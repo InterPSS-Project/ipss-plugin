@@ -644,8 +644,10 @@ Verification:
   - OpenDSS load models `1`, `4`, and `8` under a shape.
 - [ ] Add Python reference export helper for multi-step voltage and load-power
   CSVs.
-- [ ] Add enabled Java regressions comparing InterPSS time-series results to
+- [x] Add enabled Java regressions comparing InterPSS time-series results to
   checked-in DSS-Python references.
+  - `OpenDssQstsMultiStepReferenceTest` compares load, PVSystem, and storage
+    terminal P/Q against `qsts-multistep-dss-python-device-reference.csv`.
 
 Verification:
 
