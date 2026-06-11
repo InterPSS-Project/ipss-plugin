@@ -14,6 +14,7 @@ import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.powerflow.DistributionPostSolveOutputMode;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
+import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 import org.interpss.threePhase.qsts.QstsControlMode;
 import org.interpss.threePhase.qsts.QstsCsvExporter;
 import org.interpss.threePhase.qsts.QstsMode;
@@ -49,24 +50,33 @@ public class QstsLargeFeederComparisonExport {
 		Files.createDirectories(outputDir);
 
 		for(FeederCase feeder : selectedFeeders(caseSelector)) {
-			QstsResult result = runQsts(feeder, steps, controlMode, maxControlIterations,
+			QstsExportResult export = runQsts(feeder, steps, controlMode, maxControlIterations,
 					regControlsEnabled, capControlsEnabled);
+			QstsResult result = export.result();
 			Path output = outputDir.resolve(feeder.key()
 					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
 					+ "_interpss_voltage_by_step.csv");
 			Files.writeString(output, new QstsCsvExporter().exportBusVoltages(result),
 					StandardCharsets.UTF_8);
+			Path regulatorOutput = outputDir.resolve(feeder.key()
+					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
+					+ "_interpss_regulator_taps_by_step.csv");
+			Files.writeString(regulatorOutput, exportRegulatorTaps(feeder, result,
+					export.regulatorControls()), StandardCharsets.UTF_8);
 			System.out.println(String.format(Locale.US,
 					"INTERPSS_QSTS_REFERENCE feeder=%s steps=%d controlMode=%s maxControlIterations=%d "
-							+ "regControlsEnabled=%s capControlsEnabled=%s converged=%s voltageRows=%d output=%s",
+							+ "regControlsEnabled=%s capControlsEnabled=%s converged=%s voltageRows=%d "
+							+ "regulatorTapRows=%d output=%s regulatorOutput=%s",
 					feeder.name(), steps, controlMode, maxControlIterations,
 					regControlsEnabled, capControlsEnabled, result.isConverged(),
-					result.getBusVoltages().size(), output));
+					result.getBusVoltages().size(),
+					result.getStepResults().size() * export.regulatorControls().size(),
+					output, regulatorOutput));
 			assertTrue(result.isConverged(), "QSTS export did not converge for " + feeder.name());
 		}
 	}
 
-	private static QstsResult runQsts(FeederCase feeder, int steps, QstsControlMode controlMode,
+	private static QstsExportResult runQsts(FeederCase feeder, int steps, QstsControlMode controlMode,
 			int maxControlIterations, boolean regControlsEnabled, boolean capControlsEnabled) {
 		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.setRegControlEnabled(regControlsEnabled);
@@ -78,8 +88,10 @@ public class QstsLargeFeederComparisonExport {
 
 		DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
 				.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
+		List<RegulatorControlData> regulatorControls = parser.getRegulatorControls();
 		var study = OpenDSSQstsStudyFactory.from(parser)
 				.setPowerFlowAlgorithm(algorithm)
+				.setRegulatorControls(regulatorControls)
 				.setMode(QstsMode.DAILY)
 				.setNumberOfSteps(steps)
 				.setStepSizeHours(1.0)
@@ -92,7 +104,37 @@ public class QstsLargeFeederComparisonExport {
 		if(!capControlsEnabled) {
 			study.setCapacitorControls(Collections.emptyList());
 		}
-		return study.run();
+		return new QstsExportResult(study.run(), regulatorControls);
+	}
+
+	private static String exportRegulatorTaps(FeederCase feeder, QstsResult result,
+			List<RegulatorControlData> controls) {
+		StringBuilder csv = new StringBuilder();
+		csv.append("case,step,hour,control,branch,winding,tap_winding,phase,tap_number,tap_ratio,")
+				.append("target_voltage,bandwidth,pt_ratio,regulated_bus,line_drop_r,line_drop_x,voltage_limit\n");
+		for(var step : result.getStepResults()) {
+			for(RegulatorControlData control : controls) {
+				csv.append(feeder.name()).append(',')
+						.append(step.getStepIndex()).append(',')
+						.append(String.format(Locale.US, "%.12g", step.getHour())).append(',')
+						.append(control.getId()).append(',')
+						.append(control.getBranchName()).append(',')
+						.append(control.getWinding()).append(',')
+						.append(control.getTapWinding()).append(',')
+						.append(control.getPhaseCode()).append(',')
+						.append(control.getTapPosition()).append(',')
+						.append(String.format(Locale.US, "%.12g", control.getTapRatio())).append(',')
+						.append(String.format(Locale.US, "%.12g", control.getTargetVoltage())).append(',')
+						.append(String.format(Locale.US, "%.12g", control.getBandwidth())).append(',')
+						.append(String.format(Locale.US, "%.12g", control.getPtRatio())).append(',')
+						.append(control.getRegulatedBusId() == null ? "" : control.getRegulatedBusId()).append(',')
+						.append(String.format(Locale.US, "%.12g", control.getLineDropR())).append(',')
+						.append(String.format(Locale.US, "%.12g", control.getLineDropX())).append(',')
+						.append(String.format(Locale.US, "%.12g", control.getVLimit()))
+						.append('\n');
+			}
+		}
+		return csv.toString();
 	}
 
 	private static List<FeederCase> selectedFeeders(String caseSelector) {
@@ -107,6 +149,9 @@ public class QstsLargeFeederComparisonExport {
 	}
 
 	private record FeederCase(String key, String name, String folder, String masterFile) {
+	}
+
+	private record QstsExportResult(QstsResult result, List<RegulatorControlData> regulatorControls) {
 	}
 
 	private static String controlTag(QstsControlMode controlMode, boolean regControlsEnabled,
