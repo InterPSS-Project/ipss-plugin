@@ -137,6 +137,41 @@ The default fixed-point path is now:
 - matrix-time floating-component anti-float: disabled unless explicitly enabled;
 - broad non-swing bus anti-float: disabled unless explicitly enabled.
 
+## Controlled QSTS Performance Evidence
+
+Ckt24 annual QSTS performance was checked with OpenDSS static controls enabled
+on both sides. The checked-in InterPSS Ckt24 QSTS case has no time-varying
+profile bindings, so QSTS solves the first controlled static state and reuses
+the settled network state for the remaining samples. This is disabled for
+delayed/event controls, inverter controls, and any QSTS profile-bound case.
+
+Commands used on 2026-06-11:
+
+```bash
+python3 ipss.plugin.3phase/src/test/python/qsts_large_feeder_perf.py \
+  --case ckt24 --warmup-steps 24 --steps 8760 --repeats 1
+
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest=QstsLargeFeederPerformanceBenchmark \
+  -Dqsts.perf.case=ckt24 \
+  -Dqsts.perf.warmupSteps=24 \
+  -Dqsts.perf.steps=8760 \
+  -Dqsts.perf.repeats=1 \
+  -Dipss.qsts.profile=true \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Results:
+
+| Engine | Controls | Steps | Result |
+|--------|----------|-------|--------|
+| DSS-Python | static, regulators and capacitors enabled | 8760 | `0.820762 ms/step`, converged, max control iterations `9` |
+| InterPSS | static, regulators and capacitors enabled | 8760 | `0.131917 ms/step`, converged, max PF iterations `5` |
+
+The InterPSS profile reported `reused_powerflow_steps=8759`,
+`symbolicFactors=1`, `numericFactors=1`, `fallbackCount=0`, and
+`pf_iterations_per_step=0.000571`.
+
 ## Long-Term Direction: OpenDSS-Style Primitive Y Matrix
 
 The current 3x3 ABC frame forces all components into a fixed 3-phase structure, causing the zero-padding issues above. OpenDSS uses a different approach:
