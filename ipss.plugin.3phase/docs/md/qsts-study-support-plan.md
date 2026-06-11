@@ -751,6 +751,9 @@ Verification:
     engineering-unit curves before `InverterGenAdapter` evaluates them.
 - [x] Apply P/Q injections per step with consistent sign conventions for
   scheduled generic generator/PV/storage metadata.
+- [x] Add storage SOC reference rows for scheduled charge/discharge.
+  - The storage mini case compares cumulative stored kWh/SOC through
+    `QstsStorageStateStore` while `StorageController` remains deferred.
 - [x] Add DSS-Python-backed InvControl mini references for `VOLTVAR`,
   `VOLTWATT`, `WATTPF`, and `WATTVAR`.
   - These compare PVSystem terminal P/Q before bus voltages.
