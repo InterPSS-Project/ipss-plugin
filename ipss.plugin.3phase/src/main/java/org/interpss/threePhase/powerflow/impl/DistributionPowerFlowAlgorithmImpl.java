@@ -440,6 +440,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			if(!changed) {
 				return true;
 			}
+			if(this.fixedPointYMatrixCacheEnabled) {
+				clearFixedPointYMatrixCache();
+			}
 		}
 		log.error("Distribution controls did not settle within {} outer iterations", maxControlIterations);
 		return this.isAllPowerFlowConverged = false;
