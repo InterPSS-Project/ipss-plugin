@@ -2505,12 +2505,77 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				IBranch3Phase branch3P = sweepBranch(branch);
 				Complex3x1 vabcF = threePhaseBus((BaseAclfBus<?, ?>) branch.getFromBus()).get3PhaseVotlages();
 				Complex3x1 vabcT = threePhaseBus((BaseAclfBus<?, ?>) branch.getToBus()).get3PhaseVotlages();
-				branch3P.setCurrentAbcAtFromSide(branch3P.getYffabc().multiply(vabcF)
-						.add(branch3P.getYftabc().multiply(vabcT)));
-				branch3P.setCurrentAbcAtToSide(branch3P.getYttabc().multiply(vabcT)
-						.add(branch3P.getYtfabc().multiply(vabcF)));
+				if(isSinglePhase(branch3P.getPhaseCode())) {
+					updateSinglePhaseBranchCurrents(branch3P, vabcF, vabcT);
+				}
+				else {
+					branch3P.setCurrentAbcAtFromSide(branch3P.getYffabc().multiply(vabcF)
+							.add(branch3P.getYftabc().multiply(vabcT)));
+					branch3P.setCurrentAbcAtToSide(branch3P.getYttabc().multiply(vabcT)
+							.add(branch3P.getYtfabc().multiply(vabcF)));
+				}
 			}
 		}
+	}
+
+	private void updateSinglePhaseBranchCurrents(IBranch3Phase branch, Complex3x1 vabcF,
+			Complex3x1 vabcT) {
+		int phase = phaseIndex(branch.getPhaseCode());
+		Complex vf = phaseValue(vabcF, phase);
+		Complex vt = phaseValue(vabcT, phase);
+		Complex fromCurrent = phaseValue(branch.getYffabc(), phase, phase).multiply(vf)
+				.add(phaseValue(branch.getYftabc(), phase, phase).multiply(vt));
+		Complex toCurrent = phaseValue(branch.getYttabc(), phase, phase).multiply(vt)
+				.add(phaseValue(branch.getYtfabc(), phase, phase).multiply(vf));
+		branch.setCurrentAbcAtFromSide(singlePhaseValue(phase, fromCurrent));
+		branch.setCurrentAbcAtToSide(singlePhaseValue(phase, toCurrent));
+	}
+
+	private static boolean isSinglePhase(PhaseCode phaseCode) {
+		return phaseCode == PhaseCode.A || phaseCode == PhaseCode.B || phaseCode == PhaseCode.C;
+	}
+
+	private static int phaseIndex(PhaseCode phaseCode) {
+		if(phaseCode == PhaseCode.B) {
+			return 1;
+		}
+		if(phaseCode == PhaseCode.C) {
+			return 2;
+		}
+		return 0;
+	}
+
+	private static Complex phaseValue(Complex3x1 value, int phase) {
+		if(phase == 1) {
+			return value.b_1;
+		}
+		if(phase == 2) {
+			return value.c_2;
+		}
+		return value.a_0;
+	}
+
+	private static Complex phaseValue(Complex3x3 value, int row, int col) {
+		if(row == 0 && col == 0) return value.aa;
+		if(row == 0 && col == 1) return value.ab;
+		if(row == 0 && col == 2) return value.ac;
+		if(row == 1 && col == 0) return value.ba;
+		if(row == 1 && col == 1) return value.bb;
+		if(row == 1 && col == 2) return value.bc;
+		if(row == 2 && col == 0) return value.ca;
+		if(row == 2 && col == 1) return value.cb;
+		return value.cc;
+	}
+
+	private static Complex3x1 singlePhaseValue(int phase, Complex value) {
+		Complex zero = new Complex(0.0, 0.0);
+		if(phase == 1) {
+			return new Complex3x1(zero, value, zero);
+		}
+		if(phase == 2) {
+			return new Complex3x1(zero, zero, value);
+		}
+		return new Complex3x1(value, zero, zero);
 	}
 
 	private boolean FBSPowerflow(){
