@@ -105,6 +105,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private int swingBusVoltageBoundaryCurrentVersion = 0;
 	private PrimitiveFixedPointState fixedPointPrimitiveStateCache = null;
 	private int fixedPointPrimitiveStateCacheBusCount = -1;
+	private BaseAclfNetwork<?, ?> fixedPointYMatrixSymbolSignatureCacheNetwork = null;
+	private String fixedPointYMatrixSymbolSignatureCache = null;
 	private String fixedPointYMatrixSymbolSignature = null;
 	private Object fixedPointYMatrixSymbolTable = null;
 	private BaseAclfNetwork<?, ?> floatingComponentDeactivationNetwork = null;
@@ -797,6 +799,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 			else {
 				saveSwingBusVoltages(busCache);
+				primitiveState.saveVoltageMagnitudes(busCache.nonSwingBuses);
 			}
 			FIXED_POINT_PROFILE.addSaveVoltages(FIXED_POINT_PROFILE.elapsed(start));
 
@@ -1120,6 +1123,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private String fixedPointYMatrixSymbolSignature(BaseAclfNetwork<?, ?> distNet) {
+		if(this.fixedPointYMatrixCacheEnabled
+				&& this.fixedPointYMatrixSymbolSignatureCacheNetwork == distNet
+				&& this.fixedPointYMatrixSymbolSignatureCache != null) {
+			return this.fixedPointYMatrixSymbolSignatureCache;
+		}
 		StringBuilder builder = new StringBuilder();
 		builder.append(System.identityHashCode(distNet)).append('|')
 				.append(distNet.getNoBus()).append('|');
@@ -1142,7 +1150,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						.append(branch.isLine()).append(';');
 			}
 		}
-		return builder.toString();
+		String signature = builder.toString();
+		if(this.fixedPointYMatrixCacheEnabled) {
+			this.fixedPointYMatrixSymbolSignatureCacheNetwork = distNet;
+			this.fixedPointYMatrixSymbolSignatureCache = signature;
+		}
+		return signature;
 	}
 
 	private ISparseEqnComplexMatrix3x3 formYMatrixABCForPowerflow(BaseAclfNetwork distNet,
@@ -2256,12 +2269,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				return VoltageUpdateResult.invalid();
 			}
 			if(!aboveTolerance) {
-				double mismatch = primitiveState.voltageMismatch(solved, offset, bus);
+				double mismatch = primitiveState.savedMagnitudeMismatch(solved, offset, bus);
 				maxMismatch = Math.max(maxMismatch, mismatch);
 				aboveTolerance = mismatch > tolerance;
 			}
-			primitiveState.copySolvedVoltage(solved, offset, bus);
 		}
+		primitiveState.useSolvedVoltage(solved);
 		return VoltageUpdateResult.valid(maxMismatch);
 	}
 
@@ -3267,6 +3280,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		this.fixedPointBusCacheBoundaryVersion = -1;
 		this.fixedPointPrimitiveStateCache = null;
 		this.fixedPointPrimitiveStateCacheBusCount = -1;
+		this.fixedPointYMatrixSymbolSignatureCacheNetwork = null;
+		this.fixedPointYMatrixSymbolSignatureCache = null;
 		this.floatingComponentDeactivationNetwork = null;
 		this.floatingComponentDeactivationSignature = null;
 		this.fixedPointNoIslandNetwork = null;
@@ -3291,6 +3306,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void clearFixedPointYMatrixSymbolCache() {
+		this.fixedPointYMatrixSymbolSignatureCacheNetwork = null;
+		this.fixedPointYMatrixSymbolSignatureCache = null;
 		this.fixedPointYMatrixSymbolSignature = null;
 		this.fixedPointYMatrixSymbolTable = null;
 	}
@@ -3461,9 +3478,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private static class PrimitiveFixedPointState {
-		private final double[] voltage;
+		private final double[] initialVoltage;
+		private final double[] savedMagnitude;
+		private double[] voltage;
 
 		private PrimitiveFixedPointState(double[] voltage) {
+			this.initialVoltage = voltage;
+			this.savedMagnitude = new double[voltage.length / 2];
 			this.voltage = voltage;
 		}
 
@@ -3474,6 +3495,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 
 		private void resetFrom(FixedPointBusCache busCache) {
+			this.voltage = this.initialVoltage;
 			for(FixedPointBus bus : busCache.activeBuses) {
 				Complex3x1 vabc = bus.bus3P.get3PhaseVotlages();
 				int offset = bus.primitiveOffset;
@@ -3486,40 +3508,44 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 
-		private double voltageMismatch(double[] solved, int offset, FixedPointBus bus) {
+		private void saveVoltageMagnitudes(List<FixedPointBus> buses) {
+			for(FixedPointBus bus : buses) {
+				int offset = bus.primitiveOffset;
+				int magnitudeOffset = 3 * bus.sortNumber;
+				if(bus.phaseActive(0)) {
+					this.savedMagnitude[magnitudeOffset] = Math.hypot(this.voltage[offset],
+							this.voltage[offset + 1]);
+				}
+				if(bus.phaseActive(1)) {
+					this.savedMagnitude[magnitudeOffset + 1] = Math.hypot(this.voltage[offset + 2],
+							this.voltage[offset + 3]);
+				}
+				if(bus.phaseActive(2)) {
+					this.savedMagnitude[magnitudeOffset + 2] = Math.hypot(this.voltage[offset + 4],
+							this.voltage[offset + 5]);
+				}
+			}
+		}
+
+		private double savedMagnitudeMismatch(double[] solved, int offset, FixedPointBus bus) {
+			int magnitudeOffset = 3 * bus.sortNumber;
 			double aMismatch = bus.phaseActive(0)
-					? phaseMagnitudeMismatch(solved[offset], solved[offset + 1],
-							this.voltage[offset], this.voltage[offset + 1])
+					? Math.abs(Math.hypot(solved[offset], solved[offset + 1])
+							- this.savedMagnitude[magnitudeOffset])
 					: 0.0;
 			double bMismatch = bus.phaseActive(1)
-					? phaseMagnitudeMismatch(solved[offset + 2], solved[offset + 3],
-							this.voltage[offset + 2], this.voltage[offset + 3])
+					? Math.abs(Math.hypot(solved[offset + 2], solved[offset + 3])
+							- this.savedMagnitude[magnitudeOffset + 1])
 					: 0.0;
 			double cMismatch = bus.phaseActive(2)
-					? phaseMagnitudeMismatch(solved[offset + 4], solved[offset + 5],
-							this.voltage[offset + 4], this.voltage[offset + 5])
+					? Math.abs(Math.hypot(solved[offset + 4], solved[offset + 5])
+							- this.savedMagnitude[magnitudeOffset + 2])
 					: 0.0;
 			return Math.max(aMismatch, Math.max(bMismatch, cMismatch));
 		}
 
-		private static double phaseMagnitudeMismatch(double real, double imaginary,
-				double oldReal, double oldImaginary) {
-			return Math.abs(Math.hypot(real, imaginary) - Math.hypot(oldReal, oldImaginary));
-		}
-
-		private void copySolvedVoltage(double[] solved, int offset, FixedPointBus bus) {
-			if(bus.phaseActive(0)) {
-				this.voltage[offset] = solved[offset];
-				this.voltage[offset + 1] = solved[offset + 1];
-			}
-			if(bus.phaseActive(1)) {
-				this.voltage[offset + 2] = solved[offset + 2];
-				this.voltage[offset + 3] = solved[offset + 3];
-			}
-			if(bus.phaseActive(2)) {
-				this.voltage[offset + 4] = solved[offset + 4];
-				this.voltage[offset + 5] = solved[offset + 5];
-			}
+		private void useSolvedVoltage(double[] solved) {
+			this.voltage = solved;
 		}
 
 		private void syncBusVoltages(List<FixedPointBus> buses) {
