@@ -120,6 +120,26 @@ public class OpenDssTimeSeriesMetadataTest {
 	}
 
 	@Test
+	void xfkvaAllocationMatchesOpenDssAllocatedKwDefault() throws InterpssException {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		parser.getLoadParser().parseLoadData(
+				"New Load.other_feeders phases=3 Bus1=feeders kV=34.5 "
+				+ "xfkVA=23496.8 Allocationfactor=1 pf=0.992 conn=wye model=1");
+
+		AclfLoad3Phase load = parser.getStaticNetwork().getBus("feeders").getPhaseLoadList().get(0);
+		double expectedKw = 23496.8 * 0.88;
+		double expectedKvar = expectedKw * Math.tan(Math.acos(0.992));
+		assertEquals(expectedKw / 3.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-9);
+		assertEquals(expectedKvar / 3.0, load.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-9);
+
+		parser.getLoadParser().parseLoadPropertyData("Load.other_feeders.AllocationFactor=0.5");
+
+		assertEquals(expectedKw / 6.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-9);
+		assertEquals(expectedKvar / 6.0, load.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-9);
+	}
+
+	@Test
 	void staticParserCreatesLoadOnStaticNetworkPhaseView() throws InterpssException {
 		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.getStaticNetwork().setBaseKva(100000.0);
