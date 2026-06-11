@@ -1661,15 +1661,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					start = FIXED_POINT_PROFILE.start();
 					if(primitiveRhs == null) {
 						yMatrix.setPrimitiveRhs3x1(bus.sortNumber,
-								curInj[0], curInj[1],
-								curInj[2], curInj[3],
-								curInj[4], curInj[5]);
+								bus.phaseActive(0) ? curInj[0] : 0.0,
+								bus.phaseActive(0) ? curInj[1] : 0.0,
+								bus.phaseActive(1) ? curInj[2] : 0.0,
+								bus.phaseActive(1) ? curInj[3] : 0.0,
+								bus.phaseActive(2) ? curInj[4] : 0.0,
+								bus.phaseActive(2) ? curInj[5] : 0.0);
 					}
 					else {
 						writePrimitiveRhs3x1(primitiveRhs, bus.sortNumber,
-								curInj[0], curInj[1],
-								curInj[2], curInj[3],
-								curInj[4], curInj[5]);
+								bus.phaseActive(0) ? curInj[0] : 0.0,
+								bus.phaseActive(0) ? curInj[1] : 0.0,
+								bus.phaseActive(1) ? curInj[2] : 0.0,
+								bus.phaseActive(1) ? curInj[3] : 0.0,
+								bus.phaseActive(2) ? curInj[4] : 0.0,
+								bus.phaseActive(2) ? curInj[5] : 0.0);
 					}
 					FIXED_POINT_PROFILE.addCurrentRhsWrite(FIXED_POINT_PROFILE.elapsed(start));
 				}
@@ -1685,15 +1691,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					start = FIXED_POINT_PROFILE.start();
 					if(primitiveRhs == null) {
 						yMatrix.setPrimitiveRhs3x1(bus.sortNumber,
-								aReal, aImaginary,
-								bReal, bImaginary,
-								cReal, cImaginary);
+								bus.phaseActive(0) ? aReal : 0.0,
+								bus.phaseActive(0) ? aImaginary : 0.0,
+								bus.phaseActive(1) ? bReal : 0.0,
+								bus.phaseActive(1) ? bImaginary : 0.0,
+								bus.phaseActive(2) ? cReal : 0.0,
+								bus.phaseActive(2) ? cImaginary : 0.0);
 					}
 					else {
 						writePrimitiveRhs3x1(primitiveRhs, bus.sortNumber,
-								aReal, aImaginary,
-								bReal, bImaginary,
-								cReal, cImaginary);
+								bus.phaseActive(0) ? aReal : 0.0,
+								bus.phaseActive(0) ? aImaginary : 0.0,
+								bus.phaseActive(1) ? bReal : 0.0,
+								bus.phaseActive(1) ? bImaginary : 0.0,
+								bus.phaseActive(2) ? cReal : 0.0,
+								bus.phaseActive(2) ? cImaginary : 0.0);
 					}
 					FIXED_POINT_PROFILE.addCurrentRhsWrite(FIXED_POINT_PROFILE.elapsed(start));
 				}
@@ -1722,6 +1734,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				log.warn("Invalid fixed-point swing-boundary current at bus " + bus.id
 						+ ", sortNumber=" + bus.sortNumber + ", iabc=" + bus.boundaryCurrent);
 			}
+			maskInactiveCurrent(bus, curInj, 0);
 			if(bus.boundaryCurrent == null) {
 				if(primitiveRhs == null) {
 					yMatrix.setPrimitiveRhs3x1(bus.sortNumber,
@@ -1796,6 +1809,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				primitiveRhs[offset + 4] -= bus.boundaryCReal;
 				primitiveRhs[offset + 5] -= bus.boundaryCImaginary;
 			}
+			maskInactiveCurrent(bus, primitiveRhs, offset);
 			FIXED_POINT_PROFILE.addCurrentRhsCompose(FIXED_POINT_PROFILE.elapsed(start));
 			FIXED_POINT_PROFILE.addCurrentInjectionRhs(FIXED_POINT_PROFILE.elapsed(rhsStart));
 		}
@@ -1829,6 +1843,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				primitiveRhs[offset + 4] -= bus.boundaryCReal;
 				primitiveRhs[offset + 5] -= bus.boundaryCImaginary;
 			}
+			maskInactiveCurrent(bus, primitiveRhs, offset);
 		}
 	}
 
@@ -1854,6 +1869,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				gen.addEquivCurrInj(voltage, offset, primitiveRhs, offset);
 				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
 			}
+		}
+	}
+
+	private void maskInactiveCurrent(FixedPointBus bus, double[] current, int offset) {
+		if(!bus.phaseActive(0)) {
+			current[offset] = 0.0;
+			current[offset + 1] = 0.0;
+		}
+		if(!bus.phaseActive(1)) {
+			current[offset + 2] = 0.0;
+			current[offset + 3] = 0.0;
+		}
+		if(!bus.phaseActive(2)) {
+			current[offset + 4] = 0.0;
+			current[offset + 5] = 0.0;
 		}
 	}
 
@@ -2146,8 +2176,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(FixedPointBus bus : busCache.nonSwingBuses) {
 				Complex3x1 vabc = yMatrix.getX(bus.sortNumber);
 
-				if(isValidFixedPointVoltage(vabc)){
-					updateFixedPointVoltage(bus.bus3P, vabc);
+				if(isValidFixedPointVoltage(vabc, bus)){
+					updateFixedPointVoltage(bus, vabc);
 					maxMismatch = Math.max(maxMismatch, bus.voltageMismatch(vabc));
 				} else {
 					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
@@ -2168,8 +2198,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				Complex3x1 vabc = yMatrix.getPrimitiveSolved3x1(
 						bus.sortNumber, bus.bus3P.get3PhaseVotlages());
 
-				if(isValidFixedPointVoltage(vabc)){
-					updateFixedPointVoltage(bus.bus3P, vabc);
+				if(isValidFixedPointVoltage(vabc, bus)){
+					updateFixedPointVoltage(bus, vabc);
 					maxMismatch = Math.max(maxMismatch, bus.voltageMismatch(vabc));
 				} else {
 					log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
@@ -2194,13 +2224,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		double maxMismatch = 0.0;
 		for(FixedPointBus bus : busCache.nonSwingBuses) {
 			int offset = bus.primitiveOffset;
-			if(!isValidFixedPointVoltage(solved, offset)) {
+			if(!isValidFixedPointVoltage(solved, offset, bus)) {
 				log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
 						+ ", sortNumber=" + bus.sortNumber + ", vabc=" + format3x1(solved, offset));
 				return VoltageUpdateResult.invalid();
 			}
 			maxMismatch = Math.max(maxMismatch, bus.voltageMismatch(solved, offset));
-			updateFixedPointVoltage(bus.bus3P, solved, offset);
+			updateFixedPointVoltage(bus, solved, offset);
 		}
 		return VoltageUpdateResult.valid(maxMismatch);
 	}
@@ -2213,44 +2243,58 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		double tolerance = this.getTolerance();
 		for(FixedPointBus bus : busCache.nonSwingBuses) {
 			int offset = bus.primitiveOffset;
-			if(!isValidFixedPointVoltage(solved, offset)) {
+			if(!isValidFixedPointVoltage(solved, offset, bus)) {
 				log.warn("Fixed-point solve produced invalid voltage at bus " + bus.id
 						+ ", sortNumber=" + bus.sortNumber + ", vabc=" + format3x1(solved, offset));
 				return VoltageUpdateResult.invalid();
 			}
 			if(!aboveTolerance) {
-				double mismatch = primitiveState.voltageMismatch(solved, offset);
+				double mismatch = primitiveState.voltageMismatch(solved, offset, bus);
 				maxMismatch = Math.max(maxMismatch, mismatch);
 				aboveTolerance = mismatch > tolerance;
 			}
-			primitiveState.copySolvedVoltage(solved, offset);
+			primitiveState.copySolvedVoltage(solved, offset, bus);
 		}
 		return VoltageUpdateResult.valid(maxMismatch);
 	}
 
-	private void updateFixedPointVoltage(IBus3Phase bus3P, Complex3x1 vabc) {
+	private void updateFixedPointVoltage(FixedPointBus bus, Complex3x1 vabc) {
+		IBus3Phase bus3P = bus.bus3P;
 		Complex3x1 existing = bus3P.get3PhaseVotlages();
 		if(existing == null) {
-			bus3P.set3PhaseVotlages(vabc);
+			bus3P.set3PhaseVotlages(maskedVoltage(vabc, bus.activePhaseMask));
 			return;
 		}
-		existing.a_0 = vabc.a_0;
-		existing.b_1 = vabc.b_1;
-		existing.c_2 = vabc.c_2;
+		if(bus.phaseActive(0)) {
+			existing.a_0 = vabc.a_0;
+		}
+		if(bus.phaseActive(1)) {
+			existing.b_1 = vabc.b_1;
+		}
+		if(bus.phaseActive(2)) {
+			existing.c_2 = vabc.c_2;
+		}
 	}
 
-	private void updateFixedPointVoltage(IBus3Phase bus3P, double[] voltage, int offset) {
+	private void updateFixedPointVoltage(FixedPointBus bus, double[] voltage, int offset) {
+		IBus3Phase bus3P = bus.bus3P;
 		Complex3x1 existing = bus3P.get3PhaseVotlages();
 		if(existing == null) {
 			bus3P.set3PhaseVotlages(new Complex3x1(
-					new Complex(voltage[offset], voltage[offset + 1]),
-					new Complex(voltage[offset + 2], voltage[offset + 3]),
-					new Complex(voltage[offset + 4], voltage[offset + 5])));
+					bus.phaseActive(0) ? new Complex(voltage[offset], voltage[offset + 1]) : new Complex(0.0, 0.0),
+					bus.phaseActive(1) ? new Complex(voltage[offset + 2], voltage[offset + 3]) : new Complex(0.0, 0.0),
+					bus.phaseActive(2) ? new Complex(voltage[offset + 4], voltage[offset + 5]) : new Complex(0.0, 0.0)));
 			return;
 		}
-		existing.a_0 = new Complex(voltage[offset], voltage[offset + 1]);
-		existing.b_1 = new Complex(voltage[offset + 2], voltage[offset + 3]);
-		existing.c_2 = new Complex(voltage[offset + 4], voltage[offset + 5]);
+		if(bus.phaseActive(0)) {
+			existing.a_0 = new Complex(voltage[offset], voltage[offset + 1]);
+		}
+		if(bus.phaseActive(1)) {
+			existing.b_1 = new Complex(voltage[offset + 2], voltage[offset + 3]);
+		}
+		if(bus.phaseActive(2)) {
+			existing.c_2 = new Complex(voltage[offset + 4], voltage[offset + 5]);
+		}
 	}
 
 	@Override
@@ -2272,11 +2316,53 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				&& vabc.absMax() <= this.maxFixedPointVoltageAbs;
 	}
 
+	private boolean isValidFixedPointVoltage(Complex3x1 vabc, FixedPointBus bus) {
+		return (!bus.phaseActive(0) || isFinite(vabc.a_0))
+				&& (!bus.phaseActive(1) || isFinite(vabc.b_1))
+				&& (!bus.phaseActive(2) || isFinite(vabc.c_2))
+				&& activeMaxAbs(vabc, bus) <= this.maxFixedPointVoltageAbs;
+	}
+
 	private boolean isValidFixedPointVoltage(double[] voltage, int offset) {
 		return isFinite(voltage[offset], voltage[offset + 1])
 				&& isFinite(voltage[offset + 2], voltage[offset + 3])
 				&& isFinite(voltage[offset + 4], voltage[offset + 5])
 				&& maxAbs(voltage, offset) <= this.maxFixedPointVoltageAbs;
+	}
+
+	private boolean isValidFixedPointVoltage(double[] voltage, int offset, FixedPointBus bus) {
+		return (!bus.phaseActive(0) || isFinite(voltage[offset], voltage[offset + 1]))
+				&& (!bus.phaseActive(1) || isFinite(voltage[offset + 2], voltage[offset + 3]))
+				&& (!bus.phaseActive(2) || isFinite(voltage[offset + 4], voltage[offset + 5]))
+				&& activeMaxAbs(voltage, offset, bus) <= this.maxFixedPointVoltageAbs;
+	}
+
+	private double activeMaxAbs(Complex3x1 voltage, FixedPointBus bus) {
+		double max = 0.0;
+		if(bus.phaseActive(0)) {
+			max = Math.max(max, voltage.a_0.abs());
+		}
+		if(bus.phaseActive(1)) {
+			max = Math.max(max, voltage.b_1.abs());
+		}
+		if(bus.phaseActive(2)) {
+			max = Math.max(max, voltage.c_2.abs());
+		}
+		return max;
+	}
+
+	private double activeMaxAbs(double[] voltage, int offset, FixedPointBus bus) {
+		double max = 0.0;
+		if(bus.phaseActive(0)) {
+			max = Math.max(max, Math.hypot(voltage[offset], voltage[offset + 1]));
+		}
+		if(bus.phaseActive(1)) {
+			max = Math.max(max, Math.hypot(voltage[offset + 2], voltage[offset + 3]));
+		}
+		if(bus.phaseActive(2)) {
+			max = Math.max(max, Math.hypot(voltage[offset + 4], voltage[offset + 5]));
+		}
+		return max;
 	}
 
 	private void saveBusVoltages(FixedPointBusCache busCache) {
@@ -2908,6 +2994,14 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return masked;
 	}
 
+	private Complex3x1 maskedVoltage(Complex3x1 value, int phaseMask) {
+		Complex zero = new Complex(0.0, 0.0);
+		return new Complex3x1(
+				(phaseMask & 0b001) != 0 ? value.a_0 : zero,
+				(phaseMask & 0b010) != 0 ? value.b_1 : zero,
+				(phaseMask & 0b100) != 0 ? value.c_2 : zero);
+	}
+
 	private Complex3x3 copyComplex3x3(Complex3x3 source) {
 		Complex3x3 copy = new Complex3x3();
 		copy.aa = source.aa;
@@ -3371,15 +3465,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 
-		private double voltageMismatch(double[] solved, int offset) {
-			return Math.max(
-					phaseMagnitudeMismatch(solved[offset], solved[offset + 1],
-							this.voltage[offset], this.voltage[offset + 1]),
-					Math.max(
-							phaseMagnitudeMismatch(solved[offset + 2], solved[offset + 3],
-									this.voltage[offset + 2], this.voltage[offset + 3]),
-							phaseMagnitudeMismatch(solved[offset + 4], solved[offset + 5],
-									this.voltage[offset + 4], this.voltage[offset + 5])));
+		private double voltageMismatch(double[] solved, int offset, FixedPointBus bus) {
+			double aMismatch = bus.phaseActive(0)
+					? phaseMagnitudeMismatch(solved[offset], solved[offset + 1],
+							this.voltage[offset], this.voltage[offset + 1])
+					: 0.0;
+			double bMismatch = bus.phaseActive(1)
+					? phaseMagnitudeMismatch(solved[offset + 2], solved[offset + 3],
+							this.voltage[offset + 2], this.voltage[offset + 3])
+					: 0.0;
+			double cMismatch = bus.phaseActive(2)
+					? phaseMagnitudeMismatch(solved[offset + 4], solved[offset + 5],
+							this.voltage[offset + 4], this.voltage[offset + 5])
+					: 0.0;
+			return Math.max(aMismatch, Math.max(bMismatch, cMismatch));
 		}
 
 		private static double phaseMagnitudeMismatch(double real, double imaginary,
@@ -3387,13 +3486,19 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return Math.abs(Math.hypot(real, imaginary) - Math.hypot(oldReal, oldImaginary));
 		}
 
-		private void copySolvedVoltage(double[] solved, int offset) {
-			this.voltage[offset] = solved[offset];
-			this.voltage[offset + 1] = solved[offset + 1];
-			this.voltage[offset + 2] = solved[offset + 2];
-			this.voltage[offset + 3] = solved[offset + 3];
-			this.voltage[offset + 4] = solved[offset + 4];
-			this.voltage[offset + 5] = solved[offset + 5];
+		private void copySolvedVoltage(double[] solved, int offset, FixedPointBus bus) {
+			if(bus.phaseActive(0)) {
+				this.voltage[offset] = solved[offset];
+				this.voltage[offset + 1] = solved[offset + 1];
+			}
+			if(bus.phaseActive(1)) {
+				this.voltage[offset + 2] = solved[offset + 2];
+				this.voltage[offset + 3] = solved[offset + 3];
+			}
+			if(bus.phaseActive(2)) {
+				this.voltage[offset + 4] = solved[offset + 4];
+				this.voltage[offset + 5] = solved[offset + 5];
+			}
 		}
 
 		private void syncBusVoltages(List<FixedPointBus> buses) {
@@ -3402,14 +3507,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				Complex3x1 existing = bus.bus3P.get3PhaseVotlages();
 				if(existing == null) {
 					bus.bus3P.set3PhaseVotlages(new Complex3x1(
-							new Complex(this.voltage[offset], this.voltage[offset + 1]),
-							new Complex(this.voltage[offset + 2], this.voltage[offset + 3]),
-							new Complex(this.voltage[offset + 4], this.voltage[offset + 5])));
+							bus.phaseActive(0) ? new Complex(this.voltage[offset], this.voltage[offset + 1]) : new Complex(0.0, 0.0),
+							bus.phaseActive(1) ? new Complex(this.voltage[offset + 2], this.voltage[offset + 3]) : new Complex(0.0, 0.0),
+							bus.phaseActive(2) ? new Complex(this.voltage[offset + 4], this.voltage[offset + 5]) : new Complex(0.0, 0.0)));
 				}
 				else {
-					existing.a_0 = new Complex(this.voltage[offset], this.voltage[offset + 1]);
-					existing.b_1 = new Complex(this.voltage[offset + 2], this.voltage[offset + 3]);
-					existing.c_2 = new Complex(this.voltage[offset + 4], this.voltage[offset + 5]);
+					if(bus.phaseActive(0)) {
+						existing.a_0 = new Complex(this.voltage[offset], this.voltage[offset + 1]);
+					}
+					if(bus.phaseActive(1)) {
+						existing.b_1 = new Complex(this.voltage[offset + 2], this.voltage[offset + 3]);
+					}
+					if(bus.phaseActive(2)) {
+						existing.c_2 = new Complex(this.voltage[offset + 4], this.voltage[offset + 5]);
+					}
 				}
 			}
 		}
