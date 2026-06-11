@@ -135,8 +135,25 @@ public class OpenDssTimeSeriesMetadataTest {
 
 		parser.getLoadParser().parseLoadPropertyData("Load.other_feeders.AllocationFactor=0.5");
 
-		assertEquals(expectedKw / 6.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-9);
-		assertEquals(expectedKvar / 6.0, load.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-9);
+		double expectedEditedKw = 23496.8 * 0.5 * 0.992;
+		double expectedEditedKvar = expectedEditedKw * Math.tan(Math.acos(0.992));
+		assertEquals(expectedEditedKw / 3.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-9);
+		assertEquals(expectedEditedKvar / 3.0, load.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-9);
+	}
+
+	@Test
+	void nonUnityXfkvaAllocationUsesOpenDssPowerFactorRule() throws InterpssException {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		parser.getLoadParser().parseLoadData(
+				"New Load.allocated phases=3 Bus1=bus1.1.2.3 kV=0.48 "
+				+ "xfkVA=734.18 Allocationfactor=1.1578 pf=0.98 conn=wye model=1");
+
+		AclfLoad3Phase load = parser.getStaticNetwork().getBus("bus1").getPhaseLoadList().get(0);
+		double expectedKw = 734.18 * 1.1578 * 0.98;
+		double expectedKvar = expectedKw * Math.tan(Math.acos(0.98));
+		assertEquals(expectedKw / 3.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-9);
+		assertEquals(expectedKvar / 3.0, load.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-9);
 	}
 
 	@Test

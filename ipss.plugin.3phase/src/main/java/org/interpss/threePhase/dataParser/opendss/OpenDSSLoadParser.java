@@ -196,7 +196,7 @@ public class OpenDSSLoadParser {
 			}
 			if(powerfactor!=0.0 && loadQ==0.0){
 				if((loadP == 0.0 || (kwSpecified && Math.abs(loadP) <= 1.0e-3)) && transformerKva > 0.0) {
-					loadP = allocatedTransformerKw(transformerKva, allocationFactor);
+					loadP = inlineAllocatedTransformerKw(transformerKva, allocationFactor, powerfactor);
 				}
 				else if(loadP == 0.0 && !kwSpecified) {
 					loadP = 10.0;
@@ -424,7 +424,8 @@ public class OpenDSSLoadParser {
 				if(parsedLoad.transformerKva <= 0.0 || parsedLoad.powerFactor == 0.0) {
 					continue;
 				}
-				double loadP = allocatedTransformerKw(parsedLoad.transformerKva, allocationFactor);
+				double loadP = propertyAllocatedTransformerKw(parsedLoad.transformerKva, allocationFactor,
+						parsedLoad.powerFactor);
 				double loadQ = loadP*Math.tan(Math.acos(Math.abs(parsedLoad.powerFactor)));
 				if(parsedLoad.powerFactor < 0.0) {
 					loadQ = -loadQ;
@@ -442,7 +443,19 @@ public class OpenDSSLoadParser {
 			return true;
 		}
 
-		private static double allocatedTransformerKw(double transformerKva, double allocationFactor) {
+		private static double inlineAllocatedTransformerKw(double transformerKva, double allocationFactor,
+				double powerFactor) {
+			if(Math.abs(allocationFactor - 1.0) > 1.0e-12 && powerFactor != 0.0) {
+				return transformerKva * allocationFactor * Math.abs(powerFactor);
+			}
+			return transformerKva * allocationFactor * OPEN_DSS_XFKVA_ALLOCATION_KW_FACTOR;
+		}
+
+		private static double propertyAllocatedTransformerKw(double transformerKva, double allocationFactor,
+				double powerFactor) {
+			if(powerFactor != 0.0) {
+				return transformerKva * allocationFactor * Math.abs(powerFactor);
+			}
 			return transformerKva * allocationFactor * OPEN_DSS_XFKVA_ALLOCATION_KW_FACTOR;
 		}
 

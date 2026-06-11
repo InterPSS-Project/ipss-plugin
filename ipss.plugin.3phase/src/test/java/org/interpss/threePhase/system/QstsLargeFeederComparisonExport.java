@@ -17,6 +17,7 @@ import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 import org.interpss.threePhase.qsts.QstsControlMode;
 import org.interpss.threePhase.qsts.QstsCsvExporter;
+import org.interpss.threePhase.qsts.QstsDevicePowerSample;
 import org.interpss.threePhase.qsts.QstsMode;
 import org.interpss.threePhase.qsts.QstsResult;
 import org.interpss.threePhase.qsts.QstsResultSamplingMode;
@@ -63,6 +64,11 @@ public class QstsLargeFeederComparisonExport {
 					+ "_interpss_branch_power_by_step.csv");
 			Files.writeString(branchOutput, new QstsCsvExporter().exportBranchPowers(result),
 					StandardCharsets.UTF_8);
+			Path loadOutput = outputDir.resolve(feeder.key()
+					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
+					+ "_interpss_load_power_by_step.csv");
+			Files.writeString(loadOutput, exportLoadPowersKw(result, export.baseKva()),
+					StandardCharsets.UTF_8);
 			Path regulatorOutput = outputDir.resolve(feeder.key()
 					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
 					+ "_interpss_regulator_taps_by_step.csv");
@@ -71,13 +77,14 @@ public class QstsLargeFeederComparisonExport {
 			System.out.println(String.format(Locale.US,
 					"INTERPSS_QSTS_REFERENCE feeder=%s steps=%d controlMode=%s maxControlIterations=%d "
 							+ "regControlsEnabled=%s capControlsEnabled=%s converged=%s voltageRows=%d "
-							+ "branchPowerRows=%d regulatorTapRows=%d output=%s branchOutput=%s "
-							+ "regulatorOutput=%s",
+							+ "branchPowerRows=%d loadPowerRows=%d regulatorTapRows=%d output=%s branchOutput=%s "
+							+ "loadOutput=%s regulatorOutput=%s",
 					feeder.name(), steps, controlMode, maxControlIterations,
 					regControlsEnabled, capControlsEnabled, result.isConverged(),
 					result.getBusVoltages().size(), result.getBranchPowers().size(),
+					result.getLoadPowers().size(),
 					result.getStepResults().size() * export.regulatorControls().size(),
-					output, branchOutput, regulatorOutput));
+					output, branchOutput, loadOutput, regulatorOutput));
 			assertTrue(result.isConverged(), "QSTS export did not converge for " + feeder.name());
 		}
 	}
@@ -110,7 +117,24 @@ public class QstsLargeFeederComparisonExport {
 		if(!capControlsEnabled) {
 			study.setCapacitorControls(Collections.emptyList());
 		}
-		return new QstsExportResult(study.run(), regulatorControls);
+		return new QstsExportResult(study.run(), regulatorControls, parser.getStaticNetwork().getBaseKva());
+	}
+
+	private static String exportLoadPowersKw(QstsResult result, double baseKva) {
+		StringBuilder csv = new StringBuilder();
+		csv.append("step,hour,device_class,device,phase,p_kw,q_kvar\n");
+		double phaseBaseKva = baseKva / 3.0;
+		for(QstsDevicePowerSample sample : result.getLoadPowers()) {
+			csv.append(sample.getStepIndex()).append(',')
+					.append(String.format(Locale.US, "%.12g", sample.getHour())).append(',')
+					.append(sample.getDeviceClass()).append(',')
+					.append(sample.getDeviceId()).append(',')
+					.append(sample.getPhase()).append(',')
+					.append(String.format(Locale.US, "%.12g", sample.getP() * phaseBaseKva)).append(',')
+					.append(String.format(Locale.US, "%.12g", sample.getQ() * phaseBaseKva))
+					.append('\n');
+		}
+		return csv.toString();
 	}
 
 	private static String exportRegulatorTaps(FeederCase feeder, QstsResult result,
@@ -157,7 +181,8 @@ public class QstsLargeFeederComparisonExport {
 	private record FeederCase(String key, String name, String folder, String masterFile) {
 	}
 
-	private record QstsExportResult(QstsResult result, List<RegulatorControlData> regulatorControls) {
+	private record QstsExportResult(QstsResult result, List<RegulatorControlData> regulatorControls,
+			double baseKva) {
 	}
 
 	private static String controlTag(QstsControlMode controlMode, boolean regControlsEnabled,
