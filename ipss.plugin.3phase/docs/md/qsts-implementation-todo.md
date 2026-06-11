@@ -597,7 +597,7 @@ Verification:
     padding experiment results are documented as removed paths;
   - [x] larger feeder smoke coverage passes after in-place sparse-matrix updates:
     IEEE123, Ckt7, Ckt24, Ckt24 capacitor comparison, IEEE123 regulator
-    symbolic update, and IEEE8500 controls-off smoke cases.
+    symbolic update, and the legacy IEEE8500 controls-off smoke sentinel.
   - unsupported control actions force rebuild/refactor and report the reason.
 
 ## Slide 7: DSS-Python Reference Harness
@@ -721,19 +721,22 @@ Create:
   - OpenDSS adapter/reference implementation of the smoke tests.
   - IEEE13 24-step daily scheduled-profile regression is already covered by
     `OpenDssIeee13DailyQstsProfileTest`.
-  - [x] Ckt7 first 24 yearly steps, controls off, as the first large feeder with
-    real OpenDSS load-shape bindings.
-  - [x] IEEE123 first 24 repeated-state steps, controls off, to protect topology
-    and static-QSTS integration while regulator/capacitor controls remain under
-    staged implementation.
-  - [x] Ckt24 first 24 repeated-state steps, controls off, using the InterPSS static
-    fixture until a supported annual/scheduled fixture is added. The near-zero
-    OpenDSS busbar branch `subxfmr_lsb->05410(1)` is protected by the parser
-    line-impedance floor so static fixed-point setup no longer sees zero Yii
-    diagonal elements.
-  - [ ] Ckt24 low-load scheduled yearly window with static controls enabled by
-    default. Controls-off runs must use the explicit diagnostic override
-    (`--allow-disabled-controls` for DSS-Python or
+  - [x] Ckt7 first 24 yearly steps with controls off remains a historical
+    smoke baseline for the first large feeder with real OpenDSS load-shape
+    bindings.
+  - [x] IEEE123 first 24 repeated-state steps with controls off remains a
+    topology/static-QSTS sentinel from before regulator/capacitor controls were
+    promoted into the static comparison path.
+  - [x] Ckt24 first 24 repeated-state steps with controls off remains a legacy
+    parser/fixed-point sentinel. The near-zero OpenDSS busbar branch
+    `subxfmr_lsb->05410(1)` is protected by the parser line-impedance floor so
+    static fixed-point setup no longer sees zero Yii diagonal elements.
+  - [ ] Ckt24 low-load scheduled yearly window with static controls enabled is
+    the current parity and performance target. DSS-Python and InterPSS
+    comparisons must use `controlmode=static`, positive max-control iterations,
+    RegControl enabled, and CapControl enabled unless the run is explicitly
+    labeled as a frozen-state diagnostic. Controls-off runs require the
+    diagnostic override (`--allow-disabled-controls` for DSS-Python or
     `-Dqsts.compare.allowDisabledControls=true` for InterPSS):
     - profile files in `testData/feeder/Ckt24`:
       `LS_PhaseA.txt`, `LS_PhaseB.txt`, `LS_PhaseC.txt`,
@@ -750,8 +753,10 @@ Create:
       failures; remaining branch-flow mismatch is reactive-only
       (`maxQDelta=22.57404852 kvar`, `qFailures=428`) and is the next
       upstream phasor/modeling slice.
-  - [x] IEEE8500 short repeated-state window, controls off, enabled as a legacy
-    runtime sentinel before promoting controlled comparison/performance runs.
+  - [ ] IEEE8500 short repeated-state or profile-driven window with static
+    controls enabled, using the same controlled DSS-Python and InterPSS export
+    path as Ckt24. The earlier controls-off run is retained only as a legacy
+    runtime sentinel.
   - Optional 168-step Ckt7/Ckt24 run disabled or tagged until runtime is
     acceptable.
 - [x] `OpenDSSQstsComparisonSummary`
@@ -842,7 +847,8 @@ Verification:
 
 ## Slide 9: Regulator and Transformer Tap Controls
 
-Goal: add OpenDSS-compatible tap control after controls-off QSTS is stable.
+Goal: add OpenDSS-compatible tap control for the controlled static-QSTS path,
+with controls-off retained as a diagnostic baseline.
 
 Create:
 
@@ -1537,14 +1543,16 @@ criterion is that static PF is unchanged and shape metadata is inspectable.
 
 ## Recommended V1 Completion Boundary
 
-QSTS v1 is complete when Slides 1 through 8 are done:
+QSTS v1 is complete when Slides 1 through 8 are done and the active large-feeder
+evidence is controlled static QSTS:
 
 - LoadShape parsing.
 - Load/profile binding.
 - Sequential fixed-point study runner.
-- Controls-off and frozen-control QSTS.
+- Static-control QSTS, with controls-off retained only for frozen-state
+  diagnostics and legacy sentinels.
 - DSS-Python-backed mini regressions.
-- Ckt7/Ckt24 controls-off smoke studies.
+- Ckt7/Ckt24/IEEE8500 controlled smoke and comparison studies.
 - CSV export for bus voltages, load powers, convergence, and basic device state.
 
 Regulator, capacitor, reactor, DER, and storage support should follow as
