@@ -90,7 +90,8 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	    		config.getOverloadThreshold(),
 				config.isDclfInclLoss(),
 				parallelismLevel,
-				config.getSolutionMethod());
+				config.getSolutionMethod(),
+				config.getKluEndpointRhsBatchSize());
 	}
 	
     /**
@@ -129,6 +130,26 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 	        boolean dclfInclLoss,
 	        int parallelismLevel,
 	        DclfContingencySolutionMethod solutionMethod) {
+		return performContingencyAnalysis(
+				aclfNet,
+				contingencyList,
+				monitoredBranchIds,
+				overloadThreshold,
+				dclfInclLoss,
+				parallelismLevel,
+				solutionMethod,
+				0);
+	}
+
+	public static ConcurrentLinkedQueue<BranchCAResultRec> performContingencyAnalysis(
+	        AclfNetwork aclfNet,
+	        List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
+	        Set<String> monitoredBranchIds,
+	        double overloadThreshold,
+	        boolean dclfInclLoss,
+	        int parallelismLevel,
+	        DclfContingencySolutionMethod solutionMethod,
+	        int kluEndpointRhsBatchSize) {
 		if (contingencyList == null) {
 			throw new IllegalArgumentException("contingencyList cannot be null");
 		}
@@ -164,7 +185,8 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 					contingencyList,
 					monitoredBranchIds,
 					overloadThreshold,
-					parallelismLevel);
+					parallelismLevel,
+					kluEndpointRhsBatchSize);
 		}
 
 		try {
@@ -277,8 +299,12 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 			List<? extends BaseContingency<DclfMonitoringBranch>> contingencyList,
 			Set<String> monitoredBranchIds,
 			double overloadThreshold,
-			int parallelismLevel) {
-		int kluEndpointRhsBatchSize = kluEndpointRhsBatchSize(dclfAlgo, contingencyList.size());
+			int parallelismLevel,
+			int configuredKluEndpointRhsBatchSize) {
+		int kluEndpointRhsBatchSize = kluEndpointRhsBatchSize(
+				dclfAlgo,
+				contingencyList.size(),
+				configuredKluEndpointRhsBatchSize);
 		if (kluEndpointRhsBatchSize > 2) {
 			return performOpenBranchOutageKluBatchedFastAnalysis(
 					dclfAlgo,
@@ -313,13 +339,17 @@ public class ParallelDclfContingencyAnalyzer  extends NetworkRefImpl<AclfNetwork
 
 	private static int kluEndpointRhsBatchSize(
 			ContingencyAnalysisAlgorithm dclfAlgo,
-			int contingencyCount) {
+			int contingencyCount,
+			int configuredBatchSize) {
 		try {
 			if (!(dclfAlgo.getB1Matrix() instanceof KLUSparseEqnDoubleImpl)) {
 				return 0;
 			}
 		} catch (InterpssException e) {
 			return 0;
+		}
+		if (configuredBatchSize > 0) {
+			return Math.max(2, configuredBatchSize);
 		}
 		int defaultBatchSize = contingencyCount >= DEFAULT_KLU_ENDPOINT_RHS_BATCH_MIN_CONTINGENCIES
 				? DEFAULT_KLU_ENDPOINT_RHS_BATCH_SIZE : 2;
