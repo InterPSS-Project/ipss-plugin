@@ -29,11 +29,13 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
+import com.interpss.core.net.Branch;
 
 public class QstsStudy {
 	private final INetwork3Phase network;
@@ -356,9 +358,13 @@ public class QstsStudy {
 		List<QstsBusVoltageSample> samples = new ArrayList<>();
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Complex3x1 voltage = bus.get3PhaseVotlages();
-			addVoltage(samples, context, bus.getId(), "A", voltage == null ? null : voltage.a_0);
-			addVoltage(samples, context, bus.getId(), "B", voltage == null ? null : voltage.b_1);
-			addVoltage(samples, context, bus.getId(), "C", voltage == null ? null : voltage.c_2);
+			int phaseMask = activeBusPhaseMask(bus);
+			addVoltage(samples, context, bus.getId(), "A", voltage == null ? null : voltage.a_0,
+					phaseActive(phaseMask, 0));
+			addVoltage(samples, context, bus.getId(), "B", voltage == null ? null : voltage.b_1,
+					phaseActive(phaseMask, 1));
+			addVoltage(samples, context, bus.getId(), "C", voltage == null ? null : voltage.c_2,
+					phaseActive(phaseMask, 2));
 		}
 		return samples;
 	}
@@ -439,9 +445,13 @@ public class QstsStudy {
 	private static void addLoadSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
 			AclfLoad3Phase load, IBus3Phase bus) {
 		Complex3x1 power = QstsLoadPowerSampler.solvedPower(load, bus);
-		addPower(samples, context, "load", load.getId(), "A", power == null ? null : power.a_0);
-		addPower(samples, context, "load", load.getId(), "B", power == null ? null : power.b_1);
-		addPower(samples, context, "load", load.getId(), "C", power == null ? null : power.c_2);
+		int phaseMask = phaseCodeMask(load.getPhaseCode()) & activeBusPhaseMask(bus);
+		addPower(samples, context, "load", load.getId(), "A", power == null ? null : power.a_0,
+				phaseActive(phaseMask, 0));
+		addPower(samples, context, "load", load.getId(), "B", power == null ? null : power.b_1,
+				phaseActive(phaseMask, 1));
+		addPower(samples, context, "load", load.getId(), "C", power == null ? null : power.c_2,
+				phaseActive(phaseMask, 2));
 	}
 
 	private List<QstsDevicePowerSample> sampleGeneratorPowers(QstsStepContext context) {
@@ -637,20 +647,30 @@ public class QstsStudy {
 	private static void addGeneratorSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
 			AclfGen3Phase generator) {
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
-		addPower(samples, context, "generator", generator.getId(), "A", power == null ? null : power.a_0);
-		addPower(samples, context, "generator", generator.getId(), "B", power == null ? null : power.b_1);
-		addPower(samples, context, "generator", generator.getId(), "C", power == null ? null : power.c_2);
+		int phaseMask = phaseCodeMask(generator.getPhaseCode());
+		addPower(samples, context, "generator", generator.getId(), "A", power == null ? null : power.a_0,
+				phaseActive(phaseMask, 0));
+		addPower(samples, context, "generator", generator.getId(), "B", power == null ? null : power.b_1,
+				phaseActive(phaseMask, 1));
+		addPower(samples, context, "generator", generator.getId(), "C", power == null ? null : power.c_2,
+				phaseActive(phaseMask, 2));
 	}
 
 	private static void addVoltage(List<QstsBusVoltageSample> samples, QstsStepContext context,
-			String busId, String phase, Complex voltage) {
+			String busId, String phase, Complex voltage, boolean activePhase) {
+		if(!activePhase) {
+			return;
+		}
 		samples.add(new QstsBusVoltageSample(context.getStepIndex(), context.getHour(), busId, phase,
 				voltage == null ? Double.NaN : voltage.abs(),
 				voltage == null ? Double.NaN : Math.toDegrees(voltage.getArgument())));
 	}
 
 	private static void addPower(List<QstsDevicePowerSample> samples, QstsStepContext context,
-			String deviceClass, String deviceId, String phase, Complex power) {
+			String deviceClass, String deviceId, String phase, Complex power, boolean activePhase) {
+		if(!activePhase) {
+			return;
+		}
 		samples.add(new QstsDevicePowerSample(context.getStepIndex(), context.getHour(), deviceClass,
 				deviceId, phase, power == null ? Double.NaN : power.getReal(),
 				power == null ? Double.NaN : power.getImaginary()));
@@ -658,17 +678,22 @@ public class QstsStudy {
 
 	private static void addBranchPowerSamples(List<QstsBranchPowerSample> samples,
 			QstsStepContext context, AclfBranch branch, int terminal, String busId, Complex3x1 power) {
+		int phaseMask = branch instanceof IBranch3Phase
+				? phaseCodeMask(((IBranch3Phase) branch).getPhaseCode()) : 0b111;
 		addBranchPowerSample(samples, context, branch, terminal, busId, "A",
-				power == null ? null : power.a_0);
+				power == null ? null : power.a_0, phaseActive(phaseMask, 0));
 		addBranchPowerSample(samples, context, branch, terminal, busId, "B",
-				power == null ? null : power.b_1);
+				power == null ? null : power.b_1, phaseActive(phaseMask, 1));
 		addBranchPowerSample(samples, context, branch, terminal, busId, "C",
-				power == null ? null : power.c_2);
+				power == null ? null : power.c_2, phaseActive(phaseMask, 2));
 	}
 
 	private static void addBranchPowerSample(List<QstsBranchPowerSample> samples,
 			QstsStepContext context, AclfBranch branch, int terminal, String busId, String phase,
-			Complex power) {
+			Complex power, boolean activePhase) {
+		if(!activePhase) {
+			return;
+		}
 		if(power == null || !Double.isFinite(power.getReal()) || !Double.isFinite(power.getImaginary())) {
 			return;
 		}
@@ -694,6 +719,56 @@ public class QstsStudy {
 		return branch.getFromBus() != null
 				&& branch.getFromBus().getId() != null
 				&& branch.getFromBus().getId().toLowerCase(Locale.ROOT).endsWith("_vsource");
+	}
+
+	private static int activeBusPhaseMask(IBus3Phase bus) {
+		int mask = 0;
+		if(bus instanceof BaseAclfBus) {
+			for(Object branchObject : ((BaseAclfBus<?, ?>) bus).getBranchIterable()) {
+				if(branchObject instanceof Branch
+						&& ((Branch) branchObject).isActive()
+						&& branchObject instanceof IBranch3Phase) {
+					mask |= phaseCodeMask(((IBranch3Phase) branchObject).getPhaseCode());
+				}
+			}
+		}
+		for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
+			mask |= phaseCodeMask(load.getPhaseCode());
+		}
+		for(AclfGen3Phase generator : bus.getPhaseGenList()) {
+			mask |= phaseCodeMask(generator.getPhaseCode());
+		}
+		return mask == 0 ? 0b111 : mask;
+	}
+
+	private static boolean phaseActive(int phaseMask, int phaseIndex) {
+		return (phaseMask & (1 << phaseIndex)) != 0;
+	}
+
+	private static int phaseCodeMask(PhaseCode phaseCode) {
+		String phase = phaseCode == null ? "ABC" : phaseCode.toString();
+		if("ABC".equals(phase)) {
+			return 0b111;
+		}
+		if("A".equals(phase)) {
+			return 0b001;
+		}
+		if("B".equals(phase)) {
+			return 0b010;
+		}
+		if("C".equals(phase)) {
+			return 0b100;
+		}
+		if("AB".equals(phase)) {
+			return 0b011;
+		}
+		if("AC".equals(phase)) {
+			return 0b101;
+		}
+		if("BC".equals(phase)) {
+			return 0b110;
+		}
+		return 0b111;
 	}
 
 	private static Complex add(Complex left, Complex right) {
