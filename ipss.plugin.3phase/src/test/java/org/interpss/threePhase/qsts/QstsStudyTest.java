@@ -67,6 +67,23 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void branchPowerSamplingSkipsOpenDssInternalVsourceBranch() throws InterpssException {
+		Static3PNetwork network = twoBusNetworkWithOpenDssSourceImpedance();
+		QstsScheduleData schedule = schedule(1);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, schedule)
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(6, result.getStep(0).getBranchPowers().size());
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.noneMatch(sample -> sample.getElementId().equals("vsource_source")));
+	}
+
+	@Test
 	void staticScheduleReusesSolvedStateAfterFirstQstsStep() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
@@ -425,6 +442,21 @@ public class QstsStudyTest {
 
 		Static3PBranch branch = ThreePhaseObjectFactory.createStatic3PBranch("source", "load", "1", network);
 		branch.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.01, 0.04)));
+		return network;
+	}
+
+	private static Static3PNetwork twoBusNetworkWithOpenDssSourceImpedance()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus idealSource = Static3PhaseFactory.eINSTANCE.createStatic3PBus();
+		idealSource.setId("source_vsource");
+		network.addBus(idealSource);
+		idealSource.setBaseVoltage(12470.0);
+		idealSource.setGenCode(AclfGenCode.SWING);
+		Static3PBranch sourceBranch = ThreePhaseObjectFactory.createStatic3PBranch(
+				"source_vsource", "source", "vsource", network);
+		sourceBranch.setName("vsource_source");
+		sourceBranch.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.001, 0.002)));
 		return network;
 	}
 

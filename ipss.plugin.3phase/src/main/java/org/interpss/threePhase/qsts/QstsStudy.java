@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
@@ -399,7 +400,8 @@ public class QstsStudy {
 		for(AclfBranch branch : (List<AclfBranch>) aclfNetwork().getBranchList()) {
 			if(!branch.isActive() || !(branch instanceof IBranch3Phase)
 					|| !(branch.getFromBus() instanceof IBus3Phase)
-					|| !(branch.getToBus() instanceof IBus3Phase)) {
+					|| !(branch.getToBus() instanceof IBus3Phase)
+					|| isOpenDssSourceImpedanceBranch(branch)) {
 				continue;
 			}
 			IBranch3Phase branch3Phase = (IBranch3Phase) branch;
@@ -596,6 +598,16 @@ public class QstsStudy {
 	private static String branchElementId(AclfBranch branch) {
 		String name = branch.getName();
 		return name == null || name.isBlank() ? branch.getId() : name;
+	}
+
+	private static boolean isOpenDssSourceImpedanceBranch(AclfBranch branch) {
+		String name = branch.getName();
+		if(name == null || !name.toLowerCase(Locale.ROOT).startsWith("vsource_")) {
+			return false;
+		}
+		return branch.getFromBus() != null
+				&& branch.getFromBus().getId() != null
+				&& branch.getFromBus().getId().toLowerCase(Locale.ROOT).endsWith("_vsource");
 	}
 
 	private static Complex add(Complex left, Complex right) {
