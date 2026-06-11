@@ -459,7 +459,7 @@ public class QstsStudy {
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Map<Object, Boolean> sampled = new IdentityHashMap<>();
 			for(AclfGen3Phase generator : bus.getPhaseGenList()) {
-				addGeneratorSample(samples, context, generator);
+				addGeneratorSample(samples, context, generator, bus);
 				sampled.put(generator, Boolean.TRUE);
 			}
 			if(bus instanceof BaseAclfBus) {
@@ -468,7 +468,7 @@ public class QstsStudy {
 							|| !(generatorObject instanceof AclfGen3Phase)) {
 						continue;
 					}
-					addGeneratorSample(samples, context, (AclfGen3Phase) generatorObject);
+					addGeneratorSample(samples, context, (AclfGen3Phase) generatorObject, bus);
 				}
 			}
 		}
@@ -645,9 +645,9 @@ public class QstsStudy {
 	}
 
 	private static void addGeneratorSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
-			AclfGen3Phase generator) {
+			AclfGen3Phase generator, IBus3Phase bus) {
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
-		int phaseMask = phaseCodeMask(generator.getPhaseCode());
+		int phaseMask = phaseCodeMask(generator.getPhaseCode()) & activeBusPhaseMask(bus);
 		addPower(samples, context, "generator", generator.getId(), "A", power == null ? null : power.a_0,
 				phaseActive(phaseMask, 0));
 		addPower(samples, context, "generator", generator.getId(), "B", power == null ? null : power.b_1,
@@ -722,6 +722,21 @@ public class QstsStudy {
 	}
 
 	private static int activeBusPhaseMask(IBus3Phase bus) {
+		int branchMask = connectedBranchPhaseMask(bus);
+		if(branchMask != 0) {
+			return branchMask;
+		}
+		int mask = 0;
+		for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
+			mask |= phaseCodeMask(load.getPhaseCode());
+		}
+		for(AclfGen3Phase generator : bus.getPhaseGenList()) {
+			mask |= phaseCodeMask(generator.getPhaseCode());
+		}
+		return mask == 0 ? 0b111 : mask;
+	}
+
+	private static int connectedBranchPhaseMask(IBus3Phase bus) {
 		int mask = 0;
 		if(bus instanceof BaseAclfBus) {
 			for(Object branchObject : ((BaseAclfBus<?, ?>) bus).getBranchIterable()) {
@@ -732,13 +747,7 @@ public class QstsStudy {
 				}
 			}
 		}
-		for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
-			mask |= phaseCodeMask(load.getPhaseCode());
-		}
-		for(AclfGen3Phase generator : bus.getPhaseGenList()) {
-			mask |= phaseCodeMask(generator.getPhaseCode());
-		}
-		return mask == 0 ? 0b111 : mask;
+		return mask;
 	}
 
 	private static boolean phaseActive(int phaseMask, int phaseIndex) {
