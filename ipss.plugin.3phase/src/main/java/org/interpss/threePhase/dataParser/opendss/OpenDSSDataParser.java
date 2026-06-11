@@ -412,7 +412,7 @@ public class OpenDSSDataParser {
 					else if(tempAry[1].contains("XfmrCode.") ||tempAry[1].contains("xfmrcode.")){
 						no_error = no_error && this.xfrParser.parseXfmrCodeData(str);
 					}
-					else if(tempAry[1].contains("LoadShape.") ||tempAry[1].contains("loadshape.")){
+					else if(tempAry[1].toLowerCase().contains("loadshape.")){
 						LogicalLine loadShapeLine = collectLogicalContinuationLine(str, reader);
 						lineCnt = lineCnt + loadShapeLine.consumedLineCount;
 						nextLine = loadShapeLine.nextLine;
@@ -770,7 +770,7 @@ public class OpenDSSDataParser {
 					else if(tempAry[1].contains("XfmrCode.") ||tempAry[1].contains("xfmrcode.")){
 						no_error = no_error && this.xfrParser.parseXfmrCodeData(str);
 					}
-					else if(tempAry[1].contains("LoadShape.") ||tempAry[1].contains("loadshape.")){
+					else if(tempAry[1].toLowerCase().contains("loadshape.")){
 						LogicalLine loadShapeLine = collectLogicalContinuationLine(str, reader);
 						lineCnt = lineCnt + loadShapeLine.consumedLineCount;
 						nextLine = loadShapeLine.nextLine;
