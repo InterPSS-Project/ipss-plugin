@@ -45,6 +45,10 @@ public class QstsLargeFeederPerformanceBenchmark {
 				System.getProperty("qsts.perf.regControlsEnabled", "true"));
 		boolean capControlsEnabled = Boolean.parseBoolean(
 				System.getProperty("qsts.perf.capControlsEnabled", "true"));
+		boolean allowDisabledControls = Boolean.parseBoolean(
+				System.getProperty("qsts.perf.allowDisabledControls", "false"));
+		requireEnabledControls(controlMode, maxControlIterations, regControlsEnabled,
+				capControlsEnabled, allowDisabledControls);
 		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
 
 		List<FeederCase> feeders = selectedFeeders(caseSelector);
@@ -152,6 +156,25 @@ public class QstsLargeFeederPerformanceBenchmark {
 	}
 
 	private record FeederCase(String name, String folder, String masterFile) {
+	}
+
+	private static void requireEnabledControls(QstsControlMode controlMode, int maxControlIterations,
+			boolean regControlsEnabled, boolean capControlsEnabled, boolean allowDisabledControls) {
+		if(allowDisabledControls) {
+			return;
+		}
+		assertTrue(controlMode != QstsControlMode.OFF,
+				"Large-feeder QSTS performance comparisons must run with controls enabled; set "
+						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
+		assertTrue(maxControlIterations > 0,
+				"Large-feeder QSTS performance comparisons must allow control iterations; set "
+						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
+		assertTrue(regControlsEnabled,
+				"Large-feeder QSTS performance comparisons must keep regulator controls enabled; set "
+						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
+		assertTrue(capControlsEnabled,
+				"Large-feeder QSTS performance comparisons must keep capacitor controls enabled; set "
+						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
 	}
 
 	private record RunSummary(FeederCase feeder, String phase, int run, int requestedSteps,

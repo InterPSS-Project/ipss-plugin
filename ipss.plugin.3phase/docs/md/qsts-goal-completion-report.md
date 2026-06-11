@@ -169,9 +169,10 @@ enabled), then writes control-mode-specific files such as:
 - `ieee8500_qsts_controls_static_dss_python_voltage_by_step.csv`
 - `ieee8500_qsts_controls_static_dss_python_branch_power_by_step.csv`
 
-Controls-off reference files can still be generated explicitly with
-`--control-mode off --max-control-iterations 0 --disable-reg-controls
---disable-cap-controls`.
+Controls-off reference files are no longer part of the normal comparison path.
+They can still be generated only as an explicitly marked frozen-state diagnostic
+with `--allow-disabled-controls --control-mode off --max-control-iterations 0
+--disable-reg-controls --disable-cap-controls`.
 
 The CSV keys include case, step, hour, bus/element, terminal/conductor, voltage
 magnitude/angle, and branch terminal P/Q. These files provide the reference side
@@ -190,7 +191,9 @@ mvn -pl ipss.plugin.3phase -am test \
 ```
 
 It now defaults to `QstsControlMode.STATIC`, `maxControlIterations=20`, parser
-RegControl enabled, and CapControl enabled. It writes
+RegControl enabled, and CapControl enabled. It also rejects `OFF`, zero control
+iterations, or disabled RegControl/CapControl unless
+`-Dqsts.compare.allowDisabledControls=true` is set for a diagnostic run. It writes
 `ckt24_qsts_controls_static_interpss_voltage_by_step.csv`,
 `ckt24_qsts_controls_static_interpss_branch_power_by_step.csv`, and the matching
 IEEE8500 files. The InterPSS QSTS result model records per-step bus voltages,

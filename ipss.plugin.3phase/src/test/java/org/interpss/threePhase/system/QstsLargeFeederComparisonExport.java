@@ -46,6 +46,10 @@ public class QstsLargeFeederComparisonExport {
 				System.getProperty("qsts.compare.regControlsEnabled", "true"));
 		boolean capControlsEnabled = Boolean.parseBoolean(
 				System.getProperty("qsts.compare.capControlsEnabled", "true"));
+		boolean allowDisabledControls = Boolean.parseBoolean(
+				System.getProperty("qsts.compare.allowDisabledControls", "false"));
+		requireEnabledControls(controlMode, maxControlIterations, regControlsEnabled,
+				capControlsEnabled, allowDisabledControls);
 		Path outputDir = Path.of(System.getProperty("qsts.compare.outputDir",
 				"target/qsts-comparison"));
 		Files.createDirectories(outputDir);
@@ -183,6 +187,25 @@ public class QstsLargeFeederComparisonExport {
 
 	private record QstsExportResult(QstsResult result, List<RegulatorControlData> regulatorControls,
 			double baseKva) {
+	}
+
+	private static void requireEnabledControls(QstsControlMode controlMode, int maxControlIterations,
+			boolean regControlsEnabled, boolean capControlsEnabled, boolean allowDisabledControls) {
+		if(allowDisabledControls) {
+			return;
+		}
+		assertTrue(controlMode != QstsControlMode.OFF,
+				"Large-feeder QSTS comparisons must run with controls enabled; set "
+						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
+		assertTrue(maxControlIterations > 0,
+				"Large-feeder QSTS comparisons must allow control iterations; set "
+						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
+		assertTrue(regControlsEnabled,
+				"Large-feeder QSTS comparisons must keep regulator controls enabled; set "
+						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
+		assertTrue(capControlsEnabled,
+				"Large-feeder QSTS comparisons must keep capacitor controls enabled; set "
+						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
 	}
 
 	private static String controlTag(QstsControlMode controlMode, boolean regControlsEnabled,
