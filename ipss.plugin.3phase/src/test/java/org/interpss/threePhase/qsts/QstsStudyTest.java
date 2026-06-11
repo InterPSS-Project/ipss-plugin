@@ -84,6 +84,35 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void qstsSamplingSkipsInactivePhasesForTwoPhaseBusesAndDevices()
+			throws InterpssException {
+		Static3PNetwork network = twoPhaseNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(1)
+				.run();
+
+		QstsStepResult step = result.getStep(0);
+		assertTrue(result.isConverged());
+		assertTrue(step.getBusVoltages().stream()
+				.anyMatch(sample -> sample.getBusId().equals("load") && sample.getPhase().equals("A")));
+		assertTrue(step.getBusVoltages().stream()
+				.anyMatch(sample -> sample.getBusId().equals("load") && sample.getPhase().equals("B")));
+		assertFalse(step.getBusVoltages().stream()
+				.anyMatch(sample -> sample.getBusId().equals("load") && sample.getPhase().equals("C")));
+		assertEquals(2, step.getLoadPowers().stream()
+				.filter(sample -> sample.getDeviceId().equals("load1"))
+				.count());
+		assertFalse(step.getLoadPowers().stream()
+				.anyMatch(sample -> sample.getDeviceId().equals("load1") && sample.getPhase().equals("C")));
+		assertEquals(4, step.getBranchPowers().size());
+		assertFalse(step.getBranchPowers().stream()
+				.anyMatch(sample -> sample.getPhase().equals("C")));
+	}
+
+	@Test
 	void staticScheduleReusesSolvedStateAfterFirstQstsStep() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
@@ -509,6 +538,16 @@ public class QstsStudyTest {
 
 		Static3PBranch branch = ThreePhaseObjectFactory.createStatic3PBranch("source", "load", "1", network);
 		branch.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.01, 0.04)));
+		return network;
+	}
+
+	private static Static3PNetwork twoPhaseNetwork() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus loadBus = network.getBus("load");
+		loadBus.getPhaseLoadList().get(0).setPhaseCode(PhaseCode.AB);
+		loadBus.getContributeGenList().clear();
+		Static3PBranch branch = network.getBranch("source->load(1)");
+		branch.setPhaseCode(PhaseCode.AB);
 		return network;
 	}
 
