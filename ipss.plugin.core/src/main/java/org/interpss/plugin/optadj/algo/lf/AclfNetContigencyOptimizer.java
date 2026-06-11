@@ -28,9 +28,11 @@ import org.interpss.plugin.optadj.result.SsaResultContainer;
  */
 public class AclfNetContigencyOptimizer extends AclfNetLoadFlowOptimizer {
 
+	/*
 	public AclfNetContigencyOptimizer() {
 		super();
 	}
+	*/
 
 	public AclfNetContigencyOptimizer(boolean sparseMatrix) {
 		super(sparseMatrix);
