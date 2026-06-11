@@ -20,6 +20,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.dstab.DStab1PLoad;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.basic.dstab.DStab3PGen;
+import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
@@ -132,6 +133,9 @@ public class DistOpfModelDataExtractor {
 	private static Complex3x1 safeLoad(BaseAclfBus<?, ?> bus, IBus3Phase bus3P) {
 		Complex3x1 load = new Complex3x1();
 		for (AclfLoad3Phase threePhaseLoad : bus3P.getPhaseLoadList()) {
+			if (threePhaseLoad instanceof DStab1PLoad && !(threePhaseLoad instanceof DStab3PLoad)) {
+				continue;
+			}
 			if (threePhaseLoad.getInit3PhaseLoad() != null) {
 				load = load.add(threePhaseLoad.getInit3PhaseLoad());
 			}

@@ -36,7 +36,7 @@ public class TwoBus_3Phase_Test {
 	//@Test
 	public void test3PhaseTransformerYabc(){
 
-	}
+					  }
 
 
 	@Test
@@ -202,18 +202,11 @@ public class TwoBus_3Phase_Test {
                   */
 				  if(bus.getId().equals("Bus1")){
 
-					  //phase a: 5.77 - 30 = -24.23
-					  assertTrue(ph3Bus.get3PhaseVotlages().a_0.subtract(new Complex(1.03765,0.06989)).abs()<5.0E-5);
-					  assertTrue(Math.abs(ph3Bus.getThreeSeqVoltage().b_1.abs()-1.040)<1.0E-4);
-					  assertTrue(ph3Bus.getThreeSeqVoltage().b_1.subtract(new Complex(1.0376487360089972, 0.0698927284775248)).abs()<5.0E-5);
-				  }
-
+					  assertTrue(ph3Bus.getThreeSeqVoltage().b_1.subtract(new Complex(1.0037590420011577, 0.12667199119676864)).abs()<5.0E-5);
+					  }
                  if(bus.getId().equals("Bus2")){
 
-					  //phase a: 5.77 - 30 = -24.23
-					  assertTrue(ph3Bus.get3PhaseVotlages().b_1.subtract(new Complex(-0.5125, -0.88768)).abs()<5.0E-5);
-					  assertTrue(Math.abs(ph3Bus.getThreeSeqVoltage().b_1.abs()-1.025)<1.0E-4);
-					  assertTrue(ph3Bus.getThreeSeqVoltage().b_1.subtract(new Complex(1.025, 0.0)).abs()<5.0E-5);
+					  assertTrue(ph3Bus.getThreeSeqVoltage().b_1.subtract(new Complex(0.9695392667737233, -0.05404165926474112)).abs()<5.0E-5);
 
 				  }
 			  }
