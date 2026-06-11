@@ -70,7 +70,7 @@ public class IEEE39_OptBasecase_Test extends CorePluginTestSetup {
 		assertTrue(overLimitBefore > 0,
 				"Precondition: IEEE-39 case with 600 MVA ratings should have overloaded branches");
 
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer(false).optimize(
 				dclfAlgo, null,
 				LOADING_LIMIT_PCT);
 

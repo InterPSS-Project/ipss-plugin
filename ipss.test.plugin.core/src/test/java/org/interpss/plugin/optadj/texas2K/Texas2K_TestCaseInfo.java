@@ -3,6 +3,7 @@ package org.interpss.plugin.optadj.texas2K;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,9 +15,13 @@ import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
+import com.interpss.core.DclfAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
+import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 /** Shared Texas-2K test network setup for optadj regression tests. */
 public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
@@ -51,5 +56,22 @@ public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
 		return monitoredBranches.stream()
 				.map(MonitoredBranchRecord::getBranchId)
 				.collect(Collectors.toSet());
+	}
+
+	/** N-1 branch-outage contingencies for every non-reference-connected branch. */
+	public static List<DclfBranchOutage> createBranchOutageContingencyList(
+			AclfNetwork net, ContingencyAnalysisAlgorithm dclfAlgo) {
+		List<DclfBranchOutage> contList = new ArrayList<>();
+		net.getBranchList().stream()
+				.filter(branch -> !((AclfBranch) branch).isConnect2RefBus())
+				.forEach(branch -> {
+					DclfBranchOutage cont = DclfAlgoObjectFactory.createContingency("contBranch:" + branch.getId());
+					DclfOutageBranch outage = DclfAlgoObjectFactory.createCaOutageBranch(
+							dclfAlgo.getDclfAlgoBranch(branch.getId()),
+							ContingencyBranchOutageType.OPEN);
+					cont.setOutageEquip(outage);
+					contList.add(cont);
+				});
+		return contList;
 	}
 }
