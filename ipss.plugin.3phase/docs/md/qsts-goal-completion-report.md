@@ -121,18 +121,22 @@ Tests run: 301, Failures: 0, Errors: 0, Skipped: 26
 ## Verification Boundary
 
 This goal now includes controlled Ckt24 large-feeder QSTS parity evidence for
-bus voltages, load powers, and branch powers. The checked-in InterPSS Ckt24
-master file used for this comparison is a static constant-power master:
-`master_ckt24_interpss.dss` deliberately skips the yearly `LoadShape`
-definitions, so the controlled 8760 performance run is a repeated-static-state
-benchmark rather than a full yearly profile simulation.
+bus voltages, load powers, and branch powers. The current large-feeder
+performance gate uses the profile-enabled Ckt24 master
+`master_ckt24_yearly_interpss.dss`, which preserves the original yearly
+load-shape bindings while staying on the static parser/QSTS path.
 
-What has not yet been completed is a profile-enabled 8760-step large-feeder
-QSTS parity study that compares every time step against DSS-Python with the
-original Ckt24 yearly load shapes active. That remains a separate larger slice:
-it requires importing and applying the feeder load profiles on the static QSTS
-path and validating the resulting yearly trajectory without generating
-multi-gigabyte row exports.
+The current large-feeder acceptance path is controls-on only: DSS-Python uses
+`controlmode=static`, `maxcontroliter=100`, RegControl enabled, and CapControl
+enabled; InterPSS uses `QstsControlMode.STATIC`, `maxControlIterations=100`,
+parser RegControl enabled, and CapControl enabled. Disabled-control runs are
+diagnostic only and are not counted as parity or performance evidence.
+
+What has not yet been completed is a full 8760-step row-by-row export that
+compares every voltage and branch-flow sample against DSS-Python. The current
+practical parity gate uses controlled two-step Ckt24 row exports for voltages,
+load powers, and branch powers, then uses controlled 8760-step performance runs
+for the runtime metric.
 
 What was verified for large feeders in the older repo artifacts is static
 power-flow parity, mostly controls-off voltage comparison and device-level
@@ -171,7 +175,7 @@ python3 ipss.plugin.3phase/src/test/python/export_qsts_large_feeder_reference.py
 
 The exporter uses the same checked-in feeder masters as the large-feeder QSTS
 performance benchmark. It now defaults to enabled static controls
-(`controlmode=static`, `maxcontroliter=20`, RegControl enabled, CapControl
+(`controlmode=static`, `maxcontroliter=100`, RegControl enabled, CapControl
 enabled), then writes control-mode-specific files such as:
 
 - `ckt24_qsts_controls_static_dss_python_voltage_by_step.csv`
@@ -200,7 +204,7 @@ mvn -pl ipss.plugin.3phase -am test \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
-It now defaults to `QstsControlMode.STATIC`, `maxControlIterations=20`, parser
+It now defaults to `QstsControlMode.STATIC`, `maxControlIterations=100`, parser
 RegControl enabled, and CapControl enabled. It also rejects `OFF`, zero control
 iterations, or disabled RegControl/CapControl unless
 `-Dqsts.compare.allowDisabledControls=true` is set for a diagnostic run. It writes
@@ -296,97 +300,20 @@ Smoke datapoints from one-step Ckt24 and IEEE8500 DSS-Python exports:
   and should be investigated through transformer no-load/magnetizing admittance,
   capacitor/reactive-power accounting, and branch key coverage.
 
-### Controlled 8760 Large-Feeder Update
+### Controlled Large-Feeder Update
 
-Additional controlled QSTS evidence was collected on 2026-06-11 after enabling
-controls in the large-feeder comparison runs.
-
-Ckt24 static controls, regulators and capacitors enabled:
-
-- DSS-Python 8760-step run: converged, `0.820762 ms/step`, max iterations `9`.
-- InterPSS 8760-step run: converged, `0.142280 ms/step`, max PF iterations `5`,
-  `reused_powerflow_steps=8759`, `symbolicFactors=1`, `numericFactors=2`,
-  `fallbackCount=0`.
-- Earlier one-step voltage evidence regressed while load allocation was still
-  under-modeled. After matching OpenDSS non-unity `xfkVA` allocation-factor
-  behavior, the latest controlled one-step voltage comparison passes the current
-  Ckt24 tolerance. Branch-flow parity remains open.
+The large-feeder comparison and performance harnesses now default to enabled
+static controls and reject disabled controls unless the run is explicitly marked
+as a diagnostic. Earlier repeated-state and isolated-control measurements were
+useful while localizing parser/control issues, but the active acceptance
+evidence is the controlled Ckt24 yearly-profile parity and performance data
+below.
 
 IEEE8500 all-regulator controls are not a valid 8760 parity/performance
 reference case yet because DSS-Python/OpenDSS does not settle the regulator
-controls under the checked-in master-file defaults:
-
-- DSS-Python with regulators and capacitors enabled failed warm-up:
-  `converged=false`, max iterations `45`.
-- DSS-Python regulator-only with capacitors disabled and
-  `maxcontroliter=100` also failed at the first step:
-  `converged=false`, max iterations `23`.
-- DSS-Python cap-control-only with regulators disabled and
-  `maxcontroliter=100` converged, but this is a diagnostic isolation mode, not
-  the current acceptance path. The acceptance path for large-feeder comparison
-  and performance evidence remains all applicable static controls enabled.
-
-IEEE8500 static capacitor controls enabled, regulator controls disabled
-diagnostic:
-
-- DSS-Python 8760-step run: converged, `0.504579 ms/step`, max iterations `8`.
-- InterPSS 8760-step run after fixing KVAR control per-phase base conversion
-  and metadata-only profile reuse: converged, `0.164846 ms/step`, max PF
-  iterations `9`, `reused_powerflow_steps=8759`, `symbolicFactors=1`,
-  `numericFactors=1`, `fallbackCount=0`.
-- One-step voltage comparison passes at `0.005 pu` and `1.0 deg`:
-  `commonKeys=8531`, `dssOnly=0`, `interpssOnly=6100`,
-  `maxMagDelta=0.004350571409`, `maxAngleDelta=0.216126424`,
-  `magFailures=0`, and `angleFailures=0`.
-- The same IEEE8500 comparison does not pass the stricter Ckt24 `0.003 pu`
-  magnitude tolerance: `1858` magnitude failures, worst key
-  `0:l3312692:A`. This is the remaining controlled-voltage parity gap.
-
-Fixes made for the IEEE8500 controlled run:
-
-- QSTS now propagates `maxControlIterations` into the static PF control loop,
-  so benchmark properties such as `-Dqsts.perf.maxControlIterations=100`
-  actually apply to regulator/capacitor settling.
-- KVAR/PF capacitor-control branch power now uses per-phase power base
-  (`Sbase / 3`) instead of full three-phase base, matching the per-phase
-  voltage/current formulation and preventing false IEEE8500 capacitor
-  oscillation.
-- Static-state reuse now ignores metadata-only profile bindings that do not
-  resolve to actual profile points, allowing repeated static controlled states
-  to reuse the first solved state.
-
-After enabling static controls by default, a one-step Ckt24 controlled smoke run
-converged on both engines. The latest comparison closes the load-allocation and
-voltage residuals, while branch-flow parity remains the concrete follow-up
-target:
-
-- DSS-Python controlled export converged with `controlMode=static`,
-  `maxControlIterations=20`, RegControl enabled, and CapControl enabled; it
-  exported 7,522 voltage rows, 16,728 branch-power rows, and 4,397 load-power
-  rows.
-- InterPSS controlled static-QSTS export converged with
-  `QstsControlMode.STATIC`, `maxControlIterations=20`, parser RegControl
-  enabled, and CapControl enabled; it exported 18,177 voltage rows, 34,458
-  branch-power rows, and 11,682 load-power rows.
-- Controlled voltage comparison, excluding zero-voltage DSS nodes, found 7,160
-  common energized step/bus/phase keys. The maximum voltage magnitude mismatch
-  was `0.00203415895` pu at `0:n283892:C`; the maximum angle mismatch was
-  `0.0547624774` degrees. It passes the `0.003 pu` magnitude tolerance and the
-  `1.0 deg` angle tolerance.
-- Controlled load-power comparison found `4222` common load/phase keys and no
-  `5 kW` / `5 kvar` failures. Common-key totals are within `0.086 kW` and
-  `0.319 kvar` of DSS-Python.
-- Controlled branch-flow comparison found `14185` common branch terminal/phase
-  keys after the transformer no-load shunt and tap-scaling fixes. It now passes
-  the `5 kW` active-power tolerance with `maxPDelta=3.25626791 kW`; the
-  remaining mismatch is reactive-only, with `maxQDelta=22.57404852 kvar` and
-  `428` Q failures at the `5 kvar` tolerance.
-
-The large-feeder performance benchmark paths also now default to enabled static
-controls. One-step Ckt24 smoke timings from the controlled path were:
-
-- DSS-Python measured run: 14.694250 ms/step, max iterations 9.
-- InterPSS measured run: 87.309208 ms/step, max iterations 5.
+controls under the checked-in master-file defaults. That case remains useful for
+parser inventory and targeted profile tests, but not as the current large-feeder
+QSTS acceptance benchmark.
 
 ### Controlled Ckt24 Refresh After Line-Geometry Matrix Update
 
@@ -451,21 +378,6 @@ root trunk, with the worst key at `line.05410_339569oh` terminal 1 phase A. The
 line's own reactive loss matches closely, so this is now an accumulated
 reactive-accounting/localization issue rather than evidence that controls were
 disabled or that the line geometry matrix is still grossly wrong.
-
-Controlled 8760 Ckt24 performance refresh:
-
-```text
-DSSPY_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
-converged=true elapsedMillis=6434.582 msPerStep=0.734541 maxIterations=9
-
-INTERPSS_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
-actualSteps=8760 converged=true elapsedMillis=1107.620 msPerStep=0.126441
-maxIterations=5 symbolicFactors=1 numericFactors=2 valueUpdates=0 fallbackCount=0
-```
-
-On this controlled 8760 Ckt24 run, InterPSS used about 17.2% of the DSS-Python
-time per step, or roughly 5.8x DSS-Python throughput. The performance target is
-therefore satisfied for this controlled Ckt24 run.
 
 ### Controlled Ckt24 Transformer Magnetizing-Admittance Update
 
@@ -574,17 +486,46 @@ maxPDelta=0.113658150001 pFailures=0
 maxQDelta=0.74132948 qFailures=0
 ```
 
-Controlled 8760 Ckt24 performance refresh after the `%IMag` fix:
+Current controlled yearly-profile Ckt24 two-step export and comparison:
 
 ```text
-INTERPSS_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
-actualSteps=8760 converged=true elapsedMillis=1162.258 msPerStep=0.132678
-maxIterations=5 symbolicFactors=1 numericFactors=2 valueUpdates=0 fallbackCount=0
+QSTS_VOLTAGE_COMPARE commonKeys=14320 dssOnly=0 interpssOnly=22034
+maxMagDelta=0.0017546525 magFailures=0
+maxAngleDelta=0.000756435 angleFailures=0
+
+QSTS_LOAD_POWER_COMPARE commonKeys=8444 dssOnly=0 interpssOnly=368
+dssPTotalKw=46423.4454523 interpssPTotalKw=46424.7649667
+dssQTotalKvar=8212.4897142 interpssQTotalKvar=8209.50447968
+maxPDelta=0.06397092 pFailures=0
+maxQDelta=0.240896534 qFailures=0
+
+QSTS_BRANCH_POWER_COMPARE commonKeys=28405 dssOnly=57 interpssOnly=36
+maxPDelta=0.28418337 pFailures=0
+maxQDelta=0.8739569147 qFailures=0
+maxMissingP=1.13628595158e-05 maxMissingQ=0.0178927885843
+dssOnlyFailures=0 interpssOnlyFailures=0
 ```
 
-Against the current DSS-Python controlled baseline of `0.734541 ms/step`,
-InterPSS uses about 18.1% of the DSS-Python time per step, or roughly 5.5x
-DSS-Python throughput.
+This is the current controlled row-level parity gate for the yearly-profile
+path: voltage, load power, and branch power all pass with static controls
+enabled on both engines.
+
+The current profile-enabled yearly Ckt24 benchmark does not reuse the first
+solved state for the remaining samples. The active performance datapoint is:
+
+```text
+DSSPY_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+converged=true elapsedMillis=18985.057 msPerStep=2.167244 maxIterations=8
+
+INTERPSS_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+actualSteps=8760 converged=true elapsedMillis=28278.278 msPerStep=3.228114
+maxIterations=6 symbolicFactors=1 numericFactors=302 valueUpdates=0 fallbackCount=0
+```
+
+For an 80% DSS-Python-throughput target, InterPSS must be at or below about
+`2.709 ms/step` for this controlled run. The current controlled yearly-profile
+Ckt24 result is therefore not yet complete on performance, even though the
+two-step row-level voltage/load/branch parity gate passes.
 
 ### IEEE8500 Profile/QSTS Inventory
 
