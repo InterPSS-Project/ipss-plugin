@@ -66,22 +66,40 @@ class RunSummary:
         )
 
 
-def compile_case(feeder: FeederCase) -> None:
+def compile_case(
+    feeder: FeederCase,
+    control_mode: str,
+    max_control_iterations: int,
+    reg_controls_enabled: bool,
+    cap_controls_enabled: bool,
+) -> None:
     dss.Basic.ClearAll()
     previous_cwd = Path.cwd()
     try:
         os.chdir(feeder.folder)
         dss.Text.Command(f'compile "{feeder.master_file}"')
-        dss.Text.Command("set controlmode=off")
-        dss.Text.Command("batchedit regcontrol..* enabled=no")
-        dss.Text.Command("batchedit capcontrol..* enabled=no")
-        dss.Text.Command("set maxcontroliter=100")
+        dss.Text.Command(f"set controlmode={control_mode}")
+        dss.Text.Command(f"set maxcontroliter={max_control_iterations}")
+        if not reg_controls_enabled:
+            dss.Text.Command("batchedit regcontrol..* enabled=no")
+        if not cap_controls_enabled:
+            dss.Text.Command("batchedit capcontrol..* enabled=no")
     finally:
         os.chdir(previous_cwd)
 
 
-def run_case(feeder: FeederCase, steps: int, phase: str, run: int) -> RunSummary:
-    compile_case(feeder)
+def run_case(
+    feeder: FeederCase,
+    steps: int,
+    phase: str,
+    run: int,
+    control_mode: str,
+    max_control_iterations: int,
+    reg_controls_enabled: bool,
+    cap_controls_enabled: bool,
+) -> RunSummary:
+    compile_case(feeder, control_mode, max_control_iterations,
+                 reg_controls_enabled, cap_controls_enabled)
     converged = True
     max_iterations = 0
     start = time.perf_counter()
@@ -121,21 +139,34 @@ def main() -> None:
     parser.add_argument("--warmup-steps", type=int, default=24)
     parser.add_argument("--steps", type=int, default=240)
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--control-mode", choices=["off", "static", "time", "event"], default="static")
+    parser.add_argument("--max-control-iterations", type=int, default=20)
+    parser.add_argument("--disable-reg-controls", action="store_true")
+    parser.add_argument("--disable-cap-controls", action="store_true")
     args = parser.parse_args()
 
     cases = selected_cases(args.case or ["all"])
+    reg_controls_enabled = not args.disable_reg_controls
+    cap_controls_enabled = not args.disable_cap_controls
     print(
         "DSSPY_QSTS_PERF_CONFIG "
         f"cases={','.join(case.name for case in cases)} "
         f"warmupSteps={args.warmup_steps} measureSteps={args.steps} "
-        f"repeats={args.repeats} controls=off"
+        f"repeats={args.repeats} controlMode={args.control_mode} "
+        f"maxControlIterations={args.max_control_iterations} "
+        f"regControlsEnabled={str(reg_controls_enabled).lower()} "
+        f"capControlsEnabled={str(cap_controls_enabled).lower()}"
     )
     for feeder in cases:
-        warmup = run_case(feeder, args.warmup_steps, "warmup", 0)
+        warmup = run_case(feeder, args.warmup_steps, "warmup", 0,
+                          args.control_mode, args.max_control_iterations,
+                          reg_controls_enabled, cap_controls_enabled)
         if not warmup.converged:
             raise RuntimeError(f"Warm-up failed for {feeder.name}")
 
-        measured = [run_case(feeder, args.steps, "measured", run)
+        measured = [run_case(feeder, args.steps, "measured", run,
+                             args.control_mode, args.max_control_iterations,
+                             reg_controls_enabled, cap_controls_enabled)
                     for run in range(1, args.repeats + 1)]
         if not all(summary.converged for summary in measured):
             raise RuntimeError(f"Measured run failed for {feeder.name}")
