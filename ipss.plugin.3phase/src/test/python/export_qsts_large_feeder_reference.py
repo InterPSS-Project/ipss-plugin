@@ -234,6 +234,29 @@ def regulator_tap_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[l
         ]
 
 
+def capacitor_state_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[list[object]]:
+    for capacitor_name in dss.Capacitors.AllNames() or []:
+        dss.Capacitors.Name(capacitor_name)
+        element_name = f"capacitor.{capacitor_name}".lower()
+        dss.Circuit.SetActiveElement(element_name)
+        states = list(dss.Capacitors.States() or [])
+        powers = list(dss.CktElement.Powers() or [])
+        total_q_kvar = 0.0
+        conductors = int(dss.CktElement.NumConductors())
+        for conductor_index in range(conductors):
+            value_index = 2 * conductor_index + 1
+            if value_index < len(powers):
+                total_q_kvar += powers[value_index]
+        yield [
+            feeder.name,
+            step,
+            f"{hour:.12g}",
+            element_name,
+            str(any(state > 0 for state in states)).lower(),
+            f"{total_q_kvar:.12g}",
+        ]
+
+
 def export_case(
     feeder: FeederCase,
     steps: int,
@@ -248,6 +271,7 @@ def export_case(
     include_branch_flows: bool,
     include_load_powers: bool,
     include_generator_powers: bool,
+    include_capacitor_states: bool,
 ) -> None:
     compile_case(feeder, mode, step_size_hours, control_mode, max_control_iterations,
                  reg_controls_enabled, cap_controls_enabled)
@@ -258,12 +282,14 @@ def export_case(
     branch_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_branch_power_by_step.csv"
     load_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_load_power_by_step.csv"
     generator_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_generator_power_by_step.csv"
+    capacitor_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_capacitor_states_by_step.csv"
     regulator_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_regulator_taps_by_step.csv"
 
     voltage_rows = 0
     branch_rows = 0
     load_rows = 0
     generator_rows = 0
+    capacitor_rows = 0
     regulator_rows = 0
     max_iterations = 0
     converged = True
@@ -272,12 +298,14 @@ def export_case(
     branch_handle = None
     load_handle = None
     generator_handle = None
+    capacitor_handle = None
     regulator_handle = None
     try:
         voltage_writer = None
         branch_writer = None
         load_writer = None
         generator_writer = None
+        capacitor_writer = None
         regulator_handle = regulator_file.open("w", newline="", encoding="utf-8")
         regulator_writer = csv.writer(regulator_handle)
         regulator_writer.writerow([
@@ -339,6 +367,17 @@ def export_case(
                 "p_kw",
                 "q_kvar",
             ])
+        if include_capacitor_states:
+            capacitor_handle = capacitor_file.open("w", newline="", encoding="utf-8")
+            capacitor_writer = csv.writer(capacitor_handle)
+            capacitor_writer.writerow([
+                "case",
+                "step",
+                "hour",
+                "capacitor",
+                "closed",
+                "total_q_kvar",
+            ])
 
         for step in range(steps):
             dss.Solution.Solve()
@@ -361,6 +400,10 @@ def export_case(
                 rows = list(generator_power_rows(feeder, step, hour))
                 generator_writer.writerows(rows)
                 generator_rows += len(rows)
+            if capacitor_writer is not None:
+                rows = list(capacitor_state_rows(feeder, step, hour))
+                capacitor_writer.writerows(rows)
+                capacitor_rows += len(rows)
             rows = list(regulator_tap_rows(feeder, step, hour))
             regulator_writer.writerows(rows)
             regulator_rows += len(rows)
@@ -373,6 +416,8 @@ def export_case(
             load_handle.close()
         if generator_handle is not None:
             generator_handle.close()
+        if capacitor_handle is not None:
+            capacitor_handle.close()
         if regulator_handle is not None:
             regulator_handle.close()
 
@@ -385,7 +430,8 @@ def export_case(
         f"masterFile={feeder.master_file} "
         f"converged={str(converged).lower()} maxIterations={max_iterations} "
         f"voltageRows={voltage_rows} branchPowerRows={branch_rows} loadPowerRows={load_rows} "
-        f"generatorPowerRows={generator_rows} regulatorTapRows={regulator_rows} outputDir={output_dir}",
+        f"generatorPowerRows={generator_rows} capacitorStateRows={capacitor_rows} "
+        f"regulatorTapRows={regulator_rows} outputDir={output_dir}",
         flush=True,
     )
     if not converged:
@@ -440,12 +486,14 @@ def main() -> None:
     parser.add_argument("--skip-branch-flows", action="store_true")
     parser.add_argument("--skip-load-powers", action="store_true")
     parser.add_argument("--skip-generator-powers", action="store_true")
+    parser.add_argument("--skip-capacitor-states", action="store_true")
     args = parser.parse_args()
 
     include_voltages = not args.skip_voltages
     include_branch_flows = not args.skip_branch_flows
     include_load_powers = not args.skip_load_powers
     include_generator_powers = not args.skip_generator_powers
+    include_capacitor_states = not args.skip_capacitor_states
     require_enabled_controls(
         args.control_mode,
         args.max_control_iterations,
@@ -454,7 +502,7 @@ def main() -> None:
         args.allow_disabled_controls,
     )
     if (not include_voltages and not include_branch_flows and not include_load_powers
-            and not include_generator_powers):
+            and not include_generator_powers and not include_capacitor_states):
         raise ValueError("At least one export must be enabled")
 
     for feeder in selected_cases(args.case or ["all"]):
@@ -473,6 +521,7 @@ def main() -> None:
             include_branch_flows,
             include_load_powers,
             include_generator_powers,
+            include_capacitor_states,
         )
 
 
