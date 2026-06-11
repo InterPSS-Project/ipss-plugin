@@ -160,9 +160,9 @@ def require_enabled_controls(
             "Large-feeder QSTS performance comparisons must run with controls enabled; "
             "use --allow-disabled-controls only for frozen-state diagnostics"
         )
-    if max_control_iterations <= 0:
+    if max_control_iterations < 100:
         raise ValueError(
-            "Large-feeder QSTS performance comparisons must allow control iterations; "
+            "Large-feeder QSTS performance comparisons must allow at least 100 control iterations; "
             "use --allow-disabled-controls only for frozen-state diagnostics"
         )
     if not reg_controls_enabled:
@@ -187,7 +187,7 @@ def main() -> None:
     parser.add_argument("--mode", choices=["daily", "yearly", "snapshot", "duty"], default="daily")
     parser.add_argument("--step-size-hours", type=float, default=1.0)
     parser.add_argument("--control-mode", choices=["off", "static", "time", "event"], default="static")
-    parser.add_argument("--max-control-iterations", type=int, default=20)
+    parser.add_argument("--max-control-iterations", type=int, default=100)
     parser.add_argument("--disable-reg-controls", action="store_true")
     parser.add_argument("--disable-cap-controls", action="store_true")
     parser.add_argument("--allow-disabled-controls", action="store_true")

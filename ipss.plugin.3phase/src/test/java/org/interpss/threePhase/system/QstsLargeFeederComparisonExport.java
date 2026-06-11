@@ -43,7 +43,7 @@ public class QstsLargeFeederComparisonExport {
 				System.getProperty("qsts.compare.controlMode", "STATIC"));
 		QstsMode qstsMode = QstsMode.from(System.getProperty("qsts.compare.mode", "DAILY"));
 		double stepSizeHours = Double.parseDouble(System.getProperty("qsts.compare.stepSizeHours", "1.0"));
-		int maxControlIterations = Integer.getInteger("qsts.compare.maxControlIterations", 20);
+		int maxControlIterations = Integer.getInteger("qsts.compare.maxControlIterations", 100);
 		double tolerance = Double.parseDouble(System.getProperty("qsts.compare.tolerance", "1.0e-4"));
 		boolean regControlsEnabled = Boolean.parseBoolean(
 				System.getProperty("qsts.compare.regControlsEnabled", "true"));
@@ -217,8 +217,8 @@ public class QstsLargeFeederComparisonExport {
 		assertTrue(controlMode != QstsControlMode.OFF,
 				"Large-feeder QSTS comparisons must run with controls enabled; set "
 						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
-		assertTrue(maxControlIterations > 0,
-				"Large-feeder QSTS comparisons must allow control iterations; set "
+		assertTrue(maxControlIterations >= 100,
+				"Large-feeder QSTS comparisons must allow at least 100 control iterations; set "
 						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
 		assertTrue(regControlsEnabled,
 				"Large-feeder QSTS comparisons must keep regulator controls enabled; set "
