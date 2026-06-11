@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -208,10 +209,16 @@ Contributing Gen:
   		
   		System.out.println("Reach, centerline angle = "+ zone3Setting[1]+","+zone3Setting[2]);
   		
-  		String dyrFileName = "Bus"+relayBusNum+"_zone3_setting.dyr";
+  		String dyrFileName = tempDyrPath("Bus"+relayBusNum+"_zone3_setting.dyr");
   		
   		outputPSSEDyrFile(relayBusNum, relayRemoteBusNum, circuitID, zone12Setting,zone3Setting, dyrFileName); 
 		
+	}
+	
+	private String tempDyrPath(String fileName) throws IOException {
+		Path dir = Paths.get("temp");
+		Files.createDirectories(dir);
+		return dir.resolve(fileName).toString();
 	}
 	
 	
