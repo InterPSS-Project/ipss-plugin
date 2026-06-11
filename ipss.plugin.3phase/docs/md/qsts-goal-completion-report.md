@@ -214,6 +214,39 @@ IEEE8500 files. The InterPSS QSTS result model records per-step bus voltages,
 device powers, and static branch terminal powers, so this export is
 static-network-only and does not depend on DStab.
 
+### Controlled Performance Triage Update
+
+Additional controlled Ckt24 yearly-profile timing and parity checks were run on
+2026-06-11 after the controls-on requirement was tightened. These runs used the
+static parser/QSTS path, `QstsControlMode.STATIC`, `maxControlIterations=100`,
+RegControl enabled, and CapControl enabled.
+
+The DSS-Python controlled 8760 baseline remains:
+
+```text
+DSSPY_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+converged=true elapsedMillis=18985.057 msPerStep=2.167244 maxIterations=8
+```
+
+The 80% throughput target for InterPSS is therefore about `2.709 ms/step`.
+
+Current measured InterPSS diagnostics:
+
+| Run | Controlled parity result | 8760 timing result | Decision |
+|---|---|---|---|
+| Baseline tolerance `1.0e-4` | 2-step voltage/load/branch comparisons pass | Best retained run: `3.228114 ms/step`; later noisy reruns ranged around `3.44` to `3.62 ms/step` | Still above target |
+| Norton factor `0` | Not adopted | `3.442674 ms/step`, `24763` PF iterations, `numericFactors=300` | Rejected |
+| Direct primitive RHS with object bus voltages | 2-step voltage/load/branch comparisons pass | `4.070673 ms/step`, `26545` PF iterations | Rejected and reverted |
+| Tolerance `5.0e-4` | 2-step voltage/load/branch comparisons pass; branch max deltas increased to `1.90744853 kW` and `1.760634673 kvar` | `3.174950 ms/step`, `19121` PF iterations | Diagnostic only; still above target |
+| Tolerance `1.0e-3` | Voltage/load comparisons pass, but branch comparison fails (`6` P failures, `90` Q failures at 5 kW/kvar tolerance) | Not used for acceptance | Rejected |
+
+The useful conclusion is that PF iteration count matters, but iteration
+relaxation alone has not reached the 80% target while preserving branch-flow
+parity. The remaining performance gap should be attacked in the fixed-point
+current-injection and voltage-update loops or in a deeper static primitive-state
+strategy that keeps regulator/capacitor controls synchronized without
+per-iteration object-voltage churn.
+
 The generated voltage files can be compared with:
 
 ```bash
