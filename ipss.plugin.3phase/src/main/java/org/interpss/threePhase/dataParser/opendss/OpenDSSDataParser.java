@@ -114,7 +114,6 @@ public class OpenDSSDataParser {
 	this.xyCurveParser = new OpenDSSXYCurveParser(this);
 	this.capParser =  new  OpenDSSCapacitorParser (this);
 	this.xfrParser =  new  OpenDSSTransformerParser (this);
-	//TODO tentatively, treat regulator as a fixed tap transformer
 	this.regulatorParser = new  OpenDSSRegulatorParser(this);
 	this.wireDataParser = new OpenDSSWireDataParser(this);
 	this.lineGeometryParser = new OpenDSSLineGeometryParser(this);
@@ -922,12 +921,6 @@ public class OpenDSSDataParser {
 		// perform BFS and set the bus sortNumber
 		BFS(onceVisitedBuses);
 		deactivateUnvisitedIslands(activeNet);
-		if(this.regControlEnabled) {
-			this.regulatorParser.applyFixedRegControlRatios();
-		}
-
-
-
 	 return no_error;
      }
 
