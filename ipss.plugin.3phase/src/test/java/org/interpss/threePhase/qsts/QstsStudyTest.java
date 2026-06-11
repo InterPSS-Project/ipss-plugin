@@ -227,6 +227,22 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void qstsControlIterationLimitIsPropagatedToPowerFlowAlgorithm()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(powerFlow)
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(37)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(37, powerFlow.maxControlIterations);
+	}
+
+	@Test
 	void inverterControlSetpointIsAppliedAfterQstsPowerFlowThroughStaticPhaseGen() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		InverterControlData control = new InverterControlData("inv1", "pv1",
@@ -389,6 +405,7 @@ public class QstsStudyTest {
 		private int solveCount;
 		private int failOnSolve = -1;
 		private int maxIteration = 100;
+		private int maxControlIterations = 20;
 		private double tolerance = 1.0e-6;
 		private DistributionPFMethod method = DistributionPFMethod.Fixed_Point;
 		private boolean fixedPointYMatrixCacheEnabled;
@@ -488,6 +505,16 @@ public class QstsStudyTest {
 		@Override
 		public int getMaxIteration() {
 			return maxIteration;
+		}
+
+		@Override
+		public void setMaxControlIterations(int maxControlIterations) {
+			this.maxControlIterations = maxControlIterations;
+		}
+
+		@Override
+		public int getMaxControlIterations() {
+			return maxControlIterations;
 		}
 
 		@Override
