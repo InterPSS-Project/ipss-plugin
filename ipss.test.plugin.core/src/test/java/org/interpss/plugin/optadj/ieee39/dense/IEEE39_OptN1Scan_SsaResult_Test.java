@@ -98,7 +98,7 @@ public class IEEE39_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 				"SSA scan at 90% should identify material contingency overloads");
 
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer(false).optimize(
 				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
 		assertEquals(adjustResults, optAdjResult.getOptAdjResults());

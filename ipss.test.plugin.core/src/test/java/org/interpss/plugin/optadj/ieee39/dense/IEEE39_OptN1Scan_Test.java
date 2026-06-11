@@ -77,7 +77,7 @@ public class IEEE39_OptN1Scan_Test extends CorePluginTestSetup {
 		assertTrue(overLimitBefore > 0,
 				"Precondition: N-1 scan should find overloaded post-contingency branches");
 
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer().optimize(dclfAlgo, null,
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer(false).optimize(dclfAlgo, null,
 				LOADING_LIMIT_PCT);
 
 		assertTrue(adjustResults.size() >= 6 && adjustResults.size() <= 10,
