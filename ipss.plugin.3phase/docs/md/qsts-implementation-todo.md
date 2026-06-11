@@ -731,8 +731,8 @@ Create:
     OpenDSS busbar branch `subxfmr_lsb->05410(1)` is protected by the parser
     line-impedance floor so static fixed-point setup no longer sees zero Yii
     diagonal elements.
-  - [ ] Ckt24 low-load scheduled yearly window, controls off first, then
-    control-enabled with matrix update/rebuild controls:
+  - [ ] Ckt24 low-load scheduled yearly window with static controls enabled by
+    default, using controls-off only as a named frozen-state diagnostic:
     - profile files in `testData/feeder/Ckt24`:
       `LS_PhaseA.txt`, `LS_PhaseB.txt`, `LS_PhaseC.txt`,
       `LS_ThreePhase.txt`, and `Other_Bus_Load.txt`;
@@ -743,8 +743,8 @@ Create:
       168-hour window `startIndex=6573` / OpenDSS `hour=6574`;
     - use these windows to exercise larger voltage movement than the repeated
       state smoke while staying within the real Ckt24 loadshape data.
-  - [x] IEEE8500 short repeated-state window, controls off, enabled as a runtime
-    sentinel before promoting to a full 24-step smoke.
+  - [x] IEEE8500 short repeated-state window, controls off, enabled as a legacy
+    runtime sentinel before promoting controlled comparison/performance runs.
   - Optional 168-step Ckt7/Ckt24 run disabled or tagged until runtime is
     acceptable.
 - [x] `OpenDSSQstsComparisonSummary`

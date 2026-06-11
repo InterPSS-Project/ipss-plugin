@@ -126,10 +126,13 @@ flows. A controlled one-step Ckt24 parity check now exists for both voltages and
 branch powers, and the branch-power comparison is currently a diagnostic with
 known mismatches rather than a passing gate.
 
-What was verified for large feeders in the existing repo artifacts is static
+What was verified for large feeders in the older repo artifacts is static
 power-flow parity, mostly controls-off voltage comparison and device-level
 diagnostics for feeders such as IEEE13, IEEE123, IEEE8500, Ckt7, and Ckt24.
-Those are not the same as a time-step-by-time-step QSTS comparison.
+Those older diagnostics are still useful for localization, but they are not the
+current QSTS parity standard. New large-feeder QSTS comparison and performance
+evidence should use enabled static controls unless the run is explicitly marked
+as a frozen-state diagnostic.
 
 What was verified for QSTS in this goal is mini-case and focused behavior
 parity:
@@ -204,6 +207,10 @@ python3 ipss.plugin.3phase/src/test/python/compare_qsts_voltage_reference.py \
   --angle-tolerance 1.0
 ```
 
+The comparison scripts default to requiring the `controls_static` filename tag
+on both the DSS-Python and InterPSS files. Use `--require-control-tag any` only
+for an intentional diagnostic comparison.
+
 The generated branch-power files can be compared with:
 
 ```bash
@@ -223,18 +230,19 @@ Smoke datapoints from one-step Ckt24 and IEEE8500 DSS-Python exports:
 - Ckt24 InterPSS one-step static-QSTS voltage export converged with 18,177
   voltage rows and 34,458 branch-power rows.
 - Ckt24 voltage comparison, excluding zero-voltage DSS nodes, found 7,160
-  common energized step/bus/phase keys. The maximum voltage magnitude mismatch
-  was 0.0029341957 pu at `0:n283892:C`; the maximum angle mismatch was
-  0.331285484 degrees at `0:g2100bk4500_n283756_sec:B`. It fails a 0.001 pu
-  magnitude tolerance but passes a 0.003 pu magnitude tolerance and 1 degree
-  angle tolerance.
+  common energized step/bus/phase keys. After the allocated-load and
+  transformer-series-resistance fixes, the current controlled one-step result is
+  `maxMagDelta=0.008753864811` at
+  `0:g2100nj7400_n300463_sec_1:A`; angle passes with
+  `maxAngleDelta=0.9410928308`.
 - Ckt24 branch-power comparison now runs with normalized OpenDSS `NodeOrder`
   phase labels. Current controlled one-step result: `commonKeys=14102`,
-  `dssOnly=124`, `interpssOnly=23`, `maxPDelta=877.25032075` at
-  `line.other_feeders` terminal 1 phase B, `maxQDelta=187.98447851` at
-  `transformer.subxfmr` terminal 1 phase B, `pFailures=776`, and
-  `qFailures=1185` at `5 kW` / `5 kvar` tolerance. This is the next
-  branch-flow parity investigation target.
+  `dssOnly=124`, `interpssOnly=21`, `maxPDelta=1007.9344431` at
+  `transformer.subxfmr` terminal 1 phase C, `maxQDelta=592.36789446` at
+  `transformer.subxfmr` terminal 1 phase A, `pFailures=3531`, and
+  `qFailures=2282` at `5 kW` / `5 kvar` tolerance. The load allocation fix
+  brought `line.other_feeders` close to DSS-Python; the remaining controlled
+  mismatch is concentrated around `Transformer.SubXFMR` and its regulator tap.
 
 ### Controlled 8760 Large-Feeder Update
 
@@ -247,9 +255,10 @@ Ckt24 static controls, regulators and capacitors enabled:
 - InterPSS 8760-step run: converged, `0.142280 ms/step`, max PF iterations `5`,
   `reused_powerflow_steps=8759`, `symbolicFactors=1`, `numericFactors=2`,
   `fallbackCount=0`.
-- One-step voltage comparison passed at `0.003 pu` and `1.0 deg` with
-  `maxMagDelta=0.00299752703`, `maxAngleDelta=0.330423172`,
-  `magFailures=0`, and `angleFailures=0`.
+- Earlier one-step voltage evidence passed at `0.003 pu` and `1.0 deg`, but the
+  current controlled comparison after allocated-load and transformer-loss fixes
+  exposes the remaining `SubXFMR`/regulator mismatch described below. Treat the
+  latest controlled export and comparison files as the active parity evidence.
 
 IEEE8500 all-regulator controls are not a valid 8760 reference case yet because
 DSS-Python/OpenDSS does not settle the regulator controls under the checked-in
@@ -293,9 +302,8 @@ Fixes made for the IEEE8500 controlled run:
   to reuse the first solved state.
 
 After enabling static controls by default, a one-step Ckt24 controlled smoke run
-converged on both engines. The voltage comparison now passes the current Ckt24
-large-feeder tolerance, while the new branch-flow comparison exposes a concrete
-follow-up target:
+converged on both engines. The latest comparison identifies `SubXFMR`/regulator
+voltage-drop behavior as the concrete follow-up target:
 
 - DSS-Python controlled export converged with `controlMode=static`,
   `maxControlIterations=20`, RegControl enabled, and CapControl enabled; it
@@ -306,14 +314,15 @@ follow-up target:
   branch-power rows.
 - Controlled voltage comparison, excluding zero-voltage DSS nodes, found 7,160
   common energized step/bus/phase keys. The maximum voltage magnitude mismatch
-  was `0.00299752703` pu at `0:n283892:C`; the maximum angle mismatch was
-  `0.330423172` degrees at `0:g2100bk4500_n283756_sec:B`. It passes a
-  `0.003 pu` magnitude tolerance and `1.0 deg` angle tolerance.
+  was `0.008753864811` pu at `0:g2100nj7400_n300463_sec_1:A`; the maximum
+  angle mismatch was `0.9410928308` degrees at the same key. It passes the
+  `1.0 deg` angle tolerance but fails the `0.003 pu` magnitude tolerance.
 - Controlled branch-flow comparison found `14102` common branch terminal/phase
   keys. It currently fails a `5 kW` / `5 kvar` tolerance with worst active-power
-  mismatch `877.25032075 kW` at `line.other_feeders` terminal 1 phase B and
-  worst reactive-power mismatch `187.98447851 kvar` at `transformer.subxfmr`
-  terminal 1 phase B.
+  mismatch `1007.9344431 kW` at `transformer.subxfmr` terminal 1 phase C and
+  worst reactive-power mismatch `592.36789446 kvar` at `transformer.subxfmr`
+  terminal 1 phase A. `Other_Feeders` now matches closely after aligning
+  OpenDSS `xfkVA` allocation.
 
 The large-feeder performance benchmark paths also now default to enabled static
 controls. One-step Ckt24 smoke timings from the controlled path were:
