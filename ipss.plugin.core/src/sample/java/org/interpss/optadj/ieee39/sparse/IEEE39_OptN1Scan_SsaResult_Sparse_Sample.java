@@ -61,6 +61,7 @@ public class IEEE39_OptN1Scan_SsaResult_Sparse_Sample {
 
 		dclfAlgo.calculateDclf();
 	
+		/* 
 		AtomicCounter cntAfter = new AtomicCounter();
 		// perform N-1 outage scan
 		contList.parallelStream()
@@ -83,5 +84,10 @@ public class IEEE39_OptN1Scan_SsaResult_Sparse_Sample {
 					});
 			});
 		System.out.println("Total number of branches over limit after OptAdj: " + cntAfter.getCount());
+		*/
+		
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList, ssaResult.getCaOverLimitInfo());	
+		System.out.println("Total number of branches over limit after OptAdj: " + ssaResultAfter.getCaOverLimitInfo().size());
+		ssaResultAfter.printCaOverLimitInfo(ssaResult.getCaOverLimitInfo());		
 	}
 }

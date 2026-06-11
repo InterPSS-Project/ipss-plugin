@@ -37,6 +37,7 @@ public class Texas2K_OptBasecase_SsaResult_Sparse_Sample {
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);	
 
 		// check the branch loading after optimization
+		/* 
 		double baseMVA = dclfAlgo.getNetwork().getBaseMva();
 		dclfAlgo.getDclfAlgoBranchList().stream() 
 			.forEach(dclfBranch -> {
@@ -50,5 +51,9 @@ public class Texas2K_OptBasecase_SsaResult_Sparse_Sample {
 							loading);
 				}
 			});
+			*/
+
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo).calBaseCaseLoading(ssaResult.getBaseOverLimitInfo());	
+		ssaResultAfter.printBaseOverLimitInfo(ssaResult.getBaseOverLimitInfo());	
 	}
 }
