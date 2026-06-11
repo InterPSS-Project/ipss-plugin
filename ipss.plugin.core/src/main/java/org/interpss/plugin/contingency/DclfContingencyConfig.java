@@ -15,6 +15,7 @@ public class DclfContingencyConfig  extends BaseContingencyConfig {
     private double dcLoadingCutoff = 100.0; // in percent
     private double dcFlowChangeCutoff = 200.0; // in percent of base case flow
     private DclfContingencySolutionMethod solutionMethod = DclfContingencySolutionMethod.SparseEqnSolve;
+    private int kluEndpointRhsBatchSize = 0;
 
     public boolean isDclfScreening() { return dclfScreening; }
     public void setDclfScreening(boolean dclfScreening) { this.dclfScreening = dclfScreening; }
@@ -39,6 +40,16 @@ public class DclfContingencyConfig  extends BaseContingencyConfig {
             throw new IllegalArgumentException("solutionMethod cannot be null");
         }
         this.solutionMethod = solutionMethod;
+    }
+
+    /**
+     * KLU unit-RHS batch size for the accelerated endpoint solve path. A value
+     * of {@code 0} keeps the analyzer default/system-property behavior.
+     */
+    public int getKluEndpointRhsBatchSize() { return kluEndpointRhsBatchSize; }
+
+    public void setKluEndpointRhsBatchSize(int kluEndpointRhsBatchSize) {
+        this.kluEndpointRhsBatchSize = Math.max(0, kluEndpointRhsBatchSize);
     }
     
     /**
