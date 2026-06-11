@@ -214,6 +214,39 @@ The comparison scripts default to requiring the `controls_static` filename tag
 on both the DSS-Python and InterPSS files. Use `--require-control-tag any` only
 for an intentional diagnostic comparison.
 
+### Controlled Ckt24 Transformer-Shunt Update
+
+The controlled Ckt24 one-step branch-power mismatch was traced first to the
+substation transformer no-load admittance. OpenDSS applies the
+`%noloadloss=0.18` term from `Substation_ckt24.dss` as a secondary-side
+transformer shunt. The static branch Y path now includes transformer shunts, and
+the OpenDSS transformer parser maps normal two-winding no-load admittance into
+that static shunt path without replacing the tap-dependent transformer Y.
+
+Focused evidence after the fix, using enabled static controls
+(`controlmode=static`, `maxcontroliter=100`, RegControl enabled, CapControl
+enabled):
+
+```text
+QSTS_VOLTAGE_COMPARE commonKeys=7160 dssOnly=0 interpssOnly=11017
+maxMagDelta=0.00216116521 magFailures=0
+maxAngleDelta=0.00696992600001 angleFailures=0
+
+QSTS_LOAD_POWER_COMPARE commonKeys=4222 dssOnly=0 interpssOnly=184
+maxPDelta=0.0115543100001 pFailures=0
+maxQDelta=0.045158398 qFailures=0
+
+QSTS_BRANCH_POWER_COMPARE commonKeys=14185 dssOnly=41 interpssOnly=21
+maxPDelta=3.7989554 pFailures=0
+maxQDelta=22.7667859 qFailures=428
+```
+
+This resolves the active-power branch-flow mismatch and reduces the controlled
+Ckt24 branch-flow mismatch from the previous `82.3 kW / 134.1 kvar` maximum to a
+reactive-only residual. The remaining Q residual is coherent through the main
+trunk and should be handled as the next device/accounting slice, not by relaxing
+the controlled comparison standard.
+
 The generated branch-power files can be compared with:
 
 ```bash
