@@ -80,6 +80,6 @@ public class OpenDSSLoadShape {
 		for(OpenDSSParserDiagnostic diagnostic : diagnostics) {
 			qstsDiagnostics.add(diagnostic.toString());
 		}
-		return new QstsProfile(id, hour, pMult, qMult, qstsDiagnostics);
+		return new QstsProfile(id, intervalHours, hour, pMult, qMult, qstsDiagnostics);
 	}
 }
