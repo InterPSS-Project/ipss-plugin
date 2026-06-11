@@ -55,7 +55,7 @@ public class IEEE39_OptN1Scan_SsaResult_Sample {
 
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
 		
-		new AclfNetContigencyOptimizer().optimize(dclfAlgo, optAdjResult, 100.0);
+		new AclfNetContigencyOptimizer(false).optimize(dclfAlgo, optAdjResult, 100.0);
 		optAdjResult.getOptAdjResults().forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
