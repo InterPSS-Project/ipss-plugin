@@ -505,6 +505,7 @@ public class QstsStudy {
 
 	private List<QstsCapacitorStateSample> sampleCapacitorStates(QstsStepContext context) {
 		List<QstsCapacitorStateSample> samples = new ArrayList<>();
+		double phaseBaseKva = aclfNetwork().getBaseKva() / 3.0;
 		for(CapacitorControlData control : capacitorControls) {
 			Complex3x1 power = qstsCapacitorControl.capacitorPower(network, control.getCapacitorId());
 			Complex total = add(add(power.a_0, power.b_1), power.c_2);
@@ -512,7 +513,7 @@ public class QstsStudy {
 			int operationCount = operationCountByControlKey.getOrDefault(key, Integer.valueOf(0)).intValue();
 			samples.add(new QstsCapacitorStateSample(context.getStepIndex(), context.getHour(),
 					control.getCapacitorId(), control.isClosed(), total.getImaginary(),
-					total.getImaginary() * aclfNetwork().getBaseKva(), operationCount));
+					total.getImaginary() * phaseBaseKva, operationCount));
 		}
 		return samples;
 	}
