@@ -46,6 +46,8 @@ public class RegulatorSymbolicUpdatePerformanceTest {
 		assertTrue(cacheReuse.algorithm().getFixedPointYMatrixNumericFactorizationCount()
 						<= symbolNewMatrix.algorithm().getFixedPointYMatrixNumericFactorizationCount(),
 				"Cache reuse should not run more numeric factorizations than symbol-reuse mode");
+		assertTrue(cacheReuse.algorithm().getFixedPointYMatrixValueUpdateCount() > 0,
+				"Cache reuse should update regulator tap admittance values in place");
 	}
 
 	private static SolvedMode solveIeee123(Mode mode) {
