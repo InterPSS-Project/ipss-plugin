@@ -18,6 +18,8 @@ public class QstsLoadBaseState {
 	private Complex loadCI;
 	private Complex loadCZ;
 	private Complex3x1 threePhaseLoad;
+	private double appliedPMultiplier = Double.NaN;
+	private double appliedQMultiplier = Double.NaN;
 
 	public QstsLoadBaseState(Object load) {
 		if(load == null) {
@@ -50,6 +52,7 @@ public class QstsLoadBaseState {
 		if(this.loadCP == null && this.threePhaseLoad != null) {
 			this.loadCP = total(this.threePhaseLoad);
 		}
+		resetAppliedMultiplier();
 	}
 
 	public void restore() {
@@ -72,12 +75,18 @@ public class QstsLoadBaseState {
 		else if(threePhaseLoad != null) {
 			phaseLoad.set3PhaseLoad(copy(threePhaseLoad));
 		}
+		resetAppliedMultiplier();
 	}
 
-	public void applyMultiplier(double pMultiplier, double qMultiplier) {
+	public boolean applyMultiplier(double pMultiplier, double qMultiplier) {
+		if(sameMultiplier(pMultiplier, qMultiplier)) {
+			return false;
+		}
+		this.appliedPMultiplier = pMultiplier;
+		this.appliedQMultiplier = qMultiplier;
 		if(!hasNonConstantPowerComponents() && threePhaseLoad != null) {
 			phaseLoad.set3PhaseLoad(scale(threePhaseLoad, pMultiplier, qMultiplier));
-			return;
+			return true;
 		}
 		if(load instanceof AclfLoad) {
 			((AclfLoad) load).setLoadCP(scale(loadCP, pMultiplier, qMultiplier));
@@ -89,6 +98,7 @@ public class QstsLoadBaseState {
 			phaseLoad.setLoadCI(scale(loadCI, pMultiplier, qMultiplier));
 			phaseLoad.setLoadCZ(scale(loadCZ, pMultiplier, qMultiplier));
 		}
+		return true;
 	}
 
 	public void applyFixedPointNortonMultiplier(double pMultiplier, double qMultiplier) {
@@ -115,6 +125,18 @@ public class QstsLoadBaseState {
 
 	private boolean hasNonConstantPowerComponents() {
 		return nonZero(loadCI) || nonZero(loadCZ);
+	}
+
+	private boolean sameMultiplier(double pMultiplier, double qMultiplier) {
+		return Double.isFinite(this.appliedPMultiplier)
+				&& Double.isFinite(this.appliedQMultiplier)
+				&& Math.abs(this.appliedPMultiplier - pMultiplier) <= 1.0e-12
+				&& Math.abs(this.appliedQMultiplier - qMultiplier) <= 1.0e-12;
+	}
+
+	private void resetAppliedMultiplier() {
+		this.appliedPMultiplier = Double.NaN;
+		this.appliedQMultiplier = Double.NaN;
 	}
 
 	private static boolean nonZero(Complex value) {

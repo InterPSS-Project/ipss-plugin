@@ -1,6 +1,7 @@
 package org.interpss.threePhase.qsts;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -59,16 +60,18 @@ public class QstsStorageBaseStateTest {
 		QstsStateApplier applier = new QstsStateApplier(scheduleData,
 				new QstsLoadStateStore(), generatorStore, storageStore);
 
-		applier.apply(new QstsStepContext(0, 0, 0.0, QstsMode.DAILY,
+		boolean step0Changed = applier.apply(new QstsStepContext(0, 0, 0.0, QstsMode.DAILY,
 				1.0, 1.0, QstsControlMode.OFF));
 
+		assertTrue(step0Changed);
 		assertEquals(0.005, total(generator).getReal(), 1.0e-12);
 		assertEquals(0.0018, total(generator).getImaginary(), 1.0e-12);
 		assertEquals(500.0, storageStore.get(generator).getStoredKwh(), 1.0e-12);
 
-		applier.apply(new QstsStepContext(1, 1, 1.0, QstsMode.DAILY,
+		boolean step1Changed = applier.apply(new QstsStepContext(1, 1, 1.0, QstsMode.DAILY,
 				1.0, 1.0, QstsControlMode.OFF));
 
+		assertTrue(step1Changed);
 		assertEquals(-0.005, total(generator).getReal(), 1.0e-12);
 		assertEquals(0.00045, total(generator).getImaginary(), 1.0e-12);
 		assertEquals(1000.0, storageStore.get(generator).getStoredKwh(), 1.0e-12);

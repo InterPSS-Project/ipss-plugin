@@ -225,7 +225,7 @@ public class QstsStudy {
 			QstsStepContext context = new QstsStepContext(i, scheduleIndex, hour, mode,
 					stepSizeHours, loadMultiplier, controlMode);
 			long stateStartNanos = profile == null ? 0L : System.nanoTime();
-			stateApplier.apply(context);
+			boolean stateChanged = stateApplier.apply(context);
 			if(profile != null) {
 				profile.addStateApply(System.nanoTime() - stateStartNanos);
 			}
@@ -239,7 +239,8 @@ public class QstsStudy {
 			}
 			algorithm.setInitBusVoltageEnabled(i == 0 ? initializeFirstStepVoltages : false);
 			long powerFlowStartNanos = profile == null ? 0L : System.nanoTime();
-			PowerFlowControlResult controlResult = solvedReusableStaticState
+			boolean reuseSolvedState = solvedReusableStaticState && !stateChanged && actionCount == 0;
+			PowerFlowControlResult controlResult = reuseSolvedState
 					? PowerFlowControlResult.reusedSolvedState()
 					: runPowerFlowControlLoop(algorithm, context, controlsEnabled, profile);
 			if(profile != null) {
@@ -269,8 +270,8 @@ public class QstsStudy {
 			if(!converged) {
 				break;
 			}
-			if(staticStateReuseEnabled && !controlResult.reusedSolvedState) {
-				solvedReusableStaticState = true;
+			if(staticStateReuseEnabled) {
+				solvedReusableStaticState = converged;
 			}
 		}
 		if(profile != null) {
@@ -316,8 +317,8 @@ public class QstsStudy {
 	private boolean qstsStaticStateReuseEnabled(boolean delayedCapacitorControls) {
 		return !Boolean.getBoolean("ipss.qsts.disableStaticStateReuse")
 				&& !delayedCapacitorControls
-				&& inverterControls.isEmpty()
-				&& !stateApplier.hasTimeVaryingBindings();
+				&& controlMode == QstsControlMode.OFF
+				&& inverterControls.isEmpty();
 	}
 
 	private int processQueuedActions(boolean enabled, double timeSeconds) {
