@@ -44,6 +44,7 @@ import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.AclfLoad3Phase;
@@ -1005,6 +1006,7 @@ public class OpenDSSDataParser {
 	}
 
      public boolean convertActualValuesToPU(double mvaBase){
+	 double oldBaseKva = activeAclfNetwork().getBaseKva();
 
 	 if(mvaBase>0) {
 		 if(mvaBase>20){
@@ -1018,12 +1020,37 @@ public class OpenDSSDataParser {
 		 activeAclfNetwork().setBaseKva(mvaBase*1000.0);
 	 }
 
-	 boolean no_error = convertBranchZYMatrixToPU()&&convertLoadCapacitorToPU();
+	 boolean no_error = convertBranchZYMatrixToPU()&&convertLoadCapacitorToPU()
+			 && convertGeneratorPowerToPU(oldBaseKva);
 	 if(no_error) {
 		 timeSeriesData.refreshNetworkBaseStates();
 	 }
 
 	 return no_error;
+     }
+
+     private boolean convertGeneratorPowerToPU(double oldBaseKva) {
+	 double newBaseKva = activeAclfNetwork().getBaseKva();
+	 if(oldBaseKva <= 0.0 || newBaseKva <= 0.0) {
+		 return true;
+	 }
+	 double baseRatio = oldBaseKva / newBaseKva;
+	 if(Math.abs(baseRatio - 1.0) <= 1.0e-12) {
+		 return true;
+	 }
+	 for(Object busObj: activeAclfNetwork().getBusList()){
+		 if(!(busObj instanceof IBus3Phase)) {
+			 continue;
+		 }
+		 IBus3Phase bus3P = (IBus3Phase) busObj;
+		 for(AclfGen3Phase generator : bus3P.getPhaseGenList()) {
+			 Complex3x1 power = generator.getPower3Phase(UnitType.PU);
+			 if(power != null) {
+				 generator.setPower3Phase(power.multiply(baseRatio), UnitType.PU);
+			 }
+		 }
+	 }
+	 return true;
      }
 
      private boolean convertBranchZYMatrixToPU(){

@@ -16,7 +16,11 @@ import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBindi
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileType;
 import org.interpss.threePhase.qsts.QstsProfileBinding;
 import org.interpss.threePhase.qsts.QstsProfile;
+import org.interpss.threePhase.qsts.QstsControlMode;
+import org.interpss.threePhase.qsts.QstsMode;
 import org.interpss.threePhase.qsts.QstsScheduleData;
+import org.interpss.threePhase.qsts.QstsStateApplier;
+import org.interpss.threePhase.qsts.QstsStepContext;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfGenCode;
@@ -98,6 +102,50 @@ public class OpenDssGeneratorMetadataTest {
 				.findFirst()
 				.orElseThrow();
 		assertEquals("pvcurve", qstsBinding.getProfileId("duty"));
+	}
+
+	@Test
+	void convertActualValuesToPuRebasesParsedGeneratorSchedules() throws Exception {
+		Path feederDir = Path.of("testData/feeder/IEEE8500");
+		Path dssFile = feederDir.resolve("P174_Run_360kW_PV.DSS");
+		List<String> lines = Files.readAllLines(dssFile);
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		parser.getStaticNetwork().setBaseKva(100000.0);
+
+		String generatorLine = firstLineContaining(lines, "new generator.g1");
+		String loadShapeLine = firstLineContaining(lines, "new loadshape.pvcurve");
+		String dutyBindingLine = firstLineContaining(lines, "generator.g1.duty");
+
+		assertTrue(parser.getGeneratorParser().parseGeneratorData(generatorLine, dssFile.getFileName().toString(), 17));
+		assertTrue(parser.getLoadShapeParser().parseLoadShape(loadShapeLine, feederDir.toString(),
+				dssFile.getFileName().toString(), 21));
+		assertTrue(parser.getGeneratorParser().parseGeneratorPropertyData(dutyBindingLine));
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		QstsStateApplier applier = new QstsStateApplier(
+				parser.getTimeSeriesData().toQstsScheduleData(),
+				parser.getTimeSeriesData().getLoadStateStore(),
+				parser.getTimeSeriesData().getGeneratorStateStore());
+		assertTrue(applier.apply(new QstsStepContext(0, 0, 0.0, QstsMode.DUTY,
+				1.0, 1.0, QstsControlMode.STATIC)));
+
+		AclfGen3Phase generator = parser.getStaticNetwork().getBus("m1026866").getPhaseGenList().get(0);
+		double firstMultiplier = 0.763235294;
+		assertEquals(360.0 * firstMultiplier, totalKw(generator, parser), 1.0e-9);
+
+		assertTrue(applier.apply(new QstsStepContext(1, 1, 1.0, QstsMode.DUTY,
+				1.0, 1.0, QstsControlMode.STATIC)));
+		QstsProfile profile = parser.getTimeSeriesData().toQstsScheduleData()
+				.getProfileRegistry().get("pvcurve");
+		double secondHourMultiplier = profile.getPMultiplierAtIndex(3600 % profile.getPointCount());
+		assertEquals(360.0 * secondHourMultiplier, totalKw(generator, parser), 1.0e-9);
+	}
+
+	private static double totalKw(AclfGen3Phase generator, OpenDSSDataParser parser) {
+		return generator.getPower3Phase(UnitType.PU).a_0
+				.add(generator.getPower3Phase(UnitType.PU).b_1)
+				.add(generator.getPower3Phase(UnitType.PU).c_2)
+				.getReal() * parser.getStaticNetwork().getBaseKva();
 	}
 
 	private static String firstLineContaining(List<String> lines, String fragment) {
