@@ -932,8 +932,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			return Complex.ZERO;
 		}
 		double conductancePu = noLoadLossPercent/100.0;
-		double currentPu = imagPercent/100.0;
-		double susceptancePu = Math.sqrt(Math.max(0.0, currentPu*currentPu - conductancePu*conductancePu));
+		double susceptancePu = imagPercent/100.0;
 		Complex admittancePu = new Complex(conductancePu, -susceptancePu);
 		return admittancePu.multiply((kva/1000.0)/(kv*kv));
 	}
