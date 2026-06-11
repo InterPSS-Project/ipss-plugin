@@ -44,7 +44,7 @@ public class ACTIVSg25kBusAllCtrlSample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
-		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
+		aclfAlgo.setNonDivergent(true);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(50);
