@@ -441,6 +441,25 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	@Test
+	public void ckt24LineGeometryUsesOpenDssInternalResistance() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
+
+		Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), "05410_339569oh");
+		assertNotNull(branch, "Missing Ckt24 geometry line with 477 AAC conductors");
+
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double vbase = branch.getFromBus().getBaseVoltage();
+		double zbase = vbase * vbase / baseVa;
+		double lengthMiles = 140.1192 / 5280.0;
+		Complex3x3 zPerMile = branch.getZabc().multiply(zbase / lengthMiles);
+		assertEquals(0.268790556985, zPerMile.aa.getReal(), 1.0e-4);
+		assertEquals(0.0751911065091, zPerMile.ab.getReal(), 1.0e-4);
+		assertEquals(0.0742695945396, zPerMile.ac.getReal(), 1.0e-4);
+		assertEquals(0.270709060929, zPerMile.bb.getReal(), 1.0e-4);
+	}
+
+	@Test
 	public void ckt24SubstationTransformerParsesSpacedPercentRsContinuation() throws IOException {
 		OpenDSSStaticDataParser parser = parseStaticOpenDss(
 				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", true);
