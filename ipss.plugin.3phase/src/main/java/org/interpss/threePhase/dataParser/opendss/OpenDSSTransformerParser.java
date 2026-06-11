@@ -360,6 +360,16 @@ public class OpenDSSTransformerParser {
 		branch3P.setZabc(diagonalZabc(branch3P.getPhaseCode(), seriesZ));
 	}
 
+	private static void addSecondaryNoLoadAdmittance(IBranch3Phase branch3P, double kv, double kva,
+			double imagPercent, double noLoadLossPercent) {
+		Complex admittance = noLoadAdmittance(kv, kva, imagPercent, noLoadLossPercent);
+		if(admittance.equals(Complex.ZERO)) {
+			return;
+		}
+		branch3P.setFromShuntYabc(new Complex3x3());
+		branch3P.setToShuntYabc(diagonalZabc(branch3P.getPhaseCode(), admittance));
+	}
+
 	private static Complex3x3 diagonalZabc(PhaseCode phaseCode, Complex impedance) {
 		Complex zero = new Complex(0.0);
 		Complex3x3 zabc = new Complex3x3();
@@ -804,8 +814,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 	    	throw new Error("Transformer connection type at winding 2 is not supported yet #"+toConnection);
 	    }
 
-
-
+		addSecondaryNoLoadAdmittance(xfr3P, normKV2, kva2 > 0.0 ? kva2 : kva1,
+				imagPercent, noLoadLossPercent);
 
 		return no_error;
 	}

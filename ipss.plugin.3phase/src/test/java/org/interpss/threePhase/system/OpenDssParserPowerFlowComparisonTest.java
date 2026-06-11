@@ -415,7 +415,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertEquals(-0.00533225602, yffAa.getImaginary(), 1.0e-10);
 		assertEquals(-0.000695069679, yftAa.getReal(), 1.0e-10);
 		assertEquals(0.0307857945, yftAa.getImaginary(), 1.0e-10);
-		assertEquals(0.00802597332, yttAa.getReal(), 1.0e-10);
+		assertEquals(0.00809402625, yttAa.getReal(), 1.0e-10);
 		assertEquals(-0.355483735, yttAa.getImaginary(), 1.0e-10);
 	}
 
