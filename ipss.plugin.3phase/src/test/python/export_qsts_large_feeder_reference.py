@@ -79,6 +79,12 @@ def selected_cases(names: list[str]) -> list[FeederCase]:
     return selected
 
 
+def with_master_file(feeder: FeederCase, master_file: str | None) -> FeederCase:
+    if not master_file:
+        return feeder
+    return FeederCase(feeder.key, feeder.name, feeder.folder, master_file)
+
+
 def bus_voltage_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[list[object]]:
     for bus_name in dss.Circuit.AllBusNames():
         dss.Circuit.SetActiveBus(bus_name)
@@ -310,6 +316,7 @@ def export_case(
         f"controlMode={control_mode} maxControlIterations={max_control_iterations} "
         f"regControlsEnabled={str(reg_controls_enabled).lower()} "
         f"capControlsEnabled={str(cap_controls_enabled).lower()} "
+        f"masterFile={feeder.master_file} "
         f"converged={str(converged).lower()} maxIterations={max_iterations} "
         f"voltageRows={voltage_rows} branchPowerRows={branch_rows} loadPowerRows={load_rows} "
         f"regulatorTapRows={regulator_rows} outputDir={output_dir}",
@@ -353,6 +360,7 @@ def require_enabled_controls(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--case", action="append", choices=["all", "ckt24", "ieee8500", "8500"])
+    parser.add_argument("--master-file", help="Override the selected feeder master file")
     parser.add_argument("--steps", type=int, default=24)
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "target" / "qsts-comparison")
     parser.add_argument("--mode", choices=["daily", "yearly", "snapshot"], default="daily")
@@ -381,6 +389,7 @@ def main() -> None:
         raise ValueError("At least one export must be enabled")
 
     for feeder in selected_cases(args.case or ["all"]):
+        feeder = with_master_file(feeder, args.master_file)
         export_case(
             feeder,
             args.steps,
