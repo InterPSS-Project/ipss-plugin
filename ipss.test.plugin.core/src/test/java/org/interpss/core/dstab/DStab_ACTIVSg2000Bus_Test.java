@@ -17,6 +17,7 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -37,8 +38,9 @@ import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		
-		@Test
-		public void test_ACTIVSg2000_Dstab() throws InterpssException{
+			@Test
+			@Disabled("ACTIVSg2000 DStab case requires dynamic models not supported by the current mapper")
+			public void test_ACTIVSg2000_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
 			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);

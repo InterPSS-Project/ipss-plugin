@@ -50,7 +50,7 @@ public class IEEE14BusJsonCompareTest extends CorePluginTestSetup {
 				.load("testData/adpter/ieee_format/ieee14_comma.ieee")
 				.getAclfNet();	
 		
-		String jsonFile = "testdata/json/ieee14Bus.json";
+		String jsonFile = "testData/json/ieee14Bus.json";
 		
 		// output aclfNet state to json file
 		//FileUtil.writeText2File(jsonFile, new AclfNetworkState(aclfNet).toString());
