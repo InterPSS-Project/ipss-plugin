@@ -93,6 +93,10 @@ public class QstsStateApplier {
 		applyStorage(context);
 	}
 
+	public boolean hasTimeVaryingBindings() {
+		return !scheduleData.getProfileBindings().isEmpty();
+	}
+
 	public QstsLoadStateStore getLoadStateStore() {
 		return loadStateStore;
 	}

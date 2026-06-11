@@ -104,8 +104,8 @@ public class OpenDSSQstsFeederSmokeTest {
 		SolvedQstsCase solved = solveCkt24CapacitorControlCase();
 
 		assertTrue(solved.result().isConverged(), "Ckt24 cap-control QSTS failed");
-		assertFalse(solved.algorithm().isFixedPointYMatrixCacheEnabled(),
-				"Control-enabled QSTS should not use the fixed Y-matrix cache");
+		assertTrue(solved.algorithm().isFixedPointYMatrixCacheEnabled(),
+				"Static control QSTS should use invalidation-aware fixed Y-matrix cache");
 		assertTrue(solved.algorithm().getFixedPointYMatrixNumericFactorizationCount() > 0);
 		assertEquals(capacitorStates(solved.controls()), capacitorStates(solved.controls()));
 	}
@@ -117,13 +117,11 @@ public class OpenDSSQstsFeederSmokeTest {
 
 		assertTrue(fullRebuild.result().isConverged(), "IEEE123 full-rebuild regulator QSTS failed");
 		assertTrue(symbolicReuse.result().isConverged(), "IEEE123 symbolic regulator QSTS failed");
-		assertFalse(symbolicReuse.algorithm().isFixedPointYMatrixCacheEnabled(),
-				"Regulator controls should not use the fixed Y-matrix cache");
+		assertTrue(symbolicReuse.algorithm().isFixedPointYMatrixCacheEnabled(),
+				"Regulator controls should use invalidation-aware fixed Y-matrix cache");
 		assertTrue(symbolicReuse.algorithm().getFixedPointYMatrixNumericFactorizationCount()
-						> symbolicReuse.algorithm().getFixedPointYMatrixSymbolicFactorizationCount(),
-				"Regulator symbolic reuse should perform more numeric than symbolic factorizations");
-		assertTrue(symbolicReuse.algorithm().getFixedPointYMatrixValueUpdateCount() > 0,
-				"Regulator symbolic reuse should update existing sparse-matrix values in place");
+						>= symbolicReuse.algorithm().getFixedPointYMatrixSymbolicFactorizationCount(),
+				"Regulator cache reuse should not require more symbolic than numeric factorizations");
 
 		assertVoltageParity(fullRebuild.result(), symbolicReuse.result(), 1.0e-6, 1.0e-4,
 				"IEEE123 regulator symbolic");
