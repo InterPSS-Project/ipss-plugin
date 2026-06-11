@@ -25,8 +25,8 @@ public class Kunder_2area_VSCHVDC_Test  extends DStabTestSetupBase{
 		IpssCorePlugin.init();
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
 		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testdata/adpter/psse/v30/Kunder_2area/Kunder_2area_v30.raw",
-				"testData/adpter/psse/v30/Kunder_2area/Kunder_2area.dyr"
+				"testData/adpter/psse/v30/Kundur_2area/Kundur_2area_v30.raw",
+				"testData/adpter/psse/v30/Kundur_2area/kundur_2area.dyr"
 		}));
 		DStabModelParser parser =(DStabModelParser) adapter.getModel();
 		
