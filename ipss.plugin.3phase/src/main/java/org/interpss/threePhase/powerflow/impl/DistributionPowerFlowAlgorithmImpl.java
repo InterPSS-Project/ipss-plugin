@@ -1841,13 +1841,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 			int offset = bus.primitiveOffset;
 			for(AclfLoad3Phase load : bus.primitiveLoads) {
+				int activePhaseMask = activeLoadPhaseMask(bus, load);
+				if(activePhaseMask == 0) {
+					continue;
+				}
 				load.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset,
-						activeLoadPhaseMask(bus, load));
+						activePhaseMask);
 			}
 			addFixedPointLoadNortonCompensation(bus, primitiveState.voltage, offset, primitiveRhs, offset);
 			for(AclfGen3Phase gen : bus.primitiveGenerators) {
+				int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+				if(activePhaseMask == 0) {
+					continue;
+				}
 				gen.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset,
-						activeGeneratorPhaseMask(bus, gen));
+						activePhaseMask);
 			}
 			if(!isFinite(primitiveRhs, offset)) {
 				log.warn("Invalid fixed-point current injection at bus " + bus.id
@@ -1876,9 +1884,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		AclfLoad3Phase[] loads = bus.primitiveLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
 		for(AclfLoad3Phase load : loads) {
+			int activePhaseMask = activeLoadPhaseMask(bus, load);
+			if(activePhaseMask == 0) {
+				continue;
+			}
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			load.addEquivCurrInj(voltage, offset, primitiveRhs, offset, activeLoadPhaseMask(bus, load));
+			load.addEquivCurrInj(voltage, offset, primitiveRhs, offset, activePhaseMask);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, offset, primitiveRhs, offset);
@@ -1887,9 +1899,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			start = FIXED_POINT_PROFILE.start();
 			FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
 			for(AclfGen3Phase gen : bus.primitiveGenerators) {
+				int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+				if(activePhaseMask == 0) {
+					continue;
+				}
 				FIXED_POINT_PROFILE.addCurrentCalcGen();
 				start = FIXED_POINT_PROFILE.start();
-				gen.addEquivCurrInj(voltage, offset, primitiveRhs, offset, activeGeneratorPhaseMask(bus, gen));
+				gen.addEquivCurrInj(voltage, offset, primitiveRhs, offset, activePhaseMask);
 				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
 			}
 		}
@@ -1947,9 +1963,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
 		for(AclfLoad3Phase load : loads) {
+			int activePhaseMask = activeLoadPhaseMask(bus, load);
+			if(activePhaseMask == 0) {
+				continue;
+			}
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			load.addEquivCurrInj(voltageArray, 0, current, 0, activeLoadPhaseMask(bus, load));
+			load.addEquivCurrInj(voltageArray, 0, current, 0, activePhaseMask);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		addFixedPointLoadNortonCompensation(bus, voltageArray, 0, current, 0);
@@ -1958,11 +1978,15 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		List<? extends AclfGen3Phase> generators = bus.phaseGenerators;
 		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
 		for(AclfGen3Phase gen : generators) {
+			int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+			if(activePhaseMask == 0) {
+				continue;
+			}
 			FIXED_POINT_PROFILE.addCurrentCalcGen();
 			start = FIXED_POINT_PROFILE.start();
 			FIXED_POINT_PROFILE.addCurrentCalcGenPower(FIXED_POINT_PROFILE.elapsed(start));
 			start = FIXED_POINT_PROFILE.start();
-			gen.addEquivCurrInj(voltageArray, 0, current, 0, activeGeneratorPhaseMask(bus, gen));
+			gen.addEquivCurrInj(voltageArray, 0, current, 0, activePhaseMask);
 			FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		return new Complex3x1(new Complex(current[0], current[1]),
@@ -1993,9 +2017,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
 		for(AclfLoad3Phase load : loads) {
+			int activePhaseMask = activeLoadPhaseMask(bus, load);
+			if(activePhaseMask == 0) {
+				continue;
+			}
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			load.addEquivCurrInj(voltageArray, 0, current, 0, activeLoadPhaseMask(bus, load));
+			load.addEquivCurrInj(voltageArray, 0, current, 0, activePhaseMask);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		addFixedPointLoadNortonCompensation(bus, voltageArray, 0, current, 0);
@@ -2004,11 +2032,15 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		List<? extends AclfGen3Phase> generators = bus.phaseGenerators;
 		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
 		for(AclfGen3Phase gen : generators) {
+			int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+			if(activePhaseMask == 0) {
+				continue;
+			}
 			FIXED_POINT_PROFILE.addCurrentCalcGen();
 			start = FIXED_POINT_PROFILE.start();
 			FIXED_POINT_PROFILE.addCurrentCalcGenPower(FIXED_POINT_PROFILE.elapsed(start));
 			start = FIXED_POINT_PROFILE.start();
-			gen.addEquivCurrInj(voltageArray, 0, current, 0, activeGeneratorPhaseMask(bus, gen));
+			gen.addEquivCurrInj(voltageArray, 0, current, 0, activePhaseMask);
 			FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		return current;
@@ -2026,12 +2058,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
 		double[] voltageArray = voltageArray(voltage);
 		for(AclfLoad3Phase load : bus.primitiveLoads) {
-			load.addEquivCurrInj(voltageArray, 0, current, 0, activeLoadPhaseMask(bus, load));
+			int activePhaseMask = activeLoadPhaseMask(bus, load);
+			if(activePhaseMask == 0) {
+				continue;
+			}
+			load.addEquivCurrInj(voltageArray, 0, current, 0, activePhaseMask);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltageArray, 0, current, 0);
 
 		for(AclfGen3Phase gen : bus.primitiveGenerators) {
-			gen.addEquivCurrInj(voltageArray, 0, current, 0, activeGeneratorPhaseMask(bus, gen));
+			int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+			if(activePhaseMask == 0) {
+				continue;
+			}
+			gen.addEquivCurrInj(voltageArray, 0, current, 0, activePhaseMask);
 		}
 		return current;
 	}
@@ -2050,9 +2090,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		AclfLoad3Phase[] loads = bus.primitiveLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
 		for(AclfLoad3Phase load : loads) {
+			int activePhaseMask = activeLoadPhaseMask(bus, load);
+			if(activePhaseMask == 0) {
+				continue;
+			}
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			load.addEquivCurrInj(voltage, voltageOffset, current, 0, activeLoadPhaseMask(bus, load));
+			load.addEquivCurrInj(voltage, voltageOffset, current, 0, activePhaseMask);
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
@@ -2061,9 +2105,13 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			start = FIXED_POINT_PROFILE.start();
 			FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
 			for(AclfGen3Phase gen : bus.primitiveGenerators) {
+				int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+				if(activePhaseMask == 0) {
+					continue;
+				}
 				FIXED_POINT_PROFILE.addCurrentCalcGen();
 				start = FIXED_POINT_PROFILE.start();
-				gen.addEquivCurrInj(voltage, voltageOffset, current, 0, activeGeneratorPhaseMask(bus, gen));
+				gen.addEquivCurrInj(voltage, voltageOffset, current, 0, activePhaseMask);
 				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
 			}
 		}
@@ -2081,11 +2129,19 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[5] = 0.0;
 		int voltageOffset = bus.primitiveOffset;
 		for(AclfLoad3Phase load : bus.primitiveLoads) {
-			load.addEquivCurrInj(voltage, voltageOffset, current, 0, activeLoadPhaseMask(bus, load));
+			int activePhaseMask = activeLoadPhaseMask(bus, load);
+			if(activePhaseMask == 0) {
+				continue;
+			}
+			load.addEquivCurrInj(voltage, voltageOffset, current, 0, activePhaseMask);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
 		for(AclfGen3Phase gen : bus.primitiveGenerators) {
-			gen.addEquivCurrInj(voltage, voltageOffset, current, 0, activeGeneratorPhaseMask(bus, gen));
+			int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+			if(activePhaseMask == 0) {
+				continue;
+			}
+			gen.addEquivCurrInj(voltage, voltageOffset, current, 0, activePhaseMask);
 		}
 		return current;
 	}
@@ -2118,14 +2174,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return;
 		}
 		for(AclfLoad3Phase load : bus.primitiveLoads) {
+			int activePhaseMask = activeLoadPhaseMask(bus, load);
+			if(activePhaseMask == 0) {
+				continue;
+			}
 			if(factor == 1.0) {
 				load.addFixedPointNortonCompensation(voltage, voltageOffset, current, currentOffset,
-						activeLoadPhaseMask(bus, load));
+						activePhaseMask);
 			}
 			else {
 				double[] compensation = new double[6];
 				load.addFixedPointNortonCompensation(voltage, voltageOffset, compensation, 0,
-						activeLoadPhaseMask(bus, load));
+						activePhaseMask);
 				current[currentOffset] += compensation[0] * factor;
 				current[currentOffset + 1] += compensation[1] * factor;
 				current[currentOffset + 2] += compensation[2] * factor;
