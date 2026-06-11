@@ -12,6 +12,9 @@ public class OpenDSSLineGeometryParser {
 	private static final double CARSON_R_OHM_PER_MILE = 0.0953;
 	private static final double CARSON_X_COEFF = 0.12134;
 	private static final double CARSON_LOG_CONSTANT = 7.93402;
+	private static final double FEET_TO_METER = 0.3048;
+	private static final double MILE_TO_METER = 1609.344;
+	private static final double VACUUM_PERMITTIVITY = 8.854187817e-12;
 
 	private final OpenDSSDataParser dataParser;
 
@@ -77,12 +80,14 @@ public class OpenDSSLineGeometryParser {
 
 			Complex[][] zCond = buildCarsonMatrix(positions);
 			Complex[][] zPhase = reduce && nconds > nphases ? kronReduce(zCond, nphases) : leadingSubMatrix(zCond, nphases);
+			Complex[][] cPhase = leadingSubMatrix(buildCapacitanceMatrix(positions), nphases);
 
 			LineConfiguration config = new LineConfiguration();
 			config.setId(id);
 			config.setNphases(nphases);
 			config.setLengthUnit("mi");
 			config.setZ3x3Matrix(toComplex3x3(zPhase, nphases));
+			config.setShuntY3x3Matrix(toComplex3x3(cPhase, nphases));
 			dataParser.getLineConfigTable().put(id, config);
 			return true;
 		} catch (Exception e) {
@@ -117,6 +122,54 @@ public class OpenDSSLineGeometryParser {
 			}
 		}
 		return z;
+	}
+
+	private Complex[][] buildCapacitanceMatrix(ConductorPosition[] positions) {
+		int n = positions.length;
+		Complex[][] potential = new Complex[n][n];
+		for (int i = 0; i < n; i++) {
+			OpenDSSWireData wireI = dataParser.getWireDataTable().get(positions[i].wireId);
+			if (wireI == null) {
+				throw new Error("WireData definition not found: " + positions[i].wireId);
+			}
+			if (!wireI.hasRadius()) {
+				return zeroMatrix(n);
+			}
+			for (int j = 0; j < n; j++) {
+				double xi = positions[i].xFeet * FEET_TO_METER;
+				double hi = positions[i].hFeet * FEET_TO_METER;
+				double xj = positions[j].xFeet * FEET_TO_METER;
+				double hj = positions[j].hFeet * FEET_TO_METER;
+				if (i == j) {
+					double radius = Math.max(wireI.getRadiusFeet() * FEET_TO_METER, 1.0e-12);
+					potential[i][j] = new Complex(Math.log(2.0 * Math.max(hi, 1.0e-12) / radius), 0.0);
+				}
+				else {
+					double conductorDistance = Math.max(Math.hypot(xi - xj, hi - hj), 1.0e-12);
+					double imageDistance = Math.max(Math.hypot(xi - xj, hi + hj), 1.0e-12);
+					potential[i][j] = new Complex(Math.log(imageDistance / conductorDistance), 0.0);
+				}
+			}
+		}
+		Complex[][] inversePotential = invert(potential);
+		double nfPerMileFactor = 2.0 * Math.PI * VACUUM_PERMITTIVITY * MILE_TO_METER * 1.0e9;
+		Complex[][] capacitance = new Complex[n][n];
+		for (int i = 0; i < n; i++) {
+			for (int j = 0; j < n; j++) {
+				capacitance[i][j] = new Complex(0.0, inversePotential[i][j].getReal() * nfPerMileFactor);
+			}
+		}
+		return capacitance;
+	}
+
+	private static Complex[][] zeroMatrix(int size) {
+		Complex[][] zero = new Complex[size][size];
+		for (int i = 0; i < size; i++) {
+			for (int j = 0; j < size; j++) {
+				zero[i][j] = Complex.ZERO;
+			}
+		}
+		return zero;
 	}
 
 	private static Complex[][] kronReduce(Complex[][] z, int nphases) {
