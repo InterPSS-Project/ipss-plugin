@@ -41,6 +41,8 @@ public class QstsLargeFeederComparisonExport {
 		String caseSelector = System.getProperty("qsts.compare.case", "all");
 		QstsControlMode controlMode = QstsControlMode.from(
 				System.getProperty("qsts.compare.controlMode", "STATIC"));
+		QstsMode qstsMode = QstsMode.from(System.getProperty("qsts.compare.mode", "DAILY"));
+		double stepSizeHours = Double.parseDouble(System.getProperty("qsts.compare.stepSizeHours", "1.0"));
 		int maxControlIterations = Integer.getInteger("qsts.compare.maxControlIterations", 20);
 		double tolerance = Double.parseDouble(System.getProperty("qsts.compare.tolerance", "1.0e-4"));
 		boolean regControlsEnabled = Boolean.parseBoolean(
@@ -56,8 +58,9 @@ public class QstsLargeFeederComparisonExport {
 		Files.createDirectories(outputDir);
 
 		for(FeederCase feeder : selectedFeeders(caseSelector)) {
-			QstsExportResult export = runQsts(feeder, steps, controlMode, maxControlIterations,
-					tolerance, regControlsEnabled, capControlsEnabled);
+			feeder = withMasterOverride(feeder, System.getProperty("qsts.compare.masterFile"));
+			QstsExportResult export = runQsts(feeder, steps, qstsMode, stepSizeHours,
+					controlMode, maxControlIterations, tolerance, regControlsEnabled, capControlsEnabled);
 			QstsResult result = export.result();
 			Path output = outputDir.resolve(feeder.key()
 					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
@@ -86,11 +89,13 @@ public class QstsLargeFeederComparisonExport {
 					StandardCharsets.UTF_8);
 			System.out.println(String.format(Locale.US,
 					"INTERPSS_QSTS_REFERENCE feeder=%s steps=%d controlMode=%s maxControlIterations=%d "
-							+ "regControlsEnabled=%s capControlsEnabled=%s converged=%s voltageRows=%d "
+							+ "mode=%s stepSizeHours=%.12g regControlsEnabled=%s capControlsEnabled=%s "
+							+ "masterFile=%s converged=%s voltageRows=%d "
 							+ "branchPowerRows=%d loadPowerRows=%d regulatorTapRows=%d capacitorStateRows=%d "
 							+ "output=%s branchOutput=%s loadOutput=%s regulatorOutput=%s capacitorOutput=%s",
 					feeder.name(), steps, controlMode, maxControlIterations,
-					regControlsEnabled, capControlsEnabled, result.isConverged(),
+					qstsMode, stepSizeHours, regControlsEnabled, capControlsEnabled,
+					feeder.masterFile(), result.isConverged(),
 					result.getBusVoltages().size(), result.getBranchPowers().size(),
 					result.getLoadPowers().size(),
 					result.getStepResults().size() * export.regulatorControls().size(),
@@ -100,9 +105,9 @@ public class QstsLargeFeederComparisonExport {
 		}
 	}
 
-	private static QstsExportResult runQsts(FeederCase feeder, int steps, QstsControlMode controlMode,
-			int maxControlIterations, double tolerance, boolean regControlsEnabled,
-			boolean capControlsEnabled) {
+	private static QstsExportResult runQsts(FeederCase feeder, int steps, QstsMode qstsMode,
+			double stepSizeHours, QstsControlMode controlMode, int maxControlIterations,
+			double tolerance, boolean regControlsEnabled, boolean capControlsEnabled) {
 		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.setRegControlEnabled(regControlsEnabled);
 		assertTrue(parser.parseFeederData(feeder.folder(), feeder.masterFile()),
@@ -117,9 +122,9 @@ public class QstsLargeFeederComparisonExport {
 		var study = OpenDSSQstsStudyFactory.from(parser)
 				.setPowerFlowAlgorithm(algorithm)
 				.setRegulatorControls(regulatorControls)
-				.setMode(QstsMode.DAILY)
+				.setMode(qstsMode)
 				.setNumberOfSteps(steps)
-				.setStepSizeHours(1.0)
+				.setStepSizeHours(stepSizeHours)
 				.setControlMode(controlMode)
 				.setMaxControlIterations(maxControlIterations)
 				.setPostSolveOutputMode(DistributionPostSolveOutputMode.VOLTAGE_ONLY)
@@ -188,6 +193,13 @@ public class QstsLargeFeederComparisonExport {
 			return List.of(IEEE8500);
 		}
 		return List.of(CKT24, IEEE8500);
+	}
+
+	private static FeederCase withMasterOverride(FeederCase feeder, String masterFile) {
+		if(masterFile == null || masterFile.trim().isEmpty()) {
+			return feeder;
+		}
+		return new FeederCase(feeder.key(), feeder.name(), feeder.folder(), masterFile.trim());
 	}
 
 	private record FeederCase(String key, String name, String folder, String masterFile) {

@@ -68,6 +68,8 @@ class RunSummary:
 
 def compile_case(
     feeder: FeederCase,
+    mode: str,
+    step_size_hours: float,
     control_mode: str,
     max_control_iterations: int,
     reg_controls_enabled: bool,
@@ -84,6 +86,9 @@ def compile_case(
             dss.Text.Command("batchedit regcontrol..* enabled=no")
         if not cap_controls_enabled:
             dss.Text.Command("batchedit capcontrol..* enabled=no")
+        dss.Text.Command(f"set mode={mode}")
+        dss.Text.Command(f"set stepsize={step_size_hours}h")
+        dss.Text.Command("set number=1")
     finally:
         os.chdir(previous_cwd)
 
@@ -93,12 +98,14 @@ def run_case(
     steps: int,
     phase: str,
     run: int,
+    mode: str,
+    step_size_hours: float,
     control_mode: str,
     max_control_iterations: int,
     reg_controls_enabled: bool,
     cap_controls_enabled: bool,
 ) -> RunSummary:
-    compile_case(feeder, control_mode, max_control_iterations,
+    compile_case(feeder, mode, step_size_hours, control_mode, max_control_iterations,
                  reg_controls_enabled, cap_controls_enabled)
     converged = True
     max_iterations = 0
@@ -131,6 +138,12 @@ def selected_cases(names: list[str]) -> list[FeederCase]:
             key = "ieee8500"
         selected.append(CASES[key])
     return selected
+
+
+def with_master_file(feeder: FeederCase, master_file: str | None) -> FeederCase:
+    if not master_file:
+        return feeder
+    return FeederCase(feeder.name, feeder.folder, master_file)
 
 
 def require_enabled_controls(
@@ -167,9 +180,12 @@ def require_enabled_controls(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--case", action="append", choices=["all", "ckt24", "ieee8500", "8500"])
+    parser.add_argument("--master-file", help="Override the selected feeder master file")
     parser.add_argument("--warmup-steps", type=int, default=24)
     parser.add_argument("--steps", type=int, default=240)
     parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--mode", choices=["daily", "yearly", "snapshot", "duty"], default="daily")
+    parser.add_argument("--step-size-hours", type=float, default=1.0)
     parser.add_argument("--control-mode", choices=["off", "static", "time", "event"], default="static")
     parser.add_argument("--max-control-iterations", type=int, default=20)
     parser.add_argument("--disable-reg-controls", action="store_true")
@@ -191,19 +207,28 @@ def main() -> None:
         "DSSPY_QSTS_PERF_CONFIG "
         f"cases={','.join(case.name for case in cases)} "
         f"warmupSteps={args.warmup_steps} measureSteps={args.steps} "
-        f"repeats={args.repeats} controlMode={args.control_mode} "
+        f"repeats={args.repeats} mode={args.mode} stepSizeHours={args.step_size_hours:.12g} "
+        f"controlMode={args.control_mode} "
         f"maxControlIterations={args.max_control_iterations} "
         f"regControlsEnabled={str(reg_controls_enabled).lower()} "
         f"capControlsEnabled={str(cap_controls_enabled).lower()}"
     )
     for feeder in cases:
+        feeder = with_master_file(feeder, args.master_file)
+        print(
+            "DSSPY_QSTS_PERF_CASE "
+            f"feeder={feeder.name} masterFile={feeder.master_file}",
+            flush=True,
+        )
         warmup = run_case(feeder, args.warmup_steps, "warmup", 0,
+                          args.mode, args.step_size_hours,
                           args.control_mode, args.max_control_iterations,
                           reg_controls_enabled, cap_controls_enabled)
         if not warmup.converged:
             raise RuntimeError(f"Warm-up failed for {feeder.name}")
 
         measured = [run_case(feeder, args.steps, "measured", run,
+                             args.mode, args.step_size_hours,
                              args.control_mode, args.max_control_iterations,
                              reg_controls_enabled, cap_controls_enabled)
                     for run in range(1, args.repeats + 1)]
