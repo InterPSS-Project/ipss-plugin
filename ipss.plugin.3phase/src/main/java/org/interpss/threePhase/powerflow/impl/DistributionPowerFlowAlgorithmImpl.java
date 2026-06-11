@@ -1597,7 +1597,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				FIXED_POINT_PROFILE.addCurrentInjectionCalc(FIXED_POINT_PROFILE.elapsed(start));
 				long rhsStart = FIXED_POINT_PROFILE.start();
 				start = FIXED_POINT_PROFILE.start();
-				if(!isFinite(curInj.a_0) || !isFinite(curInj.b_1) || !isFinite(curInj.c_2)) {
+				if(!isFinite(curInj, bus)) {
 					log.warn("Invalid fixed-point current injection at bus " + bus.id
 							+ ", sortNumber=" + bus.sortNumber + ", iabc=" + curInj
 							+ ", vabc=" + bus3P.get3PhaseVotlages());
@@ -1626,6 +1626,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							new Complex(rhsReal(curInj.c_2, bus.boundaryCReal),
 									rhsImaginary(curInj.c_2, bus.boundaryCImaginary)));
 				}
+				rhs = phaseMaskedValue(rhs, bus.activePhaseMask);
 				FIXED_POINT_PROFILE.addCurrentRhsCompose(FIXED_POINT_PROFILE.elapsed(start));
 				start = FIXED_POINT_PROFILE.start();
 				yMatrix.setBi(rhs, bus.sortNumber);
@@ -1925,14 +1926,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private Complex3x1 calc3PhEquivCurInjProfiled(FixedPointBus bus) {
 		IBus3Phase bus3P = bus.bus3P;
 		if(!FIXED_POINT_PROFILE.enabled()) {
-			return bus3P.calc3PhEquivCurInj();
+			return calc3PhEquivCurInjFast(bus);
 		}
 		long start = FIXED_POINT_PROFILE.start();
-		Complex3x1 current = new Complex3x1();
+		double[] current = bus.currentInjectionValues;
+		current[0] = 0.0;
+		current[1] = 0.0;
+		current[2] = 0.0;
+		current[3] = 0.0;
+		current[4] = 0.0;
+		current[5] = 0.0;
 		FIXED_POINT_PROFILE.addCurrentCalcInit(FIXED_POINT_PROFILE.elapsed(start));
 
 		start = FIXED_POINT_PROFILE.start();
 		Complex3x1 voltage = bus3P.get3PhaseVotlages();
+		double[] voltageArray = voltageArray(voltage);
 		FIXED_POINT_PROFILE.addCurrentCalcVoltage(FIXED_POINT_PROFILE.elapsed(start));
 
 		start = FIXED_POINT_PROFILE.start();
@@ -1941,13 +1949,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			Complex3x1 loadCurrent = load.getEquivCurrInj(voltage);
+			load.addEquivCurrInj(voltageArray, 0, current, 0, activeLoadPhaseMask(bus, load));
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
-			start = FIXED_POINT_PROFILE.start();
-			current = current.add(loadCurrent);
-			FIXED_POINT_PROFILE.addCurrentCalcLoadAdd(FIXED_POINT_PROFILE.elapsed(start));
 		}
-		current = current.add(fixedPointLoadNortonCompensation(bus, voltage));
+		addFixedPointLoadNortonCompensation(bus, voltageArray, 0, current, 0);
 
 		start = FIXED_POINT_PROFILE.start();
 		List<? extends AclfGen3Phase> generators = bus.phaseGenerators;
@@ -1955,18 +1960,19 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(AclfGen3Phase gen : generators) {
 			FIXED_POINT_PROFILE.addCurrentCalcGen();
 			start = FIXED_POINT_PROFILE.start();
-			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
 			FIXED_POINT_PROFILE.addCurrentCalcGenPower(FIXED_POINT_PROFILE.elapsed(start));
-			if(power != null) {
-				start = FIXED_POINT_PROFILE.start();
-				Complex3x1 genCurrent = power.divide(voltage).conjugate();
-				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
-				start = FIXED_POINT_PROFILE.start();
-				current = current.add(genCurrent);
-				FIXED_POINT_PROFILE.addCurrentCalcGenAdd(FIXED_POINT_PROFILE.elapsed(start));
-			}
+			start = FIXED_POINT_PROFILE.start();
+			gen.addEquivCurrInj(voltageArray, 0, current, 0, activeGeneratorPhaseMask(bus, gen));
+			FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
-		return current;
+		return new Complex3x1(new Complex(current[0], current[1]),
+				new Complex(current[2], current[3]), new Complex(current[4], current[5]));
+	}
+
+	private Complex3x1 calc3PhEquivCurInjFast(FixedPointBus bus) {
+		double[] current = calc3PhEquivCurInjPrimitiveFast(bus);
+		return new Complex3x1(new Complex(current[0], current[1]),
+				new Complex(current[2], current[3]), new Complex(current[4], current[5]));
 	}
 
 	private double[] calc3PhEquivCurInjPrimitiveProfiled(FixedPointBus bus) {
@@ -1980,6 +1986,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		long start = FIXED_POINT_PROFILE.start();
 		Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
+		double[] voltageArray = voltageArray(voltage);
 		FIXED_POINT_PROFILE.addCurrentCalcVoltage(FIXED_POINT_PROFILE.elapsed(start));
 
 		start = FIXED_POINT_PROFILE.start();
@@ -1988,10 +1995,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
 			start = FIXED_POINT_PROFILE.start();
-			load.addEquivCurrInj(voltage, current);
+			load.addEquivCurrInj(voltageArray, 0, current, 0, activeLoadPhaseMask(bus, load));
 			FIXED_POINT_PROFILE.addCurrentCalcLoadCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
-		addFixedPointLoadNortonCompensation(bus, voltage, current);
+		addFixedPointLoadNortonCompensation(bus, voltageArray, 0, current, 0);
 
 		start = FIXED_POINT_PROFILE.start();
 		List<? extends AclfGen3Phase> generators = bus.phaseGenerators;
@@ -1999,16 +2006,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		for(AclfGen3Phase gen : generators) {
 			FIXED_POINT_PROFILE.addCurrentCalcGen();
 			start = FIXED_POINT_PROFILE.start();
-			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
 			FIXED_POINT_PROFILE.addCurrentCalcGenPower(FIXED_POINT_PROFILE.elapsed(start));
-			if(power != null) {
-				start = FIXED_POINT_PROFILE.start();
-				Complex3x1 genCurrent = power.divide(voltage).conjugate();
-				FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
-				start = FIXED_POINT_PROFILE.start();
-				addCurrent(current, genCurrent);
-				FIXED_POINT_PROFILE.addCurrentCalcGenAdd(FIXED_POINT_PROFILE.elapsed(start));
-			}
+			start = FIXED_POINT_PROFILE.start();
+			gen.addEquivCurrInj(voltageArray, 0, current, 0, activeGeneratorPhaseMask(bus, gen));
+			FIXED_POINT_PROFILE.addCurrentCalcGenCurrent(FIXED_POINT_PROFILE.elapsed(start));
 		}
 		return current;
 	}
@@ -2023,16 +2024,14 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[5] = 0.0;
 
 		Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
+		double[] voltageArray = voltageArray(voltage);
 		for(AclfLoad3Phase load : bus.primitiveLoads) {
-			load.addEquivCurrInj(voltage, current);
+			load.addEquivCurrInj(voltageArray, 0, current, 0, activeLoadPhaseMask(bus, load));
 		}
-		addFixedPointLoadNortonCompensation(bus, voltage, current);
+		addFixedPointLoadNortonCompensation(bus, voltageArray, 0, current, 0);
 
-		for(AclfGen3Phase gen : bus.phaseGenerators) {
-			Complex3x1 power = gen.getPower3Phase(UnitType.PU);
-			if(power != null) {
-				addCurrent(current, power.divide(voltage).conjugate());
-			}
+		for(AclfGen3Phase gen : bus.primitiveGenerators) {
+			gen.addEquivCurrInj(voltageArray, 0, current, 0, activeGeneratorPhaseMask(bus, gen));
 		}
 		return current;
 	}
@@ -2149,6 +2148,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		addFixedPointLoadNortonCompensation(bus, v, 0, current, 0);
 	}
 
+	private double[] voltageArray(Complex3x1 voltage) {
+		return new double[] {
+				real(voltage == null ? null : voltage.a_0),
+				imaginary(voltage == null ? null : voltage.a_0),
+				real(voltage == null ? null : voltage.b_1),
+				imaginary(voltage == null ? null : voltage.b_1),
+				real(voltage == null ? null : voltage.c_2),
+				imaginary(voltage == null ? null : voltage.c_2)
+		};
+	}
+
 	private int activeLoadPhaseMask(FixedPointBus bus, AclfLoad3Phase load) {
 		return bus.activePhaseMask & phaseCodeMask(load.getPhaseCode());
 	}
@@ -2157,16 +2167,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return bus.activePhaseMask & phaseCodeMask(generator.getPhaseCode());
 	}
 
-	private void addCurrent(double[] current, Complex3x1 value) {
-		if(value == null) {
-			return;
-		}
-		current[0] += real(value.a_0);
-		current[1] += imaginary(value.a_0);
-		current[2] += real(value.b_1);
-		current[3] += imaginary(value.b_1);
-		current[4] += real(value.c_2);
-		current[5] += imaginary(value.c_2);
+	private boolean isFinite(Complex3x1 value, FixedPointBus bus) {
+		return (!bus.phaseActive(0) || isFinite(value == null ? null : value.a_0))
+				&& (!bus.phaseActive(1) || isFinite(value == null ? null : value.b_1))
+				&& (!bus.phaseActive(2) || isFinite(value == null ? null : value.c_2));
 	}
 
 	private String formatComplex(Complex value) {
