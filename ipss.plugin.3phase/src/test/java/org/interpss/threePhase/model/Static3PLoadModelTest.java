@@ -1,12 +1,14 @@
 package org.interpss.threePhase.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.threephase.Static3PLoad;
 import com.interpss.core.threephase.Static3PhaseFactory;
@@ -44,6 +46,26 @@ public class Static3PLoadModelTest {
 
 		assertEquals(0.4, currentAtOnePu.a_0.abs(), 1.0e-12);
 		assertEquals(0.44, currentAtHighVoltage.a_0.abs(), 1.0e-12);
+	}
+
+	@Test
+	public void primitiveWyeLoadCurrentHonorsActivePhaseMask() {
+		Static3PLoad load = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setPhaseCode(PhaseCode.B);
+		load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_WYE);
+		load.set3PhaseLoad(new Complex3x1(new Complex(1.0, 0.5),
+				new Complex(2.0, 0.25), new Complex(3.0, 0.75)));
+		double[] voltage = balancedVoltageArray();
+		double[] current = new double[6];
+
+		load.addEquivCurrInj(voltage, 0, current, 0, 0b010);
+
+		assertEquals(0.0, current[0], 1.0e-12);
+		assertEquals(0.0, current[1], 1.0e-12);
+		assertEquals(0.0, current[4], 1.0e-12);
+		assertEquals(0.0, current[5], 1.0e-12);
+		assertTrue(Math.hypot(current[2], current[3]) > 0.0);
 	}
 
 	@Test
@@ -148,5 +170,14 @@ public class Static3PLoadModelTest {
 				new Complex(1.0, 0.0),
 				new Complex(-0.5, -Math.sqrt(3.0) / 2.0),
 				new Complex(-0.5, Math.sqrt(3.0) / 2.0));
+	}
+
+	private static double[] balancedVoltageArray() {
+		Complex3x1 voltage = balancedVoltage();
+		return new double[] {
+				voltage.a_0.getReal(), voltage.a_0.getImaginary(),
+				voltage.b_1.getReal(), voltage.b_1.getImaginary(),
+				voltage.c_2.getReal(), voltage.c_2.getImaginary()
+		};
 	}
 }
