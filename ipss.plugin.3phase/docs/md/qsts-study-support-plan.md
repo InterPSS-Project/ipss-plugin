@@ -517,8 +517,27 @@ this document or `opendss-feeder-benchmark-findings.md`.
   - enabled-state updates
   - whether any reference feeders use reactor switching through script,
     `SwtControl`, or another controller.
-- [ ] Create a source-note table mapping each OpenDSS source behavior to the
+- [x] Create a source-note table mapping each OpenDSS source behavior to the
   intended InterPSS adaptation.
+
+Reference behavior mapping for the static QSTS implementation:
+
+| OpenDSS behavior area | Behavior to preserve | InterPSS static/QSTS adaptation | Current coverage |
+|---|---|---|---|
+| `RegControl` monitored voltage | Evaluate controlled-terminal or remote-bus voltage in engineering units, compare against band/target, then convert the requested movement into discrete tap steps with tap limits. | Keep regulator metadata in generic `RegulatorControlData`; execute tap changes through the static transformer/regulator model and rerun static PF when tap state changes. No DStab exciter, machine, or dynamic Y contribution is part of this path. | IEEE123 and large-feeder parser/PF comparisons plus QSTS regulator performance regressions. |
+| `RegControl` delay/queue | In time/event control modes, tap actions are queued and applied on a later control pass/time boundary rather than immediately changing state. | Use `QstsControlQueue` for delayed control actions and keep immediate static mode separate from delayed time/event mode. Regulator delayed action parity remains a larger migration slice after static transformer/regulator cleanup. | Queue primitive coverage; capacitor delayed queue regression now checked. |
+| `CapControl` signal calculation | Support voltage/current/kvar/PF decision signals, including PT/CT ratios, terminal selection, voltage override, and phase selection through AVG/MIN/MAX or explicit phase. | Parse OpenDSS names into `CapacitorControlData`; evaluate solved static bus voltages and static branch currents in `CapacitorBankControl`; switch the static capacitor load representation and rerun static PF in enabled control modes. | `OpenDssCapControlMiniComparisonTest` covers voltage, current, kvar, PF, voltage override, PTPhase, and CTPhase mini cases. |
+| `CapControl` delayed switching | Preserve state carryover and operation counts; queued open/close actions execute at or after their scheduled time and should not double-count repeated scheduled state. | `QstsControlQueue` stores capacitor switch actions keyed by control/capacitor and `QstsCapacitorStateSample` records closed state, kvar, and cumulative operation count. | `DelayedHighVoltageOpen.dss` plus `capcontrol-delayed-dss-python-operation-reference.csv`. |
+| `ControlQueue` mode split | `controlmode=off` disables controls, static applies immediate control iteration, and time/event modes use queued actions constrained by `maxcontrol` style limits. | `QstsControlMode` controls whether `QstsStudy` disables controls, runs immediate PF/control loops, or processes delayed queue actions by QSTS hour. `maxControlIterations` bounds the static control loop. | QSTS unit tests for controls-off/static/time paths; mini DSS-Python delayed CapControl coverage. |
+| `Reactor` admittance/state | Reactor state affects the static admittance model; shunt/series connection and enabled state must be reflected before solved powers/voltages are accepted. | Keep reactor parsing and admittance contribution on the static network side. Add switched-reactor behavior only through a generic static state controller once feeder examples or mini DSS-Python references define the required semantics. | Parser/PF comparisons include static reactor handling where present; switched-reactor QSTS remains open. |
+
+Source/reference anchors:
+
+- EPRI OpenDSS control documentation for RegControl, CapControl phasing, and
+  Reactor properties.
+- DSS-Extensions control and Reactor property references.
+- DSS C-API / DSS-Extensions source repository, which carries the Pascal
+  OpenDSS-derived source used by DSS-Python.
 
 ## Implementation Progress Summary
 
