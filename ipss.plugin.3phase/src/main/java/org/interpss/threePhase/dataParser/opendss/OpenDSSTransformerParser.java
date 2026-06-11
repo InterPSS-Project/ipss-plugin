@@ -434,7 +434,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		boolean xhlSpecified = false;
 		boolean lossSpecified = false;
 
-		String[] xfrStrAry  = splitOutsideLists(normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase()));
+		String[] xfrStrAry  = splitOutsideLists(normalizePropertyEquals(
+				normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase())));
 		int windingContext = 0;
 		boolean hasWindingSpecificResistance = false;
 
@@ -464,7 +465,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				xlt= Double.valueOf(element.substring(4));
 			}
 
-			else if(element.contains("buses=")){
+			else if(element.startsWith("buses=")){
 				String[] busIds = listValues(element);
 				busTerminals = busIds;
 				TerminalBus fromTerminal = terminalBus(busIds[0]);
@@ -511,7 +512,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				}
 
 			}
-			else if(element.contains("bus=")){
+			else if(element.startsWith("bus=")){
 				TerminalBus terminal = terminalBus(element.substring(4));
 				if(windingContext == 1) {
 					fromBusId = terminal.busId;
@@ -531,12 +532,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 					toWyeGrounded = terminal.wyeGrounded;
 				}
 			}
-			else if(element.contains("conns=")){
+			else if(element.startsWith("conns=")){
 				String[] connTypes = listValues(element);
 				fromConnection = connTypes[0];
 				toConnection = connTypes[1];
 			}
-			else if(element.contains("conn=")){
+			else if(element.startsWith("conn=")){
 				if(windingContext == 1) {
 					fromConnection = element.substring(5);
 				}
@@ -544,13 +545,13 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 					toConnection = element.substring(5);
 				}
 			}
-			else if(element.contains("kvs=")){
+			else if(element.startsWith("kvs=")){
 				String[] kvs = listValues(element);
 				normKVs = doubleValues(kvs);
 				normKV1 = Double.valueOf(kvs[0]);
 				normKV2 = Double.valueOf(kvs[1]);
 			}
-			else if(element.contains("kv=")){
+			else if(element.startsWith("kv=")){
 				if(windingContext == 1) {
 					normKV1 = Double.valueOf(element.substring(3));
 				}
@@ -558,14 +559,14 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 					normKV2 = Double.valueOf(element.substring(3));
 				}
 			}
-			else if(element.contains("kvas=")){
+			else if(element.startsWith("kvas=")){
 				String[] kvas = listValues(element);
 				kvaRatings = doubleValues(kvas);
 				kva1 = Double.valueOf(kvas[0]);
 				kva2 = Double.valueOf(kvas[1]);
 
 			}
-			else if(element.contains("kva=")){
+			else if(element.startsWith("kva=")){
 				if(windingContext == 1) {
 					kva1 = Double.valueOf(element.substring(4));
 				}
@@ -1026,6 +1027,10 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		}
 		matcher.appendTail(buffer);
 		return buffer.toString();
+	}
+
+	private static String normalizePropertyEquals(String value) {
+		return value.replaceAll("\\s*=\\s*", "=");
 	}
 
 	private static Complex transformerSeriesImpedanceOhm(double kv1, double kv2,
