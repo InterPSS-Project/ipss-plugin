@@ -9,11 +9,13 @@ import org.interpss.threePhase.basic.LineConfiguration;
 
 public class OpenDSSLineGeometryParser {
 
-	private static final double CARSON_R_OHM_PER_MILE = 0.0953;
+	private static final double CARSON_R_OHM_PER_MILE = 0.09315;
 	private static final double CARSON_X_COEFF = 0.12134;
-	private static final double CARSON_LOG_CONSTANT = 7.93402;
+	private static final double CARSON_LOG_CONSTANT = 8.02856;
 	private static final double FEET_TO_METER = 0.3048;
 	private static final double MILE_TO_METER = 1609.344;
+	private static final double MU0 = 12.56637e-7;
+	private static final double POWER_FREQUENCY_HZ = 60.0;
 	private static final double VACUUM_PERMITTIVITY = 8.854187817e-12;
 
 	private final OpenDSSDataParser dataParser;
@@ -109,7 +111,7 @@ public class OpenDSSLineGeometryParser {
 				if (i == j) {
 					double gmr = Math.max(wireI.getGmrFeet(), 1.0e-9);
 					z[i][j] = new Complex(
-							wireI.getRacOhmPerMile() + CARSON_R_OHM_PER_MILE,
+							deriInternalResistanceOhmPerMile(wireI) + CARSON_R_OHM_PER_MILE,
 							CARSON_X_COEFF * (Math.log(1.0 / gmr) + CARSON_LOG_CONSTANT));
 				}
 				else {
@@ -122,6 +124,47 @@ public class OpenDSSLineGeometryParser {
 			}
 		}
 		return z;
+	}
+
+	private static double deriInternalResistanceOhmPerMile(OpenDSSWireData wire) {
+		double rdcOhmPerMeter = wire.getRdcOhmPerMile() / MILE_TO_METER;
+		if(rdcOhmPerMeter <= 0.0) {
+			return wire.getRacOhmPerMile();
+		}
+		Complex alpha = new Complex(1.0, 1.0)
+				.multiply(Math.sqrt(POWER_FREQUENCY_HZ * MU0 / rdcOhmPerMeter));
+		Complex ratio = alpha.abs() > 35.0 ? Complex.ONE : besselI0(alpha).divide(besselI1(alpha));
+		Complex zint = new Complex(1.0, 1.0).multiply(ratio)
+				.multiply(Math.sqrt(rdcOhmPerMeter * POWER_FREQUENCY_HZ * MU0) / 2.0);
+		return zint.getReal() * MILE_TO_METER;
+	}
+
+	private static Complex besselI0(Complex value) {
+		Complex term = Complex.ONE;
+		Complex sum = Complex.ONE;
+		Complex quarterValueSquared = value.multiply(value).divide(4.0);
+		for(int k = 1; k < 40; k++) {
+			term = term.multiply(quarterValueSquared).divide((double) k * k);
+			sum = sum.add(term);
+			if(term.abs() < 1.0e-14) {
+				break;
+			}
+		}
+		return sum;
+	}
+
+	private static Complex besselI1(Complex value) {
+		Complex term = value.divide(2.0);
+		Complex sum = term;
+		Complex quarterValueSquared = value.multiply(value).divide(4.0);
+		for(int k = 1; k < 40; k++) {
+			term = term.multiply(quarterValueSquared).divide((double) k * (k + 1));
+			sum = sum.add(term);
+			if(term.abs() < 1.0e-14) {
+				break;
+			}
+		}
+		return sum;
 	}
 
 	private Complex[][] buildCapacitanceMatrix(ConductorPosition[] positions) {

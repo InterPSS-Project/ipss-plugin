@@ -14,6 +14,7 @@ public class OpenDSSWireDataParser {
 		try {
 			String[] tokens = wireDataStr.trim().split("\\s+");
 			String id = "";
+			double rdc = 0.0;
 			double rac = 0.0;
 			String rUnits = "mi";
 			double gmrAc = 0.0;
@@ -26,6 +27,9 @@ public class OpenDSSWireDataParser {
 				String lowerToken = token.toLowerCase();
 				if (lowerToken.contains("wiredata.")) {
 					id = token.substring(token.indexOf(".") + 1).toLowerCase();
+				}
+				else if (lowerToken.startsWith("rdc=")) {
+					rdc = Double.valueOf(token.substring(token.indexOf("=") + 1));
 				}
 				else if (lowerToken.startsWith("rac=")) {
 					rac = Double.valueOf(token.substring(token.indexOf("=") + 1));
@@ -59,7 +63,7 @@ public class OpenDSSWireDataParser {
 			if (rac <= 0.0 || gmrAc <= 0.0) {
 				throw new IllegalArgumentException("WireData Rac and GMRac must be positive: " + wireDataStr);
 			}
-			dataParser.getWireDataTable().put(id, new OpenDSSWireData(id, rac, rUnits, gmrAc, gmrUnits,
+			dataParser.getWireDataTable().put(id, new OpenDSSWireData(id, rdc, rac, rUnits, gmrAc, gmrUnits,
 					radius, radiusUnits, normAmps));
 			return true;
 		} catch (Exception e) {
