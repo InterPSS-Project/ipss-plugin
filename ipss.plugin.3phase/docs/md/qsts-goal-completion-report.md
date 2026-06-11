@@ -237,8 +237,8 @@ maxPDelta=0.0115543100001 pFailures=0
 maxQDelta=0.045158398 qFailures=0
 
 QSTS_BRANCH_POWER_COMPARE commonKeys=14185 dssOnly=41 interpssOnly=21
-maxPDelta=3.7989554 pFailures=0
-maxQDelta=22.7667859 qFailures=428
+maxPDelta=3.25626791 pFailures=0
+maxQDelta=22.57404852 qFailures=428
 ```
 
 This resolves the active-power branch-flow mismatch and reduces the controlled

@@ -746,10 +746,10 @@ Create:
     - use these windows to exercise larger voltage movement than the repeated
       state smoke while staying within the real Ckt24 loadshape data.
     - 2026-06-11 controlled one-step status: transformer no-load shunt support
-      reduced branch-flow mismatch to `maxPDelta=3.7989554 kW` with no P
+      reduced branch-flow mismatch to `maxPDelta=3.25626791 kW` with no P
       failures; remaining branch-flow mismatch is reactive-only
-      (`maxQDelta=22.7667859 kvar`, `qFailures=428`) and is the next
-      line/device accounting slice.
+      (`maxQDelta=22.57404852 kvar`, `qFailures=428`) and is the next
+      upstream phasor/modeling slice.
   - [x] IEEE8500 short repeated-state window, controls off, enabled as a legacy
     runtime sentinel before promoting controlled comparison/performance runs.
   - Optional 168-step Ckt7/Ckt24 run disabled or tagged until runtime is
