@@ -24,7 +24,7 @@
 
 package org.interpss.core.adapter.ieee;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.Consumer;
@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
@@ -64,14 +65,18 @@ public class IEEE300BusTest extends CorePluginTestSetup {
 
 	@Test
 	public void testIEEE300ControlIsolation() throws Exception {
-		assertFalse(runIeee300Loadflow(algo -> {
+		PSXfrPControl psXfrControl = loadIeee300().getBranch("Bus196->Bus2040(1)").getPSXfrPControl();
+		assertEquals(-15.0, psXfrControl.getAngLimit(UnitType.Deg).getMin(), 1.0E-6);
+		assertEquals(0.0, psXfrControl.getAngLimit(UnitType.Deg).getMax(), 1.0E-6);
+
+		assertTrue(runIeee300Loadflow(algo -> {
 		}).isLfConverged());
 
-		assertFalse(runIeee300Loadflow(algo -> {
+		assertTrue(runIeee300Loadflow(algo -> {
 			algo.getLfAdjAlgo().getVoltAdjConfig().setAdjust(false);
 		}).isLfConverged());
 
-		assertFalse(runIeee300Loadflow(algo -> {
+		assertTrue(runIeee300Loadflow(algo -> {
 			algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjust(false);
 		}).isLfConverged());
 

@@ -265,7 +265,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		// load the test data
 		AclfNetwork net = IpssAdapter
 				.importAclfNet(
-						"testdata/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
+						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
 				.getImportedObj();

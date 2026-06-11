@@ -44,8 +44,8 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 		
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-				"testData/adpter/psse/v33/savnw.raw",
-				"testData/adpter/psse/v33/savnw.seq"
+				"testData/psse/v33/PSSE_sample_savnw.raw",
+				"testData/psse/v33/PSSE_sample_savnw.seq"
 				
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
@@ -181,8 +181,8 @@ Contributing Gen:
 		
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-				"testData/adpter/psse/v33/savnw.raw",
-				"testData/adpter/psse/v33/savnw.seq"
+				"testData/psse/v33/PSSE_sample_savnw.raw",
+				"testData/psse/v33/PSSE_sample_savnw.seq"
 				
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();

@@ -137,8 +137,8 @@ public class IEEE14_PVLimit_SVCTest extends CorePluginTestSetup {
 	  	
 	  	assertTrue(bus8.isGenPQ());
 	  	assertTrue(Math.abs(bus8.getVoltageMag() - 1.0877) < 0.001, ""+bus8.getVoltageMag());
-	  	// the PVBusLimit control hits the limit.
-	  	assertTrue(bus8.getPVBusLimit().isControlStatus());
+        // the PVBusLimit control hits the limit and is latched off after PV-to-PQ conversion.
+        assertTrue(!bus8.getPVBusLimit().isControlStatus());
 	  	assertTrue(!bus8.getPVBusLimit().isAdjustStatus());
 	  	
 	  	// the SVC is inactive due to limit violation
@@ -148,4 +148,3 @@ public class IEEE14_PVLimit_SVCTest extends CorePluginTestSetup {
 	  	assertTrue(Math.abs(svc.getBActual() - 0.1) < 0.0001);
 	 }
 }
-

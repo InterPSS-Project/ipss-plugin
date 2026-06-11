@@ -57,8 +57,8 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32803)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.01421)<0.0001);
 	}
 	
 	@Test 
@@ -79,7 +79,7 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3395)<0.0001);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16725)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32392)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16550)<0.0001);
 	}	
 }

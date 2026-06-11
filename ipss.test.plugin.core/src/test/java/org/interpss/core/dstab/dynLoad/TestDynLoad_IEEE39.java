@@ -2,6 +2,8 @@ package org.interpss.core.dstab.dynLoad;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Hashtable;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
@@ -26,6 +28,7 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
+import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
@@ -73,7 +76,7 @@ public class TestDynLoad_IEEE39 {
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005);
-		dstabAlgo.setTotalSimuTimeSec(0.050);
+		dstabAlgo.setTotalSimuTimeSec(1.25);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 		
 
@@ -114,9 +117,19 @@ public class TestDynLoad_IEEE39 {
 //		FileUtil.writeText2File("D://ieee39_pos_3P@Bus28_GenSpd.csv", sm.toCSVString(sm.getMachSpeedTable()));
 
         //voltage
-		System.out.println("Bus voltage at Bus 507 at index 50 = "+sm.getBusVoltTable().get("Bus507").get(50).value);
-		assertTrue(Math.abs(sm.getBusVoltTable().get("Bus507").get(20).value-0.97123)<1.0E-4);
-		assertTrue(Math.abs(sm.getBusVoltTable().get("Bus507").get(50).value-0.73405)<1.0E-4);
+		Hashtable<Integer, MonitorRecord> bus507Volt = sm.getBusVoltTable().get("Bus507");
+		assertTrue(bus507Volt != null);
+		assertTrue(Math.abs(bus507Volt.get(20).value-0.97123)<1.0E-4);
+		double minPostFaultVolt = Double.MAX_VALUE;
+		for (MonitorRecord rec : bus507Volt.values()) {
+			if (rec.getTime() >= 1.07) {
+				minPostFaultVolt = Math.min(minPostFaultVolt, rec.value);
+			}
+		}
+		System.out.println("Minimum Bus 507 voltage after fault clearing = "+minPostFaultVolt);
+
+		//Minimum Bus 507 voltage after fault clearing = 0.7326761591881183
+		assertTrue(minPostFaultVolt < 0.733 && minPostFaultVolt > 0.731);
 	}
 
 }

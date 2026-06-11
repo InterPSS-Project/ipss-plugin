@@ -48,7 +48,7 @@ public class UCTE2000Summer_EDclf_Test extends CorePluginTestSetup {
 	public void edclfTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/UCTE_2000_Summer.ieee")
+				.load("testData/adpter/ieee_format/UCTE_2000_Summer.ieee")
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
@@ -62,7 +62,7 @@ public class UCTE2000Summer_EDclf_Test extends CorePluginTestSetup {
 	public void edclfLossTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/UCTE_2000_Summer.ieee")
+				.load("testData/adpter/ieee_format/UCTE_2000_Summer.ieee")
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
@@ -76,7 +76,7 @@ public class UCTE2000Summer_EDclf_Test extends CorePluginTestSetup {
 	public void edclfVCorrectionTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/UCTE_2000_Summer.ieee")
+				.load("testData/adpter/ieee_format/UCTE_2000_Summer.ieee")
 				.getAclfNet();	
 		
 		EDclfAlgorithm edclfAlgo = DclfAlgoObjectFactory.createEDclfAlgorithm(aclfNet, CacheType.SenNotCached);
@@ -101,7 +101,7 @@ public class UCTE2000Summer_EDclf_Test extends CorePluginTestSetup {
 	public void edclfVCorAlterDataTest() throws Exception {
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/UCTE_2000_Summer.ieee")
+				.load("testData/adpter/ieee_format/UCTE_2000_Summer.ieee")
 				.getAclfNet();	
 		
 		AclfBus bus = aclfNet.getBus("Bus706");

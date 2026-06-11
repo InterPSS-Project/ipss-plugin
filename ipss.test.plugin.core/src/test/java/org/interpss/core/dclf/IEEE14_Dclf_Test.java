@@ -111,7 +111,7 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 	public void aclfTestCase() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
