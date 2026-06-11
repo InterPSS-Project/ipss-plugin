@@ -1054,6 +1054,16 @@ public class OpenDSSDataParser {
 		  if(bra3Phase.getZabc() != null) {
 			  bra3Phase.setZabc(bra3Phase.getZabc().multiply(1.0/zBase));
 		  }
+		  double fromBaseKV = bra.getFromBus().getBaseVoltage()*1.0E-3;
+		  double toBaseKV = bra.getToBus().getBaseVoltage()*1.0E-3;
+		  if(bra3Phase.getFromShuntYabc() != null) {
+			  bra3Phase.setFromShuntYabc(bra3Phase.getFromShuntYabc()
+					  .multiply(fromBaseKV*fromBaseKV/mvabase));
+		  }
+		  if(bra3Phase.getToShuntYabc() != null) {
+			  bra3Phase.setToShuntYabc(bra3Phase.getToShuntYabc()
+					  .multiply(toBaseKV*toBaseKV/mvabase));
+		  }
 
 		  // convert the turn ratios
 		  double vllfactor = 1.0;
