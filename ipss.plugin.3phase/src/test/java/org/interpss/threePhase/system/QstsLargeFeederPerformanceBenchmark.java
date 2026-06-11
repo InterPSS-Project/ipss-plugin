@@ -33,7 +33,7 @@ public class QstsLargeFeederPerformanceBenchmark {
 			"testData/feeder/IEEE8500", "Master-InterPSS.dss");
 
 	@Test
-	void controlsOffRepeatedStateDailyWindow() {
+	void controlledRepeatedStateDailyWindow() {
 		int warmupSteps = Integer.getInteger("qsts.perf.warmupSteps", 24);
 		int measureSteps = Integer.getInteger("qsts.perf.steps", 240);
 		int repeats = Integer.getInteger("qsts.perf.repeats", 3);
