@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""Export DSS-Python per-step references for large-feeder QSTS comparisons.
-
-The cases and control settings intentionally match qsts_large_feeder_perf.py so
-the performance smoke setup can also produce voltage and branch-flow evidence.
-"""
+"""Export DSS-Python per-step references for large-feeder QSTS comparisons."""
 
 from __future__ import annotations
 
@@ -44,16 +40,26 @@ CASES = {
 }
 
 
-def compile_case(feeder: FeederCase, mode: str, step_size_hours: float) -> None:
+def compile_case(
+    feeder: FeederCase,
+    mode: str,
+    step_size_hours: float,
+    control_mode: str,
+    max_control_iterations: int,
+    reg_controls_enabled: bool,
+    cap_controls_enabled: bool,
+) -> None:
     dss.Basic.ClearAll()
     previous_cwd = Path.cwd()
     try:
         os.chdir(feeder.folder)
         dss.Text.Command(f'compile "{feeder.master_file}"')
-        dss.Text.Command("set controlmode=off")
-        dss.Text.Command("batchedit regcontrol..* enabled=no")
-        dss.Text.Command("batchedit capcontrol..* enabled=no")
-        dss.Text.Command("set maxcontroliter=100")
+        dss.Text.Command(f"set controlmode={control_mode}")
+        dss.Text.Command(f"set maxcontroliter={max_control_iterations}")
+        if not reg_controls_enabled:
+            dss.Text.Command("batchedit regcontrol..* enabled=no")
+        if not cap_controls_enabled:
+            dss.Text.Command("batchedit capcontrol..* enabled=no")
         dss.Text.Command(f"set mode={mode}")
         dss.Text.Command(f"set stepsize={step_size_hours}h")
         dss.Text.Command("set number=1")
@@ -132,14 +138,20 @@ def export_case(
     output_dir: Path,
     mode: str,
     step_size_hours: float,
+    control_mode: str,
+    max_control_iterations: int,
+    reg_controls_enabled: bool,
+    cap_controls_enabled: bool,
     include_voltages: bool,
     include_branch_flows: bool,
 ) -> None:
-    compile_case(feeder, mode, step_size_hours)
+    compile_case(feeder, mode, step_size_hours, control_mode, max_control_iterations,
+                 reg_controls_enabled, cap_controls_enabled)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    voltage_file = output_dir / f"{feeder.key}_qsts_dss_python_voltage_by_step.csv"
-    branch_file = output_dir / f"{feeder.key}_qsts_dss_python_branch_power_by_step.csv"
+    tag = control_tag(control_mode, reg_controls_enabled, cap_controls_enabled)
+    voltage_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_voltage_by_step.csv"
+    branch_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_branch_power_by_step.csv"
 
     voltage_rows = 0
     branch_rows = 0
@@ -193,6 +205,9 @@ def export_case(
     print(
         "DSSPY_QSTS_REFERENCE "
         f"feeder={feeder.name} steps={steps} mode={mode} stepSizeHours={step_size_hours:.12g} "
+        f"controlMode={control_mode} maxControlIterations={max_control_iterations} "
+        f"regControlsEnabled={str(reg_controls_enabled).lower()} "
+        f"capControlsEnabled={str(cap_controls_enabled).lower()} "
         f"converged={str(converged).lower()} maxIterations={max_iterations} "
         f"voltageRows={voltage_rows} branchPowerRows={branch_rows} outputDir={output_dir}",
         flush=True,
@@ -208,6 +223,10 @@ def main() -> None:
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "target" / "qsts-comparison")
     parser.add_argument("--mode", choices=["daily", "yearly", "snapshot"], default="daily")
     parser.add_argument("--step-size-hours", type=float, default=1.0)
+    parser.add_argument("--control-mode", choices=["off", "static", "time", "event"], default="static")
+    parser.add_argument("--max-control-iterations", type=int, default=20)
+    parser.add_argument("--disable-reg-controls", action="store_true")
+    parser.add_argument("--disable-cap-controls", action="store_true")
     parser.add_argument("--skip-voltages", action="store_true")
     parser.add_argument("--skip-branch-flows", action="store_true")
     args = parser.parse_args()
@@ -224,9 +243,22 @@ def main() -> None:
             args.output_dir,
             args.mode,
             args.step_size_hours,
+            args.control_mode,
+            args.max_control_iterations,
+            not args.disable_reg_controls,
+            not args.disable_cap_controls,
             include_voltages,
             include_branch_flows,
         )
+
+
+def control_tag(control_mode: str, reg_controls_enabled: bool, cap_controls_enabled: bool) -> str:
+    tag = f"controls_{control_mode.lower()}"
+    if not reg_controls_enabled:
+        tag += "_noreg"
+    if not cap_controls_enabled:
+        tag += "_nocap"
+    return tag
 
 
 if __name__ == "__main__":
