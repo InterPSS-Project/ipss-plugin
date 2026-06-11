@@ -66,6 +66,33 @@ def read_branch_powers(path: Path, source: str, zero_threshold: float) -> dict[t
     return powers
 
 
+def control_tag(path: Path) -> str | None:
+    parts = path.stem.split("_")
+    for index, part in enumerate(parts):
+        if part == "controls" and index + 1 < len(parts):
+            tag_parts = parts[index:index + 2]
+            cursor = index + 2
+            while cursor < len(parts) and parts[cursor] in {"noreg", "nocap"}:
+                tag_parts.append(parts[cursor])
+                cursor += 1
+            return "_".join(tag_parts)
+    return None
+
+
+def validate_control_tags(dss_path: Path, interpss_path: Path, required_tag: str) -> None:
+    dss_tag = control_tag(dss_path)
+    interpss_tag = control_tag(interpss_path)
+    if dss_tag != interpss_tag:
+        raise RuntimeError(
+            f"Control-tag mismatch: DSS-Python file has {dss_tag}, InterPSS file has {interpss_tag}"
+        )
+    if required_tag.lower() != "any" and dss_tag != required_tag:
+        raise RuntimeError(
+            f"Expected QSTS comparison control tag {required_tag}, found {dss_tag}. "
+            "Use --require-control-tag any only for an intentional diagnostic comparison."
+        )
+
+
 def compare(
     dss: dict[tuple, BranchPower],
     interpss: dict[tuple, BranchPower],
@@ -119,8 +146,11 @@ def main() -> int:
     parser.add_argument("--p-tolerance-kw", type=float, default=5.0)
     parser.add_argument("--q-tolerance-kvar", type=float, default=5.0)
     parser.add_argument("--zero-threshold-kw", type=float, default=1.0e-9)
+    parser.add_argument("--require-control-tag", default="controls_static")
     args = parser.parse_args()
 
+    validate_control_tags(args.dss_branch_power, args.interpss_branch_power,
+                          args.require_control_tag)
     dss = read_branch_powers(args.dss_branch_power, "dss", args.zero_threshold_kw)
     interpss = read_branch_powers(args.interpss_branch_power, "interpss", args.zero_threshold_kw)
     return compare(dss, interpss, args.p_tolerance_kw, args.q_tolerance_kvar)
