@@ -161,49 +161,29 @@ mvn -pl ipss.plugin.3phase -am test \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
-Results:
+Current controlled yearly-profile results:
 
 | Engine | Controls | Steps | Result |
 |--------|----------|-------|--------|
-| DSS-Python | static, regulators and capacitors enabled | 8760 | `0.820762 ms/step`, converged, max control iterations `9` |
-| InterPSS | static, regulators and capacitors enabled | 8760 | `0.142280 ms/step`, converged, max PF iterations `5` |
+| DSS-Python | static, regulators and capacitors enabled | 8760 | `2.167244 ms/step`, converged, max control iterations `8` |
+| InterPSS | static, regulators and capacitors enabled | 8760 | `3.228114 ms/step`, converged, max PF iterations `6` |
 
-The InterPSS profile reported `reused_powerflow_steps=8759`,
-`symbolicFactors=1`, `numericFactors=2`, `fallbackCount=0`, and
-`pf_iterations_per_step=0.000571`.
+The InterPSS profile reported `symbolicFactors=1`, `numericFactors=302`,
+`fallbackCount=0`, and `pf_iterations_per_step=3.030251`. This is the
+profile-enabled yearly path, so it does not use repeated-static-state
+power-flow reuse.
 
-The Ckt24 one-step controlled voltage comparison also passes after the
-LineGeometry charging fix:
-`commonKeys=7160`, `dssOnly=0`, `interpssOnly=11017`,
-`maxMagDelta=0.0018390143`, `maxAngleDelta=0.00395749200001`,
-`magFailures=0`, and `angleFailures=0` at `0.003 pu` and `1.0 deg`.
-Both DSS-Python and InterPSS settle `SubXFMR_Regulator` at tap position `2`.
-The controlled load-power comparison passes at `0.5 kW` / `0.5 kvar`:
-`maxPDelta=0.0115543100001`, `maxQDelta=0.045158398`, `pFailures=0`, and
-`qFailures=0`. Static branch terminal-power comparison is much tighter after
-parsing OpenDSS geometry-derived line charging but still has a small diagnostic
-Q residual at the `5 kvar` gate: `commonKeys=14205`, `dssOnly=21`,
-`interpssOnly=31`, `maxPDelta=1.8816156`, `maxQDelta=6.650653188`,
-`pFailures=0`, and `qFailures=185`. The remaining branch-Q tail is a propagated
-phase-A feeder-path offset; normalized local branch discrepancies are small,
-with the largest common local line-Q delta about `0.555 kvar`.
+The controlled two-step Ckt24 parity comparison passes for voltages, load
+powers, and branch powers. Current common-key maxima are `0.0017546525 pu`,
+`0.000756435 deg`, `0.06397092 kW`, `0.240896534 kvar`, `0.28418337 kW`, and
+`0.8739569147 kvar`, with zero voltage, load-power, and branch-power tolerance
+failures.
 
-IEEE8500 was checked with static capacitor controls enabled and regulator
-controls disabled on both sides because the checked-in IEEE8500 regulator
-controls do not settle in DSS-Python/OpenDSS under the current master-file
-defaults. DSS-Python cap-control-only converged for 8760 steps at
-`0.504579 ms/step`, with max OpenDSS iterations `8`. InterPSS converged the
-same controlled 8760-step case at `0.164846 ms/step`, with max PF iterations
-`9`, `reused_powerflow_steps=8759`, `symbolicFactors=1`, `numericFactors=1`,
-and `fallbackCount=0`.
-
-The IEEE8500 cap-control-only voltage comparison passes at `0.005 pu` and
-`1.0 deg`: `commonKeys=8531`, `dssOnly=0`, `interpssOnly=6100`,
-`maxMagDelta=0.004350571409` at `0:l3312692:A`,
-`maxAngleDelta=0.216126424` at `0:x2841634b:A`, `magFailures=0`, and
-`angleFailures=0`. At the stricter Ckt24 tolerance of `0.003 pu`, IEEE8500 has
-`1858` magnitude failures, so the remaining IEEE8500 voltage parity gap is
-small but still larger than the Ckt24 threshold.
+IEEE8500 is not yet an acceptance benchmark for controlled 8760 QSTS because
+the checked-in IEEE8500 regulator controls do not settle in DSS-Python/OpenDSS
+under the current master-file defaults. Earlier cap-control-only runs are
+diagnostic localization evidence only; large-feeder QSTS acceptance evidence
+should keep all applicable static controls enabled.
 
 ## Long-Term Direction: OpenDSS-Style Primitive Y Matrix
 
