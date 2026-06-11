@@ -182,6 +182,34 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void qstsSamplesSolvedPowerForContributedStaticConstZLoads() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus loadBus = network.getBus("load");
+		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		capacitor.setId("cap1");
+		capacitor.setCode(AclfLoadCode.CONST_Z);
+		capacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
+				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
+		loadBus.getContributeLoadList().add(capacitor);
+		CapacitorControlData control = new CapacitorControlData("capctrl1", "cap1", "", 1,
+				CapacitorControlData.ControlType.VOLTAGE, 100.0, 200.0, 1.0, 1.0,
+				false, 0.0, 0.0, 0.0, 0.0, null, null);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		powerFlow.loadVoltageScale = 1.1;
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setCapacitorControls(List.of(control))
+				.setNumberOfSteps(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(-0.0121, power(result.getStep(0).getLoadPowers(), "cap1", "A").getQ(), 1.0e-12);
+		assertEquals(-0.0363, result.getStep(0).getCapacitorStates().get(0)
+				.getTotalReactivePowerPu(), 1.0e-12);
+	}
+
+	@Test
 	void staticCapacitorControlsUseInvalidationAwareFixedPointYMatrixCache() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		Static3PBus loadBus = network.getBus("load");
@@ -409,6 +437,7 @@ public class QstsStudyTest {
 		private double tolerance = 1.0e-6;
 		private DistributionPFMethod method = DistributionPFMethod.Fixed_Point;
 		private boolean fixedPointYMatrixCacheEnabled;
+		private double loadVoltageScale = 1.0;
 
 		@Override
 		public INetwork3Phase getNetwork() {
@@ -434,9 +463,10 @@ public class QstsStudyTest {
 		public boolean powerflow() {
 			solveCount++;
 			for(IBus3Phase bus : network.getThreePhaseBusList()) {
-				bus.set3PhaseVotlages(new Complex3x1(new Complex(1.0, 0.0),
-						new Complex(-0.5, -0.8660254037844386),
-						new Complex(-0.5, 0.8660254037844386)));
+				double scale = "load".equals(bus.getId()) ? loadVoltageScale : 1.0;
+				bus.set3PhaseVotlages(new Complex3x1(new Complex(scale, 0.0),
+						new Complex(-0.5 * scale, -0.8660254037844386 * scale),
+						new Complex(-0.5 * scale, 0.8660254037844386 * scale)));
 			}
 			return solveCount != failOnSolve;
 		}
