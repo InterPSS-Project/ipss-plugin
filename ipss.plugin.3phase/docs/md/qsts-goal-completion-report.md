@@ -154,13 +154,19 @@ python3 ipss.plugin.3phase/src/test/python/export_qsts_large_feeder_reference.py
   --output-dir target/qsts-comparison
 ```
 
-The exporter uses the same checked-in feeder masters and controls-off settings
-as the large-feeder QSTS performance benchmark, then writes:
+The exporter uses the same checked-in feeder masters as the large-feeder QSTS
+performance benchmark. It now defaults to enabled static controls
+(`controlmode=static`, `maxcontroliter=20`, RegControl enabled, CapControl
+enabled), then writes control-mode-specific files such as:
 
-- `ckt24_qsts_dss_python_voltage_by_step.csv`
-- `ckt24_qsts_dss_python_branch_power_by_step.csv`
-- `ieee8500_qsts_dss_python_voltage_by_step.csv`
-- `ieee8500_qsts_dss_python_branch_power_by_step.csv`
+- `ckt24_qsts_controls_static_dss_python_voltage_by_step.csv`
+- `ckt24_qsts_controls_static_dss_python_branch_power_by_step.csv`
+- `ieee8500_qsts_controls_static_dss_python_voltage_by_step.csv`
+- `ieee8500_qsts_controls_static_dss_python_branch_power_by_step.csv`
+
+Controls-off reference files can still be generated explicitly with
+`--control-mode off --max-control-iterations 0 --disable-reg-controls
+--disable-cap-controls`.
 
 The CSV keys include case, step, hour, bus/element, terminal/conductor, voltage
 magnitude/angle, and branch terminal P/Q. These files provide the reference side
@@ -178,20 +184,22 @@ mvn -pl ipss.plugin.3phase -am test \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
-It writes `ckt24_qsts_interpss_voltage_by_step.csv` or
-`ieee8500_qsts_interpss_voltage_by_step.csv`. The InterPSS QSTS result model
-already records per-step bus voltages and device powers, so this export is
-static-network-only and does not depend on DStab. Per-step static branch-flow
-comparison still needs either a static branch-flow sampler in QSTS results or a
-dedicated diagnostic step hook. That should be implemented without reintroducing
-DStab branch APIs into the static QSTS path.
+It now defaults to `QstsControlMode.STATIC`, `maxControlIterations=20`, parser
+RegControl enabled, and CapControl enabled. It writes
+`ckt24_qsts_controls_static_interpss_voltage_by_step.csv` or
+`ieee8500_qsts_controls_static_interpss_voltage_by_step.csv`. The InterPSS QSTS
+result model already records per-step bus voltages and device powers, so this
+export is static-network-only and does not depend on DStab. Per-step static
+branch-flow comparison still needs either a static branch-flow sampler in QSTS
+results or a dedicated diagnostic step hook. That should be implemented without
+reintroducing DStab branch APIs into the static QSTS path.
 
 The generated voltage files can be compared with:
 
 ```bash
 python3 ipss.plugin.3phase/src/test/python/compare_qsts_voltage_reference.py \
-  --dss-voltage target/qsts-comparison/ckt24_qsts_dss_python_voltage_by_step.csv \
-  --interpss-voltage ipss.plugin.3phase/target/qsts-comparison/ckt24_qsts_interpss_voltage_by_step.csv \
+  --dss-voltage target/qsts-comparison/ckt24_qsts_controls_static_dss_python_voltage_by_step.csv \
+  --interpss-voltage ipss.plugin.3phase/target/qsts-comparison/ckt24_qsts_controls_static_interpss_voltage_by_step.csv \
   --magnitude-tolerance 0.003 \
   --angle-tolerance 1.0
 ```
@@ -210,6 +218,28 @@ Smoke datapoints from one-step Ckt24 and IEEE8500 DSS-Python exports:
   0.331285484 degrees at `0:g2100bk4500_n283756_sec:B`. It fails a 0.001 pu
   magnitude tolerance but passes a 0.003 pu magnitude tolerance and 1 degree
   angle tolerance.
+
+After enabling static controls by default, a one-step Ckt24 controlled smoke run
+converged on both engines but exposed a larger controlled parity gap:
+
+- DSS-Python controlled export converged with `controlMode=static`,
+  `maxControlIterations=20`, RegControl enabled, and CapControl enabled; it
+  exported 7,522 voltage rows and 16,728 branch-power rows.
+- InterPSS controlled static-QSTS export converged with
+  `QstsControlMode.STATIC`, `maxControlIterations=20`, parser RegControl
+  enabled, and CapControl enabled; it exported 18,177 voltage rows.
+- Controlled voltage comparison, excluding zero-voltage DSS nodes, found 7,160
+  common energized step/bus/phase keys. The maximum voltage magnitude mismatch
+  was 0.016962189244 pu at `0:g2101ea3600_n292539_sec_1:A`; the maximum angle
+  mismatch was 0.324720153 degrees at `0:subxfmr_lsb:B`. It fails a 0.003 pu
+  magnitude tolerance, so controlled Ckt24 parity is now a concrete follow-up
+  investigation target.
+
+The large-feeder performance benchmark paths also now default to enabled static
+controls. One-step Ckt24 smoke timings from the controlled path were:
+
+- DSS-Python measured run: 14.694250 ms/step, max iterations 9.
+- InterPSS measured run: 87.309208 ms/step, max iterations 5.
 
 ### IEEE8500 Profile/QSTS Inventory
 

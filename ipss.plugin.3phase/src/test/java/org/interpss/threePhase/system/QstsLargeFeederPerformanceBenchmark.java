@@ -3,6 +3,7 @@ package org.interpss.threePhase.system;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +38,13 @@ public class QstsLargeFeederPerformanceBenchmark {
 		int measureSteps = Integer.getInteger("qsts.perf.steps", 240);
 		int repeats = Integer.getInteger("qsts.perf.repeats", 3);
 		String caseSelector = System.getProperty("qsts.perf.case", "all");
+		QstsControlMode controlMode = QstsControlMode.from(
+				System.getProperty("qsts.perf.controlMode", "STATIC"));
+		int maxControlIterations = Integer.getInteger("qsts.perf.maxControlIterations", 20);
+		boolean regControlsEnabled = Boolean.parseBoolean(
+				System.getProperty("qsts.perf.regControlsEnabled", "true"));
+		boolean capControlsEnabled = Boolean.parseBoolean(
+				System.getProperty("qsts.perf.capControlsEnabled", "true"));
 		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
 
 		List<FeederCase> feeders = selectedFeeders(caseSelector);
@@ -44,16 +52,21 @@ public class QstsLargeFeederPerformanceBenchmark {
 				+ ", warmupSteps=" + warmupSteps
 				+ ", measureSteps=" + measureSteps
 				+ ", repeats=" + repeats
-				+ ", controls=off"
+				+ ", controlMode=" + controlMode
+				+ ", maxControlIterations=" + maxControlIterations
+				+ ", regControlsEnabled=" + regControlsEnabled
+				+ ", capControlsEnabled=" + capControlsEnabled
 				+ ", tolerance=1.0e-4");
 
 		for(FeederCase feeder : feeders) {
-			RunSummary warmup = runInterpssQsts(feeder, warmupSteps, "warmup", 0);
+			RunSummary warmup = runInterpssQsts(feeder, warmupSteps, "warmup", 0,
+					controlMode, maxControlIterations, regControlsEnabled, capControlsEnabled);
 			assertTrue(warmup.converged(), "Warm-up failed for " + feeder.name());
 
 			List<RunSummary> measured = new ArrayList<>();
 			for(int run = 1; run <= repeats; run++) {
-				RunSummary summary = runInterpssQsts(feeder, measureSteps, "measured", run);
+				RunSummary summary = runInterpssQsts(feeder, measureSteps, "measured", run,
+						controlMode, maxControlIterations, regControlsEnabled, capControlsEnabled);
 				assertTrue(summary.converged(), "Measured run " + run + " failed for " + feeder.name());
 				measured.add(summary);
 			}
@@ -61,9 +74,11 @@ public class QstsLargeFeederPerformanceBenchmark {
 		}
 	}
 
-	private static RunSummary runInterpssQsts(FeederCase feeder, int steps, String phase, int run) {
+	private static RunSummary runInterpssQsts(FeederCase feeder, int steps, String phase, int run,
+			QstsControlMode controlMode, int maxControlIterations, boolean regControlsEnabled,
+			boolean capControlsEnabled) {
 		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
-		parser.setRegControlEnabled(false);
+		parser.setRegControlEnabled(regControlsEnabled);
 		assertTrue(parser.parseFeederData(feeder.folder(), feeder.masterFile()),
 				"Failed to parse " + feeder.name());
 		assertTrue(parser.calcVoltageBases(), "Failed to calculate voltage bases for " + feeder.name());
@@ -73,18 +88,21 @@ public class QstsLargeFeederPerformanceBenchmark {
 		DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
 				.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
 		long startNanos = System.nanoTime();
-		QstsResult result = OpenDSSQstsStudyFactory.from(parser)
+		var study = OpenDSSQstsStudyFactory.from(parser)
 				.setPowerFlowAlgorithm(algorithm)
 				.setMode(QstsMode.DAILY)
 				.setNumberOfSteps(steps)
 				.setStepSizeHours(1.0)
-				.setControlMode(QstsControlMode.OFF)
-				.setMaxControlIterations(0)
+				.setControlMode(controlMode)
+				.setMaxControlIterations(maxControlIterations)
 				.setPostSolveOutputMode(DistributionPostSolveOutputMode.VOLTAGE_ONLY)
 				.setResultSamplingMode(QstsResultSamplingMode.NONE)
 				.setMaxPowerFlowIterations(1000)
-				.setTolerance(1.0e-4)
-				.run();
+				.setTolerance(1.0e-4);
+		if(!capControlsEnabled) {
+			study.setCapacitorControls(Collections.emptyList());
+		}
+		QstsResult result = study.run();
 		long elapsedNanos = System.nanoTime() - startNanos;
 
 		RunSummary summary = RunSummary.from(feeder, phase, run, steps, elapsedNanos,
