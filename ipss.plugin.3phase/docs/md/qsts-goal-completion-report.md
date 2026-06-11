@@ -378,6 +378,86 @@ controls. One-step Ckt24 smoke timings from the controlled path were:
 - DSS-Python measured run: 14.694250 ms/step, max iterations 9.
 - InterPSS measured run: 87.309208 ms/step, max iterations 5.
 
+### Controlled Ckt24 Refresh After Line-Geometry Matrix Update
+
+A later 2026-06-11 Ckt24 refresh kept controls enabled on both engines:
+`controlMode=static` / `QstsControlMode.STATIC`,
+`maxControlIterations=100`, RegControl enabled, and CapControl enabled.
+
+Focused static parser regression:
+
+```bash
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest="OpenDssParserPowerFlowComparisonTest#ckt24LineGeometryUsesOpenDssInternalResistance+ckt24OverheadLineGeometryAddsOpenDssCapacitanceShunt+ckt24TwoPhaseLineGeometryRemapsCapacitanceShuntToBusPhases" \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Result: `BUILD SUCCESS`, `Tests run: 3, Failures: 0, Errors: 0`.
+
+The new line-geometry regression checks the Ckt24
+`OH3P_FR8_N56_OH_477_AAC_OH_477_AAC_ABCN` OpenDSS geometry against the
+DSS-Python per-mile matrix for branch `05410_339569OH`. This verifies the static
+parser path now uses OpenDSS-compatible conductor internal resistance and
+Carson constant values for that geometry class.
+
+Controlled one-step Ckt24 export:
+
+```bash
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest=QstsLargeFeederComparisonExport \
+  -Dqsts.compare.case=ckt24 \
+  -Dqsts.compare.steps=1 \
+  -Dqsts.compare.outputDir=target/qsts-ckt24-open-dss-geometry \
+  -Dqsts.compare.controlMode=STATIC \
+  -Dqsts.compare.maxControlIterations=100 \
+  -Dqsts.compare.tolerance=1.0e-6 \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Result: `BUILD SUCCESS`; InterPSS converged and exported 18,177 voltage rows,
+34,458 branch-power rows, 11,682 load-power rows, one regulator-tap row, and no
+capacitor-control state rows for Ckt24's fixed enabled capacitors.
+
+Latest controlled comparisons against the DSS-Python reference:
+
+```text
+QSTS_VOLTAGE_COMPARE commonKeys=7160 dssOnly=0 interpssOnly=11017
+maxMagDelta=0.00169047694 magFailures=0
+maxAngleDelta=0.001495792 angleFailures=0
+
+QSTS_LOAD_POWER_COMPARE commonKeys=4222 dssOnly=0 interpssOnly=184
+dssPTotalKw=46857.1168897 interpssPTotalKw=46857.0312538
+dssQTotalKvar=7947.6569535 interpssQTotalKvar=7947.33875155
+maxPDelta=0.0115543100001 pFailures=0
+maxQDelta=0.045158398 qFailures=0
+
+QSTS_BRANCH_POWER_COMPARE commonKeys=14201 dssOnly=25 interpssOnly=25
+maxPDelta=0.7234749 pFailures=0
+maxQDelta=7.286042121 qFailures=233
+```
+
+The remaining branch-flow mismatch is reactive-only and concentrated at the
+root trunk, with the worst key at `line.05410_339569oh` terminal 1 phase A. The
+line's own reactive loss matches closely, so this is now an accumulated
+reactive-accounting/localization issue rather than evidence that controls were
+disabled or that the line geometry matrix is still grossly wrong.
+
+Controlled 8760 Ckt24 performance refresh:
+
+```text
+DSSPY_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+converged=true elapsedMillis=6434.582 msPerStep=0.734541 maxIterations=9
+
+INTERPSS_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+actualSteps=8760 converged=true elapsedMillis=1107.620 msPerStep=0.126441
+maxIterations=5 symbolicFactors=1 numericFactors=2 valueUpdates=0 fallbackCount=0
+```
+
+On this controlled 8760 Ckt24 run, InterPSS used about 17.2% of the DSS-Python
+time per step, or roughly 5.8x DSS-Python throughput. The performance target is
+therefore satisfied for this controlled Ckt24 run; the remaining work is the
+small reactive branch-flow parity residual.
+
 ### IEEE8500 Profile/QSTS Inventory
 
 The checked-in IEEE8500 `Master-InterPSS.dss` and `Master.dss` files are
