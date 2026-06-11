@@ -212,25 +212,6 @@ public class OpenDSSRegulatorParser {
 		return true;
 	}
 
-	public void applyFixedRegControlRatios() {
-		for (OpenDssRegControlData control : regControls) {
-			AclfBranch transformer = findTransformer(control.transformerName);
-			if (transformer == null) {
-				continue;
-			}
-			double controlledWindingVoltage = control.vreg * control.ptratio;
-			if (((IBranch3Phase) transformer).getPhaseCode() == PhaseCode.ABC) {
-				controlledWindingVoltage *= Math.sqrt(3.0);
-			}
-			if (control.winding == 1) {
-				transformer.setFromTurnRatio(controlledWindingVoltage);
-			}
-			else {
-				transformer.setToTurnRatio(controlledWindingVoltage);
-			}
-		}
-	}
-
 	public int getRegControlCount() {
 		return this.regControls.size();
 	}
