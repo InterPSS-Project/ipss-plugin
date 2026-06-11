@@ -348,7 +348,7 @@ public class QstsStudy {
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Map<Object, Boolean> sampled = new IdentityHashMap<>();
 			for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
-				addLoadSample(samples, context, load);
+				addLoadSample(samples, context, load, bus);
 				sampled.put(load, Boolean.TRUE);
 			}
 			if(bus instanceof BaseAclfBus) {
@@ -357,7 +357,7 @@ public class QstsStudy {
 							|| !(loadObject instanceof AclfLoad3Phase)) {
 						continue;
 					}
-					addLoadSample(samples, context, (AclfLoad3Phase) loadObject);
+					addLoadSample(samples, context, (AclfLoad3Phase) loadObject, bus);
 				}
 			}
 		}
@@ -365,8 +365,8 @@ public class QstsStudy {
 	}
 
 	private static void addLoadSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
-			AclfLoad3Phase load) {
-		Complex3x1 power = load.getInit3PhaseLoad();
+			AclfLoad3Phase load, IBus3Phase bus) {
+		Complex3x1 power = QstsLoadPowerSampler.solvedPower(load, bus);
 		addPower(samples, context, "load", load.getId(), "A", power == null ? null : power.a_0);
 		addPower(samples, context, "load", load.getId(), "B", power == null ? null : power.b_1);
 		addPower(samples, context, "load", load.getId(), "C", power == null ? null : power.c_2);
