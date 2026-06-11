@@ -1,6 +1,7 @@
 package org.interpss.plugin.optadj.result;
 
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.interpss.numeric.datatype.LimitType;
 /** 
@@ -29,8 +30,8 @@ public class OptAdjResultContainer extends SsaResultContainer {
 		this(100.0	);
 		this.setBaseLoadingThreshold(ssaResult.getBaseLoadingThreshold());
 		this.setCaLoadingThreshold(ssaResult.getCaLoadingThreshold());
-		this.setBaseOverLimitInfo(ssaResult.getBaseOverLimitInfo());
-		this.setCaOverLimitInfo(ssaResult.getCaOverLimitInfo());
+		this.baseOverLimitInfo = new CopyOnWriteArrayList<SsaBranchOverLimitInfo>(ssaResult.getBaseOverLimitInfo());
+		this.caOverLimitInfo = new CopyOnWriteArrayList<SsaBranchOverLimitInfo>(ssaResult.getCaOverLimitInfo());
 	}
 
 	public double getOptAdjThreshold() {
