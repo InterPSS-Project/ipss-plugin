@@ -80,6 +80,10 @@ public class QstsStorageBaseState {
 		return storedKwh;
 	}
 
+	public double getKwhRated() {
+		return kwhRated;
+	}
+
 	private double currentKvar() {
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
 		return total(power).getImaginary() * baseKva;
