@@ -397,6 +397,28 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"Ckt24 Vsource positive/zero sequence impedance should map to phase mutual X");
 	}
 
+	@Test
+	public void ckt24SubstationTransformerParsesSpacedPercentRsContinuation() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", true);
+
+		Static3PBranch transformer = findStaticBranchByName(parser.getStaticNetwork(), "subxfmr");
+		assertNotNull(transformer, "Missing Ckt24 substation transformer");
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double fromVbase = transformer.getFromBus().getBaseVoltage();
+		double toVbase = transformer.getToBus().getBaseVoltage();
+
+		Complex yffAa = physicalY(transformer.getYffabc().aa, baseVa, fromVbase, fromVbase);
+		Complex yftAa = physicalY(transformer.getYftabc().aa, baseVa, fromVbase, toVbase);
+		Complex yttAa = physicalY(transformer.getYttabc().aa, baseVa, toVbase, toVbase);
+		assertEquals(0.0001203896, yffAa.getReal(), 1.0e-10);
+		assertEquals(-0.00533225602, yffAa.getImaginary(), 1.0e-10);
+		assertEquals(-0.000695069679, yftAa.getReal(), 1.0e-10);
+		assertEquals(0.0307857945, yftAa.getImaginary(), 1.0e-10);
+		assertEquals(0.00802597332, yttAa.getReal(), 1.0e-10);
+		assertEquals(-0.355483735, yttAa.getImaginary(), 1.0e-10);
+	}
+
 	private static void printYMatrixComponentAudit(String label, DStabNetwork3Phase distNet) {
 		OpenDssDataQaUtils.YMatrixAudit audit = OpenDssDataQaUtils.yMatrixAudit(distNet);
 		System.out.println(audit.summary(label));
@@ -2460,8 +2482,16 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	private static void printPhysicalYBlock(String label, Complex3x3 ypu, double baseVa,
 			double currentSideVbaseLl, double voltageSideVbaseLl) {
-		double scale = baseVa / (currentSideVbaseLl * voltageSideVbaseLl);
-		printMatrix(label, ypu.multiply(scale));
+		printMatrix(label, ypu.multiply(physicalYScale(baseVa, currentSideVbaseLl, voltageSideVbaseLl)));
+	}
+
+	private static Complex physicalY(Complex ypu, double baseVa, double currentSideVbaseLl,
+			double voltageSideVbaseLl) {
+		return ypu.multiply(physicalYScale(baseVa, currentSideVbaseLl, voltageSideVbaseLl));
+	}
+
+	private static double physicalYScale(double baseVa, double currentSideVbaseLl, double voltageSideVbaseLl) {
+		return baseVa / (currentSideVbaseLl * voltageSideVbaseLl);
 	}
 
 	private static void printSourcePathBranchCurrents(DStabNetwork3Phase distNet, String targetBusId,
