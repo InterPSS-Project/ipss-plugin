@@ -228,21 +228,27 @@ Smoke datapoints from one-step Ckt24 and IEEE8500 DSS-Python exports:
 - IEEE8500 DSS-Python one-step export converged with 8,531 voltage rows and
   19,446 branch-power rows.
 - Ckt24 InterPSS one-step static-QSTS voltage export converged with 18,177
-  voltage rows and 34,458 branch-power rows.
+  voltage rows, 34,458 branch-power rows, and 11,682 load-power rows.
 - Ckt24 voltage comparison, excluding zero-voltage DSS nodes, found 7,160
-  common energized step/bus/phase keys. After the allocated-load and
-  transformer-series-resistance fixes, the current controlled one-step result is
-  `maxMagDelta=0.008753864811` at
-  `0:g2100nj7400_n300463_sec_1:A`; angle passes with
-  `maxAngleDelta=0.9410928308`.
+  common energized step/bus/phase keys. After the non-unity `xfkVA`
+  allocation-factor fix, the current controlled one-step result passes at
+  `0.003 pu` and `1.0 deg`: `maxMagDelta=0.00203415895` at `0:n283892:C`,
+  `maxAngleDelta=0.0547624774`.
+- Ckt24 load-power comparison now exports physical kW/kvar on the one-phase
+  load base. Current controlled one-step result: `commonKeys=4222`,
+  `dssOnly=0`, `interpssOnly=184`, `dssPTotalKw=46857.1168897`,
+  `interpssPTotalKw=46857.0312538`, `dssQTotalKvar=7947.6569535`,
+  `interpssQTotalKvar=7947.33875155`, `maxPDelta=0.01155431`, and
+  `maxQDelta=0.045158398`, with no `5 kW` / `5 kvar` failures on common keys.
 - Ckt24 branch-power comparison now runs with normalized OpenDSS `NodeOrder`
-  phase labels. Current controlled one-step result: `commonKeys=14102`,
-  `dssOnly=124`, `interpssOnly=21`, `maxPDelta=1007.9344431` at
-  `transformer.subxfmr` terminal 1 phase C, `maxQDelta=592.36789446` at
-  `transformer.subxfmr` terminal 1 phase A, `pFailures=3531`, and
-  `qFailures=2282` at `5 kW` / `5 kvar` tolerance. The load allocation fix
-  brought `line.other_feeders` close to DSS-Python; the remaining controlled
-  mismatch is concentrated around `Transformer.SubXFMR` and its regulator tap.
+  phase labels. Current controlled one-step result: `commonKeys=14106`,
+  `dssOnly=120`, `interpssOnly=20`, `maxPDelta=82.3257921` at
+  `transformer.subxfmr` terminal 1 phase B, `maxQDelta=134.09627296` at
+  `transformer.subxfmr` terminal 1 phase C, `pFailures=770`, and
+  `qFailures=1166` at `5 kW` / `5 kvar` tolerance. The large load-allocation
+  gap is closed; the remaining branch-flow parity target is now much smaller
+  and should be investigated through transformer no-load/magnetizing admittance,
+  capacitor/reactive-power accounting, and branch key coverage.
 
 ### Controlled 8760 Large-Feeder Update
 
@@ -255,10 +261,10 @@ Ckt24 static controls, regulators and capacitors enabled:
 - InterPSS 8760-step run: converged, `0.142280 ms/step`, max PF iterations `5`,
   `reused_powerflow_steps=8759`, `symbolicFactors=1`, `numericFactors=2`,
   `fallbackCount=0`.
-- Earlier one-step voltage evidence passed at `0.003 pu` and `1.0 deg`, but the
-  current controlled comparison after allocated-load and transformer-loss fixes
-  exposes the remaining `SubXFMR`/regulator mismatch described below. Treat the
-  latest controlled export and comparison files as the active parity evidence.
+- Earlier one-step voltage evidence regressed while load allocation was still
+  under-modeled. After matching OpenDSS non-unity `xfkVA` allocation-factor
+  behavior, the latest controlled one-step voltage comparison passes the current
+  Ckt24 tolerance. Branch-flow parity remains open.
 
 IEEE8500 all-regulator controls are not a valid 8760 reference case yet because
 DSS-Python/OpenDSS does not settle the regulator controls under the checked-in
@@ -302,27 +308,31 @@ Fixes made for the IEEE8500 controlled run:
   to reuse the first solved state.
 
 After enabling static controls by default, a one-step Ckt24 controlled smoke run
-converged on both engines. The latest comparison identifies `SubXFMR`/regulator
-voltage-drop behavior as the concrete follow-up target:
+converged on both engines. The latest comparison closes the load-allocation and
+voltage residuals, while branch-flow parity remains the concrete follow-up
+target:
 
 - DSS-Python controlled export converged with `controlMode=static`,
   `maxControlIterations=20`, RegControl enabled, and CapControl enabled; it
-  exported 7,522 voltage rows and 16,728 branch-power rows.
+  exported 7,522 voltage rows, 16,728 branch-power rows, and 4,397 load-power
+  rows.
 - InterPSS controlled static-QSTS export converged with
   `QstsControlMode.STATIC`, `maxControlIterations=20`, parser RegControl
-  enabled, and CapControl enabled; it exported 18,177 voltage rows and 34,458
-  branch-power rows.
+  enabled, and CapControl enabled; it exported 18,177 voltage rows, 34,458
+  branch-power rows, and 11,682 load-power rows.
 - Controlled voltage comparison, excluding zero-voltage DSS nodes, found 7,160
   common energized step/bus/phase keys. The maximum voltage magnitude mismatch
-  was `0.008753864811` pu at `0:g2100nj7400_n300463_sec_1:A`; the maximum
-  angle mismatch was `0.9410928308` degrees at the same key. It passes the
-  `1.0 deg` angle tolerance but fails the `0.003 pu` magnitude tolerance.
-- Controlled branch-flow comparison found `14102` common branch terminal/phase
+  was `0.00203415895` pu at `0:n283892:C`; the maximum angle mismatch was
+  `0.0547624774` degrees. It passes the `0.003 pu` magnitude tolerance and the
+  `1.0 deg` angle tolerance.
+- Controlled load-power comparison found `4222` common load/phase keys and no
+  `5 kW` / `5 kvar` failures. Common-key totals are within `0.086 kW` and
+  `0.319 kvar` of DSS-Python.
+- Controlled branch-flow comparison found `14106` common branch terminal/phase
   keys. It currently fails a `5 kW` / `5 kvar` tolerance with worst active-power
-  mismatch `1007.9344431 kW` at `transformer.subxfmr` terminal 1 phase C and
-  worst reactive-power mismatch `592.36789446 kvar` at `transformer.subxfmr`
-  terminal 1 phase A. `Other_Feeders` now matches closely after aligning
-  OpenDSS `xfkVA` allocation.
+  mismatch `82.3257921 kW` at `transformer.subxfmr` terminal 1 phase B and
+  worst reactive-power mismatch `134.09627296 kvar` at `transformer.subxfmr`
+  terminal 1 phase C.
 
 The large-feeder performance benchmark paths also now default to enabled static
 controls. One-step Ckt24 smoke timings from the controlled path were:
