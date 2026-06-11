@@ -204,88 +204,8 @@ public class OpenDSSLineParser {
 			// no change is needed
 		}
 		else if(phaseNum==2){
-			if(fromBusPhases.equals("1.2")){
-				//no change is needed
-			}
-			else if (fromBusPhases.equals("1.3")){
-				//no change is needed
-				zabc.ac = zabc.ab;
-				zabc.ab = new Complex(0.0);
-
-				zabc.ca = zabc.ba;
-				zabc.ba = new Complex(0.0);
-
-				zabc.cc = zabc.bb;
-				zabc.bb = new Complex(0.0);
-			}
-			else if (fromBusPhases.equals("2.3")){
-
-				zabc.cc = zabc.bb;
-
-				zabc.bb = zabc.aa;
-				zabc.aa = new Complex(0.0);
-
-				zabc.bc = zabc.ab;
-				zabc.ab = new Complex(0.0);
-
-				zabc.cb = zabc.ba;
-				zabc.ba = new Complex(0.0);
-
-			}
-			else if (fromBusPhases.equals("2.1")){
-				Complex z11 = zabc.aa;
-				Complex z12 = zabc.ab;
-				Complex z21 = zabc.ba;
-				Complex z22 = zabc.bb;
-
-				zabc.aa = z22;
-				zabc.ab = z21;
-				zabc.ba = z12;
-				zabc.bb = z11;
-
-				zabc.ac = new Complex(0.0);
-				zabc.ca = new Complex(0.0);
-				zabc.bc = new Complex(0.0);
-				zabc.cb = new Complex(0.0);
-				zabc.cc = new Complex(0.0);
-			}
-			else if (fromBusPhases.equals("3.1")){
-				Complex z11 = zabc.aa;
-				Complex z12 = zabc.ab;
-				Complex z21 = zabc.ba;
-				Complex z22 = zabc.bb;
-
-				zabc.aa = z22;
-				zabc.ac = z21;
-				zabc.ca = z12;
-				zabc.cc = z11;
-
-				zabc.ab = new Complex(0.0);
-				zabc.ba = new Complex(0.0);
-				zabc.bb = new Complex(0.0);
-				zabc.bc = new Complex(0.0);
-				zabc.cb = new Complex(0.0);
-			}
-			else if (fromBusPhases.equals("3.2")){
-				Complex z11 = zabc.aa;
-				Complex z12 = zabc.ab;
-				Complex z21 = zabc.ba;
-				Complex z22 = zabc.bb;
-
-				zabc.bb = z22;
-				zabc.bc = z21;
-				zabc.cb = z12;
-				zabc.cc = z11;
-
-				zabc.aa = new Complex(0.0);
-				zabc.ab = new Complex(0.0);
-				zabc.ba = new Complex(0.0);
-				zabc.ac = new Complex(0.0);
-				zabc.ca = new Complex(0.0);
-			}
-			else{
-				throw new Error("phase arrangement not support yet : "+fromBusPhases);
-			}
+			zabc = twoPhaseMatrix(zabc, fromBusPhases);
+			yshuntabc = twoPhaseMatrix(yshuntabc, fromBusPhases);
 		}
 		else if(phaseNum==1){
 			if(config != null && config.isKronReductionEnabled() && config.getNeutralConductor() > 0
@@ -468,6 +388,86 @@ public class OpenDSSLineParser {
 		return matrix;
 	}
 
+	private static Complex3x3 twoPhaseMatrix(Complex3x3 source, String busPhases) {
+		String[] phases = busPhases.split("\\.");
+		if(phases.length != 2) {
+			throw new Error("phase arrangement not support yet : " + busPhases);
+		}
+		Complex3x3 matrix = new Complex3x3();
+		for(int row = 0; row < phases.length; row++) {
+			int targetRow = Integer.valueOf(phases[row]) - 1;
+			for(int col = 0; col < phases.length; col++) {
+				int targetCol = Integer.valueOf(phases[col]) - 1;
+				setMatrixValue(matrix, targetRow, targetCol, matrixValue(source, row, col));
+			}
+		}
+		return matrix;
+	}
+
+	private static Complex matrixValue(Complex3x3 matrix, int row, int col) {
+		if(row == 0 && col == 0) {
+			return matrix.aa;
+		}
+		if(row == 0 && col == 1) {
+			return matrix.ab;
+		}
+		if(row == 0 && col == 2) {
+			return matrix.ac;
+		}
+		if(row == 1 && col == 0) {
+			return matrix.ba;
+		}
+		if(row == 1 && col == 1) {
+			return matrix.bb;
+		}
+		if(row == 1 && col == 2) {
+			return matrix.bc;
+		}
+		if(row == 2 && col == 0) {
+			return matrix.ca;
+		}
+		if(row == 2 && col == 1) {
+			return matrix.cb;
+		}
+		if(row == 2 && col == 2) {
+			return matrix.cc;
+		}
+		throw new Error("phase index not supported: row=" + row + ", col=" + col);
+	}
+
+	private static void setMatrixValue(Complex3x3 matrix, int row, int col, Complex value) {
+		if(row == 0 && col == 0) {
+			matrix.aa = value;
+		}
+		else if(row == 0 && col == 1) {
+			matrix.ab = value;
+		}
+		else if(row == 0 && col == 2) {
+			matrix.ac = value;
+		}
+		else if(row == 1 && col == 0) {
+			matrix.ba = value;
+		}
+		else if(row == 1 && col == 1) {
+			matrix.bb = value;
+		}
+		else if(row == 1 && col == 2) {
+			matrix.bc = value;
+		}
+		else if(row == 2 && col == 0) {
+			matrix.ca = value;
+		}
+		else if(row == 2 && col == 1) {
+			matrix.cb = value;
+		}
+		else if(row == 2 && col == 2) {
+			matrix.cc = value;
+		}
+		else {
+			throw new Error("phase index not supported: row=" + row + ", col=" + col);
+		}
+	}
+
 	private static Complex3x3 singlePhaseServiceLoopMatrix(Complex3x3 source, int neutralConductor,
 			int kronReductionCount, String busPhase) {
 		Complex[][] reduced = toArray(source, 3);
@@ -524,19 +524,6 @@ public class OpenDSSLineParser {
 			}
 		}
 		return values;
-	}
-
-	private static Complex matrixValue(Complex3x3 matrix, int row, int column) {
-		if(row == 0 && column == 0) return matrix.aa;
-		if(row == 0 && column == 1) return matrix.ab;
-		if(row == 0 && column == 2) return matrix.ac;
-		if(row == 1 && column == 0) return matrix.ba;
-		if(row == 1 && column == 1) return matrix.bb;
-		if(row == 1 && column == 2) return matrix.bc;
-		if(row == 2 && column == 0) return matrix.ca;
-		if(row == 2 && column == 1) return matrix.cb;
-		if(row == 2 && column == 2) return matrix.cc;
-		throw new Error("matrix index out of range");
 	}
 
 	private static Complex3x3 multiPhaseDiagonalFromSinglePhase(Complex phaseValue, String busPhases) {
