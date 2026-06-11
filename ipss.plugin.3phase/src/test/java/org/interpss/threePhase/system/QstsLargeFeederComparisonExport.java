@@ -42,6 +42,7 @@ public class QstsLargeFeederComparisonExport {
 		QstsControlMode controlMode = QstsControlMode.from(
 				System.getProperty("qsts.compare.controlMode", "STATIC"));
 		int maxControlIterations = Integer.getInteger("qsts.compare.maxControlIterations", 20);
+		double tolerance = Double.parseDouble(System.getProperty("qsts.compare.tolerance", "1.0e-4"));
 		boolean regControlsEnabled = Boolean.parseBoolean(
 				System.getProperty("qsts.compare.regControlsEnabled", "true"));
 		boolean capControlsEnabled = Boolean.parseBoolean(
@@ -56,7 +57,7 @@ public class QstsLargeFeederComparisonExport {
 
 		for(FeederCase feeder : selectedFeeders(caseSelector)) {
 			QstsExportResult export = runQsts(feeder, steps, controlMode, maxControlIterations,
-					regControlsEnabled, capControlsEnabled);
+					tolerance, regControlsEnabled, capControlsEnabled);
 			QstsResult result = export.result();
 			Path output = outputDir.resolve(feeder.key()
 					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
@@ -94,7 +95,8 @@ public class QstsLargeFeederComparisonExport {
 	}
 
 	private static QstsExportResult runQsts(FeederCase feeder, int steps, QstsControlMode controlMode,
-			int maxControlIterations, boolean regControlsEnabled, boolean capControlsEnabled) {
+			int maxControlIterations, double tolerance, boolean regControlsEnabled,
+			boolean capControlsEnabled) {
 		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.setRegControlEnabled(regControlsEnabled);
 		assertTrue(parser.parseFeederData(feeder.folder(), feeder.masterFile()),
@@ -117,7 +119,7 @@ public class QstsLargeFeederComparisonExport {
 				.setPostSolveOutputMode(DistributionPostSolveOutputMode.VOLTAGE_ONLY)
 				.setResultSamplingMode(QstsResultSamplingMode.FULL)
 				.setMaxPowerFlowIterations(1000)
-				.setTolerance(1.0e-4);
+				.setTolerance(tolerance);
 		if(!capControlsEnabled) {
 			study.setCapacitorControls(Collections.emptyList());
 		}
