@@ -79,17 +79,23 @@ public class QstsLargeFeederComparisonExport {
 					+ "_interpss_regulator_taps_by_step.csv");
 			Files.writeString(regulatorOutput, exportRegulatorTaps(feeder, result,
 					export.regulatorControls()), StandardCharsets.UTF_8);
+			Path capacitorOutput = outputDir.resolve(feeder.key()
+					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
+					+ "_interpss_capacitor_states_by_step.csv");
+			Files.writeString(capacitorOutput, new QstsCsvExporter().exportCapacitorStates(result),
+					StandardCharsets.UTF_8);
 			System.out.println(String.format(Locale.US,
 					"INTERPSS_QSTS_REFERENCE feeder=%s steps=%d controlMode=%s maxControlIterations=%d "
 							+ "regControlsEnabled=%s capControlsEnabled=%s converged=%s voltageRows=%d "
-							+ "branchPowerRows=%d loadPowerRows=%d regulatorTapRows=%d output=%s branchOutput=%s "
-							+ "loadOutput=%s regulatorOutput=%s",
+							+ "branchPowerRows=%d loadPowerRows=%d regulatorTapRows=%d capacitorStateRows=%d "
+							+ "output=%s branchOutput=%s loadOutput=%s regulatorOutput=%s capacitorOutput=%s",
 					feeder.name(), steps, controlMode, maxControlIterations,
 					regControlsEnabled, capControlsEnabled, result.isConverged(),
 					result.getBusVoltages().size(), result.getBranchPowers().size(),
 					result.getLoadPowers().size(),
 					result.getStepResults().size() * export.regulatorControls().size(),
-					output, branchOutput, loadOutput, regulatorOutput));
+					result.getCapacitorStates().size(),
+					output, branchOutput, loadOutput, regulatorOutput, capacitorOutput));
 			assertTrue(result.isConverged(), "QSTS export did not converge for " + feeder.name());
 		}
 	}

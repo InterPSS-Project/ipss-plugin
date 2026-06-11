@@ -8,6 +8,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.threePhase.qsts.control.QstsControlAction;
 import org.interpss.threePhase.qsts.control.QstsControlQueue;
+import org.interpss.threePhase.qsts.QstsLoadPowerSampler;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData.ControlType;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData.PhaseSelection;
 
@@ -62,7 +63,8 @@ public class CapacitorBankControl {
 	public Complex3x1 capacitorPower(INetwork3Phase network, String capacitorId) {
 		BaseAclfNetwork<?, ?> aclfNetwork = aclfNetwork(network);
 		AclfLoad3Phase capacitor = findCapacitorLoad(aclfNetwork, capacitorId);
-		return capacitor == null ? zero() : copy(capacitor.getInit3PhaseLoad());
+		BaseAclfBus<?, ?> bus = capacitor == null ? null : parentBus(aclfNetwork, capacitor);
+		return bus instanceof IBus3Phase ? QstsLoadPowerSampler.solvedPower(capacitor, (IBus3Phase) bus) : zero();
 	}
 
 	public int scheduleDelayed(INetwork3Phase network, List<CapacitorControlData> controls,
