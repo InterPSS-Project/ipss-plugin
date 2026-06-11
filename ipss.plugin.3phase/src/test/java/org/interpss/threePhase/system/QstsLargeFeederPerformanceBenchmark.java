@@ -40,6 +40,9 @@ public class QstsLargeFeederPerformanceBenchmark {
 		String caseSelector = System.getProperty("qsts.perf.case", "all");
 		QstsControlMode controlMode = QstsControlMode.from(
 				System.getProperty("qsts.perf.controlMode", "STATIC"));
+		QstsMode qstsMode = QstsMode.from(System.getProperty("qsts.perf.mode", "DAILY"));
+		double stepSizeHours = Double.parseDouble(System.getProperty("qsts.perf.stepSizeHours", "1.0"));
+		double tolerance = Double.parseDouble(System.getProperty("qsts.perf.tolerance", "1.0e-4"));
 		int maxControlIterations = Integer.getInteger("qsts.perf.maxControlIterations", 20);
 		boolean regControlsEnabled = Boolean.parseBoolean(
 				System.getProperty("qsts.perf.regControlsEnabled", "true"));
@@ -56,21 +59,26 @@ public class QstsLargeFeederPerformanceBenchmark {
 				+ ", warmupSteps=" + warmupSteps
 				+ ", measureSteps=" + measureSteps
 				+ ", repeats=" + repeats
+				+ ", mode=" + qstsMode
+				+ ", stepSizeHours=" + stepSizeHours
 				+ ", controlMode=" + controlMode
 				+ ", maxControlIterations=" + maxControlIterations
 				+ ", regControlsEnabled=" + regControlsEnabled
 				+ ", capControlsEnabled=" + capControlsEnabled
-				+ ", tolerance=1.0e-4");
+				+ ", tolerance=" + tolerance);
 
 		for(FeederCase feeder : feeders) {
+			feeder = withMasterOverride(feeder, System.getProperty("qsts.perf.masterFile"));
 			RunSummary warmup = runInterpssQsts(feeder, warmupSteps, "warmup", 0,
-					controlMode, maxControlIterations, regControlsEnabled, capControlsEnabled);
+					qstsMode, stepSizeHours, controlMode, maxControlIterations, tolerance,
+					regControlsEnabled, capControlsEnabled);
 			assertTrue(warmup.converged(), "Warm-up failed for " + feeder.name());
 
 			List<RunSummary> measured = new ArrayList<>();
 			for(int run = 1; run <= repeats; run++) {
 				RunSummary summary = runInterpssQsts(feeder, measureSteps, "measured", run,
-						controlMode, maxControlIterations, regControlsEnabled, capControlsEnabled);
+						qstsMode, stepSizeHours, controlMode, maxControlIterations, tolerance,
+						regControlsEnabled, capControlsEnabled);
 				assertTrue(summary.converged(), "Measured run " + run + " failed for " + feeder.name());
 				measured.add(summary);
 			}
@@ -79,7 +87,8 @@ public class QstsLargeFeederPerformanceBenchmark {
 	}
 
 	private static RunSummary runInterpssQsts(FeederCase feeder, int steps, String phase, int run,
-			QstsControlMode controlMode, int maxControlIterations, boolean regControlsEnabled,
+			QstsMode qstsMode, double stepSizeHours, QstsControlMode controlMode,
+			int maxControlIterations, double tolerance, boolean regControlsEnabled,
 			boolean capControlsEnabled) {
 		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.setRegControlEnabled(regControlsEnabled);
@@ -94,15 +103,15 @@ public class QstsLargeFeederPerformanceBenchmark {
 		long startNanos = System.nanoTime();
 		var study = OpenDSSQstsStudyFactory.from(parser)
 				.setPowerFlowAlgorithm(algorithm)
-				.setMode(QstsMode.DAILY)
+				.setMode(qstsMode)
 				.setNumberOfSteps(steps)
-				.setStepSizeHours(1.0)
+				.setStepSizeHours(stepSizeHours)
 				.setControlMode(controlMode)
 				.setMaxControlIterations(maxControlIterations)
 				.setPostSolveOutputMode(DistributionPostSolveOutputMode.VOLTAGE_ONLY)
 				.setResultSamplingMode(QstsResultSamplingMode.NONE)
 				.setMaxPowerFlowIterations(1000)
-				.setTolerance(1.0e-4);
+				.setTolerance(tolerance);
 		if(!capControlsEnabled) {
 			study.setCapacitorControls(Collections.emptyList());
 		}
@@ -153,6 +162,13 @@ public class QstsLargeFeederPerformanceBenchmark {
 			return List.of(IEEE8500);
 		}
 		return List.of(CKT24, IEEE8500);
+	}
+
+	private static FeederCase withMasterOverride(FeederCase feeder, String masterFile) {
+		if(masterFile == null || masterFile.trim().isEmpty()) {
+			return feeder;
+		}
+		return new FeederCase(feeder.name(), feeder.folder(), masterFile.trim());
 	}
 
 	private record FeederCase(String name, String folder, String masterFile) {
