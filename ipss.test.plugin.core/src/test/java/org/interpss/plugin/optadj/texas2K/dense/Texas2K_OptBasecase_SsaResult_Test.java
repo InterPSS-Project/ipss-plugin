@@ -74,7 +74,7 @@ public class Texas2K_OptBasecase_SsaResult_Test extends CorePluginTestSetup {
 				"SSA scan at 90% should capture at least the overloaded branch set");
 
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer().optimize(
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetLoadFlowOptimizer(false).optimize(
 				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
 		assertEquals(adjustResults, optAdjResult.getOptAdjResults());
