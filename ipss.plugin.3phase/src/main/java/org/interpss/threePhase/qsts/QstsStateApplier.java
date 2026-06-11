@@ -139,6 +139,7 @@ public class QstsStateApplier {
 			}
 			QstsLoadMultiplier multiplier = multiplierResolver
 					.resolve(binding, context.getMode(), context.getScheduleIndex(),
+							context.getStepSizeHours(),
 							context.getLoadMultiplier());
 			changed = state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier())
 					|| changed;
@@ -157,7 +158,8 @@ public class QstsStateApplier {
 				continue;
 			}
 			QstsLoadMultiplier multiplier = multiplierResolver
-					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
+					.resolve(binding, context.getMode(), context.getScheduleIndex(),
+							context.getStepSizeHours(), 1.0);
 			changed = state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier())
 					|| changed;
 		}
@@ -172,7 +174,8 @@ public class QstsStateApplier {
 				continue;
 			}
 			QstsLoadMultiplier multiplier = multiplierResolver
-					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
+					.resolve(binding, context.getMode(), context.getScheduleIndex(),
+							context.getStepSizeHours(), 1.0);
 			changed = state.applyScheduledMultiplier(multiplier.getPMultiplier(),
 					multiplier.getQMultiplier(), context.getStepSizeHours()) || changed;
 		}
