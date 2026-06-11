@@ -75,7 +75,6 @@ public class QstsLoadBaseState {
 	}
 
 	public void applyMultiplier(double pMultiplier, double qMultiplier) {
-		restore();
 		if(!hasNonConstantPowerComponents() && threePhaseLoad != null) {
 			phaseLoad.set3PhaseLoad(scale(threePhaseLoad, pMultiplier, qMultiplier));
 			return;

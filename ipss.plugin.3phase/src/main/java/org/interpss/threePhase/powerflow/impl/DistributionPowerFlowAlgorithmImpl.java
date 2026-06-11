@@ -2848,7 +2848,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private int branchPhaseMask(IBranch3Phase branch) {
-		PhaseCode phaseCode = branch.getPhaseCode();
+		return phaseCodeMask(branch.getPhaseCode());
+	}
+
+	private static int phaseCodeMask(PhaseCode phaseCode) {
 		String phase = phaseCode == null ? "ABC" : phaseCode.toString();
 		if("ABC".equals(phase)) {
 			return 0b111;
@@ -2872,6 +2875,23 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return 0b110;
 		}
 		return 0b111;
+	}
+
+	private static int valuePhaseMask(Complex3x1 value) {
+		if(value == null) {
+			return 0;
+		}
+		int mask = 0;
+		if(value.a_0 != null && value.a_0.abs() > 1.0e-12) {
+			mask |= 0b001;
+		}
+		if(value.b_1 != null && value.b_1.abs() > 1.0e-12) {
+			mask |= 0b010;
+		}
+		if(value.c_2 != null && value.c_2.abs() > 1.0e-12) {
+			mask |= 0b100;
+		}
+		return mask;
 	}
 
 	private Complex3x1 phaseMaskedValue(Complex3x1 value, int phaseMask) {
@@ -3230,6 +3250,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		static FixedPointBusCache from(BaseAclfNetwork<?, ?> network,
 				Map<Integer, Complex3x1> boundaryCurrentBySortNumber) {
+			Map<Integer, Integer> phaseMaskBySortNumber = phaseMaskBySortNumber(network,
+					boundaryCurrentBySortNumber);
 			List<FixedPointBus> activeBuses = new ArrayList<>();
 			List<FixedPointBus> nonSwingBuses = new ArrayList<>();
 			List<FixedPointBus> currentInjectionBuses = new ArrayList<>();
@@ -3240,7 +3262,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					continue;
 				}
 				FixedPointBus fixedPointBus = new FixedPointBus(bus,
-						boundaryCurrentBySortNumber.get(bus.getSortNumber()));
+						boundaryCurrentBySortNumber.get(bus.getSortNumber()),
+						phaseMaskBySortNumber.getOrDefault(bus.getSortNumber(), 0b111));
 				activeBuses.add(fixedPointBus);
 				if(fixedPointBus.bus3P instanceof DStab3PBus
 						|| fixedPointBus.primitiveGenerators == null) {
@@ -3262,6 +3285,27 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					Collections.unmodifiableList(currentInjectionBuses),
 					Collections.unmodifiableList(swingBuses),
 					primitiveVoltageStateEligible);
+		}
+
+		private static Map<Integer, Integer> phaseMaskBySortNumber(BaseAclfNetwork<?, ?> network,
+				Map<Integer, Complex3x1> boundaryCurrentBySortNumber) {
+			Map<Integer, Integer> masks = new LinkedHashMap<>();
+			for(AclfBranch branch : (List<AclfBranch>) network.getBranchList()) {
+				if(!branch.isActive() || !(branch instanceof IBranch3Phase)) {
+					continue;
+				}
+				int mask = phaseCodeMask(((IBranch3Phase) branch).getPhaseCode());
+				addPhaseMask(masks, branch.getFromBus().getSortNumber(), mask);
+				addPhaseMask(masks, branch.getToBus().getSortNumber(), mask);
+			}
+			for(Map.Entry<Integer, Complex3x1> entry : boundaryCurrentBySortNumber.entrySet()) {
+				addPhaseMask(masks, entry.getKey(), valuePhaseMask(entry.getValue()));
+			}
+			return masks;
+		}
+
+		private static void addPhaseMask(Map<Integer, Integer> masks, int sortNumber, int mask) {
+			masks.put(sortNumber, masks.getOrDefault(sortNumber, 0) | mask);
 		}
 	}
 
@@ -3383,6 +3427,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final String id;
 		private final int sortNumber;
 		private final int primitiveOffset;
+		private final int activePhaseMask;
 		private final IBus3Phase bus3P;
 		private final List<? extends AclfLoad3Phase> phaseLoads;
 		private final AclfLoad3Phase[] primitiveLoads;
@@ -3404,7 +3449,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private double oldCReal;
 		private double oldCImaginary;
 
-		private FixedPointBus(BaseAclfBus<?, ?> bus, Complex3x1 boundaryCurrent) {
+		private FixedPointBus(BaseAclfBus<?, ?> bus, Complex3x1 boundaryCurrent,
+				int branchPhaseMask) {
 			this.id = bus.getId();
 			this.sortNumber = bus.getSortNumber();
 			this.primitiveOffset = 6 * this.sortNumber;
@@ -3413,6 +3459,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			this.primitiveLoads = primitiveLoadArray(this.phaseLoads);
 			this.phaseGenerators = this.bus3P.getPhaseGenList();
 			this.primitiveGenerators = primitiveGeneratorArray(this.phaseGenerators);
+			this.activePhaseMask = activePhaseMask(branchPhaseMask, this.phaseLoads,
+					this.phaseGenerators, boundaryCurrent);
 			this.boundaryCurrent = boundaryCurrent;
 			this.boundaryCurrentFinite = boundaryCurrent == null
 					|| (finiteValue(boundaryCurrent.a_0) && finiteValue(boundaryCurrent.b_1)
@@ -3454,18 +3502,25 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				return 0.0;
 			}
 			return Math.max(
-					phaseMismatch(voltage.a_0, this.oldAReal, this.oldAImaginary),
+					phaseActive(0) ? phaseMismatch(voltage.a_0, this.oldAReal, this.oldAImaginary) : 0.0,
 					Math.max(
-							phaseMismatch(voltage.b_1, this.oldBReal, this.oldBImaginary),
-							phaseMismatch(voltage.c_2, this.oldCReal, this.oldCImaginary)));
+							phaseActive(1) ? phaseMismatch(voltage.b_1, this.oldBReal, this.oldBImaginary) : 0.0,
+							phaseActive(2) ? phaseMismatch(voltage.c_2, this.oldCReal, this.oldCImaginary) : 0.0));
 		}
 
 		private double voltageMismatch(double[] voltage, int offset) {
 			return Math.max(
-					phaseMismatch(voltage[offset], voltage[offset + 1], this.oldAReal, this.oldAImaginary),
+					phaseActive(0) ? phaseMismatch(voltage[offset], voltage[offset + 1],
+							this.oldAReal, this.oldAImaginary) : 0.0,
 					Math.max(
-							phaseMismatch(voltage[offset + 2], voltage[offset + 3], this.oldBReal, this.oldBImaginary),
-							phaseMismatch(voltage[offset + 4], voltage[offset + 5], this.oldCReal, this.oldCImaginary)));
+							phaseActive(1) ? phaseMismatch(voltage[offset + 2], voltage[offset + 3],
+									this.oldBReal, this.oldBImaginary) : 0.0,
+							phaseActive(2) ? phaseMismatch(voltage[offset + 4], voltage[offset + 5],
+									this.oldCReal, this.oldCImaginary) : 0.0));
+		}
+
+		private boolean phaseActive(int phaseIndex) {
+			return (this.activePhaseMask & (1 << phaseIndex)) != 0;
 		}
 
 		private static double phaseMismatch(Complex value, double oldReal, double oldImaginary) {
@@ -3509,6 +3564,21 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				values[i] = loads.get(i);
 			}
 			return values;
+		}
+
+		private static int activePhaseMask(int branchPhaseMask,
+				List<? extends AclfLoad3Phase> loads,
+				List<? extends AclfGen3Phase> generators,
+				Complex3x1 boundaryCurrent) {
+			int mask = branchPhaseMask;
+			for(AclfLoad3Phase load : loads) {
+				mask |= phaseCodeMask(load.getPhaseCode());
+			}
+			for(AclfGen3Phase generator : generators) {
+				mask |= phaseCodeMask(generator.getPhaseCode());
+			}
+			mask |= valuePhaseMask(boundaryCurrent);
+			return mask == 0 ? 0b111 : mask;
 		}
 	}
 
