@@ -455,8 +455,81 @@ maxIterations=5 symbolicFactors=1 numericFactors=2 valueUpdates=0 fallbackCount=
 
 On this controlled 8760 Ckt24 run, InterPSS used about 17.2% of the DSS-Python
 time per step, or roughly 5.8x DSS-Python throughput. The performance target is
-therefore satisfied for this controlled Ckt24 run; the remaining work is the
-small reactive branch-flow parity residual.
+therefore satisfied for this controlled Ckt24 run.
+
+### Controlled Ckt24 Transformer Magnetizing-Admittance Update
+
+The remaining controlled Ckt24 branch-flow residual was traced to service
+transformer magnetizing admittance. DSS-Python YPrim evidence for
+`transformer.05410_g2100nj9400` shows OpenDSS applies `%IMag=0.5` as the
+reactive magnetizing admittance component directly, while `%NoLoadLoss=0.13255`
+is the conductance component. The previous parser treated `%IMag` as total
+exciting-current magnitude and used a Pythagorean reduction, which undercounted
+service-transformer magnetizing Q across the feeder.
+
+Focused static parser regression:
+
+```bash
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest="OpenDssParserPowerFlowComparisonTest#ckt24ServiceTransformerUsesOpenDssImagAsReactiveAdmittance+ckt24SubstationTransformerParsesSpacedPercentRsContinuation+ckt24LineGeometryUsesOpenDssInternalResistance+ckt24OverheadLineGeometryAddsOpenDssCapacitanceShunt+ckt24TwoPhaseLineGeometryRemapsCapacitanceShuntToBusPhases" \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Result: `BUILD SUCCESS`, `Tests run: 5, Failures: 0, Errors: 0`.
+
+Controlled one-step Ckt24 export after the `%IMag` fix:
+
+```bash
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest=QstsLargeFeederComparisonExport \
+  -Dqsts.compare.case=ckt24 \
+  -Dqsts.compare.steps=1 \
+  -Dqsts.compare.outputDir=target/qsts-ckt24-transformer-imag \
+  -Dqsts.compare.controlMode=STATIC \
+  -Dqsts.compare.maxControlIterations=100 \
+  -Dqsts.compare.tolerance=1.0e-6 \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Result: `BUILD SUCCESS`; InterPSS converged and exported 18,177 voltage rows,
+34,458 branch-power rows, 11,682 load-power rows, one regulator-tap row, and no
+capacitor-control state rows for Ckt24's fixed enabled capacitors.
+
+Latest controlled comparisons against the DSS-Python reference:
+
+```text
+QSTS_VOLTAGE_COMPARE commonKeys=7160 dssOnly=0 interpssOnly=11017
+maxMagDelta=0.00174367173 magFailures=0
+maxAngleDelta=0.00079384899999 angleFailures=0
+
+QSTS_LOAD_POWER_COMPARE commonKeys=4222 dssOnly=0 interpssOnly=184
+dssPTotalKw=46857.1168897 interpssPTotalKw=46857.0312538
+dssQTotalKvar=7947.6569535 interpssQTotalKvar=7947.33875155
+maxPDelta=0.0115543100001 pFailures=0
+maxQDelta=0.045158398 qFailures=0
+
+QSTS_BRANCH_POWER_COMPARE commonKeys=14094 dssOnly=0 interpssOnly=6
+maxPDelta=0.113658150001 pFailures=0
+maxQDelta=0.71220715 qFailures=0
+```
+
+The branch-power comparison uses `--zero-threshold-kw 0.05` to remove exported
+near-zero branch rows; the remaining InterPSS-only rows are the explicit source
+branch representation. With controls enabled on both engines, Ckt24 now passes
+the current voltage, load-power, and branch-power parity tolerances on common
+keys.
+
+Controlled 8760 Ckt24 performance refresh after the `%IMag` fix:
+
+```text
+INTERPSS_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+actualSteps=8760 converged=true elapsedMillis=1162.258 msPerStep=0.132678
+maxIterations=5 symbolicFactors=1 numericFactors=2 valueUpdates=0 fallbackCount=0
+```
+
+Against the current DSS-Python controlled baseline of `0.734541 ms/step`,
+InterPSS uses about 18.1% of the DSS-Python time per step, or roughly 5.5x
+DSS-Python throughput.
 
 ### IEEE8500 Profile/QSTS Inventory
 
