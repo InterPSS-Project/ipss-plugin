@@ -1806,7 +1806,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			PrimitiveFixedPointState primitiveState) {
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 			int offset = bus.primitiveOffset;
-			for(AclfLoad3Phase load : bus.phaseLoads) {
+			for(AclfLoad3Phase load : bus.primitiveLoads) {
 				load.addEquivCurrInj(primitiveState.voltage, offset, primitiveRhs, offset);
 			}
 			addFixedPointLoadNortonCompensation(bus, primitiveState.voltage, offset, primitiveRhs, offset);
@@ -1836,7 +1836,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private void addStaticCurrentToRhsProfiled(FixedPointBus bus, double[] voltage,
 			int offset, double[] primitiveRhs) {
 		long start = FIXED_POINT_PROFILE.start();
-		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
+		AclfLoad3Phase[] loads = bus.primitiveLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
 		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
@@ -1972,7 +1972,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[5] = 0.0;
 
 		Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
-		for(AclfLoad3Phase load : bus.phaseLoads) {
+		for(AclfLoad3Phase load : bus.primitiveLoads) {
 			load.addEquivCurrInj(voltage, current);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, current);
@@ -1997,7 +1997,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		int voltageOffset = bus.primitiveOffset;
 
 		long start = FIXED_POINT_PROFILE.start();
-		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
+		AclfLoad3Phase[] loads = bus.primitiveLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
 		for(AclfLoad3Phase load : loads) {
 			FIXED_POINT_PROFILE.addCurrentCalcLoad();
@@ -2030,7 +2030,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[4] = 0.0;
 		current[5] = 0.0;
 		int voltageOffset = bus.primitiveOffset;
-		for(AclfLoad3Phase load : bus.phaseLoads) {
+		for(AclfLoad3Phase load : bus.primitiveLoads) {
 			load.addEquivCurrInj(voltage, voltageOffset, current);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
@@ -2067,7 +2067,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		if(factor == 0.0) {
 			return;
 		}
-		for(AclfLoad3Phase load : bus.phaseLoads) {
+		for(AclfLoad3Phase load : bus.primitiveLoads) {
 			if(factor == 1.0) {
 				load.addFixedPointNortonCompensation(voltage, voltageOffset, current, currentOffset);
 			}
@@ -3392,6 +3392,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final int primitiveOffset;
 		private final IBus3Phase bus3P;
 		private final List<? extends AclfLoad3Phase> phaseLoads;
+		private final AclfLoad3Phase[] primitiveLoads;
 		private final List<? extends AclfGen3Phase> phaseGenerators;
 		private final AclfGen3Phase[] primitiveGenerators;
 		private final Complex3x1 boundaryCurrent;
@@ -3416,6 +3417,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			this.primitiveOffset = 6 * this.sortNumber;
 			this.bus3P = (IBus3Phase) bus;
 			this.phaseLoads = this.bus3P.getPhaseLoadList();
+			this.primitiveLoads = primitiveLoadArray(this.phaseLoads);
 			this.phaseGenerators = this.bus3P.getPhaseGenList();
 			this.primitiveGenerators = primitiveGeneratorArray(this.phaseGenerators);
 			this.boundaryCurrent = boundaryCurrent;
@@ -3501,6 +3503,17 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			AclfGen3Phase[] values = new AclfGen3Phase[generators.size()];
 			for(int i = 0; i < generators.size(); i++) {
 				values[i] = generators.get(i);
+			}
+			return values;
+		}
+
+		private static AclfLoad3Phase[] primitiveLoadArray(List<? extends AclfLoad3Phase> loads) {
+			if(loads.isEmpty()) {
+				return new AclfLoad3Phase[0];
+			}
+			AclfLoad3Phase[] values = new AclfLoad3Phase[loads.size()];
+			for(int i = 0; i < loads.size(); i++) {
+				values[i] = loads.get(i);
 			}
 			return values;
 		}
