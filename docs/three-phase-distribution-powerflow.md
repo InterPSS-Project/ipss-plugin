@@ -172,16 +172,21 @@ The InterPSS profile reported `reused_powerflow_steps=8759`,
 `symbolicFactors=1`, `numericFactors=2`, `fallbackCount=0`, and
 `pf_iterations_per_step=0.000571`.
 
-The Ckt24 one-step controlled voltage comparison also passes at the current
-large-feeder tolerance after removing the parser-time fixed regulator tap shim:
-`maxMagDelta=0.00299752703`, `maxAngleDelta=0.330423172`,
+The Ckt24 one-step controlled voltage comparison also passes after the
+LineGeometry charging fix:
+`commonKeys=7160`, `dssOnly=0`, `interpssOnly=11017`,
+`maxMagDelta=0.0018390143`, `maxAngleDelta=0.00395749200001`,
 `magFailures=0`, and `angleFailures=0` at `0.003 pu` and `1.0 deg`.
 Both DSS-Python and InterPSS settle `SubXFMR_Regulator` at tap position `2`.
-The same controlled export now includes static branch terminal powers. The
-branch-power comparator currently runs as a diagnostic and fails at `5 kW` /
-`5 kvar` tolerance: `commonKeys=14102`, `dssOnly=124`, `interpssOnly=23`,
-`maxPDelta=877.25032075` at `line.other_feeders` terminal 1 phase B, and
-`maxQDelta=187.98447851` at `transformer.subxfmr` terminal 1 phase B.
+The controlled load-power comparison passes at `0.5 kW` / `0.5 kvar`:
+`maxPDelta=0.0115543100001`, `maxQDelta=0.045158398`, `pFailures=0`, and
+`qFailures=0`. Static branch terminal-power comparison is much tighter after
+parsing OpenDSS geometry-derived line charging but still has a small diagnostic
+Q residual at the `5 kvar` gate: `commonKeys=14205`, `dssOnly=21`,
+`interpssOnly=31`, `maxPDelta=1.8816156`, `maxQDelta=6.650653188`,
+`pFailures=0`, and `qFailures=185`. The remaining branch-Q tail is a propagated
+phase-A feeder-path offset; normalized local branch discrepancies are small,
+with the largest common local line-Q delta about `0.555 kvar`.
 
 IEEE8500 was checked with static capacitor controls enabled and regulator
 controls disabled on both sides because the checked-in IEEE8500 regulator
