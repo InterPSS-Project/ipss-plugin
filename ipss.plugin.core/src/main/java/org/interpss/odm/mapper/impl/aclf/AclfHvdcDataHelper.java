@@ -14,6 +14,7 @@ import org.ieee.odm.schema.VSCConverterXmlType;
 import org.ieee.odm.schema.VSCDCControlModeEnumType;
 import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.interpss.numeric.datatype.LimitType;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toActivePowerUnit;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toAngleUnit;
 import static org.interpss.odm.mapper.base.ODMUnitHelper.toVoltageUnit;
@@ -22,8 +23,12 @@ import static org.interpss.odm.mapper.base.ODMUnitHelper.toZUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.interpss.common.datatype.UnitHelper;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.HvdcObjectFactory;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
@@ -64,8 +69,9 @@ public class AclfHvdcDataHelper {
 		//set DCLine name
 		this.hvdc2T.setName(hvdc2TXml.getName());
 		
-		HvdcLine2TLCC<AclfBus> lccHvdc2T = (HvdcLine2TLCC<AclfBus>)hvdc2T; 
-				 
+		HvdcLine2TLCC<AclfBus> lccHvdc2T = (HvdcLine2TLCC<AclfBus>)hvdc2T;
+		boolean useFixedPowerEquivalent = hasExternalXfrControl(hvdc2TXml);
+
 		//Control Mode
 		DcLineControlModeEnumType mode =hvdc2TXml.getControlMode();
 		
@@ -178,10 +184,13 @@ public class AclfHvdcDataHelper {
 			log.error("Inverter data is Null, or not defined in ODM/XML!");
 			return false;
 		}
-		
-		
+
+		if (useFixedPowerEquivalent) {
+			mapExternalXfrControlAsFixedPowerEquivalent(lccHvdc2T, hvdc2TXml);
+		}
+
 		return success;
-		
+
 	}
 	
 	private void setThyRectifierData(ThyConverter<AclfBus> rectifier, ThyristorConverterXmlType rectifierXml,int n){
@@ -220,7 +229,7 @@ public class AclfHvdcDataHelper {
 		
 		// IFR = ITR=0, IDR =1.0 by default
 		if(rectifierXml.getRefXfrFromBusId()!=null && rectifierXml.getRefXfrToBusId()!=null){
-			log.error("IFR, ITR for specifying a two winding transformer to control a converter is not supported in the LCC HVDC rectifier: "+ rectifier.getId());
+			disableExternalXfrControl(rectifier, "rectifier");
 		}
 		//BusIDRefXmlType fbRef=((BusIDRefXmlType)rectifierXml.getRefXfrFromBusId());
 		
@@ -283,7 +292,7 @@ public class AclfHvdcDataHelper {
 
 		// IFR = ITR=0, IDR =1.0 by default
 		if(inverterXml.getRefXfrFromBusId()!=null && inverterXml.getRefXfrToBusId()!=null){
-			log.error("IFR, ITR for specifying a two winding transformer to control a converter is not supported in the LCC HVDC inverter: " + inverter.getId());
+			disableExternalXfrControl(inverter, "inverter");
 		}
 
 		// TODO
@@ -301,8 +310,71 @@ public class AclfHvdcDataHelper {
 			//throw new IllegalArgumentException("Firing angle 2 is not supported in the current model");
 		}
 	}
-    
-	
+
+	private void disableExternalXfrControl(ThyConverter<AclfBus> converter, String end) {
+		double tap = converter.getXformerTapSetting();
+		converter.setXformerTapLimit(new LimitType(tap, tap));
+		log.info("External two-winding transformer control is not supported for LCC HVDC "
+				+ end + "; fixed converter tap at " + tap + " for " + converter.getId());
+	}
+
+	private void mapExternalXfrControlAsFixedPowerEquivalent(HvdcLine2TLCC<AclfBus> lccHvdc2T,
+			DCLineData2TXmlType hvdc2TXml) {
+		if (lccHvdc2T.getDcLineControlMode() != HvdcControlMode.DC_POWER || hvdc2TXml.getPowerDemand() == null) {
+			lccHvdc2T.setStatus(false);
+			log.info("Disabled LCC HVDC line " + lccHvdc2T.getId()
+					+ " because external transformer control is unsupported and fixed-power equivalent is unavailable");
+			return;
+		}
+
+		double demandMw = UnitHelper.pConversion(hvdc2TXml.getPowerDemand().getValue(), aclfNet.getBaseKva(),
+				toActivePowerUnit.apply(hvdc2TXml.getPowerDemand().getUnit()), UnitType.mW);
+		double scheduledKv = UnitHelper.vConversion(hvdc2TXml.getScheduledDCVoltage().getValue(), 1.0,
+				toVoltageUnit.apply(hvdc2TXml.getScheduledDCVoltage().getUnit()), UnitType.kV);
+		double rdcOhm = UnitHelper.zConversion(hvdc2TXml.getLineR().getR(), 1.0, aclfNet.getBaseKva(),
+				toZUnit.apply(hvdc2TXml.getLineR().getUnit()), UnitType.Ohm);
+		double lossMw = scheduledKv > 0.0 ? rdcOhm * Math.pow(demandMw / scheduledKv, 2.0) : 0.0;
+
+		double rectifierMw;
+		double inverterMw;
+		if (hvdc2TXml.isControlOnRectifierSide()) {
+			rectifierMw = demandMw;
+			inverterMw = Math.max(0.0, demandMw - lossMw);
+		}
+		else {
+			inverterMw = demandMw;
+			rectifierMw = demandMw + lossMw;
+		}
+
+		addFixedPowerLoad((AclfBus)lccHvdc2T.getFromBus(), lccHvdc2T.getId() + "_rectifier_equiv",
+				new Complex(UnitHelper.pConversion(rectifierMw, aclfNet.getBaseKva(), UnitType.mW, UnitType.PU), 0.0));
+		addFixedPowerLoad((AclfBus)lccHvdc2T.getToBus(), lccHvdc2T.getId() + "_inverter_equiv",
+				new Complex(-UnitHelper.pConversion(inverterMw, aclfNet.getBaseKva(), UnitType.mW, UnitType.PU), 0.0));
+
+		lccHvdc2T.setStatus(false);
+		log.info("Mapped LCC HVDC line " + lccHvdc2T.getId()
+				+ " with unsupported external transformer control to fixed active-power equivalent");
+	}
+
+	private void addFixedPowerLoad(AclfBus bus, String id, Complex loadPQ) {
+		AclfLoad load = CoreObjectFactory.createAclfLoad(id);
+		bus.getContributeLoadList().add(load);
+		load.setLoadCP(loadPQ);
+		load.setCode(AclfLoadCode.CONST_P);
+		bus.setLoadCode(AclfLoadCode.CONST_P);
+	}
+
+	private boolean hasExternalXfrControl(DCLineData2TXmlType hvdc2TXml) {
+		return hasExternalXfrControl(hvdc2TXml.getRectifier())
+				|| hasExternalXfrControl(hvdc2TXml.getInverter());
+	}
+
+	private boolean hasExternalXfrControl(ThyristorConverterXmlType converterXml) {
+		return converterXml != null
+				&& converterXml.getRefXfrFromBusId() != null
+				&& converterXml.getRefXfrToBusId() != null;
+	}
+
 	/*
 	 *  VSC Hvdc 2T Mapping part
 	 *  ======================== 
