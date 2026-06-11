@@ -44,6 +44,7 @@ public class QstsLargeFeederComparisonExport {
 				System.getProperty("qsts.compare.controlMode", "STATIC"));
 		QstsMode qstsMode = QstsMode.from(System.getProperty("qsts.compare.mode", "DAILY"));
 		double stepSizeHours = Double.parseDouble(System.getProperty("qsts.compare.stepSizeHours", "1.0"));
+		int startIndex = Integer.getInteger("qsts.compare.startIndex", 0);
 		int maxControlIterations = Integer.getInteger("qsts.compare.maxControlIterations", 100);
 		double tolerance = Double.parseDouble(System.getProperty("qsts.compare.tolerance", "1.0e-4"));
 		boolean regControlsEnabled = Boolean.parseBoolean(
@@ -61,7 +62,8 @@ public class QstsLargeFeederComparisonExport {
 		for(FeederCase feeder : selectedFeeders(caseSelector)) {
 			feeder = withMasterOverride(feeder, System.getProperty("qsts.compare.masterFile"));
 			QstsExportResult export = runQsts(feeder, steps, qstsMode, stepSizeHours,
-					controlMode, maxControlIterations, tolerance, regControlsEnabled, capControlsEnabled);
+					startIndex, controlMode, maxControlIterations, tolerance,
+					regControlsEnabled, capControlsEnabled);
 			QstsResult result = export.result();
 			Path output = outputDir.resolve(feeder.key()
 					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
@@ -78,6 +80,11 @@ public class QstsLargeFeederComparisonExport {
 					+ "_interpss_load_power_by_step.csv");
 			Files.writeString(loadOutput, exportLoadPowersKw(result, export.baseKva()),
 					StandardCharsets.UTF_8);
+			Path generatorOutput = outputDir.resolve(feeder.key()
+					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
+					+ "_interpss_generator_power_by_step.csv");
+			Files.writeString(generatorOutput, exportGeneratorPowersKw(result, export.baseKva()),
+					StandardCharsets.UTF_8);
 			Path regulatorOutput = outputDir.resolve(feeder.key()
 					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
 					+ "_interpss_regulator_taps_by_step.csv");
@@ -90,25 +97,30 @@ public class QstsLargeFeederComparisonExport {
 					StandardCharsets.UTF_8);
 			System.out.println(String.format(Locale.US,
 					"INTERPSS_QSTS_REFERENCE feeder=%s steps=%d controlMode=%s maxControlIterations=%d "
-							+ "mode=%s stepSizeHours=%.12g regControlsEnabled=%s capControlsEnabled=%s "
+							+ "mode=%s stepSizeHours=%.12g startIndex=%d "
+							+ "regControlsEnabled=%s capControlsEnabled=%s "
 							+ "masterFile=%s converged=%s voltageRows=%d "
-							+ "branchPowerRows=%d loadPowerRows=%d regulatorTapRows=%d capacitorStateRows=%d "
-							+ "output=%s branchOutput=%s loadOutput=%s regulatorOutput=%s capacitorOutput=%s",
+							+ "branchPowerRows=%d loadPowerRows=%d generatorPowerRows=%d "
+							+ "regulatorTapRows=%d capacitorStateRows=%d "
+							+ "output=%s branchOutput=%s loadOutput=%s generatorOutput=%s "
+							+ "regulatorOutput=%s capacitorOutput=%s",
 					feeder.name(), steps, controlMode, maxControlIterations,
-					qstsMode, stepSizeHours, regControlsEnabled, capControlsEnabled,
+					qstsMode, stepSizeHours, startIndex, regControlsEnabled, capControlsEnabled,
 					feeder.masterFile(), result.isConverged(),
 					result.getBusVoltages().size(), result.getBranchPowers().size(),
 					result.getLoadPowers().size(),
+					result.getGeneratorPowers().size(),
 					result.getStepResults().stream().mapToInt(step -> step.getRegulatorTaps().size()).sum(),
 					result.getCapacitorStates().size(),
-					output, branchOutput, loadOutput, regulatorOutput, capacitorOutput));
+					output, branchOutput, loadOutput, generatorOutput, regulatorOutput, capacitorOutput));
 			assertTrue(result.isConverged(), "QSTS export did not converge for " + feeder.name());
 		}
 	}
 
 	private static QstsExportResult runQsts(FeederCase feeder, int steps, QstsMode qstsMode,
-			double stepSizeHours, QstsControlMode controlMode, int maxControlIterations,
-			double tolerance, boolean regControlsEnabled, boolean capControlsEnabled) {
+			double stepSizeHours, int startIndex, QstsControlMode controlMode,
+			int maxControlIterations, double tolerance, boolean regControlsEnabled,
+			boolean capControlsEnabled) {
 		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
 		parser.setRegControlEnabled(regControlsEnabled);
 		assertTrue(parser.parseFeederData(feeder.folder(), feeder.masterFile()),
@@ -125,6 +137,7 @@ public class QstsLargeFeederComparisonExport {
 				.setRegulatorControls(regulatorControls)
 				.setMode(qstsMode)
 				.setNumberOfSteps(steps)
+				.setStartIndex(startIndex)
 				.setStepSizeHours(stepSizeHours)
 				.setControlMode(controlMode)
 				.setMaxControlIterations(maxControlIterations)
@@ -150,6 +163,22 @@ public class QstsLargeFeederComparisonExport {
 					.append(sample.getPhase()).append(',')
 					.append(String.format(Locale.US, "%.12g", sample.getP() * phaseBaseKva)).append(',')
 					.append(String.format(Locale.US, "%.12g", sample.getQ() * phaseBaseKva))
+					.append('\n');
+		}
+		return csv.toString();
+	}
+
+	private static String exportGeneratorPowersKw(QstsResult result, double baseKva) {
+		StringBuilder csv = new StringBuilder();
+		csv.append("step,hour,device_class,device,phase,p_kw,q_kvar\n");
+		for(QstsDevicePowerSample sample : result.getGeneratorPowers()) {
+			csv.append(sample.getStepIndex()).append(',')
+					.append(String.format(Locale.US, "%.12g", sample.getHour())).append(',')
+					.append(sample.getDeviceClass()).append(',')
+					.append(sample.getDeviceId()).append(',')
+					.append(sample.getPhase()).append(',')
+					.append(String.format(Locale.US, "%.12g", sample.getP() * baseKva)).append(',')
+					.append(String.format(Locale.US, "%.12g", sample.getQ() * baseKva))
 					.append('\n');
 		}
 		return csv.toString();
