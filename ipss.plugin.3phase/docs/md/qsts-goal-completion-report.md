@@ -120,9 +120,11 @@ Tests run: 301, Failures: 0, Errors: 0, Skipped: 26
 
 ## Verification Boundary
 
-This goal did not include, and I did not run, a large-feeder QSTS parity study
-that compares every time step against DSS-Python for bus voltages and branch
-flows.
+This goal did not include a full 8760-step large-feeder QSTS parity study that
+compares every time step against DSS-Python for both bus voltages and branch
+flows. A controlled one-step Ckt24 parity check now exists for both voltages and
+branch powers, and the branch-power comparison is currently a diagnostic with
+known mismatches rather than a passing gate.
 
 What was verified for large feeders in the existing repo artifacts is static
 power-flow parity, mostly controls-off voltage comparison and device-level
@@ -172,8 +174,8 @@ The CSV keys include case, step, hour, bus/element, terminal/conductor, voltage
 magnitude/angle, and branch terminal P/Q. These files provide the reference side
 for a per-step static-QSTS parity comparison.
 
-The InterPSS side now has a matching manual voltage export using the static
-parser/QSTS path:
+The InterPSS side now has a matching manual export using the static parser/QSTS
+path:
 
 ```bash
 mvn -pl ipss.plugin.3phase -am test \
@@ -186,13 +188,11 @@ mvn -pl ipss.plugin.3phase -am test \
 
 It now defaults to `QstsControlMode.STATIC`, `maxControlIterations=20`, parser
 RegControl enabled, and CapControl enabled. It writes
-`ckt24_qsts_controls_static_interpss_voltage_by_step.csv` or
-`ieee8500_qsts_controls_static_interpss_voltage_by_step.csv`. The InterPSS QSTS
-result model already records per-step bus voltages and device powers, so this
-export is static-network-only and does not depend on DStab. Per-step static
-branch-flow comparison still needs either a static branch-flow sampler in QSTS
-results or a dedicated diagnostic step hook. That should be implemented without
-reintroducing DStab branch APIs into the static QSTS path.
+`ckt24_qsts_controls_static_interpss_voltage_by_step.csv`,
+`ckt24_qsts_controls_static_interpss_branch_power_by_step.csv`, and the matching
+IEEE8500 files. The InterPSS QSTS result model records per-step bus voltages,
+device powers, and static branch terminal powers, so this export is
+static-network-only and does not depend on DStab.
 
 The generated voltage files can be compared with:
 
@@ -204,6 +204,16 @@ python3 ipss.plugin.3phase/src/test/python/compare_qsts_voltage_reference.py \
   --angle-tolerance 1.0
 ```
 
+The generated branch-power files can be compared with:
+
+```bash
+python3 ipss.plugin.3phase/src/test/python/compare_qsts_branch_power_reference.py \
+  --dss-branch-power target/qsts-comparison/ckt24_qsts_controls_static_dss_python_branch_power_by_step.csv \
+  --interpss-branch-power ipss.plugin.3phase/target/qsts-comparison/ckt24_qsts_controls_static_interpss_branch_power_by_step.csv \
+  --p-tolerance-kw 5.0 \
+  --q-tolerance-kvar 5.0
+```
+
 Smoke datapoints from one-step Ckt24 and IEEE8500 DSS-Python exports:
 
 - Ckt24 DSS-Python one-step export converged with 7,522 voltage rows and
@@ -211,13 +221,20 @@ Smoke datapoints from one-step Ckt24 and IEEE8500 DSS-Python exports:
 - IEEE8500 DSS-Python one-step export converged with 8,531 voltage rows and
   19,446 branch-power rows.
 - Ckt24 InterPSS one-step static-QSTS voltage export converged with 18,177
-  voltage rows.
+  voltage rows and 34,458 branch-power rows.
 - Ckt24 voltage comparison, excluding zero-voltage DSS nodes, found 7,160
   common energized step/bus/phase keys. The maximum voltage magnitude mismatch
   was 0.0029341957 pu at `0:n283892:C`; the maximum angle mismatch was
   0.331285484 degrees at `0:g2100bk4500_n283756_sec:B`. It fails a 0.001 pu
   magnitude tolerance but passes a 0.003 pu magnitude tolerance and 1 degree
   angle tolerance.
+- Ckt24 branch-power comparison now runs with normalized OpenDSS `NodeOrder`
+  phase labels. Current controlled one-step result: `commonKeys=14102`,
+  `dssOnly=124`, `interpssOnly=23`, `maxPDelta=877.25032075` at
+  `line.other_feeders` terminal 1 phase B, `maxQDelta=187.98447851` at
+  `transformer.subxfmr` terminal 1 phase B, `pFailures=776`, and
+  `qFailures=1185` at `5 kW` / `5 kvar` tolerance. This is the next
+  branch-flow parity investigation target.
 
 ### Controlled 8760 Large-Feeder Update
 
@@ -276,20 +293,27 @@ Fixes made for the IEEE8500 controlled run:
   to reuse the first solved state.
 
 After enabling static controls by default, a one-step Ckt24 controlled smoke run
-converged on both engines but exposed a larger controlled parity gap:
+converged on both engines. The voltage comparison now passes the current Ckt24
+large-feeder tolerance, while the new branch-flow comparison exposes a concrete
+follow-up target:
 
 - DSS-Python controlled export converged with `controlMode=static`,
   `maxControlIterations=20`, RegControl enabled, and CapControl enabled; it
   exported 7,522 voltage rows and 16,728 branch-power rows.
 - InterPSS controlled static-QSTS export converged with
   `QstsControlMode.STATIC`, `maxControlIterations=20`, parser RegControl
-  enabled, and CapControl enabled; it exported 18,177 voltage rows.
+  enabled, and CapControl enabled; it exported 18,177 voltage rows and 34,458
+  branch-power rows.
 - Controlled voltage comparison, excluding zero-voltage DSS nodes, found 7,160
   common energized step/bus/phase keys. The maximum voltage magnitude mismatch
-  was 0.016962189244 pu at `0:g2101ea3600_n292539_sec_1:A`; the maximum angle
-  mismatch was 0.324720153 degrees at `0:subxfmr_lsb:B`. It fails a 0.003 pu
-  magnitude tolerance, so controlled Ckt24 parity is now a concrete follow-up
-  investigation target.
+  was `0.00299752703` pu at `0:n283892:C`; the maximum angle mismatch was
+  `0.330423172` degrees at `0:g2100bk4500_n283756_sec:B`. It passes a
+  `0.003 pu` magnitude tolerance and `1.0 deg` angle tolerance.
+- Controlled branch-flow comparison found `14102` common branch terminal/phase
+  keys. It currently fails a `5 kW` / `5 kvar` tolerance with worst active-power
+  mismatch `877.25032075 kW` at `line.other_feeders` terminal 1 phase B and
+  worst reactive-power mismatch `187.98447851 kvar` at `transformer.subxfmr`
+  terminal 1 phase B.
 
 The large-feeder performance benchmark paths also now default to enabled static
 controls. One-step Ckt24 smoke timings from the controlled path were:
