@@ -332,6 +332,11 @@ public class OpenDSSDataParser {
 				else if(str.startsWith("!") || str.startsWith("//")){
 					//bypass the comments
 				}
+				else if(str.toLowerCase().contains("regcontrol.")){
+					if(this.regControlEnabled) {
+						this.regulatorParser.parseRegControlData(str);
+					}
+				}
 				else if(str.startsWith("New")||str.startsWith("new")){
 
 					//Consider in-line comment using !
@@ -695,6 +700,11 @@ public class OpenDSSDataParser {
 				}
 				else if(str.startsWith("!") || str.startsWith("//")){
 					//bypass the comment
+				}
+				else if(str.toLowerCase().contains("regcontrol.")){
+					if(this.regControlEnabled) {
+						this.regulatorParser.parseRegControlData(str);
+					}
 				}
 				else if(str.startsWith("New")||str.startsWith("new")){
 					String[] tempAry = str.split("\\s+");
