@@ -117,6 +117,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	private int fixedPointYMatrixNumericFactorizationCount = 0;
 	private int fixedPointYMatrixValueUpdateCount = 0;
 	private Map<String, RegulatorBranchAdmittance> fixedPointRegulatorValueUpdateAdmittance = Collections.emptyMap();
+	private boolean fixedPointYMatrixCacheInvalidatedByRegulatorChange = false;
 	private String fixedPointFloatingAntiFloatSignature = null;
 	private FloatingPhaseAntiFloatPlan fixedPointFloatingAntiFloatPlan = null;
 
@@ -430,18 +431,25 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			if(!converged) {
 				return false;
 			}
-			boolean changed = false;
+			boolean capacitorChanged = false;
+			boolean regulatorChanged = false;
 			if(useCapacitorControls) {
-				changed = this.capacitorBankControl.apply(this.distNet, this.capacitorControls);
+				capacitorChanged = this.capacitorBankControl.apply(this.distNet, this.capacitorControls);
 			}
 			if(useRegulatorControls) {
-				changed = this.regulatorTapControl.apply(this.distNet, this.regulatorControls) || changed;
+				regulatorChanged = this.regulatorTapControl.apply(this.distNet, this.regulatorControls);
 			}
+			boolean changed = capacitorChanged || regulatorChanged;
 			if(!changed) {
 				return true;
 			}
 			if(this.fixedPointYMatrixCacheEnabled) {
-				clearFixedPointYMatrixCache();
+				if(capacitorChanged) {
+					clearFixedPointYMatrixCache();
+				}
+				else if(regulatorChanged) {
+					invalidateFixedPointYMatrixCacheForRegulatorChange();
+				}
 			}
 		}
 		log.error("Distribution controls did not settle within {} outer iterations", maxControlIterations);
@@ -936,7 +944,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				&& symbolSignature.equals(this.fixedPointYMatrixSymbolSignature);
 		ISparseEqnComplexMatrix3x3 yMatrix = null;
 		boolean updatedExistingValues = false;
-		if(!this.fixedPointYMatrixCacheEnabled
+		if((!this.fixedPointYMatrixCacheEnabled || this.fixedPointYMatrixCacheInvalidatedByRegulatorChange)
 				&& fixedPointValueUpdateEnabled()
 				&& reuseSymbolTable
 				&& canUpdateFixedPointYMatrixValues(distNet, symbolSignature)) {
@@ -981,11 +989,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			this.fixedPointYMatrixCacheNetwork = distNet;
 			this.fixedPointYMatrixCacheSignature = signature;
 		}
-		else {
-			this.fixedPointYMatrixValueUpdateCache = yMatrix;
-			this.fixedPointYMatrixValueUpdateCacheNetwork = distNet;
-			this.fixedPointRegulatorValueUpdateAdmittance = regulatorBranchAdmittance(distNet);
-		}
+		this.fixedPointYMatrixValueUpdateCache = yMatrix;
+		this.fixedPointYMatrixValueUpdateCacheNetwork = distNet;
+		this.fixedPointRegulatorValueUpdateAdmittance = regulatorBranchAdmittance(distNet);
+		this.fixedPointYMatrixCacheInvalidatedByRegulatorChange = false;
 		return yMatrix;
 	}
 
@@ -3267,6 +3274,20 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		this.fixedPointOrderedNetwork = null;
 		this.fixedPointOrderingVerified = false;
 		this.fixedPointRegulatorValueUpdateAdmittance = Collections.emptyMap();
+		this.fixedPointYMatrixCacheInvalidatedByRegulatorChange = false;
+	}
+
+	private void invalidateFixedPointYMatrixCacheForRegulatorChange() {
+		if(!fixedPointValueUpdateEnabled()
+				|| this.fixedPointYMatrixValueUpdateCache == null
+				|| this.fixedPointRegulatorValueUpdateAdmittance.isEmpty()) {
+			clearFixedPointYMatrixCache();
+			return;
+		}
+		this.fixedPointYMatrixCache = null;
+		this.fixedPointYMatrixCacheNetwork = null;
+		this.fixedPointYMatrixCacheSignature = null;
+		this.fixedPointYMatrixCacheInvalidatedByRegulatorChange = true;
 	}
 
 	private void clearFixedPointYMatrixSymbolCache() {
