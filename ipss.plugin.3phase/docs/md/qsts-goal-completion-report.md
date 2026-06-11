@@ -219,6 +219,62 @@ Smoke datapoints from one-step Ckt24 and IEEE8500 DSS-Python exports:
   magnitude tolerance but passes a 0.003 pu magnitude tolerance and 1 degree
   angle tolerance.
 
+### Controlled 8760 Large-Feeder Update
+
+Additional controlled QSTS evidence was collected on 2026-06-11 after enabling
+controls in the large-feeder comparison runs.
+
+Ckt24 static controls, regulators and capacitors enabled:
+
+- DSS-Python 8760-step run: converged, `0.820762 ms/step`, max iterations `9`.
+- InterPSS 8760-step run: converged, `0.142280 ms/step`, max PF iterations `5`,
+  `reused_powerflow_steps=8759`, `symbolicFactors=1`, `numericFactors=2`,
+  `fallbackCount=0`.
+- One-step voltage comparison passed at `0.003 pu` and `1.0 deg` with
+  `maxMagDelta=0.00299752703`, `maxAngleDelta=0.330423172`,
+  `magFailures=0`, and `angleFailures=0`.
+
+IEEE8500 all-regulator controls are not a valid 8760 reference case yet because
+DSS-Python/OpenDSS does not settle the regulator controls under the checked-in
+master-file defaults:
+
+- DSS-Python with regulators and capacitors enabled failed warm-up:
+  `converged=false`, max iterations `45`.
+- DSS-Python regulator-only with capacitors disabled and
+  `maxcontroliter=100` also failed at the first step:
+  `converged=false`, max iterations `23`.
+- DSS-Python cap-control-only with regulators disabled and
+  `maxcontroliter=100` converged, so that is the controlled IEEE8500 comparison
+  mode currently used for performance/parity evidence.
+
+IEEE8500 static capacitor controls enabled, regulator controls disabled:
+
+- DSS-Python 8760-step run: converged, `0.504579 ms/step`, max iterations `8`.
+- InterPSS 8760-step run after fixing KVAR control per-phase base conversion
+  and metadata-only profile reuse: converged, `0.164846 ms/step`, max PF
+  iterations `9`, `reused_powerflow_steps=8759`, `symbolicFactors=1`,
+  `numericFactors=1`, `fallbackCount=0`.
+- One-step voltage comparison passes at `0.005 pu` and `1.0 deg`:
+  `commonKeys=8531`, `dssOnly=0`, `interpssOnly=6100`,
+  `maxMagDelta=0.004350571409`, `maxAngleDelta=0.216126424`,
+  `magFailures=0`, and `angleFailures=0`.
+- The same IEEE8500 comparison does not pass the stricter Ckt24 `0.003 pu`
+  magnitude tolerance: `1858` magnitude failures, worst key
+  `0:l3312692:A`. This is the remaining controlled-voltage parity gap.
+
+Fixes made for the IEEE8500 controlled run:
+
+- QSTS now propagates `maxControlIterations` into the static PF control loop,
+  so benchmark properties such as `-Dqsts.perf.maxControlIterations=100`
+  actually apply to regulator/capacitor settling.
+- KVAR/PF capacitor-control branch power now uses per-phase power base
+  (`Sbase / 3`) instead of full three-phase base, matching the per-phase
+  voltage/current formulation and preventing false IEEE8500 capacitor
+  oscillation.
+- Static-state reuse now ignores metadata-only profile bindings that do not
+  resolve to actual profile points, allowing repeated static controlled states
+  to reuse the first solved state.
+
 After enabling static controls by default, a one-step Ckt24 controlled smoke run
 converged on both engines but exposed a larger controlled parity gap:
 
