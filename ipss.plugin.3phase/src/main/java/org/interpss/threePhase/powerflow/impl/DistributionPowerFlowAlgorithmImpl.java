@@ -788,7 +788,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				saveBusVoltages(busCache);
 			}
 			else {
-				primitiveState.saveVoltageSnapshot();
 				saveSwingBusVoltages(busCache);
 			}
 			FIXED_POINT_PROFILE.addSaveVoltages(FIXED_POINT_PROFILE.elapsed(start));
@@ -3304,11 +3303,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	private static class PrimitiveFixedPointState {
 		private final double[] voltage;
-		private final double[] previousVoltage;
 
 		private PrimitiveFixedPointState(double[] voltage) {
 			this.voltage = voltage;
-			this.previousVoltage = new double[voltage.length];
 		}
 
 		private static PrimitiveFixedPointState from(FixedPointBusCache busCache, int busCount) {
@@ -3330,19 +3327,15 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 		}
 
-		private void saveVoltageSnapshot() {
-			System.arraycopy(this.voltage, 0, this.previousVoltage, 0, this.voltage.length);
-		}
-
 		private double voltageMismatch(double[] solved, int offset) {
 			return Math.max(
 					phaseMagnitudeMismatch(solved[offset], solved[offset + 1],
-							this.previousVoltage[offset], this.previousVoltage[offset + 1]),
+							this.voltage[offset], this.voltage[offset + 1]),
 					Math.max(
 							phaseMagnitudeMismatch(solved[offset + 2], solved[offset + 3],
-									this.previousVoltage[offset + 2], this.previousVoltage[offset + 3]),
+									this.voltage[offset + 2], this.voltage[offset + 3]),
 							phaseMagnitudeMismatch(solved[offset + 4], solved[offset + 5],
-									this.previousVoltage[offset + 4], this.previousVoltage[offset + 5])));
+									this.voltage[offset + 4], this.voltage[offset + 5])));
 		}
 
 		private static double phaseMagnitudeMismatch(double real, double imaginary,
