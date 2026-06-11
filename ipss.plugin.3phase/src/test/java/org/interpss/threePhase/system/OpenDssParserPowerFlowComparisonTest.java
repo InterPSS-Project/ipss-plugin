@@ -419,6 +419,28 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	@Test
+	public void ckt24TwoPhaseLineGeometryRemapsCapacitanceShuntToBusPhases() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
+
+		Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), "05410_339602oh");
+		assertNotNull(branch, "Missing Ckt24 two-phase overhead geometry line");
+		assertEquals(PhaseCode.AC, branch.getPhaseCode(), "Ckt24 05410_339602OH should be an A-C line");
+
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double vbase = branch.getFromBus().getBaseVoltage();
+		Complex3x3 yFrom = physicalY(branch.getFromShuntYabc(), baseVa, vbase);
+		assertEquals(0.0, yFrom.ab.abs(), 1.0e-12,
+				"A-C line shunt should not populate A-B coupling");
+		assertEquals(0.0, yFrom.bb.abs(), 1.0e-12,
+				"A-C line shunt should not populate phase B");
+		assertEquals(1.68570107e-7, yFrom.aa.getImaginary(), 1.0e-11);
+		assertEquals(-4.86863946e-8, yFrom.ac.getImaginary(), 1.0e-11);
+		assertEquals(-4.86863946e-8, yFrom.ca.getImaginary(), 1.0e-11);
+		assertEquals(1.70951568e-7, yFrom.cc.getImaginary(), 1.0e-11);
+	}
+
+	@Test
 	public void ckt24SubstationTransformerParsesSpacedPercentRsContinuation() throws IOException {
 		OpenDSSStaticDataParser parser = parseStaticOpenDss(
 				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", true);
