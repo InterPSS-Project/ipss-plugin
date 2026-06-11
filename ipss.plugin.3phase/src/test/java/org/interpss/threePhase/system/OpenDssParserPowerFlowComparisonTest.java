@@ -398,6 +398,27 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	@Test
+	public void ckt24OverheadLineGeometryAddsOpenDssCapacitanceShunt() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
+
+		Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), "05410_339820oh");
+		assertNotNull(branch, "Missing Ckt24 overhead geometry line");
+		assertNotNull(branch.getFromShuntYabc(), "OpenDSS LineGeometry should create line charging shunt");
+
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double vbase = branch.getFromBus().getBaseVoltage();
+		Complex3x3 yFrom = physicalY(branch.getFromShuntYabc(), baseVa, vbase);
+		assertEquals(0.0, yFrom.aa.getReal(), 1.0e-12);
+		assertEquals(4.09366860e-7, yFrom.aa.getImaginary(), 1.0e-11);
+		assertEquals(-1.12101718e-7, yFrom.ab.getImaginary(), 1.0e-11);
+		assertEquals(-5.50265960e-8, yFrom.ac.getImaginary(), 1.0e-11);
+		assertEquals(4.39535181e-7, yFrom.bb.getImaginary(), 1.0e-11);
+		assertEquals(-1.12101718e-7, yFrom.bc.getImaginary(), 1.0e-11);
+		assertEquals(4.09366860e-7, yFrom.cc.getImaginary(), 1.0e-11);
+	}
+
+	@Test
 	public void ckt24SubstationTransformerParsesSpacedPercentRsContinuation() throws IOException {
 		OpenDSSStaticDataParser parser = parseStaticOpenDss(
 				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", true);
@@ -409,17 +430,31 @@ public class OpenDssParserPowerFlowComparisonTest {
 		double toVbase = transformer.getToBus().getBaseVoltage();
 
 		Complex yffAa = physicalY(transformer.getYffabc().aa, baseVa, fromVbase, fromVbase);
+		Complex yffAb = physicalY(transformer.getYffabc().ab, baseVa, fromVbase, fromVbase);
 		Complex yftAa = physicalY(transformer.getYftabc().aa, baseVa, fromVbase, toVbase);
+		Complex yftAb = physicalY(transformer.getYftabc().ab, baseVa, fromVbase, toVbase);
+		Complex yftAc = physicalY(transformer.getYftabc().ac, baseVa, fromVbase, toVbase);
 		Complex yttAa = physicalY(transformer.getYttabc().aa, baseVa, toVbase, toVbase);
 		assertEquals(0.0001203896, yffAa.getReal(), 1.0e-10);
 		assertEquals(-0.00533225602, yffAa.getImaginary(), 1.0e-10);
+		assertEquals(-0.0000601947999, yffAb.getReal(), 1.0e-10);
+		assertEquals(0.00266612801, yffAb.getImaginary(), 1.0e-10);
 		assertEquals(-0.000695069679, yftAa.getReal(), 1.0e-10);
 		assertEquals(0.0307857945, yftAa.getImaginary(), 1.0e-10);
+		assertEquals(0.000695069679, yftAb.getReal(), 1.0e-10);
+		assertEquals(-0.0307857945, yftAb.getImaginary(), 1.0e-10);
+		assertEquals(0.0, yftAc.abs(), 1.0e-12);
 		assertEquals(0.00809402625, yttAa.getReal(), 1.0e-10);
 		assertEquals(-0.355483735, yttAa.getImaginary(), 1.0e-10);
 
 		transformer.setToTurnRatio(1.0125);
+		Complex tappedYftAa = physicalY(transformer.getYftabc().aa, baseVa, fromVbase, toVbase);
+		Complex tappedYftAb = physicalY(transformer.getYftabc().ab, baseVa, fromVbase, toVbase);
 		Complex tappedYttAa = physicalY(transformer.getYttabc().aa, baseVa, toVbase, toVbase);
+		assertEquals(-0.000686488571, tappedYftAa.getReal(), 1.0e-10);
+		assertEquals(0.0304057230, tappedYftAa.getImaginary(), 1.0e-10);
+		assertEquals(0.000686488571, tappedYftAb.getReal(), 1.0e-10);
+		assertEquals(-0.0304057230, tappedYftAb.getImaginary(), 1.0e-10);
 		assertEquals(0.00789540741, tappedYttAa.getReal(), 1.0e-10);
 		assertEquals(-0.346760559, tappedYttAa.getImaginary(), 5.0e-8);
 	}
@@ -2493,6 +2528,10 @@ public class OpenDssParserPowerFlowComparisonTest {
 	private static Complex physicalY(Complex ypu, double baseVa, double currentSideVbaseLl,
 			double voltageSideVbaseLl) {
 		return ypu.multiply(physicalYScale(baseVa, currentSideVbaseLl, voltageSideVbaseLl));
+	}
+
+	private static Complex3x3 physicalY(Complex3x3 ypu, double baseVa, double vbaseLl) {
+		return ypu.multiply(physicalYScale(baseVa, vbaseLl, vbaseLl));
 	}
 
 	private static double physicalYScale(double baseVa, double currentSideVbaseLl, double voltageSideVbaseLl) {
