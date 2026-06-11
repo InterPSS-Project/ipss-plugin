@@ -26,6 +26,7 @@ public class IEEE39_OptBasecase_SsaResult_Sparse_Sample {
 		dclfAlgo.calculateDclf();
 
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(50.0);
+		//ssaResult.printBaseOverLimitInfo();
 
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
 		
@@ -39,6 +40,7 @@ public class IEEE39_OptBasecase_SsaResult_Sparse_Sample {
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);	
 
 		// check the branch loading after optimization
+		/* 
 		double baseMVA = dclfAlgo.getNetwork().getBaseMva();
 		dclfAlgo.getDclfAlgoBranchList().stream() 
 			.forEach(dclfBranch -> {
@@ -52,5 +54,10 @@ public class IEEE39_OptBasecase_SsaResult_Sparse_Sample {
 							loading);
 					}
 			});
+		*/	
+
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo).calBaseCaseLoading(ssaResult.getBaseOverLimitInfo());	
+		ssaResultAfter.printBaseOverLimitInfo(ssaResult.getBaseOverLimitInfo());
 	}
+	
 }
