@@ -621,12 +621,99 @@ profiles. That dataset should be reviewed separately before importing any files,
 because it may use a different feeder variant and control/action model than the
 checked-in OpenDSS IEEE8500 case.
 
+## Profile-Enabled Controlled Ckt24 Update
+
+A later 2026-06-11 refresh moved Ckt24 from the repeated-static benchmark to a
+yearly profile-enabled master:
+`testData/feeder/Ckt24/master_ckt24_yearly_interpss.dss`. This master keeps the
+original Ckt24 yearly load shapes and load bindings, but uses the parser-ready
+static line file already used for InterPSS Ckt24 comparisons.
+
+Controls are enabled on both engines for this comparison path:
+
+- DSS-Python: `controlmode=static`, `maxcontroliter=100`, RegControl enabled,
+  and CapControl enabled.
+- InterPSS: `QstsControlMode.STATIC`, `maxControlIterations=100`, parser
+  RegControl enabled, and CapControl enabled.
+
+The Java large-feeder comparison and performance harnesses now accept
+`qsts.compare.masterFile` / `qsts.perf.masterFile`,
+`qsts.compare.mode` / `qsts.perf.mode`, and matching step-size properties, while
+continuing to build through `OpenDSSDataParser.forStaticNetwork()`. The
+DSS-Python reference and performance scripts now accept the same master/mode
+overrides and print the master file in their metric output.
+
+Focused controlled profile-enabled smoke:
+
+```bash
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest="QstsLoadStateStoreTest,OpenDssIeee13DailyQstsProfileTest,QstsLargeFeederComparisonExport" \
+  -Dqsts.compare.case=ckt24 \
+  -Dqsts.compare.masterFile=master_ckt24_yearly_interpss.dss \
+  -Dqsts.compare.mode=YEARLY \
+  -Dqsts.compare.steps=2 \
+  -Dqsts.compare.outputDir=target/qsts-ckt24-yearly-2step-after-control-output \
+  -Dqsts.compare.controlMode=STATIC \
+  -Dqsts.compare.maxControlIterations=100 \
+  -Dqsts.compare.tolerance=1.0e-6 \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Result: `BUILD SUCCESS`, `Tests run: 13, Failures: 0, Errors: 0, Skipped: 0`.
+
+Refreshed 2-step controlled profile-enabled comparisons:
+
+```text
+QSTS_VOLTAGE_COMPARE commonKeys=14320 dssOnly=0 interpssOnly=22034
+maxMagDelta=0.0017546525 magFailures=0
+maxAngleDelta=0.000756435 angleFailures=0
+
+QSTS_LOAD_POWER_COMPARE commonKeys=8444 dssOnly=0 interpssOnly=368
+dssPTotalKw=46423.4454523 interpssPTotalKw=46424.7649667
+dssQTotalKvar=8212.4897142 interpssQTotalKvar=8209.50447968
+maxPDelta=0.06397092 pFailures=0
+maxQDelta=0.240896534 qFailures=0
+
+QSTS_BRANCH_POWER_COMPARE commonKeys=28405 dssOnly=57 interpssOnly=48
+maxPDelta=0.28418337 pFailures=0
+maxQDelta=0.8739569147 qFailures=0
+```
+
+The branch common-key P/Q magnitudes are within tolerance. The branch comparison
+script still exits nonzero because DSS-Python has 57 branch terminal/phase keys
+not present in the InterPSS export for this 2-step yearly window, so branch key
+coverage remains open.
+
+Controlled 8760 profile-enabled Ckt24 performance after caching load profile
+bindings in `QstsStateApplier`:
+
+```text
+DSSPY_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+converged=true elapsedMillis=18985.057 msPerStep=2.167244 maxIterations=8
+
+INTERPSS_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+actualSteps=8760 converged=true elapsedMillis=30132.571 msPerStep=3.439791
+maxIterations=6 symbolicFactors=1 numericFactors=302 valueUpdates=0 fallbackCount=0
+```
+
+The cache reduced InterPSS state-application cost from about `0.867 ms/step` to
+`0.482 ms/step`, and total InterPSS time from about `3.77 ms/step` to
+`3.44 ms/step`. The current profile-enabled InterPSS throughput is about `63%`
+of DSS-Python throughput for this controlled 8760 Ckt24 run, so the requested
+80% performance target is not met yet. The remaining measured cost is mainly
+fixed-point power flow (`2.954 ms/step`).
+
 ## Final State
 
 - Branch: `qsts-opendss-parity-improvements`
-- Working tree before this report: clean
-- Six implementation/documentation commits completed
-- Focused QSTS test sweep passed
-- Broader `ipss.plugin.3phase` Maven test gate passed
+- Static parser/QSTS boundary work remains in place and focused tests pass.
+- Large-feeder comparison/performance paths now require enabled controls by
+  default unless an explicit diagnostic override is supplied.
+- Ckt24 yearly profile-enabled 2-step voltage/load common-key parity passes.
+- Ckt24 yearly profile-enabled branch common-key P/Q magnitudes pass, but branch
+  key coverage still needs cleanup.
+- Ckt24 yearly profile-enabled 8760 performance is improved but still below the
+  80% DSS-Python throughput target.
 
-This completes the requested six-task QSTS improvement goal.
+The static-boundary and controlled-comparison harness goals are completed. The
+profile-enabled yearly performance target remains open.
