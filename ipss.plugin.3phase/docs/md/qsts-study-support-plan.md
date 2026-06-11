@@ -672,15 +672,17 @@ Verification:
 
 ### TS6: Feeder Smoke Tests
 
-- [ ] Run Ckt7 yearly first 24 steps with controls off.
-- [ ] Run Ckt24 first 24 or 168 steps with controls off after shape parsing is
-  stable.
+- [ ] Run controlled Ckt7 yearly first 24 steps with `controlmode=static`,
+  RegControl enabled, and CapControl enabled. Controls-off runs are diagnostic
+  only.
+- [ ] Run controlled Ckt24 first 24 or 168 steps after shape parsing is stable,
+  then compare against DSS-Python bus voltages and branch flows at every step.
 - [ ] Export per-step worst voltage error and convergence table.
 - [ ] Document residual patterns in `opendss-feeder-benchmark-findings.md`.
 
 Verification:
 
-- Controls-off feeder runs converge across the selected step window.
+- Controlled feeder runs converge across the selected step window.
 - Worst errors are stable and explainable by already-known static modeling
   gaps, not time-series state application bugs.
 
@@ -807,7 +809,8 @@ Minimum enabled regression set for v1:
 - Effective load P/Q mini tests.
 - DSS-Python-backed two-bus daily shape voltage comparison.
 - DSS-Python-backed low-voltage CVR/ZIP shaped-load comparison.
-- Ckt7 first-day controls-off smoke test.
+- Ckt7 first-day controlled smoke test, with controls-off retained only as a
+  frozen-state diagnostic.
 
 ## Open Questions
 
