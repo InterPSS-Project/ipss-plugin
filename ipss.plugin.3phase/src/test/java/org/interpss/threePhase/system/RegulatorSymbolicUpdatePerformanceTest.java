@@ -25,13 +25,13 @@ public class RegulatorSymbolicUpdatePerformanceTest {
 	void ieee123RegulatorQstsComparesMatrixRebuildModes() {
 		SolvedMode fullRebuild = solveIeee123(Mode.FULL_REBUILD);
 		SolvedMode symbolNewMatrix = solveIeee123(Mode.SYMBOL_REUSE_NEW_MATRIX);
-		SolvedMode symbolValueUpdate = solveIeee123(Mode.SYMBOL_REUSE_VALUE_UPDATE);
+		SolvedMode cacheReuse = solveIeee123(Mode.CACHE_REUSE);
 
 		assertTrue(fullRebuild.result().isConverged());
 		assertTrue(symbolNewMatrix.result().isConverged());
-		assertTrue(symbolValueUpdate.result().isConverged());
+		assertTrue(cacheReuse.result().isConverged());
 		assertVoltageParity(fullRebuild.result(), symbolNewMatrix.result());
-		assertVoltageParity(fullRebuild.result(), symbolValueUpdate.result());
+		assertVoltageParity(fullRebuild.result(), cacheReuse.result());
 
 		assertTrue(fullRebuild.algorithm().getFixedPointYMatrixSymbolicFactorizationCount()
 						== fullRebuild.algorithm().getFixedPointYMatrixNumericFactorizationCount(),
@@ -41,8 +41,11 @@ public class RegulatorSymbolicUpdatePerformanceTest {
 				"Symbol reuse mode should run fewer symbolic factorizations than numeric factorizations");
 		assertEquals(0, symbolNewMatrix.algorithm().getFixedPointYMatrixValueUpdateCount(),
 				"New-matrix symbol reuse mode should not update matrix values in place");
-		assertTrue(symbolValueUpdate.algorithm().getFixedPointYMatrixValueUpdateCount() > 0,
-				"Value-update mode should update existing sparse matrix values");
+		assertTrue(cacheReuse.algorithm().isFixedPointYMatrixCacheEnabled(),
+				"Default optimized mode should enable invalidation-aware fixed-point cache");
+		assertTrue(cacheReuse.algorithm().getFixedPointYMatrixNumericFactorizationCount()
+						<= symbolNewMatrix.algorithm().getFixedPointYMatrixNumericFactorizationCount(),
+				"Cache reuse should not run more numeric factorizations than symbol-reuse mode");
 	}
 
 	private static SolvedMode solveIeee123(Mode mode) {
@@ -129,7 +132,7 @@ public class RegulatorSymbolicUpdatePerformanceTest {
 	private enum Mode {
 		FULL_REBUILD(true, true),
 		SYMBOL_REUSE_NEW_MATRIX(false, true),
-		SYMBOL_REUSE_VALUE_UPDATE(false, false);
+		CACHE_REUSE(false, false);
 
 		private final boolean disableSymbolReuse;
 		private final boolean disableValueUpdate;
