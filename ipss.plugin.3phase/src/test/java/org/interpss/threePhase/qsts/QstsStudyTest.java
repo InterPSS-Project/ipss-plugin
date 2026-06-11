@@ -67,6 +67,25 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void staticScheduleReusesSolvedStateAfterFirstQstsStep() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(4)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(4, result.getStepResults().size());
+		assertEquals(1, powerFlow.solveCount);
+		assertEquals(3, result.getStep(0).getIterationCount());
+		assertEquals(0, result.getStep(1).getIterationCount());
+		assertEquals(0, result.getStep(2).getIterationCount());
+		assertEquals(0, result.getStep(3).getIterationCount());
+	}
+
+	@Test
 	void failedStepIncludesStepModeHourAndReason() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
@@ -163,7 +182,7 @@ public class QstsStudyTest {
 	}
 
 	@Test
-	void capacitorControlsDisableFixedPointYMatrixCache() throws InterpssException {
+	void staticCapacitorControlsUseInvalidationAwareFixedPointYMatrixCache() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		Static3PBus loadBus = network.getBus("load");
 		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
@@ -185,11 +204,11 @@ public class QstsStudyTest {
 				.run();
 
 		assertTrue(result.isConverged());
-		assertFalse(powerFlow.fixedPointYMatrixCacheEnabled);
+		assertTrue(powerFlow.fixedPointYMatrixCacheEnabled);
 	}
 
 	@Test
-	void regulatorControlsDisableFixedPointYMatrixCacheForSymbolicRebuild()
+	void staticRegulatorControlsUseInvalidationAwareFixedPointYMatrixCache()
 			throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		RegulatorControlData control = new RegulatorControlData("reg1", "regBranch", 2,
@@ -204,7 +223,7 @@ public class QstsStudyTest {
 				.run();
 
 		assertTrue(result.isConverged());
-		assertFalse(powerFlow.fixedPointYMatrixCacheEnabled);
+		assertTrue(powerFlow.fixedPointYMatrixCacheEnabled);
 	}
 
 	@Test
@@ -323,6 +342,11 @@ public class QstsStudyTest {
 				new QstsProfileBinding("generator", "pv1", Map.of("daily", "pv_day"),
 						QstsDeviceStatus.VARIABLE)),
 				new QstsGlobalOptions("daily", steps, 1.0, 1.0, "off", 0, 0.0));
+	}
+
+	private static QstsScheduleData staticSchedule() {
+		return new QstsScheduleData(new QstsProfileRegistry(), null,
+				new QstsGlobalOptions("snapshot", 1, 1.0, 1.0, "off", 0, 0.0));
 	}
 
 	private static Static3PNetwork twoBusNetwork() throws InterpssException {

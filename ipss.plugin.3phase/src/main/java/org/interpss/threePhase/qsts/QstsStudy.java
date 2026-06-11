@@ -202,11 +202,13 @@ public class QstsStudy {
 		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
 		boolean delayedCapacitorControls = usesDelayedControlQueue();
-		algorithm.setFixedPointYMatrixCacheEnabled(pfMethod == DistributionPFMethod.Fixed_Point
-				&& !controlsEnabled);
+		algorithm.setFixedPointYMatrixCacheEnabled(qstsFixedPointYMatrixCacheEnabled(
+				delayedCapacitorControls));
 		algorithm.setRegulatorControlEnabled(controlsEnabled && !regulatorControls.isEmpty());
 		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
 				&& !capacitorControls.isEmpty());
+		boolean staticStateReuseEnabled = qstsStaticStateReuseEnabled(delayedCapacitorControls);
+		boolean solvedReusableStaticState = false;
 		if(profile != null) {
 			profile.addSetup(System.nanoTime() - setupStartNanos);
 		}
@@ -233,11 +235,12 @@ public class QstsStudy {
 			}
 			algorithm.setInitBusVoltageEnabled(i == 0 ? initializeFirstStepVoltages : false);
 			long powerFlowStartNanos = profile == null ? 0L : System.nanoTime();
-			PowerFlowControlResult controlResult = runPowerFlowControlLoop(algorithm, context,
-					controlsEnabled, profile);
+			PowerFlowControlResult controlResult = solvedReusableStaticState
+					? PowerFlowControlResult.reusedSolvedState()
+					: runPowerFlowControlLoop(algorithm, context, controlsEnabled, profile);
 			if(profile != null) {
 				profile.addPowerFlow(System.nanoTime() - powerFlowStartNanos,
-						controlResult.powerFlowIterations);
+						controlResult.powerFlowIterations, controlResult.reusedSolvedState);
 			}
 			boolean converged = controlResult.converged;
 			List<QstsInverterControlSample> inverterControlSamples = controlResult.inverterControlSamples;
@@ -253,7 +256,7 @@ public class QstsStudy {
 					: "Distribution power flow did not converge at step " + i
 							+ " mode=" + mode + " hour=" + hour;
 			long outputStartNanos = profile == null ? 0L : System.nanoTime();
-			steps.add(createStepResult(context, converged, algorithm.getIterationCount(),
+			steps.add(createStepResult(context, converged, controlResult.powerFlowIterations,
 					failureReason, actionCount, inverterControlSamples));
 			if(profile != null) {
 				profile.addOutputs(System.nanoTime() - outputStartNanos);
@@ -261,6 +264,9 @@ public class QstsStudy {
 			}
 			if(!converged) {
 				break;
+			}
+			if(staticStateReuseEnabled && !controlResult.reusedSolvedState) {
+				solvedReusableStaticState = true;
 			}
 		}
 		if(profile != null) {
@@ -293,6 +299,20 @@ public class QstsStudy {
 
 	private boolean usesDelayedControlQueue() {
 		return controlMode == QstsControlMode.TIME || controlMode == QstsControlMode.EVENT;
+	}
+
+	private boolean qstsFixedPointYMatrixCacheEnabled(boolean delayedCapacitorControls) {
+		return pfMethod == DistributionPFMethod.Fixed_Point
+				&& !delayedCapacitorControls
+				&& !Boolean.getBoolean("ipss.qsts.disableFixedPointSymbolReuse")
+				&& !Boolean.getBoolean("ipss.qsts.disableFixedPointValueUpdate");
+	}
+
+	private boolean qstsStaticStateReuseEnabled(boolean delayedCapacitorControls) {
+		return !Boolean.getBoolean("ipss.qsts.disableStaticStateReuse")
+				&& !delayedCapacitorControls
+				&& inverterControls.isEmpty()
+				&& !stateApplier.hasTimeVaryingBindings();
 	}
 
 	private int processQueuedActions(boolean enabled, double timeSeconds) {
@@ -549,12 +569,24 @@ public class QstsStudy {
 		private final boolean converged;
 		private final List<QstsInverterControlSample> inverterControlSamples;
 		private final int powerFlowIterations;
+		private final boolean reusedSolvedState;
 
 		private PowerFlowControlResult(boolean converged,
 				List<QstsInverterControlSample> inverterControlSamples, int powerFlowIterations) {
+			this(converged, inverterControlSamples, powerFlowIterations, false);
+		}
+
+		private PowerFlowControlResult(boolean converged,
+				List<QstsInverterControlSample> inverterControlSamples, int powerFlowIterations,
+				boolean reusedSolvedState) {
 			this.converged = converged;
 			this.inverterControlSamples = inverterControlSamples;
 			this.powerFlowIterations = powerFlowIterations;
+			this.reusedSolvedState = reusedSolvedState;
+		}
+
+		private static PowerFlowControlResult reusedSolvedState() {
+			return new PowerFlowControlResult(true, Collections.emptyList(), 0, true);
 		}
 	}
 
@@ -568,6 +600,7 @@ public class QstsStudy {
 		private int steps;
 		private int convergedSteps;
 		private int powerFlowIterations;
+		private int reusedPowerFlowSteps;
 
 		private static QstsRuntimeProfile enabled() {
 			return Boolean.getBoolean("ipss.qsts.profile") ? new QstsRuntimeProfile() : null;
@@ -585,9 +618,12 @@ public class QstsStudy {
 			controlsNanos += nanos;
 		}
 
-		private void addPowerFlow(long nanos, int iterations) {
+		private void addPowerFlow(long nanos, int iterations, boolean reusedSolvedState) {
 			powerFlowNanos += nanos;
 			powerFlowIterations += iterations;
+			if(reusedSolvedState) {
+				reusedPowerFlowSteps++;
+			}
 		}
 
 		private void addOutputs(long nanos) {
@@ -608,6 +644,8 @@ public class QstsStudy {
 					Integer.valueOf(steps), Integer.valueOf(convergedSteps),
 					Integer.valueOf(powerFlowIterations), Double.valueOf(powerFlowIterations / (double) divisor),
 					Double.valueOf(toMillis(setupNanos)));
+			System.out.printf("[QSTS profile] reused_powerflow_steps=%d%n",
+					Integer.valueOf(reusedPowerFlowSteps));
 			System.out.printf("[QSTS profile] per_step_ms total=%.6f state_apply=%.6f controls=%.6f powerflow=%.6f outputs=%.6f%n",
 					Double.valueOf(toMillis(totalStepNanos) / divisor),
 					Double.valueOf(toMillis(stateApplyNanos) / divisor),
