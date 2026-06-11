@@ -158,7 +158,7 @@ public class QstsLargeFeederComparisonExport {
 			List<RegulatorControlData> controls) {
 		StringBuilder csv = new StringBuilder();
 		csv.append("case,step,hour,control,branch,winding,tap_winding,phase,tap_number,tap_ratio,")
-				.append("target_voltage,bandwidth,pt_ratio,regulated_bus,line_drop_r,line_drop_x,voltage_limit\n");
+				.append("target_voltage,bandwidth,pt_ratio,delay_seconds,regulated_bus,line_drop_r,line_drop_x,voltage_limit\n");
 		for(var step : result.getStepResults()) {
 			for(RegulatorControlData control : controls) {
 				csv.append(feeder.name()).append(',')
@@ -174,6 +174,7 @@ public class QstsLargeFeederComparisonExport {
 						.append(String.format(Locale.US, "%.12g", control.getTargetVoltage())).append(',')
 						.append(String.format(Locale.US, "%.12g", control.getBandwidth())).append(',')
 						.append(String.format(Locale.US, "%.12g", control.getPtRatio())).append(',')
+						.append(String.format(Locale.US, "%.12g", control.getDelaySeconds())).append(',')
 						.append(control.getRegulatedBusId() == null ? "" : control.getRegulatedBusId()).append(',')
 						.append(String.format(Locale.US, "%.12g", control.getLineDropR())).append(',')
 						.append(String.format(Locale.US, "%.12g", control.getLineDropX())).append(',')
