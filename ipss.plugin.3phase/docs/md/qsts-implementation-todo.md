@@ -1068,7 +1068,9 @@ Verification:
   - Covered by `QstsStorageBaseStateTest`, which verifies sequential
     charge/discharge carryover through `QstsStateApplier` and static
     `IPhaseGen` injections.
-- [ ] Per-step terminal powers match DSS-Python before bus voltage assertions.
+- [x] Per-step terminal powers match DSS-Python before bus voltage assertions.
+  - `OpenDssQstsMultiStepReferenceTest` covers shaped load, PVSystem, and
+    scheduled storage terminal P/Q with checked-in multi-step reference rows.
 
 ## Slide 12b: Control Implementation Sequence
 
