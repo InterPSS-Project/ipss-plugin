@@ -1371,8 +1371,13 @@ Migration to do:
 
 - [x] Update static network bus APIs to expose phase-device lists as
   `List<IPhaseLoad>` and `List<IPhaseGen>` or equivalent read-only views.
-- [ ] Keep DStab network and bus APIs typed to DStab dynamic classes only for
+- [x] Keep DStab network and bus APIs typed to DStab dynamic classes only for
   dynamic studies.
+  - `OpenDSSStaticDataParser` does not expose or accept a `DStabNetwork3Phase`.
+  - `OpenDSSQstsStudyFactory` rejects dynamic OpenDSS parsers and operates on
+    the parser's `Static3PNetwork`.
+  - Static PF voltage update/positive-sequence helpers now use the generic
+    `IBus3Phase` phase-voltage contract instead of DStab bus special cases.
 - [x] Update OpenDSS parser-created static load/PV/storage paths to add devices
   through `IPhaseLoad` and `IPhaseGen` boundaries, not DStab-specific lists.
   - Static parser mode now builds these QSTS-relevant devices on the existing

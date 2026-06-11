@@ -2227,10 +2227,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private void updateFixedPointVoltage(IBus3Phase bus3P, Complex3x1 vabc) {
-		if(bus3P instanceof DStab3PBus) {
-			bus3P.set3PhaseVotlages(vabc);
-			return;
-		}
 		Complex3x1 existing = bus3P.get3PhaseVotlages();
 		if(existing == null) {
 			bus3P.set3PhaseVotlages(vabc);
@@ -2243,7 +2239,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	private void updateFixedPointVoltage(IBus3Phase bus3P, double[] voltage, int offset) {
 		Complex3x1 existing = bus3P.get3PhaseVotlages();
-		if(existing == null || bus3P instanceof DStab3PBus) {
+		if(existing == null) {
 			bus3P.set3PhaseVotlages(new Complex3x1(
 					new Complex(voltage[offset], voltage[offset + 1]),
 					new Complex(voltage[offset + 2], voltage[offset + 3]),
@@ -2266,9 +2262,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private Complex positiveSequenceVoltage(IBus3Phase bus3P) {
-		if(bus3P instanceof DStab3PBus dstabBus) {
-			return dstabBus.getThreeSeqVoltage().b_1;
-		}
 		return bus3P.get3PhaseVotlages().to012().b_1;
 	}
 
