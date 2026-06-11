@@ -24,7 +24,7 @@ public class Texas2K_OptBasecase_SsaResult_Sample {
 		
 		double loadingThreshold = 90.0;
 		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).baseCaseScan(loadingThreshold);   
-		ssaResult.printBaseOverLimitInfo();
+		//ssaResult.printBaseOverLimitInfo();
 		
 		// perform basecase loaing limit optimization	
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
@@ -37,6 +37,7 @@ public class Texas2K_OptBasecase_SsaResult_Sample {
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);	
 
 		// check the branch loading after optimization
+		/* 
 		double baseMVA = dclfAlgo.getNetwork().getBaseMva();
 		dclfAlgo.getDclfAlgoBranchList().stream() 
 			.forEach(dclfBranch -> {
@@ -50,5 +51,8 @@ public class Texas2K_OptBasecase_SsaResult_Sample {
 							loading);
 				}
 			});
+		*/
+		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo).calBaseCaseLoading(ssaResult.getBaseOverLimitInfo());	
+		ssaResultAfter.printBaseOverLimitInfo(ssaResult.getBaseOverLimitInfo());	
 	}
 }
