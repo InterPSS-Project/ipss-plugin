@@ -19,6 +19,12 @@ import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
+import org.interpss.threePhase.qsts.QstsCapacitorStateSample;
+import org.interpss.threePhase.qsts.QstsControlMode;
+import org.interpss.threePhase.qsts.QstsMode;
+import org.interpss.threePhase.qsts.QstsResult;
+import org.interpss.threePhase.qsts.QstsStepResult;
+import org.interpss.threePhase.qsts.opendss.OpenDSSQstsStudyFactory;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +36,8 @@ public class OpenDssCapControlMiniComparisonTest {
 	private static final String FEEDER_FOLDER = "testData/feeder/OpenDSSCapControlMini";
 	private static final String REFERENCE_RESOURCE =
 			"opendss-reference/capcontrol-mini-dss-python-capacitor-reference.csv";
+	private static final String DELAYED_REFERENCE_RESOURCE =
+			"opendss-reference/capcontrol-delayed-dss-python-operation-reference.csv";
 	private static final double TERMINAL_KVAR_TOLERANCE = 2.0;
 
 	@Test
@@ -62,6 +70,39 @@ public class OpenDssCapControlMiniComparisonTest {
 			assertEquals(reference.closed, closed, "Capacitor state mismatch for " + reference.caseId);
 			assertEquals(reference.totalQKvar, totalQKvar, TERMINAL_KVAR_TOLERANCE,
 					"Capacitor kvar mismatch for " + reference.caseId);
+		}
+	}
+
+	@Test
+	void delayedCapacitorControlOperationCountsMatchDssPythonMiniCase() throws IOException {
+		for(DelayedCapacitorReference reference : readDelayedReferences()) {
+			OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+			assertTrue(parser.parseFeederData(FEEDER_FOLDER, reference.masterFile));
+			assertTrue(parser.calcVoltageBases());
+			assertTrue(parser.convertActualValuesToPU(1.0));
+
+			QstsResult result = OpenDSSQstsStudyFactory.from(parser)
+					.setMode(QstsMode.DAILY)
+					.setStartIndex(0)
+					.setNumberOfSteps(3)
+					.setStepSizeHours(1.0)
+					.setControlMode(QstsControlMode.TIME)
+					.setMaxControlIterations(20)
+					.setMaxPowerFlowIterations(100)
+					.setTolerance(1.0e-8)
+					.run();
+
+			assertTrue(result.isConverged(), "QSTS did not converge for " + reference.caseId);
+			QstsCapacitorStateSample state = capacitorState(result, reference.stepIndex, "cap1");
+			QstsStepResult step = result.getStep(reference.stepIndex);
+			assertEquals(reference.closed, state.isClosed(),
+					"Delayed capacitor state mismatch for " + reference.caseId + " step " + reference.stepIndex);
+			assertEquals(reference.operationCount, state.getOperationCount(),
+					"Delayed capacitor operation count mismatch for " + reference.caseId
+							+ " step " + reference.stepIndex);
+			assertEquals(reference.actionCount, step.getActionCount(),
+					"Delayed capacitor action count mismatch for " + reference.caseId
+							+ " step " + reference.stepIndex);
 		}
 	}
 
@@ -103,6 +144,38 @@ public class OpenDssCapControlMiniComparisonTest {
 		return references;
 	}
 
+	private static QstsCapacitorStateSample capacitorState(QstsResult result, int stepIndex, String capacitorId) {
+		for(QstsCapacitorStateSample sample : result.getCapacitorStates()) {
+			if(sample.getStepIndex() == stepIndex && sample.getCapacitorId().equalsIgnoreCase(capacitorId)) {
+				return sample;
+			}
+		}
+		assertTrue(false, "Missing capacitor state for " + capacitorId + " step " + stepIndex);
+		return null;
+	}
+
+	private static List<DelayedCapacitorReference> readDelayedReferences() throws IOException {
+		InputStream stream = OpenDssCapControlMiniComparisonTest.class.getClassLoader()
+				.getResourceAsStream(DELAYED_REFERENCE_RESOURCE);
+		assertNotNull(stream, "Missing resource " + DELAYED_REFERENCE_RESOURCE);
+		List<DelayedCapacitorReference> references = new ArrayList<>();
+		try(BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+			String line = reader.readLine();
+			while((line = reader.readLine()) != null) {
+				if(line.trim().isEmpty()) {
+					continue;
+				}
+				String[] columns = line.split(",");
+				references.add(new DelayedCapacitorReference(columns[0], columns[1],
+						Integer.valueOf(columns[2]).intValue(),
+						Boolean.valueOf(columns[3]).booleanValue(),
+						Integer.valueOf(columns[4]).intValue(),
+						Integer.valueOf(columns[5]).intValue()));
+			}
+		}
+		return references;
+	}
+
 	private static class CapacitorReference {
 		private final String caseId;
 		private final String masterFile;
@@ -117,6 +190,25 @@ public class OpenDssCapControlMiniComparisonTest {
 			this.capacitorId = capacitorId;
 			this.closed = closed;
 			this.totalQKvar = totalQKvar;
+		}
+	}
+
+	private static class DelayedCapacitorReference {
+		private final String caseId;
+		private final String masterFile;
+		private final int stepIndex;
+		private final boolean closed;
+		private final int operationCount;
+		private final int actionCount;
+
+		private DelayedCapacitorReference(String caseId, String masterFile, int stepIndex,
+				boolean closed, int operationCount, int actionCount) {
+			this.caseId = caseId;
+			this.masterFile = masterFile;
+			this.stepIndex = stepIndex;
+			this.closed = closed;
+			this.operationCount = operationCount;
+			this.actionCount = actionCount;
 		}
 	}
 

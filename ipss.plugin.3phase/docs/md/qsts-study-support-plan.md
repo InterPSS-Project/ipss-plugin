@@ -538,9 +538,10 @@ Completed or established:
   transformers, regulators, capacitors, reactors, loads, PV, and storage are
   materialized without DStab objects.
 - Control foundation:
-  capacitor controls are implemented for the static PF path with DSS-Python
-  mini-case coverage; inverter and storage controls remain staged after their
-  static model foundations.
+  capacitor controls are implemented for the static PF and QSTS paths with
+  DSS-Python mini-case coverage, including delayed control-queue operation
+  counts; inverter and storage controls remain staged after their static model
+  foundations.
 - Regulator performance foundation:
   regulator tap QSTS uses symbolic factorization reuse and in-place sparse
   matrix value updates as the default method. Direct RHS compensation,
@@ -553,14 +554,13 @@ Completed or established:
 
 Next high-value slices:
 
-1. Add the QSTS DSS-Python reference harness for multi-step load/PV/storage
-   cases so time-series semantics are tested step by step.
-2. Finish delayed control-queue operation-count parity for capacitor controls.
-3. Implement inverter control setpoint modes on top of the static `IPhaseGen`
+1. Add PV duty-curve QSTS coverage with inverter controls enabled and
+   checked-in DSS-Python terminal P/Q references.
+2. Implement inverter control setpoint modes on top of the static `IPhaseGen`
    capability model.
-4. Wire scheduled storage dispatch through `QstsStateApplier`, including energy
+3. Wire scheduled storage dispatch through `QstsStateApplier`, including energy
    carryover between steps.
-5. Begin `QstsBaseCase`, `QstsPreparedSchedule`, and factorization-cache work
+4. Begin `QstsBaseCase`, `QstsPreparedSchedule`, and factorization-cache work
    only after the exact QSTS reference path has stable mini-case coverage.
 
 ## Milestones
@@ -693,18 +693,19 @@ Verification:
 
 ### TS7b: Capacitor Controls
 
-- [ ] Parse CapControl properties: controlled capacitor, monitored element,
+- [x] Parse CapControl properties: controlled capacitor, monitored element,
   terminal, type, ON/OFF settings, CT/PT ratios, delays, voltage override,
   `Vmax`, `Vmin`, `CTPhase`, and `PTPhase`.
-- [ ] Implement voltage, current, kvar, PF, and time control modes in priority
+- [x] Implement voltage, current, kvar, PF, and time control modes in priority
   order guided by OpenDSS source behavior.
-- [ ] Implement capacitor state updates and export per-step states/kvar.
-- [ ] Add DSS-Python mini cases for:
+- [x] Implement capacitor state updates and export per-step states/kvar.
+- [x] Add DSS-Python mini cases for:
   - voltage ON/OFF switching
   - current switching
   - kvar/PF switching
   - PTPhase/CTPhase AVG/MAX/MIN behavior
-  - voltage override.
+  - voltage override
+  - delayed control-queue operation count.
 
 Verification:
 
