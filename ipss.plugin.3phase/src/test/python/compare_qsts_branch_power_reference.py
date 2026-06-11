@@ -102,10 +102,42 @@ def compare(
     common = sorted(set(dss) & set(interpss))
     dss_only = sorted(set(dss) - set(interpss))
     interpss_only = sorted(set(interpss) - set(dss))
+    dss_only_failures = sum(
+        1 for key in dss_only
+        if abs(dss[key].p_kw) > p_tolerance_kw
+        or abs(dss[key].q_kvar) > q_tolerance_kvar
+    )
+    interpss_only_failures = sum(
+        1 for key in interpss_only
+        if abs(interpss[key].p_kw) > p_tolerance_kw
+        or abs(interpss[key].q_kvar) > q_tolerance_kvar
+    )
     max_p_delta = -1.0
     max_p_key = None
     max_q_delta = -1.0
     max_q_key = None
+    max_missing_p = 0.0
+    max_missing_p_key = None
+    max_missing_q = 0.0
+    max_missing_q_key = None
+    for key in dss_only:
+        p_delta = abs(dss[key].p_kw)
+        q_delta = abs(dss[key].q_kvar)
+        if p_delta > max_missing_p:
+            max_missing_p = p_delta
+            max_missing_p_key = key
+        if q_delta > max_missing_q:
+            max_missing_q = q_delta
+            max_missing_q_key = key
+    for key in interpss_only:
+        p_delta = abs(interpss[key].p_kw)
+        q_delta = abs(interpss[key].q_kvar)
+        if p_delta > max_missing_p:
+            max_missing_p = p_delta
+            max_missing_p_key = key
+        if q_delta > max_missing_q:
+            max_missing_q = q_delta
+            max_missing_q_key = key
     p_failures = 0
     q_failures = 0
     for key in common:
@@ -130,13 +162,17 @@ def compare(
         f"commonKeys={len(common)} dssOnly={len(dss_only)} interpssOnly={len(interpss_only)} "
         f"maxPDelta={max_p_delta:.12g} maxPKey={max_p_key} "
         f"maxQDelta={max_q_delta:.12g} maxQKey={max_q_key} "
+        f"maxMissingP={max_missing_p:.12g} maxMissingPKey={max_missing_p_key} "
+        f"maxMissingQ={max_missing_q:.12g} maxMissingQKey={max_missing_q_key} "
         f"pFailures={p_failures} qFailures={q_failures} "
+        f"dssOnlyFailures={dss_only_failures} interpssOnlyFailures={interpss_only_failures} "
         f"pToleranceKw={p_tolerance_kw:.12g} qToleranceKvar={q_tolerance_kvar:.12g}"
     )
     for label, rows in (("dssOnly", dss_only[:10]), ("interpssOnly", interpss_only[:10])):
         if rows:
             print(f"{label}Sample={rows}")
-    return 0 if p_failures == 0 and q_failures == 0 and not dss_only else 1
+    return 0 if (p_failures == 0 and q_failures == 0
+                 and dss_only_failures == 0 and interpss_only_failures == 0) else 1
 
 
 def main() -> int:
