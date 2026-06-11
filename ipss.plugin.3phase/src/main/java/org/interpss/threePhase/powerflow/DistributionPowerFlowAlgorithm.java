@@ -79,6 +79,13 @@ public interface DistributionPowerFlowAlgorithm {
 
 	public int getMaxIteration();
 
+	public default void setMaxControlIterations(int maxControlIterations) {
+	}
+
+	public default int getMaxControlIterations() {
+		return 20;
+	}
+
 	public int getIterationCount();
 
 	public boolean isFixedPointFallbackUsed();

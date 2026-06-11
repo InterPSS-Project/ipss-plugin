@@ -3054,6 +3054,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	@Override
+	public void setMaxControlIterations(int maxControlIterations) {
+		int normalized = Math.max(0, maxControlIterations);
+		this.maxRegulatorControlIterations = normalized;
+		this.maxCapacitorControlIterations = normalized;
+	}
+
+	@Override
+	public int getMaxControlIterations() {
+		return Math.max(this.maxRegulatorControlIterations, this.maxCapacitorControlIterations);
+	}
+
+	@Override
 	public int getIterationCount() {
 		return this.iterationCount;
 	}
