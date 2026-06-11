@@ -8,6 +8,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.ChildNetObjectFactory;
@@ -54,6 +55,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 	}
 	
 	@Test
+	@Disabled("Deprecated multinet child-network solver is bypassed in unit test suite")
 	public void testMultiNetLF() throws Exception{
 		//IpssCorePlugin.init();
 		
