@@ -319,6 +319,37 @@ def export_case(
         raise RuntimeError(f"DSS-Python QSTS reference did not converge for {feeder.name}")
 
 
+def require_enabled_controls(
+    control_mode: str,
+    max_control_iterations: int,
+    reg_controls_enabled: bool,
+    cap_controls_enabled: bool,
+    allow_disabled_controls: bool,
+) -> None:
+    if allow_disabled_controls:
+        return
+    if control_mode == "off":
+        raise ValueError(
+            "Large-feeder QSTS comparisons must run with controls enabled; "
+            "use --allow-disabled-controls only for frozen-state diagnostics"
+        )
+    if max_control_iterations <= 0:
+        raise ValueError(
+            "Large-feeder QSTS comparisons must allow control iterations; "
+            "use --allow-disabled-controls only for frozen-state diagnostics"
+        )
+    if not reg_controls_enabled:
+        raise ValueError(
+            "Large-feeder QSTS comparisons must keep regulator controls enabled; "
+            "use --allow-disabled-controls only for frozen-state diagnostics"
+        )
+    if not cap_controls_enabled:
+        raise ValueError(
+            "Large-feeder QSTS comparisons must keep capacitor controls enabled; "
+            "use --allow-disabled-controls only for frozen-state diagnostics"
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--case", action="append", choices=["all", "ckt24", "ieee8500", "8500"])
@@ -330,6 +361,7 @@ def main() -> None:
     parser.add_argument("--max-control-iterations", type=int, default=20)
     parser.add_argument("--disable-reg-controls", action="store_true")
     parser.add_argument("--disable-cap-controls", action="store_true")
+    parser.add_argument("--allow-disabled-controls", action="store_true")
     parser.add_argument("--skip-voltages", action="store_true")
     parser.add_argument("--skip-branch-flows", action="store_true")
     parser.add_argument("--skip-load-powers", action="store_true")
@@ -338,6 +370,13 @@ def main() -> None:
     include_voltages = not args.skip_voltages
     include_branch_flows = not args.skip_branch_flows
     include_load_powers = not args.skip_load_powers
+    require_enabled_controls(
+        args.control_mode,
+        args.max_control_iterations,
+        not args.disable_reg_controls,
+        not args.disable_cap_controls,
+        args.allow_disabled_controls,
+    )
     if not include_voltages and not include_branch_flows and not include_load_powers:
         raise ValueError("At least one export must be enabled")
 
