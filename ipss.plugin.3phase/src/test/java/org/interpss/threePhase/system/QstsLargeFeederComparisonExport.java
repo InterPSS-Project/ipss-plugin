@@ -19,6 +19,7 @@ import org.interpss.threePhase.qsts.QstsControlMode;
 import org.interpss.threePhase.qsts.QstsCsvExporter;
 import org.interpss.threePhase.qsts.QstsDevicePowerSample;
 import org.interpss.threePhase.qsts.QstsMode;
+import org.interpss.threePhase.qsts.QstsRegulatorTapSample;
 import org.interpss.threePhase.qsts.QstsResult;
 import org.interpss.threePhase.qsts.QstsResultSamplingMode;
 import org.interpss.threePhase.qsts.opendss.OpenDSSQstsStudyFactory;
@@ -80,8 +81,8 @@ public class QstsLargeFeederComparisonExport {
 			Path regulatorOutput = outputDir.resolve(feeder.key()
 					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
 					+ "_interpss_regulator_taps_by_step.csv");
-			Files.writeString(regulatorOutput, exportRegulatorTaps(feeder, result,
-					export.regulatorControls()), StandardCharsets.UTF_8);
+			Files.writeString(regulatorOutput, exportRegulatorTaps(feeder, result),
+					StandardCharsets.UTF_8);
 			Path capacitorOutput = outputDir.resolve(feeder.key()
 					+ "_qsts_" + controlTag(controlMode, regControlsEnabled, capControlsEnabled)
 					+ "_interpss_capacitor_states_by_step.csv");
@@ -98,7 +99,7 @@ public class QstsLargeFeederComparisonExport {
 					feeder.masterFile(), result.isConverged(),
 					result.getBusVoltages().size(), result.getBranchPowers().size(),
 					result.getLoadPowers().size(),
-					result.getStepResults().size() * export.regulatorControls().size(),
+					result.getStepResults().stream().mapToInt(step -> step.getRegulatorTaps().size()).sum(),
 					result.getCapacitorStates().size(),
 					output, branchOutput, loadOutput, regulatorOutput, capacitorOutput));
 			assertTrue(result.isConverged(), "QSTS export did not converge for " + feeder.name());
@@ -154,31 +155,30 @@ public class QstsLargeFeederComparisonExport {
 		return csv.toString();
 	}
 
-	private static String exportRegulatorTaps(FeederCase feeder, QstsResult result,
-			List<RegulatorControlData> controls) {
+	private static String exportRegulatorTaps(FeederCase feeder, QstsResult result) {
 		StringBuilder csv = new StringBuilder();
 		csv.append("case,step,hour,control,branch,winding,tap_winding,phase,tap_number,tap_ratio,")
 				.append("target_voltage,bandwidth,pt_ratio,delay_seconds,regulated_bus,line_drop_r,line_drop_x,voltage_limit\n");
 		for(var step : result.getStepResults()) {
-			for(RegulatorControlData control : controls) {
+			for(QstsRegulatorTapSample sample : step.getRegulatorTaps()) {
 				csv.append(feeder.name()).append(',')
-						.append(step.getStepIndex()).append(',')
-						.append(String.format(Locale.US, "%.12g", step.getHour())).append(',')
-						.append(control.getId()).append(',')
-						.append(control.getBranchName()).append(',')
-						.append(control.getWinding()).append(',')
-						.append(control.getTapWinding()).append(',')
-						.append(control.getPhaseCode()).append(',')
-						.append(control.getTapPosition()).append(',')
-						.append(String.format(Locale.US, "%.12g", control.getTapRatio())).append(',')
-						.append(String.format(Locale.US, "%.12g", control.getTargetVoltage())).append(',')
-						.append(String.format(Locale.US, "%.12g", control.getBandwidth())).append(',')
-						.append(String.format(Locale.US, "%.12g", control.getPtRatio())).append(',')
-						.append(String.format(Locale.US, "%.12g", control.getDelaySeconds())).append(',')
-						.append(control.getRegulatedBusId() == null ? "" : control.getRegulatedBusId()).append(',')
-						.append(String.format(Locale.US, "%.12g", control.getLineDropR())).append(',')
-						.append(String.format(Locale.US, "%.12g", control.getLineDropX())).append(',')
-						.append(String.format(Locale.US, "%.12g", control.getVLimit()))
+						.append(sample.getStepIndex()).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getHour())).append(',')
+						.append(sample.getControlId()).append(',')
+						.append(sample.getBranchName()).append(',')
+						.append(sample.getWinding()).append(',')
+						.append(sample.getTapWinding()).append(',')
+						.append(sample.getPhase()).append(',')
+						.append(sample.getTapPosition()).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getTapRatio())).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getTargetVoltage())).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getBandwidth())).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getPtRatio())).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getDelaySeconds())).append(',')
+						.append(sample.getRegulatedBusId() == null ? "" : sample.getRegulatedBusId()).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getLineDropR())).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getLineDropX())).append(',')
+						.append(String.format(Locale.US, "%.12g", sample.getVoltageLimit()))
 						.append('\n');
 			}
 		}
