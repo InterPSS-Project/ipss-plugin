@@ -132,6 +132,25 @@ def branch_power_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[li
                 ]
 
 
+def regulator_tap_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[list[object]]:
+    for control_name in dss.RegControls.AllNames() or []:
+        dss.RegControls.Name(control_name)
+        yield [
+            feeder.name,
+            step,
+            f"{hour:.12g}",
+            control_name.lower(),
+            dss.RegControls.Transformer().lower(),
+            dss.RegControls.Winding(),
+            dss.RegControls.TapWinding(),
+            dss.RegControls.TapNumber(),
+            f"{dss.RegControls.PTRatio():.12g}",
+            f"{dss.RegControls.ForwardVreg():.12g}",
+            f"{dss.RegControls.ForwardBand():.12g}",
+            f"{dss.RegControls.VoltageLimit():.12g}",
+        ]
+
+
 def export_case(
     feeder: FeederCase,
     steps: int,
@@ -152,17 +171,36 @@ def export_case(
     tag = control_tag(control_mode, reg_controls_enabled, cap_controls_enabled)
     voltage_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_voltage_by_step.csv"
     branch_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_branch_power_by_step.csv"
+    regulator_file = output_dir / f"{feeder.key}_qsts_{tag}_dss_python_regulator_taps_by_step.csv"
 
     voltage_rows = 0
     branch_rows = 0
+    regulator_rows = 0
     max_iterations = 0
     converged = True
 
     voltage_handle = None
     branch_handle = None
+    regulator_handle = None
     try:
         voltage_writer = None
         branch_writer = None
+        regulator_handle = regulator_file.open("w", newline="", encoding="utf-8")
+        regulator_writer = csv.writer(regulator_handle)
+        regulator_writer.writerow([
+            "case",
+            "step",
+            "hour",
+            "control",
+            "transformer",
+            "winding",
+            "tap_winding",
+            "tap_number",
+            "pt_ratio",
+            "vreg",
+            "band",
+            "voltage_limit",
+        ])
         if include_voltages:
             voltage_handle = voltage_file.open("w", newline="", encoding="utf-8")
             voltage_writer = csv.writer(voltage_handle)
@@ -196,11 +234,16 @@ def export_case(
                 rows = list(branch_power_rows(feeder, step, hour))
                 branch_writer.writerows(rows)
                 branch_rows += len(rows)
+            rows = list(regulator_tap_rows(feeder, step, hour))
+            regulator_writer.writerows(rows)
+            regulator_rows += len(rows)
     finally:
         if voltage_handle is not None:
             voltage_handle.close()
         if branch_handle is not None:
             branch_handle.close()
+        if regulator_handle is not None:
+            regulator_handle.close()
 
     print(
         "DSSPY_QSTS_REFERENCE "
@@ -209,7 +252,8 @@ def export_case(
         f"regControlsEnabled={str(reg_controls_enabled).lower()} "
         f"capControlsEnabled={str(cap_controls_enabled).lower()} "
         f"converged={str(converged).lower()} maxIterations={max_iterations} "
-        f"voltageRows={voltage_rows} branchPowerRows={branch_rows} outputDir={output_dir}",
+        f"voltageRows={voltage_rows} branchPowerRows={branch_rows} "
+        f"regulatorTapRows={regulator_rows} outputDir={output_dir}",
         flush=True,
     )
     if not converged:
