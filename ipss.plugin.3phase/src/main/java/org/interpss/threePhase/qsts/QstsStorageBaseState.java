@@ -42,8 +42,14 @@ public class QstsStorageBaseState {
 		return applyScheduledPower(requestedKw, currentKvar(), stepHours);
 	}
 
-	public double applyScheduledMultiplier(double pMultiplier, double qMultiplier, double stepHours) {
-		return applyScheduledPower(baseKw * pMultiplier, baseKvar * qMultiplier, stepHours);
+	public boolean applyScheduledMultiplier(double pMultiplier, double qMultiplier, double stepHours) {
+		Complex beforePower = total(generator.getPower3Phase(UnitType.PU));
+		double beforeStoredKwh = this.storedKwh;
+		applyScheduledPower(baseKw * pMultiplier, baseKvar * qMultiplier, stepHours);
+		Complex afterPower = total(generator.getPower3Phase(UnitType.PU));
+		return Math.abs(afterPower.getReal() - beforePower.getReal()) > 1.0e-12
+				|| Math.abs(afterPower.getImaginary() - beforePower.getImaginary()) > 1.0e-12
+				|| Math.abs(this.storedKwh - beforeStoredKwh) > 1.0e-9;
 	}
 
 	public double applyScheduledPower(double requestedKw, double requestedKvar, double stepHours) {

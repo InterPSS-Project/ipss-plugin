@@ -103,6 +103,50 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void repeatedProfileValuesReuseSolvedStateUntilInjectionChanges() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, repeatedValueSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(4)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(4, result.getStepResults().size());
+		assertEquals(2, powerFlow.solveCount);
+		assertEquals(3, result.getStep(0).getIterationCount());
+		assertEquals(0, result.getStep(1).getIterationCount());
+		assertEquals(3, result.getStep(2).getIterationCount());
+		assertEquals(0, result.getStep(3).getIterationCount());
+		assertEquals(0.05, power(result.getStep(1).getLoadPowers(), "load1", "A").getP(), 1.0e-12);
+		assertEquals(0.10, power(result.getStep(2).getLoadPowers(), "load1", "A").getP(), 1.0e-12);
+	}
+
+	@Test
+	void controlledQstsDoesNotReuseRepeatedProfileSolvedState() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		RegulatorControlData control = new RegulatorControlData("reg1", "regBranch", 2,
+				PhaseCode.A, 1.0, 0.01, 0.00625, -16, 16);
+
+		QstsResult result = QstsStudy.from(network, repeatedValueSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setRegulatorControls(List.of(control))
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.setNumberOfSteps(4)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(4, powerFlow.solveCount);
+		assertEquals(3, result.getStep(0).getIterationCount());
+		assertEquals(3, result.getStep(1).getIterationCount());
+		assertEquals(3, result.getStep(2).getIterationCount());
+		assertEquals(3, result.getStep(3).getIterationCount());
+	}
+
+	@Test
 	void failedStepIncludesStepModeHourAndReason() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
@@ -408,6 +452,20 @@ public class QstsStudyTest {
 	private static QstsScheduleData staticSchedule() {
 		return new QstsScheduleData(new QstsProfileRegistry(), null,
 				new QstsGlobalOptions("snapshot", 1, 1.0, 1.0, "off", 0, 0.0));
+	}
+
+	private static QstsScheduleData repeatedValueSchedule() {
+		QstsProfileRegistry registry = new QstsProfileRegistry();
+		registry.add(new QstsProfile("load_day", null, new double[] {0.5, 0.5, 1.0, 1.0},
+				null, null));
+		registry.add(new QstsProfile("pv_day", null, new double[] {0.3, 0.3, 0.8, 0.8},
+				null, null));
+		return new QstsScheduleData(registry, List.of(
+				new QstsProfileBinding("load", "load1", Map.of("daily", "load_day"),
+						QstsDeviceStatus.VARIABLE),
+				new QstsProfileBinding("generator", "pv1", Map.of("daily", "pv_day"),
+						QstsDeviceStatus.VARIABLE)),
+				new QstsGlobalOptions("daily", 4, 1.0, 1.0, "off", 0, 0.0));
 	}
 
 	private static Static3PNetwork twoBusNetwork() throws InterpssException {

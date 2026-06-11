@@ -93,10 +93,11 @@ public class QstsStateApplier {
 		}
 	}
 
-	public void apply(QstsStepContext context) {
-		applyLoads(context);
-		applyGenerators(context);
-		applyStorage(context);
+	public boolean apply(QstsStepContext context) {
+		boolean changed = applyLoads(context);
+		changed = applyGenerators(context) || changed;
+		changed = applyStorage(context) || changed;
+		return changed;
 	}
 
 	public boolean hasTimeVaryingBindings() {
@@ -129,7 +130,8 @@ public class QstsStateApplier {
 		}
 	}
 
-	private void applyLoads(QstsStepContext context) {
+	private boolean applyLoads(QstsStepContext context) {
+		boolean changed = false;
 		for(QstsLoadBaseState state : loadStateStore.states()) {
 			QstsProfileBinding binding = loadBindingFor(state);
 			if(binding == null && unity(context.getLoadMultiplier())) {
@@ -138,11 +140,14 @@ public class QstsStateApplier {
 			QstsLoadMultiplier multiplier = multiplierResolver
 					.resolve(binding, context.getMode(), context.getScheduleIndex(),
 							context.getLoadMultiplier());
-			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
+			changed = state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier())
+					|| changed;
 		}
+		return changed;
 	}
 
-	private void applyGenerators(QstsStepContext context) {
+	private boolean applyGenerators(QstsStepContext context) {
+		boolean changed = false;
 		for(QstsGeneratorBaseState state : generatorStateStore.states()) {
 			if(storageStateStore.contains(state.getGenerator())) {
 				continue;
@@ -153,11 +158,14 @@ public class QstsStateApplier {
 			}
 			QstsLoadMultiplier multiplier = multiplierResolver
 					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
-			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
+			changed = state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier())
+					|| changed;
 		}
+		return changed;
 	}
 
-	private void applyStorage(QstsStepContext context) {
+	private boolean applyStorage(QstsStepContext context) {
+		boolean changed = false;
 		for(QstsStorageBaseState state : storageStateStore.states()) {
 			QstsProfileBinding binding = storageBindingFor(state.getStorageId());
 			if(binding == null) {
@@ -165,9 +173,10 @@ public class QstsStateApplier {
 			}
 			QstsLoadMultiplier multiplier = multiplierResolver
 					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
-			state.applyScheduledMultiplier(multiplier.getPMultiplier(),
-					multiplier.getQMultiplier(), context.getStepSizeHours());
+			changed = state.applyScheduledMultiplier(multiplier.getPMultiplier(),
+					multiplier.getQMultiplier(), context.getStepSizeHours()) || changed;
 		}
+		return changed;
 	}
 
 	private QstsProfileBinding loadBindingFor(QstsLoadBaseState state) {
