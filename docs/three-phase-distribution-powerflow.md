@@ -178,6 +178,23 @@ large-feeder tolerance after removing the parser-time fixed regulator tap shim:
 `magFailures=0`, and `angleFailures=0` at `0.003 pu` and `1.0 deg`.
 Both DSS-Python and InterPSS settle `SubXFMR_Regulator` at tap position `2`.
 
+IEEE8500 was checked with static capacitor controls enabled and regulator
+controls disabled on both sides because the checked-in IEEE8500 regulator
+controls do not settle in DSS-Python/OpenDSS under the current master-file
+defaults. DSS-Python cap-control-only converged for 8760 steps at
+`0.504579 ms/step`, with max OpenDSS iterations `8`. InterPSS converged the
+same controlled 8760-step case at `0.164846 ms/step`, with max PF iterations
+`9`, `reused_powerflow_steps=8759`, `symbolicFactors=1`, `numericFactors=1`,
+and `fallbackCount=0`.
+
+The IEEE8500 cap-control-only voltage comparison passes at `0.005 pu` and
+`1.0 deg`: `commonKeys=8531`, `dssOnly=0`, `interpssOnly=6100`,
+`maxMagDelta=0.004350571409` at `0:l3312692:A`,
+`maxAngleDelta=0.216126424` at `0:x2841634b:A`, `magFailures=0`, and
+`angleFailures=0`. At the stricter Ckt24 tolerance of `0.003 pu`, IEEE8500 has
+`1858` magnitude failures, so the remaining IEEE8500 voltage parity gap is
+small but still larger than the Ckt24 threshold.
+
 ## Long-Term Direction: OpenDSS-Style Primitive Y Matrix
 
 The current 3x3 ABC frame forces all components into a fixed 3-phase structure, causing the zero-padding issues above. OpenDSS uses a different approach:
