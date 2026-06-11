@@ -554,13 +554,11 @@ Completed or established:
 
 Next high-value slices:
 
-1. Add PV duty-curve QSTS coverage with inverter controls enabled and
-   checked-in DSS-Python terminal P/Q references.
-2. Implement inverter control setpoint modes on top of the static `IPhaseGen`
+1. Implement inverter control setpoint modes on top of the static `IPhaseGen`
    capability model.
-3. Wire scheduled storage dispatch through `QstsStateApplier`, including energy
+2. Wire scheduled storage dispatch through `QstsStateApplier`, including energy
    carryover between steps.
-4. Begin `QstsBaseCase`, `QstsPreparedSchedule`, and factorization-cache work
+3. Begin `QstsBaseCase`, `QstsPreparedSchedule`, and factorization-cache work
    only after the exact QSTS reference path has stable mini-case coverage.
 
 ## Milestones
@@ -760,8 +758,10 @@ Verification:
     control details are investigated beyond the generic QSTS control loop.
 - [x] Add QSTS inverter PF/control iteration so inverter setpoint changes can
   trigger another PF solve within `maxControlIterations`.
-- [ ] Add PV duty-curve QSTS mini case using IEEE8500-style data and checked-in
+- [x] Add PV duty-curve QSTS mini case using IEEE8500-style data and checked-in
   DSS-Python terminal P/Q references.
+  - `DutyWattPF.dss` exercises duty-mode PV output with enabled `WATTPF`
+    inverter control and per-step terminal P/Q comparison.
 
 Verification:
 

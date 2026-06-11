@@ -1255,14 +1255,15 @@ Verification:
     a DSS-Python reference CSV for generator injection P/Q.
   - The reference preserves OpenDSS terminal-power sign conversion by comparing
     against positive generator injection in QSTS.
-- [ ] QSTS PV duty-curve case with inverter controls enabled.
+- [x] QSTS PV duty-curve case with inverter controls enabled.
   - Parser-side coverage now includes the concrete IEEE8500
     `P174_Run_360kW_PV.DSS` pattern:
     `Generator.G1` plus `LoadShape.PVCurve` plus `generator.g1.duty=PVcurve`.
   - Parser/adapter-side coverage also includes the official OpenDSS `PVSystem`
     example with `MyPvsT`, `MyEff`, `MyIrrad`, and `MyTemp`.
-  - Full QSTS acceptance still needs checked-in DSS-Python terminal P/Q
-    references with inverter control enabled.
+  - QSTS acceptance is covered by `DutyWattPF.dss` and
+    `invcontrol-duty-qsts-dss-python-generator-reference.csv`, which compare
+    per-step terminal P/Q with inverter controls enabled.
 - [x] Integrate inverter control into the QSTS control iteration loop.
   - After each PF solve, evaluate inverter controls against solved terminal
     voltages and watt output.
