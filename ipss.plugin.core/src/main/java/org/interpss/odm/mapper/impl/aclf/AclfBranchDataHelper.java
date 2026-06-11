@@ -34,6 +34,7 @@ import org.ieee.odm.schema.AngleAdjustmentXmlType;
 import org.ieee.odm.schema.AngleUnitType;
 import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.ActivePowerXmlType;
+import org.ieee.odm.schema.BranchFlowDirectionEnumType;
 import org.ieee.odm.schema.BusRefXmlType;
 import org.ieee.odm.schema.FactorUnitType;
 import org.ieee.odm.schema.FACTSDeviceXmlType;
@@ -434,6 +435,7 @@ public class AclfBranchDataHelper {
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
 				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
+				psxfr.setFlowFrom2To(xmlAngAdj.getFlowDirection() == BranchFlowDirectionEnumType.FROM_TO);
 				psxfr.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 			}
 			else {
@@ -466,6 +468,7 @@ public class AclfBranchDataHelper {
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
 				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
+				psxfr.setFlowFrom2To(xmlAngAdj.getFlowDirection() == BranchFlowDirectionEnumType.FROM_TO);
 				psxfr.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 			}
 		}
