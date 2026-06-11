@@ -195,6 +195,7 @@ public class QstsStudy {
 		algorithm.setPFMethod(pfMethod);
 		algorithm.setPostSolveOutputMode(postSolveOutputMode);
 		algorithm.setMaxIteration(maxPowerFlowIterations);
+		algorithm.setMaxControlIterations(maxControlIterations);
 		algorithm.setTolerance(tolerance);
 		algorithm.setRegulatorControls(regulatorControls);
 		algorithm.setCapacitorControls(capacitorControls);
