@@ -43,7 +43,7 @@ public class QstsLargeFeederPerformanceBenchmark {
 		QstsMode qstsMode = QstsMode.from(System.getProperty("qsts.perf.mode", "DAILY"));
 		double stepSizeHours = Double.parseDouble(System.getProperty("qsts.perf.stepSizeHours", "1.0"));
 		double tolerance = Double.parseDouble(System.getProperty("qsts.perf.tolerance", "1.0e-4"));
-		int maxControlIterations = Integer.getInteger("qsts.perf.maxControlIterations", 20);
+		int maxControlIterations = Integer.getInteger("qsts.perf.maxControlIterations", 100);
 		boolean regControlsEnabled = Boolean.parseBoolean(
 				System.getProperty("qsts.perf.regControlsEnabled", "true"));
 		boolean capControlsEnabled = Boolean.parseBoolean(
@@ -182,8 +182,8 @@ public class QstsLargeFeederPerformanceBenchmark {
 		assertTrue(controlMode != QstsControlMode.OFF,
 				"Large-feeder QSTS performance comparisons must run with controls enabled; set "
 						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
-		assertTrue(maxControlIterations > 0,
-				"Large-feeder QSTS performance comparisons must allow control iterations; set "
+		assertTrue(maxControlIterations >= 100,
+				"Large-feeder QSTS performance comparisons must allow at least 100 control iterations; set "
 						+ "-Dqsts.perf.allowDisabledControls=true only for frozen-state diagnostics");
 		assertTrue(regControlsEnabled,
 				"Large-feeder QSTS performance comparisons must keep regulator controls enabled; set "
