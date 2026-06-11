@@ -61,6 +61,9 @@ import com.interpss.core.sparse.impl.AbstractSparseEqnComplexMatrix3x3Impl;
 
 public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlowAlgorithm{
 
+	private static final String DISABLE_FLOATING_COMPONENT_ANTI_FLOAT_PROPERTY =
+			"ipss.distpf.disableFloatingComponentAntiFloat";
+
 	private INetwork3Phase distNet = null;
 
 	private DistributionPFMethod pfMethod = DistributionPFMethod.Fixed_Point;
@@ -446,9 +449,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		 this.isAllPowerFlowConverged = true;
 		 BaseAclfNetwork<? extends BaseAclfBus<? extends AclfGen, ? extends AclfLoad>, ? extends AclfBranch> distNet = aclfNetwork();
-		 if(!disableFloatingComponentDeactivation()) {
-			 deactivateBusesOnlyInFloatingPhaseComponents(distNet);
-		}
 
 		//step-1. check if there is any island in the system
 		 AclfNetHelper helper = null;
@@ -520,7 +520,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				&& preSignature.equals(this.floatingComponentDeactivationSignature)) {
 			return;
 		}
-		int nodeCount = distNet.getNoBus() * 3;
+		int sortNumberCount = maxActiveBusSortNumber(distNet) + 1;
+		if(sortNumberCount <= 0) {
+			return;
+		}
+		int nodeCount = sortNumberCount * 3;
 		List<List<Integer>> graph = new ArrayList<>(nodeCount);
 		for(int i = 0; i < nodeCount; i++) {
 			graph.add(new ArrayList<>());
@@ -531,8 +535,10 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				IBranch3Phase branch3P = threePhaseBranch(branch);
 				int from = branch.getFromBus().getSortNumber();
 				int to = branch.getToBus().getSortNumber();
-				addPhaseConnectivity(graph, from, to, branch3P.getYftabc());
-				addPhaseConnectivity(graph, to, from, branch3P.getYtfabc());
+				if(isValidSortNumber(from, sortNumberCount) && isValidSortNumber(to, sortNumberCount)) {
+					addPhaseConnectivity(graph, from, to, branch3P.getYftabc());
+					addPhaseConnectivity(graph, to, from, branch3P.getYtfabc());
+				}
 			}
 		}
 
@@ -546,6 +552,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			}
 			for(int phase = 0; phase < 3; phase++) {
 				int start = bus.getSortNumber() * 3 + phase;
+				if(!isValidSortNumber(bus.getSortNumber(), sortNumberCount)) {
+					continue;
+				}
 				if(seen[start] || graph.get(start).isEmpty()) {
 					continue;
 				}
@@ -568,6 +577,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			boolean hasSwingConnectedPhase = false;
 			for(int phase = 0; phase < 3; phase++) {
 				int node = bus.getSortNumber() * 3 + phase;
+				if(!isValidSortNumber(bus.getSortNumber(), sortNumberCount)) {
+					continue;
+				}
 				hasConnectedPhase = hasConnectedPhase || connectedNode[node];
 				hasSwingConnectedPhase = hasSwingConnectedPhase || (connectedNode[node] && !floatingNode[node]);
 			}
@@ -695,6 +707,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				log.error("Error in ordering the distribution buses", e);
 			}
 		} else{
+			if(!disableFloatingComponentDeactivation()) {
+				deactivateBusesOnlyInFloatingPhaseComponents(distNet);
+			}
 			if(this.initBusVoltagesEnabled) {
 				pfFlag = this.initBusVoltages();
 			}
@@ -752,11 +767,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		this.pfFlag = false;
 		this.iterationCount = -1;
-		PrimitiveComplex3x3Equation primitiveMatrix = yMatrix instanceof PrimitiveComplex3x3Equation
-				? (PrimitiveComplex3x3Equation) yMatrix : null;
 		long busCacheStart = FIXED_POINT_PROFILE.start();
 		FixedPointBusCache busCache = fixedPointBusCache(distNet);
 		FIXED_POINT_PROFILE.addMatrixBusCache(FIXED_POINT_PROFILE.elapsed(busCacheStart));
+		PrimitiveComplex3x3Equation primitiveMatrix = yMatrix instanceof PrimitiveComplex3x3Equation
+				? (PrimitiveComplex3x3Equation) yMatrix : null;
 		PrimitiveFixedPointState primitiveState = primitiveMatrix instanceof PrimitiveComplex3x3ArrayEquation
 				&& primitiveVoltageStateEligible(busCache)
 						? fixedPointPrimitiveState(busCache, distNet.getNoBus()) : null;
@@ -1226,7 +1241,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			return this.fixedPointFloatingAntiFloatPlan;
 		}
 
-		int nodeCount = distNet.getNoBus() * 3;
+		int sortNumberCount = maxActiveBusSortNumber(distNet) + 1;
+		int nodeCount = sortNumberCount * 3;
 		BaseAclfBus[] busesBySortNumber = busesBySortNumber(distNet);
 		List<List<Integer>> graph = new ArrayList<>(nodeCount);
 		for(int i = 0; i < nodeCount; i++) {
@@ -1234,12 +1250,14 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 
 		for(AclfBranch branch: (List<AclfBranch>) distNet.getBranchList()) {
-			if(branch.isActive()) {
+			if(branch.isActive() && branch.getFromBus().isActive() && branch.getToBus().isActive()) {
 				IBranch3Phase branch3P = threePhaseBranch(branch);
 				int from = branch.getFromBus().getSortNumber();
 				int to = branch.getToBus().getSortNumber();
-				addPhaseConnectivity(graph, from, to, branch3P.getYftabc());
-				addPhaseConnectivity(graph, to, from, branch3P.getYtfabc());
+				if(isValidSortNumber(from, sortNumberCount) && isValidSortNumber(to, sortNumberCount)) {
+					addPhaseConnectivity(graph, from, to, branch3P.getYftabc());
+					addPhaseConnectivity(graph, to, from, branch3P.getYtfabc());
+				}
 			}
 		}
 
@@ -1249,6 +1267,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		List<PhaseNode> antiFloatNodes = new ArrayList<>();
 		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
 			if(!bus.isActive()) {
+				continue;
+			}
+			if(!isValidSortNumber(bus.getSortNumber(), sortNumberCount)) {
 				continue;
 			}
 			for(int phase = 0; phase < 3; phase++) {
@@ -1278,13 +1299,40 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private BaseAclfBus[] busesBySortNumber(BaseAclfNetwork distNet) {
-		BaseAclfBus[] buses = new BaseAclfBus[distNet.getNoBus()];
+		BaseAclfBus[] buses = new BaseAclfBus[maxActiveBusSortNumber(distNet) + 1];
 		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
 			int sortNumber = bus.getSortNumber();
-			if(sortNumber >= 0 && sortNumber < buses.length) {
+			if(bus.isActive() && isValidSortNumber(sortNumber, buses.length)) {
 				buses[sortNumber] = bus;
 			}
 		}
+		return buses;
+	}
+
+	private int maxActiveBusSortNumber(BaseAclfNetwork distNet) {
+		int maxSortNumber = -1;
+		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
+			if(bus.isActive()) {
+				maxSortNumber = Math.max(maxSortNumber, bus.getSortNumber());
+			}
+		}
+		return maxSortNumber;
+	}
+
+	private boolean isValidSortNumber(int sortNumber, int sortNumberCount) {
+		return sortNumber >= 0 && sortNumber < sortNumberCount;
+	}
+
+	private List<BaseAclfBus> activeBusesBySortNumber(BaseAclfNetwork<?, ?> distNet, boolean ascending) {
+		List<BaseAclfBus> buses = new ArrayList<>();
+		for(BaseAclfBus bus: (List<BaseAclfBus>) distNet.getBusList()) {
+			if(bus.isActive()) {
+				buses.add(bus);
+			}
+		}
+		buses.sort((left, right) -> ascending
+				? Integer.compare(left.getSortNumber(), right.getSortNumber())
+				: Integer.compare(right.getSortNumber(), left.getSortNumber()));
 		return buses;
 	}
 
@@ -1391,8 +1439,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private boolean enableFloatingComponentAntiFloat() {
-		return Boolean.getBoolean("ipss.distpf.enableFloatingComponentAntiFloat")
-				&& !Boolean.getBoolean("ipss.distpf.disableFloatingComponentAntiFloat");
+		// Enabled by default; use the JVM system property as a runtime escape hatch.
+		return !Boolean.getBoolean(DISABLE_FLOATING_COMPONENT_ANTI_FLOAT_PROPERTY);
 	}
 
 	private boolean enableNonSwingBusAntiFloat() {
@@ -2319,13 +2367,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 			Hashtable<String, Integer> backwardUpdatedPhaseMask = new Hashtable<>();
 
-			for(int sortNum =distNet.getNoBus()-1;sortNum>0;sortNum--){
-				BaseAclfBus bus = (BaseAclfBus) distNet.getBus(sortNum);
-				if(bus==null){
-					throw new Error(" The bus sort num # "+sortNum +" returns null bus object in distribution #"+distNet.getId());
-
-				}
-				if(bus.isActive()){
+			for(BaseAclfBus bus : activeBusesBySortNumber(distNet, false)){
+				if(!bus.isSwing()){
 					IBus3Phase bus3P = threePhaseBus(bus);
 
 
@@ -2559,11 +2602,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 			Hashtable<String, Integer> regulatorUpdatedPhaseMask = new Hashtable<>();
 
-			for(int sortNum2 = 0;sortNum2<distNet.getNoBus();sortNum2++){
-
-				BaseAclfBus bus = (BaseAclfBus) distNet.getBus(sortNum2);
-
-				if(bus.isActive()){
+			for(BaseAclfBus bus : activeBusesBySortNumber(distNet, true)){
 					// update the bus state, with intFlag =2 meaning this bus voltage has been updated
 					bus.setIntFlag(2);
 					IBus3Phase bus3P = threePhaseBus(bus);
@@ -2651,9 +2690,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 							}
 						}
 					}
-
-
-				}
 
 			}
 
