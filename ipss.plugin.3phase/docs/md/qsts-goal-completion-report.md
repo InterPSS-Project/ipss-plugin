@@ -31,7 +31,7 @@ The architectural target was:
 
 ### Commit Evidence
 
-Current top six commits on the branch are the six task commits:
+The original six task commits on the branch are:
 
 ```text
 95cacbd0 refactor: tighten QSTS static network boundary
@@ -682,6 +682,76 @@ of DSS-Python throughput for this controlled 8760 Ckt24 run, so the requested
 80% performance target is not met yet. The remaining measured cost is mainly
 fixed-point power flow (`2.954 ms/step`).
 
+## Phase-Aware Fixed-Point Update
+
+A later retained performance update applies the profile multiplier directly from
+the captured QSTS base-load state and makes fixed-point convergence checks
+phase-aware. The phase mask is built from branch phase codes, contributed static
+load phase codes, contributed static generator phase codes, and boundary current
+phase content. This means an inactive phase on a one-phase or two-phase bus no
+longer contributes to the fixed-point voltage mismatch test.
+
+This retained update does not yet skip every inactive-phase current-injection
+calculation. That deeper optimization likely belongs in the shared static-load
+primitive API, because the efficient load-current implementation is currently
+inside the core static-load class rather than exposed as a plugin-level masked
+operation.
+
+Focused controlled two-step export with the retained phase-aware update:
+
+```bash
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest=QstsLoadStateStoreTest,QstsStudyTest,OpenDssIeee13DailyQstsProfileTest,QstsLargeFeederComparisonExport \
+  -Dqsts.compare.case=ckt24 \
+  -Dqsts.compare.masterFile=master_ckt24_yearly_interpss.dss \
+  -Dqsts.compare.mode=YEARLY \
+  -Dqsts.compare.steps=2 \
+  -Dqsts.compare.outputDir=target/qsts-ckt24-yearly-2step-phase-mask-tol5e-4-min1 \
+  -Dqsts.compare.controlMode=STATIC \
+  -Dqsts.compare.maxControlIterations=100 \
+  -Dqsts.compare.tolerance=5.0e-4 \
+  -Dipss.distpf.minIterations=1 \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Result: `BUILD SUCCESS`, `Tests run: 28, Failures: 0, Errors: 0, Skipped: 0`.
+
+Controlled two-step comparison results:
+
+```text
+QSTS_VOLTAGE_COMPARE commonKeys=14320 dssOnly=0 interpssOnly=22034
+maxMagDelta=0.00175522492 magFailures=0
+maxAngleDelta=0.00179756579999 angleFailures=0
+
+QSTS_LOAD_POWER_COMPARE commonKeys=8444 dssOnly=0 interpssOnly=368
+maxPDelta=0.06397092 pFailures=0
+maxQDelta=0.240896534 qFailures=0
+
+QSTS_BRANCH_POWER_COMPARE commonKeys=28399 dssOnly=63 interpssOnly=38
+maxPDelta=1.90744853 pFailures=0
+maxQDelta=1.760634673 qFailures=0
+dssOnlyFailures=0 interpssOnlyFailures=0
+```
+
+Controlled 8760 profile-enabled Ckt24 performance with the retained update:
+
+```text
+INTERPSS_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+actualSteps=8760 converged=true elapsedMillis=24104.860 msPerStep=2.751696
+maxIterations=5 symbolicFactors=1 numericFactors=302 valueUpdates=0 fallbackCount=0
+```
+
+This is the best retained controlled InterPSS datapoint so far. It improves on
+the previous retained `2.937146 ms/step` diagnostic, but it is still above the
+`2.709 ms/step` target implied by the controlled DSS-Python baseline.
+
+Rejected phase-aware follow-ups:
+
+| Experiment | Parity result | 8760 timing result | Decision |
+|---|---|---|---|
+| Phase-aware primitive voltage object update | 2-step voltage/load/branch comparisons pass | `2.897286 ms/step` | Rejected and reverted |
+| Phase-aware primitive snapshot saving | 2-step voltage/load/branch comparisons pass | `2.787554 ms/step` | Rejected and reverted |
+
 ## Final State
 
 - Branch: `qsts-opendss-parity-improvements`
@@ -691,8 +761,9 @@ fixed-point power flow (`2.954 ms/step`).
 - Ckt24 yearly profile-enabled 2-step voltage/load common-key parity passes.
 - Ckt24 yearly profile-enabled branch common-key P/Q magnitudes pass, but branch
   key coverage still needs cleanup.
-- Ckt24 yearly profile-enabled 8760 performance is improved but still below the
-  80% DSS-Python throughput target.
+- Best retained Ckt24 yearly profile-enabled controlled 8760 performance is
+  `2.751696 ms/step`, improved but still slightly below the 80% DSS-Python
+  throughput target of about `2.709 ms/step`.
 
 The static-boundary and controlled-comparison harness goals are completed. The
 profile-enabled yearly performance target remains open.
