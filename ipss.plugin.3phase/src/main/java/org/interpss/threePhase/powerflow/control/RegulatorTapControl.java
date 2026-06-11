@@ -19,6 +19,11 @@ import com.interpss.core.threephase.INetwork3Phase;
 
 public class RegulatorTapControl {
 	public boolean apply(INetwork3Phase network, List<RegulatorControlData> controls) {
+		return apply(network, controls, true);
+	}
+
+	public boolean apply(INetwork3Phase network, List<RegulatorControlData> controls,
+			boolean applyEarliestDelayOnly) {
 		if(controls == null || controls.isEmpty()) {
 			return false;
 		}
@@ -67,12 +72,17 @@ public class RegulatorTapControl {
 			int nextTap = Math.max(control.getMinTapPosition(),
 					Math.min(control.getMaxTapPosition(), currentTap + requestedChange));
 			if(nextTap != currentTap) {
-				double delay = control.getDelaySeconds();
-				if(delay < earliestDelay) {
-					earliestDelay = delay;
-					changes.clear();
+				if(applyEarliestDelayOnly) {
+					double delay = control.getDelaySeconds();
+					if(delay < earliestDelay) {
+						earliestDelay = delay;
+						changes.clear();
+					}
+					if(Math.abs(delay - earliestDelay) <= 1.0e-9) {
+						changes.add(new TapChange(branch, control, nextTap));
+					}
 				}
-				if(Math.abs(delay - earliestDelay) <= 1.0e-9) {
+				else {
 					changes.add(new TapChange(branch, control, nextTap));
 				}
 			}
