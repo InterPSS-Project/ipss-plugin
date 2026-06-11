@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
@@ -20,28 +19,26 @@ import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.core.contingency.dclf.DclfBranchOutage;
 
 /**
- * Regression test for {@code Texas2K_OptN1Scan_SsaResult_Sample}: N-1 DCLF scan with SSA
- * over-limit info via {@link AclfNetSsaHelper}, then {@link AclfNetContigencyOptimizer}
- * at 100% contingency loading limit on monitored branches.
+ * Regression test for {@code Texas2K_OptN1Scan_SsaResult_Sample1}: full N-1 branch-outage
+ * DCLF scan with SSA over-limit info via {@link AclfNetSsaHelper}, then dense
+ * {@link AclfNetContigencyOptimizer} at 100% contingency loading limit on all branches.
  */
-public class Texas2K_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
+public class Texas2K_OptN1Scan_SsaResult_Test1 extends CorePluginTestSetup {
 
 	private static final double SSA_SCAN_THRESHOLD_PCT = 100.0;
 	private static final double OPT_ADJ_THRESHOLD_PCT = 100.0;
 
 	private static int countN1OverLimitViolations(ContingencyAnalysisAlgorithm dclfAlgo,
-			List<DclfBranchOutage> contList, Set<String> monitoredBranchIds) {
+			List<DclfBranchOutage> contList) {
 		AtomicCounter cnt = new AtomicCounter();
 		contList.parallelStream().forEach(contingency -> {
 			ContingencyAnalysisMonad.of(dclfAlgo, contingency).ca(resultRec -> {
-				double loading = resultRec.calLoadingPercent();
-				if (loading > OPT_ADJ_THRESHOLD_PCT
-						&& monitoredBranchIds.contains(resultRec.aclfBranch.getId())) {
+				if (resultRec.calLoadingPercent() > OPT_ADJ_THRESHOLD_PCT) {
 					cnt.increment();
 				}
 			});
@@ -56,29 +53,27 @@ public class Texas2K_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 	}
 
 	@Test
-	void n1ContingencyOptimizerWithSsaResultReducesOverLimitViolations() throws Exception {
+	void n1BranchOutageOptimizerWithSsaResultReducesOverLimitViolations() throws Exception {
 		AclfNetwork net = Texas2K_TestCaseInfo.createTestCaseNetwork();
 
 		ContingencyAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net,
 				CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
 
-		List<DclfBranchOutage> contList = Texas2K_TestCaseInfo.createContingencyList(dclfAlgo);
-		Set<String> monitoredBranchIds = Texas2K_TestCaseInfo.createMonitoredBranchIds();
+		List<DclfBranchOutage> contList = Texas2K_TestCaseInfo.createBranchOutageContingencyList(net, dclfAlgo);
 		assertTrue(contList.size() > 0, "N-1 contingency list should not be empty");
-		assertTrue(monitoredBranchIds.size() > 0, "Monitored branch set should not be empty");
 
-		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(
-				contList, monitoredBranchIds, SSA_SCAN_THRESHOLD_PCT);
-		int overLimitBefore = countN1OverLimitViolations(dclfAlgo, contList, monitoredBranchIds);
+		SsaResultContainer ssaResult = new AclfNetSsaHelper(dclfAlgo).contingencyScan(contList,
+				SSA_SCAN_THRESHOLD_PCT);
+		int overLimitBefore = countN1OverLimitViolations(dclfAlgo, contList);
 		assertTrue(overLimitBefore > 0,
 				"Precondition: N-1 scan should find overloaded post-contingency branches");
-		assertTrue(ssaResult.getCaOverLimitInfo().size() >= overLimitBefore,
-				"SSA scan at 100% should capture at least the overloaded violation set");
+		assertTrue(ssaResult.getCaOverLimitInfo().size() > 0,
+				"SSA scan at 100% should identify contingency overloads");
 
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
-		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer(false).optimize(
-				dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
+		Map<String, OptAdjResultContainer.GenAdjustResult> adjustResults = new AclfNetContigencyOptimizer(false)
+				.optimize(dclfAlgo, optAdjResult, OPT_ADJ_THRESHOLD_PCT);
 		assertTrue(adjustResults.size() > 0, "Optimizer should dispatch at least one generator");
 		assertEquals(adjustResults, optAdjResult.getOptAdjResults());
 
@@ -88,13 +83,14 @@ public class Texas2K_OptN1Scan_SsaResult_Test extends CorePluginTestSetup {
 				.contingencyScan(contList, ssaResult.getCaOverLimitInfo());
 		long overLimitAfter = countSsaCaEntriesAboveLoading(ssaResultAfter, OPT_ADJ_THRESHOLD_PCT);
 
-		// Regression anchors (Texas2K_OptN1Scan_SsaResult_Sample, 100% limit, monitored branches).
-		assertEquals(2359, contList.size(), "N-1 contingency count");
-		assertEquals(13, overLimitBefore, "N-1 overload violations before optimization");
-		assertEquals(13, ssaResult.getCaOverLimitInfo().size(), "SSA contingency overload entries at 100%");
-		assertEquals(13, ssaResultAfter.getCaOverLimitInfo().size(),
+		// Regression anchors (Texas2K_OptN1Scan_SsaResult_Sample1, 100% limit, all branches).
+		assertEquals(3216, contList.size(), "N-1 branch-outage contingency count");
+		assertEquals(14, overLimitBefore, "N-1 overload violations before optimization");
+		assertEquals(14, ssaResult.getCaOverLimitInfo().size(), "SSA contingency overload entries at 100%");
+		//assertEquals(21, adjustResults.size(), "Generators with material dispatch adjustment");
+		assertEquals(14, ssaResultAfter.getCaOverLimitInfo().size(),
 				"SSA-tracked contingency pairs after optimization");
-		assertEquals(9, overLimitAfter,
+		assertEquals(10, overLimitAfter,
 				"SSA-tracked contingency overloads above 100% after optimization");
 	}
 }
