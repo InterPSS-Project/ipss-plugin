@@ -239,6 +239,8 @@ Current measured InterPSS diagnostics:
 | Direct primitive RHS with object bus voltages | 2-step voltage/load/branch comparisons pass | `4.070673 ms/step`, `26545` PF iterations | Rejected and reverted |
 | Per-bus Norton voltage scratch array | 2-step voltage/load/branch comparisons pass | `4.017018 ms/step`, `26545` PF iterations | Rejected and reverted |
 | Tolerance `5.0e-4` | 2-step voltage/load/branch comparisons pass; branch max deltas increased to `1.90744853 kW` and `1.760634673 kvar` | `3.174950 ms/step`, `19121` PF iterations | Diagnostic only; still above target |
+| Tolerance `5.0e-4` plus `ipss.distpf.minIterations=1` | 2-step voltage/load/branch comparisons pass | `2.937146 ms/step` without QSTS profiling, `18645` PF iterations in the profiled run | Diagnostic only; still above target |
+| Tolerance `7.0e-4` plus `ipss.distpf.minIterations=1` | Voltage/load comparisons pass, but branch comparison fails (`6` P failures, `90` Q failures at 5 kW/kvar tolerance) | Not used for acceptance | Rejected |
 | Tolerance `1.0e-3` | Voltage/load comparisons pass, but branch comparison fails (`6` P failures, `90` Q failures at 5 kW/kvar tolerance) | Not used for acceptance | Rejected |
 
 The useful conclusion is that PF iteration count matters, but iteration
