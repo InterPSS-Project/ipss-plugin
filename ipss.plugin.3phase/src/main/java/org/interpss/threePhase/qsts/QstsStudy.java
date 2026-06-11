@@ -23,6 +23,8 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.AclfLoad3Phase;
@@ -282,12 +284,13 @@ public class QstsStudy {
 		if(resultSamplingMode == QstsResultSamplingMode.NONE) {
 			return new QstsStepResult(context, converged, iterationCount, Double.NaN,
 					failureReason, actionCount, Collections.emptyList(), Collections.emptyList(),
-					Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+					Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+					Collections.emptyList());
 		}
 		return new QstsStepResult(context, converged, iterationCount, Double.NaN,
 				failureReason, actionCount, sampleBusVoltages(context), sampleLoadPowers(context),
-				sampleGeneratorPowers(context), sampleCapacitorStates(context),
-				inverterControlSamples);
+				sampleGeneratorPowers(context), sampleBranchPowers(context),
+				sampleCapacitorStates(context), inverterControlSamples);
 	}
 
 	public QstsStateApplier getStateApplier() {
@@ -386,6 +389,33 @@ public class QstsStudy {
 					addGeneratorSample(samples, context, (AclfGen3Phase) generatorObject);
 				}
 			}
+		}
+		return samples;
+	}
+
+	private List<QstsBranchPowerSample> sampleBranchPowers(QstsStepContext context) {
+		List<QstsBranchPowerSample> samples = new ArrayList<>();
+		double phaseBaseKva = aclfNetwork().getBaseKva() / 3.0;
+		for(AclfBranch branch : (List<AclfBranch>) aclfNetwork().getBranchList()) {
+			if(!branch.isActive() || !(branch instanceof IBranch3Phase)
+					|| !(branch.getFromBus() instanceof IBus3Phase)
+					|| !(branch.getToBus() instanceof IBus3Phase)) {
+				continue;
+			}
+			IBranch3Phase branch3Phase = (IBranch3Phase) branch;
+			Complex3x1 fromVoltage = ((IBus3Phase) branch.getFromBus()).get3PhaseVotlages();
+			Complex3x1 toVoltage = ((IBus3Phase) branch.getToBus()).get3PhaseVotlages();
+			if(fromVoltage == null || toVoltage == null) {
+				continue;
+			}
+			Complex3x1 fromCurrent = branch3Phase.getYffabc().multiply(fromVoltage)
+					.add(branch3Phase.getYftabc().multiply(toVoltage));
+			Complex3x1 toCurrent = branch3Phase.getYttabc().multiply(toVoltage)
+					.add(branch3Phase.getYtfabc().multiply(fromVoltage));
+			addBranchPowerSamples(samples, context, branch, 1, branch.getFromBus().getId(),
+					fromVoltage.multiply(fromCurrent.conjugate()).multiply(phaseBaseKva));
+			addBranchPowerSamples(samples, context, branch, 2, branch.getToBus().getId(),
+					toVoltage.multiply(toCurrent.conjugate()).multiply(phaseBaseKva));
 		}
 		return samples;
 	}
@@ -536,6 +566,36 @@ public class QstsStudy {
 		samples.add(new QstsDevicePowerSample(context.getStepIndex(), context.getHour(), deviceClass,
 				deviceId, phase, power == null ? Double.NaN : power.getReal(),
 				power == null ? Double.NaN : power.getImaginary()));
+	}
+
+	private static void addBranchPowerSamples(List<QstsBranchPowerSample> samples,
+			QstsStepContext context, AclfBranch branch, int terminal, String busId, Complex3x1 power) {
+		addBranchPowerSample(samples, context, branch, terminal, busId, "A",
+				power == null ? null : power.a_0);
+		addBranchPowerSample(samples, context, branch, terminal, busId, "B",
+				power == null ? null : power.b_1);
+		addBranchPowerSample(samples, context, branch, terminal, busId, "C",
+				power == null ? null : power.c_2);
+	}
+
+	private static void addBranchPowerSample(List<QstsBranchPowerSample> samples,
+			QstsStepContext context, AclfBranch branch, int terminal, String busId, String phase,
+			Complex power) {
+		if(power == null || !Double.isFinite(power.getReal()) || !Double.isFinite(power.getImaginary())) {
+			return;
+		}
+		samples.add(new QstsBranchPowerSample(context.getStepIndex(), context.getHour(),
+				branchElementClass(branch), branchElementId(branch), terminal, busId, phase,
+				power.getReal(), power.getImaginary()));
+	}
+
+	private static String branchElementClass(AclfBranch branch) {
+		return branch.isXfr() ? "transformer" : "line";
+	}
+
+	private static String branchElementId(AclfBranch branch) {
+		String name = branch.getName();
+		return name == null || name.isBlank() ? branch.getId() : name;
 	}
 
 	private static Complex add(Complex left, Complex right) {

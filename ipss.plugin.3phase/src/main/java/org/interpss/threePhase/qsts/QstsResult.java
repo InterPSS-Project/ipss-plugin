@@ -49,6 +49,14 @@ public class QstsResult {
 		return Collections.unmodifiableList(samples);
 	}
 
+	public List<QstsBranchPowerSample> getBranchPowers() {
+		List<QstsBranchPowerSample> samples = new ArrayList<>();
+		for(QstsStepResult step : stepResults) {
+			samples.addAll(step.getBranchPowers());
+		}
+		return Collections.unmodifiableList(samples);
+	}
+
 	public List<QstsCapacitorStateSample> getCapacitorStates() {
 		List<QstsCapacitorStateSample> samples = new ArrayList<>();
 		for(QstsStepResult step : stepResults) {
