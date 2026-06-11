@@ -2,10 +2,12 @@ package org.interpss.threePhase.qsts;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -26,6 +28,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.AclfGen3Phase;
@@ -362,9 +365,13 @@ public class QstsStudy {
 
 	private List<QstsDevicePowerSample> sampleLoadPowers(QstsStepContext context) {
 		List<QstsDevicePowerSample> samples = new ArrayList<>();
+		Set<String> capacitorLoadIds = capacitorLoadIds();
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Map<Object, Boolean> sampled = new IdentityHashMap<>();
 			for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
+				if(isCapacitorLoad(load, capacitorLoadIds)) {
+					continue;
+				}
 				addLoadSample(samples, context, load, bus);
 				sampled.put(load, Boolean.TRUE);
 			}
@@ -374,11 +381,59 @@ public class QstsStudy {
 							|| !(loadObject instanceof AclfLoad3Phase)) {
 						continue;
 					}
-					addLoadSample(samples, context, (AclfLoad3Phase) loadObject, bus);
+					AclfLoad3Phase load = (AclfLoad3Phase) loadObject;
+					if(isCapacitorLoad(load, capacitorLoadIds)) {
+						continue;
+					}
+					addLoadSample(samples, context, load, bus);
 				}
 			}
 		}
 		return samples;
+	}
+
+	private Set<String> capacitorLoadIds() {
+		Set<String> ids = new HashSet<>();
+		for(CapacitorControlData control : capacitorControls) {
+			if(control.getCapacitorId() != null) {
+				ids.add(control.getCapacitorId().toLowerCase(Locale.ROOT));
+			}
+		}
+		return ids;
+	}
+
+	private boolean isCapacitorLoad(AclfLoad3Phase load, Set<String> capacitorLoadIds) {
+		return load != null
+				&& ((load.getId() != null
+						&& capacitorLoadIds.contains(load.getId().toLowerCase(Locale.ROOT)))
+					|| isParsedCapacitorLoad(load));
+	}
+
+	private boolean isParsedCapacitorLoad(AclfLoad3Phase load) {
+		if(load.getCode() != AclfLoadCode.CONST_Z) {
+			return false;
+		}
+		Complex3x1 power = load.getInit3PhaseLoad();
+		return isCapacitorPower(power == null ? null : power.a_0)
+				&& isCapacitorPower(power == null ? null : power.b_1)
+				&& isCapacitorPower(power == null ? null : power.c_2)
+				&& (isActiveCapacitorPhase(power == null ? null : power.a_0)
+						|| isActiveCapacitorPhase(power == null ? null : power.b_1)
+						|| isActiveCapacitorPhase(power == null ? null : power.c_2));
+	}
+
+	private boolean isCapacitorPower(Complex power) {
+		if(power == null) {
+			return true;
+		}
+		return Math.abs(power.getReal()) <= 1.0e-12
+				&& power.getImaginary() <= 1.0e-12;
+	}
+
+	private boolean isActiveCapacitorPhase(Complex power) {
+		return power != null
+				&& Math.abs(power.getReal()) <= 1.0e-12
+				&& power.getImaginary() < -1.0e-12;
 	}
 
 	private static void addLoadSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
