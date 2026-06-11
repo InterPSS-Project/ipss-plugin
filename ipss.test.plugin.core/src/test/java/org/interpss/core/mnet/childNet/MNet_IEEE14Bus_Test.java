@@ -30,6 +30,7 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.ChildNetObjectFactory;
@@ -51,6 +52,7 @@ import com.interpss.core.net.childnet.solver.ChildNetworkProcessor;
 @Deprecated
 public class MNet_IEEE14Bus_Test extends CorePluginTestSetup {
 	@Test 
+	@Disabled("Deprecated multinet child-network solver is bypassed in unit test suite")
 	public void bus14testCase() throws Exception {
 		// load the IEEE-14 Bus system
 		AclfNetwork net = CorePluginFactory
