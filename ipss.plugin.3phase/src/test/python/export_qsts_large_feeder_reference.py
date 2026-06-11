@@ -111,13 +111,16 @@ def branch_power_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[li
         terminals = int(dss.CktElement.NumTerminals())
         conductors = int(dss.CktElement.NumConductors())
         bus_names = list(dss.CktElement.BusNames())
+        node_order = list(dss.CktElement.NodeOrder())
         for terminal_index in range(terminals):
             terminal = terminal_index + 1
             terminal_bus = bus_names[terminal_index].lower() if terminal_index < len(bus_names) else ""
             for conductor_index in range(conductors):
-                value_index = 2 * ((terminal_index * conductors) + conductor_index)
+                order_index = (terminal_index * conductors) + conductor_index
+                value_index = 2 * order_index
                 if value_index + 1 >= len(powers):
                     continue
+                node = int(node_order[order_index]) if order_index < len(node_order) else conductor_index + 1
                 yield [
                     feeder.name,
                     step,
@@ -126,7 +129,7 @@ def branch_power_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[li
                     element_name.lower(),
                     terminal,
                     terminal_bus,
-                    conductor_index + 1,
+                    node,
                     f"{powers[value_index]:.12g}",
                     f"{powers[value_index + 1]:.12g}",
                 ]
