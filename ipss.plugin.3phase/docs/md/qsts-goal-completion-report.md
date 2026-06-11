@@ -211,6 +211,41 @@ Smoke datapoints from one-step Ckt24 and IEEE8500 DSS-Python exports:
   magnitude tolerance but passes a 0.003 pu magnitude tolerance and 1 degree
   angle tolerance.
 
+### IEEE8500 Profile/QSTS Inventory
+
+The checked-in IEEE8500 `Master-InterPSS.dss` and `Master.dss` files are
+balanced static snapshots. They redirect balanced `Loads.dss`, capacitors,
+controls, regulators, lines, and transformers, but do not bind the main loads to
+daily/yearly/duty `LoadShape` records.
+
+The local IEEE8500 folder does contain profile-related material that can be used
+for targeted QSTS data testing:
+
+- `P174_Run_360kW_PV.DSS` compiles `Master-unbal.dss`, adds `Generator.G1`,
+  defines `Loadshape.PVCurve`, binds `generator.g1.duty=PVcurve`, and solves
+  `mode=duty number=2900 stepsize=1`.
+- `Normalized-1s-2900-pts.CSV` is present and contains 2,913 one-second PV
+  multiplier samples; existing parser tests already verify this shape can be
+  parsed into QSTS profile metadata.
+- `CloudTransient.dss` defines `Loadshape.Ramp` and a duty generator, but its
+  referenced `solarramp.csv` file is not checked in.
+- `Feeder_Loads.dss` references `Yearly=Load_Res`, but no
+  `Loadshape.Load_Res` definition was found in the checked-in IEEE8500 folder.
+- `IEEE8500u_EXP_Profile.csv` is an exported voltage-profile artifact, not a
+  load or DER time-series input profile.
+
+Conclusion: IEEE8500 is usable now as a large PV duty-profile parser/QSTS
+candidate if we create an InterPSS-compatible static master around the
+`P174_Run_360kW_PV.DSS` pattern. It is not yet a ready large load-profile QSTS
+case, and it should not be treated as one until a real `Load_Res`/low-load
+profile source is added and bound.
+
+External search did identify an open IEEE13/IEEE123/IEEE8500 Volt-VAR dataset
+and test environment as a possible future source of historical operating
+profiles. That dataset should be reviewed separately before importing any files,
+because it may use a different feeder variant and control/action model than the
+checked-in OpenDSS IEEE8500 case.
+
 ## Final State
 
 - Branch: `qsts-opendss-parity-improvements`
