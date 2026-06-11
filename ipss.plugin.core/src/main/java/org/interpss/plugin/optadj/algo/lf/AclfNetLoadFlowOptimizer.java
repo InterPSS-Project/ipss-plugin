@@ -24,9 +24,11 @@ public class AclfNetLoadFlowOptimizer extends BaseAclfNetLoadFlowOptimizer{
 
 	private DMatrixSparseCSC senSparseMatrix = null;
 
+	/* 
 	public AclfNetLoadFlowOptimizer() {
 		this.sparseMatrix = false;
 	}
+	*/
 
 	public AclfNetLoadFlowOptimizer(boolean sparseMatrix) {
 		this.sparseMatrix = sparseMatrix;
