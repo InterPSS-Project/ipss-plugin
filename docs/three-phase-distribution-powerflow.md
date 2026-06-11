@@ -166,11 +166,17 @@ Results:
 | Engine | Controls | Steps | Result |
 |--------|----------|-------|--------|
 | DSS-Python | static, regulators and capacitors enabled | 8760 | `0.820762 ms/step`, converged, max control iterations `9` |
-| InterPSS | static, regulators and capacitors enabled | 8760 | `0.131917 ms/step`, converged, max PF iterations `5` |
+| InterPSS | static, regulators and capacitors enabled | 8760 | `0.142280 ms/step`, converged, max PF iterations `5` |
 
 The InterPSS profile reported `reused_powerflow_steps=8759`,
-`symbolicFactors=1`, `numericFactors=1`, `fallbackCount=0`, and
+`symbolicFactors=1`, `numericFactors=2`, `fallbackCount=0`, and
 `pf_iterations_per_step=0.000571`.
+
+The Ckt24 one-step controlled voltage comparison also passes at the current
+large-feeder tolerance after removing the parser-time fixed regulator tap shim:
+`maxMagDelta=0.00299752703`, `maxAngleDelta=0.330423172`,
+`magFailures=0`, and `angleFailures=0` at `0.003 pu` and `1.0 deg`.
+Both DSS-Python and InterPSS settle `SubXFMR_Regulator` at tap position `2`.
 
 ## Long-Term Direction: OpenDSS-Style Primitive Y Matrix
 
