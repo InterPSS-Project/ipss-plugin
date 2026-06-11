@@ -37,12 +37,20 @@ public class OpenDSSQstsAdapterTest {
 		assertFalse(parser.hasDistNetwork());
 		assertThrows(UnsupportedOperationException.class, () -> parser.getDistNetwork());
 		Static3PBus bus = parser.getStaticNetwork().getBus("bus1");
+		assertFalse(bus.getClass().getName().contains("DStab"));
 		AclfGen3Phase generator = bus.getPhaseGenList().get(0);
+		assertFalse(generator.getClass().getName().contains("DStab"));
 		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
 		assertEquals(0.75 * 60.0 / parser.getStaticNetwork().getBaseKva() / 3.0,
 				power.a_0.getReal(), 1.0e-12);
 		assertEquals(0.0, power.a_0.getImaginary(), 1.0e-12);
 		assertEquals(0.75 * 60.0 / parser.getStaticNetwork().getBaseKva(),
 				power.a_0.add(power.b_1).add(power.c_2).getReal(), 1.0e-12);
+	}
+
+	@Test
+	void factoryRejectsDynamicOpenDssParserForQsts() {
+		assertThrows(IllegalArgumentException.class,
+				() -> OpenDSSQstsStudyFactory.from(new OpenDSSDataParser()));
 	}
 }
