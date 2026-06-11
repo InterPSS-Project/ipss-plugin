@@ -1,8 +1,11 @@
 package org.interpss.threePhase.qsts;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
@@ -67,6 +70,32 @@ public class QstsLoadStateStoreTest {
 		assertEquals(1.0, fixed.getQMultiplier(), 1.0e-12);
 		assertEquals(1.0, exempt.getPMultiplier(), 1.0e-12);
 		assertEquals(1.0, exempt.getQMultiplier(), 1.0e-12);
+	}
+
+	@Test
+	void stateApplierTreatsMetadataOnlyBindingsAsStatic() {
+		QstsScheduleData scheduleData = new QstsScheduleData(new QstsProfileRegistry(),
+				List.of(new QstsProfileBinding("load", "load1", Map.of("daily", "missing"),
+						QstsDeviceStatus.VARIABLE)),
+				null);
+
+		QstsStateApplier applier = new QstsStateApplier(scheduleData, null, null);
+
+		assertFalse(applier.hasTimeVaryingBindings());
+	}
+
+	@Test
+	void stateApplierDetectsResolvedProfileBindingsAsTimeVarying() {
+		QstsProfileRegistry registry = new QstsProfileRegistry();
+		registry.add(new QstsProfile("daily", new double[0], new double[] {0.5, 1.0}, null, null));
+		QstsScheduleData scheduleData = new QstsScheduleData(registry,
+				List.of(new QstsProfileBinding("load", "load1", Map.of("daily", "daily"),
+						QstsDeviceStatus.VARIABLE)),
+				null);
+
+		QstsStateApplier applier = new QstsStateApplier(scheduleData, null, null);
+
+		assertTrue(applier.hasTimeVaryingBindings());
 	}
 
 	@Test
