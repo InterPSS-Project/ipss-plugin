@@ -751,6 +751,7 @@ Rejected phase-aware follow-ups:
 |---|---|---|---|
 | Phase-aware primitive voltage object update | 2-step voltage/load/branch comparisons pass | `2.897286 ms/step` | Rejected and reverted |
 | Phase-aware primitive snapshot saving | 2-step voltage/load/branch comparisons pass | `2.787554 ms/step` | Rejected and reverted |
+| Masked load/generator current-injection API with per-device phase masks | 2-step voltage/load/branch comparisons pass | `2.868383 ms/step`; cached per-device masks improved to `2.792129 ms/step` | Rejected and reverted; slower than retained `2.751696 ms/step` |
 
 ## Final State
 
