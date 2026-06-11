@@ -417,6 +417,11 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertEquals(0.0307857945, yftAa.getImaginary(), 1.0e-10);
 		assertEquals(0.00809402625, yttAa.getReal(), 1.0e-10);
 		assertEquals(-0.355483735, yttAa.getImaginary(), 1.0e-10);
+
+		transformer.setToTurnRatio(1.0125);
+		Complex tappedYttAa = physicalY(transformer.getYttabc().aa, baseVa, toVbase, toVbase);
+		assertEquals(0.00789540741, tappedYttAa.getReal(), 1.0e-10);
+		assertEquals(-0.346760559, tappedYttAa.getImaginary(), 5.0e-8);
 	}
 
 	private static void printYMatrixComponentAudit(String label, DStabNetwork3Phase distNet) {
