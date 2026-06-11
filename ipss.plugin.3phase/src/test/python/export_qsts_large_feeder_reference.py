@@ -373,7 +373,7 @@ def main() -> None:
     parser.add_argument("--master-file", help="Override the selected feeder master file")
     parser.add_argument("--steps", type=int, default=24)
     parser.add_argument("--output-dir", type=Path, default=REPO_ROOT / "target" / "qsts-comparison")
-    parser.add_argument("--mode", choices=["daily", "yearly", "snapshot"], default="daily")
+    parser.add_argument("--mode", choices=["daily", "yearly", "snapshot", "duty"], default="daily")
     parser.add_argument("--step-size-hours", type=float, default=1.0)
     parser.add_argument("--control-mode", choices=["off", "static", "time", "event"], default="static")
     parser.add_argument("--max-control-iterations", type=int, default=100)
