@@ -243,7 +243,7 @@ public class QstsStudyTest {
 	}
 
 	@Test
-	void qstsSamplesSolvedPowerForContributedStaticConstZLoads() throws InterpssException {
+	void qstsExcludesControlledCapacitorsFromLoadPowerSamples() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		Static3PBus loadBus = network.getBus("load");
 		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
@@ -252,6 +252,12 @@ public class QstsStudyTest {
 		capacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
 				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
 		loadBus.getContributeLoadList().add(capacitor);
+		Static3PLoad fixedCapacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		fixedCapacitor.setId("cap2");
+		fixedCapacitor.setCode(AclfLoadCode.CONST_Z);
+		fixedCapacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.02),
+				new Complex(0.0, -0.02), new Complex(0.0, -0.02)));
+		loadBus.getContributeLoadList().add(fixedCapacitor);
 		CapacitorControlData control = new CapacitorControlData("capctrl1", "cap1", "", 1,
 				CapacitorControlData.ControlType.VOLTAGE, 100.0, 200.0, 1.0, 1.0,
 				false, 0.0, 0.0, 0.0, 0.0, null, null);
@@ -265,7 +271,10 @@ public class QstsStudyTest {
 				.run();
 
 		assertTrue(result.isConverged());
-		assertEquals(-0.0121, power(result.getStep(0).getLoadPowers(), "cap1", "A").getQ(), 1.0e-12);
+		assertTrue(result.getStep(0).getLoadPowers().stream()
+				.noneMatch(sample -> sample.getDeviceId().equals("cap1")));
+		assertTrue(result.getStep(0).getLoadPowers().stream()
+				.noneMatch(sample -> sample.getDeviceId().equals("cap2")));
 		assertEquals(-0.0363, result.getStep(0).getCapacitorStates().get(0)
 				.getTotalReactivePowerPu(), 1.0e-12);
 	}
