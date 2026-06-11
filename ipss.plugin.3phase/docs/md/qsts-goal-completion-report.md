@@ -302,9 +302,9 @@ Ckt24 static controls, regulators and capacitors enabled:
   behavior, the latest controlled one-step voltage comparison passes the current
   Ckt24 tolerance. Branch-flow parity remains open.
 
-IEEE8500 all-regulator controls are not a valid 8760 reference case yet because
-DSS-Python/OpenDSS does not settle the regulator controls under the checked-in
-master-file defaults:
+IEEE8500 all-regulator controls are not a valid 8760 parity/performance
+reference case yet because DSS-Python/OpenDSS does not settle the regulator
+controls under the checked-in master-file defaults:
 
 - DSS-Python with regulators and capacitors enabled failed warm-up:
   `converged=false`, max iterations `45`.
@@ -312,10 +312,12 @@ master-file defaults:
   `maxcontroliter=100` also failed at the first step:
   `converged=false`, max iterations `23`.
 - DSS-Python cap-control-only with regulators disabled and
-  `maxcontroliter=100` converged, so that is the controlled IEEE8500 comparison
-  mode currently used for performance/parity evidence.
+  `maxcontroliter=100` converged, but this is a diagnostic isolation mode, not
+  the current acceptance path. The acceptance path for large-feeder comparison
+  and performance evidence remains all applicable static controls enabled.
 
-IEEE8500 static capacitor controls enabled, regulator controls disabled:
+IEEE8500 static capacitor controls enabled, regulator controls disabled
+diagnostic:
 
 - DSS-Python 8760-step run: converged, `0.504579 ms/step`, max iterations `8`.
 - InterPSS 8760-step run after fixing KVAR control per-phase base conversion
@@ -364,11 +366,11 @@ target:
 - Controlled load-power comparison found `4222` common load/phase keys and no
   `5 kW` / `5 kvar` failures. Common-key totals are within `0.086 kW` and
   `0.319 kvar` of DSS-Python.
-- Controlled branch-flow comparison found `14106` common branch terminal/phase
-  keys. It currently fails a `5 kW` / `5 kvar` tolerance with worst active-power
-  mismatch `82.3257921 kW` at `transformer.subxfmr` terminal 1 phase B and
-  worst reactive-power mismatch `134.09627296 kvar` at `transformer.subxfmr`
-  terminal 1 phase C.
+- Controlled branch-flow comparison found `14185` common branch terminal/phase
+  keys after the transformer no-load shunt and tap-scaling fixes. It now passes
+  the `5 kW` active-power tolerance with `maxPDelta=3.25626791 kW`; the
+  remaining mismatch is reactive-only, with `maxQDelta=22.57404852 kvar` and
+  `428` Q failures at the `5 kvar` tolerance.
 
 The large-feeder performance benchmark paths also now default to enabled static
 controls. One-step Ckt24 smoke timings from the controlled path were:
