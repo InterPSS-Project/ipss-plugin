@@ -18,6 +18,7 @@ import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.InverterControlData;
 import org.interpss.threePhase.powerflow.control.InverterControlModel.InverterControlResult;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
+import org.interpss.threePhase.powerflow.control.RegulatorTapControl;
 import org.interpss.threePhase.qsts.control.QstsControlAction;
 import org.interpss.threePhase.qsts.control.QstsControlQueue;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -55,6 +56,7 @@ public class QstsStudy {
 	private List<InverterControlData> inverterControls = Collections.emptyList();
 	private QstsInverterAdapterStore inverterAdapterStore = new QstsInverterAdapterStore();
 	private final CapacitorBankControl qstsCapacitorControl = new CapacitorBankControl();
+	private final RegulatorTapControl qstsRegulatorTapControl = new RegulatorTapControl();
 	private final QstsControlQueue controlQueue = new QstsControlQueue();
 	private final Map<String, Integer> operationCountByControlKey = new java.util.LinkedHashMap<>();
 
@@ -206,9 +208,11 @@ public class QstsStudy {
 		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
 		boolean delayedCapacitorControls = usesDelayedControlQueue();
+		boolean steppedRegulatorControls = usesSteppedRegulatorControls(controlsEnabled);
 		algorithm.setFixedPointYMatrixCacheEnabled(qstsFixedPointYMatrixCacheEnabled(
 				delayedCapacitorControls));
-		algorithm.setRegulatorControlEnabled(controlsEnabled && !regulatorControls.isEmpty());
+		algorithm.setRegulatorControlEnabled(controlsEnabled && !steppedRegulatorControls
+				&& !regulatorControls.isEmpty());
 		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
 				&& !capacitorControls.isEmpty());
 		boolean staticStateReuseEnabled = qstsStaticStateReuseEnabled(delayedCapacitorControls);
@@ -263,6 +267,13 @@ public class QstsStudy {
 			long outputStartNanos = profile == null ? 0L : System.nanoTime();
 			steps.add(createStepResult(context, converged, controlResult.powerFlowIterations,
 					failureReason, actionCount, inverterControlSamples));
+			if(converged && steppedRegulatorControls) {
+				boolean regulatorChanged = qstsRegulatorTapControl.apply(network, regulatorControls, false);
+				if(regulatorChanged) {
+					algorithm.clearFixedPointYMatrixCache();
+					solvedReusableStaticState = false;
+				}
+			}
 			if(profile != null) {
 				profile.addOutputs(System.nanoTime() - outputStartNanos);
 				profile.finishStep(System.nanoTime() - stepStartNanos, converged);
@@ -287,12 +298,12 @@ public class QstsStudy {
 			return new QstsStepResult(context, converged, iterationCount, Double.NaN,
 					failureReason, actionCount, Collections.emptyList(), Collections.emptyList(),
 					Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-					Collections.emptyList());
+					Collections.emptyList(), Collections.emptyList());
 		}
 		return new QstsStepResult(context, converged, iterationCount, Double.NaN,
 				failureReason, actionCount, sampleBusVoltages(context), sampleLoadPowers(context),
 				sampleGeneratorPowers(context), sampleBranchPowers(context),
-				sampleCapacitorStates(context), inverterControlSamples);
+				sampleCapacitorStates(context), sampleRegulatorTaps(context), inverterControlSamples);
 	}
 
 	public QstsStateApplier getStateApplier() {
@@ -305,6 +316,10 @@ public class QstsStudy {
 
 	private boolean usesDelayedControlQueue() {
 		return controlMode == QstsControlMode.TIME || controlMode == QstsControlMode.EVENT;
+	}
+
+	private boolean usesSteppedRegulatorControls(boolean controlsEnabled) {
+		return controlsEnabled && controlMode == QstsControlMode.STATIC && !regulatorControls.isEmpty();
 	}
 
 	private boolean qstsFixedPointYMatrixCacheEnabled(boolean delayedCapacitorControls) {
@@ -433,6 +448,21 @@ public class QstsStudy {
 			samples.add(new QstsCapacitorStateSample(context.getStepIndex(), context.getHour(),
 					control.getCapacitorId(), control.isClosed(), total.getImaginary(),
 					total.getImaginary() * aclfNetwork().getBaseKva(), operationCount));
+		}
+		return samples;
+	}
+
+	private List<QstsRegulatorTapSample> sampleRegulatorTaps(QstsStepContext context) {
+		List<QstsRegulatorTapSample> samples = new ArrayList<>();
+		for(RegulatorControlData control : regulatorControls) {
+			samples.add(new QstsRegulatorTapSample("",
+					context.getStepIndex(), context.getHour(), control.getId(),
+					control.getBranchName(), control.getWinding(), control.getTapWinding(),
+					control.getPhaseCode() == null ? "" : control.getPhaseCode().name(),
+					control.getTapPosition(), control.getTapRatio(), control.getTargetVoltage(),
+					control.getBandwidth(), control.getPtRatio(), control.getDelaySeconds(),
+					control.getRegulatedBusId() == null ? "" : control.getRegulatedBusId(),
+					control.getLineDropR(), control.getLineDropX(), control.getVLimit()));
 		}
 		return samples;
 	}
