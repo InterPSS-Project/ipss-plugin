@@ -1316,8 +1316,10 @@ Verification:
 - [ ] DSS-Python mini cases for `StorageController` only after the static model
   and parser support are complete.
 - [x] Compare storage terminal P/Q before bus voltages.
-- [ ] Add DSS-Python state-of-charge reference rows if future controller tests
-  need SOC parity beyond the existing Java energy-state unit tests.
+- [x] Add DSS-Python state-of-charge reference rows for the scheduled
+  charge/discharge mini case.
+  - `storage-mini-dss-python-soc-reference.csv` compares cumulative stored kWh
+    and SOC percent through the static parser-owned `QstsStorageStateStore`.
 
 Exit criteria:
 
