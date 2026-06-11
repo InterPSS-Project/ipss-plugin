@@ -177,6 +177,11 @@ large-feeder tolerance after removing the parser-time fixed regulator tap shim:
 `maxMagDelta=0.00299752703`, `maxAngleDelta=0.330423172`,
 `magFailures=0`, and `angleFailures=0` at `0.003 pu` and `1.0 deg`.
 Both DSS-Python and InterPSS settle `SubXFMR_Regulator` at tap position `2`.
+The same controlled export now includes static branch terminal powers. The
+branch-power comparator currently runs as a diagnostic and fails at `5 kW` /
+`5 kvar` tolerance: `commonKeys=14102`, `dssOnly=124`, `interpssOnly=23`,
+`maxPDelta=877.25032075` at `line.other_feeders` terminal 1 phase B, and
+`maxQDelta=187.98447851` at `transformer.subxfmr` terminal 1 phase B.
 
 IEEE8500 was checked with static capacitor controls enabled and regulator
 controls disabled on both sides because the checked-in IEEE8500 regulator
