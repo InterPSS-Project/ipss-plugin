@@ -154,7 +154,7 @@ public class CapacitorBankControl {
 					control);
 			return new CapacitorMeasurement(current, localVoltage);
 		}
-		Complex3x1 powerKva = voltagePu.multiply(currentPu.conjugate()).multiply(network.getBaseKva());
+		Complex3x1 powerKva = voltagePu.multiply(currentPu.conjugate()).multiply(network.getBaseKva() / 3.0);
 		if(control.getControlType() == ControlType.KVAR) {
 			return new CapacitorMeasurement(selectedReactivePower(powerKva, control), localVoltage);
 		}
