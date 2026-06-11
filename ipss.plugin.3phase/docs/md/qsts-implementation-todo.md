@@ -732,7 +732,9 @@ Create:
     line-impedance floor so static fixed-point setup no longer sees zero Yii
     diagonal elements.
   - [ ] Ckt24 low-load scheduled yearly window with static controls enabled by
-    default, using controls-off only as a named frozen-state diagnostic:
+    default. Controls-off runs must use the explicit diagnostic override
+    (`--allow-disabled-controls` for DSS-Python or
+    `-Dqsts.compare.allowDisabledControls=true` for InterPSS):
     - profile files in `testData/feeder/Ckt24`:
       `LS_PhaseA.txt`, `LS_PhaseB.txt`, `LS_PhaseC.txt`,
       `LS_ThreePhase.txt`, and `Other_Bus_Load.txt`;

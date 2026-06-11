@@ -133,6 +133,37 @@ def selected_cases(names: list[str]) -> list[FeederCase]:
     return selected
 
 
+def require_enabled_controls(
+    control_mode: str,
+    max_control_iterations: int,
+    reg_controls_enabled: bool,
+    cap_controls_enabled: bool,
+    allow_disabled_controls: bool,
+) -> None:
+    if allow_disabled_controls:
+        return
+    if control_mode == "off":
+        raise ValueError(
+            "Large-feeder QSTS performance comparisons must run with controls enabled; "
+            "use --allow-disabled-controls only for frozen-state diagnostics"
+        )
+    if max_control_iterations <= 0:
+        raise ValueError(
+            "Large-feeder QSTS performance comparisons must allow control iterations; "
+            "use --allow-disabled-controls only for frozen-state diagnostics"
+        )
+    if not reg_controls_enabled:
+        raise ValueError(
+            "Large-feeder QSTS performance comparisons must keep regulator controls enabled; "
+            "use --allow-disabled-controls only for frozen-state diagnostics"
+        )
+    if not cap_controls_enabled:
+        raise ValueError(
+            "Large-feeder QSTS performance comparisons must keep capacitor controls enabled; "
+            "use --allow-disabled-controls only for frozen-state diagnostics"
+        )
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--case", action="append", choices=["all", "ckt24", "ieee8500", "8500"])
@@ -143,11 +174,19 @@ def main() -> None:
     parser.add_argument("--max-control-iterations", type=int, default=20)
     parser.add_argument("--disable-reg-controls", action="store_true")
     parser.add_argument("--disable-cap-controls", action="store_true")
+    parser.add_argument("--allow-disabled-controls", action="store_true")
     args = parser.parse_args()
 
     cases = selected_cases(args.case or ["all"])
     reg_controls_enabled = not args.disable_reg_controls
     cap_controls_enabled = not args.disable_cap_controls
+    require_enabled_controls(
+        args.control_mode,
+        args.max_control_iterations,
+        reg_controls_enabled,
+        cap_controls_enabled,
+        args.allow_disabled_controls,
+    )
     print(
         "DSSPY_QSTS_PERF_CONFIG "
         f"cases={','.join(case.name for case in cases)} "
