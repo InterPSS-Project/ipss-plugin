@@ -500,6 +500,21 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertEquals(-0.346760559, tappedYttAa.getImaginary(), 5.0e-8);
 	}
 
+	@Test
+	public void ckt24ServiceTransformerUsesOpenDssImagAsReactiveAdmittance() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", true);
+
+		Static3PBranch transformer = findStaticBranchByName(parser.getStaticNetwork(), "05410_g2100nj9400");
+		assertNotNull(transformer, "Missing Ckt24 service transformer with %IMag");
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double toVbase = transformer.getToBus().getBaseVoltage();
+
+		Complex yttAa = physicalY(transformer.getYttabc().aa, baseVa, toVbase, toVbase);
+		assertEquals(11.0365662589, yttAa.getReal(), 1.0e-8);
+		assertEquals(-78.6265905048, yttAa.getImaginary(), 5.0e-6);
+	}
+
 	private static void printYMatrixComponentAudit(String label, DStabNetwork3Phase distNet) {
 		OpenDssDataQaUtils.YMatrixAudit audit = OpenDssDataQaUtils.yMatrixAudit(distNet);
 		System.out.println(audit.summary(label));
