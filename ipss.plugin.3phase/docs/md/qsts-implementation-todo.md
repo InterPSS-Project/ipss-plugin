@@ -1141,10 +1141,10 @@ Verification:
 - [x] DSS-Python mini case: `CTPhase` AVG, MIN, MAX and explicit phase
   selection beyond PTPhase min/max.
 - [x] DSS-Python mini case: voltage override.
-- [ ] DSS-Python mini case: delayed control-queue operation count.
-  - Java QSTS queue timing, state carryover, operation count, and CSV result
-    export are covered; a DSS-Python delayed-operation reference fixture still
-    needs to be generated.
+- [x] DSS-Python mini case: delayed control-queue operation count.
+  - Covered by `OpenDssCapControlMiniComparisonTest` using
+    `DelayedHighVoltageOpen.dss` and
+    `capcontrol-delayed-dss-python-operation-reference.csv`.
 
 Exit criteria:
 
