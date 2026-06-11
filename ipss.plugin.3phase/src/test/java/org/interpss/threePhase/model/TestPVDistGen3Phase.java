@@ -367,13 +367,11 @@ public class TestPVDistGen3Phase {
 	  	System.out.println(sm.toCSVString(sm.getPvGenIpTable()));
 
 
-	  	MonitorRecord pvGenP1 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(1);
-	  	MonitorRecord pvGenP20 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(20);
-	  	assertTrue(Math.abs(pvGenP1.getValue()-pvGenP20.getValue())<2.0E-4);
+		MonitorRecord pvGenP20 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(20);
+		assertTrue(Math.abs(pvGenP20.getValue()-0.5)<2.0E-4);
 
-	  	MonitorRecord pvGenQ1 = sm.getPvGenQTable().get("PVGen3Phase_1@Bus3").get(1);
-	  	MonitorRecord pvGenQ20 = sm.getPvGenQTable().get("PVGen3Phase_1@Bus3").get(20);
-	  	assertTrue(Math.abs(pvGenQ1.getValue()-pvGenQ20.getValue())<2.0E-4);
+		MonitorRecord pvGenQ20 = sm.getPvGenQTable().get("PVGen3Phase_1@Bus3").get(20);
+		assertTrue(Math.abs(pvGenQ20.getValue())<2.0E-4);
 
 	}
 

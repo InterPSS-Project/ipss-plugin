@@ -3,6 +3,7 @@ package org.interpss.threePhase.basic.dstab.impl;
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseGenAptr;
 import static org.interpss.threePhase.util.ThreePhaseUtilFunction.threePhaseInductionMotorAptr;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.util.ThreeSeqLoadProcessor;
 
 import com.interpss.core.threephase.LoadConnectionType;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.net.Branch;
@@ -51,6 +53,7 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 	private List<DStab1PLoad> singlePhaseLoadList = null;
 
 	private List<DStab3PLoad> threePhaseLoadList = null;
+	private List<AclfLoad3Phase> phaseLoadView = null;
 	private List<DStab3PGen> threePhaseGenList = null;
 
 	private Complex3x1 load3PhEquivCurInj = null;
@@ -239,6 +242,28 @@ public class DStab3PBusImpl extends BaseDStabBusImpl<DStab3PGen,DStab3PLoad> imp
 		}
 		return singlePhaseLoadList;
 
+	}
+
+	@Override
+	public List<? extends AclfLoad3Phase> getPhaseLoadList() {
+		if(this.phaseLoadView == null) {
+			this.phaseLoadView = new AbstractList<AclfLoad3Phase>() {
+				@Override
+				public AclfLoad3Phase get(int index) {
+					List<DStab1PLoad> singlePhaseLoads = getSinglePhaseLoadList();
+					if(index < singlePhaseLoads.size()) {
+						return singlePhaseLoads.get(index);
+					}
+					return getThreePhaseLoadList().get(index - singlePhaseLoads.size());
+				}
+
+				@Override
+				public int size() {
+					return getSinglePhaseLoadList().size() + getThreePhaseLoadList().size();
+				}
+			};
+		}
+		return this.phaseLoadView;
 	}
 
 
