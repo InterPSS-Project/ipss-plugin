@@ -330,6 +330,8 @@ public class QstsStudyTest {
 				.noneMatch(sample -> sample.getDeviceId().equals("cap2")));
 		assertEquals(-0.0363, result.getStep(0).getCapacitorStates().get(0)
 				.getTotalReactivePowerPu(), 1.0e-12);
+		assertEquals(-1210.0, result.getStep(0).getCapacitorStates().get(0)
+				.getTotalReactivePowerKvar(), 1.0e-12);
 	}
 
 	@Test
