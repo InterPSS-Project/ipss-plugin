@@ -120,11 +120,19 @@ Tests run: 301, Failures: 0, Errors: 0, Skipped: 26
 
 ## Verification Boundary
 
-This goal did not include a full 8760-step large-feeder QSTS parity study that
-compares every time step against DSS-Python for both bus voltages and branch
-flows. A controlled one-step Ckt24 parity check now exists for both voltages and
-branch powers, and the branch-power comparison is currently a diagnostic with
-known mismatches rather than a passing gate.
+This goal now includes controlled Ckt24 large-feeder QSTS parity evidence for
+bus voltages, load powers, and branch powers. The checked-in InterPSS Ckt24
+master file used for this comparison is a static constant-power master:
+`master_ckt24_interpss.dss` deliberately skips the yearly `LoadShape`
+definitions, so the controlled 8760 performance run is a repeated-static-state
+benchmark rather than a full yearly profile simulation.
+
+What has not yet been completed is a profile-enabled 8760-step large-feeder
+QSTS parity study that compares every time step against DSS-Python with the
+original Ckt24 yearly load shapes active. That remains a separate larger slice:
+it requires importing and applying the feeder load profiles on the static QSTS
+path and validating the resulting yearly trajectory without generating
+multi-gigabyte row exports.
 
 What was verified for large feeders in the older repo artifacts is static
 power-flow parity, mostly controls-off voltage comparison and device-level
@@ -143,9 +151,11 @@ parity:
 - storage SOC carryover;
 - static parser/QSTS boundary enforcement.
 
-There are QSTS large-feeder performance benchmark notes for Ckt24, including a
-240-step repeated-state run, but that benchmark is performance-oriented and does
-not compare each QSTS step to DSS-Python bus voltages or branch flows.
+There is now a controlled 24-step repeated-state Ckt24 comparison against
+DSS-Python for bus voltages, load powers, and branch powers, plus a controlled
+8760-step performance run on the same static master. The 24-step comparison is
+the practical row-level parity gate for the current static repeated-state setup;
+a full 8760 row export would be many gigabytes of repeated data.
 
 ### Large-Feeder Comparison Path Added
 
@@ -518,6 +528,51 @@ near-zero branch rows; the remaining InterPSS-only rows are the explicit source
 branch representation. With controls enabled on both engines, Ckt24 now passes
 the current voltage, load-power, and branch-power parity tolerances on common
 keys.
+
+Controlled 24-step repeated-state Ckt24 export and comparison:
+
+```bash
+python3 ipss.plugin.3phase/src/test/python/export_qsts_large_feeder_reference.py \
+  --case ckt24 \
+  --steps 24 \
+  --output-dir target/qsts-ckt24-24step-controlled \
+  --control-mode static \
+  --max-control-iterations 100
+
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest=QstsLargeFeederComparisonExport \
+  -Dqsts.compare.case=ckt24 \
+  -Dqsts.compare.steps=24 \
+  -Dqsts.compare.outputDir=target/qsts-ckt24-24step-controlled \
+  -Dqsts.compare.controlMode=STATIC \
+  -Dqsts.compare.maxControlIterations=100 \
+  -Dqsts.compare.tolerance=1.0e-6 \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Results: DSS-Python converged with `maxIterations=9`, 180,528 voltage rows,
+401,472 branch-power rows, 105,528 load-power rows, and 24 regulator-tap rows.
+InterPSS converged with 436,248 voltage rows, 826,992 branch-power rows,
+280,368 load-power rows, 24 regulator-tap rows, and no capacitor-control state
+rows for Ckt24's fixed enabled capacitors.
+
+The 24-step controlled comparisons pass:
+
+```text
+QSTS_VOLTAGE_COMPARE commonKeys=171840 dssOnly=0 interpssOnly=264408
+maxMagDelta=0.00174384683 magFailures=0
+maxAngleDelta=0.000887403999997 angleFailures=0
+
+QSTS_LOAD_POWER_COMPARE commonKeys=101328 dssOnly=0 interpssOnly=4416
+dssPTotalKw=1124568.83732 interpssPTotalKw=1124568.75009
+dssQTotalKvar=190736.454033 interpssQTotalKvar=190736.130037
+maxPDelta=0.0115543100001 pFailures=0
+maxQDelta=0.045158398 qFailures=0
+
+QSTS_BRANCH_POWER_COMPARE commonKeys=338256 dssOnly=0 interpssOnly=144
+maxPDelta=0.113658150001 pFailures=0
+maxQDelta=0.74132948 qFailures=0
+```
 
 Controlled 8760 Ckt24 performance refresh after the `%IMag` fix:
 
