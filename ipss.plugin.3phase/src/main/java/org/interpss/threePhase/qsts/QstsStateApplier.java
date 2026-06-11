@@ -94,7 +94,15 @@ public class QstsStateApplier {
 	}
 
 	public boolean hasTimeVaryingBindings() {
-		return !scheduleData.getProfileBindings().isEmpty();
+		for(QstsProfileBinding binding : scheduleData.getProfileBindings()) {
+			for(String profileId : binding.getProfileIdsByType().values()) {
+				QstsProfile profile = scheduleData.getProfileRegistry().get(profileId);
+				if(profile != null && profile.getPointCount() > 0) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public QstsLoadStateStore getLoadStateStore() {
