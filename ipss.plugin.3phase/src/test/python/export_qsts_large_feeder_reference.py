@@ -105,6 +105,16 @@ def bus_voltage_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[lis
             ]
 
 
+def safe_node_order(count: int) -> list[int]:
+    try:
+        nodes = list(dss.CktElement.NodeOrder())
+    except Exception:
+        nodes = []
+    if len(nodes) >= count:
+        return [int(node) for node in nodes[:count]]
+    return [int(node) for node in nodes] + list(range(len(nodes) + 1, count + 1))
+
+
 def branch_power_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[list[object]]:
     for element_name in dss.Circuit.AllElementNames():
         element_class = element_name.split(".", 1)[0].lower()
@@ -117,7 +127,7 @@ def branch_power_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[li
         terminals = int(dss.CktElement.NumTerminals())
         conductors = int(dss.CktElement.NumConductors())
         bus_names = list(dss.CktElement.BusNames())
-        node_order = list(dss.CktElement.NodeOrder())
+        node_order = safe_node_order(terminals * conductors)
         for terminal_index in range(terminals):
             terminal = terminal_index + 1
             terminal_bus = bus_names[terminal_index].lower() if terminal_index < len(bus_names) else ""
@@ -151,7 +161,7 @@ def load_power_rows(feeder: FeederCase, step: int, hour: float) -> Iterable[list
             continue
         conductors = int(dss.CktElement.NumConductors())
         bus_names = list(dss.CktElement.BusNames())
-        node_order = list(dss.CktElement.NodeOrder())
+        node_order = safe_node_order(conductors)
         terminal_bus = bus_names[0].lower() if bus_names else ""
         for conductor_index in range(conductors):
             value_index = 2 * conductor_index

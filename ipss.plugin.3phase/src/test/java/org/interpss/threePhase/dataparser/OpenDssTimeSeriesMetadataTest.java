@@ -216,6 +216,27 @@ public class OpenDssTimeSeriesMetadataTest {
 		assertEquals(declaredToTurnRatio, branch.getToTurnRatio(), 1.0e-12);
 		assertEquals(1, parser.getRegulatorControls().size());
 		assertEquals("reg1", parser.getRegulatorControls().get(0).getBranchName());
+		assertEquals(0.0, parser.getRegulatorControls().get(0).getDelaySeconds(), 1.0e-12);
+		assertFalse(parser.hasDistNetwork());
+	}
+
+	@Test
+	void regControlPropertyEditPreservesMetadataAndParsesDelay() throws InterpssException {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		parser.getXfrParser().parseTransformerDataOneLine(
+				"New Transformer.reg1 phases=1 windings=2 buses=[source.1 load.1] "
+				+ "conns=[wye wye] kvs=[7.2 7.2] kvas=[500 500] xhl=1 %loadloss=0.1");
+		parser.getRegulatorParser().parseRegControlData(
+				"New RegControl.creg1 transformer=reg1 winding=2 vreg=120 band=2 ptratio=60");
+		parser.getRegulatorParser().parseRegControlData(
+				"regcontrol.creg1.maxtapchange=1 Delay=45");
+
+		assertEquals(1, parser.getRegulatorControls().size());
+		assertEquals("reg1", parser.getRegulatorControls().get(0).getBranchName());
+		assertEquals(1, parser.getRegulatorControls().get(0).getMaxTapChange());
+		assertEquals(45.0, parser.getRegulatorControls().get(0).getDelaySeconds(), 1.0e-12);
+		assertEquals(120.0, parser.getRegulatorControls().get(0).getTargetVoltage(), 1.0e-12);
 		assertFalse(parser.hasDistNetwork());
 	}
 
