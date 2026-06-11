@@ -50,7 +50,7 @@ public class Texas2K_OptN1Scan_SsaResult_Sample {
 		System.out.println("Total number of branches over limit before OptAdj: " + ssaResult.getCaOverLimitInfo().size());
 		
 		OptAdjResultContainer optAdjResult = new OptAdjResultContainer(ssaResult);
-		new AclfNetContigencyOptimizer().optimize(dclfAlgo, optAdjResult, loadingThreshold);
+		new AclfNetContigencyOptimizer(false).optimize(dclfAlgo, optAdjResult, loadingThreshold);
 		optAdjResult.getOptAdjResults().forEach((genName, result) -> {
 			System.out.println("GenAdjustResult: " + genName + ", " + result.toString());
 		});
