@@ -17,6 +17,8 @@ public class QstsStateApplier {
 	private final QstsGeneratorStateStore generatorStateStore;
 	private final QstsStorageStateStore storageStateStore;
 	private final Map<String, QstsProfileBinding> bindingsByKey = new LinkedHashMap<>();
+	private final Map<QstsLoadBaseState, QstsProfileBinding> loadBindingsByState = new IdentityHashMap<>();
+	private final QstsLoadMultiplierResolver multiplierResolver;
 
 	public QstsStateApplier(QstsScheduleData scheduleData, QstsLoadStateStore loadStateStore,
 			QstsGeneratorStateStore generatorStateStore) {
@@ -33,6 +35,10 @@ public class QstsStateApplier {
 		this.storageStateStore = storageStateStore == null ? new QstsStorageStateStore() : storageStateStore;
 		for(QstsProfileBinding binding : this.scheduleData.getProfileBindings()) {
 			bindingsByKey.put(key(binding.getDeviceClass(), binding.getDeviceId()), binding);
+		}
+		this.multiplierResolver = new QstsLoadMultiplierResolver(this.scheduleData.getProfileRegistry());
+		for(QstsLoadBaseState state : this.loadStateStore.states()) {
+			loadBindingsByState.put(state, bindingFor("load", state.getLoadId()));
 		}
 		initializeLoadNortonReferences();
 	}
@@ -125,12 +131,13 @@ public class QstsStateApplier {
 
 	private void applyLoads(QstsStepContext context) {
 		for(QstsLoadBaseState state : loadStateStore.states()) {
-			QstsProfileBinding binding = bindingFor("load", state.getLoadId());
+			QstsProfileBinding binding = loadBindingFor(state);
 			if(binding == null && unity(context.getLoadMultiplier())) {
 				continue;
 			}
-			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
-					.resolve(binding, context.getMode(), context.getScheduleIndex(), context.getLoadMultiplier());
+			QstsLoadMultiplier multiplier = multiplierResolver
+					.resolve(binding, context.getMode(), context.getScheduleIndex(),
+							context.getLoadMultiplier());
 			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
 		}
 	}
@@ -144,7 +151,7 @@ public class QstsStateApplier {
 			if(binding == null) {
 				continue;
 			}
-			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
+			QstsLoadMultiplier multiplier = multiplierResolver
 					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
 			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
 		}
@@ -156,11 +163,20 @@ public class QstsStateApplier {
 			if(binding == null) {
 				continue;
 			}
-			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
+			QstsLoadMultiplier multiplier = multiplierResolver
 					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
 			state.applyScheduledMultiplier(multiplier.getPMultiplier(),
 					multiplier.getQMultiplier(), context.getStepSizeHours());
 		}
+	}
+
+	private QstsProfileBinding loadBindingFor(QstsLoadBaseState state) {
+		if(loadBindingsByState.containsKey(state)) {
+			return loadBindingsByState.get(state);
+		}
+		QstsProfileBinding binding = bindingFor("load", state.getLoadId());
+		loadBindingsByState.put(state, binding);
+		return binding;
 	}
 
 	private QstsProfileBinding generatorBindingFor(String deviceId) {
