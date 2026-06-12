@@ -95,6 +95,35 @@ public class OpenDssGeneratorMetadataTest {
 	}
 
 	@Test
+	void parsedStaticGeneratorInjectsCurrentOnPhaseBase() {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		assertTrue(parser.getGeneratorParser().parseGeneratorData(
+				"New generator.G1 Bus1=m1026866 kV=12.47 kW=360 pf=1.0 model=1",
+				"P174_Run_360kW_PV.DSS", 15));
+
+		AclfGen3Phase parsed = parser.getStaticNetwork().getBus("m1026866").getPhaseGenList().get(0);
+		assertTrue(parsed instanceof OpenDSSStaticGenerator);
+		OpenDSSStaticGenerator generator = (OpenDSSStaticGenerator) parsed;
+		double[] voltage = {
+				1.0, 0.0,
+				1.0, 0.0,
+				0.85, 0.0
+		};
+		double[] current = new double[6];
+
+		generator.addEquivCurrInj(voltage, 0, current, 0, 0b111);
+
+		double phasePower = 360.0 / 3.0 / parser.getStaticNetwork().getBaseKva();
+		assertEquals(phasePower * 3.0, current[0], 1.0e-12);
+		assertEquals(phasePower * 3.0, current[2], 1.0e-12);
+		assertEquals(phasePower * Math.pow(0.85 / 0.9, 2.0) * 3.0 / 0.85,
+				current[4], 1.0e-12);
+		assertEquals(0.0, current[1], 1.0e-12);
+		assertEquals(0.0, current[3], 1.0e-12);
+		assertEquals(0.0, current[5], 1.0e-12);
+	}
+
+	@Test
 	void readsIeee8500PvGeneratorAndDutyCurveFromCheckedInDssFile() throws Exception {
 		Path feederDir = Path.of("testData/feeder/IEEE8500");
 		Path dssFile = feederDir.resolve("P174_Run_360kW_PV.DSS");

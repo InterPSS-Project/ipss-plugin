@@ -56,17 +56,17 @@ public class OpenDSSStaticGenerator extends Static3PGenImpl {
 		}
 		Complex3x1 scheduled = getPower3Phase(UnitType.PU);
 		if((activePhaseMask & 0b001) != 0) {
-			addGeneratorCurrent(terminalPower(scheduled == null ? null : scheduled.a_0,
+			addGeneratorCurrent(terminalInjectionPower(scheduled == null ? null : scheduled.a_0,
 					vabc[voltageOffset], vabc[voltageOffset + 1]),
 					vabc[voltageOffset], vabc[voltageOffset + 1], accumulator, accumulatorOffset);
 		}
 		if((activePhaseMask & 0b010) != 0) {
-			addGeneratorCurrent(terminalPower(scheduled == null ? null : scheduled.b_1,
+			addGeneratorCurrent(terminalInjectionPower(scheduled == null ? null : scheduled.b_1,
 					vabc[voltageOffset + 2], vabc[voltageOffset + 3]),
 					vabc[voltageOffset + 2], vabc[voltageOffset + 3], accumulator, accumulatorOffset + 2);
 		}
 		if((activePhaseMask & 0b100) != 0) {
-			addGeneratorCurrent(terminalPower(scheduled == null ? null : scheduled.c_2,
+			addGeneratorCurrent(terminalInjectionPower(scheduled == null ? null : scheduled.c_2,
 					vabc[voltageOffset + 4], vabc[voltageOffset + 5]),
 					vabc[voltageOffset + 4], vabc[voltageOffset + 5], accumulator, accumulatorOffset + 4);
 		}
@@ -103,6 +103,13 @@ public class OpenDSSStaticGenerator extends Static3PGenImpl {
 		}
 		double scale = voltageLimitScale(voltageReal, voltageImaginary);
 		return scale == 1.0 ? power : power.multiply(scale);
+	}
+
+	private Complex terminalInjectionPower(Complex scheduledPower, double voltageReal,
+			double voltageImaginary) {
+		// OpenDSS generator schedules are stored on the three-phase network base;
+		// fixed-point phase currents are assembled on the per-phase base.
+		return terminalPower(scheduledPower, voltageReal, voltageImaginary).multiply(3.0);
 	}
 
 	private double voltageLimitScale(double voltageReal, double voltageImaginary) {
