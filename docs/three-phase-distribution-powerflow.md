@@ -161,17 +161,17 @@ mvn -pl ipss.plugin.3phase -am test \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 
-Current controlled yearly-profile results:
+Current controlled results:
 
 | Engine | Controls | Steps | Result |
 |--------|----------|-------|--------|
-| DSS-Python | static, regulators and capacitors enabled | 8760 | `2.167244 ms/step`, converged, max control iterations `8` |
-| InterPSS | static, regulators and capacitors enabled | 8760 | `3.228114 ms/step`, converged, max PF iterations `6` |
+| DSS-Python | static, regulators and capacitors enabled | 8760 | `1.146780 ms/step`, converged, max iterations `9` |
+| InterPSS | static, regulators and capacitors enabled | 8760 | `1.021454 ms/step`, converged, max PF iterations `10` |
 
-The InterPSS profile reported `symbolicFactors=1`, `numericFactors=302`,
-`fallbackCount=0`, and `pf_iterations_per_step=3.030251`. This is the
-profile-enabled yearly path, so it does not use repeated-static-state
-power-flow reuse.
+The InterPSS profile reported `symbolicFactors=1`, `numericFactors=2`,
+`fallbackCount=0`, and `pf_iterations_per_step=2.000913`. This result is
+about `112.3%` of DSS-Python throughput for the same controlled 8760 run, so it
+meets the 80% performance target.
 
 The controlled two-step Ckt24 parity comparison passes for voltages, load
 powers, and branch powers. Current common-key maxima are `0.0017546525 pu`,
@@ -179,11 +179,11 @@ powers, and branch powers. Current common-key maxima are `0.0017546525 pu`,
 `0.8739569147 kvar`, with zero voltage, load-power, and branch-power tolerance
 failures.
 
-IEEE8500 is not yet an acceptance benchmark for controlled 8760 QSTS because
-the checked-in IEEE8500 regulator controls do not settle in DSS-Python/OpenDSS
-under the current master-file defaults. Earlier cap-control-only runs are
-diagnostic localization evidence only; large-feeder QSTS acceptance evidence
-should keep all applicable static controls enabled.
+IEEE8500 controlled PV-duty one-step row-level parity is now green with static
+controls enabled. The current comparison maxima are `0.00104704199 pu`,
+`0.0267427413 deg`, `2.87351585 kW`, `2.728537974 kvar`, `0.014988296 kW`,
+and `0.00406943705 kvar`, with zero voltage, load-power, branch-power,
+generator-power, and capacitor-state tolerance failures.
 
 ## Long-Term Direction: OpenDSS-Style Primitive Y Matrix
 

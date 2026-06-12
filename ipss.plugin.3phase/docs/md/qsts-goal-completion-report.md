@@ -836,12 +836,88 @@ treated as a generic rule for every static generator type.
 - Static parser/QSTS boundary work remains in place and focused tests pass.
 - Large-feeder comparison/performance paths now require enabled controls by
   default unless an explicit diagnostic override is supplied.
-- Ckt24 yearly profile-enabled 2-step voltage/load common-key parity passes.
-- Ckt24 yearly profile-enabled branch common-key P/Q magnitudes pass, but branch
-  key coverage still needs cleanup.
-- Best retained Ckt24 yearly profile-enabled controlled 8760 performance is
-  `2.751696 ms/step`, improved but still slightly below the 80% DSS-Python
-  throughput target of about `2.709 ms/step`.
+- Ckt24 controlled 8760 performance now exceeds the requested 80%
+  DSS-Python-throughput target.
+- IEEE8500 controlled PV-duty one-step voltage, load-power, branch-power,
+  generator-power, and capacitor-state comparisons now pass against DSS-Python.
 
-The static-boundary and controlled-comparison harness goals are completed. The
-profile-enabled yearly performance target remains open.
+## Completion Refresh: 2026-06-11
+
+This refresh supersedes the older open-performance status above. It uses the
+checked-in controlled Ckt24 performance harness with static controls enabled on
+both engines.
+
+DSS-Python command:
+
+```bash
+python3 ipss.plugin.3phase/src/test/python/qsts_large_feeder_perf.py \
+  --case ckt24 --warmup-steps 24 --steps 8760 --repeats 1
+```
+
+DSS-Python result:
+
+```text
+DSSPY_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+converged=true elapsedMillis=10045.792 msPerStep=1.146780 maxIterations=9
+```
+
+InterPSS command:
+
+```bash
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest=QstsLargeFeederPerformanceBenchmark \
+  -Dqsts.perf.case=ckt24 \
+  -Dqsts.perf.warmupSteps=24 \
+  -Dqsts.perf.steps=8760 \
+  -Dqsts.perf.repeats=1 \
+  -Dipss.qsts.profile=true \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+InterPSS result:
+
+```text
+INTERPSS_QSTS_PERF feeder=Ckt24 phase=measured run=1 requestedSteps=8760
+actualSteps=8760 converged=true elapsedMillis=8947.938 msPerStep=1.021454
+maxIterations=10 symbolicFactors=1 numericFactors=2 valueUpdates=0 fallbackCount=0
+```
+
+For an 80% DSS-Python-throughput target, InterPSS must be at or below
+`1.433475 ms/step` for this run (`1.146780 / 0.8`). The measured InterPSS value
+is `1.021454 ms/step`, or about `112.3%` of DSS-Python throughput.
+
+IEEE8500 controlled PV-duty one-step comparison is also green after matching
+OpenDSS model-1 low-voltage load interpolation:
+
+```text
+QSTS_VOLTAGE_COMPARE commonKeys=8531 dssOnly=0 interpssOnly=364
+maxMagDelta=0.00104704199 maxAngleDelta=0.0267427413
+magFailures=0 angleFailures=0
+
+QSTS_BRANCH_POWER_COMPARE commonKeys=15819 dssOnly=1 interpssOnly=11
+maxPDelta=2.87351585 maxQDelta=2.728537974
+pFailures=0 qFailures=0 dssOnlyFailures=0 interpssOnlyFailures=0
+
+QSTS_LOAD_POWER_COMPARE commonKeys=2354 dssOnly=0 interpssOnly=0
+dssPTotalKw=10495.5637952 interpssPTotalKw=10498.3902402
+maxPDelta=0.014988296 maxQDelta=0.00406943705
+pFailures=0 qFailures=0
+
+QSTS_GENERATOR_POWER_COMPARE commonKeys=3 dssOnly=0 interpssOnly=0
+maxPDelta=0.0824894012 maxQDelta=0.00360815159091
+pFailures=0 qFailures=0
+
+QSTS_CAPACITOR_STATE_COMPARE commonKeys=10 dssOnly=0 interpssOnly=0
+stateFailures=0 qFailures=0 maxQDelta=0.225208022
+```
+
+The current code/test gate also passed:
+
+```text
+mvn -pl ipss.plugin.3phase test -Dsurefire.failIfNoSpecifiedTests=false
+Tests run: 337, Failures: 0, Errors: 0, Skipped: 28
+```
+
+Current conclusion: the static-boundary, IEEE8500 parity, and controlled 8760
+performance goals are complete for the verified Ckt24/IEEE8500 acceptance
+paths.
