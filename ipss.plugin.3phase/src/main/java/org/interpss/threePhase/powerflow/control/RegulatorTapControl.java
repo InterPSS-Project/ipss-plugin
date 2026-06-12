@@ -1,6 +1,7 @@
 package org.interpss.threePhase.powerflow.control;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -18,11 +19,17 @@ import com.interpss.core.threephase.INetwork3Phase;
 
 public class RegulatorTapControl {
 	public boolean apply(INetwork3Phase network, List<RegulatorControlData> controls) {
+		return apply(network, controls, true);
+	}
+
+	public boolean apply(INetwork3Phase network, List<RegulatorControlData> controls,
+			boolean applyEarliestDelayOnly) {
 		if(controls == null || controls.isEmpty()) {
 			return false;
 		}
 		BaseAclfNetwork<?, ?> aclfNetwork = aclfNetwork(network);
-		boolean changed = false;
+		List<TapChange> changes = new ArrayList<>();
+		double earliestDelay = Double.POSITIVE_INFINITY;
 		for(RegulatorControlData control : controls) {
 			IBranch3Phase branch = findBranch(aclfNetwork, control.getBranchName());
 			if(branch == null) {
@@ -65,10 +72,26 @@ public class RegulatorTapControl {
 			int nextTap = Math.max(control.getMinTapPosition(),
 					Math.min(control.getMaxTapPosition(), currentTap + requestedChange));
 			if(nextTap != currentTap) {
-				control.setTapPosition(nextTap);
-				applyTapPosition(branch, control, nextTap);
-				changed = true;
+				if(applyEarliestDelayOnly) {
+					double delay = control.getDelaySeconds();
+					if(delay < earliestDelay) {
+						earliestDelay = delay;
+						changes.clear();
+					}
+					if(Math.abs(delay - earliestDelay) <= 1.0e-9) {
+						changes.add(new TapChange(branch, control, nextTap));
+					}
+				}
+				else {
+					changes.add(new TapChange(branch, control, nextTap));
+				}
 			}
+		}
+		boolean changed = false;
+		for(TapChange change : changes) {
+			change.control.setTapPosition(change.nextTap);
+			applyTapPosition(change.branch, change.control, change.nextTap);
+			changed = true;
 		}
 		return changed;
 	}
@@ -307,6 +330,18 @@ public class RegulatorTapControl {
 			this.controlVoltage = controlVoltage;
 			this.localVoltage = localVoltage;
 			this.baseWindingVoltage = baseWindingVoltage;
+		}
+	}
+
+	private static class TapChange {
+		private final IBranch3Phase branch;
+		private final RegulatorControlData control;
+		private final int nextTap;
+
+		private TapChange(IBranch3Phase branch, RegulatorControlData control, int nextTap) {
+			this.branch = branch;
+			this.control = control;
+			this.nextTap = nextTap;
 		}
 	}
 

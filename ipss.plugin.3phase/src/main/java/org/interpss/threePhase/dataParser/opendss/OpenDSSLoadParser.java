@@ -26,6 +26,7 @@ import com.interpss.core.threephase.Static3PBus;
 import com.interpss.core.threephase.Static3PLoad;
 
 public class OpenDSSLoadParser {
+	private static final double OPEN_DSS_XFKVA_ALLOCATION_KW_FACTOR = 0.88;
 
 	/*
 	 *  load model code:
@@ -195,7 +196,7 @@ public class OpenDSSLoadParser {
 			}
 			if(powerfactor!=0.0 && loadQ==0.0){
 				if((loadP == 0.0 || (kwSpecified && Math.abs(loadP) <= 1.0e-3)) && transformerKva > 0.0) {
-					loadP = transformerKva * allocationFactor * Math.abs(powerfactor);
+					loadP = inlineAllocatedTransformerKw(transformerKva, allocationFactor, powerfactor);
 				}
 				else if(loadP == 0.0 && !kwSpecified) {
 					loadP = 10.0;
@@ -240,8 +241,8 @@ public class OpenDSSLoadParser {
 
 			//load model type
 			if(modelType==1){
-				//TODO extend AclfLoadCode instead of introducing a new load model type
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
+				setOpenDssLoadModel(load, modelType, cvrWatts, cvrVars, zipv);
 			}
 			else if(modelType==2){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_Z);
@@ -423,7 +424,8 @@ public class OpenDSSLoadParser {
 				if(parsedLoad.transformerKva <= 0.0 || parsedLoad.powerFactor == 0.0) {
 					continue;
 				}
-				double loadP = parsedLoad.transformerKva * allocationFactor * Math.abs(parsedLoad.powerFactor);
+				double loadP = propertyAllocatedTransformerKw(parsedLoad.transformerKva, allocationFactor,
+						parsedLoad.powerFactor);
 				double loadQ = loadP*Math.tan(Math.acos(Math.abs(parsedLoad.powerFactor)));
 				if(parsedLoad.powerFactor < 0.0) {
 					loadQ = -loadQ;
@@ -439,6 +441,22 @@ public class OpenDSSLoadParser {
 				}
 			}
 			return true;
+		}
+
+		private static double inlineAllocatedTransformerKw(double transformerKva, double allocationFactor,
+				double powerFactor) {
+			if(Math.abs(allocationFactor - 1.0) > 1.0e-12 && powerFactor != 0.0) {
+				return transformerKva * allocationFactor * Math.abs(powerFactor);
+			}
+			return transformerKva * allocationFactor * OPEN_DSS_XFKVA_ALLOCATION_KW_FACTOR;
+		}
+
+		private static double propertyAllocatedTransformerKw(double transformerKva, double allocationFactor,
+				double powerFactor) {
+			if(powerFactor != 0.0) {
+				return transformerKva * allocationFactor * Math.abs(powerFactor);
+			}
+			return transformerKva * allocationFactor * OPEN_DSS_XFKVA_ALLOCATION_KW_FACTOR;
 		}
 
 		private void registerProfileBinding(String loadId, String dailyShapeId, String yearlyShapeId,

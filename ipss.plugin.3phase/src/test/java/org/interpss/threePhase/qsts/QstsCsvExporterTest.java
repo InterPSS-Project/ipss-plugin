@@ -88,6 +88,25 @@ public class QstsCsvExporterTest {
 	}
 
 	@Test
+	void branchPowerCsvUsesStaticBranchPowerSamples() {
+		QstsStepContext context = new QstsStepContext(1, 1, 0.25, QstsMode.DAILY,
+				0.25, 1.0, QstsControlMode.STATIC);
+		QstsStepResult step = new QstsStepResult(context, true, 2, Double.NaN, null, 0,
+				null, null, null,
+				List.of(new QstsBranchPowerSample(1, 0.25, "line",
+						"line,1", 2, "bus.1.2.3", "C", -12.5, 3.75)),
+				null, null);
+
+		String csv = new QstsCsvExporter().exportBranchPowers(new QstsResult(List.of(step)));
+
+		String[] lines = csv.split("\\n");
+		assertEquals("step,hour,class,element,terminal,bus,phase,p_kw,q_kvar", lines[0]);
+		assertEquals(2, lines.length);
+		assertEquals("1,0.250000000000,line,\"line,1\",2,bus.1.2.3,C,-12.5000000000,3.75000000000",
+				lines[1]);
+	}
+
+	@Test
 	void loadPowerCsvUsesSampledStaticPhaseLoadChannel() {
 		QstsStepContext context = new QstsStepContext(2, 2, 0.5, QstsMode.DAILY,
 				0.25, 1.0, QstsControlMode.OFF);

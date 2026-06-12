@@ -45,6 +45,7 @@ public class OpenDSSRegulatorParser {
 		PhaseCode ptPhaseCode = null;
 		double vLimit = 0.0;
 		int maxTapChange = 16;
+		double delaySeconds = 0.0;
 		double tapStep = 0.00625;
 		int minTap = -16;
 		int maxTap = 16;
@@ -129,6 +130,9 @@ public class OpenDSSRegulatorParser {
 			else if (token.startsWith("maxtapchange=")) {
 				maxTapChange = Integer.valueOf(token.substring(13)).intValue();
 			}
+			else if (token.startsWith("delay=")) {
+				delaySeconds = Double.valueOf(token.substring(6)).doubleValue();
+			}
 			else if (token.startsWith("mintap=")) {
 				double minTapRatio = Double.valueOf(token.substring(7)).doubleValue();
 				minTap = (int) Math.round((minTapRatio - 1.0) / tapStep);
@@ -181,6 +185,9 @@ public class OpenDSSRegulatorParser {
 			if(!tokenWasSpecified(propertyTokens, "maxtapchange=")) {
 				maxTapChange = template.maxTapChange;
 			}
+			if(!tokenWasSpecified(propertyTokens, "delay=")) {
+				delaySeconds = template.delaySeconds;
+			}
 			tapStep = template.tapStep;
 			minTap = template.minTap;
 			maxTap = template.maxTap;
@@ -196,7 +203,7 @@ public class OpenDSSRegulatorParser {
 		}
 		OpenDssRegControlData control = new OpenDssRegControlData(id, transformerName, winding, vreg,
 				band, ptratio, remotePtratio, ctPrim, r, x, regulatedBus, phaseSelection, ptPhaseCode,
-				tapWinding, vLimit, maxTapChange, tapStep, minTap, maxTap);
+				tapWinding, vLimit, maxTapChange, delaySeconds, tapStep, minTap, maxTap);
 		if(existing == null) {
 			regControls.add(control);
 		}
@@ -210,25 +217,6 @@ public class OpenDSSRegulatorParser {
 			this.regControlsById.put(id, control);
 		}
 		return true;
-	}
-
-	public void applyFixedRegControlRatios() {
-		for (OpenDssRegControlData control : regControls) {
-			AclfBranch transformer = findTransformer(control.transformerName);
-			if (transformer == null) {
-				continue;
-			}
-			double controlledWindingVoltage = control.vreg * control.ptratio;
-			if (((IBranch3Phase) transformer).getPhaseCode() == PhaseCode.ABC) {
-				controlledWindingVoltage *= Math.sqrt(3.0);
-			}
-			if (control.winding == 1) {
-				transformer.setFromTurnRatio(controlledWindingVoltage);
-			}
-			else {
-				transformer.setToTurnRatio(controlledWindingVoltage);
-			}
-		}
 	}
 
 	public int getRegControlCount() {
@@ -266,7 +254,8 @@ public class OpenDSSRegulatorParser {
 					control.tapStep,
 					control.minTap,
 					control.maxTap,
-					control.maxTapChange);
+					control.maxTapChange,
+					control.delaySeconds);
 			controls.add(data);
 		}
 		return controls;
@@ -364,6 +353,7 @@ public class OpenDSSRegulatorParser {
 		private final PhaseCode ptPhaseCode;
 		private final double vLimit;
 		private final int maxTapChange;
+		private final double delaySeconds;
 		private final double tapStep;
 		private final int minTap;
 		private final int maxTap;
@@ -371,7 +361,7 @@ public class OpenDSSRegulatorParser {
 		private OpenDssRegControlData(String id, String transformerName, int winding, double vreg, double band,
 				double ptratio, double remotePtratio, double ctPrim, double r, double x, String regulatedBus,
 				PhaseSelection phaseSelection, PhaseCode ptPhaseCode, int tapWinding, double vLimit,
-				int maxTapChange, double tapStep, int minTap, int maxTap) {
+				int maxTapChange, double delaySeconds, double tapStep, int minTap, int maxTap) {
 			this.id = id;
 			this.transformerName = transformerName;
 			this.winding = winding;
@@ -388,6 +378,7 @@ public class OpenDSSRegulatorParser {
 			this.ptPhaseCode = ptPhaseCode;
 			this.vLimit = vLimit;
 			this.maxTapChange = maxTapChange;
+			this.delaySeconds = Math.max(0.0, delaySeconds);
 			this.tapStep = tapStep;
 			this.minTap = minTap;
 			this.maxTap = maxTap;

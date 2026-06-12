@@ -1,0 +1,4 @@
+case,master,step,closed,operation_count,action_count
+delayed_high_voltage_open,DelayedHighVoltageOpen.dss,0,true,0,0
+delayed_high_voltage_open,DelayedHighVoltageOpen.dss,1,false,1,1
+delayed_high_voltage_open,DelayedHighVoltageOpen.dss,2,false,1,0

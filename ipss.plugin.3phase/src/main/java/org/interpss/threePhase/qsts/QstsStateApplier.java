@@ -1,7 +1,7 @@
 package org.interpss.threePhase.qsts;
 
-import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -17,6 +17,11 @@ public class QstsStateApplier {
 	private final QstsGeneratorStateStore generatorStateStore;
 	private final QstsStorageStateStore storageStateStore;
 	private final Map<String, QstsProfileBinding> bindingsByKey = new LinkedHashMap<>();
+	private final QstsLoadMultiplierResolver multiplierResolver;
+	private final QstsLoadBaseState[] loadStates;
+	private final QstsProfileBinding[] loadBindings;
+	private final QstsGeneratorBaseState[] generatorStates;
+	private final QstsStorageBaseState[] storageStates;
 
 	public QstsStateApplier(QstsScheduleData scheduleData, QstsLoadStateStore loadStateStore,
 			QstsGeneratorStateStore generatorStateStore) {
@@ -34,6 +39,15 @@ public class QstsStateApplier {
 		for(QstsProfileBinding binding : this.scheduleData.getProfileBindings()) {
 			bindingsByKey.put(key(binding.getDeviceClass(), binding.getDeviceId()), binding);
 		}
+		this.multiplierResolver = new QstsLoadMultiplierResolver(this.scheduleData.getProfileRegistry());
+		this.loadStates = this.loadStateStore.states().toArray(new QstsLoadBaseState[0]);
+		this.loadBindings = new QstsProfileBinding[this.loadStates.length];
+		for(int i = 0; i < this.loadStates.length; i++) {
+			QstsProfileBinding binding = bindingFor("load", this.loadStates[i].getLoadId());
+			this.loadBindings[i] = binding;
+		}
+		this.generatorStates = this.generatorStateStore.states().toArray(new QstsGeneratorBaseState[0]);
+		this.storageStates = this.storageStateStore.states().toArray(new QstsStorageBaseState[0]);
 		initializeLoadNortonReferences();
 	}
 
@@ -87,10 +101,23 @@ public class QstsStateApplier {
 		}
 	}
 
-	public void apply(QstsStepContext context) {
-		applyLoads(context);
-		applyGenerators(context);
-		applyStorage(context);
+	public boolean apply(QstsStepContext context) {
+		boolean changed = applyLoads(context);
+		changed = applyGenerators(context) || changed;
+		changed = applyStorage(context) || changed;
+		return changed;
+	}
+
+	public boolean hasTimeVaryingBindings() {
+		for(QstsProfileBinding binding : scheduleData.getProfileBindings()) {
+			for(String profileId : binding.getProfileIdsByType().values()) {
+				QstsProfile profile = scheduleData.getProfileRegistry().get(profileId);
+				if(profile != null && profile.getPointCount() > 0) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	public QstsLoadStateStore getLoadStateStore() {
@@ -106,25 +133,32 @@ public class QstsStateApplier {
 	}
 
 	public void initializeLoadNortonReferences() {
-		for(QstsLoadBaseState state : loadStateStore.states()) {
+		for(QstsLoadBaseState state : loadStates) {
 			state.applyFixedPointNortonMultiplier(1.0, 1.0);
 		}
 	}
 
-	private void applyLoads(QstsStepContext context) {
-		for(QstsLoadBaseState state : loadStateStore.states()) {
-			QstsProfileBinding binding = bindingFor("load", state.getLoadId());
+	private boolean applyLoads(QstsStepContext context) {
+		boolean changed = false;
+		for(int i = 0; i < loadStates.length; i++) {
+			QstsLoadBaseState state = loadStates[i];
+			QstsProfileBinding binding = loadBindings[i];
 			if(binding == null && unity(context.getLoadMultiplier())) {
 				continue;
 			}
-			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
-					.resolve(binding, context.getMode(), context.getScheduleIndex(), context.getLoadMultiplier());
-			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
+			QstsLoadMultiplier multiplier = multiplierResolver
+					.resolve(binding, context.getMode(), context.getScheduleIndex(),
+							context.getStepSizeHours(),
+							context.getLoadMultiplier());
+			changed = state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier())
+					|| changed;
 		}
+		return changed;
 	}
 
-	private void applyGenerators(QstsStepContext context) {
-		for(QstsGeneratorBaseState state : generatorStateStore.states()) {
+	private boolean applyGenerators(QstsStepContext context) {
+		boolean changed = false;
+		for(QstsGeneratorBaseState state : generatorStates) {
 			if(storageStateStore.contains(state.getGenerator())) {
 				continue;
 			}
@@ -132,23 +166,29 @@ public class QstsStateApplier {
 			if(binding == null) {
 				continue;
 			}
-			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
-					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
-			state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier());
+			QstsLoadMultiplier multiplier = multiplierResolver
+					.resolve(binding, context.getMode(), context.getScheduleIndex(),
+							context.getStepSizeHours(), 1.0);
+			changed = state.applyMultiplier(multiplier.getPMultiplier(), multiplier.getQMultiplier())
+					|| changed;
 		}
+		return changed;
 	}
 
-	private void applyStorage(QstsStepContext context) {
-		for(QstsStorageBaseState state : storageStateStore.states()) {
+	private boolean applyStorage(QstsStepContext context) {
+		boolean changed = false;
+		for(QstsStorageBaseState state : storageStates) {
 			QstsProfileBinding binding = storageBindingFor(state.getStorageId());
 			if(binding == null) {
 				continue;
 			}
-			QstsLoadMultiplier multiplier = new QstsLoadMultiplierResolver(scheduleData.getProfileRegistry())
-					.resolve(binding, context.getMode(), context.getScheduleIndex(), 1.0);
-			state.applyScheduledMultiplier(multiplier.getPMultiplier(),
-					multiplier.getQMultiplier(), context.getStepSizeHours());
+			QstsLoadMultiplier multiplier = multiplierResolver
+					.resolve(binding, context.getMode(), context.getScheduleIndex(),
+							context.getStepSizeHours(), 1.0);
+			changed = state.applyScheduledMultiplier(multiplier.getPMultiplier(),
+					multiplier.getQMultiplier(), context.getStepSizeHours()) || changed;
 		}
+		return changed;
 	}
 
 	private QstsProfileBinding generatorBindingFor(String deviceId) {

@@ -597,7 +597,7 @@ Verification:
     padding experiment results are documented as removed paths;
   - [x] larger feeder smoke coverage passes after in-place sparse-matrix updates:
     IEEE123, Ckt7, Ckt24, Ckt24 capacitor comparison, IEEE123 regulator
-    symbolic update, and IEEE8500 controls-off smoke cases.
+    symbolic update, and the legacy IEEE8500 controls-off smoke sentinel.
   - unsupported control actions force rebuild/refactor and report the reason.
 
 ## Slide 7: DSS-Python Reference Harness
@@ -721,18 +721,23 @@ Create:
   - OpenDSS adapter/reference implementation of the smoke tests.
   - IEEE13 24-step daily scheduled-profile regression is already covered by
     `OpenDssIeee13DailyQstsProfileTest`.
-  - [x] Ckt7 first 24 yearly steps, controls off, as the first large feeder with
-    real OpenDSS load-shape bindings.
-  - [x] IEEE123 first 24 repeated-state steps, controls off, to protect topology
-    and static-QSTS integration while regulator/capacitor controls remain under
-    staged implementation.
-  - [x] Ckt24 first 24 repeated-state steps, controls off, using the InterPSS static
-    fixture until a supported annual/scheduled fixture is added. The near-zero
-    OpenDSS busbar branch `subxfmr_lsb->05410(1)` is protected by the parser
-    line-impedance floor so static fixed-point setup no longer sees zero Yii
-    diagonal elements.
-  - [ ] Ckt24 low-load scheduled yearly window, controls off first, then
-    control-enabled with matrix update/rebuild controls:
+  - [x] Ckt7 first 24 yearly steps with controls off remains a historical
+    smoke baseline for the first large feeder with real OpenDSS load-shape
+    bindings.
+  - [x] IEEE123 first 24 repeated-state steps with controls off remains a
+    topology/static-QSTS sentinel from before regulator/capacitor controls were
+    promoted into the static comparison path.
+  - [x] Ckt24 first 24 repeated-state steps with controls off remains a legacy
+    parser/fixed-point sentinel. The near-zero OpenDSS busbar branch
+    `subxfmr_lsb->05410(1)` is protected by the parser line-impedance floor so
+    static fixed-point setup no longer sees zero Yii diagonal elements.
+  - [ ] Ckt24 low-load scheduled yearly window with static controls enabled is
+    the current parity and performance target. DSS-Python and InterPSS
+    comparisons must use `controlmode=static`, positive max-control iterations,
+    RegControl enabled, and CapControl enabled unless the run is explicitly
+    labeled as a frozen-state diagnostic. Controls-off runs require the
+    diagnostic override (`--allow-disabled-controls` for DSS-Python or
+    `-Dqsts.compare.allowDisabledControls=true` for InterPSS):
     - profile files in `testData/feeder/Ckt24`:
       `LS_PhaseA.txt`, `LS_PhaseB.txt`, `LS_PhaseC.txt`,
       `LS_ThreePhase.txt`, and `Other_Bus_Load.txt`;
@@ -743,8 +748,15 @@ Create:
       168-hour window `startIndex=6573` / OpenDSS `hour=6574`;
     - use these windows to exercise larger voltage movement than the repeated
       state smoke while staying within the real Ckt24 loadshape data.
-  - [x] IEEE8500 short repeated-state window, controls off, enabled as a runtime
-    sentinel before promoting to a full 24-step smoke.
+    - 2026-06-11 controlled one-step status: transformer no-load shunt support
+      reduced branch-flow mismatch to `maxPDelta=3.25626791 kW` with no P
+      failures; remaining branch-flow mismatch is reactive-only
+      (`maxQDelta=22.57404852 kvar`, `qFailures=428`) and is the next
+      upstream phasor/modeling slice.
+  - [ ] IEEE8500 short repeated-state or profile-driven window with static
+    controls enabled, using the same controlled DSS-Python and InterPSS export
+    path as Ckt24. The earlier controls-off run is retained only as a legacy
+    runtime sentinel.
   - Optional 168-step Ckt7/Ckt24 run disabled or tagged until runtime is
     acceptable.
 - [x] `OpenDSSQstsComparisonSummary`
@@ -835,7 +847,8 @@ Verification:
 
 ## Slide 9: Regulator and Transformer Tap Controls
 
-Goal: add OpenDSS-compatible tap control after controls-off QSTS is stable.
+Goal: add OpenDSS-compatible tap control for the controlled static-QSTS path,
+with controls-off retained as a diagnostic baseline.
 
 Create:
 
@@ -1068,7 +1081,9 @@ Verification:
   - Covered by `QstsStorageBaseStateTest`, which verifies sequential
     charge/discharge carryover through `QstsStateApplier` and static
     `IPhaseGen` injections.
-- [ ] Per-step terminal powers match DSS-Python before bus voltage assertions.
+- [x] Per-step terminal powers match DSS-Python before bus voltage assertions.
+  - `OpenDssQstsMultiStepReferenceTest` covers shaped load, PVSystem, and
+    scheduled storage terminal P/Q with checked-in multi-step reference rows.
 
 ## Slide 12b: Control Implementation Sequence
 
@@ -1139,10 +1154,10 @@ Verification:
 - [x] DSS-Python mini case: `CTPhase` AVG, MIN, MAX and explicit phase
   selection beyond PTPhase min/max.
 - [x] DSS-Python mini case: voltage override.
-- [ ] DSS-Python mini case: delayed control-queue operation count.
-  - Java QSTS queue timing, state carryover, operation count, and CSV result
-    export are covered; a DSS-Python delayed-operation reference fixture still
-    needs to be generated.
+- [x] DSS-Python mini case: delayed control-queue operation count.
+  - Covered by `OpenDssCapControlMiniComparisonTest` using
+    `DelayedHighVoltageOpen.dss` and
+    `capcontrol-delayed-dss-python-operation-reference.csv`.
 
 Exit criteria:
 
@@ -1253,14 +1268,15 @@ Verification:
     a DSS-Python reference CSV for generator injection P/Q.
   - The reference preserves OpenDSS terminal-power sign conversion by comparing
     against positive generator injection in QSTS.
-- [ ] QSTS PV duty-curve case with inverter controls enabled.
+- [x] QSTS PV duty-curve case with inverter controls enabled.
   - Parser-side coverage now includes the concrete IEEE8500
     `P174_Run_360kW_PV.DSS` pattern:
     `Generator.G1` plus `LoadShape.PVCurve` plus `generator.g1.duty=PVcurve`.
   - Parser/adapter-side coverage also includes the official OpenDSS `PVSystem`
     example with `MyPvsT`, `MyEff`, `MyIrrad`, and `MyTemp`.
-  - Full QSTS acceptance still needs checked-in DSS-Python terminal P/Q
-    references with inverter control enabled.
+  - QSTS acceptance is covered by `DutyWattPF.dss` and
+    `invcontrol-duty-qsts-dss-python-generator-reference.csv`, which compare
+    per-step terminal P/Q with inverter controls enabled.
 - [x] Integrate inverter control into the QSTS control iteration loop.
   - After each PF solve, evaluate inverter controls against solved terminal
     voltages and watt output.
@@ -1313,8 +1329,10 @@ Verification:
 - [ ] DSS-Python mini cases for `StorageController` only after the static model
   and parser support are complete.
 - [x] Compare storage terminal P/Q before bus voltages.
-- [ ] Add DSS-Python state-of-charge reference rows if future controller tests
-  need SOC parity beyond the existing Java energy-state unit tests.
+- [x] Add DSS-Python state-of-charge reference rows for the scheduled
+  charge/discharge mini case.
+  - `storage-mini-dss-python-soc-reference.csv` compares cumulative stored kWh
+    and SOC percent through the static parser-owned `QstsStorageStateStore`.
 
 Exit criteria:
 
@@ -1366,8 +1384,13 @@ Migration to do:
 
 - [x] Update static network bus APIs to expose phase-device lists as
   `List<IPhaseLoad>` and `List<IPhaseGen>` or equivalent read-only views.
-- [ ] Keep DStab network and bus APIs typed to DStab dynamic classes only for
+- [x] Keep DStab network and bus APIs typed to DStab dynamic classes only for
   dynamic studies.
+  - `OpenDSSStaticDataParser` does not expose or accept a `DStabNetwork3Phase`.
+  - `OpenDSSQstsStudyFactory` rejects dynamic OpenDSS parsers and operates on
+    the parser's `Static3PNetwork`.
+  - Static PF voltage update/positive-sequence helpers now use the generic
+    `IBus3Phase` phase-voltage contract instead of DStab bus special cases.
 - [x] Update OpenDSS parser-created static load/PV/storage paths to add devices
   through `IPhaseLoad` and `IPhaseGen` boundaries, not DStab-specific lists.
   - Static parser mode now builds these QSTS-relevant devices on the existing
@@ -1520,14 +1543,16 @@ criterion is that static PF is unchanged and shape metadata is inspectable.
 
 ## Recommended V1 Completion Boundary
 
-QSTS v1 is complete when Slides 1 through 8 are done:
+QSTS v1 is complete when Slides 1 through 8 are done and the active large-feeder
+evidence is controlled static QSTS:
 
 - LoadShape parsing.
 - Load/profile binding.
 - Sequential fixed-point study runner.
-- Controls-off and frozen-control QSTS.
+- Static-control QSTS, with controls-off retained only for frozen-state
+  diagnostics and legacy sentinels.
 - DSS-Python-backed mini regressions.
-- Ckt7/Ckt24 controls-off smoke studies.
+- Ckt7/Ckt24/IEEE8500 controlled smoke and comparison studies.
 - CSV export for bus voltages, load powers, convergence, and basic device state.
 
 Regulator, capacitor, reactor, DER, and storage support should follow as
