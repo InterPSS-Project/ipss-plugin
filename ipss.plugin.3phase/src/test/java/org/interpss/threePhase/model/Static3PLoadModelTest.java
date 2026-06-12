@@ -86,6 +86,29 @@ public class Static3PLoadModelTest {
 	}
 
 	@Test
+	public void openDssModel1InterpolatesCurrentBetweenVlowAndVmin() {
+		Static3PLoad load = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		load.setCode(AclfLoadCode.CONST_P);
+		load.setOpenDssLoadModel(1, 1.0, 2.0, null);
+		load.setLoadConnectionType(LoadConnectionType.THREE_PHASE_WYE);
+		load.setVminpu(0.88);
+		load.set3PhaseLoad(new Complex3x1(new Complex(10.0, 5.0),
+				Complex.ZERO, Complex.ZERO));
+
+		Complex lowVoltageLoad = load.get3PhaseLoad(new Complex3x1(
+				new Complex(0.825, 0.0), Complex.ZERO, Complex.ZERO)).a_0;
+		double expectedScale = openDssModel1LowVoltageScale(0.825, 0.50, 0.88);
+
+		assertEquals(10.0 * expectedScale, lowVoltageLoad.getReal(), 1.0e-12);
+		assertEquals(5.0 * expectedScale, lowVoltageLoad.getImaginary(), 1.0e-12);
+
+		double[] current = new double[6];
+		load.addEquivCurrInj(new double[] {0.825, 0.0, 0.0, 0.0, 0.0, 0.0}, 0, current, 0, 0b001);
+		assertEquals(-(10.0 * expectedScale) / 0.825, current[0], 1.0e-12);
+		assertEquals((5.0 * expectedScale) / 0.825, current[1], 1.0e-12);
+	}
+
+	@Test
 	public void openDssModel4ScalesWattsAndVarsIndependently() {
 		Static3PLoad load = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
 		load.setCode(AclfLoadCode.CONST_P);
@@ -179,5 +202,12 @@ public class Static3PLoadModelTest {
 				voltage.b_1.getReal(), voltage.b_1.getImaginary(),
 				voltage.c_2.getReal(), voltage.c_2.getImaginary()
 		};
+	}
+
+	private static double openDssModel1LowVoltageScale(double voltage, double vlow, double vmin) {
+		double lowCurrentScale = vlow;
+		double transitionCurrentScale = 1.0 / vmin;
+		double slope = (transitionCurrentScale - lowCurrentScale) / (vmin - vlow);
+		return voltage * (lowCurrentScale + slope * (voltage - vlow));
 	}
 }
