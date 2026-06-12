@@ -20,6 +20,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
+import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -72,6 +73,17 @@ public class Texas2k_CASample {
 			Double loadingPercent = rec.calLoadingPercent();
 			System.out.println(String.format("{\n  \"branch_id\": \"%s\",\n  \"contingency_name\": \"%s\",\n  \"post_flow_mw\": %.2f,\n  \"line_rating_mw\": %.2f,\n  \"loading_percent\": %.2f\n}", 
                 branchId, contingencyName, postFlowMW, lineRatingMW, loadingPercent));
+			
+			for (AclfBus bus : net.getBusList()) {
+				if (bus.isGen() || bus.isLoad()) {
+					double comShiftingFactor = rec.calCombinedShiftingFactor(bus.getId(), algo);
+					if (Math.abs(comShiftingFactor) > 0.05) {
+						String busType = bus.isGen() ? "Gen" : "Load";
+						System.out.println(String.format("  Combined Shifting Factor @%s (%s): %.2f", bus.getId(), busType, comShiftingFactor));
+					}
+				}
+			}	
+	
 		}
     }
 
