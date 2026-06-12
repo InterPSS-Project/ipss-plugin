@@ -50,6 +50,9 @@ public class OpenDSSGeneratorParser {
 		double kw = parseDouble(properties.get("kw"), kva);
 		double powerFactor = parseDouble(properties.get("pf"), 0.0);
 		double kvar = parseKvar(properties, kw, kva);
+		int model = parseInt(properties.get("model"), 1);
+		double vminpu = parseDouble(properties.get("vminpu"), 0.9);
+		double vmaxpu = parseDouble(properties.get("vmaxpu"), 1.1);
 		String daily = stripDssValue(properties.get("daily"));
 		String yearly = stripDssValue(properties.get("yearly"));
 		String duty = stripDssValue(properties.get("duty"));
@@ -59,7 +62,11 @@ public class OpenDSSGeneratorParser {
 				kvar / dataParser.getNetworkBaseKva());
 		if(dataParser.isStaticNetworkMode()) {
 			Static3PBus bus = dataParser.getOrCreateStaticBus(busId);
-			Static3PGen staticGenerator = ThreePhaseObjectFactory.createStatic3PGenerator(id);
+			OpenDSSStaticGenerator staticGenerator = new OpenDSSStaticGenerator();
+			staticGenerator.setId(id);
+			staticGenerator.setOpenDssModel(model);
+			staticGenerator.setVminpu(vminpu);
+			staticGenerator.setVmaxpu(vmaxpu);
 			staticGenerator.setMvaBase(dataParser.getNetworkBaseMva());
 			staticGenerator.setGen(genPu);
 			staticGenerator.setPower3Phase(generatorPhasePower(genPu, phases, phaseCode(busIdPhases)), UnitType.PU);
