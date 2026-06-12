@@ -812,6 +812,24 @@ Rejected phase-aware follow-ups:
 | Phase-aware primitive snapshot saving | 2-step voltage/load/branch comparisons pass | `2.787554 ms/step` | Rejected and reverted |
 | Masked load/generator current-injection API with per-device phase masks | 2-step voltage/load/branch comparisons pass | `2.868383 ms/step`; cached per-device masks improved to `2.792129 ms/step` | Rejected and reverted; slower than retained `2.751696 ms/step` |
 
+## OpenDSS Generator Voltage-Band Check
+
+The IEEE8500 PV generator comparison exposed a generator terminal-power
+difference. This was checked with a generator-specific DSS-Python mini circuit,
+not inferred from load behavior. With `Generator model=1 vminpu=0.9 vmaxpu=1.1`
+and a 300 kW three-phase schedule, OpenDSS reports:
+
+```text
+source pu 0.95 -> generator terminal P = -300.000000 kW
+source pu 0.85 -> generator terminal P = -267.616623 kW
+source pu 1.15 -> generator terminal P = -327.912276 kW
+```
+
+The 0.85 pu and 1.15 pu results match the outside-band constant-impedance
+scaling of the generator terminal power. The corresponding InterPSS support is
+therefore scoped to the static OpenDSS generator model path and should not be
+treated as a generic rule for every static generator type.
+
 ## Final State
 
 - Branch: `qsts-opendss-parity-improvements`
