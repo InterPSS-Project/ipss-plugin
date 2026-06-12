@@ -13,7 +13,14 @@ import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.net.Branch;
+import com.interpss.core.net.Bus;
+import com.interpss.core.threephase.AclfGen3Phase;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.Static3PBranch;
@@ -46,6 +53,13 @@ class DistributionPowerFlowPhaseMaskTest {
 		assertNotNull(phaseBBranch, "Missing IEEE8500 phase-B single-phase line");
 		assertEquals(PhaseCode.B, phaseBBranch.getPhaseCode());
 		assertBranchCurrentsMatchActivePhases(phaseBBranch);
+
+		IBus3Phase phaseBBus = singlePhaseBus(network, 0b010);
+		assertNotNull(phaseBBus, "IEEE8500 should include phase-B-only buses");
+		Complex3x1 phaseBVoltage = phaseBBus.get3PhaseVotlages();
+		assertZero(phaseBVoltage.a_0);
+		assertTrue(phaseBVoltage.b_1.abs() > 0.0);
+		assertZero(phaseBVoltage.c_2);
 	}
 
 	@Test
@@ -99,6 +113,45 @@ class DistributionPowerFlowPhaseMaskTest {
 			String name = branch.getName() == null ? "" : branch.getName().toLowerCase();
 			if(id.equals(branchName) || id.endsWith(":" + branchName) || name.equals(branchName)) {
 				return branch;
+			}
+		}
+		return null;
+	}
+
+	private static IBus3Phase singlePhaseBus(Static3PNetwork network, int expectedPhaseMask) {
+		for(Bus bus : network.getBusList()) {
+			if(!bus.isActive() || !(bus instanceof BaseAclfBus)) {
+				continue;
+			}
+			BaseAclfBus<?, ?> aclfBus = (BaseAclfBus<?, ?>) bus;
+			if(aclfBus.isSwing()) {
+				continue;
+			}
+			int mask = 0;
+			for(Branch branch : bus.getBranchIterable()) {
+				if(branch.isActive() && branch instanceof IBranch3Phase) {
+					mask |= phaseMask(((IBranch3Phase) branch).getPhaseCode());
+				}
+			}
+			IBus3Phase bus3Phase = (IBus3Phase) bus;
+			for(AclfLoad3Phase load : bus3Phase.getPhaseLoadList()) {
+				mask |= phaseMask(load.getPhaseCode());
+			}
+			for(AclfGen3Phase gen : bus3Phase.getPhaseGenList()) {
+				mask |= phaseMask(gen.getPhaseCode());
+			}
+			for(AclfLoad load : aclfBus.getContributeLoadList()) {
+				if(load instanceof AclfLoad3Phase) {
+					mask |= phaseMask(((AclfLoad3Phase) load).getPhaseCode());
+				}
+			}
+			for(AclfGen gen : aclfBus.getContributeGenList()) {
+				if(gen instanceof AclfGen3Phase) {
+					mask |= phaseMask(((AclfGen3Phase) gen).getPhaseCode());
+				}
+			}
+			if(mask == expectedPhaseMask) {
+				return bus3Phase;
 			}
 		}
 		return null;
