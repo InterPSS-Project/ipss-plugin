@@ -236,10 +236,11 @@ public class QstsStudy {
 		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
 		boolean delayedCapacitorControls = usesDelayedControlQueue();
-		boolean steppedRegulatorControls = usesSteppedRegulatorControls(controlsEnabled);
+		boolean regulatorControlsEnabled = regulatorControlsEnabledForMode(controlsEnabled);
+		boolean steppedRegulatorControls = usesSteppedRegulatorControls(regulatorControlsEnabled);
 		algorithm.setFixedPointYMatrixCacheEnabled(qstsFixedPointYMatrixCacheEnabled(
 				delayedCapacitorControls));
-		algorithm.setRegulatorControlEnabled(controlsEnabled && !steppedRegulatorControls
+		algorithm.setRegulatorControlEnabled(regulatorControlsEnabled && !steppedRegulatorControls
 				&& !regulatorControls.isEmpty());
 		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
 				&& !capacitorControls.isEmpty());
@@ -274,7 +275,8 @@ public class QstsStudy {
 			boolean reuseSolvedState = solvedReusableStaticState && !stateChanged && actionCount == 0;
 			PowerFlowControlResult controlResult = reuseSolvedState
 					? PowerFlowControlResult.reusedSolvedState()
-					: runPowerFlowControlLoop(algorithm, context, controlsEnabled, profile);
+					: runPowerFlowControlLoop(algorithm, context, controlsEnabled,
+							steppedRegulatorControls, profile);
 			if(profile != null) {
 				profile.addPowerFlow(System.nanoTime() - powerFlowStartNanos,
 						controlResult.powerFlowIterations, controlResult.reusedSolvedState);
@@ -295,13 +297,6 @@ public class QstsStudy {
 			long outputStartNanos = profile == null ? 0L : System.nanoTime();
 			steps.add(createStepResult(context, converged, controlResult.powerFlowIterations,
 					failureReason, actionCount, inverterControlSamples));
-			if(converged && steppedRegulatorControls) {
-				boolean regulatorChanged = qstsRegulatorTapControl.apply(network, regulatorControls, false);
-				if(regulatorChanged) {
-					algorithm.clearFixedPointYMatrixCache();
-					solvedReusableStaticState = false;
-				}
-			}
 			if(profile != null) {
 				profile.addOutputs(System.nanoTime() - outputStartNanos);
 				profile.finishStep(System.nanoTime() - stepStartNanos, converged);
@@ -346,8 +341,13 @@ public class QstsStudy {
 		return controlMode == QstsControlMode.TIME || controlMode == QstsControlMode.EVENT;
 	}
 
+	private boolean regulatorControlsEnabledForMode(boolean controlsEnabled) {
+		return controlsEnabled && mode != QstsMode.DUTY;
+	}
+
 	private boolean usesSteppedRegulatorControls(boolean controlsEnabled) {
-		return controlsEnabled && controlMode == QstsControlMode.STATIC && !regulatorControls.isEmpty();
+		return controlsEnabled && controlMode == QstsControlMode.STATIC
+				&& !regulatorControls.isEmpty();
 	}
 
 	private boolean qstsFixedPointYMatrixCacheEnabled(boolean delayedCapacitorControls) {
@@ -590,7 +590,8 @@ public class QstsStudy {
 	}
 
 	private PowerFlowControlResult runPowerFlowControlLoop(DistributionPowerFlowAlgorithm algorithm,
-			QstsStepContext context, boolean controlsEnabled, QstsRuntimeProfile profile) {
+			QstsStepContext context, boolean controlsEnabled, boolean steppedRegulatorControls,
+			QstsRuntimeProfile profile) {
 		List<QstsInverterControlSample> inverterControlSamples = Collections.emptyList();
 		boolean converged = false;
 		int powerFlowIterations = 0;
@@ -598,7 +599,15 @@ public class QstsStudy {
 			converged = algorithm.powerflow();
 			powerFlowIterations += algorithm.getIterationCount();
 			algorithm.setInitBusVoltageEnabled(false);
-			if(!converged || !controlsEnabled || inverterControls.isEmpty()) {
+			if(!converged || !controlsEnabled) {
+				return new PowerFlowControlResult(converged, inverterControlSamples, powerFlowIterations);
+			}
+			if(steppedRegulatorControls
+					&& qstsRegulatorTapControl.apply(network, regulatorControls, false)) {
+				algorithm.clearFixedPointYMatrixCache();
+				continue;
+			}
+			if(inverterControls.isEmpty()) {
 				return new PowerFlowControlResult(converged, inverterControlSamples, powerFlowIterations);
 			}
 			long inverterControlStartNanos = profile == null ? 0L : System.nanoTime();
