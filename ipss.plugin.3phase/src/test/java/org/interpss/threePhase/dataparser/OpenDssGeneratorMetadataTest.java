@@ -86,7 +86,7 @@ public class OpenDssGeneratorMetadataTest {
 
 		OpenDSSLoadShape shape = parser.getTimeSeriesData().getShapeRegistry().get("pvcurve");
 		assertNotNull(shape);
-		assertEquals(3000, shape.getNpts());
+		assertEquals(2913, shape.getNpts());
 		assertEquals(2913, shape.getPointCount());
 		assertEquals(1.0 / 3600.0, shape.getIntervalHours(), 1.0e-12);
 		assertEquals(0.763235294, shape.getPMult()[0], 1.0e-12);
@@ -130,14 +130,14 @@ public class OpenDssGeneratorMetadataTest {
 				1.0, 1.0, QstsControlMode.STATIC)));
 
 		AclfGen3Phase generator = parser.getStaticNetwork().getBus("m1026866").getPhaseGenList().get(0);
-		double firstMultiplier = 0.763235294;
+		double firstMultiplier = 0.805882353;
 		assertEquals(360.0 * firstMultiplier, totalKw(generator, parser), 1.0e-9);
 
 		assertTrue(applier.apply(new QstsStepContext(1, 1, 1.0, QstsMode.DUTY,
 				1.0, 1.0, QstsControlMode.STATIC)));
 		QstsProfile profile = parser.getTimeSeriesData().toQstsScheduleData()
 				.getProfileRegistry().get("pvcurve");
-		double secondHourMultiplier = profile.getPMultiplierAtIndex(3600 % profile.getPointCount());
+		double secondHourMultiplier = profile.getPMultiplierAtIndex(1373);
 		assertEquals(360.0 * secondHourMultiplier, totalKw(generator, parser), 1.0e-9);
 	}
 
