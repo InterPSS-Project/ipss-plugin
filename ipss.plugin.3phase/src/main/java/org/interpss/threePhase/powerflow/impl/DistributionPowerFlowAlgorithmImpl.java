@@ -2505,8 +2505,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				IBranch3Phase branch3P = sweepBranch(branch);
 				Complex3x1 vabcF = threePhaseBus((BaseAclfBus<?, ?>) branch.getFromBus()).get3PhaseVotlages();
 				Complex3x1 vabcT = threePhaseBus((BaseAclfBus<?, ?>) branch.getToBus()).get3PhaseVotlages();
-				if(isSinglePhase(branch3P.getPhaseCode())) {
-					updateSinglePhaseBranchCurrents(branch3P, vabcF, vabcT);
+				if(!isThreePhase(branch3P.getPhaseCode())) {
+					updatePartialPhaseBranchCurrents(branch3P, vabcF, vabcT);
 				}
 				else {
 					branch3P.setCurrentAbcAtFromSide(branch3P.getYffabc().multiply(vabcF)
@@ -2518,31 +2518,38 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
-	private void updateSinglePhaseBranchCurrents(IBranch3Phase branch, Complex3x1 vabcF,
+	private void updatePartialPhaseBranchCurrents(IBranch3Phase branch, Complex3x1 vabcF,
 			Complex3x1 vabcT) {
-		int phase = phaseIndex(branch.getPhaseCode());
-		Complex vf = phaseValue(vabcF, phase);
-		Complex vt = phaseValue(vabcT, phase);
-		Complex fromCurrent = phaseValue(branch.getYffabc(), phase, phase).multiply(vf)
-				.add(phaseValue(branch.getYftabc(), phase, phase).multiply(vt));
-		Complex toCurrent = phaseValue(branch.getYttabc(), phase, phase).multiply(vt)
-				.add(phaseValue(branch.getYtfabc(), phase, phase).multiply(vf));
-		branch.setCurrentAbcAtFromSide(singlePhaseValue(phase, fromCurrent));
-		branch.setCurrentAbcAtToSide(singlePhaseValue(phase, toCurrent));
+		int phaseMask = phaseCodeMask(branch.getPhaseCode());
+		Complex3x1 fromCurrent = new Complex3x1();
+		Complex3x1 toCurrent = new Complex3x1();
+		for(int row = 0; row < 3; row++) {
+			if((phaseMask & (1 << row)) == 0) {
+				continue;
+			}
+			setPhaseValue(fromCurrent, row, branchCurrent(branch.getYffabc(), vabcF,
+					branch.getYftabc(), vabcT, row, phaseMask));
+			setPhaseValue(toCurrent, row, branchCurrent(branch.getYttabc(), vabcT,
+					branch.getYtfabc(), vabcF, row, phaseMask));
+		}
+		branch.setCurrentAbcAtFromSide(fromCurrent);
+		branch.setCurrentAbcAtToSide(toCurrent);
 	}
 
-	private static boolean isSinglePhase(PhaseCode phaseCode) {
-		return phaseCode == PhaseCode.A || phaseCode == PhaseCode.B || phaseCode == PhaseCode.C;
+	private static boolean isThreePhase(PhaseCode phaseCode) {
+		return phaseCode == null || phaseCode == PhaseCode.ABC || "ABC".equals(phaseCode.toString());
 	}
 
-	private static int phaseIndex(PhaseCode phaseCode) {
-		if(phaseCode == PhaseCode.B) {
-			return 1;
+	private static Complex branchCurrent(Complex3x3 ySelf, Complex3x1 vSelf,
+			Complex3x3 yOther, Complex3x1 vOther, int row, int phaseMask) {
+		Complex current = Complex.ZERO;
+		for(int col = 0; col < 3; col++) {
+			if((phaseMask & (1 << col)) != 0) {
+				current = current.add(phaseValue(ySelf, row, col).multiply(phaseValue(vSelf, col)))
+						.add(phaseValue(yOther, row, col).multiply(phaseValue(vOther, col)));
+			}
 		}
-		if(phaseCode == PhaseCode.C) {
-			return 2;
-		}
-		return 0;
+		return current;
 	}
 
 	private static Complex phaseValue(Complex3x1 value, int phase) {
@@ -2567,15 +2574,16 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		return value.cc;
 	}
 
-	private static Complex3x1 singlePhaseValue(int phase, Complex value) {
-		Complex zero = new Complex(0.0, 0.0);
+	private static void setPhaseValue(Complex3x1 target, int phase, Complex value) {
 		if(phase == 1) {
-			return new Complex3x1(zero, value, zero);
+			target.b_1 = value;
 		}
-		if(phase == 2) {
-			return new Complex3x1(zero, zero, value);
+		else if(phase == 2) {
+			target.c_2 = value;
 		}
-		return new Complex3x1(value, zero, zero);
+		else {
+			target.a_0 = value;
+		}
 	}
 
 	private boolean FBSPowerflow(){
