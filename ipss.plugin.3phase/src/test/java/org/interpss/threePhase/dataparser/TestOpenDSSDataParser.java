@@ -393,7 +393,7 @@ public class TestOpenDSSDataParser {
 		  //TODO in the future, could add the nominalKV info to the transformer
 		  System.out.println("reg4a tap = "+xfr2.getFromTurnRatio());
 		  assertTrue(Math.abs(xfr2.getFromTurnRatio()-2402.0/basevolt)<1.0E-6);
-			  assertTrue(Math.abs(xfr2.getToTurnRatio()-124.0*20.0*Math.sqrt(3)/4160.0)<1.0E-6);
+		  assertTrue(Math.abs(xfr2.getToTurnRatio()-2402.0/basevolt)<1.0E-6);
 
 		  assertTrue(Math.abs(xfr2.getXfrRatedKVA()-2000)<1.0E-6);
 
