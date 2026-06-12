@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticGenerator;
 import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPostSolveOutputMode;
@@ -712,7 +713,9 @@ public class QstsStudy {
 
 	private static void addGeneratorSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
 			AclfGen3Phase generator, IBus3Phase bus) {
-		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
+		Complex3x1 power = generator instanceof OpenDSSStaticGenerator
+				? ((OpenDSSStaticGenerator) generator).getTerminalPower3Phase(bus.get3PhaseVotlages(), UnitType.PU)
+				: generator.getPower3Phase(UnitType.PU);
 		int phaseMask = phaseCodeMask(generator.getPhaseCode()) & activeBusPhaseMask(bus);
 		addPower(samples, context, "generator", generator.getId(), "A", power == null ? null : power.a_0,
 				phaseActive(phaseMask, 0));
