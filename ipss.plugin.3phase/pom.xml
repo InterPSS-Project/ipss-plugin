@@ -46,6 +46,12 @@
             <artifactId>colt</artifactId>
             <version>1.2.0</version>
         </dependency>
+        <!-- Direct ojalgo use in OjAlgoDistOpfSolver (transitive via ipss.plugin.core) -->
+        <dependency>
+            <groupId>org.ojalgo</groupId>
+            <artifactId>ojalgo</artifactId>
+            <version>51.2.0</version>
+        </dependency>
     </dependencies>
 
     <build>
