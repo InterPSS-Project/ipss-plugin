@@ -39,7 +39,8 @@ public class QstsLoadMultiplierResolver {
 		if(intervalHours <= 0.0 || stepSizeHours <= 0.0) {
 			return Math.floorMod(stepIndex, pointCount);
 		}
-		long profileStep = Math.round(stepIndex * stepSizeHours / intervalHours);
-		return Math.floorMod((int) profileStep, pointCount);
+		long profileStep = Math.round((stepIndex + 1L) * stepSizeHours / intervalHours);
+		int oneBasedIndex = Math.floorMod((int) profileStep, pointCount);
+		return oneBasedIndex == 0 ? pointCount - 1 : oneBasedIndex - 1;
 	}
 }
