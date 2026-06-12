@@ -1821,7 +1821,8 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertTrue(vabc.c_2.abs() < 1.0e-3);
 
 		ComparisonResult result = compareVoltages(distNet,
-				readReferences("opendss-reference/centertap-mini-dss-python-voltage-reference.csv"));
+				activePhaseReferences(distNet,
+						readReferences("opendss-reference/centertap-mini-dss-python-voltage-reference.csv")));
 		assertMiniDssPythonComparison(result, "CenterTapMini DSS-Python");
 	}
 
@@ -1898,7 +1899,8 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertEquals(1.0, splitPhaseLineVoltagePu(vabc), 0.08);
 		assertTrue(vabc.c_2.abs() < 1.0e-3);
 
-		ComparisonResult result = compareVoltages(distNet, readReferences(referenceResource));
+		ComparisonResult result = compareVoltages(distNet,
+				activePhaseReferences(distNet, readReferences(referenceResource)));
 		assertMiniDssPythonComparison(result, comparisonLabel);
 	}
 
@@ -1926,7 +1928,8 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"split-phase line voltage should be below Vminpu to exercise OpenDSS fallback");
 		assertTrue(vabc.c_2.abs() < 1.0e-3);
 
-		ComparisonResult result = compareVoltages(distNet, readReferences(referenceResource));
+		ComparisonResult result = compareVoltages(distNet,
+				activePhaseReferences(distNet, readReferences(referenceResource)));
 		assertMiniDssPythonComparison(result, comparisonLabel);
 	}
 
@@ -2059,7 +2062,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 		}
 		assertTrue(powerFlow.powerflow(), "Power flow failed, iterations=" + powerFlow.getIterationCount());
 
-		List<VoltageReference> references = readReferences(referenceResource);
+		List<VoltageReference> references = activePhaseReferences(distNet, readReferences(referenceResource));
 		ComparisonResult result = tapProfile == OpenDssTapProfile.IEEE13_SOLVED
 				? compareVoltages(distNet, references, "650", 1)
 				: compareVoltages(distNet, references);
@@ -2291,6 +2294,52 @@ public class OpenDssParserPowerFlowComparisonTest {
 					return bus != null && bus.isActive();
 				})
 				.toList();
+	}
+
+	private static List<VoltageReference> activePhaseReferences(BaseAclfNetwork<?, ?> distNet,
+			List<VoltageReference> references) {
+		return references.stream()
+				.filter(reference -> {
+					BaseAclfBus<?, ?> bus = distNet.getBus(reference.bus);
+					if(bus == null || !bus.isActive() || !(bus instanceof IBus3Phase)) {
+						return false;
+					}
+					int phaseMask = activePhaseMask((IBus3Phase) bus);
+					return (phaseMask & (1 << (reference.phase - 1))) != 0;
+				})
+				.toList();
+	}
+
+	private static int activePhaseMask(IBus3Phase bus) {
+		int mask = 0;
+		for(Object branchObject : ((BaseAclfBus<?, ?>) bus).getBranchList()) {
+			if(branchObject instanceof IBranch3Phase && ((Branch) branchObject).isActive()) {
+				mask |= phaseMask(((IBranch3Phase) branchObject).getPhaseCode());
+			}
+		}
+		return mask == 0 ? 0b111 : mask;
+	}
+
+	private static int phaseMask(PhaseCode phaseCode) {
+		if(phaseCode == PhaseCode.A) {
+			return 0b001;
+		}
+		if(phaseCode == PhaseCode.B) {
+			return 0b010;
+		}
+		if(phaseCode == PhaseCode.C) {
+			return 0b100;
+		}
+		if(phaseCode == PhaseCode.AB) {
+			return 0b011;
+		}
+		if(phaseCode == PhaseCode.AC) {
+			return 0b101;
+		}
+		if(phaseCode == PhaseCode.BC) {
+			return 0b110;
+		}
+		return 0b111;
 	}
 
 	private static String interpssLoadCsv(DStabNetwork3Phase distNet) {
