@@ -506,6 +506,7 @@ public class QstsStudy {
 	private List<QstsCapacitorStateSample> sampleCapacitorStates(QstsStepContext context) {
 		List<QstsCapacitorStateSample> samples = new ArrayList<>();
 		double phaseBaseKva = aclfNetwork().getBaseKva() / 3.0;
+		Set<String> controlledCapacitors = capacitorLoadIds();
 		for(CapacitorControlData control : capacitorControls) {
 			Complex3x1 power = qstsCapacitorControl.capacitorPower(network, control.getCapacitorId());
 			Complex total = add(add(power.a_0, power.b_1), power.c_2);
@@ -515,7 +516,39 @@ public class QstsStudy {
 					control.getCapacitorId(), control.isClosed(), total.getImaginary(),
 					total.getImaginary() * phaseBaseKva, operationCount));
 		}
+		for(IBus3Phase bus : network.getThreePhaseBusList()) {
+			Map<Object, Boolean> sampled = new IdentityHashMap<>();
+			for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
+				addFixedCapacitorStateSample(samples, context, load, bus, controlledCapacitors,
+						phaseBaseKva);
+				sampled.put(load, Boolean.TRUE);
+			}
+			if(bus instanceof BaseAclfBus) {
+				for(Object loadObject : ((BaseAclfBus<?, ?>) bus).getContributeLoadList()) {
+					if(!sampled.containsKey(loadObject) && loadObject instanceof AclfLoad3Phase) {
+						addFixedCapacitorStateSample(samples, context, (AclfLoad3Phase) loadObject,
+								bus, controlledCapacitors, phaseBaseKva);
+					}
+				}
+			}
+		}
 		return samples;
+	}
+
+	private void addFixedCapacitorStateSample(List<QstsCapacitorStateSample> samples,
+			QstsStepContext context, AclfLoad3Phase load, IBus3Phase bus,
+			Set<String> controlledCapacitors, double phaseBaseKva) {
+		if(load == null || load.getId() == null
+				|| controlledCapacitors.contains(load.getId().toLowerCase(Locale.ROOT))
+				|| !isParsedCapacitorLoad(load)) {
+			return;
+		}
+		Complex3x1 power = QstsLoadPowerSampler.solvedPower(load, bus);
+		Complex total = add(add(power == null ? null : power.a_0,
+				power == null ? null : power.b_1), power == null ? null : power.c_2);
+		samples.add(new QstsCapacitorStateSample(context.getStepIndex(), context.getHour(),
+				load.getId(), total.getImaginary() < -1.0e-12, total.getImaginary(),
+				total.getImaginary() * phaseBaseKva, 0));
 	}
 
 	private List<QstsRegulatorTapSample> sampleRegulatorTaps(QstsStepContext context) {

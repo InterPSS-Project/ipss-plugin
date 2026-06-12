@@ -328,10 +328,19 @@ public class QstsStudyTest {
 				.noneMatch(sample -> sample.getDeviceId().equals("cap1")));
 		assertTrue(result.getStep(0).getLoadPowers().stream()
 				.noneMatch(sample -> sample.getDeviceId().equals("cap2")));
+		assertEquals(2, result.getStep(0).getCapacitorStates().size());
+		assertEquals("cap1", result.getStep(0).getCapacitorStates().get(0).getCapacitorId());
+		assertEquals("cap2", result.getStep(0).getCapacitorStates().get(1).getCapacitorId());
 		assertEquals(-0.0363, result.getStep(0).getCapacitorStates().get(0)
 				.getTotalReactivePowerPu(), 1.0e-12);
 		assertEquals(-1210.0, result.getStep(0).getCapacitorStates().get(0)
 				.getTotalReactivePowerKvar(), 1.0e-12);
+		assertEquals(-0.0726, result.getStep(0).getCapacitorStates().get(1)
+				.getTotalReactivePowerPu(), 1.0e-12);
+		assertEquals(-2420.0, result.getStep(0).getCapacitorStates().get(1)
+				.getTotalReactivePowerKvar(), 1.0e-12);
+		assertTrue(result.getStep(0).getCapacitorStates().get(1).isClosed());
+		assertEquals(0, result.getStep(0).getCapacitorStates().get(1).getOperationCount());
 	}
 
 	@Test
