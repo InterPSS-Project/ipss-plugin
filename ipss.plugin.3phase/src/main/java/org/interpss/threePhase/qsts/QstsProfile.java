@@ -6,12 +6,18 @@ import java.util.List;
 
 public class QstsProfile {
 	private final String id;
+	private final double intervalHours;
 	private final double[] hour;
 	private final double[] pMult;
 	private final double[] qMult;
 	private final List<String> diagnostics;
 
 	public QstsProfile(String id, double[] hour, double[] pMult, double[] qMult, List<String> diagnostics) {
+		this(id, 0.0, hour, pMult, qMult, diagnostics);
+	}
+
+	public QstsProfile(String id, double intervalHours, double[] hour, double[] pMult,
+			double[] qMult, List<String> diagnostics) {
 		if(id == null || id.trim().isEmpty()) {
 			throw new IllegalArgumentException("QSTS profile id is required");
 		}
@@ -19,6 +25,7 @@ public class QstsProfile {
 			throw new IllegalArgumentException("QSTS profile " + id + " requires at least one P multiplier");
 		}
 		this.id = id;
+		this.intervalHours = intervalHours;
 		this.hour = hour == null ? new double[0] : hour.clone();
 		this.pMult = pMult.clone();
 		this.qMult = qMult == null ? pMult.clone() : qMult.clone();
@@ -35,6 +42,10 @@ public class QstsProfile {
 
 	public String getId() {
 		return id;
+	}
+
+	public double getIntervalHours() {
+		return intervalHours;
 	}
 
 	public int getPointCount() {

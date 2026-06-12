@@ -22,7 +22,9 @@ public final class OpenDSSQstsStudyFactory {
 		return from(parser.getStaticNetwork(), parser.getTimeSeriesData())
 				.setRegulatorControls(parser.getRegulatorControls())
 				.setCapacitorControls(parser.getCapacitorControls())
-				.setInverterControls(parser.getInverterControls());
+				.setInverterControls(parser.getInverterControls())
+				.setBranchElementClasses(parser.getBranchElementClasses())
+				.setBranchPowerTerminalByPhase(parser.getBranchPowerTerminalByPhase());
 	}
 
 	public static QstsStudy from(OpenDSSStaticDataParser parser) {
