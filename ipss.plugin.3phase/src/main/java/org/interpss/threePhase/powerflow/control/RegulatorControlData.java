@@ -28,6 +28,7 @@ public class RegulatorControlData {
 	private final int minTapPosition;
 	private final int maxTapPosition;
 	private final int maxTapChange;
+	private final double delaySeconds;
 	private int tapPosition;
 
 	public RegulatorControlData(String id, String branchName, int winding, PhaseCode phaseCode,
@@ -42,6 +43,16 @@ public class RegulatorControlData {
 			PhaseSelection phaseSelection, String regulatedBusId, double targetVoltage, double bandwidth,
 			double ptRatio, double remotePtRatio, double ctPrim, double lineDropR, double lineDropX,
 			double vLimit, double tapStep, int minTapPosition, int maxTapPosition, int maxTapChange) {
+		this(id, branchName, winding, tapWinding, phaseCode, phaseSelection, regulatedBusId,
+				targetVoltage, bandwidth, ptRatio, remotePtRatio, ctPrim, lineDropR, lineDropX,
+				vLimit, tapStep, minTapPosition, maxTapPosition, maxTapChange, 0.0);
+	}
+
+	public RegulatorControlData(String id, String branchName, int winding, int tapWinding, PhaseCode phaseCode,
+			PhaseSelection phaseSelection, String regulatedBusId, double targetVoltage, double bandwidth,
+			double ptRatio, double remotePtRatio, double ctPrim, double lineDropR, double lineDropX,
+			double vLimit, double tapStep, int minTapPosition, int maxTapPosition, int maxTapChange,
+			double delaySeconds) {
 		this.id = id;
 		this.branchName = branchName;
 		this.winding = winding;
@@ -61,6 +72,7 @@ public class RegulatorControlData {
 		this.minTapPosition = minTapPosition;
 		this.maxTapPosition = maxTapPosition;
 		this.maxTapChange = maxTapChange;
+		this.delaySeconds = Math.max(0.0, delaySeconds);
 	}
 
 	public String getId() {
@@ -157,6 +169,10 @@ public class RegulatorControlData {
 
 	public int getMaxTapChange() {
 		return maxTapChange;
+	}
+
+	public double getDelaySeconds() {
+		return delaySeconds;
 	}
 
 	public int getTapPosition() {

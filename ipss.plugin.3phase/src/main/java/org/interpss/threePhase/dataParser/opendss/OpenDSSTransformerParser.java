@@ -360,6 +360,16 @@ public class OpenDSSTransformerParser {
 		branch3P.setZabc(diagonalZabc(branch3P.getPhaseCode(), seriesZ));
 	}
 
+	private static void addSecondaryNoLoadAdmittance(IBranch3Phase branch3P, double kv, double kva,
+			double imagPercent, double noLoadLossPercent) {
+		Complex admittance = noLoadAdmittance(kv, kva, imagPercent, noLoadLossPercent);
+		if(admittance.equals(Complex.ZERO)) {
+			return;
+		}
+		branch3P.setFromShuntYabc(new Complex3x3());
+		branch3P.setToShuntYabc(diagonalZabc(branch3P.getPhaseCode(), admittance));
+	}
+
 	private static Complex3x3 diagonalZabc(PhaseCode phaseCode, Complex impedance) {
 		Complex zero = new Complex(0.0);
 		Complex3x3 zabc = new Complex3x3();
@@ -434,7 +444,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		boolean xhlSpecified = false;
 		boolean lossSpecified = false;
 
-		String[] xfrStrAry  = splitOutsideLists(normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase()));
+		String[] xfrStrAry  = splitOutsideLists(normalizePropertyEquals(
+				normalizeInlineRpnDivisions(xfrStr.trim().toLowerCase())));
 		int windingContext = 0;
 		boolean hasWindingSpecificResistance = false;
 
@@ -464,7 +475,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				xlt= Double.valueOf(element.substring(4));
 			}
 
-			else if(element.contains("buses=")){
+			else if(element.startsWith("buses=")){
 				String[] busIds = listValues(element);
 				busTerminals = busIds;
 				TerminalBus fromTerminal = terminalBus(busIds[0]);
@@ -511,7 +522,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				}
 
 			}
-			else if(element.contains("bus=")){
+			else if(element.startsWith("bus=")){
 				TerminalBus terminal = terminalBus(element.substring(4));
 				if(windingContext == 1) {
 					fromBusId = terminal.busId;
@@ -531,12 +542,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 					toWyeGrounded = terminal.wyeGrounded;
 				}
 			}
-			else if(element.contains("conns=")){
+			else if(element.startsWith("conns=")){
 				String[] connTypes = listValues(element);
 				fromConnection = connTypes[0];
 				toConnection = connTypes[1];
 			}
-			else if(element.contains("conn=")){
+			else if(element.startsWith("conn=")){
 				if(windingContext == 1) {
 					fromConnection = element.substring(5);
 				}
@@ -544,13 +555,13 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 					toConnection = element.substring(5);
 				}
 			}
-			else if(element.contains("kvs=")){
+			else if(element.startsWith("kvs=")){
 				String[] kvs = listValues(element);
 				normKVs = doubleValues(kvs);
 				normKV1 = Double.valueOf(kvs[0]);
 				normKV2 = Double.valueOf(kvs[1]);
 			}
-			else if(element.contains("kv=")){
+			else if(element.startsWith("kv=")){
 				if(windingContext == 1) {
 					normKV1 = Double.valueOf(element.substring(3));
 				}
@@ -558,14 +569,14 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 					normKV2 = Double.valueOf(element.substring(3));
 				}
 			}
-			else if(element.contains("kvas=")){
+			else if(element.startsWith("kvas=")){
 				String[] kvas = listValues(element);
 				kvaRatings = doubleValues(kvas);
 				kva1 = Double.valueOf(kvas[0]);
 				kva2 = Double.valueOf(kvas[1]);
 
 			}
-			else if(element.contains("kva=")){
+			else if(element.startsWith("kva=")){
 				if(windingContext == 1) {
 					kva1 = Double.valueOf(element.substring(4));
 				}
@@ -803,8 +814,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 	    	throw new Error("Transformer connection type at winding 2 is not supported yet #"+toConnection);
 	    }
 
-
-
+		addSecondaryNoLoadAdmittance(xfr3P, normKV2, kva2 > 0.0 ? kva2 : kva1,
+				imagPercent, noLoadLossPercent);
 
 		return no_error;
 	}
@@ -876,9 +887,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				addToBlock(refs[row], refs[col], value, yff, yft, ytf, ytt);
 			}
 		}
-		addPrimaryNoLoadAdmittance(yff, phaseIndex(primary.nodes[0]),
-				noLoadAdmittance(kvs[0], kvas[0], imagPercent, noLoadLossPercent));
+		addCenterTapNoLoadAdmittance(ytt, phaseIndex(nonGroundNode(secondary1)),
+				noLoadAdmittance(kvs[1], kvas.length > 1 ? kvas[1] : kvas[0],
+						imagPercent, noLoadLossPercent));
 		xfr3P.setExplicitYabc(yff, yft, ytf, ytt);
+		this.dataParser.registerBranchPowerTerminal(xfrBranch, phaseIndex(nonGroundNode(secondary1)), 2);
+		this.dataParser.registerBranchPowerTerminal(xfrBranch, phaseIndex(nonGroundNode(secondary2)), 3);
 
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
 		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED,
@@ -921,17 +935,16 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			return Complex.ZERO;
 		}
 		double conductancePu = noLoadLossPercent/100.0;
-		double currentPu = imagPercent/100.0;
-		double susceptancePu = Math.sqrt(Math.max(0.0, currentPu*currentPu - conductancePu*conductancePu));
+		double susceptancePu = imagPercent/100.0;
 		Complex admittancePu = new Complex(conductancePu, -susceptancePu);
 		return admittancePu.multiply((kva/1000.0)/(kv*kv));
 	}
 
-	private static void addPrimaryNoLoadAdmittance(Complex3x3 yff, int phase, Complex admittance) {
+	private static void addCenterTapNoLoadAdmittance(Complex3x3 ytt, int phase, Complex admittance) {
 		if(admittance.equals(Complex.ZERO)) {
 			return;
 		}
-		setPhaseValue(yff, phase, phase, getPhaseValue(yff, phase, phase).add(admittance));
+		setPhaseValue(ytt, phase, phase, getPhaseValue(ytt, phase, phase).add(admittance));
 	}
 
 	private static int secondaryPolarity(TerminalBus terminal) {
@@ -1026,6 +1039,10 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		}
 		matcher.appendTail(buffer);
 		return buffer.toString();
+	}
+
+	private static String normalizePropertyEquals(String value) {
+		return value.replaceAll("\\s*=\\s*", "=");
 	}
 
 	private static Complex transformerSeriesImpedanceOhm(double kv1, double kv2,

@@ -6,9 +6,12 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -44,6 +47,7 @@ import com.interpss.core.acsc.PhaseCode;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NetworkType;
+import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.AclfLoad3Phase;
@@ -79,6 +83,8 @@ public class OpenDSSDataParser {
 	protected OpenDSSTimeSeriesData timeSeriesData = null;
 	protected OpenDSSLoadShapeParser loadShapeParser = null;
 	protected OpenDSSTemperatureShapeParser temperatureShapeParser = null;
+	private final Map<AclfBranch, String> branchElementClasses = new IdentityHashMap<>();
+	private final Map<AclfBranch, Map<Integer, Integer>> branchPowerTerminalByPhase = new IdentityHashMap<>();
 	private boolean regControlEnabled = true;
 	private double minLineSeriesImpedancePu = 1.0E-7;
 
@@ -114,7 +120,6 @@ public class OpenDSSDataParser {
 	this.xyCurveParser = new OpenDSSXYCurveParser(this);
 	this.capParser =  new  OpenDSSCapacitorParser (this);
 	this.xfrParser =  new  OpenDSSTransformerParser (this);
-	//TODO tentatively, treat regulator as a fixed tap transformer
 	this.regulatorParser = new  OpenDSSRegulatorParser(this);
 	this.wireDataParser = new OpenDSSWireDataParser(this);
 	this.lineGeometryParser = new OpenDSSLineGeometryParser(this);
@@ -127,9 +132,30 @@ public class OpenDSSDataParser {
 	this.debug = enableDebug;
     }
 
-    public void setMinLineSeriesImpedancePu(double minLineSeriesImpedancePu) {
-	this.minLineSeriesImpedancePu = minLineSeriesImpedancePu;
-    }
+	public void setMinLineSeriesImpedancePu(double minLineSeriesImpedancePu) {
+		this.minLineSeriesImpedancePu = minLineSeriesImpedancePu;
+	}
+
+	public Map<AclfBranch, String> getBranchElementClasses() {
+		return Collections.unmodifiableMap(this.branchElementClasses);
+	}
+
+	public Map<AclfBranch, Map<Integer, Integer>> getBranchPowerTerminalByPhase() {
+		return Collections.unmodifiableMap(this.branchPowerTerminalByPhase);
+	}
+
+	private void registerBranchElementClass(AclfBranch branch, String elementClass) {
+		if(branch != null && elementClass != null && !elementClass.isBlank()) {
+			this.branchElementClasses.put(branch, elementClass);
+		}
+	}
+
+	void registerBranchPowerTerminal(AclfBranch branch, int phaseIndex, int terminal) {
+		if(branch != null && phaseIndex >= 0 && phaseIndex < 3 && terminal > 0) {
+			this.branchPowerTerminalByPhase.computeIfAbsent(branch,
+					ignored -> new java.util.LinkedHashMap<>()).put(phaseIndex, terminal);
+		}
+	}
 
 	public Hashtable<String, LineConfiguration> getLineConfigTable() {
 		if(lineConfigTable == null){
@@ -333,6 +359,11 @@ public class OpenDSSDataParser {
 				else if(str.startsWith("!") || str.startsWith("//")){
 					//bypass the comments
 				}
+				else if(str.toLowerCase().contains("regcontrol.")){
+					if(this.regControlEnabled) {
+						this.regulatorParser.parseRegControlData(str);
+					}
+				}
 				else if(str.startsWith("New")||str.startsWith("new")){
 
 					//Consider in-line comment using !
@@ -413,7 +444,7 @@ public class OpenDSSDataParser {
 					else if(tempAry[1].contains("XfmrCode.") ||tempAry[1].contains("xfmrcode.")){
 						no_error = no_error && this.xfrParser.parseXfmrCodeData(str);
 					}
-					else if(tempAry[1].contains("LoadShape.") ||tempAry[1].contains("loadshape.")){
+					else if(tempAry[1].toLowerCase().contains("loadshape.")){
 						LogicalLine loadShapeLine = collectLogicalContinuationLine(str, reader);
 						lineCnt = lineCnt + loadShapeLine.consumedLineCount;
 						nextLine = loadShapeLine.nextLine;
@@ -697,6 +728,11 @@ public class OpenDSSDataParser {
 				else if(str.startsWith("!") || str.startsWith("//")){
 					//bypass the comment
 				}
+				else if(str.toLowerCase().contains("regcontrol.")){
+					if(this.regControlEnabled) {
+						this.regulatorParser.parseRegControlData(str);
+					}
+				}
 				else if(str.startsWith("New")||str.startsWith("new")){
 					String[] tempAry = str.split("\\s+");
 					if(tempAry[1].contains("object=")||tempAry[1].contains("Object=")){
@@ -771,7 +807,7 @@ public class OpenDSSDataParser {
 					else if(tempAry[1].contains("XfmrCode.") ||tempAry[1].contains("xfmrcode.")){
 						no_error = no_error && this.xfrParser.parseXfmrCodeData(str);
 					}
-					else if(tempAry[1].contains("LoadShape.") ||tempAry[1].contains("loadshape.")){
+					else if(tempAry[1].toLowerCase().contains("loadshape.")){
 						LogicalLine loadShapeLine = collectLogicalContinuationLine(str, reader);
 						lineCnt = lineCnt + loadShapeLine.consumedLineCount;
 						nextLine = loadShapeLine.nextLine;
@@ -922,12 +958,6 @@ public class OpenDSSDataParser {
 		// perform BFS and set the bus sortNumber
 		BFS(onceVisitedBuses);
 		deactivateUnvisitedIslands(activeNet);
-		if(this.regControlEnabled) {
-			this.regulatorParser.applyFixedRegControlRatios();
-		}
-
-
-
 	 return no_error;
      }
 
@@ -1002,6 +1032,7 @@ public class OpenDSSDataParser {
 	}
 
      public boolean convertActualValuesToPU(double mvaBase){
+	 double oldBaseKva = activeAclfNetwork().getBaseKva();
 
 	 if(mvaBase>0) {
 		 if(mvaBase>20){
@@ -1015,12 +1046,37 @@ public class OpenDSSDataParser {
 		 activeAclfNetwork().setBaseKva(mvaBase*1000.0);
 	 }
 
-	 boolean no_error = convertBranchZYMatrixToPU()&&convertLoadCapacitorToPU();
+	 boolean no_error = convertBranchZYMatrixToPU()&&convertLoadCapacitorToPU()
+			 && convertGeneratorPowerToPU(oldBaseKva);
 	 if(no_error) {
 		 timeSeriesData.refreshNetworkBaseStates();
 	 }
 
 	 return no_error;
+     }
+
+     private boolean convertGeneratorPowerToPU(double oldBaseKva) {
+	 double newBaseKva = activeAclfNetwork().getBaseKva();
+	 if(oldBaseKva <= 0.0 || newBaseKva <= 0.0) {
+		 return true;
+	 }
+	 double baseRatio = oldBaseKva / newBaseKva;
+	 if(Math.abs(baseRatio - 1.0) <= 1.0e-12) {
+		 return true;
+	 }
+	 for(Object busObj: activeAclfNetwork().getBusList()){
+		 if(!(busObj instanceof IBus3Phase)) {
+			 continue;
+		 }
+		 IBus3Phase bus3P = (IBus3Phase) busObj;
+		 for(AclfGen3Phase generator : bus3P.getPhaseGenList()) {
+			 Complex3x1 power = generator.getPower3Phase(UnitType.PU);
+			 if(power != null) {
+				 generator.setPower3Phase(power.multiply(baseRatio), UnitType.PU);
+			 }
+		 }
+	 }
+	 return true;
      }
 
      private boolean convertBranchZYMatrixToPU(){
@@ -1060,6 +1116,16 @@ public class OpenDSSDataParser {
 		  ((AcscBranch) bra).setZ(bra.getAdjustedZ().divide(zBase));
 		  if(bra3Phase.getZabc() != null) {
 			  bra3Phase.setZabc(bra3Phase.getZabc().multiply(1.0/zBase));
+		  }
+		  double fromBaseKV = bra.getFromBus().getBaseVoltage()*1.0E-3;
+		  double toBaseKV = bra.getToBus().getBaseVoltage()*1.0E-3;
+		  if(bra3Phase.getFromShuntYabc() != null) {
+			  bra3Phase.setFromShuntYabc(bra3Phase.getFromShuntYabc()
+					  .multiply(fromBaseKV*fromBaseKV/mvabase));
+		  }
+		  if(bra3Phase.getToShuntYabc() != null) {
+			  bra3Phase.setToShuntYabc(bra3Phase.getToShuntYabc()
+					  .multiply(toBaseKV*toBaseKV/mvabase));
 		  }
 
 		  // convert the turn ratios
@@ -1383,6 +1449,7 @@ public class OpenDSSDataParser {
 	 }
 	 reactor.setName(this.busIdPrefix + reactorName);
 	 reactor.setBranchCode(AclfBranchCode.LINE);
+	 registerBranchElementClass(reactor, "reactor");
 	 reactor3P.setPhaseCode(phaseNum == 1 ? PhaseCode.A : PhaseCode.ABC);
 	 Complex z = new Complex(r, x);
 	 Complex zero = new Complex(0.0);
