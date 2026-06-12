@@ -1889,6 +1889,30 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	@Test
+	public void ieee8500CenterTappedNoLoadAdmittanceUsesSecondaryWindingConvention() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/IEEE8500", "Master-InterPSS-QSTS-PV-Duty.dss", true);
+
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		Static3PBranch transformer = findStaticBranchByName(distNet, "t21373784a");
+		assertNotNull(transformer, "Missing IEEE8500 center-tapped service transformer");
+		assertTrue(transformer.hasExplicitYabc(), "Center-tapped transformer should use explicit Y blocks");
+
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		double fromVbase = transformer.getFromBus().getBaseVoltage();
+		double toVbase = transformer.getToBus().getBaseVoltage();
+
+		Complex primarySelf = physicalY(transformer.getYffabc().aa, baseVa, fromVbase, fromVbase);
+		assertEquals(0.02672996321957061, primarySelf.getReal(), 1.0e-8);
+		assertEquals(-0.037867448376644776, primarySelf.getImaginary(), 1.0e-8);
+
+		Complex secondaryNoLoad = physicalY(transformer.getYttabc().aa.subtract(transformer.getYttabc().bb),
+				baseVa, toVbase, toVbase);
+		assertEquals(0.006944444444444444, secondaryNoLoad.getReal(), 1.0e-8);
+		assertEquals(-0.017361111111111112, secondaryNoLoad.getImaginary(), 1.0e-8);
+	}
+
+	@Test
 	public void centerTappedTwoPhaseWyeLoadMiniCaseConverges() throws IOException {
 		assertCenterTappedMiniCaseConverges("testData/feeder/CenterTapMiniTwoPhaseLoad",
 				"opendss-reference/centertap-mini-two-phase-load-dss-python-voltage-reference.csv",

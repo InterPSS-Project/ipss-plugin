@@ -887,8 +887,9 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				addToBlock(refs[row], refs[col], value, yff, yft, ytf, ytt);
 			}
 		}
-		addPrimaryNoLoadAdmittance(yff, phaseIndex(primary.nodes[0]),
-				noLoadAdmittance(kvs[0], kvas[0], imagPercent, noLoadLossPercent));
+		addCenterTapNoLoadAdmittance(ytt, phaseIndex(nonGroundNode(secondary1)),
+				noLoadAdmittance(kvs[1], kvas.length > 1 ? kvas[1] : kvas[0],
+						imagPercent, noLoadLossPercent));
 		xfr3P.setExplicitYabc(yff, yft, ytf, ytt);
 		this.dataParser.registerBranchPowerTerminal(xfrBranch, phaseIndex(nonGroundNode(secondary1)), 2);
 		this.dataParser.registerBranchPowerTerminal(xfrBranch, phaseIndex(nonGroundNode(secondary2)), 3);
@@ -939,11 +940,11 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		return admittancePu.multiply((kva/1000.0)/(kv*kv));
 	}
 
-	private static void addPrimaryNoLoadAdmittance(Complex3x3 yff, int phase, Complex admittance) {
+	private static void addCenterTapNoLoadAdmittance(Complex3x3 ytt, int phase, Complex admittance) {
 		if(admittance.equals(Complex.ZERO)) {
 			return;
 		}
-		setPhaseValue(yff, phase, phase, getPhaseValue(yff, phase, phase).add(admittance));
+		setPhaseValue(ytt, phase, phase, getPhaseValue(ytt, phase, phase).add(admittance));
 	}
 
 	private static int secondaryPolarity(TerminalBus terminal) {
