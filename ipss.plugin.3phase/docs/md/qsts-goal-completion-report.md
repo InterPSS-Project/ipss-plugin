@@ -238,6 +238,65 @@ Current measured InterPSS diagnostics:
 | Norton factor `0` | Not adopted | `3.442674 ms/step`, `24763` PF iterations, `numericFactors=300` | Rejected |
 | Direct primitive RHS with object bus voltages | 2-step voltage/load/branch comparisons pass | `4.070673 ms/step`, `26545` PF iterations | Rejected and reverted |
 | Per-bus Norton voltage scratch array | 2-step voltage/load/branch comparisons pass | `4.017018 ms/step`, `26545` PF iterations | Rejected and reverted |
+
+### IEEE8500 QSTS Parity Update
+
+Fresh one-step IEEE8500 QSTS comparisons were run on 2026-06-11 with enabled
+static controls on both sides:
+
+- DSS-Python: `controlmode=static`, `maxcontroliter=100`, RegControl enabled,
+  CapControl enabled.
+- InterPSS: static OpenDSS parser, `QstsControlMode.STATIC`,
+  `maxControlIterations=100`, RegControl enabled, CapControl enabled.
+
+The primitive voltage-state optimization was isolated as an IEEE8500 regression:
+with that shortcut enabled, the voltage comparison reached about `0.054 pu` and
+`3.2 deg`. After gating the shortcut behind
+`-Dipss.distpf.enablePrimitiveVoltageState=true`, the static no-PV IEEE8500
+baseline returned to:
+
+```text
+max |V| error 0.004536 pu
+max angle error 0.204100 deg
+```
+
+The controlled one-step no-PV QSTS comparison now shows:
+
+```text
+QSTS_VOLTAGE_COMPARE maxMagDelta=0.004535871392 maxAngleDelta=0.204099516
+QSTS_LOAD_POWER_COMPARE maxPDelta=0.09181900765 kW maxQDelta=0.02319418734 kvar
+QSTS_BRANCH_POWER_COMPARE maxPDelta=24.16285099 kW maxQDelta=24.399335059 kvar
+```
+
+The controlled one-step PV-duty QSTS comparison now shows:
+
+```text
+QSTS_VOLTAGE_COMPARE maxMagDelta=0.008218768897 maxAngleDelta=0.549890894
+QSTS_LOAD_POWER_COMPARE maxPDelta=0.1064412609 kW maxQDelta=0.02636367859 kvar
+QSTS_CAPACITOR_STATE_COMPARE stateFailures=0 qFailures=0 maxQDelta=3.814450016 kvar
+QSTS_BRANCH_POWER_COMPARE maxPDelta=79.20953538 kW maxQDelta=53.612842701 kvar
+QSTS_GENERATOR_POWER_COMPARE maxPDelta=9.7602730361 kW maxQDelta=0.00360815159091 kvar
+```
+
+These data points narrow the remaining IEEE8500 work:
+
+- The no-PV branch-flow mismatch is now mostly the residual static PF voltage
+  mismatch; load rows already pass tight per-device tolerances.
+- The PV-duty case adds an OpenDSS generator model-1 terminal-power mismatch:
+  DSS-Python keeps the generator object's scheduled `kW` at `290.11764708`, but
+  reports unbalanced terminal powers totaling `278.188021286 kW` under the
+  solved unbalanced terminal voltage. InterPSS currently samples the scheduled
+  per-phase generator power.
+- The first large branch-flow deviation is at the substation
+  `Reactor.hvmv_sub_hsb` / `Transformer.hvmv_sub` / feeder regulator chain.
+  OpenDSS Yprim diagnostics and InterPSS physical-Y diagnostics agree on the
+  source reactor and main transformer off-diagonal blocks, so the next
+  architecture slice should focus on static transformer/regulator parity and
+  OpenDSS generator model-1 terminal-power behavior, not dynamic-network code.
+
+The IEEE8500 evidence above is not yet a completion gate. It is the current
+localization record for the remaining parity work before the 8760 performance
+target can be claimed.
 | Disabled hot-loop current-injection validation by default | 2-step voltage/load/branch comparisons pass | `3.123257 ms/step`, `maxIterations=5`, `numericFactors=302` | Rejected and reverted; slower than the retained `2.937146 ms/step` diagnostic |
 | Primitive voltage-state with controls, but direct primitive RHS disabled | 2-step voltage/load/branch comparisons pass | `3.006202 ms/step`, `maxIterations=5`, `numericFactors=302` | Rejected and reverted; still slower than the retained `2.937146 ms/step` diagnostic |
 | Tolerance `5.0e-4` | 2-step voltage/load/branch comparisons pass; branch max deltas increased to `1.90744853 kW` and `1.760634673 kvar` | `3.174950 ms/step`, `19121` PF iterations | Diagnostic only; still above target |
