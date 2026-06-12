@@ -117,6 +117,7 @@ public class QstsStudyTest {
 
 		QstsResult result = QstsStudy.from(network, staticSchedule())
 				.setPowerFlowAlgorithm(powerFlow)
+				.setBranchPowerTerminalByPhase(Map.of(branch, Map.of(0, 2, 1, 3)))
 				.setNumberOfSteps(1)
 				.run();
 
@@ -126,12 +127,19 @@ public class QstsStudyTest {
 						&& sample.getPhase().equals("A")
 						&& Math.abs(sample.getActivePowerKw()) > 1.0e-9));
 		assertTrue(result.getStep(0).getBranchPowers().stream()
-				.anyMatch(sample -> sample.getTerminal() == 2
+				.anyMatch(sample -> sample.getTerminal() == 3
 						&& sample.getPhase().equals("B")
 						&& Math.abs(sample.getActivePowerKw()) > 1.0e-9));
 		assertTrue(result.getStep(0).getBranchPowers().stream()
-				.anyMatch(sample -> sample.getTerminal() == 2
+				.anyMatch(sample -> sample.getTerminal() == 1
+						&& sample.getBusId().equals("source")
 						&& sample.getPhase().equals("C")));
+		assertFalse(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getTerminal() == 1
+						&& sample.getBusId().equals("load")
+						&& sample.getPhase().equals("C")
+						&& Math.abs(sample.getActivePowerKw()) < 1.0e-9
+						&& Math.abs(sample.getReactivePowerKvar()) < 1.0e-9));
 	}
 
 	@Test

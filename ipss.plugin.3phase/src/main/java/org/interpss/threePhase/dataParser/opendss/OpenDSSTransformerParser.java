@@ -890,6 +890,8 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		addPrimaryNoLoadAdmittance(yff, phaseIndex(primary.nodes[0]),
 				noLoadAdmittance(kvs[0], kvas[0], imagPercent, noLoadLossPercent));
 		xfr3P.setExplicitYabc(yff, yft, ytf, ytt);
+		this.dataParser.registerBranchPowerTerminal(xfrBranch, phaseIndex(nonGroundNode(secondary1)), 2);
+		this.dataParser.registerBranchPowerTerminal(xfrBranch, phaseIndex(nonGroundNode(secondary2)), 3);
 
 		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
 		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED,
