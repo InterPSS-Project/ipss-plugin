@@ -39,6 +39,17 @@
             <artifactId>mvel2</artifactId>
             <version>2.5.2.Final</version>
         </dependency>
+        <!-- Direct DFLib use in sample/dframe and result tests (transitive via ipss.plugin.core) -->
+        <dependency>
+            <groupId>org.dflib</groupId>
+            <artifactId>dflib</artifactId>
+            <version>2.0.0-M6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dflib</groupId>
+            <artifactId>dflib-csv</artifactId>
+            <version>2.0.0-M6</version>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
