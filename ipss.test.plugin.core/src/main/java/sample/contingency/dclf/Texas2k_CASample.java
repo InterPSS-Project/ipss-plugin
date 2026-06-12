@@ -83,7 +83,6 @@ public class Texas2k_CASample {
 					}
 				}
 			}	
-	
 		}
     }
 
