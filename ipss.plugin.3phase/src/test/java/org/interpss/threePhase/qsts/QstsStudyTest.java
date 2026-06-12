@@ -448,6 +448,44 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void staticRegulatorControlsAreSkippedForDutyModeToMatchOpenDss()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		RegulatorControlData control = new RegulatorControlData("reg1", "source->load(1)", 2,
+				PhaseCode.A, 1.0, 0.01, 0.00625, -16, 16);
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(new FakePowerFlowAlgorithm())
+				.setRegulatorControls(List.of(control))
+				.setMode(QstsMode.DUTY)
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(0, result.getStep(0).getRegulatorTaps().get(0).getTapPosition());
+	}
+
+	@Test
+	void staticRegulatorControlsAreAppliedBeforeDailyModeSampling()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		RegulatorControlData control = new RegulatorControlData("reg1", "source->load(1)", 2,
+				PhaseCode.A, 1.0, 0.01, 0.00625, -16, 16);
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(new FakePowerFlowAlgorithm())
+				.setRegulatorControls(List.of(control))
+				.setMode(QstsMode.DAILY)
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(-16, result.getStep(0).getRegulatorTaps().get(0).getTapPosition());
+	}
+
+	@Test
 	void qstsControlIterationLimitIsPropagatedToPowerFlowAlgorithm()
 			throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
