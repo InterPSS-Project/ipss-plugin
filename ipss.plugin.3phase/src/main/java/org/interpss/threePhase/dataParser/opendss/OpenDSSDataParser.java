@@ -84,6 +84,7 @@ public class OpenDSSDataParser {
 	protected OpenDSSLoadShapeParser loadShapeParser = null;
 	protected OpenDSSTemperatureShapeParser temperatureShapeParser = null;
 	private final Map<AclfBranch, String> branchElementClasses = new IdentityHashMap<>();
+	private final Map<AclfBranch, Map<Integer, Integer>> branchPowerTerminalByPhase = new IdentityHashMap<>();
 	private boolean regControlEnabled = true;
 	private double minLineSeriesImpedancePu = 1.0E-7;
 
@@ -139,9 +140,20 @@ public class OpenDSSDataParser {
 		return Collections.unmodifiableMap(this.branchElementClasses);
 	}
 
+	public Map<AclfBranch, Map<Integer, Integer>> getBranchPowerTerminalByPhase() {
+		return Collections.unmodifiableMap(this.branchPowerTerminalByPhase);
+	}
+
 	private void registerBranchElementClass(AclfBranch branch, String elementClass) {
 		if(branch != null && elementClass != null && !elementClass.isBlank()) {
 			this.branchElementClasses.put(branch, elementClass);
+		}
+	}
+
+	void registerBranchPowerTerminal(AclfBranch branch, int phaseIndex, int terminal) {
+		if(branch != null && phaseIndex >= 0 && phaseIndex < 3 && terminal > 0) {
+			this.branchPowerTerminalByPhase.computeIfAbsent(branch,
+					ignored -> new java.util.LinkedHashMap<>()).put(phaseIndex, terminal);
 		}
 	}
 
