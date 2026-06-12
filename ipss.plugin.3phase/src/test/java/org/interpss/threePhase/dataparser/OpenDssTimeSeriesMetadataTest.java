@@ -104,6 +104,30 @@ public class OpenDssTimeSeriesMetadataTest {
 	}
 
 	@Test
+	void loadShapeUsesOpenDssEffectiveNpts() {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		assertTrue(parser.getLoadShapeParser().parseLoadShape(
+				"New LoadShape.short npts=2 interval=1 mult=(1.0 1.1 1.2)",
+				"testData/feeder", "Master.dss", 14));
+		assertTrue(parser.getLoadShapeParser().parseLoadShape(
+				"New LoadShape.long npts=4 interval=1 mult=(0.7 0.8 0.9)",
+				"testData/feeder", "Master.dss", 15));
+
+		OpenDSSLoadShape shortShape = parser.getTimeSeriesData().getShapeRegistry().get("short");
+		assertNotNull(shortShape);
+		assertEquals(2, shortShape.getNpts());
+		assertEquals(2, shortShape.getPointCount());
+		assertArrayEquals(new double[] {1.0, 1.1}, shortShape.getPMult(), 1.0e-12);
+
+		OpenDSSLoadShape longShape = parser.getTimeSeriesData().getShapeRegistry().get("long");
+		assertNotNull(longShape);
+		assertEquals(3, longShape.getNpts());
+		assertEquals(3, longShape.getPointCount());
+		assertArrayEquals(new double[] {0.7, 0.8, 0.9}, longShape.getPMult(), 1.0e-12);
+	}
+
+	@Test
 	void capturesLoadProfileBindingsWithoutChangingStaticLoad() throws InterpssException {
 		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
@@ -117,6 +141,43 @@ public class OpenDssTimeSeriesMetadataTest {
 		assertEquals(1, parser.getStaticNetwork().getBus("bus1").getPhaseLoadList().size());
 		assertEquals(30.0, parser.getStaticNetwork().getBus("bus1").getPhaseLoadList().get(0)
 				.getInit3PhaseLoad().a_0.getReal(), 1.0e-12);
+	}
+
+	@Test
+	void xfkvaAllocationMatchesOpenDssAllocatedKwDefault() throws InterpssException {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		parser.getLoadParser().parseLoadData(
+				"New Load.other_feeders phases=3 Bus1=feeders kV=34.5 "
+				+ "xfkVA=23496.8 Allocationfactor=1 pf=0.992 conn=wye model=1");
+
+		AclfLoad3Phase load = parser.getStaticNetwork().getBus("feeders").getPhaseLoadList().get(0);
+		double expectedKw = 23496.8 * 0.88;
+		double expectedKvar = expectedKw * Math.tan(Math.acos(0.992));
+		assertEquals(expectedKw / 3.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-9);
+		assertEquals(expectedKvar / 3.0, load.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-9);
+
+		parser.getLoadParser().parseLoadPropertyData("Load.other_feeders.AllocationFactor=0.5");
+
+		double expectedEditedKw = 23496.8 * 0.5 * 0.992;
+		double expectedEditedKvar = expectedEditedKw * Math.tan(Math.acos(0.992));
+		assertEquals(expectedEditedKw / 3.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-9);
+		assertEquals(expectedEditedKvar / 3.0, load.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-9);
+	}
+
+	@Test
+	void nonUnityXfkvaAllocationUsesOpenDssPowerFactorRule() throws InterpssException {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		parser.getLoadParser().parseLoadData(
+				"New Load.allocated phases=3 Bus1=bus1.1.2.3 kV=0.48 "
+				+ "xfkVA=734.18 Allocationfactor=1.1578 pf=0.98 conn=wye model=1");
+
+		AclfLoad3Phase load = parser.getStaticNetwork().getBus("bus1").getPhaseLoadList().get(0);
+		double expectedKw = 734.18 * 1.1578 * 0.98;
+		double expectedKvar = expectedKw * Math.tan(Math.acos(0.98));
+		assertEquals(expectedKw / 3.0, load.getInit3PhaseLoad().a_0.getReal(), 1.0e-9);
+		assertEquals(expectedKvar / 3.0, load.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-9);
 	}
 
 	@Test
@@ -157,15 +218,16 @@ public class OpenDssTimeSeriesMetadataTest {
 	}
 
 	@Test
-	void staticParserCreatesTransformerAndRegControlWithoutDynamicNetwork() throws InterpssException {
+	void staticParserCreatesTransformerAndRegControlWithoutFixedTapShim() throws InterpssException {
 		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
 		parser.getXfrParser().parseTransformerDataOneLine(
 				"New Transformer.reg1 phases=3 windings=2 buses=[source.1.2.3 load.1.2.3] "
 				+ "conns=[wye wye] kvs=[12.47 12.47] kvas=[500 500] xhl=1 %loadloss=0.1");
+		Static3PBranch parsedTransformer = parser.getStaticNetwork().getBranchList().get(0);
+		double declaredToTurnRatio = parsedTransformer.getToTurnRatio();
 		parser.getRegulatorParser().parseRegControlData(
 				"New RegControl.creg1 transformer=reg1 winding=2 vreg=120 band=2 ptratio=60");
-		parser.getRegulatorParser().applyFixedRegControlRatios();
 
 		assertFalse(parser.hasDistNetwork());
 		assertNotNull(parser.getStaticNetwork().getBus("source"));
@@ -175,9 +237,30 @@ public class OpenDssTimeSeriesMetadataTest {
 		assertEquals("reg1", branch.getName());
 		assertEquals(AclfBranchCode.XFORMER, branch.getBranchCode());
 		assertEquals(PhaseCode.ABC, branch.getPhaseCode());
-		assertEquals(120.0 * 60.0 * Math.sqrt(3.0), branch.getToTurnRatio(), 1.0e-12);
+		assertEquals(declaredToTurnRatio, branch.getToTurnRatio(), 1.0e-12);
 		assertEquals(1, parser.getRegulatorControls().size());
 		assertEquals("reg1", parser.getRegulatorControls().get(0).getBranchName());
+		assertEquals(0.0, parser.getRegulatorControls().get(0).getDelaySeconds(), 1.0e-12);
+		assertFalse(parser.hasDistNetwork());
+	}
+
+	@Test
+	void regControlPropertyEditPreservesMetadataAndParsesDelay() throws InterpssException {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		parser.getXfrParser().parseTransformerDataOneLine(
+				"New Transformer.reg1 phases=1 windings=2 buses=[source.1 load.1] "
+				+ "conns=[wye wye] kvs=[7.2 7.2] kvas=[500 500] xhl=1 %loadloss=0.1");
+		parser.getRegulatorParser().parseRegControlData(
+				"New RegControl.creg1 transformer=reg1 winding=2 vreg=120 band=2 ptratio=60");
+		parser.getRegulatorParser().parseRegControlData(
+				"regcontrol.creg1.maxtapchange=1 Delay=45");
+
+		assertEquals(1, parser.getRegulatorControls().size());
+		assertEquals("reg1", parser.getRegulatorControls().get(0).getBranchName());
+		assertEquals(1, parser.getRegulatorControls().get(0).getMaxTapChange());
+		assertEquals(45.0, parser.getRegulatorControls().get(0).getDelaySeconds(), 1.0e-12);
+		assertEquals(120.0, parser.getRegulatorControls().get(0).getTargetVoltage(), 1.0e-12);
 		assertFalse(parser.hasDistNetwork());
 	}
 

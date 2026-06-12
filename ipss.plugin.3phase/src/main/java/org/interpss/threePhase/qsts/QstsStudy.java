@@ -2,13 +2,17 @@ package org.interpss.threePhase.qsts;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticGenerator;
 import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPostSolveOutputMode;
@@ -17,16 +21,22 @@ import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.InverterControlData;
 import org.interpss.threePhase.powerflow.control.InverterControlModel.InverterControlResult;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
+import org.interpss.threePhase.powerflow.control.RegulatorTapControl;
 import org.interpss.threePhase.qsts.control.QstsControlAction;
 import org.interpss.threePhase.qsts.control.QstsControlQueue;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.acsc.PhaseCode;
+import com.interpss.core.threephase.IBranch3Phase;
 import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.AclfGen3Phase;
 import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
+import com.interpss.core.net.Branch;
 
 public class QstsStudy {
 	private final INetwork3Phase network;
@@ -52,8 +62,11 @@ public class QstsStudy {
 	private List<InverterControlData> inverterControls = Collections.emptyList();
 	private QstsInverterAdapterStore inverterAdapterStore = new QstsInverterAdapterStore();
 	private final CapacitorBankControl qstsCapacitorControl = new CapacitorBankControl();
+	private final RegulatorTapControl qstsRegulatorTapControl = new RegulatorTapControl();
 	private final QstsControlQueue controlQueue = new QstsControlQueue();
 	private final Map<String, Integer> operationCountByControlKey = new java.util.LinkedHashMap<>();
+	private Map<AclfBranch, String> branchElementClassByBranch = Collections.emptyMap();
+	private Map<AclfBranch, Map<Integer, Integer>> branchPowerTerminalByPhase = Collections.emptyMap();
 
 	private QstsStudy(INetwork3Phase network, QstsScheduleData scheduleData) {
 		if(network == null) {
@@ -110,6 +123,27 @@ public class QstsStudy {
 	public QstsStudy setInverterAdapterStore(QstsInverterAdapterStore inverterAdapterStore) {
 		this.inverterAdapterStore = inverterAdapterStore == null
 				? new QstsInverterAdapterStore() : inverterAdapterStore;
+		return this;
+	}
+
+	public QstsStudy setBranchElementClasses(Map<AclfBranch, String> branchElementClassByBranch) {
+		if(branchElementClassByBranch == null || branchElementClassByBranch.isEmpty()) {
+			this.branchElementClassByBranch = Collections.emptyMap();
+		}
+		else {
+			this.branchElementClassByBranch = new IdentityHashMap<>(branchElementClassByBranch);
+		}
+		return this;
+	}
+
+	public QstsStudy setBranchPowerTerminalByPhase(
+			Map<AclfBranch, Map<Integer, Integer>> branchPowerTerminalByPhase) {
+		if(branchPowerTerminalByPhase == null || branchPowerTerminalByPhase.isEmpty()) {
+			this.branchPowerTerminalByPhase = Collections.emptyMap();
+		}
+		else {
+			this.branchPowerTerminalByPhase = new IdentityHashMap<>(branchPowerTerminalByPhase);
+		}
 		return this;
 	}
 
@@ -195,6 +229,7 @@ public class QstsStudy {
 		algorithm.setPFMethod(pfMethod);
 		algorithm.setPostSolveOutputMode(postSolveOutputMode);
 		algorithm.setMaxIteration(maxPowerFlowIterations);
+		algorithm.setMaxControlIterations(maxControlIterations);
 		algorithm.setTolerance(tolerance);
 		algorithm.setRegulatorControls(regulatorControls);
 		algorithm.setCapacitorControls(capacitorControls);
@@ -202,11 +237,16 @@ public class QstsStudy {
 		registerMissingInverterAdapters();
 		boolean controlsEnabled = controlMode != QstsControlMode.OFF && maxControlIterations > 0;
 		boolean delayedCapacitorControls = usesDelayedControlQueue();
-		algorithm.setFixedPointYMatrixCacheEnabled(pfMethod == DistributionPFMethod.Fixed_Point
-				&& !controlsEnabled);
-		algorithm.setRegulatorControlEnabled(controlsEnabled && !regulatorControls.isEmpty());
+		boolean regulatorControlsEnabled = regulatorControlsEnabledForMode(controlsEnabled);
+		boolean steppedRegulatorControls = usesSteppedRegulatorControls(regulatorControlsEnabled);
+		algorithm.setFixedPointYMatrixCacheEnabled(qstsFixedPointYMatrixCacheEnabled(
+				delayedCapacitorControls));
+		algorithm.setRegulatorControlEnabled(regulatorControlsEnabled && !steppedRegulatorControls
+				&& !regulatorControls.isEmpty());
 		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
 				&& !capacitorControls.isEmpty());
+		boolean staticStateReuseEnabled = qstsStaticStateReuseEnabled(delayedCapacitorControls);
+		boolean solvedReusableStaticState = false;
 		if(profile != null) {
 			profile.addSetup(System.nanoTime() - setupStartNanos);
 		}
@@ -219,7 +259,7 @@ public class QstsStudy {
 			QstsStepContext context = new QstsStepContext(i, scheduleIndex, hour, mode,
 					stepSizeHours, loadMultiplier, controlMode);
 			long stateStartNanos = profile == null ? 0L : System.nanoTime();
-			stateApplier.apply(context);
+			boolean stateChanged = stateApplier.apply(context);
 			if(profile != null) {
 				profile.addStateApply(System.nanoTime() - stateStartNanos);
 			}
@@ -233,11 +273,14 @@ public class QstsStudy {
 			}
 			algorithm.setInitBusVoltageEnabled(i == 0 ? initializeFirstStepVoltages : false);
 			long powerFlowStartNanos = profile == null ? 0L : System.nanoTime();
-			PowerFlowControlResult controlResult = runPowerFlowControlLoop(algorithm, context,
-					controlsEnabled, profile);
+			boolean reuseSolvedState = solvedReusableStaticState && !stateChanged && actionCount == 0;
+			PowerFlowControlResult controlResult = reuseSolvedState
+					? PowerFlowControlResult.reusedSolvedState()
+					: runPowerFlowControlLoop(algorithm, context, controlsEnabled,
+							steppedRegulatorControls, profile);
 			if(profile != null) {
 				profile.addPowerFlow(System.nanoTime() - powerFlowStartNanos,
-						controlResult.powerFlowIterations);
+						controlResult.powerFlowIterations, controlResult.reusedSolvedState);
 			}
 			boolean converged = controlResult.converged;
 			List<QstsInverterControlSample> inverterControlSamples = controlResult.inverterControlSamples;
@@ -253,7 +296,7 @@ public class QstsStudy {
 					: "Distribution power flow did not converge at step " + i
 							+ " mode=" + mode + " hour=" + hour;
 			long outputStartNanos = profile == null ? 0L : System.nanoTime();
-			steps.add(createStepResult(context, converged, algorithm.getIterationCount(),
+			steps.add(createStepResult(context, converged, controlResult.powerFlowIterations,
 					failureReason, actionCount, inverterControlSamples));
 			if(profile != null) {
 				profile.addOutputs(System.nanoTime() - outputStartNanos);
@@ -261,6 +304,9 @@ public class QstsStudy {
 			}
 			if(!converged) {
 				break;
+			}
+			if(staticStateReuseEnabled) {
+				solvedReusableStaticState = converged;
 			}
 		}
 		if(profile != null) {
@@ -275,12 +321,13 @@ public class QstsStudy {
 		if(resultSamplingMode == QstsResultSamplingMode.NONE) {
 			return new QstsStepResult(context, converged, iterationCount, Double.NaN,
 					failureReason, actionCount, Collections.emptyList(), Collections.emptyList(),
-					Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
+					Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+					Collections.emptyList(), Collections.emptyList());
 		}
 		return new QstsStepResult(context, converged, iterationCount, Double.NaN,
 				failureReason, actionCount, sampleBusVoltages(context), sampleLoadPowers(context),
-				sampleGeneratorPowers(context), sampleCapacitorStates(context),
-				inverterControlSamples);
+				sampleGeneratorPowers(context), sampleBranchPowers(context),
+				sampleCapacitorStates(context), sampleRegulatorTaps(context), inverterControlSamples);
 	}
 
 	public QstsStateApplier getStateApplier() {
@@ -293,6 +340,29 @@ public class QstsStudy {
 
 	private boolean usesDelayedControlQueue() {
 		return controlMode == QstsControlMode.TIME || controlMode == QstsControlMode.EVENT;
+	}
+
+	private boolean regulatorControlsEnabledForMode(boolean controlsEnabled) {
+		return controlsEnabled && mode != QstsMode.DUTY;
+	}
+
+	private boolean usesSteppedRegulatorControls(boolean controlsEnabled) {
+		return controlsEnabled && controlMode == QstsControlMode.STATIC
+				&& !regulatorControls.isEmpty();
+	}
+
+	private boolean qstsFixedPointYMatrixCacheEnabled(boolean delayedCapacitorControls) {
+		return pfMethod == DistributionPFMethod.Fixed_Point
+				&& !delayedCapacitorControls
+				&& !Boolean.getBoolean("ipss.qsts.disableFixedPointSymbolReuse")
+				&& !Boolean.getBoolean("ipss.qsts.disableFixedPointValueUpdate");
+	}
+
+	private boolean qstsStaticStateReuseEnabled(boolean delayedCapacitorControls) {
+		return !Boolean.getBoolean("ipss.qsts.disableStaticStateReuse")
+				&& !delayedCapacitorControls
+				&& controlMode == QstsControlMode.OFF
+				&& inverterControls.isEmpty();
 	}
 
 	private int processQueuedActions(boolean enabled, double timeSeconds) {
@@ -312,19 +382,27 @@ public class QstsStudy {
 		List<QstsBusVoltageSample> samples = new ArrayList<>();
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Complex3x1 voltage = bus.get3PhaseVotlages();
-			addVoltage(samples, context, bus.getId(), "A", voltage == null ? null : voltage.a_0);
-			addVoltage(samples, context, bus.getId(), "B", voltage == null ? null : voltage.b_1);
-			addVoltage(samples, context, bus.getId(), "C", voltage == null ? null : voltage.c_2);
+			int phaseMask = activeBusPhaseMask(bus);
+			addVoltage(samples, context, bus.getId(), "A", voltage == null ? null : voltage.a_0,
+					phaseActive(phaseMask, 0));
+			addVoltage(samples, context, bus.getId(), "B", voltage == null ? null : voltage.b_1,
+					phaseActive(phaseMask, 1));
+			addVoltage(samples, context, bus.getId(), "C", voltage == null ? null : voltage.c_2,
+					phaseActive(phaseMask, 2));
 		}
 		return samples;
 	}
 
 	private List<QstsDevicePowerSample> sampleLoadPowers(QstsStepContext context) {
 		List<QstsDevicePowerSample> samples = new ArrayList<>();
+		Set<String> capacitorLoadIds = capacitorLoadIds();
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Map<Object, Boolean> sampled = new IdentityHashMap<>();
 			for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
-				addLoadSample(samples, context, load);
+				if(isCapacitorLoad(load, capacitorLoadIds)) {
+					continue;
+				}
+				addLoadSample(samples, context, load, bus);
 				sampled.put(load, Boolean.TRUE);
 			}
 			if(bus instanceof BaseAclfBus) {
@@ -333,19 +411,71 @@ public class QstsStudy {
 							|| !(loadObject instanceof AclfLoad3Phase)) {
 						continue;
 					}
-					addLoadSample(samples, context, (AclfLoad3Phase) loadObject);
+					AclfLoad3Phase load = (AclfLoad3Phase) loadObject;
+					if(isCapacitorLoad(load, capacitorLoadIds)) {
+						continue;
+					}
+					addLoadSample(samples, context, load, bus);
 				}
 			}
 		}
 		return samples;
 	}
 
-	private static void addLoadSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
-			AclfLoad3Phase load) {
+	private Set<String> capacitorLoadIds() {
+		Set<String> ids = new HashSet<>();
+		for(CapacitorControlData control : capacitorControls) {
+			if(control.getCapacitorId() != null) {
+				ids.add(control.getCapacitorId().toLowerCase(Locale.ROOT));
+			}
+		}
+		return ids;
+	}
+
+	private boolean isCapacitorLoad(AclfLoad3Phase load, Set<String> capacitorLoadIds) {
+		return load != null
+				&& ((load.getId() != null
+						&& capacitorLoadIds.contains(load.getId().toLowerCase(Locale.ROOT)))
+					|| isParsedCapacitorLoad(load));
+	}
+
+	private boolean isParsedCapacitorLoad(AclfLoad3Phase load) {
+		if(load.getCode() != AclfLoadCode.CONST_Z) {
+			return false;
+		}
 		Complex3x1 power = load.getInit3PhaseLoad();
-		addPower(samples, context, "load", load.getId(), "A", power == null ? null : power.a_0);
-		addPower(samples, context, "load", load.getId(), "B", power == null ? null : power.b_1);
-		addPower(samples, context, "load", load.getId(), "C", power == null ? null : power.c_2);
+		return isCapacitorPower(power == null ? null : power.a_0)
+				&& isCapacitorPower(power == null ? null : power.b_1)
+				&& isCapacitorPower(power == null ? null : power.c_2)
+				&& (isActiveCapacitorPhase(power == null ? null : power.a_0)
+						|| isActiveCapacitorPhase(power == null ? null : power.b_1)
+						|| isActiveCapacitorPhase(power == null ? null : power.c_2));
+	}
+
+	private boolean isCapacitorPower(Complex power) {
+		if(power == null) {
+			return true;
+		}
+		return Math.abs(power.getReal()) <= 1.0e-12
+				&& power.getImaginary() <= 1.0e-12;
+	}
+
+	private boolean isActiveCapacitorPhase(Complex power) {
+		return power != null
+				&& Math.abs(power.getReal()) <= 1.0e-12
+				&& power.getImaginary() < -1.0e-12;
+	}
+
+	private static void addLoadSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
+			AclfLoad3Phase load, IBus3Phase bus) {
+		Complex3x1 power = QstsLoadPowerSampler.solvedPower(load, bus);
+		int phaseMask = phaseCodeMask(load.getPhaseCode()) & activeBusPhaseMask(bus);
+		addPower(samples, context, "load", load.getId(), "A", power == null ? null : power.a_0,
+				phaseActive(phaseMask, 0));
+		addPower(samples, context, "load", load.getId(), "B", power == null ? null : power.b_1,
+				phaseActive(phaseMask, 1));
+		addPower(samples, context, "load", load.getId(), "C", power == null ? null : power.c_2,
+				phaseActive(phaseMask, 2));
 	}
 
 	private List<QstsDevicePowerSample> sampleGeneratorPowers(QstsStepContext context) {
@@ -353,7 +483,7 @@ public class QstsStudy {
 		for(IBus3Phase bus : network.getThreePhaseBusList()) {
 			Map<Object, Boolean> sampled = new IdentityHashMap<>();
 			for(AclfGen3Phase generator : bus.getPhaseGenList()) {
-				addGeneratorSample(samples, context, generator);
+				addGeneratorSample(samples, context, generator, bus);
 				sampled.put(generator, Boolean.TRUE);
 			}
 			if(bus instanceof BaseAclfBus) {
@@ -362,15 +492,45 @@ public class QstsStudy {
 							|| !(generatorObject instanceof AclfGen3Phase)) {
 						continue;
 					}
-					addGeneratorSample(samples, context, (AclfGen3Phase) generatorObject);
+					addGeneratorSample(samples, context, (AclfGen3Phase) generatorObject, bus);
 				}
 			}
 		}
 		return samples;
 	}
 
+	private List<QstsBranchPowerSample> sampleBranchPowers(QstsStepContext context) {
+		List<QstsBranchPowerSample> samples = new ArrayList<>();
+		double phaseBaseKva = aclfNetwork().getBaseKva() / 3.0;
+		for(AclfBranch branch : (List<AclfBranch>) aclfNetwork().getBranchList()) {
+			if(!branch.isActive() || !(branch instanceof IBranch3Phase)
+					|| !(branch.getFromBus() instanceof IBus3Phase)
+					|| !(branch.getToBus() instanceof IBus3Phase)
+					|| isOpenDssSourceImpedanceBranch(branch)) {
+				continue;
+			}
+			IBranch3Phase branch3Phase = (IBranch3Phase) branch;
+			Complex3x1 fromVoltage = ((IBus3Phase) branch.getFromBus()).get3PhaseVotlages();
+			Complex3x1 toVoltage = ((IBus3Phase) branch.getToBus()).get3PhaseVotlages();
+			if(fromVoltage == null || toVoltage == null) {
+				continue;
+			}
+			Complex3x1 fromCurrent = branch3Phase.getYffabc().multiply(fromVoltage)
+					.add(branch3Phase.getYftabc().multiply(toVoltage));
+			Complex3x1 toCurrent = branch3Phase.getYttabc().multiply(toVoltage)
+					.add(branch3Phase.getYtfabc().multiply(fromVoltage));
+			addBranchPowerSamples(samples, context, branch, 1, branch.getFromBus().getId(),
+					fromVoltage.multiply(fromCurrent.conjugate()).multiply(phaseBaseKva));
+			addBranchPowerSamples(samples, context, branch, 2, branch.getToBus().getId(),
+					toVoltage.multiply(toCurrent.conjugate()).multiply(phaseBaseKva));
+		}
+		return samples;
+	}
+
 	private List<QstsCapacitorStateSample> sampleCapacitorStates(QstsStepContext context) {
 		List<QstsCapacitorStateSample> samples = new ArrayList<>();
+		double phaseBaseKva = aclfNetwork().getBaseKva() / 3.0;
+		Set<String> controlledCapacitors = capacitorLoadIds();
 		for(CapacitorControlData control : capacitorControls) {
 			Complex3x1 power = qstsCapacitorControl.capacitorPower(network, control.getCapacitorId());
 			Complex total = add(add(power.a_0, power.b_1), power.c_2);
@@ -378,13 +538,61 @@ public class QstsStudy {
 			int operationCount = operationCountByControlKey.getOrDefault(key, Integer.valueOf(0)).intValue();
 			samples.add(new QstsCapacitorStateSample(context.getStepIndex(), context.getHour(),
 					control.getCapacitorId(), control.isClosed(), total.getImaginary(),
-					total.getImaginary() * aclfNetwork().getBaseKva(), operationCount));
+					total.getImaginary() * phaseBaseKva, operationCount));
+		}
+		for(IBus3Phase bus : network.getThreePhaseBusList()) {
+			Map<Object, Boolean> sampled = new IdentityHashMap<>();
+			for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
+				addFixedCapacitorStateSample(samples, context, load, bus, controlledCapacitors,
+						phaseBaseKva);
+				sampled.put(load, Boolean.TRUE);
+			}
+			if(bus instanceof BaseAclfBus) {
+				for(Object loadObject : ((BaseAclfBus<?, ?>) bus).getContributeLoadList()) {
+					if(!sampled.containsKey(loadObject) && loadObject instanceof AclfLoad3Phase) {
+						addFixedCapacitorStateSample(samples, context, (AclfLoad3Phase) loadObject,
+								bus, controlledCapacitors, phaseBaseKva);
+					}
+				}
+			}
+		}
+		return samples;
+	}
+
+	private void addFixedCapacitorStateSample(List<QstsCapacitorStateSample> samples,
+			QstsStepContext context, AclfLoad3Phase load, IBus3Phase bus,
+			Set<String> controlledCapacitors, double phaseBaseKva) {
+		if(load == null || load.getId() == null
+				|| controlledCapacitors.contains(load.getId().toLowerCase(Locale.ROOT))
+				|| !isParsedCapacitorLoad(load)) {
+			return;
+		}
+		Complex3x1 power = QstsLoadPowerSampler.solvedPower(load, bus);
+		Complex total = add(add(power == null ? null : power.a_0,
+				power == null ? null : power.b_1), power == null ? null : power.c_2);
+		samples.add(new QstsCapacitorStateSample(context.getStepIndex(), context.getHour(),
+				load.getId(), total.getImaginary() < -1.0e-12, total.getImaginary(),
+				total.getImaginary() * phaseBaseKva, 0));
+	}
+
+	private List<QstsRegulatorTapSample> sampleRegulatorTaps(QstsStepContext context) {
+		List<QstsRegulatorTapSample> samples = new ArrayList<>();
+		for(RegulatorControlData control : regulatorControls) {
+			samples.add(new QstsRegulatorTapSample("",
+					context.getStepIndex(), context.getHour(), control.getId(),
+					control.getBranchName(), control.getWinding(), control.getTapWinding(),
+					control.getPhaseCode() == null ? "" : control.getPhaseCode().name(),
+					control.getTapPosition(), control.getTapRatio(), control.getTargetVoltage(),
+					control.getBandwidth(), control.getPtRatio(), control.getDelaySeconds(),
+					control.getRegulatedBusId() == null ? "" : control.getRegulatedBusId(),
+					control.getLineDropR(), control.getLineDropX(), control.getVLimit()));
 		}
 		return samples;
 	}
 
 	private PowerFlowControlResult runPowerFlowControlLoop(DistributionPowerFlowAlgorithm algorithm,
-			QstsStepContext context, boolean controlsEnabled, QstsRuntimeProfile profile) {
+			QstsStepContext context, boolean controlsEnabled, boolean steppedRegulatorControls,
+			QstsRuntimeProfile profile) {
 		List<QstsInverterControlSample> inverterControlSamples = Collections.emptyList();
 		boolean converged = false;
 		int powerFlowIterations = 0;
@@ -392,7 +600,15 @@ public class QstsStudy {
 			converged = algorithm.powerflow();
 			powerFlowIterations += algorithm.getIterationCount();
 			algorithm.setInitBusVoltageEnabled(false);
-			if(!converged || !controlsEnabled || inverterControls.isEmpty()) {
+			if(!converged || !controlsEnabled) {
+				return new PowerFlowControlResult(converged, inverterControlSamples, powerFlowIterations);
+			}
+			if(steppedRegulatorControls
+					&& qstsRegulatorTapControl.apply(network, regulatorControls, false)) {
+				algorithm.clearFixedPointYMatrixCache();
+				continue;
+			}
+			if(inverterControls.isEmpty()) {
 				return new PowerFlowControlResult(converged, inverterControlSamples, powerFlowIterations);
 			}
 			long inverterControlStartNanos = profile == null ? 0L : System.nanoTime();
@@ -496,25 +712,185 @@ public class QstsStudy {
 	}
 
 	private static void addGeneratorSample(List<QstsDevicePowerSample> samples, QstsStepContext context,
-			AclfGen3Phase generator) {
-		Complex3x1 power = generator.getPower3Phase(UnitType.PU);
-		addPower(samples, context, "generator", generator.getId(), "A", power == null ? null : power.a_0);
-		addPower(samples, context, "generator", generator.getId(), "B", power == null ? null : power.b_1);
-		addPower(samples, context, "generator", generator.getId(), "C", power == null ? null : power.c_2);
+			AclfGen3Phase generator, IBus3Phase bus) {
+		Complex3x1 power = generator instanceof OpenDSSStaticGenerator
+				? ((OpenDSSStaticGenerator) generator).getTerminalPower3Phase(bus.get3PhaseVotlages(), UnitType.PU)
+				: generator.getPower3Phase(UnitType.PU);
+		int phaseMask = phaseCodeMask(generator.getPhaseCode()) & activeBusPhaseMask(bus);
+		addPower(samples, context, "generator", generator.getId(), "A", power == null ? null : power.a_0,
+				phaseActive(phaseMask, 0));
+		addPower(samples, context, "generator", generator.getId(), "B", power == null ? null : power.b_1,
+				phaseActive(phaseMask, 1));
+		addPower(samples, context, "generator", generator.getId(), "C", power == null ? null : power.c_2,
+				phaseActive(phaseMask, 2));
 	}
 
 	private static void addVoltage(List<QstsBusVoltageSample> samples, QstsStepContext context,
-			String busId, String phase, Complex voltage) {
+			String busId, String phase, Complex voltage, boolean activePhase) {
+		if(!activePhase) {
+			return;
+		}
 		samples.add(new QstsBusVoltageSample(context.getStepIndex(), context.getHour(), busId, phase,
 				voltage == null ? Double.NaN : voltage.abs(),
 				voltage == null ? Double.NaN : Math.toDegrees(voltage.getArgument())));
 	}
 
 	private static void addPower(List<QstsDevicePowerSample> samples, QstsStepContext context,
-			String deviceClass, String deviceId, String phase, Complex power) {
+			String deviceClass, String deviceId, String phase, Complex power, boolean activePhase) {
+		if(!activePhase) {
+			return;
+		}
 		samples.add(new QstsDevicePowerSample(context.getStepIndex(), context.getHour(), deviceClass,
 				deviceId, phase, power == null ? Double.NaN : power.getReal(),
 				power == null ? Double.NaN : power.getImaginary()));
+	}
+
+	private void addBranchPowerSamples(List<QstsBranchPowerSample> samples,
+			QstsStepContext context, AclfBranch branch, int terminal, String busId, Complex3x1 power) {
+		int phaseMask = branch instanceof IBranch3Phase
+				? phaseCodeMask(((IBranch3Phase) branch).getPhaseCode()) : 0b111;
+		phaseMask = branchPowerPhaseMask(branch, terminal, phaseMask, power);
+		addBranchPowerSample(samples, context, branch, branchPowerTerminal(branch, terminal, 0), busId, "A",
+				power == null ? null : power.a_0, phaseActive(phaseMask, 0));
+		addBranchPowerSample(samples, context, branch, branchPowerTerminal(branch, terminal, 1), busId, "B",
+				power == null ? null : power.b_1, phaseActive(phaseMask, 1));
+		addBranchPowerSample(samples, context, branch, branchPowerTerminal(branch, terminal, 2), busId, "C",
+				power == null ? null : power.c_2, phaseActive(phaseMask, 2));
+	}
+
+	private void addBranchPowerSample(List<QstsBranchPowerSample> samples,
+			QstsStepContext context, AclfBranch branch, int terminal, String busId, String phase,
+			Complex power, boolean activePhase) {
+		if(!activePhase) {
+			return;
+		}
+		if(power == null || !Double.isFinite(power.getReal()) || !Double.isFinite(power.getImaginary())) {
+			return;
+		}
+		samples.add(new QstsBranchPowerSample(context.getStepIndex(), context.getHour(),
+				branchElementClass(branch), branchElementId(branch), terminal, busId, phase,
+				power.getReal(), power.getImaginary()));
+	}
+
+	private String branchElementClass(AclfBranch branch) {
+		String elementClass = this.branchElementClassByBranch.get(branch);
+		if(elementClass != null && !elementClass.isBlank()) {
+			return elementClass;
+		}
+		return branch.isXfr() ? "transformer" : "line";
+	}
+
+	private int branchPowerTerminal(AclfBranch branch, int defaultTerminal, int phaseIndex) {
+		if(defaultTerminal == 1) {
+			return defaultTerminal;
+		}
+		Map<Integer, Integer> terminalByPhase = this.branchPowerTerminalByPhase.get(branch);
+		if(terminalByPhase == null) {
+			return defaultTerminal;
+		}
+		return terminalByPhase.getOrDefault(phaseIndex, defaultTerminal);
+	}
+
+	private int branchPowerPhaseMask(AclfBranch branch, int terminal, int phaseCodeMask, Complex3x1 power) {
+		Map<Integer, Integer> terminalByPhase = this.branchPowerTerminalByPhase.get(branch);
+		if(terminalByPhase == null || terminalByPhase.isEmpty()) {
+			return phaseCodeMask | valuePhaseMask(power);
+		}
+		if(terminal == 1) {
+			return phaseCodeMask | valuePhaseMask(power);
+		}
+		return valuePhaseMask(power);
+	}
+
+	private static String branchElementId(AclfBranch branch) {
+		String name = branch.getName();
+		return name == null || name.isBlank() ? branch.getId() : name;
+	}
+
+	private static boolean isOpenDssSourceImpedanceBranch(AclfBranch branch) {
+		String name = branch.getName();
+		if(name == null || !name.toLowerCase(Locale.ROOT).startsWith("vsource_")) {
+			return false;
+		}
+		return branch.getFromBus() != null
+				&& branch.getFromBus().getId() != null
+				&& branch.getFromBus().getId().toLowerCase(Locale.ROOT).endsWith("_vsource");
+	}
+
+	private static int activeBusPhaseMask(IBus3Phase bus) {
+		int branchMask = connectedBranchPhaseMask(bus);
+		if(branchMask != 0) {
+			return branchMask;
+		}
+		int mask = 0;
+		for(AclfLoad3Phase load : bus.getPhaseLoadList()) {
+			mask |= phaseCodeMask(load.getPhaseCode());
+		}
+		for(AclfGen3Phase generator : bus.getPhaseGenList()) {
+			mask |= phaseCodeMask(generator.getPhaseCode());
+		}
+		return mask == 0 ? 0b111 : mask;
+	}
+
+	private static int connectedBranchPhaseMask(IBus3Phase bus) {
+		int mask = 0;
+		if(bus instanceof BaseAclfBus) {
+			for(Object branchObject : ((BaseAclfBus<?, ?>) bus).getBranchIterable()) {
+				if(branchObject instanceof Branch
+						&& ((Branch) branchObject).isActive()
+						&& branchObject instanceof IBranch3Phase) {
+					mask |= phaseCodeMask(((IBranch3Phase) branchObject).getPhaseCode());
+				}
+			}
+		}
+		return mask;
+	}
+
+	private static boolean phaseActive(int phaseMask, int phaseIndex) {
+		return (phaseMask & (1 << phaseIndex)) != 0;
+	}
+
+	private static int valuePhaseMask(Complex3x1 value) {
+		if(value == null) {
+			return 0;
+		}
+		int mask = 0;
+		if(value.a_0 != null && value.a_0.abs() > 1.0e-12) {
+			mask |= 0b001;
+		}
+		if(value.b_1 != null && value.b_1.abs() > 1.0e-12) {
+			mask |= 0b010;
+		}
+		if(value.c_2 != null && value.c_2.abs() > 1.0e-12) {
+			mask |= 0b100;
+		}
+		return mask;
+	}
+
+	private static int phaseCodeMask(PhaseCode phaseCode) {
+		String phase = phaseCode == null ? "ABC" : phaseCode.toString();
+		if("ABC".equals(phase)) {
+			return 0b111;
+		}
+		if("A".equals(phase)) {
+			return 0b001;
+		}
+		if("B".equals(phase)) {
+			return 0b010;
+		}
+		if("C".equals(phase)) {
+			return 0b100;
+		}
+		if("AB".equals(phase)) {
+			return 0b011;
+		}
+		if("AC".equals(phase)) {
+			return 0b101;
+		}
+		if("BC".equals(phase)) {
+			return 0b110;
+		}
+		return 0b111;
 	}
 
 	private static Complex add(Complex left, Complex right) {
@@ -549,12 +925,24 @@ public class QstsStudy {
 		private final boolean converged;
 		private final List<QstsInverterControlSample> inverterControlSamples;
 		private final int powerFlowIterations;
+		private final boolean reusedSolvedState;
 
 		private PowerFlowControlResult(boolean converged,
 				List<QstsInverterControlSample> inverterControlSamples, int powerFlowIterations) {
+			this(converged, inverterControlSamples, powerFlowIterations, false);
+		}
+
+		private PowerFlowControlResult(boolean converged,
+				List<QstsInverterControlSample> inverterControlSamples, int powerFlowIterations,
+				boolean reusedSolvedState) {
 			this.converged = converged;
 			this.inverterControlSamples = inverterControlSamples;
 			this.powerFlowIterations = powerFlowIterations;
+			this.reusedSolvedState = reusedSolvedState;
+		}
+
+		private static PowerFlowControlResult reusedSolvedState() {
+			return new PowerFlowControlResult(true, Collections.emptyList(), 0, true);
 		}
 	}
 
@@ -568,6 +956,7 @@ public class QstsStudy {
 		private int steps;
 		private int convergedSteps;
 		private int powerFlowIterations;
+		private int reusedPowerFlowSteps;
 
 		private static QstsRuntimeProfile enabled() {
 			return Boolean.getBoolean("ipss.qsts.profile") ? new QstsRuntimeProfile() : null;
@@ -585,9 +974,12 @@ public class QstsStudy {
 			controlsNanos += nanos;
 		}
 
-		private void addPowerFlow(long nanos, int iterations) {
+		private void addPowerFlow(long nanos, int iterations, boolean reusedSolvedState) {
 			powerFlowNanos += nanos;
 			powerFlowIterations += iterations;
+			if(reusedSolvedState) {
+				reusedPowerFlowSteps++;
+			}
 		}
 
 		private void addOutputs(long nanos) {
@@ -608,6 +1000,8 @@ public class QstsStudy {
 					Integer.valueOf(steps), Integer.valueOf(convergedSteps),
 					Integer.valueOf(powerFlowIterations), Double.valueOf(powerFlowIterations / (double) divisor),
 					Double.valueOf(toMillis(setupNanos)));
+			System.out.printf("[QSTS profile] reused_powerflow_steps=%d%n",
+					Integer.valueOf(reusedPowerFlowSteps));
 			System.out.printf("[QSTS profile] per_step_ms total=%.6f state_apply=%.6f controls=%.6f powerflow=%.6f outputs=%.6f%n",
 					Double.valueOf(toMillis(totalStepNanos) / divisor),
 					Double.valueOf(toMillis(stateApplyNanos) / divisor),
