@@ -785,6 +785,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		FIXED_POINT_PROFILE.addMatrixBusCache(FIXED_POINT_PROFILE.elapsed(busCacheStart));
 		PrimitiveComplex3x3Equation primitiveMatrix = yMatrix instanceof PrimitiveComplex3x3Equation
 				? (PrimitiveComplex3x3Equation) yMatrix : null;
+		normalizeInactivePhaseVoltages(busCache.activeBuses);
 		PrimitiveFixedPointState primitiveState = primitiveMatrix instanceof PrimitiveComplex3x3ArrayEquation
 				&& primitiveVoltageStateEligible(busCache)
 						? fixedPointPrimitiveState(busCache, distNet.getNoBus()) : null;
@@ -901,6 +902,24 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			this.fixedPointPrimitiveStateCacheBusCount = busCount;
 		}
 		return state;
+	}
+
+	private void normalizeInactivePhaseVoltages(List<FixedPointBus> buses) {
+		for(FixedPointBus bus : buses) {
+			Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
+			if(voltage == null) {
+				continue;
+			}
+			if(!bus.phaseActive(0)) {
+				voltage.a_0 = Complex.ZERO;
+			}
+			if(!bus.phaseActive(1)) {
+				voltage.b_1 = Complex.ZERO;
+			}
+			if(!bus.phaseActive(2)) {
+				voltage.c_2 = Complex.ZERO;
+			}
+		}
 	}
 
 	private void updateFixedPointPostSolveOutputs() {
