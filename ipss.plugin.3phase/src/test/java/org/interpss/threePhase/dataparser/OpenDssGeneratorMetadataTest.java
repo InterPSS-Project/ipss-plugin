@@ -9,7 +9,9 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
+import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticGenerator;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSGeneratorModel;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSLoadShape;
 import org.interpss.threePhase.dataParser.opendss.timeseries.OpenDSSProfileBinding;
@@ -22,6 +24,8 @@ import org.interpss.threePhase.qsts.QstsScheduleData;
 import org.interpss.threePhase.qsts.QstsStateApplier;
 import org.interpss.threePhase.qsts.QstsStepContext;
 import org.junit.jupiter.api.Test;
+
+import org.apache.commons.math3.complex.Complex;
 
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.threephase.AclfGen3Phase;
@@ -66,6 +70,28 @@ public class OpenDssGeneratorMetadataTest {
 				.findFirst()
 				.orElseThrow();
 		assertEquals("pvcurve", qstsBinding.getProfileId("duty"));
+	}
+
+	@Test
+	void parsedStaticGeneratorUsesOpenDssVoltageLimitFallbackForTerminalPower() {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		assertTrue(parser.getGeneratorParser().parseGeneratorData(
+				"New generator.G1 Bus1=m1026866 kV=12.47 kW=360 pf=1.0 model=1",
+				"P174_Run_360kW_PV.DSS", 15));
+
+		AclfGen3Phase parsed = parser.getStaticNetwork().getBus("m1026866").getPhaseGenList().get(0);
+		assertTrue(parsed instanceof OpenDSSStaticGenerator);
+		OpenDSSStaticGenerator generator = (OpenDSSStaticGenerator) parsed;
+		Complex3x1 terminalPower = generator.getTerminalPower3Phase(new Complex3x1(
+				new Complex(0.85, 0.0), new Complex(0.89, 0.0), new Complex(1.0, 0.0)),
+				UnitType.PU);
+
+		double phasePower = 360.0 / 3.0 / parser.getStaticNetwork().getBaseKva();
+		assertEquals(phasePower * Math.pow(0.85 / 0.9, 2.0),
+				terminalPower.a_0.getReal(), 1.0e-12);
+		assertEquals(phasePower * Math.pow(0.89 / 0.9, 2.0),
+				terminalPower.b_1.getReal(), 1.0e-12);
+		assertEquals(phasePower, terminalPower.c_2.getReal(), 1.0e-12);
 	}
 
 	@Test
