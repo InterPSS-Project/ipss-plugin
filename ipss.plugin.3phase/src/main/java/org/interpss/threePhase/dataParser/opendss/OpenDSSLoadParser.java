@@ -241,8 +241,8 @@ public class OpenDSSLoadParser {
 
 			//load model type
 			if(modelType==1){
-				//TODO extend AclfLoadCode instead of introducing a new load model type
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_P);
+				setOpenDssLoadModel(load, modelType, cvrWatts, cvrVars, zipv);
 			}
 			else if(modelType==2){
 				setLoadPower(load, phaseNum, phase1, phase2, loadPQ, AclfLoadCode.CONST_Z);
