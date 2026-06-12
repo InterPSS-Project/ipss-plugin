@@ -235,6 +235,40 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	@Test
+	@Disabled("Diagnostic only: prints selected IEEE8500 branch Y blocks in physical units")
+	public void ieee8500SelectedBranchPhysicalYDiagnostic() throws IOException {
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS-QSTS-PV-Duty.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		for(String branchName : List.of("ln6504020-2", "ln6504018-1", "ln6318761-1",
+				"ln6167731-2", "ln5480058-1", "hvmv_sub", "feeder_rega",
+				"t228532641a", "tpx228532641a0")) {
+			Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), branchName);
+			assertNotNull(branch, "Missing selected IEEE8500 branch: " + branchName);
+			System.out.println("SELECTED_BRANCH_Y name=" + branchName
+					+ " id=" + branch.getId()
+					+ " phase=" + branch.getPhaseCode()
+					+ " line=" + branch.isLine()
+					+ " xfr=" + branch.isXfr()
+					+ " explicit=" + branch.hasExplicitYabc()
+					+ " fromBaseV=" + branch.getFromBus().getBaseVoltage()
+					+ " toBaseV=" + branch.getToBus().getBaseVoltage()
+					+ " fromTap=" + branch.getFromTurnRatio()
+					+ " toTap=" + branch.getToTurnRatio());
+			printStaticPhysicalYBlock("  yff", branch.getYffabc(), branch.getFromBus().getBaseVoltage(),
+					branch.getFromBus().getBaseVoltage(), parser.getStaticNetwork().getBaseKva());
+			printStaticPhysicalYBlock("  yft", branch.getYftabc(), branch.getFromBus().getBaseVoltage(),
+					branch.getToBus().getBaseVoltage(), parser.getStaticNetwork().getBaseKva());
+			printStaticPhysicalYBlock("  ytf", branch.getYtfabc(), branch.getToBus().getBaseVoltage(),
+					branch.getFromBus().getBaseVoltage(), parser.getStaticNetwork().getBaseKva());
+			printStaticPhysicalYBlock("  ytt", branch.getYttabc(), branch.getToBus().getBaseVoltage(),
+					branch.getToBus().getBaseVoltage(), parser.getStaticNetwork().getBaseKva());
+		}
+	}
+
+	@Test
 	@Disabled("Diagnostic only: prints Ckt24 floating phase components for Y-matrix investigation")
 	public void ckt24YMatrixComponentAudit() throws IOException {
 		OpenDSSDataParser parser = new OpenDSSDataParser();
@@ -605,6 +639,25 @@ public class OpenDssParserPowerFlowComparisonTest {
 		return Math.max(
 				Math.max(branch.getYffabc().absMax(), branch.getYftabc().absMax()),
 				Math.max(branch.getYtfabc().absMax(), branch.getYttabc().absMax()));
+	}
+
+	private static void printStaticPhysicalYBlock(String label, Complex3x3 ypu, double rowBaseV,
+			double colBaseV, double baseKva) {
+		double scale = baseKva <= 0.0 ? 1.0 : baseKva / 1000.0 / ((rowBaseV * 1.0e-3) * (colBaseV * 1.0e-3));
+		System.out.println(label + " physicalS scale=" + scale);
+		System.out.println("    [" + complexString(ypu.aa.multiply(scale)) + ", "
+				+ complexString(ypu.ab.multiply(scale)) + ", "
+				+ complexString(ypu.ac.multiply(scale)) + "]");
+		System.out.println("    [" + complexString(ypu.ba.multiply(scale)) + ", "
+				+ complexString(ypu.bb.multiply(scale)) + ", "
+				+ complexString(ypu.bc.multiply(scale)) + "]");
+		System.out.println("    [" + complexString(ypu.ca.multiply(scale)) + ", "
+				+ complexString(ypu.cb.multiply(scale)) + ", "
+				+ complexString(ypu.cc.multiply(scale)) + "]");
+	}
+
+	private static String complexString(Complex value) {
+		return String.format(Locale.US, "%.12g%+.12gj", value.getReal(), value.getImaginary());
 	}
 
 	private static Static3PBranch findStaticBranchByName(Static3PNetwork distNet, String branchName) {
@@ -1127,16 +1180,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 		powerFlow.setTolerance(1.0e-4);
 		assertTrue(powerFlow.powerflow(), "Power flow failed, iterations=" + powerFlow.getIterationCount());
 
-		printPhasePathBranchCurrents(distNet, "hvmv_sub_hsb", "m1166366", 3);
-		printPhasePathBranchCurrents(distNet, "m1166366", "l2862616", 3);
-		printThreePhaseCurrentBalance(distNet, "hvmv_sub_hsb");
-		printThreePhaseCurrentBalance(distNet, "regxfmr_hvmv_sub_lsb");
-		printThreePhaseCurrentBalance(distNet, "_hvmv_sub_lsb");
-		printThreePhaseCurrentBalance(distNet, "hvmv_sub_48332");
-		printThreePhaseCurrentBalance(distNet, "q16483");
-		printThreePhaseCurrentBalance(distNet, "q16483_cap");
-		printThreePhaseCurrentBalance(distNet, "q16642");
-		printThreePhaseCurrentBalance(distNet, "q16642_cap");
+		printPhasePathBranchCurrents(distNet, "_hvmv_sub_lsb", "m1047404", 1);
 	}
 
 	@Test
@@ -1220,6 +1264,24 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"ln81048089-1",
 				"ln81048109-1"}) {
 			printPhysicalBranchYDiagnostic(distNet, branchName);
+		}
+	}
+
+	@Test
+	@Disabled("Diagnostic only: prints InterPSS static Y blocks for IEEE8500 suspect service path")
+	public void ieee8500SuspectServiceStaticYprimDiagnostic() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/IEEE8500", "Master-InterPSS-QSTS-PV-Duty.dss", true);
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		for(String branchName : new String[] {
+				"hvmv_sub_hsb",
+				"hvmv_sub",
+				"feeder_rega",
+				"feeder_regb",
+				"feeder_regc",
+				"t21373784a",
+				"tpx21373784a0"}) {
+			printStaticPhysicalBranchYDiagnostic(distNet, branchName);
 		}
 	}
 
@@ -2610,6 +2672,26 @@ public class OpenDssParserPowerFlowComparisonTest {
 				+ " type=" + (branch.isXfr() ? "xfr" : "line")
 				+ " from=" + fromBus.getId() + " baseVll=" + fromVbase
 				+ " to=" + toBus.getId() + " baseVll=" + toVbase);
+		printPhysicalYBlock("  Yff phys", branch.getYffabc(), baseVa, fromVbase, fromVbase);
+		printPhysicalYBlock("  Yft phys", branch.getYftabc(), baseVa, fromVbase, toVbase);
+		printPhysicalYBlock("  Ytf phys", branch.getYtfabc(), baseVa, toVbase, fromVbase);
+		printPhysicalYBlock("  Ytt phys", branch.getYttabc(), baseVa, toVbase, toVbase);
+	}
+
+	private static void printStaticPhysicalBranchYDiagnostic(Static3PNetwork distNet, String branchName) {
+		Static3PBranch branch = findStaticBranchByName(distNet, branchName);
+		assertNotNull(branch, "Missing static physical branch Y diagnostic target: " + branchName);
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		double fromVbase = branch.getFromBus().getBaseVoltage();
+		double toVbase = branch.getToBus().getBaseVoltage();
+
+		System.out.println("IEEE8500 static physical branch Y diagnostic: " + branchName
+				+ " id=" + branch.getId()
+				+ " name=" + branch.getName()
+				+ " phase=" + branch.getPhaseCode()
+				+ " type=" + (branch.isXfr() ? "xfr" : "line")
+				+ " from=" + branch.getFromBus().getId() + " baseVll=" + fromVbase
+				+ " to=" + branch.getToBus().getId() + " baseVll=" + toVbase);
 		printPhysicalYBlock("  Yff phys", branch.getYffabc(), baseVa, fromVbase, fromVbase);
 		printPhysicalYBlock("  Yft phys", branch.getYftabc(), baseVa, fromVbase, toVbase);
 		printPhysicalYBlock("  Ytf phys", branch.getYtfabc(), baseVa, toVbase, fromVbase);
