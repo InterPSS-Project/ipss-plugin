@@ -104,6 +104,30 @@ public class OpenDssTimeSeriesMetadataTest {
 	}
 
 	@Test
+	void loadShapeUsesOpenDssEffectiveNpts() {
+		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
+
+		assertTrue(parser.getLoadShapeParser().parseLoadShape(
+				"New LoadShape.short npts=2 interval=1 mult=(1.0 1.1 1.2)",
+				"testData/feeder", "Master.dss", 14));
+		assertTrue(parser.getLoadShapeParser().parseLoadShape(
+				"New LoadShape.long npts=4 interval=1 mult=(0.7 0.8 0.9)",
+				"testData/feeder", "Master.dss", 15));
+
+		OpenDSSLoadShape shortShape = parser.getTimeSeriesData().getShapeRegistry().get("short");
+		assertNotNull(shortShape);
+		assertEquals(2, shortShape.getNpts());
+		assertEquals(2, shortShape.getPointCount());
+		assertArrayEquals(new double[] {1.0, 1.1}, shortShape.getPMult(), 1.0e-12);
+
+		OpenDSSLoadShape longShape = parser.getTimeSeriesData().getShapeRegistry().get("long");
+		assertNotNull(longShape);
+		assertEquals(3, longShape.getNpts());
+		assertEquals(3, longShape.getPointCount());
+		assertArrayEquals(new double[] {0.7, 0.8, 0.9}, longShape.getPMult(), 1.0e-12);
+	}
+
+	@Test
 	void capturesLoadProfileBindingsWithoutChangingStaticLoad() throws InterpssException {
 		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
