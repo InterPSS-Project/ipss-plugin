@@ -65,6 +65,7 @@ public class QstsStudy {
 	private final QstsControlQueue controlQueue = new QstsControlQueue();
 	private final Map<String, Integer> operationCountByControlKey = new java.util.LinkedHashMap<>();
 	private Map<AclfBranch, String> branchElementClassByBranch = Collections.emptyMap();
+	private Map<AclfBranch, Map<Integer, Integer>> branchPowerTerminalByPhase = Collections.emptyMap();
 
 	private QstsStudy(INetwork3Phase network, QstsScheduleData scheduleData) {
 		if(network == null) {
@@ -130,6 +131,17 @@ public class QstsStudy {
 		}
 		else {
 			this.branchElementClassByBranch = new IdentityHashMap<>(branchElementClassByBranch);
+		}
+		return this;
+	}
+
+	public QstsStudy setBranchPowerTerminalByPhase(
+			Map<AclfBranch, Map<Integer, Integer>> branchPowerTerminalByPhase) {
+		if(branchPowerTerminalByPhase == null || branchPowerTerminalByPhase.isEmpty()) {
+			this.branchPowerTerminalByPhase = Collections.emptyMap();
+		}
+		else {
+			this.branchPowerTerminalByPhase = new IdentityHashMap<>(branchPowerTerminalByPhase);
 		}
 		return this;
 	}
@@ -725,12 +737,12 @@ public class QstsStudy {
 			QstsStepContext context, AclfBranch branch, int terminal, String busId, Complex3x1 power) {
 		int phaseMask = branch instanceof IBranch3Phase
 				? phaseCodeMask(((IBranch3Phase) branch).getPhaseCode()) : 0b111;
-		phaseMask |= valuePhaseMask(power);
-		addBranchPowerSample(samples, context, branch, terminal, busId, "A",
+		phaseMask = branchPowerPhaseMask(branch, terminal, phaseMask, power);
+		addBranchPowerSample(samples, context, branch, branchPowerTerminal(branch, terminal, 0), busId, "A",
 				power == null ? null : power.a_0, phaseActive(phaseMask, 0));
-		addBranchPowerSample(samples, context, branch, terminal, busId, "B",
+		addBranchPowerSample(samples, context, branch, branchPowerTerminal(branch, terminal, 1), busId, "B",
 				power == null ? null : power.b_1, phaseActive(phaseMask, 1));
-		addBranchPowerSample(samples, context, branch, terminal, busId, "C",
+		addBranchPowerSample(samples, context, branch, branchPowerTerminal(branch, terminal, 2), busId, "C",
 				power == null ? null : power.c_2, phaseActive(phaseMask, 2));
 	}
 
@@ -754,6 +766,28 @@ public class QstsStudy {
 			return elementClass;
 		}
 		return branch.isXfr() ? "transformer" : "line";
+	}
+
+	private int branchPowerTerminal(AclfBranch branch, int defaultTerminal, int phaseIndex) {
+		if(defaultTerminal == 1) {
+			return defaultTerminal;
+		}
+		Map<Integer, Integer> terminalByPhase = this.branchPowerTerminalByPhase.get(branch);
+		if(terminalByPhase == null) {
+			return defaultTerminal;
+		}
+		return terminalByPhase.getOrDefault(phaseIndex, defaultTerminal);
+	}
+
+	private int branchPowerPhaseMask(AclfBranch branch, int terminal, int phaseCodeMask, Complex3x1 power) {
+		Map<Integer, Integer> terminalByPhase = this.branchPowerTerminalByPhase.get(branch);
+		if(terminalByPhase == null || terminalByPhase.isEmpty()) {
+			return phaseCodeMask | valuePhaseMask(power);
+		}
+		if(terminal == 1) {
+			return phaseCodeMask | valuePhaseMask(power);
+		}
+		return valuePhaseMask(power);
 	}
 
 	private static String branchElementId(AclfBranch branch) {
