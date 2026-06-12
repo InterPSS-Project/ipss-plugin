@@ -1,0 +1,9 @@
+New Circuit.InvControlMini basekv=12.47 pu=1.00 phases=3 bus1=source
+New XYCurve.MyPvsT npts=2 xarray=[0 100] yarray=[1 1]
+New XYCurve.MyEff npts=2 xarray=[0 1] yarray=[1 1]
+New Loadshape.PVDuty npts=3 interval=1 mult=[1.0 0.5 0.8]
+New Line.feeder bus1=source.1.2.3 bus2=pvbus.1.2.3 phases=3 r1=0.001 x1=0.001 r0=0.001 x0=0.001 length=1 units=kft
+New Load.load1 bus1=pvbus.1.2.3 phases=3 conn=wye kv=12.47 kw=100 kvar=20 model=1
+New PVSystem.PV phases=3 bus1=pvbus kV=12.47 kVA=600 Pmpp=500 irrad=1 temperature=25 PF=1 effcurve=MyEff P-TCurve=MyPvsT kvarMax=200 kvarMaxAbs=200 duty=PVDuty
+New XYCurve.WPF npts=2 xarray=[0 500] yarray=[0.9 0.9]
+New InvControl.inv DERList=(PVSystem.PV) mode=WATTPF wattpf_curve=WPF EventLog=yes

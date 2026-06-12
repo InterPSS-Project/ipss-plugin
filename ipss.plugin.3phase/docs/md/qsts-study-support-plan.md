@@ -517,8 +517,27 @@ this document or `opendss-feeder-benchmark-findings.md`.
   - enabled-state updates
   - whether any reference feeders use reactor switching through script,
     `SwtControl`, or another controller.
-- [ ] Create a source-note table mapping each OpenDSS source behavior to the
+- [x] Create a source-note table mapping each OpenDSS source behavior to the
   intended InterPSS adaptation.
+
+Reference behavior mapping for the static QSTS implementation:
+
+| OpenDSS behavior area | Behavior to preserve | InterPSS static/QSTS adaptation | Current coverage |
+|---|---|---|---|
+| `RegControl` monitored voltage | Evaluate controlled-terminal or remote-bus voltage in engineering units, compare against band/target, then convert the requested movement into discrete tap steps with tap limits. | Keep regulator metadata in generic `RegulatorControlData`; execute tap changes through the static transformer/regulator model and rerun static PF when tap state changes. No DStab exciter, machine, or dynamic Y contribution is part of this path. | IEEE123 and large-feeder parser/PF comparisons plus QSTS regulator performance regressions. |
+| `RegControl` delay/queue | In time/event control modes, tap actions are queued and applied on a later control pass/time boundary rather than immediately changing state. | Use `QstsControlQueue` for delayed control actions and keep immediate static mode separate from delayed time/event mode. Regulator delayed action parity remains a larger migration slice after static transformer/regulator cleanup. | Queue primitive coverage; capacitor delayed queue regression now checked. |
+| `CapControl` signal calculation | Support voltage/current/kvar/PF decision signals, including PT/CT ratios, terminal selection, voltage override, and phase selection through AVG/MIN/MAX or explicit phase. | Parse OpenDSS names into `CapacitorControlData`; evaluate solved static bus voltages and static branch currents in `CapacitorBankControl`; switch the static capacitor load representation and rerun static PF in enabled control modes. | `OpenDssCapControlMiniComparisonTest` covers voltage, current, kvar, PF, voltage override, PTPhase, and CTPhase mini cases. |
+| `CapControl` delayed switching | Preserve state carryover and operation counts; queued open/close actions execute at or after their scheduled time and should not double-count repeated scheduled state. | `QstsControlQueue` stores capacitor switch actions keyed by control/capacitor and `QstsCapacitorStateSample` records closed state, kvar, and cumulative operation count. | `DelayedHighVoltageOpen.dss` plus `capcontrol-delayed-dss-python-operation-reference.csv`. |
+| `ControlQueue` mode split | `controlmode=off` disables controls, static applies immediate control iteration, and time/event modes use queued actions constrained by `maxcontrol` style limits. | `QstsControlMode` controls whether `QstsStudy` disables controls, runs immediate PF/control loops, or processes delayed queue actions by QSTS hour. `maxControlIterations` bounds the static control loop. | QSTS unit tests for controls-off/static/time paths; mini DSS-Python delayed CapControl coverage. |
+| `Reactor` admittance/state | Reactor state affects the static admittance model; shunt/series connection and enabled state must be reflected before solved powers/voltages are accepted. | Keep reactor parsing and admittance contribution on the static network side. Add switched-reactor behavior only through a generic static state controller once feeder examples or mini DSS-Python references define the required semantics. | Parser/PF comparisons include static reactor handling where present; switched-reactor QSTS remains open. |
+
+Source/reference anchors:
+
+- EPRI OpenDSS control documentation for RegControl, CapControl phasing, and
+  Reactor properties.
+- DSS-Extensions control and Reactor property references.
+- DSS C-API / DSS-Extensions source repository, which carries the Pascal
+  OpenDSS-derived source used by DSS-Python.
 
 ## Implementation Progress Summary
 
@@ -538,9 +557,10 @@ Completed or established:
   transformers, regulators, capacitors, reactors, loads, PV, and storage are
   materialized without DStab objects.
 - Control foundation:
-  capacitor controls are implemented for the static PF path with DSS-Python
-  mini-case coverage; inverter and storage controls remain staged after their
-  static model foundations.
+  capacitor controls are implemented for the static PF and QSTS paths with
+  DSS-Python mini-case coverage, including delayed control-queue operation
+  counts; inverter and storage controls remain staged after their static model
+  foundations.
 - Regulator performance foundation:
   regulator tap QSTS uses symbolic factorization reuse and in-place sparse
   matrix value updates as the default method. Direct RHS compensation,
@@ -553,14 +573,11 @@ Completed or established:
 
 Next high-value slices:
 
-1. Add the QSTS DSS-Python reference harness for multi-step load/PV/storage
-   cases so time-series semantics are tested step by step.
-2. Finish delayed control-queue operation-count parity for capacitor controls.
-3. Implement inverter control setpoint modes on top of the static `IPhaseGen`
+1. Implement inverter control setpoint modes on top of the static `IPhaseGen`
    capability model.
-4. Wire scheduled storage dispatch through `QstsStateApplier`, including energy
+2. Wire scheduled storage dispatch through `QstsStateApplier`, including energy
    carryover between steps.
-5. Begin `QstsBaseCase`, `QstsPreparedSchedule`, and factorization-cache work
+3. Begin `QstsBaseCase`, `QstsPreparedSchedule`, and factorization-cache work
    only after the exact QSTS reference path has stable mini-case coverage.
 
 ## Milestones
@@ -644,8 +661,10 @@ Verification:
   - OpenDSS load models `1`, `4`, and `8` under a shape.
 - [ ] Add Python reference export helper for multi-step voltage and load-power
   CSVs.
-- [ ] Add enabled Java regressions comparing InterPSS time-series results to
+- [x] Add enabled Java regressions comparing InterPSS time-series results to
   checked-in DSS-Python references.
+  - `OpenDssQstsMultiStepReferenceTest` compares load, PVSystem, and storage
+    terminal P/Q against `qsts-multistep-dss-python-device-reference.csv`.
 
 Verification:
 
@@ -653,15 +672,17 @@ Verification:
 
 ### TS6: Feeder Smoke Tests
 
-- [ ] Run Ckt7 yearly first 24 steps with controls off.
-- [ ] Run Ckt24 first 24 or 168 steps with controls off after shape parsing is
-  stable.
+- [ ] Run controlled Ckt7 yearly first 24 steps with `controlmode=static`,
+  RegControl enabled, and CapControl enabled. Controls-off runs are diagnostic
+  only.
+- [ ] Run controlled Ckt24 first 24 or 168 steps after shape parsing is stable,
+  then compare against DSS-Python bus voltages and branch flows at every step.
 - [ ] Export per-step worst voltage error and convergence table.
 - [ ] Document residual patterns in `opendss-feeder-benchmark-findings.md`.
 
 Verification:
 
-- Controls-off feeder runs converge across the selected step window.
+- Controlled feeder runs converge across the selected step window.
 - Worst errors are stable and explainable by already-known static modeling
   gaps, not time-series state application bugs.
 
@@ -691,18 +712,19 @@ Verification:
 
 ### TS7b: Capacitor Controls
 
-- [ ] Parse CapControl properties: controlled capacitor, monitored element,
+- [x] Parse CapControl properties: controlled capacitor, monitored element,
   terminal, type, ON/OFF settings, CT/PT ratios, delays, voltage override,
   `Vmax`, `Vmin`, `CTPhase`, and `PTPhase`.
-- [ ] Implement voltage, current, kvar, PF, and time control modes in priority
+- [x] Implement voltage, current, kvar, PF, and time control modes in priority
   order guided by OpenDSS source behavior.
-- [ ] Implement capacitor state updates and export per-step states/kvar.
-- [ ] Add DSS-Python mini cases for:
+- [x] Implement capacitor state updates and export per-step states/kvar.
+- [x] Add DSS-Python mini cases for:
   - voltage ON/OFF switching
   - current switching
   - kvar/PF switching
   - PTPhase/CTPhase AVG/MAX/MIN behavior
-  - voltage override.
+  - voltage override
+  - delayed control-queue operation count.
 
 Verification:
 
@@ -750,6 +772,9 @@ Verification:
     engineering-unit curves before `InverterGenAdapter` evaluates them.
 - [x] Apply P/Q injections per step with consistent sign conventions for
   scheduled generic generator/PV/storage metadata.
+- [x] Add storage SOC reference rows for scheduled charge/discharge.
+  - The storage mini case compares cumulative stored kWh/SOC through
+    `QstsStorageStateStore` while `StorageController` remains deferred.
 - [x] Add DSS-Python-backed InvControl mini references for `VOLTVAR`,
   `VOLTWATT`, `WATTPF`, and `WATTVAR`.
   - These compare PVSystem terminal P/Q before bus voltages.
@@ -757,8 +782,10 @@ Verification:
     control details are investigated beyond the generic QSTS control loop.
 - [x] Add QSTS inverter PF/control iteration so inverter setpoint changes can
   trigger another PF solve within `maxControlIterations`.
-- [ ] Add PV duty-curve QSTS mini case using IEEE8500-style data and checked-in
+- [x] Add PV duty-curve QSTS mini case using IEEE8500-style data and checked-in
   DSS-Python terminal P/Q references.
+  - `DutyWattPF.dss` exercises duty-mode PV output with enabled `WATTPF`
+    inverter control and per-step terminal P/Q comparison.
 
 Verification:
 
@@ -782,7 +809,8 @@ Minimum enabled regression set for v1:
 - Effective load P/Q mini tests.
 - DSS-Python-backed two-bus daily shape voltage comparison.
 - DSS-Python-backed low-voltage CVR/ZIP shaped-load comparison.
-- Ckt7 first-day controls-off smoke test.
+- Ckt7 first-day controlled smoke test, with controls-off retained only as a
+  frozen-state diagnostic.
 
 ## Open Questions
 

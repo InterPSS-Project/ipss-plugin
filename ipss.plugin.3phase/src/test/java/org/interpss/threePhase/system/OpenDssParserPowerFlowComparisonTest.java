@@ -235,6 +235,40 @@ public class OpenDssParserPowerFlowComparisonTest {
 	}
 
 	@Test
+	@Disabled("Diagnostic only: prints selected IEEE8500 branch Y blocks in physical units")
+	public void ieee8500SelectedBranchPhysicalYDiagnostic() throws IOException {
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE8500", "Master-InterPSS-QSTS-PV-Duty.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
+
+		for(String branchName : List.of("ln6504020-2", "ln6504018-1", "ln6318761-1",
+				"ln6167731-2", "ln5480058-1", "hvmv_sub", "feeder_rega",
+				"t228532641a", "tpx228532641a0")) {
+			Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), branchName);
+			assertNotNull(branch, "Missing selected IEEE8500 branch: " + branchName);
+			System.out.println("SELECTED_BRANCH_Y name=" + branchName
+					+ " id=" + branch.getId()
+					+ " phase=" + branch.getPhaseCode()
+					+ " line=" + branch.isLine()
+					+ " xfr=" + branch.isXfr()
+					+ " explicit=" + branch.hasExplicitYabc()
+					+ " fromBaseV=" + branch.getFromBus().getBaseVoltage()
+					+ " toBaseV=" + branch.getToBus().getBaseVoltage()
+					+ " fromTap=" + branch.getFromTurnRatio()
+					+ " toTap=" + branch.getToTurnRatio());
+			printStaticPhysicalYBlock("  yff", branch.getYffabc(), branch.getFromBus().getBaseVoltage(),
+					branch.getFromBus().getBaseVoltage(), parser.getStaticNetwork().getBaseKva());
+			printStaticPhysicalYBlock("  yft", branch.getYftabc(), branch.getFromBus().getBaseVoltage(),
+					branch.getToBus().getBaseVoltage(), parser.getStaticNetwork().getBaseKva());
+			printStaticPhysicalYBlock("  ytf", branch.getYtfabc(), branch.getToBus().getBaseVoltage(),
+					branch.getFromBus().getBaseVoltage(), parser.getStaticNetwork().getBaseKva());
+			printStaticPhysicalYBlock("  ytt", branch.getYttabc(), branch.getToBus().getBaseVoltage(),
+					branch.getToBus().getBaseVoltage(), parser.getStaticNetwork().getBaseKva());
+		}
+	}
+
+	@Test
 	@Disabled("Diagnostic only: prints Ckt24 floating phase components for Y-matrix investigation")
 	public void ckt24YMatrixComponentAudit() throws IOException {
 		OpenDSSDataParser parser = new OpenDSSDataParser();
@@ -397,6 +431,124 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"Ckt24 Vsource positive/zero sequence impedance should map to phase mutual X");
 	}
 
+	@Test
+	public void ckt24OverheadLineGeometryAddsOpenDssCapacitanceShunt() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
+
+		Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), "05410_339820oh");
+		assertNotNull(branch, "Missing Ckt24 overhead geometry line");
+		assertNotNull(branch.getFromShuntYabc(), "OpenDSS LineGeometry should create line charging shunt");
+
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double vbase = branch.getFromBus().getBaseVoltage();
+		Complex3x3 yFrom = physicalY(branch.getFromShuntYabc(), baseVa, vbase);
+		assertEquals(0.0, yFrom.aa.getReal(), 1.0e-12);
+		assertEquals(4.09366860e-7, yFrom.aa.getImaginary(), 1.0e-11);
+		assertEquals(-1.12101718e-7, yFrom.ab.getImaginary(), 1.0e-11);
+		assertEquals(-5.50265960e-8, yFrom.ac.getImaginary(), 1.0e-11);
+		assertEquals(4.39535181e-7, yFrom.bb.getImaginary(), 1.0e-11);
+		assertEquals(-1.12101718e-7, yFrom.bc.getImaginary(), 1.0e-11);
+		assertEquals(4.09366860e-7, yFrom.cc.getImaginary(), 1.0e-11);
+	}
+
+	@Test
+	public void ckt24TwoPhaseLineGeometryRemapsCapacitanceShuntToBusPhases() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
+
+		Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), "05410_339602oh");
+		assertNotNull(branch, "Missing Ckt24 two-phase overhead geometry line");
+		assertEquals(PhaseCode.AC, branch.getPhaseCode(), "Ckt24 05410_339602OH should be an A-C line");
+
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double vbase = branch.getFromBus().getBaseVoltage();
+		Complex3x3 yFrom = physicalY(branch.getFromShuntYabc(), baseVa, vbase);
+		assertEquals(0.0, yFrom.ab.abs(), 1.0e-12,
+				"A-C line shunt should not populate A-B coupling");
+		assertEquals(0.0, yFrom.bb.abs(), 1.0e-12,
+				"A-C line shunt should not populate phase B");
+		assertEquals(1.68570107e-7, yFrom.aa.getImaginary(), 1.0e-11);
+		assertEquals(-4.86863946e-8, yFrom.ac.getImaginary(), 1.0e-11);
+		assertEquals(-4.86863946e-8, yFrom.ca.getImaginary(), 1.0e-11);
+		assertEquals(1.70951568e-7, yFrom.cc.getImaginary(), 1.0e-11);
+	}
+
+	@Test
+	public void ckt24LineGeometryUsesOpenDssInternalResistance() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", false);
+
+		Static3PBranch branch = findStaticBranchByName(parser.getStaticNetwork(), "05410_339569oh");
+		assertNotNull(branch, "Missing Ckt24 geometry line with 477 AAC conductors");
+
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double vbase = branch.getFromBus().getBaseVoltage();
+		double zbase = vbase * vbase / baseVa;
+		double lengthMiles = 140.1192 / 5280.0;
+		Complex3x3 zPerMile = branch.getZabc().multiply(zbase / lengthMiles);
+		assertEquals(0.268790556985, zPerMile.aa.getReal(), 1.0e-4);
+		assertEquals(0.0751911065091, zPerMile.ab.getReal(), 1.0e-4);
+		assertEquals(0.0742695945396, zPerMile.ac.getReal(), 1.0e-4);
+		assertEquals(0.270709060929, zPerMile.bb.getReal(), 1.0e-4);
+	}
+
+	@Test
+	public void ckt24SubstationTransformerParsesSpacedPercentRsContinuation() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", true);
+
+		Static3PBranch transformer = findStaticBranchByName(parser.getStaticNetwork(), "subxfmr");
+		assertNotNull(transformer, "Missing Ckt24 substation transformer");
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double fromVbase = transformer.getFromBus().getBaseVoltage();
+		double toVbase = transformer.getToBus().getBaseVoltage();
+
+		Complex yffAa = physicalY(transformer.getYffabc().aa, baseVa, fromVbase, fromVbase);
+		Complex yffAb = physicalY(transformer.getYffabc().ab, baseVa, fromVbase, fromVbase);
+		Complex yftAa = physicalY(transformer.getYftabc().aa, baseVa, fromVbase, toVbase);
+		Complex yftAb = physicalY(transformer.getYftabc().ab, baseVa, fromVbase, toVbase);
+		Complex yftAc = physicalY(transformer.getYftabc().ac, baseVa, fromVbase, toVbase);
+		Complex yttAa = physicalY(transformer.getYttabc().aa, baseVa, toVbase, toVbase);
+		assertEquals(0.0001203896, yffAa.getReal(), 1.0e-10);
+		assertEquals(-0.00533225602, yffAa.getImaginary(), 1.0e-10);
+		assertEquals(-0.0000601947999, yffAb.getReal(), 1.0e-10);
+		assertEquals(0.00266612801, yffAb.getImaginary(), 1.0e-10);
+		assertEquals(-0.000695069679, yftAa.getReal(), 1.0e-10);
+		assertEquals(0.0307857945, yftAa.getImaginary(), 1.0e-10);
+		assertEquals(0.000695069679, yftAb.getReal(), 1.0e-10);
+		assertEquals(-0.0307857945, yftAb.getImaginary(), 1.0e-10);
+		assertEquals(0.0, yftAc.abs(), 1.0e-12);
+		assertEquals(0.00809402625, yttAa.getReal(), 1.0e-10);
+		assertEquals(-0.355483735, yttAa.getImaginary(), 1.0e-10);
+
+		transformer.setToTurnRatio(1.0125);
+		Complex tappedYftAa = physicalY(transformer.getYftabc().aa, baseVa, fromVbase, toVbase);
+		Complex tappedYftAb = physicalY(transformer.getYftabc().ab, baseVa, fromVbase, toVbase);
+		Complex tappedYttAa = physicalY(transformer.getYttabc().aa, baseVa, toVbase, toVbase);
+		assertEquals(-0.000686488571, tappedYftAa.getReal(), 1.0e-10);
+		assertEquals(0.0304057230, tappedYftAa.getImaginary(), 1.0e-10);
+		assertEquals(0.000686488571, tappedYftAb.getReal(), 1.0e-10);
+		assertEquals(-0.0304057230, tappedYftAb.getImaginary(), 1.0e-10);
+		assertEquals(0.00789540741, tappedYttAa.getReal(), 1.0e-10);
+		assertEquals(-0.346760559, tappedYttAa.getImaginary(), 5.0e-8);
+	}
+
+	@Test
+	public void ckt24ServiceTransformerUsesOpenDssImagAsReactiveAdmittance() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/Ckt24", "master_ckt24_interpss.dss", true);
+
+		Static3PBranch transformer = findStaticBranchByName(parser.getStaticNetwork(), "05410_g2100nj9400");
+		assertNotNull(transformer, "Missing Ckt24 service transformer with %IMag");
+		double baseVa = parser.getStaticNetwork().getBaseKva() * 1000.0;
+		double toVbase = transformer.getToBus().getBaseVoltage();
+
+		Complex yttAa = physicalY(transformer.getYttabc().aa, baseVa, toVbase, toVbase);
+		assertEquals(11.0365662589, yttAa.getReal(), 1.0e-8);
+		assertEquals(-78.6265905048, yttAa.getImaginary(), 5.0e-6);
+	}
+
 	private static void printYMatrixComponentAudit(String label, DStabNetwork3Phase distNet) {
 		OpenDssDataQaUtils.YMatrixAudit audit = OpenDssDataQaUtils.yMatrixAudit(distNet);
 		System.out.println(audit.summary(label));
@@ -487,6 +639,25 @@ public class OpenDssParserPowerFlowComparisonTest {
 		return Math.max(
 				Math.max(branch.getYffabc().absMax(), branch.getYftabc().absMax()),
 				Math.max(branch.getYtfabc().absMax(), branch.getYttabc().absMax()));
+	}
+
+	private static void printStaticPhysicalYBlock(String label, Complex3x3 ypu, double rowBaseV,
+			double colBaseV, double baseKva) {
+		double scale = baseKva <= 0.0 ? 1.0 : baseKva / 1000.0 / ((rowBaseV * 1.0e-3) * (colBaseV * 1.0e-3));
+		System.out.println(label + " physicalS scale=" + scale);
+		System.out.println("    [" + complexString(ypu.aa.multiply(scale)) + ", "
+				+ complexString(ypu.ab.multiply(scale)) + ", "
+				+ complexString(ypu.ac.multiply(scale)) + "]");
+		System.out.println("    [" + complexString(ypu.ba.multiply(scale)) + ", "
+				+ complexString(ypu.bb.multiply(scale)) + ", "
+				+ complexString(ypu.bc.multiply(scale)) + "]");
+		System.out.println("    [" + complexString(ypu.ca.multiply(scale)) + ", "
+				+ complexString(ypu.cb.multiply(scale)) + ", "
+				+ complexString(ypu.cc.multiply(scale)) + "]");
+	}
+
+	private static String complexString(Complex value) {
+		return String.format(Locale.US, "%.12g%+.12gj", value.getReal(), value.getImaginary());
 	}
 
 	private static Static3PBranch findStaticBranchByName(Static3PNetwork distNet, String branchName) {
@@ -1009,16 +1180,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 		powerFlow.setTolerance(1.0e-4);
 		assertTrue(powerFlow.powerflow(), "Power flow failed, iterations=" + powerFlow.getIterationCount());
 
-		printPhasePathBranchCurrents(distNet, "hvmv_sub_hsb", "m1166366", 3);
-		printPhasePathBranchCurrents(distNet, "m1166366", "l2862616", 3);
-		printThreePhaseCurrentBalance(distNet, "hvmv_sub_hsb");
-		printThreePhaseCurrentBalance(distNet, "regxfmr_hvmv_sub_lsb");
-		printThreePhaseCurrentBalance(distNet, "_hvmv_sub_lsb");
-		printThreePhaseCurrentBalance(distNet, "hvmv_sub_48332");
-		printThreePhaseCurrentBalance(distNet, "q16483");
-		printThreePhaseCurrentBalance(distNet, "q16483_cap");
-		printThreePhaseCurrentBalance(distNet, "q16642");
-		printThreePhaseCurrentBalance(distNet, "q16642_cap");
+		printPhasePathBranchCurrents(distNet, "_hvmv_sub_lsb", "m1047404", 1);
 	}
 
 	@Test
@@ -1102,6 +1264,24 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"ln81048089-1",
 				"ln81048109-1"}) {
 			printPhysicalBranchYDiagnostic(distNet, branchName);
+		}
+	}
+
+	@Test
+	@Disabled("Diagnostic only: prints InterPSS static Y blocks for IEEE8500 suspect service path")
+	public void ieee8500SuspectServiceStaticYprimDiagnostic() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/IEEE8500", "Master-InterPSS-QSTS-PV-Duty.dss", true);
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		for(String branchName : new String[] {
+				"hvmv_sub_hsb",
+				"hvmv_sub",
+				"feeder_rega",
+				"feeder_regb",
+				"feeder_regc",
+				"t21373784a",
+				"tpx21373784a0"}) {
+			printStaticPhysicalBranchYDiagnostic(distNet, branchName);
 		}
 	}
 
@@ -1703,8 +1883,33 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertTrue(vabc.c_2.abs() < 1.0e-3);
 
 		ComparisonResult result = compareVoltages(distNet,
-				readReferences("opendss-reference/centertap-mini-dss-python-voltage-reference.csv"));
+				activePhaseReferences(distNet,
+						readReferences("opendss-reference/centertap-mini-dss-python-voltage-reference.csv")));
 		assertMiniDssPythonComparison(result, "CenterTapMini DSS-Python");
+	}
+
+	@Test
+	public void ieee8500CenterTappedNoLoadAdmittanceUsesSecondaryWindingConvention() throws IOException {
+		OpenDSSStaticDataParser parser = parseStaticOpenDss(
+				"testData/feeder/IEEE8500", "Master-InterPSS-QSTS-PV-Duty.dss", true);
+
+		Static3PNetwork distNet = parser.getStaticNetwork();
+		Static3PBranch transformer = findStaticBranchByName(distNet, "t21373784a");
+		assertNotNull(transformer, "Missing IEEE8500 center-tapped service transformer");
+		assertTrue(transformer.hasExplicitYabc(), "Center-tapped transformer should use explicit Y blocks");
+
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		double fromVbase = transformer.getFromBus().getBaseVoltage();
+		double toVbase = transformer.getToBus().getBaseVoltage();
+
+		Complex primarySelf = physicalY(transformer.getYffabc().aa, baseVa, fromVbase, fromVbase);
+		assertEquals(0.02672996321957061, primarySelf.getReal(), 1.0e-8);
+		assertEquals(-0.037867448376644776, primarySelf.getImaginary(), 1.0e-8);
+
+		Complex secondaryNoLoad = physicalY(transformer.getYttabc().aa.subtract(transformer.getYttabc().bb),
+				baseVa, toVbase, toVbase);
+		assertEquals(0.006944444444444444, secondaryNoLoad.getReal(), 1.0e-8);
+		assertEquals(-0.017361111111111112, secondaryNoLoad.getImaginary(), 1.0e-8);
 	}
 
 	@Test
@@ -1780,7 +1985,8 @@ public class OpenDssParserPowerFlowComparisonTest {
 		assertEquals(1.0, splitPhaseLineVoltagePu(vabc), 0.08);
 		assertTrue(vabc.c_2.abs() < 1.0e-3);
 
-		ComparisonResult result = compareVoltages(distNet, readReferences(referenceResource));
+		ComparisonResult result = compareVoltages(distNet,
+				activePhaseReferences(distNet, readReferences(referenceResource)));
 		assertMiniDssPythonComparison(result, comparisonLabel);
 	}
 
@@ -1808,7 +2014,8 @@ public class OpenDssParserPowerFlowComparisonTest {
 				"split-phase line voltage should be below Vminpu to exercise OpenDSS fallback");
 		assertTrue(vabc.c_2.abs() < 1.0e-3);
 
-		ComparisonResult result = compareVoltages(distNet, readReferences(referenceResource));
+		ComparisonResult result = compareVoltages(distNet,
+				activePhaseReferences(distNet, readReferences(referenceResource)));
 		assertMiniDssPythonComparison(result, comparisonLabel);
 	}
 
@@ -1941,7 +2148,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 		}
 		assertTrue(powerFlow.powerflow(), "Power flow failed, iterations=" + powerFlow.getIterationCount());
 
-		List<VoltageReference> references = readReferences(referenceResource);
+		List<VoltageReference> references = activePhaseReferences(distNet, readReferences(referenceResource));
 		ComparisonResult result = tapProfile == OpenDssTapProfile.IEEE13_SOLVED
 				? compareVoltages(distNet, references, "650", 1)
 				: compareVoltages(distNet, references);
@@ -2173,6 +2380,52 @@ public class OpenDssParserPowerFlowComparisonTest {
 					return bus != null && bus.isActive();
 				})
 				.toList();
+	}
+
+	private static List<VoltageReference> activePhaseReferences(BaseAclfNetwork<?, ?> distNet,
+			List<VoltageReference> references) {
+		return references.stream()
+				.filter(reference -> {
+					BaseAclfBus<?, ?> bus = distNet.getBus(reference.bus);
+					if(bus == null || !bus.isActive() || !(bus instanceof IBus3Phase)) {
+						return false;
+					}
+					int phaseMask = activePhaseMask((IBus3Phase) bus);
+					return (phaseMask & (1 << (reference.phase - 1))) != 0;
+				})
+				.toList();
+	}
+
+	private static int activePhaseMask(IBus3Phase bus) {
+		int mask = 0;
+		for(Object branchObject : ((BaseAclfBus<?, ?>) bus).getBranchList()) {
+			if(branchObject instanceof IBranch3Phase && ((Branch) branchObject).isActive()) {
+				mask |= phaseMask(((IBranch3Phase) branchObject).getPhaseCode());
+			}
+		}
+		return mask == 0 ? 0b111 : mask;
+	}
+
+	private static int phaseMask(PhaseCode phaseCode) {
+		if(phaseCode == PhaseCode.A) {
+			return 0b001;
+		}
+		if(phaseCode == PhaseCode.B) {
+			return 0b010;
+		}
+		if(phaseCode == PhaseCode.C) {
+			return 0b100;
+		}
+		if(phaseCode == PhaseCode.AB) {
+			return 0b011;
+		}
+		if(phaseCode == PhaseCode.AC) {
+			return 0b101;
+		}
+		if(phaseCode == PhaseCode.BC) {
+			return 0b110;
+		}
+		return 0b111;
 	}
 
 	private static String interpssLoadCsv(DStabNetwork3Phase distNet) {
@@ -2449,6 +2702,26 @@ public class OpenDssParserPowerFlowComparisonTest {
 		printPhysicalYBlock("  Ytt phys", branch.getYttabc(), baseVa, toVbase, toVbase);
 	}
 
+	private static void printStaticPhysicalBranchYDiagnostic(Static3PNetwork distNet, String branchName) {
+		Static3PBranch branch = findStaticBranchByName(distNet, branchName);
+		assertNotNull(branch, "Missing static physical branch Y diagnostic target: " + branchName);
+		double baseVa = distNet.getBaseKva() * 1000.0;
+		double fromVbase = branch.getFromBus().getBaseVoltage();
+		double toVbase = branch.getToBus().getBaseVoltage();
+
+		System.out.println("IEEE8500 static physical branch Y diagnostic: " + branchName
+				+ " id=" + branch.getId()
+				+ " name=" + branch.getName()
+				+ " phase=" + branch.getPhaseCode()
+				+ " type=" + (branch.isXfr() ? "xfr" : "line")
+				+ " from=" + branch.getFromBus().getId() + " baseVll=" + fromVbase
+				+ " to=" + branch.getToBus().getId() + " baseVll=" + toVbase);
+		printPhysicalYBlock("  Yff phys", branch.getYffabc(), baseVa, fromVbase, fromVbase);
+		printPhysicalYBlock("  Yft phys", branch.getYftabc(), baseVa, fromVbase, toVbase);
+		printPhysicalYBlock("  Ytf phys", branch.getYtfabc(), baseVa, toVbase, fromVbase);
+		printPhysicalYBlock("  Ytt phys", branch.getYttabc(), baseVa, toVbase, toVbase);
+	}
+
 	private static String physicalVoltageValues(Complex3x1 value, double baseVoltageLl) {
 		double phaseBase = baseVoltageLl / Math.sqrt(3.0);
 		return phaseValues(value.multiply(phaseBase));
@@ -2460,8 +2733,20 @@ public class OpenDssParserPowerFlowComparisonTest {
 
 	private static void printPhysicalYBlock(String label, Complex3x3 ypu, double baseVa,
 			double currentSideVbaseLl, double voltageSideVbaseLl) {
-		double scale = baseVa / (currentSideVbaseLl * voltageSideVbaseLl);
-		printMatrix(label, ypu.multiply(scale));
+		printMatrix(label, ypu.multiply(physicalYScale(baseVa, currentSideVbaseLl, voltageSideVbaseLl)));
+	}
+
+	private static Complex physicalY(Complex ypu, double baseVa, double currentSideVbaseLl,
+			double voltageSideVbaseLl) {
+		return ypu.multiply(physicalYScale(baseVa, currentSideVbaseLl, voltageSideVbaseLl));
+	}
+
+	private static Complex3x3 physicalY(Complex3x3 ypu, double baseVa, double vbaseLl) {
+		return ypu.multiply(physicalYScale(baseVa, vbaseLl, vbaseLl));
+	}
+
+	private static double physicalYScale(double baseVa, double currentSideVbaseLl, double voltageSideVbaseLl) {
+		return baseVa / (currentSideVbaseLl * voltageSideVbaseLl);
 	}
 
 	private static void printSourcePathBranchCurrents(DStabNetwork3Phase distNet, String targetBusId,

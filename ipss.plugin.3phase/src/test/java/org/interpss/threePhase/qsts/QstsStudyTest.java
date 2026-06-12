@@ -67,6 +67,198 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void branchPowerSamplingSkipsOpenDssInternalVsourceBranch() throws InterpssException {
+		Static3PNetwork network = twoBusNetworkWithOpenDssSourceImpedance();
+		QstsScheduleData schedule = schedule(1);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, schedule)
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(6, result.getStep(0).getBranchPowers().size());
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.noneMatch(sample -> sample.getElementId().equals("vsource_source")));
+	}
+
+	@Test
+	void branchPowerSamplingUsesOpenDssElementClassMetadata()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBranch branch = network.getBranch("source->load(1)");
+		branch.setName("hvmv_sub_hsb");
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setBranchElementClasses(Map.of(branch, "reactor"))
+				.setNumberOfSteps(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getElementClass().equals("reactor")
+						&& sample.getElementId().equals("hvmv_sub_hsb")));
+		assertFalse(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getElementClass().equals("line")
+						&& sample.getElementId().equals("hvmv_sub_hsb")));
+	}
+
+	@Test
+	void branchPowerSamplingIncludesSolvedPowerPhasesBeyondPrimaryPhaseCode()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBranch branch = network.getBranch("source->load(1)");
+		branch.setPhaseCode(PhaseCode.C);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		powerFlow.loadVoltageScale = 0.98;
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setBranchPowerTerminalByPhase(Map.of(branch, Map.of(0, 2, 1, 3)))
+				.setNumberOfSteps(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getTerminal() == 2
+						&& sample.getPhase().equals("A")
+						&& Math.abs(sample.getActivePowerKw()) > 1.0e-9));
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getTerminal() == 3
+						&& sample.getPhase().equals("B")
+						&& Math.abs(sample.getActivePowerKw()) > 1.0e-9));
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getTerminal() == 1
+						&& sample.getBusId().equals("source")
+						&& sample.getPhase().equals("C")));
+		assertFalse(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getTerminal() == 1
+						&& sample.getBusId().equals("load")
+						&& sample.getPhase().equals("C")
+						&& Math.abs(sample.getActivePowerKw()) < 1.0e-9
+						&& Math.abs(sample.getReactivePowerKvar()) < 1.0e-9));
+	}
+
+	@Test
+	void qstsSamplingSkipsInactivePhasesForTwoPhaseBusesAndDevices()
+			throws InterpssException {
+		Static3PNetwork network = twoPhaseNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(1)
+				.run();
+
+		QstsStepResult step = result.getStep(0);
+		assertTrue(result.isConverged());
+		assertTrue(step.getBusVoltages().stream()
+				.anyMatch(sample -> sample.getBusId().equals("load") && sample.getPhase().equals("A")));
+		assertTrue(step.getBusVoltages().stream()
+				.anyMatch(sample -> sample.getBusId().equals("load") && sample.getPhase().equals("B")));
+		assertFalse(step.getBusVoltages().stream()
+				.anyMatch(sample -> sample.getBusId().equals("load") && sample.getPhase().equals("C")));
+		assertEquals(2, step.getLoadPowers().stream()
+				.filter(sample -> sample.getDeviceId().equals("load1"))
+				.count());
+		assertFalse(step.getLoadPowers().stream()
+				.anyMatch(sample -> sample.getDeviceId().equals("load1") && sample.getPhase().equals("C")));
+		assertEquals(4, step.getBranchPowers().size());
+		assertFalse(step.getBranchPowers().stream()
+				.anyMatch(sample -> sample.getPhase().equals("C")));
+	}
+
+	@Test
+	void qstsGeneratorSamplingIsConstrainedByConnectedBusPhases()
+			throws InterpssException {
+		Static3PNetwork network = twoPhaseNetworkWithGenerator();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(1)
+				.run();
+
+		QstsStepResult step = result.getStep(0);
+		assertTrue(result.isConverged());
+		assertEquals(2, step.getGeneratorPowers().stream()
+				.filter(sample -> sample.getDeviceId().equals("pv1"))
+				.count());
+		assertTrue(step.getGeneratorPowers().stream()
+				.anyMatch(sample -> sample.getDeviceId().equals("pv1") && sample.getPhase().equals("A")));
+		assertTrue(step.getGeneratorPowers().stream()
+				.anyMatch(sample -> sample.getDeviceId().equals("pv1") && sample.getPhase().equals("B")));
+		assertFalse(step.getGeneratorPowers().stream()
+				.anyMatch(sample -> sample.getDeviceId().equals("pv1") && sample.getPhase().equals("C")));
+	}
+
+	@Test
+	void staticScheduleReusesSolvedStateAfterFirstQstsStep() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(4)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(4, result.getStepResults().size());
+		assertEquals(1, powerFlow.solveCount);
+		assertEquals(3, result.getStep(0).getIterationCount());
+		assertEquals(0, result.getStep(1).getIterationCount());
+		assertEquals(0, result.getStep(2).getIterationCount());
+		assertEquals(0, result.getStep(3).getIterationCount());
+	}
+
+	@Test
+	void repeatedProfileValuesReuseSolvedStateUntilInjectionChanges() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, repeatedValueSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(4)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(4, result.getStepResults().size());
+		assertEquals(2, powerFlow.solveCount);
+		assertEquals(3, result.getStep(0).getIterationCount());
+		assertEquals(0, result.getStep(1).getIterationCount());
+		assertEquals(3, result.getStep(2).getIterationCount());
+		assertEquals(0, result.getStep(3).getIterationCount());
+		assertEquals(0.05, power(result.getStep(1).getLoadPowers(), "load1", "A").getP(), 1.0e-12);
+		assertEquals(0.10, power(result.getStep(2).getLoadPowers(), "load1", "A").getP(), 1.0e-12);
+	}
+
+	@Test
+	void controlledQstsDoesNotReuseRepeatedProfileSolvedState() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		RegulatorControlData control = new RegulatorControlData("reg1", "regBranch", 2,
+				PhaseCode.A, 1.0, 0.01, 0.00625, -16, 16);
+
+		QstsResult result = QstsStudy.from(network, repeatedValueSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setRegulatorControls(List.of(control))
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.setNumberOfSteps(4)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(4, powerFlow.solveCount);
+		assertEquals(3, result.getStep(0).getIterationCount());
+		assertEquals(3, result.getStep(1).getIterationCount());
+		assertEquals(3, result.getStep(2).getIterationCount());
+		assertEquals(3, result.getStep(3).getIterationCount());
+	}
+
+	@Test
 	void failedStepIncludesStepModeHourAndReason() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
@@ -163,7 +355,55 @@ public class QstsStudyTest {
 	}
 
 	@Test
-	void capacitorControlsDisableFixedPointYMatrixCache() throws InterpssException {
+	void qstsExcludesControlledCapacitorsFromLoadPowerSamples() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus loadBus = network.getBus("load");
+		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		capacitor.setId("cap1");
+		capacitor.setCode(AclfLoadCode.CONST_Z);
+		capacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.01),
+				new Complex(0.0, -0.01), new Complex(0.0, -0.01)));
+		loadBus.getContributeLoadList().add(capacitor);
+		Static3PLoad fixedCapacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+		fixedCapacitor.setId("cap2");
+		fixedCapacitor.setCode(AclfLoadCode.CONST_Z);
+		fixedCapacitor.set3PhaseLoad(new Complex3x1(new Complex(0.0, -0.02),
+				new Complex(0.0, -0.02), new Complex(0.0, -0.02)));
+		loadBus.getContributeLoadList().add(fixedCapacitor);
+		CapacitorControlData control = new CapacitorControlData("capctrl1", "cap1", "", 1,
+				CapacitorControlData.ControlType.VOLTAGE, 100.0, 200.0, 1.0, 1.0,
+				false, 0.0, 0.0, 0.0, 0.0, null, null);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		powerFlow.loadVoltageScale = 1.1;
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setCapacitorControls(List.of(control))
+				.setNumberOfSteps(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertTrue(result.getStep(0).getLoadPowers().stream()
+				.noneMatch(sample -> sample.getDeviceId().equals("cap1")));
+		assertTrue(result.getStep(0).getLoadPowers().stream()
+				.noneMatch(sample -> sample.getDeviceId().equals("cap2")));
+		assertEquals(2, result.getStep(0).getCapacitorStates().size());
+		assertEquals("cap1", result.getStep(0).getCapacitorStates().get(0).getCapacitorId());
+		assertEquals("cap2", result.getStep(0).getCapacitorStates().get(1).getCapacitorId());
+		assertEquals(-0.0363, result.getStep(0).getCapacitorStates().get(0)
+				.getTotalReactivePowerPu(), 1.0e-12);
+		assertEquals(-1210.0, result.getStep(0).getCapacitorStates().get(0)
+				.getTotalReactivePowerKvar(), 1.0e-12);
+		assertEquals(-0.0726, result.getStep(0).getCapacitorStates().get(1)
+				.getTotalReactivePowerPu(), 1.0e-12);
+		assertEquals(-2420.0, result.getStep(0).getCapacitorStates().get(1)
+				.getTotalReactivePowerKvar(), 1.0e-12);
+		assertTrue(result.getStep(0).getCapacitorStates().get(1).isClosed());
+		assertEquals(0, result.getStep(0).getCapacitorStates().get(1).getOperationCount());
+	}
+
+	@Test
+	void staticCapacitorControlsUseInvalidationAwareFixedPointYMatrixCache() throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		Static3PBus loadBus = network.getBus("load");
 		Static3PLoad capacitor = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
@@ -185,11 +425,11 @@ public class QstsStudyTest {
 				.run();
 
 		assertTrue(result.isConverged());
-		assertFalse(powerFlow.fixedPointYMatrixCacheEnabled);
+		assertTrue(powerFlow.fixedPointYMatrixCacheEnabled);
 	}
 
 	@Test
-	void regulatorControlsDisableFixedPointYMatrixCacheForSymbolicRebuild()
+	void staticRegulatorControlsUseInvalidationAwareFixedPointYMatrixCache()
 			throws InterpssException {
 		Static3PNetwork network = twoBusNetwork();
 		RegulatorControlData control = new RegulatorControlData("reg1", "regBranch", 2,
@@ -204,7 +444,61 @@ public class QstsStudyTest {
 				.run();
 
 		assertTrue(result.isConverged());
-		assertFalse(powerFlow.fixedPointYMatrixCacheEnabled);
+		assertTrue(powerFlow.fixedPointYMatrixCacheEnabled);
+	}
+
+	@Test
+	void staticRegulatorControlsAreSkippedForDutyModeToMatchOpenDss()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		RegulatorControlData control = new RegulatorControlData("reg1", "source->load(1)", 2,
+				PhaseCode.A, 1.0, 0.01, 0.00625, -16, 16);
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(new FakePowerFlowAlgorithm())
+				.setRegulatorControls(List.of(control))
+				.setMode(QstsMode.DUTY)
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(0, result.getStep(0).getRegulatorTaps().get(0).getTapPosition());
+	}
+
+	@Test
+	void staticRegulatorControlsAreAppliedBeforeDailyModeSampling()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		RegulatorControlData control = new RegulatorControlData("reg1", "source->load(1)", 2,
+				PhaseCode.A, 1.0, 0.01, 0.00625, -16, 16);
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(new FakePowerFlowAlgorithm())
+				.setRegulatorControls(List.of(control))
+				.setMode(QstsMode.DAILY)
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(-16, result.getStep(0).getRegulatorTaps().get(0).getTapPosition());
+	}
+
+	@Test
+	void qstsControlIterationLimitIsPropagatedToPowerFlowAlgorithm()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, schedule(1))
+				.setPowerFlowAlgorithm(powerFlow)
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(37)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertEquals(37, powerFlow.maxControlIterations);
 	}
 
 	@Test
@@ -325,6 +619,25 @@ public class QstsStudyTest {
 				new QstsGlobalOptions("daily", steps, 1.0, 1.0, "off", 0, 0.0));
 	}
 
+	private static QstsScheduleData staticSchedule() {
+		return new QstsScheduleData(new QstsProfileRegistry(), null,
+				new QstsGlobalOptions("snapshot", 1, 1.0, 1.0, "off", 0, 0.0));
+	}
+
+	private static QstsScheduleData repeatedValueSchedule() {
+		QstsProfileRegistry registry = new QstsProfileRegistry();
+		registry.add(new QstsProfile("load_day", null, new double[] {0.5, 0.5, 1.0, 1.0},
+				null, null));
+		registry.add(new QstsProfile("pv_day", null, new double[] {0.3, 0.3, 0.8, 0.8},
+				null, null));
+		return new QstsScheduleData(registry, List.of(
+				new QstsProfileBinding("load", "load1", Map.of("daily", "load_day"),
+						QstsDeviceStatus.VARIABLE),
+				new QstsProfileBinding("generator", "pv1", Map.of("daily", "pv_day"),
+						QstsDeviceStatus.VARIABLE)),
+				new QstsGlobalOptions("daily", 4, 1.0, 1.0, "off", 0, 0.0));
+	}
+
 	private static Static3PNetwork twoBusNetwork() throws InterpssException {
 		Static3PNetwork network = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
 		network.setBaseKva(100000.0);
@@ -360,14 +673,50 @@ public class QstsStudyTest {
 		return network;
 	}
 
+	private static Static3PNetwork twoPhaseNetwork() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus loadBus = network.getBus("load");
+		loadBus.getPhaseLoadList().get(0).setPhaseCode(PhaseCode.AB);
+		loadBus.getContributeGenList().clear();
+		Static3PBranch branch = network.getBranch("source->load(1)");
+		branch.setPhaseCode(PhaseCode.AB);
+		return network;
+	}
+
+	private static Static3PNetwork twoPhaseNetworkWithGenerator() throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus loadBus = network.getBus("load");
+		loadBus.getPhaseLoadList().get(0).setPhaseCode(PhaseCode.AB);
+		Static3PBranch branch = network.getBranch("source->load(1)");
+		branch.setPhaseCode(PhaseCode.AB);
+		return network;
+	}
+
+	private static Static3PNetwork twoBusNetworkWithOpenDssSourceImpedance()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBus idealSource = Static3PhaseFactory.eINSTANCE.createStatic3PBus();
+		idealSource.setId("source_vsource");
+		network.addBus(idealSource);
+		idealSource.setBaseVoltage(12470.0);
+		idealSource.setGenCode(AclfGenCode.SWING);
+		Static3PBranch sourceBranch = ThreePhaseObjectFactory.createStatic3PBranch(
+				"source_vsource", "source", "vsource", network);
+		sourceBranch.setName("vsource_source");
+		sourceBranch.setZabc(Complex3x3.createUnitMatrix().multiply(new Complex(0.001, 0.002)));
+		return network;
+	}
+
 	private static class FakePowerFlowAlgorithm implements DistributionPowerFlowAlgorithm {
 		private INetwork3Phase network;
 		private int solveCount;
 		private int failOnSolve = -1;
 		private int maxIteration = 100;
+		private int maxControlIterations = 20;
 		private double tolerance = 1.0e-6;
 		private DistributionPFMethod method = DistributionPFMethod.Fixed_Point;
 		private boolean fixedPointYMatrixCacheEnabled;
+		private double loadVoltageScale = 1.0;
 
 		@Override
 		public INetwork3Phase getNetwork() {
@@ -393,9 +742,10 @@ public class QstsStudyTest {
 		public boolean powerflow() {
 			solveCount++;
 			for(IBus3Phase bus : network.getThreePhaseBusList()) {
-				bus.set3PhaseVotlages(new Complex3x1(new Complex(1.0, 0.0),
-						new Complex(-0.5, -0.8660254037844386),
-						new Complex(-0.5, 0.8660254037844386)));
+				double scale = "load".equals(bus.getId()) ? loadVoltageScale : 1.0;
+				bus.set3PhaseVotlages(new Complex3x1(new Complex(scale, 0.0),
+						new Complex(-0.5 * scale, -0.8660254037844386 * scale),
+						new Complex(-0.5 * scale, 0.8660254037844386 * scale)));
 			}
 			return solveCount != failOnSolve;
 		}
@@ -464,6 +814,16 @@ public class QstsStudyTest {
 		@Override
 		public int getMaxIteration() {
 			return maxIteration;
+		}
+
+		@Override
+		public void setMaxControlIterations(int maxControlIterations) {
+			this.maxControlIterations = maxControlIterations;
+		}
+
+		@Override
+		public int getMaxControlIterations() {
+			return maxControlIterations;
 		}
 
 		@Override

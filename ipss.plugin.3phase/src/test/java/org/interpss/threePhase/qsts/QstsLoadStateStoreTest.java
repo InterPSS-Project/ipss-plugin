@@ -1,8 +1,11 @@
 package org.interpss.threePhase.qsts;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
@@ -38,6 +41,25 @@ public class QstsLoadStateStoreTest {
 	}
 
 	@Test
+	void resolverUsesOpenDssFixedIntervalShapeIndexing() {
+		QstsProfileRegistry registry = new QstsProfileRegistry();
+		double[] multipliers = new double[2900];
+		multipliers[699] = 0.805882353;
+		multipliers[1399] = 0.229411765;
+		registry.add(new QstsProfile("pvcurve", 1.0 / 3600.0, new double[0],
+				multipliers, null, null));
+		QstsProfileBinding binding = new QstsProfileBinding("generator", "g1",
+				Map.of("duty", "pvcurve"), QstsDeviceStatus.VARIABLE);
+		QstsLoadMultiplierResolver resolver = new QstsLoadMultiplierResolver(registry);
+
+		QstsLoadMultiplier step0 = resolver.resolve(binding, QstsMode.DUTY, 0, 1.0, 1.0);
+		QstsLoadMultiplier step1 = resolver.resolve(binding, QstsMode.DUTY, 1, 1.0, 1.0);
+
+		assertEquals(0.805882353, step0.getPMultiplier(), 1.0e-12);
+		assertEquals(0.229411765, step1.getPMultiplier(), 1.0e-12);
+	}
+
+	@Test
 	void resolverSupportsIndependentPAndQMultipliers() {
 		QstsProfileRegistry registry = new QstsProfileRegistry();
 		registry.add(new QstsProfile("daily", new double[0], new double[] {0.5}, new double[] {0.7}, null));
@@ -67,6 +89,32 @@ public class QstsLoadStateStoreTest {
 		assertEquals(1.0, fixed.getQMultiplier(), 1.0e-12);
 		assertEquals(1.0, exempt.getPMultiplier(), 1.0e-12);
 		assertEquals(1.0, exempt.getQMultiplier(), 1.0e-12);
+	}
+
+	@Test
+	void stateApplierTreatsMetadataOnlyBindingsAsStatic() {
+		QstsScheduleData scheduleData = new QstsScheduleData(new QstsProfileRegistry(),
+				List.of(new QstsProfileBinding("load", "load1", Map.of("daily", "missing"),
+						QstsDeviceStatus.VARIABLE)),
+				null);
+
+		QstsStateApplier applier = new QstsStateApplier(scheduleData, null, null);
+
+		assertFalse(applier.hasTimeVaryingBindings());
+	}
+
+	@Test
+	void stateApplierDetectsResolvedProfileBindingsAsTimeVarying() {
+		QstsProfileRegistry registry = new QstsProfileRegistry();
+		registry.add(new QstsProfile("daily", new double[0], new double[] {0.5, 1.0}, null, null));
+		QstsScheduleData scheduleData = new QstsScheduleData(registry,
+				List.of(new QstsProfileBinding("load", "load1", Map.of("daily", "daily"),
+						QstsDeviceStatus.VARIABLE)),
+				null);
+
+		QstsStateApplier applier = new QstsStateApplier(scheduleData, null, null);
+
+		assertTrue(applier.hasTimeVaryingBindings());
 	}
 
 	@Test
