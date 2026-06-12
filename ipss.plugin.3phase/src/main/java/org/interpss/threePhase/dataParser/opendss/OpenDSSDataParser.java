@@ -6,9 +6,12 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -80,6 +83,7 @@ public class OpenDSSDataParser {
 	protected OpenDSSTimeSeriesData timeSeriesData = null;
 	protected OpenDSSLoadShapeParser loadShapeParser = null;
 	protected OpenDSSTemperatureShapeParser temperatureShapeParser = null;
+	private final Map<AclfBranch, String> branchElementClasses = new IdentityHashMap<>();
 	private boolean regControlEnabled = true;
 	private double minLineSeriesImpedancePu = 1.0E-7;
 
@@ -127,9 +131,19 @@ public class OpenDSSDataParser {
 	this.debug = enableDebug;
     }
 
-    public void setMinLineSeriesImpedancePu(double minLineSeriesImpedancePu) {
-	this.minLineSeriesImpedancePu = minLineSeriesImpedancePu;
-    }
+	public void setMinLineSeriesImpedancePu(double minLineSeriesImpedancePu) {
+		this.minLineSeriesImpedancePu = minLineSeriesImpedancePu;
+	}
+
+	public Map<AclfBranch, String> getBranchElementClasses() {
+		return Collections.unmodifiableMap(this.branchElementClasses);
+	}
+
+	private void registerBranchElementClass(AclfBranch branch, String elementClass) {
+		if(branch != null && elementClass != null && !elementClass.isBlank()) {
+			this.branchElementClasses.put(branch, elementClass);
+		}
+	}
 
 	public Hashtable<String, LineConfiguration> getLineConfigTable() {
 		if(lineConfigTable == null){
@@ -1423,6 +1437,7 @@ public class OpenDSSDataParser {
 	 }
 	 reactor.setName(this.busIdPrefix + reactorName);
 	 reactor.setBranchCode(AclfBranchCode.LINE);
+	 registerBranchElementClass(reactor, "reactor");
 	 reactor3P.setPhaseCode(phaseNum == 1 ? PhaseCode.A : PhaseCode.ABC);
 	 Complex z = new Complex(r, x);
 	 Complex zero = new Complex(0.0);

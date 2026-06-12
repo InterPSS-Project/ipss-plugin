@@ -84,6 +84,29 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void branchPowerSamplingUsesOpenDssElementClassMetadata()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBranch branch = network.getBranch("source->load(1)");
+		branch.setName("hvmv_sub_hsb");
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setBranchElementClasses(Map.of(branch, "reactor"))
+				.setNumberOfSteps(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getElementClass().equals("reactor")
+						&& sample.getElementId().equals("hvmv_sub_hsb")));
+		assertFalse(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getElementClass().equals("line")
+						&& sample.getElementId().equals("hvmv_sub_hsb")));
+	}
+
+	@Test
 	void qstsSamplingSkipsInactivePhasesForTwoPhaseBusesAndDevices()
 			throws InterpssException {
 		Static3PNetwork network = twoPhaseNetwork();
