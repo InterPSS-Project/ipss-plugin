@@ -725,6 +725,7 @@ public class QstsStudy {
 			QstsStepContext context, AclfBranch branch, int terminal, String busId, Complex3x1 power) {
 		int phaseMask = branch instanceof IBranch3Phase
 				? phaseCodeMask(((IBranch3Phase) branch).getPhaseCode()) : 0b111;
+		phaseMask |= valuePhaseMask(power);
 		addBranchPowerSample(samples, context, branch, terminal, busId, "A",
 				power == null ? null : power.a_0, phaseActive(phaseMask, 0));
 		addBranchPowerSample(samples, context, branch, terminal, busId, "B",
@@ -801,6 +802,23 @@ public class QstsStudy {
 
 	private static boolean phaseActive(int phaseMask, int phaseIndex) {
 		return (phaseMask & (1 << phaseIndex)) != 0;
+	}
+
+	private static int valuePhaseMask(Complex3x1 value) {
+		if(value == null) {
+			return 0;
+		}
+		int mask = 0;
+		if(value.a_0 != null && value.a_0.abs() > 1.0e-12) {
+			mask |= 0b001;
+		}
+		if(value.b_1 != null && value.b_1.abs() > 1.0e-12) {
+			mask |= 0b010;
+		}
+		if(value.c_2 != null && value.c_2.abs() > 1.0e-12) {
+			mask |= 0b100;
+		}
+		return mask;
 	}
 
 	private static int phaseCodeMask(PhaseCode phaseCode) {
