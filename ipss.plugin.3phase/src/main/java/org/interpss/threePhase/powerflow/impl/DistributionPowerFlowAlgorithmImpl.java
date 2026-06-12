@@ -19,7 +19,6 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
-import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.powerflow.control.CapacitorBankControl;
 import org.interpss.threePhase.powerflow.control.CapacitorControlData;
 import org.interpss.threePhase.powerflow.control.RegulatorControlData;
@@ -787,7 +786,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				? (PrimitiveComplex3x3Equation) yMatrix : null;
 		normalizeInactivePhaseVoltages(busCache.activeBuses);
 		PrimitiveFixedPointState primitiveState = primitiveMatrix instanceof PrimitiveComplex3x3ArrayEquation
-				&& primitiveVoltageStateEligible(busCache)
+				&& primitiveVoltageStateEligible()
 						? fixedPointPrimitiveState(busCache, distNet.getNoBus()) : null;
 		FIXED_POINT_PROFILE.addAttempt();
 
@@ -1859,8 +1858,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			PrimitiveFixedPointState primitiveState) {
 		for(FixedPointBus bus : busCache.currentInjectionBuses) {
 			int offset = bus.primitiveOffset;
-			for(AclfLoad3Phase load : bus.primitiveLoads) {
-				int activePhaseMask = activeLoadPhaseMask(bus, load);
+			for(int i = 0; i < bus.primitiveLoads.length; i++) {
+				AclfLoad3Phase load = bus.primitiveLoads[i];
+				int activePhaseMask = bus.primitiveLoadPhaseMasks[i];
 				if(activePhaseMask == 0) {
 					continue;
 				}
@@ -1868,8 +1868,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						activePhaseMask);
 			}
 			addFixedPointLoadNortonCompensation(bus, primitiveState.voltage, offset, primitiveRhs, offset);
-			for(AclfGen3Phase gen : bus.primitiveGenerators) {
-				int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+			for(int i = 0; i < bus.primitiveGenerators.length; i++) {
+				AclfGen3Phase gen = bus.primitiveGenerators[i];
+				int activePhaseMask = bus.primitiveGeneratorPhaseMasks[i];
 				if(activePhaseMask == 0) {
 					continue;
 				}
@@ -1902,8 +1903,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		long start = FIXED_POINT_PROFILE.start();
 		AclfLoad3Phase[] loads = bus.primitiveLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
-		for(AclfLoad3Phase load : loads) {
-			int activePhaseMask = activeLoadPhaseMask(bus, load);
+		for(int i = 0; i < loads.length; i++) {
+			AclfLoad3Phase load = loads[i];
+			int activePhaseMask = bus.primitiveLoadPhaseMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -1917,8 +1919,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		if(bus.primitiveGenerators.length > 0) {
 			start = FIXED_POINT_PROFILE.start();
 			FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
-			for(AclfGen3Phase gen : bus.primitiveGenerators) {
-				int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+			for(int i = 0; i < bus.primitiveGenerators.length; i++) {
+				AclfGen3Phase gen = bus.primitiveGenerators[i];
+				int activePhaseMask = bus.primitiveGeneratorPhaseMasks[i];
 				if(activePhaseMask == 0) {
 					continue;
 				}
@@ -1981,8 +1984,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		start = FIXED_POINT_PROFILE.start();
 		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
-		for(AclfLoad3Phase load : loads) {
-			int activePhaseMask = activeLoadPhaseMask(bus, load);
+		for(int i = 0; i < loads.size(); i++) {
+			AclfLoad3Phase load = loads.get(i);
+			int activePhaseMask = bus.phaseLoadMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -1996,8 +2000,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		start = FIXED_POINT_PROFILE.start();
 		List<? extends AclfGen3Phase> generators = bus.phaseGenerators;
 		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
-		for(AclfGen3Phase gen : generators) {
-			int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+		for(int i = 0; i < generators.size(); i++) {
+			AclfGen3Phase gen = generators.get(i);
+			int activePhaseMask = bus.phaseGeneratorMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -2035,8 +2040,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		start = FIXED_POINT_PROFILE.start();
 		List<? extends AclfLoad3Phase> loads = bus.phaseLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
-		for(AclfLoad3Phase load : loads) {
-			int activePhaseMask = activeLoadPhaseMask(bus, load);
+		for(int i = 0; i < loads.size(); i++) {
+			AclfLoad3Phase load = loads.get(i);
+			int activePhaseMask = bus.phaseLoadMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -2050,8 +2056,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		start = FIXED_POINT_PROFILE.start();
 		List<? extends AclfGen3Phase> generators = bus.phaseGenerators;
 		FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
-		for(AclfGen3Phase gen : generators) {
-			int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+		for(int i = 0; i < generators.size(); i++) {
+			AclfGen3Phase gen = generators.get(i);
+			int activePhaseMask = bus.phaseGeneratorMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -2076,8 +2083,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 		Complex3x1 voltage = bus.bus3P.get3PhaseVotlages();
 		double[] voltageArray = voltageArray(voltage);
-		for(AclfLoad3Phase load : bus.primitiveLoads) {
-			int activePhaseMask = activeLoadPhaseMask(bus, load);
+		for(int i = 0; i < bus.primitiveLoads.length; i++) {
+			AclfLoad3Phase load = bus.primitiveLoads[i];
+			int activePhaseMask = bus.primitiveLoadPhaseMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -2085,8 +2093,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 		addFixedPointLoadNortonCompensation(bus, voltageArray, 0, current, 0);
 
-		for(AclfGen3Phase gen : bus.primitiveGenerators) {
-			int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+		for(int i = 0; i < bus.primitiveGenerators.length; i++) {
+			AclfGen3Phase gen = bus.primitiveGenerators[i];
+			int activePhaseMask = bus.primitiveGeneratorPhaseMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -2108,8 +2117,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		long start = FIXED_POINT_PROFILE.start();
 		AclfLoad3Phase[] loads = bus.primitiveLoads;
 		FIXED_POINT_PROFILE.addCurrentCalcLoadList(FIXED_POINT_PROFILE.elapsed(start));
-		for(AclfLoad3Phase load : loads) {
-			int activePhaseMask = activeLoadPhaseMask(bus, load);
+		for(int i = 0; i < loads.length; i++) {
+			AclfLoad3Phase load = loads[i];
+			int activePhaseMask = bus.primitiveLoadPhaseMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -2123,8 +2133,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		if(bus.primitiveGenerators.length > 0) {
 			start = FIXED_POINT_PROFILE.start();
 			FIXED_POINT_PROFILE.addCurrentCalcGenList(FIXED_POINT_PROFILE.elapsed(start));
-			for(AclfGen3Phase gen : bus.primitiveGenerators) {
-				int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+			for(int i = 0; i < bus.primitiveGenerators.length; i++) {
+				AclfGen3Phase gen = bus.primitiveGenerators[i];
+				int activePhaseMask = bus.primitiveGeneratorPhaseMasks[i];
 				if(activePhaseMask == 0) {
 					continue;
 				}
@@ -2147,16 +2158,18 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		current[4] = 0.0;
 		current[5] = 0.0;
 		int voltageOffset = bus.primitiveOffset;
-		for(AclfLoad3Phase load : bus.primitiveLoads) {
-			int activePhaseMask = activeLoadPhaseMask(bus, load);
+		for(int i = 0; i < bus.primitiveLoads.length; i++) {
+			AclfLoad3Phase load = bus.primitiveLoads[i];
+			int activePhaseMask = bus.primitiveLoadPhaseMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
 			load.addEquivCurrInj(voltage, voltageOffset, current, 0, activePhaseMask);
 		}
 		addFixedPointLoadNortonCompensation(bus, voltage, voltageOffset, current, 0);
-		for(AclfGen3Phase gen : bus.primitiveGenerators) {
-			int activePhaseMask = activeGeneratorPhaseMask(bus, gen);
+		for(int i = 0; i < bus.primitiveGenerators.length; i++) {
+			AclfGen3Phase gen = bus.primitiveGenerators[i];
+			int activePhaseMask = bus.primitiveGeneratorPhaseMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -2192,8 +2205,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		if(factor == 0.0) {
 			return;
 		}
-		for(AclfLoad3Phase load : bus.primitiveLoads) {
-			int activePhaseMask = activeLoadPhaseMask(bus, load);
+		for(int i = 0; i < bus.primitiveLoads.length; i++) {
+			AclfLoad3Phase load = bus.primitiveLoads[i];
+			int activePhaseMask = bus.primitiveLoadPhaseMasks[i];
 			if(activePhaseMask == 0) {
 				continue;
 			}
@@ -2236,14 +2250,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				real(voltage == null ? null : voltage.c_2),
 				imaginary(voltage == null ? null : voltage.c_2)
 		};
-	}
-
-	private int activeLoadPhaseMask(FixedPointBus bus, AclfLoad3Phase load) {
-		return bus.activePhaseMask & phaseCodeMask(load.getPhaseCode());
-	}
-
-	private int activeGeneratorPhaseMask(FixedPointBus bus, AclfGen3Phase generator) {
-		return bus.activePhaseMask & phaseCodeMask(generator.getPhaseCode());
 	}
 
 	private boolean isFinite(Complex3x1 value, FixedPointBus bus) {
@@ -2502,11 +2508,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		}
 	}
 
-	private boolean primitiveVoltageStateEligible(FixedPointBusCache busCache) {
+	private boolean primitiveVoltageStateEligible() {
 		if(this.regulatorControlEnabled && !this.regulatorControls.isEmpty()) {
 			return false;
 		}
-		return busCache.primitiveVoltageStateEligible;
+		return true;
 	}
 
 	private double maxSwingVoltageMismatch(FixedPointBusCache busCache, double maxMis) {
@@ -3535,18 +3541,15 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final List<FixedPointBus> nonSwingBuses;
 		private final List<FixedPointBus> currentInjectionBuses;
 		private final List<FixedPointBus> swingBuses;
-		private final boolean primitiveVoltageStateEligible;
 
 		private FixedPointBusCache(List<FixedPointBus> activeBuses,
 				List<FixedPointBus> nonSwingBuses,
 				List<FixedPointBus> currentInjectionBuses,
-				List<FixedPointBus> swingBuses,
-				boolean primitiveVoltageStateEligible) {
+				List<FixedPointBus> swingBuses) {
 			this.activeBuses = activeBuses;
 			this.nonSwingBuses = nonSwingBuses;
 			this.currentInjectionBuses = currentInjectionBuses;
 			this.swingBuses = swingBuses;
-			this.primitiveVoltageStateEligible = primitiveVoltageStateEligible;
 		}
 
 		static FixedPointBusCache from(BaseAclfNetwork<?, ?> network,
@@ -3557,7 +3560,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			List<FixedPointBus> nonSwingBuses = new ArrayList<>();
 			List<FixedPointBus> currentInjectionBuses = new ArrayList<>();
 			List<FixedPointBus> swingBuses = new ArrayList<>();
-			boolean primitiveVoltageStateEligible = true;
 			for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) network.getBusList()) {
 				if(!bus.isActive()) {
 					continue;
@@ -3566,10 +3568,6 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 						boundaryCurrentBySortNumber.get(bus.getSortNumber()),
 						phaseMaskBySortNumber.getOrDefault(bus.getSortNumber(), 0b111));
 				activeBuses.add(fixedPointBus);
-				if(fixedPointBus.bus3P instanceof DStab3PBus
-						|| fixedPointBus.primitiveGenerators == null) {
-					primitiveVoltageStateEligible = false;
-				}
 				if(bus.isSwing()) {
 					swingBuses.add(fixedPointBus);
 				}
@@ -3584,8 +3582,7 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 					Collections.unmodifiableList(activeBuses),
 					Collections.unmodifiableList(nonSwingBuses),
 					Collections.unmodifiableList(currentInjectionBuses),
-					Collections.unmodifiableList(swingBuses),
-					primitiveVoltageStateEligible);
+					Collections.unmodifiableList(swingBuses));
 		}
 
 		private static Map<Integer, Integer> phaseMaskBySortNumber(BaseAclfNetwork<?, ?> network,
@@ -3780,8 +3777,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 		private final IBus3Phase bus3P;
 		private final List<? extends AclfLoad3Phase> phaseLoads;
 		private final AclfLoad3Phase[] primitiveLoads;
+		private final int[] phaseLoadMasks;
+		private final int[] primitiveLoadPhaseMasks;
 		private final List<? extends AclfGen3Phase> phaseGenerators;
 		private final AclfGen3Phase[] primitiveGenerators;
+		private final int[] phaseGeneratorMasks;
+		private final int[] primitiveGeneratorPhaseMasks;
 		private final Complex3x1 boundaryCurrent;
 		private final boolean boundaryCurrentFinite;
 		private final double boundaryAReal;
@@ -3810,6 +3811,12 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			this.primitiveGenerators = primitiveGeneratorArray(this.phaseGenerators);
 			this.activePhaseMask = activePhaseMask(branchPhaseMask, this.phaseLoads,
 					this.phaseGenerators, boundaryCurrent);
+			this.phaseLoadMasks = activeLoadPhaseMasks(this.activePhaseMask, this.phaseLoads);
+			this.primitiveLoadPhaseMasks = activeLoadPhaseMasks(this.activePhaseMask, this.primitiveLoads);
+			this.phaseGeneratorMasks = activeGeneratorPhaseMasks(this.activePhaseMask,
+					this.phaseGenerators);
+			this.primitiveGeneratorPhaseMasks = activeGeneratorPhaseMasks(this.activePhaseMask,
+					this.primitiveGenerators);
 			this.boundaryCurrent = boundaryCurrent;
 			this.boundaryCurrentFinite = boundaryCurrent == null
 					|| (finiteValue(boundaryCurrent.a_0) && finiteValue(boundaryCurrent.b_1)
@@ -3913,6 +3920,40 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 				values[i] = loads.get(i);
 			}
 			return values;
+		}
+
+		private static int[] activeLoadPhaseMasks(int busPhaseMask,
+				List<? extends AclfLoad3Phase> loads) {
+			int[] masks = new int[loads.size()];
+			for(int i = 0; i < loads.size(); i++) {
+				masks[i] = busPhaseMask & phaseCodeMask(loads.get(i).getPhaseCode());
+			}
+			return masks;
+		}
+
+		private static int[] activeLoadPhaseMasks(int busPhaseMask, AclfLoad3Phase[] loads) {
+			int[] masks = new int[loads.length];
+			for(int i = 0; i < loads.length; i++) {
+				masks[i] = busPhaseMask & phaseCodeMask(loads[i].getPhaseCode());
+			}
+			return masks;
+		}
+
+		private static int[] activeGeneratorPhaseMasks(int busPhaseMask,
+				List<? extends AclfGen3Phase> generators) {
+			int[] masks = new int[generators.size()];
+			for(int i = 0; i < generators.size(); i++) {
+				masks[i] = busPhaseMask & phaseCodeMask(generators.get(i).getPhaseCode());
+			}
+			return masks;
+		}
+
+		private static int[] activeGeneratorPhaseMasks(int busPhaseMask, AclfGen3Phase[] generators) {
+			int[] masks = new int[generators.length];
+			for(int i = 0; i < generators.length; i++) {
+				masks[i] = busPhaseMask & phaseCodeMask(generators[i].getPhaseCode());
+			}
+			return masks;
 		}
 
 		private static int activePhaseMask(int branchPhaseMask,
