@@ -64,6 +64,7 @@ public class QstsStudy {
 	private final RegulatorTapControl qstsRegulatorTapControl = new RegulatorTapControl();
 	private final QstsControlQueue controlQueue = new QstsControlQueue();
 	private final Map<String, Integer> operationCountByControlKey = new java.util.LinkedHashMap<>();
+	private Map<AclfBranch, String> branchElementClassByBranch = Collections.emptyMap();
 
 	private QstsStudy(INetwork3Phase network, QstsScheduleData scheduleData) {
 		if(network == null) {
@@ -120,6 +121,16 @@ public class QstsStudy {
 	public QstsStudy setInverterAdapterStore(QstsInverterAdapterStore inverterAdapterStore) {
 		this.inverterAdapterStore = inverterAdapterStore == null
 				? new QstsInverterAdapterStore() : inverterAdapterStore;
+		return this;
+	}
+
+	public QstsStudy setBranchElementClasses(Map<AclfBranch, String> branchElementClassByBranch) {
+		if(branchElementClassByBranch == null || branchElementClassByBranch.isEmpty()) {
+			this.branchElementClassByBranch = Collections.emptyMap();
+		}
+		else {
+			this.branchElementClassByBranch = new IdentityHashMap<>(branchElementClassByBranch);
+		}
 		return this;
 	}
 
@@ -710,7 +721,7 @@ public class QstsStudy {
 				power == null ? Double.NaN : power.getImaginary()));
 	}
 
-	private static void addBranchPowerSamples(List<QstsBranchPowerSample> samples,
+	private void addBranchPowerSamples(List<QstsBranchPowerSample> samples,
 			QstsStepContext context, AclfBranch branch, int terminal, String busId, Complex3x1 power) {
 		int phaseMask = branch instanceof IBranch3Phase
 				? phaseCodeMask(((IBranch3Phase) branch).getPhaseCode()) : 0b111;
@@ -722,7 +733,7 @@ public class QstsStudy {
 				power == null ? null : power.c_2, phaseActive(phaseMask, 2));
 	}
 
-	private static void addBranchPowerSample(List<QstsBranchPowerSample> samples,
+	private void addBranchPowerSample(List<QstsBranchPowerSample> samples,
 			QstsStepContext context, AclfBranch branch, int terminal, String busId, String phase,
 			Complex power, boolean activePhase) {
 		if(!activePhase) {
@@ -736,7 +747,11 @@ public class QstsStudy {
 				power.getReal(), power.getImaginary()));
 	}
 
-	private static String branchElementClass(AclfBranch branch) {
+	private String branchElementClass(AclfBranch branch) {
+		String elementClass = this.branchElementClassByBranch.get(branch);
+		if(elementClass != null && !elementClass.isBlank()) {
+			return elementClass;
+		}
 		return branch.isXfr() ? "transformer" : "line";
 	}
 
