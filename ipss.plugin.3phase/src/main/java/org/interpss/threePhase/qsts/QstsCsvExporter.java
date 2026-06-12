@@ -27,6 +27,26 @@ public class QstsCsvExporter {
 		return exportDevicePowers(result == null ? null : result.getGeneratorPowers());
 	}
 
+	public String exportBranchPowers(QstsResult result) {
+		StringBuilder builder = new StringBuilder(
+				"step,hour,class,element,terminal,bus,phase,p_kw,q_kvar\n");
+		if(result == null) {
+			return builder.toString();
+		}
+		for(QstsBranchPowerSample sample : result.getBranchPowers()) {
+			builder.append(sample.getStepIndex()).append(',')
+					.append(format(sample.getHour())).append(',')
+					.append(escape(sample.getElementClass())).append(',')
+					.append(escape(sample.getElementId())).append(',')
+					.append(sample.getTerminal()).append(',')
+					.append(escape(sample.getBusId())).append(',')
+					.append(sample.getPhase()).append(',')
+					.append(format(sample.getActivePowerKw())).append(',')
+					.append(format(sample.getReactivePowerKvar())).append('\n');
+		}
+		return builder.toString();
+	}
+
 	public String exportDevicePowers(Iterable<QstsDevicePowerSample> samples) {
 		StringBuilder builder = new StringBuilder("step,hour,device_class,device,phase,p_pu,q_pu\n");
 		if(samples == null) {

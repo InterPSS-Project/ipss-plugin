@@ -15,6 +15,8 @@ public class QstsGeneratorBaseState {
 	private Complex3x1 phasePower;
 	private AclfGenCode code;
 	private double mvaBase;
+	private double appliedPMultiplier = Double.NaN;
+	private double appliedQMultiplier = Double.NaN;
 
 	public QstsGeneratorBaseState(Object generator) {
 		if(generator == null) {
@@ -41,6 +43,7 @@ public class QstsGeneratorBaseState {
 		this.phasePower = copy(phaseGenerator.getPower3Phase(UnitType.PU));
 		this.code = generator instanceof AclfGen ? ((AclfGen) generator).getCode() : null;
 		this.mvaBase = phaseGenerator.getMvaBase();
+		resetAppliedMultiplier();
 	}
 
 	public void restore() {
@@ -53,11 +56,18 @@ public class QstsGeneratorBaseState {
 		if(generator instanceof AclfGen) {
 			((AclfGen) generator).setMvaBase(mvaBase);
 		}
+		resetAppliedMultiplier();
 	}
 
-	public void applyMultiplier(double pMultiplier, double qMultiplier) {
+	public boolean applyMultiplier(double pMultiplier, double qMultiplier) {
+		if(sameMultiplier(pMultiplier, qMultiplier)) {
+			return false;
+		}
 		restore();
+		this.appliedPMultiplier = pMultiplier;
+		this.appliedQMultiplier = qMultiplier;
 		phaseGenerator.setPower3Phase(scale(phasePower, pMultiplier, qMultiplier), UnitType.PU);
+		return true;
 	}
 
 	public Complex getGen() {
@@ -82,6 +92,18 @@ public class QstsGeneratorBaseState {
 	private static Complex3x1 scale(Complex3x1 value, double pMultiplier, double qMultiplier) {
 		return value == null ? null : new Complex3x1(scale(value.a_0, pMultiplier, qMultiplier),
 				scale(value.b_1, pMultiplier, qMultiplier), scale(value.c_2, pMultiplier, qMultiplier));
+	}
+
+	private boolean sameMultiplier(double pMultiplier, double qMultiplier) {
+		return Double.isFinite(this.appliedPMultiplier)
+				&& Double.isFinite(this.appliedQMultiplier)
+				&& Math.abs(this.appliedPMultiplier - pMultiplier) <= 1.0e-12
+				&& Math.abs(this.appliedQMultiplier - qMultiplier) <= 1.0e-12;
+	}
+
+	private void resetAppliedMultiplier() {
+		this.appliedPMultiplier = Double.NaN;
+		this.appliedQMultiplier = Double.NaN;
 	}
 
 	private static Complex copy(Complex value) {

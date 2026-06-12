@@ -18,6 +18,7 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 	double nominalKV = 0;
 	double Vminpu = 0.85; // pu
 	double Vmaxpu = 1.1; // pu
+	double Vlowpu = 0.5; // pu
 	private int openDssLoadModel = 0;
 	private double cvrWatts = 1.0;
 	private double cvrVars = 2.0;
@@ -99,7 +100,8 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 	}
 
 	protected boolean isOpenDssVoltageModel() {
-		return this.openDssLoadModel == 3 || this.openDssLoadModel == 4
+		return this.openDssLoadModel == 1
+				|| this.openDssLoadModel == 3 || this.openDssLoadModel == 4
 				|| this.openDssLoadModel == 6 || this.openDssLoadModel == 7
 				|| this.openDssLoadModel == 8;
 	}
@@ -107,6 +109,9 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 	protected Complex openDssLoadAtVoltage(Complex nominalLoad, double vmag) {
 		if(this.openDssLoadModel == 8) {
 			return zipvLoadAtVoltage(nominalLoad, vmag);
+		}
+		if(this.openDssLoadModel == 1 && vmag > this.Vlowpu && vmag < this.Vminpu) {
+			return nominalLoad.multiply(openDssLowVoltageInterpolationScale(vmag));
 		}
 		if (vmag < this.Vminpu) {
 			return openDssLoadAtTransitionVoltage(nominalLoad, this.Vminpu)
@@ -121,6 +126,8 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 
 	private Complex openDssLoadAtTransitionVoltage(Complex nominalLoad, double vmag) {
 		switch(this.openDssLoadModel) {
+		case 1:
+			return nominalLoad;
 		case 3:
 		case 7:
 			return new Complex(nominalLoad.getReal(),
@@ -152,6 +159,16 @@ public class DStab1PLoadImpl extends DStabLoadImpl implements DStab1PLoad {
 		}
 		double ratio = vmag / transitionVoltage;
 		return ratio * ratio;
+	}
+
+	private double openDssLowVoltageInterpolationScale(double vmag) {
+		if(this.Vminpu <= this.Vlowpu || this.Vminpu <= 0.0) {
+			return matchedImpedanceScale(vmag, this.Vminpu);
+		}
+		double lowCurrentScale = this.Vlowpu;
+		double transitionCurrentScale = 1.0 / this.Vminpu;
+		double slope = (transitionCurrentScale - lowCurrentScale) / (this.Vminpu - this.Vlowpu);
+		return vmag * (lowCurrentScale + slope * (vmag - this.Vlowpu));
 	}
 
 	@Override

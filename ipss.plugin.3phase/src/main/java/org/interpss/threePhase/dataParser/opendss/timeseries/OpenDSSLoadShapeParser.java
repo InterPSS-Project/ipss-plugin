@@ -60,8 +60,12 @@ public class OpenDSSLoadShapeParser {
 				qMult = pMult.clone();
 			}
 			validateShape(shapeId, npts, hour, pMult, qMult, diagnostics, sourceFile, sourceLine);
+			int effectiveNpts = effectiveNpts(npts, pMult.length);
+			hour = truncate(hour, effectiveNpts);
+			pMult = truncate(pMult, effectiveNpts);
+			qMult = truncate(qMult, effectiveNpts);
 			if(pMult.length > 0) {
-				timeSeriesData.getShapeRegistry().add(new OpenDSSLoadShape(shapeId, npts, intervalHours, hour, pMult,
+				timeSeriesData.getShapeRegistry().add(new OpenDSSLoadShape(shapeId, effectiveNpts, intervalHours, hour, pMult,
 						qMult, sourceFile, sourceLine, diagnostics));
 			}
 			return addDiagnostics(diagnostics);
@@ -70,6 +74,25 @@ public class OpenDSSLoadShapeParser {
 					sourceLine);
 			return addDiagnostics(diagnostics);
 		}
+	}
+
+	private static int effectiveNpts(int declaredNpts, int multiplierCount) {
+		if(multiplierCount <= 0) {
+			return 0;
+		}
+		if(declaredNpts <= 0) {
+			return multiplierCount;
+		}
+		return Math.min(declaredNpts, multiplierCount);
+	}
+
+	private static double[] truncate(double[] values, int count) {
+		if(values == null || values.length <= count) {
+			return values;
+		}
+		double[] truncated = new double[count];
+		System.arraycopy(values, 0, truncated, 0, count);
+		return truncated;
 	}
 
 	private boolean addDiagnostics(List<OpenDSSParserDiagnostic> diagnostics) {

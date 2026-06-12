@@ -1,0 +1,4 @@
+case_id,master_file,step,generator_id,expected_p_kw,expected_q_kvar
+duty_wattpf,DutyWattPF.dss,0,PV,500.000000000000,200.000000000000
+duty_wattpf,DutyWattPF.dss,1,PV,250.000000000000,121.080526209463
+duty_wattpf,DutyWattPF.dss,2,PV,400.000000000000,193.728841935141
