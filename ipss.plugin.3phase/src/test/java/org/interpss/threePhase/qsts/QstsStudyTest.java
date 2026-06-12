@@ -107,6 +107,34 @@ public class QstsStudyTest {
 	}
 
 	@Test
+	void branchPowerSamplingIncludesSolvedPowerPhasesBeyondPrimaryPhaseCode()
+			throws InterpssException {
+		Static3PNetwork network = twoBusNetwork();
+		Static3PBranch branch = network.getBranch("source->load(1)");
+		branch.setPhaseCode(PhaseCode.C);
+		FakePowerFlowAlgorithm powerFlow = new FakePowerFlowAlgorithm();
+		powerFlow.loadVoltageScale = 0.98;
+
+		QstsResult result = QstsStudy.from(network, staticSchedule())
+				.setPowerFlowAlgorithm(powerFlow)
+				.setNumberOfSteps(1)
+				.run();
+
+		assertTrue(result.isConverged());
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getTerminal() == 2
+						&& sample.getPhase().equals("A")
+						&& Math.abs(sample.getActivePowerKw()) > 1.0e-9));
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getTerminal() == 2
+						&& sample.getPhase().equals("B")
+						&& Math.abs(sample.getActivePowerKw()) > 1.0e-9));
+		assertTrue(result.getStep(0).getBranchPowers().stream()
+				.anyMatch(sample -> sample.getTerminal() == 2
+						&& sample.getPhase().equals("C")));
+	}
+
+	@Test
 	void qstsSamplingSkipsInactivePhasesForTwoPhaseBusesAndDevices()
 			throws InterpssException {
 		Static3PNetwork network = twoPhaseNetwork();
