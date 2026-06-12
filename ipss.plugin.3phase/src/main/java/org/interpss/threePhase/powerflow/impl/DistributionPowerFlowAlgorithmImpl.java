@@ -62,6 +62,8 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 
 	private static final String DISABLE_FLOATING_COMPONENT_ANTI_FLOAT_PROPERTY =
 			"ipss.distpf.disableFloatingComponentAntiFloat";
+	private static final String ENABLE_PRIMITIVE_VOLTAGE_STATE_PROPERTY =
+			"ipss.distpf.enablePrimitiveVoltageState";
 
 	private INetwork3Phase distNet = null;
 
@@ -2515,6 +2517,9 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private boolean primitiveVoltageStateEligible() {
+		if(!Boolean.getBoolean(ENABLE_PRIMITIVE_VOLTAGE_STATE_PROPERTY)) {
+			return false;
+		}
 		if(this.regulatorControlEnabled && !this.regulatorControls.isEmpty()) {
 			return false;
 		}
