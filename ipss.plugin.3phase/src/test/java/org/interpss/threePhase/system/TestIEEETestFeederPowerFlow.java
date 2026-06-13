@@ -22,7 +22,7 @@ public class TestIEEETestFeederPowerFlow {
 	public void testIEEE123BusPowerflow(){
 
 		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.dss");
+		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.DSS");
 
 		parser.calcVoltageBases();
 
@@ -102,7 +102,7 @@ public class TestIEEETestFeederPowerFlow {
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 
 		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified.dss");
+		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified.DSS");
 
 		parser.calcVoltageBases();
 
