@@ -6,6 +6,14 @@
 *.dat
 !**/src/test/resources/**/*.csv
 !**/src/test/resources/**/*.dat
+!**/testData/**/*.csv
+!**/testData/**/*.CSV
+!**/testData/**/*.dat
+**/testData/**/ipss.plugin.3phase/
+**/testData/**/ieee123_netString.dat
+**/testData/**/IEEE8500*_EXP_*.csv
+**/testData/**/Normalized-*.CSV
+**/testData/**/AC-Loadflow-*.csv
 *.prefs
 /.classpath
 .project
