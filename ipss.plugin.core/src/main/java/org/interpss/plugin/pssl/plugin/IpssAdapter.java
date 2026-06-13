@@ -23,10 +23,8 @@
   */
 package org.interpss.plugin.pssl.plugin;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
@@ -115,51 +113,26 @@ public class IpssAdapter extends BaseDSL {
 	* @throws InterpssException if an error occurs during file reading or parsing
 	*/
 	public static PsseVersion parsePsseVersion(String filename) throws InterpssException {
-		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-			String line;
-			
-			// Skip comment lines starting with @
-			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				if (!line.startsWith("@") && !line.isEmpty()) {
-					break;
-				}
-			}
-			
-			if (line != null) {
-				// Split by comma and get the third item (REV)
-				String[] parts = line.split(",");
-				if (parts.length >= 3) {
-					String revStr = parts[2].trim();
-					try {
-						int version = Integer.parseInt(revStr);
-						
-						// Map version number to PsseVersion enum
-						switch (version) {
-							case 30: return PsseVersion.PSSE_30;
-							case 31: return PsseVersion.PSSE_31;
-							case 32: return PsseVersion.PSSE_32;
-							case 33: return PsseVersion.PSSE_33;
-							case 34: return PsseVersion.PSSE_34;
-							case 35: return PsseVersion.PSSE_35;
-							case 36: return PsseVersion.PSSE_36;
-							default: 
-								// Default to latest version for unknown versions
-								return PsseVersion.PSSE_36;
-						}
-					} catch (NumberFormatException e) {
-						throw new InterpssException("Invalid REV format in PSSE file: " + revStr + " - " + e.getMessage());
-					}
-				} else {
-					throw new InterpssException("Invalid PSSE file format: insufficient fields in header line");
-				}
-			} else {
-				throw new InterpssException("Unable to read header information from PSSE file");
-			}
-		} catch (IOException e) {
-			throw new InterpssException("Error reading PSSE file: " + filename + " - " + e.getMessage());
+		try {
+			return psseVersion(PSSEAdapter.parsePsseVersion(filename));
+		} catch (Exception e) {
+			throw new InterpssException(e.getMessage());
 		}
-	}			
+	}
+
+	private static PsseVersion psseVersion(PSSEAdapter.PsseVersion version) {
+		switch (version) {
+			case PSSE_29: return PsseVersion.PSSE_29;
+			case PSSE_30: return PsseVersion.PSSE_30;
+			case PSSE_31: return PsseVersion.PSSE_31;
+			case PSSE_32: return PsseVersion.PSSE_32;
+			case PSSE_33: return PsseVersion.PSSE_33;
+			case PSSE_34: return PsseVersion.PSSE_34;
+			case PSSE_35: return PsseVersion.PSSE_35;
+			case PSSE_36: return PsseVersion.PSSE_36;
+			default: return PsseVersion.PSSE_36;
+		}
+	}
 			
 	/**
 	 * create an ImportAclfNetDSL object
