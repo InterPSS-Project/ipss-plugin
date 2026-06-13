@@ -1,0 +1,9 @@
+case,bus,phase,vmag_pu,angle_deg
+centertap-mini,sourcebus,1,1.000000139327,-0.000005006462
+centertap-mini,sourcebus,2,0.999998686377,-120.000147482756
+centertap-mini,sourcebus,3,0.999999943666,119.999992521495
+centertap-mini,primary,2,0.999998662699,-120.000148331317
+centertap-mini,secondary,1,0.995932868120,-120.161038793392
+centertap-mini,secondary,2,0.995932864731,59.838961540164
+centertap-mini,loadbus,1,0.995924160643,-120.161338962553
+centertap-mini,loadbus,2,0.995924157254,59.838661371001
