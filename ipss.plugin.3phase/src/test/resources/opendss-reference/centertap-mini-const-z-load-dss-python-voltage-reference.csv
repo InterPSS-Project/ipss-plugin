@@ -1,0 +1,9 @@
+case,bus,phase,vmag_pu,angle_deg
+centertap-mini-const-z-load,sourcebus,1,1.000000138226,-0.000004964241
+centertap-mini-const-z-load,sourcebus,2,0.999998698267,-120.000146290782
+centertap-mini-const-z-load,sourcebus,3,0.999999944854,119.999992555032
+centertap-mini-const-z-load,primary,2,0.999998674785,-120.000147132668
+centertap-mini-const-z-load,secondary,1,0.995959382000,-120.159733060832
+centertap-mini-const-z-load,secondary,2,0.995959378621,59.840267272875
+centertap-mini-const-z-load,loadbus,1,0.995950745127,-120.160030788232
+centertap-mini-const-z-load,loadbus,2,0.995950741748,59.839969545475

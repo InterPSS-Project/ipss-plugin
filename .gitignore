@@ -4,6 +4,8 @@
 .settings
 *.csv
 *.dat
+!**/src/test/resources/**/*.csv
+!**/src/test/resources/**/*.dat
 *.prefs
 /.classpath
 .project
