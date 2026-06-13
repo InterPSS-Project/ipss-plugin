@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -132,9 +133,10 @@ public class TestOpenDSSDataParser {
 
 		//System.out.println(parser.getDistNetwork().net2String());
 
-		String netStrFileName = "testData/feeder/IEEE123/ieee123_netString.dat";
+		Path netStrFileName = Paths.get("target", "test-output", "opendss", "ieee123_netString.dat");
 		try {
-			Files.write(Paths.get(netStrFileName), parser.getDistNetwork().net2String().getBytes());
+			Files.createDirectories(netStrFileName.getParent());
+			Files.write(netStrFileName, parser.getDistNetwork().net2String().getBytes());
 		} catch (IOException e) {
 
 			e.printStackTrace();
