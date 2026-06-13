@@ -111,4 +111,4 @@ jobs:
       run: mvn -s "$MAVEN_SETTINGS" -B package --file pom.xml
 
     - name: Deploy
-      run: mvn -s "$MAVEN_SETTINGS" -B deploy --file pom.xml
+      run: mvn -s "$MAVEN_SETTINGS" -B deploy -DskipTests --file pom.xml
