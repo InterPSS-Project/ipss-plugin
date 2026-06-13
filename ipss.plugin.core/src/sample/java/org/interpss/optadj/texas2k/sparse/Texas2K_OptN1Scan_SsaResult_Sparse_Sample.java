@@ -15,12 +15,19 @@ import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
+import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
+import com.interpss.common.exp.InterpssException;
+import com.interpss.core.DclfAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
@@ -84,5 +91,36 @@ public class Texas2K_OptN1Scan_SsaResult_Sparse_Sample {
 		SsaResultContainer ssaResultAfter = new AclfNetSsaHelper(dclfAlgo).contingencyScan(dclfContList, ssaResult.getCaOverLimitInfo());	
 		System.out.println("Total number of branches over limit after OptAdj: " + ssaResultAfter.getCaOverLimitInfo().size());
 		ssaResultAfter.printCaOverLimitInfo(ssaResult.getCaOverLimitInfo());
+
+		double baseMVA = aclfNet.getBaseMva();
+		String monitorBranchId = "Bus4044->Bus4185(1)";
+		String outageBranchId = "Bus4044->Bus4119(1)";
+		SsaBranchOverLimitInfo overLimitInfo = ssaResultAfter.getCaOverLimitInfo().stream()
+			.filter(info -> info.getOverLimitBranchId().equals(monitorBranchId)
+					&& info.getOutageBranchId().equals(outageBranchId))
+			.findFirst()
+			.orElse(null);
+
+		if (overLimitInfo != null) {
+			aclfNet.getBusList().stream()
+					.filter(bus -> bus.isGenPV() || bus.isGenPQ())
+					.forEach(bus -> {
+						try {
+							double csf = overLimitInfo.calCombinedShiftingFactor(bus.getId(), dclfAlgo);
+							if (Math.abs(csf) > 0.05) {
+								double genMw = dclfAlgo.getDclfAlgoBus(bus.getId()).getGenList().stream()
+										.mapToDouble(DclfAlgoGen::getGenP).sum() * baseMVA;
+								double genMaxMw = bus.getPGenLimit().getMax() * baseMVA;
+								double genMinMw = bus.getPGenLimit().getMin() * baseMVA;
+								System.out.println(String.format(
+										"CSF for %s on monitored: %s outage: %s: %.2f, genP: %.2f, genMaxP: %.2f, genMinP: %.2f",
+										bus.getId(), monitorBranchId, outageBranchId, csf, genMw, genMaxMw, genMinMw));
+							}
+						} catch (InterpssException e) {
+							e.printStackTrace();
+						}
+					});
+		}		
 	}
 }
+
