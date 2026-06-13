@@ -14,6 +14,7 @@
 **/testData/**/IEEE8500*_EXP_*.csv
 **/testData/**/Normalized-*.CSV
 **/testData/**/AC-Loadflow-*.csv
+!ipss.plugin.3phase/testData/feeder/IEEE8500/Normalized-1s-2900-pts.CSV
 *.prefs
 /.classpath
 .project
