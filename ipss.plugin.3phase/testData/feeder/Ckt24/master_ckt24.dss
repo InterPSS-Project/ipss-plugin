@@ -4,9 +4,9 @@ New Circuit.ckt24 bus1=SourceBus pu=1.05  basekV=230 R1=0.63 X1=6.72 R0=4.07 X0=
 
 Redirect  Wiredata_ckt24.dss
 Redirect  Linegeometry_ckt24.dss
-Redirect  LineCodes_ckt24.dss
+Redirect  Linecodes_ckt24.dss
 Redirect  TriplexLineCodes_ckt24.dss
-Redirect  Substation_ckt24.dss
+Redirect  substation_ckt24.dss
 
 ! Loadshapes for yearly simulations (normalized)
 New Loadshape.LS_PhaseA npts=8760 interval=1 mult=(file=LS_PhaseA.txt) action=normalize 
@@ -16,7 +16,7 @@ New Loadshape.LS_ThreePhase npts=8760 interval=1 mult=(file=LS_ThreePhase.txt) a
 New Loadshape.Other_Bus_Load npts=8760 interval=1 mult=(file=Other_Bus_Load.txt) action=normalize
 
 Redirect  lines_ckt24.dss
-Redirect  Capacitors_ckt24.dss
+Redirect  capacitors_ckt24.dss
 Redirect  stepxfmrs_ckt24.dss
 Redirect  transformers_ckt24.dss
 Redirect  sec_serv_ckt24.dss
