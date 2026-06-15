@@ -26,7 +26,7 @@ public class DistOpfOpenDssImportTest {
 	@Test
 	public void extractsExistingOpenDssIeee123Feeder() {
 		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master_Modified_v2.dss");
+		parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master_Modified_v2.DSS");
 		parser.calcVoltageBases();
 		parser.convertActualValuesToPU(1.0);
 
@@ -77,7 +77,7 @@ public class DistOpfOpenDssImportTest {
 
 	@Test
 	public void verifiesDistOpfOnOpenDssIeee123WithFixedPointPowerFlow() {
-		OpenDSSDataParser parser = openDssParser("testData/feeder/IEEE123", "IEEE123Master_Modified_v2.dss");
+		OpenDSSDataParser parser = openDssParser("testData/feeder/IEEE123", "IEEE123Master_Modified_v2.DSS");
 		parser.getBranchByName("reg1a").setToTurnRatio(1.0438);
 		DStabNetwork3Phase distNet = parser.getDistNetwork();
 

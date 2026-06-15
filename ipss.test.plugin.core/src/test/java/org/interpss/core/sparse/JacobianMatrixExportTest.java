@@ -2,6 +2,7 @@ package org.interpss.core.sparse;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -26,8 +27,7 @@ import com.interpss.core.sparse.impl.AbstractSparseEqnDoubleImpl;
 
 public class JacobianMatrixExportTest extends CorePluginTestSetup {
 
-    private static final Path DEFAULT_OUTPUT_DIR =
-            Paths.get("/Users/ipssdev/github/JKLU/target/ipss-matrices");
+    private static final String EXPORT_DIR = "jklu.matrix.output.dir";
 
     @Test
     public void exportActivs25kJacobian() throws Exception {
@@ -49,6 +49,10 @@ public class JacobianMatrixExportTest extends CorePluginTestSetup {
 
     private static void exportJacobian(String name, String rawFile, double tolerance, String outputFile)
             throws InterpssException, IOException {
+        String dir = System.getProperty(EXPORT_DIR);
+        assumeTrue(dir != null && dir.trim().length() > 0,
+                "Set -D" + EXPORT_DIR + "=<dir> to export Newton-Raphson Jacobian Matrix Market cases");
+
         IpssCorePlugin.init();
 
         AclfNetwork net = org.interpss.plugin.pssl.plugin.IpssAdapter.importAclfNet(rawFile)
@@ -66,7 +70,7 @@ public class JacobianMatrixExportTest extends CorePluginTestSetup {
         assertTrue(jacobian instanceof AbstractSparseEqnDoubleImpl,
                 "Expected InterPSS sparse double-backed Jacobian");
 
-        Path outDir = Paths.get(System.getProperty("jklu.matrix.output.dir", DEFAULT_OUTPUT_DIR.toString()));
+        Path outDir = Paths.get(dir);
         Files.createDirectories(outDir);
         Path out = outDir.resolve(outputFile);
         writeMatrixMarket((AbstractSparseEqnDoubleImpl) jacobian, out, name);

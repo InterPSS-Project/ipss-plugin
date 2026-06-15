@@ -524,11 +524,12 @@ public class OpenDSSDataParser {
 				else if(str.startsWith("redirect")||str.startsWith("Redirect")){
 					ODMLogger.getLogger().info(str);
 					String redictFileName = str.split("\\s+")[1];
+					String resolvedFileName = resolveRedirectFileName(folderPath, redictFileName);
 					if(redictFileName.toLowerCase().contains("linecode")){
-						no_error=this.lineCodeParser.parseLineCodeFile(folderPath+"/"+redictFileName);
+						no_error=this.lineCodeParser.parseLineCodeFile(folderPath+"/"+resolvedFileName);
 					}
 					else{
-						no_error = no_error&&parseFile(folderPath,redictFileName);
+						no_error = no_error&&parseFile(folderPath,resolvedFileName);
 					}
 				}
 				else if(str.toLowerCase().startsWith("transformer.") && str.toLowerCase().contains(".taps=")){
@@ -683,6 +684,23 @@ public class OpenDSSDataParser {
 	 zabc.ca = mutual;
 	 zabc.cb = mutual;
 	 return zabc;
+	 }
+
+     private String resolveRedirectFileName(String folderPath, String redirectFileName) {
+	 File exact = new File(folderPath, redirectFileName);
+	 if(exact.exists()) {
+		 return redirectFileName;
+	 }
+	 File folder = new File(folderPath);
+	 String[] files = folder.list();
+	 if(files != null) {
+		 for(String file : files) {
+			 if(file.equalsIgnoreCase(redirectFileName)) {
+				 return file;
+			 }
+		 }
+	 }
+	 return redirectFileName;
      }
 
      private boolean parseFile(String folderPath, String fileName){
