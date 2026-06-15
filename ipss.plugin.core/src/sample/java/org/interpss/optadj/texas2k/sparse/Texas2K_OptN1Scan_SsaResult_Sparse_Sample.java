@@ -95,32 +95,25 @@ public class Texas2K_OptN1Scan_SsaResult_Sparse_Sample {
 		double baseMVA = aclfNet.getBaseMva();
 		String monitorBranchId = "Bus4044->Bus4185(1)";
 		String outageBranchId = "Bus4044->Bus4119(1)";
-		SsaBranchOverLimitInfo overLimitInfo = ssaResultAfter.getCaOverLimitInfo().stream()
-			.filter(info -> info.getOverLimitBranchId().equals(monitorBranchId)
-					&& info.getOutageBranchId().equals(outageBranchId))
-			.findFirst()
-			.orElse(null);
-
-		if (overLimitInfo != null) {
-			aclfNet.getBusList().stream()
+		/* calculate the combined shifting factor CGSF for the monitored branch with respect to the outage branch */
+		aclfNet.getBusList().stream()
 					.filter(bus -> bus.isGenPV() || bus.isGenPQ())
 					.forEach(bus -> {
 						try {
-							double csf = BranchCAResultRec.calCombinedShiftingFactor(bus.getId(), dclfAlgo, outageBranchId, monitorBranchId);
-							if (Math.abs(csf) > 0.05) {
+							double cgsf = BranchCAResultRec.calCombinedShiftingFactor(bus.getId(), dclfAlgo, outageBranchId, monitorBranchId);
+							if (Math.abs(cgsf) > 0.05) {
 								double genMw = dclfAlgo.getDclfAlgoBus(bus.getId()).getGenList().stream()
 										.mapToDouble(DclfAlgoGen::getGenP).sum() * baseMVA;
 								double genMaxMw = bus.getPGenLimit().getMax() * baseMVA;
 								double genMinMw = bus.getPGenLimit().getMin() * baseMVA;
 								System.out.println(String.format(
-										"CSF for %s on monitored: %s outage: %s: %.2f, genP: %.2f, genMaxP: %.2f, genMinP: %.2f",
-										bus.getId(), monitorBranchId, outageBranchId, csf, genMw, genMaxMw, genMinMw));
+										"CGSF for %s on monitored: %s outage: %s: %.2f, genP: %.2f, genMaxP: %.2f, genMinP: %.2f",
+										bus.getId(), monitorBranchId, outageBranchId, cgsf, genMw, genMaxMw, genMinMw));
 							}
 						} catch (InterpssException e) {
 							e.printStackTrace();
 						}
 					});
-		}		
 	}
 }
 
