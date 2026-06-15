@@ -8,6 +8,7 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
@@ -84,22 +85,6 @@ public class SsaBranchOverLimitInfo extends BaseJSONBean{
 	}
 
 	public double calCombinedShiftingFactor(String busId, ContingencyAnalysisAlgorithm dclfAlgo) throws InterpssException {
-		// create a contingency object for the branch outage analysis
-		DclfBranchOutage contingency = DclfAlgoObjectFactory.createContingency("contBranch:" + outageBranchId);
-		// create an open CA outage branch object for the branch outage analysis
-		DclfOutageBranch outage = DclfAlgoObjectFactory.createCaOutageBranch(
-					dclfAlgo.getDclfAlgoBranch(outageBranchId),
-					ContingencyBranchOutageType.OPEN);
-		contingency.setOutageEquip(outage);
-
-		AclfNetwork aclfNet = dclfAlgo.getAclfNet();
-		AclfBranch monitoredBranch = aclfNet.getBranch(overLimitBranchId);
-		double csf = 0.0;
-		if (contingency != null && monitoredBranch != null) {
-			BranchCAResultRec rec = new BranchCAResultRec(contingency, monitoredBranch,
-					this.getBaseFlowMW(), this.getShftedFlowMW());
-			csf = rec.calCombinedShiftingFactor(busId, dclfAlgo);	
-		}
-		return csf;
+		return BranchCAResultRec.calCombinedShiftingFactor(busId, dclfAlgo, outageBranchId, overLimitBranchId);
 	}
 }
