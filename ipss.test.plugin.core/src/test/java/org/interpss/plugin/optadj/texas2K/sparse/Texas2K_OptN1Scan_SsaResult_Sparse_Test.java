@@ -12,6 +12,7 @@ import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.result.OptAdjResultContainer;
+import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
 import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.interpss.plugin.optadj.texas2K.Texas2K_TestCaseInfo;
 import org.junit.jupiter.api.Test;
@@ -96,5 +97,22 @@ public class Texas2K_OptN1Scan_SsaResult_Sparse_Test extends CorePluginTestSetup
 				"SSA-tracked contingency pairs after optimization");
 		assertEquals(9, overLimitAfter,
 				"SSA-tracked contingency overloads above 100% after optimization");
+
+		// CSF regression anchors (Texas2K_OptN1Scan_SsaResult_Sparse_Sample, sparse optimizer).
+		String monitorBranchId = "Bus4044->Bus4185(1)";
+		String outageBranchId = "Bus4044->Bus4119(1)";
+		SsaBranchOverLimitInfo overLimitInfo = ssaResultAfter.getCaOverLimitInfo().stream()
+				.filter(info -> info.getOverLimitBranchId().equals(monitorBranchId)
+						&& info.getOutageBranchId().equals(outageBranchId))
+				.findFirst()
+				.orElse(null);
+		assertTrue(overLimitInfo != null,
+				"Anchor monitored/outage pair should remain in SSA result after optimization");
+		assertEquals(1.0, overLimitInfo.calCombinedShiftingFactor("Bus4045", dclfAlgo), 1.0e-6,
+				"CSF on Bus4045 for anchor contingency pair");
+		assertEquals(1.0, overLimitInfo.calCombinedShiftingFactor("Bus4046", dclfAlgo), 1.0e-6,
+				"CSF on Bus4046 for anchor contingency pair");
+		assertEquals(1.0, overLimitInfo.calCombinedShiftingFactor("Bus4047", dclfAlgo), 1.0e-6,
+				"CSF on Bus4047 for anchor contingency pair");
 	}
 }
