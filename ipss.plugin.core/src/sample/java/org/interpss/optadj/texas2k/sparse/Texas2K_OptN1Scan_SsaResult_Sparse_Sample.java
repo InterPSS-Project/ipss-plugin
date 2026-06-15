@@ -106,7 +106,7 @@ public class Texas2K_OptN1Scan_SsaResult_Sparse_Sample {
 					.filter(bus -> bus.isGenPV() || bus.isGenPQ())
 					.forEach(bus -> {
 						try {
-							double csf = overLimitInfo.calCombinedShiftingFactor(bus.getId(), dclfAlgo);
+							double csf = BranchCAResultRec.calCombinedShiftingFactor(bus.getId(), dclfAlgo, outageBranchId, monitorBranchId);
 							if (Math.abs(csf) > 0.05) {
 								double genMw = dclfAlgo.getDclfAlgoBus(bus.getId()).getGenList().stream()
 										.mapToDouble(DclfAlgoGen::getGenP).sum() * baseMVA;
