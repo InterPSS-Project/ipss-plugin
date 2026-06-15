@@ -8,5 +8,8 @@ public record DclfCgsfResult(
 		String monitorBranchId,
 		String outageBranchId,
 		double branchRatingMva,
-		double cgsf) {
+		double cgsf,
+		double genMw,
+		double genMaxMw,
+		double genMinMw) {
 }
