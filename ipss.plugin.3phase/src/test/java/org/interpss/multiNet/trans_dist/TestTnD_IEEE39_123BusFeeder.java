@@ -402,7 +402,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 				parser.setBusIdPrefix(idPrefix);
 				
 				
-				parser.parseFeederData("testData\\feeder\\IEEE123","IEEE123Master_Modified_v2.dss");
+				parser.parseFeederData("testData\\feeder\\IEEE123","IEEE123Master_Modified_v2.DSS");
 				
 				parser.calcVoltageBases();
 
