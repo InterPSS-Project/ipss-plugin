@@ -24,6 +24,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.core.sparse.impl.klu.KLUSparseEqnDoubleImpl;
@@ -204,6 +205,7 @@ public class DclfSensitivityAnalyzer {
 		AclfBranch monitorBranch = findBranch(request.net(), request.monitorBranchId());
 		double branchRatingMva = monitorBranch.getRatingMva1() > 0 ? monitorBranch.getRatingMva1() : 0.0;
 		findBranch(request.net(), request.outageBranchId());
+		double baseMva = request.net().getBaseMva();
 		long startedNanos = System.nanoTime();
 
 		ConcurrentLinkedQueue<DclfCgsfResult> results = new ConcurrentLinkedQueue<>();
@@ -215,12 +217,20 @@ public class DclfSensitivityAnalyzer {
 						request.outageBranchId(),
 						request.monitorBranchId());
 				if (Math.abs(cgsf) > request.threshold()) {
+					double genMw = dclfAlgo.getDclfAlgoBus(bus.getId()).getGenList().stream()
+							.mapToDouble(DclfAlgoGen::getGenP)
+							.sum() * baseMva;
+					double genMaxMw = bus.getPGenLimit() != null ? bus.getPGenLimit().getMax() * baseMva : 0.0;
+					double genMinMw = bus.getPGenLimit() != null ? bus.getPGenLimit().getMin() * baseMva : 0.0;
 					results.add(new DclfCgsfResult(
 							bus.getId(),
 							request.monitorBranchId(),
 							request.outageBranchId(),
 							branchRatingMva,
-							cgsf));
+							cgsf,
+							genMw,
+							genMaxMw,
+							genMinMw));
 				}
 			} catch (InterpssException ex) {
 				throw new IllegalStateException("Failed to calculate CGSF for Gen@"
