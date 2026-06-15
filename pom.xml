@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <revision>1.2.1</revision>
-        <ipss.core.version>1.2.1</ipss.core.version>
+        <revision>1.2.2</revision>
+        <ipss.core.version>1.2.2</ipss.core.version>
         <ieee.odm.version>1.0.5</ieee.odm.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
@@ -110,14 +110,25 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>maven-releases</id>
-            <url>https://gzv-nex.piston.ink/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven-snapshots</id>
-            <url>https://gzv-nex.piston.ink/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+  <repositories>
+    <repository>
+      <id>codeartifact</id>
+      <name>ipss-maven-release</name>
+      <url>https://ipss-078183419290.d.codeartifact.us-east-1.amazonaws.com/maven/maven-release/</url>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+        <id>codeartifact</id>
+        <name>ipss-maven-release</name>
+        <url>https://ipss-078183419290.d.codeartifact.us-east-1.amazonaws.com/maven/maven-release/</url>
+    </repository>
+    <snapshotRepository>
+        <id>codeartifact</id>
+        <name>ipss-maven-snapshot</name>
+        <url>https://ipss-078183419290.d.codeartifact.us-east-1.amazonaws.com/maven/maven-snapshot/</url>
+    </snapshotRepository>
+  </distributionManagement>
+   
 </project>
