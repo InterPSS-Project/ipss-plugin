@@ -15,6 +15,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.apache.commons.math3.complex.Complex;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfLoad;
@@ -188,6 +190,47 @@ public class DclfSensitivityAnalyzer {
 
 		long candidateCount = (long) request.outageBranchIds().size() * request.monitorBranchIds().size();
 		return new SensitivityRunResult(new ArrayList<>(results), candidateCount, elapsedMillis(startedNanos), false);
+	}
+
+	public CgsfRunResult runCgsf(CgsfRunRequest request) {
+		ContingencyAnalysisAlgorithm dclfAlgo = createDclfAlgo(request.net(), request.dclfMethod(), "CGSF");
+		Set<String> sourceBusIds = request.sourceBusIds().isEmpty() ? Set.of() : new HashSet<>(request.sourceBusIds());
+		double minimumGeneratorRatingMva = Math.max(0.0, request.minimumGeneratorRatingMva());
+		List<? extends BaseAclfBus<?, ?>> generatorBuses = request.net().getBusList().stream()
+				.filter(bus -> bus.isActive() && (bus.isGenPV() || bus.isGenPQ()))
+				.filter(bus -> sourceBusIds.isEmpty() || sourceBusIds.contains(bus.getId()))
+				.filter(bus -> meetsMinimumGeneratorRating(bus, minimumGeneratorRatingMva))
+				.toList();
+		AclfBranch monitorBranch = findBranch(request.net(), request.monitorBranchId());
+		double branchRatingMva = monitorBranch.getRatingMva1() > 0 ? monitorBranch.getRatingMva1() : 0.0;
+		findBranch(request.net(), request.outageBranchId());
+		long startedNanos = System.nanoTime();
+
+		ConcurrentLinkedQueue<DclfCgsfResult> results = new ConcurrentLinkedQueue<>();
+		generatorBuses.parallelStream().forEach(bus -> {
+			try {
+				double cgsf = BranchCAResultRec.calCombinedShiftingFactor(
+						bus.getId(),
+						dclfAlgo,
+						request.outageBranchId(),
+						request.monitorBranchId());
+				if (Math.abs(cgsf) > request.threshold()) {
+					results.add(new DclfCgsfResult(
+							bus.getId(),
+							request.monitorBranchId(),
+							request.outageBranchId(),
+							branchRatingMva,
+							cgsf));
+				}
+			} catch (InterpssException ex) {
+				throw new IllegalStateException("Failed to calculate CGSF for Gen@"
+						+ bus.getId() + " on monitored " + request.monitorBranchId()
+						+ " outage " + request.outageBranchId(), ex);
+			}
+		});
+
+		long candidateCount = generatorBuses.size();
+		return new CgsfRunResult(new ArrayList<>(results), candidateCount, elapsedMillis(startedNanos));
 	}
 
 	public void clearCache() {
@@ -513,6 +556,35 @@ public class DclfSensitivityAnalyzer {
 		public LodfRunRequest {
 			monitorBranchIds = monitorBranchIds == null ? List.of() : List.copyOf(monitorBranchIds);
 			outageBranchIds = outageBranchIds == null ? List.of() : List.copyOf(outageBranchIds);
+		}
+	}
+
+	public record CgsfRunRequest(
+			AclfNetwork net,
+			DclfMethod dclfMethod,
+			String monitorBranchId,
+			String outageBranchId,
+			double threshold,
+			List<String> sourceBusIds,
+			double minimumGeneratorRatingMva) {
+		public CgsfRunRequest {
+			if (monitorBranchId == null || monitorBranchId.isBlank()) {
+				throw new IllegalArgumentException("Monitor branch id is required.");
+			}
+			if (outageBranchId == null || outageBranchId.isBlank()) {
+				throw new IllegalArgumentException("Outage branch id is required.");
+			}
+			sourceBusIds = sourceBusIds == null ? List.of() : List.copyOf(sourceBusIds);
+			minimumGeneratorRatingMva = Math.max(0.0, minimumGeneratorRatingMva);
+		}
+	}
+
+	public record CgsfRunResult(
+			List<DclfCgsfResult> results,
+			long candidateCount,
+			long elapsedMillis) {
+		public CgsfRunResult {
+			results = results == null ? List.of() : List.copyOf(results);
 		}
 	}
 

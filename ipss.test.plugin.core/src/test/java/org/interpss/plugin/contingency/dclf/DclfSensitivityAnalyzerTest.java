@@ -14,8 +14,10 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.contingency.DclfSensitivityAnalyzer;
 import org.interpss.plugin.contingency.DclfSensitivityResult;
+import org.interpss.plugin.contingency.DclfCgsfResult;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.aclf.AclfNetwork;
@@ -77,6 +79,35 @@ public class DclfSensitivityAnalyzerTest extends CorePluginTestSetup {
 		for (DclfSensitivityResult row : result.results()) {
 			double expected = scalar.pTransferDistFactor(row.sourceId(), net.getBranch(row.monitorBranchId()));
 			assertEquals(expected, row.factor(), 1.0e-10);
+		}
+	}
+
+	@Test
+	public void runCgsf_matchesCoreApi() throws Exception {
+		AclfNetwork net = loadIeee14();
+		ContingencyAnalysisAlgorithm scalar = createContingencyAnalysisAlgorithm(net);
+		scalar.calculateDclf(DclfMethod.STD);
+
+		String monitorBranchId = "Bus1->Bus2(1)";
+		String outageBranchId = "Bus4->Bus5(1)";
+
+		DclfSensitivityAnalyzer.CgsfRunResult result = new DclfSensitivityAnalyzer().runCgsf(
+				new DclfSensitivityAnalyzer.CgsfRunRequest(
+						net,
+						DclfMethod.STD,
+						monitorBranchId,
+						outageBranchId,
+						0.0,
+						List.of(),
+						0.0));
+
+		assertFalse(result.results().isEmpty());
+		for (DclfCgsfResult row : result.results()) {
+			double expected = BranchCAResultRec.calCombinedShiftingFactor(
+					row.genBusId(), scalar, outageBranchId, monitorBranchId);
+			assertEquals(expected, row.cgsf(), 1.0e-10);
+			assertEquals(monitorBranchId, row.monitorBranchId());
+			assertEquals(outageBranchId, row.outageBranchId());
 		}
 	}
 
