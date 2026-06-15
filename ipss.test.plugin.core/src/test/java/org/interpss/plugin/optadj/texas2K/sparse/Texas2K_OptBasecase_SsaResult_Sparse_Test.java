@@ -15,6 +15,7 @@ import org.interpss.plugin.optadj.texas2K.Texas2K_TestCaseInfo;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
@@ -99,5 +100,16 @@ public class Texas2K_OptBasecase_SsaResult_Sparse_Test extends CorePluginTestSet
 				"Peak loading before optimization (~99.6%)");
 		assertTrue(maxLoadingAfter > 93.0 && maxLoadingAfter < 96.0,
 				"Peak loading after optimization (~94.8%)");
+
+		// GSF regression anchors (Texas2K_OptBasecase_SsaResult_Sparse_Sample, sparse optimizer).
+		String branchId = "Bus4044->Bus4119(1)";
+		AclfBranch branch = net.getBranch(branchId);
+		assertTrue(branch != null, "Anchor branch for GSF check should exist");
+		assertEquals(0.735705, dclfAlgo.calGenShiftFactor("Bus4045", branch), 1.0e-4,
+				"GSF on Bus4045 for anchor branch");
+		assertEquals(0.735705, dclfAlgo.calGenShiftFactor("Bus4046", branch), 1.0e-4,
+				"GSF on Bus4046 for anchor branch");
+		assertEquals(0.735705, dclfAlgo.calGenShiftFactor("Bus4047", branch), 1.0e-4,
+				"GSF on Bus4047 for anchor branch");
 	}
 }
