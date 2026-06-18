@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonIOException;
@@ -24,6 +27,8 @@ import com.interpss.state.aclf.AclfNetworkState;
  * or two JSON files, and prints the differences in a human-readable format.
  */
 public class AclfNetJsonComparator {
+    private static final Logger log = LoggerFactory.getLogger(AclfNetJsonComparator.class);
+
 	// predicate to filter out certain fields from being printed
 	private Predicate<String> outFilter = path -> true;
 	
@@ -102,7 +107,8 @@ public class AclfNetJsonComparator {
     	 JsonElement obj1 = JsonParser.parseString(new AclfNetworkState(aclfNet).toString());
     	 JsonElement obj2 = JsonParser.parseReader(new FileReader(file2));
 		 
-		 System.out.println(this.desc + " comparing JSON objects: " + aclfNet.getName() + " vs " + file2.getPath());
+         // Change to log
+         log.info(this.desc + " comparing JSON objects: " + aclfNet.getName() + " vs " + file2.getPath());
 		 comparePrettyPrint("", obj1, obj2);
 		 
 		 return !isDifferent;
@@ -122,7 +128,8 @@ public class AclfNetJsonComparator {
     	 JsonElement obj1 = JsonParser.parseReader(new FileReader(file1));
     	 JsonElement obj2 = JsonParser.parseReader(new FileReader(file2));
 		 
-		 System.out.println(this.desc + " comparing JSON objects: " + file1.getPath() + " vs " + file2.getPath());
+		 // Change to log
+		 log.info(this.desc + " comparing JSON objects: " + file1.getPath() + " vs " + file2.getPath());
 		 comparePrettyPrint("", obj1, obj2);
 		 
 		 return !isDifferent;
@@ -139,7 +146,7 @@ public class AclfNetJsonComparator {
         	if (outFilter.test(path)) {
         		if (!path.contains("timeStamp")) {
         			isDifferent = true;
-	        		System.out.println("Value mismatch at " + path + ": " +
+	        		log.warn("Value mismatch at " + path + ": " +
 	                             "\nFirst:  " + obj1 + 
 	                             "\nSecond: " + obj2);
         		}
@@ -155,7 +162,7 @@ public class AclfNetJsonComparator {
                 comparePrettyPrint(currentPath, obj1.get(key), obj2.get(key));
             } else {
             	isDifferent = true;
-                System.out.println("Path missing in second JSON: " + currentPath);
+                log.warn("Path missing in second JSON: " + currentPath);
             }
         }
 
@@ -163,7 +170,7 @@ public class AclfNetJsonComparator {
             String currentPath = path.endsWith("/") ? path + key : path + "/" + key;
             if (!obj1.has(key)) {
             	isDifferent = true;
-                System.out.println("Path missing in first JSON: " + currentPath);
+                log.warn("Path missing in first JSON: " + currentPath);
             }
         }
     }
@@ -174,7 +181,7 @@ public class AclfNetJsonComparator {
         
         if (size1 != size2) {
         	isDifferent = true;
-            System.out.println("Array size mismatch at " + path + ": " + 
+            log.warn("Array size mismatch at " + path + ": " + 
                              size1 + " != " + size2);
         }
 
@@ -201,7 +208,7 @@ public class AclfNetJsonComparator {
             if (elem.isJsonObject() && elem.getAsJsonObject().has("id")) {
                 String id = elem.getAsJsonObject().get("id").getAsString();
                 if (map1.containsKey(id)) {
-                    System.out.println("WARNING: Duplicate ID in first array at " + path + ": " + id);
+                    log.warn("WARNING: Duplicate ID in first array at " + path + ": " + id);
                 }
                 map1.put(id, elem);
             }
@@ -212,7 +219,7 @@ public class AclfNetJsonComparator {
             if (elem.isJsonObject() && elem.getAsJsonObject().has("id")) {
                 String id = elem.getAsJsonObject().get("id").getAsString();
                 if (map2.containsKey(id)) {
-                    System.out.println("WARNING: Duplicate ID in second array at " + path + ": " + id);
+                    log.warn("WARNING: Duplicate ID in second array at " + path + ": " + id);
                 }
                 map2.put(id, elem);
             }
@@ -220,9 +227,9 @@ public class AclfNetJsonComparator {
         
         // Debug: Show first few IDs from each array
         if (map1.size() > 0 && map2.size() > 0) {
-            System.out.println("DEBUG " + path + " - First array has " + map1.size() + " elements, Second array has " + map2.size() + " elements");
+            //System.out.println("DEBUG " + path + " - First array has " + map1.size() + " elements, Second array has " + map2.size() + " elements");
             if (map1.size() != map2.size()) {
-                System.out.println("DEBUG " + path + " - Size mismatch detected!");
+                log.debug("DEBUG " + path + " - Size mismatch detected!");
             }
         }
         
@@ -239,17 +246,17 @@ public class AclfNetJsonComparator {
         // Report missing elements first
         if (!onlyInFirst.isEmpty()) {
             isDifferent = true;
-            System.out.println("Elements only in first array at " + path + ": " + onlyInFirst.size() + " elements");
+            log.warn("Elements only in first array at " + path + ": " + onlyInFirst.size() + " elements");
             for (String id : onlyInFirst) {
-                System.out.println("  Missing from second: " + id);
+                log.warn("  Missing from second: " + id);
             }
         }
         
         if (!onlyInSecond.isEmpty()) {
             isDifferent = true;
-            System.out.println("Elements only in second array at " + path + ": " + onlyInSecond.size() + " elements");
+            log.warn("Elements only in second array at " + path + ": " + onlyInSecond.size() + " elements");
             for (String id : onlyInSecond) {
-                System.out.println("  Missing from first: " + id);
+                log.warn("  Missing from first: " + id);
             }
         }
         
