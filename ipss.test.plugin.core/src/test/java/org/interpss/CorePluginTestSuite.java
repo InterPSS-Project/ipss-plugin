@@ -125,7 +125,8 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_ACTIVSg2000Bus_Test.class,
 	PSSE_ACTIVSg25kBus_Test.class,
 	
-	// Compare
+	// Json Compare
+	Texas2KJsonCompareTest.class,
 	PSSE_ACTIVSg25kObjectCompareTest.class,
 	PSSE_ACTIVSg2000BusCompare_Test.class,
 	
@@ -175,7 +176,6 @@ import org.junit.platform.suite.api.Suite;
 	IEEE39_OptN1Scan_SsaResult_Test.class,
 	IEEE39_OptN1Scan_SsaResult_Sparse_Test.class,
 	IEEE39_OptSection_Test.class,
-	Texas2KJsonCompareTest.class,
 	Texas2K_SenMatrixHelper_Test.class,
 	Texas2K_OptBasecase_SsaResult_Test.class,
 	Texas2K_OptBasecase_SsaResult_Sparse_Test.class,
