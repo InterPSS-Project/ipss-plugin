@@ -12,9 +12,8 @@ import java.util.stream.Collectors;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.contingency.DclfSensitivityAnalyzer;
-import org.interpss.plugin.contingency.DclfSensitivityResult;
-import org.interpss.plugin.contingency.DclfCgsfResult;
+import com.interpss.core.algo.dclf.DclfCgsfResult;
+import com.interpss.core.algo.dclf.DclfSensitivityResult;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
@@ -24,6 +23,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
+import com.interpss.core.algo.dclf.solver.DclfSensitivityAnalyzer;
 
 public class DclfSensitivityAnalyzerTest extends CorePluginTestSetup {
 	private static final List<String> MONITOR_BRANCHES = List.of(
