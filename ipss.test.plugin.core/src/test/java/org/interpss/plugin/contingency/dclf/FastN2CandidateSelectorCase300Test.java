@@ -33,6 +33,7 @@ import com.interpss.core.algo.dclf.fastn2.FastN2CandidatePair;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidateRequest;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidateResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidateSelector;
+import com.interpss.core.algo.dclf.fastn2.FastN2LodfStats;
 import com.interpss.core.algo.dclf.fastn2.FastN2Pruner;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2ScreeningOptions;
@@ -253,14 +254,17 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 				baseline.stats().exactEvaluatedPairCount(),
 				baseline.stats().riskGraphSkippedPairCount(),
 				baselineElapsedMillis,
+				baseline.stats().lodfStats(),
 				pruned.candidates().size(),
 				pruned.stats().exactEvaluatedPairCount(),
 				pruned.stats().upperBoundPruningSkippedPairCount(),
 				prunedElapsedMillis,
+				pruned.stats().lodfStats(),
 				riskGraph.candidates().size(),
 				riskGraph.stats().exactEvaluatedPairCount(),
 				riskGraph.stats().riskGraphSkippedPairCount(),
 				riskGraphElapsedMillis,
+				riskGraph.stats().lodfStats(),
 				riskGraphOptions.minimumRiskGraphScore(),
 				riskGraphOptions.minimumOutageInteractionLodf(),
 				PERFORMANCE_RATING_BASE_FLOW_MULTIPLIER,
@@ -545,14 +549,17 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 			long baselineExactEvaluatedPairCount,
 			long baselineRiskGraphSkippedPairCount,
 			long baselineElapsedMillis,
+			FastN2LodfStats baselineLodfStats,
 			long prunedDangerousPairCount,
 			long prunedExactEvaluatedPairCount,
 			long prunedSkippedPairCount,
 			long prunedElapsedMillis,
+			FastN2LodfStats prunedLodfStats,
 			long riskGraphDangerousPairCount,
 			long riskGraphExactEvaluatedPairCount,
 			long riskGraphSkippedPairCount,
 			long riskGraphElapsedMillis,
+			FastN2LodfStats riskGraphLodfStats,
 			double minimumRiskGraphScore,
 			double minimumOutageInteractionLodf,
 			double ratingBaseFlowMultiplier,
@@ -596,6 +603,11 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					- exact evaluated pairs: %d
 					- risk-graph skipped pairs: %d
 					- elapsed: %d ms
+					- scalar LODF elapsed: %d ms
+					- monitor/outage LODFs computed: %d
+					- outage/outage LODFs computed: %d
+					- outage/outage rows reused from monitor matrix: %d
+					- LODF cache hits: monitor/outage=%d, outage/outage=%d
 
 					Upper-bound pruning prescreen selector:
 					- dangerous pairs: %d
@@ -604,6 +616,11 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					- exact pair evaluation reduction: %.2f%%
 					- elapsed: %d ms
 					- measured selector speedup: %.2fx
+					- scalar LODF elapsed: %d ms
+					- monitor/outage LODFs computed: %d
+					- outage/outage LODFs computed: %d
+					- outage/outage rows reused from monitor matrix: %d
+					- LODF cache hits: monitor/outage=%d, outage/outage=%d
 
 					Risk-graph prescreen selector:
 					- dangerous pairs: %d
@@ -612,6 +629,11 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					- exact pair evaluation reduction: %.2f%%
 					- elapsed: %d ms
 					- measured selector speedup: %.2fx
+					- scalar LODF elapsed: %d ms
+					- monitor/outage LODFs computed: %d
+					- outage/outage LODFs computed: %d
+					- outage/outage rows reused from monitor matrix: %d
+					- LODF cache hits: monitor/outage=%d, outage/outage=%d
 
 					Correctness:
 					- upper-bound pruning missed baseline dangerous pairs: %d
@@ -632,18 +654,36 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					baselineExactEvaluatedPairCount,
 					baselineRiskGraphSkippedPairCount,
 					baselineElapsedMillis,
+					baselineLodfStats.lineOutageElapsedMillis(),
+					baselineLodfStats.monitorOutageComputedCount(),
+					baselineLodfStats.outagePairComputedCount(),
+					baselineLodfStats.outagePairMonitorReuseCount(),
+					baselineLodfStats.monitorOutageCacheHitCount(),
+					baselineLodfStats.outagePairCacheHitCount(),
 					prunedDangerousPairCount,
 					prunedExactEvaluatedPairCount,
 					prunedSkippedPairCount,
 					pruningExactEvaluationReduction,
 					prunedElapsedMillis,
 					pruningSpeedup,
+					prunedLodfStats.lineOutageElapsedMillis(),
+					prunedLodfStats.monitorOutageComputedCount(),
+					prunedLodfStats.outagePairComputedCount(),
+					prunedLodfStats.outagePairMonitorReuseCount(),
+					prunedLodfStats.monitorOutageCacheHitCount(),
+					prunedLodfStats.outagePairCacheHitCount(),
 					riskGraphDangerousPairCount,
 					riskGraphExactEvaluatedPairCount,
 					riskGraphSkippedPairCount,
 					exactEvaluationReduction,
 					riskGraphElapsedMillis,
 					speedup,
+					riskGraphLodfStats.lineOutageElapsedMillis(),
+					riskGraphLodfStats.monitorOutageComputedCount(),
+					riskGraphLodfStats.outagePairComputedCount(),
+					riskGraphLodfStats.outagePairMonitorReuseCount(),
+					riskGraphLodfStats.monitorOutageCacheHitCount(),
+					riskGraphLodfStats.outagePairCacheHitCount(),
 					prunedMissedBaselinePairCount,
 					prunedExtraPairCount,
 					missedBaselinePairCount,
