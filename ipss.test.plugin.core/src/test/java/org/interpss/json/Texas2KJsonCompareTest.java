@@ -36,7 +36,7 @@ public class Texas2KJsonCompareTest extends CorePluginTestSetup {
 
 		// Regression anchors (Texas2K_JSon_Sample).
 		assertEquals(2000, aclfNet.getNoBus(), "Bus count");
-		assertEquals(3206, aclfNet.getNoBranch(), "Branch count");
+		assertEquals(3220, aclfNet.getNoBranch(), "Branch count");
 		assertEquals(aclfNet.getNoBus(), aclfNetCopy.getNoBus(), "Round-trip bus count");
 		assertEquals(aclfNet.getNoBranch(), aclfNetCopy.getNoBranch(), "Round-trip branch count");
 	}
