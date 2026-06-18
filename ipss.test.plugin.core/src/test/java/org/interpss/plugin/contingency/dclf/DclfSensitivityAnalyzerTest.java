@@ -143,6 +143,40 @@ public class DclfSensitivityAnalyzerTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void batchedOutageInteractionMatrixMatchesScalarCoreApi() throws Exception {
+		AclfNetwork net = loadIeee14();
+		List<String> outageBranchIds = List.of(
+				"Bus2->Bus3(1)",
+				"Bus2->Bus4(1)",
+				"Bus4->Bus5(1)",
+				"Bus6->Bus11(1)");
+		ContingencyAnalysisAlgorithm scalar = createContingencyAnalysisAlgorithm(net);
+		scalar.calculateDclf(DclfMethod.STD);
+		List<DclfOutageBranch> outages = outageBranchIds.stream()
+				.map(branchId -> createCaOutageBranch(
+						scalar.getDclfAlgoBranch(branchId),
+						ContingencyBranchOutageType.OPEN))
+				.toList();
+
+		double[][] matrix = new DclfSensitivityAnalyzer().lineOutageInteractionDFactors(
+				scalar,
+				outages,
+				outageBranchIds.stream().map(net::getBranch).toList(),
+				2);
+
+		assertEquals(outageBranchIds.size(), matrix.length);
+		for (int monitorIndex = 0; monitorIndex < outageBranchIds.size(); monitorIndex++) {
+			assertEquals(outageBranchIds.size(), matrix[monitorIndex].length);
+			for (int outageIndex = 0; outageIndex < outageBranchIds.size(); outageIndex++) {
+				double expected = scalar.lineOutageDFactor(
+						outages.get(outageIndex),
+						net.getBranch(outageBranchIds.get(monitorIndex)));
+				assertEquals(expected, matrix[monitorIndex][outageIndex], 1.0e-10);
+			}
+		}
+	}
+
+	@Test
 	public void filtersGeneratorRatingLoadAndAreaInputs() throws Exception {
 		AclfNetwork net = loadIeee14();
 		DclfSensitivityAnalyzer analyzer = new DclfSensitivityAnalyzer(true);
