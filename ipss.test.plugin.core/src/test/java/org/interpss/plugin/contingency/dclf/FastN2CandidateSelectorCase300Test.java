@@ -603,10 +603,11 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					- exact evaluated pairs: %d
 					- risk-graph skipped pairs: %d
 					- elapsed: %d ms
-					- scalar LODF elapsed: %d ms
+					- LODF kernel elapsed: %d ms
 					- monitor/outage LODFs computed: %d
 					- outage/outage LODFs computed: %d
 					- outage/outage rows reused from monitor matrix: %d
+					- outage LODF vectors computed: %d
 					- LODF cache hits: monitor/outage=%d, outage/outage=%d
 
 					Upper-bound pruning prescreen selector:
@@ -616,10 +617,11 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					- exact pair evaluation reduction: %.2f%%
 					- elapsed: %d ms
 					- measured selector speedup: %.2fx
-					- scalar LODF elapsed: %d ms
+					- LODF kernel elapsed: %d ms
 					- monitor/outage LODFs computed: %d
 					- outage/outage LODFs computed: %d
 					- outage/outage rows reused from monitor matrix: %d
+					- outage LODF vectors computed: %d
 					- LODF cache hits: monitor/outage=%d, outage/outage=%d
 
 					Risk-graph prescreen selector:
@@ -629,10 +631,11 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					- exact pair evaluation reduction: %.2f%%
 					- elapsed: %d ms
 					- measured selector speedup: %.2fx
-					- scalar LODF elapsed: %d ms
+					- LODF kernel elapsed: %d ms
 					- monitor/outage LODFs computed: %d
 					- outage/outage LODFs computed: %d
 					- outage/outage rows reused from monitor matrix: %d
+					- outage LODF vectors computed: %d
 					- LODF cache hits: monitor/outage=%d, outage/outage=%d
 
 					Correctness:
@@ -658,6 +661,7 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					baselineLodfStats.monitorOutageComputedCount(),
 					baselineLodfStats.outagePairComputedCount(),
 					baselineLodfStats.outagePairMonitorReuseCount(),
+					baselineLodfStats.outageVectorComputedCount(),
 					baselineLodfStats.monitorOutageCacheHitCount(),
 					baselineLodfStats.outagePairCacheHitCount(),
 					prunedDangerousPairCount,
@@ -670,6 +674,7 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					prunedLodfStats.monitorOutageComputedCount(),
 					prunedLodfStats.outagePairComputedCount(),
 					prunedLodfStats.outagePairMonitorReuseCount(),
+					prunedLodfStats.outageVectorComputedCount(),
 					prunedLodfStats.monitorOutageCacheHitCount(),
 					prunedLodfStats.outagePairCacheHitCount(),
 					riskGraphDangerousPairCount,
@@ -682,6 +687,7 @@ public class FastN2CandidateSelectorCase300Test extends CorePluginTestSetup {
 					riskGraphLodfStats.monitorOutageComputedCount(),
 					riskGraphLodfStats.outagePairComputedCount(),
 					riskGraphLodfStats.outagePairMonitorReuseCount(),
+					riskGraphLodfStats.outageVectorComputedCount(),
 					riskGraphLodfStats.monitorOutageCacheHitCount(),
 					riskGraphLodfStats.outagePairCacheHitCount(),
 					prunedMissedBaselinePairCount,
