@@ -33,6 +33,7 @@ import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidateRequest;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidateResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidateSelector;
+import com.interpss.core.algo.dclf.fastn2.FastN2LodfStats;
 import com.interpss.core.algo.dclf.fastn2.FastN2ScreeningOptions;
 
 @Tag("large")
@@ -127,10 +128,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				baseline.candidates().size(),
 				baseline.stats().exactEvaluatedPairCount(),
 				baselineElapsedMillis,
+				baseline.stats().lodfStats(),
 				pruned.candidates().size(),
 				pruned.stats().exactEvaluatedPairCount(),
 				pruned.stats().upperBoundPruningSkippedPairCount(),
-				prunedElapsedMillis));
+				prunedElapsedMillis,
+				pruned.stats().lodfStats()));
 	}
 
 	private static Texas7kStudySet texas7kStudySet(AclfNetwork net) throws Exception {
@@ -239,10 +242,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			long baselineDangerousPairCount,
 			long baselineExactEvaluatedPairCount,
 			long baselineElapsedMillis,
+			FastN2LodfStats baselineLodfStats,
 			long prunedDangerousPairCount,
 			long prunedExactEvaluatedPairCount,
 			long prunedSkippedPairCount,
-			long prunedElapsedMillis) {
+			long prunedElapsedMillis,
+			FastN2LodfStats prunedLodfStats) {
 
 		String toText() {
 			double exactEvaluationReduction = candidatePairCount > 0L
@@ -273,6 +278,11 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					- dangerous pairs: %d
 					- exact evaluated pairs: %d
 					- elapsed: %d ms
+					- scalar LODF elapsed: %d ms
+					- monitor/outage LODFs computed: %d
+					- outage/outage LODFs computed: %d
+					- outage/outage rows reused from monitor matrix: %d
+					- LODF cache hits: monitor/outage=%d, outage/outage=%d
 
 					Upper-bound pruning prescreen selector:
 					- dangerous pairs: %d
@@ -281,6 +291,11 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					- exact pair evaluation reduction: %.2f%%
 					- elapsed: %d ms
 					- measured selector speedup: %.2fx
+					- scalar LODF elapsed: %d ms
+					- monitor/outage LODFs computed: %d
+					- outage/outage LODFs computed: %d
+					- outage/outage rows reused from monitor matrix: %d
+					- LODF cache hits: monitor/outage=%d, outage/outage=%d
 
 					Correctness:
 					- upper-bound pruning dangerous pair set matched baseline exactly
@@ -299,12 +314,24 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					baselineDangerousPairCount,
 					baselineExactEvaluatedPairCount,
 					baselineElapsedMillis,
+					baselineLodfStats.lineOutageElapsedMillis(),
+					baselineLodfStats.monitorOutageComputedCount(),
+					baselineLodfStats.outagePairComputedCount(),
+					baselineLodfStats.outagePairMonitorReuseCount(),
+					baselineLodfStats.monitorOutageCacheHitCount(),
+					baselineLodfStats.outagePairCacheHitCount(),
 					prunedDangerousPairCount,
 					prunedExactEvaluatedPairCount,
 					prunedSkippedPairCount,
 					exactEvaluationReduction,
 					prunedElapsedMillis,
-					speedup);
+					speedup,
+					prunedLodfStats.lineOutageElapsedMillis(),
+					prunedLodfStats.monitorOutageComputedCount(),
+					prunedLodfStats.outagePairComputedCount(),
+					prunedLodfStats.outagePairMonitorReuseCount(),
+					prunedLodfStats.monitorOutageCacheHitCount(),
+					prunedLodfStats.outagePairCacheHitCount());
 		}
 	}
 }
