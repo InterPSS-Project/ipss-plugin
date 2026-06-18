@@ -7,10 +7,11 @@ import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
 import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
+import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 
 public class Texas2K_Sample_Info {
-    public static AclfNetwork loadNetwork() throws Exception {
+    public static AclfNetwork loadNetwork() throws InterpssException {
 		// load the test data V33
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v36/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(PSSE)
