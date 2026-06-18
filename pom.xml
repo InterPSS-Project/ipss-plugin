@@ -7,7 +7,7 @@
 
     <properties>
         <revision>1.2.2</revision>
-        <ipss.core.version>1.2.2</ipss.core.version>
+        <ipss.core.version>1.2.3</ipss.core.version>
         <ieee.odm.version>1.0.5</ieee.odm.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>

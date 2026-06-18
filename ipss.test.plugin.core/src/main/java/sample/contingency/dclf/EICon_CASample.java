@@ -10,8 +10,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
-import org.interpss.plugin.contingency.DclfContingencyConfig;
-import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
+import com.interpss.core.algo.dclf.DclfContingencyConfig;
+import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
