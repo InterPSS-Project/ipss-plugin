@@ -1,11 +1,12 @@
 package org.interpss.plugin.contingency;
 
 /**
- * One DCLF sensitivity result row.
+ * @deprecated Use {@link com.interpss.core.algo.dclf.DclfSensitivityResult}.
  */
+@Deprecated
 public record DclfSensitivityResult(
-		String sourceId,
-		String monitorBranchId,
-		double branchRatingMva,
-		double factor) {
+        String sourceId,
+        String monitorBranchId,
+        double branchRatingMva,
+        double factor) {
 }
