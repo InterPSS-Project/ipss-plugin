@@ -1,6 +1,7 @@
 package org.interpss.plugin.contingency.dclf;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
+import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,6 +25,8 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.DclfSensitivityAnalyzer;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
+import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 public class DclfSensitivityAnalyzerTest extends CorePluginTestSetup {
 	private static final List<String> MONITOR_BRANCHES = List.of(
@@ -108,6 +111,34 @@ public class DclfSensitivityAnalyzerTest extends CorePluginTestSetup {
 			assertEquals(expected, row.cgsf(), 1.0e-10);
 			assertEquals(monitorBranchId, row.monitorBranchId());
 			assertEquals(outageBranchId, row.outageBranchId());
+		}
+	}
+
+	@Test
+	public void lodfRunUsesVectorPathAndMatchesScalarCoreApi() throws Exception {
+		AclfNetwork net = loadIeee14();
+		String outageBranchId = "Bus2->Bus3(1)";
+		ContingencyAnalysisAlgorithm scalar = createContingencyAnalysisAlgorithm(net);
+		scalar.calculateDclf(DclfMethod.STD);
+		DclfOutageBranch outage = createCaOutageBranch(
+				scalar.getDclfAlgoBranch(outageBranchId),
+				ContingencyBranchOutageType.OPEN);
+
+		DclfSensitivityAnalyzer.SensitivityRunResult result = new DclfSensitivityAnalyzer().runLodf(
+				new DclfSensitivityAnalyzer.LodfRunRequest(
+						net,
+						DclfMethod.STD,
+						MONITOR_BRANCHES,
+						List.of(outageBranchId),
+						0.0));
+
+		assertFalse(result.results().isEmpty());
+		assertEquals(MONITOR_BRANCHES.size(), result.candidateCount());
+		for (DclfSensitivityResult row : result.results()) {
+			double expected = outageBranchId.equals(row.monitorBranchId())
+					? -1.0
+					: scalar.lineOutageDFactor(outage, net.getBranch(row.monitorBranchId()));
+			assertEquals(expected, row.factor(), 1.0e-10);
 		}
 	}
 
