@@ -41,11 +41,14 @@ import com.interpss.core.algo.dclf.fastn2.FastN2CandidatePair;
 import com.interpss.core.algo.dclf.fastn2.FastN2LodfStats;
 import com.interpss.core.algo.dclf.fastn2.FastN2MonitorScreeningStats;
 import com.interpss.core.algo.dclf.fastn2.FastN2Pruner;
+import com.interpss.core.algo.dclf.fastn2.FastN2PrunedPairSample;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2RankingMode;
 import com.interpss.core.algo.dclf.fastn2.FastN2ScreeningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingCandidateSelector;
+import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPrunedPairSampleResult;
+import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPrunedPairSampler;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruner;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningResult;
@@ -92,6 +95,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					FastN2StreamingPruningOptions.DEFAULT_ENDPOINT_RHS_BATCH_SIZE);
 	private static final int ACTIVS25K_TOP_K =
 			Integer.getInteger("interpss.fastN2Activs25kTopK", 10_000);
+	private static final int ACTIVS25K_VALIDATION_SAMPLE_SIZE =
+			Integer.getInteger("interpss.fastN2Activs25kValidationSamples", 30);
 	private static final boolean ACTIVS25K_EXACT_MONITOR_PRUNING =
 			Boolean.getBoolean("interpss.fastN2Activs25kExactMonitorPruning");
 	private static final double THERMAL_LIMIT_PERCENT = 100.0;
@@ -469,6 +474,63 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		assertTrue(result.candidates().size() <= ACTIVS25K_TOP_K);
 	}
 
+	@Test
+	public void activs25kValidationSamplingBenchmark() throws Exception {
+		assumeTrue(Boolean.getBoolean("interpss.fastN2Activs25kValidationSampling"),
+				"Set -Dinterpss.fastN2Activs25kValidationSampling=true to run ACTIVSg25k pruned-away validation sampling");
+		assumeTrue(Files.isRegularFile(ACTIVS25K_RAW), "ACTIVSg25k RAW fixture is not available: " + ACTIVS25K_RAW);
+		assumeTrue(Files.isRegularFile(ACTIVS25K_CONTINGENCIES),
+				"ACTIVSg25k contingency fixture is not available: " + ACTIVS25K_CONTINGENCIES);
+		assumeTrue(Files.isRegularFile(ACTIVS25K_MONITORS),
+				"ACTIVSg25k monitor fixture is not available: " + ACTIVS25K_MONITORS);
+
+		AclfNetwork net = importPsse(ACTIVS25K_RAW);
+		List<BranchContingencyRecord> contingencies =
+				ContingencyFileUtil.importContingenciesFromJson(ACTIVS25K_CONTINGENCIES.toFile());
+		List<MonitoredBranchRecord> monitors =
+				ContingencyFileUtil.importMonitoredBranchRecordsFromJson(ACTIVS25K_MONITORS.toFile());
+		List<String> outageCandidateIds = contingencies.stream()
+				.map(record -> record.name)
+				.toList();
+		List<String> monitorIds = monitors.stream()
+				.map(MonitoredBranchRecord::getBranchId)
+				.toList();
+
+		long memoryBeforeBytes = usedMemoryBytes();
+		FastN2StreamingPrunedPairSampleResult samples =
+				new FastN2StreamingPrunedPairSampler().samplePrunedPairs(
+						new FastN2CandidateRequest(
+								net,
+								DclfMethod.STD,
+								monitorIds,
+								outageCandidateIds,
+								FastN2ScreeningOptions.defaults()),
+						new FastN2StreamingPruningOptions(
+								ACTIVS25K_STREAMING_OUTAGE_BATCH_SIZE,
+								ACTIVS25K_STREAMING_MONITOR_BATCH_SIZE,
+								ACTIVS25K_STREAMING_ENDPOINT_RHS_BATCH_SIZE,
+								FastN2PruningOptions.DEFAULT_ZERO_FLOW_EPSILON,
+								FastN2PruningOptions.DEFAULT_ISLANDING_EPSILON),
+						ACTIVS25K_VALIDATION_SAMPLE_SIZE);
+		Activs25kSampleValidationResult validation = validateActivs25kExactPairSamples(
+				net,
+				monitorIds,
+				samples.samples());
+		long memoryAfterBytes = usedMemoryBytes();
+		writeActivs25kValidationSamplingReport(new Activs25kValidationSamplingReport(
+				contingencies.size(),
+				monitors.size(),
+				samples,
+				validation,
+				memoryBeforeBytes,
+				memoryAfterBytes));
+		writeActivs25kValidationDiagnosticsCsv(validation);
+		assertTrue(samples.originalPairCount() > 0L);
+		assertTrue(samples.prunedPairCount() > 0L);
+		assertTrue(samples.samples().size() <= ACTIVS25K_VALIDATION_SAMPLE_SIZE);
+		assertEquals(samples.samples().size(), validation.diagnostics().size());
+	}
+
 	private static Texas7kStudySet texas7kStudySet(AclfNetwork net) throws Exception {
 		return texas7kStudySet(net, OUTAGE_CANDIDATE_LIMIT, MONITORED_BRANCH_LIMIT);
 	}
@@ -630,6 +692,40 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		Path reportPath = Path.of("target", "fast-n2-activsg25k-topk-exact-report.txt");
 		Files.createDirectories(reportPath.getParent());
 		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
+	}
+
+	private static void writeActivs25kValidationSamplingReport(Activs25kValidationSamplingReport report)
+			throws Exception {
+		Path reportPath = Path.of("target", "fast-n2-activsg25k-validation-sampling-report.txt");
+		Files.createDirectories(reportPath.getParent());
+		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
+	}
+
+	private static void writeActivs25kValidationDiagnosticsCsv(Activs25kSampleValidationResult result)
+			throws Exception {
+		Path csvPath = Path.of("target", "fast-n2-activsg25k-validation-diagnostics.csv");
+		Files.createDirectories(csvPath.getParent());
+		StringBuilder csv = new StringBuilder();
+		csv.append("outageBranchId1,outageBranchId2,riskBucket,pairBaseFlowRiskMw,pruningBound,dangerous,")
+				.append("boundingMonitorBranchId,violationCount,upperBoundLoadingPercent,totalOverloadMw,")
+				.append("totalNormalizedOverload,maxOverloadPercent,maxOverloadMw,severityScore\n");
+		for (Activs25kPrunedAwayDiagnostic diagnostic : result.diagnostics()) {
+			csv.append(csv(diagnostic.sample().outageBranchId1())).append(',')
+					.append(csv(diagnostic.sample().outageBranchId2())).append(',')
+					.append(diagnostic.sample().riskBucket()).append(',')
+					.append(diagnostic.sample().pairBaseFlowRiskMw()).append(',')
+					.append(diagnostic.sample().pruningBound()).append(',')
+					.append(diagnostic.dangerous()).append(',')
+					.append(csv(diagnostic.boundingMonitorBranchId())).append(',')
+					.append(diagnostic.violationCount()).append(',')
+					.append(diagnostic.upperBoundLoadingPercent()).append(',')
+					.append(diagnostic.totalOverloadMw()).append(',')
+					.append(diagnostic.totalNormalizedOverload()).append(',')
+					.append(diagnostic.maxOverloadPercent()).append(',')
+					.append(diagnostic.maxOverloadMw()).append(',')
+					.append(diagnostic.severityScore()).append('\n');
+		}
+		Files.writeString(csvPath, csv.toString(), StandardCharsets.UTF_8);
 	}
 
 	private static void writePrunedAwayDiagnosticsCsv(SampleValidationResult result) throws Exception {
@@ -1105,6 +1201,38 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		return new SampleValidationResult(diagnostics, elapsedMillis(startedNanos));
 	}
 
+	private static Activs25kSampleValidationResult validateActivs25kExactPairSamples(
+			AclfNetwork net,
+			List<String> monitoredBranchIds,
+			List<FastN2PrunedPairSample> sampledPairs) {
+		List<Activs25kPrunedAwayDiagnostic> diagnostics = new ArrayList<>();
+		long startedNanos = System.nanoTime();
+		List<String> sampleOutageIds = sampledPairs.stream()
+				.flatMap(sample -> java.util.stream.Stream.of(sample.outageBranchId1(), sample.outageBranchId2()))
+				.distinct()
+				.toList();
+		FastN2CandidateResult exactSampleUniverse = sampleOutageIds.size() < 2
+				? new FastN2CandidateResult(List.of(), null, 0L)
+				: new FastN2CandidateSelector().selectCandidates(
+						new FastN2CandidateRequest(
+								net,
+								DclfMethod.STD,
+								monitoredBranchIds,
+								sampleOutageIds,
+								new FastN2ScreeningOptions(THERMAL_LIMIT_PERCENT, 0.0, 1.0e-8, 0, false)));
+		Map<PairKey, FastN2CandidatePair> exactCandidateByPair = exactSampleUniverse.candidates().stream()
+				.collect(Collectors.toMap(
+						candidate -> PairKey.of(candidate.outageBranchId1(), candidate.outageBranchId2()),
+						candidate -> candidate,
+						(first, ignored) -> first));
+		for (FastN2PrunedPairSample sampledPair : sampledPairs) {
+			FastN2CandidatePair candidate = exactCandidateByPair.get(
+					PairKey.of(sampledPair.outageBranchId1(), sampledPair.outageBranchId2()));
+			diagnostics.add(Activs25kPrunedAwayDiagnostic.of(sampledPair, candidate));
+		}
+		return new Activs25kSampleValidationResult(diagnostics, elapsedMillis(startedNanos));
+	}
+
 	private static ReturnedCandidateValidationResult validateReturnedCandidates(FastN2CandidateResult result) {
 		int falsePositiveCount = 0;
 		for (FastN2CandidatePair candidate : result.candidates()) {
@@ -1485,6 +1613,179 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					result.elapsedMillis(),
 					bytesToMb(memoryBeforeBytes),
 					bytesToMb(memoryAfterBytes));
+		}
+	}
+
+	private record Activs25kValidationSamplingReport(
+			int contingencyJsonCount,
+			int monitorJsonCount,
+			FastN2StreamingPrunedPairSampleResult samples,
+			Activs25kSampleValidationResult validation,
+			long memoryBeforeBytes,
+			long memoryAfterBytes) {
+
+		String toText() {
+			return """
+					Fast N-2 ACTIVSg25k pruned-away validation sampling report
+					==========================================================
+					Input files:
+					- RAW: %s
+					- contingencies: %s
+					- monitors: %s
+
+					Study scope:
+					- contingency records in JSON: %d
+					- monitor records in JSON: %d
+					- outage candidates after topology filter: %d
+					- monitored branches with usable rating: %d
+					- candidate pairs: %d
+
+					Streaming pruned-away sampling:
+					- requested samples: %d
+					- collected samples: %d
+					- pruned-away pairs: %d
+					- survivor pairs: %d
+					- islanding/near-singular pairs: %d
+					- zero-flow protected pairs: %d
+					- pruned-away risk buckets: low=%d, medium=%d, high=%d
+					- sampling elapsed: %d ms
+
+					Exact brute-force validation of sampled pruned-away pairs:
+					- sampled pruned-away dangerous pairs: %d
+					- dangerous pairs by risk bucket: low=%d, medium=%d, high=%d
+					- worst missed loading percent: %.4f
+					- worst missed total normalized overload: %.6f
+					- worst missed max overload percent: %.4f
+					- validation elapsed: %d ms
+
+					Outputs:
+					- CSV: target/fast-n2-activsg25k-validation-diagnostics.csv
+
+					Memory:
+					- before: %.2f MB
+					- after: %.2f MB
+					""".formatted(
+					ACTIVS25K_RAW,
+					ACTIVS25K_CONTINGENCIES,
+					ACTIVS25K_MONITORS,
+					contingencyJsonCount,
+					monitorJsonCount,
+					samples.outageCandidateCount(),
+					samples.monitoredBranchCount(),
+					samples.originalPairCount(),
+					samples.requestedSampleCount(),
+					samples.samples().size(),
+					samples.prunedPairCount(),
+					samples.survivorPairCount(),
+					samples.islandingPairCount(),
+					samples.zeroFlowProtectedPairCount(),
+					samples.lowRiskPrunedPairCount(),
+					samples.mediumRiskPrunedPairCount(),
+					samples.highRiskPrunedPairCount(),
+					samples.elapsedMillis(),
+					validation.dangerousCount(),
+					validation.dangerousLowRiskCount(),
+					validation.dangerousMediumRiskCount(),
+					validation.dangerousHighRiskCount(),
+					validation.worstLoadingPercent(),
+					validation.worstTotalNormalizedOverload(),
+					validation.worstMaxOverloadPercent(),
+					validation.elapsedMillis(),
+					bytesToMb(memoryBeforeBytes),
+					bytesToMb(memoryAfterBytes));
+		}
+	}
+
+	private record Activs25kPrunedAwayDiagnostic(
+			FastN2PrunedPairSample sample,
+			boolean dangerous,
+			String boundingMonitorBranchId,
+			int violationCount,
+			double upperBoundLoadingPercent,
+			double totalOverloadMw,
+			double totalNormalizedOverload,
+			double maxOverloadPercent,
+			double maxOverloadMw,
+			double severityScore) {
+
+		static Activs25kPrunedAwayDiagnostic of(FastN2PrunedPairSample sample, FastN2CandidatePair candidate) {
+			if (candidate == null) {
+				return new Activs25kPrunedAwayDiagnostic(
+						sample,
+						false,
+						null,
+						0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0);
+			}
+			return new Activs25kPrunedAwayDiagnostic(
+					sample,
+					true,
+					candidate.boundingMonitorBranchId(),
+					candidate.violationCount(),
+					candidate.upperBoundLoadingPercent(),
+					candidate.totalOverloadMw(),
+					candidate.totalNormalizedOverload(),
+					candidate.maxOverloadPercent(),
+					candidate.maxOverloadMw(),
+					candidate.severityScore());
+		}
+	}
+
+	private record Activs25kSampleValidationResult(
+			List<Activs25kPrunedAwayDiagnostic> diagnostics,
+			long elapsedMillis) {
+
+		Activs25kSampleValidationResult {
+			diagnostics = diagnostics == null ? List.of() : List.copyOf(diagnostics);
+		}
+
+		long dangerousCount() {
+			return diagnostics.stream().filter(Activs25kPrunedAwayDiagnostic::dangerous).count();
+		}
+
+		long dangerousLowRiskCount() {
+			return dangerousCountByBucket(com.interpss.core.algo.dclf.fastn2.FastN2RiskBucket.LOW);
+		}
+
+		long dangerousMediumRiskCount() {
+			return dangerousCountByBucket(com.interpss.core.algo.dclf.fastn2.FastN2RiskBucket.MEDIUM);
+		}
+
+		long dangerousHighRiskCount() {
+			return dangerousCountByBucket(com.interpss.core.algo.dclf.fastn2.FastN2RiskBucket.HIGH);
+		}
+
+		double worstLoadingPercent() {
+			return diagnostics.stream()
+					.mapToDouble(Activs25kPrunedAwayDiagnostic::upperBoundLoadingPercent)
+					.max()
+					.orElse(0.0);
+		}
+
+		double worstTotalNormalizedOverload() {
+			return diagnostics.stream()
+					.mapToDouble(Activs25kPrunedAwayDiagnostic::totalNormalizedOverload)
+					.max()
+					.orElse(0.0);
+		}
+
+		double worstMaxOverloadPercent() {
+			return diagnostics.stream()
+					.mapToDouble(Activs25kPrunedAwayDiagnostic::maxOverloadPercent)
+					.max()
+					.orElse(0.0);
+		}
+
+		private long dangerousCountByBucket(com.interpss.core.algo.dclf.fastn2.FastN2RiskBucket bucket) {
+			return diagnostics.stream()
+					.filter(Activs25kPrunedAwayDiagnostic::dangerous)
+					.filter(diagnostic -> diagnostic.sample().riskBucket() == bucket)
+					.count();
 		}
 	}
 
