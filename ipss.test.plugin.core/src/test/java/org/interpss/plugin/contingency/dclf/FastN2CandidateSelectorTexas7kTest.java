@@ -66,6 +66,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	private static final int FULL_SET_EXACT_EVALUATION_CHUNK_SIZE =
 			Integer.getInteger("interpss.fastN2Texas7kExactEvaluationChunkSize",
 					FastN2ScreeningOptions.DEFAULT_EXACT_EVALUATION_CHUNK_SIZE);
+	private static final int FULL_SET_EXACT_EVALUATION_THREADS =
+			Integer.getInteger("interpss.fastN2Texas7kExactEvaluationThreads", 1);
 	private static final boolean FULL_SET_EXACT_MONITOR_PRUNING =
 			Boolean.getBoolean("interpss.fastN2Texas7kExactMonitorPruning");
 	private static final boolean FAIL_ON_SAMPLE_DANGEROUS =
@@ -350,10 +352,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				false,
 				FastN2ScreeningOptions.DEFAULT_MINIMUM_RISK_GRAPH_SCORE,
 				FastN2ScreeningOptions.DEFAULT_MINIMUM_OUTAGE_INTERACTION_LODF,
-				FULL_SET_EXACT_EVALUATION_CHUNK_SIZE);
-		return FULL_SET_EXACT_MONITOR_PRUNING
-				? options.withExactMonitorPruningEnabled()
-				: options;
+				FULL_SET_EXACT_EVALUATION_CHUNK_SIZE)
+						.withExactEvaluationThreadCount(FULL_SET_EXACT_EVALUATION_THREADS);
+		if (FULL_SET_EXACT_MONITOR_PRUNING) {
+			options = options.withExactMonitorPruningEnabled();
+		}
+		return options;
 	}
 
 	private static boolean isActiveBranch(AclfNetwork net, String branchId) {
@@ -510,17 +514,20 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				sampleValidation.sampledPrunedAwayPairCount(),
 				sampleValidation.dangerousPairCount(),
 				returnedValidation.falsePositiveCount(),
-				monitorScreeningMarkdown(result.stats().monitorScreeningStats()),
+				monitorScreeningMarkdown(
+						result.stats().exactEvaluationThreadCount(),
+						result.stats().monitorScreeningStats()),
 				rankingOverlapMarkdown(result.candidates(), 20),
 				repeatedOutageBranchMarkdown(result.candidates(), 20),
 				repeatedViolationMonitorMarkdown(result.candidates(), 20),
 				repeatedBoundingMonitorMarkdown(result.candidates(), 20));
 	}
 
-	private static String monitorScreeningMarkdown(FastN2MonitorScreeningStats stats) {
+	private static String monitorScreeningMarkdown(int exactEvaluationThreadCount, FastN2MonitorScreeningStats stats) {
 		return """
 				| Metric | Value |
 				|---|---:|
+				| Exact evaluation threads | %d |
 				| Exact monitor pruning enabled | %s |
 				| Total monitor visits | %d |
 				| Exact monitor evaluations | %d |
@@ -537,6 +544,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				| Estimated reduction if only >=95%% monitors needed exact scoring | %.2f%% |
 				| Estimated reduction if only >=98%% monitors needed exact scoring | %.2f%% |
 				""".formatted(
+				exactEvaluationThreadCount,
 				FULL_SET_EXACT_MONITOR_PRUNING,
 				stats.totalMonitorVisitCount(),
 				stats.exactMonitorEvaluationCount(),
@@ -1210,6 +1218,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					- top-K candidate cap: %s
 					- truncated by top-K cap: %s
 					- exact evaluation chunk size: %d outage rows
+					- exact evaluation threads: %d
 					- exact monitor pruning enabled: %s
 					- exact evaluated pairs: %d
 					- selector pruned-away pairs: %d
@@ -1285,6 +1294,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					maxReturnedCandidatePairs > 0 ? Integer.toString(maxReturnedCandidatePairs) : "unbounded",
 					truncatedByMaxCandidatePairs,
 					exactEvaluationChunkSize,
+					FULL_SET_EXACT_EVALUATION_THREADS,
 					FULL_SET_EXACT_MONITOR_PRUNING,
 					exactEvaluatedPairCount,
 					selectorPrunedPairCount,
