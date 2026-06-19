@@ -26,20 +26,22 @@ import org.interpss.plugin.contingency.definition.json.MonitoredBranchListJson;
 import org.interpss.plugin.contingency.definition.json.MonitoredInterfaceBranchJson;
 import org.interpss.plugin.contingency.definition.json.MonitoredInterfaceJson;
 import org.interpss.plugin.contingency.definition.json.MonitoredInterfaceListJson;
-import org.interpss.plugin.contingency.definition.json.NomogramFacetJson;
+import org.interpss.plugin.contingency.definition.json.NomogramConstraintJson;
+import org.interpss.plugin.contingency.definition.json.NomogramJson;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.interpss.core.algo.dclf.check.MonitoringExceptionRecord;
 import com.interpss.core.algo.dclf.check.MonitoringExceptionStatus;
 import com.interpss.core.algo.dclf.check.MonitoringObjectType;
-import com.interpss.core.algo.dclf.check.NomogramMwBoundaryCheck;
 import com.interpss.core.algo.dclf.definition.DclfMonitoringConfigRecord;
 import com.interpss.core.algo.dclf.definition.FlowgateConstraintRecord;
 import com.interpss.core.algo.dclf.definition.FlowgateContingencyRef;
 import com.interpss.core.algo.dclf.definition.FlowgateContingencyType;
 import com.interpss.core.algo.dclf.definition.FlowgateLimitSelection;
 import com.interpss.core.algo.dclf.definition.FlowgateLimitSet;
+import com.interpss.core.algo.dclf.definition.NomogramConstraintRecord;
+import com.interpss.core.algo.dclf.definition.NomogramRecord;
 
 public class ContingencyFileUtil {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ContingencyFileUtil.class);
@@ -213,24 +215,24 @@ public class ContingencyFileUtil {
                         (a, b) -> a,
                         LinkedHashMap::new));
         List<FlowgateConstraintRecord> flowgates = toFlowgateRecords(jsonData.flowgates);
-        List<NomogramMwBoundaryCheck.Facet> nomogramFacets =
-                toNomogramFacets(jsonData.nomogram_facets, interfaceById);
+        List<NomogramRecord> nomograms =
+                toNomogramRecords(jsonData.nomograms, interfaceById);
         List<MonitoringExceptionRecord> monitoringExceptions =
                 toMonitoringExceptionRecords(jsonData.monitoring_exceptions);
 
-        log.info("Imported DCLF monitoring config from file: {}, branches={}, interfaces={}, flowgates={}, nomogramFacets={}, exceptions={}",
+        log.info("Imported DCLF monitoring config from file: {}, branches={}, interfaces={}, flowgates={}, nomograms={}, exceptions={}",
                 file.getName(),
                 monitoredBranches.size(),
                 monitoredInterfaces.size(),
                 flowgates.size(),
-                nomogramFacets.size(),
+                nomograms.size(),
                 monitoringExceptions.size());
 
         return new DclfMonitoringConfigRecord(
                 monitoredBranches,
                 monitoredInterfaces,
                 flowgates,
-                nomogramFacets,
+                nomograms,
                 monitoringExceptions);
     }
 
@@ -378,48 +380,67 @@ public class ContingencyFileUtil {
         return limits;
     }
 
-    private static List<NomogramMwBoundaryCheck.Facet> toNomogramFacets(
-            List<NomogramFacetJson> jsonFacets,
+    private static List<NomogramRecord> toNomogramRecords(
+            List<NomogramJson> jsonNomograms,
             Map<String, MonitoredInterfaceRecord> interfaceById) throws IOException {
-        List<NomogramMwBoundaryCheck.Facet> facets = new ArrayList<>();
-        if (jsonFacets == null) {
-            return facets;
+        List<NomogramRecord> nomograms = new ArrayList<>();
+        if (jsonNomograms != null) {
+            for (NomogramJson jsonNomogram : jsonNomograms) {
+                nomograms.add(toNomogramRecord(jsonNomogram, interfaceById));
+            }
         }
-        for (NomogramFacetJson jsonFacet : jsonFacets) {
-            facets.add(toNomogramFacet(jsonFacet, interfaceById));
-        }
-        return facets;
+        return nomograms;
     }
 
-    private static NomogramMwBoundaryCheck.Facet toNomogramFacet(
-            NomogramFacetJson jsonFacet,
+    private static NomogramRecord toNomogramRecord(
+            NomogramJson jsonNomogram,
             Map<String, MonitoredInterfaceRecord> interfaceById) throws IOException {
-        if (jsonFacet == null) {
-            throw new IOException("Nomogram facet cannot be null");
+        if (jsonNomogram == null) {
+            throw new IOException("Nomogram cannot be null");
         }
-        if (jsonFacet.id == null || jsonFacet.id.isBlank()) {
-            throw new IOException("Nomogram facet id cannot be blank");
-        }
-        if (jsonFacet.limit_mw == null) {
-            throw new IOException("Nomogram facet limit_mw is required");
+        if (jsonNomogram.id == null || jsonNomogram.id.isBlank()) {
+            throw new IOException("Nomogram id cannot be blank");
         }
         MonitoredInterfaceRecord axisA = resolveNomogramAxis(
-                jsonFacet.axis_a_id,
-                jsonFacet.axis_a,
+                jsonNomogram.axis_a_id,
+                jsonNomogram.axis_a,
                 interfaceById,
                 "axis_a");
         MonitoredInterfaceRecord axisB = resolveNomogramAxis(
-                jsonFacet.axis_b_id,
-                jsonFacet.axis_b,
+                jsonNomogram.axis_b_id,
+                jsonNomogram.axis_b,
                 interfaceById,
                 "axis_b");
-        return new NomogramMwBoundaryCheck.Facet(
-                jsonFacet.id,
-                axisA,
-                axisB,
-                jsonFacet.coefficient_a == null ? 1.0 : jsonFacet.coefficient_a,
-                jsonFacet.coefficient_b == null ? 1.0 : jsonFacet.coefficient_b,
-                jsonFacet.limit_mw);
+        List<NomogramConstraintRecord> constraints = toNomogramConstraints(
+                jsonNomogram.constraints,
+                jsonNomogram.id);
+        return new NomogramRecord(jsonNomogram.id, axisA, axisB, constraints);
+    }
+
+    private static List<NomogramConstraintRecord> toNomogramConstraints(
+            List<NomogramConstraintJson> jsonConstraints,
+            String nomogramId) throws IOException {
+        List<NomogramConstraintRecord> constraints = new ArrayList<>();
+        if (jsonConstraints == null || jsonConstraints.isEmpty()) {
+            throw new IOException("Nomogram " + nomogramId + " must define at least one constraint");
+        }
+        for (NomogramConstraintJson jsonConstraint : jsonConstraints) {
+            if (jsonConstraint == null) {
+                throw new IOException("Nomogram constraint cannot be null");
+            }
+            if (jsonConstraint.id == null || jsonConstraint.id.isBlank()) {
+                throw new IOException("Nomogram constraint id cannot be blank");
+            }
+            if (jsonConstraint.limit_mw == null) {
+                throw new IOException("Nomogram constraint limit_mw is required");
+            }
+            constraints.add(new NomogramConstraintRecord(
+                    jsonConstraint.id,
+                    jsonConstraint.coefficient_a == null ? 1.0 : jsonConstraint.coefficient_a,
+                    jsonConstraint.coefficient_b == null ? 1.0 : jsonConstraint.coefficient_b,
+                    jsonConstraint.limit_mw));
+        }
+        return constraints;
     }
 
     private static MonitoredInterfaceRecord resolveNomogramAxis(
