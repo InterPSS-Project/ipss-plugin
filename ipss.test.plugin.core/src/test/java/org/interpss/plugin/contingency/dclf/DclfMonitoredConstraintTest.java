@@ -27,6 +27,8 @@ import com.interpss.core.algo.dclf.check.MonitoringObjectType;
 import com.interpss.core.algo.dclf.check.MonitoringExceptionPolicy;
 import com.interpss.core.algo.dclf.check.NomogramMwBoundaryCheck;
 import com.interpss.core.algo.dclf.definition.DclfMonitoringConfigRecord;
+import com.interpss.core.algo.dclf.definition.NomogramConstraintRecord;
+import com.interpss.core.algo.dclf.definition.NomogramRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.definition.MonitoredInterfaceRecord;
 import com.interpss.core.algo.dclf.result.DclfMonitoredConstraintResult;
@@ -299,14 +301,19 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
                       ]
                     }
                   ],
-                  "nomogram_facets": [
+                  "nomograms": [
                     {
-                      "id": "GGS_FACET_01",
+                      "id": "GGS",
                       "axis_a_id": "PATH26_N-S",
                       "axis_b_id": "PATH26_S-N",
-                      "coefficient_a": 0.6,
-                      "coefficient_b": 0.4,
-                      "limit_mw": 900.0
+                      "constraints": [
+                        {
+                          "id": "GGS_LIMIT_01",
+                          "coefficient_a": 0.6,
+                          "coefficient_b": 0.4,
+                          "limit_mw": 900.0
+                        }
+                      ]
                     }
                   ],
                   "monitoring_exceptions": [
@@ -334,7 +341,9 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
         assertEquals("5107", config.getFlowgates().get(0).getNercId());
         assertEquals("OPEN:Bus2->Bus5(1)", config.getFlowgates().get(0).getContingencyRef().getId());
         assertEquals(190.95, config.getFlowgates().get(0).getLimitMW(), 1.0e-8);
-        assertEquals(1, config.getNomogramFacets().size());
+        assertEquals(1, config.getNomograms().size());
+        assertEquals("GGS", config.getNomograms().get(0).id());
+        assertEquals(1, config.getNomograms().get(0).constraints().size());
         assertEquals(1, config.getMonitoringExceptions().size());
         assertEquals(MonitoringObjectType.FLOWGATE,
                 config.getMonitoringExceptions().get(0).getMonitoredObjectType());
@@ -419,15 +428,17 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
         MonitoredInterfaceRecord axisB = new MonitoredInterfaceRecord("AXIS_B", 9999.0);
         axisB.addBranch(new MonitoredBranchRecord(branchId2, flow2MW >= 0.0 ? 1.0 : -1.0));
 
-        String nomogramId = "IEEE14_NOMOGRAM_FACET";
+        String nomogramId = "IEEE14_NOMOGRAM";
         NomogramMwBoundaryCheck check = new NomogramMwBoundaryCheck(
-                List.of(new NomogramMwBoundaryCheck.Facet(
+                List.of(new NomogramRecord(
                         nomogramId,
                         axisA,
                         axisB,
-                        1.0,
-                        1.0,
-                        signedFlow1MW + signedFlow2MW - 0.01)),
+                        List.of(new NomogramConstraintRecord(
+                                "LIMIT_01",
+                                1.0,
+                                1.0,
+                                signedFlow1MW + signedFlow2MW - 0.01)))),
                 100.0);
         DclfContingencyConfig config = new DclfContingencyConfig();
         check.compile(new DclfLimitCheckCompileContext(
