@@ -1,6 +1,6 @@
 package org.interpss.plugin.contingency;
 
-import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
+import com.interpss.core.algo.dclf.solver.DclfContingencySolutionMethod;
 
 /**
  * Configuration class for contingency analysis parameters
