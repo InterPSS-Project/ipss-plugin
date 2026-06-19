@@ -39,6 +39,7 @@ import com.interpss.core.algo.dclf.fastn2.FastN2CandidateResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidateSelector;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidatePair;
 import com.interpss.core.algo.dclf.fastn2.FastN2LodfStats;
+import com.interpss.core.algo.dclf.fastn2.FastN2MonitorScreeningStats;
 import com.interpss.core.algo.dclf.fastn2.FastN2Pruner;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningResult;
@@ -268,6 +269,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				pruned.stats().upperBoundPruningSkippedPairCount(),
 				selectorElapsedMillis,
 				pruned.stats().lodfStats(),
+				pruned.stats().monitorScreeningStats(),
 				top20RankingSummary(pruned.candidates()),
 				sampleValidation,
 				returnedValidation,
@@ -477,6 +479,10 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				- Exact dangerous pairs in pruned-away sample: %d
 				- Returned top-K false positives: %d
 
+				## Monitor-Side Exact Evaluation
+
+				%s
+
 				## Ranking Overlap
 
 				%s
@@ -499,10 +505,42 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				sampleValidation.sampledPrunedAwayPairCount(),
 				sampleValidation.dangerousPairCount(),
 				returnedValidation.falsePositiveCount(),
+				monitorScreeningMarkdown(result.stats().monitorScreeningStats()),
 				rankingOverlapMarkdown(result.candidates(), 20),
 				repeatedOutageBranchMarkdown(result.candidates(), 20),
 				repeatedViolationMonitorMarkdown(result.candidates(), 20),
 				repeatedBoundingMonitorMarkdown(result.candidates(), 20));
+	}
+
+	private static String monitorScreeningMarkdown(FastN2MonitorScreeningStats stats) {
+		return """
+				| Metric | Value |
+				|---|---:|
+				| Exact monitor evaluations | %d |
+				| Monitor evaluations at or above 90%% loading | %d |
+				| Monitor evaluations at or above 95%% loading | %d |
+				| Monitor evaluations at or above 98%% loading | %d |
+				| Violating monitor evaluations | %d |
+				| Exact pairs with violations | %d |
+				| Distinct violating monitors | %d |
+				| Max violations on one outage pair | %d |
+				| Max loading percent | %.6f |
+				| Estimated reduction if only >=90%% monitors needed exact scoring | %.2f%% |
+				| Estimated reduction if only >=95%% monitors needed exact scoring | %.2f%% |
+				| Estimated reduction if only >=98%% monitors needed exact scoring | %.2f%% |
+				""".formatted(
+				stats.exactMonitorEvaluationCount(),
+				stats.near90PercentEvaluationCount(),
+				stats.near95PercentEvaluationCount(),
+				stats.near98PercentEvaluationCount(),
+				stats.violatingMonitorEvaluationCount(),
+				stats.exactEvaluatedPairsWithViolations(),
+				stats.distinctViolatingMonitorCount(),
+				stats.maxViolationCountPerPair(),
+				stats.maxLoadingPercent(),
+				100.0 * stats.monitorEvaluationReductionIfOnlyNear90Percent(),
+				100.0 * stats.monitorEvaluationReductionIfOnlyNear95Percent(),
+				100.0 * stats.monitorEvaluationReductionIfOnlyNear98Percent());
 	}
 
 	private static void writeDangerousPairCsv(FastN2CandidateResult result) throws Exception {
@@ -1119,6 +1157,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			long selectorPrunedPairCount,
 			long selectorElapsedMillis,
 			FastN2LodfStats selectorLodfStats,
+			FastN2MonitorScreeningStats monitorScreeningStats,
 			String top20RankingSummary,
 			SampleValidationResult sampleValidation,
 			ReturnedCandidateValidationResult returnedValidation,
@@ -1168,6 +1207,20 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					- monitor/outage LODFs computed: %d
 					- outage/outage LODFs computed: %d
 					- outage LODF vectors computed: %d
+
+					Monitor-side exact evaluation diagnostics:
+					- exact monitor evaluations: %d
+					- monitor evaluations at or above 90%% loading: %d (%.4f%%)
+					- monitor evaluations at or above 95%% loading: %d (%.4f%%)
+					- monitor evaluations at or above 98%% loading: %d (%.4f%%)
+					- violating monitor evaluations: %d (%.4f%%)
+					- exact evaluated pairs with violations: %d
+					- distinct violating monitors: %d
+					- max violations on one outage pair: %d
+					- max loading percent: %.6f
+					- estimated monitor evaluation reduction if only >=90%% monitors need exact scoring: %.2f%%
+					- estimated monitor evaluation reduction if only >=95%% monitors need exact scoring: %.2f%%
+					- estimated monitor evaluation reduction if only >=98%% monitors need exact scoring: %.2f%%
 
 					Top 20 Returned Candidate Ranking Matrix:
 					%s
@@ -1226,6 +1279,22 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					selectorLodfStats.monitorOutageComputedCount(),
 					selectorLodfStats.outagePairComputedCount(),
 					selectorLodfStats.outageVectorComputedCount(),
+					monitorScreeningStats.exactMonitorEvaluationCount(),
+					monitorScreeningStats.near90PercentEvaluationCount(),
+					100.0 * monitorScreeningStats.near90PercentEvaluationRatio(),
+					monitorScreeningStats.near95PercentEvaluationCount(),
+					100.0 * monitorScreeningStats.near95PercentEvaluationRatio(),
+					monitorScreeningStats.near98PercentEvaluationCount(),
+					100.0 * monitorScreeningStats.near98PercentEvaluationRatio(),
+					monitorScreeningStats.violatingMonitorEvaluationCount(),
+					100.0 * monitorScreeningStats.violatingMonitorEvaluationRatio(),
+					monitorScreeningStats.exactEvaluatedPairsWithViolations(),
+					monitorScreeningStats.distinctViolatingMonitorCount(),
+					monitorScreeningStats.maxViolationCountPerPair(),
+					monitorScreeningStats.maxLoadingPercent(),
+					100.0 * monitorScreeningStats.monitorEvaluationReductionIfOnlyNear90Percent(),
+					100.0 * monitorScreeningStats.monitorEvaluationReductionIfOnlyNear95Percent(),
+					100.0 * monitorScreeningStats.monitorEvaluationReductionIfOnlyNear98Percent(),
 					top20RankingSummary,
 					sampleValidation.dangerousPairCount() == 0
 							? "HEURISTIC_SAMPLE_CLEAN_NOT_CERTIFIED"
