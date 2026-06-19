@@ -45,6 +45,7 @@ import com.interpss.core.algo.dclf.fastn2.FastN2PruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2RankingMode;
 import com.interpss.core.algo.dclf.fastn2.FastN2ScreeningOptions;
+import com.interpss.core.algo.dclf.fastn2.FastN2StreamingCandidateSelector;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruner;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningResult;
@@ -89,6 +90,10 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	private static final int ACTIVS25K_STREAMING_ENDPOINT_RHS_BATCH_SIZE =
 			Integer.getInteger("interpss.fastN2Activs25kStreamingEndpointRhsBatchSize",
 					FastN2StreamingPruningOptions.DEFAULT_ENDPOINT_RHS_BATCH_SIZE);
+	private static final int ACTIVS25K_TOP_K =
+			Integer.getInteger("interpss.fastN2Activs25kTopK", 10_000);
+	private static final boolean ACTIVS25K_EXACT_MONITOR_PRUNING =
+			Boolean.getBoolean("interpss.fastN2Activs25kExactMonitorPruning");
 	private static final double THERMAL_LIMIT_PERCENT = 100.0;
 	private static final double FALLBACK_RATING_BASE_FLOW_MULTIPLIER = 1.20;
 
@@ -277,8 +282,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				exactDangerousPairCount,
 				pruned.stats().exactEvaluatedPairCount() == survivorPairs);
 
-		writeDangerousPairCsv(pruned);
-		writeDangerousPairJson(pruned);
+		writeDangerousPairCsv(pruned, Path.of("target", "fast-n2-texas7k-dangerous-pairs.csv"));
+		writeDangerousPairJson(pruned, Path.of("target", "fast-n2-texas7k-dangerous-pairs.json"));
 		writePrunedAwayDiagnosticsCsv(sampleValidation);
 		writePlanningReviewMarkdown(pruned, sampleValidation, returnedValidation);
 		writeFullSetReport(new Texas7kFullSetReport(
@@ -398,6 +403,70 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				memoryAfterBytes));
 		assertTrue(result.originalPairCount() > 0L);
 		assertTrue(result.finalPairCount() <= result.originalPairCount());
+	}
+
+	@Test
+	public void activs25kTopKExactStreamingBenchmark() throws Exception {
+		assumeTrue(Boolean.getBoolean("interpss.fastN2Activs25kTopKExact"),
+				"Set -Dinterpss.fastN2Activs25kTopKExact=true to run the ACTIVSg25k streaming top-K exact benchmark");
+		assumeTrue(Files.isRegularFile(ACTIVS25K_RAW), "ACTIVSg25k RAW fixture is not available: " + ACTIVS25K_RAW);
+		assumeTrue(Files.isRegularFile(ACTIVS25K_CONTINGENCIES),
+				"ACTIVSg25k contingency fixture is not available: " + ACTIVS25K_CONTINGENCIES);
+		assumeTrue(Files.isRegularFile(ACTIVS25K_MONITORS),
+				"ACTIVSg25k monitor fixture is not available: " + ACTIVS25K_MONITORS);
+
+		AclfNetwork net = importPsse(ACTIVS25K_RAW);
+		List<BranchContingencyRecord> contingencies =
+				ContingencyFileUtil.importContingenciesFromJson(ACTIVS25K_CONTINGENCIES.toFile());
+		List<MonitoredBranchRecord> monitors =
+				ContingencyFileUtil.importMonitoredBranchRecordsFromJson(ACTIVS25K_MONITORS.toFile());
+		List<String> outageCandidateIds = contingencies.stream()
+				.map(record -> record.name)
+				.toList();
+		List<String> monitorIds = monitors.stream()
+				.map(MonitoredBranchRecord::getBranchId)
+				.toList();
+
+		FastN2ScreeningOptions screeningOptions = new FastN2ScreeningOptions(
+				THERMAL_LIMIT_PERCENT,
+				0.0,
+				1.0e-8,
+				ACTIVS25K_TOP_K,
+				false,
+				true,
+				false,
+				FastN2ScreeningOptions.DEFAULT_MINIMUM_RISK_GRAPH_SCORE,
+				FastN2ScreeningOptions.DEFAULT_MINIMUM_OUTAGE_INTERACTION_LODF,
+				FastN2ScreeningOptions.DEFAULT_EXACT_EVALUATION_CHUNK_SIZE,
+				FastN2RankingMode.TOTAL_NORMALIZED_OVERLOAD,
+				ACTIVS25K_EXACT_MONITOR_PRUNING,
+				1);
+		long memoryBeforeBytes = usedMemoryBytes();
+		FastN2CandidateResult result = new FastN2StreamingCandidateSelector().selectCandidates(
+				new FastN2CandidateRequest(
+						net,
+						DclfMethod.STD,
+						monitorIds,
+						outageCandidateIds,
+						screeningOptions),
+				new FastN2StreamingPruningOptions(
+						ACTIVS25K_STREAMING_OUTAGE_BATCH_SIZE,
+						ACTIVS25K_STREAMING_MONITOR_BATCH_SIZE,
+						ACTIVS25K_STREAMING_ENDPOINT_RHS_BATCH_SIZE,
+						FastN2PruningOptions.DEFAULT_ZERO_FLOW_EPSILON,
+						FastN2PruningOptions.DEFAULT_ISLANDING_EPSILON));
+		long memoryAfterBytes = usedMemoryBytes();
+		writeActivs25kTopKExactReport(new Activs25kTopKExactReport(
+				contingencies.size(),
+				monitors.size(),
+				result,
+				memoryBeforeBytes,
+				memoryAfterBytes));
+		writeDangerousPairCsv(result, Path.of("target", "fast-n2-activsg25k-topk-dangerous-pairs.csv"));
+		writeDangerousPairJson(result, Path.of("target", "fast-n2-activsg25k-topk-dangerous-pairs.json"));
+		assertTrue(result.stats().originalPairCount() > 0L);
+		assertTrue(result.stats().exactEvaluatedPairCount() <= result.stats().originalPairCount());
+		assertTrue(result.candidates().size() <= ACTIVS25K_TOP_K);
 	}
 
 	private static Texas7kStudySet texas7kStudySet(AclfNetwork net) throws Exception {
@@ -557,6 +626,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
 	}
 
+	private static void writeActivs25kTopKExactReport(Activs25kTopKExactReport report) throws Exception {
+		Path reportPath = Path.of("target", "fast-n2-activsg25k-topk-exact-report.txt");
+		Files.createDirectories(reportPath.getParent());
+		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
+	}
+
 	private static void writePrunedAwayDiagnosticsCsv(SampleValidationResult result) throws Exception {
 		Path csvPath = Path.of("target", "fast-n2-texas7k-pruned-away-diagnostics.csv");
 		Files.createDirectories(csvPath.getParent());
@@ -687,8 +762,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				100.0 * stats.monitorEvaluationReductionIfOnlyNear98Percent());
 	}
 
-	private static void writeDangerousPairCsv(FastN2CandidateResult result) throws Exception {
-		Path csvPath = Path.of("target", "fast-n2-texas7k-dangerous-pairs.csv");
+	private static void writeDangerousPairCsv(FastN2CandidateResult result, Path csvPath) throws Exception {
 		Files.createDirectories(csvPath.getParent());
 		RankColumns ranks = rankColumns(result.candidates());
 		StringBuilder csv = new StringBuilder();
@@ -718,8 +792,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		Files.writeString(csvPath, csv.toString(), StandardCharsets.UTF_8);
 	}
 
-	private static void writeDangerousPairJson(FastN2CandidateResult result) throws Exception {
-		Path jsonPath = Path.of("target", "fast-n2-texas7k-dangerous-pairs.json");
+	private static void writeDangerousPairJson(FastN2CandidateResult result, Path jsonPath) throws Exception {
 		Files.createDirectories(jsonPath.getParent());
 		RankColumns ranks = rankColumns(result.candidates());
 		StringBuilder json = new StringBuilder();
@@ -1331,6 +1404,84 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					result.outageBatchSize(),
 					result.monitorBatchSize(),
 					result.endpointRhsBatchSize(),
+					result.elapsedMillis(),
+					bytesToMb(memoryBeforeBytes),
+					bytesToMb(memoryAfterBytes));
+		}
+	}
+
+	private record Activs25kTopKExactReport(
+			int contingencyJsonCount,
+			int monitorJsonCount,
+			FastN2CandidateResult result,
+			long memoryBeforeBytes,
+			long memoryAfterBytes) {
+
+		String toText() {
+			FastN2MonitorScreeningStats monitorStats = result.stats().monitorScreeningStats();
+			long dangerousPairCount = result.stats().originalPairCount() - result.stats().prunedPairCount();
+			return """
+					Fast N-2 ACTIVSg25k streaming top-K exact report
+					================================================
+					Input files:
+					- RAW: %s
+					- contingencies: %s
+					- monitors: %s
+
+					Study scope:
+					- contingency records in JSON: %d
+					- monitor records in JSON: %d
+					- outage candidates after topology filter: %d
+					- monitored branches with usable rating: %d
+					- candidate pairs: %d
+
+					Streaming first-pass pruning and exact survivor evaluation:
+					- upper-bound pruned-away pairs: %d
+					- exact evaluated survivor pairs: %d
+					- exact dangerous pairs: %d
+					- returned top-K pairs: %d
+					- top-K limit: %d
+					- top-K truncated: %s
+					- singular/near-singular survivor pairs: %d
+					- exact monitor pruning enabled: %s
+					- exact monitor evaluations: %d
+					- pruned monitor evaluations: %d
+					- violating monitor evaluations: %d
+					- exact evaluated pairs with violations: %d
+					- max violation count per pair: %d
+					- max loading percent: %.4f
+					- elapsed: %d ms
+
+					Outputs:
+					- CSV: target/fast-n2-activsg25k-topk-dangerous-pairs.csv
+					- JSON: target/fast-n2-activsg25k-topk-dangerous-pairs.json
+
+					Memory:
+					- before: %.2f MB
+					- after: %.2f MB
+					""".formatted(
+					ACTIVS25K_RAW,
+					ACTIVS25K_CONTINGENCIES,
+					ACTIVS25K_MONITORS,
+					contingencyJsonCount,
+					monitorJsonCount,
+					result.stats().outageCandidateCount(),
+					result.stats().monitoredBranchCount(),
+					result.stats().originalPairCount(),
+					result.stats().upperBoundPruningSkippedPairCount(),
+					result.stats().exactEvaluatedPairCount(),
+					dangerousPairCount,
+					result.candidates().size(),
+					ACTIVS25K_TOP_K,
+					result.stats().truncatedByMaxCandidatePairs(),
+					result.stats().singularOrNearSingularPairCount(),
+					ACTIVS25K_EXACT_MONITOR_PRUNING,
+					monitorStats.exactMonitorEvaluationCount(),
+					monitorStats.prunedMonitorEvaluationCount(),
+					monitorStats.violatingMonitorEvaluationCount(),
+					monitorStats.exactEvaluatedPairsWithViolations(),
+					monitorStats.maxViolationCountPerPair(),
+					monitorStats.maxLoadingPercent(),
 					result.elapsedMillis(),
 					bytesToMb(memoryBeforeBytes),
 					bytesToMb(memoryAfterBytes));
