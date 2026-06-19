@@ -66,6 +66,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	private static final int FULL_SET_EXACT_EVALUATION_CHUNK_SIZE =
 			Integer.getInteger("interpss.fastN2Texas7kExactEvaluationChunkSize",
 					FastN2ScreeningOptions.DEFAULT_EXACT_EVALUATION_CHUNK_SIZE);
+	private static final boolean FULL_SET_EXACT_MONITOR_PRUNING =
+			Boolean.getBoolean("interpss.fastN2Texas7kExactMonitorPruning");
 	private static final boolean FAIL_ON_SAMPLE_DANGEROUS =
 			Boolean.getBoolean("interpss.fastN2Texas7kFailOnSampleDangerous");
 	private static final double THERMAL_LIMIT_PERCENT = 100.0;
@@ -338,7 +340,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	}
 
 	private static FastN2ScreeningOptions fullSetSelectorOptions() {
-		return new FastN2ScreeningOptions(
+		FastN2ScreeningOptions options = new FastN2ScreeningOptions(
 				THERMAL_LIMIT_PERCENT,
 				0.0,
 				1.0e-8,
@@ -349,6 +351,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				FastN2ScreeningOptions.DEFAULT_MINIMUM_RISK_GRAPH_SCORE,
 				FastN2ScreeningOptions.DEFAULT_MINIMUM_OUTAGE_INTERACTION_LODF,
 				FULL_SET_EXACT_EVALUATION_CHUNK_SIZE);
+		return FULL_SET_EXACT_MONITOR_PRUNING
+				? options.withExactMonitorPruningEnabled()
+				: options;
 	}
 
 	private static boolean isActiveBranch(AclfNetwork net, String branchId) {
@@ -516,7 +521,10 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		return """
 				| Metric | Value |
 				|---|---:|
+				| Exact monitor pruning enabled | %s |
+				| Total monitor visits | %d |
 				| Exact monitor evaluations | %d |
+				| Pruned monitor evaluations | %d |
 				| Monitor evaluations at or above 90%% loading | %d |
 				| Monitor evaluations at or above 95%% loading | %d |
 				| Monitor evaluations at or above 98%% loading | %d |
@@ -529,7 +537,10 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				| Estimated reduction if only >=95%% monitors needed exact scoring | %.2f%% |
 				| Estimated reduction if only >=98%% monitors needed exact scoring | %.2f%% |
 				""".formatted(
+				FULL_SET_EXACT_MONITOR_PRUNING,
+				stats.totalMonitorVisitCount(),
 				stats.exactMonitorEvaluationCount(),
+				stats.prunedMonitorEvaluationCount(),
 				stats.near90PercentEvaluationCount(),
 				stats.near95PercentEvaluationCount(),
 				stats.near98PercentEvaluationCount(),
@@ -1199,6 +1210,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					- top-K candidate cap: %s
 					- truncated by top-K cap: %s
 					- exact evaluation chunk size: %d outage rows
+					- exact monitor pruning enabled: %s
 					- exact evaluated pairs: %d
 					- selector pruned-away pairs: %d
 					- selector elapsed: %d ms
@@ -1209,7 +1221,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					- outage LODF vectors computed: %d
 
 					Monitor-side exact evaluation diagnostics:
+					- total monitor visits: %d
 					- exact monitor evaluations: %d
+					- pruned monitor evaluations: %d
 					- monitor evaluations at or above 90%% loading: %d (%.4f%%)
 					- monitor evaluations at or above 95%% loading: %d (%.4f%%)
 					- monitor evaluations at or above 98%% loading: %d (%.4f%%)
@@ -1271,6 +1285,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					maxReturnedCandidatePairs > 0 ? Integer.toString(maxReturnedCandidatePairs) : "unbounded",
 					truncatedByMaxCandidatePairs,
 					exactEvaluationChunkSize,
+					FULL_SET_EXACT_MONITOR_PRUNING,
 					exactEvaluatedPairCount,
 					selectorPrunedPairCount,
 					selectorElapsedMillis,
@@ -1279,7 +1294,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					selectorLodfStats.monitorOutageComputedCount(),
 					selectorLodfStats.outagePairComputedCount(),
 					selectorLodfStats.outageVectorComputedCount(),
+					monitorScreeningStats.totalMonitorVisitCount(),
 					monitorScreeningStats.exactMonitorEvaluationCount(),
+					monitorScreeningStats.prunedMonitorEvaluationCount(),
 					monitorScreeningStats.near90PercentEvaluationCount(),
 					100.0 * monitorScreeningStats.near90PercentEvaluationRatio(),
 					monitorScreeningStats.near95PercentEvaluationCount(),
