@@ -40,6 +40,7 @@ import com.interpss.core.algo.dclf.fastn2.FastN2CandidateSelector;
 import com.interpss.core.algo.dclf.fastn2.FastN2CandidatePair;
 import com.interpss.core.algo.dclf.fastn2.FastN2LodfStats;
 import com.interpss.core.algo.dclf.fastn2.FastN2Pruner;
+import com.interpss.core.algo.dclf.fastn2.FastN2PruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2RankingMode;
 import com.interpss.core.algo.dclf.fastn2.FastN2ScreeningOptions;
@@ -180,7 +181,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 		long memoryBeforeBytes = usedMemoryBytes();
 		long prunerStartedNanos = System.nanoTime();
-		FastN2PruningResult pruning = new FastN2Pruner().prune(prunerRequest);
+		FastN2PruningResult pruning = new FastN2Pruner().prune(
+				prunerRequest,
+				FastN2PruningOptions.defaults().withPairPruningBoundsCaptured());
 		long prunerElapsedMillis = elapsedMillis(prunerStartedNanos);
 		long memoryAfterPrunerBytes = usedMemoryBytes();
 		long survivorPairs = pruning.finalPairCount();
@@ -424,7 +427,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		csv.append("bucket,outageBranchId1,outageBranchId2,pairBaseFlowRiskMw,")
 				.append("dangerous,boundingMonitorBranchId,violationCount,upperBoundLoadingPercent,")
 				.append("totalOverloadMw,totalNormalizedOverload,maxOverloadPercent,maxOverloadMw,")
-				.append("severityScore,pruningDecision,survivorMask\n");
+				.append("severityScore,pairPruningBound,pairPruningIteration,")
+				.append("pruningDecision,survivorMask\n");
 		for (PrunedAwayPairDiagnostic diagnostic : result.diagnostics()) {
 			csv.append(diagnostic.bucket()).append(',')
 					.append(csv(diagnostic.pair().branchId1())).append(',')
@@ -439,6 +443,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					.append(diagnostic.maxOverloadPercent()).append(',')
 					.append(diagnostic.maxOverloadMw()).append(',')
 					.append(diagnostic.severityScore()).append(',')
+					.append(diagnostic.pairPruningBound()).append(',')
+					.append(diagnostic.pairPruningIteration()).append(',')
 					.append("PRUNED_BY_UPPER_BOUND_HEURISTIC,false\n");
 		}
 		Files.writeString(csvPath, csv.toString(), StandardCharsets.UTF_8);
@@ -612,7 +618,14 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				int bucket = riskBucket(risk, maxPairRiskMw);
 				if (selectedByBucket[bucket] < perBucketTarget
 						&& seenByBucket[bucket] >= nextOrdinalByBucket[bucket]) {
-					samples.add(new SampledPair(PairKey.of(branchId1, branchId2), RiskBucket.values()[bucket], risk));
+					samples.add(new SampledPair(
+							PairKey.of(branchId1, branchId2),
+							x,
+							y,
+							RiskBucket.values()[bucket],
+							risk,
+							pruning.pairPruningBound(x, y),
+							pruning.pairPruningIteration(x, y)));
 					selectedByBucket[bucket]++;
 					nextOrdinalByBucket[bucket] += strideByBucket[bucket];
 				}
@@ -772,8 +785,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	private record SampledPair(
 			PairKey pair,
+			int outageIndex1,
+			int outageIndex2,
 			RiskBucket bucket,
-			double pairBaseFlowRiskMw) {
+			double pairBaseFlowRiskMw,
+			double pairPruningBound,
+			int pairPruningIteration) {
 	}
 
 	private record PrunedAwayPairDiagnostic(
@@ -788,7 +805,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			double totalNormalizedOverload,
 			double maxOverloadPercent,
 			double maxOverloadMw,
-			double severityScore) {
+			double severityScore,
+			double pairPruningBound,
+			int pairPruningIteration) {
 
 		static PrunedAwayPairDiagnostic of(SampledPair sampledPair, FastN2CandidatePair candidate) {
 			if (candidate == null) {
@@ -804,7 +823,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 						0.0,
 						0.0,
 						0.0,
-						0.0);
+						0.0,
+						sampledPair.pairPruningBound(),
+						sampledPair.pairPruningIteration());
 			}
 			return new PrunedAwayPairDiagnostic(
 					sampledPair.pair(),
@@ -818,7 +839,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					candidate.totalNormalizedOverload(),
 					candidate.maxOverloadPercent(),
 					candidate.maxOverloadMw(),
-					candidate.severityScore());
+					candidate.severityScore(),
+					sampledPair.pairPruningBound(),
+					sampledPair.pairPruningIteration());
 		}
 	}
 
