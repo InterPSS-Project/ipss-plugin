@@ -3,6 +3,9 @@
 Detailed class-level work packages and verification gates are tracked in
 `qsts-implementation-todo.md`.
 
+Combined transmission-and-distribution QSTS is tracked separately in
+`td-combined-qsts-feature-plan.md`.
+
 ## Goal
 
 Add generic quasi-static time-series study support for three-phase distribution
