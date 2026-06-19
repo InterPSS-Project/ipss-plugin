@@ -46,6 +46,8 @@ import com.interpss.core.algo.dclf.definition.FlowgateContingencyRef;
 import com.interpss.core.algo.dclf.definition.FlowgateLimitSet;
 import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import com.interpss.core.algo.dclf.definition.MonitoredInterfaceRecord;
+import com.interpss.core.algo.dclf.definition.NomogramConstraintRecord;
+import com.interpss.core.algo.dclf.definition.NomogramRecord;
 import com.interpss.core.algo.dclf.result.DclfMonitoredConstraintResult;
 import com.interpss.core.algo.dclf.result.FlowgateViolationResult;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
@@ -123,7 +125,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         }
         study = study.withSupplementalChecks(
                 buildFlowgates(study.contingencies, study.monitoredExpressions, maxFlowgates, maxFlowgateContingencies),
-                buildNomogramFacets(study.monitoredExpressions, maxNomograms));
+                buildNomograms(study.monitoredExpressions, maxNomograms));
         assumeTrue(!study.contingencies.isEmpty(), caseName + " contingencies");
         assumeTrue(!study.monitoredExpressions.isEmpty(), caseName + " monitored expressions");
 
@@ -162,7 +164,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
                 printSupplementalResult(caseName, "flowgate", repeat - warmups + 1, false,
                         study, study.flowgates.size(), parallelism, flowgatePath);
                 printSupplementalResult(caseName, "nomogram-base", repeat - warmups + 1, false,
-                        study, study.nomogramFacets.size(), parallelism, nomogramBasePath);
+                        study, study.nomograms.size(), parallelism, nomogramBasePath);
             }
         }
     }
@@ -235,21 +237,23 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         return flowgates;
     }
 
-    private static List<NomogramMwBoundaryCheck.Facet> buildNomogramFacets(
+    private static List<NomogramRecord> buildNomograms(
             List<MonitoredInterfaceRecord> monitoredExpressions,
             int maxNomograms) {
         int count = Math.min(Math.max(0, maxNomograms), Math.max(0, monitoredExpressions.size() - 1));
-        List<NomogramMwBoundaryCheck.Facet> facets = new ArrayList<>(count);
+        List<NomogramRecord> nomograms = new ArrayList<>(count);
         for (int i = 0; i < count; i++) {
-            facets.add(new NomogramMwBoundaryCheck.Facet(
+            nomograms.add(new NomogramRecord(
                     "nom:" + i,
                     monitoredExpressions.get(i),
                     monitoredExpressions.get(i + 1),
-                    0.6,
-                    0.4,
-                    NO_VIOLATION_LIMIT_MW));
+                    List.of(new NomogramConstraintRecord(
+                            "limit:0",
+                            0.6,
+                            0.4,
+                            NO_VIOLATION_LIMIT_MW))));
         }
-        return facets;
+        return nomograms;
     }
 
     private static List<DclfBranchOutage> loadContingenciesFromJson(
@@ -349,7 +353,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
             PreparedStudy study) throws Exception {
         long start = System.nanoTime();
         Collection<DclfMwLimitViolationResult> results = new ConcurrentLinkedQueue<>();
-        if (!study.nomogramFacets.isEmpty()) {
+        if (!study.nomograms.isEmpty()) {
             ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
             dclfAlgo.calculateDclf();
             DclfContingencyConfig config = new DclfContingencyConfig();
@@ -359,7 +363,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
             Map<String, Integer> branchIndexById = branchIndexById(branchIds);
             double[] preFlowMw = preFlowMw(dclfAlgo, branchIds);
 
-            NomogramMwBoundaryCheck check = new NomogramMwBoundaryCheck(study.nomogramFacets, 100.0);
+            NomogramMwBoundaryCheck check = new NomogramMwBoundaryCheck(study.nomograms, 100.0);
             check.compile(new DclfLimitCheckCompileContext(
                     net,
                     dclfAlgo,
@@ -464,23 +468,23 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         private final List<DclfBranchOutage> contingencies;
         private final List<MonitoredInterfaceRecord> monitoredExpressions;
         private final List<FlowgateConstraintRecord> flowgates;
-        private final List<NomogramMwBoundaryCheck.Facet> nomogramFacets;
+        private final List<NomogramRecord> nomograms;
 
         private PreparedStudy(
                 List<DclfBranchOutage> contingencies,
                 List<MonitoredInterfaceRecord> monitoredExpressions,
                 List<FlowgateConstraintRecord> flowgates,
-                List<NomogramMwBoundaryCheck.Facet> nomogramFacets) {
+                List<NomogramRecord> nomograms) {
             this.contingencies = contingencies;
             this.monitoredExpressions = monitoredExpressions;
             this.flowgates = flowgates;
-            this.nomogramFacets = nomogramFacets;
+            this.nomograms = nomograms;
         }
 
         private PreparedStudy withSupplementalChecks(
                 List<FlowgateConstraintRecord> flowgates,
-                List<NomogramMwBoundaryCheck.Facet> nomogramFacets) {
-            return new PreparedStudy(contingencies, monitoredExpressions, flowgates, nomogramFacets);
+                List<NomogramRecord> nomograms) {
+            return new PreparedStudy(contingencies, monitoredExpressions, flowgates, nomograms);
         }
     }
 
