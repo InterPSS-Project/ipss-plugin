@@ -11,9 +11,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,6 +41,7 @@ import com.interpss.core.algo.dclf.fastn2.FastN2CandidatePair;
 import com.interpss.core.algo.dclf.fastn2.FastN2LodfStats;
 import com.interpss.core.algo.dclf.fastn2.FastN2Pruner;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningResult;
+import com.interpss.core.algo.dclf.fastn2.FastN2RankingMode;
 import com.interpss.core.algo.dclf.fastn2.FastN2ScreeningOptions;
 
 @Tag("large")
@@ -255,6 +258,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				pruned.stats().upperBoundPruningSkippedPairCount(),
 				selectorElapsedMillis,
 				pruned.stats().lodfStats(),
+				top20RankingSummary(pruned.candidates()),
 				sampleValidation,
 				survivorValidation,
 				memoryBeforeBytes,
@@ -393,9 +397,13 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	private static void writeDangerousPairCsv(FastN2CandidateResult result) throws Exception {
 		Path csvPath = Path.of("target", "fast-n2-texas7k-dangerous-pairs.csv");
 		Files.createDirectories(csvPath.getParent());
+		RankColumns ranks = rankColumns(result.candidates());
 		StringBuilder csv = new StringBuilder();
 		csv.append("outageBranchId1,outageBranchId2,boundingMonitorBranchId,violationCount,")
-				.append("upperBoundLoadingPercent,totalOverloadMw,totalNormalizedOverload,maxOverloadPercent,")
+				.append("upperBoundLoadingPercent,totalOverloadMw,totalNormalizedOverload,")
+				.append("maxOverloadPercent,maxOverloadMw,severityScore,")
+				.append("rankByTotalNormalizedOverload,rankByViolationCount,")
+				.append("rankByMaxOverloadPercent,rankByCompositeSeverity,")
 				.append("singularOrIslandingRisk\n");
 		result.candidates().stream()
 				.sorted(candidateComparator())
@@ -407,6 +415,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 						.append(candidate.totalOverloadMw()).append(',')
 						.append(candidate.totalNormalizedOverload()).append(',')
 						.append(candidate.maxOverloadPercent()).append(',')
+						.append(candidate.maxOverloadMw()).append(',')
+						.append(candidate.severityScore()).append(',')
+						.append(ranks.rank(FastN2RankingMode.TOTAL_NORMALIZED_OVERLOAD, candidate)).append(',')
+						.append(ranks.rank(FastN2RankingMode.VIOLATION_COUNT, candidate)).append(',')
+						.append(ranks.rank(FastN2RankingMode.MAX_OVERLOAD_PERCENT, candidate)).append(',')
+						.append(ranks.rank(FastN2RankingMode.COMPOSITE_SEVERITY, candidate)).append(',')
 						.append(candidate.singularOrIslandingRisk()).append('\n'));
 		Files.writeString(csvPath, csv.toString(), StandardCharsets.UTF_8);
 	}
@@ -414,6 +428,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	private static void writeDangerousPairJson(FastN2CandidateResult result) throws Exception {
 		Path jsonPath = Path.of("target", "fast-n2-texas7k-dangerous-pairs.json");
 		Files.createDirectories(jsonPath.getParent());
+		RankColumns ranks = rankColumns(result.candidates());
 		StringBuilder json = new StringBuilder();
 		json.append("[\n");
 		List<FastN2CandidatePair> candidates = result.candidates().stream()
@@ -430,6 +445,16 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					.append("\"totalOverloadMw\":").append(candidate.totalOverloadMw()).append(',')
 					.append("\"totalNormalizedOverload\":").append(candidate.totalNormalizedOverload()).append(',')
 					.append("\"maxOverloadPercent\":").append(candidate.maxOverloadPercent()).append(',')
+					.append("\"maxOverloadMw\":").append(candidate.maxOverloadMw()).append(',')
+					.append("\"severityScore\":").append(candidate.severityScore()).append(',')
+					.append("\"rankByTotalNormalizedOverload\":")
+					.append(ranks.rank(FastN2RankingMode.TOTAL_NORMALIZED_OVERLOAD, candidate)).append(',')
+					.append("\"rankByViolationCount\":")
+					.append(ranks.rank(FastN2RankingMode.VIOLATION_COUNT, candidate)).append(',')
+					.append("\"rankByMaxOverloadPercent\":")
+					.append(ranks.rank(FastN2RankingMode.MAX_OVERLOAD_PERCENT, candidate)).append(',')
+					.append("\"rankByCompositeSeverity\":")
+					.append(ranks.rank(FastN2RankingMode.COMPOSITE_SEVERITY, candidate)).append(',')
 					.append("\"singularOrIslandingRisk\":").append(candidate.singularOrIslandingRisk())
 					.append("}");
 			if (i + 1 < candidates.size()) {
@@ -442,10 +467,65 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	}
 
 	private static Comparator<FastN2CandidatePair> candidateComparator() {
-		return Comparator.comparingDouble(FastN2CandidatePair::totalNormalizedOverload).reversed()
-				.thenComparing(Comparator.comparingDouble(FastN2CandidatePair::upperBoundLoadingPercent).reversed())
-				.thenComparing(FastN2CandidatePair::outageBranchId1)
-				.thenComparing(FastN2CandidatePair::outageBranchId2);
+		return FastN2RankingMode.TOTAL_NORMALIZED_OVERLOAD.comparator();
+	}
+
+	private static RankColumns rankColumns(List<FastN2CandidatePair> candidates) {
+		EnumMap<FastN2RankingMode, Map<PairKey, Integer>> ranks = new EnumMap<>(FastN2RankingMode.class);
+		for (FastN2RankingMode mode : List.of(
+				FastN2RankingMode.TOTAL_NORMALIZED_OVERLOAD,
+				FastN2RankingMode.VIOLATION_COUNT,
+				FastN2RankingMode.MAX_OVERLOAD_PERCENT,
+				FastN2RankingMode.COMPOSITE_SEVERITY)) {
+			List<FastN2CandidatePair> sorted = candidates.stream()
+					.sorted(mode.comparator())
+					.toList();
+			Map<PairKey, Integer> modeRanks = new java.util.HashMap<>();
+			for (int index = 0; index < sorted.size(); index++) {
+				FastN2CandidatePair candidate = sorted.get(index);
+				modeRanks.put(PairKey.of(candidate.outageBranchId1(), candidate.outageBranchId2()), index + 1);
+			}
+			ranks.put(mode, modeRanks);
+		}
+		return new RankColumns(ranks);
+	}
+
+	private static String top20RankingSummary(List<FastN2CandidatePair> candidates) {
+		StringBuilder summary = new StringBuilder();
+		for (FastN2RankingMode mode : List.of(
+				FastN2RankingMode.TOTAL_NORMALIZED_OVERLOAD,
+				FastN2RankingMode.VIOLATION_COUNT,
+				FastN2RankingMode.MAX_OVERLOAD_PERCENT,
+				FastN2RankingMode.COMPOSITE_SEVERITY)) {
+			summary.append("- ").append(mode).append('\n');
+			List<FastN2CandidatePair> top = candidates.stream()
+					.sorted(mode.comparator())
+					.limit(20)
+					.toList();
+			for (int index = 0; index < top.size(); index++) {
+				FastN2CandidatePair candidate = top.get(index);
+				summary.append("  ")
+						.append(index + 1)
+						.append(". ")
+						.append(candidate.outageBranchId1())
+						.append(" + ")
+						.append(candidate.outageBranchId2())
+						.append(" | score=")
+						.append(mode.score(candidate))
+						.append(" | violations=")
+						.append(candidate.violationCount())
+						.append(" | totalNorm=")
+						.append(candidate.totalNormalizedOverload())
+						.append(" | maxPct=")
+						.append(candidate.maxOverloadPercent())
+						.append(" | maxMW=")
+						.append(candidate.maxOverloadMw())
+						.append(" | composite=")
+						.append(candidate.severityScore())
+						.append('\n');
+			}
+		}
+		return summary.toString();
 	}
 
 	private static List<PairKey> sampledPrunedAwayPairs(
@@ -546,6 +626,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		}
 	}
 
+	private record RankColumns(EnumMap<FastN2RankingMode, Map<PairKey, Integer>> ranks) {
+		int rank(FastN2RankingMode mode, FastN2CandidatePair candidate) {
+			return ranks.get(mode).get(PairKey.of(candidate.outageBranchId1(), candidate.outageBranchId2()));
+		}
+	}
+
 	private record SampleValidationResult(
 			int sampledPrunedAwayPairCount,
 			int dangerousPairCount,
@@ -643,6 +729,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			long selectorPrunedPairCount,
 			long selectorElapsedMillis,
 			FastN2LodfStats selectorLodfStats,
+			String top20RankingSummary,
 			SampleValidationResult sampleValidation,
 			SurvivorValidationResult survivorValidation,
 			long memoryBeforeBytes,
@@ -691,6 +778,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					- outage/outage LODFs computed: %d
 					- outage LODF vectors computed: %d
 
+					Top 20 Returned Candidate Ranking Matrix:
+					%s
+
 					Validation sampling:
 					- sampled pruned-away pairs: %d
 					- exact dangerous pairs in sample: %d
@@ -733,6 +823,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					selectorLodfStats.monitorOutageComputedCount(),
 					selectorLodfStats.outagePairComputedCount(),
 					selectorLodfStats.outageVectorComputedCount(),
+					top20RankingSummary,
 					sampleValidation.sampledPrunedAwayPairCount,
 					sampleValidation.dangerousPairCount,
 					sampleValidation.dangerousPairCount == 0 ? "PASS" : "FAILED - pruned-away sample contains dangerous pairs",
