@@ -247,6 +247,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		writeDangerousPairCsv(pruned);
 		writeDangerousPairJson(pruned);
 		writePrunedAwayDiagnosticsCsv(sampleValidation);
+		writePlanningReviewMarkdown(pruned, sampleValidation, returnedValidation);
 		writeFullSetReport(new Texas7kFullSetReport(
 				studySet.totalContingencyCount(),
 				studySet.totalMonitorCount(),
@@ -450,6 +451,60 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		Files.writeString(csvPath, csv.toString(), StandardCharsets.UTF_8);
 	}
 
+	private static void writePlanningReviewMarkdown(
+			FastN2CandidateResult result,
+			SampleValidationResult sampleValidation,
+			ReturnedCandidateValidationResult returnedValidation) throws Exception {
+		Path reportPath = Path.of("target", "fast-n2-texas7k-planning-review.md");
+		Files.createDirectories(reportPath.getParent());
+		Files.writeString(
+				reportPath,
+				planningReviewMarkdown(result, sampleValidation, returnedValidation),
+				StandardCharsets.UTF_8);
+	}
+
+	private static String planningReviewMarkdown(
+			FastN2CandidateResult result,
+			SampleValidationResult sampleValidation,
+			ReturnedCandidateValidationResult returnedValidation) {
+		return """
+				# Fast N-2 Texas 7K Planning Review
+
+				## Completeness Status
+
+				- Pruning safety classification: %s
+				- Sampled pruned-away pairs: %d
+				- Exact dangerous pairs in pruned-away sample: %d
+				- Returned top-K false positives: %d
+
+				## Ranking Overlap
+
+				%s
+
+				## Top Repeated Outage Branches
+
+				%s
+
+				## Top Repeated Overloaded Monitored Branches
+
+				%s
+
+				## Top Repeated Bounding Monitors
+
+				%s
+				""".formatted(
+				sampleValidation.dangerousPairCount() == 0
+						? "HEURISTIC_SAMPLE_CLEAN_NOT_CERTIFIED"
+						: "HEURISTIC_UNSAFE_SAMPLE_MISSES",
+				sampleValidation.sampledPrunedAwayPairCount(),
+				sampleValidation.dangerousPairCount(),
+				returnedValidation.falsePositiveCount(),
+				rankingOverlapMarkdown(result.candidates(), 20),
+				repeatedOutageBranchMarkdown(result.candidates(), 20),
+				repeatedViolationMonitorMarkdown(result.candidates(), 20),
+				repeatedBoundingMonitorMarkdown(result.candidates(), 20));
+	}
+
 	private static void writeDangerousPairCsv(FastN2CandidateResult result) throws Exception {
 		Path csvPath = Path.of("target", "fast-n2-texas7k-dangerous-pairs.csv");
 		Files.createDirectories(csvPath.getParent());
@@ -544,6 +599,86 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			ranks.put(mode, modeRanks);
 		}
 		return new RankColumns(ranks);
+	}
+
+	private static String rankingOverlapMarkdown(List<FastN2CandidatePair> candidates, int topN) {
+		List<FastN2RankingMode> modes = List.of(
+				FastN2RankingMode.TOTAL_NORMALIZED_OVERLOAD,
+				FastN2RankingMode.VIOLATION_COUNT,
+				FastN2RankingMode.MAX_OVERLOAD_PERCENT,
+				FastN2RankingMode.COMPOSITE_SEVERITY);
+		Map<FastN2RankingMode, Set<PairKey>> topPairs = new EnumMap<>(FastN2RankingMode.class);
+		for (FastN2RankingMode mode : modes) {
+			topPairs.put(mode, candidates.stream()
+					.sorted(mode.comparator())
+					.limit(topN)
+					.map(candidate -> PairKey.of(candidate.outageBranchId1(), candidate.outageBranchId2()))
+					.collect(Collectors.toSet()));
+		}
+		StringBuilder text = new StringBuilder();
+		text.append("| Ranking A | Ranking B | Shared Top ").append(topN).append(" |\n");
+		text.append("|---|---|---:|\n");
+		for (int i = 0; i < modes.size(); i++) {
+			for (int j = i + 1; j < modes.size(); j++) {
+				Set<PairKey> overlap = new HashSet<>(topPairs.get(modes.get(i)));
+				overlap.retainAll(topPairs.get(modes.get(j)));
+				text.append("| ")
+						.append(modes.get(i))
+						.append(" | ")
+						.append(modes.get(j))
+						.append(" | ")
+						.append(overlap.size())
+						.append(" |\n");
+			}
+		}
+		return text.toString();
+	}
+
+	private static String repeatedOutageBranchMarkdown(List<FastN2CandidatePair> candidates, int limit) {
+		Map<String, Long> counts = new java.util.HashMap<>();
+		for (FastN2CandidatePair candidate : candidates) {
+			counts.merge(candidate.outageBranchId1(), 1L, Long::sum);
+			counts.merge(candidate.outageBranchId2(), 1L, Long::sum);
+		}
+		return countTableMarkdown("Outage Branch", "Top-K Appearances", counts, limit);
+	}
+
+	private static String repeatedViolationMonitorMarkdown(List<FastN2CandidatePair> candidates, int limit) {
+		Map<String, Long> counts = new java.util.HashMap<>();
+		for (FastN2CandidatePair candidate : candidates) {
+			candidate.violations().forEach(violation -> counts.merge(violation.monitorBranchId(), 1L, Long::sum));
+		}
+		return countTableMarkdown("Monitored Branch", "Violation Appearances", counts, limit);
+	}
+
+	private static String repeatedBoundingMonitorMarkdown(List<FastN2CandidatePair> candidates, int limit) {
+		Map<String, Long> counts = new java.util.HashMap<>();
+		for (FastN2CandidatePair candidate : candidates) {
+			if (candidate.boundingMonitorBranchId() != null && !candidate.boundingMonitorBranchId().isBlank()) {
+				counts.merge(candidate.boundingMonitorBranchId(), 1L, Long::sum);
+			}
+		}
+		return countTableMarkdown("Bounding Monitor", "Top-K Appearances", counts, limit);
+	}
+
+	private static String countTableMarkdown(
+			String labelColumn,
+			String countColumn,
+			Map<String, Long> counts,
+			int limit) {
+		StringBuilder text = new StringBuilder();
+		text.append("| ").append(labelColumn).append(" | ").append(countColumn).append(" |\n");
+		text.append("|---|---:|\n");
+		counts.entrySet().stream()
+				.sorted(Map.Entry.<String, Long>comparingByValue().reversed()
+						.thenComparing(Map.Entry.comparingByKey()))
+				.limit(limit)
+				.forEach(entry -> text.append("| ")
+						.append(entry.getKey())
+						.append(" | ")
+						.append(entry.getValue())
+						.append(" |\n"));
+		return text.toString();
 	}
 
 	private static String top20RankingSummary(List<FastN2CandidatePair> candidates) {
@@ -1061,6 +1196,8 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					Exports:
 					- target/fast-n2-texas7k-dangerous-pairs.csv
 					- target/fast-n2-texas7k-dangerous-pairs.json
+					- target/fast-n2-texas7k-pruned-away-diagnostics.csv
+					- target/fast-n2-texas7k-planning-review.md
 					""".formatted(
 					TEXAS7K_RAW,
 					TEXAS7K_CONTINGENCIES,
