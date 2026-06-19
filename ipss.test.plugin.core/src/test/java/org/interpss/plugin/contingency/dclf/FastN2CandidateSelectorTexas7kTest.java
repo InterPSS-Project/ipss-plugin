@@ -184,6 +184,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		long prunerElapsedMillis = elapsedMillis(prunerStartedNanos);
 		long memoryAfterPrunerBytes = usedMemoryBytes();
 		long survivorPairs = pruning.finalPairCount();
+		Map<String, Double> baseFlowMagnitudeByBranchId = baseFlowMagnitudesMw(prunerNet);
 		writeFullSetPrunerCheckpoint(new Texas7kFullSetPrunerCheckpoint(
 				studySet.totalContingencyCount(),
 				studySet.totalMonitorCount(),
@@ -226,10 +227,14 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				pruned.stats().exactEvaluatedPairCount(),
 				selectorElapsedMillis);
 
-		List<PairKey> sampledPrunedAwayPairs = sampledPrunedAwayPairs(pruning, FULL_SET_VALIDATION_SAMPLE_SIZE);
+		List<SampledPair> sampledPrunedAwayPairs = sampledPrunedAwayPairs(
+				pruning,
+				baseFlowMagnitudeByBranchId,
+				FULL_SET_VALIDATION_SAMPLE_SIZE);
 		SampleValidationResult sampleValidation = validateExactPairSamples(
 				studySet,
 				sampledPrunedAwayPairs);
+		ReturnedCandidateValidationResult returnedValidation = validateReturnedCandidates(pruned);
 		SurvivorValidationResult survivorValidation = new SurvivorValidationResult(
 				survivorPairs,
 				pruned.stats().exactEvaluatedPairCount(),
@@ -238,6 +243,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 		writeDangerousPairCsv(pruned);
 		writeDangerousPairJson(pruned);
+		writePrunedAwayDiagnosticsCsv(sampleValidation);
 		writeFullSetReport(new Texas7kFullSetReport(
 				studySet.totalContingencyCount(),
 				studySet.totalMonitorCount(),
@@ -260,6 +266,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				pruned.stats().lodfStats(),
 				top20RankingSummary(pruned.candidates()),
 				sampleValidation,
+				returnedValidation,
 				survivorValidation,
 				memoryBeforeBytes,
 				memoryAfterPrunerBytes,
@@ -370,6 +377,22 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		return changed;
 	}
 
+	private static Map<String, Double> baseFlowMagnitudesMw(AclfNetwork net) {
+		ContingencyAnalysisAlgorithm dclfAlgo =
+				com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net);
+		if (!dclfAlgo.calculateDclf(DclfMethod.STD)) {
+			throw new IllegalStateException("Could not calculate DCLF for Texas 7k base flow diagnostics.");
+		}
+		Map<String, Double> flows = new java.util.HashMap<>();
+		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
+			AclfBranch branch = dclfBranch.getBranch();
+			if (branch != null && dclfBranch.isActive()) {
+				flows.put(branch.getId(), Math.abs(dclfBranch.getDclfFlow() * net.getBaseMva()));
+			}
+		}
+		return flows;
+	}
+
 	private static Set<PairKey> candidateKeys(FastN2CandidateResult result) {
 		return result.candidates().stream()
 				.map(candidate -> PairKey.of(candidate.outageBranchId1(), candidate.outageBranchId2()))
@@ -392,6 +415,33 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		Path reportPath = Path.of("target", "fast-n2-texas7k-fullset-pruner-checkpoint.txt");
 		Files.createDirectories(reportPath.getParent());
 		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
+	}
+
+	private static void writePrunedAwayDiagnosticsCsv(SampleValidationResult result) throws Exception {
+		Path csvPath = Path.of("target", "fast-n2-texas7k-pruned-away-diagnostics.csv");
+		Files.createDirectories(csvPath.getParent());
+		StringBuilder csv = new StringBuilder();
+		csv.append("bucket,outageBranchId1,outageBranchId2,pairBaseFlowRiskMw,")
+				.append("dangerous,boundingMonitorBranchId,violationCount,upperBoundLoadingPercent,")
+				.append("totalOverloadMw,totalNormalizedOverload,maxOverloadPercent,maxOverloadMw,")
+				.append("severityScore,pruningDecision,survivorMask\n");
+		for (PrunedAwayPairDiagnostic diagnostic : result.diagnostics()) {
+			csv.append(diagnostic.bucket()).append(',')
+					.append(csv(diagnostic.pair().branchId1())).append(',')
+					.append(csv(diagnostic.pair().branchId2())).append(',')
+					.append(diagnostic.pairBaseFlowRiskMw()).append(',')
+					.append(diagnostic.dangerous()).append(',')
+					.append(csv(diagnostic.boundingMonitorBranchId())).append(',')
+					.append(diagnostic.violationCount()).append(',')
+					.append(diagnostic.upperBoundLoadingPercent()).append(',')
+					.append(diagnostic.totalOverloadMw()).append(',')
+					.append(diagnostic.totalNormalizedOverload()).append(',')
+					.append(diagnostic.maxOverloadPercent()).append(',')
+					.append(diagnostic.maxOverloadMw()).append(',')
+					.append(diagnostic.severityScore()).append(',')
+					.append("PRUNED_BY_UPPER_BOUND_HEURISTIC,false\n");
+		}
+		Files.writeString(csvPath, csv.toString(), StandardCharsets.UTF_8);
 	}
 
 	private static void writeDangerousPairCsv(FastN2CandidateResult result) throws Exception {
@@ -528,8 +578,9 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		return summary.toString();
 	}
 
-	private static List<PairKey> sampledPrunedAwayPairs(
+	private static List<SampledPair> sampledPrunedAwayPairs(
 			FastN2PruningResult pruning,
+			Map<String, Double> baseFlowMagnitudeByBranchId,
 			int sampleSize) {
 		if (sampleSize <= 0) {
 			return List.of();
@@ -538,32 +589,104 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		if (prunedPairCount <= 0L) {
 			return List.of();
 		}
-		List<PairKey> samples = new ArrayList<>();
-		long stride = Math.max(1L, prunedPairCount / sampleSize);
-		long nextOrdinal = 0L;
-		long prunedOrdinal = 0L;
+		double maxPairRiskMw = maxPrunedPairBaseFlowRiskMw(pruning, baseFlowMagnitudeByBranchId);
+		int[] bucketCounts = prunedPairBucketCounts(pruning, baseFlowMagnitudeByBranchId, maxPairRiskMw);
+		int perBucketTarget = Math.max(1, (int) Math.ceil(sampleSize / 3.0));
+		int[] selectedByBucket = new int[3];
+		long[] seenByBucket = new long[3];
+		long[] nextOrdinalByBucket = new long[3];
+		long[] strideByBucket = new long[3];
+		for (int bucket = 0; bucket < strideByBucket.length; bucket++) {
+			strideByBucket[bucket] = Math.max(1L, bucketCounts[bucket] / Math.max(1, perBucketTarget));
+		}
+		List<SampledPair> samples = new ArrayList<>();
 		boolean[][] mask = pruning.survivorPairMask();
 		for (int x = 0; x < mask.length && samples.size() < sampleSize; x++) {
 			for (int y = x + 1; y < mask[x].length && samples.size() < sampleSize; y++) {
 				if (mask[x][y]) {
 					continue;
 				}
-				if (prunedOrdinal >= nextOrdinal) {
-					samples.add(PairKey.of(pruning.outageBranchIds().get(x), pruning.outageBranchIds().get(y)));
-					nextOrdinal += stride;
+				String branchId1 = pruning.outageBranchIds().get(x);
+				String branchId2 = pruning.outageBranchIds().get(y);
+				double risk = pairBaseFlowRiskMw(branchId1, branchId2, baseFlowMagnitudeByBranchId);
+				int bucket = riskBucket(risk, maxPairRiskMw);
+				if (selectedByBucket[bucket] < perBucketTarget
+						&& seenByBucket[bucket] >= nextOrdinalByBucket[bucket]) {
+					samples.add(new SampledPair(PairKey.of(branchId1, branchId2), RiskBucket.values()[bucket], risk));
+					selectedByBucket[bucket]++;
+					nextOrdinalByBucket[bucket] += strideByBucket[bucket];
 				}
-				prunedOrdinal++;
+				seenByBucket[bucket]++;
 			}
 		}
 		return samples;
 	}
 
+	private static int[] prunedPairBucketCounts(
+			FastN2PruningResult pruning,
+			Map<String, Double> baseFlowMagnitudeByBranchId,
+			double maxPairRiskMw) {
+		int[] counts = new int[3];
+		boolean[][] mask = pruning.survivorPairMask();
+		for (int x = 0; x < mask.length; x++) {
+			for (int y = x + 1; y < mask[x].length; y++) {
+				if (!mask[x][y]) {
+					String branchId1 = pruning.outageBranchIds().get(x);
+					String branchId2 = pruning.outageBranchIds().get(y);
+					double risk = pairBaseFlowRiskMw(branchId1, branchId2, baseFlowMagnitudeByBranchId);
+					counts[riskBucket(risk, maxPairRiskMw)]++;
+				}
+			}
+		}
+		return counts;
+	}
+
+	private static double maxPrunedPairBaseFlowRiskMw(
+			FastN2PruningResult pruning,
+			Map<String, Double> baseFlowMagnitudeByBranchId) {
+		double max = 0.0;
+		boolean[][] mask = pruning.survivorPairMask();
+		for (int x = 0; x < mask.length; x++) {
+			for (int y = x + 1; y < mask[x].length; y++) {
+				if (!mask[x][y]) {
+					String branchId1 = pruning.outageBranchIds().get(x);
+					String branchId2 = pruning.outageBranchIds().get(y);
+					max = Math.max(max, pairBaseFlowRiskMw(branchId1, branchId2, baseFlowMagnitudeByBranchId));
+				}
+			}
+		}
+		return max;
+	}
+
+	private static int riskBucket(double pairBaseFlowRiskMw, double maxPairRiskMw) {
+		if (maxPairRiskMw <= 0.0) {
+			return RiskBucket.LOW.ordinal();
+		}
+		double normalized = pairBaseFlowRiskMw / maxPairRiskMw;
+		if (normalized >= 2.0 / 3.0) {
+			return RiskBucket.HIGH.ordinal();
+		}
+		if (normalized >= 1.0 / 3.0) {
+			return RiskBucket.MEDIUM.ordinal();
+		}
+		return RiskBucket.LOW.ordinal();
+	}
+
+	private static double pairBaseFlowRiskMw(
+			String branchId1,
+			String branchId2,
+			Map<String, Double> baseFlowMagnitudeByBranchId) {
+		return baseFlowMagnitudeByBranchId.getOrDefault(branchId1, 0.0)
+				+ baseFlowMagnitudeByBranchId.getOrDefault(branchId2, 0.0);
+	}
+
 	private static SampleValidationResult validateExactPairSamples(
 			Texas7kStudySet studySet,
-			List<PairKey> sampledPairs) throws Exception {
-		int dangerous = 0;
+			List<SampledPair> sampledPairs) throws Exception {
+		List<PrunedAwayPairDiagnostic> diagnostics = new ArrayList<>();
 		long startedNanos = System.nanoTime();
-		for (PairKey pair : sampledPairs) {
+		for (SampledPair sampledPair : sampledPairs) {
+			PairKey pair = sampledPair.pair();
 			AclfNetwork net = importPsse(TEXAS7K_RAW);
 			fillMissingRatingsFromBaseDclfFlow(net, FALLBACK_RATING_BASE_FLOW_MULTIPLIER);
 			FastN2CandidateResult result = new FastN2CandidateSelector().selectCandidates(
@@ -573,11 +696,20 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 							studySet.monitoredBranchIds(),
 							List.of(pair.branchId1(), pair.branchId2()),
 							new FastN2ScreeningOptions(THERMAL_LIMIT_PERCENT, 0.0, 1.0e-8, 0, false)));
-			if (!result.candidates().isEmpty()) {
-				dangerous++;
+			FastN2CandidatePair candidate = result.candidates().isEmpty() ? null : result.candidates().get(0);
+			diagnostics.add(PrunedAwayPairDiagnostic.of(sampledPair, candidate));
+		}
+		return new SampleValidationResult(diagnostics, elapsedMillis(startedNanos));
+	}
+
+	private static ReturnedCandidateValidationResult validateReturnedCandidates(FastN2CandidateResult result) {
+		int falsePositiveCount = 0;
+		for (FastN2CandidatePair candidate : result.candidates()) {
+			if (!candidate.singularOrIslandingRisk() && candidate.violationCount() == 0) {
+				falsePositiveCount++;
 			}
 		}
-		return new SampleValidationResult(sampledPairs.size(), dangerous, elapsedMillis(startedNanos));
+		return new ReturnedCandidateValidationResult(result.candidates().size(), falsePositiveCount);
 	}
 
 	private static long usedMemoryBytes() {
@@ -632,10 +764,110 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		}
 	}
 
+	private enum RiskBucket {
+		LOW,
+		MEDIUM,
+		HIGH
+	}
+
+	private record SampledPair(
+			PairKey pair,
+			RiskBucket bucket,
+			double pairBaseFlowRiskMw) {
+	}
+
+	private record PrunedAwayPairDiagnostic(
+			PairKey pair,
+			RiskBucket bucket,
+			double pairBaseFlowRiskMw,
+			boolean dangerous,
+			String boundingMonitorBranchId,
+			int violationCount,
+			double upperBoundLoadingPercent,
+			double totalOverloadMw,
+			double totalNormalizedOverload,
+			double maxOverloadPercent,
+			double maxOverloadMw,
+			double severityScore) {
+
+		static PrunedAwayPairDiagnostic of(SampledPair sampledPair, FastN2CandidatePair candidate) {
+			if (candidate == null) {
+				return new PrunedAwayPairDiagnostic(
+						sampledPair.pair(),
+						sampledPair.bucket(),
+						sampledPair.pairBaseFlowRiskMw(),
+						false,
+						null,
+						0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0);
+			}
+			return new PrunedAwayPairDiagnostic(
+					sampledPair.pair(),
+					sampledPair.bucket(),
+					sampledPair.pairBaseFlowRiskMw(),
+					true,
+					candidate.boundingMonitorBranchId(),
+					candidate.violationCount(),
+					candidate.upperBoundLoadingPercent(),
+					candidate.totalOverloadMw(),
+					candidate.totalNormalizedOverload(),
+					candidate.maxOverloadPercent(),
+					candidate.maxOverloadMw(),
+					candidate.severityScore());
+		}
+	}
+
 	private record SampleValidationResult(
-			int sampledPrunedAwayPairCount,
-			int dangerousPairCount,
+			List<PrunedAwayPairDiagnostic> diagnostics,
 			long elapsedMillis) {
+
+		int sampledPrunedAwayPairCount() {
+			return diagnostics.size();
+		}
+
+		int dangerousPairCount() {
+			return (int) diagnostics.stream().filter(PrunedAwayPairDiagnostic::dangerous).count();
+		}
+
+		double worstMissedLoadingPercent() {
+			return diagnostics.stream()
+					.filter(PrunedAwayPairDiagnostic::dangerous)
+					.mapToDouble(PrunedAwayPairDiagnostic::upperBoundLoadingPercent)
+					.max()
+					.orElse(0.0);
+		}
+
+		double worstMissedSeverityScore() {
+			return diagnostics.stream()
+					.filter(PrunedAwayPairDiagnostic::dangerous)
+					.mapToDouble(PrunedAwayPairDiagnostic::severityScore)
+					.max()
+					.orElse(0.0);
+		}
+
+		int sampledCount(RiskBucket bucket) {
+			return (int) diagnostics.stream().filter(diagnostic -> diagnostic.bucket() == bucket).count();
+		}
+
+		int dangerousCount(RiskBucket bucket) {
+			return (int) diagnostics.stream()
+					.filter(diagnostic -> diagnostic.bucket() == bucket && diagnostic.dangerous())
+					.count();
+		}
+	}
+
+	private record ReturnedCandidateValidationResult(
+			int returnedCandidateCount,
+			int falsePositiveCount) {
+
+		String status() {
+			return falsePositiveCount == 0 ? "PASS" : "FAILED - returned candidates without exact violations";
+		}
 	}
 
 	private record SurvivorValidationResult(
@@ -731,6 +963,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			FastN2LodfStats selectorLodfStats,
 			String top20RankingSummary,
 			SampleValidationResult sampleValidation,
+			ReturnedCandidateValidationResult returnedValidation,
 			SurvivorValidationResult survivorValidation,
 			long memoryBeforeBytes,
 			long memoryAfterPrunerBytes,
@@ -782,10 +1015,20 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					%s
 
 					Validation sampling:
+					- pruning safety classification: %s
 					- sampled pruned-away pairs: %d
+					- sampled pruned-away pairs by risk bucket: low=%d, medium=%d, high=%d
 					- exact dangerous pairs in sample: %d
+					- exact dangerous pairs by risk bucket: low=%d, medium=%d, high=%d
+					- worst missed loading percent: %.6f
+					- worst missed severity score: %.6f
 					- pruning validation status: %s
 					- sample validation elapsed: %d ms
+
+					Returned top-K validation:
+					- returned candidate pairs checked: %d
+					- returned false positives: %d
+					- returned validation status: %s
 
 					Memory:
 					- before: %.2f MB
@@ -824,10 +1067,24 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					selectorLodfStats.outagePairComputedCount(),
 					selectorLodfStats.outageVectorComputedCount(),
 					top20RankingSummary,
-					sampleValidation.sampledPrunedAwayPairCount,
-					sampleValidation.dangerousPairCount,
-					sampleValidation.dangerousPairCount == 0 ? "PASS" : "FAILED - pruned-away sample contains dangerous pairs",
-					sampleValidation.elapsedMillis,
+					sampleValidation.dangerousPairCount() == 0
+							? "HEURISTIC_SAMPLE_CLEAN_NOT_CERTIFIED"
+							: "HEURISTIC_UNSAFE_SAMPLE_MISSES",
+					sampleValidation.sampledPrunedAwayPairCount(),
+					sampleValidation.sampledCount(RiskBucket.LOW),
+					sampleValidation.sampledCount(RiskBucket.MEDIUM),
+					sampleValidation.sampledCount(RiskBucket.HIGH),
+					sampleValidation.dangerousPairCount(),
+					sampleValidation.dangerousCount(RiskBucket.LOW),
+					sampleValidation.dangerousCount(RiskBucket.MEDIUM),
+					sampleValidation.dangerousCount(RiskBucket.HIGH),
+					sampleValidation.worstMissedLoadingPercent(),
+					sampleValidation.worstMissedSeverityScore(),
+					sampleValidation.dangerousPairCount() == 0 ? "PASS" : "FAILED - pruned-away sample contains dangerous pairs",
+					sampleValidation.elapsedMillis(),
+					returnedValidation.returnedCandidateCount(),
+					returnedValidation.falsePositiveCount(),
+					returnedValidation.status(),
 					bytesToMb(memoryBeforeBytes),
 					bytesToMb(memoryAfterPrunerBytes),
 					bytesToMb(memoryAfterSelectorBytes));
