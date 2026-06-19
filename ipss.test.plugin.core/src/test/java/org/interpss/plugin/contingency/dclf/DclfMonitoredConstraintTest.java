@@ -26,7 +26,7 @@ import com.interpss.core.algo.dclf.check.MonitoringExceptionStatus;
 import com.interpss.core.algo.dclf.check.MonitoringObjectType;
 import com.interpss.core.algo.dclf.check.MonitoringExceptionPolicy;
 import com.interpss.core.algo.dclf.check.NomogramMwBoundaryCheck;
-import org.interpss.plugin.contingency.definition.DclfMonitoringConfigRecord;
+import com.interpss.core.algo.dclf.definition.DclfMonitoringConfigRecord;
 import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.definition.MonitoredInterfaceRecord;
 import com.interpss.core.algo.dclf.result.DclfMonitoredConstraintResult;
