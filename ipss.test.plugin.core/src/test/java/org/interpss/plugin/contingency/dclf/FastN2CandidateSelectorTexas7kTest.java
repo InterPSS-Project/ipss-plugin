@@ -56,6 +56,11 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			Integer.getInteger("interpss.fastN2Texas7kValidationSamples", 100);
 	private static final int FULL_SET_MAX_SURVIVOR_VALIDATION_PAIRS =
 			Integer.getInteger("interpss.fastN2Texas7kMaxSurvivorValidationPairs", 250_000);
+	private static final int FULL_SET_MAX_RETURNED_CANDIDATES =
+			Integer.getInteger("interpss.fastN2Texas7kMaxReturnedCandidates", 10_000);
+	private static final int FULL_SET_EXACT_EVALUATION_CHUNK_SIZE =
+			Integer.getInteger("interpss.fastN2Texas7kExactEvaluationChunkSize",
+					FastN2ScreeningOptions.DEFAULT_EXACT_EVALUATION_CHUNK_SIZE);
 	private static final boolean FAIL_ON_SAMPLE_DANGEROUS =
 			Boolean.getBoolean("interpss.fastN2Texas7kFailOnSampleDangerous");
 	private static final double THERMAL_LIMIT_PERCENT = 100.0;
@@ -205,13 +210,15 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				DclfMethod.STD,
 				studySet.monitoredBranchIds(),
 				studySet.outageCandidateBranchIds(),
-				pruningOptions);
+				fullSetSelectorOptions());
 		long selectorStartedNanos = System.nanoTime();
 		FastN2CandidateResult pruned = new FastN2CandidateSelector().selectCandidates(selectorRequest);
 		long selectorElapsedMillis = elapsedMillis(selectorStartedNanos);
 		long memoryAfterSelectorBytes = usedMemoryBytes();
+		long exactDangerousPairCount = pruned.stats().originalPairCount() - pruned.stats().prunedPairCount();
 		System.out.printf(
-				"Texas 7k full-set selector complete: dangerous=%d, exactEvaluated=%d, elapsed=%d ms%n",
+				"Texas 7k full-set selector complete: dangerous=%d, returned=%d, exactEvaluated=%d, elapsed=%d ms%n",
+				exactDangerousPairCount,
 				pruned.candidates().size(),
 				pruned.stats().exactEvaluatedPairCount(),
 				selectorElapsedMillis);
@@ -223,7 +230,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		SurvivorValidationResult survivorValidation = new SurvivorValidationResult(
 				survivorPairs,
 				pruned.stats().exactEvaluatedPairCount(),
-				pruned.candidates().size(),
+				exactDangerousPairCount,
 				pruned.stats().exactEvaluatedPairCount() == survivorPairs);
 
 		writeDangerousPairCsv(pruned);
@@ -239,7 +246,11 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				pruning.originalPairCount() - pruning.finalPairCount(),
 				pruning.islandingPairCount(),
 				prunerElapsedMillis,
+				exactDangerousPairCount,
 				pruned.candidates().size(),
+				pruned.stats().truncatedByMaxCandidatePairs(),
+				FULL_SET_MAX_RETURNED_CANDIDATES,
+				FULL_SET_EXACT_EVALUATION_CHUNK_SIZE,
 				pruned.stats().exactEvaluatedPairCount(),
 				pruned.stats().upperBoundPruningSkippedPairCount(),
 				selectorElapsedMillis,
@@ -307,6 +318,20 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				false,
 				FastN2ScreeningOptions.DEFAULT_MINIMUM_RISK_GRAPH_SCORE,
 				FastN2ScreeningOptions.DEFAULT_MINIMUM_OUTAGE_INTERACTION_LODF);
+	}
+
+	private static FastN2ScreeningOptions fullSetSelectorOptions() {
+		return new FastN2ScreeningOptions(
+				THERMAL_LIMIT_PERCENT,
+				0.0,
+				1.0e-8,
+				FULL_SET_MAX_RETURNED_CANDIDATES,
+				false,
+				true,
+				false,
+				FastN2ScreeningOptions.DEFAULT_MINIMUM_RISK_GRAPH_SCORE,
+				FastN2ScreeningOptions.DEFAULT_MINIMUM_OUTAGE_INTERACTION_LODF,
+				FULL_SET_EXACT_EVALUATION_CHUNK_SIZE);
 	}
 
 	private static boolean isActiveBranch(AclfNetwork net, String branchId) {
@@ -610,6 +635,10 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			long islandingPairCount,
 			long prunerElapsedMillis,
 			long dangerousPairCount,
+			long returnedCandidateCount,
+			boolean truncatedByMaxCandidatePairs,
+			int maxReturnedCandidatePairs,
+			int exactEvaluationChunkSize,
 			long exactEvaluatedPairCount,
 			long selectorPrunedPairCount,
 			long selectorElapsedMillis,
@@ -649,6 +678,10 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 					Exact survivor evaluation:
 					- dangerous pairs: %d
+					- returned/exported candidate pairs: %d
+					- top-K candidate cap: %s
+					- truncated by top-K cap: %s
+					- exact evaluation chunk size: %d outage rows
 					- exact evaluated pairs: %d
 					- selector pruned-away pairs: %d
 					- selector elapsed: %d ms
@@ -688,6 +721,10 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					islandingPairCount,
 					prunerElapsedMillis,
 					dangerousPairCount,
+					returnedCandidateCount,
+					maxReturnedCandidatePairs > 0 ? Integer.toString(maxReturnedCandidatePairs) : "unbounded",
+					truncatedByMaxCandidatePairs,
+					exactEvaluationChunkSize,
 					exactEvaluatedPairCount,
 					selectorPrunedPairCount,
 					selectorElapsedMillis,
