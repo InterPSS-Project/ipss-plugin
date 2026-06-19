@@ -45,6 +45,9 @@ import com.interpss.core.algo.dclf.fastn2.FastN2PruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2RankingMode;
 import com.interpss.core.algo.dclf.fastn2.FastN2ScreeningOptions;
+import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruner;
+import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningOptions;
+import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2StudyInventory;
 
 @Tag("large")
@@ -77,6 +80,15 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			Boolean.getBoolean("interpss.fastN2Texas7kExactMonitorPruning");
 	private static final boolean FAIL_ON_SAMPLE_DANGEROUS =
 			Boolean.getBoolean("interpss.fastN2Texas7kFailOnSampleDangerous");
+	private static final int ACTIVS25K_STREAMING_OUTAGE_BATCH_SIZE =
+			Integer.getInteger("interpss.fastN2Activs25kStreamingOutageBatchSize",
+					FastN2StreamingPruningOptions.DEFAULT_OUTAGE_BATCH_SIZE);
+	private static final int ACTIVS25K_STREAMING_MONITOR_BATCH_SIZE =
+			Integer.getInteger("interpss.fastN2Activs25kStreamingMonitorBatchSize",
+					FastN2StreamingPruningOptions.DEFAULT_MONITOR_BATCH_SIZE);
+	private static final int ACTIVS25K_STREAMING_ENDPOINT_RHS_BATCH_SIZE =
+			Integer.getInteger("interpss.fastN2Activs25kStreamingEndpointRhsBatchSize",
+					FastN2StreamingPruningOptions.DEFAULT_ENDPOINT_RHS_BATCH_SIZE);
 	private static final double THERMAL_LIMIT_PERCENT = 100.0;
 	private static final double FALLBACK_RATING_BASE_FLOW_MULTIPLIER = 1.20;
 
@@ -341,6 +353,53 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		assertTrue(inventory.monitoredBranchCount() > 0);
 	}
 
+	@Test
+	public void activs25kPrunedOnlyStreamingBenchmark() throws Exception {
+		assumeTrue(Boolean.getBoolean("interpss.fastN2Activs25kPrunedOnly"),
+				"Set -Dinterpss.fastN2Activs25kPrunedOnly=true to run the ACTIVSg25k streaming Fast N-2 pruner");
+		assumeTrue(Files.isRegularFile(ACTIVS25K_RAW), "ACTIVSg25k RAW fixture is not available: " + ACTIVS25K_RAW);
+		assumeTrue(Files.isRegularFile(ACTIVS25K_CONTINGENCIES),
+				"ACTIVSg25k contingency fixture is not available: " + ACTIVS25K_CONTINGENCIES);
+		assumeTrue(Files.isRegularFile(ACTIVS25K_MONITORS),
+				"ACTIVSg25k monitor fixture is not available: " + ACTIVS25K_MONITORS);
+
+		AclfNetwork net = importPsse(ACTIVS25K_RAW);
+		List<BranchContingencyRecord> contingencies =
+				ContingencyFileUtil.importContingenciesFromJson(ACTIVS25K_CONTINGENCIES.toFile());
+		List<MonitoredBranchRecord> monitors =
+				ContingencyFileUtil.importMonitoredBranchRecordsFromJson(ACTIVS25K_MONITORS.toFile());
+		List<String> outageCandidateIds = contingencies.stream()
+				.map(record -> record.name)
+				.toList();
+		List<String> monitorIds = monitors.stream()
+				.map(MonitoredBranchRecord::getBranchId)
+				.toList();
+
+		long memoryBeforeBytes = usedMemoryBytes();
+		FastN2StreamingPruningResult result = new FastN2StreamingPruner().prune(
+				new FastN2CandidateRequest(
+						net,
+						DclfMethod.STD,
+						monitorIds,
+						outageCandidateIds,
+						FastN2ScreeningOptions.defaults()),
+				new FastN2StreamingPruningOptions(
+						ACTIVS25K_STREAMING_OUTAGE_BATCH_SIZE,
+						ACTIVS25K_STREAMING_MONITOR_BATCH_SIZE,
+						ACTIVS25K_STREAMING_ENDPOINT_RHS_BATCH_SIZE,
+						FastN2PruningOptions.DEFAULT_ZERO_FLOW_EPSILON,
+						FastN2PruningOptions.DEFAULT_ISLANDING_EPSILON));
+		long memoryAfterBytes = usedMemoryBytes();
+		writeActivs25kPrunedOnlyReport(new Activs25kPrunedOnlyReport(
+				contingencies.size(),
+				monitors.size(),
+				result,
+				memoryBeforeBytes,
+				memoryAfterBytes));
+		assertTrue(result.originalPairCount() > 0L);
+		assertTrue(result.finalPairCount() <= result.originalPairCount());
+	}
+
 	private static Texas7kStudySet texas7kStudySet(AclfNetwork net) throws Exception {
 		return texas7kStudySet(net, OUTAGE_CANDIDATE_LIMIT, MONITORED_BRANCH_LIMIT);
 	}
@@ -488,6 +547,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	private static void writeActivs25kInventoryReport(Activs25kInventoryReport report) throws Exception {
 		Path reportPath = Path.of("target", "fast-n2-activsg25k-inventory.txt");
+		Files.createDirectories(reportPath.getParent());
+		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
+	}
+
+	private static void writeActivs25kPrunedOnlyReport(Activs25kPrunedOnlyReport report) throws Exception {
+		Path reportPath = Path.of("target", "fast-n2-activsg25k-pruned-only-report.txt");
 		Files.createDirectories(reportPath.getParent());
 		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
 	}
@@ -1209,6 +1274,66 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 					inventory.activeRequestedMonitorCount(),
 					inventory.activeRequestedMonitorMissingRatingCount(),
 					inventory.monitoredBranchCount());
+		}
+	}
+
+	private record Activs25kPrunedOnlyReport(
+			int contingencyJsonCount,
+			int monitorJsonCount,
+			FastN2StreamingPruningResult result,
+			long memoryBeforeBytes,
+			long memoryAfterBytes) {
+
+		String toText() {
+			return """
+					Fast N-2 ACTIVSg25k streaming pruned-only report
+					================================================
+					Input files:
+					- RAW: %s
+					- contingencies: %s
+					- monitors: %s
+
+					Study scope:
+					- contingency records in JSON: %d
+					- monitor records in JSON: %d
+					- outage candidates after topology filter: %d
+					- monitored branches with usable rating: %d
+					- candidate pairs: %d
+
+					Streaming first-pass upper-bound pruning:
+					- survivor pairs: %d
+					- pruned-away pairs: %d
+					- pruning ratio: %.2f%%
+					- islanding/near-singular pairs: %d
+					- zero-flow protected pairs: %d
+					- outage batch size: %d
+					- monitor batch size: %d
+					- endpoint RHS batch size: %d
+					- elapsed: %d ms
+
+					Memory:
+					- before: %.2f MB
+					- after: %.2f MB
+					""".formatted(
+					ACTIVS25K_RAW,
+					ACTIVS25K_CONTINGENCIES,
+					ACTIVS25K_MONITORS,
+					contingencyJsonCount,
+					monitorJsonCount,
+					result.outageBranchIds().size(),
+					result.monitoredBranchIds().size(),
+					result.originalPairCount(),
+					result.finalPairCount(),
+					result.prunedPairCount(),
+					100.0 * result.pruningRatio(),
+					result.islandingPairCount(),
+					result.zeroFlowProtectedPairCount(),
+					result.outageBatchSize(),
+					result.monitorBatchSize(),
+					result.endpointRhsBatchSize(),
+					result.elapsedMillis(),
+					bytesToMb(memoryBeforeBytes),
+					bytesToMb(memoryAfterBytes));
 		}
 	}
 
