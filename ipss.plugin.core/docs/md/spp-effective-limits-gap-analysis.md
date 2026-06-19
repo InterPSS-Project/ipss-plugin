@@ -207,7 +207,7 @@ PowerWorld public help does not appear to expose a first-class object named `flo
 |---|---|---|
 | Interface | `https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Interface_Information.htm` | A weighted monitored expression over one or more elements. |
 | Interface element | `https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Interface_Element_Information.htm` | A monitored term. PowerWorld supports branch, area-to-area, zone-to-zone, DC line, injection group, generator, load, multi-section line, nested interface, and contingency-conditioned interface elements. |
-| Nomogram | `https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Nomogram_Information_Dialog.htm` | A two-interface piecewise-linear limit boundary. InterPSS now supports compiled linear MW facets; full convex breakpoint nomograms would need an additional record type or decomposition into multiple facets. |
+| Nomogram | `https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Nomogram_Information_Dialog.htm` | A two-interface piecewise-linear limit boundary. InterPSS models this as a nomogram with two monitored-interface axes and one or more linear MW boundary constraints. |
 | Limit monitoring settings | `https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Limit_Monitoring_Settings.htm` | Global policy for which element limits are monitored. InterPSS currently receives the monitored records explicitly. |
 | Limit group | `https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Limit_Group_Dialog.htm` | Rating-set and reporting-policy selection. PowerWorld distinguishes normal and contingency rating sets for branches, interfaces, and bus pairs. |
 | Contingency monitoring exceptions | `https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Monitoring_Exceptions.htm` | Per-contingency include/exclude/default rules. InterPSS now has a DCLF monitoring-exception policy for branch, interface, flowgate, and nomogram checks. |
@@ -742,7 +742,7 @@ Phase 8: Documentation and examples
 
 ### Monitoring Exception Example
 
-There is no required file format in the core API; callers can import this shape, or any equivalent source, into `MonitoringExceptionRecord` objects. In `ipss.plugin.core`, `ContingencyFileUtil.importDclfMonitoringConfigFromJson(...)` now supports a single monitoring config file that embeds monitored branches, monitored interfaces, flowgates, nomogram facets, and monitoring exceptions together:
+There is no required file format in the core API; callers can import this shape, or any equivalent source, into `MonitoringExceptionRecord` objects. In `ipss.plugin.core`, `ContingencyFileUtil.importDclfMonitoringConfigFromJson(...)` now supports a single monitoring config file that embeds monitored branches, monitored interfaces, flowgates, nomograms, and monitoring exceptions together:
 
 ```json
 {
@@ -806,14 +806,19 @@ There is no required file format in the core API; callers can import this shape,
       ]
     }
   ],
-  "nomogram_facets": [
+  "nomograms": [
     {
-      "id": "GGS_FACET_01",
+      "id": "GGS",
       "axis_a_id": "PATH26_N-S",
       "axis_b_id": "PATH26_S-N",
-      "coefficient_a": 0.6,
-      "coefficient_b": 0.4,
-      "limit_mw": 900.0
+      "constraints": [
+        {
+          "id": "GGS_LIMIT_01",
+          "coefficient_a": 0.6,
+          "coefficient_b": 0.4,
+          "limit_mw": 900.0
+        }
+      ]
     }
   ],
   "monitoring_exceptions": [
@@ -882,7 +887,7 @@ branchCheck.compile(new DclfLimitCheckCompileContext(
         net, dclfAlgo, branchIndexById, net.getBaseMva(), config));
 
 NomogramMwBoundaryCheck nomogramCheck =
-        new NomogramMwBoundaryCheck(facets, 100.0);
+        new NomogramMwBoundaryCheck(nomograms, 100.0);
 nomogramCheck.compile(new DclfLimitCheckCompileContext(
         net, dclfAlgo, branchIndexById, net.getBaseMva(), config));
 ```
@@ -895,7 +900,7 @@ The generalized monitored-expression facade was checked against the current anal
 It also packages synthetic flowgate and nomogram definitions onto the same test systems:
 
 - `flowgate`: contingency-aware `FlowgateConstraintRecord` rows built from the monitored-expression pool and grouped over a bounded set of outage contingencies.
-- `nomogram-base`: compiled `NomogramMwBoundaryCheck` facets built from pairs of monitored expressions and evaluated on the base DCLF MW array.
+- `nomogram-base`: compiled `NomogramMwBoundaryCheck` records built from pairs of monitored expressions and evaluated on the base DCLF MW array.
 
 Command:
 
