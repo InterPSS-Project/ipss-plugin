@@ -45,6 +45,7 @@ import com.interpss.core.algo.dclf.fastn2.FastN2PruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2PruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2RankingMode;
 import com.interpss.core.algo.dclf.fastn2.FastN2ScreeningOptions;
+import com.interpss.core.algo.dclf.fastn2.FastN2StudyInventory;
 
 @Tag("large")
 public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
@@ -53,6 +54,10 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	private static final Path TEXAS7K_RAW = TEXAS7K_DIR.resolve("Texas7k_20210804.RAW");
 	private static final Path TEXAS7K_CONTINGENCIES = TEXAS7K_DIR.resolve("Texas7k_20210804_filtered_contingencies.json");
 	private static final Path TEXAS7K_MONITORS = TEXAS7K_DIR.resolve("Texas7k_20210804_monitored_branches.json");
+	private static final Path ACTIVS25K_DIR = resolveActivs25kDir();
+	private static final Path ACTIVS25K_RAW = ACTIVS25K_DIR.resolve("ACTIVSg25k.RAW");
+	private static final Path ACTIVS25K_CONTINGENCIES = ACTIVS25K_DIR.resolve("25k_above100kV_filtered_contingencies.json");
+	private static final Path ACTIVS25K_MONITORS = ACTIVS25K_DIR.resolve("25k_above138kV_monitored_branches.json");
 	private static final int OUTAGE_CANDIDATE_LIMIT =
 			Integer.getInteger("interpss.fastN2Texas7kOutageLimit", 300);
 	private static final int MONITORED_BRANCH_LIMIT =
@@ -82,6 +87,17 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 				Path.of("/Users/ipssdev/github/ipss-desktop/examples/texas7k"));
 		return candidates.stream()
 				.filter(path -> Files.isRegularFile(path.resolve("Texas7k_20210804.RAW")))
+				.findFirst()
+				.orElse(candidates.get(0));
+	}
+
+	private static Path resolveActivs25kDir() {
+		List<Path> candidates = List.of(
+				Path.of("../ipss-desktop/examples/25k"),
+				Path.of("../../ipss-desktop/examples/25k"),
+				Path.of("/Users/ipssdev/github/ipss-desktop/examples/25k"));
+		return candidates.stream()
+				.filter(path -> Files.isRegularFile(path.resolve("ACTIVSg25k.RAW")))
 				.findFirst()
 				.orElse(candidates.get(0));
 	}
@@ -287,6 +303,44 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 		}
 	}
 
+	@Test
+	public void activs25kInventoryReport() throws Exception {
+		assumeTrue(Boolean.getBoolean("interpss.fastN2Activs25kInventory"),
+				"Set -Dinterpss.fastN2Activs25kInventory=true to run the ACTIVSg25k Fast N-2 inventory");
+		assumeTrue(Files.isRegularFile(ACTIVS25K_RAW), "ACTIVSg25k RAW fixture is not available: " + ACTIVS25K_RAW);
+		assumeTrue(Files.isRegularFile(ACTIVS25K_CONTINGENCIES),
+				"ACTIVSg25k contingency fixture is not available: " + ACTIVS25K_CONTINGENCIES);
+		assumeTrue(Files.isRegularFile(ACTIVS25K_MONITORS),
+				"ACTIVSg25k monitor fixture is not available: " + ACTIVS25K_MONITORS);
+
+		AclfNetwork net = importPsse(ACTIVS25K_RAW);
+		List<BranchContingencyRecord> contingencies =
+				ContingencyFileUtil.importContingenciesFromJson(ACTIVS25K_CONTINGENCIES.toFile());
+		List<MonitoredBranchRecord> monitors =
+				ContingencyFileUtil.importMonitoredBranchRecordsFromJson(ACTIVS25K_MONITORS.toFile());
+		List<String> outageCandidateIds = contingencies.stream()
+				.map(record -> record.name)
+				.toList();
+		List<String> monitorIds = monitors.stream()
+				.map(MonitoredBranchRecord::getBranchId)
+				.toList();
+		FastN2StudyInventory inventory = FastN2StudyInventory.analyze(new FastN2CandidateRequest(
+				net,
+				DclfMethod.STD,
+				monitorIds,
+				outageCandidateIds,
+				FastN2ScreeningOptions.defaults()));
+
+		writeActivs25kInventoryReport(new Activs25kInventoryReport(
+				net.getBusList().size(),
+				net.getBranchList().size(),
+				contingencies.size(),
+				monitors.size(),
+				inventory));
+		assertTrue(inventory.finalOutageCandidateCount() > 0);
+		assertTrue(inventory.monitoredBranchCount() > 0);
+	}
+
 	private static Texas7kStudySet texas7kStudySet(AclfNetwork net) throws Exception {
 		return texas7kStudySet(net, OUTAGE_CANDIDATE_LIMIT, MONITORED_BRANCH_LIMIT);
 	}
@@ -428,6 +482,12 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
 	private static void writeFullSetPrunerCheckpoint(Texas7kFullSetPrunerCheckpoint report) throws Exception {
 		Path reportPath = Path.of("target", "fast-n2-texas7k-fullset-pruner-checkpoint.txt");
+		Files.createDirectories(reportPath.getParent());
+		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
+	}
+
+	private static void writeActivs25kInventoryReport(Activs25kInventoryReport report) throws Exception {
+		Path reportPath = Path.of("target", "fast-n2-activsg25k-inventory.txt");
 		Files.createDirectories(reportPath.getParent());
 		Files.writeString(reportPath, report.toText(), StandardCharsets.UTF_8);
 	}
@@ -1090,6 +1150,66 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 			long exactEvaluatedPairCount,
 			long dangerousPairCount,
 			boolean selectorEvaluatedAllSurvivors) {
+	}
+
+	private record Activs25kInventoryReport(
+			int busCount,
+			int branchCount,
+			int contingencyJsonCount,
+			int monitorJsonCount,
+			FastN2StudyInventory inventory) {
+
+		String toText() {
+			return """
+					Fast N-2 ACTIVSg25k inventory
+					=============================
+					Input files:
+					- RAW: %s
+					- contingencies: %s
+					- monitors: %s
+
+					Network:
+					- buses: %d
+					- branches: %d
+					- active branches: %d
+					- active branches missing RateB: %d
+
+					Outage candidates:
+					- contingency records in JSON: %d
+					- distinct requested outage IDs: %d
+					- active requested outage branches: %d
+					- topology-filter removals: %d
+					- final outage candidates: %d
+					- raw N-2 pair count before topology filter: %d
+					- final N-2 pair count after topology filter: %d
+
+					Monitored branches:
+					- monitor records in JSON: %d
+					- distinct requested monitor IDs: %d
+					- active requested monitor branches: %d
+					- active requested monitors missing RateB: %d
+					- final monitored branches with usable rating: %d
+					""".formatted(
+					ACTIVS25K_RAW,
+					ACTIVS25K_CONTINGENCIES,
+					ACTIVS25K_MONITORS,
+					busCount,
+					branchCount,
+					inventory.activeBranchCount(),
+					inventory.activeBranchMissingRatingCount(),
+					contingencyJsonCount,
+					inventory.requestedOutageCount(),
+					inventory.activeRequestedOutageCount(),
+					inventory.topologyFilteredOutageCount(),
+					inventory.finalOutageCandidateCount(),
+					inventory.rawPairCount(),
+					inventory.finalCandidatePairCount(),
+					monitorJsonCount,
+					inventory.requestedMonitorCount(),
+					inventory.activeRequestedMonitorCount(),
+					inventory.activeRequestedMonitorMissingRatingCount(),
+					inventory.monitoredBranchCount());
+		}
 	}
 
 	private record Texas7kFullSetPrunerCheckpoint(
