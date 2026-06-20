@@ -464,6 +464,9 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
         assertEquals(NomogramMwBoundaryCheck.CHECK_ID, results.get(0).getCheckId());
         assertEquals(MonitoringObjectType.NOMOGRAM.name(), results.get(0).getMonitoredObjectType());
         assertEquals(nomogramId, results.get(0).getMonitoredObjectId());
+        assertEquals("LIMIT_01", results.get(0).getMetadata().get("nomogramConstraintId"));
+        assertEquals("AXIS_A", results.get(0).getMetadata().get("axisA"));
+        assertEquals("AXIS_B", results.get(0).getMetadata().get("axisB"));
         assertEquals(signedFlow1MW + signedFlow2MW, results.get(0).getPostValue(), 1.0e-8);
 
         MonitoringExceptionRecord exception = new MonitoringExceptionRecord(
