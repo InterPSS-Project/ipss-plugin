@@ -151,6 +151,10 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			mapAclfNetworkData(aclfNet, xmlNet);
 			simuCtx.setAclfNet((AclfNetwork)aclfNet);
 
+			int busCnt = xmlNet.getBusList().getBus().size();
+			int branchCnt = xmlNet.getBranchList().getBranch().size();
+			aclfNet.ensureLookupCapacity(busCnt, branchCnt);
+
 			//XformerZTableXmlType xfrZTable = xmlNet.getXfrZTable();
 			AclfBusDataHelper busHelper = new AclfBusDataHelper(aclfNet);
 			for (JAXBElement<? extends BusXmlType> bus : xmlNet.getBusList().getBus()) {
