@@ -16,7 +16,7 @@ public class Texas2kBusNonDivergentSample {
 	
 	public static void main(String args[]) throws InterpssException {
 		
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
+		AclfNetwork net = IpssAdapter.importAclfNet("ipss.test.plugin.core/testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
 				.setFormat(PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
 				.load()
