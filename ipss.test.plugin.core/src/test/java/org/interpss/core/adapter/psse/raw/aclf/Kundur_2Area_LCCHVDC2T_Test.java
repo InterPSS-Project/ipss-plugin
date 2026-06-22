@@ -35,21 +35,6 @@ import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
 public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
-	//@Test
-	public void test_LCCHVDC_DeepCopy() throws Exception {
-		AclfNetwork net = createTestCase();
-		
-		AclfNetwork netCopy = net.hzCopy();
-		
-		//assertTrue(net.diffState(netCopy));
-  		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, netCopy);
-  		comp.compareNetwork();
-  		
-  		System.out.println("Differences found: " + comp.getDiffMsgList());
-  		assertTrue(comp.getDiffMsgList().size() == 0, "" + comp.getDiffMsgList());
-		
-		test_LCCHVDC_Data(netCopy);
-	}
 	
 	@Test
 	public void test_LCCHVDC_JSonCopy() throws Exception {
