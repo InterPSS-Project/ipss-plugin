@@ -30,23 +30,6 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 	double errorV = 0.01;
 	
 	//@Test
-	public void testDeepCopy() throws InterpssException, IpssNumericException, Exception {
-		SENetwork seNet = createTestCase();
-		
-		SerializationService serializeService = new DefaultSerializationServiceBuilder().build();  
-		SEBus busCopy = seNet.getBus("Bus1").hzCopy(serializeService);
-		//System.out.println(seNet.getBus("Bus1"));
-		//System.out.println(busCopy);
-		
-		SEBranch braCopy = seNet.getBranch("Bus2->Bus1(1)").hzCopy(serializeService);
-		//System.out.println(seNet.getBranch("Bus2->Bus1(1)"));
-		//System.out.println(braCopy);
-		
-		// copy through Hz
-		SENetwork seNetCopy = seNet.hzCopy();
-	}
-	
-	//@Test
 	public void testJsonCopy() throws InterpssException, IpssNumericException, Exception {
 		SENetwork seNet = createTestCase();
 		
@@ -75,26 +58,6 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 		assertTrue(qer > 0.95, "QER should be larger than 95% ");		
 		
 		double maxResidual = seNet.calMaxResidual();
-		assertTrue(maxResidual < 0.02, "Max residual should be less than 2% ");
-	}
-	
-	//@Test
-	public void testDeepCopySEAlgo() throws InterpssException, IpssNumericException, Exception {
-		SENetwork seNet = createTestCase();
-		SENetworkState seNetBean = new SENetworkState(seNet);
-		FileUtil.writeText2File("output/temp1.json",seNetBean.toString());
-		
-		SENetwork seNetCopy = seNet.hzCopy();
-		SENetworkState seNetCopyBean = new SENetworkState(seNetCopy);
-		FileUtil.writeText2File("output/temp2.json",seNetCopyBean.toString());
-		
-		SEAlgorithm seAlgo = SEObjectFactory.createSEAlgorithm(seNetCopy);
-
-		// qer: Qualified Estimation Rate
-		double qer = seAlgo.se();
-		assertTrue(qer > 0.95, "QER should be larger than 95% ");		
-		
-		double maxResidual = seNetCopy.calMaxResidual();
 		assertTrue(maxResidual < 0.02, "Max residual should be less than 2% ");
 	}
 	
