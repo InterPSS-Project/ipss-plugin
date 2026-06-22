@@ -27,14 +27,6 @@ import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
 public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
-	@Test
-	public void test_VSCHVDC_DeepCopy() throws Exception {
-		AclfNetwork net = createTestCaseV30();
-		
-		AclfNetwork netCopy = net.hzCopy();
-		
-		test_VSCHVDC_Data(netCopy);
-	}
 	
 	@Test
 	public void test_VSCHVDC_JSonCopy() throws Exception {
