@@ -19,6 +19,7 @@ import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.solver.FlowgateDclfAnalyzer;
+import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import com.interpss.core.algo.dclf.check.MonitoringExceptionRecord;
 import com.interpss.core.algo.dclf.check.MonitoringExceptionStatus;
 import com.interpss.core.algo.dclf.check.MonitoringObjectType;
@@ -56,7 +57,7 @@ public class FlowgateDclfAnalyzerTest extends CorePluginTestSetup {
         flowgate.addBranch(new MonitoredBranchRecord(monitorBranchId, coefficient));
 
         ConcurrentLinkedQueue<FlowgateViolationResult> results =
-                FlowgateDclfAnalyzer.executeFlowgateAnalysis(
+                ParallelDclfContingencyAnalyzer.executeFlowgateConstraintAnalysis(
                         net,
                         List.of(flowgate),
                         config(),
@@ -151,7 +152,7 @@ public class FlowgateDclfAnalyzerTest extends CorePluginTestSetup {
         flowgate.addBranch(new MonitoredBranchRecord(monitor2.getId(), coefficient));
 
         ConcurrentLinkedQueue<FlowgateViolationResult> results =
-                FlowgateDclfAnalyzer.executeFlowgateAnalysis(
+                ParallelDclfContingencyAnalyzer.executeFlowgateConstraintAnalysis(
                         net,
                         List.of(flowgate),
                         List.of(new MonitoringExceptionRecord(
