@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>InterPSS Three-Phase Distribution Modeling Flyer</title>
+  <title>IPSS Three-Phase Distribution Modeling Flyer</title>
   <style>
     :root {
       --ink: #17202a;
@@ -146,6 +146,11 @@
       grid-column: 1 / -1;
     }
 
+    .measured-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
     h2 {
       font-size: 18px;
       margin: 0 0 10px;
@@ -201,8 +206,10 @@
 
     .data-strip {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto 1fr;
       gap: 10px;
+      flex: 1;
     }
 
     .data-card {
@@ -224,25 +231,134 @@
       margin-top: 3px;
     }
 
-    .pipeline {
+    .data-card.feature {
+      grid-column: 1 / -1;
+      border-left: 5px solid var(--amber);
       display: grid;
-      grid-template-columns: 1fr 26px 1fr 26px 1fr;
-      gap: 8px;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 14px;
       align-items: stretch;
+      min-height: 112px;
     }
 
-    .pipe-node {
+    .feature-headline {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 10px;
+      align-items: center;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.25;
+      max-width: 100%;
+    }
+
+    .feature-headline .headline-value {
+      color: var(--teal-dark);
+      font-size: 28px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .feature-headline .headline-copy {
+      display: block;
+      max-width: 370px;
+    }
+
+    .feature-headline strong {
+      color: var(--teal-dark);
+      font-size: 19px;
+      white-space: nowrap;
+    }
+
+    .result-compare {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+      align-self: stretch;
+    }
+
+    .result-compare span {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 9px;
+      padding: 8px 7px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .result-compare b {
+      display: block;
+      color: var(--ink);
+      font-size: 14px;
+      margin-top: 4px;
+      white-space: nowrap;
+    }
+
+    .hosting-lede {
+      border-left: 4px solid var(--green);
+      padding-left: 10px;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 12.5px;
+      margin-bottom: 9px;
+    }
+
+    .hosting-lede span {
+      display: block;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 10.8px;
+      margin-top: 4px;
+    }
+
+    .hosting-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .hosting-item {
       border: 1px solid var(--line);
       background: white;
-      padding: 10px;
+      padding: 8px;
+      min-height: 60px;
     }
 
-    .arrow {
-      display: grid;
-      place-items: center;
+    .hosting-item b {
+      display: block;
       color: var(--teal-dark);
-      font-size: 22px;
+      font-size: 10.5px;
       font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .hosting-item span {
+      color: var(--muted);
+      display: block;
+      font-size: 9.8px;
+      line-height: 1.32;
+    }
+
+    .hosting-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .hosting-chips span {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--ink);
+      font-size: 9px;
+      font-weight: 800;
+      padding: 4px 6px;
     }
 
     table {
@@ -314,9 +430,6 @@
       margin-top: 16px;
       border-top: 2px solid var(--ink);
       padding-top: 10px;
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
       font-size: 10.5px;
       color: var(--muted);
     }
@@ -426,8 +539,76 @@
         font-size: 8.8px;
       }
 
-      .pipe-node {
+      .data-card.feature {
+        grid-template-columns: 1.02fr 1fr;
+        min-height: 92px;
+        gap: 8px;
+      }
+
+      .feature-headline {
+        column-gap: 7px;
+        font-size: 11.5px;
+      }
+
+      .feature-headline .headline-value {
+        font-size: 21px;
+      }
+
+      .feature-headline .headline-copy {
+        max-width: 300px;
+      }
+
+      .feature-headline strong {
+        font-size: 14.5px;
+      }
+
+      .result-compare {
+        gap: 5px;
+      }
+
+      .result-compare span {
+        font-size: 7.6px;
+        padding: 6px 5px;
+      }
+
+      .result-compare b {
+        font-size: 9.8px;
+      }
+
+      .hosting-lede {
+        font-size: 10.2px;
+        margin-bottom: 6px;
+      }
+
+      .hosting-lede span {
+        font-size: 8.7px;
+      }
+
+      .hosting-grid {
+        gap: 6px;
+      }
+
+      .hosting-item {
         padding: 7px;
+        min-height: 55px;
+      }
+
+      .hosting-item b {
+        font-size: 8.8px;
+      }
+
+      .hosting-item span {
+        font-size: 8px;
+      }
+
+      .hosting-chips {
+        gap: 4px;
+        margin-top: 6px;
+      }
+
+      .hosting-chips span {
+        font-size: 7.4px;
+        padding: 3px 4px;
       }
 
       table {
@@ -451,15 +632,15 @@
   </style>
 </head>
 <body>
-  <article class="sheet" aria-label="InterPSS three-phase modeling product flyer">
+  <article class="sheet" aria-label="IPSS three-phase modeling product flyer">
     <header>
       <div>
-        <p class="eyebrow">InterPSS Distribution Analytics</p>
+        <p class="eyebrow">IPSS Distribution Analytics</p>
         <h1>Three-phase modeling for power flow, optimization, and QSTS.</h1>
         <p class="subhead">
-          InterPSS provides a validated static three-phase distribution platform
-          for OpenDSS feeders, unbalanced power-flow studies, DistOPF workflows,
-          and long-horizon quasi-static time-series simulation.
+          IPSS provides a validated static three-phase distribution platform
+          for OpenDSS feeders, balanced and unbalanced optimal power flow,
+          and long-horizon quasi-static time-series (QSTS) simulation.
         </p>
       </div>
 
@@ -467,7 +648,7 @@
         <p class="big">112.3%</p>
         <p class="label">of DSS-Python throughput on controlled 8760-step Ckt24 QSTS</p>
         <div class="compare" aria-label="Performance comparison">
-          <span>InterPSS<br><b>1.021 ms/step</b></span>
+          <span>IPSS<br><b>1.021 ms/step</b></span>
           <span>DSS-Python<br><b>1.147 ms/step</b></span>
         </div>
       </aside>
@@ -483,7 +664,7 @@
           </div>
           <div class="capability">
             <strong>Power flow and optimization on one network model</strong>
-            <span>Fixed-point unbalanced power flow and DistOPF share static three-phase APIs, avoiding dynamic-model coupling for planning and operational studies.</span>
+            <span>Static power flow and balanced and unbalanced optimal power flow share three-phase APIs, facilitating model management and validation for planning and operational studies.</span>
           </div>
           <div class="capability">
             <strong>Validated QSTS for large feeders</strong>
@@ -492,55 +673,71 @@
         </div>
       </section>
 
-      <section>
+      <section class="measured-panel">
         <h2>Measured results</h2>
         <div class="data-strip">
           <div class="data-card">
-            <div class="value">8760</div>
-            <div class="caption">controlled QSTS steps completed on Ckt24</div>
+            <div class="value">IEEE 8500</div>
+            <div class="caption">largest validated OpenDSS feeder case</div>
           </div>
           <div class="data-card">
-            <div class="value">1.021</div>
-            <div class="caption">InterPSS milliseconds per step</div>
+            <div class="value">0.001</div>
+            <div class="caption">pu max difference vs DSS-Python in IEEE8500 power-flow parity</div>
           </div>
-          <div class="data-card">
-            <div class="value">0</div>
-            <div class="caption">IEEE8500 voltage/load/branch/generator/capacitor tolerance failures</div>
-          </div>
-          <div class="data-card">
-            <div class="value">337</div>
-            <div class="caption">three-phase module tests passing in the latest gate</div>
+          <div class="data-card feature">
+            <div class="feature-headline">
+              <span class="headline-value">8.9 s</span>
+              <span class="headline-copy">Total time for <strong>8760-step QSTS</strong> on a 7,522-node feeder</span>
+            </div>
+            <div class="result-compare" aria-label="Ckt24 QSTS benchmark comparison">
+              <span>IPSS<b>8.9 s</b></span>
+              <span>DSS-Python<b>10.0 s</b></span>
+              <span>Throughput<b>112.3%</b></span>
+            </div>
           </div>
         </div>
       </section>
 
       <section>
-        <h2>Static workflow</h2>
-        <div class="pipeline">
-          <div class="pipe-node">
-            <h3>Import</h3>
-            <p>OpenDSS feeder, device, geometry, profile, and control metadata.</p>
+        <h2>Hosting capacity analysis</h2>
+        <p class="hosting-lede">
+          Find feeder headroom for DER growth before queues become upgrades.
+          <span>IPSS turns validated static feeders into repeatable screens for PV, storage, EV charging, electrification, and flexible load.</span>
+        </p>
+        <div class="hosting-grid">
+          <div class="hosting-item">
+            <b>Three-phase limits</b>
+            <span>Voltage, thermal, unbalance, regulator, capacitor, and phase-specific constraints.</span>
           </div>
-          <div class="arrow">›</div>
-          <div class="pipe-node">
-            <h3>Solve</h3>
-            <p>Static three-phase power flow, DistOPF, and QSTS without dynamic models.</p>
+          <div class="hosting-item">
+            <b>Scenario sweeps</b>
+            <span>Location, size, profile, control mode, and seasonal loading sensitivities.</span>
           </div>
-          <div class="arrow">›</div>
-          <div class="pipe-node">
-            <h3>Validate</h3>
-            <p>DSS-Python row-level checks for voltage, load, branch, DER, and control outputs.</p>
+          <div class="hosting-item">
+            <b>OPF-backed relief</b>
+            <span>Balanced and unbalanced OPF identifies feasible headroom and upgrade alternatives.</span>
           </div>
+          <div class="hosting-item">
+            <b>Annual validation</b>
+            <span>8760-step QSTS checks controls and time-varying PV/storage behavior.</span>
+          </div>
+        </div>
+        <div class="hosting-chips" aria-label="Hosting capacity study inputs">
+          <span>PV</span>
+          <span>Storage</span>
+          <span>EV load</span>
+          <span>Flexible demand</span>
+          <span>Controls enabled</span>
         </div>
       </section>
 
       <section class="wide">
-        <h2>InterPSS vs. DSS-Python: customer-relevant evidence</h2>
+        <h2>IPSS vs. DSS-Python: customer-relevant evidence</h2>
         <table>
           <thead>
             <tr>
               <th>Evidence point</th>
-              <th>InterPSS</th>
+              <th>IPSS</th>
               <th>DSS-Python reference</th>
               <th>Customer value</th>
             </tr>
@@ -608,8 +805,7 @@
     </main>
 
     <footer>
-      <div><strong>InterPSS 3-Phase Distribution Platform</strong> · static OpenDSS parser · power flow · DistOPF · QSTS</div>
-      <div>Data source: verified Ckt24 and IEEE8500 DSS-Python comparison runs, June 2026.</div>
+      <div><strong>IPSS 3-Phase Distribution Platform</strong> · static OpenDSS parser · power flow · balanced and unbalanced optimal power flow · QSTS</div>
     </footer>
   </article>
 </body>
