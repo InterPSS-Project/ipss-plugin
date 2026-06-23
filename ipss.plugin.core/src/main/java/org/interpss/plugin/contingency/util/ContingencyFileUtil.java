@@ -11,9 +11,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
+import com.interpss.core.algo.dclf.definition.MonitoredInterfaceRecord;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.MonitoredInterfaceRecord;
 import org.interpss.plugin.contingency.definition.json.ContingencyJson;
 import org.interpss.plugin.contingency.definition.json.ContingencyListJson;
 import org.interpss.plugin.contingency.definition.json.DclfMonitoringConfigJson;
@@ -569,7 +569,7 @@ public class ContingencyFileUtil {
 
     public static void exportMonitoredInterfaceRecordsToJson(
             File file,
-            List<MonitoredInterfaceRecord> monitoredInterfaces) throws IOException {
+            List<? extends MonitoredInterfaceRecord> monitoredInterfaces) throws IOException {
         MonitoredInterfaceListJson jsonData = new MonitoredInterfaceListJson();
         jsonData.monitored_interfaces = monitoredInterfaces.stream()
                 .map(rec -> {
