@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.interpss.CorePluginTestSetup;
 import com.interpss.core.algo.dclf.DclfContingencyLimitStudy;
 import com.interpss.core.algo.dclf.DclfContingencyConfig;
-import com.interpss.core.algo.dclf.ParallelDclfContingencyAnalyzer;
+import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import com.interpss.core.algo.dclf.check.BranchMwLimitCheck;
 import com.interpss.core.algo.dclf.check.DclfLimitCheckCompileContext;
 import com.interpss.core.algo.dclf.check.DclfLimitCheckContext;
@@ -177,7 +177,7 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
                         100.0,
                         false,
                         1,
-                        com.interpss.core.algo.dclf.DclfContingencySolutionMethod.SparseEqnSolve,
+                        com.interpss.core.algo.dclf.solver.DclfContingencySolutionMethod.SparseEqnSolve,
                         0);
 
         assertEquals(2, results.size());
