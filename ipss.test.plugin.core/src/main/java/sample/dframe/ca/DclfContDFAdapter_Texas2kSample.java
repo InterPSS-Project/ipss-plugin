@@ -15,7 +15,7 @@ import org.dflib.csv.Csv;
 import com.interpss.core.algo.dclf.DclfContingencyConfig;
 import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
+import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
