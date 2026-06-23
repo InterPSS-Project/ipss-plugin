@@ -10,8 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
+
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.definition.MonitoredInterfaceRecord;
 import org.interpss.plugin.contingency.definition.json.ContingencyJson;
 import org.interpss.plugin.contingency.definition.json.ContingencyListJson;
@@ -532,7 +533,9 @@ public class ContingencyFileUtil {
      * @param file
      * @param branches 
      */
-    public static void exportMonitoredBranchRecordsToJson(File file, List<MonitoredBranchRecord> branches) throws IOException {
+    public static void exportMonitoredBranchRecordsToJson(
+            File file,
+            List<? extends MonitoredBranchRecord> branches) throws IOException {
 	    
 	        // Create JSON structure
 	        MonitoredBranchListJson jsonData = new MonitoredBranchListJson();
