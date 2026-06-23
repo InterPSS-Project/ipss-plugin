@@ -30,7 +30,7 @@ import com.interpss.core.algo.dclf.definition.DclfMonitoringConfigRecord;
 import com.interpss.core.algo.dclf.definition.NomogramConstraintRecord;
 import com.interpss.core.algo.dclf.definition.NomogramRecord;
 import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
-import org.interpss.plugin.contingency.definition.MonitoredInterfaceRecord;
+import com.interpss.core.algo.dclf.definition.MonitoredInterfaceRecord;
 import com.interpss.core.algo.dclf.result.DclfMonitoredConstraintResult;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
