@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import org.interpss.numeric.datatype.AtomicCounter;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
+import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
