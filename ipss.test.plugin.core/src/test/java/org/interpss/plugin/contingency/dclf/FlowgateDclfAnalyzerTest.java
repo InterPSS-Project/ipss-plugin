@@ -18,7 +18,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.FlowgateDclfAnalyzer;
+import com.interpss.core.algo.dclf.solver.FlowgateDclfAnalyzer;
 import com.interpss.core.algo.dclf.check.MonitoringExceptionRecord;
 import com.interpss.core.algo.dclf.check.MonitoringExceptionStatus;
 import com.interpss.core.algo.dclf.check.MonitoringObjectType;
