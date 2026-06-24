@@ -1,6 +1,7 @@
 package org.interpss.core.dstab.mach;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.Comparator;
 import java.util.logging.Level;
@@ -70,7 +71,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -102,7 +103,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 			
 
 		if (dstabAlgo.initialization()) {
-			System.out.println(dsNet.getMachineInitCondition());
+			//System.out.println(dsNet.getMachineInitCondition());
 			
 			//System.out.println("Running DStab simulation ...");
 			timer.start();
@@ -114,23 +115,23 @@ public class SMIB_Gen_Test extends TestSetupBase{
 
 		//}
 		
-		System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
-		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
+		//System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 		
-		System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 		
 //		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		MonitorRecord maxAngleRec = sm.getMachAngleTable().get("Bus1-mach1").values().stream().max(Comparator.comparing(MonitorRecord:: getValue)).get();
-		assertTrue(NumericUtil.equals(maxAngleRec.getValue(),25.338, 1.0e-1));
+		assertEquals(25.338, maxAngleRec.getValue(), 1.0e-1);
 //		assertTrue(NumericUtil.equals(maxAngleRec.getTime(),1.315, 1.0e-3));
-		assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 22.98926,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(1000).value, 23.328,1.0E-3));
+		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(23.328, sm.getMachAngleTable().get("Bus1-mach1").get(1000).value, 1.0E-3);
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.5,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(200).value, 0.5,1.0E-4));
+		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(200).value, 1.0E-4);
 		FileUtil.writeText2File("output/SMIB/GENROU_angle.csv",sm.toCSVString(sm.getMachAngleTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_speed.csv",sm.toCSVString(sm.getMachSpeedTable()));
 //		FileUtil.writeText2File("output/ieee9_bus5_busVolt_v5_03172015.csv",sm.toCSVString(sm.getBusVoltTable()));
@@ -180,7 +181,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -212,7 +213,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 			
 
 		if (dstabAlgo.initialization()) {
-			System.out.println(dsNet.getMachineInitCondition());
+			//System.out.println(dsNet.getMachineInitCondition());
 			
 			//System.out.println("Running DStab simulation ...");
 			timer.start();
@@ -224,23 +225,23 @@ public class SMIB_Gen_Test extends TestSetupBase{
 
 		//}
 		
-		System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
-		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
+		//System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 		
-		System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 		
 //		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		MonitorRecord maxAngleRec = sm.getMachAngleTable().get("Bus1-mach1").values().stream().max(Comparator.comparing(MonitorRecord:: getValue)).get();
-		assertTrue(NumericUtil.equals(maxAngleRec.getValue(),23.44368, 1.0e-2));
+		assertEquals(23.44368, maxAngleRec.getValue(), 1.0e-2);
 //		assertTrue(NumericUtil.equals(maxAngleRec.getTime(),1.315, 1.0e-3));
-		assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 21.01872,1.0E-4));
+		assertEquals(21.01872, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
 		//assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(1000).value, 23.328,1.0E-3));
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.5,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(200).value, 0.5,1.0E-4));
+		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(200).value, 1.0E-4);
 		FileUtil.writeText2File("output/SMIB/GENROU_angle.csv",sm.toCSVString(sm.getMachAngleTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_speed.csv",sm.toCSVString(sm.getMachSpeedTable()));
 //		FileUtil.writeText2File("output/ieee9_bus5_busVolt_v5_03172015.csv",sm.toCSVString(sm.getBusVoltTable()));
@@ -290,7 +291,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -322,7 +323,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 			
 
 		if (dstabAlgo.initialization()) {
-			System.out.println(dsNet.getMachineInitCondition());
+			//System.out.println(dsNet.getMachineInitCondition());
 			
 			//System.out.println("Running DStab simulation ...");
 			timer.start();
@@ -334,19 +335,19 @@ public class SMIB_Gen_Test extends TestSetupBase{
 
 		//}
 		
-		System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
-		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
+		//System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 		
-		System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 		
-		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 
-		assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 22.98926,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 23.09754,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.50001,1.0E-5));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(2000).value, 0.50004,1.0E-5));
+		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(23.09754, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-4);
+		assertEquals(0.50001, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-5);
+		assertEquals(0.50004, sm.getMachPeTable().get("Bus1-mach1").get(2000).value, 1.0E-5);
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_pm.csv",sm.toCSVString(sm.getMachPmTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_angle.csv",sm.toCSVString(sm.getMachAngleTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_speed.csv",sm.toCSVString(sm.getMachSpeedTable()));
@@ -390,7 +391,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -422,7 +423,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 			
 
 		if (dstabAlgo.initialization()) {
-			System.out.println(dsNet.getMachineInitCondition());
+			//System.out.println(dsNet.getMachineInitCondition());
 			
 			//System.out.println("Running DStab simulation ...");
 			timer.start();
@@ -441,18 +442,18 @@ public class SMIB_Gen_Test extends TestSetupBase{
 //		System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
 //		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 //		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 //		System.out.println("Mach EFD(pu) :\n"+sm.toCSVString(sm.getMachEfdTable()));
 //		
-		System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 //		
 //		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
-		assertTrue(NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(0).value, 1.105872869,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(83).t, 0.41,1.0E-4), ""+sm.getMachEfdTable().get("Bus1-mach1").get(83).t);
-		assertTrue(NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(83).value, 1.10587,1.0E-4), ""+sm.getMachEfdTable().get("Bus1-mach1").get(83).value);
-		assertTrue(NumericUtil.equals(sm.getMachEfdTable().get("Bus1-mach1").get(2000).value, 2.7344,1.0E-4), ""+sm.getMachEfdTable().get("Bus1-mach1").get(2000).value);
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.50001,1.0E-5));
+		assertEquals(1.105872869, sm.getMachEfdTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(0.41, sm.getMachEfdTable().get("Bus1-mach1").get(83).t, 1.0E-4, ""+sm.getMachEfdTable().get("Bus1-mach1").get(83).t);
+		assertEquals(1.10587, sm.getMachEfdTable().get("Bus1-mach1").get(83).value, 1.0E-4, ""+sm.getMachEfdTable().get("Bus1-mach1").get(83).value);
+		assertEquals(2.7344, sm.getMachEfdTable().get("Bus1-mach1").get(2000).value, 1.0E-4, ""+sm.getMachEfdTable().get("Bus1-mach1").get(2000).value);
+		assertEquals(0.50001, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-5);
 
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEET1_Efd.csv",sm.toCSVString(sm.getMachEfdTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEET1_angle.csv",sm.toCSVString(sm.getMachAngleTable()));
@@ -504,7 +505,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -536,7 +537,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 			
 
 		if (dstabAlgo.initialization()) {
-			System.out.println(dsNet.getMachineInitCondition());
+			//System.out.println(dsNet.getMachineInitCondition());
 
 			
 			//System.out.println("Running DStab simulation ...");
@@ -549,23 +550,22 @@ public class SMIB_Gen_Test extends TestSetupBase{
 
 		//}
 		
-		System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
-		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println("Mach Speed (pu):\n"+sm.toCSVString(sm.getMachSpeedTable()));
+		//System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 		
-//		System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
-//		
-//		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		//System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		MonitorRecord maxAngleRec = sm.getMachAngleTable().get("Bus1-mach1").values().stream().max(Comparator.comparing(MonitorRecord:: getValue)).get();
-		assertTrue(NumericUtil.equals(maxAngleRec.getValue(),25.94, 1.0e-1));
+		assertEquals(25.94, maxAngleRec.getValue(), 1.0e-1);
 //		assertTrue(NumericUtil.equals(maxAngleRec.getTime(),1.315, 1.0e-3));
-		assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 22.98926,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 23.09,1.0E-2));
+		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(23.09, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-2);
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.5,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(200).value, 0.5,1.0E-4));
+		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(200).value, 1.0E-4);
 //		FileUtil.writeText2File("output/ieee9_bus5_machPe_v5_03172015.csv",sm.toCSVString(sm.getMachPeTable()));
 		FileUtil.writeText2File("output/SMIB/GENSAL_angle.csv",sm.toCSVString(sm.getMachAngleTable()));
 		FileUtil.writeText2File("output/SMIB/GENSAL_speed.csv",sm.toCSVString(sm.getMachSpeedTable()));

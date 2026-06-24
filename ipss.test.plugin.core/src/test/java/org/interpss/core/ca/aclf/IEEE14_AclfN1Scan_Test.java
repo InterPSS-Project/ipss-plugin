@@ -40,7 +40,7 @@ public class IEEE14_AclfN1Scan_Test extends CorePluginTestSetup {
 			});
 		
 		branchOutageList.forEach(outage -> {
-			System.out.println("Outage branch: " + outage.getOutageEquip().getId());
+			//System.out.println("Outage branch: " + outage.getOutageEquip().getId());
 			
 			// for Aclf based contingency analysis, we need to make a copy of the original network 
 			// model for each contingency scenario, and apply the outage to the network model copy.
