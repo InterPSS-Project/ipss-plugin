@@ -65,9 +65,9 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 				Bus11                             1.00492      -13.90       0.0000    0.0000    0.0000    0.0000   BUS11   AR2 
 		 */
   		
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.95830,0.0001));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),48.75/(180/Math.PI),0.01));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.96461,0.0001));
+  		assertEquals(0.95830, net.getBus("Bus7").getVoltageMag(), 0.0001);
+  		assertEquals(48.75/(180/Math.PI), net.getBus("Bus7").getVoltageAng(), 0.01);
+  		assertEquals(0.96461, net.getBus("Bus9").getVoltageMag(), 0.0001);
 
 
   		System.out.println("Rec Power: " + ComplexFunc.toStr(lccHVDC.getRectifier().powerIntoConverter()));
