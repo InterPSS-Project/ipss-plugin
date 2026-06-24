@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import com.interpss.core.algo.dclf.DclfCgsfResult;
+import org.interpss.plugin.contingency.DclfCgsfResult;
 import com.interpss.core.algo.dclf.DclfSensitivityResult;
 import org.junit.jupiter.api.Test;
 
