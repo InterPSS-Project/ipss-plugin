@@ -40,18 +40,6 @@
             <artifactId>ortools-java</artifactId>
             <version>9.15.6755</version>
         </dependency>
-        <!-- Direct Colt use in DistOpfConstraintFactory (transitive via ipss.plugin.core) -->
-        <dependency>
-            <groupId>colt</groupId>
-            <artifactId>colt</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-        <!-- Direct ojalgo use in OjAlgoDistOpfSolver (transitive via ipss.plugin.core) -->
-        <dependency>
-            <groupId>org.ojalgo</groupId>
-            <artifactId>ojalgo</artifactId>
-            <version>51.2.0</version>
-        </dependency>
     </dependencies>
 
     <build>
