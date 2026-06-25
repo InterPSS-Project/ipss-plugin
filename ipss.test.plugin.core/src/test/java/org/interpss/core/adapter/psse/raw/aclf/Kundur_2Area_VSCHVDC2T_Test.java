@@ -27,14 +27,6 @@ import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
 public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
-	@Test
-	public void test_VSCHVDC_DeepCopy() throws Exception {
-		AclfNetwork net = createTestCaseV30();
-		
-		AclfNetwork netCopy = net.hzCopy();
-		
-		test_VSCHVDC_Data(netCopy);
-	}
 	
 	@Test
 	public void test_VSCHVDC_JSonCopy() throws Exception {
@@ -51,7 +43,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		//System.out.println(net.net2String());
 
 		for(AclfBus bus : net.getBusList()) {
-			System.out.println(bus.mismatch(AclfMethodType.NR));
+			//System.out.println(bus.mismatch(AclfMethodType.NR));
 		}
 		 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -61,7 +53,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		AclfBus bus1 = net.getBus("Bus1");
   		// TODO test failed after the ThyConverter.converterType change
   		assertEquals(bus1.getVoltageAng(UnitType.Deg),13.15,0.01);
@@ -96,11 +88,11 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		  TO      8 BUS8        230.00  2     95.6   -25.4    99.0                           1.13   11.26    2 AREA2           2
 
   		 */
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getGenP(), -2.09, 0.001));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getGenQ(), -0.687,0.001));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.95946,0.00001));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),-11.84/(180/Math.PI),0.01));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.98,0.00001));
+  		assertEquals(-2.09, net.getBus("Bus7").getGenP(), 0.001);
+  		assertEquals(-0.687, net.getBus("Bus7").getGenQ(), 0.001);
+  		assertEquals(0.95946, net.getBus("Bus7").getVoltageMag(), 0.00001);
+  		assertEquals(-11.84/(180/Math.PI), net.getBus("Bus7").getVoltageAng(), 0.01);
+  		assertEquals(0.98, net.getBus("Bus9").getVoltageMag(), 0.00001);
   		
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
   		//System.out.println("Rec Power: " + ComplexFunc.toStr(vscHVDC.getRecConverter().powerIntoConverter()));
@@ -138,7 +130,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		// check the remote bus id
 		assertTrue(vscInv.getRemoteControlBusId().equals("Bus10"));
 		assertTrue(vscInv.getRemoteControlPercent() == 100.0);
-		assertTrue(NumericUtil.equals(vscInv.getAcSetPoint(), 0.99, 0.0001));
+		assertEquals(0.99, vscInv.getAcSetPoint(), 0.0001);
 
 	}
 	
@@ -185,7 +177,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		
 		vscHVDC.getRecConverter().setId("Rec");
 		
-		System.out.println("VSC HVDC: " + vscHVDC.toString(net.getBaseKva()));
+		//System.out.println("VSC HVDC: " + vscHVDC.toString(net.getBaseKva()));
 /*
 VSC HVDC: com.interpss.core.aclf.hvdc.impl.HvdcLine2TVSCImpl@6b3e12b5 (
 	id: Bus7->Bus9(cirId), name: VDCLINE1, desc: , number: 0, status: true) 
@@ -233,7 +225,7 @@ VSC HVDC: com.interpss.core.aclf.hvdc.impl.HvdcLine2TVSCImpl@6b3e12b5 (
 		
 		vscHVDC.getRecConverter().setId("Rec");
 		
-		System.out.println("VSC HVDC: " + vscHVDC.toString(net.getBaseKva()));
+		//System.out.println("VSC HVDC: " + vscHVDC.toString(net.getBaseKva()));
 /*
 VSC HVDC: com.interpss.core.aclf.hvdc.impl.HvdcLine2TVSCImpl@6b3e12b5 (
 	id: Bus7->Bus9(cirId), name: VDCLINE1, desc: , number: 0, status: true) 

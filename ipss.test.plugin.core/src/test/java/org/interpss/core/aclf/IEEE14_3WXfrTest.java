@@ -62,7 +62,7 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
   		assertTrue(!bus.isRemoteQBus());		
   		//bus.getRemoteQBus();
 		
-		System.out.println(net.net2String());
+		//System.out.println(net.net2String());
 		
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setInitBusVoltage(true);
@@ -73,7 +73,7 @@ public class IEEE14_3WXfrTest extends CorePluginTestSetup {
 	  	
   		//System.out.println(net.net2String());
 	  	
- 		System.out.println(AclfOutFunc.loadFlowSummary(net));
+ 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 	  	
   		assertTrue(net.isLfConverged());		
 	}

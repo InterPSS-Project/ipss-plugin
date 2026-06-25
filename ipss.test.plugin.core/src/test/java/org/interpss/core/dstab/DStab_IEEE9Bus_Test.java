@@ -129,16 +129,16 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			//dstabAlgo.performOneStepSimulation();
 
 		//}
-		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 		
-		System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("Volages (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 		
-		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.71639,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(20).value, 0.71639,1.0E-4));
+		assertEquals(0.71639, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(0.71639, sm.getMachPeTable().get("Bus1-mach1").get(20).value, 1.0E-4);
 //		FileUtil.writeText2File("output/ieee9_bus5_machPe_v5_03172015.csv",sm.toCSVString(sm.getMachPeTable()));
 //		FileUtil.writeText2File("output/ieee9_bus5_machAngle_v5_03172015.csv",sm.toCSVString(sm.getMachAngleTable()));
 //		FileUtil.writeText2File("output/ieee9_bus5_machSpd_v5_03172015.csv",sm.toCSVString(sm.getMachSpeedTable()));
@@ -225,7 +225,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -275,25 +275,25 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			timer.logStd("total simu time: ");
 		}
 		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 //		
 //		System.out.println("Volages Mag (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 		
 //		System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
 		
-		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
-		System.out.println("Branch flow P (pu):\n"+sm.toCSVString(sm.getBranchFlowPTable()));
+		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		//System.out.println("Branch flow P (pu):\n"+sm.toCSVString(sm.getBranchFlowPTable()));
 		
 		Complex load5 = ((BaseDStabBus)dsNet.getBus("Bus5")).calStaticLoad();
 		
-	    System.out.println("after being tripped static load at bus 5 = "+load5.toString());
+	    //System.out.println("after being tripped static load at bus 5 = "+load5.toString());
 	    
 	    assertTrue(NumericUtil.equals(load5, new Complex(1.02869, 0.41147), 1.0E-5)); 
 		
 
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.71639,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(40).value, 0.71639,1.0E-4));
+		assertEquals(0.71639, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(0.71639, sm.getMachPeTable().get("Bus1-mach1").get(40).value, 1.0E-4);
 		//assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(60).value, 0.62507,1.0E-5));
 		//assertTrue(!dsNet.getMachine("Bus1-mach1").isActive());
 		
@@ -459,7 +459,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		
         BaseDStabBus bus5 =  dsNet.getDStabBus("Bus5");
@@ -527,21 +527,21 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		Complex load5 = ((BaseDStabBus)dsNet.getBus("Bus5")).calTotalLoad();
 		
-	    System.out.println("after being tripped total load at bus 5 = "+load5.toString());
+	    //System.out.println("after being tripped total load at bus 5 = "+load5.toString());
 	    
 //	    assertTrue(NumericUtil.equals(load5, new Complex(1.0143804864153798, 0.4040793069573881), 1.0E-6)); 
 		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 //		
-		System.out.println("Volages Mag (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
+		//System.out.println("Volages Mag (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 		
-		System.out.println("Motor Pe:\n"+sm.toCSVString(sm.getMotorPTable()));
+		//System.out.println("Motor Pe:\n"+sm.toCSVString(sm.getMotorPTable()));
 		
 		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
-		System.out.println("Branch flow P (pu):\n"+sm.toCSVString(sm.getBranchFlowPTable()));
+		//System.out.println("Branch flow P (pu):\n"+sm.toCSVString(sm.getBranchFlowPTable()));
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.71639,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(40).value, 0.71639,1.0E-4));
+		assertEquals(0.71639, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(0.71639, sm.getMachPeTable().get("Bus1-mach1").get(40).value, 1.0E-4);
 		//assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(60).value, 0.62507,1.0E-5));
 		assertEquals(sm.getMotorPTable().get("IndMotor_1@Bus5").get(0).value*(1+loadChangeFraction), sm.getMotorPTable().get("IndMotor_1@Bus5").get(40*14).value,5.0E-4);
 		
@@ -629,20 +629,20 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			//dstabAlgo.performOneStepSimulation();
 
 		//}
-		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 		
 //		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
-		System.out.println("Mach Pm (pu) :\n"+sm.toCSVString(sm.getMachPmTable()));
+		//System.out.println("Mach Pm (pu) :\n"+sm.toCSVString(sm.getMachPmTable()));
 //		
 //		System.out.println("Volages Mag (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 		
-		System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
+		//System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
 		
-		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 0.71639,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(15).value, 0.71639,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(42).value, 0.0,1.0E-4));
+		assertEquals(0.71639, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(0.71639, sm.getMachPeTable().get("Bus1-mach1").get(15).value, 1.0E-4);
+		assertEquals(0.0, sm.getMachPeTable().get("Bus1-mach1").get(42).value, 1.0E-4);
 		assertTrue(!dsNet.getMachine("Bus1-mach1").isActive());
 		
 	
@@ -738,21 +738,21 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 			//dstabAlgo.performOneStepSimulation();
 
 		//}
-		System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
+		//System.out.println("Mach Angles (deg):\n"+sm.toCSVString(sm.getMachAngleTable()));
 		
-		System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
+		//System.out.println("Mach Pe (pu) :\n"+sm.toCSVString(sm.getMachPeTable()));
 //		
 //		System.out.println("Volages Mag (pu):\n"+sm.toCSVString(sm.getBusVoltTable()));
 		
 //		System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
 //		
-		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.13090,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus1-mach1").get(40).value, 1.13090,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(0).value, 0.0,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(40).value, 0.0,1.0E-4));
-		assertTrue(NumericUtil.equals(sm.getMachPeTable().get("Bus3-mach2").get(42).value, 0.60418,1.0E-4));
+		assertEquals(1.13090, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
+		assertEquals(1.13090, sm.getMachPeTable().get("Bus1-mach1").get(40).value, 1.0E-4);
+		assertEquals(0.0, sm.getMachPeTable().get("Bus3-mach2").get(0).value, 1.0E-4);
+		assertEquals(0.0, sm.getMachPeTable().get("Bus3-mach2").get(40).value, 1.0E-4);
+		assertEquals(0.60418, sm.getMachPeTable().get("Bus3-mach2").get(42).value, 1.0E-4);
 		
 	
 		
@@ -936,7 +936,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
             LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
             aclfAlgo.setTolerance(1.0E-6);
             assertTrue(aclfAlgo.loadflow());
-            System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+            //System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
             
             dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
             dstabAlgo.setSimuStepSec(0.001);
@@ -1014,7 +1014,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		
-		System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
+		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
 		//dsNet.setNetEqnIterationNoEvent(20);
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -1034,16 +1034,16 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		if (dstabAlgo.initialization()) {
 			//System.out.println(simuCtx.getDStabilityNet().net2String());
 
-			System.out.println("Running DStab simulation ...");
+			//System.out.println("Running DStab simulation ...");
 			assertTrue(dstabAlgo.performSimulation());
 		}
 		timer.logStd("total simu time: ");
 		
-		System.out.println("Mach Pm (pu) :\n"+sm.toCSVString(sm.getMachPmTable()));
+		//System.out.println("Mach Pm (pu) :\n"+sm.toCSVString(sm.getMachPmTable()));
 		
-		System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
+		//System.out.println("Volages Angle (Deg):\n"+sm.toCSVString(sm.getBusAngleTable()));
 		
-		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
+		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 			
 	
 	}
@@ -1116,8 +1116,8 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		//IpssLogger.getLogger().setLevel(Level.FINE);
 		assertTrue(dstabAlgo.initialization());
 		if (dstabAlgo.initialization()) {
-			System.out.println(dsNet.getMachineInitCondition());
-			System.out.println("Running DStab simulation ...");
+			//System.out.println(dsNet.getMachineInitCondition());
+			//System.out.println("Running DStab simulation ...");
 			dstabAlgo.performSimulation();
 			//dstabAlgo.performOneStepSimulation();
 		}
