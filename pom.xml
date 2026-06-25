@@ -65,6 +65,19 @@
             <artifactId>ieee.odm.schema</artifactId>
             <version>${ieee.odm.version}</version>
         </dependency>
+
+        <!-- Direct Colt use in DistOpfConstraintFactory (transitive via ipss.plugin.core) -->
+        <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <!-- Direct ojalgo use in OjAlgoDistOpfSolver (transitive via ipss.plugin.core) -->
+        <dependency>
+            <groupId>org.ojalgo</groupId>
+            <artifactId>ojalgo</artifactId>
+            <version>57.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>
