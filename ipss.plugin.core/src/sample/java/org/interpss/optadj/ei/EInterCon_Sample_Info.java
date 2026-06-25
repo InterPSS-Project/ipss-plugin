@@ -6,10 +6,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.ejml.data.DMatrixSparseCSC;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.optadj.algo.util.AclfNetSensSparseHelper;
 
 public class EInterCon_Sample_Info {
     public static AclfNetwork loadNetwork() throws Exception {

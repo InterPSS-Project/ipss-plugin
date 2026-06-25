@@ -6,12 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
 import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
-import org.interpss.plugin.optadj.result.OptAdjResultContainer;
-import org.interpss.plugin.optadj.result.SsaBranchOverLimitInfo;
-import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -20,6 +15,11 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
+import com.interpss.optadj.algo.util.AclfNetSsaHelper;
+import com.interpss.optadj.result.OptAdjResultContainer;
+import com.interpss.optadj.result.SsaBranchOverLimitInfo;
+import com.interpss.optadj.result.SsaResultContainer;
 
 /**
  * Regression test for {@code IEEE39_OptBasecase_SsaResult_Sample}: DCLF basecase with
