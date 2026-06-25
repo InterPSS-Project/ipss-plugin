@@ -3,10 +3,6 @@ package org.interpss.optadj.texas2k.sparse;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 
 import org.interpss.optadj.texas2k.Texas2K_Sample_Info;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
-import org.interpss.plugin.optadj.result.OptAdjResultContainer;
-import org.interpss.plugin.optadj.result.SsaResultContainer;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -15,6 +11,10 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoGen;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
+import com.interpss.optadj.algo.util.AclfNetSsaHelper;
+import com.interpss.optadj.result.OptAdjResultContainer;
+import com.interpss.optadj.result.SsaResultContainer;
 
 public class Texas2K_OptBasecase_SsaResult_Sparse_Sample {
     public static void main(String args[]) throws Exception {
