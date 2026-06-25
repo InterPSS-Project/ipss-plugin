@@ -1,9 +1,10 @@
 package org.interpss.optadj.texas2k;
 
 import org.ejml.data.DMatrixSparseCSC;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensHelper;
-import org.interpss.plugin.optadj.algo.util.AclfNetSensSparseHelper;
+
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.optadj.algo.util.AclfNetSensHelper;
+import com.interpss.optadj.algo.util.AclfNetSensSparseHelper;
 
 public class Texas2K_SenMatrix_Sample {
 	public static void main(String args[]) throws Exception {

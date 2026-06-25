@@ -35,21 +35,6 @@ import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
 public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
-	//@Test
-	public void test_LCCHVDC_DeepCopy() throws Exception {
-		AclfNetwork net = createTestCase();
-		
-		AclfNetwork netCopy = net.hzCopy();
-		
-		//assertTrue(net.diffState(netCopy));
-  		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, netCopy);
-  		comp.compareNetwork();
-  		
-  		System.out.println("Differences found: " + comp.getDiffMsgList());
-  		assertTrue(comp.getDiffMsgList().size() == 0, "" + comp.getDiffMsgList());
-		
-		test_LCCHVDC_Data(netCopy);
-	}
 	
 	@Test
 	public void test_LCCHVDC_JSonCopy() throws Exception {
@@ -93,7 +78,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		AclfBus bus1 = net.getBus("Bus1");
   		assertEquals(bus1.getVoltageAng(UnitType.Deg),69.43,0.01);
 
@@ -157,9 +142,9 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 			TO     10     BUS10   AR2 230.00  1    773.3   103.8   780.2                          15.09  150.86    2                 2
 
   		 */
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.9595,0.0001));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),48.75/(180/Math.PI),0.01));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.9647,0.0001));
+  		assertEquals(0.9595, net.getBus("Bus7").getVoltageMag(), 0.0001);
+  		assertEquals(48.75/(180/Math.PI), net.getBus("Bus7").getVoltageAng(), 0.01);
+  		assertEquals(0.9647, net.getBus("Bus9").getVoltageMag(), 0.0001);
 
 
   		//System.out.println("Rec Power: " + ComplexFunc.toStr(lccHVDC.getRectifier().powerIntoConverter()));
@@ -213,12 +198,12 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
-  		System.out.println(net.net2String());
+  		//System.out.println(net.net2String());
 	  	
   		assertTrue(net.isLfConverged());
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
-		System.out.println(AclfOut_PSSE.lfResults(net,AclfOut_PSSE.Format.POUT));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOut_PSSE.lfResults(net,AclfOut_PSSE.Format.POUT));
   		AclfBus bus1 = net.getBus("Bus1");
   		assertEquals(bus1.getVoltageAng(UnitType.Deg),69.43,0.01);
 
@@ -279,9 +264,9 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 			TO      3     BUS3   AR2  20.000  1   -773.5   -83.8   778.0     1.0000UN              0.00   99.26    2                 2
 			TO     10     BUS10   AR2 230.00  1    773.5    83.8   778.0                          14.90  148.98    2                 2
   		 */
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageMag(),0.9735,0.0001));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus7").getVoltageAng(),48.98/(180/Math.PI),0.01));
-  		assertTrue(NumericUtil.equals(net.getBus("Bus9").getVoltageMag(),0.9796,0.0001));
+  		assertEquals(0.9735, net.getBus("Bus7").getVoltageMag(), 0.0001);
+  		assertEquals(48.98/(180/Math.PI), net.getBus("Bus7").getVoltageAng(), 0.01);
+  		assertEquals(0.9796, net.getBus("Bus9").getVoltageMag(), 0.0001);
 
 
   		System.out.println("Rec Power: " + ComplexFunc.toStr(lccHVDC.getRectifier().powerIntoConverter()));
@@ -391,7 +376,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		
 		/*
 					*     BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
@@ -444,7 +429,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());
   		
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		/*
 				*      BusID          Code           Volt(pu)   Angle(deg)      Pg(pu)    Qg(pu)    Pl(pu)    Ql(pu)    Bus Name   
