@@ -87,19 +87,6 @@
             <version>1.0.3</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/colt/colt -->
-        <dependency>
-            <groupId>colt</groupId>
-            <artifactId>colt</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.ojalgo</groupId>
-            <artifactId>ojalgo</artifactId>
-            <version>51.2.0</version>
-        </dependency>
-
         <!-- Sparse sensitivity matrices (org.ejml.data.DMatrixSparseCSC in optadj) -->
         <dependency>
             <groupId>org.ejml</groupId>
