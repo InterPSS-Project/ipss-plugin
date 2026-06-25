@@ -2,6 +2,7 @@ package org.interpss.core.script.gvy;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
@@ -34,7 +35,7 @@ public class GvyScriptEval_Test extends CorePluginTestSetup {
     	groovyCode = "aclfnet.getBus('Bus14').loadP = 0.18;";
 		result = gvyProcessor.evaluate(groovyCode);
 		//System.out.println("Result: " + result);
-		assertTrue(NumericUtil.equals(net.getBus("Bus14").getLoadP(), 0.18, 1.0E-4), "Bus load should be 0.18");
+		assertEquals(0.18, net.getBus("Bus14").getLoadP(), 1.0E-4, "Bus load should be 0.18");
 		
     	groovyCode = """
     			bus = aclfnet.getBus('Bus14');

@@ -161,7 +161,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		if (dstabAlgo.initialization()) {
 			//double t1 = System.currentTimeMillis();
 			//System.out.println("time1="+t1);
-			System.out.println("Running DStab simulation ...");
+			//System.out.println("Running DStab simulation ...");
 			//System.out.println(dsNet.getMachineInitCondition());
 			dstabAlgo.performSimulation();
 			//double t2 = System.currentTimeMillis();

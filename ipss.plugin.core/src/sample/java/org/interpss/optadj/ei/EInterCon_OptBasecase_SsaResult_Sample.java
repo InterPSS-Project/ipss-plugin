@@ -1,14 +1,15 @@
 package org.interpss.optadj.ei;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
-import org.interpss.plugin.optadj.result.OptAdjResultContainer;
-import org.interpss.plugin.optadj.result.SsaResultContainer;
+
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
+import com.interpss.optadj.algo.util.AclfNetSsaHelper;
+import com.interpss.optadj.result.OptAdjResultContainer;
+import com.interpss.optadj.result.SsaResultContainer;
 
 public class EInterCon_OptBasecase_SsaResult_Sample {
     public static void main(String args[]) throws Exception {
