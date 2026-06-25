@@ -10,7 +10,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.contingency.DclfContingencyConfig;
-import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
+import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.junit.jupiter.api.Test;
 
