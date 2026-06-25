@@ -126,7 +126,7 @@ ssaResultAfter.printCaOverLimitInfo(ssaResult.getCaOverLimitInfo());
 Optimizes against **user-defined transfer sections** rather than individual branches.
 
 - Constructor: `SectionOptimizer(AclfNetwork network, List<PowerSystemSection> sections)`
-- Entry point: `optmize()` → `Map<String, Double>` (generator ID → MW adjustment)
+- Entry point: `optimize()` → `Map<String, Double>` (generator ID → MW adjustment)
 - Uses `AclfNetSensSparseHelper` for sparse sensitivity on section-relevant buses/branches.
 - Each `PowerSystemSection` aggregates branch flows and sensitivities with per-branch coefficients.
 - `updateNet(resultMap)` writes adjustments back to `AclfGen` setpoints (preserving Q/P ratio).
@@ -215,6 +215,7 @@ Per-branch over-limit record:
 
 - Base case: `(overLimitBranchId, limitMW, baseFlowMW)` → `loadingPercent = 100 * |baseFlowMW| / limitMW`
 - Contingency: adds `outageBranchId`, `shftedFlowMW` → post-flow loading from `baseFlowMW + shftedFlowMW`
+- `calCombinedShiftingFactor(busId, dclfAlgo)` — computes the combined shifting factor (CSF) of a control bus on this record's monitored branch under its outage branch. Delegates to `BranchCAResultRec.calCombinedShiftingFactor(...)`, defined as `GSF(monitored) + GSF(outaged) * LODF(outaged → monitored)` w.r.t. the control bus. Used to confirm which generators have a meaningful post-contingency effect on a surviving overload (see the Texas2K sparse N-1 SSA sample/test, where the anchor pair yields CSF ≈ 1.0 on the radial-supply buses).
 
 #### `OptAdjResultContainer`
 
@@ -279,7 +280,7 @@ On Texas2K (3216 branch outages, 100% limit, full branch scan): 14 contingency o
 
 ### Section optimization
 
-Typical flow in `SectionOptimizer.optmize()`:
+Typical flow in `SectionOptimizer.optimize()`:
 
 1. Filter generators (optional `genPre` predicate).
 2. Compute sparse sensitivities scoped to section buses/branches.
