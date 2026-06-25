@@ -43,6 +43,7 @@ import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.CoreObjectFactory;
@@ -112,52 +113,52 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 5              4.000  1.0500   0.0   257.94   229.94     0.00     0.00  3              257.94   229.94  45.239          1.05
 ------------------------------------------------------------------------------------------------------------------------------------------	
 */		
-		assertTrue(NumericUtil.equals(aclfResult.gen.re, (500.0+257.94)*0.01, 0.0001));
+		assertEquals((500.0+257.94)*0.01, aclfResult.gen.re, 0.0001);
 		//assertTrue(NumericUtil.equals(aclfResult.gen.im, (181.31+229.94)*0.01, 0.0001));
 		
-		assertTrue(NumericUtil.equals(aclfResult.load.re, (160.0+200.0+370.0)*0.01, 0.0001));
-		assertTrue(NumericUtil.equals(aclfResult.load.im, (80.0+100.0+130.0)*0.01, 0.0001));
+		assertEquals((160.0+200.0+370.0)*0.01, aclfResult.load.re, 0.0001);
+		assertEquals((80.0+100.0+130.0)*0.01, aclfResult.load.im, 0.0001);
 
-		assertTrue(NumericUtil.equals(aclfResult.loss.re, ((500.0+257.94)-(160.0+200.0+370.0))*0.01, 0.0001));
+		assertEquals(((500.0+257.94)-(160.0+200.0+370.0))*0.01, aclfResult.loss.re, 0.0001);
 		//assertTrue(NumericUtil.equals(aclfResult.loss.im, (80.0+100.0+130.0)*0.01, 0.0001));
 
 		for (AclfBusBean bus : aclfBean.getBusBeanList()) {
 			if (bus.id.equals("5")) {
-				assertTrue(NumericUtil.equals(bus.v_mag, 1.0500, 0.0001));
-				assertTrue(NumericUtil.equals(bus.v_ang, 0.0, 0.0001));
+				assertEquals(1.0500, bus.v_mag, 0.0001);
+				assertEquals(0.0, bus.v_ang, 0.0001);
 				assertTrue(bus.gen_code == AclfBusBean.GenCode.Swing);
 				//bus.gen;
 				//System.out.println(bus.gen.re);
-				assertTrue(NumericUtil.equals(bus.gen.re, 0, 0.0001));
-				assertTrue(NumericUtil.equals(bus.gen.im, 0, 0.0001));
+				assertEquals(0, bus.gen.re, 0.0001);
+				assertEquals(0, bus.gen.im, 0.0001);
 				assertTrue(bus.load_code == AclfBusBean.LoadCode.NonLoad);
 				//bus.load;
-				assertTrue(NumericUtil.equals(bus.load.re, 0.0, 0.0001));
-				assertTrue(NumericUtil.equals(bus.load.im, 0.0, 0.0001));
+				assertEquals(0.0, bus.load.re, 0.0001);
+				assertEquals(0.0, bus.load.im, 0.0001);
 			}
 			else if (bus.id.equals("4")) {
-				assertTrue(NumericUtil.equals(bus.v_mag, 1.0500, 0.0001));
-				assertTrue(NumericUtil.equals(bus.v_ang, 21.8, 0.1));
+				assertEquals(1.0500, bus.v_mag, 0.0001);
+				assertEquals(21.8, bus.v_ang, 0.1);
 				assertTrue(bus.gen_code == AclfBusBean.GenCode.PV);
 				//bus.gen;
-				assertTrue(NumericUtil.equals(bus.gen.re, 5.0, 0.0001));				
-				assertTrue(NumericUtil.equals(bus.gen.im, 0.0, 0.0001));
+				assertEquals(5.0, bus.gen.re, 0.0001);				
+				assertEquals(0.0, bus.gen.im, 0.0001);
 				assertTrue(bus.load_code == AclfBusBean.LoadCode.NonLoad);
 				//bus.load;
-				assertTrue(NumericUtil.equals(bus.load.re, 0.0, 0.0001));
-				assertTrue(NumericUtil.equals(bus.load.im, 0.0, 0.0001));
+				assertEquals(0.0, bus.load.re, 0.0001);
+				assertEquals(0.0, bus.load.im, 0.0001);
 			}
 			else if (bus.id.equals("1")) {
-				assertTrue(NumericUtil.equals(bus.v_mag, 0.8622, 0.0001));
-				assertTrue(NumericUtil.equals(bus.v_ang, -4.8, 0.1));
+				assertEquals(0.8622, bus.v_mag, 0.0001);
+				assertEquals(-4.8, bus.v_ang, 0.1);
 				assertTrue(bus.gen_code == AclfBusBean.GenCode.NonGen);
 				//bus.gen;
-				assertTrue(NumericUtil.equals(bus.gen.re, 0.0, 0.0001));
-				assertTrue(NumericUtil.equals(bus.gen.im, 0.0, 0.0001));
+				assertEquals(0.0, bus.gen.re, 0.0001);
+				assertEquals(0.0, bus.gen.im, 0.0001);
 				assertTrue(bus.load_code == AclfBusBean.LoadCode.ConstP);
 				//bus.load;
-				assertTrue(NumericUtil.equals(bus.load.re, 1.6, 0.0001));
-				assertTrue(NumericUtil.equals(bus.load.im, 0.8, 0.0001));			}
+				assertEquals(1.6, bus.load.re, 0.0001);
+				assertEquals(0.8, bus.load.im, 0.0001);			}
 		}
 		
 		for (AclfBranchBean<AclfBranchResultBean> bra : aclfBean.getBranchBeanList()) {
@@ -169,11 +170,11 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 				bra.cur;
 				*/
 				AclfBranchResultBean braResult = bra.extension;
-				assertTrue(NumericUtil.equals(braResult.flow_f2t.re, -1.4662, 0.0001));
-				assertTrue(NumericUtil.equals(braResult.flow_f2t.im, -0.4091, 0.0001));
-				assertTrue(NumericUtil.equals(braResult.flow_t2f.re,  1.5845, 0.0001));
-				assertTrue(NumericUtil.equals(braResult.flow_t2f.im,  0.6726, 0.0001));
-				assertTrue(NumericUtil.equals(braResult.cur,  7387, 1.0));
+				assertEquals(-1.4662, braResult.flow_f2t.re, 0.0001);
+				assertEquals(-0.4091, braResult.flow_f2t.im, 0.0001);
+				assertEquals(1.5845, braResult.flow_t2f.re, 0.0001);
+				assertEquals(0.6726, braResult.flow_t2f.im, 0.0001);
+				assertEquals(7387, braResult.cur, 1.0);
 			}
 			else if (bra.id.equals("4->2(1)")) {
 				assertTrue(bra.bra_code == BranchCode.Xfr);
@@ -183,11 +184,11 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 				bra.cur;
 				*/
 				AclfBranchResultBean braResult = bra.extension;
-				assertTrue(NumericUtil.equals(braResult.flow_f2t.re,  5.0, 0.0001));
-				assertTrue(NumericUtil.equals(braResult.flow_f2t.im,  1.8131, 0.0001));
-				assertTrue(NumericUtil.equals(braResult.flow_t2f.re,  -5.0, 0.0001));
-				assertTrue(NumericUtil.equals(braResult.flow_t2f.im,  -1.4282, 0.0001));
-				assertTrue(NumericUtil.equals(braResult.cur,  20183, 1.0));
+				assertEquals(5.0, braResult.flow_f2t.re, 0.0001);
+				assertEquals(1.8131, braResult.flow_f2t.im, 0.0001);
+				assertEquals(-5.0, braResult.flow_t2f.re, 0.0001);
+				assertEquals(-1.4282, braResult.flow_t2f.im, 0.0001);
+				assertEquals(20183, braResult.cur, 1.0);
 			}
 		}
 	}
