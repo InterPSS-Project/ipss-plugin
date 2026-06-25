@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.contingency.DclfCgsfResult;
 import com.interpss.core.algo.dclf.DclfSensitivityResult;
 import org.junit.jupiter.api.Test;
 
@@ -23,6 +22,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
+import com.interpss.core.algo.dclf.DclfCgsfResult;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.DclfSensitivityAnalyzer;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
