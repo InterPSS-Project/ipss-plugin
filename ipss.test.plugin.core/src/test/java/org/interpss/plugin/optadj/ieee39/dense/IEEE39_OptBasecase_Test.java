@@ -6,9 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.optadj.algo.lf.AclfNetLoadFlowOptimizer;
 import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
-import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -17,6 +15,8 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
+import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
+import com.interpss.optadj.result.OptAdjResultContainer;
 
 /**
  * Regression test for {@code IEEE39_OptBasecase_Sample}: DCLF basecase with
