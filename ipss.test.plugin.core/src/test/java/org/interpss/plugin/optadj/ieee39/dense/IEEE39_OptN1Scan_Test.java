@@ -9,9 +9,7 @@ import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
-import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
 import org.interpss.plugin.optadj.ieee39.IEEE39_TestCaseInfo;
-import org.interpss.plugin.optadj.result.OptAdjResultContainer;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
@@ -22,6 +20,8 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import com.interpss.optadj.algo.lf.AclfNetContigencyOptimizer;
+import com.interpss.optadj.result.OptAdjResultContainer;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
 /**
