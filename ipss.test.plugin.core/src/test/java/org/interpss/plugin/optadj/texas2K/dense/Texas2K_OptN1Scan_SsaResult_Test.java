@@ -9,10 +9,6 @@ import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.AtomicCounter;
-import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
-import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
-import org.interpss.plugin.optadj.result.OptAdjResultContainer;
-import org.interpss.plugin.optadj.result.SsaResultContainer;
 import org.interpss.plugin.optadj.texas2K.Texas2K_TestCaseInfo;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +17,10 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
+import com.interpss.optadj.algo.lf.AclfNetContigencyOptimizer;
+import com.interpss.optadj.algo.util.AclfNetSsaHelper;
+import com.interpss.optadj.result.OptAdjResultContainer;
+import com.interpss.optadj.result.SsaResultContainer;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
