@@ -1,11 +1,11 @@
 package org.interpss.core.dstab.dynLoad;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.interpss.core.dstab.mach.TestSetupBase;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
-import org.interpss.numeric.util.NumericUtil;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -89,8 +89,8 @@ public class TestCalBusDStabLoad extends TestSetupBase {
 		System.out.println("\n bus total Load Q:\n"+sm.toCSVString(sm.getBusTotalLoadQTable()));
 		
 		System.out.println(sm.getBusTotalLoadQTable().get("Bus1").get(1).getValue());
-		assertTrue(NumericUtil.equals(sm.getBusTotalLoadPTable().get("Bus1").get(1).getValue(), 0.8,1.0E-6));
-		assertTrue(NumericUtil.equals(sm.getBusTotalLoadQTable().get("Bus1").get(1).getValue(), 0.2,1.0E-5));
+		assertEquals(0.8, sm.getBusTotalLoadPTable().get("Bus1").get(1).getValue(), 1.0E-6);
+		assertEquals(0.2, sm.getBusTotalLoadQTable().get("Bus1").get(1).getValue(), 1.0E-5);
 		
 	}
 	

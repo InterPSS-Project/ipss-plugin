@@ -12,10 +12,6 @@ import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
-import org.interpss.plugin.optadj.algo.lf.AclfNetContigencyOptimizer;
-import org.interpss.plugin.optadj.algo.util.AclfNetSsaHelper;
-import org.interpss.plugin.optadj.result.OptAdjResultContainer;
-import org.interpss.plugin.optadj.result.SsaResultContainer;
 
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -26,6 +22,10 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import com.interpss.optadj.algo.lf.AclfNetContigencyOptimizer;
+import com.interpss.optadj.algo.util.AclfNetSsaHelper;
+import com.interpss.optadj.result.OptAdjResultContainer;
+import com.interpss.optadj.result.SsaResultContainer;
 
 public class Texas2K_OptN1Scan_SsaResult_Sample1 {
     public static void main(String args[]) throws Exception {

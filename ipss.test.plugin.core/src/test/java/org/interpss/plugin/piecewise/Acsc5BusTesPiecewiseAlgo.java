@@ -116,7 +116,7 @@ public class Acsc5BusTesPiecewiseAlgo {
   			//System.out.println(cbra.getBranchId() + ": " + cbra.getCurrent());
   		}
 
-		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().a_0,  // 0.00342 + j0.0000
+		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().a_0,    // 0.00342 + j0.0000
 		     	new Complex(0.00342, 0.0000), 1.0e-5));
 		assertTrue(NumericUtil.equals(proc.getCuttingBranches()[0].getCurrent().b_1,  // 0.20069 + j0.03858 
 		     	new Complex(0.20069, 0.03858), 1.0e-5));
