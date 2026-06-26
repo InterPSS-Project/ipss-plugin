@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 import org.interpss.CorePluginTestSetup;
 import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
@@ -41,6 +40,7 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
 import com.interpss.core.net.Branch;
 import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
+import com.interpss.monitor.definition.MonitoredBranchRecord;
 
 @Tag("large")
 public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {

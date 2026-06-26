@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import org.interpss.optadj.texas2k.Texas2K_Sample_Info;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 
@@ -22,6 +21,7 @@ import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import com.interpss.monitor.definition.MonitoredBranchRecord;
 import com.interpss.optadj.algo.lf.AclfNetContigencyOptimizer;
 import com.interpss.optadj.algo.util.AclfNetSsaHelper;
 import com.interpss.optadj.result.OptAdjResultContainer;
