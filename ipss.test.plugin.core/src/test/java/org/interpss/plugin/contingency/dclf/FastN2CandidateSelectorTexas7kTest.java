@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.BeforeEach;
@@ -53,6 +52,7 @@ import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruner;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningOptions;
 import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2StudyInventory;
+import com.interpss.monitor.definition.MonitoredBranchRecord;
 
 @Tag("large")
 public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {

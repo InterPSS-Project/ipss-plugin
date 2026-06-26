@@ -10,7 +10,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.contingency.DclfContingencyConfig;
-import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.junit.jupiter.api.Test;
 
@@ -20,17 +19,18 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.solver.FlowgateDclfAnalyzer;
 import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
-import com.interpss.core.algo.dclf.check.MonitoringExceptionRecord;
-import com.interpss.core.algo.dclf.check.MonitoringExceptionStatus;
-import com.interpss.core.algo.dclf.check.MonitoringObjectType;
-import com.interpss.core.algo.dclf.definition.FlowgateConstraintRecord;
-import com.interpss.core.algo.dclf.definition.FlowgateContingencyRef;
-import com.interpss.core.algo.dclf.definition.FlowgateLimitSelection;
-import com.interpss.core.algo.dclf.definition.FlowgateLimitSet;
-import com.interpss.core.algo.dclf.result.FlowgateViolationResult;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import com.interpss.monitor.check.MonitoringExceptionRecord;
+import com.interpss.monitor.check.MonitoringExceptionStatus;
+import com.interpss.monitor.check.MonitoringObjectType;
+import com.interpss.monitor.definition.FlowgateConstraintRecord;
+import com.interpss.monitor.definition.FlowgateContingencyRef;
+import com.interpss.monitor.definition.FlowgateLimitSelection;
+import com.interpss.monitor.definition.FlowgateLimitSet;
+import com.interpss.monitor.definition.MonitoredBranchRecord;
+import com.interpss.monitor.result.FlowgateViolationResult;
 
 public class FlowgateDclfAnalyzerTest extends CorePluginTestSetup {
     @Test
