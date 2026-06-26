@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import com.interpss.core.algo.dclf.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
@@ -22,6 +21,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import com.interpss.monitor.definition.MonitoredBranchRecord;
 
 /** Shared Texas-2K test network setup for optadj regression tests. */
 public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
