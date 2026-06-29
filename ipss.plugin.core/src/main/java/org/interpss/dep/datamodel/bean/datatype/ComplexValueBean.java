@@ -25,7 +25,7 @@
 package org.interpss.dep.datamodel.bean.datatype;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.dep.datamodel.bean.base.BaseJSONBean;
+import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.util.IpssLogger;
@@ -56,10 +56,10 @@ public class ComplexValueBean  implements Comparable<ComplexValueBean> {
 	@Override public int compareTo(ComplexValueBean bean) {
 		int eql = 0;
 		
-		if (!NumericUtil.equals(this.re, bean.re, BaseJSONBean.PU_ERR)) {
+		if (!NumericUtil.equals(this.re, bean.re, CompareBaseJSONBean.PU_ERR)) {
 			IpssLogger.ipssLogger.warning("ComplexBean.re is not equal, " + this.re + ", " + bean.re); eql = 1; }
 		
-		if (!NumericUtil.equals(this.im, bean.im, BaseJSONBean.PU_ERR)) {
+		if (!NumericUtil.equals(this.im, bean.im, CompareBaseJSONBean.PU_ERR)) {
 			IpssLogger.ipssLogger.warning("ComplexBean.im is not equal, " + this.im + ", " + bean.im); eql = 1; }	
 		
 		return eql;
