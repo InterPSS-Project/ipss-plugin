@@ -25,7 +25,7 @@ package org.interpss.dep.datamodel.bean.aclf.adj;
 
 import java.util.List;
 
-import org.interpss.dep.datamodel.bean.base.BaseJSONBean;
+import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 
 /**
@@ -43,7 +43,7 @@ public class XfrTapControlBean<TExt extends BaseJSONUtilBean> extends BaseTapCon
 	
 	public XfrTapControlBean() {}
 	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TExt> b) {
 		
 		int eql = super.compareTo(b);
 		
