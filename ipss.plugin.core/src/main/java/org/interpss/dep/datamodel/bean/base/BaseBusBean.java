@@ -36,7 +36,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @param <TExt> template for extension info 
  *
  */
-public abstract class BaseBusBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
+public abstract class BaseBusBean<TExt extends BaseJSONUtilBean> extends CompareBaseJSONBean<TExt> {
 		
 	public long number;    				// bus number
 	
@@ -64,7 +64,7 @@ public abstract class BaseBusBean<TExt extends BaseJSONUtilBean> extends BaseJSO
 		
 	public BaseBusBean() {}
 	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
 		BaseBusBean<TExt> bean = (BaseBusBean<TExt>)b;

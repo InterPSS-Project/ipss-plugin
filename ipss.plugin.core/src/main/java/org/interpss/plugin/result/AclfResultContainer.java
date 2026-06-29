@@ -4,7 +4,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datatype.base.BaseJSONBean;
 import org.interpss.plugin.result.bean.AclfBranchInfo;
 import org.interpss.plugin.result.bean.AclfBusInfo;
 import org.interpss.plugin.result.bean.AclfGenInfo;
@@ -12,6 +11,8 @@ import org.interpss.plugin.result.bean.AclfHvdcInfo;
 import org.interpss.plugin.result.bean.AclfLoadInfo;
 import org.interpss.plugin.result.bean.AclfNetInfo;
 import org.interpss.plugin.result.bean.AclfSvcInfo;
+
+import com.interpss.common.datatype.BaseJSONBean;
 
 /**
  * Container class for holding the loadflow results
