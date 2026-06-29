@@ -1,7 +1,7 @@
 package org.interpss.plugin.result.bean;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.datatype.base.BaseJSONBean;
+import com.interpss.common.datatype.BaseJSONBean;
 
 public class AclfNetInfo extends BaseJSONBean {
 	private String networkId;
