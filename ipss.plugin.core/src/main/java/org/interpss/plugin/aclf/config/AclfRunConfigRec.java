@@ -3,7 +3,7 @@ package org.interpss.plugin.aclf.config;
 import java.io.IOException;
 import java.lang.reflect.Type;
 
-import org.interpss.datatype.base.BaseJSONBean;
+import com.interpss.common.datatype.BaseJSONBean;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
