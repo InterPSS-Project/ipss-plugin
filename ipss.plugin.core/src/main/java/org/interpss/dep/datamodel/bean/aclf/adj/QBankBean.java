@@ -2,7 +2,7 @@ package org.interpss.dep.datamodel.bean.aclf.adj;
 
 import java.util.List;
 
-import org.interpss.dep.datamodel.bean.base.BaseJSONBean;
+import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 
 /**
@@ -12,13 +12,13 @@ import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
  * 
  * @param <TExt> template for extension info 
  */
-public class QBankBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
+public class QBankBean<TExt extends BaseJSONUtilBean> extends CompareBaseJSONBean<TExt> {
 	
 	public int step;
 	
 	public double UnitQMvar;
 
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
 		QBankBean<TExt> bean = (QBankBean<TExt>)b;
