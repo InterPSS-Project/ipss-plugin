@@ -35,7 +35,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @param <TExt> template for extension info 
  *
  */
-public abstract class BaseNetBean<TNetExt extends BaseJSONUtilBean> extends BaseJSONBean<TNetExt> {
+public abstract class BaseNetBean<TNetExt extends BaseJSONUtilBean> extends CompareBaseJSONBean<TNetExt> {
 	public double base_kva; // network base kva
 
 	/**
@@ -51,7 +51,7 @@ public abstract class BaseNetBean<TNetExt extends BaseJSONUtilBean> extends Base
 	
 	public BaseNetBean() {  }
 	
-	@Override public int compareTo(BaseJSONBean<TNetExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TNetExt> b) {
 		int eql = super.compareTo(b);
 		
 		BaseNetBean<TNetExt> bean = (BaseNetBean<TNetExt>)b;

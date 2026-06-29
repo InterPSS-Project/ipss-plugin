@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.interpss.dep.datamodel.bean.aclf.adj.SwitchShuntBean;
 import org.interpss.dep.datamodel.bean.base.BaseBusBean;
-import org.interpss.dep.datamodel.bean.base.BaseJSONBean;
+import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.dep.datamodel.bean.datatype.LimitValueBean;
 import org.interpss.numeric.util.NumericUtil;
@@ -83,7 +83,7 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 	public AclfBusBean() {}	
 		
 	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
 		AclfBusBean<TExt> bean = (AclfBusBean<TExt>)b;
