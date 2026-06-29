@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.interpss.dep.datamodel.bean.base.BaseJSONBean;
+import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.dep.datamodel.bean.base.BaseNetBean;
 
@@ -83,7 +83,7 @@ public class BaseAclfNetBean<TBus extends AclfBusBean<TBusExt>,
 		this.branchIdMapper.put(branch.id, (TBra)branch);		
 	}
 	
-	@Override public int compareTo(BaseJSONBean<TNetExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TNetExt> b) {
 		int eql = super.compareTo(b);
 		
 		BaseAclfNetBean<TBus,TBra,TBusExt,TBraExt,TNetExt> netBean = (BaseAclfNetBean<TBus,TBra, TBusExt, TBraExt, TNetExt>)b;
