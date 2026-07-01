@@ -1,0 +1,32 @@
+Clear
+
+New Circuit.ckt24 bus1=SourceBus pu=1.05  basekV=230 R1=0.63 X1=6.72 R0=4.07 X0=15.55
+
+Redirect  Wiredata_ckt24.dss
+Redirect  Linegeometry_ckt24.dss
+Redirect  Linecodes_ckt24.dss
+Redirect  TriplexLineCodes_ckt24.dss
+Redirect  substation_ckt24.dss
+
+! Loadshapes for yearly simulations (normalized)
+New Loadshape.LS_PhaseA npts=8760 interval=1 mult=(file=LS_PhaseA.txt) action=normalize
+New Loadshape.LS_PhaseB npts=8760 interval=1 mult=(file=LS_PhaseB.txt) action=normalize
+New Loadshape.LS_PhaseC npts=8760 interval=1 mult=(file=LS_PhaseC.txt) action=normalize
+New Loadshape.LS_ThreePhase npts=8760 interval=1 mult=(file=LS_ThreePhase.txt) action=normalize
+New Loadshape.Other_Bus_Load npts=8760 interval=1 mult=(file=Other_Bus_Load.txt) action=normalize
+
+Redirect  lines_ckt24_interpss.dss
+Redirect  capacitors_ckt24.dss
+Redirect  stepxfmrs_ckt24.dss
+Redirect  transformers_ckt24.dss
+Redirect  sec_serv_ckt24.dss
+
+! Loads (allocated by XF kVA) with yearly shape bindings retained
+Redirect  Allocated_Loads_ckt24.dss
+Redirect Other_Load_ckt24.dss
+Redirect  AllocationFactors_Base.Txt
+
+Set voltagebases=[230,34.5,13.2,0.48,0.415,0.208]
+Calcvoltagebases
+
+Buscoords buscoords_ckt24.dss

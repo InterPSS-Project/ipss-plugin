@@ -51,7 +51,7 @@ public class IEEE123Feeder_Dstab_Test {
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 
 		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.dss");
+		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.DSS");
 
 		parser.calcVoltageBases();
 
@@ -128,7 +128,7 @@ public class IEEE123Feeder_Dstab_Test {
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 
 		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.dss");
+		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.DSS");
 		parser.calcVoltageBases();
 		parser.convertActualValuesToPU(100.0);
 
@@ -189,7 +189,7 @@ public class IEEE123Feeder_Dstab_Test {
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 
 		OpenDSSDataParser parser = new OpenDSSDataParser();
-		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.dss");
+		parser.parseFeederData("testData/feeder/IEEE123","IEEE123Master_Modified_v2.DSS");
 
 		parser.calcVoltageBases();
 

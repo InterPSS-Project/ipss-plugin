@@ -28,8 +28,8 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.NumericUtil;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
@@ -67,13 +67,13 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		AclfBus bus1 = dclfBus1.getBus();
 		int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
-		assertTrue(NumericUtil.equals(pgen, 225.43, 0.01), "Aclf 232.393");
+		assertEquals(225.43, pgen, 0.01, "Aclf 232.393");
 
 		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
 		AclfBus bus2 = dclfBus2.getBus();
 		int n2 = bus2.getSortNumber();
 		double angle = dclfAlgo.getBusAngle(n2);
-		assertTrue(NumericUtil.equals(angle, -0.092, 0.001));		
+		assertEquals(-0.092, angle, 0.001);		
 	}
 
 	@Test 
@@ -98,20 +98,20 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		AclfBus bus1 = dclfBus1.getBus();
 		int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
-		assertTrue(NumericUtil.equals(pgen, 219.00, 0.01), "Aclf 232.393");
+		assertEquals(219.00, pgen, 0.01, "Aclf 232.393");
 
 		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
 		AclfBus bus2 = dclfBus2.getBus();
 		int n2 = bus2.getSortNumber();
 		double angle = dclfAlgo.getBusAngle(n2);
-		assertTrue(NumericUtil.equals(angle, -0.088, 0.001));			
+		assertEquals(-0.088, angle, 0.001);			
 	}
 	
 	//@Test 
 	public void aclfTestCase() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testdata/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);

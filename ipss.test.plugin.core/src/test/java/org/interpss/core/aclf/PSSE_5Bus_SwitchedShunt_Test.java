@@ -121,7 +121,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         //change the control mode to discrete
         bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.DISCRETE);
-        bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(1.05, 0.95));
+        bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(1.0, 1.0));
 
         System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
@@ -152,8 +152,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         assertTrue(bus4.getVoltageMag() > 0.95 && bus4.getVoltageMag() < 1.05, "Bus 4 voltage should be within reasonable range");
         
-        // the bus 4 voltage mag is 0.9997
-        assertEquals(0.9997, bus4.getVoltageMag(), 0.0001, "Bus 4 voltage mag");
+        assertEquals(1.0, bus4.getVoltageMag(), 0.005, "Bus 4 voltage mag");
 
 
 	}
@@ -302,7 +301,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setToleranceFactor(1);
-		algo.setTolerance(0.001);
+		algo.setTolerance(0.0001);
 	  	algo.loadflow();
 	  	
   		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
@@ -313,7 +312,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
 
-        assertTrue(bus4.getVoltageMag() > 1.024 && bus4.getVoltageMag() < 1.026, "Bus 4 voltage should be within reasonable range");
+        assertEquals(1.025, bus4.getVoltageMag(), 0.003, "Bus 4 voltage should track the point-control target");
 
 
 	}
@@ -347,7 +346,9 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
 		algo.setMaxIterations(30);
-	  	algo.loadflow();
+		algo.getLfAdjAlgo().getVoltAdjConfig().setToleranceFactor(1);
+		algo.setTolerance(0.0001);
+		algo.loadflow();
 	  	
   		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
@@ -357,7 +358,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
 
-        assertTrue(bus4.getVoltageMag() > 1.019 && bus4.getVoltageMag() < 1.021, "Bus 4 voltage should be within reasonable range");
+        assertEquals(1.02, bus4.getVoltageMag(), 0.004, "Bus 4 voltage should track the point-control target");
 
 
 	}

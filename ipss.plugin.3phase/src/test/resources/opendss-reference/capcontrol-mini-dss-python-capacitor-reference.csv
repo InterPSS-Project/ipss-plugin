@@ -1,0 +1,13 @@
+case,master,capacitor,closed,total_q_kvar
+high_voltage_open,HighVoltageOpen.dss,cap1,false,0.0
+low_voltage_closed,LowVoltageClosed.dss,cap1,true,-576.2429086695767
+kvar_open,KvarOpen.dss,cap1,false,0.0
+current_open,CurrentOpen.dss,cap1,false,0.0
+pf_open,PowerFactorOpen.dss,cap1,false,0.0
+voltage_override_open,VoltageOverrideOpen.dss,cap1,false,0.0
+ptphase_max_open,PhaseMaxOpen.dss,cap1,false,0.0
+ptphase_min_closed,PhaseMinClosed.dss,cap1,true,-604.841360066209
+ctphase_avg_open,CurrentCtPhaseAvgOpen.dss,cap1,false,0.0
+ctphase_max_closed,CurrentCtPhaseMaxClosed.dss,cap1,true,-604.841360066209
+ctphase_min_open,CurrentCtPhaseMinOpen.dss,cap1,false,0.0
+ctphase_phase_a_closed,CurrentCtPhaseAClosed.dss,cap1,true,-604.841360066209
