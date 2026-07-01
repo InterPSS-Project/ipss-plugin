@@ -34,12 +34,12 @@ public class MatpowerCase6468RteTest extends CorePluginTestSetup {
 				.getAclfNet();
 	}
 
-	private boolean runNonDivergentPowerflow(AclfNetwork net) throws Exception {
+	private boolean runNonDivergentPowerflow(AclfNetwork net, AclfMethodType method) throws Exception {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
 		algo.getDataCheckConfig().setTurnOffIslandBus(true);
 		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-		algo.setLfMethod(AclfMethodType.NR);
+		algo.setLfMethod(method);
 		algo.setHvdcLfSwitchFactor(5);
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(algo);
 		algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
@@ -47,7 +47,7 @@ public class MatpowerCase6468RteTest extends CorePluginTestSetup {
 		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
 
 		NrMethodConfig config = algo.getNrMethodConfig();
-		config.setNonDivergent(true);
+		algo.setNonDivergent(true);
 		config.setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		algo.getLfCalculator().getNrSolver().reConfigSolver(config);
 
@@ -145,10 +145,18 @@ public class MatpowerCase6468RteTest extends CorePluginTestSetup {
 	public void testCase6468RteNonDivergentPowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE6468RTE_FILE);
 		net.setPolarCoordinate(false);
-
 		assertCase6468RteImportedData(net);
 
-		boolean solved = runNonDivergentPowerflow(net);
+		boolean solved = runNonDivergentPowerflow(net, AclfMethodType.NR);
+		assertTrue(solved && net.isLfConverged(), AclfOutFunc.loadFlowSummary(net).toString());
+	}
+
+	@Test
+	public void testCase6468RtePqNonDivergentPowerFlow() throws Exception {
+		AclfNetwork net = loadMatpowerCase(CASE6468RTE_FILE);
+		assertCase6468RteImportedData(net);
+
+		boolean solved = runNonDivergentPowerflow(net, AclfMethodType.PQ);
 		assertTrue(solved && net.isLfConverged(), AclfOutFunc.loadFlowSummary(net).toString());
 	}
 }
