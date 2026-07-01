@@ -27,6 +27,8 @@ package org.interpss.odm.mapper.base;
 import org.ieee.odm.schema.ApparentPowerUnitType;
 import org.ieee.odm.schema.BaseBranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
+import org.ieee.odm.schema.NameTagXmlType;
+import org.ieee.odm.schema.NameValuePairXmlType;
 import org.ieee.odm.schema.NetworkXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
@@ -44,6 +46,7 @@ import com.interpss.core.net.Area;
 import com.interpss.core.net.Branch;
 import com.interpss.core.net.Branch3W;
 import com.interpss.core.net.Bus;
+import com.interpss.core.net.NameTag;
 import com.interpss.core.net.Network;
 import com.interpss.core.net.Zone;
 
@@ -106,7 +109,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		}
 		*/
 		
-		bus.setDesc(busRec.getDesc());
+		mapNameTagMetadata(busRec, bus);
 		if (busRec.getAreaNumber() != null) {
 			Area area = CoreObjectFactory.createArea(busRec.getAreaNumber(), net);
 			bus.setArea(area);
@@ -161,6 +164,7 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 
 		branch.setName(branchRec.getName() == null ? "" : branchRec.getName());
 		branch.setDesc(branchRec.getDesc() == null ? "" : branchRec.getDesc());
+		mapNameTagMetadata(branchRec, branch);
 		branch.setStatus(branchRec.isOffLine() != null ? !branchRec.isOffLine() : true);
 		// if (!branch.isActive()) {
 		// 	log.info("Branch is not active, " + branch.getId());
@@ -174,5 +178,28 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 			Zone zone = CoreObjectFactory.createZone(branchRec.getZoneNumber(), net);
 			branch.setZone(zone);
 		}
+	}
+
+	public static void mapNameTagMetadata(NameTagXmlType xmlRec, NameTag device) {
+		if (xmlRec == null || device == null) {
+			return;
+		}
+		if (xmlRec.getDesc() != null) {
+			device.setDesc(xmlRec.getDesc());
+		}
+		String extUid = findExternalUid(xmlRec);
+		if (extUid != null && !extUid.isEmpty()) {
+			device.setExtUID(extUid);
+		}
+	}
+
+	private static String findExternalUid(NameTagXmlType xmlRec) {
+		for (NameValuePairXmlType nv : xmlRec.getNvPair()) {
+			if (nv.getName() != null
+					&& ("externalUID".equalsIgnoreCase(nv.getName()) || "ExtUID".equalsIgnoreCase(nv.getName()))) {
+				return nv.getValue();
+			}
+		}
+		return null;
 	}
 }
