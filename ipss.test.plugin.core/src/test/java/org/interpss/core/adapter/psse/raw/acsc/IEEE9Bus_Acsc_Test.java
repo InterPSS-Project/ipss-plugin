@@ -260,7 +260,7 @@ public class IEEE9Bus_Acsc_Test {
 		
 		acscAlgo.calBusFault(fault);
 	  	//System.out.println(fault.getFaultResult().getSCCurrent_012());
-	  	System.out.println(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus4")));
+	  	//System.out.println(fault.getFaultResult().getBusVoltage_012(net.getBus("Bus4")));
 	  	
 	    //seq voltage @Bus4
 	  	//0.0000 + j0.0000  0.61996 + j-0.00357  0.40527 + j-0.0355
@@ -276,7 +276,7 @@ public class IEEE9Bus_Acsc_Test {
 	  			0.0, 0.0, 0.61996, -0.00357, 0.40527, -0.0355) );
 	  	
 	  	//output fault analysis result
-	  	System.out.println(AcscOutFunc.faultResult2String(net,acscAlgo));
+	  	//System.out.println(AcscOutFunc.faultResult2String(net,acscAlgo));
 	  	
 	  	
 	  	

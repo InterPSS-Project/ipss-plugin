@@ -26,7 +26,7 @@ public class PSSEJSon_IEEE9Bus_BusSet_Test extends CorePluginTestSetup {
 	@Test
 	public void testJSonExport() throws Exception {
 	    IODMAdapter adapter = new PSSEJSonAdapter();
-	    adapter.parseInputFile("testdata/adpter/psse/json/ieee9.rawx");
+	    adapter.parseInputFile("testData/adpter/psse/json/ieee9.rawx");
 	    
 	    AclfModelParser parser = (AclfModelParser)adapter.getModel();
 	    //parser.stdout();

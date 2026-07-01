@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IPSS Three-Phase Distribution Modeling Flyer</title>
+  <style>
+    :root {
+      --ink: #17202a;
+      --muted: #5d6975;
+      --paper: #fbfcfd;
+      --panel: #ffffff;
+      --line: #d8e0e7;
+      --teal: #0f9f9a;
+      --teal-dark: #076d70;
+      --amber: #f2aa2e;
+      --red: #c9433b;
+      --green: #2f8f58;
+      --steel: #33495d;
+      --soft: #eef7f6;
+    }
+
+    @page {
+      size: letter;
+      margin: 0.35in;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: #dfe6ec;
+      color: var(--ink);
+      font-family: "Aptos", "Segoe UI", Arial, sans-serif;
+      line-height: 1.35;
+    }
+
+    .sheet {
+      width: 8.5in;
+      min-height: 11in;
+      margin: 24px auto;
+      background:
+        linear-gradient(90deg, rgba(15, 159, 154, 0.08) 0 1px, transparent 1px 100%),
+        linear-gradient(0deg, rgba(15, 159, 154, 0.06) 0 1px, transparent 1px 100%),
+        var(--paper);
+      background-size: 34px 34px;
+      box-shadow: 0 16px 60px rgba(23, 32, 42, 0.22);
+      padding: 0.42in;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sheet::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, var(--teal) 0 10px, transparent 10px);
+      pointer-events: none;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 26px;
+      align-items: start;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 22px;
+    }
+
+    .eyebrow {
+      font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--teal-dark);
+      font-weight: 700;
+      margin: 0 0 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 0.96;
+      letter-spacing: 0;
+      color: var(--ink);
+    }
+
+    .subhead {
+      margin: 14px 0 0;
+      font-size: 15px;
+      color: var(--steel);
+      max-width: 5.2in;
+    }
+
+    .hero-metric {
+      background: var(--ink);
+      color: white;
+      padding: 18px 18px 16px;
+      border-left: 8px solid var(--amber);
+      min-height: 178px;
+    }
+
+    .hero-metric .big {
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 0.9;
+      margin: 0;
+    }
+
+    .hero-metric .label {
+      margin: 8px 0 12px;
+      color: #cde7e5;
+      font-weight: 700;
+    }
+
+    .hero-metric .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+      font-size: 11px;
+    }
+
+    .hero-metric .compare span {
+      display: block;
+      border-top: 1px solid rgba(255, 255, 255, 0.28);
+      padding-top: 7px;
+    }
+
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    section {
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid var(--line);
+      padding: 15px;
+    }
+
+    .wide {
+      grid-column: 1 / -1;
+    }
+
+    .measured-panel {
+      display: flex;
+      flex-direction: column;
+    }
+
+    h2 {
+      font-size: 18px;
+      margin: 0 0 10px;
+      color: var(--ink);
+    }
+
+    h3 {
+      font-size: 13px;
+      margin: 0 0 4px;
+      color: var(--teal-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 12.5px;
+    }
+
+    .capability-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    .capability {
+      border-top: 4px solid var(--teal);
+      background: var(--soft);
+      padding: 10px;
+      min-height: 108px;
+    }
+
+    .capability:nth-child(2) {
+      border-color: var(--amber);
+    }
+
+    .capability:nth-child(3) {
+      border-color: var(--red);
+    }
+
+    .capability strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .capability span {
+      display: block;
+      color: var(--muted);
+      font-size: 11.5px;
+    }
+
+    .data-strip {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto 1fr;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .data-card {
+      border: 1px solid var(--line);
+      background: white;
+      padding: 11px;
+    }
+
+    .data-card .value {
+      font-size: 23px;
+      font-weight: 800;
+      color: var(--teal-dark);
+      white-space: nowrap;
+    }
+
+    .data-card .caption {
+      font-size: 10.5px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .data-card.feature {
+      grid-column: 1 / -1;
+      border-left: 5px solid var(--amber);
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 14px;
+      align-items: stretch;
+      min-height: 112px;
+    }
+
+    .feature-headline {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      column-gap: 10px;
+      align-items: center;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 800;
+      line-height: 1.25;
+      max-width: 100%;
+    }
+
+    .feature-headline .headline-value {
+      color: var(--teal-dark);
+      font-size: 28px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .feature-headline .headline-copy {
+      display: block;
+      max-width: 370px;
+    }
+
+    .feature-headline strong {
+      color: var(--teal-dark);
+      font-size: 19px;
+      white-space: nowrap;
+    }
+
+    .result-compare {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 7px;
+      font-family: "Cascadia Mono", "SFMono-Regular", Consolas, monospace;
+      align-self: stretch;
+    }
+
+    .result-compare span {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--muted);
+      font-size: 9px;
+      padding: 8px 7px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .result-compare b {
+      display: block;
+      color: var(--ink);
+      font-size: 14px;
+      margin-top: 4px;
+      white-space: nowrap;
+    }
+
+    .hosting-lede {
+      border-left: 4px solid var(--green);
+      padding-left: 10px;
+      color: var(--ink);
+      font-weight: 800;
+      font-size: 12.5px;
+      margin-bottom: 9px;
+    }
+
+    .hosting-lede span {
+      display: block;
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 10.8px;
+      margin-top: 4px;
+    }
+
+    .hosting-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .hosting-item {
+      border: 1px solid var(--line);
+      background: white;
+      padding: 8px;
+      min-height: 60px;
+    }
+
+    .hosting-item b {
+      display: block;
+      color: var(--teal-dark);
+      font-size: 10.5px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .hosting-item span {
+      color: var(--muted);
+      display: block;
+      font-size: 9.8px;
+      line-height: 1.32;
+    }
+
+    .hosting-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 8px;
+    }
+
+    .hosting-chips span {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      color: var(--ink);
+      font-size: 9px;
+      font-weight: 800;
+      padding: 4px 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--ink);
+      color: white;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    td.check {
+      color: var(--green);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .visual {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .singleline {
+      width: 100%;
+      height: 178px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+    }
+
+    .legend {
+      display: grid;
+      gap: 7px;
+      font-size: 11.5px;
+      color: var(--muted);
+    }
+
+    .legend b {
+      color: var(--ink);
+    }
+
+    .dot {
+      display: inline-block;
+      width: 9px;
+      height: 9px;
+      margin-right: 6px;
+      vertical-align: middle;
+      background: var(--teal);
+    }
+
+    .dot.amber { background: var(--amber); }
+    .dot.red { background: var(--red); }
+
+    footer {
+      margin-top: 16px;
+      border-top: 2px solid var(--ink);
+      padding-top: 10px;
+      font-size: 10.5px;
+      color: var(--muted);
+    }
+
+    footer strong {
+      color: var(--ink);
+    }
+
+    @media print {
+      @page {
+        size: letter;
+        margin: 0;
+      }
+
+      body {
+        background: white;
+        width: 8.5in;
+        height: 11in;
+        overflow: hidden;
+      }
+
+      .sheet {
+        margin: 0;
+        width: 8.5in;
+        height: 11in;
+        min-height: 11in;
+        box-shadow: none;
+        padding: 0.28in 0.32in;
+        overflow: hidden;
+      }
+
+      header {
+        gap: 18px;
+        padding-bottom: 14px;
+      }
+
+      h1 {
+        font-size: 34px;
+      }
+
+      .subhead {
+        font-size: 12.5px;
+        margin-top: 10px;
+      }
+
+      .hero-metric {
+        min-height: 138px;
+        padding: 14px 14px 12px;
+      }
+
+      .hero-metric .big {
+        font-size: 44px;
+      }
+
+      main {
+        gap: 10px;
+        margin-top: 12px;
+      }
+
+      section {
+        padding: 10px;
+      }
+
+      h2 {
+        font-size: 15px;
+        margin-bottom: 6px;
+      }
+
+      h3 {
+        font-size: 10px;
+      }
+
+      p {
+        font-size: 10.5px;
+        margin-bottom: 6px;
+      }
+
+      .capability-grid,
+      .data-strip {
+        gap: 7px;
+      }
+
+      .capability {
+        min-height: 78px;
+        padding: 7px;
+      }
+
+      .capability strong {
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+
+      .capability span,
+      .legend {
+        font-size: 9.5px;
+      }
+
+      .data-card {
+        padding: 7px;
+      }
+
+      .data-card .value {
+        font-size: 18px;
+      }
+
+      .data-card .caption {
+        font-size: 8.8px;
+      }
+
+      .data-card.feature {
+        grid-template-columns: 1.02fr 1fr;
+        min-height: 92px;
+        gap: 8px;
+      }
+
+      .feature-headline {
+        column-gap: 7px;
+        font-size: 11.5px;
+      }
+
+      .feature-headline .headline-value {
+        font-size: 21px;
+      }
+
+      .feature-headline .headline-copy {
+        max-width: 300px;
+      }
+
+      .feature-headline strong {
+        font-size: 14.5px;
+      }
+
+      .result-compare {
+        gap: 5px;
+      }
+
+      .result-compare span {
+        font-size: 7.6px;
+        padding: 6px 5px;
+      }
+
+      .result-compare b {
+        font-size: 9.8px;
+      }
+
+      .hosting-lede {
+        font-size: 10.2px;
+        margin-bottom: 6px;
+      }
+
+      .hosting-lede span {
+        font-size: 8.7px;
+      }
+
+      .hosting-grid {
+        gap: 6px;
+      }
+
+      .hosting-item {
+        padding: 7px;
+        min-height: 55px;
+      }
+
+      .hosting-item b {
+        font-size: 8.8px;
+      }
+
+      .hosting-item span {
+        font-size: 8px;
+      }
+
+      .hosting-chips {
+        gap: 4px;
+        margin-top: 6px;
+      }
+
+      .hosting-chips span {
+        font-size: 7.4px;
+        padding: 3px 4px;
+      }
+
+      table {
+        font-size: 9px;
+      }
+
+      th, td {
+        padding: 4px 5px;
+      }
+
+      .singleline {
+        height: 124px;
+      }
+
+      footer {
+        margin-top: 8px;
+        padding-top: 7px;
+        font-size: 8.8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <article class="sheet" aria-label="IPSS three-phase modeling product flyer">
+    <header>
+      <div>
+        <p class="eyebrow">IPSS Distribution Analytics</p>
+        <h1>Three-phase modeling for power flow, optimization, and QSTS.</h1>
+        <p class="subhead">
+          IPSS provides a validated static three-phase distribution platform
+          for OpenDSS feeders, balanced and unbalanced optimal power flow,
+          and long-horizon quasi-static time-series (QSTS) simulation.
+        </p>
+      </div>
+
+      <aside class="hero-metric">
+        <p class="big">112.3%</p>
+        <p class="label">of DSS-Python throughput on controlled 8760-step Ckt24 QSTS</p>
+        <div class="compare" aria-label="Performance comparison">
+          <span>IPSS<br><b>1.021 ms/step</b></span>
+          <span>DSS-Python<br><b>1.147 ms/step</b></span>
+        </div>
+      </aside>
+    </header>
+
+    <main>
+      <section class="wide">
+        <h2>What customers get</h2>
+        <div class="capability-grid">
+          <div class="capability">
+            <strong>OpenDSS-aligned three-phase models</strong>
+            <span>Static parser support for partial-phase feeders, source Thevenin impedance, linecode units, Kron reduction, transformer no-load and magnetizing admittance, OpenDSS load models, PV, storage, regulators, and capacitors.</span>
+          </div>
+          <div class="capability">
+            <strong>Power flow and optimization on one network model</strong>
+            <span>Static power flow and balanced and unbalanced optimal power flow share three-phase APIs, facilitating model management and validation for planning and operational studies.</span>
+          </div>
+          <div class="capability">
+            <strong>Validated QSTS for large feeders</strong>
+            <span>Time-series state application, enabled static controls, regulator and capacitor metadata, PV/storage profiles, and measured 8760-step performance.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="measured-panel">
+        <h2>Measured results</h2>
+        <div class="data-strip">
+          <div class="data-card">
+            <div class="value">IEEE 8500</div>
+            <div class="caption">largest validated OpenDSS feeder case</div>
+          </div>
+          <div class="data-card">
+            <div class="value">0.001</div>
+            <div class="caption">pu max difference vs DSS-Python in IEEE8500 power-flow parity</div>
+          </div>
+          <div class="data-card feature">
+            <div class="feature-headline">
+              <span class="headline-value">8.9 s</span>
+              <span class="headline-copy">Total time for <strong>8760-step QSTS</strong> on a 7,522-node feeder</span>
+            </div>
+            <div class="result-compare" aria-label="Ckt24 QSTS benchmark comparison">
+              <span>IPSS<b>8.9 s</b></span>
+              <span>DSS-Python<b>10.0 s</b></span>
+              <span>Throughput<b>112.3%</b></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Hosting capacity analysis</h2>
+        <p class="hosting-lede">
+          Find feeder headroom for DER growth before queues become upgrades.
+          <span>IPSS turns validated static feeders into repeatable screens for PV, storage, EV charging, electrification, and flexible load.</span>
+        </p>
+        <div class="hosting-grid">
+          <div class="hosting-item">
+            <b>Three-phase limits</b>
+            <span>Voltage, thermal, unbalance, regulator, capacitor, and phase-specific constraints.</span>
+          </div>
+          <div class="hosting-item">
+            <b>Scenario sweeps</b>
+            <span>Location, size, profile, control mode, and seasonal loading sensitivities.</span>
+          </div>
+          <div class="hosting-item">
+            <b>OPF-backed relief</b>
+            <span>Balanced and unbalanced OPF identifies feasible headroom and upgrade alternatives.</span>
+          </div>
+          <div class="hosting-item">
+            <b>Annual validation</b>
+            <span>8760-step QSTS checks controls and time-varying PV/storage behavior.</span>
+          </div>
+        </div>
+        <div class="hosting-chips" aria-label="Hosting capacity study inputs">
+          <span>PV</span>
+          <span>Storage</span>
+          <span>EV load</span>
+          <span>Flexible demand</span>
+          <span>Controls enabled</span>
+        </div>
+      </section>
+
+      <section class="wide">
+        <h2>IPSS vs. DSS-Python: customer-relevant evidence</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Evidence point</th>
+              <th>IPSS</th>
+              <th>DSS-Python reference</th>
+              <th>Customer value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Controlled Ckt24 annual QSTS</td>
+              <td>1.021 ms/step, 8.948 s total, converged</td>
+              <td>1.147 ms/step, 10.046 s total, converged</td>
+              <td class="check">Faster validated annual simulation</td>
+            </tr>
+            <tr>
+              <td>IEEE8500 PV-duty voltage parity</td>
+              <td>Max |V| delta 0.001047 pu; max angle delta 0.026743 deg</td>
+              <td>Controlled DSS-Python one-step export</td>
+              <td class="check">Large-feeder voltage confidence</td>
+            </tr>
+            <tr>
+              <td>IEEE8500 branch-flow parity</td>
+              <td>Max branch P/Q delta 2.874 kW / 2.729 kvar; zero failures</td>
+              <td>Controlled DSS-Python terminal power export</td>
+              <td class="check">Operational flow comparison</td>
+            </tr>
+            <tr>
+              <td>Static parser and PF gate</td>
+              <td>337 tests, 0 failures, 0 errors</td>
+              <td>DSS-Python mini-case and feeder references</td>
+              <td class="check">Regression-backed delivery</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="wide">
+        <div class="visual">
+          <svg class="singleline" viewBox="0 0 560 220" role="img" aria-label="Three-phase feeder capability diagram">
+            <rect x="0" y="0" width="560" height="220" fill="#fff"/>
+            <line x1="42" y1="110" x2="500" y2="110" stroke="#17202a" stroke-width="5"/>
+            <line x1="96" y1="110" x2="96" y2="52" stroke="#0f9f9a" stroke-width="4"/>
+            <line x1="214" y1="110" x2="214" y2="168" stroke="#f2aa2e" stroke-width="4"/>
+            <line x1="340" y1="110" x2="340" y2="52" stroke="#c9433b" stroke-width="4"/>
+            <line x1="430" y1="110" x2="486" y2="164" stroke="#0f9f9a" stroke-width="4"/>
+            <circle cx="42" cy="110" r="18" fill="#17202a"/>
+            <circle cx="96" cy="52" r="12" fill="#0f9f9a"/>
+            <circle cx="214" cy="168" r="12" fill="#f2aa2e"/>
+            <circle cx="340" cy="52" r="12" fill="#c9433b"/>
+            <circle cx="486" cy="164" r="12" fill="#0f9f9a"/>
+            <rect x="138" y="84" width="56" height="52" fill="#eef7f6" stroke="#0f9f9a" stroke-width="2"/>
+            <path d="M154 126 L178 92 M154 92 L178 126" stroke="#0f9f9a" stroke-width="3"/>
+            <rect x="270" y="86" width="52" height="48" fill="#fff7e6" stroke="#f2aa2e" stroke-width="2"/>
+            <path d="M281 122 L311 98 M281 98 L311 122" stroke="#f2aa2e" stroke-width="3"/>
+            <text x="32" y="148" font-size="13" fill="#17202a" font-weight="700">source</text>
+            <text x="73" y="36" font-size="13" fill="#076d70" font-weight="700">load</text>
+            <text x="185" y="195" font-size="13" fill="#7f5a12" font-weight="700">PV/storage</text>
+            <text x="309" y="36" font-size="13" fill="#8c2c27" font-weight="700">control</text>
+            <text x="448" y="190" font-size="13" fill="#076d70" font-weight="700">QSTS</text>
+          </svg>
+          <div class="legend">
+            <p><b><span class="dot"></span>Model depth:</b> single-, two-, and three-phase devices with active-phase handling for realistic distribution feeders.</p>
+            <p><b><span class="dot amber"></span>Planning value:</b> one static model supports power flow, hosting and DER optimization workflows, and annual time-series studies.</p>
+            <p><b><span class="dot red"></span>Validation discipline:</b> comparisons are grounded in DSS-Python voltages, branch flows, load powers, generator powers, and capacitor states.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div><strong>IPSS 3-Phase Distribution Platform</strong> · static OpenDSS parser · power flow · balanced and unbalanced optimal power flow · QSTS</div>
+    </footer>
+  </article>
+</body>
+</html>

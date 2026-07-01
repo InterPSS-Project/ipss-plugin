@@ -1,0 +1,3 @@
+case_id,step,storage_id,expected_p_kw,expected_q_kvar
+scheduled_charge_discharge,0,batt1,500.000007906382,60.000008009875
+scheduled_charge_discharge,1,batt1,-500.000008692711,29.999986004192

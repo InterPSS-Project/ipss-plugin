@@ -1,0 +1,3 @@
+case_id,step,storage_id,expected_stored_kwh,expected_soc_pct
+scheduled_charge_discharge,0,batt1,500.000000000000,50.000000000000
+scheduled_charge_discharge,1,batt1,1000.000000000000,100.000000000000
