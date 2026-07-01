@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -132,9 +133,10 @@ public class TestOpenDSSDataParser {
 
 		//System.out.println(parser.getDistNetwork().net2String());
 
-		String netStrFileName = "testData/feeder/IEEE123/ieee123_netString.dat";
+		Path netStrFileName = Paths.get("target", "test-output", "opendss", "ieee123_netString.dat");
 		try {
-			Files.write(Paths.get(netStrFileName), parser.getDistNetwork().net2String().getBytes());
+			Files.createDirectories(netStrFileName.getParent());
+			Files.write(netStrFileName, parser.getDistNetwork().net2String().getBytes());
 		} catch (IOException e) {
 
 			e.printStackTrace();
@@ -168,8 +170,8 @@ public class TestOpenDSSDataParser {
 
 		  LineConfiguration lc7 = parser.getLineConfigTable().get("7");
 		  assertTrue(line2phase.getZabc().aa.subtract(lc7.getZ3x3Matrix().aa.multiply(length)).abs()<1.0E-9);
-		  assertTrue(line2phase.getZabc().ac.subtract(lc7.getZ3x3Matrix().ac.multiply(length)).abs()<1.0E-9);
-		  assertTrue(line2phase.getZabc().cc.subtract(lc7.getZ3x3Matrix().cc.multiply(length)).abs()<1.0E-9);
+		  assertTrue(line2phase.getZabc().ac.subtract(lc7.getZ3x3Matrix().ab.multiply(length)).abs()<1.0E-9);
+		  assertTrue(line2phase.getZabc().cc.subtract(lc7.getZ3x3Matrix().bb.multiply(length)).abs()<1.0E-9);
 		  assertTrue(line2phase.getZabc().ab.abs()<1.0E-9);
 		  assertTrue(line2phase.getZabc().ba.abs()<1.0E-9);
 
@@ -178,7 +180,7 @@ public class TestOpenDSSDataParser {
 		  LineConfiguration lc11 = parser.getLineConfigTable().get("11");
 		  length = 0.225;
 
-		  assertTrue(line1phase.getZabc().cc.subtract(lc11.getZ3x3Matrix().cc.multiply(length)).abs()<1.0E-9);
+		  assertTrue(line1phase.getZabc().cc.subtract(lc11.getZ3x3Matrix().aa.multiply(length)).abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().bb.abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().aa.abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().ab.abs()<1.0E-9);
@@ -339,8 +341,8 @@ public class TestOpenDSSDataParser {
 
 		  LineConfiguration lc7 = parser.getLineConfigTable().get("7");
 		  assertTrue(line2phase.getZabc().aa.subtract(lc7.getZ3x3Matrix().aa.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
-		  assertTrue(line2phase.getZabc().ac.subtract(lc7.getZ3x3Matrix().ac.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
-		  assertTrue(line2phase.getZabc().cc.subtract(lc7.getZ3x3Matrix().cc.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
+		  assertTrue(line2phase.getZabc().ac.subtract(lc7.getZ3x3Matrix().ab.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
+		  assertTrue(line2phase.getZabc().cc.subtract(lc7.getZ3x3Matrix().bb.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(line2phase.getZabc().ab.abs()<1.0E-9);
 		  assertTrue(line2phase.getZabc().ba.abs()<1.0E-9);
 
@@ -349,7 +351,7 @@ public class TestOpenDSSDataParser {
 		  LineConfiguration lc11 = parser.getLineConfigTable().get("11");
 		  length = 0.225;
 
-		  assertTrue(line1phase.getZabc().cc.subtract(lc11.getZ3x3Matrix().cc.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
+		  assertTrue(line1phase.getZabc().cc.subtract(lc11.getZ3x3Matrix().aa.multiply(length).multiply(1.0/zbase)).abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().bb.abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().aa.abs()<1.0E-9);
 		  assertTrue(line1phase.getZabc().ab.abs()<1.0E-9);
@@ -393,7 +395,7 @@ public class TestOpenDSSDataParser {
 		  //TODO in the future, could add the nominalKV info to the transformer
 		  System.out.println("reg4a tap = "+xfr2.getFromTurnRatio());
 		  assertTrue(Math.abs(xfr2.getFromTurnRatio()-2402.0/basevolt)<1.0E-6);
-			  assertTrue(Math.abs(xfr2.getToTurnRatio()-124.0*20.0*Math.sqrt(3)/4160.0)<1.0E-6);
+		  assertTrue(Math.abs(xfr2.getToTurnRatio()-2402.0/basevolt)<1.0E-6);
 
 		  assertTrue(Math.abs(xfr2.getXfrRatedKVA()-2000)<1.0E-6);
 

@@ -8,7 +8,13 @@ final class OpenDSSUnitConverter {
 	static double lengthFactor(String fromUnit, String toUnit) {
 		String from = normalizeLengthUnit(fromUnit);
 		String to = normalizeLengthUnit(toUnit);
-		if (from.equals("") || to.equals("") || from.equals("none") || to.equals("none") || from.equals(to)) {
+		if (from.equals("") || from.equals("none")) {
+			return 1.0;
+		}
+		if (to.equals("")) {
+			to = "mi";
+		}
+		if (to.equals("none") || from.equals(to)) {
 			return 1.0;
 		}
 		return metersPerUnit(from) / metersPerUnit(to);

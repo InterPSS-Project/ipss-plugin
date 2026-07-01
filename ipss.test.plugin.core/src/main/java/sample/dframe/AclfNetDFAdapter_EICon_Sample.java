@@ -13,7 +13,6 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.optadj.algo.AclfNetLocalOptimizer;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.result.dframe.AclfNetDFrameAdapter;
 
@@ -51,7 +50,7 @@ public class AclfNetDFAdapter_EICon_Sample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
+		aclfAlgo.setNonDivergent(true);
 		
 		aclfAlgo.setTolerance(1.0E-4);
 		aclfAlgo.setMaxIterations(50);

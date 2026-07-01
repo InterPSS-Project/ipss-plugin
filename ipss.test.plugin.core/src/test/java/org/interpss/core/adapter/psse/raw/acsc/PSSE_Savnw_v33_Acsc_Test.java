@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -44,8 +45,8 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 		
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-				"testData/adpter/psse/v33/savnw.raw",
-				"testData/adpter/psse/v33/savnw.seq"
+				"testData/psse/v33/PSSE_sample_savnw.raw",
+				"testData/psse/v33/PSSE_sample_savnw.seq"
 				
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
@@ -181,8 +182,8 @@ Contributing Gen:
 		
 		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
 		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
-				"testData/adpter/psse/v33/savnw.raw",
-				"testData/adpter/psse/v33/savnw.seq"
+				"testData/psse/v33/PSSE_sample_savnw.raw",
+				"testData/psse/v33/PSSE_sample_savnw.seq"
 				
 		}));
 		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
@@ -208,10 +209,16 @@ Contributing Gen:
   		
   		System.out.println("Reach, centerline angle = "+ zone3Setting[1]+","+zone3Setting[2]);
   		
-  		String dyrFileName = "Bus"+relayBusNum+"_zone3_setting.dyr";
+  		String dyrFileName = tempDyrPath("Bus"+relayBusNum+"_zone3_setting.dyr");
   		
   		outputPSSEDyrFile(relayBusNum, relayRemoteBusNum, circuitID, zone12Setting,zone3Setting, dyrFileName); 
 		
+	}
+	
+	private String tempDyrPath(String fileName) throws IOException {
+		Path dir = Paths.get("temp");
+		Files.createDirectories(dir);
+		return dir.resolve(fileName).toString();
 	}
 	
 	

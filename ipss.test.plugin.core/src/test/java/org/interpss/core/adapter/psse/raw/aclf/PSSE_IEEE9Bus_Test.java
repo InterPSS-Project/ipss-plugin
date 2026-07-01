@@ -57,7 +57,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	//@Test
 	public void load() throws Exception {
 		// load the test data V33
-		AclfNetwork net33 = IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
+		AclfNetwork net33 = IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31) 
 				.load()
@@ -67,7 +67,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	//@Test
 	public void compare() throws Exception {
 		// load the test data V30
-		AclfNetwork net30 = IpssAdapter.importAclfNet("testdata/adpter/psse/v30/IEEE9Bus/ieee9.raw")
+		AclfNetwork net30 = IpssAdapter.importAclfNet("testData/adpter/psse/v30/IEEE9Bus/ieee9.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
@@ -75,7 +75,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		AclfNetBean netBean30 = new AclfNet2AclfBeanMapper().map2Model(net30);
 		
 		// load the test data V29
-		AclfNetwork net29 = IpssAdapter.importAclfNet("testdata/adpter/psse/v29/ieee9_v29.raw")
+		AclfNetwork net29 = IpssAdapter.importAclfNet("testData/adpter/psse/v29/ieee9_v29.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_29)
 				.load()
@@ -86,7 +86,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		netBean30.compareTo(netBean29);
 
 		// load the test data V31
-		AclfNetwork net31 = IpssAdapter.importAclfNet("testdata/adpter/psse/v31/ieee9_v31.raw")
+		AclfNetwork net31 = IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_31)
 				.load()
@@ -97,7 +97,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		netBean30.compareTo(netBean31);
 		
 		// load the test data V32
-		AclfNetwork net32 = IpssAdapter.importAclfNet("testdata/psse/v32/ieee9_v32.raw")
+		AclfNetwork net32 = IpssAdapter.importAclfNet("testData/psse/v32/ieee9_v32.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_32)
 				.load()
@@ -108,7 +108,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		netBean30.compareTo(netBean32);
 		
 		// load the test data V33
-		AclfNetwork net33 = IpssAdapter.importAclfNet("testdata/adpter/psse/V33/ieee9_v33.raw")
+		AclfNetwork net33 = IpssAdapter.importAclfNet("testData/adpter/psse/V33/ieee9_v33.raw")
 				.setFormat(PSSE)
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
@@ -243,7 +243,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.getNrMethodConfig().setNonDivergent(true);
+		algo.setNonDivergent(true);
 		algo.loadflow();
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
@@ -310,7 +310,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.getNrMethodConfig().setNonDivergent(true);
+		algo.setNonDivergent(true);
 		
 		algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
 		
@@ -388,7 +388,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
-		algo.getNrMethodConfig().setNonDivergent(true);
+		algo.setNonDivergent(true);
 		algo.loadflow();
 
 		assertTrue(net.isLfConverged(), "Loadflow converged");

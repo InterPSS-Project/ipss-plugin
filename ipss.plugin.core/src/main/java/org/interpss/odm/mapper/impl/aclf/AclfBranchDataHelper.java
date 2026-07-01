@@ -26,24 +26,33 @@ package org.interpss.odm.mapper.impl.aclf;
 
 import java.util.Optional;
 
+import javax.xml.bind.JAXBElement;
+
 import org.apache.commons.math3.complex.Complex;
 import org.ieee.odm.schema.AdjustmentModeEnumType;
 import org.ieee.odm.schema.AngleAdjustmentXmlType;
 import org.ieee.odm.schema.AngleUnitType;
 import org.ieee.odm.schema.ApparentPowerUnitType;
+import org.ieee.odm.schema.ActivePowerXmlType;
+import org.ieee.odm.schema.BranchFlowDirectionEnumType;
+import org.ieee.odm.schema.BusRefXmlType;
 import org.ieee.odm.schema.FactorUnitType;
+import org.ieee.odm.schema.FACTSDeviceXmlType;
 import org.ieee.odm.schema.LineBranchEnumType;
 import org.ieee.odm.schema.LineBranchXmlType;
 import org.ieee.odm.schema.MagnitizingZSideEnumType;
 import org.ieee.odm.schema.MvarFlowAdjustmentDataXmlType;
+import org.ieee.odm.schema.NameValuePairXmlType;
 import org.ieee.odm.schema.PSXfr3WBranchXmlType;
 import org.ieee.odm.schema.PSXfrBranchXmlType;
+import org.ieee.odm.schema.ReactivePowerXmlType;
 import org.ieee.odm.schema.TapAdjustBusLocationEnumType;
 import org.ieee.odm.schema.TapAdjustmentEnumType;
 import org.ieee.odm.schema.TapAdjustmentXmlType;
 import org.ieee.odm.schema.Transformer3WInfoXmlType;
 import org.ieee.odm.schema.TransformerInfoXmlType;
 import org.ieee.odm.schema.VoltageAdjustmentDataXmlType;
+import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 import org.ieee.odm.schema.Xfr3WBranchXmlType;
 import org.ieee.odm.schema.XfrBranchXmlType;
@@ -64,13 +73,20 @@ import com.interpss.common.exp.InterpssException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.interpss.core.AclfAdjustObjectFactory;
+import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
+import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.XfrZTableEntry;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.Aclf3WPSXformerAdapter;
@@ -78,6 +94,7 @@ import com.interpss.core.aclf.adpter.Aclf3WXformerAdapter;
 import com.interpss.core.aclf.adpter.AclfLineAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.adpter.AclfXformerAdapter;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.net.Branch;
 
 /**
@@ -157,6 +174,192 @@ public class AclfBranchDataHelper {
 	}
 
 	/**
+	 * Map a PSS/E FACTS device with a terminal bus to an equivalent series branch.
+	 */
+	public void setFactsDeviceData(FACTSDeviceXmlType xmlFactsDevice) throws InterpssException {
+		AclfBranch aclfBra = (AclfBranch)this.branch;
+		aclfBra.setBranchCode(AclfBranchCode.LINE);
+
+		int mode = getFactsDeviceInt(xmlFactsDevice, "mode", 1);
+		double linx = getFactsDeviceDouble(xmlFactsDevice, "LINX", 0.0);
+		AclfLineAdapter line = aclfBra.toLine();
+		line.setZ(new Complex(0.0, linx), UnitType.PU, aclfBra.getFromAclfBus().getBaseVoltage());
+
+		if (mode != 0) {
+			mapFactsShuntEquivalent(xmlFactsDevice, aclfBra.getFromAclfBus());
+		}
+
+		if (mode == 1) {
+			mapFactsMode1PowerExchange(xmlFactsDevice, aclfBra);
+			aclfBra.setStatus(false);
+		}
+		else if (mode == 2) {
+			line.setZ(new Complex(0.0, 0.0), UnitType.PU, aclfBra.getFromAclfBus().getBaseVoltage());
+		}
+		else if (mode == 3) {
+			double r = getFactsDeviceDouble(xmlFactsDevice, "SET1", 0.0);
+			double x = getFactsDeviceDouble(xmlFactsDevice, "SET2", linx);
+			line.setZ(new Complex(r, x), UnitType.PU, aclfBra.getFromAclfBus().getBaseVoltage());
+		}
+	}
+
+	private void mapFactsShuntEquivalent(FACTSDeviceXmlType xmlFactsDevice,
+			BaseAclfBus<? extends AclfGen, ? extends AclfLoad> bus)
+			throws InterpssException {
+		YXmlType maxShunt = getFactsDeviceY(xmlFactsDevice, "maxShunt");
+		if (maxShunt == null || maxShunt.getIm() == 0.0) {
+			return;
+		}
+
+		Optional<StaticVarCompensator> svcOpt = AclfAdjustObjectFactory.createStaticVarCompensator(bus);
+		if (!svcOpt.isPresent()) {
+			return;
+		}
+
+		StaticVarCompensator svc = svcOpt.get();
+		svc.setId("SVC@" + xmlFactsDevice.getId());
+		svc.setName(xmlFactsDevice.getName() != null ? xmlFactsDevice.getName() : svc.getId());
+		svc.setStatus(!xmlFactsDevice.isOffLine());
+
+		double qLimit = UnitHelper.pConversion(maxShunt.getIm(), aclfNet.getBaseKva(),
+				toYUnit.apply(maxShunt.getUnit()), UnitType.PU);
+		svc.setBLimit(new LimitType(qLimit, -qLimit));
+		svc.setControlMode(AclfAdjustControlMode.CONTINUOUS);
+		svc.setRemoteQControlType(BusBranchControlType.BUS_VOLTAGE);
+
+		VoltageXmlType voltageSetPoint = getFactsDeviceVoltage(xmlFactsDevice, "voltageSetPoint");
+		if (voltageSetPoint == null) {
+			throw new InterpssException("FACTS device data error, voltageSetPoint is not defined, branch id: "
+					+ xmlFactsDevice.getId());
+		}
+		double vpu = UnitHelper.vConversion(voltageSetPoint.getValue(), bus.getBaseVoltage(),
+				toVoltageUnit.apply(voltageSetPoint.getUnit()), UnitType.PU);
+		svc.setVSpecified(vpu, UnitType.PU);
+		svc.setDesiredControlRange(new LimitType(vpu + 0.0001, vpu - 0.0001));
+
+		String remoteId = getFactsDeviceBusId(xmlFactsDevice, "regulatedBus");
+		if (remoteId != null) {
+			svc.setRemoteBusBranchId(remoteId);
+			if (bus.getGenCode() != AclfGenCode.GEN_PQ) {
+				bus.setGenCode(AclfGenCode.GEN_PQ);
+			}
+		}
+		else {
+			svc.setRemoteBusBranchId(bus.getId());
+			svc.setRemoteBus(bus);
+			if (bus.getGenCode() != AclfGenCode.GEN_PV) {
+				bus.setGenCode(AclfGenCode.GEN_PV);
+			}
+		}
+
+		svc.setRemoteControlPercentage(getFactsDeviceDouble(xmlFactsDevice, "remoteControlPercent", 100.0));
+	}
+
+	private int getFactsDeviceInt(FACTSDeviceXmlType xmlFactsDevice, String name, int defaultValue) {
+		for (JAXBElement<?> elem : xmlFactsDevice.getRest()) {
+			if (name.equals(elem.getName().getLocalPart()) && elem.getValue() instanceof Integer) {
+				return ((Integer) elem.getValue()).intValue();
+			}
+		}
+		return defaultValue;
+	}
+
+	private double getFactsDeviceDouble(FACTSDeviceXmlType xmlFactsDevice, String name, double defaultValue) throws InterpssException {
+		for (NameValuePairXmlType nv : xmlFactsDevice.getNvPair()) {
+			if (name.equals(nv.getName())) {
+				try {
+					return Double.parseDouble(nv.getValue());
+				}
+				catch (NumberFormatException e) {
+					throw new InterpssException("FACTS device data error, " + name + " is not numeric, branch id: "
+							+ xmlFactsDevice.getId());
+				}
+			}
+		}
+		for (JAXBElement<?> elem : xmlFactsDevice.getRest()) {
+			if (name.equals(elem.getName().getLocalPart()) && elem.getValue() instanceof Double) {
+				return ((Double) elem.getValue()).doubleValue();
+			}
+		}
+		return defaultValue;
+	}
+
+	private YXmlType getFactsDeviceY(FACTSDeviceXmlType xmlFactsDevice, String name) {
+		for (JAXBElement<?> elem : xmlFactsDevice.getRest()) {
+			if (name.equals(elem.getName().getLocalPart()) && elem.getValue() instanceof YXmlType) {
+				return (YXmlType) elem.getValue();
+			}
+		}
+		return null;
+	}
+
+	private VoltageXmlType getFactsDeviceVoltage(FACTSDeviceXmlType xmlFactsDevice, String name) {
+		for (JAXBElement<?> elem : xmlFactsDevice.getRest()) {
+			if (name.equals(elem.getName().getLocalPart()) && elem.getValue() instanceof VoltageXmlType) {
+				return (VoltageXmlType) elem.getValue();
+			}
+		}
+		return null;
+	}
+
+	private String getFactsDeviceBusId(FACTSDeviceXmlType xmlFactsDevice, String name) {
+		for (JAXBElement<?> elem : xmlFactsDevice.getRest()) {
+			if (name.equals(elem.getName().getLocalPart()) && elem.getValue() instanceof BusRefXmlType) {
+				return ((BusRefXmlType) elem.getValue()).getBusId();
+			}
+		}
+		return null;
+	}
+
+	private void mapFactsMode1PowerExchange(FACTSDeviceXmlType xmlFactsDevice, AclfBranch aclfBra) {
+		ActivePowerXmlType pdes = getFactsDeviceActivePower(xmlFactsDevice, "desiredActivePower");
+		ReactivePowerXmlType qdes = getFactsDeviceReactivePower(xmlFactsDevice, "desiredReactivePower");
+		if (pdes == null && qdes == null) {
+			return;
+		}
+
+		double baseKva = aclfNet.getBaseKva();
+		double p = pdes != null ? UnitHelper.pConversion(pdes.getValue(), baseKva,
+				toActivePowerUnit.apply(pdes.getUnit()), UnitType.PU) : 0.0;
+		double q = qdes != null ? UnitHelper.pConversion(qdes.getValue(), baseKva,
+				toReactivePowerUnit.apply(qdes.getUnit()), UnitType.PU) : 0.0;
+		Complex target = new Complex(p, q);
+		if (target.abs() == 0.0) {
+			return;
+		}
+
+		addFactsDeviceLoad(aclfBra.getFromAclfBus(), xmlFactsDevice.getId() + "_from", target);
+		addFactsDeviceLoad(aclfBra.getToAclfBus(), xmlFactsDevice.getId() + "_to", target.negate());
+	}
+
+	private ActivePowerXmlType getFactsDeviceActivePower(FACTSDeviceXmlType xmlFactsDevice, String name) {
+		for (JAXBElement<?> elem : xmlFactsDevice.getRest()) {
+			if (name.equals(elem.getName().getLocalPart()) && elem.getValue() instanceof ActivePowerXmlType) {
+				return (ActivePowerXmlType) elem.getValue();
+			}
+		}
+		return null;
+	}
+
+	private ReactivePowerXmlType getFactsDeviceReactivePower(FACTSDeviceXmlType xmlFactsDevice, String name) {
+		for (JAXBElement<?> elem : xmlFactsDevice.getRest()) {
+			if (name.equals(elem.getName().getLocalPart()) && elem.getValue() instanceof ReactivePowerXmlType) {
+				return (ReactivePowerXmlType) elem.getValue();
+			}
+		}
+		return null;
+	}
+
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	private void addFactsDeviceLoad(BaseAclfBus bus, String id, Complex loadPQ) {
+		AclfLoad load = CoreObjectFactory.createAclfLoad(id);
+		bus.getContributeLoadList().add(load);
+		load.setLoadCP(loadPQ);
+		load.setCode(AclfLoadCode.CONST_P);
+		bus.setLoadCode(AclfLoadCode.CONST_P);
+	}
+
+	/**
 	 * 	 map the Aclf Xfr ODM object info to the AclfBranch object
 	 * 
 	 * @param xmlXfrBranch
@@ -232,6 +435,7 @@ public class AclfBranchDataHelper {
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
 				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
+				psxfr.setFlowFrom2To(xmlAngAdj.getFlowDirection() == BranchFlowDirectionEnumType.FROM_TO);
 				psxfr.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 			}
 			else {
@@ -264,6 +468,7 @@ public class AclfBranchDataHelper {
 				psxfr.setPSpecified(xmlAngAdj.getDesiredValue(), toActivePowerUnit.apply(xmlAngAdj.getDesiredActivePowerUnit()), baseKva);
 				psxfr.setAngLimit(new LimitType(xmlAngAdj.getAngleLimit().getMax(), xmlAngAdj.getAngleLimit().getMin()), toAngleUnit.apply(xmlAngAdj.getAngleLimit().getUnit()));
 				psxfr.setControlOnFromSide(xmlAngAdj.isAngleAdjOnFromSide());
+				psxfr.setFlowFrom2To(xmlAngAdj.getFlowDirection() == BranchFlowDirectionEnumType.FROM_TO);
 				psxfr.setMeteredOnFromSide(xmlAngAdj.isDesiredMeasuredOnFromSide());
 			}
 		}
@@ -671,14 +876,16 @@ public class AclfBranchDataHelper {
 			int tableNum2 = xfrData.getZTableNumber2() != null ? xfrData.getZTableNumber2() : 0;
 			int tableNum3 = xfrData.getZTableNumber3() != null ? xfrData.getZTableNumber3() : 0;
 
-			if (tableNum1 > 0) {
-				branch3W.getFromAclfBranch().setXfrZTableNumber(tableNum1);
-			}
-			if (tableNum2 > 0) {
-				branch3W.getToAclfBranch().setXfrZTableNumber(tableNum2);
-			}
-			if (tableNum3 > 0) {
-				branch3W.getTertAclfBranch().setXfrZTableNumber(tableNum3);
+			if (branch3W.isZCorrectionOnWinding()) {
+				if (tableNum1 > 0) {
+					branch3W.getFromAclfBranch().setXfrZTableNumber(tableNum1);
+				}
+				if (tableNum2 > 0) {
+					branch3W.getToAclfBranch().setXfrZTableNumber(tableNum2);
+				}
+				if (tableNum3 > 0) {
+					branch3W.getTertAclfBranch().setXfrZTableNumber(tableNum3);
+				}
 			}
 		}
 
@@ -720,11 +927,6 @@ public class AclfBranchDataHelper {
 				treated as a function of phase shift angle. Otherwise, the transformer impedances dependent on the table
 				are made sensitive to off-nominal turns ratio.
 			 */
-			if (xfrData.getZTableNumber()!= null && xfrData.getZTableNumber2()!= null && xfrData.getZTableNumber3()!= null &&
-					xfrData.getZTableNumber()+xfrData.getZTableNumber2()+xfrData.getZTableNumber3() > 1) {
-				throw new InterpssException("3W Xfr Z Table Number is not defined properly, more than one non-zero numbers, number: " + xfrData.getZTableNumber() + ", " + xfrData.getZTableNumber2() + ", " + xfrData.getZTableNumber3());
-			}
-
 			if (xfrData.getZTableNumber()!= null && xfrData.getZTableNumber() > 0) {
 				XfrZTableEntry elem = this.aclfNet.getXfrZTableEntry(xfrData.getZTableNumber());
 				boolean isPhaseShiftBased = false;
@@ -797,7 +999,7 @@ public class AclfBranchDataHelper {
 						log.error("Xfr Z Adj Table entry is empty, number: " + xfrData.getZTableNumber());
 					}
 					if (!isPhaseShiftBased) {
-						Complex factor = elem.getScaleFactor(xfr3W.getToTurnRatio());
+						Complex factor = elem.getScaleFactor(xfr3W.getTertTurnRatio());
 						z31 = z31.multiply(factor);
 					}
 					else if (isPhaseShiftBased) { //Note: this could be applied to both phshift xfr and non-phase shift xfr, the phase shift angle could be zero and still valid

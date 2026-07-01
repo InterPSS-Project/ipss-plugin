@@ -1,6 +1,6 @@
 package org.interpss.plugin.result.bean;
 
-import org.interpss.datatype.base.BaseJSONBean;
+import com.interpss.common.datatype.BaseJSONBean;
 
 public abstract class BaseAclfBusInfo extends BaseJSONBean {
 	private int areaNo;  

@@ -1,0 +1,5 @@
+Clear
+New Circuit.OpenDSSQstsLoadMini basekv=12.47 pu=1.00 phases=3 bus1=source
+New LoadShape.loadshape npts=2 interval=1 mult=(0.5 1.5) qmult=(0.5 1.5)
+New Line.feeder bus1=source.1.2.3 bus2=loadbus.1.2.3 phases=3 r1=0.01 x1=0.02 r0=0.03 x0=0.06 length=1 units=kft
+New Load.load1 bus1=loadbus.1.2.3 phases=3 conn=wye kv=12.47 kw=900 kvar=300 model=1 daily=loadshape

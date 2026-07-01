@@ -135,7 +135,7 @@ public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRe
          // disable all the controls
         if(config.isApplyAdjustAlgo())
             AclfAdjCtrlFunction.disableAllAdjControls.accept(algo);
-        algo.getNrMethodConfig().setNonDivergent(config.isNonDivergent());
+        algo.setNonDivergent(config.isNonDivergent());
         algo.setMaxIterations(config.getMaxIterations());
         algo.setTolerance(config.getTolerance());
     }
