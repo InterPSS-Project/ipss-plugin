@@ -26,6 +26,12 @@
         </dependency>
 
         <dependency>
+            <groupId>net.java.dev.jna</groupId>
+            <artifactId>jna</artifactId>
+            <version>5.18.1</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>2.13.1</version>
@@ -81,17 +87,11 @@
             <version>1.0.3</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/colt/colt -->
+        <!-- Sparse sensitivity matrices (org.ejml.data.DMatrixSparseCSC in optadj) -->
         <dependency>
-            <groupId>colt</groupId>
-            <artifactId>colt</artifactId>
-            <version>1.2.0</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.ojalgo</groupId>
-            <artifactId>ojalgo</artifactId>
-            <version>51.2.0</version>
+            <groupId>org.ejml</groupId>
+            <artifactId>ejml-dsparse</artifactId>
+            <version>0.44.0</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.datumbox/lpsolve -->
@@ -130,6 +130,13 @@
             <groupId>org.dflib</groupId>
             <artifactId>dflib-parquet</artifactId>
             <version>2.0.0-M6</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.11.4</version>
+            <scope>test</scope>
         </dependency>
 
 

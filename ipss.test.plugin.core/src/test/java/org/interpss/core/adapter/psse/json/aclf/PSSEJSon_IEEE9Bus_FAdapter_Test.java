@@ -93,7 +93,7 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
   		
   		//System.out.println("After Json String:\n" + json.toString());
   		
-  		FileUtil.writeText2File("testdata/adpter/psse/json/ieee9_export.rawx", psseJson.toString());
+  		FileUtil.writeText2File("testData/adpter/psse/json/ieee9_export.rawx", psseJson.toString());
 	}
 	
 	@Test

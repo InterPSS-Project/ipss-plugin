@@ -1,86 +1,142 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class PSSEV31_v36_Sample_Test extends CorePluginTestSetup{
+	@Test
+	public void testV31() throws Exception {
+		runSample(31, PsseVersion.PSSE_31);
+	}
 
+	@Test
+	public void testV32() throws Exception {
+		runSample(32, PsseVersion.PSSE_32);
+	}
 
-	
-	
-@Test
-public void testV31() throws Exception {
-	AclfNetwork net = IpssAdapter.importAclfNet("testdata/psse/v31/sample_v31.raw")
-			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_31)
-			.load()
-			.getImportedObj();
-	
-	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-  	//algo.setLfMethod(AclfMethod.PQ);
-	//algo.setNonDivergent(true);
-  	algo.setLfMethod(AclfMethodType.NR);
-  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-  	
-  	algo.loadflow();
-	
+	@Test
+	public void testV33() throws Exception {
+		runSample(33, PsseVersion.PSSE_33);
+	}
 
-	assertTrue(net.isLfConverged());
-	
-	System.out.println(AclfOutFunc.loadFlowSummary(net));
-	
-	checkData(net);
+	@Test
+	public void testV34() throws Exception {
+		runSample(34, PsseVersion.PSSE_34);
+	}
+
+	@Test
+	public void testV35() throws Exception {
+		runSample(35, PsseVersion.PSSE_35);
+	}
+
+	@Test
+	public void testV36() throws Exception {
+		checkMappedData(loadSample(36, PsseVersion.PSSE_36));
+	}
+
+	@Test
+	public void testV36Loadflow() throws Exception {
+		runSample(36, PsseVersion.PSSE_36);
+	}
+
+	@Test
+	public void testV36Pq2ThenNrLoadflow() throws Exception {
+		AclfNetwork net = loadSample(36, PsseVersion.PSSE_36);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.setLfMethod(AclfMethodType.PQ_NR);
+		algo.setTolerance(0.001);
+		algo.setMaxIterations(1000);
+		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+
+		algo.loadflow();
+
+		assertTrue(net.isLfConverged());
+		checkSolvedData(net);
+	}
+
+	private AclfNetwork loadSample(int version, PsseVersion psseVersion) throws Exception {
+		return IpssAdapter.importAclfNet("testData/psse/v" + version + "/sample_v" + version + ".raw")
+				.setFormat(FileFormat.PSSE)
+				.setPsseVersion(psseVersion)
+				.load()
+				.getImportedObj();
+	}
+
+	private void runSample(int version, PsseVersion psseVersion) throws Exception {
+		AclfNetwork net = loadSample(version, psseVersion);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.setLfMethod(AclfMethodType.NR);
+		if (version >= 36) {
+			algo.setTolerance(0.001);
+			algo.setMaxIterations(1000);
+		}
+		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		algo.loadflow();
+
+		assertTrue(net.isLfConverged());
+		checkSolvedData(net);
+	}
+
+	private void checkSolvedData(AclfNetwork net) {
+		checkMappedData(net);
+
+		AclfBus bus153 = net.getBus("Bus153");
+		// The solved bus voltage should meet the PSS/E FACTS voltage setpoint.
+		assertEquals(1.015, bus153.getVoltageMag(), 1.0E-6);
+	}
+
+	private void checkMappedData(AclfNetwork net) {
+		AclfBus bus153 = net.getBus("Bus153");
+		AclfBus bus155 = net.getBus("Bus155");
+		assertNotNull(bus153);
+		assertNotNull(bus155);
+
+		// FACTS_DVCE_1 is the STATCON row. FACTS_DVCE_2 contributes its own mode-1
+		// shunt equivalent, so Bus153 should keep two separately controllable SVCs.
+		assertEquals(2, bus153.getStaticVarCompensatorList().size());
+		StaticVarCompensator statcon = bus153.getStaticVarCompensatorList().get(0);
+		StaticVarCompensator factsShunt = bus153.getStaticVarCompensatorList().get(1);
+		assertEquals(1.015, statcon.getVSpecified(), 1.0E-6);
+		assertEquals(1.015, factsShunt.getVSpecified(), 1.0E-6);
+		assertEquals(0.50, statcon.getBLimit().getMax(), 1.0E-6);
+		assertEquals(0.25, factsShunt.getBLimit().getMax(), 1.0E-6);
+
+		// MODE=1 target transfer is represented as equal-and-opposite constant-power
+		// injections because the dummy LINX branch is not left in the AC equations.
+		assertComplexEquals(new Complex(3.5, 0.4), findLoad(bus153, new Complex(3.5, 0.4)).getLoadCP(), 1.0E-8);
+		assertComplexEquals(new Complex(-3.5, -0.4), findLoad(bus155, new Complex(-3.5, -0.4)).getLoadCP(), 1.0E-8);
+		assertEquals(-3.5, bus155.getLoadP(), 1.0E-8);
+		assertEquals(-0.4, bus155.getLoadQ(), 1.0E-8);
+	}
+
+	private AclfLoad findLoad(AclfBus bus, Complex loadPQ) {
+		return bus.getContributeLoadList().stream()
+				.filter(load -> load.getLoadCP() != null)
+				.filter(load -> Math.abs(load.getLoadCP().getReal() - loadPQ.getReal()) < 1.0E-8)
+				.filter(load -> Math.abs(load.getLoadCP().getImaginary() - loadPQ.getImaginary()) < 1.0E-8)
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("Load not found: " + loadPQ));
+	}
+
+	private void assertComplexEquals(Complex expected, Complex actual, double tolerance) {
+		assertEquals(expected.getReal(), actual.getReal(), tolerance);
+		assertEquals(expected.getImaginary(), actual.getImaginary(), tolerance);
+	}
 
 }
-
-	
-@Test
-public void testV32() throws Exception {
-	
-
-}
-
-@Test
-public void testV33() throws Exception {
-	
-
-}
-
-@Test
-public void testV34() throws Exception {
-	
-}
-
-@Test
-public void testV35() throws Exception {
-
-
-	
-}
-
-@Test
-public void testV36() throws Exception {
-
-
-	
-}
-
-private void checkData(AclfNetwork net) {
-	
-}
-
-}
-
-
-

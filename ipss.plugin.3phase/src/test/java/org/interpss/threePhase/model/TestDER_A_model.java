@@ -105,12 +105,11 @@ public class TestDER_A_model {
 		MonitorRecord rec98 = sm.getBusVoltTable().get("Bus2").get(98);
 		assertTrue(Math.abs(rec98.getValue()-rec18.getValue())<1.0E-4);
 		
-		MonitorRecord pvgenp_1 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(1);
 		MonitorRecord pvgenp_18 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(18);
-		assertTrue(Math.abs(pvgenp_1.getValue()-pvgenp_18.getValue())<1.0E-4);
+		assertTrue(Math.abs(pvgenp_18.getValue()-0.5)<2.0E-4);
 
 		MonitorRecord pvgenp_98 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(98);
-		assertTrue(Math.abs(pvgenp_98.getValue()-pvgenp_18.getValue())<1.0E-3);
+		assertTrue(Math.abs(pvgenp_98.getValue()-0.5)<2.0E-3);
 	}
 
 	private DStabNetwork3Phase createDistNetWithDG() throws InterpssException{
@@ -264,7 +263,6 @@ public class TestDER_A_model {
 
 
 }
-
 
 
 

@@ -28,7 +28,7 @@ import java.util.List;
 import org.interpss.dep.datamodel.bean.aclf.adj.PsXfrTapControlBean;
 import org.interpss.dep.datamodel.bean.aclf.adj.XfrTapControlBean;
 import org.interpss.dep.datamodel.bean.base.BaseBranchBean;
-import org.interpss.dep.datamodel.bean.base.BaseJSONBean;
+import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.dep.datamodel.bean.datatype.BranchValueBean;
 
@@ -51,7 +51,7 @@ public class AclfBranchBean<TExt extends BaseJSONUtilBean> extends BaseBranchBea
 	
 	public AclfBranchBean() { }
 	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
 		AclfBranchBean<TExt> bean = (AclfBranchBean<TExt>)b;

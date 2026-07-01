@@ -1,6 +1,10 @@
 package org.interpss.threePhase.powerflow;
 
+import java.util.List;
+
 import com.interpss.core.threephase.INetwork3Phase;
+import org.interpss.threePhase.powerflow.control.CapacitorControlData;
+import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 
 
 public interface DistributionPowerFlowAlgorithm {
@@ -37,9 +41,35 @@ public interface DistributionPowerFlowAlgorithm {
 	 */
 	public boolean powerflow();
 
+	public void setRegulatorControls(List<RegulatorControlData> controls);
+
+	public List<RegulatorControlData> getRegulatorControls();
+
+	public void setRegulatorControlEnabled(boolean enabled);
+
+	public boolean isRegulatorControlEnabled();
+
+	public void setCapacitorControls(List<CapacitorControlData> controls);
+
+	public List<CapacitorControlData> getCapacitorControls();
+
+	public void setCapacitorControlEnabled(boolean enabled);
+
+	public boolean isCapacitorControlEnabled();
+
 	public DistributionPFMethod getPFMethod();
 
 	public void setPFMethod(DistributionPFMethod method);
+
+	public default DistributionPostSolveOutputMode getPostSolveOutputMode() {
+		return DistributionPostSolveOutputMode.FULL_BRANCH_CURRENTS;
+	}
+
+	public default void setPostSolveOutputMode(DistributionPostSolveOutputMode mode) {
+	}
+
+	public default void syncPositiveSequenceVoltages() {
+	}
 
 	public void setTolerance(double tolerance);
 
@@ -49,7 +79,38 @@ public interface DistributionPowerFlowAlgorithm {
 
 	public int getMaxIteration();
 
+	public default void setMaxControlIterations(int maxControlIterations) {
+	}
+
+	public default int getMaxControlIterations() {
+		return 20;
+	}
+
 	public int getIterationCount();
+
+	public boolean isFixedPointFallbackUsed();
+
+	public default int getFixedPointFallbackCount() {
+		return 0;
+	}
+
+	public void setFixedPointYMatrixCacheEnabled(boolean enabled);
+
+	public boolean isFixedPointYMatrixCacheEnabled();
+
+	public void clearFixedPointYMatrixCache();
+
+	public default int getFixedPointYMatrixSymbolicFactorizationCount() {
+		return 0;
+	}
+
+	public default int getFixedPointYMatrixNumericFactorizationCount() {
+		return 0;
+	}
+
+	public default int getFixedPointYMatrixValueUpdateCount() {
+		return 0;
+	}
 
 	public void  setInitBusVoltageEnabled(boolean enableInitBus3PhaseVolts);
 

@@ -143,8 +143,7 @@ public class AclfNetworkEquivHelper {
                 if(cuttingBranch.getSplitSide() == BranchBusSide.FROM_SIDE){
                     
                     Complex s = branch.powerFrom2To();
-                    @SuppressWarnings("rawtypes")
-                    BaseAclfBus bus = branch.getFromAclfBus();
+                    AclfBus bus = equivNet.getBus(branch.getFromBusId());
                     if(bus != null && bus.isActive()){
                         // create a load object with the total power at the boundary bus
                         AclfLoad load = CoreObjectFactory.createAclfLoad(branch.getId() + "_" + branch.getFromBusId());
@@ -153,6 +152,7 @@ public class AclfNetworkEquivHelper {
                         load.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
                         bus.setLoadCode(AclfLoadCode.CONST_P);
                         bus.initContributeLoad(false);
+                        bus.setExternalPowerIntoNet(Complex.ZERO);
                         // log the load creation and the power value
                         log.info("Boundary load created at bus " + branch.getFromBusId() + " with power: " + s.toString());
                 
@@ -174,6 +174,7 @@ public class AclfNetworkEquivHelper {
                         load.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
                         bus.setLoadCode(AclfLoadCode.CONST_P);
                         bus.initContributeLoad(false);
+                        bus.setExternalPowerIntoNet(Complex.ZERO);
                          // log the load creation and the power value
                         log.info("Boundary load created at bus " + branch.getToBusId() + " with power: " + s.toString());
 
@@ -205,6 +206,8 @@ public class AclfNetworkEquivHelper {
                                             load.setLoadCP(s);
                                             load.setCode(AclfLoadCode.CONST_P); // set load code to CONST_P
                                             bus.setLoadCode(AclfLoadCode.CONST_P);
+                                            bus.initContributeLoad(false);
+                                            bus.setExternalPowerIntoNet(Complex.ZERO);
                                         }
                                     }
                                     else if(cuttingBranch.getSplitSide() == BranchBusSide.TO_SIDE){
@@ -213,7 +216,10 @@ public class AclfNetworkEquivHelper {
                                         AclfLoad load = CoreObjectFactory.createAclfLoad(hvdcBranch.getId() + "_" + hvdcBranch.getToBusId());
                                         toBus.getContributeLoadList().add(load);
                                         load.setLoadCP(s); // re(s) is negative as it is power into the converter, so it is negative load already, no need to further change it
+                                        load.setCode(AclfLoadCode.CONST_P);
                                         toBus.setLoadCode(AclfLoadCode.CONST_P);
+                                        toBus.initContributeLoad(false);
+                                        toBus.setExternalPowerIntoNet(Complex.ZERO);
                                     }
                                 }
                             }
@@ -243,17 +249,17 @@ public class AclfNetworkEquivHelper {
                    //IpssLogger.getLogger().info("Turning off branch: " + branch.getId());
                 }
             }
-            
-            //process special branches like HVDC
-            if(equivNet.getSpecialBranchList() != null) {
-                for(Branch bra : equivNet.getSpecialBranchList()) {
-                    if(bra != null && !keptBranchSet.contains(bra.getId())) {
-                        bra.setStatus(false);
-                        //IpssLogger.getLogger().info("Turning off special branch: " + bra.getId());
-                    }
+            //
+        }
+
+        //process special branches like HVDC
+        if(equivNet.getSpecialBranchList() != null) {
+            for(Branch bra : equivNet.getSpecialBranchList()) {
+                if(bra != null && !keptBranchSet.contains(bra.getId())) {
+                    bra.setStatus(false);
+                    //IpssLogger.getLogger().info("Turning off special branch: " + bra.getId());
                 }
             }
-            //
         }
 
         // check if the swing bus is in the kept bus set, if not, set the bus with the largest generator as the swing bus

@@ -25,13 +25,13 @@
 package org.interpss.core.adapter.pwd;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.logging.Level;
 
 import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
-import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
@@ -55,12 +55,12 @@ public class SixBus_XfrControl_pwd extends CorePluginTestSetup {
   		AclfBranch branch = net.getBranch("Bus1->Bus3(1)");
   		assertTrue(branch != null);
   		assertTrue(branch.getTapControl() != null);
-  		assertTrue(NumericUtil.equals(branch.getTapControl().getControlSpec(), 1.0450, 0.0001));
+  		assertEquals(1.0450, branch.getTapControl().getControlSpec(), 0.0001);
   		
   		branch = net.getBranch("Bus5->Bus6(T9)");
   		assertTrue(branch != null);
   		assertTrue(branch.getPSXfrPControl() != null);
-  		assertTrue(NumericUtil.equals(branch.getPSXfrPControl().getControlSpec(), -0.75, 0.0001));
+  		assertEquals(-0.75, branch.getPSXfrPControl().getControlSpec(), 0.0001);
   		
   		
 	}

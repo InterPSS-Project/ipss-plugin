@@ -4,6 +4,17 @@
 .settings
 *.csv
 *.dat
+!**/src/test/resources/**/*.csv
+!**/src/test/resources/**/*.dat
+!**/testData/**/*.csv
+!**/testData/**/*.CSV
+!**/testData/**/*.dat
+**/testData/**/ipss.plugin.3phase/
+**/testData/**/ieee123_netString.dat
+**/testData/**/IEEE8500*_EXP_*.csv
+**/testData/**/Normalized-*.CSV
+**/testData/**/AC-Loadflow-*.csv
+!ipss.plugin.3phase/testData/feeder/IEEE8500/Normalized-1s-2900-pts.CSV
 *.prefs
 /.classpath
 .project
@@ -14,3 +25,5 @@
 .vscode/settings.json
 
 ipss.plugin.py/sample/results/*.*
+.venv/
+ipss.plugin.3phase/src/test/python/__pycache__/

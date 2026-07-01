@@ -29,17 +29,27 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	private Complex3x3 toBusIabc2FromBusIabcMatrix = null;
 	private Complex3x3 fromBusVabc2ToBusVabcMatrix = null;
 	private Complex3x3 toBusIabc2ToBusVabcMatrix = null;
+	private Complex3x3 phaseXfrFromBusVabc2ToBusVabcMatrix = null;
+	private Complex3x3 phaseXfrToBusVabc2FromBusVabcMatrix = null;
+	private Complex3x3 phaseXfrIabc2VabcMatrix = null;
+	private Complex3x3 explicitYffabc = null;
+	private Complex3x3 explicitYftabc = null;
+	private Complex3x3 explicitYtfabc = null;
+	private Complex3x3 explicitYttabc = null;
 
 	private static final double z0_to_z1_ratio = 2.5;
 
 	private PhaseCode  ph = PhaseCode.ABC;
 
 	private double baseKVA = 100000; //100 MVA
+	private double[] fromTurnRatioABC = null;
+	private double[] toTurnRatioABC = null;
 
 	@Override
 	public void setZabc(Complex3x3 Zabc) {
 		this.Zabc = Zabc;
 		this.Yabc = null;
+		invalidateMatrixCache();
 		if(this.isXfr() && Zabc != null && Zabc.aa != null && Zabc.aa.abs() > 0.0) {
 			this.setZ(Zabc.aa);
 		}
@@ -262,8 +272,14 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getYffabc() {
+		if(hasExplicitYabc()) {
+			return this.explicitYffabc;
+		}
 		Complex3x3 yff = null;
-		if(!isXfr()){
+		if(hasPhaseTurnRatio()){
+			yff= phaseTransformerYffabc();
+		}
+		else if(!isXfr()){
 			yff= this.getBranchYabc();
 
 
@@ -271,8 +287,11 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 				yff = yff.add(this.getFromShuntYabc());
 			}
 		}else{
+			if(this.ph != PhaseCode.ABC) {
+				return singlePhaseTransformerY(true, true);
+			}
 			Static3PXformer ph3Xformer = this.to3PXformer();
-			yff = ph3Xformer.getYffabc();
+			yff = phaseMaskedTransformerY(ph3Xformer.getYffabc());
 		}
 
 	    return yff;
@@ -280,16 +299,25 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getYttabc() {
+		if(hasExplicitYabc()) {
+			return this.explicitYttabc;
+		}
 		Complex3x3 ytt = null;
-		if(!isXfr()){
+		if(hasPhaseTurnRatio()){
+			ytt= phaseTransformerYttabc();
+		}
+		else if(!isXfr()){
 			ytt = this.getBranchYabc();
 			if(this.getToShuntYabc()!=null) {
 				ytt = ytt.add(this.getToShuntYabc());
 			}
 		}
 		else{
+			if(this.ph != PhaseCode.ABC) {
+				return singlePhaseTransformerY(false, false);
+			}
 			Static3PXformer ph3Xformer = this.to3PXformer();
-			ytt = ph3Xformer.getYttabc();
+			ytt = phaseMaskedTransformerY(ph3Xformer.getYttabc());
 		}
 
 		return ytt;
@@ -297,12 +325,21 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getYftabc() {
+		if(hasExplicitYabc()) {
+			return this.explicitYftabc;
+		}
 		Complex3x3 yft = null;
-		if(!isXfr()) {
+		if(hasPhaseTurnRatio()){
+			yft= phaseTransformerYftabc();
+		}
+		else if(!isXfr()) {
 			yft = this.getBranchYabc().multiply(-1);
 		} else{
+			if(this.ph != PhaseCode.ABC) {
+				return singlePhaseTransformerY(true, false).multiply(-1.0);
+			}
 			Static3PXformer ph3Xformer = this.to3PXformer();
-			yft = ph3Xformer.getYftabc();
+			yft = phaseMaskedTransformerY(ph3Xformer.getYftabc());
 		}
 
 		return yft;
@@ -310,12 +347,21 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getYtfabc() {
+		if(hasExplicitYabc()) {
+			return this.explicitYtfabc;
+		}
 		Complex3x3 ytf = null;
-		if(!isXfr()) {
+		if(hasPhaseTurnRatio()){
+			ytf= phaseTransformerYtfabc();
+		}
+		else if(!isXfr()) {
 			ytf = this.getBranchYabc().multiply(-1);
 		} else{
+			if(this.ph != PhaseCode.ABC) {
+				return singlePhaseTransformerY(false, true).multiply(-1.0);
+			}
 			Static3PXformer ph3Xformer = this.to3PXformer();
-			ytf = ph3Xformer.getYtfabc();
+			ytf = phaseMaskedTransformerY(ph3Xformer.getYtfabc());
 		}
 
 		return ytf;
@@ -341,6 +387,12 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getToBusVabc2FromBusVabcMatrix() {
+		if(hasPhaseTurnRatio()) {
+			if(this.phaseXfrToBusVabc2FromBusVabcMatrix == null) {
+				this.phaseXfrToBusVabc2FromBusVabcMatrix = ratioMatrix(this.fromTurnRatioABC, this.toTurnRatioABC);
+			}
+			return this.phaseXfrToBusVabc2FromBusVabcMatrix;
+		}
 
 		if(this.toBusVabc2FromBusVabcMatrix == null){
 		    Complex3x3 U = Complex3x3.createUnitMatrix();
@@ -351,12 +403,18 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getToBusIabc2FromBusVabcMatrix() {
+		if(hasPhaseTurnRatio()) {
+			return phaseTransformerIabc2VabcMatrix();
+		}
 
 		return this.toBusIabc2FromBusVabcMatrix = this.getZabc();
 	}
 
 	@Override
 	public Complex3x3 getToBusVabc2FromBusIabcMatrix() {
+		 if(hasPhaseTurnRatio()) {
+			 return new Complex3x3();
+		 }
 		 if(this.toBusVabc2FromBusIabcMatrix ==null){
 			 if(this.getFromShuntY()!=null && this.getToShuntY()!=null){
 				 Complex3x3 shuntYabc = this.getFromShuntYabc().add(this.getToShuntYabc());
@@ -379,18 +437,27 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 
 	@Override
 	public Complex3x3 getFromBusVabc2ToBusVabcMatrix() {
-		     if(this.fromBusVabc2ToBusVabcMatrix==null){
-		    	 this.fromBusVabc2ToBusVabcMatrix = this.getToBusVabc2FromBusVabcMatrix().inv();
-		     }
+		if(hasPhaseTurnRatio()) {
+			if(this.phaseXfrFromBusVabc2ToBusVabcMatrix == null) {
+				this.phaseXfrFromBusVabc2ToBusVabcMatrix = ratioMatrix(this.toTurnRatioABC, this.fromTurnRatioABC);
+			}
+			return this.phaseXfrFromBusVabc2ToBusVabcMatrix;
+		}
+		if(this.fromBusVabc2ToBusVabcMatrix==null){
+			this.fromBusVabc2ToBusVabcMatrix = this.getToBusVabc2FromBusVabcMatrix().inv();
+		}
 		return this.fromBusVabc2ToBusVabcMatrix;
 	}
 
 	@Override
 	public Complex3x3 getToBusIabc2ToBusVabcMatrix() {
-		     if(this.toBusIabc2ToBusVabcMatrix==null) {
-				this.toBusIabc2ToBusVabcMatrix = this.getToBusVabc2FromBusVabcMatrix().inv().
-		    	                                      multiply(getToBusIabc2FromBusVabcMatrix());
-			}
+		if(hasPhaseTurnRatio()) {
+			return phaseTransformerIabc2VabcMatrix();
+		}
+		if(this.toBusIabc2ToBusVabcMatrix==null) {
+			this.toBusIabc2ToBusVabcMatrix = this.getToBusVabc2FromBusVabcMatrix().inv()
+					.multiply(getToBusIabc2FromBusVabcMatrix());
+		}
 		return this.toBusIabc2ToBusVabcMatrix;
 	}
 
@@ -428,6 +495,146 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	public double getXfrRatedKVA() {
 		return this.baseKVA;
 
+	}
+
+	@Override
+	public void setFromTurnRatioABC(double phaseA, double phaseB, double phaseC) {
+		this.fromTurnRatioABC = new double[] {phaseA, phaseB, phaseC};
+		invalidateMatrixCache();
+	}
+
+	@Override
+	public void setToTurnRatioABC(double phaseA, double phaseB, double phaseC) {
+		this.toTurnRatioABC = new double[] {phaseA, phaseB, phaseC};
+		invalidateMatrixCache();
+	}
+
+	@Override
+	public double[] getFromTurnRatioABC() {
+		return this.fromTurnRatioABC == null ? null : this.fromTurnRatioABC.clone();
+	}
+
+	@Override
+	public double[] getToTurnRatioABC() {
+		return this.toTurnRatioABC == null ? null : this.toTurnRatioABC.clone();
+	}
+
+	@Override
+	public boolean hasPhaseTurnRatio() {
+		return this.fromTurnRatioABC != null && this.toTurnRatioABC != null;
+	}
+
+	@Override
+	public void setExplicitYabc(Complex3x3 yff, Complex3x3 yft, Complex3x3 ytf, Complex3x3 ytt) {
+		this.explicitYffabc = yff;
+		this.explicitYftabc = yft;
+		this.explicitYtfabc = ytf;
+		this.explicitYttabc = ytt;
+		invalidateMatrixCache();
+	}
+
+	@Override
+	public boolean hasExplicitYabc() {
+		return this.explicitYffabc != null && this.explicitYftabc != null
+				&& this.explicitYtfabc != null && this.explicitYttabc != null;
+	}
+
+	private void invalidateMatrixCache() {
+		this.toBusVabc2FromBusVabcMatrix = null;
+		this.toBusIabc2FromBusVabcMatrix = null;
+		this.toBusVabc2FromBusIabcMatrix = null;
+		this.toBusIabc2FromBusIabcMatrix = null;
+		this.fromBusVabc2ToBusVabcMatrix = null;
+		this.toBusIabc2ToBusVabcMatrix = null;
+		this.phaseXfrFromBusVabc2ToBusVabcMatrix = null;
+		this.phaseXfrToBusVabc2FromBusVabcMatrix = null;
+		this.phaseXfrIabc2VabcMatrix = null;
+		this.Yabc = null;
+	}
+
+	private Complex3x3 phaseTransformerYffabc() {
+		return phaseTransformerY(true, true);
+	}
+
+	private Complex3x3 phaseMaskedTransformerY(Complex3x3 yabc) {
+		if(this.ph == PhaseCode.ABC) {
+			return yabc;
+		}
+		Complex3x3 masked = new Complex3x3();
+		if(this.ph == PhaseCode.A) {
+			masked.aa = yabc.aa;
+		}
+		else if(this.ph == PhaseCode.B) {
+			masked.bb = yabc.bb;
+		}
+		else if(this.ph == PhaseCode.C) {
+			masked.cc = yabc.cc;
+		}
+		return masked;
+	}
+
+	private Complex3x3 singlePhaseTransformerY(boolean firstFrom, boolean secondFrom) {
+		Complex y = new Complex(1.0, 0.0).divide(this.getAdjustedZ());
+		double firstRatio = firstFrom ? this.getFromTurnRatio() : this.getToTurnRatio();
+		double secondRatio = secondFrom ? this.getFromTurnRatio() : this.getToTurnRatio();
+		Complex phaseY = y.divide(firstRatio * secondRatio);
+		Complex3x3 stamped = new Complex3x3();
+		if(this.ph == PhaseCode.A) {
+			stamped.aa = phaseY;
+		}
+		else if(this.ph == PhaseCode.B) {
+			stamped.bb = phaseY;
+		}
+		else if(this.ph == PhaseCode.C) {
+			stamped.cc = phaseY;
+		}
+		return stamped;
+	}
+
+	private Complex3x3 phaseTransformerYttabc() {
+		return phaseTransformerY(false, false);
+	}
+
+	private Complex3x3 phaseTransformerYftabc() {
+		return phaseTransformerY(true, false).multiply(-1.0);
+	}
+
+	private Complex3x3 phaseTransformerYtfabc() {
+		return phaseTransformerY(false, true).multiply(-1.0);
+	}
+
+	private Complex3x3 phaseTransformerY(boolean fromSide, boolean fromSideAgain) {
+		Complex3x3 yabc = getBranchYabc();
+		Complex3x3 y = new Complex3x3();
+		y.aa = scaledPhaseY(yabc.aa, 0, fromSide, fromSideAgain);
+		y.bb = scaledPhaseY(yabc.bb, 1, fromSide, fromSideAgain);
+		y.cc = scaledPhaseY(yabc.cc, 2, fromSide, fromSideAgain);
+		return y;
+	}
+
+	private Complex scaledPhaseY(Complex phaseY, int phase, boolean firstFrom, boolean secondFrom) {
+		double firstRatio = firstFrom ? this.fromTurnRatioABC[phase] : this.toTurnRatioABC[phase];
+		double secondRatio = secondFrom ? this.fromTurnRatioABC[phase] : this.toTurnRatioABC[phase];
+		return phaseY.divide(firstRatio * secondRatio);
+	}
+
+	private Complex3x3 phaseTransformerIabc2VabcMatrix() {
+		if(this.phaseXfrIabc2VabcMatrix == null) {
+			Complex3x3 zabc = getZabc();
+			this.phaseXfrIabc2VabcMatrix = new Complex3x3();
+			this.phaseXfrIabc2VabcMatrix.aa = zabc.aa.multiply(this.fromTurnRatioABC[0] * this.toTurnRatioABC[0]);
+			this.phaseXfrIabc2VabcMatrix.bb = zabc.bb.multiply(this.fromTurnRatioABC[1] * this.toTurnRatioABC[1]);
+			this.phaseXfrIabc2VabcMatrix.cc = zabc.cc.multiply(this.fromTurnRatioABC[2] * this.toTurnRatioABC[2]);
+		}
+		return this.phaseXfrIabc2VabcMatrix;
+	}
+
+	private Complex3x3 ratioMatrix(double[] numerator, double[] denominator) {
+		Complex3x3 matrix = new Complex3x3();
+		matrix.aa = new Complex(numerator[0] / denominator[0], 0.0);
+		matrix.bb = new Complex(numerator[1] / denominator[1], 0.0);
+		matrix.cc = new Complex(numerator[2] / denominator[2], 0.0);
+		return matrix;
 	}
 
 

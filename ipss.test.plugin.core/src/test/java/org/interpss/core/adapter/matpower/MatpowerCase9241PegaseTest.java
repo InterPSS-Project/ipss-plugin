@@ -34,12 +34,12 @@ public class MatpowerCase9241PegaseTest extends CorePluginTestSetup {
 				.getAclfNet();
 	}
 
-	private boolean runNonDivergentPowerflow(AclfNetwork net) throws Exception {
+	private boolean runNonDivergentPowerflow(AclfNetwork net, AclfMethodType method) throws Exception {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
 		algo.getDataCheckConfig().setTurnOffIslandBus(true);
 		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-		algo.setLfMethod(AclfMethodType.NR);
+		algo.setLfMethod(method);
 		algo.setHvdcLfSwitchFactor(5);
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(algo);
 		algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
@@ -47,7 +47,7 @@ public class MatpowerCase9241PegaseTest extends CorePluginTestSetup {
 		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
 
 		NrMethodConfig config = algo.getNrMethodConfig();
-		config.setNonDivergent(true);
+		algo.setNonDivergent(true);
 		config.setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		algo.getLfCalculator().getNrSolver().reConfigSolver(config);
 
@@ -169,10 +169,18 @@ public class MatpowerCase9241PegaseTest extends CorePluginTestSetup {
 	public void testCase9241PegaseNonDivergentPowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE9241PEGASE_FILE);
 		net.setPolarCoordinate(false);
-
 		assertCase9241PegaseImportedData(net);
 
-		boolean solved = runNonDivergentPowerflow(net);
+		boolean solved = runNonDivergentPowerflow(net, AclfMethodType.NR);
+		assertTrue(solved && net.isLfConverged(), AclfOutFunc.loadFlowSummary(net).toString());
+	}
+
+	@Test
+	public void testCase9241PegasePqNonDivergentPowerFlow() throws Exception {
+		AclfNetwork net = loadMatpowerCase(CASE9241PEGASE_FILE);
+		assertCase9241PegaseImportedData(net);
+
+		boolean solved = runNonDivergentPowerflow(net, AclfMethodType.PQ);
 		assertTrue(solved && net.isLfConverged(), AclfOutFunc.loadFlowSummary(net).toString());
 	}
 
@@ -180,7 +188,6 @@ public class MatpowerCase9241PegaseTest extends CorePluginTestSetup {
 	public void testCase9241PegasePowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE9241PEGASE_FILE);
 		net.setPolarCoordinate(false);
-
 		assertCase9241PegaseImportedData(net);
 
 		boolean solved = runPowerflow(net);

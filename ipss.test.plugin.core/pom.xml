@@ -28,10 +28,33 @@
             <artifactId>ipss.core.lib</artifactId>
             <version>${ipss.core.version}</version>
         </dependency>
+        <!-- Direct dependency for sample code using Apache Commons Pool2 API (AclfNetObjPoolManager). -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>2.12.1</version>
+        </dependency>
         <dependency>
             <groupId>org.mvel</groupId>
             <artifactId>mvel2</artifactId>
             <version>2.5.2.Final</version>
+        </dependency>
+        <!-- Direct EJML use in optadj sensitivity tests (transitive via ipss.plugin.core) -->
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>ejml-dsparse</artifactId>
+            <version>0.44.0</version>
+        </dependency>
+        <!-- Direct DFLib use in sample/dframe and result tests (transitive via ipss.plugin.core) -->
+        <dependency>
+            <groupId>org.dflib</groupId>
+            <artifactId>dflib</artifactId>
+            <version>2.0.0-M6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.dflib</groupId>
+            <artifactId>dflib-csv</artifactId>
+            <version>2.0.0-M6</version>
         </dependency>
 
         <dependency>

@@ -41,8 +41,8 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 	private String runLoadflowWithDiagnostics(AclfNetwork net, AclfMethodType method) throws Exception {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(method);
-		algo.setInitBusVoltage(true);
-		algo.getNrMethodConfig().setNonDivergent(true);
+		algo.setInitBusVoltage(method != AclfMethodType.PQ);
+		algo.setNonDivergent(true);
 		algo.setMaxIterations(50);
 
 		boolean solved = algo.loadflow();
@@ -298,6 +298,7 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 	@Test
 	public void testCase30PowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE30_FILE);
+		net.setPolarCoordinate(false);
 
 		assertNotNull(net);
 		assertEquals(30, net.getNoBus());
@@ -321,8 +322,34 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void testCase30PqPowerFlow() throws Exception {
+		AclfNetwork net = loadMatpowerCase(CASE30_FILE);
+
+		assertNotNull(net);
+		assertEquals(30, net.getNoBus());
+		assertEquals(41, net.getNoBranch());
+
+		AclfBus bus1 = net.getBus("Bus1");
+		AclfBus bus13 = net.getBus("Bus13");
+		AclfBus bus5 = net.getBus("Bus5");
+		assertNotNull(bus1);
+		assertNotNull(bus13);
+		assertNotNull(bus5);
+		assertTrue(bus1.isSwing());
+		assertTrue(bus13.isGenPV());
+		assertNotNull(bus5.getShuntY());
+		assertCase30ImportedData(net);
+
+		String diagnostic = runLoadflowWithDiagnostics(net, AclfMethodType.PQ);
+		if (diagnostic != null) {
+			fail(diagnostic);
+		}
+	}
+
+	@Test
 	public void testCase118PowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE118_FILE);
+		net.setPolarCoordinate(false);
 
 		assertNotNull(net);
 		assertEquals(118, net.getNoBus());
@@ -345,8 +372,33 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void testCase118PqPowerFlow() throws Exception {
+		AclfNetwork net = loadMatpowerCase(CASE118_FILE);
+
+		assertNotNull(net);
+		assertEquals(118, net.getNoBus());
+		assertEquals(186, net.getNoBranch());
+
+		AclfBus bus1 = net.getBus("Bus1");
+		AclfBus bus5 = net.getBus("Bus5");
+		AclfBus bus69 = net.getBus("Bus69");
+		assertNotNull(bus1);
+		assertNotNull(bus5);
+		assertNotNull(bus69);
+		assertTrue(bus69.isSwing());
+		assertNotNull(bus5.getShuntY());
+		assertCase118ImportedData(net);
+
+		String diagnostic = runLoadflowWithDiagnostics(net, AclfMethodType.PQ);
+		if (diagnostic != null) {
+			fail(diagnostic);
+		}
+	}
+
+	@Test
 	public void testCase2736SpPowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE2736SP_FILE);
+		net.setPolarCoordinate(false);
 
 		assertNotNull(net);
 		assertEquals(2736, net.getNoBus());

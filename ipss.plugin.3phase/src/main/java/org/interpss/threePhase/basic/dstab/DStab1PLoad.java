@@ -3,16 +3,27 @@ package org.interpss.threePhase.basic.dstab;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Complex3x3;
 
-import com.interpss.core.threephase.ILoad1Phase;
+import com.interpss.core.threephase.IDynamicPhaseLoad;
+import com.interpss.core.threephase.AclfLoad3Phase;
 import com.interpss.core.threephase.LoadConnectionType;
 import com.interpss.core.acsc.PhaseCode;
 import com.interpss.dstab.DStabLoad;
 
-public interface DStab1PLoad extends ILoad1Phase, DStabLoad {
+public interface DStab1PLoad extends AclfLoad3Phase, IDynamicPhaseLoad, DStabLoad {
 
 	public void setPhaseCode (PhaseCode phCode);
 
 	public PhaseCode getPhaseCode ();
+
+	@Override
+	default Complex3x1 getInit3PhaseLoad() {
+		return AclfLoad3Phase.distribute(getLoadCP(), getPhaseCode());
+	}
+
+	@Override
+	default void set3PhaseLoad(Complex3x1 threePhaseLoad) {
+		setLoadCP(AclfLoad3Phase.total(threePhaseLoad));
+	}
 
 	/**
 	 * The Norton equivalent admittance. Used in power flow and short circuit analysis.
@@ -82,5 +93,28 @@ public interface DStab1PLoad extends ILoad1Phase, DStabLoad {
 	public double getVminpu();
 
 	public double getVmaxpu();
+
+	/**
+	 * Enable OpenDSS model=4 CVR behavior for this load. The active and reactive
+	 * powers are scaled independently as P=P0*V^cvrWatts and Q=Q0*V^cvrVars
+	 * inside the Vmin/Vmax band.
+	 */
+	public void setOpenDssModel4(boolean enabled, double cvrWatts, double cvrVars);
+
+	public boolean isOpenDssModel4();
+
+	/**
+	 * Configure the OpenDSS voltage-dependent load model code. Supported codes are
+	 * 3, 4, 6, 7, and 8. Model 8 uses the ZIPV coefficients from OpenDSS.
+	 */
+	public void setOpenDssLoadModel(int modelType, double cvrWatts, double cvrVars, double[] zipv);
+
+	public int getOpenDssLoadModel();
+
+	public double[] getOpenDssZipv();
+
+	public double getCvrWatts();
+
+	public double getCvrVars();
 
 }

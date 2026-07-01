@@ -24,7 +24,7 @@ package org.interpss.dep.datamodel.bean.aclf.adj;
 
 import java.util.List;
 
-import org.interpss.dep.datamodel.bean.base.BaseJSONBean;
+import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
@@ -35,7 +35,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @param <TExt> template for extension info 
  *
  */
-public class BaseTapControlBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {	
+public class BaseTapControlBean<TExt extends BaseJSONUtilBean> extends CompareBaseJSONBean<TExt> {	
 	 
 	public static enum TapControlTypeBean {
 				Point_Control, 
@@ -70,7 +70,7 @@ public class BaseTapControlBean<TExt extends BaseJSONUtilBean> extends BaseJSONB
 	
 	public BaseTapControlBean() {}
 	
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
 		BaseTapControlBean<TExt> bean = (BaseTapControlBean<TExt>)b;

@@ -84,6 +84,107 @@ if(vabc.a_0.abs() > this.Vminpu) {
 
 The fixed-point solver produces V=0 for unused phases (since the artificial diagonal has no physical coupling). BFS propagates upstream voltage for unused phases, which is a better approximation. Both methods agree exactly on active phases.
 
+## Anti-Float Necessity Check
+
+Diagnostic switches were added temporarily around the matrix stabilization paths
+to test which mechanisms are necessary for the checked-in OpenDSS feeders. The
+tests used the CSparseJ solver and the QSTS smoke cases for IEEE123, Ckt7,
+Ckt24, and IEEE8500:
+
+```bash
+mvn -pl ipss.plugin.3phase \
+  -Dtest=OpenDSSQstsFeederSmokeTest#ieee123ControlsOffRepeatedStateDailyWindowConverges+ckt7ControlsOffYearlyWindowConverges+ckt24ControlsOffRepeatedStateDailyWindowConverges+ieee8500ControlsOffShortRepeatedStateDailyWindowConverges \
+  -Dipss.sparse.solver=csj \
+  -Dsurefire.failIfNoSpecifiedTests=false test
+```
+
+Results on 2026-06-07:
+
+| Disabled mechanism | Result | Interpretation |
+|--------------------|--------|----------------|
+| None | All four feeders converged | Baseline is healthy. |
+| Zero diagonal fill only | All four feeders converged | The broad non-swing shunt can still regularize missing-phase rows. |
+| Transformer anti-float only | All four feeders converged | Not proven necessary by these feeders; keep transformer-specific edge-case coverage before removing. |
+| Floating-component anti-float only | All four feeders converged | Redundant for these feeders when pre-PF floating-component deactivation remains active. |
+| Broad non-swing bus anti-float only | All four feeders converged | Zero diagonal fill can still regularize missing-phase rows. |
+| Zero diagonal fill and broad non-swing bus anti-float | IEEE123, Ckt7, and IEEE8500 failed numeric LU factorization at step 1 | At least one general missing-phase diagonal stabilizer is required while the solver uses fixed 3-phase bus expansion. |
+| All matrix-time anti-float mechanisms | IEEE123, Ckt7, and IEEE8500 failed numeric LU factorization at step 1 | Transformer and floating-component anti-float do not solve the fixed-expansion missing-phase singularity. |
+| Floating-component deactivation only | All four feeders converged; Ckt24 used matrix-time anti-floating admittance on 7,163 phase nodes and max iterations increased from 2 to 5 | Deactivation is not strictly required when matrix-time floating anti-float remains, but it materially reduces Ckt24 solve work. |
+| Floating-component deactivation and matrix-time floating-component anti-float | All four feeders converged | The general diagonal stabilizers are enough for these smoke cases, but this leaves disconnected/floating topology in the solved matrix. |
+
+Current conclusion:
+
+- Keep one general missing-phase diagonal stabilizer until the solver moves to an
+  OpenDSS-style active conductor/node matrix.
+- Prefer the explicit zero diagonal fill over the broad non-swing shunt because
+  it targets only missing/near-zero phase diagonals.
+- Keep pre-PF floating-component deactivation enabled by default.
+- Treat matrix-time floating-component anti-float as redundant for the tested
+  feeders when pre-PF deactivation is enabled. It is now opt-in by setting
+  `ipss.distpf.enableFloatingComponentAntiFloat=true`.
+- Treat the broad non-swing shunt as a compatibility fallback rather than a
+  default stabilizer. It is now opt-in by setting
+  `ipss.distpf.enableNonSwingBusAntiFloat=true`.
+- Keep transformer anti-float until a focused delta/ungrounded transformer
+  regression suite proves it can be removed or moved into a solve-only
+  transformer YPrim contribution.
+
+The default fixed-point path is now:
+
+- floating-component deactivation: enabled;
+- zero diagonal fill: enabled;
+- transformer anti-float: enabled;
+- matrix-time floating-component anti-float: disabled unless explicitly enabled;
+- broad non-swing bus anti-float: disabled unless explicitly enabled.
+
+## Controlled QSTS Performance Evidence
+
+Ckt24 annual QSTS performance was checked with OpenDSS static controls enabled
+on both sides. The checked-in InterPSS Ckt24 QSTS case has no time-varying
+profile bindings, so QSTS solves the first controlled static state and reuses
+the settled network state for the remaining samples. This is disabled for
+delayed/event controls, inverter controls, and any QSTS profile-bound case.
+
+Commands used on 2026-06-11:
+
+```bash
+python3 ipss.plugin.3phase/src/test/python/qsts_large_feeder_perf.py \
+  --case ckt24 --warmup-steps 24 --steps 8760 --repeats 1
+
+mvn -pl ipss.plugin.3phase -am test \
+  -Dtest=QstsLargeFeederPerformanceBenchmark \
+  -Dqsts.perf.case=ckt24 \
+  -Dqsts.perf.warmupSteps=24 \
+  -Dqsts.perf.steps=8760 \
+  -Dqsts.perf.repeats=1 \
+  -Dipss.qsts.profile=true \
+  -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+Current controlled results:
+
+| Engine | Controls | Steps | Result |
+|--------|----------|-------|--------|
+| DSS-Python | static, regulators and capacitors enabled | 8760 | `1.146780 ms/step`, converged, max iterations `9` |
+| InterPSS | static, regulators and capacitors enabled | 8760 | `1.021454 ms/step`, converged, max PF iterations `10` |
+
+The InterPSS profile reported `symbolicFactors=1`, `numericFactors=2`,
+`fallbackCount=0`, and `pf_iterations_per_step=2.000913`. This result is
+about `112.3%` of DSS-Python throughput for the same controlled 8760 run, so it
+meets the 80% performance target.
+
+The controlled two-step Ckt24 parity comparison passes for voltages, load
+powers, and branch powers. Current common-key maxima are `0.0017546525 pu`,
+`0.000756435 deg`, `0.06397092 kW`, `0.240896534 kvar`, `0.28418337 kW`, and
+`0.8739569147 kvar`, with zero voltage, load-power, and branch-power tolerance
+failures.
+
+IEEE8500 controlled PV-duty one-step row-level parity is now green with static
+controls enabled. The current comparison maxima are `0.00104704199 pu`,
+`0.0267427413 deg`, `2.87351585 kW`, `2.728537974 kvar`, `0.014988296 kW`,
+and `0.00406943705 kvar`, with zero voltage, load-power, branch-power,
+generator-power, and capacitor-state tolerance failures.
+
 ## Long-Term Direction: OpenDSS-Style Primitive Y Matrix
 
 The current 3x3 ABC frame forces all components into a fixed 3-phase structure, causing the zero-padding issues above. OpenDSS uses a different approach:

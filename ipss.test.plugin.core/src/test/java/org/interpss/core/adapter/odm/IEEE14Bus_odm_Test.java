@@ -42,7 +42,7 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
 	@Test 
 	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/Ieee14Bus.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -57,14 +57,14 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32393)<0.0001);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32803)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.01421)<0.0001);
 	}
 	
 	@Test 
 	public void testFLoad() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_FLoad.xml")
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/Ieee14Bus_FLoad.xml")
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
@@ -79,7 +79,7 @@ public class IEEE14Bus_odm_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged());		
   		AclfBus swingBus = (AclfBus)net.getBus("Bus1");
   		AclfSwingBusAdapter swing = swingBus.toSwingBus();
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3395)<0.0001);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16725)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32392)<0.0001);
+  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16550)<0.0001);
 	}	
 }

@@ -41,6 +41,7 @@ import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.dep.datamodel.bean.datatype.BranchValueBean;
 import org.interpss.dep.datamodel.bean.datatype.ComplexValueBean;
 import org.interpss.dep.datamodel.bean.datatype.LimitValueBean;
+import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
@@ -263,9 +264,10 @@ public class AclfNet2BeanUtilFunc {
 			ssb.vmin = ss.getDesiredControlRange().getMin();
 		}
 		
-		if(ss.getQLimit() != null){ 
-			ssb.qmax = ss.getQLimit().getMax();
-			ssb.qmin = ss.getQLimit().getMin();
+		LimitType bLimit = ss.getBLimit(false);
+		if(bLimit != null){
+			ssb.qmax = bLimit.getMax();
+			ssb.qmin = bLimit.getMin();
 		}
 		for(ShuntCompensator qb: ss.getShuntCompensatorList()){
 			QBankBean qbb =  new QBankBean();
@@ -301,7 +303,8 @@ public class AclfNet2BeanUtilFunc {
 	}
 
 	private static void mapXfrData(TapControl tap, XfrTapControlBean<? extends BaseJSONUtilBean> tapBean) {
-		tapBean.controlledBusId = tap.getVcBus().getId();
+		if (tap.getVcBus() != null)
+			tapBean.controlledBusId = tap.getVcBus().getId();
 		if(tap.getTapControlType() == BusBranchControlType.BUS_VOLTAGE){
 			tapBean.controlMode = TapControlModeBean.Bus_Voltage;
 			tapBean.desiredControlTarget = tap.getVSpecified();
@@ -342,4 +345,3 @@ public class AclfNet2BeanUtilFunc {
 		return new Double(Number2String.toStr(x, "#0.0#")).doubleValue();
 	}	
 }
-

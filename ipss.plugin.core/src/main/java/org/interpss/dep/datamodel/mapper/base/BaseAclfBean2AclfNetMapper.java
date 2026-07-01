@@ -244,7 +244,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 						AclfAdjustControlMode.FIXED;
 			ss.setControlMode(mode);
 			ss.setDesiredControlRange(new LimitType(ssb.vmax, ssb.vmin));
-			ss.setQLimit(new LimitType(ssb.qmax, ssb.qmin));
+			ss.setBLimit(new LimitType(ssb.qmax, ssb.qmin));
 			for(QBankBean<TBusExt> qbb: ssb.varBankList){
 				ShuntCompensator qb = CoreObjectFactory.createShuntCompensator(ss, ShuntCompensatorType.CAPACITOR);
 				qb.setSteps(qbb.step);
@@ -325,6 +325,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					AclfBus vcBus = aclfNet.getBus(tcb.controlledBusId);				
 					tap.setVcBusOnFromSide(branch.isFromBus(vcBus));
 					tap.setControlOnFromSide(tcb.controlOnFromSide);
+					tap.setMeteredOnFromSide(tcb.measuredOnFromSide);
 					tap.setTurnRatioLimit(new LimitType(tcb.maxTap, tcb.minTap));
 					tap.setTapSteps(tcb.steps);
 					tap.setTapStepSize(tcb.stepSize);

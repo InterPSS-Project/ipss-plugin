@@ -84,7 +84,7 @@ public class BpaO7CTest extends DStabTestSetupBase {
 			  return;
 	    }
 		String xml=parser.toXmlDoc();
-		FileOutputStream out=new FileOutputStream(new File("testdata/ieee_odm/07c_0615_notBE.xml"));
+		FileOutputStream out=new FileOutputStream(new File("testData/ieee_odm/07c_0615_notBE.xml"));
 		out.write(xml.getBytes());
 		out.flush();
 		out.close();
@@ -115,15 +115,15 @@ public class BpaO7CTest extends DStabTestSetupBase {
 	public void sys2010_noFaultTestCase() throws Exception {
 		IODMAdapter adapter = new BPAAdapter();
 		assertTrue(adapter.parseInputFile(IODMAdapter.NetType.DStabNet,
-				new String[] { "testdata/adpter/bpa/07c_0615_notBE.dat", 
-				               "testdata/adpter/bpa/07c_mach_exc_noSE_EA_FJ_FK.swi"}));//"testdata/bpa/07c_onlyMach.swi"
+				new String[] { "testData/adpter/bpa/07c_0615_notBE.dat", 
+				               "testData/adpter/bpa/07c_mach_exc_noSE_EA_FJ_FK.swi"}));//"testData/adpter/bpa/07c_onlyMach.swi"
 		
 		DStabModelParser parser=(DStabModelParser) adapter.getModel();
 	
 		//parser.stdout();
 		
 		String xml=parser.toXmlDoc();
-		FileOutputStream out=new FileOutputStream(new File("testdata/ieee_odm/07c_2010_Mach_Exc0627.xml"));
+		FileOutputStream out=new FileOutputStream(new File("testData/ieee_odm/07c_2010_Mach_Exc0627.xml"));
 		out.write(xml.getBytes());
 		out.flush();
 		out.close();
@@ -188,118 +188,6 @@ public class BpaO7CTest extends DStabTestSetupBase {
 	 *  but it was stable once they are changed to shuntY format(with 07c_2010_OnlyMach_noSe0616.xml)
 	 * 22/06[Tony]
 	 */
-	@Test
-	public void sys2010_XmlDstabtestCase() throws Exception {
-		
-		File file = new File("testData/odm/07c_2010_Mach_Exc0627.xml");
-		DStabModelParser parser = ODMObjectFactory.createDStabModelParser();
-		if (parser.parse(new FileInputStream(file))) {
-			//System.out.println(parser.toXmlDoc(false));
-
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
-
-			BaseDStabNetwork net = simuCtx.getDStabilityNet();
-
-			assertTrue(net.checkData(CoreObjectFactory.createDefaultDataCheckConfiguration()));
-			assertTrue(net.getBranchList().size()==308);
-			assertTrue(net.getBusList().size()==141);
-			 
-			//System.out.println(net.net2String());
-			 
-			//setDynamicEventData(net);
-			// System.out.println(net.getMachine("Bus59-mach1").getMachData().toString());
-			// System.out.println(net.getMachine("Bus56-mach1").getMachData().getXl());
-			/* 
-			 FileOutputStream out=new FileOutputStream(new File("d:/07c_2010_MachExc_noSe_netString.txt"));
-				out.write(net.net2String().getBytes());
-				out.flush();
-				out.close();
-			
-			 */ 
-		 
-			DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
-			dstabAlgo.setRefMachine(net.getMachine("Bus141-mach1"));
-			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-			dstabAlgo.setSimuStepSec(0.001);
-			dstabAlgo.setTotalSimuTimeSec(0.002);
-			
-			// run load flow test case
-			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
-			assertTrue(aclfAlgo.loadflow());
-			//System.out.println(AclfOutFunc.lfResultsBusStyle(net));
-			/*
-			//get the genResult
-			System.out.println("Dstab network lf result");
-			for(Bus b:net.getBusList()){
-				AclfBus bus=(AclfBus) b;
-				if(bus.isGen()){
-					System.out.println(bus.getName()+", "+bus.getId()+" ,p= "+bus.getGenResults().getReal()+",q= "+bus.getGenResults().getImaginary());
-				}
-			}
-			*/	
-			// create fault
-			//create3PFaultEvent(net, "Bus50", "luopingg", 0.2, 0.04);
-
-			// create state variable recorder to record simulation results
-
-			StateVariableRecorder stateRecorder = new StateVariableRecorder(0.0001);
-			
-			stateRecorder.addCacheRecords("Bus85-mach1",      // mach id 
-					MachineState,    // record type
-					DStabOutSymbol.OUT_SYMBOL_MACH_ANG,       // state variable name
-					0.1,                                      // time steps for recording 
-					300);
-			stateRecorder.addCacheRecords("Bus78-mach1", MachineState, 
-					DStabOutSymbol.OUT_SYMBOL_MACH_PE, 0.1, 100);
-			
-			stateRecorder.addCacheRecords("Bus64-mach1",      // mach id 
-					MachineState,    // record type
-					DStabOutSymbol.OUT_SYMBOL_MACH_ANG,       // state variable name
-					0.1,                                      // time steps for recording 
-					300);                                      // total points to record 
-			stateRecorder.addCacheRecords("Bus64-mach1", MachineState, 
-					DStabOutSymbol.OUT_SYMBOL_MACH_PE, 0.1, 300);
-			
-			//dstabAlgo.setSimuOutputHandler(stateRecorder);
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
-			dstabAlgo.setSimuOutputHandler(new TextSimuOutputHandler());
-			if (dstabAlgo.initialization()) {
-				System.out.println("Running DStab simulation ...");
-				assertTrue(dstabAlgo.performSimulation());
-			}
-          
-			// output recorded simulation results
-			/*
-			List<StateVariableRecorder.Record> list = stateRecorder.getMachineRecords(
-					"Bus64-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_ANG);
-			System.out.println("\n\nMachine Anagle");
-			for (Record rec : list) {
-				System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-			}
-			
-			list = stateRecorder.getMachineRecords(
-					"Bus85-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_ANG);
-			System.out.println("\n\n Bus85-mach1 (EQG030) Angle");
-			for (Record rec : list) {
-				System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-			}
-
-			list = stateRecorder.getMachineRecords(
-					"Bus64-mach1", MachineState, DStabOutSymbol.OUT_SYMBOL_MACH_PE);
-			System.out.println("\n\nMachine Power");
-			for (Record rec : list) {
-				System.out.println(Number2String.toStr(rec.t) + ", " + Number2String.toStr(rec.variableValue));
-			}
-			*/
-		}
-	}
-	
 	/************************************************
 	 * lf test data:
 	 * 1) 07c_2010_OnlyMach_lf.xml
