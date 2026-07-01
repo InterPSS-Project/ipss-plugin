@@ -119,9 +119,13 @@ public abstract class AbstractODMNetDataMapper<Tfrom, Tto> extends AbstractMappe
 		
 		// for DcSystem, baseVoltage might defined at Net level
 		if (busRec.getBaseVoltage() != null) {
-			bus.setBaseVoltage(busRec.getBaseVoltage().getUnit()==VoltageUnitType.KV ?    // Base V unit [KV, Volt] 
-					busRec.getBaseVoltage().getValue()*1000.0 : 
-					busRec.getBaseVoltage().getValue());
+			double baseVoltage = busRec.getBaseVoltage().getValue();
+			if (baseVoltage == 0.0) {
+				baseVoltage = 1.0;
+			}
+			bus.setBaseVoltage(busRec.getBaseVoltage().getUnit()==VoltageUnitType.KV ?    // Base V unit [KV, Volt]
+					baseVoltage*1000.0 :
+					baseVoltage);
 		}
 	}
 
