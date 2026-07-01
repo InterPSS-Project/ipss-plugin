@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.aclf.config.psse.PSSELfAdjControlConfig;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
@@ -61,9 +60,9 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
-		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertEquals(0.23637, swShunt.getBInit(), 0.0001);
+		assertEquals(0.23637, swShunt.getBActual(), 0.0001);
+		assertEquals(0.2, swShunt.getQ(), 0.0001);
 		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue(swShunt.getShuntCompensatorList().size() == 3);
 		
@@ -71,12 +70,12 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertEquals(0.23637, swShunt.getBInit(), 0.0001);
+		assertEquals(0.23637, swShunt.getBActual(), 0.0001);
+		assertEquals(0.2, swShunt.getQ(), 0.0001);
 		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
-		assertTrue(NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue(NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
+		assertEquals(1.0, swShunt.getVSpecified(), 0.0001);
+		assertEquals(0.91985, bus4.getVoltageMag(), 0.0001);
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
@@ -102,9 +101,9 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
-		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertEquals(0.23637, swShunt.getBInit(), 0.0001);
+		assertEquals(0.23637, swShunt.getBActual(), 0.0001);
+		assertEquals(0.2, swShunt.getQ(), 0.0001);
 		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue(swShunt.getShuntCompensatorList().size() == 3);
 		
@@ -115,12 +114,12 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		algo.loadflow();
 		assertTrue(net.isLfConverged());
 
-		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertEquals(0.23637, swShunt.getBInit(), 0.0001);
+		assertEquals(0.23637, swShunt.getBActual(), 0.0001);
+		assertEquals(0.2, swShunt.getQ(), 0.0001);
 		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
-		assertTrue(NumericUtil.equals(swShunt.getVSpecified(), 1.0, 0.0001));
-		assertTrue(NumericUtil.equals(bus4.getVoltageMag(), 0.91985, 0.0001));
+		assertEquals(1.0, swShunt.getVSpecified(), 0.0001);
+		assertEquals(0.91985, bus4.getVoltageMag(), 0.0001);
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
@@ -146,9 +145,9 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		//swShunt.setBLimit(new LimitType(3.0*0.23637, 0.0));
 		//System.out.println("Switched Shunt: " + swShunt);
 		
-		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertEquals(0.23637, swShunt.getBInit(), 0.0001);
+		assertEquals(0.23637, swShunt.getBActual(), 0.0001);
+		assertEquals(0.2, swShunt.getQ(), 0.0001);
 		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue(swShunt.getShuntCompensatorList().size() == 3);
 
@@ -168,8 +167,8 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		//System.out.println("Switched Shunt: " + swShunt);
 
 		//Setting it continuous_only control, the switched shunt should be not activated as it is operated in fixed mode
-		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
+		assertEquals(0.23637, swShunt.getBInit(), 0.0001);
+		assertEquals(0.23637, swShunt.getBActual(), 0.0001);
 
 
 		// change the switched shunt to continuous mode, the switched shunt should be activated
@@ -220,9 +219,9 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		// });
 		//System.out.println("Switched Shunt: " + swShunt);
 		
-		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getBActual(), 0.23637, 0.0001));
-		assertTrue(NumericUtil.equals(swShunt.getQ(), 0.2, 0.0001));
+		assertEquals(0.23637, swShunt.getBInit(), 0.0001);
+		assertEquals(0.23637, swShunt.getBActual(), 0.0001);
+		assertEquals(0.2, swShunt.getQ(), 0.0001);
 		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.FIXED);
 		assertTrue(swShunt.getShuntCompensatorList().size() == 3);
 
@@ -242,7 +241,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertTrue(net.isLfConverged());
 
 		//System.out.println("Switched Shunt: " + swShunt);
-		assertTrue(NumericUtil.equals(swShunt.getBInit(), 0.23637, 0.0001));
+		assertEquals(0.23637, swShunt.getBInit(), 0.0001);
 		assertEquals(swShunt.getBActual(), 0.47274, 0.0001);
 		assertEquals(swShunt.getQ(), 0.47423  , 0.0001);
 		assertTrue(swShunt.getControlMode() == AclfAdjustControlMode.DISCRETE);

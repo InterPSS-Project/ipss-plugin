@@ -52,14 +52,6 @@ public class Bus11856Test extends CorePluginTestSetup {
   					.getAclfNet();	
 		
 		PerformanceTimer timer = new PerformanceTimer();
-		net.hzCopy();
-		timer.log("DeepCopy ");
-		
-		timer.start();
-		for (int i = 0; i < 10; i++) {
-			net.hzCopy();
-		}
-		timer.log("10 DeepCopy ");
 		
 		timer.start();
 		net.jsonCopy();
