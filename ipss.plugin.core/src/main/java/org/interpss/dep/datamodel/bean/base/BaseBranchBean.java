@@ -35,7 +35,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @param <TExt> template for extension info 
  *
  */
-public abstract class BaseBranchBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
+public abstract class BaseBranchBean<TExt extends BaseJSONUtilBean> extends CompareBaseJSONBean<TExt> {
 	/**
 	 * branch type code
 	 */
@@ -76,7 +76,7 @@ public abstract class BaseBranchBean<TExt extends BaseJSONUtilBean> extends Base
 	public BaseBranchBean() {
 	}
 
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
 		BaseBranchBean<TExt> bean = (BaseBranchBean<TExt>)b;

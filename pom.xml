@@ -6,9 +6,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <revision>1.1.1</revision>
-        <ipss.core.version>1.1.1</ipss.core.version>
-        <ieee.odm.version>1.0.3</ieee.odm.version>
+        <revision>1.2.5</revision>
+        <ipss.core.version>1.2.5</ipss.core.version>
+        <ieee.odm.version>1.0.5</ieee.odm.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -65,6 +65,19 @@
             <artifactId>ieee.odm.schema</artifactId>
             <version>${ieee.odm.version}</version>
         </dependency>
+
+        <!-- Direct Colt use in DistOpfConstraintFactory (transitive via ipss.plugin.core) -->
+        <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+        </dependency>
+        <!-- Direct ojalgo use in OjAlgoDistOpfSolver (transitive via ipss.plugin.core) -->
+        <dependency>
+            <groupId>org.ojalgo</groupId>
+            <artifactId>ojalgo</artifactId>
+            <version>57.0.0</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -110,14 +123,25 @@
         </plugins>
     </build>
 
-    <distributionManagement>
-        <repository>
-            <id>maven-releases</id>
-            <url>https://gzv-nex.piston.ink/repository/maven-releases/</url>
-        </repository>
-        <snapshotRepository>
-            <id>maven-snapshots</id>
-            <url>https://gzv-nex.piston.ink/repository/maven-snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
+  <repositories>
+    <repository>
+      <id>codeartifact</id>
+      <name>ipss-maven-release</name>
+      <url>https://ipss-078183419290.d.codeartifact.us-east-1.amazonaws.com/maven/maven-release/</url>
+    </repository>
+  </repositories>
+
+  <distributionManagement>
+    <repository>
+        <id>codeartifact</id>
+        <name>ipss-maven-release</name>
+        <url>https://ipss-078183419290.d.codeartifact.us-east-1.amazonaws.com/maven/maven-release/</url>
+    </repository>
+    <snapshotRepository>
+        <id>codeartifact</id>
+        <name>ipss-maven-snapshot</name>
+        <url>https://ipss-078183419290.d.codeartifact.us-east-1.amazonaws.com/maven/maven-snapshot/</url>
+    </snapshotRepository>
+  </distributionManagement>
+   
 </project>

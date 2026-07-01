@@ -119,7 +119,7 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 
   		for (int i = 0; i < y.getDimension(); i++) {
   			//System.out.println(y.getX(i).abs() + ", // " + y.getBusId(i));
-  			assertTrue(NumericUtil.equals(y.getX(i).abs(), results[i], 1.0e-10));
+  			assertEquals(results[i], y.getX(i).abs(), 1.0e-10);
   		}
   		
   		// turn off the cutting branches
@@ -240,8 +240,8 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 		/*
 		 * Checking bus voltage results
 		 */
-  		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(areaFlag2).get("10").abs(), 0.9336218714652498, 1.0e-10));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(areaFlag1).get("1").abs(), 1.1582643132837784, 1.0e-10));
+  		assertEquals(0.9336218714652498, pieceWiseAlgo.getBusVoltage(areaFlag2).get("10").abs(), 1.0e-10);
+		assertEquals(1.1582643132837784, pieceWiseAlgo.getBusVoltage(areaFlag1).get("1").abs(), 1.0e-10);
 	}
 
 	/*
@@ -451,8 +451,8 @@ public class IEEE14TestAclfNetPiesewise extends PiecewiseAlgoTestSetup {
 			1.1582643132837898,   //  1
 		*/
 		
-  		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 0.9336218714651833, 1.0e-10));
-		assertTrue(NumericUtil.equals(pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.1582643132837898, 1.0e-10));
+  		assertEquals(0.9336218714651833, pieceWiseAlgo.getBusVoltage(2).get("10").abs(), 1.0e-10);
+		assertEquals(1.1582643132837898, pieceWiseAlgo.getBusVoltage(1).get("1").abs(), 1.0e-10);
 	}
 
 	/*
