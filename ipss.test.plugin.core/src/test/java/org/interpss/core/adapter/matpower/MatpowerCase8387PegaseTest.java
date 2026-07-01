@@ -34,12 +34,12 @@ public class MatpowerCase8387PegaseTest extends CorePluginTestSetup {
 				.getAclfNet();
 	}
 
-	private boolean runNonDivergentPowerflow(AclfNetwork net) throws Exception {
+	private boolean runNonDivergentPowerflow(AclfNetwork net, AclfMethodType method) throws Exception {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
 		algo.getDataCheckConfig().setTurnOffIslandBus(true);
 		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-		algo.setLfMethod(AclfMethodType.NR);
+		algo.setLfMethod(method);
 		algo.setHvdcLfSwitchFactor(5);
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(algo);
 		algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(true);
@@ -47,7 +47,7 @@ public class MatpowerCase8387PegaseTest extends CorePluginTestSetup {
 		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
 
 		NrMethodConfig config = algo.getNrMethodConfig();
-		config.setNonDivergent(true);
+		algo.setNonDivergent(true);
 		config.setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		algo.getLfCalculator().getNrSolver().reConfigSolver(config);
 
@@ -65,6 +65,21 @@ public class MatpowerCase8387PegaseTest extends CorePluginTestSetup {
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.setHvdcLfSwitchFactor(5);
 		algo.setMaxIterations(20);
+		algo.setTolerance(0.001);
+
+		return algo.loadflow();
+	}
+
+	private boolean runPqNonDivergentNormalControlPowerflow(AclfNetwork net) throws Exception {
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+
+		algo.getDataCheckConfig().setTurnOffIslandBus(true);
+		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+		algo.setLfMethod(AclfMethodType.PQ);
+		algo.setInitBusVoltage(false);
+		algo.setNonDivergent(true);
+		algo.setVariableUpdateLimit(false);
+		algo.setMaxIterations(50);
 		algo.setTolerance(0.001);
 
 		return algo.loadflow();
@@ -171,10 +186,28 @@ public class MatpowerCase8387PegaseTest extends CorePluginTestSetup {
 	public void testCase8387PegaseNonDivergentPowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE8387PEGASE_FILE);
 		net.setPolarCoordinate(false);
-
 		assertCase8387PegaseImportedData(net);
 
-		boolean solved = runNonDivergentPowerflow(net);
+		boolean solved = runNonDivergentPowerflow(net, AclfMethodType.NR);
+		assertTrue(solved && net.isLfConverged(), AclfOutFunc.loadFlowSummary(net).toString());
+	}
+
+	@Test
+	public void testCase8387PegasePqNonDivergentPowerFlow() throws Exception {
+		AclfNetwork net = loadMatpowerCase(CASE8387PEGASE_FILE);
+		assertCase8387PegaseImportedData(net);
+
+		boolean solved = runNonDivergentPowerflow(net, AclfMethodType.PQ);
+		assertTrue(solved && net.isLfConverged(), AclfOutFunc.loadFlowSummary(net).toString());
+	}
+
+	@Test
+	public void testCase8387PegasePqNonDivergentNormalControlPowerFlow() throws Exception {
+		AclfNetwork net = loadMatpowerCase(CASE8387PEGASE_FILE);
+		net.setPolarCoordinate(false);
+		assertCase8387PegaseImportedData(net);
+
+		boolean solved = runPqNonDivergentNormalControlPowerflow(net);
 		assertTrue(solved && net.isLfConverged(), AclfOutFunc.loadFlowSummary(net).toString());
 	}
 
@@ -182,7 +215,6 @@ public class MatpowerCase8387PegaseTest extends CorePluginTestSetup {
 	public void testCase8387PegasePowerFlow() throws Exception {
 		AclfNetwork net = loadMatpowerCase(CASE8387PEGASE_FILE);
 		net.setPolarCoordinate(false);
-
 		assertCase8387PegaseImportedData(net);
 
 		boolean solved = runPowerflow(net);

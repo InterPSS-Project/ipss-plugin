@@ -1,11 +1,11 @@
 package org.interpss.core.ca;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.numeric.util.NumericUtil;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -28,13 +28,13 @@ public class Ieee14_GSF_Test extends CorePluginTestSetup {
 		// Branch 1->2 and 1->5 form an interface, their GSF sum is -1.0 w.r.p to 8
 		double x1 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus1->Bus2(1)"));
 		double x2 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus1->Bus5(1)"));
-		assertTrue(NumericUtil.equals(x1+x2, -1.0, 0.0001));
+		assertEquals(-1.0, x1+x2, 0.0001);
 
 		// Branch 5->6, 4->7 and 4->9 form an interface, their GSF sum is -1.0 w.r.p to 8
 		x1 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus5->Bus6(1)"));
 		x2 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus4->Bus7(1)"));
 		double x3 = algo.calGenShiftFactor("Bus8", net.getBranch("Bus4->Bus9(1)"));
-		assertTrue(NumericUtil.equals(x1+x2+x3, -1.0, 0.0001));
+		assertEquals(-1.0, x1+x2+x3, 0.0001);
 	}
 	
 	@Test
@@ -51,11 +51,11 @@ public class Ieee14_GSF_Test extends CorePluginTestSetup {
 		double f = algo.genTransferDistFactor(net.getBranch("Bus2->Bus3(1)"));
 		//System.out.println("monitorBranch - 2->3");
 		//System.out.println("GSF: " + f );	
-		assertTrue(NumericUtil.equals(f, 0.55937609, 0.00001));
+		assertEquals(0.55937609, f, 0.00001);
 
 		f = algo.genTransferDistFactor(net.getBranch("Bus3->Bus4(1)"));
 		//System.out.println("GSF: " + f );	
-		assertTrue(NumericUtil.equals(f,-0.440623, 0.00001));
+		assertEquals(-0.440623, f, 0.00001);
 
 		// multiple withdraw buses
 		algo.getInjectBusList().clear();
@@ -66,15 +66,15 @@ public class Ieee14_GSF_Test extends CorePluginTestSetup {
 		
 		f = algo.genTransferDistFactor(net.getBranch("Bus9->Bus14(1)"));
 		//System.out.println("GSF: " + f );	
-		assertTrue(NumericUtil.equals(f, 0.424185, 0.00001));
+		assertEquals(0.424185, f, 0.00001);
 
 		f = algo.genTransferDistFactor(net.getBranch("Bus6->Bus13(1)"));
 		//System.out.println("GSF: " + f );	
-		assertTrue(NumericUtil.equals(f, 0.447801, 0.00001));
+		assertEquals(0.447801, f, 0.00001);
 
 		f = algo.genTransferDistFactor(net.getBranch("Bus12->Bus13(1)"));
 		//System.out.println("GSF: " + f );
-		assertTrue(NumericUtil.equals(f, 0.128015, 0.00001));
+		assertEquals(0.128015, f, 0.00001);
 	
 		// change the withdraw bus weights
 		algo.getInjectBusList().clear();
@@ -85,15 +85,15 @@ public class Ieee14_GSF_Test extends CorePluginTestSetup {
 
 		f =algo.genTransferDistFactor(net.getBranch("Bus9->Bus14(1)"));
 		//System.out.println("GSF: " + f );	
-		assertTrue(NumericUtil.equals(f, 0.569027, 0.00001));
+		assertEquals(0.569027, f, 0.00001);
 
 		f =	algo.genTransferDistFactor(net.getBranch("Bus6->Bus13(1)"));
 		//System.out.println("GSF: " + f);	
-		assertTrue(NumericUtil.equals(f, 0.335159, 0.00001));
+		assertEquals(0.335159, f, 0.00001);
 
 		f = algo.genTransferDistFactor(net.getBranch("Bus12->Bus13(1)"));
 		//System.out.println("GSF: " + f );	
-		assertTrue(NumericUtil.equals(f, 0.095813, 0.00001));
+		assertEquals(0.095813, f, 0.00001);
 	}
 }
 

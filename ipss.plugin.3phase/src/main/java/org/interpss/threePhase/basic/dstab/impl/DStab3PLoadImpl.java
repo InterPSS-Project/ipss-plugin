@@ -64,7 +64,7 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 	@Override
 	public Complex3x1 get3PhaseLoad(Complex3x1 vabc) {
-		Complex3x1 loadPQ = ph3Load;
+		Complex3x1 loadPQ = new Complex3x1();
 
 //      Complex3x1 vabc =((Bus3Phase)this.getParentBus()).get3PhaseVotlages();
 
@@ -74,13 +74,20 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 		switch (this.loadConnectType){
 		  case THREE_PHASE_WYE:
-			  if(this.code==AclfLoadCode.CONST_P){
-				  // default
+			  if(this.isOpenDssVoltageModel()) {
+				  loadPQ.a_0 = openDssLoadAtVoltage(ph3Load.a_0, vabc.a_0.abs());
+				  loadPQ.b_1 = openDssLoadAtVoltage(ph3Load.b_1, vabc.b_1.abs());
+				  loadPQ.c_2 = openDssLoadAtVoltage(ph3Load.c_2, vabc.c_2.abs());
+			  }
+			  else if(this.code==AclfLoadCode.CONST_P){
+				  loadPQ.a_0 = loadAtVoltage(ph3Load.a_0, Complex.ZERO, Complex.ZERO, vabc.a_0.abs());
+				  loadPQ.b_1 = loadAtVoltage(ph3Load.b_1, Complex.ZERO, Complex.ZERO, vabc.b_1.abs());
+				  loadPQ.c_2 = loadAtVoltage(ph3Load.c_2, Complex.ZERO, Complex.ZERO, vabc.c_2.abs());
 			  }
 			  else if(this.code==AclfLoadCode.CONST_I){
-				  loadPQ.a_0 = ph3Load.a_0.multiply(vabc.a_0.abs());
-				  loadPQ.b_1 = ph3Load.b_1.multiply(vabc.b_1.abs());
-				  loadPQ.c_2 = ph3Load.c_2.multiply(vabc.c_2.abs());
+				  loadPQ.a_0 = loadAtVoltage(Complex.ZERO, ph3Load.a_0, Complex.ZERO, vabc.a_0.abs());
+				  loadPQ.b_1 = loadAtVoltage(Complex.ZERO, ph3Load.b_1, Complex.ZERO, vabc.b_1.abs());
+				  loadPQ.c_2 = loadAtVoltage(Complex.ZERO, ph3Load.c_2, Complex.ZERO, vabc.c_2.abs());
 			  }
 			  else if(this.code==AclfLoadCode.CONST_Z){
 				  double va = vabc.a_0.abs();
@@ -98,21 +105,31 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 
 		  case THREE_PHASE_DELTA:
-			  if(this.code==AclfLoadCode.CONST_P){
-				  // default
+			  Complex vab = vabc.a_0.subtract(vabc.b_1);
+			  Complex vbc = vabc.b_1.subtract(vabc.c_2);
+			  Complex vca = vabc.c_2.subtract(vabc.a_0);
+			  if(this.isOpenDssVoltageModel()) {
+				  loadPQ.a_0 = openDssDeltaLoad(ph3Load.a_0, vab);
+				  loadPQ.b_1 = openDssDeltaLoad(ph3Load.b_1, vbc);
+				  loadPQ.c_2 = openDssDeltaLoad(ph3Load.c_2, vca);
+			  }
+			  else if(this.code==AclfLoadCode.CONST_P){
+				  loadPQ.a_0 = deltaLoad(ph3Load.a_0, Complex.ZERO, Complex.ZERO, vab);
+				  loadPQ.b_1 = deltaLoad(ph3Load.b_1, Complex.ZERO, Complex.ZERO, vbc);
+				  loadPQ.c_2 = deltaLoad(ph3Load.c_2, Complex.ZERO, Complex.ZERO, vca);
 			  }
 			  else if(this.code==AclfLoadCode.CONST_I){
-				  loadPQ.a_0 = ph3Load.a_0.multiply(vabc.a_0.subtract(vabc.b_1).abs()/Math.sqrt(3.0));
-				  loadPQ.b_1 = ph3Load.b_1.multiply(vabc.b_1.subtract(vabc.c_2).abs()/Math.sqrt(3.0));
-				  loadPQ.c_2 = ph3Load.c_2.multiply(vabc.c_2.subtract(vabc.a_0).abs()/Math.sqrt(3.0));
+				  loadPQ.a_0 = deltaLoad(Complex.ZERO, ph3Load.a_0, Complex.ZERO, vab);
+				  loadPQ.b_1 = deltaLoad(Complex.ZERO, ph3Load.b_1, Complex.ZERO, vbc);
+				  loadPQ.c_2 = deltaLoad(Complex.ZERO, ph3Load.c_2, Complex.ZERO, vca);
 			  }
 			  else if(this.code==AclfLoadCode.CONST_Z){
-				  double vab = vabc.a_0.subtract(vabc.b_1).abs()/Math.sqrt(3.0);
-				  double vbc = vabc.b_1.subtract(vabc.c_2).abs()/Math.sqrt(3.0);
-				  double vca = vabc.c_2.subtract(vabc.a_0).abs()/Math.sqrt(3.0);
-				  loadPQ.a_0 = ph3Load.a_0.multiply(vab*vab);
-				  loadPQ.b_1 = ph3Load.b_1.multiply(vbc*vbc);
-				  loadPQ.c_2 = ph3Load.c_2.multiply(vca*vca);
+				  double vabMag = vab.abs()/Math.sqrt(3.0);
+				  double vbcMag = vbc.abs()/Math.sqrt(3.0);
+				  double vcaMag = vca.abs()/Math.sqrt(3.0);
+				  loadPQ.a_0 = ph3Load.a_0.multiply(vabMag*vabMag);
+				  loadPQ.b_1 = ph3Load.b_1.multiply(vbcMag*vbcMag);
+				  loadPQ.c_2 = ph3Load.c_2.multiply(vcaMag*vcaMag);
 			  }
 			  else{
 				  throw new Error("Load model type not supported yet!! Bus, load id,model type, phases: "
@@ -134,6 +151,15 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 	public void set3PhaseLoad(Complex3x1 threePhaseLoad) {
 
 		 ph3Load = threePhaseLoad;
+		 if(ph3Load != null) {
+			 this.setLoadCP(add(add(ph3Load.a_0, ph3Load.b_1), ph3Load.c_2));
+		 }
+	}
+
+	private static Complex add(Complex left, Complex right) {
+		Complex a = left == null ? Complex.ZERO : left;
+		Complex b = right == null ? Complex.ZERO : right;
+		return a.add(b);
 	}
 
 	@Override
@@ -157,29 +183,24 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 
 		switch (this.loadConnectType){
 		  case THREE_PHASE_WYE:
-			  if(this.code==AclfLoadCode.CONST_P){
+			  if(this.isOpenDssVoltageModel()) {
+				  double va = vabc.a_0.abs();
+				  double vb = vabc.b_1.abs();
+				  double vc = vabc.c_2.abs();
+
+				  loadPQ.a_0 = openDssLoadAtVoltage(ph3Load.a_0, va);
+				  loadPQ.b_1 = openDssLoadAtVoltage(ph3Load.b_1, vb);
+				  loadPQ.c_2 = openDssLoadAtVoltage(ph3Load.c_2, vc);
+			  }
+			  else if(this.code==AclfLoadCode.CONST_P){
 				  // default
 				  double va = vabc.a_0.abs();
 				  double vb = vabc.b_1.abs();
 				  double vc = vabc.c_2.abs();
 
-				  if(va>this.Vminpu) {
-					loadPQ.a_0 = ph3Load.a_0;
-				} else {
-					loadPQ.a_0 = ph3Load.a_0.multiply(va*va);
-				}
-
-				  if(vb>this.Vminpu) {
-					loadPQ.b_1 = ph3Load.b_1;
-				} else {
-					loadPQ.b_1 = ph3Load.b_1.multiply(vb*vb);
-				}
-
-				  if(vc>this.Vminpu) {
-					loadPQ.c_2 = ph3Load.c_2;
-				} else {
-					loadPQ.c_2 = ph3Load.c_2.multiply(vc*vc);
-				}
+				  loadPQ.a_0 = loadAtVoltage(ph3Load.a_0, Complex.ZERO, Complex.ZERO, va);
+				  loadPQ.b_1 = loadAtVoltage(ph3Load.b_1, Complex.ZERO, Complex.ZERO, vb);
+				  loadPQ.c_2 = loadAtVoltage(ph3Load.c_2, Complex.ZERO, Complex.ZERO, vc);
 
 			  }
 			  else if(this.code==AclfLoadCode.CONST_I){
@@ -187,9 +208,9 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 				  double vb = vabc.b_1.abs();
 				  double vc = vabc.c_2.abs();
 
-				  loadPQ.a_0 = ph3Load.a_0.multiply(va);
-				  loadPQ.b_1 = ph3Load.b_1.multiply(vb);
-				  loadPQ.c_2 = ph3Load.c_2.multiply(vc);
+				  loadPQ.a_0 = loadAtVoltage(Complex.ZERO, ph3Load.a_0, Complex.ZERO, va);
+				  loadPQ.b_1 = loadAtVoltage(Complex.ZERO, ph3Load.b_1, Complex.ZERO, vb);
+				  loadPQ.c_2 = loadAtVoltage(Complex.ZERO, ph3Load.c_2, Complex.ZERO, vc);
 			  }
 			  else if(this.code==AclfLoadCode.CONST_Z){
 				  double va = vabc.a_0.abs();
@@ -210,15 +231,20 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 			  Complex vab = vabc.a_0.subtract(vabc.b_1);
 			  Complex vbc = vabc.b_1.subtract(vabc.c_2);
 			  Complex vca = vabc.c_2.subtract(vabc.a_0);
-			  if(this.code==AclfLoadCode.CONST_P){
-				  loadPQ.a_0 = deltaLoad(ph3Load.a_0, vab);
-				  loadPQ.b_1 = deltaLoad(ph3Load.b_1, vbc);
-				  loadPQ.c_2 = deltaLoad(ph3Load.c_2, vca);
+			  if(this.isOpenDssVoltageModel()) {
+				  loadPQ.a_0 = openDssDeltaLoad(ph3Load.a_0, vab);
+				  loadPQ.b_1 = openDssDeltaLoad(ph3Load.b_1, vbc);
+				  loadPQ.c_2 = openDssDeltaLoad(ph3Load.c_2, vca);
+			  }
+			  else if(this.code==AclfLoadCode.CONST_P){
+				  loadPQ.a_0 = deltaLoad(ph3Load.a_0, Complex.ZERO, Complex.ZERO, vab);
+				  loadPQ.b_1 = deltaLoad(ph3Load.b_1, Complex.ZERO, Complex.ZERO, vbc);
+				  loadPQ.c_2 = deltaLoad(ph3Load.c_2, Complex.ZERO, Complex.ZERO, vca);
 			  }
 			  else if(this.code==AclfLoadCode.CONST_I){
-				  loadPQ.a_0 = ph3Load.a_0.multiply(vab.abs()/Math.sqrt(3.0));
-				  loadPQ.b_1 = ph3Load.b_1.multiply(vbc.abs()/Math.sqrt(3.0));
-				  loadPQ.c_2 = ph3Load.c_2.multiply(vca.abs()/Math.sqrt(3.0));
+				  loadPQ.a_0 = deltaLoad(Complex.ZERO, ph3Load.a_0, Complex.ZERO, vab);
+				  loadPQ.b_1 = deltaLoad(Complex.ZERO, ph3Load.b_1, Complex.ZERO, vbc);
+				  loadPQ.c_2 = deltaLoad(Complex.ZERO, ph3Load.c_2, Complex.ZERO, vca);
 			  }
 			  else if(this.code==AclfLoadCode.CONST_Z){
 				  double vabMag = vab.abs()/Math.sqrt(3.0);
@@ -253,25 +279,27 @@ public class DStab3PLoadImpl extends DStab1PLoadImpl implements DStab3PLoad {
 			equivCurInj.c_2 = ica.multiply(-1.0).add(ibc);
 		}
 		else {
-			if(vabc.a_0.abs() > this.Vminpu) {
+			if(vabc.a_0.abs() > 0.001) {
 				equivCurInj.a_0 = loadPQ.a_0.divide(vabc.a_0).conjugate().multiply(-1.0);
 			}
-			if(vabc.b_1.abs() > this.Vminpu) {
+			if(vabc.b_1.abs() > 0.001) {
 				equivCurInj.b_1 = loadPQ.b_1.divide(vabc.b_1).conjugate().multiply(-1.0);
 			}
-			if(vabc.c_2.abs() > this.Vminpu) {
+			if(vabc.c_2.abs() > 0.001) {
 				equivCurInj.c_2 = loadPQ.c_2.divide(vabc.c_2).conjugate().multiply(-1.0);
 			}
 		}
 		return equivCurInj;
 	}
 
-	private Complex deltaLoad(Complex nominalLoad, Complex lineVoltage) {
+	private Complex deltaLoad(Complex constP, Complex constI, Complex constZ, Complex lineVoltage) {
 		double vmag = lineVoltage.abs()/Math.sqrt(3.0);
-		if(vmag > this.Vminpu) {
-			return nominalLoad;
-		}
-		return nominalLoad.multiply(vmag*vmag);
+		return loadAtVoltage(constP, constI, constZ, vmag);
+	}
+
+	private Complex openDssDeltaLoad(Complex nominalLoad, Complex lineVoltage) {
+		double vmag = lineVoltage.abs()/Math.sqrt(3.0);
+		return openDssLoadAtVoltage(nominalLoad, vmag);
 	}
 
 	private Complex loadCurrent(Complex load, Complex voltage) {

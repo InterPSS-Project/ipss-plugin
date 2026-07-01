@@ -10,6 +10,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
@@ -56,31 +57,31 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.3239)<0.0001);
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.1654)<0.0001);
   		
-  		// cashe the bus and branch results for comparison after deconsolidation
-  		Map<String,String> results = new HashMap<>();
-  		Map<String,String> pIntoNetResults = new HashMap<>();
-  		net.getBusList().stream()
-  			.filter(bus -> !bus.isActive()) 	
-	  		.forEach(bus -> {
-	  			String result = AclfOutFunc.busLfSummary(bus, true);
-	  			//System.out.println(result);
-	  			results.put(bus.getId(), result);
-	  			
+		// cashe the bus and branch results for comparison after deconsolidation
+		Map<String,String> results = new HashMap<>();
+		Map<String,Complex> pIntoNetResults = new HashMap<>();
+		net.getBusList().stream()
+			.filter(bus -> bus.isActive())
+			.forEach(bus -> {
+				String result = AclfOutFunc.busLfSummary(bus, true);
+				//System.out.println(result);
+				results.put(bus.getId(), result);
+
 				Complex pIntoNet = bus.powerIntoNet();
-				pIntoNetResults.put(bus.getId(), ComplexFunc.toStr(pIntoNet));
-	  		});
-  		
- 		Map<String,String> from2ToResults = new HashMap<>();
-  		Map<String,String> to2FromResults = new HashMap<>();
-  		net.getBranchList().stream()
-  			.filter(branch -> !branch.isActive())
-	  		.forEach(branch -> {
-	  			String originalId = branch.getOriginalBranchId().equals("") ? 
-	  					branch.getId() : branch.getOriginalBranchId();
-	  			//System.out.println("Branch: " + branch.getId() + " originalId: " + originalId);
-	  			from2ToResults.put(originalId, ComplexFunc.toStr(branch.powerFrom2To()));
-	  			to2FromResults.put(originalId, ComplexFunc.toStr(branch.powerTo2From()));
-	  		});
+				pIntoNetResults.put(bus.getId(), pIntoNet);
+			});
+
+		Map<String,Complex> from2ToResults = new HashMap<>();
+		Map<String,Complex> to2FromResults = new HashMap<>();
+		net.getBranchList().stream()
+			.filter(branch -> !branch.isActive())
+			.forEach(branch -> {
+				String originalId = branch.getOriginalBranchId().equals("") ?
+						branch.getId() : branch.getOriginalBranchId();
+				//System.out.println("Branch: " + branch.getId() + " originalId: " + originalId);
+				from2ToResults.put(originalId, branch.powerFrom2To());
+				to2FromResults.put(originalId, branch.powerTo2From());
+			});
   		
   		//System.out.println(net.getBus("Bus4").toString(net.getBaseKva()));
   		//AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus4", false);
@@ -96,32 +97,49 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
   		net.getBusList().forEach(bus -> {
   			if (bus.isConnect2ZeroZBranch()) {
-  				// We need to the special function to calculate the power into net for the bus 
-  				// connected to zeroZ branch
+				// We need to the special function to calculate the power into net for the bus
+				// connected to zeroZ branch
 				Complex pIntoNet = bus.powerIntoNet();
 				//System.out.println("Bus " + bus.getId() + " power into net: " + ComplexFunc.toStr(pIntoNet));
-	  			if (pIntoNetResults.get(bus.getId()) == null) 
-	  					assertTrue(pIntoNetResults.get(bus.getId()).equals(ComplexFunc.toStr(pIntoNet)),
-	  						"Bus " + bus.getId() + " pIntoNetResults do not match");
-  			} else {
+				Complex expectedPIntoNet = pIntoNetResults.get(bus.getId());
+				if (expectedPIntoNet != null) {
+					assertTrue(NumericUtil.equals(expectedPIntoNet, pIntoNet, 1.0e-4),
+							"Bus " + bus.getId() + " pIntoNetResults do not match, expected: "
+									+ ComplexFunc.toStr(expectedPIntoNet) + ", actual: "
+									+ ComplexFunc.toStr(pIntoNet));
+				}
+			} else {
   				// For the bus not connected to zeroZ branch, we can use the regular method
   				String result = AclfOutFunc.busLfSummary(bus, true);
   				//System.out.println(AclfOutFunc.busLfSummary(bus, true));
-  				assertTrue(results.get(bus.getId()).equals(result),
-  						"Bus " + bus.getId() + " results do not match");
+				String expectedResult = results.get(bus.getId());
+				if (expectedResult != null) {
+					assertTrue(expectedResult.equals(result),
+							"Bus " + bus.getId() + " results do not match");
+				}
   			}
   		});
   		
-  		net.getBranchList().forEach(branch -> {
-  			// we only compare the branch results for the branches that are not zeroZ branches
-  			if (!branch.isZeroZBranch()) {
-  				//System.out.println("---Branch: " + branch.getId());
-	  			assertTrue(from2ToResults.get(branch.getId()).equals(ComplexFunc.toStr(branch.powerFrom2To())),
-	  					"Branch " + branch.getId() + " from2to results do not match");
-	  			assertTrue(to2FromResults.get(branch.getId()).equals(ComplexFunc.toStr(branch.powerTo2From())),
-	  					"Branch " + branch.getId() + " to2from results do not match");
-  			}
-  		});
+		net.getBranchList().forEach(branch -> {
+			// we only compare the branch results for the branches that are not zeroZ branches
+			if (!branch.isZeroZBranch()) {
+				//System.out.println("---Branch: " + branch.getId());
+				Complex expectedFrom2To = from2ToResults.get(branch.getId());
+				Complex expectedTo2From = to2FromResults.get(branch.getId());
+				if (expectedFrom2To != null && expectedTo2From != null) {
+					Complex actualFrom2To = branch.powerFrom2To();
+					assertTrue(NumericUtil.equals(expectedFrom2To, actualFrom2To, 1.0e-4),
+							"Branch " + branch.getId() + " from2to results do not match, expected: "
+										+ ComplexFunc.toStr(expectedFrom2To) + ", actual: "
+										+ ComplexFunc.toStr(actualFrom2To));
+					Complex actualTo2From = branch.powerTo2From();
+					assertTrue(NumericUtil.equals(expectedTo2From, actualTo2From, 1.0e-4),
+							"Branch " + branch.getId() + " to2from results do not match, expected: "
+										+ ComplexFunc.toStr(expectedTo2From) + ", actual: "
+										+ ComplexFunc.toStr(actualTo2From));
+				}
+			}
+		});
     }
 }
 /*

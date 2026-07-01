@@ -223,7 +223,11 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		if(dstabBusXml.getGenData().getContributeGen().size() > 0){
 			DStabGenDataXmlType dyGen = null;
 			for(JAXBElement<? extends LoadflowGenDataXmlType> dyGenElem: dstabBusXml.getGenData().getContributeGen()){
-                dyGen = (DStabGenDataXmlType)dyGenElem.getValue();
+				LoadflowGenDataXmlType gen = dyGenElem.getValue();
+				if (!(gen instanceof DStabGenDataXmlType)) {
+					continue;
+				}
+                dyGen = (DStabGenDataXmlType)gen;
                 //TODO input from ODM, generator is not created yet
                 if(dstabBus.getContributeGen(dyGen.getId())==null ){
                         log.error("The generator, Id="+ dyGen.getId()+ " does NOT exist in the bus # "+dstabBus.getId());
@@ -243,12 +247,16 @@ public abstract class AbstractODMDStabParserMapper<Tfrom> extends AbstractODMAcs
 		
 		if(dstabBusXml.getLoadData()!= null && dstabBusXml.getLoadData().getContributeLoad().size() > 0){
 				for(JAXBElement<? extends LoadflowLoadDataXmlType> dynLoadModel:dstabBusXml.getLoadData().getContributeLoad()){
-					DStabLoadDataXmlType dynLoad =(DStabLoadDataXmlType) dynLoadModel.getValue();
+					LoadflowLoadDataXmlType load = dynLoadModel.getValue();
+					if (!(load instanceof DStabLoadDataXmlType)) {
+						continue;
+					}
+					DStabLoadDataXmlType dynLoad =(DStabLoadDataXmlType) load;
 					if(dynLoad!=null){
 						setDynLoadData(dynLoad, dstabBus);
 					}
 				}
-		}
+			}
     }
 
 	protected void setDynGenData(BaseDStabBus dstabBus, 

@@ -61,6 +61,20 @@ public interface DStab3PBranch extends IBranch3Phase, DStabBranch{
 
 	public Static3PXformer to3PXformer();
 
+	public void setFromTurnRatioABC(double phaseA, double phaseB, double phaseC);
+
+	public void setToTurnRatioABC(double phaseA, double phaseB, double phaseC);
+
+	public double[] getFromTurnRatioABC();
+
+	public double[] getToTurnRatioABC();
+
+	public boolean hasPhaseTurnRatio();
+
+	public void setExplicitYabc(Complex3x3 yff, Complex3x3 yft, Complex3x3 ytf, Complex3x3 ytt);
+
+	public boolean hasExplicitYabc();
+
 	/**
 	 * The mapping matrix relating Vabc of to bus to the Vabc of from bus
 	 * @return

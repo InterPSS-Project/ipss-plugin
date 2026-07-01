@@ -3,7 +3,7 @@ package org.interpss.dep.datamodel.bean.aclf.adj;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.interpss.dep.datamodel.bean.base.BaseJSONBean;
+import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
@@ -13,7 +13,7 @@ import org.interpss.numeric.util.NumericUtil;
  * @author sHou 
  * @param <TExt> template for extension info 
  */
-public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean<TExt> {
+public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends CompareBaseJSONBean<TExt> {
 	
 	/**
 	 * switch shunt control type  
@@ -40,14 +40,14 @@ public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends BaseJSONBean
 		varBankList = new ArrayList<QBankBean<TExt>>();
 	}
 
-	@Override public int compareTo(BaseJSONBean<TExt> b) {
+	@Override public int compareTo(CompareBaseJSONBean<TExt> b) {
 		int eql = super.compareTo(b);
 		
 		SwitchShuntBean<TExt> bean = (SwitchShuntBean<TExt>)b;
 
 		String str = "ID: " + this.id + " SwitchShuntBean.";
 		
-		if (!this.remoteBusId.equals(bean.remoteBusId)) {
+		if (!java.util.Objects.equals(this.remoteBusId, bean.remoteBusId)) {
 			logCompareMsg(str + "remoteBusNumber is not equal, " + this.remoteBusId + ", " + bean.remoteBusId); eql = 1; }
 
 		if (!NumericUtil.equals(this.vmax, bean.vmax, PU_ERR)) {

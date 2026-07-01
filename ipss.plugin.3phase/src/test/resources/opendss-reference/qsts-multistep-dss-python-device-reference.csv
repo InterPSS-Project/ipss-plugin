@@ -1,0 +1,7 @@
+case_id,device_class,device_id,step,expected_p_kw,expected_q_kvar
+load_daily_shape,load,load1,0,450.000000000000,150.000000000000
+load_daily_shape,load,load1,1,1350.000000000000,450.000000000000
+official_pvsystem_example,generator,pv,0,382.666666666667,0.000000000000
+official_pvsystem_example,generator,pv,1,302.719999968911,-0.000000032727
+scheduled_charge_discharge,generator,batt1,0,500.000007906382,60.000008009875
+scheduled_charge_discharge,generator,batt1,1,-500.000008692711,29.999986004192

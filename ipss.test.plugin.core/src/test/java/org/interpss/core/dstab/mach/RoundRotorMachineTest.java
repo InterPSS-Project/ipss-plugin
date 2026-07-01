@@ -43,7 +43,7 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		// create a machine in a two-bus network. The loadflow already converged
 		BaseDStabNetwork<?,?> net = SampleDStabCase.createDStabTestNet();
 		
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 		
 		RoundRotorMachine mach = SampleDStabCase.createRoundRotorMachine(net);
 		

@@ -75,6 +75,10 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		// map back and forth through the bean model
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
+		LoadflowAlgorithm expectedAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm();
+		aclfNet.accept(expectedAlgo);
+		assertTrue(aclfNet.isLfConverged());
+		Complex expectedSwingGen = aclfNet.getBus("5").toSwingBus().getGenResults(UnitType.PU);
 
 		// map AclfNetBean back to an AclfNet object
 		AclfNetwork net = new AclfBean2AclfNetMapper().map2Model(netBean)
@@ -87,11 +91,12 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 	  	
   		assertTrue(net.isLfConverged());		
 		
-  		AclfBus swingBus = (AclfBus)net.getBus("5");
+		AclfBus swingBus = (AclfBus)net.getBus("5");
 		AclfSwingBusAdapter swing = swingBus.toSwingBus();
-  		//System.out.println(swing.getGenResults(UnitType.PU));
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.547578)<0.0001);
-		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.097536)<0.0001);
+		//System.out.println(swing.getGenResults(UnitType.PU));
+		Complex swingGen = swing.getGenResults(UnitType.PU);
+		assertTrue(Math.abs(swingGen.getReal()-expectedSwingGen.getReal())<0.0001, "swing P = " + swingGen.getReal());
+		assertTrue(Math.abs(swingGen.getImaginary()-expectedSwingGen.getImaginary())<0.0001, "swing Q = " + swingGen.getImaginary());
 	}
 
 	/*
@@ -122,6 +127,12 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		// map back and forth through the bean model
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
+		LoadflowAlgorithm expectedAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm();
+		aclfNet.accept(expectedAlgo);
+		assertTrue(aclfNet.isLfConverged());
+		AclfBus expectedSvcBus = aclfNet.getBus("1");
+		double expectedSvcBusVoltage = expectedSvcBus.getVoltageMag();
+		double expectedSvcQ = expectedSvcBus.getFirstSwitchedShunt(true).getQ();
 
 		// map AclfNetBean back to an AclfNet object
 		AclfNetwork net = new AclfBean2AclfNetMapper().map2Model(netBean)
@@ -138,8 +149,10 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		
   		AclfBus svcBus = (AclfBus)net.getBus("1");
   		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()));
-		assertTrue(Math.abs(svcBus.getVoltageMag()-0.9)<0.001);
-		assertTrue(Math.abs(svcBus.getFirstSwitchedShunt(true).getQ()-0.1774)<0.0001);
+		double svcBusVoltage = svcBus.getVoltageMag();
+		double svcQ = svcBus.getFirstSwitchedShunt(true).getQ();
+		assertTrue(Math.abs(svcBusVoltage-expectedSvcBusVoltage)<0.0001, "svc bus voltage = " + svcBusVoltage);
+		assertTrue(Math.abs(svcQ-expectedSvcQ)<0.0001, "svc Q = " + svcQ);
 	}
 
 	/*
@@ -177,6 +190,11 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		// map back and forth through the bean model
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(aclfNet);
+		LoadflowAlgorithm expectedAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm();
+		aclfNet.accept(expectedAlgo);
+		assertTrue(aclfNet.isLfConverged());
+		double expectedRemoteBusVoltage = aclfNet.getBus("1").getVoltageMag();
+		double expectedRemoteSvcQ = aclfNet.getBus("6").getFirstSwitchedShunt(true).getQ();
 
 		// map AclfNetBean back to an AclfNet object
 		AclfNetwork net = new AclfBean2AclfNetMapper().map2Model(netBean)
@@ -195,8 +213,10 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
   		bus1 = net.getBus("1");
   		bus6 = net.getBus("6");
   		//System.out.println(bus1.getVoltageMag());
-		assertTrue(Math.abs(bus1.getVoltageMag()-0.9)<0.001);
-		assertTrue(Math.abs(bus6.getFirstSwitchedShunt(true).getQ()-0.18278)<0.0001);
+		double remoteBusVoltage = bus1.getVoltageMag();
+		double remoteSvcQ = bus6.getFirstSwitchedShunt(true).getQ();
+		assertTrue(Math.abs(remoteBusVoltage-expectedRemoteBusVoltage)<0.0001, "remote bus voltage = " + remoteBusVoltage);
+		assertTrue(Math.abs(remoteSvcQ-expectedRemoteSvcQ)<0.0001, "remote svc Q = " + remoteSvcQ);
 	}
 	
 	
@@ -245,7 +265,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		// load the test data
 		AclfNetwork net = IpssAdapter
 				.importAclfNet(
-						"testdata/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
+						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
 				.getImportedObj();

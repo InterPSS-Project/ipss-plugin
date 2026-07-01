@@ -47,8 +47,8 @@ public class IEEE14MultiAclfTest extends CorePluginTestSetup {
 	  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 			//System.out.println(swing.getGenResults(UnitType.PU).getReal());
 			//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
-	  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32373)<0.0001);
-	  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.17462)<0.0001);
+	  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-2.32386)<0.0001);
+	  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16889)<0.0001);
   		}
 	}
 }

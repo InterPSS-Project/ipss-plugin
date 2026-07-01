@@ -23,10 +23,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.contingency.DclfContingencyConfig;
-import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
+import com.interpss.core.algo.dclf.DclfContingencyConfig;
+import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.MonitoredBranchRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,17 +39,18 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
-import com.interpss.core.algo.dclf.DclfContingencySolutionMethod;
-import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver;
-import com.interpss.core.algo.dclf.DclfContingencyWoodburySolver.OpenBranchOutageBatch;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBranch;
+import com.interpss.core.algo.dclf.solver.DclfContingencySolutionMethod;
+import com.interpss.core.algo.dclf.solver.DclfContingencyWoodburySolver;
+import com.interpss.core.algo.dclf.solver.DclfContingencyWoodburySolver.OpenBranchOutageBatch;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import com.interpss.monitor.definition.MonitoredBranchRecord;
 
 import org.apache.commons.math3.complex.Complex;
 

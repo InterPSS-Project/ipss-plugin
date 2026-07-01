@@ -36,6 +36,7 @@ import org.ieee.odm.schema.BranchBusSideEnumType;
 import org.ieee.odm.schema.BranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.DCLineData2TXmlType;
+import org.ieee.odm.schema.FACTSDeviceXmlType;
 import org.ieee.odm.schema.FlowInterfaceBranchXmlType;
 import org.ieee.odm.schema.FlowInterfaceEnumType;
 import org.ieee.odm.schema.FlowInterfaceRecXmlType;
@@ -149,6 +150,11 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			
 			mapAclfNetworkData(aclfNet, xmlNet);
 			simuCtx.setAclfNet((AclfNetwork)aclfNet);
+
+			int busCnt = xmlNet.getBusList().getBus().size();
+			int branchCnt = xmlNet.getBranchList().getBranch().size();
+			aclfNet.ensureLookupCapacity(busCnt, branchCnt);
+			log.info("ODM to AclfNetwork: busCnt: " + busCnt + ", branchCnt: " + branchCnt);
 
 			//XformerZTableXmlType xfrZTable = xmlNet.getXfrZTable();
 			AclfBusDataHelper busHelper = new AclfBusDataHelper(aclfNet);
@@ -331,9 +337,11 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 			for (XformerZTableXmlType.XformerZTableItem item : xfrZTable.getXformerZTableItem()) {
 				XfrZTableEntry elem = CoreObjectFactory.createXfrZTableEntry(item.getNumber(), net).get();
 				for (XformerZTableXmlType.XformerZTableItem.Lookup point : item.getLookup()) {
-					elem.getPointSet().getPoints().add(new XfrZCorrection(point.getTurnRatioShiftAngle(), point.getScaleFactor()));
+					double im = point.getImaginaryPart() != null ? point.getImaginaryPart() : 0.0;
+					elem.getPointSet().getPoints().add(new XfrZCorrection(point.getTurnRatioShiftAngle(),
+							new Complex(point.getScaleFactor(), im)));
 				}
-			}	
+			}
 		}
 		
 		if (xmlNet.getBusVLimit() != null)
@@ -483,6 +491,10 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 		if (xmlBranch instanceof LineBranchXmlType) {
 			LineBranchXmlType branchRec = (LineBranchXmlType) xmlBranch;
 			helper.setLineBranchData(branchRec);
+		}
+		else if (xmlBranch instanceof FACTSDeviceXmlType) {
+			FACTSDeviceXmlType branchRec = (FACTSDeviceXmlType) xmlBranch;
+			helper.setFactsDeviceData(branchRec);
 		}
 		else if (xmlBranch instanceof PSXfr3WBranchXmlType) {
 			PSXfr3WBranchXmlType branchRec = (PSXfr3WBranchXmlType) xmlBranch;
