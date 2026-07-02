@@ -20,10 +20,10 @@ import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
+import com.interpss.core.funcImpl.dclf.AclfNetSsaHelper;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 import com.interpss.optadj.algo.lf.AclfNetContigencyOptimizer;
 import com.interpss.optadj.algo.lf.AclfNetLoadFlowOptimizer;
-import com.interpss.optadj.algo.util.AclfNetSsaHelper;
 import com.interpss.optadj.result.OptAdjResultContainer;
 import com.interpss.optadj.result.SsaResultContainer;
 
