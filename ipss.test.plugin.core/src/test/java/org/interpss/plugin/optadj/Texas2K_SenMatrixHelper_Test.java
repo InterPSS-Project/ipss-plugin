@@ -9,8 +9,8 @@ import org.interpss.plugin.optadj.texas2K.Texas2K_TestCaseInfo;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.optadj.algo.util.AclfNetSensHelper;
-import com.interpss.optadj.algo.util.AclfNetSensSparseHelper;
+import com.interpss.core.funcImpl.dclf.AclfNetSensHelper;
+import com.interpss.core.funcImpl.dclf.AclfNetSensSparseHelper;
 
 /**
  * Regression test for {@code Texas2K_SenMatrix_Sample}: dense and sparse bus-to-branch

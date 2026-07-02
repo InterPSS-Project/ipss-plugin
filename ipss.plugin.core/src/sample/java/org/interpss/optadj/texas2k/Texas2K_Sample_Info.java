@@ -7,8 +7,8 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.optadj.algo.util.AclfNetSensHelper;
-import com.interpss.optadj.algo.util.AclfNetSensSparseHelper;
+import com.interpss.core.funcImpl.dclf.AclfNetSensHelper;
+import com.interpss.core.funcImpl.dclf.AclfNetSensSparseHelper;
 
 public class Texas2K_Sample_Info {
     public static AclfNetwork loadNetwork() throws InterpssException {
