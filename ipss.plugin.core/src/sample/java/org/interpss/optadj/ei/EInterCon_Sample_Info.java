@@ -9,7 +9,7 @@ import org.ejml.data.DMatrixSparseCSC;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.optadj.algo.util.AclfNetSensSparseHelper;
+import com.interpss.core.funcImpl.dclf.AclfNetSensSparseHelper;
 
 public class EInterCon_Sample_Info {
     public static AclfNetwork loadNetwork() throws Exception {

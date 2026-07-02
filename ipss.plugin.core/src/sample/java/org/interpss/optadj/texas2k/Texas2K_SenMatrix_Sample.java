@@ -3,8 +3,8 @@ package org.interpss.optadj.texas2k;
 import org.ejml.data.DMatrixSparseCSC;
 
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.optadj.algo.util.AclfNetSensHelper;
-import com.interpss.optadj.algo.util.AclfNetSensSparseHelper;
+import com.interpss.core.funcImpl.dclf.AclfNetSensHelper;
+import com.interpss.core.funcImpl.dclf.AclfNetSensSparseHelper;
 
 public class Texas2K_SenMatrix_Sample {
 	public static void main(String args[]) throws Exception {
