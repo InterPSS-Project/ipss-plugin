@@ -161,16 +161,20 @@ public class AclfNetJsonComparator {
             if (obj2.has(key)) {
                 comparePrettyPrint(currentPath, obj1.get(key), obj2.get(key));
             } else {
-            	isDifferent = true;
-                log.warn("Path missing in second JSON: " + currentPath);
+            	if (outFilter.test(currentPath)) {
+	            	isDifferent = true;
+	                log.warn("Path missing in second JSON: " + currentPath);
+            	}
             }
         }
 
         for (String key : obj2.keySet()) {
             String currentPath = path.endsWith("/") ? path + key : path + "/" + key;
             if (!obj1.has(key)) {
-            	isDifferent = true;
-                log.warn("Path missing in first JSON: " + currentPath);
+            	if (outFilter.test(currentPath)) {
+	            	isDifferent = true;
+	                log.warn("Path missing in first JSON: " + currentPath);
+            	}
             }
         }
     }
