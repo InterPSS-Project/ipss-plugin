@@ -18,7 +18,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.optadj.algo.lf.AclfNetContigencyOptimizer;
-import com.interpss.optadj.algo.util.AclfNetSsaHelper;
+import com.interpss.core.funcImpl.dclf.AclfNetSsaHelper;
 import com.interpss.optadj.result.OptAdjResultContainer;
 import com.interpss.optadj.result.SsaResultContainer;
 import com.interpss.core.algo.dclf.DclfMethod;
