@@ -357,6 +357,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 					}
 					area.setName(areaXml.getName() == null? "Area" : areaXml.getName());
 					area.setDesc(areaXml.getDesc() == null? "Area Desc" : areaXml.getDesc());
+					mapNameTagMetadata(areaXml, area);
 					//net.getAreaList().add(area);
 				}
 			}
@@ -371,6 +372,7 @@ public abstract class AbstractODMAclfNetMapper<Tfrom> extends AbstractODMSimuCtx
 					}
 					zone.setName(zoneXml.getName() == null? "Zone" : zoneXml.getName());
 					zone.setDesc(zoneXml.getDesc() == null? "Zone Desc" : zoneXml.getDesc());
+					mapNameTagMetadata(zoneXml, zone);
 					//net.getZoneList().add(zone);
 				}
 			}
