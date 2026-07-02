@@ -49,6 +49,7 @@ import org.ieee.odm.schema.SwitchedShuntXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 import org.ieee.odm.schema.VoltageXmlType;
 import org.ieee.odm.schema.YXmlType;
+import org.interpss.odm.mapper.base.AbstractODMNetDataMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import static org.interpss.odm.mapper.base.ODMFunction.BusXmlRef2BusId;
@@ -324,6 +325,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 				bus.getContributeGenList().add((TGen)gen);
 				
 				gen.setStatus(xmlGen.isOffLine()==null?true:!xmlGen.isOffLine());
+				AbstractODMNetDataMapper.mapNameTagMetadata(xmlGen, gen);
 				/*
 				double Mva =xmlGen.getMvaBase().getValue();
 				double MvaFactor = xmlGen.getMvaBase().getUnit()==ApparentPowerUnitType.MVA?1.0:
@@ -423,6 +425,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 						bus.getContributeLoadList().add((TLoad)load);
 						//status
 						load.setStatus(loadElem.isOffLine()!=null?!loadElem.isOffLine():true);
+						AbstractODMNetDataMapper.mapNameTagMetadata(loadElem, load);
 
 						// load code		
 						AclfLoadCode code = AclfLoadCode.NON_LOAD;
@@ -480,6 +483,7 @@ public class AclfBusDataHelper<TGen extends AclfGen, TLoad extends AclfLoad> {
 		//id, default id = "1"
 		String id = (xmlSwitchedShuntData.getId()==null || xmlSwitchedShuntData.getId().isEmpty())?"1":xmlSwitchedShuntData.getId();
 		swchShunt.setId(id);
+		AbstractODMNetDataMapper.mapNameTagMetadata(xmlSwitchedShuntData, swchShunt);
 
 		ReactivePowerXmlType binit = xmlSwitchedShuntData.getBInit();
 		

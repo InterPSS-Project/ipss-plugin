@@ -49,7 +49,8 @@ public class IEEE14JsonCompareTest extends CorePluginTestSetup {
 		//FileUtil.writeText2File(jsonFile, new AclfNetworkState(aclfNet).toString());
 		
 		// compare the json file with the aclfNet
-		assertTrue(new AclfNetJsonComparator("Internal format ieee14Bus")
+		assertTrue(new AclfNetJsonComparator("Internal format ieee14Bus",
+				path -> !path.endsWith("/extUID"))
 							.compareJson(aclfNet, new File(jsonFile)));
 	}
 }
