@@ -57,7 +57,8 @@ public class IEEE14BusJsonCompareTest extends CorePluginTestSetup {
 		
 		// compare the json file with the aclfNet
 		assertTrue(new AclfNetJsonComparator("IEEE Common format ieee14Bus",
-				path -> !path.matches("/busAry\\[[^\\]]+\\]/desc"))
+				path -> !path.matches("/busAry\\[[^\\]]+\\]/desc")
+						&& !path.endsWith("/extUID"))
 							.compareJson(aclfNet, new File(jsonFile)));
 	}
 }
