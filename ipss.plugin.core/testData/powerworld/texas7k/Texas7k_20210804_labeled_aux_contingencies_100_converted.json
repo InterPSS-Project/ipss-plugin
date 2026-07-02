@@ -1,0 +1,2509 @@
+{
+  "contingencies": [
+    {
+      "name": "TX7KLBL001",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110126",
+      "to_bus": "Bus111216",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL002",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110126",
+      "to_bus": "Bus111305",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL002",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111389",
+      "to_bus": "Bus110126",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL003",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110126",
+      "to_bus": "Bus160264",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL003",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110160",
+      "to_bus": "Bus111389",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL003",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110160",
+      "to_bus": "Bus230072",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL004",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110417",
+      "to_bus": "Bus111269",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL004",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111310",
+      "to_bus": "Bus110417",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL004",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111346",
+      "to_bus": "Bus110440",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL004",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110440",
+      "to_bus": "Bus111393",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL005",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110484",
+      "to_bus": "Bus111328",
+      "circuit": "1",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL006",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110585",
+      "to_bus": "Bus110943",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL006",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111171",
+      "to_bus": "Bus110585",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL007",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111067",
+      "to_bus": "Bus110742",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL007",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110742",
+      "to_bus": "Bus111269",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL007",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110742",
+      "to_bus": "Bus111310",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL008",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111323",
+      "to_bus": "Bus110742",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL008",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111235",
+      "to_bus": "Bus110883",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL008",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111337",
+      "to_bus": "Bus110883",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL008",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110928",
+      "to_bus": "Bus110972",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL009",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110928",
+      "to_bus": "Bus230283",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL010",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110943",
+      "to_bus": "Bus111171",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL010",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110943",
+      "to_bus": "Bus111362",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL011",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111389",
+      "to_bus": "Bus110943",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL011",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus110958",
+      "to_bus": "Bus111035",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL011",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus230072",
+      "to_bus": "Bus110958",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL012",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111067",
+      "to_bus": "Bus110972",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL012",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111067",
+      "to_bus": "Bus110972",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL012",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111035",
+      "to_bus": "Bus111189",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL012",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111035",
+      "to_bus": "Bus111323",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL013",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111189",
+      "to_bus": "Bus111067",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL014",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111067",
+      "to_bus": "Bus111317",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL014",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111189",
+      "to_bus": "Bus111171",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL015",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111207",
+      "to_bus": "Bus111171",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL015",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111207",
+      "to_bus": "Bus111171",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL015",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111179",
+      "to_bus": "Bus111370",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL016",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111179",
+      "to_bus": "Bus111370",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL016",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111337",
+      "to_bus": "Bus111207",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL016",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111207",
+      "to_bus": "Bus111389",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL016",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111216",
+      "to_bus": "Bus111389",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL017",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111216",
+      "to_bus": "Bus111389",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL018",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111235",
+      "to_bus": "Bus111279",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL018",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111235",
+      "to_bus": "Bus111284",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL019",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111300",
+      "to_bus": "Bus111235",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL019",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111317",
+      "to_bus": "Bus111269",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL019",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111269",
+      "to_bus": "Bus111370",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL020",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111279",
+      "to_bus": "Bus111353",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL020",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111300",
+      "to_bus": "Bus111284",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL020",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111284",
+      "to_bus": "Bus111305",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL020",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111353",
+      "to_bus": "Bus111293",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL021",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111310",
+      "to_bus": "Bus111323",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL022",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111346",
+      "to_bus": "Bus111310",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL022",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111346",
+      "to_bus": "Bus111310",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL023",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111346",
+      "to_bus": "Bus111332",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL023",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111370",
+      "to_bus": "Bus111332",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL023",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111353",
+      "to_bus": "Bus111393",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL024",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus111362",
+      "to_bus": "Bus111389",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL024",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120447",
+      "to_bus": "Bus120031",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL024",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120031",
+      "to_bus": "Bus120494",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL024",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120148",
+      "to_bus": "Bus120151",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL025",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120351",
+      "to_bus": "Bus120148",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL026",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120148",
+      "to_bus": "Bus240012",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL026",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120151",
+      "to_bus": "Bus240012",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL027",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120440",
+      "to_bus": "Bus120198",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL027",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120198",
+      "to_bus": "Bus160080",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL027",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120437",
+      "to_bus": "Bus120351",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL028",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus270001",
+      "to_bus": "Bus120351",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL028",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120437",
+      "to_bus": "Bus120415",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL028",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120415",
+      "to_bus": "Bus120440",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL028",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120415",
+      "to_bus": "Bus270216",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL029",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120440",
+      "to_bus": "Bus120437",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL030",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120462",
+      "to_bus": "Bus120437",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL030",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120471",
+      "to_bus": "Bus120440",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL031",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus180138",
+      "to_bus": "Bus120447",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL031",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120462",
+      "to_bus": "Bus120468",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL031",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120468",
+      "to_bus": "Bus120494",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL032",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus120494",
+      "to_bus": "Bus120471",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL032",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130106",
+      "to_bus": "Bus130104",
+      "circuit": "1",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL032",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130106",
+      "to_bus": "Bus130104",
+      "circuit": "2",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL032",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130106",
+      "to_bus": "Bus130104",
+      "circuit": "3",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL033",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130106",
+      "to_bus": "Bus130104",
+      "circuit": "4",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL034",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130143",
+      "to_bus": "Bus260120",
+      "circuit": "1",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL034",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130143",
+      "to_bus": "Bus260120",
+      "circuit": "2",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL035",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130354",
+      "to_bus": "Bus130310",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL035",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus230242",
+      "to_bus": "Bus130310",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL035",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130310",
+      "to_bus": "Bus250366",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL036",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130327",
+      "to_bus": "Bus130354",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL036",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus260119",
+      "to_bus": "Bus130327",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL036",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus260206",
+      "to_bus": "Bus130327",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL036",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130329",
+      "to_bus": "Bus250352",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL037",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130329",
+      "to_bus": "Bus260206",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL038",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170517",
+      "to_bus": "Bus130350",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL038",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130350",
+      "to_bus": "Bus260105",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL039",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130350",
+      "to_bus": "Bus260119",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL039",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130367",
+      "to_bus": "Bus130357",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL039",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130367",
+      "to_bus": "Bus130357",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL040",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130357",
+      "to_bus": "Bus170168",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL040",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130357",
+      "to_bus": "Bus170512",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL040",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130357",
+      "to_bus": "Bus170520",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL040",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130357",
+      "to_bus": "Bus250233",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL041",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130367",
+      "to_bus": "Bus150341",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL042",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130367",
+      "to_bus": "Bus150430",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL042",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130367",
+      "to_bus": "Bus260119",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL043",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus130367",
+      "to_bus": "Bus260206",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL043",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140266",
+      "to_bus": "Bus140185",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL043",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140272",
+      "to_bus": "Bus140185",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL044",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140185",
+      "to_bus": "Bus140303",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL044",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140185",
+      "to_bus": "Bus140303",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL044",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140185",
+      "to_bus": "Bus140323",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL044",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140323",
+      "to_bus": "Bus140213",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL045",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140213",
+      "to_bus": "Bus140338",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL046",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140213",
+      "to_bus": "Bus270153",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL046",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140213",
+      "to_bus": "Bus270211",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL047",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140266",
+      "to_bus": "Bus230207",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL047",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus210171",
+      "to_bus": "Bus140272",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL047",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140272",
+      "to_bus": "Bus210317",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL048",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140338",
+      "to_bus": "Bus140303",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL048",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140316",
+      "to_bus": "Bus140323",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL048",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140334",
+      "to_bus": "Bus140316",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL048",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140329",
+      "to_bus": "Bus140353",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL049",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140360",
+      "to_bus": "Bus140329",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL050",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140329",
+      "to_bus": "Bus140372",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL050",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus210317",
+      "to_bus": "Bus140334",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL051",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140334",
+      "to_bus": "Bus270001",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL051",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140338",
+      "to_bus": "Bus140360",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL051",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus140372",
+      "to_bus": "Bus230263",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL052",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150120",
+      "to_bus": "Bus150341",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL052",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150434",
+      "to_bus": "Bus150120",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL052",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150434",
+      "to_bus": "Bus150120",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL052",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150120",
+      "to_bus": "Bus150532",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL053",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus240231",
+      "to_bus": "Bus150120",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL054",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus240231",
+      "to_bus": "Bus150120",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL054",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150152",
+      "to_bus": "Bus150265",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL055",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150152",
+      "to_bus": "Bus150265",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL055",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150152",
+      "to_bus": "Bus150487",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL055",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150152",
+      "to_bus": "Bus150487",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL056",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150152",
+      "to_bus": "Bus150487",
+      "circuit": "3",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL056",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150152",
+      "to_bus": "Bus260137",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL056",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150152",
+      "to_bus": "Bus260137",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL056",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150430",
+      "to_bus": "Bus150265",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL057",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150503",
+      "to_bus": "Bus150265",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL058",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150265",
+      "to_bus": "Bus150539",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL058",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus260137",
+      "to_bus": "Bus150265",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL059",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150337",
+      "to_bus": "Bus150342",
+      "circuit": "1",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL059",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150341",
+      "to_bus": "Bus150430",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL059",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus150341",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL060",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus150341",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL060",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150367",
+      "to_bus": "Bus150369",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL060",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150367",
+      "to_bus": "Bus150369",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL060",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150367",
+      "to_bus": "Bus150434",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL061",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150367",
+      "to_bus": "Bus150434",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL062",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150367",
+      "to_bus": "Bus240231",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL062",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150487",
+      "to_bus": "Bus150369",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL063",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150375",
+      "to_bus": "Bus150532",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL063",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150497",
+      "to_bus": "Bus150426",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL063",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150426",
+      "to_bus": "Bus150503",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL064",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150426",
+      "to_bus": "Bus150503",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL064",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus150430",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL064",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150430",
+      "to_bus": "Bus260119",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL064",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150430",
+      "to_bus": "Bus260137",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL065",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150440",
+      "to_bus": "Bus150521",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL066",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150440",
+      "to_bus": "Bus150521",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL066",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150440",
+      "to_bus": "Bus150521",
+      "circuit": "3",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL067",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150440",
+      "to_bus": "Bus210090",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL067",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150440",
+      "to_bus": "Bus210090",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL067",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus150443",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL068",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus150443",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL068",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150475",
+      "to_bus": "Bus150443",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL068",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150521",
+      "to_bus": "Bus150443",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL068",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150500",
+      "to_bus": "Bus150449",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL069",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150513",
+      "to_bus": "Bus150449",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL070",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150449",
+      "to_bus": "Bus150526",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL070",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150449",
+      "to_bus": "Bus150529",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL071",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150449",
+      "to_bus": "Bus150550",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL071",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150475",
+      "to_bus": "Bus150460",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL071",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150475",
+      "to_bus": "Bus150460",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL072",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus150521",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL072",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus150521",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL072",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus260206",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL072",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150460",
+      "to_bus": "Bus260206",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL073",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150464",
+      "to_bus": "Bus150487",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL074",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150475",
+      "to_bus": "Bus150521",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL074",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150475",
+      "to_bus": "Bus150521",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL075",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150487",
+      "to_bus": "Bus150479",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL075",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150487",
+      "to_bus": "Bus150479",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL075",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150479",
+      "to_bus": "Bus150503",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL076",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150487",
+      "to_bus": "Bus150503",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL076",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150487",
+      "to_bus": "Bus150503",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL076",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150497",
+      "to_bus": "Bus150500",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL076",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150497",
+      "to_bus": "Bus150503",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL077",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150497",
+      "to_bus": "Bus150503",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL078",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150497",
+      "to_bus": "Bus240299",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL078",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150497",
+      "to_bus": "Bus240299",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL079",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150500",
+      "to_bus": "Bus150513",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL079",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150521",
+      "to_bus": "Bus150532",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL079",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150521",
+      "to_bus": "Bus150532",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL080",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150521",
+      "to_bus": "Bus260206",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL080",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150521",
+      "to_bus": "Bus260206",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL080",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150526",
+      "to_bus": "Bus150550",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL080",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150529",
+      "to_bus": "Bus170562",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL081",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus240208",
+      "to_bus": "Bus150532",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL082",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150539",
+      "to_bus": "Bus170118",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL082",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150540",
+      "to_bus": "Bus170556",
+      "circuit": "1",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL083",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus150540",
+      "to_bus": "Bus170556",
+      "circuit": "2",
+      "base_kv": 138.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL083",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus190204",
+      "to_bus": "Bus150550",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL083",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus190204",
+      "to_bus": "Bus150550",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL084",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160209",
+      "to_bus": "Bus160080",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL084",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160080",
+      "to_bus": "Bus160299",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL084",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160092",
+      "to_bus": "Bus160279",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL084",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160092",
+      "to_bus": "Bus160299",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL085",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160139",
+      "to_bus": "Bus160252",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL086",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160299",
+      "to_bus": "Bus160139",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL086",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160203",
+      "to_bus": "Bus160188",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL087",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160252",
+      "to_bus": "Bus160188",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL087",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160271",
+      "to_bus": "Bus160188",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL087",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160192",
+      "to_bus": "Bus160196",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL088",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160234",
+      "to_bus": "Bus160192",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL088",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160196",
+      "to_bus": "Bus160209",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL088",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160196",
+      "to_bus": "Bus230263",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL088",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160289",
+      "to_bus": "Bus160203",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL089",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160215",
+      "to_bus": "Bus160234",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL090",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160215",
+      "to_bus": "Bus160264",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL090",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160215",
+      "to_bus": "Bus160264",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL091",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160234",
+      "to_bus": "Bus160271",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL091",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160256",
+      "to_bus": "Bus160247",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL091",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160276",
+      "to_bus": "Bus160247",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL092",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160256",
+      "to_bus": "Bus160271",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL092",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160261",
+      "to_bus": "Bus160268",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL092",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160279",
+      "to_bus": "Bus160261",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL092",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160261",
+      "to_bus": "Bus200187",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL093",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus160284",
+      "to_bus": "Bus160289",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL094",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170168",
+      "to_bus": "Bus170118",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL094",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170118",
+      "to_bus": "Bus170218",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL095",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170118",
+      "to_bus": "Bus170562",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL095",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170168",
+      "to_bus": "Bus170517",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL095",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170168",
+      "to_bus": "Bus170517",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL096",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170520",
+      "to_bus": "Bus170168",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL096",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170218",
+      "to_bus": "Bus260105",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL096",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170218",
+      "to_bus": "Bus260105",
+      "circuit": "2",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL096",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170562",
+      "to_bus": "Bus170450",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL097",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170462",
+      "to_bus": "Bus170548",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL098",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170462",
+      "to_bus": "Bus170562",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL098",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170479",
+      "to_bus": "Bus170562",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL099",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170517",
+      "to_bus": "Bus170526",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL099",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170548",
+      "to_bus": "Bus170526",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL099",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus170548",
+      "to_bus": "Bus170538",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL100",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus180013",
+      "to_bus": "Bus180026",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL100",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus180026",
+      "to_bus": "Bus180129",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL100",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus180135",
+      "to_bus": "Bus180124",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    },
+    {
+      "name": "TX7KLBL100",
+      "element_type": "Branch",
+      "action_type": "OPEN",
+      "from_bus": "Bus180141",
+      "to_bus": "Bus180124",
+      "circuit": "1",
+      "base_kv": 345.0,
+      "pre_contingency_flow_mw": 0.0
+    }
+  ],
+  "metadata": {
+    "total_count": 250,
+    "created_date": "2026-07-01T23:17:19.374326400",
+    "description": "User-defined contingency list for DCLF analysis"
+  }
+}
