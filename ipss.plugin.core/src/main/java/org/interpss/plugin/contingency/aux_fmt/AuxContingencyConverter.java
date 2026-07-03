@@ -10,6 +10,8 @@ import org.interpss.plugin.contingency.aux_fmt.bean.AuxParsedData;
 import org.interpss.plugin.contingency.aux_fmt.mapper.AuxToBranchContingencyMapper;
 import org.interpss.plugin.contingency.aux_fmt.parser.AuxContingencyParser;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
+import org.interpss.plugin.contingency.definition.ContingencyDefinition;
+import org.interpss.plugin.contingency.util.ContingencyDefinitionAdapter;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfMultiOutageContingencyHelper;
 
@@ -28,9 +30,26 @@ public class AuxContingencyConverter {
     public AuxConversionReport convert(File inputAuxFile, File outputJsonFile, AuxConversionOptions options)
             throws IOException {
         AuxConversionReport report = new AuxConversionReport();
-        List<BranchContingencyRecord> records = importContingencyRecords(inputAuxFile, options, report);
-        ContingencyFileUtil.exportContingenciesToJson(outputJsonFile, records);
+        List<ContingencyDefinition> definitions =
+                importContingencyDefinitions(inputAuxFile, options, report);
+        ContingencyFileUtil.exportContingencyDefinitionsToJson(outputJsonFile, definitions);
         return report;
+    }
+
+    public List<ContingencyDefinition> importContingencyDefinitions(
+            File inputAuxFile,
+            AuxConversionOptions options)
+            throws IOException {
+        return importContingencyDefinitions(inputAuxFile, options, new AuxConversionReport());
+    }
+
+    public List<ContingencyDefinition> importContingencyDefinitions(
+            File inputAuxFile,
+            AuxConversionOptions options,
+            AuxConversionReport report)
+            throws IOException {
+        return ContingencyDefinitionAdapter.fromBranchRecords(
+                importContingencyRecords(inputAuxFile, options, report));
     }
 
     public List<BranchContingencyRecord> importContingencyRecords(
@@ -59,6 +78,8 @@ public class AuxContingencyConverter {
             AuxConversionOptions options)
             throws IOException, InterpssException {
         List<BranchContingencyRecord> records = importContingencyRecords(inputAuxFile, options);
-        return new DclfMultiOutageContingencyHelper(dclfAlgo).createDclfMultiOutageContList(records);
+        return new DclfMultiOutageContingencyHelper(dclfAlgo)
+                .createDclfMultiOutageContListFromDefinitions(
+                        ContingencyDefinitionAdapter.fromBranchRecords(records));
     }
 }
