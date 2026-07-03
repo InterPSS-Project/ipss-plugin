@@ -33,11 +33,11 @@ public class EInterCon_Sample_Info {
 
 		AclfNetSensSparseHelper helper = new AclfNetSensSparseHelper(aclfNet);
 
-		aclfNet.createAclfGenNameLookupTable(true);
+		aclfNet.createAclfGenUIDLookupTable(true);
 
 		Set<String> busSet = new HashSet<>();
 		// add all active gen buses to the bus set
-		aclfNet.getAclfGenNameLookupTable().values().stream().filter(gen -> gen.isActive()).forEach(gen -> {
+		aclfNet.getAclfGenUIDLookupTable().values().stream().filter(gen -> gen.isActive()).forEach(gen -> {
 			busSet.add(gen.getParentBus().getId());
 		});
 		System.out.println("Number of active gen buses: " + busSet.size());

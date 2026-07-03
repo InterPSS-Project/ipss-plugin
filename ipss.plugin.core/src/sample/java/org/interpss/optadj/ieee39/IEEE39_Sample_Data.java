@@ -21,7 +21,7 @@ public class IEEE39_Sample_Data {
 	            bus.getContributeGenList().clear();
 	    });
 		
-	    net.createAclfGenNameLookupTable(true).values()
+	    net.createAclfGenUIDLookupTable(true).values()
 			.forEach(gen -> {
 				if (gen.getName().equals("Bus39-G1")) {
 					gen.setPGenLimit(new LimitType(10, 0));
