@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
+import org.interpss.plugin.contingency.definition.ContingencyDefinition;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfMultiOutageContingencyHelper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
@@ -69,23 +70,31 @@ public class AuxContingencyConverterTest {
                 {
                   "CTG_A", "Branch", "Open", 1001, 1064, "1"
                   "CTG_A", "Line", "Trip", 1002, 1007, "2"
-                  "CTG_B", "Branch", "Close", "Bus5", "Bus6", "1"
+                  "CTG_B", "Branch", "Open", "Bus5", "Bus6", "1"
                 }
                 """, StandardCharsets.UTF_8);
 
         AuxConversionReport report = new AuxContingencyConverter(importIeee9Labeled())
                 .convert(input.toFile(), output.toFile(), AuxConversionOptions.defaultOptions());
         List<BranchContingencyRecord> records = ContingencyFileUtil.importContingenciesFromJson(output.toFile());
+        List<ContingencyDefinition> definitions =
+                ContingencyFileUtil.importContingencyDefinitionsFromJson(output.toFile());
+        String json = Files.readString(output, StandardCharsets.UTF_8);
 
         assertEquals(2, report.getContingencyCount());
         assertEquals(3, report.getCtgElementCount());
         assertEquals(3, report.getEmittedBranchRecordCount());
+        assertTrue(json.contains("\"contingency_definitions\""));
+        assertTrue(json.contains("\"object_id\""));
+        assertFalse(json.contains("\"contingencies\""));
+        assertEquals(2, definitions.size());
+        assertEquals(2, definitions.get(0).actions.size());
         assertEquals(3, records.size());
         assertEquals("CTG_A", records.get(0).name);
         assertEquals("CTG_A", records.get(1).name);
         assertEquals("OPEN", records.get(0).actionType);
         assertEquals("OPEN", records.get(1).actionType);
-        assertEquals("CLOSE", records.get(2).actionType);
+        assertEquals("OPEN", records.get(2).actionType);
         assertEquals("Bus1001", records.get(0).fromBus);
         assertEquals("Bus1007", records.get(1).toBus);
         assertEquals("Bus5", records.get(2).fromBus);
