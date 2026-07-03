@@ -1,6 +1,7 @@
 package org.interpss.plugin.contingency.util;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -11,6 +12,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
+import org.interpss.plugin.contingency.definition.ContingencyAction;
+import org.interpss.plugin.contingency.definition.ContingencyActionType;
+import org.interpss.plugin.contingency.definition.ContingencyDefinition;
+import org.interpss.plugin.contingency.definition.ContingencyObjectType;
+import org.interpss.plugin.contingency.definition.json.ContingencyActionJson;
+import org.interpss.plugin.contingency.definition.json.ContingencyDefinitionJson;
+import org.interpss.plugin.contingency.definition.json.ContingencyDefinitionListJson;
 import org.interpss.plugin.contingency.definition.json.ContingencyJson;
 import org.interpss.plugin.contingency.definition.json.ContingencyListJson;
 import org.interpss.plugin.contingency.definition.json.DclfMonitoringConfigJson;
@@ -29,6 +37,8 @@ import org.interpss.plugin.contingency.definition.json.NomogramJson;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.interpss.monitor.check.MonitoringExceptionRecord;
 import com.interpss.monitor.check.MonitoringExceptionStatus;
 import com.interpss.monitor.check.MonitoringObjectType;
@@ -50,39 +60,36 @@ public class ContingencyFileUtil {
 	 * Import contingencies from JSON file
 	 */
 	public static List<BranchContingencyRecord> importContingenciesFromJson(File file) throws IOException {
-
-        List<BranchContingencyRecord> contList = new java.util.ArrayList<>();
-	    Gson gson = new Gson();
-	    ContingencyListJson jsonData;
-	    
-	    try (java.io.FileReader reader = new java.io.FileReader(file)) {
-	        jsonData = gson.fromJson(reader, ContingencyListJson.class);
-	    }
-	    
-	    if (jsonData == null || jsonData.contingencies == null) {
-	        throw new IOException("Invalid contingency file format");
-	    }
-	    
-	    // Convert JSON contingencies to ContingencyRecord objects
-	    for (ContingencyJson jsonCont : jsonData.contingencies) {
-	        BranchContingencyRecord record = new BranchContingencyRecord(
-	            jsonCont.name,
-	            jsonCont.element_type,
-	            jsonCont.action_type,
-	            jsonCont.from_bus,
-	            jsonCont.to_bus,
-	            jsonCont.circuit,
-	            jsonCont.from_bus_area,
-	            jsonCont.to_bus_area,
-	            jsonCont.base_kv,
-	            jsonCont.pre_contingency_flow_mw
-	        );
-	        contList.add(record);
-	    }
-	    
-	    log.info("Imported {} contingencies from file: {}", jsonData.contingencies.size(), file.getName());
-	    return contList;
+        JsonObject root = readJsonObject(file);
+        if (root.has("contingency_definitions")) {
+            return ContingencyDefinitionAdapter.toBranchRecords(importContingencyDefinitionsFromJson(file));
+        }
+        return importFlatContingenciesFromJson(root, file);
 	}
+
+    public static List<ContingencyDefinition> importContingencyDefinitionsFromJson(File file) throws IOException {
+        JsonObject root = readJsonObject(file);
+        if (root.has("contingency_definitions")) {
+            Gson gson = new Gson();
+            ContingencyDefinitionListJson jsonData =
+                    gson.fromJson(root, ContingencyDefinitionListJson.class);
+            if (jsonData == null || jsonData.contingency_definitions == null) {
+                throw new IOException("Invalid grouped contingency file format");
+            }
+
+            List<ContingencyDefinition> definitions = jsonData.contingency_definitions.stream()
+                    .map(ContingencyFileUtil::toDefinition)
+                    .collect(Collectors.toList());
+            log.info("Imported {} contingency definitions from file: {}",
+                    definitions.size(), file.getName());
+            return definitions;
+        }
+        if (root.has("contingencies")) {
+            return ContingencyDefinitionAdapter.fromBranchRecords(
+                    importFlatContingenciesFromJson(root, file));
+        }
+        throw new IOException("Invalid contingency file format");
+    }
 	
 	/**
 	 * Export contingencies to JSON file
@@ -118,6 +125,117 @@ public class ContingencyFileUtil {
 	        gson.toJson(jsonData, writer);
 	    }
 	}
+
+    public static void exportContingencyDefinitionsToJson(
+            File file,
+            List<ContingencyDefinition> definitions) throws IOException {
+        ContingencyDefinitionListJson jsonData = new ContingencyDefinitionListJson();
+        jsonData.contingency_definitions = definitions.stream()
+                .map(ContingencyFileUtil::toDefinitionJson)
+                .collect(Collectors.toList());
+
+        jsonData.metadata = new MetadataJson();
+        jsonData.metadata.total_count = definitions.size();
+        jsonData.metadata.created_date = LocalDateTime.now().toString();
+        jsonData.metadata.description = "User-defined grouped contingency definitions";
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        try (FileWriter writer = new FileWriter(file)) {
+            gson.toJson(jsonData, writer);
+        }
+    }
+
+    private static JsonObject readJsonObject(File file) throws IOException {
+        try (FileReader reader = new FileReader(file)) {
+            return JsonParser.parseReader(reader).getAsJsonObject();
+        } catch (RuntimeException e) {
+            throw new IOException("Invalid JSON file format: " + file.getName(), e);
+        }
+    }
+
+    private static List<BranchContingencyRecord> importFlatContingenciesFromJson(
+            JsonObject root,
+            File file) throws IOException {
+        Gson gson = new Gson();
+        ContingencyListJson jsonData = gson.fromJson(root, ContingencyListJson.class);
+
+        if (jsonData == null || jsonData.contingencies == null) {
+            throw new IOException("Invalid contingency file format");
+        }
+
+        List<BranchContingencyRecord> contList = new java.util.ArrayList<>();
+        for (ContingencyJson jsonCont : jsonData.contingencies) {
+            BranchContingencyRecord record = new BranchContingencyRecord(
+                jsonCont.name,
+                jsonCont.element_type,
+                jsonCont.action_type,
+                jsonCont.from_bus,
+                jsonCont.to_bus,
+                jsonCont.circuit,
+                jsonCont.from_bus_area,
+                jsonCont.to_bus_area,
+                jsonCont.base_kv == null ? 0.0 : jsonCont.base_kv,
+                jsonCont.pre_contingency_flow_mw == null ? 0.0 : jsonCont.pre_contingency_flow_mw
+            );
+            contList.add(record);
+        }
+
+        log.info("Imported {} contingencies from file: {}", jsonData.contingencies.size(), file.getName());
+        return contList;
+    }
+
+    private static ContingencyDefinition toDefinition(ContingencyDefinitionJson jsonDefinition) {
+        ContingencyDefinition definition = new ContingencyDefinition(jsonDefinition.name);
+        if (jsonDefinition.metadata != null) {
+            definition.metadata.putAll(jsonDefinition.metadata);
+        }
+        if (jsonDefinition.actions != null) {
+            for (ContingencyActionJson jsonAction : jsonDefinition.actions) {
+                definition.addAction(toAction(jsonAction));
+            }
+        }
+        return definition;
+    }
+
+    private static ContingencyAction toAction(ContingencyActionJson jsonAction) {
+        ContingencyAction action = new ContingencyAction(
+                parseEnum(ContingencyObjectType.class, jsonAction.object_type),
+                parseEnum(ContingencyActionType.class, jsonAction.action_type),
+                jsonAction.object_id);
+        action.extUID = jsonAction.extUID;
+        if (jsonAction.metadata != null) {
+            action.metadata.putAll(jsonAction.metadata);
+        }
+        return action;
+    }
+
+    private static ContingencyDefinitionJson toDefinitionJson(ContingencyDefinition definition) {
+        ContingencyDefinitionJson jsonDefinition = new ContingencyDefinitionJson();
+        jsonDefinition.name = definition.name;
+        jsonDefinition.actions = definition.actions.stream()
+                .map(ContingencyFileUtil::toActionJson)
+                .collect(Collectors.toList());
+        jsonDefinition.metadata = definition.metadata == null || definition.metadata.isEmpty()
+                ? null
+                : definition.metadata;
+        return jsonDefinition;
+    }
+
+    private static ContingencyActionJson toActionJson(ContingencyAction action) {
+        ContingencyActionJson jsonAction = new ContingencyActionJson();
+        jsonAction.object_type = action.objectType.name();
+        jsonAction.action_type = action.actionType.name();
+        jsonAction.object_id = action.objectId;
+        jsonAction.extUID = action.extUID;
+        jsonAction.metadata = action.metadata == null || action.metadata.isEmpty()
+                ? null
+                : action.metadata;
+        return jsonAction;
+    }
+
+    private static <T extends Enum<T>> T parseEnum(Class<T> enumType, String value) {
+        return Enum.valueOf(enumType, value.trim().toUpperCase(java.util.Locale.ROOT));
+    }
 
     public static List<MonitoredBranchRecord> importMonitoredBranchRecordsFromJson(File file) throws IOException {
         List<MonitoredBranchRecord> monitoredBranches = new java.util.ArrayList<>();
