@@ -6,12 +6,18 @@ import java.util.List;
 import java.util.Set;
 
 import org.interpss.plugin.contingency.con_fmt.ConContainer;
+import org.interpss.plugin.contingency.con_fmt.bean.ConBranchAction;
 import org.interpss.plugin.contingency.con_fmt.bean.ConBranchEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConBusEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConCase;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipAction;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipType;
+import org.interpss.plugin.contingency.definition.ContingencyAction;
+import org.interpss.plugin.contingency.definition.ContingencyActionType;
+import org.interpss.plugin.contingency.definition.ContingencyDefinition;
+import org.interpss.plugin.contingency.definition.ContingencyObjectType;
+import org.interpss.plugin.contingency.util.ContingencyDefinitionAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +96,15 @@ public class ConToIpssMapper {
         return result;
     }
 
+    public List<ContingencyDefinition> mapDefinitions(ConContainer container) {
+        List<ContingencyDefinition> result = new ArrayList<>();
+        for (ConCase cas : container.getCases()) {
+            result.add(mapCaseDefinition(cas));
+        }
+        log.info("Mapped {} contingency cases to grouped definitions", result.size());
+        return result;
+    }
+
     /**
      * Maps a single {@link ConCase} to an {@link AclfMultiOutage}.
      *
@@ -128,6 +143,73 @@ public class ConToIpssMapper {
         }
 
         return multiOutage;
+    }
+
+    public ContingencyDefinition mapCaseDefinition(ConCase cas) {
+        ContingencyDefinition definition = new ContingencyDefinition(cas.getLabel());
+        if (cas.getCategory() != null && !cas.getCategory().isBlank()) {
+            definition.metadata.put("category", cas.getCategory());
+        }
+        if (cas.getComment() != null && !cas.getComment().isBlank()) {
+            definition.metadata.put("comment", cas.getComment());
+        }
+
+        if (!cas.getBusEvents().isEmpty()
+                || !cas.getEquipEvents().isEmpty()
+                || !cas.getBusModEvents().isEmpty()
+                || !cas.getEquipMoveEvents().isEmpty()) {
+            log.warn("Contingency '{}': grouped definitions currently support branch-open actions only",
+                    cas.getLabel());
+        }
+
+        Set<String> mappedBranchEventKeys = new HashSet<>();
+        for (ConBranchEvent event : cas.getBranchEvents()) {
+            String eventKey = buildBranchEventKey(event);
+            if (!mappedBranchEventKeys.add(eventKey)) {
+                log.warn("Contingency '{}': duplicate branch definition skipped: {}",
+                        cas.getLabel(), eventKey);
+                continue;
+            }
+            mapBranchEventDefinition(event, definition, cas.getLabel());
+        }
+        return definition;
+    }
+
+    private void mapBranchEventDefinition(
+            ConBranchEvent event,
+            ContingencyDefinition target,
+            String caseLabel) {
+        if (event.getAction() != ConBranchAction.DISCONNECT) {
+            log.warn("Contingency '{}': grouped definition skipped unsupported branch action {}",
+                    caseLabel, event.getAction());
+            return;
+        }
+        if (event.isThreeWinding()) {
+            log.warn("Contingency '{}': grouped definition skipped unsupported 3W branch event {}",
+                    caseLabel, event);
+            return;
+        }
+
+        AclfBranch branch = findBranchByBusNumbers(
+                event.getFromBusNum(), event.getToBusNum(), event.getCkt());
+        if (branch == null) {
+            log.warn("Contingency '{}': branch FROM {} TO {} CKT {} not found",
+                    caseLabel, event.getFromBusNum(), event.getToBusNum(), event.getCkt());
+            return;
+        }
+
+        ContingencyAction action = new ContingencyAction(
+                ContingencyObjectType.BRANCH,
+                ContingencyActionType.OPEN,
+                branch.getId());
+        action.metadata.put(
+                ContingencyDefinitionAdapter.METADATA_FROM_BUS,
+                branch.getFromBus().getId());
+        action.metadata.put(
+                ContingencyDefinitionAdapter.METADATA_TO_BUS,
+                branch.getToBus().getId());
+        action.metadata.put(ContingencyDefinitionAdapter.METADATA_CIRCUIT, event.getCkt());
+        target.addAction(action);
     }
 
     private String buildBranchEventKey(ConBranchEvent event) {
