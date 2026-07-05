@@ -12,6 +12,7 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConEquipAction;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipType;
 import org.interpss.plugin.contingency.con_fmt.mapper.ConToIpssMapper;
+import org.interpss.plugin.contingency.definition.ContingencyDefinition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -119,6 +120,30 @@ public class ConToIpssMapper_Test extends CorePluginTestSetup {
         assertEquals(1, outage.getOutageEquips().size());
         assertEquals(ContingencyBranchOutageType.OPEN,
                 outage.getOutageEquips().get(0).getOutageType());
+    }
+
+    @Test
+    public void testDisconnectBranch_createsGroupedDefinition() {
+        ConCase cas = branchCase("OPEN_12_DEF", ConBranchAction.DISCONNECT, 1001, 1002, "1");
+
+        ContingencyDefinition definition = mapper.mapCaseDefinition(cas);
+
+        assertEquals("OPEN_12_DEF", definition.name);
+        assertEquals(1, definition.actions.size());
+        assertEquals("Bus1001->Bus1002(1)", definition.actions.get(0).objectId);
+        assertEquals("Bus1001", definition.actions.get(0).metadata.get("from_bus"));
+        assertEquals("Bus1002", definition.actions.get(0).metadata.get("to_bus"));
+        assertEquals("1", definition.actions.get(0).metadata.get("circuit"));
+    }
+
+    @Test
+    public void testCloseBranch_isSkippedForGroupedDefinitionV1() {
+        ConCase cas = branchCase("CLOSE_12_DEF", ConBranchAction.CLOSE, 1001, 1002, "1");
+
+        ContingencyDefinition definition = mapper.mapCaseDefinition(cas);
+
+        assertEquals("CLOSE_12_DEF", definition.name);
+        assertEquals(0, definition.actions.size());
     }
 
     // -----------------------------------------------------------------------
