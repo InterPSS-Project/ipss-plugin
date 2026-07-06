@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
+import org.interpss.plugin.contingency.definition.ContingencyDefinition;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -37,6 +38,29 @@ public class DclfMultiOutageContingencyHelper {
             contingencies.add(createDclfMultiOutage(entry.getKey(), entry.getValue()));
         }
         return contingencies;
+    }
+
+    public List<DclfMultiOutage> createDclfMultiOutageContListFromDefinitions(
+            List<ContingencyDefinition> definitions)
+            throws InterpssException {
+        List<DclfMultiOutage> contingencies = new ArrayList<>();
+        if (definitions == null) {
+            return contingencies;
+        }
+        for (ContingencyDefinition definition : definitions) {
+            contingencies.add(createDclfMultiOutage(definition));
+        }
+        return contingencies;
+    }
+
+    public DclfMultiOutage createDclfMultiOutage(ContingencyDefinition definition)
+            throws InterpssException {
+        if (definition == null) {
+            throw new InterpssException("Contingency definition cannot be null");
+        }
+        List<BranchContingencyRecord> records =
+                ContingencyDefinitionAdapter.toBranchRecords(List.of(definition));
+        return createDclfMultiOutage(definition.name, records);
     }
 
     public DclfMultiOutage createDclfMultiOutage(String name, List<BranchContingencyRecord> records)
