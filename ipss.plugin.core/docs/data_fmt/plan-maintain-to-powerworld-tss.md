@@ -138,8 +138,67 @@ If Simulator rejects the headers, create one schedule + subscription in the UI, 
 7. At **T56** (14:00): second outage active (`Bus26_to_Bus25_cirId_1` **OPEN**).
 8. At **T0**: total gen ≈ **6192.83 MW**, total load ≈ **6150.1 MW** (flat schedule).
 
+## Reverse mapping (Java adapter)
+
+Load PowerWorld TSS text artifacts back into a `PlanMaintainModel` using:
+
+```java
+import java.nio.file.Path;
+import org.interpss.plugin.fstate.pw_fmt.PowerWorldPlanMaintainAdapter;
+import com.interpss.algo.fstate.plan.model.PlanMaintainModel;
+
+PlanMaintainModel model = PowerWorldPlanMaintainAdapter.load(
+    Path.of("testData/powerworld/ieee39"));
+```
+
+Or with explicit paths:
+
+```java
+import org.interpss.plugin.fstate.pw_fmt.PowerWorldTssInput;
+import com.interpss.algo.fstate.plan.model.type.FSPlanMaintainModelType;
+
+PlanMaintainModel model = PowerWorldPlanMaintainAdapter.load(new PowerWorldTssInput(
+    Path.of(".../ieee39_dayahead_plan_schedules.aux"),
+    Path.of(".../ieee39_dayahead_plan_timepoints.csv"),
+    Path.of(".../ieee39_dayahead_plan_outages.csv"),  // optional fallback
+    FSPlanMaintainModelType.DayAhead,
+    null));  // interval inferred from CSV when null
+```
+
+### Adapter inputs
+
+| File | Required | Maps to |
+|---|---|---|
+| `*_schedules.aux` | Yes | Gen/load MW schedules + branch maintenance boolean schedules |
+| `*_timepoints.csv` | Yes | `numTimePoints`, `planStartDate`, `timePointIntervalMin`, `point2TimeMap` |
+| `*_outages.csv` | Optional | `originalMaintainEquipemnts` (used only when no `Sched_Maint_*` schedules) |
+
+Not used by the adapter: labeled base AUX, binary `.tsb`, run SCRIPT.
+
+Implementation: `org.interpss.plugin.fstate.pw_fmt` (`PowerWorldPlanMaintainAdapter`, parsers, mapper). Tests: `PowerWorldPlanMaintainAdapterTest`.
+
+### Reverse field mapping
+
+| PowerWorld | `PlanMaintainModel` |
+|---|---|
+| `Sched_Gen_{name}` numeric `SchedPoint` (step-hold) | `TimePointRec[i].genMap.get(name).p` |
+| `Sched_Load_{name}` numeric `SchedPoint` (step-hold) | `TimePointRec[i].loadMap.get(name).p` |
+| `Sched_Maint_{branch}` OPEN intervals | `EquipmentMaintainRec` (`Inactive`, `Acline`, start/end) |
+| `*_timepoints.csv` ISO8601 column | Horizon and `point2TimeMap` |
+| Plan type (caller default) | `FSPlanMaintainModelType.DayAhead` |
+
+### Flat MW vs multi-point schedules
+
+The current IEEE39 `*_schedules.aux` uses a **single** numeric `SchedPoint` at T0 per device (`ApplyAsEvents=NO`), so the adapter produces **flat** gen/load MW across all 96 points. The checked-in plan JSON (`ieee39_dayahead_plan_maintain_plan.json`) has **time-varying** MW at T1, T2, etc.; full JSON round-trip requires multi-point `SchedPoint` rows in the AUX (future export enhancement). The adapter supports multi-point schedules via step-hold evaluation when present.
+
+Run tests:
+
+```bash
+mvn -pl ipss.plugin.core test -Dtest=PowerWorldPlanMaintainAdapterTest
+```
+
 ## Scope
 
-In scope: static `.aux` / `.tsb` manifest / `.csv` fixtures, labeled references, this mapping doc.
+In scope: static `.aux` / `.tsb` manifest / `.csv` fixtures, labeled references, Java adapter (`org.interpss.plugin.fstate.pw_fmt`), this mapping doc.
 
-Out of scope: reusable Java converter (deferred; follow `src/main/java/org/interpss/plugin/contingency/aux_fmt/` pattern if needed later).
+Out of scope: binary `.tsb` parsing, PowerWorld Simulator automation.
