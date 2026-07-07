@@ -1,4 +1,4 @@
-package org.interpss.plugin.fstate.aux_fmt;
+package org.interpss.plugin.fstate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,7 +20,7 @@ import com.interpss.algo.fstate.plan.model.type.EquipmentMaintainPlanState;
 import com.interpss.algo.fstate.plan.model.type.FSPlanMaintainModelType;
 import com.interpss.algo.fstate.plan.model.type.MPlanEquipmentType;
 
-class PowerWorldPlanMaintainAdapterTest {
+public class PowerWorld2PlanMaintainAdapterTest {
 
     private static final Path IEEE39_PW_DIR = Path.of("testData/powerworld/ieee39");
 

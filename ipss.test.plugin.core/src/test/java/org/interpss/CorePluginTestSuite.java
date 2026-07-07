@@ -53,6 +53,7 @@ import org.interpss.core.contingency.parser.ConFileParser_Test;
 import org.interpss.core.contingency.parser.ConToIpssMapper_Test;
 import org.interpss.core.dclf.IEEE14_Dclf_Test;
 import org.interpss.json.Texas2KJsonCompareTest;
+import org.interpss.plugin.fstate.PowerWorld2PlanMaintainAdapterTest;
 import org.interpss.plugin.optadj.Texas2K_SenMatrixHelper_Test;
 import org.interpss.plugin.optadj.texas2K.dense.Texas2K_OptBasecase_SsaResult_Test;
 import org.interpss.plugin.optadj.texas2K.dense.Texas2K_OptN1Scan_SsaResult_Test1;
@@ -257,6 +258,8 @@ import org.junit.platform.suite.api.Suite;
 	MatpowerCase6468RteTest.class,
 	UCTEFormatAusPowerTest.class,
 
+	// PowerWorld
+	PowerWorld2PlanMaintainAdapterTest.class,
 	SixBus_DclfPsXfr.class,
 	PWDIEEE14BusTestCase.class,
 
