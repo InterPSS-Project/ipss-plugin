@@ -1,0 +1,10 @@
+SCRIPT IEEE39DayAhead
+{
+  SetScheduleWindow("06/27/2026 00:00", "06/27/2026 23:45", 15, MINUTES);
+  TimeStepLoadTSB("ieee39_dayahead_plan.tsb");
+  LoadAux("IEEE39bus_v30_labeled.aux", YES);
+  LoadAux("ieee39_dayahead_plan_schedules.aux", YES);
+  ImportData("ieee39_dayahead_plan_outages.csv", PWCSV, 1, NO);
+  ApplyScheduledActionsAt("06/27/2026 08:00", "06/27/2026 16:00", , NO);
+  TimeStepDoRun("2026-06-27T00:00:00", "2026-06-27T23:45:00");
+}
