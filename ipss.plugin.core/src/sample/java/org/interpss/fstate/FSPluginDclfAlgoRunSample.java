@@ -79,6 +79,9 @@ public class FSPluginDclfAlgoRunSample {
 	            bus.getContributeGenList().clear();
 	    });
 
+	    // PSSE import names devices Gen:1(31) / Load:1(31); plan JSON uses Bus31-G1 / Bus31-L1.
+	    applyInterpssDeviceNames(aclfNet);
+
 	    aclfNet.createAclfGenUIDLookupTable(true);
 	    aclfNet.createAclfLoadUIDLookupTable(true);
 		
@@ -104,5 +107,35 @@ public class FSPluginDclfAlgoRunSample {
 				// Mva1 is used for basecase loading limit
 				aclfBranch.setRatingMva1(600.0);
 			});
+	}
+
+	private static void applyInterpssDeviceNames(AclfNetwork aclfNet) {
+		aclfNet.getBusList().forEach(bus -> {
+			bus.getContributeGenList().forEach(gen -> {
+				if (gen.getName() != null && gen.getName().startsWith("Gen:")) {
+					gen.setName(interpssGenName(bus.getId(), gen.getId()));
+				}
+			});
+			bus.getContributeLoadList().forEach(load -> {
+				if (load.getName() != null && load.getName().startsWith("Load:")) {
+					load.setName(interpssLoadName(bus.getId(), load.getId()));
+				}
+			});
+		});
+	}
+
+	private static String interpssGenName(String busId, String machineId) {
+		return busId + "-G" + trimMachineId(machineId);
+	}
+
+	private static String interpssLoadName(String busId, String machineId) {
+		return busId + "-L" + trimMachineId(machineId);
+	}
+
+	private static String trimMachineId(String machineId) {
+		if (machineId == null || machineId.isBlank()) {
+			return "1";
+		}
+		return machineId.replace("'", "").trim();
 	}
 }
