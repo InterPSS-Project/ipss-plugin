@@ -1,6 +1,13 @@
 # Plan/Maintain Model to PowerWorld Time Step Simulation
 
-Maps InterPSS **PlanMaintainModel** day-ahead inputs to static PowerWorld Simulator **Time Step Simulation (TSS)** auxiliary files under `testData/powerworld/ieee39/`.
+Maps InterPSS **PlanMaintainModel** day-ahead inputs to static PowerWorld Simulator **Time Step Simulation (TSS)** auxiliary files.
+
+Fixture directories:
+
+| Location | Use |
+|---|---|
+| [`ipss.plugin.core/testData/powerworld/ieee39/`](../../testData/powerworld/ieee39/) | Generator script, run SCRIPT, `.tsb` manifest, full artifact set |
+| [`ipss.test.plugin.core/testData/powerworld/ieee39/`](../../../ipss.test.plugin.core/testData/powerworld/ieee39/) | JUnit adapter tests (`PowerWorld2PlanMaintainAdapterTest`) |
 
 Related: [future-state-what-if-analysis.md](future-state-what-if-analysis.md) (InterPSS future-state pipeline).
 
@@ -15,14 +22,16 @@ PowerWorld references:
 
 | Item | Path |
 |---|---|
-| Plan JSON | `testData/psse/v30/ieee39_dayahead_plan_maintain_plan.json` |
-| PSSE base case | `testData/psse/v30/IEEE39bus_v30.raw` |
+| Plan JSON | `ipss.plugin.core/testData/psse/v30/ieee39_dayahead_plan_maintain_plan.json` |
+| PSSE base case | `ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw` |
 | InterPSS branch names | `ipss-core/ipss.test.core/testdata/json/ieee39.json` (`branchAry`, `branchCode=LINE`) |
 | Maintenance definition | `ipss-core/.../Ieee39_Dayahead_Info.java` |
 
 Horizon: **96** points, **15-minute** spacing, start **2026-06-27T00:00:00**.
 
 ## Generated artifacts
+
+All files under `ipss.plugin.core/testData/powerworld/ieee39/` unless noted.
 
 | File | Role |
 |---|---|
@@ -35,6 +44,8 @@ Horizon: **96** points, **15-minute** spacing, start **2026-06-27T00:00:00**.
 | `ieee39_dayahead_plan_outages.csv` | Scheduled Actions (PWCSV) parallel outage representation |
 | `ieee39_dayahead_plan_run.aux` | Orchestration SCRIPT for full day-ahead TSS run |
 | `generate_ieee39_dayahead_pw_tss.py` | Regenerates all text artifacts from plan JSON |
+
+A subset of these files is also copied to `ipss.test.plugin.core/testData/powerworld/ieee39/` for adapter unit tests.
 
 Regenerate:
 
@@ -73,7 +84,7 @@ Branch labels follow InterPSS naming (`Bus{from}_to_Bus{to}_cirId_{ckt}`) and ar
 
 ### Object references
 
-Contingency-style label references (see `testData/powerworld/texas7k/..._labeled_aux_contingencies_100.aux`):
+Contingency-style label references (see `ipss.plugin.core/testData/powerworld/texas7k/..._labeled_aux_contingencies_100.aux`):
 
 ```text
 GEN 'Bus39-G1'
@@ -140,30 +151,32 @@ If Simulator rejects the headers, create one schedule + subscription in the UI, 
 
 ## Reverse mapping (Java adapter)
 
-Load PowerWorld TSS text artifacts back into a `PlanMaintainModel` using:
+Load PowerWorld TSS text artifacts back into a `PlanMaintainModel` using [`Aux2PlanMaintainAdapter`](../../src/main/java/org/interpss/plugin/fstate/aux_fmt/Aux2PlanMaintainAdapter.java):
 
 ```java
 import java.nio.file.Path;
-import org.interpss.plugin.fstate.pw_fmt.PowerWorldPlanMaintainAdapter;
+import org.interpss.plugin.fstate.aux_fmt.Aux2PlanMaintainAdapter;
 import com.interpss.algo.fstate.plan.model.PlanMaintainModel;
 
-PlanMaintainModel model = PowerWorldPlanMaintainAdapter.load(
-    Path.of("testData/powerworld/ieee39"));
+PlanMaintainModel model = Aux2PlanMaintainAdapter.load(
+    Path.of("ipss.test.plugin.core/testData/powerworld/ieee39"));
 ```
 
 Or with explicit paths:
 
 ```java
-import org.interpss.plugin.fstate.pw_fmt.PowerWorldTssInput;
+import org.interpss.plugin.fstate.aux_fmt.AuxTssInput;
 import com.interpss.algo.fstate.plan.model.type.FSPlanMaintainModelType;
 
-PlanMaintainModel model = PowerWorldPlanMaintainAdapter.load(new PowerWorldTssInput(
+PlanMaintainModel model = Aux2PlanMaintainAdapter.load(new AuxTssInput(
     Path.of(".../ieee39_dayahead_plan_schedules.aux"),
     Path.of(".../ieee39_dayahead_plan_timepoints.csv"),
     Path.of(".../ieee39_dayahead_plan_outages.csv"),  // optional fallback
     FSPlanMaintainModelType.DayAhead,
     null));  // interval inferred from CSV when null
 ```
+
+`load(Path directory)` discovers `*_schedules.aux`, `*_timepoints.csv`, and optionally `*_outages.csv` in the given directory.
 
 ### Adapter inputs
 
@@ -175,7 +188,21 @@ PlanMaintainModel model = PowerWorldPlanMaintainAdapter.load(new PowerWorldTssIn
 
 Not used by the adapter: labeled base AUX, binary `.tsb`, run SCRIPT.
 
-Implementation: `org.interpss.plugin.fstate.pw_fmt` (`PowerWorldPlanMaintainAdapter`, parsers, mapper). Tests: `PowerWorldPlanMaintainAdapterTest`.
+### Implementation layout
+
+Package: `org.interpss.plugin.fstate.aux_fmt`
+
+| Class | Role |
+|---|---|
+| `Aux2PlanMaintainAdapter` | Entry point: parse files → `PlanMaintainModelBuilder.build()` |
+| `AuxTssInput` | Explicit input paths and plan-type overrides |
+| `AuxTssScheduleAuxParser` | `TSSchedule` / `TSScheduleSub` with `<SUBDATA SchedPoint>` |
+| `AuxTimepointsCsvParser` | Horizon from `*_timepoints.csv` |
+| `AuxOutageCsvParser` | Optional maintenance from `*_outages.csv` |
+| `AuxScheduleEvaluator` | Step-hold schedule evaluation at each timestamp |
+| `Aux2PlanMaintainModelMapper` | Maps parsed data to `TimePointRec[]` and `EquipmentMaintainRec` |
+
+Shared AUX tokenization: `org.interpss.plugin.aux_fmt.util.AuxParseUtil`.
 
 ### Reverse field mapping
 
@@ -191,14 +218,25 @@ Implementation: `org.interpss.plugin.fstate.pw_fmt` (`PowerWorldPlanMaintainAdap
 
 The current IEEE39 `*_schedules.aux` uses a **single** numeric `SchedPoint` at T0 per device (`ApplyAsEvents=NO`), so the adapter produces **flat** gen/load MW across all 96 points. The checked-in plan JSON (`ieee39_dayahead_plan_maintain_plan.json`) has **time-varying** MW at T1, T2, etc.; full JSON round-trip requires multi-point `SchedPoint` rows in the AUX (future export enhancement). The adapter supports multi-point schedules via step-hold evaluation when present.
 
-Run tests:
+### Tests and sample
+
+JUnit: [`PowerWorld2PlanMaintainAdapterTest`](../../../ipss.test.plugin.core/src/test/java/org/interpss/plugin/fstate/PowerWorld2PlanMaintainAdapterTest.java) (included in `CorePluginTestSuite`).
 
 ```bash
-mvn -pl ipss.plugin.core test -Dtest=PowerWorldPlanMaintainAdapterTest
+mvn -pl ipss.test.plugin.core test -Dtest=PowerWorld2PlanMaintainAdapterTest
+```
+
+Runnable sample (mirror of the test): [`PowerWorld2PlanMaintainAdapterSample`](../../src/sample/java/org/interpss/fstate/PowerWorld2PlanMaintainAdapterSample.java).
+
+```bash
+cd ipss-plugin
+mvn -pl ipss.plugin.core compile exec:java \
+  -Dexec.mainClass=org.interpss.fstate.PowerWorld2PlanMaintainAdapterSample \
+  -Dexec.classpathScope=runtime
 ```
 
 ## Scope
 
-In scope: static `.aux` / `.tsb` manifest / `.csv` fixtures, labeled references, Java adapter (`org.interpss.plugin.fstate.pw_fmt`), this mapping doc.
+In scope: static `.aux` / `.tsb` manifest / `.csv` fixtures, labeled references, Java adapter (`org.interpss.plugin.fstate.aux_fmt`), this mapping doc.
 
 Out of scope: binary `.tsb` parsing, PowerWorld Simulator automation.
