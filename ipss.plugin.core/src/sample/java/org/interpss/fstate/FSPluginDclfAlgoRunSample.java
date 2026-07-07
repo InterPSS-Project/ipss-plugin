@@ -20,14 +20,7 @@ import com.interpss.core.aclf.AclfNetwork;
 
 public class FSPluginDclfAlgoRunSample {
 	public static void main(String[] args) throws Exception {
-		String PSSE_FILE = "ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw";
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet(PSSE_FILE)
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30) 
-				.load()
-				.getImportedObj();
-
-		addInfo2Network(aclfNet);
+		AclfNetwork aclfNet = IEEE39_RAW_Info_Sample.loadIEEE39Raw();
 
 		String JSON_FILE = "ipss.plugin.core/testData/psse/v30/ieee39_dayahead_plan_maintain_plan.json";
 		Path path = Path.of(JSON_FILE);
