@@ -27,7 +27,7 @@ public class FSPluginDclfAlgoRunSample {
 				.load()
 				.getImportedObj();
 
-		adInof2Network(aclfNet);
+		addInfo2Network(aclfNet);
 
 		String JSON_FILE = "ipss.plugin.core/testData/psse/v30/ieee39_dayahead_plan_maintain_plan.json";
 		Path path = Path.of(JSON_FILE);
@@ -72,7 +72,7 @@ public class FSPluginDclfAlgoRunSample {
 		subSeries.forEach((tpoint, rec) -> System.out.printf("  T%d: %s%n", tpoint, rec.toString()));
 	}
 
-	public static void adInof2Network(AclfNetwork aclfNet) throws Exception {
+	public static void addInfo2Network(AclfNetwork aclfNet) throws Exception {
 	    // Clear zero-generation contributions
 	    aclfNet.getBusList().forEach(bus -> {
 	        if (bus.getGenP() == 0)
