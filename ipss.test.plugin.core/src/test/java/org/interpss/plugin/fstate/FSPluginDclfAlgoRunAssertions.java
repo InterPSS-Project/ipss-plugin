@@ -44,6 +44,21 @@ final class FSPluginDclfAlgoRunAssertions {
         assertEquals(96, fsAlgo.getSimuSummaryInfoMap().size());
     }
 
+    static void assertWeekStructure(PlanMaintainModel model, FStateDclfAlgorithm fsAlgo) {
+        assertEquals(FSPlanMaintainModelType.Week, model.getPlanModelType());
+        assertEquals(7, model.getNumsOfPeriods());
+        assertEquals(168, model.getNumsOfTotalTimePoints());
+        assertEquals(60, model.getTimePointIntervalMin());
+        assertEquals(3, model.getOriginalMaintainEquipemnts().size());
+        assertEquals(168, fsAlgo.getMStateDclfAlgo().getMsDclfAlgoList().size());
+        assertEquals(168, fsAlgo.getSimuSummaryInfoMap().size());
+    }
+
+    static void assertGenNotFoundEmpty(FStateDclfAlgorithm fsAlgo) {
+        assertTrue(fsAlgo.getSimuSummaryInfoMap().get(0).getGenNotFoundList().isEmpty());
+        assertTrue(fsAlgo.getSimuSummaryInfoMap().get(0).getLoadNotFoundList().isEmpty());
+    }
+
     static void assertT0RefBusPower(FStateDclfAlgorithm fsAlgo) {
         ContingencyAnalysisAlgorithm dclfAlgo = fsAlgo.getDclfAlgo(0);
         double refBusP = dclfAlgo.getBusPower(dclfAlgo.getNetwork().getRefBusId());
@@ -51,11 +66,18 @@ final class FSPluginDclfAlgoRunAssertions {
     }
 
     static void assertSampleBranchFlowSeries(FStateDclfAlgorithm fsAlgo) {
+        assertSampleBranchFlowSeries(fsAlgo, 96);
+    }
+
+    static void assertSampleBranchFlowSeries(FStateDclfAlgorithm fsAlgo, int expectedSize) {
         Map<Integer, FSDclfBranchInfoRec> branchSeries =
                 new FStateDclfBranchInfoAdapter(SAMPLE_BRANCH).adapt(fsAlgo);
 
-        assertEquals(96, branchSeries.size());
+        assertEquals(expectedSize, branchSeries.size());
         for (int t : SPOT_TIME_POINTS) {
+            if (t >= expectedSize) {
+                continue;
+            }
             FSDclfBranchInfoRec rec = branchSeries.get(t);
             assertNotNull(rec, "T" + t);
             assertEquals(SAMPLE_BRANCH, rec.getBranchName());
@@ -65,10 +87,17 @@ final class FSPluginDclfAlgoRunAssertions {
     }
 
     static void assertSampleBusSeries(FStateDclfAlgorithm fsAlgo) {
+        assertSampleBusSeries(fsAlgo, 96);
+    }
+
+    static void assertSampleBusSeries(FStateDclfAlgorithm fsAlgo, int expectedSize) {
         Map<Integer, FSDclfBusInfoRec> busSeries = new FStateDclfBusInfoAdapter(SAMPLE_BUS_UID).adapt(fsAlgo);
 
-        assertEquals(96, busSeries.size());
+        assertEquals(expectedSize, busSeries.size());
         for (int t : SPOT_TIME_POINTS) {
+            if (t >= expectedSize) {
+                continue;
+            }
             FSDclfBusInfoRec rec = busSeries.get(t);
             assertNotNull(rec, "T" + t);
             assertEquals(SAMPLE_BUS_UID, rec.getBusName());
@@ -79,11 +108,18 @@ final class FSPluginDclfAlgoRunAssertions {
     }
 
     static void assertSampleSubStationSeries(FStateDclfAlgorithm fsAlgo) {
+        assertSampleSubStationSeries(fsAlgo, 96);
+    }
+
+    static void assertSampleSubStationSeries(FStateDclfAlgorithm fsAlgo, int expectedSize) {
         Map<Integer, FSDclfSubStationInfoRec> subSeries =
                 new FStateDclfSubStationInfoAdapter(SAMPLE_SUB).adapt(fsAlgo);
 
-        assertEquals(96, subSeries.size());
+        assertEquals(expectedSize, subSeries.size());
         for (int t : SPOT_TIME_POINTS) {
+            if (t >= expectedSize) {
+                continue;
+            }
             FSDclfSubStationInfoRec rec = subSeries.get(t);
             assertNotNull(rec, "T" + t);
             assertEquals(SAMPLE_SUB, rec.getSubStationId());

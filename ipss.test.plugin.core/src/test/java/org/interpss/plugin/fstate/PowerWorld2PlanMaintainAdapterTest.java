@@ -22,7 +22,7 @@ import com.interpss.algo.fstate.plan.model.type.MPlanEquipmentType;
 
 public class PowerWorld2PlanMaintainAdapterTest {
 
-    private static final Path IEEE39_PW_DIR = Path.of("testData/powerworld/ieee39");
+    private static final Path IEEE39_PW_DIR = Path.of("testData/powerworld/ieee39/dayahead");
 
     @Test
     void loadIeee39Fixture_structure() throws Exception {
@@ -45,17 +45,18 @@ public class PowerWorld2PlanMaintainAdapterTest {
     }
 
     @Test
-    void loadIeee39Fixture_flatMwAcrossTimePoints() throws Exception {
+    void loadIeee39Fixture_mwProfile() throws Exception {
         PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
 
         TimePointRec t0 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(0);
         TimePointRec t1 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(1);
         TimePointRec t2 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(2);
+        TimePointRec t3 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(3);
 
-        assertEquals(t0.getGenMap().get("Bus31-G1").getP(), t1.getGenMap().get("Bus31-G1").getP(), 1.0e-9);
-        assertEquals(t0.getGenMap().get("Bus31-G1").getP(), t2.getGenMap().get("Bus31-G1").getP(), 1.0e-9);
-        assertEquals(t0.getLoadMap().get("Bus39-L1").getP(), t1.getLoadMap().get("Bus39-L1").getP(), 1.0e-9);
-        assertEquals(t0.getLoadMap().get("Bus39-L1").getP(), t2.getLoadMap().get("Bus39-L1").getP(), 1.0e-9);
+        assertEquals(572.8349, t0.getGenMap().get("Bus31-G1").getP(), 1.0e-4);
+        assertEquals(601.4766, t1.getGenMap().get("Bus31-G1").getP(), 1.0e-4);
+        assertEquals(544.1932, t2.getGenMap().get("Bus31-G1").getP(), 1.0e-4);
+        assertEquals(t3.getGenMap().get("Bus31-G1").getP(), t0.getGenMap().get("Bus31-G1").getP(), 1.0e-4);
     }
 
     @Test
@@ -82,7 +83,7 @@ public class PowerWorld2PlanMaintainAdapterTest {
     @Test
     void scheduleAuxParser_extractsSubdataSchedules() throws Exception {
         AuxTssParsedData parsed = new AuxTssScheduleAuxParser().parse(
-                IEEE39_PW_DIR.resolve("ieee39_dayahead_plan_schedules.aux"));
+                IEEE39_PW_DIR.resolve("ieee39_dayahead_schedules.aux"));
 
         assertEquals(31, parsed.schedules().size());
         assertEquals(31, parsed.subscriptions().size());
@@ -93,7 +94,7 @@ public class PowerWorld2PlanMaintainAdapterTest {
                 .orElseThrow();
         assertNotNull(genSchedule);
         assertTrue(genSchedule.isNumeric());
-        assertEquals(1, genSchedule.points().size());
+        assertEquals(4, genSchedule.points().size());
         assertEquals(572.8349, genSchedule.points().get(0).nValue(), 1.0e-4);
 
         AuxTssSchedule maintSchedule = parsed.schedules().stream()
