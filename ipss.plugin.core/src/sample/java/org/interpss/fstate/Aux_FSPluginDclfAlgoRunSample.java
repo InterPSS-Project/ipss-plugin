@@ -37,7 +37,7 @@ public class Aux_FSPluginDclfAlgoRunSample {
 				+ ", clonedNets=" + numNets + ", dclfAlgos=" + numAlgos
 				+ ", T0 refBusP(pu)=" + String.format("%.4f", refBusP));
 
-		System.out.println(fsAlgo.getSimuSummaryInfoMap().toString());
+		//System.out.println(fsAlgo.getSimuSummaryInfoMap().toString());
 		/* 
 		var netSeries = new FStateDclfNetInfoAdapter().adapt(fsAlgo);
 		System.out.println("Net info series:");
@@ -48,7 +48,7 @@ public class Aux_FSPluginDclfAlgoRunSample {
 		System.out.println("Branch flow series (" + sampleBranch + ", MW):");
 		branchSeries.forEach((tpoint, rec) -> System.out.printf("  T%d: %.4f%n", tpoint, rec.getDclfFlow()));
 
-		String sampleBus = "BUS-21  100";
+		String sampleBus = "LBUS21";
 		var busSeries = new FStateDclfBusInfoAdapter(sampleBus).adapt(fsAlgo);
 		System.out.println("Bus angle/power series (" + sampleBus + "):");
 		busSeries.forEach((tpoint, rec) -> System.out.printf("  T%d: angle=%.4f power=%.4f%n",
