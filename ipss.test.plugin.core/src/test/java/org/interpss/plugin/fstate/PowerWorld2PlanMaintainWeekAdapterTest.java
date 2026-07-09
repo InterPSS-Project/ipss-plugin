@@ -20,22 +20,23 @@ import com.interpss.algo.fstate.plan.model.type.EquipmentMaintainPlanState;
 import com.interpss.algo.fstate.plan.model.type.FSPlanMaintainModelType;
 import com.interpss.algo.fstate.plan.model.type.MPlanEquipmentType;
 
-public class PowerWorld2PlanMaintainAdapterTest {
+public class PowerWorld2PlanMaintainWeekAdapterTest {
 
-    private static final Path IEEE39_PW_DIR = Path.of("testData/powerworld/ieee39/dayahead");
+    private static final Path IEEE39_PW_WEEK_DIR = Path.of("testData/powerworld/ieee39/week");
 
     @Test
-    void loadIeee39Fixture_structure() throws Exception {
-        PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
+    void loadIeee39WeekFixture_structure() throws Exception {
+        PlanMaintainModel model = Aux2PlanMaintainAdapter.createWeekModel(IEEE39_PW_WEEK_DIR);
 
-        assertEquals(FSPlanMaintainModelType.DayAhead, model.getPlanModelType());
-        assertEquals(96, model.getNumsOfTotalTimePoints());
-        assertEquals(15, model.getTimePointIntervalMin());
-        assertEquals(2, model.getOriginalMaintainEquipemnts().size());
+        assertEquals(FSPlanMaintainModelType.Week, model.getPlanModelType());
+        assertEquals(168, model.getNumsOfTotalTimePoints());
+        assertEquals(60, model.getTimePointIntervalMin());
+        assertEquals(7, model.getNumsOfPeriods());
+        assertEquals(3, model.getOriginalMaintainEquipemnts().size());
 
-        LocalDateTime planStart = LocalDateTime.of(2026, 6, 27, 0, 0);
+        LocalDateTime planStart = LocalDateTime.of(2026, 6, 23, 0, 0);
         assertEquals(planStart, model.getPoint2TimeMap().get(0));
-        assertEquals(planStart.plusMinutes(15L * 95), model.getPoint2TimeMap().get(95));
+        assertEquals(planStart.plusHours(167), model.getPoint2TimeMap().get(167));
 
         TimePointRec firstPoint = model.getTimePeriodRecList().get(0).getTimePointRecList().get(0);
         assertEquals(10, firstPoint.getGenMap().size());
@@ -45,48 +46,49 @@ public class PowerWorld2PlanMaintainAdapterTest {
     }
 
     @Test
-    void loadIeee39Fixture_mwProfile() throws Exception {
-        PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
+    void loadIeee39WeekFixture_mwProfile() throws Exception {
+        PlanMaintainModel model = Aux2PlanMaintainAdapter.createWeekModel(IEEE39_PW_WEEK_DIR);
 
         TimePointRec t0 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(0);
         TimePointRec t1 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(1);
         TimePointRec t2 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(2);
-        TimePointRec t3 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(3);
+        TimePointRec t24 = model.getTimePointRec(24);
 
-        assertEquals(572.8349, t0.getGenMap().get("Bus31-G1").getP(), 1.0e-4);
         assertEquals(601.4766, t1.getGenMap().get("Bus31-G1").getP(), 1.0e-4);
         assertEquals(544.1932, t2.getGenMap().get("Bus31-G1").getP(), 1.0e-4);
-        assertEquals(t3.getGenMap().get("Bus31-G1").getP(), t0.getGenMap().get("Bus31-G1").getP(), 1.0e-4);
+        assertEquals(t0.getGenMap().get("Bus31-G1").getP(), t24.getGenMap().get("Bus31-G1").getP(), 1.0e-6);
     }
 
     @Test
-    void loadIeee39Fixture_maintenanceWindows() throws Exception {
-        PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
+    void loadIeee39WeekFixture_maintenanceWindows() throws Exception {
+        PlanMaintainModel model = Aux2PlanMaintainAdapter.createWeekModel(IEEE39_PW_WEEK_DIR);
 
         EquipmentMaintainRec rec1 = model.getOriginalMaintainEquipemnts().get(0);
         assertEquals("Bus29_to_Bus26_cirId_1", rec1.getName());
         assertEquals(MPlanEquipmentType.Acline, rec1.getEquipType());
         assertEquals(EquipmentMaintainPlanState.Inactive, rec1.getPlanState());
         assertTrue(rec1.isChangeState());
-        assertEquals(LocalDateTime.of(2026, 6, 27, 8, 0), rec1.getStartTime());
-        assertEquals(LocalDateTime.of(2026, 6, 27, 11, 0), rec1.getEndTime());
+        assertEquals(LocalDateTime.of(2026, 6, 23, 8, 0), rec1.getStartTime());
+        assertEquals(LocalDateTime.of(2026, 6, 23, 12, 0), rec1.getEndTime());
 
         EquipmentMaintainRec rec2 = model.getOriginalMaintainEquipemnts().get(1);
-        assertEquals("Bus26_to_Bus25_cirId_1", rec2.getName());
-        assertEquals(MPlanEquipmentType.Acline, rec2.getEquipType());
-        assertEquals(EquipmentMaintainPlanState.Inactive, rec2.getPlanState());
-        assertTrue(rec2.isChangeState());
-        assertEquals(LocalDateTime.of(2026, 6, 27, 14, 0), rec2.getStartTime());
-        assertEquals(LocalDateTime.of(2026, 6, 27, 16, 0), rec2.getEndTime());
+        assertEquals("Bus22_to_Bus23_cirId_1", rec2.getName());
+        assertEquals(LocalDateTime.of(2026, 6, 25, 10, 0), rec2.getStartTime());
+        assertEquals(LocalDateTime.of(2026, 6, 25, 16, 0), rec2.getEndTime());
+
+        EquipmentMaintainRec rec3 = model.getOriginalMaintainEquipemnts().get(2);
+        assertEquals("Bus26_to_Bus25_cirId_1", rec3.getName());
+        assertEquals(LocalDateTime.of(2026, 6, 27, 14, 0), rec3.getStartTime());
+        assertEquals(LocalDateTime.of(2026, 6, 27, 18, 0), rec3.getEndTime());
     }
 
     @Test
     void scheduleAuxParser_extractsSubdataSchedules() throws Exception {
         AuxTssParsedData parsed = new AuxTssScheduleAuxParser().parse(
-                IEEE39_PW_DIR.resolve("ieee39_dayahead_schedules.aux"));
+                IEEE39_PW_WEEK_DIR.resolve("ieee39_week_schedules.aux"));
 
-        assertEquals(31, parsed.schedules().size());
-        assertEquals(31, parsed.subscriptions().size());
+        assertEquals(32, parsed.schedules().size());
+        assertEquals(32, parsed.subscriptions().size());
 
         AuxTssSchedule genSchedule = parsed.schedules().stream()
                 .filter(s -> "Sched_Gen_Bus31-G1".equals(s.scheduleName()))
@@ -98,7 +100,7 @@ public class PowerWorld2PlanMaintainAdapterTest {
         assertEquals(572.8349, genSchedule.points().get(0).nValue(), 1.0e-4);
 
         AuxTssSchedule maintSchedule = parsed.schedules().stream()
-                .filter(s -> "Sched_Maint_Bus29_to_Bus26_cirId_1".equals(s.scheduleName()))
+                .filter(s -> "Sched_Maint_Bus22_to_Bus23_cirId_1".equals(s.scheduleName()))
                 .findFirst()
                 .orElseThrow();
         assertTrue(maintSchedule.isBoolean());

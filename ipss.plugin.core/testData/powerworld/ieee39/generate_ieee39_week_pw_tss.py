@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate IEEE39 day-ahead PowerWorld TSS auxiliary artifacts from PlanMaintainModel JSON."""
+"""Generate IEEE39 week PowerWorld TSS auxiliary artifacts from PlanMaintainModel JSON."""
 
 from __future__ import annotations
 
@@ -10,30 +10,30 @@ from pathlib import Path
 import pw_tss_common as common
 
 ROOT = Path(__file__).resolve().parent
-OUT_DIR = ROOT / "dayahead"
+OUT_DIR = ROOT / "week"
 PLAN_JSON = (
     Path(__file__).resolve().parents[4].parent
-    / "ipss-core/ipss.test.core/testdata/json/ieee39_dayahead_plan_maintain_plan.json"
+    / "ipss-core/ipss.test.core/testdata/json/ieee39_week_plan_maintain_plan.json"
 )
 
-START = datetime(2026, 6, 27, 0, 0, 0)
-INTERVAL_MIN = 15
-NUM_POINTS = 96
-PREFIX = "ieee39_dayahead"
+START = datetime(2026, 6, 23, 0, 0, 0)
+INTERVAL_MIN = 60
+NUM_POINTS = 168
+PREFIX = "ieee39_week"
 
 
 def write_run_aux() -> None:
     content = "\n".join(
         [
-            "SCRIPT IEEE39DayAhead",
+            "SCRIPT IEEE39Week",
             "{",
-            '  SetScheduleWindow("06/27/2026 00:00", "06/27/2026 23:45", 15, MINUTES);',
+            '  SetScheduleWindow("06/23/2026 00:00", "06/29/2026 23:00", 60, MINUTES);',
             f'  TimeStepLoadTSB("{PREFIX}.tsb");',
             '  LoadAux("../IEEE39bus_v30_labeled.aux", YES);',
             f'  LoadAux("{PREFIX}_schedules.aux", YES);',
             f'  ImportData("{PREFIX}_outages.csv", PWCSV, 1, NO);',
-            '  ApplyScheduledActionsAt("06/27/2026 08:00", "06/27/2026 16:00", , NO);',
-            '  TimeStepDoRun("2026-06-27T00:00:00", "2026-06-27T23:45:00");',
+            '  ApplyScheduledActionsAt("06/23/2026 08:00", "06/27/2026 18:00", , NO);',
+            '  TimeStepDoRun("2026-06-23T00:00:00", "2026-06-29T23:00:00");',
             "}",
             "",
         ]
@@ -46,12 +46,12 @@ def write_generate_tsb_aux() -> None:
         [
             "// One-time helper: configure TSS Summary in Simulator, then run this script to save the .tsb.",
             "// Manual setup (Time Step Simulation dialog):",
-            "//   Start: 06/27/2026 00:00, End: 06/27/2026 23:45, Resolution: 15 minutes",
-            "//   Solution type: Single Solution for all 96 points",
-            "SCRIPT GenerateIEEE39DayAheadTSB",
+            "//   Start: 06/23/2026 00:00, End: 06/29/2026 23:00, Resolution: 60 minutes",
+            "//   Solution type: Single Solution for all 168 points",
+            "SCRIPT GenerateIEEE39WeekTSB",
             "{",
             "  TimeStepDeleteAll;",
-            f'  // Add 96 time points via TSS Summary UI (or paste {PREFIX}_timepoints.csv).',
+            f'  // Add 168 time points via TSS Summary UI (or paste {PREFIX}_timepoints.csv).',
             f'  TimeStepSaveTSB("{PREFIX}.tsb");',
             "}",
             "",
@@ -64,16 +64,10 @@ def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     with PLAN_JSON.open(encoding="utf-8") as fh:
         plan = json.load(fh)
-    raw_text = common.RAW_FILE.read_text(encoding="utf-8")
-    branches = common.parse_raw_branches(raw_text)
-    line_labels = common.line_branch_names()
-
-    common.write_labeled_aux(ROOT, branches, line_labels)
-    common.write_golden_reference(ROOT, START)
     common.write_schedules_aux(
         plan,
         OUT_DIR / f"{PREFIX}_schedules.aux",
-        "// IEEE39 day-ahead gen/load MW schedules and branch maintenance status schedules.",
+        "// IEEE39 week gen/load MW schedules and branch maintenance status schedules.",
     )
     common.write_outages_csv(plan, OUT_DIR / f"{PREFIX}_outages.csv")
     common.write_timepoints_csv(
@@ -90,7 +84,7 @@ def main() -> None:
     )
     write_run_aux()
     write_generate_tsb_aux()
-    print(f"Generated PowerWorld TSS day-ahead artifacts under {OUT_DIR}")
+    print(f"Generated PowerWorld TSS week artifacts under {OUT_DIR}")
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ import com.interpss.algo.fstate.plan.model.type.FSPlanMaintainModelType;
  */
 public class PowerWorld2PlanMaintainAdapterSample {
 
-    private static final Path IEEE39_PW_DIR = Path.of("ipss.plugin.core/testData/powerworld/ieee39");
+    private static final Path IEEE39_PW_DIR = Path.of("ipss.plugin.core/testData/powerworld/ieee39/dayahead");
 
     public static void main(String[] args) throws Exception {
         PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
@@ -60,20 +60,18 @@ public class PowerWorld2PlanMaintainAdapterSample {
     }
 
     private static void printFlatMwCheck(PlanMaintainModel model) {
-        System.out.println("\n=== Flat MW check (PW fixture uses single SchedPoint at T0) ===");
+        System.out.println("\n=== MW profile (multi-point SchedPoint export) ===");
         TimePointRec t0 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(0);
         TimePointRec t1 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(1);
         TimePointRec t2 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(2);
+        TimePointRec t3 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(3);
 
         double genT0 = t0.getGenMap().get("Bus31-G1").getP();
         double genT1 = t1.getGenMap().get("Bus31-G1").getP();
         double genT2 = t2.getGenMap().get("Bus31-G1").getP();
-        double loadT0 = t0.getLoadMap().get("Bus39-L1").getP();
-        double loadT1 = t1.getLoadMap().get("Bus39-L1").getP();
-        double loadT2 = t2.getLoadMap().get("Bus39-L1").getP();
+        double genT3 = t3.getGenMap().get("Bus31-G1").getP();
 
-        System.out.printf("Bus31-G1: T0=%.4f T1=%.4f T2=%.4f%n", genT0, genT1, genT2);
-        System.out.printf("Bus39-L1: T0=%.4f T1=%.4f T2=%.4f%n", loadT0, loadT1, loadT2);
+        System.out.printf("Bus31-G1: T0=%.4f T1=%.4f T2=%.4f T3=%.4f%n", genT0, genT1, genT2, genT3);
     }
 
     private static void printMaintenanceWindows(PlanMaintainModel model) {
@@ -95,7 +93,7 @@ public class PowerWorld2PlanMaintainAdapterSample {
     private static void printScheduleParserSummary() throws Exception {
         System.out.println("\n=== Schedule AUX parser ===");
         AuxTssParsedData parsed = new AuxTssScheduleAuxParser().parse(
-                IEEE39_PW_DIR.resolve("ieee39_dayahead_plan_schedules.aux"));
+                IEEE39_PW_DIR.resolve("ieee39_dayahead_schedules.aux"));
         System.out.println("schedules: " + parsed.schedules().size());
         System.out.println("subscriptions: " + parsed.subscriptions().size());
 
