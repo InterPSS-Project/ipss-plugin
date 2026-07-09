@@ -1,3 +1,0 @@
-OutageID,Description,BranchLabel,Action,StartTime,EndTime,Status
-OUT001,Bus29_to_Bus26_cirId_1,Bus29_to_Bus26_cirId_1,OpenLine,06/27/2026 08:00,06/27/2026 11:00,Planned
-OUT002,Bus26_to_Bus25_cirId_1,Bus26_to_Bus25_cirId_1,OpenLine,06/27/2026 14:00,06/27/2026 16:00,Planned
