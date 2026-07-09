@@ -20,7 +20,7 @@ import com.interpss.algo.fstate.plan.model.PlanMaintainModel;
  */
 public class AuxFSPluginDclfAlgoRunTest extends CorePluginTestSetup {
 
-    private static final Path IEEE39_PW_DIR = Path.of("testData/powerworld/ieee39");
+    private static final Path IEEE39_PW_DIR = Path.of("testData/powerworld/ieee39/dayahead");
 
     private PlanMaintainModel loadPlanModel() throws Exception {
         return Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);

@@ -30,9 +30,13 @@ public final class Aux2PlanMaintainAdapter {
     private static final AuxOutageCsvParser OUTAGE_PARSER = new AuxOutageCsvParser();
     private static final Aux2PlanMaintainModelMapper MAPPER = new Aux2PlanMaintainModelMapper();
 
-    private static final String SFX_SCHEDULES_AUX = "dayahead_schedules.aux";
-    private static final String SFX_TIMEPOINTS_CSV = "dayahead_timepoints.csv";
-    private static final String SFX_OUTAGES_CSV = "dayahead_outages.csv";
+    private static final String SFX_DAYAHEAD_SCHEDULES_AUX = "dayahead_schedules.aux";
+    private static final String SFX_DAYAHEAD_TIMEPOINTS_CSV = "dayahead_timepoints.csv";
+    private static final String SFX_DAYAHEAD_OUTAGES_CSV = "dayahead_outages.csv";
+
+    private static final String SFX_WEEK_SCHEDULES_AUX = "week_schedules.aux";
+    private static final String SFX_WEEK_TIMEPOINTS_CSV = "week_timepoints.csv";
+    private static final String SFX_WEEK_OUTAGES_CSV = "week_outages.csv";
 
     private Aux2PlanMaintainAdapter() {
     }
@@ -42,10 +46,21 @@ public final class Aux2PlanMaintainAdapter {
      * {@code *_timepoints.csv}, and optionally {@code *_outages.csv}.
      */
     public static PlanMaintainModel createDayAheadModel(Path directory) throws Exception {
-        Path schedulesAux = findSingleFile(directory, SFX_SCHEDULES_AUX);
-        Path timepointsCsv = findSingleFile(directory, SFX_TIMEPOINTS_CSV);
-        Path outagesCsv = findOptionalFile(directory, SFX_OUTAGES_CSV);
+        Path schedulesAux = findSingleFile(directory, SFX_DAYAHEAD_SCHEDULES_AUX);
+        Path timepointsCsv = findSingleFile(directory, SFX_DAYAHEAD_TIMEPOINTS_CSV);
+        Path outagesCsv = findOptionalFile(directory, SFX_DAYAHEAD_OUTAGES_CSV);
         return load(new AuxTssInput(schedulesAux, timepointsCsv, outagesCsv, FSPlanMaintainModelType.DayAhead, null));
+    }
+
+    /**
+     * Loads a Week plan from a directory containing {@code *_week_schedules.aux},
+     * {@code *_week_timepoints.csv}, and optionally {@code *_week_outages.csv}.
+     */
+    public static PlanMaintainModel createWeekModel(Path directory) throws Exception {
+        Path schedulesAux = findSingleFile(directory, SFX_WEEK_SCHEDULES_AUX);
+        Path timepointsCsv = findSingleFile(directory, SFX_WEEK_TIMEPOINTS_CSV);
+        Path outagesCsv = findOptionalFile(directory, SFX_WEEK_OUTAGES_CSV);
+        return load(new AuxTssInput(schedulesAux, timepointsCsv, outagesCsv, FSPlanMaintainModelType.Week, null));
     }
 
     public static PlanMaintainModel load(AuxTssInput input) throws Exception {

@@ -1,0 +1,10 @@
+// One-time helper: configure TSS Summary in Simulator, then run this script to save the .tsb.
+// Manual setup (Time Step Simulation dialog):
+//   Start: 06/27/2026 00:00, End: 06/27/2026 23:45, Resolution: 15 minutes
+//   Solution type: Single Solution for all 96 points
+SCRIPT GenerateIEEE39DayAheadTSB
+{
+  TimeStepDeleteAll;
+  // Add 96 time points via TSS Summary UI (or paste ieee39_dayahead_timepoints.csv).
+  TimeStepSaveTSB("ieee39_dayahead.tsb");
+}
