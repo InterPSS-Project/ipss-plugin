@@ -1,0 +1,10 @@
+SCRIPT IEEE39Week
+{
+  SetScheduleWindow("06/23/2026 00:00", "06/29/2026 23:00", 60, MINUTES);
+  TimeStepLoadTSB("ieee39_week.tsb");
+  LoadAux("../IEEE39bus_v30_labeled.aux", YES);
+  LoadAux("ieee39_week_schedules.aux", YES);
+  ImportData("ieee39_week_outages.csv", PWCSV, 1, NO);
+  ApplyScheduledActionsAt("06/23/2026 08:00", "06/27/2026 18:00", , NO);
+  TimeStepDoRun("2026-06-23T00:00:00", "2026-06-29T23:00:00");
+}
