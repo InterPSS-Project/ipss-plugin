@@ -22,6 +22,7 @@ final class FSPluginDclfAlgoRunAssertions {
     static final String SAMPLE_BRANCH = "Bus22_to_Bus35_cirId_1";
     static final String SAMPLE_BUS_UID = "LBUS21";
     static final String SAMPLE_BUS_ID = "Bus21";
+    static final String SAMPLE_SUB = "Sub01";
     static final String UNKNOWN_SUB = "unknownSub";
 
     static final int[] SPOT_TIME_POINTS = {0, 32, 64, 95};
@@ -75,6 +76,19 @@ final class FSPluginDclfAlgoRunAssertions {
         }
         assertEquals(SAMPLE_BUS_T0_ANGLE, busSeries.get(0).getBusAngle(), 1.0e-6);
         assertEquals(SAMPLE_BUS_T0_POWER_MW, busSeries.get(0).getBusPower(), 0.1);
+    }
+
+    static void assertSampleSubStationSeries(FStateDclfAlgorithm fsAlgo) {
+        Map<Integer, FSDclfSubStationInfoRec> subSeries =
+                new FStateDclfSubStationInfoAdapter(SAMPLE_SUB).adapt(fsAlgo);
+
+        assertEquals(96, subSeries.size());
+        for (int t : SPOT_TIME_POINTS) {
+            FSDclfSubStationInfoRec rec = subSeries.get(t);
+            assertNotNull(rec, "T" + t);
+            assertEquals(SAMPLE_SUB, rec.getSubStationId());
+            assertEquals(SAMPLE_SUB, rec.getSubStationName());
+        }
     }
 
     static void assertUnknownSubStationSeriesEmpty(FStateDclfAlgorithm fsAlgo) {
