@@ -32,37 +32,37 @@ public class FSPluginDclfAlgoRunTest extends CorePluginTestSetup {
     @Test
     void jsonPlan_runSample_structure() throws Exception {
         PlanMaintainModel model = loadPlanModel();
-        FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(model);
+        FStateDclfAlgorithm fsAlgo = IEEE39Raw_FState_TestFixture.runDclfAssessment(model);
         assertDayAheadStructure(model, fsAlgo);
     }
 
     @Test
     void jsonPlan_runSample_t0RefBusPower() throws Exception {
-        FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
+        FStateDclfAlgorithm fsAlgo = IEEE39Raw_FState_TestFixture.runDclfAssessment(loadPlanModel());
         assertT0RefBusPower(fsAlgo);
     }
 
     @Test
     void jsonPlan_runSample_branchFlowSeries() throws Exception {
-        FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
+        FStateDclfAlgorithm fsAlgo = IEEE39Raw_FState_TestFixture.runDclfAssessment(loadPlanModel());
         assertSampleBranchFlowSeries(fsAlgo);
     }
 
     @Test
     void jsonPlan_runSample_busSeries() throws Exception {
-        FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
+        FStateDclfAlgorithm fsAlgo = IEEE39Raw_FState_TestFixture.runDclfAssessment(loadPlanModel());
         assertSampleBusSeries(fsAlgo);
     }
 
     @Test
     void jsonPlan_runSample_subStationSeries() throws Exception {
-        FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
+        FStateDclfAlgorithm fsAlgo = IEEE39Raw_FState_TestFixture.runDclfAssessment(loadPlanModel());
         assertSampleSubStationSeries(fsAlgo);
     }
 
     @Test
     void jsonPlan_runSample_unknownSubStationSeries_empty() throws Exception {
-        FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
+        FStateDclfAlgorithm fsAlgo = IEEE39Raw_FState_TestFixture.runDclfAssessment(loadPlanModel());
         assertUnknownSubStationSeriesEmpty(fsAlgo);
     }
 }
