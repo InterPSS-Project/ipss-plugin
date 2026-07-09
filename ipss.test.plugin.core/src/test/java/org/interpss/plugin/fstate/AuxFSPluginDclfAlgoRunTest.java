@@ -3,9 +3,9 @@ package org.interpss.plugin.fstate;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertDayAheadStructure;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertSampleBranchFlowSeries;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertSampleBusSeries;
+import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertSampleSubStationSeries;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertT0RefBusPower;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertUnknownSubStationSeriesEmpty;
-
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
@@ -49,6 +49,12 @@ public class AuxFSPluginDclfAlgoRunTest extends CorePluginTestSetup {
     void auxPlan_runSample_busSeries() throws Exception {
         FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
         assertSampleBusSeries(fsAlgo);
+    }
+
+    @Test
+    void auxPlan_runSample_subStationSeries() throws Exception {
+        FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
+        assertSampleSubStationSeries(fsAlgo);
     }
 
     @Test
