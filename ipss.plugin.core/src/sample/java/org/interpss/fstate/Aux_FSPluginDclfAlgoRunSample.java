@@ -18,7 +18,7 @@ public class Aux_FSPluginDclfAlgoRunSample {
 	public static void main(String[] args) throws Exception {
 		AclfNetwork aclfNet = IEEE39_RAW_Info_Sample.loadIEEE39Raw();
 
-		Path IEEE39_PW_DIR = Path.of("ipss.plugin.core/testData/powerworld/ieee39");
+		Path IEEE39_PW_DIR = Path.of("ipss.plugin.core/testData/powerworld/ieee39/dayahead");
 			PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
 
 		FStateAlgoConfig fStateAlgoConfig = new FStateAlgoConfig();
