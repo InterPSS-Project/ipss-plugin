@@ -49,7 +49,7 @@ public final class Aux2PlanMaintainAdapter {
         Path schedulesAux = findSingleFile(directory, SFX_DAYAHEAD_SCHEDULES_AUX);
         Path timepointsCsv = findSingleFile(directory, SFX_DAYAHEAD_TIMEPOINTS_CSV);
         Path outagesCsv = findOptionalFile(directory, SFX_DAYAHEAD_OUTAGES_CSV);
-        return load(new AuxTssInput(schedulesAux, timepointsCsv, outagesCsv, FSPlanMaintainModelType.DayAhead, null));
+        return load(new AuxTssInput(schedulesAux, timepointsCsv, outagesCsv, FSPlanMaintainModelType.DayAhead, 15));
     }
 
     /**
@@ -60,7 +60,7 @@ public final class Aux2PlanMaintainAdapter {
         Path schedulesAux = findSingleFile(directory, SFX_WEEK_SCHEDULES_AUX);
         Path timepointsCsv = findSingleFile(directory, SFX_WEEK_TIMEPOINTS_CSV);
         Path outagesCsv = findOptionalFile(directory, SFX_WEEK_OUTAGES_CSV);
-        return load(new AuxTssInput(schedulesAux, timepointsCsv, outagesCsv, FSPlanMaintainModelType.Week, null));
+        return load(new AuxTssInput(schedulesAux, timepointsCsv, outagesCsv, FSPlanMaintainModelType.Week, 60));
     }
 
     public static PlanMaintainModel load(AuxTssInput input) throws Exception {
