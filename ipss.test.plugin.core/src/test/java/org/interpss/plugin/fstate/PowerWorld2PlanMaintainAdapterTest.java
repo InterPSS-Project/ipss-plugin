@@ -26,7 +26,7 @@ public class PowerWorld2PlanMaintainAdapterTest {
 
     @Test
     void loadIeee39Fixture_structure() throws Exception {
-        PlanMaintainModel model = Aux2PlanMaintainAdapter.load(IEEE39_PW_DIR);
+        PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
 
         assertEquals(FSPlanMaintainModelType.DayAhead, model.getPlanModelType());
         assertEquals(96, model.getNumsOfTotalTimePoints());
@@ -46,7 +46,7 @@ public class PowerWorld2PlanMaintainAdapterTest {
 
     @Test
     void loadIeee39Fixture_flatMwAcrossTimePoints() throws Exception {
-        PlanMaintainModel model = Aux2PlanMaintainAdapter.load(IEEE39_PW_DIR);
+        PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
 
         TimePointRec t0 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(0);
         TimePointRec t1 = model.getTimePeriodRecList().get(0).getTimePointRecList().get(1);
@@ -60,7 +60,7 @@ public class PowerWorld2PlanMaintainAdapterTest {
 
     @Test
     void loadIeee39Fixture_maintenanceWindows() throws Exception {
-        PlanMaintainModel model = Aux2PlanMaintainAdapter.load(IEEE39_PW_DIR);
+        PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
 
         EquipmentMaintainRec rec1 = model.getOriginalMaintainEquipemnts().get(0);
         assertEquals("Bus29_to_Bus26_cirId_1", rec1.getName());
