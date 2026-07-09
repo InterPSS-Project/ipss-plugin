@@ -22,7 +22,7 @@ final class FSPluginDclfAlgoRunAssertions {
     static final String SAMPLE_BRANCH = "Bus22_to_Bus35_cirId_1";
     static final String SAMPLE_BUS_UID = "LBUS21";
     static final String SAMPLE_BUS_ID = "Bus21";
-    static final String UNKNOWN_SUB = "Sub01";
+    static final String UNKNOWN_SUB = "unknownSub";
 
     static final int[] SPOT_TIME_POINTS = {0, 32, 64, 95};
 
