@@ -19,7 +19,7 @@ public class Aux_FSPluginDclfAlgoRunSample {
 		AclfNetwork aclfNet = IEEE39_RAW_Info_Sample.loadIEEE39Raw();
 
 		Path IEEE39_PW_DIR = Path.of("ipss.plugin.core/testData/powerworld/ieee39");
-		PlanMaintainModel model = Aux2PlanMaintainAdapter.load(IEEE39_PW_DIR);
+			PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
 
 		FStateAlgoConfig fStateAlgoConfig = new FStateAlgoConfig();
 		FStateDclfAlgorithm fsAlgo = new FStateDclfAlgorithm(aclfNet, model, fStateAlgoConfig);
