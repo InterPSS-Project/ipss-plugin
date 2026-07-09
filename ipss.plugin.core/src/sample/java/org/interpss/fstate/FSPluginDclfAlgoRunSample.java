@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.algo.fstate.FStateDclfAlgorithm;
@@ -15,7 +14,6 @@ import com.interpss.algo.fstate.result.adapter.dclf.FStateDclfBranchInfoAdapter;
 import com.interpss.algo.fstate.result.adapter.dclf.FStateDclfBusInfoAdapter;
 import com.interpss.algo.fstate.result.adapter.dclf.FStateDclfSubStationInfoAdapter;
 import com.interpss.algo.fstate.util.FStateDclfAlgoHelper;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 
 public class FSPluginDclfAlgoRunSample {
@@ -53,7 +51,8 @@ public class FSPluginDclfAlgoRunSample {
 		System.out.println("Branch flow series (" + sampleBranch + ", MW):");
 		branchSeries.forEach((tpoint, rec) -> System.out.printf("  T%d: %.4f%n", tpoint, rec.getDclfFlow()));
 
-		String sampleBus = "BUS-21  100";
+		// PSSE RAW uses LBUS21; core JSON sample uses "BUS-21  100"
+		String sampleBus = "LBUS21";
 		var busSeries = new FStateDclfBusInfoAdapter(sampleBus).adapt(fsAlgo);
 		System.out.println("Bus angle/power series (" + sampleBus + "):");
 		busSeries.forEach((tpoint, rec) -> System.out.printf("  T%d: angle=%.4f power=%.4f%n",
