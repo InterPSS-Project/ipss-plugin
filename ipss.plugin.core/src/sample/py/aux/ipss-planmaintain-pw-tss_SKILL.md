@@ -11,6 +11,8 @@ Bidirectional workflow between InterPSS **PlanMaintainModel** (future-state plan
 
 Canonical mapping doc: `ipss-plugin/ipss.plugin.core/docs/data_fmt/plan-maintain-to-powerworld-tss.md`
 
+Python generators and this skill live under `ipss.plugin.core/src/sample/py/aux/`.
+
 ## When to use
 
 - Export a `PlanMaintainModel` JSON fixture to PowerWorld `.aux` / `.csv` for Simulator TSS
@@ -21,10 +23,11 @@ Canonical mapping doc: `ipss-plugin/ipss.plugin.core/docs/data_fmt/plan-maintain
 ## Architecture (two directions)
 
 ```
-PlanMaintainModel JSON  ──generate_ieee39_*_pw_tss.py──►  PW TSS artifacts
-                                                              │
-                                                              ▼
-PlanMaintainModel       ◄── Aux2PlanMaintainAdapter ────  *_schedules.aux
+PlanMaintainModel JSON  ──src/sample/py/aux/generate_ieee39_*_pw_tss.py──►  PW TSS artifacts
+                                                                                  │
+                                                                                  ▼
+PlanMaintainModel       ◄── Aux2PlanMaintainAdapter ────  testData/powerworld/ieee39/*/
+                                                          *_schedules.aux
                                                           *_timepoints.csv
                                                           *_outages.csv (opt)
 ```
@@ -86,24 +89,32 @@ Gen/load schedules compress to ~4 numeric `SchedPoint` rows per device via `comp
 
 ### Week artifact layout
 
+**Generators** (`src/sample/py/aux/`):
+
 ```
-ipss.plugin.core/testData/powerworld/ieee39/
-├── pw_tss_common.py                    # shared: flatten_time_points, compress_step_hold, AUX writers
+ipss.plugin.core/src/sample/py/aux/
+├── pw_tss_common.py
+├── generate_ieee39_dayahead_pw_tss.py
 ├── generate_ieee39_week_pw_tss.py
-├── IEEE39bus_v30_labeled.aux           # shared (parent dir)
-├── golden_tsschedule_reference.aux     # shared (parent dir)
-└── week/
-    ├── ieee39_week_schedules.aux       # adapter input (*week_schedules.aux suffix)
+├── ipss-planmaintain-pw-tss_SKILL.md
+├── IEEE39bus_v30_labeled.aux           # generated (shared)
+├── golden_tsschedule_reference.aux     # generated (shared)
+├── dayahead/                           # generated day-ahead TSS artifacts
+│   ├── ieee39_dayahead_schedules.aux
+│   ├── ieee39_dayahead_timepoints.csv
+│   └── ...
+└── week/                               # generated week TSS artifacts
+    ├── ieee39_week_schedules.aux
     ├── ieee39_week_timepoints.csv
-    ├── ieee39_week_outages.csv
-    ├── ieee39_week_run.aux
-    ├── ieee39_week_generate_tsb.aux
-    └── ieee39_week.tsb                 # text manifest (168 timestamps)
+    └── ...
 ```
 
-JUnit fixtures (copy 3 adapter input files after regeneration):
+**Committed adapter / test fixtures** (copy 3 input files here after regeneration):
 
 ```
+ipss.plugin.core/testData/powerworld/ieee39/dayahead/
+ipss.plugin.core/testData/powerworld/ieee39/week/
+ipss.test.plugin.core/testData/powerworld/ieee39/dayahead/
 ipss.test.plugin.core/testData/powerworld/ieee39/week/
 ```
 
@@ -111,9 +122,13 @@ ipss.test.plugin.core/testData/powerworld/ieee39/week/
 
 ### Week generator
 
+Run from `ipss-plugin` repo root (or `cd` into the script directory):
+
 ```bash
-python3 ipss-plugin/ipss.plugin.core/testData/powerworld/ieee39/generate_ieee39_week_pw_tss.py
+python3 ipss.plugin.core/src/sample/py/aux/generate_ieee39_week_pw_tss.py
 ```
+
+Writes to `ipss.plugin.core/src/sample/py/aux/week/`. Then copy `ieee39_week_schedules.aux`, `ieee39_week_timepoints.csv`, and `ieee39_week_outages.csv` into the `testData/.../week/` fixture dirs above.
 
 `ieee39_week_run.aux` sequence:
 
@@ -184,33 +199,37 @@ Week DCLF clones **168** network/DCLF algo instances (vs 96 for day-ahead). Alwa
 | Plan JSON (week) | `ipss-core/ipss.test.core/testdata/json/ieee39_week_plan_maintain_plan.json` |
 | PSSE case | `ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw` |
 | Branch names | `ipss-core/ipss.test.core/testdata/json/ieee39.json` (`branchAry`, `branchCode=LINE`) |
-| Shared utilities | `ipss.plugin.core/testData/powerworld/ieee39/pw_tss_common.py` |
+| Shared utilities | `ipss.plugin.core/src/sample/py/aux/pw_tss_common.py` |
+| Day-ahead generator | `ipss.plugin.core/src/sample/py/aux/generate_ieee39_dayahead_pw_tss.py` |
+| Week generator | `ipss.plugin.core/src/sample/py/aux/generate_ieee39_week_pw_tss.py` |
 
 ### Generate day-ahead artifacts
 
 ```bash
-python3 ipss-plugin/ipss.plugin.core/testData/powerworld/ieee39/generate_ieee39_dayahead_pw_tss.py
+python3 ipss.plugin.core/src/sample/py/aux/generate_ieee39_dayahead_pw_tss.py
 ```
 
-Output under `ipss.plugin.core/testData/powerworld/ieee39/dayahead/`:
+Writes to `ipss.plugin.core/src/sample/py/aux/dayahead/`:
 
 | File | Purpose |
 |---|---|
-| `IEEE39bus_v30_labeled.aux` | Labels on gens/loads/branches (parent `ieee39/` dir) |
-| `golden_tsschedule_reference.aux` | Minimal syntax reference (parent dir) |
+| `IEEE39bus_v30_labeled.aux` | Labels on gens/loads/branches (parent `aux/` dir) |
+| `golden_tsschedule_reference.aux` | Minimal syntax reference (parent `aux/` dir) |
 | `*_dayahead_schedules.aux` | MW + branch-status schedules + subscriptions |
 | `*_dayahead_timepoints.csv` | 96 timestamps, 15-min, ISO8601 column |
 | `*_dayahead_outages.csv` | PWCSV scheduled-outage rows (parallel to TSS) |
 | `*_dayahead_run.aux` | Simulator orchestration SCRIPT |
 | `*_dayahead.tsb` | Text manifest (not binary — see TSB note) |
 
+Copy the three adapter input files (`*_schedules.aux`, `*_timepoints.csv`, `*_outages.csv`) to `testData/powerworld/ieee39/dayahead/` and `ipss.test.plugin.core/testData/powerworld/ieee39/dayahead/`.
+
 ### Generate week artifacts
 
 ```bash
-python3 ipss-plugin/ipss.plugin.core/testData/powerworld/ieee39/generate_ieee39_week_pw_tss.py
+python3 ipss.plugin.core/src/sample/py/aux/generate_ieee39_week_pw_tss.py
 ```
 
-Output under `ipss.plugin.core/testData/powerworld/ieee39/week/`:
+Writes to `ipss.plugin.core/src/sample/py/aux/week/`:
 
 | File | Purpose |
 |---|---|
@@ -220,7 +239,7 @@ Output under `ipss.plugin.core/testData/powerworld/ieee39/week/`:
 | `*_week_run.aux` | Simulator SCRIPT (`SetScheduleWindow(..., 60, MINUTES)`) |
 | `*_week.tsb` | Text manifest (168 timestamps) |
 
-Copy adapter inputs to `ipss.test.plugin.core/testData/powerworld/ieee39/dayahead/` or `.../week/`.
+Copy the three adapter input files to `testData/powerworld/ieee39/week/` and `ipss.test.plugin.core/testData/powerworld/ieee39/week/`.
 
 ### Field mapping (export)
 
@@ -379,18 +398,17 @@ All four are in `CorePluginTestSuite`.
 ```
 Task Progress:
 - [ ] 1. Obtain PlanMaintainModel JSON + PSSE case + ieee*.json branch names
-- [ ] 2. Clone/adapt generate_*_pw_tss.py (horizon, interval, naming prefix)
-- [ ] 3. Generate labeled.aux (gen/load/branch Labels = InterPSS names)
-- [ ] 4. Generate schedules.aux + timepoints.csv + outages.csv
-- [ ] 5. Add golden_tsschedule_reference.aux (minimal syntax probe)
-- [ ] 6. Copy adapter inputs to ipss.test.plugin.core/testData/...
-- [ ] 7. Add/extend PowerWorld2PlanMaintainAdapterTest assertions
-- [ ] 8. Add sample + AuxFSPlugin*DclfAlgoRunTest if DCLF integration needed
-- [ ] 9. Ensure network device names match plan schedule names
-- [ ] 10. Update plan-maintain-to-powerworld-tss.md
+- [ ] 2. Clone/adapt scripts under ipss.plugin.core/src/sample/py/aux/
+- [ ] 3. Run generator; labeled.aux + golden reference land in aux/ parent dir
+- [ ] 4. Generate schedules.aux + timepoints.csv + outages.csv (dayahead/ or week/ subdir)
+- [ ] 5. Copy 3 adapter input files to testData/powerworld/ieee39/... fixture dirs
+- [ ] 6. Add/extend PowerWorld2PlanMaintain*AdapterTest assertions
+- [ ] 7. Add sample + AuxFSPlugin*DclfAlgoRunTest if DCLF integration needed
+- [ ] 8. Ensure network device names match plan schedule names
+- [ ] 9. Update plan-maintain-to-powerworld-tss.md
 ```
 
-For **week** plans: use `generate_ieee39_week_pw_tss.py`, `createWeekModel(dir)`, `week_*` file suffixes, and `FSPlanMaintainModelType.Week`.
+For **week** plans: use `generate_ieee39_week_pw_tss.py` in `src/sample/py/aux/`, `createWeekModel(dir)`, `week_*` file suffixes, and `FSPlanMaintainModelType.Week`.
 
 ---
 
@@ -421,7 +439,7 @@ Date formats:
 |---|---|---|
 | `genNotFoundList` with `Bus31-G1` | PSSE names not renamed | Call `IEEE39_RAW_Info_Sample.addInfo2Network` before DCLF |
 | Adapter `Expected exactly one *dayahead_schedules.aux` | Wrong filename suffix | Rename to `*dayahead_schedules.aux` or `*week_schedules.aux` |
-| MW mismatch at T1/T2 | Old flat T0-only export | Regenerate with `pw_tss_common.compress_step_hold` |
+| MW mismatch at T1/T2 | Old flat T0-only export or stale testData fixtures | Regenerate from `src/sample/py/aux/` and copy to `testData/` |
 | TSB load fails | Text manifest, not binary | Export from Simulator |
 | Branch maint not found | Label mismatch | Use `ieee39.json` LINE branch names in labeled.aux |
 | Week plan 26k-line JSON | Long horizon, JSON only in ipss-core | Generator reads cross-repo path; use `compress_step_hold` to keep AUX small |
@@ -431,6 +449,7 @@ Date formats:
 
 ## Reference links
 
+- This skill: `ipss-plugin/ipss.plugin.core/src/sample/py/aux/ipss-planmaintain-pw-tss_SKILL.md`
 - Mapping doc: `ipss-plugin/ipss.plugin.core/docs/data_fmt/plan-maintain-to-powerworld-tss.md`
 - Week JSON baseline test: `ipss-core/ipss.test.core/.../WeekMaintainPlanTest.java`
 - Week maintenance definition: `ipss-core/ipss.test.core/.../Ieee39_Week_Info.java`
