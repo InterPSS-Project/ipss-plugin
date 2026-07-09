@@ -3,9 +3,9 @@ package org.interpss.plugin.fstate;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertDayAheadStructure;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertSampleBranchFlowSeries;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertSampleBusSeries;
+import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertSampleSubStationSeries;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertT0RefBusPower;
 import static org.interpss.plugin.fstate.FSPluginDclfAlgoRunAssertions.assertUnknownSubStationSeriesEmpty;
-
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,7 +23,7 @@ import com.interpss.algo.fstate.plan.model.PlanMaintainModel;
 public class FSPluginDclfAlgoRunTest extends CorePluginTestSetup {
 
     private static final Path PLAN_JSON = Path.of(
-            "../ipss.plugin.core/testData/psse/v30/ieee39_dayahead_plan_maintain_plan.json");
+            "../ipss.plugin.core/testData/psse/v30/ieee39Raw_dayahead_plan_maintain_plan.json");
 
     private PlanMaintainModel loadPlanModel() throws Exception {
         return PlanMaintainModelBuilder.fromJson(Files.readString(PLAN_JSON, StandardCharsets.UTF_8));
@@ -52,6 +52,12 @@ public class FSPluginDclfAlgoRunTest extends CorePluginTestSetup {
     void jsonPlan_runSample_busSeries() throws Exception {
         FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
         assertSampleBusSeries(fsAlgo);
+    }
+
+    @Test
+    void jsonPlan_runSample_subStationSeries() throws Exception {
+        FStateDclfAlgorithm fsAlgo = IEEE39FStateTestFixture.runDclfAssessment(loadPlanModel());
+        assertSampleSubStationSeries(fsAlgo);
     }
 
     @Test
