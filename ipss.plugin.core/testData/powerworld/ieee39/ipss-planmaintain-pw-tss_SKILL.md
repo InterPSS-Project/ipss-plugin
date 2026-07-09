@@ -1,6 +1,6 @@
 ---
 name: ipss-planmaintain-pw-tss
-description: Port InterPSS PlanMaintainModel to/from PowerWorld TSS auxiliary files (AUX, CSV, TSB). Use when exporting plan/maintain JSON to PowerWorld, importing PW schedules into PlanMaintainModel, wiring Aux2PlanMaintainAdapter, or debugging genNotFoundList / device name mismatches in future-state DCLF runs.
+description: Port InterPSS PlanMaintainModel to/from PowerWorld TSS auxiliary files (AUX, CSV, TSB). Use when exporting plan/maintain JSON to PowerWorld (day-ahead or week), importing PW schedules into PlanMaintainModel via createDayAheadModel/createWeekModel, or debugging genNotFoundList / device name mismatches in future-state DCLF runs.
 metadata:
   short-description: PlanMaintainModel ↔ PowerWorld TSS porting
 ---
@@ -42,6 +42,135 @@ Java adapter package: `org.interpss.plugin.fstate.aux_fmt`
 | `AuxParseUtil` | Shared AUX tokenization (`org.interpss.plugin.aux_fmt.util`) |
 
 Build target model via `PlanMaintainModelBuilder` in `ipss-core`.
+
+---
+
+## IEEE39 Week port (reference case)
+
+Week porting follows the same pipeline as day-ahead but with a longer horizon, three maintenance windows, and multi-point MW schedules. Regression baseline: `ipss-core/ipss.test.core/src/test/java/com/interpss/test/fstate/plan/WeekMaintainPlanTest.java`.
+
+### Source vs target
+
+| Attribute | Week plan | Day-ahead (reference) |
+|---|---|---|
+| Plan JSON | `ipss-core/.../ieee39_week_plan_maintain_plan.json` | `ieee39_dayahead_plan_maintain_plan.json` |
+| `planModelType` | `Week` | `DayAhead` |
+| Horizon | **168** points, **60-min**, `2026-06-23T00:00` … `2026-06-29T23:00` | 96 × 15-min |
+| Maintenance | **3** lines | 2 lines |
+| MW profile | T0–T2 vary (`genLoadFactor` 1.0 / 1.05 / 0.95), T3+ flat | Same genLoadFactor pattern |
+| Schedules in AUX | 29 numeric + 3 boolean + 32 subscriptions | 29 numeric + 2 boolean + 31 subscriptions |
+| Maintenance source | `ipss-core/.../Ieee39_Week_Info.java` | `Ieee39_Dayahead_Info.java` |
+
+### Week maintenance windows
+
+| Branch | Window |
+|---|---|
+| `Bus29_to_Bus26_cirId_1` | Mon 2026-06-23 08:00–12:00 |
+| `Bus22_to_Bus23_cirId_1` | Wed 2026-06-25 10:00–16:00 |
+| `Bus26_to_Bus25_cirId_1` | Fri 2026-06-27 14:00–18:00 |
+
+Each maintenance schedule uses 3 boolean `SchedPoint` rows: CLOSED → OPEN → CLOSED at `startTime` / `endTime`.
+
+### Week MW profile (spot-check values)
+
+`Bus31-G1` MW after adapter round-trip:
+
+| Time point | Expected MW (≈) |
+|---|---|
+| T0 | 572.83 |
+| T1 | 601.48 |
+| T2 | 544.19 |
+| T24 (and T3+) | 572.83 (flat after hour 2) |
+
+Gen/load schedules compress to ~4 numeric `SchedPoint` rows per device via `compress_step_hold()`.
+
+### Week artifact layout
+
+```
+ipss.plugin.core/testData/powerworld/ieee39/
+├── pw_tss_common.py                    # shared: flatten_time_points, compress_step_hold, AUX writers
+├── generate_ieee39_week_pw_tss.py
+├── IEEE39bus_v30_labeled.aux           # shared (parent dir)
+├── golden_tsschedule_reference.aux     # shared (parent dir)
+└── week/
+    ├── ieee39_week_schedules.aux       # adapter input (*week_schedules.aux suffix)
+    ├── ieee39_week_timepoints.csv
+    ├── ieee39_week_outages.csv
+    ├── ieee39_week_run.aux
+    ├── ieee39_week_generate_tsb.aux
+    └── ieee39_week.tsb                 # text manifest (168 timestamps)
+```
+
+JUnit fixtures (copy 3 adapter input files after regeneration):
+
+```
+ipss.test.plugin.core/testData/powerworld/ieee39/week/
+```
+
+**Filename rule:** adapter suffix discovery requires `*week_schedules.aux`, `*week_timepoints.csv`, `*week_outages.csv` — not `*_plan_schedules.aux`.
+
+### Week generator
+
+```bash
+python3 ipss-plugin/ipss.plugin.core/testData/powerworld/ieee39/generate_ieee39_week_pw_tss.py
+```
+
+`ieee39_week_run.aux` sequence:
+
+```text
+SetScheduleWindow("06/23/2026 00:00", "06/29/2026 23:00", 60, MINUTES);
+TimeStepLoadTSB("ieee39_week.tsb");
+LoadAux("../IEEE39bus_v30_labeled.aux", YES);
+LoadAux("ieee39_week_schedules.aux", YES);
+ImportData("ieee39_week_outages.csv", PWCSV, 1, NO);
+TimeStepDoRun("2026-06-23T00:00:00", "2026-06-29T23:00:00");
+```
+
+### Week adapter import
+
+```java
+PlanMaintainModel model = Aux2PlanMaintainAdapter.createWeekModel(
+    Path.of("ipss.test.plugin.core/testData/powerworld/ieee39/week"));
+// or from repo root in samples:
+// Path.of("ipss.plugin.core/testData/powerworld/ieee39/week")
+```
+
+Explicit load:
+
+```java
+PlanMaintainModel model = Aux2PlanMaintainAdapter.load(new AuxTssInput(
+    Path.of(".../ieee39_week_schedules.aux"),
+    Path.of(".../ieee39_week_timepoints.csv"),
+    Path.of(".../ieee39_week_outages.csv"),
+    FSPlanMaintainModelType.Week,
+    null));
+```
+
+No mapper changes needed — `AuxScheduleEvaluator` step-hold logic handles multi-point schedules.
+
+### Week tests and samples
+
+| Artifact | Path |
+|---|---|
+| Adapter test | `PowerWorld2PlanMaintainWeekAdapterTest` |
+| DCLF integration test | `AuxFSPluginWeekDclfAlgoRunTest` |
+| DCLF sample | `Aux_FSPluginWeekDclfAlgoRunSample` |
+
+```bash
+mvn -pl ipss.test.plugin.core test -Dtest=PowerWorld2PlanMaintainWeekAdapterTest
+mvn -pl ipss.test.plugin.core test -Dtest=AuxFSPluginWeekDclfAlgoRunTest
+```
+
+Week DCLF clones **168** network/DCLF algo instances (vs 96 for day-ahead). Always load network via `IEEE39_RAW_Info_Sample.loadIEEE39Raw()` to avoid `genNotFoundList`.
+
+### Week manual PowerWorld checklist
+
+1. Load `IEEE39bus_v30_labeled.aux` + `ieee39_week_schedules.aux` — confirm **32** schedules import
+2. Configure TSS from `ieee39_week_timepoints.csv` — **168** points in TSS Summary
+3. Run `ieee39_week_run.aux` without import errors
+4. Spot-check Mon 08:00: `Bus29_to_Bus26_cirId_1` **OPEN**
+5. Spot-check Wed 10:00: `Bus22_to_Bus23_cirId_1` **OPEN**
+6. Spot-check Fri 14:00: `Bus26_to_Bus25_cirId_1` **OPEN**
 
 ---
 
@@ -228,10 +357,12 @@ All four are in `CorePluginTestSuite`.
 
 ### Adapter test checklist (week)
 
-- [ ] `Week` plan type, 168 points, 60-min interval, 7 periods
-- [ ] 3 maintenance records (Mon/Wed/Fri windows)
-- [ ] MW profile matches `WeekMaintainPlanTest` baseline
-- [ ] Parser: 32 schedules + 32 subscriptions
+- [ ] `Week` plan type, 168 points, 60-min interval, **7 periods**
+- [ ] Horizon: `2026-06-23T00:00` … `2026-06-29T23:00`
+- [ ] 3 maintenance records with Mon/Wed/Fri windows (see table above)
+- [ ] MW profile: `Bus31-G1` T0 ≈ 572.83, T1 ≈ 601.48, T2 ≈ 544.19; T24 = T0
+- [ ] Parser: 32 schedules + 32 subscriptions; gen schedule has 4 SchedPoints; maint has 3
+- [ ] DCLF: no `genNotFoundList` / `loadNotFoundList` at T0
 
 ### Manual PowerWorld checklist
 
@@ -293,13 +424,16 @@ Date formats:
 | MW mismatch at T1/T2 | Old flat T0-only export | Regenerate with `pw_tss_common.compress_step_hold` |
 | TSB load fails | Text manifest, not binary | Export from Simulator |
 | Branch maint not found | Label mismatch | Use `ieee39.json` LINE branch names in labeled.aux |
-| Week plan 26k-line JSON | Long horizon | Separate generator; may need non-flat schedule export |
+| Week plan 26k-line JSON | Long horizon, JSON only in ipss-core | Generator reads cross-repo path; use `compress_step_hold` to keep AUX small |
+| `createWeekModel` not found | Stale `ipss.plugin.core` jar | `mvn -pl ipss.plugin.core,ipss.test.plugin.core -am` before tests |
 
 ---
 
 ## Reference links
 
 - Mapping doc: `ipss-plugin/ipss.plugin.core/docs/data_fmt/plan-maintain-to-powerworld-tss.md`
+- Week JSON baseline test: `ipss-core/ipss.test.core/.../WeekMaintainPlanTest.java`
+- Week maintenance definition: `ipss-core/ipss.test.core/.../Ieee39_Week_Info.java`
 - Contingency AUX pattern: `org.interpss.plugin.contingency.aux_fmt`
 - Plan model builder: `com.interpss.algo.fstate.plan.PlanMaintainModelBuilder`
 - Future-state architecture: `ipss-core/ipss.core_EMF/docs/md/notes/fstate-architecture.md`
