@@ -30,17 +30,21 @@ public final class Aux2PlanMaintainAdapter {
     private static final AuxOutageCsvParser OUTAGE_PARSER = new AuxOutageCsvParser();
     private static final Aux2PlanMaintainModelMapper MAPPER = new Aux2PlanMaintainModelMapper();
 
+    private static final String SFX_SCHEDULES_AUX = "dayahead_schedules.aux";
+    private static final String SFX_TIMEPOINTS_CSV = "dayahead_timepoints.csv";
+    private static final String SFX_OUTAGES_CSV = "dayahead_outages.csv";
+
     private Aux2PlanMaintainAdapter() {
     }
 
     /**
-     * Loads a plan from a directory containing {@code *_schedules.aux},
+     * Loads an DayAhead plan from a directory containing {@code *_schedules.aux},
      * {@code *_timepoints.csv}, and optionally {@code *_outages.csv}.
      */
-    public static PlanMaintainModel load(Path directory) throws Exception {
-        Path schedulesAux = findSingleFile(directory, "_schedules.aux");
-        Path timepointsCsv = findSingleFile(directory, "_timepoints.csv");
-        Path outagesCsv = findOptionalFile(directory, "_outages.csv");
+    public static PlanMaintainModel createDayAheadModel(Path directory) throws Exception {
+        Path schedulesAux = findSingleFile(directory, SFX_SCHEDULES_AUX);
+        Path timepointsCsv = findSingleFile(directory, SFX_TIMEPOINTS_CSV);
+        Path outagesCsv = findOptionalFile(directory, SFX_OUTAGES_CSV);
         return load(new AuxTssInput(schedulesAux, timepointsCsv, outagesCsv, FSPlanMaintainModelType.DayAhead, null));
     }
 

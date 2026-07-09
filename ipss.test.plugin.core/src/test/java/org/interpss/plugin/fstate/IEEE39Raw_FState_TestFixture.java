@@ -15,12 +15,12 @@ import com.interpss.core.net.Substation;
  * Test fixture mirroring {@code org.interpss.fstate.IEEE39_RAW_Info_Sample} with
  * paths relative to the {@code ipss.test.plugin.core} module.
  */
-public final class IEEE39FStateTestFixture {
+public final class IEEE39Raw_FState_TestFixture {
 
     private static final String IEEE39_RAW =
             "../ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw";
 
-    private IEEE39FStateTestFixture() {
+    private IEEE39Raw_FState_TestFixture() {
     }
 
     public static AclfNetwork loadIEEE39Raw() throws Exception {
