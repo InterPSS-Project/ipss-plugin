@@ -1,0 +1,10 @@
+// One-time helper: configure TSS Summary in Simulator, then run this script to save the .tsb.
+// Manual setup (Time Step Simulation dialog):
+//   Start: 06/23/2026 00:00, End: 06/29/2026 23:00, Resolution: 60 minutes
+//   Solution type: Single Solution for all 168 points
+SCRIPT GenerateIEEE39WeekTSB
+{
+  TimeStepDeleteAll;
+  // Add 168 time points via TSS Summary UI (or paste ieee39_week_timepoints.csv).
+  TimeStepSaveTSB("ieee39_week.tsb");
+}
