@@ -26,7 +26,7 @@ public class PowerWorld2PlanMaintainAdapterSample {
     private static final Path IEEE39_PW_DIR = Path.of("ipss.plugin.core/testData/powerworld/ieee39");
 
     public static void main(String[] args) throws Exception {
-        PlanMaintainModel model = Aux2PlanMaintainAdapter.load(IEEE39_PW_DIR);
+        PlanMaintainModel model = Aux2PlanMaintainAdapter.createDayAheadModel(IEEE39_PW_DIR);
         printPlanStructure(model);
         printFlatMwCheck(model);
         printMaintenanceWindows(model);
