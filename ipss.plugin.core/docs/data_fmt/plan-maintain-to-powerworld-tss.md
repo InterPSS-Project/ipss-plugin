@@ -1,13 +1,16 @@
 # Plan/Maintain Model to PowerWorld Time Step Simulation
 
-Maps InterPSS **PlanMaintainModel** day-ahead inputs to static PowerWorld Simulator **Time Step Simulation (TSS)** auxiliary files.
+Maps InterPSS **PlanMaintainModel** inputs to static PowerWorld Simulator **Time Step Simulation (TSS)** auxiliary files.
 
 Fixture directories:
 
 | Location | Use |
 |---|---|
-| [`ipss.plugin.core/testData/powerworld/ieee39/`](../../testData/powerworld/ieee39/) | Generator script, run SCRIPT, `.tsb` manifest, full artifact set |
-| [`ipss.test.plugin.core/testData/powerworld/ieee39/`](../../../ipss.test.plugin.core/testData/powerworld/ieee39/) | JUnit adapter tests (`PowerWorld2PlanMaintainAdapterTest`) |
+| [`ipss.plugin.core/testData/powerworld/ieee39/`](../../testData/powerworld/ieee39/) | Shared generators, labeled AUX, golden reference |
+| [`ipss.plugin.core/testData/powerworld/ieee39/dayahead/`](../../testData/powerworld/ieee39/dayahead/) | Day-ahead artifacts (96 × 15-min) |
+| [`ipss.plugin.core/testData/powerworld/ieee39/week/`](../../testData/powerworld/ieee39/week/) | Week artifacts (168 × 60-min) |
+| [`ipss.test.plugin.core/testData/powerworld/ieee39/dayahead/`](../../../ipss.test.plugin.core/testData/powerworld/ieee39/dayahead/) | JUnit day-ahead adapter tests |
+| [`ipss.test.plugin.core/testData/powerworld/ieee39/week/`](../../../ipss.test.plugin.core/testData/powerworld/ieee39/week/) | JUnit week adapter tests |
 
 Related: [future-state-what-if-analysis.md](future-state-what-if-analysis.md) (InterPSS future-state pipeline).
 
@@ -18,34 +21,37 @@ PowerWorld references:
 - [Schedule Subscriptions Page](https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Schedule_Subscriptions_Page.htm)
 - [Auxiliary File Format PDF](https://www.powerworld.com/WebHelp/Content/Other_Documents/Auxiliary-File-Format.pdf)
 
-## Source fixture
+## Day-ahead fixture
+
+### Source
 
 | Item | Path |
 |---|---|
-| Plan JSON | `ipss.plugin.core/testData/psse/v30/ieee39_dayahead_plan_maintain_plan.json` |
+| Plan JSON | `ipss-core/ipss.test.core/testdata/json/ieee39_dayahead_plan_maintain_plan.json` |
 | PSSE base case | `ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw` |
 | InterPSS branch names | `ipss-core/ipss.test.core/testdata/json/ieee39.json` (`branchAry`, `branchCode=LINE`) |
 | Maintenance definition | `ipss-core/.../Ieee39_Dayahead_Info.java` |
 
 Horizon: **96** points, **15-minute** spacing, start **2026-06-27T00:00:00**.
 
-## Generated artifacts
+### Generated artifacts
 
-All files under `ipss.plugin.core/testData/powerworld/ieee39/` unless noted.
+All files under `ipss.plugin.core/testData/powerworld/ieee39/dayahead/` unless noted.
 
 | File | Role |
 |---|---|
-| `IEEE39bus_v30_labeled.aux` | Sets `Label` on 10 gens, 19 loads, 34 line branches (InterPSS names) |
-| `golden_tsschedule_reference.aux` | Minimal 1 gen + 1 load + 1 branch schedule/subscription syntax reference |
-| `ieee39_dayahead_plan_schedules.aux` | 29 numeric MW schedules + 2 boolean line-status schedules + subscriptions |
-| `ieee39_dayahead_plan_timepoints.csv` | Human-readable list of 96 TSS timestamps (`Single Solution`) |
-| `ieee39_dayahead_plan.tsb` | TSS time-point manifest (see TSB note below) |
-| `ieee39_dayahead_plan_generate_tsb.aux` | One-time Simulator script to save binary `.tsb` |
-| `ieee39_dayahead_plan_outages.csv` | Scheduled Actions (PWCSV) parallel outage representation |
-| `ieee39_dayahead_plan_run.aux` | Orchestration SCRIPT for full day-ahead TSS run |
-| `generate_ieee39_dayahead_pw_tss.py` | Regenerates all text artifacts from plan JSON |
+| `IEEE39bus_v30_labeled.aux` | Sets `Label` on 10 gens, 19 loads, 34 line branches (parent `ieee39/` dir) |
+| `golden_tsschedule_reference.aux` | Minimal 1 gen + 1 load + 1 branch schedule/subscription syntax reference (parent dir) |
+| `ieee39_dayahead_schedules.aux` | 29 numeric MW schedules + 2 boolean line-status schedules + subscriptions |
+| `ieee39_dayahead_timepoints.csv` | Human-readable list of 96 TSS timestamps (`Single Solution`) |
+| `ieee39_dayahead.tsb` | TSS time-point manifest (see TSB note below) |
+| `ieee39_dayahead_generate_tsb.aux` | One-time Simulator script to save binary `.tsb` |
+| `ieee39_dayahead_outages.csv` | Scheduled Actions (PWCSV) parallel outage representation |
+| `ieee39_dayahead_run.aux` | Orchestration SCRIPT for full day-ahead TSS run |
+| `generate_ieee39_dayahead_pw_tss.py` | Regenerates day-ahead artifacts from plan JSON (parent `ieee39/` dir) |
+| `pw_tss_common.py` | Shared generator utilities (branch labels, `compress_step_hold`, AUX writers) |
 
-A subset of these files is also copied to `ipss.test.plugin.core/testData/powerworld/ieee39/` for adapter unit tests.
+A subset of adapter input files is copied to `ipss.test.plugin.core/testData/powerworld/ieee39/dayahead/`.
 
 Regenerate:
 
@@ -53,18 +59,58 @@ Regenerate:
 python3 ipss.plugin.core/testData/powerworld/ieee39/generate_ieee39_dayahead_pw_tss.py
 ```
 
+## Week fixture
+
+### Source
+
+| Item | Path |
+|---|---|
+| Plan JSON | `ipss-core/ipss.test.core/testdata/json/ieee39_week_plan_maintain_plan.json` |
+| PSSE / branch names | Same as day-ahead |
+| Maintenance definition | `ipss-core/.../Ieee39_Week_Info.java` |
+
+Horizon: **168** points, **60-minute** spacing, start **2026-06-23T00:00:00** … **2026-06-29T23:00:00**.
+
+Outage windows:
+
+- `Bus29_to_Bus26_cirId_1`: Mon 08:00–12:00
+- `Bus22_to_Bus23_cirId_1`: Wed 10:00–16:00
+- `Bus26_to_Bus25_cirId_1`: Fri 14:00–18:00
+
+### Generated artifacts
+
+All files under `ipss.plugin.core/testData/powerworld/ieee39/week/`:
+
+| File | Role |
+|---|---|
+| `ieee39_week_schedules.aux` | 29 numeric + **3** boolean schedules + subscriptions (**32** total) |
+| `ieee39_week_timepoints.csv` | 168 hourly timestamps |
+| `ieee39_week_outages.csv` | PWCSV scheduled-outage rows |
+| `ieee39_week_run.aux` | Orchestration SCRIPT (`SetScheduleWindow(..., 60, MINUTES)`) |
+| `ieee39_week_generate_tsb.aux` | Binary TSB export helper |
+| `ieee39_week.tsb` | Text manifest (168 timestamps) |
+| `generate_ieee39_week_pw_tss.py` | Regenerates week artifacts from plan JSON (parent `ieee39/` dir) |
+
+Regenerate:
+
+```bash
+python3 ipss.plugin.core/testData/powerworld/ieee39/generate_ieee39_week_pw_tss.py
+```
+
+Copy `ieee39_week_schedules.aux`, `ieee39_week_timepoints.csv`, and `ieee39_week_outages.csv` to `ipss.test.plugin.core/testData/powerworld/ieee39/week/` for JUnit.
+
 ## Field mapping
 
-### Gen / load MW (flat day-ahead schedule)
+### Gen / load MW (multi-point step-hold schedule)
 
 | InterPSS JSON | PowerWorld |
 |---|---|
-| `timePeriodRecList[0].timePointRecList[*].genMap.{name}.p` | `TSSchedule` `Sched_Gen_{name}` (Numeric, single point at T0) |
-| `timePeriodRecList[0].timePointRecList[*].loadMap.{name}.p` | `TSSchedule` `Sched_Load_{name}` (Numeric, single point at T0) |
+| `timePeriodRecList[0].timePointRecList[*].genMap.{name}.p` | `TSSchedule` `Sched_Gen_{name}` (Numeric, compressed `SchedPoint` rows) |
+| `timePeriodRecList[0].timePointRecList[*].loadMap.{name}.p` | `TSSchedule` `Sched_Load_{name}` (Numeric, compressed `SchedPoint` rows) |
 | Device name e.g. `Bus39-G1` | `Label` on Gen/Load + subscription `ObjectIdentifier` |
 | Subscription target | `Gen MW` / `Load MW` via `TSScheduleSub` |
 
-MW is flat across all 96 points in this fixture; one `SchedPoint` at `06/27/2026 12:00:00 AM` with `ApplyAsEvents=NO` re-applies each timestep.
+Generators use `compress_step_hold()` to emit minimal `SchedPoint` rows (typically **4 points/device** for IEEE39: T0, T1, T2, T3+ flat). `ApplyAsEvents=NO` re-applies step-hold values each timestep.
 
 ### Planned line maintenance
 
@@ -98,34 +144,36 @@ Schedule subscriptions use the same label strings in `TSScheduleSub.ObjectIdenti
 
 1. Open `IEEE39bus_v30.raw` (or saved `.pwb`).
 2. `LoadAux("IEEE39bus_v30_labeled.aux", YES)` — verify labels in case information.
-3. Generate/load `ieee39_dayahead_plan.tsb` (see below).
-4. Run `ieee39_dayahead_plan_run.aux` **or** execute its SCRIPT steps manually.
+3. Generate/load `ieee39_dayahead.tsb` (see below).
+4. Run `ieee39_dayahead_run.aux` **or** execute its SCRIPT steps manually.
 
-`ieee39_dayahead_plan_run.aux` sequence:
+`ieee39_dayahead_run.aux` sequence:
 
 ```text
 SetScheduleWindow("06/27/2026 00:00", "06/27/2026 23:45", 15, MINUTES);
-TimeStepLoadTSB("ieee39_dayahead_plan.tsb");
+TimeStepLoadTSB("ieee39_dayahead.tsb");
 LoadAux("IEEE39bus_v30_labeled.aux", YES);
-LoadAux("ieee39_dayahead_plan_schedules.aux", YES);
-ImportData("ieee39_dayahead_plan_outages.csv", PWCSV, 1, NO);
+LoadAux("ieee39_dayahead_schedules.aux", YES);
+ImportData("ieee39_dayahead_outages.csv", PWCSV, 1, NO);
 ApplyScheduledActionsAt("06/27/2026 08:00", "06/27/2026 16:00", , NO);
 TimeStepDoRun("2026-06-27T00:00:00", "2026-06-27T23:45:00");
 ```
+
+Week run (`ieee39_week_run.aux`) uses 60-minute window and `ieee39_week_*` filenames over `2026-06-23` … `2026-06-29T23:00`.
 
 - **TSS branch-status schedules** are the primary maintenance mechanism for TSS.
 - **Scheduled Actions / PWCSV** requires the Scheduled Actions add-on; provides parallel outage switching.
 
 ## TSB file note
 
-PowerWorld `.tsb` files are **proprietary binary** and cannot be hand-authored reliably. The committed `ieee39_dayahead_plan.tsb` is a **text manifest** listing the 96 timestamps until a binary file is exported from Simulator.
+PowerWorld `.tsb` files are **proprietary binary** and cannot be hand-authored reliably. The committed `ieee39_dayahead.tsb` and `ieee39_week.tsb` files are **text manifests** listing timestamps until a binary file is exported from Simulator.
 
 To produce the binary TSB:
 
 1. Open the IEEE39 case in Simulator.
-2. Open Time Step Simulation → Summary; configure start/end/resolution using `ieee39_dayahead_plan_timepoints.csv`.
+2. Open Time Step Simulation → Summary; configure start/end/resolution using `*_timepoints.csv`.
 3. Set solution type **Single Solution** for all points.
-4. Run `ieee39_dayahead_plan_generate_tsb.aux` (calls `TimeStepSaveTSB("ieee39_dayahead_plan.tsb")`).
+4. Run `*_generate_tsb.aux` (calls `TimeStepSaveTSB(...)`).
 
 Replace the text manifest with the exported binary before running `TimeStepLoadTSB` in production.
 
@@ -142,8 +190,8 @@ If Simulator rejects the headers, create one schedule + subscription in the UI, 
 
 1. Load `IEEE39bus_v30_labeled.aux` — confirm labels resolve (`Bus29_to_Bus26_cirId_1`, etc.).
 2. Load `golden_tsschedule_reference.aux` on a test case — confirm schedule/subscription syntax imports.
-3. Load binary `ieee39_dayahead_plan.tsb` — confirm **96** time points in TSS Summary.
-4. Run `ieee39_dayahead_plan_run.aux` — TSS completes without import errors.
+3. Load binary `ieee39_dayahead.tsb` — confirm **96** time points in TSS Summary.
+4. Run `ieee39_dayahead_run.aux` — TSS completes without import errors.
 5. At **T32** (08:00): `Bus29_to_Bus26_cirId_1` **OPEN**; gen/load MW match JSON T32.
 6. At **T44** (11:00): first line restored (**CLOSED**).
 7. At **T56** (14:00): second outage active (`Bus26_to_Bus25_cirId_1` **OPEN**).
@@ -154,12 +202,11 @@ If Simulator rejects the headers, create one schedule + subscription in the UI, 
 Load PowerWorld TSS text artifacts back into a `PlanMaintainModel` using [`Aux2PlanMaintainAdapter`](../../src/main/java/org/interpss/plugin/fstate/aux_fmt/Aux2PlanMaintainAdapter.java):
 
 ```java
-import java.nio.file.Path;
-import org.interpss.plugin.fstate.aux_fmt.Aux2PlanMaintainAdapter;
-import com.interpss.algo.fstate.plan.model.PlanMaintainModel;
+PlanMaintainModel dayAhead = Aux2PlanMaintainAdapter.createDayAheadModel(
+    Path.of("ipss.test.plugin.core/testData/powerworld/ieee39/dayahead"));
 
-PlanMaintainModel model = Aux2PlanMaintainAdapter.load(
-    Path.of("ipss.test.plugin.core/testData/powerworld/ieee39"));
+PlanMaintainModel week = Aux2PlanMaintainAdapter.createWeekModel(
+    Path.of("ipss.test.plugin.core/testData/powerworld/ieee39/week"));
 ```
 
 Or with explicit paths:
@@ -169,22 +216,24 @@ import org.interpss.plugin.fstate.aux_fmt.AuxTssInput;
 import com.interpss.algo.fstate.plan.model.type.FSPlanMaintainModelType;
 
 PlanMaintainModel model = Aux2PlanMaintainAdapter.load(new AuxTssInput(
-    Path.of(".../ieee39_dayahead_plan_schedules.aux"),
-    Path.of(".../ieee39_dayahead_plan_timepoints.csv"),
-    Path.of(".../ieee39_dayahead_plan_outages.csv"),  // optional fallback
+    Path.of(".../ieee39_dayahead_schedules.aux"),
+    Path.of(".../ieee39_dayahead_timepoints.csv"),
+    Path.of(".../ieee39_dayahead_outages.csv"),  // optional fallback
     FSPlanMaintainModelType.DayAhead,
     null));  // interval inferred from CSV when null
 ```
 
-`load(Path directory)` discovers `*_schedules.aux`, `*_timepoints.csv`, and optionally `*_outages.csv` in the given directory.
+`createDayAheadModel(dir)` discovers `*dayahead_schedules.aux`, `*dayahead_timepoints.csv`, and optionally `*dayahead_outages.csv`.
+
+`createWeekModel(dir)` discovers `*week_schedules.aux`, `*week_timepoints.csv`, and optionally `*week_outages.csv`.
 
 ### Adapter inputs
 
-| File | Required | Maps to |
+| Suffix (day-ahead) | Suffix (week) | Maps to |
 |---|---|---|
-| `*_schedules.aux` | Yes | Gen/load MW schedules + branch maintenance boolean schedules |
-| `*_timepoints.csv` | Yes | `numTimePoints`, `planStartDate`, `timePointIntervalMin`, `point2TimeMap` |
-| `*_outages.csv` | Optional | `originalMaintainEquipemnts` (used only when no `Sched_Maint_*` schedules) |
+| `*dayahead_schedules.aux` | `*week_schedules.aux` | Gen/load MW + branch maintenance boolean schedules |
+| `*dayahead_timepoints.csv` | `*week_timepoints.csv` | `numTimePoints`, `planStartDate`, `timePointIntervalMin`, `point2TimeMap` |
+| `*dayahead_outages.csv` | `*week_outages.csv` | `originalMaintainEquipemnts` (fallback when no `Sched_Maint_*`) |
 
 Not used by the adapter: labeled base AUX, binary `.tsb`, run SCRIPT.
 
@@ -194,7 +243,7 @@ Package: `org.interpss.plugin.fstate.aux_fmt`
 
 | Class | Role |
 |---|---|
-| `Aux2PlanMaintainAdapter` | Entry point: parse files → `PlanMaintainModelBuilder.build()` |
+| `Aux2PlanMaintainAdapter` | Entry point: `createDayAheadModel(dir)`, `createWeekModel(dir)`, or `load(AuxTssInput)` |
 | `AuxTssInput` | Explicit input paths and plan-type overrides |
 | `AuxTssScheduleAuxParser` | `TSSchedule` / `TSScheduleSub` with `<SUBDATA SchedPoint>` |
 | `AuxTimepointsCsvParser` | Horizon from `*_timepoints.csv` |
@@ -214,24 +263,42 @@ Shared AUX tokenization: `org.interpss.plugin.aux_fmt.util.AuxParseUtil`.
 | `*_timepoints.csv` ISO8601 column | Horizon and `point2TimeMap` |
 | Plan type (caller default) | `FSPlanMaintainModelType.DayAhead` |
 
-### Flat MW vs multi-point schedules
+### Multi-point SchedPoint export
 
-The current IEEE39 `*_schedules.aux` uses a **single** numeric `SchedPoint` at T0 per device (`ApplyAsEvents=NO`), so the adapter produces **flat** gen/load MW across all 96 points. The checked-in plan JSON (`ieee39_dayahead_plan_maintain_plan.json`) has **time-varying** MW at T1, T2, etc.; full JSON round-trip requires multi-point `SchedPoint` rows in the AUX (future export enhancement). The adapter supports multi-point schedules via step-hold evaluation when present.
+IEEE39 generators emit compressed step-hold `SchedPoint` rows (~4 points/device). The adapter evaluates step-hold schedules at each timestamp via `AuxScheduleEvaluator`, producing time-varying MW where the plan JSON varies (T0/T1/T2 genLoadFactor, T3+ flat).
 
 ### Tests and sample
 
-JUnit: [`PowerWorld2PlanMaintainAdapterTest`](../../../ipss.test.plugin.core/src/test/java/org/interpss/plugin/fstate/PowerWorld2PlanMaintainAdapterTest.java) (included in `CorePluginTestSuite`).
+JUnit adapter tests (in `CorePluginTestSuite`):
+
+- [`PowerWorld2PlanMaintainAdapterTest`](../../../ipss.test.plugin.core/src/test/java/org/interpss/plugin/fstate/PowerWorld2PlanMaintainAdapterTest.java) — day-ahead
+- [`PowerWorld2PlanMaintainWeekAdapterTest`](../../../ipss.test.plugin.core/src/test/java/org/interpss/plugin/fstate/PowerWorld2PlanMaintainWeekAdapterTest.java) — week
+
+DCLF integration tests:
+
+- [`AuxFSPluginDclfAlgoRunTest`](../../../ipss.test.plugin.core/src/test/java/org/interpss/plugin/fstate/AuxFSPluginDclfAlgoRunTest.java) — day-ahead
+- [`AuxFSPluginWeekDclfAlgoRunTest`](../../../ipss.test.plugin.core/src/test/java/org/interpss/plugin/fstate/AuxFSPluginWeekDclfAlgoRunTest.java) — week
 
 ```bash
 mvn -pl ipss.test.plugin.core test -Dtest=PowerWorld2PlanMaintainAdapterTest
+mvn -pl ipss.test.plugin.core test -Dtest=PowerWorld2PlanMaintainWeekAdapterTest
+mvn -pl ipss.test.plugin.core test -Dtest=AuxFSPluginWeekDclfAlgoRunTest
 ```
 
-Runnable sample (mirror of the test): [`PowerWorld2PlanMaintainAdapterSample`](../../src/sample/java/org/interpss/fstate/PowerWorld2PlanMaintainAdapterSample.java).
+Runnable samples:
+
+- [`PowerWorld2PlanMaintainAdapterSample`](../../src/sample/java/org/interpss/fstate/PowerWorld2PlanMaintainAdapterSample.java) — day-ahead adapter
+- [`Aux_FSPluginDclfAlgoRunSample`](../../src/sample/java/org/interpss/fstate/Aux_FSPluginDclfAlgoRunSample.java) — day-ahead DCLF
+- [`Aux_FSPluginWeekDclfAlgoRunSample`](../../src/sample/java/org/interpss/fstate/Aux_FSPluginWeekDclfAlgoRunSample.java) — week DCLF
 
 ```bash
 cd ipss-plugin
 mvn -pl ipss.plugin.core compile exec:java \
   -Dexec.mainClass=org.interpss.fstate.PowerWorld2PlanMaintainAdapterSample \
+  -Dexec.classpathScope=runtime
+
+mvn -pl ipss.plugin.core compile exec:java \
+  -Dexec.mainClass=org.interpss.fstate.Aux_FSPluginWeekDclfAlgoRunSample \
   -Dexec.classpathScope=runtime
 ```
 
