@@ -44,6 +44,8 @@ import org.ieee.odm.schema.CostModelEnumType;
 import org.ieee.odm.schema.IncCostXmlType;
 import org.ieee.odm.schema.LinCoeffXmlType;
 import org.ieee.odm.schema.LoadflowBusXmlType;
+import org.ieee.odm.schema.LoadflowGenDataXmlType;
+import org.ieee.odm.schema.NameValuePairXmlType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.ieee.odm.schema.OpfDclfGenBusXmlType;
 import org.ieee.odm.schema.OpfDclfNetworkXmlType;
@@ -209,16 +211,39 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 	 * @throws InterpssException
 	 */
 	public OpfGen mapOpfGenBusData(OpfGenBusXmlType busRec, OpfNetwork net) throws InterpssException {
-		OpfBus opfGenBus = OpfObjectFactory.createOpfGenBus(busRec.getId(), net);
+		OpfBus opfGenBus = OpfObjectFactory.createOpfBus(busRec.getId(), net);
 		mapBaseBusData(busRec, opfGenBus, net);
 
 		AclfBusDataHelper helper = new AclfBusDataHelper(net);
 		helper.setBus(opfGenBus);
 		helper.setAclfBusData(busRec);
-		
 
-		OpfGenOperatingModeEnumType genMode = busRec.getOperatingMode();
-		OpfGen opfGen = opfGenBus.getOpfGen();
+		if (opfGenBus.getContributeGenList().isEmpty()) {
+			opfGenBus.getContributeGenList().add(OpfObjectFactory.createOpfGen(busRec.getId() + "-G1"));
+		}
+		for (int i = 0; i < opfGenBus.getContributeGenList().size(); i++) {
+			OpfGen opfGen = opfGenBus.getContributeGenList().get(i);
+			mapOperatingMode(busRec.getOperatingMode(), opfGen);
+			LoadflowGenDataXmlType xmlGen = i < busRec.getGenData().getContributeGen().size()
+					? busRec.getGenData().getContributeGen().get(i).getValue() : null;
+			if (xmlGen != null) {
+				mapOpfLimits(xmlGen, opfGen, net);
+				if (!mapMatpowerGenCost(xmlGen, opfGen, net) && i == 0 && busRec.getIncCost() != null) {
+					mapIncrementalCost(busRec.getIncCost(), opfGen, net, opfGenBus.getId());
+				}
+			} else if (i == 0) {
+				if (busRec.getConstraints() != null) {
+					mapOpfLimits(busRec.getConstraints(), opfGen, net);
+				}
+				if (busRec.getIncCost() != null) {
+					mapIncrementalCost(busRec.getIncCost(), opfGen, net, opfGenBus.getId());
+				}
+			}
+		}
+		return opfGenBus.getOpfGen();
+	}
+
+	private void mapOperatingMode(OpfGenOperatingModeEnumType genMode, OpfGen opfGen) {
 		if (genMode.equals(OpfGenOperatingModeEnumType.PV_GENERATOR)){
 			opfGen.setOperatingMode(OpfGenOperatingMode.PV_GENERATOR);
 			
@@ -231,19 +256,50 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 			// synchronized condensor
 			opfGen.setOperatingMode(OpfGenOperatingMode.SYCHRONOUS_COMPENSATOR);
 		}
-		
-		// set gen incremental cost model
-		IncCostXmlType incCostRec = busRec.getIncCost();
+	}
+
+	private boolean mapMatpowerGenCost(LoadflowGenDataXmlType xmlGen, OpfGen opfGen, OpfNetwork net) {
+		String type = nv(xmlGen, "matpower.gencost.type");
+		if (type == null) {
+			return false;
+		}
+		IncrementalCost inc = OpfDatatypeFactory.eINSTANCE.createIncrementalCost();
+		if ("2".equals(type)) {
+			inc.setCostModel(NumericCurveModel.QUADRATIC);
+			QuadraticCurve quaIpss = CommonCurveFactory.eINSTANCE.createQuadraticCurve();
+			double baseKva = net.getBaseKva();
+			quaIpss.setA(nvDouble(xmlGen, "matpower.gencost.c2") * baseKva * baseKva / 1000 / 1000);
+			quaIpss.setB(nvDouble(xmlGen, "matpower.gencost.c1") * baseKva / 1000);
+			quaIpss.setC(nvDouble(xmlGen, "matpower.gencost.c0"));
+			inc.setQuadraticCurve(quaIpss);
+		} else {
+			inc.setCostModel(NumericCurveModel.PIECE_WISE);
+			PieceWiseCurve pwIpss = CommonCurveFactory.eINSTANCE.createPieceWiseCurve();
+			int np = (int) nvDouble(xmlGen, "matpower.gencost.n");
+			double baseMw = net.getBaseKva() / 1000;
+			for (int i = 0; i < np; i++) {
+				Point costPoint = new Point();
+				costPoint.x = nvDouble(xmlGen, "matpower.gencost.pw" + (2 * i)) / baseMw;
+				costPoint.y = nvDouble(xmlGen, "matpower.gencost.pw" + (2 * i + 1)) * baseMw;
+				pwIpss.getPoints().add(costPoint);
+			}
+			inc.setPieceWiseCurve(pwIpss);
+		}
+		opfGen.setIncCost(inc);
+		return true;
+	}
+
+	private void mapIncrementalCost(IncCostXmlType incCostRec, OpfGen opfGen, OpfNetwork net, String id) {
 		CostModelEnumType costModelRec = incCostRec.getCostModel();
 		IncrementalCost inc = OpfDatatypeFactory.eINSTANCE.createIncrementalCost();
 		if (costModelRec.equals(CostModelEnumType.PIECE_WISE_LINEAR_MODEL)){
 			inc.setCostModel(NumericCurveModel.PIECE_WISE);
-			if (busRec.getIncCost().getPieceWiseLinearModel()!=null){
-				PieceWiseLinearModelXmlType pw = busRec.getIncCost().getPieceWiseLinearModel();
+			if (incCostRec.getPieceWiseLinearModel()!=null){
+				PieceWiseLinearModelXmlType pw = incCostRec.getPieceWiseLinearModel();
 				boolean isConvex = checkConvex(pw);
 				if(isConvex == false){
 					log.error("Gen cost function must be in ascending order. Please check gen cost function at bus: "
-							+ busRec.getNumber());
+							+ id);
 				}
 				PieceWiseCurve pwIpss = CommonCurveFactory.eINSTANCE.createPieceWiseCurve();
 				for (StairStepXmlType stair : pw.getStairStep()){
@@ -262,13 +318,13 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				inc.setPieceWiseCurve(pwIpss);				
 				
 			}else{
-				log.error("Can not find a piece-wise cost model for bus: "+ opfGenBus.getId());
+				log.error("Can not find a piece-wise cost model for bus: "+ id);
 			}
 
 		}else {
 			inc.setCostModel(NumericCurveModel.QUADRATIC);
-			if (busRec.getIncCost().getQuadraticModel()!=null){
-				QuadraticModelXmlType quaXml = busRec.getIncCost().getQuadraticModel();
+			if (incCostRec.getQuadraticModel()!=null){
+				QuadraticModelXmlType quaXml = incCostRec.getQuadraticModel();
 				QuadraticCurve quaIpss = CommonCurveFactory.eINSTANCE.createQuadraticCurve();
 				
 				// quadratic function in the form of: C = Ax^2+Bx+C;
@@ -303,19 +359,34 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 				quaIpss.setC(constCoeff);				
 				inc.setQuadraticCurve(quaIpss);
 			}else{
-				log.error("Can not find a quadratic cost model for bus: "+ opfGenBus.getId());
+				log.error("Can not find a quadratic cost model for bus: "+ id);
 			}			
 		}
 		opfGen.setIncCost(inc);
-		
-		
-		// set constraints
-		if(busRec.getConstraints()!=null){
-			ConstraintsXmlType ctrtXml = busRec.getConstraints();		
+	}
+
+	private void mapOpfLimits(LoadflowGenDataXmlType xmlGen, OpfGen opfGen, OpfNetwork net) {
+		OpfBusLimits ctrtIpss = OpfDatatypeFactory.eINSTANCE.createOpfBusLimits();
+		double baseKva = net.getBaseKva();
+		if (xmlGen.getPLimit() != null) {
+			ActivePowerLimitXmlType pLmt = xmlGen.getPLimit();
+			UnitType ipssUnit = toActivePowerUnit.apply(pLmt.getUnit());
+			ctrtIpss.setPLimit(UnitHelper.pConversion(new LimitType(pLmt.getMax(), pLmt.getMin()),
+					baseKva, ipssUnit, UnitType.PU));
+		}
+		if (xmlGen.getQLimit() != null) {
+			ReactivePowerLimitXmlType qLmt = xmlGen.getQLimit();
+			UnitType ipssUnit = toReactivePowerUnit.apply(qLmt.getUnit());
+			ctrtIpss.setQLimit(UnitHelper.pConversion(new LimitType(qLmt.getMax(), qLmt.getMin()),
+					baseKva, ipssUnit, UnitType.PU));
+		}
+		opfGen.setOpfLimits(ctrtIpss);
+	}
+
+	private void mapOpfLimits(ConstraintsXmlType ctrtXml, OpfGen opfGen, OpfNetwork net) {
 			OpfBusLimits ctrtIpss = OpfDatatypeFactory.eINSTANCE.createOpfBusLimits();			
 			
 			double baseKva = net.getBaseKva();
-			double factor = net.getBaseKva()*0.001;
 			if(ctrtXml.getActivePowerLimit()!=null){			
 				ActivePowerLimitXmlType pLmt = ctrtXml.getActivePowerLimit();			
 				double pmax = pLmt.getMax();
@@ -344,9 +415,20 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 			}
 			
 			opfGen.setOpfLimits(ctrtIpss);
-			
+	}
+
+	private String nv(LoadflowGenDataXmlType xmlGen, String name) {
+		for (NameValuePairXmlType nv : xmlGen.getNvPair()) {
+			if (name.equals(nv.getName())) {
+				return nv.getValue();
+			}
 		}
-		return opfGen;
+		return null;
+	}
+
+	private double nvDouble(LoadflowGenDataXmlType xmlGen, String name) {
+		String value = nv(xmlGen, name);
+		return value == null ? 0.0 : Double.parseDouble(value);
 	}
 	
 	/*
