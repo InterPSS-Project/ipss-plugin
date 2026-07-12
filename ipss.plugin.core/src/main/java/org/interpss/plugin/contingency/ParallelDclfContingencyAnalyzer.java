@@ -1,6 +1,6 @@
 package org.interpss.plugin.contingency;
 
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 
 /**
  * @deprecated Use {@link com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer}.
@@ -8,7 +8,7 @@ import com.interpss.core.aclf.AclfNetwork;
 @Deprecated
 public class ParallelDclfContingencyAnalyzer
         extends com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer {
-    public ParallelDclfContingencyAnalyzer(AclfNetwork net) {
+    public ParallelDclfContingencyAnalyzer(BaseAclfNetwork<?, ?> net) {
         super(net);
     }
 }
