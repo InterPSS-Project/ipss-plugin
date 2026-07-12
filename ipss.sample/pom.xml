@@ -27,7 +27,7 @@
       <dependency>
         <groupId>com.interpss</groupId>
         <artifactId>ipss.core.lib</artifactId>
-        <version>${project.parent.version}</version>
+        <version>${ipss.core.version}</version>
     </dependency>
     
  	<dependency>
