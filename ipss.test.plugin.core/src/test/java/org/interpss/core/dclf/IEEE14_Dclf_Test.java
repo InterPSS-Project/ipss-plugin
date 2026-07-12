@@ -36,6 +36,7 @@ import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.dclf.DclfAlgorithm;
@@ -64,13 +65,13 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 		 */
 
 		DclfAlgoBus dclfBus1 = dclfAlgo.getDclfAlgoBus("Bus1");
-		AclfBus bus1 = dclfBus1.getBus();
+		BaseAclfBus<?, ?> bus1 = dclfBus1.getBus();
 		int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
 		assertEquals(225.43, pgen, 0.01, "Aclf 232.393");
 
 		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
-		AclfBus bus2 = dclfBus2.getBus();
+		BaseAclfBus<?, ?> bus2 = dclfBus2.getBus();
 		int n2 = bus2.getSortNumber();
 		double angle = dclfAlgo.getBusAngle(n2);
 		assertEquals(-0.092, angle, 0.001);		
@@ -95,13 +96,13 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
 			    Bus3          -0.226         0.00    94.20     0.00 
 		 */
 		DclfAlgoBus dclfBus1 = dclfAlgo.getDclfAlgoBus("Bus1");
-		AclfBus bus1 = dclfBus1.getBus();
+		BaseAclfBus<?, ?> bus1 = dclfBus1.getBus();
 		int n1 = bus1.getSortNumber();
 		double pgen = dclfAlgo.getBusPower(dclfBus1) * aclfNet.getBaseMva(); 
 		assertEquals(219.00, pgen, 0.01, "Aclf 232.393");
 
 		DclfAlgoBus dclfBus2 = dclfAlgo.getDclfAlgoBus("Bus2");
-		AclfBus bus2 = dclfBus2.getBus();
+		BaseAclfBus<?, ?> bus2 = dclfBus2.getBus();
 		int n2 = bus2.getSortNumber();
 		double angle = dclfAlgo.getBusAngle(n2);
 		assertEquals(-0.088, angle, 0.001);			
@@ -126,4 +127,3 @@ public class IEEE14_Dclf_Test extends CorePluginTestSetup {
   		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()+0.16549)<0.0001);
 	}
 }
-
