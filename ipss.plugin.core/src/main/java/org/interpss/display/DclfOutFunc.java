@@ -31,8 +31,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.Number2String;
 
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.algo.dclf.DclfAlgorithm;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
@@ -108,7 +108,7 @@ public class DclfOutFunc {
 		}
 		double baseMva = algo.getNetwork().getBaseKva() * 0.001;
 		for (DclfAlgoBus dclfBus : algo.getDclfAlgoBusList()) {
-			AclfBus bus = dclfBus.getBus(); 
+			BaseAclfBus<?, ?> bus = dclfBus.getBus();
 			if (bus.isActive()) {
 				int n = bus.getSortNumber();
 				double angle = algo.getNetwork().isRefBus(bus)?
