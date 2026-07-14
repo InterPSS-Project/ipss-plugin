@@ -27,3 +27,5 @@
 ipss.plugin.py/sample/results/*.*
 .venv/
 ipss.plugin.3phase/src/test/python/__pycache__/
+
+.factorypath
