@@ -47,7 +47,7 @@ import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
 import com.interpss.core.aclf.contingency.AclfBranchRating;
-import com.interpss.core.aclf.contingency.CAViolationType;
+import com.interpss.core.aclf.contingency.ContingencyViolationType;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.path.NetPathWalkDirectionEnum;
 import com.interpss.core.datatype.Mismatch;
@@ -480,7 +480,7 @@ public class AclfOutFunc {
 			StringBuffer str, AclfBranch bra) {
 		if (bra.isActive()) {
 			AclfBranchRating adapter = branchRatingAptr.apply(bra);
-			if (adapter.isRatingViolated(CAViolationType.BRANCH_THERMAL_MVA_RATING, net.getBaseMva())) {
+			if (adapter.isRatingViolated(ContingencyViolationType.BRANCH_THERMAL_MVA_RATING, net.getBaseMva())) {
 				str.append(Number2String.toStr(-25, bra.getId()));
 				Complex mva = bra.powerFrom2To(UnitType.mVA);
 				String side = "From";

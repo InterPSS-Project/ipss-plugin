@@ -169,7 +169,7 @@ public class AclfNetLoadFlowOptimizer {
 
 		result.getCaOverLimitInfo().forEach(info -> {
 			processGenSet(gfsMatrix, genSet, info.aclfBranch.getId());
-			processGenSet(gfsMatrix, genSet, info.contingency.getOutageBranch().getBranch().getId());
+			processGenSet(gfsMatrix, genSet, info.contingency.getOutageEquip().getBranch().getId());
 		});
 		return genSet;
 	}
