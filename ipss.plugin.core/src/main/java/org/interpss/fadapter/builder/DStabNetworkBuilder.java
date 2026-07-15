@@ -61,7 +61,7 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENROU: {}", busId);
             return null;
         }
-        String machId = busId + "_" + genId + "_Mach";
+        String machId = busId + "-mach" + genId;
         RoundRotorMachine mach = (RoundRotorMachine) DStabObjectFactory.createMachine(
                 machId, "GENROU", MachineModelType.EQ11_ED11_ROUND_ROTOR,
                 (BaseDStabNetwork<?, ?>) network, busId, genId);
@@ -107,7 +107,7 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENSAL: {}", busId);
             return null;
         }
-        String machId = busId + "_" + genId + "_Mach";
+        String machId = busId + "-mach" + genId;
         SalientPoleMachine mach = (SalientPoleMachine) DStabObjectFactory.createMachine(
                 machId, "GENSAL", MachineModelType.EQ11_SALIENT_POLE,
                 (BaseDStabNetwork<?, ?>) network, busId, genId);
@@ -151,7 +151,7 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for EQ1_ED1: {}", busId);
             return null;
         }
-        String machId = busId + "_" + genId + "_Mach";
+        String machId = busId + "-mach" + genId;
         Eq1Ed1Machine mach = (Eq1Ed1Machine) DStabObjectFactory.createMachine(
                 machId, "EQ1ED1", MachineModelType.EQ1_ED1_MODEL,
                 (BaseDStabNetwork<?, ?>) network, busId, genId);
@@ -192,7 +192,7 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for EQ1: {}", busId);
             return null;
         }
-        String machId = busId + "_" + genId + "_Mach";
+        String machId = busId + "-mach" + genId;
         Eq1Machine mach = (Eq1Machine) DStabObjectFactory.createMachine(
                 machId, "EQ1", MachineModelType.EQ1_MODEL,
                 (BaseDStabNetwork<?, ?>) network, busId, genId);
@@ -228,7 +228,7 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENCLS: {}", busId);
             return null;
         }
-        String machId = busId + "_" + genId + "_Mach";
+        String machId = busId + "-mach" + genId;
         EConstMachine mach = (EConstMachine) DStabObjectFactory.createMachine(
                 machId, "GENCLS", MachineModelType.ECONSTANT,
                 (BaseDStabNetwork<?, ?>) network, busId, genId);
@@ -255,7 +255,7 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for infinite machine: {}", busId);
             return null;
         }
-        String machId = busId + "_" + genId + "_Mach";
+        String machId = busId + "-mach" + genId;
         return DStabObjectFactory.createInfiniteMachine(
                 machId, "InfiniteBus",
                 (BaseDStabNetwork<?, ?>) network, busId, genId);
