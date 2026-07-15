@@ -28,8 +28,6 @@ import static com.interpss.common.util.IpssLogger.ipssLogger;
 
 import java.util.logging.Level;
 
-import org.ieee.odm.common.ODMLogger;
-
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.common.util.IpssLogger;
@@ -98,7 +96,6 @@ public class IpssCorePlugin {
 	 */
 	public static void setLoggerLevel(Level level) {
 		ipssLogger.setLevel(level);
-		ODMLogger.getLogger().setLevel(level);
 	}	
 
 	public static Selection configureSparseSolverFromSystemProperties() {

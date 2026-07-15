@@ -8,12 +8,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
@@ -25,7 +21,6 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.threePhase.basic.IEEEFeederLineCode;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
@@ -33,7 +28,6 @@ import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.basic.dstab.impl.DStab3PLoadImpl;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
-import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
@@ -57,8 +51,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class TestTnD_IEEE300_13busFeeder {
 	
@@ -67,25 +59,7 @@ public class TestTnD_IEEE300_13busFeeder {
         IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw",
-				"testData/IEEE300/ieee300_generated_seq_1023.seq",
-				//"testData/IEEE300/IEEE300.seq",
-				"testData/IEEE300/IEEE300_Dyn.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		
-		// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -102,26 +76,7 @@ public class TestTnD_IEEE300_13busFeeder {
         IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw",
-				//"testData/IEEE300/ieee300_generated_seq_1023.seq",
-				//"testData/IEEE300/IEEE300.seq",
-				"testData/IEEE300/IEEE300_Dyn.dyr"
-		}));
-		
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		
-		// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/IEEE300_Dyn.dyr");
 		
 		
 	   // DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -179,25 +134,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw",
-				"testData/IEEE300/ieee300_generated_seq_1023.seq",
-				//"testData/IEEE300/IEEE300.seq",
-				"testData/IEEE300/IEEE300_Dyn.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		
-		// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -266,25 +203,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			IpssCorePlugin.init();
 			
 			IpssCorePlugin.setLoggerLevel(Level.INFO);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					"testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw",
-					"testData/IEEE300/ieee300_generated_seq_1023.seq",
-					//"testData/IEEE300/IEEE300.seq",
-					"testData/IEEE300/IEEE300_Dyn.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			
-			// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-			if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 			
 			
 		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -463,25 +382,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			IpssCorePlugin.init();
 			
 			IpssCorePlugin.setLoggerLevel(Level.INFO);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					"testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw",
-					"testData/IEEE300/ieee300_generated_seq_1023.seq",
-					//"testData/IEEE300/IEEE300.seq",
-					"testData/IEEE300/IEEE300_Dyn.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			
-			// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-			if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 			
 			
 		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -689,25 +590,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw",
-				"testData/IEEE300/ieee300_generated_seq_1023.seq",
-				//"testData/IEEE300/IEEE300.seq",
-				"testData/IEEE300/IEEE300_Dyn.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		
-		// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
