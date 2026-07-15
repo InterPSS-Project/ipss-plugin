@@ -56,10 +56,11 @@ import com.interpss.core.acsc.adpter.AcscXformerAdapter;
  *   3. Call methods here to set sequence impedance and grounding data
  *   4. Call finalizeAcscNetwork() when done
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class AcscNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(AcscNetworkBuilder.class);
 
-    private final AcscNetwork network;
+    private final BaseAcscNetwork network;
 
     public AcscNetworkBuilder() {
         this.network = CoreObjectFactory.createAcscNetwork();
@@ -69,13 +70,12 @@ public class AcscNetworkBuilder {
         this.network = network;
     }
 
-    @SuppressWarnings("unchecked")
     public AcscNetworkBuilder(BaseAcscNetwork<?,?> network) {
-        this.network = (AcscNetwork) network;
+        this.network = network;
     }
 
     public AcscNetwork getAcscNetwork() {
-        return network;
+        return (AcscNetwork) network;
     }
 
     // ==================== Bus SC Data ====================
@@ -151,7 +151,7 @@ public class AcscNetworkBuilder {
         if (branch == null) return;
 
         AcscLineAdapter line = acscLineAptr.apply(branch);
-        double baseV = branch.getFromAcscBus().getBaseVoltage();
+        double baseV = ((BaseAcscBus<?,?>)branch.getFromBus()).getBaseVoltage();
         line.setZ0(new Complex(r0, x0), UnitType.PU, baseV);
         line.setHB0(b0 * 0.5, UnitType.PU, baseV);
     }
@@ -185,8 +185,8 @@ public class AcscNetworkBuilder {
         if (branch == null) return;
 
         AcscXformerAdapter xfr = acscXfrAptr.apply(branch);
-        double baseV = Math.max(branch.getFromAcscBus().getBaseVoltage(),
-                                branch.getToAcscBus().getBaseVoltage());
+        double baseV = Math.max(((BaseAcscBus<?,?>)branch.getFromBus()).getBaseVoltage(),
+                                ((BaseAcscBus<?,?>)branch.getToBus()).getBaseVoltage());
         xfr.setZ0(new Complex(r1, x1), UnitType.PU, baseV);
 
         Complex zgPrimary = new Complex(rg, xg);

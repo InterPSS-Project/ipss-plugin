@@ -41,16 +41,13 @@ public class PSSEAcscDirectParser {
      * Parse a PSS/E sequence data file and populate the Acsc network.
      * The ACLF data must already be loaded into the builder's network.
      */
-    public AcscNetwork parseSequenceFile(String seqFilePath) throws InterpssException {
+    public void parseSequenceFile(String seqFilePath) throws InterpssException {
         try (BufferedReader reader = new BufferedReader(new FileReader(seqFilePath))) {
             parseSequenceData(reader);
         } catch (IOException e) {
             throw new InterpssException("Error reading sequence file: " + seqFilePath + " - " + e.toString());
         }
-        AcscNetwork net = builder.getAcscNetwork();
-        net.setScDataLoaded(true);
-        net.setPositiveSeqDataOnly(false);
-        return net;
+        builder.finalizeAcscNetwork();
     }
 
     private void parseSequenceData(BufferedReader reader) throws IOException, InterpssException {
