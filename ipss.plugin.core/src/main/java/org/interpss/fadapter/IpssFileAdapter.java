@@ -24,8 +24,6 @@
 
 package org.interpss.fadapter;
 
-import org.ieee.odm.model.IODMModelParser;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
@@ -138,9 +136,9 @@ public interface IpssFileAdapter extends IpssCustomAdapter {
 	boolean save(String filepath, SimuContext net) throws InterpssException;
 	
 	/**
-	 * get the IEEE ODMModelParser, if ODM is used for import data
-	 * 
-	 * @return
+	 * @deprecated ODM layer has been replaced by direct file-to-model adapters.
+	 *             This method now always returns null.
 	 */
-	IODMModelParser getODMModelParser();
+	@Deprecated
+	default Object getODMModelParser() { return null; }
 }
