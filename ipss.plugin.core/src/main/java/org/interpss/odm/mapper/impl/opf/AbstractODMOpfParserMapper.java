@@ -71,6 +71,7 @@ import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.odm.mapper.base.ODMHelper;
 import org.interpss.odm.mapper.impl.aclf.AbstractODMAclfParserMapper;
 import org.interpss.odm.mapper.impl.aclf.AclfBusDataHelper;
+import org.interpss.plugin.opf.util.MatpowerDcLineData;
 
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
@@ -177,6 +178,12 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 								hvdcBranch = HvdcObjectFactory.createHvdc2TVSC();
 							}
 							hvdcBranch.setNetwork(opfNet);
+							MatpowerDcLineData matpowerData = matpowerDcLineData(branchXml);
+							if (matpowerData != null) {
+								aclfNetMapper.mapBaseBranchRec(branchXml, hvdcBranch, opfNet);
+								hvdcBranch.setExtensionObject(matpowerData);
+								continue;
+							}
 							aclfNetMapper.mapAclfHVDC2TData(branchXml, hvdcBranch, opfNet);
 							continue;
 						}
@@ -210,6 +217,28 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 			noError = false;
 		}
 		return noError;
+	}
+
+	private MatpowerDcLineData matpowerDcLineData(BaseBranchXmlType branchXml) {
+		String index = nv(branchXml, "matpower.dcline.index");
+		if (index == null) {
+			return null;
+		}
+		return new MatpowerDcLineData(Integer.parseInt(index),
+				Double.parseDouble(nv(branchXml, "matpower.dcline.pf")),
+				Double.parseDouble(nv(branchXml, "matpower.dcline.pt")),
+				Double.parseDouble(nv(branchXml, "matpower.dcline.qf")),
+				Double.parseDouble(nv(branchXml, "matpower.dcline.qt")),
+				nv(branchXml, "matpower.dcline.raw"));
+	}
+
+	private String nv(BaseBranchXmlType branchXml, String name) {
+		for (NameValuePairXmlType nv : branchXml.getNvPair()) {
+			if (name.equals(nv.getName())) {
+				return nv.getValue();
+			}
+		}
+		return null;
 	}
 	
 	/*
