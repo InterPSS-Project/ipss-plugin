@@ -26,47 +26,49 @@ package org.interpss.fadapter;
 
 import java.io.File;
 
-import org.ieee.odm.ODMFileFormatEnum;
-import org.ieee.odm.ODMObjectFactory;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.common.ODMException;
-import org.ieee.odm.model.dstab.DStabModelParser;
-import org.interpss.CorePluginFactory;
+import org.interpss.fadapter.bpa.BPADirectParser;
 import org.interpss.fadapter.impl.IpssFileAdapterBase;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.msg.IPSSMsgHub;
+import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
+import com.interpss.simu.SimuCtxType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BPAFormat extends IpssFileAdapterBase {
     private static final Logger logger = LoggerFactory.getLogger(BPAFormat.class);
+
 	public BPAFormat(IPSSMsgHub msgHub) {
-		super(msgHub, ODMFileFormatEnum.BPA);
+		super(msgHub);
 	}
-	
+
+	@Override
+	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {
+		BPADirectParser parser = new BPADirectParser();
+		AclfNetwork aclfNet = parser.parse(filepath);
+		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
+		simuCtx.setAclfNet(aclfNet);
+		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar) + 1));
+		simuCtx.setDesc("This project is created by input file " + filepath);
+	}
+
 	@Override
 	public void load(final SimuContext simuCtx, final String[] filepathAry, boolean debug, String outfile) throws InterpssException {
-		try {
-			IODMAdapter adapter = ODMObjectFactory.createODMAdapter(ODMFileFormatEnum.BPA);
-			adapter.parseInputFile(IODMAdapter.NetType.DStabNet, filepathAry);
-			this.parser = adapter.getModel();
-			if (debug)
-				System.out.println(adapter.getModel().toXmlDoc(outfile));
-
-			String filepath = filepathAry[0];
-			if (CorePluginFactory.getOdm2DStabParserMapper().map2Model((DStabModelParser)adapter.getModel(), simuCtx)) {
-	  	  		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar)+1));
-	  	  		simuCtx.setDesc("This project is created by input file " + filepath);
-			}
-			else {
-				msgHub.sendErrorMsg("Error to load file: " + filepath);
-				logger.error("Error to load file: {}", filepath);
-			}		
-		} catch (ODMException e) {
-			logger.error(e.toString(), e);
-			throw new InterpssException("Error while loading custom file through ODM, " + e.toString());
+		// For single-file load, delegate to the main load method
+		if (filepathAry.length == 1) {
+			load(simuCtx, filepathAry[0], debug, outfile);
+			return;
 		}
- 	}
+		// Multi-file BPA (load flow + dynamics) uses the first file for load flow
+		load(simuCtx, filepathAry[0], debug, outfile);
+		logger.info("BPA multi-file load: only load flow data from first file is imported via direct parser");
+	}
+
+	@Override
+	public AclfNetwork loadAclfNet(String filepath) throws InterpssException {
+		BPADirectParser parser = new BPADirectParser();
+		return parser.parse(filepath);
+	}
 }

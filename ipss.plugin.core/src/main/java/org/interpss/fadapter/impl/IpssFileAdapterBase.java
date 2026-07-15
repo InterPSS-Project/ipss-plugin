@@ -24,17 +24,7 @@
 
 package org.interpss.fadapter.impl;
 
-import java.io.File;
-
-import org.ieee.odm.ODMFileFormatEnum;
-import org.ieee.odm.ODMObjectFactory;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.common.ODMException;
-import org.ieee.odm.model.IODMModelParser;
-import org.ieee.odm.model.aclf.AclfModelParser;
-import org.interpss.CorePluginFactory;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.odm.mapper.ODMAclfNetMapper.XfrBranchModel;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
@@ -49,8 +39,6 @@ import org.slf4j.LoggerFactory;
 public class IpssFileAdapterBase implements IpssFileAdapter {
     private static final Logger log = LoggerFactory.getLogger(IpssFileAdapterBase.class);
 	protected IPSSMsgHub msgHub;
-	private ODMFileFormatEnum format;
-	//private ODMAclfNetMapper.XfrBranchModel xfrBranchModel = ODMAclfNetMapper.XfrBranchModel.InterPSS;
 
 	private String name;
 	private String[] versionList = null;
@@ -59,59 +47,15 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 	private String description;
 	private String fileFilterString;
 	private String versionSelected;
-	
-	protected IODMModelParser parser;
-	
+
 	public IpssFileAdapterBase(IPSSMsgHub msgHub) {
 		this.msgHub = msgHub;
 	}
-	
-	public IpssFileAdapterBase(IPSSMsgHub msgHub, ODMFileFormatEnum format) {
-		this.msgHub = msgHub;
-		this.format = format;
-	}
 
-	/**
-	 * Load the data in the data file, specified by the filepath, into the SimuContext object. An AclfAdjNetwork
-	 * object will be created to hold the data for loadflow analysis.
-	 * 
-	 * @param simuCtx the SimuContext object
-	 * @param filepath full path path of the input file
-	 * @param msg the SessionMsg object
-	 */
 	@Override
 	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {
-		try {
-			IODMAdapter adapter = ODMObjectFactory.createODMAdapter(this.format);
-			loadByODMTransformation(adapter, simuCtx, filepath, msgHub, debug, outfile);
-		} catch (ODMException e) {
-			log.error(e.toString());
-			throw new InterpssException("Error while loading custom file through ODM, " + e.toString());
-		}
+		throw new InterpssException("load() must be implemented by subclass: " + getClass().getName());
  	}
-	
-	protected void loadByODMTransformation(final IODMAdapter adapter, final SimuContext simuCtx, final String filepath, 
-						final IPSSMsgHub msg, boolean debug, String outfile)  throws InterpssException {		
-		adapter.parseInputFile(filepath);
-		this.parser = adapter.getModel();
-		if (debug)
-			System.out.println(adapter.getModel().toXmlDoc(outfile));
-		
-		if (CorePluginFactory.getOdm2AclfParserMapper(XfrBranchModel.InterPSS)
-					.map2Model((AclfModelParser)adapter.getModel(), simuCtx)) {
-  	  		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar)+1));
-  	  		simuCtx.setDesc("This project is created by input file " + filepath);
-		}
-		else {
-  			msg.sendErrorMsg("Error to load file: " + filepath);
-  			log.error("Error to load file: " + filepath);
-		}
-	}
-	
-	@Override
-	public IODMModelParser getODMModelParser() {
-		return this.parser;
-	}
 
 	/**
 	 * @return the fileFilterString
@@ -235,13 +179,5 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 	@Override
 	public void setVersionSelected(String versionSelected) {
 		this.versionSelected = versionSelected;
-		
-		/*
-		 * Please note : the following is implementation specific for ipss editor 
-		 */
-		if (versionSelected.equals("PSS/E-26"))
-			this.format = ODMFileFormatEnum.PsseV26;
-		else if (versionSelected.equals("PSS/E-30") && versionSelected.equals("PSS/E-29"))
-			this.format = ODMFileFormatEnum.PsseV30;
 	}
 }
