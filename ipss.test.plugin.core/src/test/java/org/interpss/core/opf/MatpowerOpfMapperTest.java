@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.net.Branch;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfGen;
@@ -57,6 +58,8 @@ public class MatpowerOpfMapperTest extends CorePluginTestSetup {
 		Branch branch = net.getBranch("Bus1->Bus2(1)");
 		assertNotNull(branch);
 		assertEquals("LINE_1_2", branch.getName());
+		assertEquals(1, net.getSpecialBranchList().size());
+		assertTrue(net.getSpecialBranchList().get(0) instanceof HvdcLine2TLCC);
 
 		AclfLoad dcFromLoad = net.getBus("Bus1").getContributeLoadList().get(0);
 		assertEquals(new Complex(0.10, 0.01), dcFromLoad.getLoadCP());
@@ -76,6 +79,7 @@ public class MatpowerOpfMapperTest extends CorePluginTestSetup {
 
 		assertEquals(73, net.getBusList().size());
 		assertEquals(120, net.getBranchList().size());
+		assertTrue(net.getSpecialBranchList().stream().anyMatch(HvdcLine2TLCC.class::isInstance));
 		assertEquals(158, countContributedGenerators(net));
 		assertTrue(net.getBus("Bus101").getContributeGenList().size() > 1);
 		assertTrue(net.getBus("Bus113").getContributeLoadList().stream()
