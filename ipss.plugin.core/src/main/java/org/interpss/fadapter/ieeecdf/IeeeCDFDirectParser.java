@@ -128,12 +128,6 @@ public class IeeeCDFDirectParser {
                 baseMva = parseDouble(fields[2]);
                 if (baseMva == 0.0) baseMva = 100.0;
             }
-            String caseId = "IEEE_CDF_Case";
-            if (fields.length >= 6) {
-                String id = fields[fields.length - 1].trim();
-                if (!id.isEmpty()) caseId = id.replaceAll("\\s+", "_");
-            }
-            builder.setNetworkInfo(caseId, "IEEE CDF Case", baseMva * 1000.0, OriginalDataFormat.IEEECDF);
         } else {
             if (line.length() >= 37) {
                 String mvaStr = safeSubstring(line, 31, 37).trim();
@@ -145,13 +139,10 @@ public class IeeeCDFDirectParser {
                     }
                 }
             }
-            String caseId = "IEEE_CDF_Case";
-            if (line.length() >= 55) {
-                String id = safeSubstring(line, 44, line.length()).trim();
-                if (!id.isEmpty()) caseId = id.replaceAll("\\s+", "_");
-            }
-            builder.setNetworkInfo(caseId, "IEEE CDF Case", baseMva * 1000.0, OriginalDataFormat.IEEECDF);
         }
+        // Use the same fixed network id as the legacy ODM import path
+        builder.setNetworkInfo("Base_Case_from_IEEECDF_format", "IEEE CDF Case",
+                baseMva * 1000.0, OriginalDataFormat.IEEECDF);
     }
 
     // ==================== Bus Data ====================
@@ -249,9 +240,10 @@ public class IeeeCDFDirectParser {
             if (load != null) load.setName(loadId);
         }
 
-        // Add fixed shunt
+        // Add fixed shunt. The CDF shunt G/B fields are already in per unit
+        // on the system base, so no baseMva conversion is needed.
         if (gShunt != 0.0 || bShunt != 0.0) {
-            builder.addToBusShuntY(busId, new Complex(gShunt / baseMva, bShunt / baseMva));
+            builder.addToBusShuntY(busId, new Complex(gShunt, bShunt));
         }
     }
 

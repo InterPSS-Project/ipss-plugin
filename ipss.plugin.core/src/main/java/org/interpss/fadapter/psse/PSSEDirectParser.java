@@ -821,12 +821,15 @@ public class PSSEDirectParser {
 
         HvdcControlMode controlMode = mdc == 1 ? HvdcControlMode.DC_POWER :
                 mdc == 2 ? HvdcControlMode.DC_CURRENT : HvdcControlMode.BLOCKED;
+        // when SETVL == 0, the dc line operates as blocked (matches PSS/E behavior)
+        if (Math.abs(setvl) < 1.0E-3)
+            controlMode = HvdcControlMode.BLOCKED;
 
-        // Line 2: IPR, NBR, ANMNR, ANMXR, RCR, XCR, EBASR, TRR, TAPR, TMXR, TMNR, STPR, ICR, IFR, ITR, IDR, XCAPR
+        // Line 2: IPR, NBR, ANMXR, ANMNR, RCR, XCR, EBASR, TRR, TAPR, TMXR, TMNR, STPR, ICR, IFR, ITR, IDR, XCAPR
         int recBusNum = line2.getInt(0);
         int nbr = line2.getInt(1);
-        double anmnr = line2.getDouble(2, 0.0);
-        double anmxr = line2.getDouble(3, 0.0);
+        double anmxr = line2.getDouble(2, 0.0);
+        double anmnr = line2.getDouble(3, 0.0);
         double rcr = line2.getDouble(4, 0.0);
         double xcr = line2.getDouble(5, 0.0);
         double ebasr = line2.getDouble(6, 0.0);
@@ -837,11 +840,11 @@ public class PSSEDirectParser {
         double stpr = line2.getDouble(11, 0.00625);
         double xcapr = line2.getDouble(16, 0.0);
 
-        // Line 3: IPI, NBI, ANMNI, ANMXI, RCI, XCI, EBASI, TRI, TAPI, TMXI, TMNI, STPI, ICI, IFI, ITI, IDI, XCAPI
+        // Line 3: IPI, NBI, ANMXI, ANMNI, RCI, XCI, EBASI, TRI, TAPI, TMXI, TMNI, STPI, ICI, IFI, ITI, IDI, XCAPI
         int invBusNum = line3.getInt(0);
         int nbi = line3.getInt(1);
-        double anmni = line3.getDouble(2, 0.0);
-        double anmxi = line3.getDouble(3, 0.0);
+        double anmxi = line3.getDouble(2, 0.0);
+        double anmni = line3.getDouble(3, 0.0);
         double rci = line3.getDouble(4, 0.0);
         double xci = line3.getDouble(5, 0.0);
         double ebasi = line3.getDouble(6, 0.0);
@@ -856,7 +859,10 @@ public class PSSEDirectParser {
         String toBusId = BUS_ID_PREFIX + invBusNum;
         String dcLineId = name.trim().isEmpty() ? fromBusId + "_" + toBusId : name.trim();
 
-        boolean controlOnRec = meter.toUpperCase().startsWith("R");
+        // when MDC = 1, a positive SETVL specifies desired power at the rectifier
+        // and a negative value specifies desired inverter power
+        boolean controlOnRec = setvl > 0.0;
+        boolean meterOnRec = meter.toUpperCase().startsWith("R");
 
         try {
             HvdcLine2TLCC<AclfBus> lcc = builder.addHvdcLine2TLCC(
@@ -865,7 +871,7 @@ public class PSSEDirectParser {
                     controlMode, HvdcOperationMode.REC1_INV1,
                     rdc, setvl, setvl,
                     controlOnRec, vschd, rcomp, delti,
-                    controlOnRec ? ConverterType.RECTIFIER : ConverterType.INVERTER);
+                    meterOnRec ? ConverterType.RECTIFIER : ConverterType.INVERTER);
 
             builder.setLCCRectifier(lcc, nbr, anmnr, anmxr,
                     rcr, xcr, ebasr, trr, tapr, tmxr, tmnr, stpr, xcapr, null);
@@ -891,27 +897,42 @@ public class PSSEDirectParser {
         int mdc = line1.getInt(1, 1);
         double rdc = line1.getDouble(2, 0.0);
 
-        // Line 2: IBUS, TYPE, MODE, DCSET, ACSET, ALOSS, BLOSS, MINLOSS, SMAX, IMAX, PWF, MAXQ, MINQ, VSREG, NREG, RMPCT
-        int recBusNum = line2.getInt(0);
-        int recDcMode = line2.getInt(2, 1);
-        double recDcSet = line2.getDouble(3, 0.0);
-        double recAcSet = line2.getDouble(4, 1.0);
-        double recSmax = line2.getDouble(8, 0.0);
-        double recMaxQ = line2.getDouble(11, 9999.0);
-        double recMinQ = line2.getDouble(12, -9999.0);
-        int recVsreg = line2.getInt(13, 0);
-        double recRmpct = line2.getDouble(15, 100.0);
+        // Line 2/3: IBUS, TYPE, MODE, DCSET, ACSET, ALOSS, BLOSS, MINLOSS, SMAX, IMAX, PWF,
+        //           MAXQ, MINQ, REMOT, RMPCT              (version < 34)
+        //           MAXQ, MINQ, VSREG, NREG, RMPCT        (version >= 34)
+        // TYPE: dc control - 0 = blocked, 1 = dc voltage control, 2 = dc power (MW) control
+        // MODE: ac control - 1 = ac voltage control, 2 = fixed ac power factor
+        int rmpctIdx = version >= 34 ? 15 : 14;
 
-        // Line 3: inverter converter
-        int invBusNum = line3.getInt(0);
-        int invDcMode = line3.getInt(2, 1);
-        double invDcSet = line3.getDouble(3, 0.0);
-        double invAcSet = line3.getDouble(4, 1.0);
-        double invSmax = line3.getDouble(8, 0.0);
-        double invMaxQ = line3.getDouble(11, 9999.0);
-        double invMinQ = line3.getDouble(12, -9999.0);
-        int invVsreg = line3.getInt(13, 0);
-        double invRmpct = line3.getDouble(15, 100.0);
+        int bus1Num = line2.getInt(0);
+        int type1 = line2.getInt(1, 1);
+        int mode1 = line2.getInt(2, 1);
+        double dcSet1 = line2.getDouble(3, 0.0);
+        double acSet1 = line2.getDouble(4, 1.0);
+        double smax1 = line2.getDouble(8, 0.0);
+        double maxQ1 = line2.getDouble(11, 9999.0);
+        double minQ1 = line2.getDouble(12, -9999.0);
+        int remot1 = line2.getInt(13, 0);
+        double rmpct1 = line2.getDouble(rmpctIdx, 100.0);
+
+        int bus2Num = line3.getInt(0);
+        int type2 = line3.getInt(1, 1);
+        int mode2 = line3.getInt(2, 1);
+        double dcSet2 = line3.getDouble(3, 0.0);
+        double acSet2 = line3.getDouble(4, 1.0);
+        double smax2 = line3.getDouble(8, 0.0);
+        double maxQ2 = line3.getDouble(11, 9999.0);
+        double minQ2 = line3.getDouble(12, -9999.0);
+        int remot2 = line3.getInt(13, 0);
+        double rmpct2 = line3.getDouble(rmpctIdx, 100.0);
+
+        // Determine which converter is the rectifier. For dc power (MW) control,
+        // DCSET is positive when power flows from the converter into the ac network,
+        // i.e. a negative DCSET identifies the rectifier side.
+        boolean isConv1Rec = (type1 == 2 && dcSet1 < 0) || (type2 == 2 && dcSet2 > 0);
+
+        int recBusNum = isConv1Rec ? bus1Num : bus2Num;
+        int invBusNum = isConv1Rec ? bus2Num : bus1Num;
 
         String fromBusId = BUS_ID_PREFIX + recBusNum;
         String toBusId = BUS_ID_PREFIX + invBusNum;
@@ -923,24 +944,39 @@ public class PSSEDirectParser {
 
             VSCConverter recConv = (VSCConverter) vsc.getRecConverter();
             recConv.setId("VSC Rec_" + fromBusId);
-            HvdcControlMode recDcCtrl = recDcMode == 0 ? HvdcControlMode.BLOCKED :
-                    recDcMode == 1 ? HvdcControlMode.DC_VOLTAGE : HvdcControlMode.DC_POWER;
-            builder.setVSCConverter(recConv, fromBusId, recDcCtrl, recDcSet,
-                    VSCAcControlMode.AC_VOLTAGE, recAcSet,
-                    recSmax, recMaxQ, recMinQ,
-                    recVsreg > 0 ? BUS_ID_PREFIX + recVsreg : null, recRmpct);
+            configVSCConverter(recConv, recBusNum,
+                    isConv1Rec ? type1 : type2, isConv1Rec ? mode1 : mode2,
+                    isConv1Rec ? dcSet1 : dcSet2, isConv1Rec ? acSet1 : acSet2,
+                    isConv1Rec ? smax1 : smax2,
+                    isConv1Rec ? maxQ1 : maxQ2, isConv1Rec ? minQ1 : minQ2,
+                    isConv1Rec ? remot1 : remot2, isConv1Rec ? rmpct1 : rmpct2);
 
             VSCConverter invConv = (VSCConverter) vsc.getInvConverter();
             invConv.setId("VSC Inv_" + toBusId);
-            HvdcControlMode invDcCtrl = invDcMode == 0 ? HvdcControlMode.BLOCKED :
-                    invDcMode == 1 ? HvdcControlMode.DC_VOLTAGE : HvdcControlMode.DC_POWER;
-            builder.setVSCConverter(invConv, toBusId, invDcCtrl, invDcSet,
-                    VSCAcControlMode.AC_VOLTAGE, invAcSet,
-                    invSmax, invMaxQ, invMinQ,
-                    invVsreg > 0 ? BUS_ID_PREFIX + invVsreg : null, invRmpct);
+            configVSCConverter(invConv, invBusNum,
+                    isConv1Rec ? type2 : type1, isConv1Rec ? mode2 : mode1,
+                    isConv1Rec ? dcSet2 : dcSet1, isConv1Rec ? acSet2 : acSet1,
+                    isConv1Rec ? smax2 : smax1,
+                    isConv1Rec ? maxQ2 : maxQ1, isConv1Rec ? minQ2 : minQ1,
+                    isConv1Rec ? remot2 : remot1, isConv1Rec ? rmpct2 : rmpct1);
         } catch (Exception e) {
             log.error("Error parsing VSC HVDC record: " + e.getMessage());
         }
+    }
+
+    private void configVSCConverter(VSCConverter converter, int busNum,
+                                    int type, int mode, double dcSet, double acSet,
+                                    double smax, double maxQ, double minQ,
+                                    int remoteBusNum, double rmpct) {
+        HvdcControlMode dcCtrl = type == 0 ? HvdcControlMode.BLOCKED :
+                type == 1 ? HvdcControlMode.DC_VOLTAGE : HvdcControlMode.DC_POWER;
+        VSCAcControlMode acCtrl = mode == 1 ? VSCAcControlMode.AC_VOLTAGE :
+                VSCAcControlMode.AC_POWER_FACTOR;
+        String remoteBusId = (remoteBusNum > 0 && remoteBusNum != busNum)
+                ? BUS_ID_PREFIX + remoteBusNum : null;
+        // dc set points are stored as positive values; the converter type defines the direction
+        builder.setVSCConverter(converter, BUS_ID_PREFIX + busNum, dcCtrl, Math.abs(dcSet),
+                acCtrl, acSet, smax, maxQ, minQ, remoteBusId, rmpct);
     }
 
     // ==================== Xfr Z Correction Table ====================
