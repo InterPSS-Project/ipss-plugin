@@ -38,7 +38,7 @@ jobs:
         cache: maven
     - name: Configure AWS credentials
       if: github.event_name == 'push'
-      uses: aws-actions/configure-aws-credentials@v5
+      uses: aws-actions/configure-aws-credentials@v6
       with:
         role-to-assume: arn:aws:iam::078183419290:role/interpss-core-codeartifact-deploy-role
         aws-region: us-east-1
