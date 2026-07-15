@@ -166,12 +166,16 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 					} else {
 						BaseBranchXmlType branchXml = b.getValue();
 						if (branchXml instanceof DCLineData2TXmlType || branchXml instanceof VSCHVDC2TXmlType) {
-							Branch hvdcBranch = branchXml instanceof DCLineData2TXmlType
-									? HvdcObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1,
-											branchXml.getId(),
-											((LoadflowBusXmlType) branchXml.getFromBus().getIdRef()).getId(),
-											((LoadflowBusXmlType) branchXml.getToBus().getIdRef()).getId())
-									: HvdcObjectFactory.createHvdc2TVSC();
+							Branch hvdcBranch;
+							if (branchXml instanceof DCLineData2TXmlType) {
+								LoadflowBusXmlType fromBus = (LoadflowBusXmlType) branchXml.getFromBus().getIdRef();
+								LoadflowBusXmlType toBus = (LoadflowBusXmlType) branchXml.getToBus().getIdRef();
+								hvdcBranch = HvdcObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1,
+										branchXml.getId(), fromBus.getId(), toBus.getId());
+							}
+							else {
+								hvdcBranch = HvdcObjectFactory.createHvdc2TVSC();
+							}
 							hvdcBranch.setNetwork(opfNet);
 							aclfNetMapper.mapAclfHVDC2TData(branchXml, hvdcBranch, opfNet);
 							continue;
