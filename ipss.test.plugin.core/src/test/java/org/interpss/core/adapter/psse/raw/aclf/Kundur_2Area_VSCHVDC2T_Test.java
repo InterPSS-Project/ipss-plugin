@@ -1,16 +1,10 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
-import org.interpss.numeric.datatype.ComplexFunc;
+import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -20,11 +14,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.VSCConverter;
-import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	
@@ -73,7 +63,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 			9	BUS9   L	230.0	2	AREA2	2		1		1	0.9800	-24.73	1.1000	0.9000	1.1000	0.9000
 			10	BUS10   AR2	230.0	2	AREA2	2		1		1	0.9886	-16.50	1.1000	0.9000	1.1000	0.9000
 			11	BUS11   AR2	230.0	2	AREA2	2		1		1	1.0107	-6.47	1.1000	0.9000	1.1000	0.9000
-															
+														
 
   		 */
   		
@@ -153,21 +143,8 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		//System.out.println(net.net2String());
 	}
 	
-	private AclfNetwork createTestCaseV30() {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_vschvdc_v30.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return null;
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
+	private AclfNetwork createTestCaseV30() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(30).parse("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_vschvdc_v30.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
@@ -201,21 +178,8 @@ VSC HVDC: com.interpss.core.aclf.hvdc.impl.HvdcLine2TVSCImpl@6b3e12b5 (
 		return net;
 	}
 
-	private AclfNetwork createBasicTestCaseV35() {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_35);
-		assertTrue(adapter.parseInputFile("testData/adpter/psse/v35/Kundur_2area_vschvdc_v35.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return null;
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
+	private AclfNetwork createBasicTestCaseV35() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(35).parse("testData/adpter/psse/v35/Kundur_2area_vschvdc_v35.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
@@ -249,21 +213,8 @@ VSC HVDC: com.interpss.core.aclf.hvdc.impl.HvdcLine2TVSCImpl@6b3e12b5 (
 		return net;
 	}
 
-	private AclfNetwork createTestCaseV35() {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_35);
-		assertTrue(adapter.parseInputFile("testData/psse/v35/Kundur_2area_vschvdc_remotebus_v35.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return null;
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
+	private AclfNetwork createTestCaseV35() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(35).parse("testData/psse/v35/Kundur_2area_vschvdc_remotebus_v35.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);

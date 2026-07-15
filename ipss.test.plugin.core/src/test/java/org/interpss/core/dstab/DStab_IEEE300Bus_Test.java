@@ -8,15 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.numeric.NumericConstant;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
 import org.junit.jupiter.api.Test;
 
@@ -36,8 +31,6 @@ import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		
@@ -45,26 +38,9 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		public void test_IEEE300_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
 			//IpssLogger.getLogger().setLevel(Level.OFF);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					
-					//NOTE: the original IEEE300Bus_modified_noHVDC.raw could result in oscillation for some faults due to capacitor compensation of long distance lines between 120 and 118
-					
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
-					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-            
-			
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2.dyr");
 			
 			
 		    BaseDStabNetwork<?, ?> dsNet =simuCtx.getDStabilityNet();
@@ -124,27 +100,9 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		public void test_IEEE300_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
 			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					
-					//NOTE: the original "IEEE300Bus_modified_noHVDC.raw" case could result in oscillation for some faults (at buses 4 or 182) due to capacitor compensation of long distance lines between 120 and 118
-					
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
-					//"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2.dyr"
-					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-            
-			
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
 			
 			
 		    BaseDStabNetwork<?, ?> dsNet =simuCtx.getDStabilityNet();
@@ -241,23 +199,9 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		public void IEEE300_Dstab_compositeLoadModel_generate_results_() throws InterpssException{
 			IpssCorePlugin.init();
 			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
-					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-            
-			
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
 			
 			
 		    BaseDStabNetwork<?, ?> dsNet =simuCtx.getDStabilityNet();
@@ -300,24 +244,9 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 //							   break;
 //						}
 							
-						adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-						assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+						simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 								"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
-								"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2_cmld.dyr"
-						}));
-						parser =(DStabModelParser) adapter.getModel();
-						
-						//System.out.println(parser.toXmlDoc());
-			            
-						
-						
-						simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-						if (!new ODMDStabParserMapper(msg)
-									.map2Model(parser, simuCtx)) {
-							System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-							return;
-						}
-						
+								"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2_cmld.dyr");
 						
 					    dsNet =simuCtx.getDStabilityNet();
 					    

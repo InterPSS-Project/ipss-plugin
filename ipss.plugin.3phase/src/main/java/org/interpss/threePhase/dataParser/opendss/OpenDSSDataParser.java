@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import java.io.IOException;
+
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.common.IFileReader;
-import org.ieee.odm.common.ODMException;
-import org.ieee.odm.common.ODMLogger;
-import org.ieee.odm.common.ODMTextFileReader;
 import org.interpss.numeric.datatype.Complex3x1;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.LineConfiguration;
@@ -59,6 +59,7 @@ import com.interpss.core.threephase.Static3PNetwork;
 import com.interpss.dstab.DStabBranch;
 
 public class OpenDSSDataParser {
+	private static final Logger logger = LoggerFactory.getLogger(OpenDSSDataParser.class);
 
 	protected String busIdPrefix = "";
 	// Line configuration table
@@ -332,9 +333,9 @@ public class OpenDSSDataParser {
 				    final File file = new File(fullFilePath);
 				final InputStream stream = new FileInputStream(file);
 				final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
-				IFileReader reader = new ODMTextFileReader(din);
+				BufferedReader reader = din;
 
-				ODMLogger.getLogger().info("Start to parse feeder file and create the parser object # " + fullFilePath);
+				logger.info("Start to parse feeder file and create the parser object # " + fullFilePath);
 
 			do {
 				if(useLastLineString){
@@ -518,11 +519,11 @@ public class OpenDSSDataParser {
 					}
 
                                 else{
-	ODMLogger.getLogger().severe("Non-supported object for line # "+str);
+	logger.error("Non-supported object for line # "+str);
                                 }
 				}
 				else if(str.startsWith("redirect")||str.startsWith("Redirect")){
-					ODMLogger.getLogger().info(str);
+					logger.info(str);
 					String redictFileName = str.split("\\s+")[1];
 					String resolvedFileName = resolveRedirectFileName(folderPath, redictFileName);
 					if(redictFileName.toLowerCase().contains("linecode")){
@@ -542,13 +543,13 @@ public class OpenDSSDataParser {
 					no_error = no_error && this.loadParser.parseLoadPropertyData(str);
 				}
 				else{
-					ODMLogger.getLogger().severe("Non-supported syntax/data model in line # "+lineCnt+"  :\n "+str);
+					logger.error("Non-supported syntax/data model in line # "+lineCnt+"  :\n "+str);
 				}
 			}
 			}while(str!=null);
 		 } catch (Exception e) {
-			    ODMLogger.getLogger().severe("processing line #"+str);
-				ODMLogger.getLogger().severe(e.toString());
+			    logger.error("processing line #"+str);
+				logger.error(e.toString());
 
 				e.printStackTrace();
 				return false;
@@ -719,9 +720,9 @@ public class OpenDSSDataParser {
 				final File file = new File(fullFilePath);
 				final InputStream stream = new FileInputStream(file);
 				final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
-				IFileReader reader = new ODMTextFileReader(din);
+				BufferedReader reader = din;
 
-				ODMLogger.getLogger().info("Start to parse file: " + fullFilePath);
+				logger.info("Start to parse file: " + fullFilePath);
 
 			do {
 				if(useLastLineString){
@@ -899,11 +900,11 @@ public class OpenDSSDataParser {
 					}
 
                                 else{
-	ODMLogger.getLogger().severe("Non-supported object for line # "+str);
+	logger.error("Non-supported object for line # "+str);
                                 }
 				}
 				else if(str.startsWith("redirect")||str.startsWith("Redirect")){
-					ODMLogger.getLogger().info(str);
+					logger.info(str);
 				}
 				else if(str.toLowerCase().startsWith("transformer.") && str.toLowerCase().contains(".taps=")){
 					no_error = no_error && this.xfrParser.parseTransformerTapData(str);
@@ -915,16 +916,16 @@ public class OpenDSSDataParser {
 					no_error = no_error && this.loadParser.parseLoadPropertyData(str);
 				}
 				else{
-					ODMLogger.getLogger().severe("Non-supported syntax/data model in line # "+lineCnt+"  :\n "+str);
+					logger.error("Non-supported syntax/data model in line # "+lineCnt+"  :\n "+str);
 				}
 			}
 			}while(str!=null);
 
-			ODMLogger.getLogger().info("End of parsing file: " + fullFilePath);
+			logger.info("End of parsing file: " + fullFilePath);
 		 } catch (Exception e) {
 
-			    ODMLogger.getLogger().severe("processing line #"+str);
-				ODMLogger.getLogger().severe(e.toString());
+			    logger.error("processing line #"+str);
+				logger.error(e.toString());
 
 				e.printStackTrace();
 				return false;
@@ -947,7 +948,7 @@ public class OpenDSSDataParser {
 	 try {
 		this.xfrParser.mergeParallelSinglePhaseRegulatorBranches();
 	 } catch (Exception e) {
-		ODMLogger.getLogger().severe("Failed to merge parallel single-phase transformer regulators: " + e.toString());
+		logger.error("Failed to merge parallel single-phase transformer regulators: " + e.toString());
 		return false;
 	}
 
@@ -1044,7 +1045,7 @@ public class OpenDSSDataParser {
 			}
 		}
 		if(inactiveBusCount > 0 || inactiveBranchCount > 0) {
-			ODMLogger.getLogger().info("Turned off OpenDSS island objects not connected to an active swing bus: buses="
+			logger.info("Turned off OpenDSS island objects not connected to an active swing bus: buses="
 					+ inactiveBusCount + ", branches=" + inactiveBranchCount);
 		}
 	}
@@ -1054,12 +1055,12 @@ public class OpenDSSDataParser {
 
 	 if(mvaBase>0) {
 		 if(mvaBase>20){
-			 ODMLogger.getLogger().warning("The input mvaBase is beyond the normal range of [5, 20] MVA, input mvabase = "+mvaBase);
+			 logger.warn("The input mvaBase is beyond the normal range of [5, 20] MVA, input mvabase = "+mvaBase);
 		 }
 		 activeAclfNetwork().setBaseKva(mvaBase*1000.0);
 	 }
 	 else{
-		 ODMLogger.getLogger().severe("The input mvabase <= 0. mvabase = 1.0 MVA will be used");
+		 logger.error("The input mvabase <= 0. mvabase = 1.0 MVA will be used");
 		 mvaBase = 1.0;
 		 activeAclfNetwork().setBaseKva(mvaBase*1000.0);
 	 }
@@ -1156,7 +1157,7 @@ public class OpenDSSDataParser {
 		  convertPhaseTurnRatiosToPU(bra, bra3Phase, vllfactor);
 	  }
 	  else{
-		  ODMLogger.getLogger().severe("Sepcial branch type is not supported, branchId = "+bra.getId());
+		  logger.error("Sepcial branch type is not supported, branchId = "+bra.getId());
 	  }
 
           }
@@ -1178,7 +1179,7 @@ public class OpenDSSDataParser {
 				 new Complex(this.minLineSeriesImpedancePu, 0.0)));
 	 }
 	 if(this.debug) {
-		 ODMLogger.getLogger().info("Replaced near-zero OpenDSS line impedance with "
+		 logger.info("Replaced near-zero OpenDSS line impedance with "
 				 + this.minLineSeriesImpedancePu + " pu floor: branch="
 				 + branch.getId() + ", name=" + branch.getName());
 	 }
@@ -1366,9 +1367,9 @@ public class OpenDSSDataParser {
       * @param din
       * @param useLastLineString
       * @return String[2]
-      * @throws ODMException
-      */
-     private LogicalLine collectLogicalContinuationLine(String firstLine, IFileReader reader) throws ODMException {
+     * @throws IOException
+     */
+    private LogicalLine collectLogicalContinuationLine(String firstLine, BufferedReader reader) throws IOException {
 	 String logicalLine = firstLine;
 	 String nextDataLine = null;
 	 int consumedLineCount = 0;
@@ -1602,7 +1603,7 @@ public class OpenDSSDataParser {
 					 || lower.contains(".duty="));
      }
 
-     private String[] getNextDataInputString(IFileReader reader) throws ODMException{
+     private String[] getNextDataInputString(BufferedReader reader) throws IOException{
 	 String dataString = null;
 	 int skipLineNum = 0;
 	 do{

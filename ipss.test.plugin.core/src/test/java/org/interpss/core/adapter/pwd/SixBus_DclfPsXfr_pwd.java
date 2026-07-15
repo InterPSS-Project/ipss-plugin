@@ -26,10 +26,7 @@ package org.interpss.core.adapter.pwd;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
@@ -52,7 +49,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void aclf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
@@ -77,7 +74,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
@@ -131,7 +128,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf1() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
@@ -149,7 +146,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf2() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
@@ -169,7 +166,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf3() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
 					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
@@ -195,7 +192,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf4() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_2.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)

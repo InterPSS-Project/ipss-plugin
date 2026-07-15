@@ -44,6 +44,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.ShuntCompensatorType;
@@ -101,6 +102,11 @@ public class AclfNetworkBuilder {
 
     public AclfNetworkBuilder() {
         this.network = CoreObjectFactory.createAclfNetwork();
+    }
+
+    @SuppressWarnings("unchecked")
+    public AclfNetworkBuilder(BaseAclfNetwork<?,?> network) {
+        this.network = (AclfNetwork) network;
     }
 
     public AclfNetwork getNetwork() {
