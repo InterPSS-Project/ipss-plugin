@@ -28,18 +28,10 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 
-import org.ieee.odm.ODMFileFormatEnum;
-import org.ieee.odm.ODMObjectFactory;
 import org.ieee.odm.adapter.IODMAdapter;
 import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.bpa.BPAAdapter;
-import org.ieee.odm.adapter.ge.GePslfAdapter;
-import org.ieee.odm.adapter.ieeecdf.IeeeCDFAdapter;
 import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
 import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.adapter.pwd.PowerWorldAdapter;
-import org.ieee.odm.adapter.ucte.UCTE_DEFAdapter;
 import org.ieee.odm.model.IODMModelParser;
 import org.ieee.odm.model.ODMModelParser;
 import org.ieee.odm.model.aclf.AclfModelParser;
@@ -53,6 +45,14 @@ import org.interpss.CorePluginFunction;
 import static org.interpss.CorePluginFunction.AclfParser2AclfNet;
 import static org.interpss.CorePluginFunction.AcscParser2AcscNet;
 import static org.interpss.CorePluginFunction.DStabParser2DStabAlgo;
+import org.interpss.fadapter.bpa.BPADirectParser;
+import org.interpss.fadapter.ge.GEPslfDirectParser;
+import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
+import org.interpss.fadapter.matpower.MatpowerDirectParser;
+import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.interpss.fadapter.psse.PSSEJsonDirectParser;
+import org.interpss.fadapter.pwd.PWDDirectParser;
+import org.interpss.fadapter.ucte.UCTEDirectParser;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.plugin.pssl.simu.BaseDSL;
@@ -406,50 +406,63 @@ public class IpssAdapter extends BaseDSL {
 		public FileImportDSL filename(String name) { return this.setFilename(name); }
 
 		/**
-		 * create(get) ODM custom file adapter, based on the file format and PSS/E version
-		 * number
-		 * 
-		 * @return
+		 * Attempt to load the file directly via direct parsers (bypassing ODM).
+		 * Returns the AclfNetwork or null if direct parsing is not available for this format.
+		 */
+		private AclfNetwork loadDirect(String filepath) throws InterpssException {
+			if (this.format == FileFormat.IEEECommonFormat) {
+				return new IeeeCDFDirectParser().parse(filepath);
+			} else if (this.format == FileFormat.PSSE) {
+				if (this.psseVersion == PsseVersion.PSSE_JSON) {
+					return new PSSEJsonDirectParser().parse(filepath);
+				} else {
+					int ver = mapPsseVersionToInt(this.psseVersion);
+					return new PSSEDirectParser(ver).parse(filepath);
+				}
+			} else if (this.format == FileFormat.GE_PSLF) {
+				return new GEPslfDirectParser().parse(filepath);
+			} else if (this.format == FileFormat.UCTE) {
+				return new UCTEDirectParser().parse(filepath);
+			} else if (this.format == FileFormat.BPA) {
+				return new BPADirectParser().parse(filepath);
+			} else if (this.format == FileFormat.PWD) {
+				return new PWDDirectParser().parse(filepath);
+			} else if (this.format == FileFormat.MATPOWER) {
+				return new MatpowerDirectParser().parse(filepath);
+			}
+			return null;
+		}
+
+		private int mapPsseVersionToInt(PsseVersion ver) {
+			if (ver == null) return 30;
+			switch (ver) {
+				case PSSE_29: return 29;
+				case PSSE_30: return 30;
+				case PSSE_31: return 31;
+				case PSSE_32: return 32;
+				case PSSE_33: return 33;
+				case PSSE_34: return 34;
+				case PSSE_35: return 35;
+				case PSSE_36: return 36;
+				default: return 30;
+			}
+		}
+
+		/**
+		 * Get ODM adapter for advanced analysis types (Acsc, DStab, etc.)
+		 * that still require the ODM pipeline.
 		 */
 		public IODMAdapter getAdapter() {
 			if (this.adapter == null) {
 				try {
-					if ( this.format == FileFormat.IEEECommonFormat ) {
-						adapter = new IeeeCDFAdapter();
-					}
-					else if ( this.format == FileFormat.PSSE ) {
-						if (this.psseVersion == PsseVersion.PSSE_JSON)
-							adapter = new PSSEJSonAdapter();
-//						else if (this.psseVersion == PsseVersion.PSSE_26)
-//							adapter = new PSSEV26Adapter();
-						else
-							adapter = new PSSERawAdapter(getPsseAptVer());
-					}
-					else if ( this.format == FileFormat.GE_PSLF ) {
-						adapter = new GePslfAdapter(GePslfAdapter.Version.PSLF15);
-					}
-					else if ( this.format == FileFormat.UCTE ) {
-						adapter = new UCTE_DEFAdapter();
-					}
-					else if ( this.format == FileFormat.BPA ) {
-						adapter = new BPAAdapter();
-					}
-					else if ( this.format == FileFormat.PWD ) {
-						adapter = new PowerWorldAdapter();
-					}
-					else if ( this.format == FileFormat.MATPOWER ) {
-						adapter = ODMObjectFactory.createODMAdapter(ODMFileFormatEnum.MatPower);
+					if ( this.format == FileFormat.PSSE ) {
+						adapter = new PSSERawAdapter(getPsseAptVer());
 					}
 					else if ( this.format == FileFormat.Custom ) {
 						Class<?> klass = Class.forName(this.classname);
 						Constructor<?> constructor = klass.getConstructor();
 						adapter = (IODMAdapter)constructor.newInstance();
 					}
-					/*
-					else if ( this.format == FileFormat.PSASP ) {
-						adapter = new PSASPODMAdapter(file1Name, Version.V6_x);
-					}
-					*/
 				} catch (Exception e) {
 					psslMsg.sendErrorMsg("Cannot load adapter: " + e.toString());
 				}
@@ -518,14 +531,11 @@ public class IpssAdapter extends BaseDSL {
 			if(filename !=null) this.file1Name = filename;
 			
 			try {
-				//ipssLogger.info("Load file: " + this.file1Name + " of format " + this.format);
-
 				if ( this.format == FileFormat.IEEE_ODM) {
 					ODMModelParser parser = new ODMModelParser();
 
 					FileInputStream inStream = new FileInputStream(new File(this.file1Name));
 					if (parser.parse(inStream)) {
-						//System.out.println(parser.toXmlDoc(false));
 						if (parser.getStudyCase().getNetworkCategory() == NetworkCategoryEnumType.DC_SYSTEM) {
 							odmParser = parser.toDcSystemModelParser();
 						}
@@ -547,31 +557,29 @@ public class IpssAdapter extends BaseDSL {
 					}
 					inStream.close();
 				}
-				/* the PSASP adapter becomes private 
-				else if(this.format == FileFormat.PSASP){
-					try {
-						((PSASPODMAdapter)getAdapter()).parseInputFile();
-					} catch (ODMException e) {
-						e.printStackTrace();
-					}
-					odmParser = adapter.getModel();
-				}
-				*/
 				else {
-					getAdapter().parseInputFile(this.file1Name);
-					
-					if (debug) {
-						if (filename == null)
-							System.out.println(getAdapter().getModel().toXmlDoc());
-						else 
-							getAdapter().getModel().toXmlDoc(filename);
+					// Use direct parsers to load Aclf networks, bypassing ODM
+					AclfNetwork directNet = loadDirect(this.file1Name);
+					if (directNet != null) {
+						this.importedObj = directNet;
+						return this;
 					}
-					odmParser = adapter.getModel();
+
+					// Fallback to ODM adapter for Custom format or unsupported formats
+					if (getAdapter() != null) {
+						getAdapter().parseInputFile(this.file1Name);
+						if (debug) {
+							if (filename == null)
+								System.out.println(getAdapter().getModel().toXmlDoc());
+							else 
+								getAdapter().getModel().toXmlDoc(filename);
+						}
+						odmParser = adapter.getModel();
+					}
 				}
 				
-				// this.aclfNet = AclfParser2AclfNet.fx((AclfModelParser)odmParser);
 				return this;
-			} catch (IOException e) {
+			} catch (IOException | InterpssException e) {
 				psslMsg.sendErrorMsg("Error in loading file: " + e.toString());
 			}
 			return null; 
