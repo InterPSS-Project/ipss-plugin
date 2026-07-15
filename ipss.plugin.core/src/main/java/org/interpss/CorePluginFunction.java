@@ -3,7 +3,6 @@ package org.interpss;
 import java.util.List;
 import java.util.function.Function;
 
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.ieee.odm.model.acsc.AcscModelParser;
 import org.ieee.odm.model.dstab.DStabModelParser;
 import org.ieee.odm.schema.AcscFaultCategoryEnumType;
@@ -49,17 +48,6 @@ public class CorePluginFunction {
 	 ************************************************************/
 
 	///////////////  AclfNetwork ////////////////////
-	
-	/**
-	 * Aclf ODM model parser to AclfNetwork object mapping function
-	 */
-	public static IFunction2<AclfModelParser, ODMAclfNetMapper.XfrBranchModel, AclfNetwork> AclfParser2AclfNet = 
-		new Function2Adapter<AclfModelParser, ODMAclfNetMapper.XfrBranchModel, AclfNetwork>() {
-			@Override public AclfNetwork fx(AclfModelParser parser, ODMAclfNetMapper.XfrBranchModel xfrBranchModel) throws InterpssException {
-				return CorePluginFactory.getOdm2AclfParserMapper(xfrBranchModel)
-						.map2Model(parser)
-						.getAclfNet();
-		}};
 	
 	/**
 	 * Aclf ODM network xml doc to AclfNetwork object mapping function

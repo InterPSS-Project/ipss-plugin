@@ -413,8 +413,8 @@ public class PSSEDirectParser {
     // ==================== Line/Branch ====================
 
     private void parseLineLine(PSSEDataRec rec) throws InterpssException {
-        int fromNum = rec.getInt(0);
-        int toNum = rec.getInt(1);
+        int fromNum = Math.abs(rec.getInt(0));
+        int toNum = Math.abs(rec.getInt(1));
         String ckt = rec.getString(2, "1").trim();
         String fromBusId = BUS_ID_PREFIX + fromNum;
         String toBusId = BUS_ID_PREFIX + toNum;
@@ -507,9 +507,9 @@ public class PSSEDirectParser {
     private void parseXfrRecord(PSSEDataRec line1, String line2Str, String line3Str,
                                 String line4Str, String line5Str, boolean is3W) throws InterpssException {
         // Line 1: I, J, K, CKT, CW, CZ, CM, MAG1, MAG2, NMETR, NAME, STAT, O1..F4, VECGRP
-        int fromNum = line1.getInt(0);
-        int toNum = line1.getInt(1);
-        int tertNum = line1.getInt(2);
+        int fromNum = Math.abs(line1.getInt(0));
+        int toNum = Math.abs(line1.getInt(1));
+        int tertNum = Math.abs(line1.getInt(2));
         String ckt = line1.getString(3, "1").trim();
         int cw = line1.getInt(4, 1);
         int cz = line1.getInt(5, 1);
