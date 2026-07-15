@@ -2,9 +2,7 @@ package org.interpss.core.adapter.psse.raw.acsc;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -13,16 +11,10 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AcscOutFunc;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.odm.mapper.ODMAcscParserMapper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -43,16 +35,9 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 	@Test
 	public void testDataInputAndACSC() throws Exception {
 		
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
-		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
+		AcscNetwork net = new PSSEMultiFileLoader(33).loadAcsc(
 				"testData/psse/v33/PSSE_sample_savnw.raw",
-				"testData/psse/v33/PSSE_sample_savnw.seq"
-				
-		}));
-		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-		//acscParser.stdout();
-		
-		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+				"testData/psse/v33/PSSE_sample_savnw.seq");
 		
 		//set the order in original sequence for better testing
 //		for(int i=1;i<=net.getNoBus();i++){
@@ -180,16 +165,9 @@ Contributing Gen:
 	public void calcZone3Setting() throws Exception {
 		   
 		
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
-		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
+		AcscNetwork net = new PSSEMultiFileLoader(33).loadAcsc(
 				"testData/psse/v33/PSSE_sample_savnw.raw",
-				"testData/psse/v33/PSSE_sample_savnw.seq"
-				
-		}));
-		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-	
-		//acscParser.stdout();
-		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+				"testData/psse/v33/PSSE_sample_savnw.seq");
 		
 		//System.out.println(net.net2String());
 		
@@ -225,7 +203,7 @@ Contributing Gen:
 	
 	private boolean outputPSSEDyrFile(int relayBusNum, int relayRemoteBusNum, String circuitID, 
 			double[] zone12Settings,double[] zone3Settings, String dyrFileName) 
-					throws UnsupportedEncodingException, FileNotFoundException, IOException{
+					throws IOException{
 		/*
 		 * Format:
 		 * IBUS, 'DISTR1',JBUS, ID, RS, ICON(M) to ICON(M+10), CON(J) to CON(J+23)

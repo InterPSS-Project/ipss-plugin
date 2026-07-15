@@ -1,127 +1,19 @@
 package org.interpss.core.adapter.bpa;
 
-import java.io.File;
-import java.io.FileInputStream;
-
-import org.ieee.odm.ODMObjectFactory;
-import org.ieee.odm.model.aclf.AclfModelParser;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.core.dstab.DStabTestSetupBase;
-import org.interpss.dep.QA.compare.IAclfBranchComparator;
-import org.interpss.dep.QA.compare.IAclfBusComparator;
-import org.interpss.dep.QA.compare.IAclfNetComparator;
-import org.interpss.dep.QA.compare.NetModelComparator;
-import org.interpss.numeric.util.NumericUtil;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.BaseAclfBus;
-import com.interpss.core.aclf.BaseAclfNetwork;
-import com.interpss.dstab.BaseDStabNetwork;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
-
+/**
+ * TODO: This test used ODMObjectFactory to load ODM XML files and ODMAclfParserMapper/ODMDStabParserMapper
+ * to map them. No direct parser supports ODM XML loading. Re-enable once a direct parser is implemented.
+ * 
+ * Previously loaded from:
+ *   - testData/odm/07c_2010_OnlyMach_lf.xml (ACLF)
+ *   - testData/odm/07c_2010_OnlyMach.xml (DStab)
+ */
 public class CampareModel_OfBpaO7CTest extends DStabTestSetupBase {
-	@Test
-	@Disabled("Requires missing fixture testData/odm/07c_2010_OnlyMach.xml")
-	public void compareTestCase() throws Exception {
-		 AclfNetwork baseNet = null;
-
-		File file = new File("testData/odm/07c_2010_OnlyMach_lf.xml");
-		AclfModelParser aclfParser = ODMObjectFactory.createAclfModelParser();
-		if (aclfParser.parse(new FileInputStream(file))) {
-			//System.out.println(parser.toXmlDoc(false));
-
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-			if (!new ODMAclfParserMapper().map2Model(aclfParser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
-			
-			 baseNet=simuCtx.getAclfNet();
-		}
-		
-		file = new File("testData/odm/07c_2010_OnlyMach.xml");
-		DStabModelParser dstabParser = ODMObjectFactory.createDStabModelParser();
-		if (dstabParser.parse(new FileInputStream(file))) {
-			//System.out.println(parser.toXmlDoc(false));
-
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(dstabParser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
-			
-
-			BaseDStabNetwork dstabNet = simuCtx.getDStabilityNet();
-			
-			System.out.println("LF Net as the base net for comparison");
-			new NetModelComparator(baseNet)
-					.compare(dstabNet, netCompRules, busCompRules, branchCompRules);
-
-			System.out.println("DStab Net as the base net for comparison");
-			new NetModelComparator(dstabNet)
-				.compare(baseNet, netCompRules, busCompRules, branchCompRules);
-		}
-	}
-
-	IAclfNetComparator netCompRules = new IAclfNetComparator() {
-		@Override
-		public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
-			boolean ok = true;
-			if (baseNet.getNoBus() != net.getNoBus()) {
-				//IpssLogger.getLogger().warning("NoOfBus not the same: " + baseNet.getNoBus() + ", " + net.getNoBus());
-				ok = false; 
-			}
-			if (baseNet.getNoBranch() != net.getNoBranch()) {
-				//IpssLogger.getLogger().warning("NoOfBranch not the same: " + baseNet.getNoBranch() + ", " + net.getNoBranch());
-				ok = false; 
-			}
-			return ok;
-		}
-	}; 
-	
-	IAclfBusComparator busCompRules = new IAclfBusComparator(){
-		@Override
-		public boolean compare(BaseAclfBus baseBus, BaseAclfBus bus) {
-			boolean ok = true;
-			if (bus == null) {
-				//IpssLogger.getLogger().warning("AclfBus not found, " + baseBus.getId());
-				ok = false; 
-			}
-			
-			// compare base voltage
-			if (!NumericUtil.equals(baseBus.getBaseVoltage(), bus.getBaseVoltage())) {
-				//IpssLogger.getLogger().warning("AclfBus base voltage not same, " + baseBus.getId());
-				ok = false; 
-			}
-
-			// compare base yii
-			/*
-			if (!NumericUtil.equals(baseBus.yii(), bus.yii())) {
-				IpssLogger.getLogger().warning("AclfBus yii not same, " + baseBus.getId());
-				ok = false; 
-			}
-			*/
-			return ok;
-		}
-	};
-	
-	IAclfBranchComparator branchCompRules = new IAclfBranchComparator(){
-		@Override
-		public boolean compare(AclfBranch baseBra, AclfBranch branch) {
-			boolean ok = true;
-			if (branch == null) {
-				//IpssLogger.getLogger().warning("AclfBranch not found, " + baseBra.getId());
-				ok = false; 
-			}
-			return ok;
-		}
-	};
+	// @Test
+	// @Disabled("Requires missing fixture testData/odm/07c_2010_OnlyMach.xml")
+	// public void compareTestCase() throws Exception {
+	// 	// Previously used: ODMObjectFactory + ODMAclfParserMapper + ODMDStabParserMapper
+	// }
 }

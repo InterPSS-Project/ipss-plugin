@@ -4,15 +4,10 @@ import static com.interpss.dstab.cache.StateVariableRecorder.StateVarRecType.Mac
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.numeric.NumericConstant;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -31,32 +26,15 @@ import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		
 		@Test
 		public void test_IEEE39Bus_Dstab_OnlyGen() throws InterpssException{
 			IpssCorePlugin.init();
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
-					//"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
-					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_onlyGen.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-            
-			
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_onlyGen.dyr");
 			
 			
 		    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
@@ -115,24 +93,10 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		public void test_IEEE39Bus_Dstab_fullModel() throws InterpssException{
 			IpssCorePlugin.init();
 			
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
-					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-            
-			
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr");
 			
 			
 		    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
@@ -183,22 +147,9 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void IEEE39_Dstab_benchMark() throws InterpssException{
 			IpssCorePlugin.init();
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
-					//"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr"
-					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_onlyGen.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_onlyGen.dyr");
 			
 		    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
 
