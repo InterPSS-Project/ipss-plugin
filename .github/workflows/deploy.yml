@@ -37,12 +37,14 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Configure AWS credentials
+      if: github.event_name == 'push'
       uses: aws-actions/configure-aws-credentials@v5
       with:
         role-to-assume: arn:aws:iam::078183419290:role/interpss-core-codeartifact-deploy-role
         aws-region: us-east-1
         
     - name: Configure Maven for CodeArtifact
+      if: github.event_name == 'push'
       run: |
         CODEARTIFACT_AUTH_TOKEN="$(aws codeartifact get-authorization-token \
           --domain "$CODEARTIFACT_DOMAIN" \
@@ -108,7 +110,9 @@ jobs:
 
         echo "MAVEN_SETTINGS=$HOME/.m2/settings.xml" >> "$GITHUB_ENV"
     - name: Build with Maven
+      if: github.event_name == 'push'
       run: mvn -s "$MAVEN_SETTINGS" -B package --file pom.xml
 
     - name: Deploy
+      if: github.event_name == 'push'
       run: mvn -s "$MAVEN_SETTINGS" -B deploy -DskipTests --file pom.xml
