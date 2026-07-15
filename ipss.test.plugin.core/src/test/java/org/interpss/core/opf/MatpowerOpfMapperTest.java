@@ -79,7 +79,7 @@ public class MatpowerOpfMapperTest extends CorePluginTestSetup {
 
 		assertEquals(73, net.getBusList().size());
 		assertEquals(120, net.getBranchList().size());
-		assertTrue(net.getSpecialBranchList().size() > 0);
+		assertTrue(net.getSpecialBranchList().stream().anyMatch(HvdcLine2TLCC.class::isInstance));
 		assertEquals(158, countContributedGenerators(net));
 		assertTrue(net.getBus("Bus101").getContributeGenList().size() > 1);
 		assertTrue(net.getBus("Bus113").getContributeLoadList().stream()
