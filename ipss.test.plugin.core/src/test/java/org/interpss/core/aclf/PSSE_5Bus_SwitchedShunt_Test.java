@@ -3,15 +3,11 @@ package org.interpss.core.aclf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -20,9 +16,6 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 /**
  * Test case for PSSE 5-Bus system with switched shunt compensation
@@ -366,39 +359,11 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 	/**
 	 * Create the test network from the PSSE RAW file
 	 */
-	private AclfNetwork createTestCase() {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/psse/v30/PSSE_5Bus_Test_switchShunt_locked.raw"), "Should successfully parse RAW file");
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return null;
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
-		
-		return net;
+	private AclfNetwork createTestCase() throws Exception {
+		return new PSSEDirectParser(30).parse("testData/psse/v30/PSSE_5Bus_Test_switchShunt_locked.raw");
 	}
 
-    private AclfNetwork createTestCaseContinuousV35() {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_35);
-		assertTrue(adapter.parseInputFile("testData/psse/v35/PSSE_5Bus_Test_switchShunt_continuous_v35.raw"), "Should successfully parse RAW file");
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return null;
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
-		
-		return net;
+    private AclfNetwork createTestCaseContinuousV35() throws Exception {
+		return new PSSEDirectParser(35).parse("testData/psse/v35/PSSE_5Bus_Test_switchShunt_continuous_v35.raw");
 	}
 }

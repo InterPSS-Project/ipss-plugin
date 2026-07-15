@@ -3,7 +3,7 @@ package org.interpss.fadapter.psse.export.psse;
 import java.util.List;
 import java.util.Set;
 
-import org.ieee.odm.adapter.psse.bean.PSSESchema;
+import org.interpss.fadapter.psse.bean.PSSESchema;
 
 import com.interpss.core.aclf.BaseAclfNetwork;
 
