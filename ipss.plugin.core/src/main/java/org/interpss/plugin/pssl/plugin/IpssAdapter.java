@@ -42,7 +42,6 @@ import org.ieee.odm.model.dstab.DStabModelParser;
 import org.ieee.odm.schema.AnalysisCategoryEnumType;
 import org.ieee.odm.schema.NetworkCategoryEnumType;
 import org.interpss.CorePluginFunction;
-import static org.interpss.CorePluginFunction.AclfParser2AclfNet;
 import static org.interpss.CorePluginFunction.AcscParser2AcscNet;
 import static org.interpss.CorePluginFunction.DStabParser2DStabAlgo;
 import org.interpss.fadapter.bpa.BPADirectParser;
@@ -54,6 +53,7 @@ import org.interpss.fadapter.psse.PSSEJsonDirectParser;
 import org.interpss.fadapter.pwd.PWDDirectParser;
 import org.interpss.fadapter.ucte.UCTEDirectParser;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
+import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.plugin.pssl.simu.BaseDSL;
 
@@ -235,7 +235,9 @@ public class IpssAdapter extends BaseDSL {
 		 * @throws InterpssException
 		 */
 		public AclfNetwork mapAclfNet() throws InterpssException { 
-			return AclfParser2AclfNet.fx((AclfModelParser)odmParser, this.xfrBranchModel);
+			ODMAclfParserMapper mapper = new ODMAclfParserMapper();
+			mapper.setXfrBranchModel(this.xfrBranchModel);
+			return mapper.map2Model((AclfModelParser)odmParser).getAclfNet();
 		}
 
 		/**

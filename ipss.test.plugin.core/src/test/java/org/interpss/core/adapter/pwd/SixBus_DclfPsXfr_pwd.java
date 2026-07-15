@@ -35,7 +35,6 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.display.DclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
@@ -135,7 +134,6 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
 					.getImportedObj();
@@ -144,9 +142,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		algo.calculateDclf();
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
 
-		//algo.destroy();			
 	}
 
 	@Test
@@ -156,7 +152,6 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
 					.getImportedObj();
@@ -203,7 +198,6 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		ODMLogger.getLogger().setLevel(Level.WARNING);
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_2.aux")
-					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
 					.getImportedObj();
