@@ -41,6 +41,7 @@ import org.ieee.odm.schema.BranchXmlType;
 import org.ieee.odm.schema.BusXmlType;
 import org.ieee.odm.schema.ConstraintsXmlType;
 import org.ieee.odm.schema.CostModelEnumType;
+import org.ieee.odm.schema.DCLineData2TXmlType;
 import org.ieee.odm.schema.IncCostXmlType;
 import org.ieee.odm.schema.LinCoeffXmlType;
 import org.ieee.odm.schema.LoadflowBusXmlType;
@@ -60,6 +61,7 @@ import org.ieee.odm.schema.ReactivePowerLimitXmlType;
 import org.ieee.odm.schema.ReactivePowerUnitType;
 import org.ieee.odm.schema.SqrCoeffXmlType;
 import org.ieee.odm.schema.StairStepXmlType;
+import org.ieee.odm.schema.VSCHVDC2TXmlType;
 import org.ieee.odm.schema.VoltageLimitXmlType;
 import org.ieee.odm.schema.VoltageUnitType;
 import org.interpss.numeric.datatype.LimitType;
@@ -73,10 +75,13 @@ import org.interpss.odm.mapper.impl.aclf.AclfBusDataHelper;
 import com.interpss.common.datatype.UnitHelper;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
+import com.interpss.core.HvdcObjectFactory;
+import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.common.curve.CommonCurveFactory;
 import com.interpss.core.common.curve.NumericCurveModel;
 import com.interpss.core.common.curve.PieceWiseCurve;
 import com.interpss.core.common.curve.QuadraticCurve;
+import com.interpss.core.net.Branch;
 import com.interpss.opf.OpfBranch;
 import com.interpss.opf.OpfBus;
 import com.interpss.opf.OpfGen;
@@ -159,15 +164,27 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						OpfBranch opfDclfBranch = OpfObjectFactory.createOpfBranch();
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfDclfBranch, opfNet);
 					} else {
-						if (!(b.getValue() instanceof BranchXmlType)) {
+						BaseBranchXmlType branchXml = b.getValue();
+						if (branchXml instanceof DCLineData2TXmlType || branchXml instanceof VSCHVDC2TXmlType) {
+							Branch hvdcBranch = branchXml instanceof DCLineData2TXmlType
+									? HvdcObjectFactory.createHvdcLine2TLCC(HvdcOperationMode.REC1_INV1,
+											branchXml.getId(),
+											((LoadflowBusXmlType) branchXml.getFromBus().getIdRef()).getId(),
+											((LoadflowBusXmlType) branchXml.getToBus().getIdRef()).getId())
+									: HvdcObjectFactory.createHvdc2TVSC();
+							hvdcBranch.setNetwork(opfNet);
+							aclfNetMapper.mapAclfHVDC2TData(branchXml, hvdcBranch, opfNet);
+							continue;
+						}
+						if (!(branchXml instanceof BranchXmlType)) {
 							continue;
 						}
 						OpfBranch opfBranch = OpfObjectFactory.createOpfBranch();
-						aclfNetMapper.mapAclfBranchData(b.getValue(), opfBranch, opfNet);
-						BranchXmlType branchXml = (BranchXmlType)b.getValue();
-						if(branchXml.getRatingLimit()!=null){
-							if (branchXml.getRatingLimit().getMw()!=null){
-								OpfBranchDataHelper helper = new OpfBranchDataHelper(opfBranch, b.getValue());
+						aclfNetMapper.mapAclfBranchData(branchXml, opfBranch, opfNet);
+						BranchXmlType opfBranchXml = (BranchXmlType)branchXml;
+						if(opfBranchXml.getRatingLimit()!=null){
+							if (opfBranchXml.getRatingLimit().getMw()!=null){
+								OpfBranchDataHelper helper = new OpfBranchDataHelper(opfBranch, branchXml);
 								helper.setMwRating();
 							}
 						}
