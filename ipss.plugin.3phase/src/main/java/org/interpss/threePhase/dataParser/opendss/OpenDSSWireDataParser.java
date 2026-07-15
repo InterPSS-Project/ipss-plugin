@@ -1,8 +1,10 @@
 package org.interpss.threePhase.dataParser.opendss;
 
-import org.ieee.odm.common.ODMLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OpenDSSWireDataParser {
+	private static final Logger logger = LoggerFactory.getLogger(OpenDSSWireDataParser.class);
 
 	private final OpenDSSDataParser dataParser;
 
@@ -67,7 +69,7 @@ public class OpenDSSWireDataParser {
 					radius, radiusUnits, normAmps));
 			return true;
 		} catch (Exception e) {
-			ODMLogger.getLogger().severe(e.toString());
+			logger.error(e.toString());
 			e.printStackTrace();
 			return false;
 		}

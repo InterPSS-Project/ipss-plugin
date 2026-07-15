@@ -24,10 +24,7 @@
 
 package org.interpss;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -59,8 +56,6 @@ public class CorePluginTestSetup {
 	public static void initTestEnv() {
 		IpssCorePlugin.init();
 		msg = CoreCommonFactory.getIpssMsgHub();
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
 	}
 
   public static DStabilityNetwork create2BusSystem() throws InterpssException{

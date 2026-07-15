@@ -3,11 +3,13 @@ package org.interpss.threePhase.dataParser.opendss;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.interpss.threePhase.basic.LineConfiguration;
 
 public class OpenDSSLineGeometryParser {
+	private static final Logger logger = LoggerFactory.getLogger(OpenDSSLineGeometryParser.class);
 
 	private static final double CARSON_R_OHM_PER_MILE = 0.09315;
 	private static final double CARSON_X_COEFF = 0.12134;
@@ -93,7 +95,7 @@ public class OpenDSSLineGeometryParser {
 			dataParser.getLineConfigTable().put(id, config);
 			return true;
 		} catch (Exception e) {
-			ODMLogger.getLogger().severe(e.toString());
+			logger.error(e.toString());
 			e.printStackTrace();
 			return false;
 		}
