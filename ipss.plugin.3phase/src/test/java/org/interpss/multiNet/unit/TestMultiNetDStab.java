@@ -4,12 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.logging.Level;
 
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.multiNet.algo.MultiNetDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNetDStabSolverImpl;
@@ -17,7 +13,6 @@ import org.interpss.multiNet.algo.MultiNetDynamicEventProcessor;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -36,8 +31,6 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.devent.DynamicSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class TestMultiNetDStab {
 	
@@ -45,25 +38,7 @@ public class TestMultiNetDStab {
 	public void test_IEEE9Bus_subNet_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE9Bus/ieee9.raw",
-				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
-				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
@@ -135,25 +110,7 @@ public class TestMultiNetDStab {
 	public void test_IEEE9Bus_MultiSubNet_Dstab_1port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE9Bus/ieee9.raw",
-				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_GENCLS.dyr"
-				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
@@ -236,25 +193,7 @@ public class TestMultiNetDStab {
 	public void test_IEEE9Bus_MultiSubNet_Dstab_2port() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE9Bus/ieee9.raw",
-				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_GENCLS.dyr"
-				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
@@ -353,25 +292,7 @@ public class TestMultiNetDStab {
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE9Bus/ieee9.raw",
-				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_GENCLS.dyr"
-				"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();

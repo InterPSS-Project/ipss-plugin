@@ -9,13 +9,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.util.FileUtil;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -33,8 +28,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.DynDeviceType;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		
@@ -43,25 +36,9 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			public void test_ACTIVSg2000_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
 			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_33);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					
+			SimuContext simuCtx = new PSSEMultiFileLoader(33).loadDStab(
 					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.RAW",
-					//"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000_dynamics_v2.dyr"
-					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000_dyn_cmld_zone3_v1.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-            
-			
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000_dyn_cmld_zone3_v1.dyr");
 			
 			
 		    BaseDStabNetwork<?, ?> dsNet =simuCtx.getDStabilityNet();
@@ -144,62 +121,6 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 				}
 			}
 			
-			//processing genQ limit violation
-			/*
-			double violation_ratio =0.8;
-			for(BaseDStabBus<? extends DStabGen, ? extends DStabLoad> bus: dsNet.getBusList()) {
-				if(bus.isActive() && bus.isGen()) {
-					for(DStabGen gen: bus.getContributeGenList()) {
-						if(gen.isActive()) {
-							if(gen.getMach()!=null &&  gen.getMach().getExciter()!=null) {
-								//if(gen.getMach().getExciter() instanceof IEEE2005ST4BExciter) {
-									if(gen.getGen().getImaginary() > violation_ratio *gen.getQGenLimit().getMax() ||
-											gen.getGen().getImaginary() < violation_ratio *gen.getQGenLimit().getMin() ) {
-										
-									              gen.getMach().getExciter().setStatus(false);
-									              
-									             System.out.println("Turn off ST4BExciter @"+gen.getMach().getExciter().getId());
-									}
-//									else {
-//										IEEE2005ST4BExciter exciter = (IEEE2005ST4BExciter) gen.getMach().getExciter();
-//										exciter.getData().setVrmax(99);
-//										exciter.getData().setVrmin(-99);
-//										
-//										exciter.getData().setVmmax(99);
-//										exciter.getData().setVmmin(-99);
-//									
-//										exciter.getData().setVbmax(9);
-//									
-//										exciter.getData().setTr(0.05);
-//										exciter.getData().setTa(0.01);
-//									
-//										
-//										if(exciter.getData().getKpr()>5) {
-//											exciter.getData().setKpr(3.2);
-//											exciter.getData().setKir(3.2);
-//											
-//										}
-//										if(exciter.getData().getKi()<0.0001) {
-//											exciter.getData().setKi(1);
-//										}
-											
-//										if(exciter.getData().getKim()<0.0001) {
-//											exciter.getData().setKim(0.01);
-//										}
-//											
-//										
-//									}
-									
-//								}
-							
-							}
-						}
-							
-					}
-				}
-			}
-*/
-			
 			if (dstabAlgo.initialization()) {
 				double t1 = System.currentTimeMillis();
 				System.out.println("time1="+t1);
@@ -223,27 +144,9 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		public void test_ACTIVSg2000_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
 			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-					
-					//NOTE: the original "IEEE300Bus_modified_noHVDC.raw" case could result in oscillation for some faults (at buses 4 or 182) due to capacitor compensation of long distance lines between 120 and 118
-					
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
-					//"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2.dyr"
-					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr"
-			}));
-			DStabModelParser parser =(DStabModelParser) adapter.getModel();
-			
-			//System.out.println(parser.toXmlDoc());
-            
-			
-			
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-			if (!new ODMDStabParserMapper(msg)
-						.map2Model(parser, simuCtx)) {
-				System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
 			
 			
 		    BaseDStabNetwork<?, ?> dsNet =simuCtx.getDStabilityNet();
@@ -271,8 +174,6 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 				if(b.getZone().getNumber()!=1)
 				     b.setInfoOnlyDynModel(null);
 			}
-			
-			
 			
 			
 

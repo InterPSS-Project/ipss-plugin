@@ -3,21 +3,13 @@ package org.interpss.core.adapter.psse.raw.aclf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.text.Format;
-
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
-import org.interpss.display.impl.AclfOut_PSSE;
+import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
@@ -30,9 +22,6 @@ import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	
@@ -351,19 +340,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	public void test_LCCHVDC_PsetZero_Loadflow() throws Exception {
 
 		//IpssLogger.getLogger().setLevel(Level.INFO);
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
-		assertTrue(adapter.parseInputFile("testData/psse/v33/Kundur_2area_LCC_HVDC_PsetZero.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
+		AclfNetwork net = new PSSEDirectParser(33).parse("testData/psse/v33/Kundur_2area_LCC_HVDC_PsetZero.raw");
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
 		assertTrue(!lccHVDC.isActive());
@@ -460,23 +437,10 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 		
 	}
 
-	private AclfNetwork createTestCase() {
+	private AclfNetwork createTestCase() throws Exception {
 		System.out.println("Kundur 2-area LCC HVDC test case creation ...");
 		
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
-		assertTrue(adapter.parseInputFile("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return null;
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
+		AclfNetwork net = new PSSEDirectParser(33).parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);

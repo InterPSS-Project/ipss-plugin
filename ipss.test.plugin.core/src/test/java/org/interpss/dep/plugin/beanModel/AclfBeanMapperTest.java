@@ -24,9 +24,6 @@
 
 package org.interpss.dep.plugin.beanModel;
 
-import java.util.logging.Level;
-
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dep.datamodel.bean.aclf.AclfBranchBean;
@@ -222,7 +219,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	public void testCase_2WPsxfr() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
@@ -255,7 +252,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	public void testCase_2WPsxfr_lf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
  
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)

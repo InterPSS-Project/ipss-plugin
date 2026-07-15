@@ -32,6 +32,7 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.hvdc.ConverterType;
@@ -62,6 +63,11 @@ public class PSSEDirectParser {
     public PSSEDirectParser(int version) {
         this.version = version;
         this.builder = new AclfNetworkBuilder();
+    }
+
+    public PSSEDirectParser(int version, BaseAclfNetwork<?,?> network) {
+        this.version = version;
+        this.builder = new AclfNetworkBuilder(network);
     }
 
     public AclfNetwork parse(String filepath) throws InterpssException {

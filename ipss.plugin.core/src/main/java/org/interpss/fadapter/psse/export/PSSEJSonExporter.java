@@ -2,7 +2,7 @@ package org.interpss.fadapter.psse.export;
 
 import java.util.Set;
 
-import org.ieee.odm.adapter.psse.bean.PSSESchema;
+import org.interpss.fadapter.psse.bean.PSSESchema;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonAclineUpdater;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonBusUpdater;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonDc2TLCCUpdater;
