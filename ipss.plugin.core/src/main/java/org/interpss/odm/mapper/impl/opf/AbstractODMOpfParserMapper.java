@@ -159,6 +159,9 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						OpfBranch opfDclfBranch = OpfObjectFactory.createOpfBranch();
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfDclfBranch, opfNet);
 					} else {
+						if (!(b.getValue() instanceof BranchXmlType)) {
+							continue;
+						}
 						OpfBranch opfBranch = OpfObjectFactory.createOpfBranch();
 						aclfNetMapper.mapAclfBranchData(b.getValue(), opfBranch, opfNet);
 						BranchXmlType branchXml = (BranchXmlType)b.getValue();
