@@ -14,6 +14,8 @@ import org.ieee.odm.adapter.opf.matpower.OpfMatpowerAdapter;
 import org.ieee.odm.model.opf.OpfModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.odm.mapper.ODMOpfParserMapper;
+import org.interpss.plugin.opf.OpfSolverFactory;
+import org.interpss.plugin.opf.solver.IOpfSolver;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -60,6 +62,11 @@ public class MatpowerOpfMapperTest extends CorePluginTestSetup {
 		assertEquals("LINE_1_2", branch.getName());
 		assertEquals(1, net.getSpecialBranchList().size());
 		assertTrue(net.getSpecialBranchList().get(0) instanceof HvdcLine2TLCC);
+		assertEquals(0, net.getBus("Bus1").getContributeLoadList().size());
+		assertEquals(0, net.getBus("Bus3").getContributeLoadList().size());
+
+		OpfSolverFactory.createApacheLPSolver(net, IOpfSolver.constraintHandleType.AllIn);
+		OpfSolverFactory.createApacheLPSolver(net, IOpfSolver.constraintHandleType.AllIn);
 
 		AclfLoad dcFromLoad = net.getBus("Bus1").getContributeLoadList().get(0);
 		assertEquals(new Complex(0.10, 0.01), dcFromLoad.getLoadCP());
@@ -68,6 +75,9 @@ public class MatpowerOpfMapperTest extends CorePluginTestSetup {
 		AclfLoad dcToLoad = net.getBus("Bus3").getContributeLoadList().get(0);
 		assertEquals(new Complex(-0.09, -0.01), dcToLoad.getLoadCP());
 		assertEquals("MATPOWER DC line 1 to terminal", dcToLoad.getName());
+		assertEquals(1, net.getBus("Bus1").getContributeLoadList().size());
+		assertEquals(1, net.getBus("Bus3").getContributeLoadList().size());
+		assertTrue(!net.getSpecialBranchList().get(0).isActive());
 	}
 
 	@Test
