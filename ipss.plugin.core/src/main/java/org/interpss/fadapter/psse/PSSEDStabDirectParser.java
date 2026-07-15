@@ -155,7 +155,22 @@ public class PSSEDStabDirectParser {
         double h = getDouble(f, 3, 0);
         double d = getDouble(f, 4, 0);
         double[] rating = getGenRating(busId, genId);
-        builder.addGencls(busId, genId, rating[0], rating[1], h, d, 0, 0);
+
+        double ra = 0, xd1 = 0;
+        DStabilityNetwork net = builder.getDStabNetwork();
+        var bus = net.getDStabBus(busId);
+        if (bus != null) {
+            DStabGen gen = (DStabGen) bus.getContributeGen(genId);
+            if (gen != null && gen.getSourceZ() != null) {
+                ra = gen.getSourceZ().getReal();
+                xd1 = gen.getSourceZ().getImaginary();
+            }
+        }
+        if (xd1 == 0 && h > 99999) {
+            xd1 = 0.00001;
+        }
+
+        builder.addGencls(busId, genId, rating[0], rating[1], h, d, ra, xd1);
         return true;
     }
 
@@ -205,22 +220,22 @@ public class PSSEDStabDirectParser {
 
     // ==================== Exciter Model Parsers ====================
 
-    // IEEET1: IBUS 'IEEET1' ID TR KA TA TB TC VRMAX VRMIN KE TE KF TF1 Switch E1 SE(E1) E2 SE(E2)
-    //         idx:  0    1    2  3  4  5  6  7   8     9   10 11 12 13   14    15  16    17   18
+    // IEEET1: IBUS 'IEEET1' ID TR KA TA VRMAX VRMIN KE TE KF TF1 Switch E1 SE(E1) E2 SE(E2)
+    //         idx:  0    1    2  3  4  5   6     7   8  9  10 11   12    13  14    15   16
     private boolean procExcIeeet1(String busId, String genId, String[] f) throws InterpssException {
         double tr = getDouble(f, 3, 0);
         double ka = getDouble(f, 4, 0);
         double ta = getDouble(f, 5, 0);
-        double vrmax = getDouble(f, 8, 0);
-        double vrmin = getDouble(f, 9, 0);
-        double ke = getDouble(f, 10, 0);
-        double te = getDouble(f, 11, 0);
-        double kf = getDouble(f, 12, 0);
-        double tf = getDouble(f, 13, 0);
-        double e1 = getDouble(f, 15, 0);
-        double seE1 = getDouble(f, 16, 0);
-        double e2 = getDouble(f, 17, 0);
-        double seE2 = getDouble(f, 18, 0);
+        double vrmax = getDouble(f, 6, 0);
+        double vrmin = getDouble(f, 7, 0);
+        double ke = getDouble(f, 8, 0);
+        double te = getDouble(f, 9, 0);
+        double kf = getDouble(f, 10, 0);
+        double tf = getDouble(f, 11, 0);
+        double e1 = getDouble(f, 13, 0);
+        double seE1 = getDouble(f, 14, 0);
+        double e2 = getDouble(f, 15, 0);
+        double seE2 = getDouble(f, 16, 0);
         builder.addExcIeeet1(busId, genId, tr, ka, ta, vrmax, vrmin, ke, te, kf, tf, e1, seE1, e2, seE2);
         return true;
     }

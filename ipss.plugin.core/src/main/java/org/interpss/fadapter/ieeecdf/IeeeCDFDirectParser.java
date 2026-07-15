@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.OriginalDataFormat;
@@ -39,6 +39,7 @@ public class IeeeCDFDirectParser {
 
     private final AclfNetworkBuilder builder;
     private double baseMva = 100.0;
+    private boolean commaFormat = false;
 
     public IeeeCDFDirectParser() {
         this.builder = new AclfNetworkBuilder();
@@ -86,7 +87,7 @@ public class IeeeCDFDirectParser {
                 section = "TIELINE";
                 continue;
             }
-            if (line.trim().startsWith("-999") || line.trim().startsWith("-99")) {
+            if (line.trim().startsWith("-999") || line.trim().startsWith("-99") || line.trim().equals("-9")) {
                 section = "BETWEEN";
                 continue;
             }
@@ -119,60 +120,90 @@ public class IeeeCDFDirectParser {
     // ==================== Title / Header ====================
 
     private void parseTitle(String line) throws InterpssException {
-        // First line of IEEE CDF contains: date, originator, MVA base, year, season, case ID
-        // Columns 32-37: MVA base
-        if (line.length() >= 37) {
-            String mvaStr = safeSubstring(line, 31, 37).trim();
-            if (!mvaStr.isEmpty()) {
-                try {
-                    baseMva = Double.parseDouble(mvaStr);
-                } catch (NumberFormatException e) {
-                    baseMva = 100.0;
+        commaFormat = line.contains(",");
+
+        if (commaFormat) {
+            String[] fields = line.split(",");
+            if (fields.length >= 3) {
+                baseMva = parseDouble(fields[2]);
+                if (baseMva == 0.0) baseMva = 100.0;
+            }
+            String caseId = "IEEE_CDF_Case";
+            if (fields.length >= 6) {
+                String id = fields[fields.length - 1].trim();
+                if (!id.isEmpty()) caseId = id.replaceAll("\\s+", "_");
+            }
+            builder.setNetworkInfo(caseId, "IEEE CDF Case", baseMva * 1000.0, OriginalDataFormat.IEEECDF);
+        } else {
+            if (line.length() >= 37) {
+                String mvaStr = safeSubstring(line, 31, 37).trim();
+                if (!mvaStr.isEmpty()) {
+                    try {
+                        baseMva = Double.parseDouble(mvaStr);
+                    } catch (NumberFormatException e) {
+                        baseMva = 100.0;
+                    }
                 }
             }
+            String caseId = "IEEE_CDF_Case";
+            if (line.length() >= 55) {
+                String id = safeSubstring(line, 44, line.length()).trim();
+                if (!id.isEmpty()) caseId = id.replaceAll("\\s+", "_");
+            }
+            builder.setNetworkInfo(caseId, "IEEE CDF Case", baseMva * 1000.0, OriginalDataFormat.IEEECDF);
         }
-
-        String caseId = "IEEE_CDF_Case";
-        if (line.length() >= 55) {
-            String id = safeSubstring(line, 44, line.length()).trim();
-            if (!id.isEmpty()) caseId = id.replaceAll("\\s+", "_");
-        }
-
-        builder.setNetworkInfo(caseId, "IEEE CDF Case", baseMva * 1000.0, OriginalDataFormat.IEEECDF);
     }
 
     // ==================== Bus Data ====================
 
     private void parseBusLine(String line) throws InterpssException {
-        if (line.length() < 83) return;
-
-        int busNum = parseInt(safeSubstring(line, 0, 4));
-        String name = safeSubstring(line, 5, 17).trim();
-        int areaNum = parseInt(safeSubstring(line, 18, 20));
-        int lossZone = parseInt(safeSubstring(line, 20, 23));
-        int type = parseInt(safeSubstring(line, 24, 26));  // 0,1=PQ, 2=PV, 3=Swing
-        double vm = parseDouble(safeSubstring(line, 27, 33));
-        double va = parseDouble(safeSubstring(line, 33, 40));
-        double pLoad = parseDouble(safeSubstring(line, 40, 49));
-        double qLoad = parseDouble(safeSubstring(line, 49, 59));
-        double pGen = parseDouble(safeSubstring(line, 59, 67));
-        double qGen = parseDouble(safeSubstring(line, 67, 75));
-        double baseKv = parseDouble(safeSubstring(line, 76, 83));
-
-        double desiredV = vm;
-        double qMax = 0.0, qMin = 0.0;
+        int busNum, areaNum, lossZone, type;
+        String name;
+        double vm, va, pLoad, qLoad, pGen, qGen, baseKv;
+        double desiredV, qMax = 0.0, qMin = 0.0;
         double gShunt = 0.0, bShunt = 0.0;
         int remoteBusNum = 0;
 
-        if (line.length() >= 90) desiredV = parseDouble(safeSubstring(line, 84, 90));
-        if (line.length() >= 98) qMax = parseDouble(safeSubstring(line, 90, 98));
-        if (line.length() >= 106) qMin = parseDouble(safeSubstring(line, 98, 106));
-        if (line.length() >= 114) gShunt = parseDouble(safeSubstring(line, 106, 114));
-        if (line.length() >= 122) bShunt = parseDouble(safeSubstring(line, 114, 122));
-        if (line.length() >= 127) remoteBusNum = parseInt(safeSubstring(line, 123, 127));
+        if (commaFormat) {
+            String[] f = line.split(",");
+            if (f.length < 12) return;
+            busNum = parseInt(f[0]); name = f[1].trim();
+            areaNum = parseInt(f[2]); lossZone = parseInt(f[3]);
+            type = parseInt(f[4]); vm = parseDouble(f[5]); va = parseDouble(f[6]);
+            pLoad = parseDouble(f[7]); qLoad = parseDouble(f[8]);
+            pGen = parseDouble(f[9]); qGen = parseDouble(f[10]); baseKv = parseDouble(f[11]);
+            desiredV = f.length > 12 ? parseDouble(f[12]) : vm;
+            qMax = f.length > 13 ? parseDouble(f[13]) : 0.0;
+            qMin = f.length > 14 ? parseDouble(f[14]) : 0.0;
+            gShunt = f.length > 15 ? parseDouble(f[15]) : 0.0;
+            bShunt = f.length > 16 ? parseDouble(f[16]) : 0.0;
+            remoteBusNum = f.length > 17 ? parseInt(f[17]) : 0;
+        } else {
+            if (line.length() < 83) return;
+            busNum = parseInt(safeSubstring(line, 0, 4));
+            name = safeSubstring(line, 5, 17).trim();
+            areaNum = parseInt(safeSubstring(line, 18, 20));
+            lossZone = parseInt(safeSubstring(line, 20, 23));
+            type = parseInt(safeSubstring(line, 24, 26));
+            vm = parseDouble(safeSubstring(line, 27, 33));
+            va = parseDouble(safeSubstring(line, 33, 40));
+            pLoad = parseDouble(safeSubstring(line, 40, 49));
+            qLoad = parseDouble(safeSubstring(line, 49, 59));
+            pGen = parseDouble(safeSubstring(line, 59, 67));
+            qGen = parseDouble(safeSubstring(line, 67, 75));
+            baseKv = parseDouble(safeSubstring(line, 76, 83));
+            desiredV = vm;
+            if (line.length() >= 90) desiredV = parseDouble(safeSubstring(line, 84, 90));
+            if (line.length() >= 98) qMax = parseDouble(safeSubstring(line, 90, 98));
+            if (line.length() >= 106) qMin = parseDouble(safeSubstring(line, 98, 106));
+            if (line.length() >= 114) gShunt = parseDouble(safeSubstring(line, 106, 114));
+            if (line.length() >= 122) bShunt = parseDouble(safeSubstring(line, 114, 122));
+            if (line.length() >= 127) remoteBusNum = parseInt(safeSubstring(line, 123, 127));
+        }
 
         if (desiredV == 0.0) desiredV = vm;
         if (vm == 0.0) vm = 1.0;
+        if (baseKv == 0.0) baseKv = 1.0;
 
         String busId = BUS_ID_PREFIX + busNum;
         String areaId = areaNum > 0 ? String.valueOf(areaNum) : null;
@@ -181,7 +212,7 @@ public class IeeeCDFDirectParser {
         if (areaId != null) builder.addArea(areaId, "Area " + areaNum, null);
         if (zoneId != null) builder.addZone(zoneId, "Zone " + lossZone, null);
 
-        AclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
+        BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, null);
 
         // Set bus type
@@ -201,17 +232,21 @@ public class IeeeCDFDirectParser {
 
         // Add generator contribution
         if (pGen != 0.0 || qGen != 0.0) {
-            builder.addContributeGen(busId, "1", true,
+            String genId = busId + "-G1";
+            var gen = builder.addContributeGen(busId, genId, true,
                     pGen / baseMva, qGen / baseMva, baseMva, desiredV,
                     qMax / baseMva, qMin / baseMva, 0.0, 0.0,
                     null, null, 1.0, null, 1.0, 1.0);
+            if (gen != null) gen.setName(genId);
             bus.setGenP(pGen / baseMva);
         }
 
         // Add load contribution
         if (pLoad != 0.0 || qLoad != 0.0) {
+            String loadId = busId + "-L1";
             Complex constP = new Complex(pLoad / baseMva, qLoad / baseMva);
-            builder.addContributeLoad(busId, "1", true, constP, null, null, null, false);
+            var load = builder.addContributeLoad(busId, loadId, true, constP, null, null, null, false);
+            if (load != null) load.setName(loadId);
         }
 
         // Add fixed shunt
@@ -223,29 +258,44 @@ public class IeeeCDFDirectParser {
     // ==================== Branch Data ====================
 
     private void parseBranchLine(String line) throws InterpssException {
-        if (line.length() < 56) return;
+        int tapBusNum, zBusNum, brType;
+        String circuitStr;
+        double r, x, b, rating1, rating2, rating3, tapRatio, shiftAngle;
 
-        int tapBusNum = parseInt(safeSubstring(line, 0, 4));
-        int zBusNum = parseInt(safeSubstring(line, 5, 9));
-        int area = parseInt(safeSubstring(line, 10, 12));
-        int lossZone = parseInt(safeSubstring(line, 12, 14));
-        String circuitStr = safeSubstring(line, 16, 17).trim();
-        if (circuitStr.isEmpty()) circuitStr = "1";
-        int brType = parseInt(safeSubstring(line, 18, 19));  // 0=line, 1=xfr, ...
-
-        double r = parseDouble(safeSubstring(line, 19, 29));
-        double x = parseDouble(safeSubstring(line, 29, 40));
-        double b = parseDouble(safeSubstring(line, 40, 50));
-        double rating1 = parseDouble(safeSubstring(line, 50, 55));
-        double rating2 = parseDouble(safeSubstring(line, 55, 61));
-        double rating3 = parseDouble(safeSubstring(line, 61, 67));
-
-        double tapRatio = 0.0;
-        double shiftAngle = 0.0;
-        if (line.length() >= 82) tapRatio = parseDouble(safeSubstring(line, 76, 82));
-        if (tapRatio == 0.0) tapRatio = 1.0;
-
-        if (line.length() >= 90) shiftAngle = parseDouble(safeSubstring(line, 83, 90));
+        if (commaFormat) {
+            String[] f = line.split(",");
+            if (f.length < 9) return;
+            tapBusNum = parseInt(f[0]); zBusNum = parseInt(f[1]);
+            // f[2]=area, f[3]=lossZone
+            circuitStr = f[4].trim();
+            if (circuitStr.isEmpty()) circuitStr = "1";
+            brType = parseInt(f[5]);
+            r = parseDouble(f[6]); x = parseDouble(f[7]); b = parseDouble(f[8]);
+            rating1 = f.length > 9 ? parseDouble(f[9]) : 0.0;
+            rating2 = f.length > 10 ? parseDouble(f[10]) : 0.0;
+            rating3 = f.length > 11 ? parseDouble(f[11]) : 0.0;
+            tapRatio = f.length > 14 ? parseDouble(f[14]) : 0.0;
+            if (tapRatio == 0.0) tapRatio = 1.0;
+            shiftAngle = f.length > 15 ? parseDouble(f[15]) : 0.0;
+        } else {
+            if (line.length() < 56) return;
+            tapBusNum = parseInt(safeSubstring(line, 0, 4));
+            zBusNum = parseInt(safeSubstring(line, 5, 9));
+            circuitStr = safeSubstring(line, 16, 17).trim();
+            if (circuitStr.isEmpty()) circuitStr = "1";
+            brType = parseInt(safeSubstring(line, 18, 19));
+            r = parseDouble(safeSubstring(line, 19, 29));
+            x = parseDouble(safeSubstring(line, 29, 40));
+            b = parseDouble(safeSubstring(line, 40, 50));
+            rating1 = parseDouble(safeSubstring(line, 50, 55));
+            rating2 = parseDouble(safeSubstring(line, 55, 61));
+            rating3 = parseDouble(safeSubstring(line, 61, 67));
+            tapRatio = 0.0;
+            shiftAngle = 0.0;
+            if (line.length() >= 82) tapRatio = parseDouble(safeSubstring(line, 76, 82));
+            if (tapRatio == 0.0) tapRatio = 1.0;
+            if (line.length() >= 90) shiftAngle = parseDouble(safeSubstring(line, 83, 90));
+        }
 
         String fromBusId = BUS_ID_PREFIX + tapBusNum;
         String toBusId = BUS_ID_PREFIX + zBusNum;
