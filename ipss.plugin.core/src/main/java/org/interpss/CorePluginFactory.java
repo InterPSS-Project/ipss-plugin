@@ -34,7 +34,6 @@ import org.interpss.fadapter.PTIFormat;
 import org.interpss.fadapter.PWDFormat;
 import org.interpss.fadapter.UCTEFormat;
 import org.interpss.odm.mapper.ODMAclfNetMapper;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.odm.mapper.ODMAcscParserMapper;
 import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.odm.mapper.ODMDcSysNetMapper;
@@ -57,17 +56,6 @@ public class CorePluginFactory extends CoreCommonFactory {
 	 * 		Mapper definition Odm -> SimuCtx
 	 * 		================================
 	 */
-	/**
-	 * create a ODMAclfMapper object from the Spring container
-	 * 
-	 * @param xfrBranchModel
-	 */
-	public static ODMAclfParserMapper getOdm2AclfParserMapper(ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
-		ODMAclfParserMapper mapper = new ODMAclfParserMapper();
-		mapper.setXfrBranchModel(xfrBranchModel);
-		return mapper;
-	}	
-
 	/**
 	 * create a ODMAclfNetMapper object from the Spring container
 	 * 

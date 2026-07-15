@@ -24,77 +24,25 @@
 
 package org.interpss.core.adapter.pwd;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-
-import org.ieee.odm.ODMFileFormatEnum;
-import org.ieee.odm.ODMObjectFactory;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.junit.jupiter.api.Test;
 
-import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class PWDIEEE14BusTestCase extends CorePluginTestSetup {
-	//@Test
-	public void odmAdapterTestCase() throws Exception {
+	@Test
+	public void testCase() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PWD)
-				.load("testData/adpter/pwd/ieee14.AUX")
-				.getAclfNet();	
-		
-		//System.out.println(net.net2String());
+				.loadAclfNet("testData/adpter/pwd/ieee14.AUX");
 
-		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-	  	algo.loadflow();
-		
-	  	//System.out.println(AclfOutFunc.loadFlowSummary(net));
-	  	
-  		assertTrue(net.isLfConverged());		
-  		//AclfBus swingBus = (AclfBus)net.getBus("Bus1");
-  		//AclfSwingBus swing = swingBus.toSwingBus();
-		//System.out.println(swing.getGenResults(UnitType.PU).getImaginary());
-  		//assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-1.0586)<0.01);
-  		//assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.4366)<0.01);
-	}	
-	@Test
-	public void testCaseStringInput() throws Exception{
-		String file = "testData/adpter/pwd/ieee14.AUX";
-  		IODMAdapter adapter = ODMObjectFactory
-				.createODMAdapter(ODMFileFormatEnum.PWD);
-
-  		BufferedReader br = new BufferedReader(new FileReader(file));
-  		String everything = null;
-  	    try {
-  	        StringBuilder sb = new StringBuilder();
-  	        String line = br.readLine();
-  	        while (line != null) {
-  	            sb.append(line);
-  	            sb.append("\n");
-  	            line = br.readLine();
-  	        }
-  	        everything = sb.toString();
-  	    } finally {
-  	        br.close();
-  	    }					
-
-		//this.log.info("casedata.inputDataFile: " + casedata.inputDataFile);
-		adapter.parseFileContent(everything);		
-		
-		AclfNetwork aclfNet = CorePluginFactory
-				.getOdm2AclfParserMapper(ODMAclfNetMapper.XfrBranchModel.InterPSS)
-				.map2Model((AclfModelParser) adapter.getModel())
-				.getAclfNet();
-		
+		assertNotNull(net);
+		assertTrue(net.getNoBus() > 0);
 	}
 }
 

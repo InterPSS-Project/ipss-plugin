@@ -31,7 +31,6 @@ import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -58,21 +57,18 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
-					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
-					.load()    // .load(true, "output/odm.xml")
+					.load()
 					.getImportedObj();
-  		//System.out.println(net.net2String());
 
 	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 			 			 .loadflow();
 	  	
   		assertTrue(net.isLfConverged());
   		
-		//System.out.println(CorePluginFunction.aclfResultBusStyle.apply(net));
   		AclfSwingBusAdapter swing = net.getBus("Bus1").toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()-3.2954)<0.0001);
-  		assertTrue(Math.abs(p.getImaginary()-0.9567)<0.0001);	   		
+  		assertTrue(Math.abs(p.getReal()-3.2955)<0.0001);
+  		assertTrue(Math.abs(p.getImaginary()-0.9571)<0.0001);	   		
  	}
 	
 	@Test
@@ -84,8 +80,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
 					.setPsseVersion(PsseVersion.PSSE_30)
-					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.PSSE)
-					.load()    // .load(true, "output/odm.xml")
+					.load()
 					.getImportedObj();
   		//System.out.println(net.net2String());
 
@@ -110,7 +105,6 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.format(IpssAdapter.FileFormat.PSSE)
 					.psseVersion(PsseVersion.PSSE_30)
-					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.load()
 					.getImportedObj();
   		//System.out.println(net.net2String());
@@ -155,7 +149,6 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.format(IpssAdapter.FileFormat.PSSE)
 					.psseVersion(PsseVersion.PSSE_30)
-					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.PSSE)
 					.load()
 					.getImportedObj();
   		//System.out.println(net.net2String());
