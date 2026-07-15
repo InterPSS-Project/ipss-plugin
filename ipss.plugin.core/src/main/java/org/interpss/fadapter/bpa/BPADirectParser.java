@@ -14,6 +14,8 @@ package org.interpss.fadapter.bpa;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -21,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.OriginalDataFormat;
@@ -47,6 +49,8 @@ public class BPADirectParser {
 
     private final AclfNetworkBuilder builder;
     private double baseMva = 100.0;
+    private int busCounter = 0;
+    private final Map<String, String> busKeyToIdMap = new HashMap<>();
 
     public BPADirectParser() {
         this.builder = new AclfNetworkBuilder();
@@ -75,9 +79,7 @@ public class BPADirectParser {
                 case "B":   parseBusCard(line); break;
                 case "BC":  parseBusContinuation(line); break;
                 case "BV":  parseBusVoltageCard(line); break;
-                case "BQ":  parseBusReactiveCard(line); break;
                 case "BG":  parseBusGenCard(line); break;
-                case "BS":  parseBusShuntCard(line); break;
                 case "L":   parseLineCard(line); break;
                 case "E":   parseEquivLineCard(line); break;
                 case "T":   parseTransformerCard(line); break;
@@ -101,11 +103,8 @@ public class BPADirectParser {
         if (c0 == 'B') {
             if (c1 == 'C') return "BC";
             if (c1 == 'V') return "BV";
-            if (c1 == 'Q') return "BQ";
             if (c1 == 'G') return "BG";
-            if (c1 == 'S') return "BS";
-            if (c1 == 'E') return "BE";
-            if (c1 == ' ' || c1 == 'T' || c1 == 'F' || c1 == 'X') return "B";
+            if (c1 == ' ' || c1 == 'T' || c1 == 'F' || c1 == 'X' || c1 == 'S' || c1 == 'E' || c1 == 'Q') return "B";
             return "B";
         }
         if (c0 == 'L') return "L";
@@ -172,12 +171,12 @@ public class BPADirectParser {
         if (vpu > 2.0 && baseKv > 0) vpu = vSched / baseKv;
         if (vpu <= 0.0) vpu = 1.0;
 
-        AclfBus bus = builder.addBus(busId, busName, 0, baseKv * 1000.0,
+        BaseAclfBus bus = builder.addBus(busId, busName, 0, baseKv * 1000.0,
                 vpu, 0.0, null, zoneId, null);
 
-        if (subtype == 'X') {
+        if (subtype == 'X' || subtype == 'S') {
             builder.setSwingBus(busId, vpu, 0.0);
-        } else if (subtype == 'F') {
+        } else if (subtype == 'F' || subtype == 'E' || subtype == 'Q') {
             bus.setGenCode(AclfGenCode.GEN_PV);
             builder.setPVBus(busId, pGen / baseMva, vpu, qMax / baseMva, qMin / baseMva, true);
         } else if (subtype == 'T' || pGen != 0.0) {
@@ -212,16 +211,8 @@ public class BPADirectParser {
         // BV cards specify voltage limit data
     }
 
-    private void parseBusReactiveCard(String line) {
-        // BQ cards specify reactive limit data
-    }
-
     private void parseBusGenCard(String line) {
         // BG cards add generator data
-    }
-
-    private void parseBusShuntCard(String line) {
-        // BS cards add switched shunt data
     }
 
     // ==================== Branch Records ====================
@@ -291,11 +282,11 @@ public class BPADirectParser {
         String circuit = safeSubstring(line, 31, 32).trim();
         if (circuit.isEmpty()) circuit = "1";
 
-        double r = parseDouble(safeSubstring(line, 33, 39));
-        double x = parseDouble(safeSubstring(line, 39, 45));
+        double r = parseDouble(safeSubstring(line, 38, 44));
+        double x = parseDouble(safeSubstring(line, 44, 50));
 
-        double tap1 = line.length() > 50 ? parseDouble(safeSubstring(line, 45, 50)) : 0.0;
-        double tap2 = line.length() > 55 ? parseDouble(safeSubstring(line, 50, 55)) : 0.0;
+        double tap1 = line.length() > 67 ? parseDouble(safeSubstring(line, 62, 67)) : 0.0;
+        double tap2 = line.length() > 72 ? parseDouble(safeSubstring(line, 67, 72)) : 0.0;
 
         if (tap1 == 0.0) tap1 = 1.0;
         if (tap2 == 0.0) tap2 = 1.0;
@@ -329,9 +320,8 @@ public class BPADirectParser {
     // ==================== Utility Methods ====================
 
     private String makeBusId(String name, double baseKv) {
-        String cleanName = name.replaceAll("[^a-zA-Z0-9_]", "_").trim();
-        if (cleanName.isEmpty()) cleanName = "NoName";
-        return BUS_ID_PREFIX + cleanName + "_" + (int) baseKv;
+        String key = name + "_" + (int) baseKv;
+        return busKeyToIdMap.computeIfAbsent(key, k -> "Bus" + (++busCounter));
     }
 
     private static String safeSubstring(String str, int start, int end) {

@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
@@ -71,25 +72,39 @@ public class PSSEDirectParser {
     }
 
     public AclfNetwork parse(String filepath) throws InterpssException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
-            parseFromReader(reader);
-        } catch (IOException e) {
-            throw new InterpssException("Error reading PSS/E file: " + filepath + ": " + e.getMessage());
-        }
+        parseInto(filepath);
         return builder.getNetwork();
     }
 
+    /**
+     * Parse a PSS/E file and populate the pre-configured network.
+     * Unlike parse(), this does not cast to AclfNetwork, so it works
+     * when the builder holds an AcscNetwork or DStabilityNetwork.
+     */
+    public void parseInto(String filepath) throws InterpssException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
+            parseFromReaderInternal(reader);
+        } catch (IOException e) {
+            throw new InterpssException("Error reading PSS/E file: " + filepath + ": " + e.getMessage());
+        }
+    }
+
     public AclfNetwork parseFromReader(BufferedReader reader) throws InterpssException {
+        parseFromReaderInternal(reader);
+        return builder.getNetwork();
+    }
+
+    private void parseFromReaderInternal(BufferedReader reader) throws InterpssException {
         try {
             parseHeader(reader);
             parseSection(reader, this::parseBusLine);
             parseSection(reader, this::parseLoadLine);
-            if (version >= 31) collectFixedShunts(reader); // fixed shunts as separate section
-            if (version >= 36) parseSection(reader, null); // voltage droop control
+            if (version >= 31) collectFixedShunts(reader);
+            if (version >= 36) parseSection(reader, null);
             parseSection(reader, this::parseGenLine);
-            if (version >= 36) parseSection(reader, null); // switching device rating sets
+            if (version >= 36) parseSection(reader, null);
             parseSection(reader, this::parseLineLine);
-            if (version >= 34) parseSection(reader, null); // switching devices
+            if (version >= 34) parseSection(reader, null);
             parseXfrSection(reader);
             parseSection(reader, this::parseAreaLine);
             parseMultiLineSection(reader, 3, this::parseHvdc2TLCCLines);
@@ -98,16 +113,16 @@ public class PSSEDirectParser {
             if (version <= 30) parseSection(reader, this::parseSwitchedShuntLine);
 
             parseXfrZCorrSection(reader);
-            parseSection(reader, null); // multi-terminal DC
-            parseSection(reader, null); // multi-section line
+            parseSection(reader, null);
+            parseSection(reader, null);
             parseSection(reader, this::parseZoneLine);
-            parseSection(reader, null); // inter-area transfer
+            parseSection(reader, null);
             parseSection(reader, this::parseOwnerLine);
-            parseSection(reader, null); // FACTS
+            parseSection(reader, null);
 
             if (version >= 31) parseSection(reader, this::parseSwitchedShuntLine);
-            if (version >= 33) parseSection(reader, null); // GNE
-            if (version >= 33) parseSection(reader, null); // induction motors
+            if (version >= 33) parseSection(reader, null);
+            if (version >= 33) parseSection(reader, null);
 
             if (version >= 31) parseFixedShuntSection();
 
@@ -115,17 +130,19 @@ public class PSSEDirectParser {
         } catch (IOException e) {
             throw new InterpssException("Error parsing PSS/E data: " + e.getMessage());
         }
-        return builder.getNetwork();
     }
 
     // ==================== Header ====================
 
     private void parseHeader(BufferedReader reader) throws IOException, InterpssException {
         String line1 = reader.readLine();
+        if (line1 == null) throw new InterpssException("Empty PSS/E file");
+        while (line1 != null && line1.startsWith("@!")) {
+            line1 = reader.readLine();
+        }
+        if (line1 == null) throw new InterpssException("Empty PSS/E file after comments");
         String line2 = reader.readLine();
         String line3 = reader.readLine();
-
-        if (line1 == null) throw new InterpssException("Empty PSS/E file");
 
         PSSEDataRec rec = new PSSEDataRec(line1);
         // IC, SBASE, REV, XFRRAT, NXFRAT, BASFRQ
@@ -223,7 +240,7 @@ public class PSSEDirectParser {
         if (zoneId != null) builder.addZone(zoneId, "Zone " + zoneNum, null);
         if (ownerId != null) builder.addOwner(ownerId, "Owner " + ownerNum);
 
-        AclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
+        BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, ownerId);
 
         if (ide == 4) bus.setStatus(false);
@@ -340,7 +357,7 @@ public class PSSEDirectParser {
 
         if (mbase == 0.0) mbase = baseMva;
 
-        AclfBus bus = builder.getNetwork().getBus(busId);
+        BaseAclfBus bus = builder.getBus(busId);
         if (bus == null) {
             log.error("Bus " + busId + " not found for generator " + genId);
             return;
@@ -567,8 +584,8 @@ public class PSSEDirectParser {
         double windv2 = line4.getDouble(0, 1.0);
         double nomv2 = line4.getDouble(1, 0.0);
 
-        AclfBus fromBus = builder.getNetwork().getBus(fromBusId);
-        AclfBus toBus = builder.getNetwork().getBus(toBusId);
+        BaseAclfBus fromBus = builder.getBus(fromBusId);
+        BaseAclfBus toBus = builder.getBus(toBusId);
         if (fromBus == null || toBus == null) {
             log.error("Xfr bus not found: " + fromBusId + " or " + toBusId);
             return;
@@ -743,12 +760,14 @@ public class PSSEDirectParser {
             // RMPCT at 7, RMIDNT at 8
             binit = rec.getDouble(9, 0.0);
         } else {
+            // v30 format: I, MODSW, VSWHI, VSWLO, SWREM, RMPCT, RMIDNT, BINIT, N1, B1, ...
             modsw = rec.getInt(1, 1);
-            stat = rec.getInt(2, 1);
-            vswhi = rec.getDouble(3, 1.0);
-            vswlo = rec.getDouble(4, 1.0);
-            swreg = rec.getInt(5, 0);
-            binit = rec.getDouble(6, 0.0);
+            stat = 1;
+            vswhi = rec.getDouble(2, 1.0);
+            vswlo = rec.getDouble(3, 1.0);
+            swreg = rec.getInt(4, 0);
+            // RMPCT at 5, RMIDNT at 6
+            binit = rec.getDouble(7, 0.0);
         }
 
         AclfAdjustControlMode mode;
@@ -763,7 +782,7 @@ public class PSSEDirectParser {
         String remoteBusId = (swreg > 0 && swreg != busNum) ? BUS_ID_PREFIX + swreg : null;
 
         // Parse shunt blocks (N, B pairs)
-        int blockStartIdx = version >= 33 ? 10 : 7;
+        int blockStartIdx = version >= 33 ? 10 : 8;
         List<ShuntBlock> blocks = new ArrayList<>();
         for (int i = 0; i < 8; i++) {
             int n = rec.getInt(blockStartIdx + i * 2, 0);

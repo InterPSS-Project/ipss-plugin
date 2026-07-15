@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.OriginalDataFormat;
@@ -181,7 +181,7 @@ public class MatpowerDirectParser {
             if (areaId != null) builder.addArea(areaId, "Area " + area, null);
             if (zoneId != null) builder.addZone(zoneId, "Zone " + zone, null);
 
-            AclfBus bus = builder.addBus(busId, "Bus" + busNum, busNum, baseKv * 1000.0,
+            BaseAclfBus bus = builder.addBus(busId, "Bus" + busNum, busNum, baseKv * 1000.0,
                     vm, Math.toRadians(va), areaId, zoneId, null);
 
             builder.setBusVoltageLimit(busId, vmax, vmin);
@@ -233,7 +233,7 @@ public class MatpowerDirectParser {
             if (mbase == 0.0) mbase = baseMva;
 
             String busId = BUS_ID_PREFIX + busNum;
-            AclfBus bus = builder.getNetwork().getBus(busId);
+            BaseAclfBus bus = (BaseAclfBus) builder.getNetwork().getBus(busId);
             if (bus == null) continue;
 
             genCount[busNum]++;

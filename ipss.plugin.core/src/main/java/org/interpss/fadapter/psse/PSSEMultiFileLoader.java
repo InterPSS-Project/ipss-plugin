@@ -33,7 +33,7 @@ public class PSSEMultiFileLoader {
      */
     public AcscNetwork loadAcsc(String lfFile) throws InterpssException {
         AcscNetwork net = CoreObjectFactory.createAcscNetwork();
-        new PSSEDirectParser(version, net).parse(lfFile);
+        new PSSEDirectParser(version, net).parseInto(lfFile);
         return net;
     }
 
@@ -60,7 +60,7 @@ public class PSSEMultiFileLoader {
         }
 
         DStabilityNetwork dsNet = DStabObjectFactory.createDStabilityNetwork();
-        new PSSEDirectParser(version, dsNet).parse(files[0]);
+        new PSSEDirectParser(version, dsNet).parseInto(files[0]);
 
         SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
         simuCtx.setDStabilityNet(dsNet);

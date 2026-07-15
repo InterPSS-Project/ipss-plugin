@@ -23,7 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.OriginalDataFormat;
@@ -136,7 +136,7 @@ public class GEPslfDirectParser {
         if (areaId != null) builder.addArea(areaId, "Area " + area, null);
         if (zoneId != null) builder.addZone(zoneId, "Zone " + zone, null);
 
-        AclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
+        BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, null);
 
         if (type == 3 || type == -1) {

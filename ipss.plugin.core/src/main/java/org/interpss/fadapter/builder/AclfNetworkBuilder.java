@@ -35,6 +35,14 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.HvdcObjectFactory;
+import com.interpss.core.acsc.AcscBus;
+import com.interpss.core.acsc.AcscGen;
+import com.interpss.core.acsc.AcscLoad;
+import com.interpss.core.acsc.BaseAcscNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabLoad;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
@@ -95,22 +103,65 @@ import com.interpss.core.net.Zone;
  * The model-construction logic is extracted from AclfBusDataHelper, AclfBranchDataHelper,
  * AclfHvdcDataHelper, and AbstractODMAclfNetMapper.
  */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class AclfNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(AclfNetworkBuilder.class);
 
-    private final AclfNetwork network;
+    private final BaseAclfNetwork network;
 
     public AclfNetworkBuilder() {
         this.network = CoreObjectFactory.createAclfNetwork();
     }
 
-    @SuppressWarnings("unchecked")
     public AclfNetworkBuilder(BaseAclfNetwork<?,?> network) {
-        this.network = (AclfNetwork) network;
+        this.network = network;
     }
 
     public AclfNetwork getNetwork() {
+        return (AclfNetwork) network;
+    }
+
+    public BaseAclfNetwork<?,?> getBaseNetwork() {
         return network;
+    }
+
+    public BaseAclfBus getBus(String busId) {
+        return (BaseAclfBus) network.getBus(busId);
+    }
+
+    public AclfBranch getBranch(String branchId) {
+        return (AclfBranch) network.getBranch(branchId);
+    }
+
+    private AclfBranch createBranch() {
+        if (network instanceof BaseDStabNetwork) {
+            return DStabObjectFactory.createDStabBranch();
+        } else if (network instanceof BaseAcscNetwork) {
+            return CoreObjectFactory.createAcscBranch();
+        }
+        return CoreObjectFactory.createAclfBranch();
+    }
+
+    private static String branchUIDName(String fromBusId, String toBusId, String cirId) {
+        return fromBusId + "_to_" + toBusId + "_cirId_" + cirId;
+    }
+
+    private AclfGen createGen(String genId) {
+        if (network instanceof BaseDStabNetwork) {
+            return DStabObjectFactory.createDStabGen(genId);
+        } else if (network instanceof BaseAcscNetwork) {
+            return CoreObjectFactory.createAcscGen(genId);
+        }
+        return CoreObjectFactory.createAclfGen(genId);
+    }
+
+    private AclfLoad createLoad(String loadId) {
+        if (network instanceof BaseDStabNetwork) {
+            return DStabObjectFactory.createDStabLoad(loadId);
+        } else if (network instanceof BaseAcscNetwork) {
+            return CoreObjectFactory.createAcscLoad(loadId);
+        }
+        return CoreObjectFactory.createAclfLoad(loadId);
     }
 
     // ==================== Network Level ====================
@@ -204,14 +255,18 @@ public class AclfNetworkBuilder {
      * @param ownerId owner ID (null if none)
      * @return the created bus
      */
-    public AclfBus addBus(String id, String name, long number, double baseVoltageV,
+    public BaseAclfBus addBus(String id, String name, long number, double baseVoltageV,
                           double voltagePU, double angleRad,
                           String areaId, String zoneId, String ownerId) throws InterpssException {
-        Optional<AclfBus> busOpt = CoreObjectFactory.createAclfBus(id, network);
-        if (!busOpt.isPresent()) {
-            throw new InterpssException("Failed to create bus: " + id);
+        BaseAclfBus bus;
+        if (network instanceof BaseDStabNetwork) {
+            bus = (BaseAclfBus) DStabObjectFactory.createDStabBus(id, (BaseDStabNetwork) network).get();
+        } else if (network instanceof BaseAcscNetwork) {
+            bus = (BaseAclfBus) CoreObjectFactory.createAcscBus(id, (BaseAcscNetwork) network).get();
+        } else {
+            bus = (BaseAclfBus) CoreObjectFactory.createAclfBus(id, network)
+                    .orElseThrow(() -> new InterpssException("Failed to create bus: " + id));
         }
-        AclfBus bus = busOpt.get();
         if (name != null) bus.setName(name);
         bus.setNumber(number);
         bus.setBaseVoltage(baseVoltageV);
@@ -236,7 +291,7 @@ public class AclfNetworkBuilder {
      * Set voltage limits on a bus.
      */
     public void setBusVoltageLimit(String busId, double vMaxPU, double vMinPU) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus != null) {
             bus.setVLimit(new LimitType(vMaxPU, vMinPU));
         }
@@ -251,7 +306,7 @@ public class AclfNetworkBuilder {
      * @param desiredAngRad desired voltage angle in radians
      */
     public void setSwingBus(String busId, double desiredVPU, double desiredAngRad) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus == null) return;
         bus.setGenCode(AclfGenCode.SWING);
         AclfSwingBusAdapter swing = bus.toSwingBus();
@@ -270,7 +325,7 @@ public class AclfNetworkBuilder {
      */
     public void setPVBus(String busId, double pGenPU, double desiredVPU,
                          double qMaxPU, double qMinPU, boolean qLimitActive) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus == null) return;
         bus.setGenCode(AclfGenCode.GEN_PV);
         AclfPVGenBusAdapter pvBus = bus.toPVBus();
@@ -289,13 +344,13 @@ public class AclfNetworkBuilder {
      */
     public void setPQBus(String busId, double pGenPU, double qGenPU,
                          double vMaxPU, double vMinPU) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus == null) return;
         bus.setGenCode(AclfGenCode.GEN_PQ);
         AclfPQGenBusAdapter pqBus = bus.toPQBus();
         pqBus.setGen(new Complex(pGenPU, qGenPU), UnitType.PU);
         if (vMaxPU != 0.0 || vMinPU != 0.0) {
-            PQBusLimit pqLimit = AclfAdjustObjectFactory.createPQBusLimit(bus).get();
+            PQBusLimit pqLimit = (PQBusLimit) AclfAdjustObjectFactory.createPQBusLimit(bus).get();
             pqLimit.setVLimit(new LimitType(vMaxPU, vMinPU), UnitType.PU);
         }
     }
@@ -304,7 +359,7 @@ public class AclfNetworkBuilder {
      * Set bus gen code to non-gen.
      */
     public void setNonGenBus(String busId) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus != null) bus.setGenCode(AclfGenCode.NON_GEN);
     }
 
@@ -319,10 +374,12 @@ public class AclfNetworkBuilder {
                                     Complex sourceZ, Complex xfrZ, double xfrTap,
                                     String remoteVControlBusId,
                                     double mvarPFactor, double mwPFactor) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus == null) return null;
 
-        AclfGen gen = CoreObjectFactory.createAclfGen(genId);
+        AclfGen gen = createGen(genId);
+        String busNumber = busId.startsWith("Bus") ? busId.substring(3) : busId;
+        gen.setName("Gen:" + genId + "(" + busNumber + ")");
         bus.getContributeGenList().add(gen);
 
         gen.setStatus(status);
@@ -330,12 +387,8 @@ public class AclfNetworkBuilder {
         gen.setGen(new Complex(pGenPU, qGenPU));
         gen.setDesiredVoltMag(desiredVPU);
 
-        if (qMaxPU != 0.0 || qMinPU != 0.0) {
-            gen.setQGenLimit(new LimitType(qMaxPU, qMinPU));
-        }
-        if (pMaxPU != 0.0 || pMinPU != 0.0) {
-            gen.setPGenLimit(new LimitType(pMaxPU, pMinPU));
-        }
+        gen.setQGenLimit(new LimitType(qMaxPU, qMinPU));
+        gen.setPGenLimit(new LimitType(pMaxPU, pMinPU));
 
         if (sourceZ != null) gen.setSourceZ(sourceZ);
         if (xfrZ != null && (xfrZ.getReal() != 0.0 || xfrZ.getImaginary() != 0.0)) {
@@ -359,7 +412,7 @@ public class AclfNetworkBuilder {
      * Set bus load code to non-load.
      */
     public void setNonLoadBus(String busId) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus != null) bus.setLoadCode(AclfLoadCode.NON_LOAD);
     }
 
@@ -369,10 +422,12 @@ public class AclfNetworkBuilder {
     public AclfLoad addContributeLoad(String busId, String loadId, boolean status,
                                       Complex constPPU, Complex constIPU, Complex constZPU,
                                       Complex distGenPowerPU, boolean distGenStatus) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus == null) return null;
 
-        AclfLoad load = CoreObjectFactory.createAclfLoad(loadId);
+        AclfLoad load = createLoad(loadId);
+        String busNumber = busId.startsWith("Bus") ? busId.substring(3) : busId;
+        load.setName("Load:" + loadId + "(" + busNumber + ")");
         bus.getContributeLoadList().add(load);
         load.setStatus(status);
         bus.setLoadCode(AclfLoadCode.CONST_P);
@@ -406,7 +461,7 @@ public class AclfNetworkBuilder {
      * Set the equivalent shunt admittance on a bus (in PU on system base).
      */
     public void setBusShuntY(String busId, Complex yShuntPU) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus != null && yShuntPU != null) {
             bus.setShuntY(yShuntPU);
         }
@@ -416,7 +471,7 @@ public class AclfNetworkBuilder {
      * Add to the equivalent shunt admittance on a bus (in PU on system base).
      */
     public void addToBusShuntY(String busId, Complex yShuntPU) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus != null && yShuntPU != null) {
             Complex existing = bus.getShuntY();
             bus.setShuntY(existing.add(yShuntPU));
@@ -444,7 +499,7 @@ public class AclfNetworkBuilder {
                                           double vHiPU, double vLoPU,
                                           String remoteBusId,
                                           List<ShuntBlock> blocks) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus == null) return null;
 
         SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt(bus);
@@ -516,7 +571,7 @@ public class AclfNetworkBuilder {
                                        double qMaxPU, double qMinPU,
                                        double vSetpointPU,
                                        String remoteBusId, double remoteControlPercent) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus == null) return null;
 
         Optional<StaticVarCompensator> svcOpt = AclfAdjustObjectFactory.createStaticVarCompensator(bus);
@@ -569,8 +624,9 @@ public class AclfNetworkBuilder {
                               Complex fromShuntYPU, Complex toShuntYPU,
                               double ratingMva1, double ratingMva2, double ratingMva3,
                               boolean status) throws InterpssException {
-        AclfBranch bra = CoreObjectFactory.createAclfBranch();
+        AclfBranch bra = createBranch();
         network.addBranch(bra, fromBusId, toBusId, cirId);
+        bra.setName(branchUIDName(fromBusId, toBusId, cirId));
         bra.setStatus(status);
         bra.setBranchCode(AclfBranchCode.LINE);
 
@@ -597,8 +653,9 @@ public class AclfNetworkBuilder {
      */
     public AclfBranch addBreaker(String fromBusId, String toBusId, String cirId,
                                  Complex zPU, boolean status, AclfBranchCode code) throws InterpssException {
-        AclfBranch bra = CoreObjectFactory.createAclfBranch();
+        AclfBranch bra = createBranch();
         network.addBranch(bra, fromBusId, toBusId, cirId);
+        bra.setName(branchUIDName(fromBusId, toBusId, cirId));
         bra.setStatus(status);
         bra.setBranchCode(code);
         bra.setZ(zPU);
@@ -630,8 +687,9 @@ public class AclfNetworkBuilder {
                                    Complex magYFromSide, Complex magYToSide,
                                    double ratingMva1, double ratingMva2, double ratingMva3,
                                    int zTableNumber, boolean status) throws InterpssException {
-        AclfBranch bra = CoreObjectFactory.createAclfBranch();
+        AclfBranch bra = createBranch();
         network.addBranch(bra, fromBusId, toBusId, cirId);
+        bra.setName(branchUIDName(fromBusId, toBusId, cirId));
         bra.setStatus(status);
         bra.setBranchCode(AclfBranchCode.XFORMER);
         bra.setNetwork(network);
@@ -663,7 +721,7 @@ public class AclfNetworkBuilder {
                                            double tapMax, double tapMin,
                                            boolean controlOnFromSide, boolean vcBusOnFromSide,
                                            Double stepSize, Integer steps) {
-        AclfBranch bra = network.getBranch(branchId);
+        AclfBranch bra = getBranch(branchId);
         if (bra == null) return null;
 
         Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(
@@ -693,7 +751,7 @@ public class AclfNetworkBuilder {
                                                 double tapMax, double tapMin,
                                                 boolean controlOnFromSide, boolean vcBusOnFromSide,
                                                 Double stepSize, Integer steps) {
-        AclfBranch bra = network.getBranch(branchId);
+        AclfBranch bra = getBranch(branchId);
         if (bra == null) return null;
 
         Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(
@@ -719,7 +777,7 @@ public class AclfNetworkBuilder {
                                         double tapMax, double tapMin,
                                         boolean controlOnFromSide, boolean meteredOnFromSide,
                                         Double stepSize, Integer steps) {
-        AclfBranch bra = network.getBranch(branchId);
+        AclfBranch bra = getBranch(branchId);
         if (bra == null) return null;
 
         Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlMvarFlow(bra, controlType);
@@ -747,8 +805,9 @@ public class AclfNetworkBuilder {
                                    Complex magYFromSide, Complex magYToSide,
                                    double ratingMva1, double ratingMva2, double ratingMva3,
                                    int zTableNumber, boolean status) throws InterpssException {
-        AclfBranch bra = CoreObjectFactory.createAclfBranch();
+        AclfBranch bra = createBranch();
         network.addBranch(bra, fromBusId, toBusId, cirId);
+        bra.setName(branchUIDName(fromBusId, toBusId, cirId));
         bra.setStatus(status);
         bra.setBranchCode(AclfBranchCode.PS_XFORMER);
         bra.setNetwork(network);
@@ -781,7 +840,7 @@ public class AclfNetworkBuilder {
                                               double angMaxDeg, double angMinDeg,
                                               boolean controlOnFromSide, boolean flowFrom2To,
                                               boolean meteredOnFromSide) {
-        AclfBranch bra = network.getBranch(branchId);
+        AclfBranch bra = getBranch(branchId);
         if (bra == null) return null;
 
         Optional<PSXfrPControl> ctrlOpt = AclfAdjustObjectFactory.createPSXfrPControl(bra, controlType);
@@ -806,7 +865,7 @@ public class AclfNetworkBuilder {
                                                    double angMaxDeg, double angMinDeg,
                                                    boolean controlOnFromSide, boolean flowFrom2To,
                                                    boolean meteredOnFromSide) {
-        AclfBranch bra = network.getBranch(branchId);
+        AclfBranch bra = getBranch(branchId);
         if (bra == null) return null;
 
         Optional<PSXfrPControl> ctrlOpt = AclfAdjustObjectFactory.createPSXfrPControl(
@@ -1024,7 +1083,7 @@ public class AclfNetworkBuilder {
                                 VSCAcControlMode acMode, double acSetPoint,
                                 double mvaRating, double qMaxMvar, double qMinMvar,
                                 String remoteCtrlBusId, double remoteCtrlPercent) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus != null) converter.setBus(bus);
         converter.setDcControlMode(dcMode);
         converter.setDcSetPoint(dcSetPoint);
@@ -1050,8 +1109,9 @@ public class AclfNetworkBuilder {
                                      String regulatedBusId, double remoteCtrlPercent,
                                      Complex targetPQPU,
                                      boolean status) throws InterpssException {
-        AclfBranch bra = CoreObjectFactory.createAclfBranch();
+        AclfBranch bra = createBranch();
         network.addBranch(bra, fromBusId, toBusId, cirId);
+        bra.setName(branchUIDName(fromBusId, toBusId, cirId));
         bra.setStatus(status);
         bra.setBranchCode(AclfBranchCode.LINE);
         bra.setNetwork(network);
@@ -1086,7 +1146,7 @@ public class AclfNetworkBuilder {
     }
 
     private void addFixedPowerLoad(String busId, String id, Complex loadPQPU) {
-        AclfBus bus = network.getBus(busId);
+        BaseAclfBus bus = getBus(busId);
         if (bus == null) return;
         AclfLoad load = CoreObjectFactory.createAclfLoad(id);
         bus.getContributeLoadList().add(load);
@@ -1102,8 +1162,9 @@ public class AclfNetworkBuilder {
      */
     public AclfBranch addSwitchingDevice(String fromBusId, String toBusId, String cirId,
                                          boolean status, AclfBranchCode code) throws InterpssException {
-        AclfBranch bra = CoreObjectFactory.createAclfBranch();
+        AclfBranch bra = createBranch();
         network.addBranch(bra, fromBusId, toBusId, cirId);
+        bra.setName(branchUIDName(fromBusId, toBusId, cirId));
         bra.setStatus(status);
         bra.setBranchCode(code);
         bra.setZ(new Complex(0.0, 0.0));
@@ -1116,16 +1177,16 @@ public class AclfNetworkBuilder {
      * Add a flow interface.
      */
     public FlowInterface addFlowInterface(String id) {
-        return AclfAdjustObjectFactory.createInterface(network, id);
+        return AclfAdjustObjectFactory.createInterface((AclfNetwork) network, id);
     }
 
     public FlowInterfaceBranch addInterfaceBranch(FlowInterface intf,
                                                   String fromBusId, String toBusId, String cirId,
                                                   double weight) {
         FlowInterfaceBranch branch = AclfAdjustObjectFactory.createInterfaceBranch(intf);
-        AclfBranch b = network.getBranch(fromBusId, toBusId, cirId);
+        AclfBranch b = (AclfBranch) network.getBranch(fromBusId, toBusId, cirId);
         if (b == null) {
-            b = network.getBranch(toBusId, fromBusId, cirId);
+            b = (AclfBranch) network.getBranch(toBusId, fromBusId, cirId);
             branch.setBranchDir(false);
         } else {
             branch.setBranchDir(true);
@@ -1153,7 +1214,7 @@ public class AclfNetworkBuilder {
         } else {
             intf.setOffPeakLimit(limit);
         }
-        network.setFlowInterfaceLoaded(true);
+        ((AclfNetwork) network).setFlowInterfaceLoaded(true);
     }
 
     // ==================== Post-processing / Finalize ====================
@@ -1166,38 +1227,41 @@ public class AclfNetworkBuilder {
      * Ported from AbstractODMAclfNetMapper.postAclfNetProcessing().
      */
     public void finalizeNetwork() throws InterpssException {
-        // Resolve SVC and SwitchedShunt remote bus references
-        network.getBusList().forEach(bus -> {
+        for (Object obj : network.getBusList()) {
+            BaseAclfBus bus = (BaseAclfBus) obj;
             if (bus.isStaticVarCompensator()) {
-                for (StaticVarCompensator svc : bus.getStaticVarCompensatorList()) {
+                for (Object o : bus.getStaticVarCompensatorList()) {
+                    StaticVarCompensator svc = (StaticVarCompensator) o;
                     if (svc != null && svc.getRemoteBusBranchId() != null && !svc.getRemoteBusBranchId().isEmpty()) {
-                        BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = network.getBus(svc.getRemoteBusBranchId());
-                        svc.setRemoteBus(remoteBus);
+                        BaseAclfBus remoteBus = getBus(svc.getRemoteBusBranchId());
+                        if (remoteBus != null) svc.setRemoteBus(remoteBus);
                     }
                 }
             }
             if (bus.isSwitchedShunt()) {
-                for (SwitchedShunt sw : bus.getSwitchedShuntList()) {
+                for (Object o : bus.getSwitchedShuntList()) {
+                    SwitchedShunt sw = (SwitchedShunt) o;
                     if (sw != null && sw.getRemoteBusBranchId() != null && !sw.getRemoteBusBranchId().isEmpty()) {
-                        BaseAclfBus<? extends AclfGen, ? extends AclfLoad> remoteBus = network.getBus(sw.getRemoteBusBranchId());
-                        sw.setRemoteBus(remoteBus);
+                        BaseAclfBus remoteBus = getBus(sw.getRemoteBusBranchId());
+                        if (remoteBus != null) sw.setRemoteBus(remoteBus);
                     }
                 }
             }
-        });
+        }
 
         network.adjustXfrZ();
         network.initContributeGenLoad(false);
 
-        // Number 3W transformer star buses
         if (network.getOriginalDataFormat() == OriginalDataFormat.PSSE) {
-            long maxBusNum = network.getBusList().stream()
-                    .mapToLong(bus -> bus.getNumber() > 0 ? bus.getNumber() : 0)
-                    .max()
-                    .orElse(network.getBusList().size());
+            long maxBusNum = 0;
+            for (Object obj : network.getBusList()) {
+                BaseAclfBus bus = (BaseAclfBus) obj;
+                if (bus.getNumber() > maxBusNum) maxBusNum = bus.getNumber();
+            }
 
             long startingNum = (long) Math.pow(10, Long.toString(maxBusNum).length());
-            for (BaseAclfBus<?, ?> bus : network.getBusList()) {
+            for (Object obj : network.getBusList()) {
+                BaseAclfBus bus = (BaseAclfBus) obj;
                 if ("3WXfr StarBus".equals(bus.getName())) {
                     bus.setNumber(startingNum++);
                 }
