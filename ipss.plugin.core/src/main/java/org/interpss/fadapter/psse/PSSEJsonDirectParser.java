@@ -28,7 +28,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.OriginalDataFormat;
@@ -156,7 +156,12 @@ public class PSSEJsonDirectParser {
                 JsonArray fields = caseid.getAsJsonArray("fields");
                 JsonArray data = caseid.getAsJsonArray("data");
                 if (data.size() > 0) {
-                    JsonArray row = data.get(0).getAsJsonArray();
+                    JsonArray row;
+                    if (data.get(0).isJsonArray()) {
+                        row = data.get(0).getAsJsonArray();
+                    } else {
+                        row = data;
+                    }
                     Map<String, JsonElement> rowMap = new HashMap<>();
                     for (int i = 0; i < Math.min(fields.size(), row.size()); i++) {
                         rowMap.put(fields.get(i).getAsString().toLowerCase(), row.get(i));
@@ -193,7 +198,7 @@ public class PSSEJsonDirectParser {
         if (zoneId != null) builder.addZone(zoneId, "Zone " + zoneNum, null);
         if (ownerId != null) builder.addOwner(ownerId, "Owner " + ownerNum);
 
-        AclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
+        BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, ownerId);
 
         if (ide == 4) bus.setStatus(false);
@@ -268,7 +273,7 @@ public class PSSEJsonDirectParser {
 
         if (mbase == 0.0) mbase = baseMva;
 
-        AclfBus bus = builder.getNetwork().getBus(busId);
+        BaseAclfBus bus = (BaseAclfBus) builder.getNetwork().getBus(busId);
         if (bus == null) return;
 
         boolean genStatus = (stat == 1);
@@ -363,8 +368,8 @@ public class PSSEJsonDirectParser {
             zRatio = baseMva / sbase12;
         }
 
-        AclfBus fromBus = builder.getNetwork().getBus(fromBusId);
-        AclfBus toBus = builder.getNetwork().getBus(toBusId);
+        BaseAclfBus fromBus = (BaseAclfBus) builder.getNetwork().getBus(fromBusId);
+        BaseAclfBus toBus = (BaseAclfBus) builder.getNetwork().getBus(toBusId);
         if (fromBus == null || toBus == null) return;
 
         double fromTap = windv1;

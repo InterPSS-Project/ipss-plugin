@@ -21,7 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.OriginalDataFormat;
@@ -117,9 +117,9 @@ public class UCTEDirectParser {
         double baseKv = estimateBaseKvFromNodeCode(nodeCode);
         double vpu = (baseKv > 0 && voltage > 0) ? voltage / baseKv : 1.0;
 
-        String busId = nodeCode;
+        String busId = sanitizeBusId(nodeCode);
 
-        AclfBus bus = builder.addBus(busId, nodeName, 0, baseKv * 1000.0,
+        BaseAclfBus bus = builder.addBus(busId, nodeName, 0, baseKv * 1000.0,
                 vpu, 0.0, null, null, null);
 
         if (status == 1) bus.setStatus(false);
@@ -156,8 +156,8 @@ public class UCTEDirectParser {
     private void parseLineLine(String line) throws InterpssException {
         if (line.length() < 44) return;
 
-        String node1 = safeSubstring(line, 0, 8).trim();
-        String node2 = safeSubstring(line, 9, 17).trim();
+        String node1 = sanitizeBusId(safeSubstring(line, 0, 8).trim());
+        String node2 = sanitizeBusId(safeSubstring(line, 9, 17).trim());
         String orderCode = safeSubstring(line, 18, 19).trim();
         int status = parseInt(safeSubstring(line, 20, 21));
 
@@ -167,7 +167,7 @@ public class UCTEDirectParser {
         double ratingI = line.length() > 50 ? parseDouble(safeSubstring(line, 45, 51)) : 0.0;
 
         // Convert impedance from ohms to per-unit
-        AclfBus fromBus = builder.getNetwork().getBus(node1);
+        BaseAclfBus fromBus = (BaseAclfBus) builder.getNetwork().getBus(node1);
         double baseKv = (fromBus != null) ? fromBus.getBaseVoltage() / 1000.0 : 1.0;
         double zBase = (baseKv * baseKv) / baseMva;
 
@@ -192,8 +192,8 @@ public class UCTEDirectParser {
     private void parseTransformerLine(String line) throws InterpssException {
         if (line.length() < 55) return;
 
-        String node1 = safeSubstring(line, 0, 8).trim();
-        String node2 = safeSubstring(line, 9, 17).trim();
+        String node1 = sanitizeBusId(safeSubstring(line, 0, 8).trim());
+        String node2 = sanitizeBusId(safeSubstring(line, 9, 17).trim());
         String orderCode = safeSubstring(line, 18, 19).trim();
         int status = parseInt(safeSubstring(line, 20, 21));
 
@@ -205,8 +205,8 @@ public class UCTEDirectParser {
         double b = line.length() > 63 ? parseDouble(safeSubstring(line, 56, 64)) : 0.0;
         double g = line.length() > 72 ? parseDouble(safeSubstring(line, 65, 73)) : 0.0;
 
-        AclfBus fromBus = builder.getNetwork().getBus(node1);
-        AclfBus toBus = builder.getNetwork().getBus(node2);
+        BaseAclfBus fromBus = (BaseAclfBus) builder.getNetwork().getBus(node1);
+        BaseAclfBus toBus = (BaseAclfBus) builder.getNetwork().getBus(node2);
 
         double baseKvFrom = (fromBus != null) ? fromBus.getBaseVoltage() / 1000.0 : v1;
         double baseKvTo = (toBus != null) ? toBus.getBaseVoltage() / 1000.0 : v2;
@@ -248,6 +248,10 @@ public class UCTEDirectParser {
     }
 
     // ==================== Utility Methods ====================
+
+    private static String sanitizeBusId(String nodeCode) {
+        return nodeCode.replace(' ', '_').replace("->", "_to_").replace("(", "").replace(")", "");
+    }
 
     private double estimateBaseKvFromNodeCode(String nodeCode) {
         if (nodeCode.length() < 7) return 110.0;
