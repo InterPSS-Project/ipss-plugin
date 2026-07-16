@@ -37,7 +37,6 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_IEEE300_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
-			//IpssLogger.getLogger().setLevel(Level.OFF);
 			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2.dyr");
@@ -99,7 +98,6 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_IEEE300_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
@@ -154,8 +152,6 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 			
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
-			
 			String faultBusId = "Bus7"; //3, 5, 12 182  157 7 167  135
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(faultBusId,dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.1),"3phaseFault@"+faultBusId);
@@ -198,7 +194,6 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void IEEE300_Dstab_compositeLoadModel_generate_results_() throws InterpssException{
 			IpssCorePlugin.init();
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
@@ -281,8 +276,6 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 						dstabAlgo.setSimuOutputHandler(sm);
 						dstabAlgo.setOutPutPerSteps(10);
 						//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
-						
-						//IpssLogger.getLogger().setLevel(Level.OFF);
 						
 											
 						dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(faultBusId,dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,ft,fd),"3phaseFault@"+faultBusId);

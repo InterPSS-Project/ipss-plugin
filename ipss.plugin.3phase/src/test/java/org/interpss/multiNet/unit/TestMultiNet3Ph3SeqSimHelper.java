@@ -76,8 +76,6 @@ public class TestMultiNet3Ph3SeqSimHelper {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
 		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
         // Must use this dynamic event process to modify the YMatrixABC
@@ -157,8 +155,6 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			
@@ -329,8 +325,6 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
-			
 		  // first initialize the subsystems in order to solve them in the following steps.	
 			 dstabAlgo.setSolver( new MultiNet3Ph3SeqDStabSolverImpl(dstabAlgo, mNetHelper));
 		  
@@ -447,8 +441,6 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
-			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,new Complex(0,0), null,0.5d,0.05),"3phaseFault@Bus5");
 			
 	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
@@ -537,8 +529,6 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-1"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
 			
@@ -648,8 +638,6 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
 			
@@ -917,8 +905,6 @@ public class TestMultiNet3Ph3SeqSimHelper {
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,new Complex(0,0),null,0.5d,0.05),"3phaseFault@Bus5");
 			

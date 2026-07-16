@@ -225,8 +225,6 @@ public class TestCMPLDWGModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
 
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-
 		
 		if (dstabAlgo.initialization()) {
 	
