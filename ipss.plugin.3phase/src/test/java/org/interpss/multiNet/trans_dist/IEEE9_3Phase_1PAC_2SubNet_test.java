@@ -92,9 +92,6 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 	    proc.set3PhaseSubNetByBusId("Bus10");
 	    
 	    MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
-	  
-		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 
         // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
@@ -122,8 +119,6 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -363,7 +358,6 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 //	    MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
 //	  
 //		
-//		IpssLogger.getLogger().setLevel(Level.INFO);
 //		
 //
 //        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
@@ -392,8 +386,6 @@ public class IEEE9_3Phase_1PAC_2SubNet_test {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		

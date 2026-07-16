@@ -315,8 +315,6 @@ Contributing Gen:
 		
 		try {
 		    Files.write(Paths.get(dyrFileName), sb.toString().getBytes());
-		    
-		    //IpssLogger.getLogger().info("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		    System.out.println("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		
 		} catch (IOException e) {
@@ -382,7 +380,6 @@ Contributing Gen:
 			relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 			
 			if(relayBranch==null){
-				//IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
 			    return null;
 			}
 			else
@@ -516,7 +513,6 @@ Contributing Gen:
 				if(relayBranch ==null){
 					relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 					if(relayBranch==null){
-						//IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
 					    return null;
 					}
 					else

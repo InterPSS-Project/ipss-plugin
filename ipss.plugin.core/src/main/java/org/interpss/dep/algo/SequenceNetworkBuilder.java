@@ -8,7 +8,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.util.Number2String;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.acsc.Acsc3WBranch;
@@ -25,6 +26,8 @@ import com.interpss.core.net.Branch;
 
 @Deprecated
 public class SequenceNetworkBuilder {
+	private static final Logger log = LoggerFactory.getLogger(SequenceNetworkBuilder.class);
+
 	private BaseAcscNetwork<?,?> _net = null;
 	private boolean overrideSeqData = false;
 	private double lineZero2PosZRatio = 2.5;
@@ -322,7 +325,7 @@ public class SequenceNetworkBuilder {
 			return flag = false;
 		}
 	    
-	    IpssLogger.getLogger().info("The Sequence network data is saved to :"+ Paths.get(seqFileName));
+	    log.info("The Sequence network data is saved to :"+ Paths.get(seqFileName));
 	    
 		return flag;
 	}
@@ -367,7 +370,7 @@ public class SequenceNetworkBuilder {
 							}
 						}
 						else{
-							IpssLogger.getLogger().severe("Error: Positive seq Z is NULL for Gen :"+scGen.getId() +" @ "+scBus.getId());;
+							log.error("Error: Positive seq Z is NULL for Gen :"+scGen.getId() +" @ "+scBus.getId());;
 							return false;
 						}
 					}
@@ -519,7 +522,7 @@ public class SequenceNetworkBuilder {
 						}
 						else {
 							// error, unprocessed model
-							IpssLogger.getLogger().severe("Error: transformer is not belong to predefined types, set to Yg/Yg connection: "+scBranch.getId());
+							log.error("Error: transformer is not belong to predefined types, set to Yg/Yg connection: "+scBranch.getId());
 							//scBranch.setXfrFromConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							//scBranch.setXfrToConnectCode(XfrConnectCode.WYE_SOLID_GROUNDED);
 							scBranch.getFromGrounding().setXfrConnectCode(XFormerConnectCode.WYE);
@@ -715,7 +718,7 @@ public class SequenceNetworkBuilder {
 		else if(bra.getFromAcscBus().getBaseVoltage()<bra.getToAcscBus().getBaseVoltage())
 			return bra.getToAcscBus();
 		else {
-			IpssLogger.getLogger().info(" The base voltages of from bus and to bus are the same, Xfr:"+bra.getId());
+			log.info(" The base voltages of from bus and to bus are the same, Xfr:"+bra.getId());
 			return bra.getFromAcscBus();
 		}
 		
@@ -727,7 +730,7 @@ public class SequenceNetworkBuilder {
 		else if(bra.getFromAcscBus().getBaseVoltage()<bra.getToAcscBus().getBaseVoltage())
 			return bra.getFromAcscBus();
 		else {
-			IpssLogger.getLogger().info("From bus and to bus base voltage is the same, Xfr:"+bra.getId());
+			log.info("From bus and to bus base voltage is the same, Xfr:"+bra.getId());
 			return bra.getToAcscBus();
 		}
 		

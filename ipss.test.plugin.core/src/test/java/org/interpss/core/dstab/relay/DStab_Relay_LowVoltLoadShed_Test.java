@@ -79,8 +79,6 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(5);
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){

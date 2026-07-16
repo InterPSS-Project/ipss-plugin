@@ -112,7 +112,6 @@ public class IEEE14Test extends CorePluginTestSetup {
   		 * Get the default loadflow algorithm and Run loadflow analysis. By default, it uses
   		 * NR method with convergence error tolerance 0.0001 pu
   		 */
-  		//IpssLogger.getLogger().setLevel(Level.INFO);
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();

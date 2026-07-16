@@ -87,8 +87,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
 		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){
@@ -218,8 +216,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -455,8 +451,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
 		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
 	    dsNet.setStaticLoadIncludedInYMatrix(false);
@@ -543,8 +537,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -635,8 +627,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -798,7 +788,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
     public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
             IpssCorePlugin.init();
-            //IpssLogger.getLogger().setLevel(Level.INFO);
             SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
                             "testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw",
                             "testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_multiGen.dyr");
@@ -960,8 +949,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(1);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		assertTrue(dstabAlgo.initialization());
 		if (dstabAlgo.initialization()) {
 			//System.out.println(dsNet.getMachineInitCondition());
@@ -1009,8 +996,6 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(2);
-		
-		//IpssLogger.getLogger().setLevel(Level.ALL);
 		assertTrue(dstabAlgo.initialization());
 		if (dstabAlgo.initialization()) {
 			System.out.println(dsNet.getMachineInitCondition());

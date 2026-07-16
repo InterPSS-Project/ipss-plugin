@@ -50,7 +50,6 @@ public class IEEE14BusBreaker_equivCABranch_Test extends CorePluginTestSetup {
 	  	/*
 	  	 * identify equivalent CA branches
 	  	 */
-	  	//IpssLogger.ipssLogger.setLevel(Level.INFO);
 	  	//for (Branch branch : net.getBranchList()) 
 	  	//	branch.identifyEquivCABranch();	  	
 	  	
@@ -78,8 +77,6 @@ public class IEEE14BusBreaker_equivCABranch_Test extends CorePluginTestSetup {
 		
 	  	net.accept(new ZeroZBranchProcesor(true));
 	  	//assertTrue(net.isZeroZBranchModel());
-
-	  	//IpssLogger.ipssLogger.setLevel(Level.INFO);
 	  	//for (Branch branch : net.getBranchList()) 
 	  	//	branch.identifyEquivCABranch();	  	
 	  	

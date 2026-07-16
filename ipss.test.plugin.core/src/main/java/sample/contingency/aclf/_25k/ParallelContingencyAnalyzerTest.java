@@ -11,7 +11,6 @@ public class ParallelContingencyAnalyzerTest {
         try {
             // Initialize InterPSS
             //IpssCorePlugin.init();
-            //IpssLogger.getLogger().setLevel(Level.INFO);
             
             System.out.println("=== ParallelContingencyAnalyzer Test ===");
             
