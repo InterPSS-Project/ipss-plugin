@@ -53,6 +53,9 @@ import org.interpss.fadapter.builder.AclfNetworkBuilderAdjDeviceTest;
 import org.interpss.fadapter.builder.AclfNetworkBuilderBranchTest;
 import org.interpss.fadapter.builder.AclfNetworkBuilderCoreTest;
 import org.interpss.fadapter.builder.AclfNetworkBuilderHvdcTest;
+import org.interpss.fadapter.builder.AcscNetworkBuilderBranchTest;
+import org.interpss.fadapter.builder.AcscNetworkBuilderCoreTest;
+import org.interpss.fadapter.builder.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.ca.Ieee14_GSF_Test;
 import org.interpss.core.ca.aclf.IEEE14_AclfN1Scan_Test;
 import org.interpss.core.contingency.parser.ConFileParser_Test;
@@ -264,6 +267,11 @@ import org.junit.platform.suite.api.Suite;
 	AclfNetworkBuilderAdjDeviceTest.class,
 	AclfNetworkBuilderHvdcTest.class,
 	AclfNetworkBuilder3WAndFinalizeTest.class,
+
+	// AcscNetworkBuilder unit tests
+	AcscNetworkBuilderCoreTest.class,
+	AcscNetworkBuilderBranchTest.class,
+	AcscNetworkBuilderFinalizeTest.class,
 
 	//matpower
 	MatpowerFormatTest.class,
