@@ -1,37 +1,33 @@
- /*
-  * @(#)WECC_10212010_TestCase.java   
-  *
-  * Copyright (C) 2008 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Stephen Hou
-  * @Version 1.0
-  * @Date 02/01/2008
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
+/*
+ * @(#)WECC_10212010_TestCase.java   
+ *
+ * Copyright (C) 2008 www.interpss.org
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * @Author Stephen Hou
+ * @Version 1.0
+ * @Date 02/01/2008
+ * 
+ *   Revision History
+ *   ================
+ *
+ */
 
 package org.interpss.core.adapter.psse.raw.aclf;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -41,29 +37,14 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class PSSE_5Bus_TestCase extends CorePluginTestSetup { 
 	@Test
 	public void testCase1() throws Exception {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/adpter/psse/PSSE_5Bus_Test.raw"));
+		AclfNetwork net = new PSSEDirectParser(30).parse("testData/adpter/psse/PSSE_5Bus_Test.raw");
 		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
+		//System.out.println(net.net2String());
 		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return;
-		}		
-		
-		//System.out.println(simuCtx.getAclfNet().net2String());
-		
-		AclfNetwork net = simuCtx.getAclfNet();
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();

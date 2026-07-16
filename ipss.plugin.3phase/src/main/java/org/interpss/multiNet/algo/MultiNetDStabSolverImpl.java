@@ -41,7 +41,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	protected List<BaseDStabNetwork> subNetList = null;
 
 	public MultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
-		super(algo, IpssCorePlugin.getMsgHub());
+		super(algo);
 		this.multiNetSimuHelper = mNetSimuHelper;
 		this.subNetList = this.multiNetSimuHelper.getSubNetworkProcessor().getSubNetworkList();
 	}
@@ -460,7 +460,6 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 //				  
 //			
 //			  if(i>0 && netSolConverged) {
-//				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 //				  break;
 //			  }
 //	

@@ -1,6 +1,8 @@
 package org.interpss.dep.QA.rfile.aclf;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 
 import org.interpss.dep.QA.rfile.BaseResultFileProcessor;
@@ -15,6 +17,8 @@ import org.interpss.dep.datamodel.bean.datatype.ComplexValueBean;
 import com.interpss.common.exp.InterpssException;
 
 public class PWDResultFileProcessor extends BaseResultFileProcessor {
+	private static final Logger log = LoggerFactory.getLogger(PWDResultFileProcessor.class);
+
 	public static enum RecType {BusRec, BranchRec, Dclf_BusRec, Dclf_BranchRec, Dclf_XfrRec};
 	
 	private int lineCnt = 0;
@@ -41,7 +45,7 @@ public class PWDResultFileProcessor extends BaseResultFileProcessor {
 		this.setRecType(type);
 		new QAFileReader(file)
 				.processFile(this);		
-		ipssLogger.info("Total rec: " + this.getLineCnt() + " of type " + type);
+		log.info("Total rec: " + this.getLineCnt() + " of type " + type);
 	}
 	
 	@Override public boolean processLine(String lineStr) throws InterpssException {

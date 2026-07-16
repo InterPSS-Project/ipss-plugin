@@ -1,17 +1,11 @@
 package org.interpss.core.adapter.psse.raw.acsc;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.display.AcscOutFunc;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.TestUtilFunc;
-import org.interpss.odm.mapper.ODMAcscParserMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -37,15 +31,9 @@ public class IEEE9Bus_Acsc_Test {
 	@Test
 	public void testIeee9SeqY() throws InterpssException, IpssNumericException{
 			IpssCorePlugin.init();
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
+			AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
 					"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
-					"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq"
-			}));
-			AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-			//acscParser.stdout();
-			
-			AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+					"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq");
 			
 			//set the order in original sequence for better testing
 			for(int i=1;i<=net.getNoBus();i++){
@@ -54,36 +42,34 @@ public class IEEE9Bus_Acsc_Test {
 			net.setBusNumberArranged(true);
 			
 			LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		  	algo.setLfMethod(AclfMethodType.PQ);
+		  	algo.setLfMethod(AclfMethodType.NR);
 		  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		  	algo.loadflow();
 	  	
 	  		assertTrue( net.isLfConverged());
-	  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
-	  		//System.out.println(net.net2String());
-	  		
+
 	  		//check the transformer type and SC grounding info
 	  		/*com.interpss.core.acsc.impl.AcscBranchImpl@5ac86ba5 (id: Bus2->Bus7(1), name: Gen2_to_Bus2_cirId_1, desc: , number: 0, status: true) (booleanFlag: false, intFlag: 0, weight: (0.0, 0.0), sortNumber: 0, areaId: 1, zoneId: 1, ownerId: , statusChangeInfo: NoChange) (extensionObject: null)
-			     circuitNumber: 1
-			     branchCode:    XFormer
-			     z:          0.0000 + j0.0625
-			    Ratio  :   from side 1.0000   to side  1.0000 pu
-			    Z multiplying factor: 1.0000    Z Adj Table number: 0
-			     fromShuntY: 0.0000 + j0.0000 pu
-			     toShuntY:   0.0000 + j0.0000 pu
-			     mvaRating1,mvaRating2,mvaRating3:   0.0000, 0.0000, 0.0000
-			   LF results 
-			      p+jq(f->t) : 1.63002 + j0.06594 pu   163002.46414 + j6593.60204 kva
-			      p+jq(t->f) : -1.63002 + j0.09238 pu   -163002.46414 + j9238.21171 kva
-			      current    : -1.57971 + j-0.19395 pu    399.51847 Amps
-			
-			  SC Info:
-			     z0:      0.0000 + j0.0625
-			     From Connection:      Delta
-			     From Grounding:      Ungrounded
-			     To Connection:      Wye
-			     To Grounding:      SolidGrounded
-			     */
+		     circuitNumber: 1
+		     branchCode:    XFormer
+		     z:          0.0000 + j0.0625
+		    Ratio  :   from side 1.0000   to side  1.0000 pu
+		    Z multiplying factor: 1.0000    Z Adj Table number: 0
+		     fromShuntY: 0.0000 + j0.0000 pu
+		     toShuntY:   0.0000 + j0.0000 pu
+		     mvaRating1,mvaRating2,mvaRating3:   0.0000, 0.0000, 0.0000
+		   LF results 
+		      p+jq(f->t) : 1.63002 + j0.06594 pu   163002.46414 + j6593.60204 kva
+		      p+jq(t->f) : -1.63002 + j0.09238 pu   -163002.46414 + j9238.21171 kva
+		      current    : -1.57971 + j-0.19395 pu    399.51847 Amps
+		
+		  SC Info:
+		     z0:      0.0000 + j0.0625
+		     From Connection:      Delta
+		     From Grounding:      Ungrounded
+		     To Connection:      Wye
+		     To Grounding:      SolidGrounded
+		     */
 	  		AcscBranch xfr_2_7= net.getBranch("Bus2->Bus7(1)");
 	  		assertEquals(xfr_2_7.getZ0().getReal(), 0, 1.0E-4);
 	  		assertEquals(xfr_2_7.getZ0().getImaginary(), 0.0625, 1.0E-4);
@@ -104,7 +90,7 @@ public class IEEE9Bus_Acsc_Test {
 	  		
 	        ISparseEqnComplex posYMatrix = net.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false);
 	        
-	        //Gen Bus: Bus 1
+        //Gen Bus: Bus 1
 	        //Yii: 0.0 + (-42.63668430335097i)
 	        assertTrue(posYMatrix.getA(0, 0).getReal()==0);
 	        assertTrue(Math.abs(posYMatrix.getA(0, 0).getImaginary()+42.6366)<1.0E-4);
@@ -114,7 +100,7 @@ public class IEEE9Bus_Acsc_Test {
 	        
 	        //Load Bus: Bus 5
 	        //Yii: 3.81 - j17.84
-	        assertTrue(Math.abs(posYMatrix.getA(4, 4).getReal()-3.81)<1.0E-2);
+        assertTrue(Math.abs(posYMatrix.getA(4, 4).getReal()-3.81)<1.0E-2);
 	        assertTrue(Math.abs(posYMatrix.getA(4, 4).getImaginary()+17.84)<1.0E-2);
 	        
 	        //Y54:-1.37 + j11.60
@@ -157,7 +143,7 @@ public class IEEE9Bus_Acsc_Test {
 	        //Yii 2.80 - j35.45
 	        assertTrue(Math.abs(negYMatrix.getA(6, 6).getReal()-2.80)<1.0E-2);
 	        assertTrue(Math.abs(negYMatrix.getA(6, 6).getImaginary()+35.45)<1.0E-2);
-			
+		
 	        /*
 	  		 * ***********************************
 	  		 *       Zero sequence
@@ -185,19 +171,13 @@ public class IEEE9Bus_Acsc_Test {
 	       // MatrixUtil.matrixToMatlabMFile("output/ieee9_zeroYmatrix.m", zeroYMatrix);
 	        
 		}
-	
+
 	@Test
 	public void testFaultCalc() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
+		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
-				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq"
-		}));
-		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-		//acscParser.stdout();
-		
-		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq");
 		
 		//set the order in original sequence for better testing
 		for(int i=1;i<=net.getNoBus();i++){
@@ -308,15 +288,9 @@ public class IEEE9Bus_Acsc_Test {
 	@Test
 	public void testFaultCalc_compare() throws InterpssException{
 		IpssCorePlugin.init();
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
+		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_newGenBase.raw",
-				"testData/adpter/psse/v30/IEEE9Bus/ieee9_null.seq"
-		}));
-		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-		//acscParser.stdout();
-		
-		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9_null.seq");
 		net.setLfDataLoaded(true);
 		net.setPositiveSeqDataOnly(true);
 

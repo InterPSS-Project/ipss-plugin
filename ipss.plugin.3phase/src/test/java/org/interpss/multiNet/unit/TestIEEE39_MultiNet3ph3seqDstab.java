@@ -5,12 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
@@ -20,9 +16,7 @@ import org.interpss.multiNet.algo.MultiNetDStabSolverImpl;
 import org.interpss.multiNet.algo.MultiNetDynamicEventProcessor;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
-import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -35,8 +29,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class TestIEEE39_MultiNet3ph3seqDstab {
 	
@@ -50,25 +42,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	public void test_3phase3SeqMultiSubNetTS_IEEE39Bus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE39Bus/IEEE39bus_v30.raw",
-				"testData/IEEE39Bus/IEEE39bus_v30.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
-				"testData/IEEE39Bus/IEEE39bus_onlyGen.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus_onlyGen.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -110,7 +84,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
 		  
 		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
@@ -122,8 +96,6 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",proc.getSubNetworkByBusId("Bus17"),SimpleFaultCode.GROUND_LG,new Complex(0,0),null,0.5d,0.05),"3phaseFault@Bus5");
 			
@@ -158,24 +130,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	public void test_IEEE39Bus_pos_SeqMultiSubNetTS() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE39Bus/IEEE39bus_v30.raw",
-				"testData/IEEE39Bus/IEEE39bus_v30.seq",
-				"testData/IEEE39Bus/IEEE39bus_onlyGen.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus_onlyGen.dyr");
 
 	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 		
@@ -205,7 +160,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 		  MultiNetDStabSimuHelper  mNetHelper = new MultiNetDStabSimuHelper(dsNet,proc);
 		  
 		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 			dstabAlgo.setSimuStepSec(0.005d);
@@ -218,8 +173,6 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",proc.getSubNetworkByBusId("Bus17"),SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.05),"3phaseFault@Bus17");
 			

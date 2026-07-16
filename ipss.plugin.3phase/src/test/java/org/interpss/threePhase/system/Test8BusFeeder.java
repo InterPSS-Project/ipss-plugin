@@ -91,7 +91,7 @@ public class Test8BusFeeder {
 
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 
 
@@ -178,7 +178,7 @@ public class Test8BusFeeder {
 
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 
 

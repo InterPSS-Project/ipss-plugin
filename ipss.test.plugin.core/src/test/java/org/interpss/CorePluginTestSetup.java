@@ -24,16 +24,12 @@
 
 package org.interpss;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -53,14 +49,10 @@ public class CorePluginTestSetup {
 	//protected static final String TEST_ROOT = "ipss.plugin.core/";
 	protected static final String TEST_ROOT = "";
 
-	protected static IPSSMsgHub msg;
 
 	@BeforeAll  
 	public static void initTestEnv() {
 		IpssCorePlugin.init();
-		msg = CoreCommonFactory.getIpssMsgHub();
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
 	}
 
   public static DStabilityNetwork create2BusSystem() throws InterpssException{

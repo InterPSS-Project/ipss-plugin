@@ -10,7 +10,6 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
 import com.interpss.common.exp.InterpssRuntimeException;
-import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBranchFault;
 import com.interpss.core.acsc.fault.AcscBusFault;
@@ -38,10 +37,8 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 	 * @param eventMsg network dynamic event
 	 * @return false if there is any issue during event handling process
 	 */
-	@Override public boolean onMsgEventStatus(IpssMessage eventMsg) {
-		if (eventMsg instanceof DStabSimuTimeEvent) {
-			DStabSimuTimeEvent dEventMsg = (DStabSimuTimeEvent) eventMsg;
-			if (dEventMsg.getType() == DStabSimuTimeEvent.ProessDynamicEvent) {
+	@Override public boolean onDynamicEvent(DStabSimuTimeEvent dEventMsg) {
+		if (dEventMsg.getType() == DStabSimuTimeEvent.ProessDynamicEvent) {
 
 				this.net = (DStabNetwork3Phase) dEventMsg.getDStabNetData();
 
@@ -92,8 +89,8 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 					// someone may be interested in the change event, for
 					// example, user acceptance testing.
 					if (net.getNetChangeListener() != null) {
-						net.getNetChangeListener().onMsgEvent(
-								new DStabSimuTimeEvent(	DStabSimuTimeEvent.YMatrixChangeEvent,
+						net.getNetChangeListener().onNetChangeEvent(
+								new DStabSimuTimeEvent(DStabSimuTimeEvent.YMatrixChangeEvent,
 										net.getYMatrixABC(), t));
 					}
 
@@ -105,7 +102,6 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 					//TODO no need any more as network solution is solved at the beginning in the nextStep, or just right after this
 					net.solveNetEqn();
 				}
-			}
 		}
 		return true;
 	}
@@ -119,10 +115,6 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 			}
 		}
 		return has;
-	}
-
-	@Override public void onMsgEvent(IpssMessage eventMsg) {
-		throw new InterpssRuntimeException("Method not applicable");
 	}
 
 	// apply event before building the Y-matrix

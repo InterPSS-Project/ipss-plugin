@@ -7,12 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -20,7 +16,6 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.sparse.ISparseEqnComplexMatrix3x3;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.threePhase.basic.IEEEFeederLineCode;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
@@ -63,8 +58,6 @@ import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.mach.RoundRotorMachine;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class ThreeBus_3Phase_Test {
 
@@ -81,7 +74,6 @@ public class ThreeBus_3Phase_Test {
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	//run load flow using default setting
-
 
 
 	  	assertTrue(algo.loadflow())	;
@@ -196,7 +188,6 @@ public class ThreeBus_3Phase_Test {
 	  	System.out.println("Gen2@Bus3 yabc = \n"+yg2abc);
 
 
-
 	  	DStab3PBranch line23 = net.getBranch("Bus2->Bus3(0)");
 
 	  	/*
@@ -224,12 +215,11 @@ public class ThreeBus_3Phase_Test {
 		net.initContributeGenLoad(false);
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	//run load flow using default setting
-
 
 
 	  	assertTrue(algo.loadflow())	;
@@ -265,7 +255,6 @@ public class ThreeBus_3Phase_Test {
 	public void test_3busfeeder_unbalanced_dstab() throws Exception{
 
 		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create3BusFeeder_unbalanced();
 
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
@@ -293,9 +282,7 @@ public class ThreeBus_3Phase_Test {
 		}
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
-
-
+				net);
 
 
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -349,24 +336,7 @@ public class ThreeBus_3Phase_Test {
 
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/threeBusSys.raw",
-				//"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
-				"testData/threeBusSys.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-
-		//System.out.println(parser.toXmlDoc());
-
-
-
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/threeBusSys.raw", "testData/threeBusSys.dyr");
 
 
 	    BaseDStabNetwork net =simuCtx.getDStabilityNet();
@@ -376,7 +346,7 @@ public class ThreeBus_3Phase_Test {
 		//net.initContributeGenLoad();
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
@@ -412,11 +382,8 @@ public class ThreeBus_3Phase_Test {
 	public void testSolvNetwork() throws Exception{
 
 		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		DStabNetwork3Phase net = create3BusSys();
-
-
 
 
 		// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation
@@ -425,7 +392,6 @@ public class ThreeBus_3Phase_Test {
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	//run load flow using default setting
-
 
 
 	  	assertTrue(algo.loadflow())	;
@@ -456,7 +422,6 @@ public class ThreeBus_3Phase_Test {
 	   *
 	   * Bus, Igen:Bus1,1.29185 + j-5.1606  -5.11514 + j1.46152  3.82329 + j3.69908     ->abs(Ia)     =5.3198
          Bus, Igen:Bus3,-0.1915 + j-4.87234  -4.12382 + j2.60201  4.31532 + j2.27032    ->abs(Ig2_c)  =4.8761
-
 
 
          Xfr: Delta-Wye-g
@@ -532,7 +497,6 @@ public class ThreeBus_3Phase_Test {
 			mach.setXd1(0.05);
 
 
-
 			DStab3PBus bus650 = ThreePhaseObjectFactory.create3PDStabBus("Bus650", net);
 			bus650.setAttributes("feeder 650", "");
 			bus650.setBaseVoltage(baseVolt4160);
@@ -540,7 +504,6 @@ public class ThreeBus_3Phase_Test {
 			bus650.setGenCode(AclfGenCode.NON_GEN);
 			// set the bus to a constant power load bus
 			bus650.setLoadCode(AclfLoadCode.NON_LOAD);
-
 
 
 //			Bus3Phase bus632 = ThreePhaseObjectFactory.create3PDStabBus("Bus632", net);
@@ -636,8 +599,6 @@ public class ThreeBus_3Phase_Test {
 			bus611.getThreePhaseLoadList().add(load611);
 
 
-
-
 			////////////////////////////////// transformers ////////////////////////////////////////////////////////
 
 			DStab3PBranch xfr1_2 = ThreePhaseObjectFactory.create3PBranch("SubBus", "Bus650", "0", net);
@@ -651,9 +612,7 @@ public class ThreeBus_3Phase_Test {
 			xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 
 
-
 			///////////////////////////////////////////////////////// LINES ////////////////////////////////////////
-
 
 
 			// New Line.684611    Phases=1 Bus1=684.3        Bus2=611.3      LineCode=mtx605 Length=300  units=ft
@@ -663,8 +622,6 @@ public class ThreeBus_3Phase_Test {
 			double length = 300.0*ft2mile; // convert to miles
 			Complex3x3 zabc_pu = IEEEFeederLineCode.zMtx605.multiply(length/zBase4160);
 			Line650_611.setZabc(zabc_pu);
-
-
 
 
 			return net;
@@ -731,7 +688,6 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		mach.setSe120(0.0);
 
 
-
   	// Bus 2
 		DStab3PBus bus2 = ThreePhaseObjectFactory.create3PDStabBus("Bus2", net);
   		// set bus name and description attributes
@@ -752,10 +708,7 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
   		bus2.getContributeLoadList().add(load);
 
 
-
   		bus2.setSortNumber(1);
-
-
 
 
   	  	// Bus 3
@@ -789,8 +742,6 @@ private DStabNetwork3Phase create3BusSys() throws InterpssException{
 		mach2.setD(0.01);
 		mach2.setRa(0.02);
 		mach2.setXd1(0.20);
-
-
 
 
 		//////////////////transformers///////////////////////////////////////////

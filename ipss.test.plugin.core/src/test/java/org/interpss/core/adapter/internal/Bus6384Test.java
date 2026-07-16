@@ -39,7 +39,6 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class Bus6384Test extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 //  		System.out.println("Start loading data ...");
 //		IpssFileAdapter adapter = PluginSpringFactory.getCustomFileAdapter("ipssdat");
