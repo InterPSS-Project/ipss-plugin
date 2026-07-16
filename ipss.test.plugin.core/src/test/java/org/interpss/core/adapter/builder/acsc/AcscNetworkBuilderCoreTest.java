@@ -1,4 +1,4 @@
-package org.interpss.fadapter.builder;
+package org.interpss.core.adapter.builder.acsc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.builder.AcscNetworkBuilder;
 import org.interpss.numeric.NumericConstant;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.jupiter.api.Test;
