@@ -48,6 +48,11 @@ import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
 import org.interpss.core.ca.IEEE14_N1Scan_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
+import org.interpss.fadapter.builder.AclfNetworkBuilder3WAndFinalizeTest;
+import org.interpss.fadapter.builder.AclfNetworkBuilderAdjDeviceTest;
+import org.interpss.fadapter.builder.AclfNetworkBuilderBranchTest;
+import org.interpss.fadapter.builder.AclfNetworkBuilderCoreTest;
+import org.interpss.fadapter.builder.AclfNetworkBuilderHvdcTest;
 import org.interpss.core.ca.Ieee14_GSF_Test;
 import org.interpss.core.ca.aclf.IEEE14_AclfN1Scan_Test;
 import org.interpss.core.contingency.parser.ConFileParser_Test;
@@ -252,6 +257,13 @@ import org.junit.platform.suite.api.Suite;
 	IEEE14BusTest.class,
 	IEEE118Bus_Test.class,
 	BPASampleTestCases.class,
+
+	// AclfNetworkBuilder unit tests
+	AclfNetworkBuilderCoreTest.class,
+	AclfNetworkBuilderBranchTest.class,
+	AclfNetworkBuilderAdjDeviceTest.class,
+	AclfNetworkBuilderHvdcTest.class,
+	AclfNetworkBuilder3WAndFinalizeTest.class,
 
 	//matpower
 	MatpowerFormatTest.class,
