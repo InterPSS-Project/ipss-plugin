@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
@@ -118,7 +119,7 @@ public class PSSEDirectParser {
             parseSection(reader, this::parseZoneLine);
             parseSection(reader, null);
             parseSection(reader, this::parseOwnerLine);
-            parseSection(reader, null);
+            parseSection(reader, this::parseFACTSLine);
 
             if (version >= 31) parseSection(reader, this::parseSwitchedShuntLine);
             if (version >= 33) parseSection(reader, null);
@@ -367,7 +368,16 @@ public class PSSEDirectParser {
         boolean busOffline = (bus.getGenCode() == AclfGenCode.NON_GEN);
         if (busOffline) genStatus = false;
 
-        String remoteBusId = (ireg > 0 && ireg != busNum) ? BUS_ID_PREFIX + ireg : null;
+        String remoteBusId = null;
+        if (ireg > 0 && ireg != busNum) {
+            String candidate = BUS_ID_PREFIX + ireg;
+            if (builder.getBus(candidate) != null) {
+                remoteBusId = candidate;
+            } else {
+                log.warn("Generator " + genId + " at " + busId + " has IREG=" + ireg
+                        + " pointing to non-existent bus; using local voltage control");
+            }
+        }
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
         Complex xfrZ = (rt != 0.0 || xt != 0.0) ? new Complex(rt, xt) : null;
 
@@ -529,7 +539,6 @@ public class PSSEDirectParser {
 
     private void parseXfrRecord(PSSEDataRec line1, String line2Str, String line3Str,
                                 String line4Str, String line5Str, boolean is3W) throws InterpssException {
-        // Line 1: I, J, K, CKT, CW, CZ, CM, MAG1, MAG2, NMETR, NAME, STAT, O1..F4, VECGRP
         int fromNum = Math.abs(line1.getInt(0));
         int toNum = Math.abs(line1.getInt(1));
         int tertNum = Math.abs(line1.getInt(2));
@@ -544,42 +553,41 @@ public class PSSEDirectParser {
         String fromBusId = BUS_ID_PREFIX + fromNum;
         String toBusId = BUS_ID_PREFIX + toNum;
 
-        // Line 2: R1-2, X1-2, SBASE1-2 [, R2-3, X2-3, SBASE2-3, R3-1, X3-1, SBASE3-1, VMSTAR, ANSTAR]
         PSSEDataRec line2 = new PSSEDataRec(line2Str);
         double r12 = line2.getDouble(0);
         double x12 = line2.getDouble(1);
         double sbase12 = line2.getDouble(2, baseMva);
 
-        // Convert Z to system base if needed (CZ handling)
-        double zRatio12 = 1.0;
-        if (cz == 2) {
-            // Z in PU on winding base, sbase12 gives the MVA base
-            if (sbase12 > 0.0 && sbase12 != baseMva) {
-                zRatio12 = baseMva / sbase12;
-            }
-        } else if (cz == 3) {
-            // Z in watts loss and impedance magnitude
-            // simplified: treat as PU on system base
-        }
-
-        // Line 3 (winding 1): WINDV1, NOMV1, ANG1, RATA1, RATB1, RATC1, COD1, CONT1, NODE1, RMA1, RMI1, VMA1, VMI1, NTP1, TAB1, CR1, CX1, CNXA1, WINDV1O
         PSSEDataRec line3 = new PSSEDataRec(line3Str);
         double windv1 = line3.getDouble(0, 1.0);
         double nomv1 = line3.getDouble(1, 0.0);
         double ang1 = line3.getDouble(2, 0.0);
-        double rata1 = line3.getDouble(3, 0.0);
-        double ratb1 = line3.getDouble(4, 0.0);
-        double ratc1 = line3.getDouble(5, 0.0);
-        int cod1 = line3.getInt(6, 0);
-        int cont1 = line3.getInt(7, 0);
-        double rma1 = line3.getDouble(9, 1.1);
-        double rmi1 = line3.getDouble(10, 0.9);
-        double vma1 = line3.getDouble(11, 1.1);
-        double vmi1 = line3.getDouble(12, 0.9);
-        int ntp1 = line3.getInt(13, 33);
-        int tab1 = line3.getInt(14, 0);
 
-        // Line 4 (winding 2): WINDV2, NOMV2 [, ANG2, RATA2..., COD2...]
+        // Version-dependent field indices for line 3
+        int codIdx, contIdx, rmaIdx, rmiIdx, vmaIdx, vmiIdx, ntpIdx, tabIdx;
+        double rata1, ratb1, ratc1;
+        if (version >= 34) {
+            rata1 = line3.getDouble(3, 0.0);
+            ratb1 = line3.getDouble(4, 0.0);
+            ratc1 = line3.getDouble(5, 0.0);
+            codIdx = 15; contIdx = 16; rmaIdx = 18; rmiIdx = 19;
+            vmaIdx = 20; vmiIdx = 21; ntpIdx = 22; tabIdx = 23;
+        } else {
+            rata1 = line3.getDouble(3, 0.0);
+            ratb1 = line3.getDouble(4, 0.0);
+            ratc1 = line3.getDouble(5, 0.0);
+            codIdx = 6; contIdx = 7; rmaIdx = 8; rmiIdx = 9;
+            vmaIdx = 10; vmiIdx = 11; ntpIdx = 12; tabIdx = 13;
+        }
+        int cod1 = line3.getInt(codIdx, 0);
+        int cont1 = line3.getInt(contIdx, 0);
+        double rma1 = line3.getDouble(rmaIdx, 1.1);
+        double rmi1 = line3.getDouble(rmiIdx, 0.9);
+        double vma1 = line3.getDouble(vmaIdx, 1.1);
+        double vmi1 = line3.getDouble(vmiIdx, 0.9);
+        int ntp1 = line3.getInt(ntpIdx, 33);
+        int tab1 = line3.getInt(tabIdx, 0);
+
         PSSEDataRec line4 = new PSSEDataRec(line4Str);
         double windv2 = line4.getDouble(0, 1.0);
         double nomv2 = line4.getDouble(1, 0.0);
@@ -593,67 +601,37 @@ public class PSSEDirectParser {
         double fromBaseV = fromBus.getBaseVoltage();
         double toBaseV = toBus.getBaseVoltage();
 
-        // Compute tap ratios based on CW
-        double fromTap, toTap;
-        if (cw == 1) {
-            // PU winding voltages
-            fromTap = windv1;
-            toTap = windv2;
-        } else if (cw == 2) {
-            // kV winding voltages
-            fromTap = windv1 * 1000.0 / fromBaseV;
-            toTap = windv2 * 1000.0 / toBaseV;
-        } else {
-            fromTap = windv1;
-            toTap = windv2;
-        }
+        double nomv1Kv = (nomv1 == 0.0) ? fromBaseV / 1000.0 : nomv1;
+        double nomv2Kv = (nomv2 == 0.0) ? toBaseV / 1000.0 : nomv2;
 
-        // Apply PSS/E branch model: adjust Z by to-side tap squared
-        double zr = r12 * zRatio12;
-        double zx = x12 * zRatio12;
-        zr *= toTap * toTap;
-        zx *= toTap * toTap;
-        Complex zPU = new Complex(zr, zx);
+        Complex zPU = convertZ(cz, r12, x12, sbase12);
 
-        // Convert from PSS/E model (from/to tap) to InterPSS model (single effective tap)
-        double effFromTap = fromTap / toTap;
-        double effToTap = 1.0;
+        double fromTap = convertTap(cw, windv1, nomv1Kv, fromBaseV);
+        double toTap = convertTap(cw, windv2, nomv2Kv, toBaseV);
 
-        // Magnetizing admittance
-        Complex magY = null;
-        if (mag1 != 0.0 || mag2 != 0.0) {
-            if (cm == 1) {
-                magY = new Complex(mag1, mag2);
-            } else {
-                // CM=2: losses in watts and exciting current
-                double yg = mag1 / (baseMva * 1e6); // loss in watts to PU
-                double ym = mag2 / 100.0; // exciting current in % to PU
-                magY = new Complex(yg, -ym);
-            }
-        }
+        Complex magY = convertMagY(cm, mag1, mag2, nomv1Kv, sbase12, fromBaseV);
 
         if (is3W) {
             parse3WXfr(line1, line2, line3, line4, line5Str,
                     fromBusId, toBusId, BUS_ID_PREFIX + tertNum, ckt,
-                    stat, cw, cz, mag1, mag2, cm);
+                    stat, cw, cz, cm, sbase12, nomv1Kv);
         } else {
             boolean isPhaseShifter = (ang1 != 0.0);
             if (isPhaseShifter) {
                 builder.addPsXformer(fromBusId, toBusId, ckt,
-                        zPU, effFromTap, effToTap,
+                        zPU, fromTap, toTap,
                         ang1, 0.0,
                         magY, null,
                         rata1, ratb1, ratc1,
                         tab1, stat == 1);
             } else {
                 builder.addXformer2W(fromBusId, toBusId, ckt,
-                        zPU, effFromTap, effToTap,
+                        zPU, fromTap, toTap,
                         magY, null,
                         rata1, ratb1, ratc1,
                         tab1, stat == 1);
             }
 
-            // Add tap control if COD1 != 0
             String branchId = fromBusId + "->" + toBusId + "(" + ckt + ")";
             if (Math.abs(cod1) == 1) {
                 String vcBusId = BUS_ID_PREFIX + Math.abs(cont1);
@@ -664,13 +642,57 @@ public class PSSEDirectParser {
         }
     }
 
+    private Complex convertZ(int cz, double r, double x, double sbase) {
+        if (cz == 1) {
+            return new Complex(r, x);
+        } else if (cz == 2) {
+            double ratio = (sbase > 0 && sbase != baseMva) ? baseMva / sbase : 1.0;
+            return new Complex(r * ratio, x * ratio);
+        } else if (cz == 3) {
+            double zpu = x * baseMva / sbase;
+            double rpu = r * 1.0E-6 * baseMva / (sbase * sbase);
+            double xpu = Math.sqrt(Math.max(zpu * zpu - rpu * rpu, 0.0));
+            return new Complex(rpu, xpu);
+        }
+        return new Complex(r, x);
+    }
+
+    private double convertTap(int cw, double windv, double nomvKv, double busBaseV) {
+        if (cw == 1) {
+            return windv;
+        } else if (cw == 2) {
+            return windv * 1000.0 / busBaseV;
+        } else if (cw == 3) {
+            return windv * nomvKv * 1000.0 / busBaseV;
+        }
+        return windv;
+    }
+
+    private Complex convertMagY(int cm, double mag1, double mag2,
+                                double nomv1Kv, double sbase12, double fromBaseV) {
+        if (mag1 == 0.0 && mag2 == 0.0) return null;
+        if (cm == 1) {
+            return new Complex(mag1, mag2);
+        } else {
+            double fromBaseKv = fromBaseV / 1000.0;
+            double ybase = baseMva / (fromBaseKv * fromBaseKv);
+            double g_rv = mag1 / (nomv1Kv * nomv1Kv) * 1.0E-6;
+            double g_pu = g_rv / ybase;
+            double ybase_w12 = sbase12 / (nomv1Kv * nomv1Kv);
+            double b_rv = -mag2 * ybase_w12;
+            double b_pu = b_rv / ybase;
+            return new Complex(g_pu, b_pu);
+        }
+    }
+
     private void parse3WXfr(PSSEDataRec line1, PSSEDataRec line2, PSSEDataRec line3,
                             PSSEDataRec line4, String line5Str,
                             String fromBusId, String toBusId, String tertBusId, String ckt,
-                            int stat, int cw, int cz, double mag1, double mag2, int cm) throws InterpssException {
+                            int stat, int cw, int cz, int cm,
+                            double sbase12, double nomv1Kv) throws InterpssException {
         double r12 = line2.getDouble(0);
         double x12 = line2.getDouble(1);
-        double sbase12 = line2.getDouble(2, baseMva);
+        sbase12 = line2.getDouble(2, baseMva);
         double r23 = line2.getDouble(3, 0.0);
         double x23 = line2.getDouble(4, 0.0);
         double sbase23 = line2.getDouble(5, baseMva);
@@ -681,35 +703,62 @@ public class PSSEDirectParser {
         double starVAng = line2.getDouble(10, 0.0);
 
         double windv1 = line3.getDouble(0, 1.0);
+        double nomv1_3w = line3.getDouble(1, 0.0);
         double ang1 = line3.getDouble(2, 0.0);
 
         double windv2 = line4.getDouble(0, 1.0);
+        double nomv2_3w = line4.getDouble(1, 0.0);
         double ang2 = line4.getDouble(2, 0.0);
 
         PSSEDataRec line5 = line5Str != null ? new PSSEDataRec(line5Str) : null;
         double windv3 = line5 != null ? line5.getDouble(0, 1.0) : 1.0;
+        double nomv3_3w = line5 != null ? line5.getDouble(1, 0.0) : 0.0;
         double ang3 = line5 != null ? line5.getDouble(2, 0.0) : 0.0;
 
-        // Convert Z to system base
-        double zRatio12 = (cz == 2 && sbase12 > 0 && sbase12 != baseMva) ? baseMva / sbase12 : 1.0;
-        double zRatio23 = (cz == 2 && sbase23 > 0 && sbase23 != baseMva) ? baseMva / sbase23 : 1.0;
-        double zRatio31 = (cz == 2 && sbase31 > 0 && sbase31 != baseMva) ? baseMva / sbase31 : 1.0;
+        BaseAclfBus fromBus = builder.getBus(fromBusId);
+        BaseAclfBus toBus = builder.getBus(toBusId);
+        BaseAclfBus tertBus = builder.getBus(tertBusId);
+        double fromBaseV = fromBus != null ? fromBus.getBaseVoltage() : 1000.0;
+        double toBaseV = toBus != null ? toBus.getBaseVoltage() : 1000.0;
+        double tertBaseV = tertBus != null ? tertBus.getBaseVoltage() : 1000.0;
 
-        Complex z12PU = new Complex(r12 * zRatio12, x12 * zRatio12);
-        Complex z23PU = new Complex(r23 * zRatio23, x23 * zRatio23);
-        Complex z31PU = new Complex(r31 * zRatio31, x31 * zRatio31);
+        if (nomv1_3w == 0.0) nomv1_3w = fromBaseV / 1000.0;
+        if (nomv2_3w == 0.0) nomv2_3w = toBaseV / 1000.0;
+        if (nomv3_3w == 0.0) nomv3_3w = tertBaseV / 1000.0;
 
-        Complex magY = (mag1 != 0.0 || mag2 != 0.0) ? new Complex(mag1, mag2) : null;
+        Complex z12PU = convertZ(cz, r12, x12, sbase12);
+        Complex z23PU = convertZ(cz, r23, x23, sbase23);
+        Complex z31PU = convertZ(cz, r31, x31, sbase31);
+
+        double fromTap = convertTap(cw, windv1, nomv1_3w, fromBaseV);
+        double toTap = convertTap(cw, windv2, nomv2_3w, toBaseV);
+        double tertTap = convertTap(cw, windv3, nomv3_3w, tertBaseV);
+
+        double mag1 = line1.getDouble(7, 0.0);
+        double mag2 = line1.getDouble(8, 0.0);
+        Complex magY = convertMagY(cm, mag1, mag2, nomv1_3w, sbase12, fromBaseV);
+
+        // Read TAB numbers from lines 3, 4, 5 (version-dependent index)
+        int tabIdx = version >= 34 ? 23 : 13;
+        int tab1 = line3.getInt(tabIdx, 0);
+        int tab2 = line4.getInt(tabIdx, 0);
+        int tab3 = line5 != null ? line5.getInt(tabIdx, 0) : 0;
 
         boolean isPhaseShifting = (ang1 != 0.0 || ang2 != 0.0 || ang3 != 0.0);
 
-        builder.addXformer3W(fromBusId, toBusId, tertBusId, ckt,
+        Aclf3WBranch branch3W = builder.addXformer3W(fromBusId, toBusId, tertBusId, ckt,
                 z12PU, z23PU, z31PU,
-                windv1, windv2, windv3,
+                fromTap, toTap, tertTap,
                 magY, starVMag, starVAng,
                 false, false, false,
                 isPhaseShifting, ang1, ang2, ang3,
                 stat == 1);
+
+        if (branch3W != null) {
+            if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
+            if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
+            if (tab3 > 0) branch3W.getTertAclfBranch().setXfrZTableNumber(tab3);
+        }
     }
 
     // ==================== Area ====================
@@ -742,7 +791,6 @@ public class PSSEDirectParser {
     // ==================== Switched Shunt ====================
 
     private void parseSwitchedShuntLine(PSSEDataRec rec) throws InterpssException {
-        // I, MODSW, ADJM, STAT, VSWHI, VSWLO, SWREG/SWREM, RMPCT, RMIDNT, BINIT, N1, B1, ..., N8, B8
         int busNum = rec.getInt(0);
         String busId = BUS_ID_PREFIX + busNum;
 
@@ -750,23 +798,29 @@ public class PSSEDirectParser {
         double vswhi, vswlo, binit;
         int swreg;
 
-        if (version >= 33) {
+        if (version >= 35) {
+            // v35+: I, ID, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, NREG, RMPCT, RMIDNT, BINIT, [NAME for v36], S1, N1, B1, ...
+            modsw = rec.getInt(2, 1);
+            stat = rec.getInt(4, 1);
+            vswhi = rec.getDouble(5, 1.0);
+            vswlo = rec.getDouble(6, 1.0);
+            swreg = rec.getInt(7, 0);
+            binit = rec.getDouble(11, 0.0);
+        } else if (version >= 33) {
+            // v33-34: I, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, RMPCT, RMIDNT, BINIT, N1, B1, ...
             modsw = rec.getInt(1, 1);
-            // ADJM at 2
             stat = rec.getInt(3, 1);
             vswhi = rec.getDouble(4, 1.0);
             vswlo = rec.getDouble(5, 1.0);
             swreg = rec.getInt(6, 0);
-            // RMPCT at 7, RMIDNT at 8
             binit = rec.getDouble(9, 0.0);
         } else {
-            // v30 format: I, MODSW, VSWHI, VSWLO, SWREM, RMPCT, RMIDNT, BINIT, N1, B1, ...
+            // v30: I, MODSW, VSWHI, VSWLO, SWREM, RMPCT, RMIDNT, BINIT, N1, B1, ...
             modsw = rec.getInt(1, 1);
             stat = 1;
             vswhi = rec.getDouble(2, 1.0);
             vswlo = rec.getDouble(3, 1.0);
             swreg = rec.getInt(4, 0);
-            // RMPCT at 5, RMIDNT at 6
             binit = rec.getDouble(7, 0.0);
         }
 
@@ -781,14 +835,29 @@ public class PSSEDirectParser {
 
         String remoteBusId = (swreg > 0 && swreg != busNum) ? BUS_ID_PREFIX + swreg : null;
 
-        // Parse shunt blocks (N, B pairs)
-        int blockStartIdx = version >= 33 ? 10 : 8;
         List<ShuntBlock> blocks = new ArrayList<>();
-        for (int i = 0; i < 8; i++) {
-            int n = rec.getInt(blockStartIdx + i * 2, 0);
-            double bVal = rec.getDouble(blockStartIdx + i * 2 + 1, 0.0);
-            if (n > 0 || bVal != 0.0) {
-                blocks.add(new ShuntBlock(n, bVal, true));
+        if (version >= 35) {
+            // v35+: S, N, B triples; v36 has NAME field before blocks
+            int blockStartIdx = version >= 36 ? 13 : 12;
+            for (int i = 0; i < 8; i++) {
+                int idx = blockStartIdx + i * 3;
+                if (idx + 2 >= rec.size()) break;
+                int s = rec.getInt(idx, 0);
+                int n = rec.getInt(idx + 1, 0);
+                double bVal = rec.getDouble(idx + 2, 0.0);
+                if (n > 0 || bVal != 0.0) {
+                    blocks.add(new ShuntBlock(n, bVal, s == 1));
+                }
+            }
+        } else {
+            // v30-34: N, B pairs
+            int blockStartIdx = version >= 33 ? 10 : 8;
+            for (int i = 0; i < 8; i++) {
+                int n = rec.getInt(blockStartIdx + i * 2, 0);
+                double bVal = rec.getDouble(blockStartIdx + i * 2 + 1, 0.0);
+                if (n > 0 || bVal != 0.0) {
+                    blocks.add(new ShuntBlock(n, bVal, true));
+                }
             }
         }
 
@@ -979,6 +1048,67 @@ public class PSSEDirectParser {
                 acCtrl, acSet, smax, maxQ, minQ, remoteBusId, rmpct);
     }
 
+    // ==================== FACTS Device / SVC ====================
+
+    private void parseFACTSLine(PSSEDataRec rec) throws InterpssException {
+        // v30: N, I, J, MODE, PDES, QDES, VSET, SHMX, TRMX, VTMN, VTMX, VSMX, IMX, LINX, RMPCT, OWNER, SET1, SET2, VSREF
+        // v31-33: NAME, I, J, MODE, PDES, QDES, VSET, SHMX, TRMX, VTMN, VTMX, VSMX, IMX, LINX, RMPCT, OWNER, SET1, SET2, VSREF, FCREG, MNAME
+        // v35: NAME, I, J, MODE, PDES, QDES, VSET, SHMX, TRMX, VTMN, VTMX, VSMX, IMX, LINX, RMPCT, OWNER, SET1, SET2, VSREF, FCREG, NREG, MNAME
+        int nameOffset = (version <= 30) ? 0 : 0;
+        String name = rec.getString(0, "").trim();
+        int busNum = rec.getInt(1);
+        int jBus = rec.getInt(2, 0);
+        int mode = rec.getInt(3, 1);
+        double vset = rec.getDouble(6, 1.0);
+        double shmx = rec.getDouble(7, 9999.0);
+        double linx = rec.getDouble(13, 0.05);
+        double rmpct = rec.getDouble(14, 100.0);
+
+        int fcreg = 0;
+        if (version >= 31 && version < 35) {
+            fcreg = rec.getInt(19, 0);
+        } else if (version >= 35) {
+            fcreg = rec.getInt(19, 0);
+        }
+
+        String busId = BUS_ID_PREFIX + busNum;
+
+        if (jBus == 0) {
+            double qMaxPU = shmx / baseMva;
+            double qMinPU = 0.0;
+
+            String remoteBusId = null;
+            if (fcreg > 0 && fcreg != busNum) {
+                remoteBusId = BUS_ID_PREFIX + fcreg;
+            }
+
+            builder.addSVC(busId, name, mode != 0,
+                    qMaxPU, qMinPU, vset, remoteBusId, rmpct);
+        } else {
+            String toBusId = BUS_ID_PREFIX + jBus;
+            double pdes = rec.getDouble(4, 0.0);
+            double qdes = rec.getDouble(5, 0.0);
+            double set1 = rec.getDouble(16, 0.0);
+            double set2 = rec.getDouble(17, 0.0);
+
+            double qMaxPU = shmx / baseMva;
+            String remoteBusId = null;
+            if (fcreg > 0 && fcreg != busNum) {
+                remoteBusId = BUS_ID_PREFIX + fcreg;
+            }
+            Complex targetPQ = new Complex(pdes / baseMva, qdes / baseMva);
+
+            try {
+                builder.addFactsDevice(busId, toBusId, "FD",
+                        mode, linx, set1, set2,
+                        qMaxPU, 0.0, vset,
+                        remoteBusId, rmpct, targetPQ, mode != 0);
+            } catch (Exception e) {
+                log.error("Error parsing FACTS device: " + e.getMessage());
+            }
+        }
+    }
+
     // ==================== Xfr Z Correction Table ====================
 
     private void parseXfrZCorrSection(BufferedReader reader) throws IOException, InterpssException {
@@ -1005,11 +1135,21 @@ public class PSSEDirectParser {
         if (tableNum <= 0) return;
 
         List<XfrZCorrection> points = new ArrayList<>();
-        for (int i = 1; i + 1 < rec.size(); i += 2) {
-            double t = rec.getDouble(i, 0.0);
-            double f = rec.getDouble(i + 1, 0.0);
-            if (t == 0.0 && f == 0.0) break;
-            points.add(new XfrZCorrection(t, f));
+        if (version >= 35) {
+            for (int i = 1; i + 2 < rec.size(); i += 3) {
+                double t = rec.getDouble(i, 0.0);
+                double reF = rec.getDouble(i + 1, 0.0);
+                double imF = rec.getDouble(i + 2, 0.0);
+                if (t == 0.0 && reF == 0.0 && imF == 0.0) break;
+                points.add(new XfrZCorrection(t, new Complex(reF, imF)));
+            }
+        } else {
+            for (int i = 1; i + 1 < rec.size(); i += 2) {
+                double t = rec.getDouble(i, 0.0);
+                double f = rec.getDouble(i + 1, 0.0);
+                if (t == 0.0 && f == 0.0) break;
+                points.add(new XfrZCorrection(t, f));
+            }
         }
 
         if (!points.isEmpty()) {
