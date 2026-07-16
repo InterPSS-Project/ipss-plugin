@@ -30,7 +30,6 @@ import org.interpss.fadapter.impl.IpssFileAdapterBase;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -39,13 +38,11 @@ import com.interpss.simu.SimuObjectFactory;
 public class PTIFormat extends IpssFileAdapterBase {
 	private int psseVersion = 30;
 
-	public PTIFormat(IPSSMsgHub msgHub) {
-		super(msgHub);
+	public PTIFormat() {
 		this.psseVersion = 30;
 	}
 
-	public PTIFormat(IpssFileAdapter.Version v, IPSSMsgHub msgHub) {
-		super(msgHub);
+	public PTIFormat(IpssFileAdapter.Version v) {
 		this.psseVersion = mapVersionToInt(v);
 	}
 	

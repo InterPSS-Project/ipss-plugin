@@ -37,25 +37,25 @@ public class CorePluginFactory extends CoreCommonFactory {
 	public static IpssFileAdapter getFileAdapter(IpssFileAdapter.FileFormat f, IpssFileAdapter.Version v)
 					throws InterpssException {
 		if (f == IpssFileAdapter.FileFormat.IEEECDF) {
-			return new IeeeCDFFormat(CoreCommonFactory.getIpssMsgHub(), v);
+			return new IeeeCDFFormat();
 		}
 		else if (f == IpssFileAdapter.FileFormat.GE_PSLF) {
-			return new GEFormat(CoreCommonFactory.getIpssMsgHub());
+			return new GEFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.PSSE) {
-			return new PTIFormat(v, CoreCommonFactory.getIpssMsgHub());
+			return new PTIFormat(v);
 		} 
 		else if (f == IpssFileAdapter.FileFormat.BPA) {
-			return new BPAFormat(CoreCommonFactory.getIpssMsgHub());
+			return new BPAFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.PWD) {
-			return new PWDFormat(CoreCommonFactory.getIpssMsgHub());
+			return new PWDFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.MATPOWER) {
-			return new MatpowerFormat(CoreCommonFactory.getIpssMsgHub());
+			return new MatpowerFormat();
 		}
 		else if (f == IpssFileAdapter.FileFormat.UCTE) {
-			return new UCTEFormat(CoreCommonFactory.getIpssMsgHub());
+			return new UCTEFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.IpssInternal) {
 			return new IpssInternalFormat(CoreCommonFactory.getIpssMsgHub());
