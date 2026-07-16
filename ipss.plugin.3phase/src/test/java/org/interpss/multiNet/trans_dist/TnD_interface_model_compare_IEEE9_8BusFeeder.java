@@ -336,7 +336,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
 		  
 		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		    double time_step =0.005d;
 		    double total_sim_time = 15.0;
@@ -654,7 +654,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			 //
 			 //=============dynamic simulation ===============================
 			 //
-			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			    
 			  
 			    double time_step =0.005d;
@@ -1001,7 +1001,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			 //
 			 //=============dynamic simulation ===============================
 			 //
-			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			    
 			  
 			    double time_step =0.005d;
@@ -1336,7 +1336,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			 //
 			 //=============dynamic simulation ===============================
 			 //
-			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			    
 			  
 				dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -1658,7 +1658,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -1978,7 +1978,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -2309,7 +2309,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				 //
 				 //=============dynamic simulation ===============================
 				 //
-				  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+				  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 				    
 				  
 					dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -2625,7 +2625,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		  MultiNet3Ph3SeqDStabSimuHelper  mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet,proc);
 		  
 		  // create multiNet3Seq3PhDStabHelper and initialize the subsystem
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

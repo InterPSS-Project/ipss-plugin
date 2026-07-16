@@ -30,7 +30,6 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -52,7 +51,7 @@ import org.slf4j.LoggerFactory;
 
 public class IpssInternalFormat_in {
     private static final Logger log = LoggerFactory.getLogger(IpssInternalFormat_in.class);
-    public static AclfNetwork loadFile(final java.io.BufferedReader din, final IPSSMsgHub msg) throws Exception {
+    public static AclfNetwork loadFile(final java.io.BufferedReader din) throws Exception {
     	// create a AclfAdjNetwork object to hold the loadflow data
     	final AclfNetwork  aclfNet = CoreObjectFactory.createAclfNetwork();
     	//adjNet.setAllowParallelBranch(true);
@@ -133,7 +132,7 @@ public class IpssInternalFormat_in {
               		do {
                 		str = din.readLine();
                 		if (!str.startsWith("end")) {
-							loadBranchInfo(str, aclfNet, msg);
+							loadBranchInfo(str, aclfNet);
                 		//msgHub.sendInfoMsg("Branch Loaded: " + String.valueOf(++cnt));
 						}
                 		else {
@@ -348,7 +347,7 @@ public class IpssInternalFormat_in {
 		}
     }
 
-    public static void loadBranchInfo(final String str, final AclfNetwork net, final IPSSMsgHub msgHub) 
+    public static void loadBranchInfo(final String str, final AclfNetwork net) 
 	       throws Exception {
       	// MsgHub.sendInfoMsg("Branch: " + str);
       	final java.util.StringTokenizer st =
