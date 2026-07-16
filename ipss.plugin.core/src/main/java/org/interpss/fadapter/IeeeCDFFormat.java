@@ -32,21 +32,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
 public class IeeeCDFFormat extends IpssFileAdapterBase {
     private static final Logger log = LoggerFactory.getLogger(IeeeCDFFormat.class);
-	
-	public IeeeCDFFormat(IPSSMsgHub msgHub) {
-		super(msgHub);
-	}
-	
-	public IeeeCDFFormat(IPSSMsgHub msgHub, IpssFileAdapter.Version v) {
-		super(msgHub);
-	}
 	
 	@Override
 	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {

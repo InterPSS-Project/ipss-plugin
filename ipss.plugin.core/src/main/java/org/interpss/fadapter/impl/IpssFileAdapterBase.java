@@ -28,7 +28,6 @@ import org.interpss.fadapter.IpssFileAdapter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.exp.InterpssRuntimeException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -38,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 public class IpssFileAdapterBase implements IpssFileAdapter {
     private static final Logger log = LoggerFactory.getLogger(IpssFileAdapterBase.class);
-	protected IPSSMsgHub msgHub;
 
 	private String name;
 	private String[] versionList = null;
@@ -47,10 +45,6 @@ public class IpssFileAdapterBase implements IpssFileAdapter {
 	private String description;
 	private String fileFilterString;
 	private String versionSelected;
-
-	public IpssFileAdapterBase(IPSSMsgHub msgHub) {
-		this.msgHub = msgHub;
-	}
 
 	@Override
 	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {

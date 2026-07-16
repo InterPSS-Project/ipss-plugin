@@ -30,15 +30,11 @@ import org.interpss.fadapter.ge.GEPslfDirectParser;
 import org.interpss.fadapter.impl.IpssFileAdapterBase;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
 
 public class GEFormat extends IpssFileAdapterBase {
-	public GEFormat(IPSSMsgHub msgHub) {
-		super(msgHub);
-	}
 
 	@Override
 	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {
