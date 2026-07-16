@@ -27,7 +27,8 @@ package org.interpss.dep.datamodel.bean.datatype;
 import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.numeric.util.NumericUtil;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Bean class for storing limit value
@@ -36,6 +37,8 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public class LimitValueBean  implements Comparable<LimitValueBean> {
+	private static final Logger log = LoggerFactory.getLogger(LimitValueBean.class);
+
 	public double
 		max ,				
 		min ;				
@@ -53,10 +56,10 @@ public class LimitValueBean  implements Comparable<LimitValueBean> {
 		int eql = 0;
 		
 		if (!NumericUtil.equals(this.max, bean.max, CompareBaseJSONBean.PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BranchValueBean.f is not equal, " + this.max + ", " + bean.max); eql = 1; }
+			log.warn("BranchValueBean.f is not equal, " + this.max + ", " + bean.max); eql = 1; }
 		
 		if (!NumericUtil.equals(this.min, bean.min, CompareBaseJSONBean.PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BranchValueBean.t is not equal, " + this.min + ", " + bean.min); eql = 1; }	
+			log.warn("BranchValueBean.t is not equal, " + this.min + ", " + bean.min); eql = 1; }	
 		
 		return eql;
 	}	

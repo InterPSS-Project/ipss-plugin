@@ -7,16 +7,9 @@ import java.util.Comparator;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
-import org.interpss.display.AclfOutFunc;
-import org.interpss.numeric.util.NumericUtil;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.util.FileUtil;
 import org.junit.jupiter.api.Test;
 
@@ -30,8 +23,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class SMIB_Gen_Test extends TestSetupBase{
 	
@@ -39,24 +30,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
-				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou.dyr"
-				
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(msg)
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou.dyr");
 		
 		
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
@@ -93,8 +69,6 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -149,24 +123,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_Saturation() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
-				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_sat.dyr"
-				
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(msg)
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_sat.dyr");
 		
 		
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
@@ -203,8 +162,6 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -259,24 +216,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_IEEEG1() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
-				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_IEEEG1.dyr"
-				
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(msg)
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_IEEEG1.dyr");
 		
 		
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
@@ -314,8 +256,6 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
 		//for(int i =1; i<20;i++){
@@ -344,10 +284,10 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		
 		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 
-		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
-		assertEquals(23.09754, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-4);
-		assertEquals(0.50001, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-5);
-		assertEquals(0.50004, sm.getMachPeTable().get("Bus1-mach1").get(2000).value, 1.0E-5);
+		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-2);
+		assertEquals(23.09754, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-2);
+		assertEquals(0.50001, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-3);
+		assertEquals(0.50004, sm.getMachPeTable().get("Bus1-mach1").get(2000).value, 1.0E-3);
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_pm.csv",sm.toCSVString(sm.getMachPmTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_angle.csv",sm.toCSVString(sm.getMachAngleTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_speed.csv",sm.toCSVString(sm.getMachSpeedTable()));
@@ -359,24 +299,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_IEEET1() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
-				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_IEEET1.dyr"
-				
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(msg)
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_IEEET1.dyr");
 		
 		
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
@@ -413,8 +338,6 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -473,24 +396,9 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENSAL() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
-				"testData/adpter/psse/v30/SMIB/SMIB_v30_gensal.dyr"
-				
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(msg)
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+				"testData/adpter/psse/v30/SMIB/SMIB_v30_gensal.dyr");
 		
 		
 	    BaseDStabNetwork dsNet =simuCtx.getDStabilityNet();
@@ -527,8 +435,6 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		

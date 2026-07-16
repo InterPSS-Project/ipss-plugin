@@ -27,10 +27,6 @@ package org.interpss.plugin.pssl.simu;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.msg.StdoutMsgListener;
-import com.interpss.common.msg.impl.IPSSMsgHubImpl;
-import com.interpss.common.msg.impl.TextMessageImpl;
 
 /**
  * base class for defining InterPSS PSSL (DSL)
@@ -39,7 +35,7 @@ import com.interpss.common.msg.impl.TextMessageImpl;
  *
  */
 public class BaseDSL {
-	private static final Logger log = LoggerFactory.getLogger(BaseDSL.class);
+	protected static final Logger log = LoggerFactory.getLogger(BaseDSL.class);
 	/**
 	 * Analysis type exposed by PSSL and core simulation engine
 	 */
@@ -63,42 +59,19 @@ public class BaseDSL {
 	}
 
 	/**
-	 * PSSL msgHub object
+	 * PSSL logging uses SLF4J via {@link #log}.
 	 */
-	public static IPSSMsgHub psslMsg = null;
 
 	/**
 	 * sparse solver type
 	 */
 	public static SparseSolverType sparseSolver = SparseSolverType.IpssJava;
 
-	/**
-	 * set msgHub object
-	 * 
-	 * @param msg
-	 */
-	public static void setMsgHub(IPSSMsgHub msg) {
-		psslMsg = msg;
-	}
-	
-	/**
-	 * Check if a particular analysis type is enabled for the PSSL and 
-	 * core simulation engine 
-	 * 
-	 * @param type
-	 * @return
-	 */
 	public static boolean analysisEnabled(IpssAnalysisType type) {
 		if (type == IpssAnalysisType.PowerTrainding) {
 			// TODO license check here
 			return sparseSolver == SparseSolverType.Native;
 		}
 		return true;
-	}
-	
-	static {
-		//ipssLogger.setLevel(Level.WARNING);
-		psslMsg = new IPSSMsgHubImpl();
-		psslMsg.addMsgListener(new StdoutMsgListener(TextMessageImpl.TYPE_WARN));
 	}
 }

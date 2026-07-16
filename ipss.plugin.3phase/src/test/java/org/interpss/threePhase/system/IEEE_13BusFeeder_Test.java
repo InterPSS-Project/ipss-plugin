@@ -115,7 +115,7 @@ public class IEEE_13BusFeeder_Test {
 
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 
 
@@ -200,7 +200,7 @@ public class IEEE_13BusFeeder_Test {
 
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 
 
