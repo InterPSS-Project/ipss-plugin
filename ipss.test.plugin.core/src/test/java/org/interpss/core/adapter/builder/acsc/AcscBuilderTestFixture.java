@@ -1,6 +1,7 @@
-package org.interpss.fadapter.builder;
+package org.interpss.core.adapter.builder.acsc;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscNetwork;

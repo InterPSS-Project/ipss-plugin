@@ -9,6 +9,17 @@ import org.interpss.core.aclf.SwingBusSubAreaTest;
 import org.interpss.core.algo.cpf.ContinuationPowerFlowPsseTest;
 import org.interpss.core.aclf.svc.IEEE14_PVLimit_SVCTest;
 import org.interpss.core.adapter.bpa.BPASampleTestCases;
+import org.interpss.core.adapter.builder.aclf.AclfNetworkBuilder3WAndFinalizeTest;
+import org.interpss.core.adapter.builder.aclf.AclfNetworkBuilderAdjDeviceTest;
+import org.interpss.core.adapter.builder.aclf.AclfNetworkBuilderBranchTest;
+import org.interpss.core.adapter.builder.aclf.AclfNetworkBuilderCoreTest;
+import org.interpss.core.adapter.builder.aclf.AclfNetworkBuilderHvdcTest;
+import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderBranchTest;
+import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderCoreTest;
+import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderFinalizeTest;
+import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExciterTest;
+import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGovernorTest;
+import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
 import org.interpss.core.adapter.ieee.IEEE118Bus_Test;
@@ -48,14 +59,6 @@ import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
 import org.interpss.core.ca.IEEE14_N1Scan_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
-import org.interpss.fadapter.builder.AclfNetworkBuilder3WAndFinalizeTest;
-import org.interpss.fadapter.builder.AclfNetworkBuilderAdjDeviceTest;
-import org.interpss.fadapter.builder.AclfNetworkBuilderBranchTest;
-import org.interpss.fadapter.builder.AclfNetworkBuilderCoreTest;
-import org.interpss.fadapter.builder.AclfNetworkBuilderHvdcTest;
-import org.interpss.fadapter.builder.AcscNetworkBuilderBranchTest;
-import org.interpss.fadapter.builder.AcscNetworkBuilderCoreTest;
-import org.interpss.fadapter.builder.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.ca.Ieee14_GSF_Test;
 import org.interpss.core.ca.aclf.IEEE14_AclfN1Scan_Test;
 import org.interpss.core.contingency.parser.ConFileParser_Test;
@@ -272,6 +275,11 @@ import org.junit.platform.suite.api.Suite;
 	AcscNetworkBuilderCoreTest.class,
 	AcscNetworkBuilderBranchTest.class,
 	AcscNetworkBuilderFinalizeTest.class,
+
+	// DStabNetworkBuilder unit tests
+	DStabNetworkBuilderMachineTest.class,
+	DStabNetworkBuilderExciterTest.class,
+	DStabNetworkBuilderGovernorTest.class,
 
 	//matpower
 	MatpowerFormatTest.class,
