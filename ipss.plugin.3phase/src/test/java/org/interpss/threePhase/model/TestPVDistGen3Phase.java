@@ -274,7 +274,7 @@ public class TestPVDistGen3Phase {
 		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(distNet));
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				distNet, IpssCorePlugin.getMsgHub());
+				distNet);
 
 
 
@@ -323,7 +323,7 @@ public class TestPVDistGen3Phase {
 		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(distNet));
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				distNet, IpssCorePlugin.getMsgHub());
+				distNet);
 
 
 

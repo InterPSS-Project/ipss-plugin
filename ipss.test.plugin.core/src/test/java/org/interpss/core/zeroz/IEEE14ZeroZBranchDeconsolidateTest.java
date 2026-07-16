@@ -86,7 +86,6 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
   		/*
   		 * (4) run loadflow calculation. There should be no difference in the results
   		 */
-  		//IpssLogger.getLogger().setLevel(Level.INFO);
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());

@@ -7,17 +7,12 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.DStabTestSetupBase;
 import org.interpss.dstab.relay.LVSHLoadRelayModel;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.numeric.datatype.Triplet;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -30,8 +25,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 	
@@ -39,24 +32,9 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
-				//"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
-				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(msg)
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabilityNetwork dsNet =(DStabilityNetwork) simuCtx.getDStabilityNet();
@@ -100,8 +78,6 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 		// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(5);
-		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		

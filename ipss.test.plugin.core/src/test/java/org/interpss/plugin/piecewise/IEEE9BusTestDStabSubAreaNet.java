@@ -2,14 +2,9 @@ package org.interpss.plugin.piecewise;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
 import org.interpss.piecewise.subAreaNet.seq012.SubDStabNetwork;
 import org.interpss.piecewise.subAreaNet.seq012.impl.SubAreaDStabProcessorImpl;
 import org.interpss.piecewise.subAreaNet.seq012.impl.SubNetworkDStabProcessorImpl;
@@ -25,13 +20,11 @@ import com.interpss.dstab.DStabBranch;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabLoad;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class IEEE9BusTestDStabSubAreaNet {
 	
 	@Test
-	public void testSubArea() throws InterpssException{
+	public void testSubArea() throws Exception {
 		IpssCorePlugin.init();
 	
 		BaseDStabNetwork dsNet = getTestNet();
@@ -67,7 +60,7 @@ public class IEEE9BusTestDStabSubAreaNet {
 	}
 
 	@Test
-	public void testSubNetwork() throws InterpssException{
+	public void testSubNetwork() throws Exception {
 		IpssCorePlugin.init();
 	
 		BaseDStabNetwork dsNet = getTestNet();
@@ -99,23 +92,11 @@ public class IEEE9BusTestDStabSubAreaNet {
   		assertTrue(dsNet.getBus("Bus7").getSubAreaFlag() == 2, "Bus7 should be in the SubArea (2)");
 	}
 	
-	private BaseDStabNetwork getTestNet() {
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
+	private BaseDStabNetwork getTestNet() throws Exception {
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 				"testData/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/psse/v30/IEEE9Bus/ieee9.seq",
-				"testData/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODMDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return null;
-		}
+				"testData/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 	    return simuCtx.getDStabilityNet();
 	}

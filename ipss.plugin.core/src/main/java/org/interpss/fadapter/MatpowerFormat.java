@@ -20,13 +20,31 @@
 
 package org.interpss.fadapter;
 
-import org.ieee.odm.ODMFileFormatEnum;
-import org.interpss.fadapter.impl.IpssFileAdapterBase;
+import java.io.File;
 
-import com.interpss.common.msg.IPSSMsgHub;
+import org.interpss.fadapter.impl.IpssFileAdapterBase;
+import org.interpss.fadapter.matpower.MatpowerDirectParser;
+
+import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.simu.SimuContext;
+import com.interpss.simu.SimuCtxType;
 
 public class MatpowerFormat extends IpssFileAdapterBase {
-	public MatpowerFormat(IPSSMsgHub msgHub) {
-		super(msgHub, ODMFileFormatEnum.MatPower);
+
+	@Override
+	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {
+		MatpowerDirectParser parser = new MatpowerDirectParser();
+		AclfNetwork aclfNet = parser.parse(filepath);
+		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
+		simuCtx.setAclfNet(aclfNet);
+		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar) + 1));
+		simuCtx.setDesc("This project is created by input file " + filepath);
+	}
+
+	@Override
+	public AclfNetwork loadAclfNet(String filepath) throws InterpssException {
+		MatpowerDirectParser parser = new MatpowerDirectParser();
+		return parser.parse(filepath);
 	}
 }

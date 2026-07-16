@@ -37,7 +37,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		acLoad.setLoadPercent(50.0);
 		acLoad.setMvaBase(50);
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		// System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -58,8 +58,6 @@ public class TestLd1pacModel extends TestSetupBase {
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
-
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());
@@ -103,7 +101,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		acLoad.setMvaBase(100);
 		acLoad.setPowerFactor(0.94);
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		// System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -126,8 +124,6 @@ public class TestLd1pacModel extends TestSetupBase {
 		// faultBusId, net, code, zlg, zll, startTime, durationTime)
 		net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Swing", net, SimpleFaultCode.GROUND_3P,
 				new Complex(0.01, 0), new Complex(0), 1.0d, 0.08), "3phaseFault@Bus1");
-
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());
@@ -163,7 +159,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		acLoad.setLoadPercent(50);
 		acLoad.setMvaBase(50);
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		// System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -183,8 +179,6 @@ public class TestLd1pacModel extends TestSetupBase {
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());

@@ -35,7 +35,6 @@ import org.interpss.plugin.pssl.simu.net.IpssAclfNet;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -54,7 +53,7 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 				.getAclfNet();
 
 		// set the network data
-	  	set2BusNetworkData(net, msg);
+	  	set2BusNetworkData(net);
 	  	
 	  	net.getBranchList().forEach(b -> {
 	  		if (b.isZeroZBranch()) {
@@ -101,7 +100,7 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	assertTrue(!net.getBranch("Bus2->Bus3(Branch 1)").isActive());
 	}
 
-	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) throws InterpssException {
+	private void set2BusNetworkData(AclfNetwork net) throws InterpssException {
 		IpssAclfNet.addAclfBus("Bus1", "Bus 1", net)
 				.setBaseVoltage(4000.0)
 				.setGenCode(AclfGenCode.SWING)

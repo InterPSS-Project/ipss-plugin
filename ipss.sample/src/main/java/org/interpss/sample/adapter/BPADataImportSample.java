@@ -1,38 +1,22 @@
 package org.interpss.sample.adapter;
 
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.bpa.BPAAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import org.interpss.IpssCorePlugin;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
+import org.interpss.fadapter.bpa.BPADirectParser;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class BPADataImportSample {
 
 	public static void main(String[] args) throws InterpssException {
 		IpssCorePlugin.init();
 		
-		IODMAdapter adapter = new BPAAdapter();
-		adapter.parseInputFile("ipss-plugin/ipss.sample/testData/bpa/07c_0615_notBE.dat"); 
+		AclfNetwork net = new BPADirectParser().parse("ipss-plugin/ipss.sample/testData/bpa/07c_0615_notBE.dat");
 		
-		AclfModelParser parser=(AclfModelParser) adapter.getModel();
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-			  System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			  return;
-	    }
-		AclfNetwork net=simuCtx.getAclfNet();
-		
-		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		net.accept(algo);
 		System.out.println(aclfResultBusStyle.apply(net));
 	}

@@ -202,7 +202,7 @@ public class TestCMPLDWGModel extends TestSetupBase {
 
 		//net.initDStabNet();
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		// System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -224,8 +224,6 @@ public class TestCMPLDWGModel extends TestSetupBase {
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
-
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 
 		
 		if (dstabAlgo.initialization()) {

@@ -24,7 +24,8 @@
 
 package org.interpss.dep.datamodel.bean.datatype;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Bean for storing AC Loadflow mismatch info
@@ -33,6 +34,8 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public class MismatchResultBean implements Comparable<MismatchResultBean> {
+	private static final Logger log = LoggerFactory.getLogger(MismatchResultBean.class);
+
 	public ComplexValueBean
 		err;				// real/reactive power mismatch
 	
@@ -52,12 +55,12 @@ public class MismatchResultBean implements Comparable<MismatchResultBean> {
 		int eql = 0;
 		
 		if (this.err.compareTo(bean.err) != 0) {
-			IpssLogger.ipssLogger.warning("MismatchResultBean.err is not equal"); eql = 1; }
+			log.warn("MismatchResultBean.err is not equal"); eql = 1; }
 		
 		if (!this.p_bus_id.equals(bean.p_bus_id)) {
-			IpssLogger.ipssLogger.warning("MismatchResultBean.p_bus_id is not equal"); eql = 1; }
+			log.warn("MismatchResultBean.p_bus_id is not equal"); eql = 1; }
 		if (!this.q_bus_id.equals(bean.q_bus_id)) {
-			IpssLogger.ipssLogger.warning("MismatchResultBean.q_bus_id is not equal"); eql = 1; }
+			log.warn("MismatchResultBean.q_bus_id is not equal"); eql = 1; }
 		
 		return eql;
 	}	

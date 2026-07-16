@@ -23,7 +23,6 @@ public class ParallelContingencyAnalyzer25kTest {
         try {
             // Initialize InterPSS
            // IpssCorePlugin.init();
-           // IpssLogger.getLogger().setLevel(Level.INFO);
             
             System.out.println("=== Large-Scale Parallel Contingency Analysis Test ===");
             System.out.println("Testing with ACTIVSg25k bus system (25,000+ buses)");

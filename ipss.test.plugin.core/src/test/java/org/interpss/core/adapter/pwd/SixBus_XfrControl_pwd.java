@@ -27,9 +27,6 @@ package org.interpss.core.adapter.pwd;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.logging.Level;
-
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
@@ -43,7 +40,7 @@ public class SixBus_XfrControl_pwd extends CorePluginTestSetup {
 	public void aclf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/pwd/SixBus_XfrControl.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)

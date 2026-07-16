@@ -8,7 +8,6 @@ import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 
-import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -38,10 +37,8 @@ public class MultiNet3PhPosSeqDynEventProcessor extends
 	 * @param eventMsg network dynamic event
 	 * @return false if there is any issue during event handling process 
 	 */
-	@Override public boolean onMsgEventStatus(IpssMessage eventMsg) {
-		if (eventMsg instanceof DStabSimuTimeEvent) {
-			DStabSimuTimeEvent dEventMsg = (DStabSimuTimeEvent) eventMsg;
-			if (dEventMsg.getType() == DStabSimuTimeEvent.ProessDynamicEvent) {
+	@Override public boolean onDynamicEvent(DStabSimuTimeEvent dEventMsg) {
+		if (dEventMsg.getType() == DStabSimuTimeEvent.ProessDynamicEvent) {
 				
 				this.net = dEventMsg.getDStabNetData();
 				
@@ -122,7 +119,6 @@ public class MultiNet3PhPosSeqDynEventProcessor extends
 
 					
 				}
-			}
 		}
 		return true;
 	}

@@ -12,7 +12,6 @@ import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.sc.ScBusModelType;
 import com.interpss.core.net.Bus;
@@ -30,8 +29,8 @@ public class DStab3SeqSolverImpl extends DStabSolverImpl {
 
     private double negZeroSeqCurrTolerance = 1.0E-3;
 
-    public DStab3SeqSolverImpl(DynamicSimuAlgorithm algo, IPSSMsgHub msg) {
-        super(algo, msg);
+    public DStab3SeqSolverImpl(DynamicSimuAlgorithm algo) {
+        super(algo);
         this.net = dstabAlgo.getNetwork();
     }
 
