@@ -187,6 +187,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+		aclfAlgo.setLfMethod(com.interpss.core.algo.AclfMethodType.NR);
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
@@ -406,6 +407,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	    
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+		aclfAlgo.setLfMethod(com.interpss.core.algo.AclfMethodType.NR);
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
@@ -807,6 +809,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 
             DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
             LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
+            aclfAlgo.setLfMethod(com.interpss.core.algo.AclfMethodType.NR);
             aclfAlgo.setTolerance(1.0E-6);
             assertTrue(aclfAlgo.loadflow());
             //System.out.println(AclfOutFunc.loadFlowSummary(dsNet));

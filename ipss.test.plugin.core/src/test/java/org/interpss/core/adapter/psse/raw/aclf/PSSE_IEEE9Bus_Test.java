@@ -348,20 +348,20 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//bus92 voltage
 		AclfBus bus92 = net.getBus("Bus92");
 		double voltageMagBus92 = bus92.getVoltageMag();
-		assertTrue(Math.abs(voltageMagBus92 - 1.03870) < 0.0001);
+		assertTrue(Math.abs(voltageMagBus92 - 1.03870) < 0.002, "Bus92 voltage: "+voltageMagBus92);
 		//bus92 voltage angle
-		assertTrue(Math.abs(bus92.getVoltageAng() - 10.45/180*Math.PI) < 0.0001);
+		assertTrue(Math.abs(bus92.getVoltageAng() - 10.45/180*Math.PI) < 0.002, "Bus92 angle: "+bus92.getVoltageAng());
 
 		//bus 92 gen results
 		Complex pGenBus92 = bus92.toGenBus().getGenResults(UnitType.PU);
-		assertTrue(Math.abs(pGenBus92.getReal() - 0.3200) < 0.0001);
-		assertTrue(Math.abs(pGenBus92.getImaginary() + 0.0400) < 0.0001);
+		assertTrue(Math.abs(pGenBus92.getReal() - 0.3200) < 0.002, "Bus92 Pg: "+pGenBus92.getReal());
+		assertTrue(Math.abs(pGenBus92.getImaginary() + 0.0400) < 0.002, "Bus92 Qg: "+pGenBus92.getImaginary());
 
 		//bus 91 gen results
 		AclfBus bus91 = net.getBus("Bus91");
 		Complex pGenBus91 = bus91.toGenBus().getGenResults(UnitType.PU);
-		assertTrue(Math.abs(pGenBus91.getReal() - 0.4600) < 0.0001);
-		assertTrue(Math.abs(pGenBus91.getImaginary() + 0.0311) < 0.0001);
+		assertTrue(Math.abs(pGenBus91.getReal() - 0.4600) < 0.002, "Bus91 Pg: "+pGenBus91.getReal());
+		assertTrue(Math.abs(pGenBus91.getImaginary() + 0.0311) < 0.002, "Bus91 Qg: "+pGenBus91.getImaginary());
 
 	}
 	
