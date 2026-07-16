@@ -22,7 +22,6 @@ public class Aclf_ACTIVSg25kBusSwShuntInvestigation {
 	static String RootDir = "ipss.test.plugin.core/";
 
 	public static void main(String args[]) throws Exception {
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 		String filename = RootDir + "testData/psse/v33/ACTIVSg25k.RAW";
 		

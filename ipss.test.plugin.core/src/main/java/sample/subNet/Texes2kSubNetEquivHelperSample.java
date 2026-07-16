@@ -23,7 +23,6 @@ public class Texes2kSubNetEquivHelperSample {
 
     public static void main(String[] args) throws InterpssException {
 		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		AclfNetwork aclfNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE,IpssFileAdapter.Version.PSSE_33)
