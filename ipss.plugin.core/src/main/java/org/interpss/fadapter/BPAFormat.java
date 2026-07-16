@@ -30,7 +30,6 @@ import org.interpss.fadapter.bpa.BPADirectParser;
 import org.interpss.fadapter.impl.IpssFileAdapterBase;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -39,10 +38,6 @@ import org.slf4j.LoggerFactory;
 
 public class BPAFormat extends IpssFileAdapterBase {
     private static final Logger logger = LoggerFactory.getLogger(BPAFormat.class);
-
-	public BPAFormat(IPSSMsgHub msgHub) {
-		super(msgHub);
-	}
 
 	@Override
 	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {

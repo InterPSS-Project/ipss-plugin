@@ -49,9 +49,11 @@ import org.slf4j.LoggerFactory;
 
 public class IpssInternalFormat extends IpssFileAdapterBase {
     private static final Logger logger = LoggerFactory.getLogger(IpssInternalFormat.class);
+	private final IPSSMsgHub msgHub;
+
 	public IpssInternalFormat(IPSSMsgHub msgHub) {
-		super(msgHub);
-	}	
+		this.msgHub = msgHub;
+	}
 
 	/**
 	 * Load the data in the data file, specified by the filepath, into the SimuContext object. An AclfAdjNetwork
