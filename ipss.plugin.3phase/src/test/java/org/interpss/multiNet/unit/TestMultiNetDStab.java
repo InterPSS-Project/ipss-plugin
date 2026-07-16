@@ -84,8 +84,6 @@ public class TestMultiNetDStab {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
 		
@@ -155,8 +153,6 @@ public class TestMultiNetDStab {
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -239,8 +235,6 @@ public class TestMultiNetDStab {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
 		
@@ -321,8 +315,6 @@ public class TestMultiNetDStab {
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		

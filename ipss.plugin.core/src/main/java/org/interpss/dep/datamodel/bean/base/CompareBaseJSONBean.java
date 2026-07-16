@@ -27,9 +27,10 @@ package org.interpss.dep.datamodel.bean.base;
 import java.util.Comparator;
 import java.util.List;
 
-import org.interpss.dep.datamodel.util.INetBeanComparator.CompareLog;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.interpss.common.util.IpssLogger;
+import org.interpss.dep.datamodel.util.INetBeanComparator.CompareLog;
 
 /**
  * Base bean class. The bean data model is intended for use in combination
@@ -41,6 +42,7 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public abstract class CompareBaseJSONBean<TExt extends BaseJSONUtilBean> extends BaseJSONUtilBean implements Comparable<CompareBaseJSONBean<TExt>> {
+	private static final Logger log = LoggerFactory.getLogger(CompareBaseJSONBean.class);
 	
 	/**
 	 * default error tolerance for Bean object comparison for value in PU
@@ -108,7 +110,7 @@ public abstract class CompareBaseJSONBean<TExt extends BaseJSONUtilBean> extends
 	 */
 	public void logCompareMsg(String msg) {
 		if (compareLog == CompareLog.Console)
-			IpssLogger.ipssLogger.warning(msg);
+			log.warn(msg);
 		else
 			getMsgList().add(msg);
 	}

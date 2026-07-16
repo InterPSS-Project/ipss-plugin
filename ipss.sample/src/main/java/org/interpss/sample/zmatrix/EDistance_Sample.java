@@ -36,7 +36,7 @@ import org.interpss.plugin.pssl.common.PSSLException;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
+import java.util.logging.Logger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.common.ReferenceBusException;
@@ -109,7 +109,7 @@ public class EDistance_Sample {
 		
 		int N = 10000;
 	  	
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer(Logger.getLogger(EDistance_Sample.class.getName()));
 		for (int n = 0; n < N; n++) {
 			eqn.setB2Zero();
 			eqn.setBi(new Complex(1.0,0.0), i);

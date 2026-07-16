@@ -45,7 +45,6 @@ public class DStabTestSetupBase extends CorePluginTestSetup {
 
 	public DStabTestSetupBase() { 
 		msg = CoreCommonFactory.getIpssMsgHub();
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
  	}
 /*
 	public DynamicSimuAlgorithm createDStabAlgo(DStabilityNetwork net) {

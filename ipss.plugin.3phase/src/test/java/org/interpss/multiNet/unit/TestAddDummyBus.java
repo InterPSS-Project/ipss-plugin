@@ -206,8 +206,6 @@ public class TestAddDummyBus {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
 		

@@ -167,8 +167,6 @@ public class IEEE14TestAclfSubNetBuild extends PiecewiseAlgoTestSetup {
   		
   		proc.mergeSubNet();
   		//System.out.println(net.net2String());
-
-  		//IpssLogger.getLogger().setLevel(Level.INFO);;
 	  	algo.loadflow();
   		assertTrue(net.isLfConverged());
   		//System.out.println(net.net2String());

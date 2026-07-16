@@ -41,9 +41,11 @@ import org.interpss.dep.datamodel.bean.base.BaseBranchBean;
 import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.datatype.LimitType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.common.exp.InterpssException;
 import com.interpss.common.mapper.AbstractMapper;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.AclfAdjustObjectFactory;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -85,6 +87,8 @@ public abstract class BaseAclfBean2AclfNetMapper<
                                                                 AclfBranchBean<TBraExt>, 
                                                                 TBusExt, TBraExt, TNetExt>, 
                                                 SimuContext> {
+	private static final Logger log = LoggerFactory.getLogger(BaseAclfBean2AclfNetMapper.class);
+
 	/**
 	 * constructor
 	 */
@@ -132,7 +136,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 				mapBranchBean(branchBean, aclfNet);
 			}
 		} catch (InterpssException e) {
-			IpssLogger.ipssLogger.severe(e.toString());
+			log.error(e.toString());
 			noError = false;	
 		}
 
@@ -318,7 +322,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 						tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
 					            AclfAdjustControlType.POINT_CONTROL, aclfNet, tcb.controlledBusId);
 						if (!tapOpt.isPresent()) {
-							IpssLogger.ipssLogger.warning("Cannot create tap voltage control for branch " + branch.getId()
+							log.warn("Cannot create tap voltage control for branch " + branch.getId()
 									+ ", controlled bus: " + tcb.controlledBusId);
 							return;
 						}
@@ -327,7 +331,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 						tapOpt = AclfAdjustObjectFactory.createTapVControlBusVoltage(branch, 
 					            AclfAdjustControlType.RANGE_CONTROL, aclfNet, tcb.controlledBusId);
 						if (!tapOpt.isPresent()) {
-							IpssLogger.ipssLogger.warning("Cannot create tap voltage control for branch " + branch.getId()
+							log.warn("Cannot create tap voltage control for branch " + branch.getId()
 									+ ", controlled bus: " + tcb.controlledBusId);
 							return;
 						}
@@ -350,7 +354,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 					Optional<TapControl> tapOpt = AclfAdjustObjectFactory.createTapVControlMvarFlow(branch, 
 							            AclfAdjustControlType.POINT_CONTROL);
 					if (!tapOpt.isPresent()) {
-						IpssLogger.ipssLogger.warning("Cannot create tap Mvar flow control for branch " + branch.getId());
+						log.warn("Cannot create tap Mvar flow control for branch " + branch.getId());
 						return;
 					}
 					TapControl tap = tapOpt.get();
@@ -371,7 +375,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 				if(tcb.controlType == TapControlTypeBean.Point_Control){
 					Optional<PSXfrPControl> psxfrOpt = AclfAdjustObjectFactory.createPSXfrPControl(branch, AclfAdjustControlType.POINT_CONTROL);
 					if (!psxfrOpt.isPresent()) {
-						IpssLogger.ipssLogger.warning("Cannot create PSXfr P control for branch " + branch.getId());
+						log.warn("Cannot create PSXfr P control for branch " + branch.getId());
 						return;
 					}
 					PSXfrPControl psxfr = psxfrOpt.get();
@@ -385,7 +389,7 @@ public abstract class BaseAclfBean2AclfNetMapper<
 				}else if (tcb.controlType == TapControlTypeBean.Range_Control ){ // range control
 					Optional<PSXfrPControl> psxfrOpt = AclfAdjustObjectFactory.createPSXfrPControl(branch, AclfAdjustControlType.RANGE_CONTROL);
 					if (!psxfrOpt.isPresent()) {
-						IpssLogger.ipssLogger.warning("Cannot create PSXfr P control for branch " + branch.getId());
+						log.warn("Cannot create PSXfr P control for branch " + branch.getId());
 						return;
 					}
 					PSXfrPControl psxfr = psxfrOpt.get();
