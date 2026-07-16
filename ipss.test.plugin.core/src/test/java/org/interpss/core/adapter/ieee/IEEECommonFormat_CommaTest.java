@@ -56,13 +56,6 @@ public class IEEECommonFormat_CommaTest extends CorePluginTestSetup {
 		assertTrue(net.getBus("Bus2").getContributeLoad("Bus2-L1") != null);
 		assertTrue(net.getBus("Bus2").getContributeLoad("Bus2-L1").getName().equals("Bus2-L1"));
 		
-//		IODMAdapter adapter = new IeeeCDFAdapter(IpssLogger.getLogger());
-//		adapter.parseInputFile("testdata/ieee_format/ieee14_comma.ieee");
-//		
-//		AclfNetwork net = PluginSpringCtx
-//				.getOdm2AclfMapper()
-//				.map2Model((AclfModelParser)adapter.getModel())
-//				.getAclfNet();		
 		
 		//System.out.println(adapter.getODMModelParser().toString());
 		

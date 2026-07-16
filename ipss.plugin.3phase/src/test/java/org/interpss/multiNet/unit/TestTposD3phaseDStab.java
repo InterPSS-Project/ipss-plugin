@@ -86,7 +86,7 @@ public class TestTposD3phaseDStab {
 		 */
 		
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				dsNet, IpssCorePlugin.getMsgHub());
+				dsNet);
 			
 	
 	  	
@@ -217,7 +217,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -265,8 +265,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			
@@ -377,7 +375,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -421,8 +419,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			
@@ -536,7 +532,7 @@ public class TestTposD3phaseDStab {
 			 //
 			 //=============dynamic simulation ===============================
 			 //
-			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			    
 			  
 				dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -585,8 +581,6 @@ public class TestTposD3phaseDStab {
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				PerformanceTimer timer = new PerformanceTimer();
 				
@@ -701,7 +695,7 @@ public class TestTposD3phaseDStab {
 			 //
 			 //=============dynamic simulation ===============================
 			 //
-			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			    
 			  
 				dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -745,8 +739,6 @@ public class TestTposD3phaseDStab {
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				PerformanceTimer timer = new PerformanceTimer();
 				
@@ -860,7 +852,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -904,8 +896,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			
@@ -1020,7 +1010,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -1045,8 +1035,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			
@@ -1147,7 +1135,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -1173,8 +1161,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			

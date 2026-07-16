@@ -27,15 +27,10 @@ package org.interpss.core.adapter.psse.raw.aclf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.odm.mapper.ODMAclfNetMapper;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -44,65 +39,40 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class GuideSample_TestCase extends CorePluginTestSetup {
 	@Test
 	public void testCase() throws Exception {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/adpter/psse/PSSE_GuideSample.raw"));		
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return;
-		}	
-  		simuCtx.setName("Sample18Bus");
- 	  	simuCtx.setDesc("This project is created by input file adapter.getModel()");
- 	  	AclfNetwork net = simuCtx.getAclfNet();
-  		//System.out.println(net.net2String());
+		AclfNetwork net = CorePluginFactory
+				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
+				.loadAclfNet("testData/adpter/psse/PSSE_GuideSample.raw");
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 		algo.setNonDivergent(true);
 	  	algo.loadflow();
-  		//System.out.println(net.net2String());
 	  	
-  		AclfBus swingBus = simuCtx.getAclfNet().getBus("Bus3011");
+  		AclfBus swingBus = net.getBus("Bus3011");
 		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.mW);
-  		//System.out.println(p.getReal() + ", " + p.getImaginary());
   		assertTrue(Math.abs(p.getReal()-258.6568)<0.01);
   		assertTrue(Math.abs(p.getImaginary()-104.04017)<0.01);
 	}
 
 	@Test
 	public void testCase1() throws Exception {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile("testData/adpter/psse/PSSE_GuideSample.raw"));		
-		
 		AclfNetwork net = CorePluginFactory
-				.getOdm2AclfParserMapper(ODMAclfNetMapper.XfrBranchModel.InterPSS)
-				.map2Model((AclfModelParser)adapter.getModel())
-				.getAclfNet();
-		
-  		//System.out.println(net.net2String());
+				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
+				.loadAclfNet("testData/adpter/psse/PSSE_GuideSample.raw");
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 		algo.setNonDivergent(true);
 	  	algo.loadflow();
-  		//System.out.println(net.net2String());
 	  	
   		AclfBus swingBus = net.getBus("Bus3011");
 		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.mW);
-  		//System.out.println(p.getReal() + ", " + p.getImaginary());
   		assertTrue(Math.abs(p.getReal()-258.657)<0.01);
   		assertTrue(Math.abs(p.getImaginary()-104.045)<0.01);
 	}

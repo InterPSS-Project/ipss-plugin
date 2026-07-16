@@ -52,7 +52,7 @@ public class TestDER_AModel extends TestSetupBase {
 	
 		//net.initDStabNet();
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -73,8 +73,6 @@ public class TestDER_AModel extends TestSetupBase {
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 
 		
 		if (dstabAlgo.initialization()) {
@@ -128,7 +126,7 @@ public class TestDER_AModel extends TestSetupBase {
 		DER_A_PosSeq der = new DER_A_PosSeqImpl(gen1,bus1, "1");
 
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 

@@ -82,8 +82,6 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
 	  	net.setZeroZBranchThreshold(0.00001);
@@ -119,8 +117,6 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
@@ -155,8 +151,6 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
@@ -198,8 +192,6 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
 				.load()
 				.getImportedObj();
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);

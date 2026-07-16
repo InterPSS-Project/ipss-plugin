@@ -27,7 +27,8 @@ package org.interpss.dep.datamodel.bean.datatype;
 import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.numeric.util.NumericUtil;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Bean class for storing branch value [fromSideValue, toSideValue]
@@ -36,6 +37,8 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public class BranchValueBean  implements Comparable<BranchValueBean> {
+	private static final Logger log = LoggerFactory.getLogger(BranchValueBean.class);
+
 	public double
 		f ,				// value at the from side
 		t ;				// value at the to side
@@ -53,10 +56,10 @@ public class BranchValueBean  implements Comparable<BranchValueBean> {
 		int eql = 0;
 		
 		if (!NumericUtil.equals(this.f, bean.f, CompareBaseJSONBean.PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BranchValueBean.f is not equal, " + this.f + ", " + bean.f); eql = 1; }
+			log.warn("BranchValueBean.f is not equal, " + this.f + ", " + bean.f); eql = 1; }
 		
 		if (!NumericUtil.equals(this.t, bean.t, CompareBaseJSONBean.PU_ERR)) {
-			IpssLogger.ipssLogger.warning("BranchValueBean.t is not equal, " + this.t + ", " + bean.t); eql = 1; }	
+			log.warn("BranchValueBean.t is not equal, " + this.t + ", " + bean.t); eql = 1; }	
 		
 		return eql;
 	}	

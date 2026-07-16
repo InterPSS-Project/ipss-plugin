@@ -61,7 +61,7 @@ public class TestDER_A_model {
 		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(distNet));
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				distNet, IpssCorePlugin.getMsgHub());
+				distNet);
 
 
 	  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
