@@ -23,7 +23,6 @@ public class PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 	@Test
 	public void testAclf() throws InterpssException{
 		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
 
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")

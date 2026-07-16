@@ -9,12 +9,8 @@ import java.util.Hashtable;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
@@ -38,7 +34,6 @@ import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel1Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
-import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
 import org.interpss.threePhase.powerflow.impl.DistPowerFlowOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
@@ -71,8 +66,6 @@ import com.interpss.dstab.impl.DStabGenImpl;
 import com.interpss.dstab.mach.EConstMachine;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class TestTnD_DynamicSwitching {
 
@@ -80,22 +73,7 @@ public class TestTnD_DynamicSwitching {
 	public void test_IEEE9_8Busfeeder_powerflow() throws InterpssException {
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet,
-				new String[] { "testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq",
-						// "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-						"testData/IEEE9Bus/ieee9_dyn.dyr" }));
-		DStabModelParser parser = (DStabModelParser) adapter.getModel();
-
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-
-		// The only change to the normal data import is the use of
-		// ODM3PhaseDStabParserMapper
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub()).map2Model(parser, simuCtx)) {
-			System.out
-					.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 
 		DStabNetwork3Phase dsNet = (DStabNetwork3Phase) simuCtx.getDStabilityNet();
 
@@ -199,24 +177,7 @@ public class TestTnD_DynamicSwitching {
 		 * ----------------------------------------------------------
 		 */
 
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[] { 
-				"testData/IEEE9Bus/ieee9.raw",
-				"testData/IEEE9Bus/ieee9.seq", 
-				"testData/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr"
-				// "testData/IEEE9Bus/ieee9_dyn.dyr"
-		}));
-		DStabModelParser parser = (DStabModelParser) adapter.getModel();
-
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-
-		// The only change to the normal data import is the use of
-		// ODM3PhaseDStabParserMapper
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub()).map2Model(parser, simuCtx)) {
-			System.out
-					.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr");
 
 		DStabNetwork3Phase dsNet = (DStabNetwork3Phase) simuCtx.getDStabilityNet();
 		
@@ -372,8 +333,7 @@ public class TestTnD_DynamicSwitching {
 
 			MultiNet3Ph3SeqDStabSimuHelper mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet, proc);
 			// create multiNet3Seq3PhDStabHelper and initialize the subsystem
-			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet,
-					IpssCorePlugin.getMsgHub());
+			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 
 			StateMonitor sm = new StateMonitor();
 			sm.addGeneratorStdMonitor(new String[] { "Bus1-mach1", "Bus2-mach1", "Bus3-mach1" });
@@ -487,8 +447,6 @@ public class TestTnD_DynamicSwitching {
 			// proc.getSubNetworkByBusId("Bus28"),LoadChangeEventType.FIXED_TIME,-0.4,
 			// 1.0),"LoadReduce40%@Bus18");
 //			dsNet.addDynamicEvent(createGeneratorTripEvent("Bus2", "1", proc.getSubNetworkByBusId("Bus2"), 1),"Bus1_Mach1_trip_1sec");
-
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
@@ -770,8 +728,7 @@ public class TestTnD_DynamicSwitching {
 
 			// make sure dynamic event list is empty in the beginning of each loop
 			dsNet.getDynamicEventList().clear();
-			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet,
-					IpssCorePlugin.getMsgHub());
+			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 
 			StateMonitor sm = new StateMonitor();
 			sm.addGeneratorStdMonitor(new String[] { "MachId" });
@@ -838,8 +795,6 @@ public class TestTnD_DynamicSwitching {
 			// proc.getSubNetworkByBusId("Bus28"),LoadChangeEventType.FIXED_TIME,-0.4,
 			// 1.0),"LoadReduce40%@Bus18");
 //			dsNet.addDynamicEvent(createGeneratorTripEvent("Bus2", "1", proc.getSubNetworkByBusId("Bus2"), 1),"Bus1_Mach1_trip_1sec");
-
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();

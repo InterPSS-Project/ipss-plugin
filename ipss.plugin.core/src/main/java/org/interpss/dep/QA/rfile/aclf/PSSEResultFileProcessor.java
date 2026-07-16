@@ -8,8 +8,10 @@ import org.interpss.dep.datamodel.bean.aclf.ext.AclfBranchResultBean;
 import org.interpss.dep.datamodel.bean.base.BaseBranchBean.BranchCode;
 import org.interpss.dep.datamodel.bean.datatype.ComplexValueBean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.common.util.NetUtilFunc;
 import com.interpss.common.util.StringUtil;
 
@@ -19,6 +21,8 @@ import com.interpss.common.util.StringUtil;
  * 
  */
 public class PSSEResultFileProcessor extends BaseResultFileProcessor {
+	private static final Logger log = LoggerFactory.getLogger(PSSEResultFileProcessor.class);
+
 	public static String BusPrefix = "Bus"; 
 
 /*
@@ -124,7 +128,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 			if (lineStr.length() > 38 && StringUtil.isDouble(lineStr.substring(0, 38).trim())) {
 				double baseMva = StringUtil.getDouble(lineStr.substring(0, 38).trim());
 				this.mva2pu = 1.0 / baseMva;
-				IpssLogger.getLogger().info("BaseMva: " + baseMva);
+				log.info("BaseMva: " + baseMva);
 				baseKvaProcessed = true;
 				this.qaSet.base_kva = baseMva * 1000.0;
 			}
@@ -135,7 +139,6 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 			busDataBegin = true;
 			totalBus++; 
 			this.busDataLineNo = 0;
-			//IpssLogger.getLogger().info("Processing bus: " + totalBus);
 		}
 
 		if (busDataBegin) {

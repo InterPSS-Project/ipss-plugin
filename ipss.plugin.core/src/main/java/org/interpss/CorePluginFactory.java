@@ -1,27 +1,3 @@
-/*
- * @(#)CorePluginSpringCtx.java   
- *
- * Copyright (C) 2006 www.interpss.org
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
- * as published by the Free Software Foundation; either version 2.1
- * of the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * @Author Mike Zhou
- * @Version 1.0
- * @Date 09/15/2006
- * 
- *   Revision History
- *   ================
- *
- */
-
 package org.interpss;
 
 import org.interpss.fadapter.BPAFormat;
@@ -33,108 +9,19 @@ import org.interpss.fadapter.MatpowerFormat;
 import org.interpss.fadapter.PTIFormat;
 import org.interpss.fadapter.PWDFormat;
 import org.interpss.fadapter.UCTEFormat;
-import org.interpss.odm.mapper.ODMAclfNetMapper;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
-import org.interpss.odm.mapper.ODMAcscParserMapper;
-import org.interpss.odm.mapper.ODMDStabParserMapper;
-import org.interpss.odm.mapper.ODMDcSysNetMapper;
-import org.interpss.odm.mapper.ODMDcSysParserMapper;
-import org.interpss.odm.mapper.ODMDistNetMapper;
-import org.interpss.odm.mapper.ODMDistParserMapper;
-import org.interpss.odm.mapper.ODMOpfParserMapper;
 
-import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 
 /**
- * Core plugin spring object factory
+ * Core plugin factory for file adapters and other core components.
+ * ODM mapper factory methods have been removed - use direct parsers instead.
  * 
  * @author mzhou
- *
  */
-public class CorePluginFactory extends CoreCommonFactory {
-	/*
-	 * 		Mapper definition Odm -> SimuCtx
-	 * 		================================
-	 */
-	/**
-	 * create a ODMAclfMapper object from the Spring container
-	 * 
-	 * @param xfrBranchModel
-	 */
-	public static ODMAclfParserMapper getOdm2AclfParserMapper(ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
-		ODMAclfParserMapper mapper = new ODMAclfParserMapper();
-		mapper.setXfrBranchModel(xfrBranchModel);
-		return mapper;
-	}	
+public class CorePluginFactory {
 
-	/**
-	 * create a ODMAclfNetMapper object from the Spring container
-	 * 
-	 * @param xfrBranchModel
-	 * @return
-	 */
-	public static ODMAclfNetMapper getOdm2AclfNetMapper(ODMAclfNetMapper.XfrBranchModel xfrBranchModel) {
-		ODMAclfNetMapper mapper = new ODMAclfNetMapper();
-		mapper.setXfrBranchModel(xfrBranchModel);
-		return mapper;
-	}	
-
-	/**
-	 * create a ODMAcscDataMapper object from the Spring container
-	 */
-	public static ODMAcscParserMapper getOdm2AcscParserMapper() {
-		return new ODMAcscParserMapper();
-	}	
-	
-	/**
-	 * create a ODMDStabDataMapper object from the Spring container
-	 */
-	public static ODMDStabParserMapper getOdm2DStabParserMapper() {
-		return new ODMDStabParserMapper(CoreCommonFactory.getIpssMsgHub());
-	}	
-	
-	/**
-	 * create a ODMDistParserMapper object from the Spring container
-	 */
-	public static ODMDistParserMapper getOdm2DistParserMapper() {
-		return new ODMDistParserMapper();
-	}	
-
-	/**
-	 * create a ODMDistNetMapper object from the Spring container
-	 */	
-	public static ODMDistNetMapper getOdm2DistNetMapper() {
-		return new ODMDistNetMapper();
-	}	
-	
-	/**
-	 * create a ODMDcSysParserMapper object from the Spring container
-	 */	
-	public static ODMDcSysParserMapper getOdm2DcSysParserMapper() {
-		return new ODMDcSysParserMapper();
-	}		
-
-	/**
-	 * create a ODMDcSysNetMapper object from the Spring container
-	 */	
-	public static ODMDcSysNetMapper getOdm2DcSysNetMapper() {
-		return new ODMDcSysNetMapper();
-	}		
-
-	/**
-	 * create a ODMOpfParserMapper object from the Spring container
-	 */
-	public static ODMOpfParserMapper getOdm2OpfParserMapper() {
-		return new ODMOpfParserMapper();
-	}	
-	
 	/**
 	 * get input file adapter for the file format
-	 * 
-	 * @param f
-	 * @return
-	 * @throws InterpssException
 	 */
 	public static IpssFileAdapter getFileAdapter(IpssFileAdapter.FileFormat f) throws InterpssException {
 		IpssFileAdapter.Version version = 
@@ -144,38 +31,33 @@ public class CorePluginFactory extends CoreCommonFactory {
 	}
 	
 	/**
-	 * get input file adapter for the file format
-	 * 
-	 * @param f
-	 * @param v
-	 * @return
-	 * @throws InterpssException
+	 * get input file adapter for the file format and version
 	 */
 	public static IpssFileAdapter getFileAdapter(IpssFileAdapter.FileFormat f, IpssFileAdapter.Version v)
 					throws InterpssException {
 		if (f == IpssFileAdapter.FileFormat.IEEECDF) {
-			return new IeeeCDFFormat(CoreCommonFactory.getIpssMsgHub(), v);
+			return new IeeeCDFFormat();
 		}
 		else if (f == IpssFileAdapter.FileFormat.GE_PSLF) {
-			return new GEFormat(CoreCommonFactory.getIpssMsgHub());
+			return new GEFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.PSSE) {
-			return new PTIFormat(v, CoreCommonFactory.getIpssMsgHub());
+			return new PTIFormat(v);
 		} 
 		else if (f == IpssFileAdapter.FileFormat.BPA) {
-			return new BPAFormat(CoreCommonFactory.getIpssMsgHub());
+			return new BPAFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.PWD) {
-			return new PWDFormat(CoreCommonFactory.getIpssMsgHub());
+			return new PWDFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.MATPOWER) {
-			return new MatpowerFormat(CoreCommonFactory.getIpssMsgHub());
+			return new MatpowerFormat();
 		}
 		else if (f == IpssFileAdapter.FileFormat.UCTE) {
-			return new UCTEFormat(CoreCommonFactory.getIpssMsgHub());
+			return new UCTEFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.IpssInternal) {
-			return new IpssInternalFormat(CoreCommonFactory.getIpssMsgHub());
+			return new IpssInternalFormat();
 		} 
 		throw new InterpssException("Error - File adapter format/version not implemented");
 	}	
