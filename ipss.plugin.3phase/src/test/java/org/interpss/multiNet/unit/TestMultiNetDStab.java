@@ -66,7 +66,7 @@ public class TestMultiNetDStab {
 	    // the first subnetwork 
 	    BaseDStabNetwork<?, ?> subNet = proc.getSubNetworkList().get(0);
 	    
-	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(subNet, IpssCorePlugin.getMsgHub());
+	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(subNet);
 	    
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -136,7 +136,7 @@ public class TestMultiNetDStab {
 	    MultiNetDStabSimuHelper multiNetHelper = new  MultiNetDStabSimuHelper(dsNet,proc);
 	    
 	    
-	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 	    
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -217,7 +217,7 @@ public class TestMultiNetDStab {
 	    MultiNetDStabSimuHelper multiNetHelper = new  MultiNetDStabSimuHelper(dsNet,proc);
 	    
 	    
-	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 	    
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
@@ -298,7 +298,7 @@ public class TestMultiNetDStab {
 	
 
 	    
-	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+	    DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 	    
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);

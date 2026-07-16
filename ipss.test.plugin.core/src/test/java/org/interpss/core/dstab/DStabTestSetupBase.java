@@ -29,7 +29,6 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.NumericConstant;
 
 import com.interpss.common.CoreCommonFactory;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.fault.AcscBusFault;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -41,10 +40,8 @@ import com.interpss.dstab.devent.DynamicSimuEventType;
 
 public class DStabTestSetupBase extends CorePluginTestSetup {
 	
-	protected IPSSMsgHub msg;
 
 	public DStabTestSetupBase() { 
-		msg = CoreCommonFactory.getIpssMsgHub();
  	}
 /*
 	public DynamicSimuAlgorithm createDStabAlgo(DStabilityNetwork net) {

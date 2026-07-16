@@ -155,7 +155,7 @@ public class IEEE123Feeder_Dstab_Test {
 		mach.setXd1(0.05);
 
 		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(
-				distNet, IpssCorePlugin.getMsgHub());
+				distNet);
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
 		dstabAlgo.setTotalSimuTimeSec(1.0);
@@ -248,7 +248,7 @@ public class IEEE123Feeder_Dstab_Test {
 
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				distNet, IpssCorePlugin.getMsgHub());
+				distNet);
 
 
 
