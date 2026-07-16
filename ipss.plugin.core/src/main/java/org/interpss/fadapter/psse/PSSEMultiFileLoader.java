@@ -79,7 +79,7 @@ public class PSSEMultiFileLoader {
         }
 
         DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(
-                dsNet, CoreCommonFactory.getIpssMsgHub());
+                dsNet);
         simuCtx.setDynSimuAlgorithm(dstabAlgo);
 
         return simuCtx;

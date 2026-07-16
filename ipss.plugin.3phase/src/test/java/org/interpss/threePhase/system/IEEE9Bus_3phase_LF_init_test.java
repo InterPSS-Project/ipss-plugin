@@ -235,7 +235,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 //	  		bus5.getPhaseCDynLoadList().add(ac3);
 
 
-			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			assertTrue(aclfAlgo.loadflow());
 			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));

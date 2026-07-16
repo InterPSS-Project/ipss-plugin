@@ -202,7 +202,7 @@ public class TestCMPLDWGModel extends TestSetupBase {
 
 		//net.initDStabNet();
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		// System.out.println(AclfOutFunc.loadFlowSummary(net));
