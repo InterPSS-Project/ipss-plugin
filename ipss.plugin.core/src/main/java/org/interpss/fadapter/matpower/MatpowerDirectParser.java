@@ -145,12 +145,24 @@ public class MatpowerDirectParser {
             token = token.trim();
             if (token.isEmpty()) continue;
             try {
-                values.add(Double.parseDouble(token));
+                values.add(Double.parseDouble(normalizeSpecialFloat(token)));
             } catch (NumberFormatException e) {
                 // skip non-numeric tokens
             }
         }
         return values.stream().mapToDouble(Double::doubleValue).toArray();
+    }
+
+    /**
+     * MATPOWER uses "Inf"/"-Inf"/"NaN" but Java's Double.parseDouble
+     * only accepts "Infinity"/"-Infinity"/"NaN".
+     */
+    private static String normalizeSpecialFloat(String token) {
+        switch (token) {
+            case "Inf": case "+Inf": return "Infinity";
+            case "-Inf": return "-Infinity";
+            default: return token;
+        }
     }
 
     // ==================== Bus Processing ====================
@@ -287,7 +299,7 @@ public class MatpowerDirectParser {
             circuitMap.put(brKey, cir);
             String cirId = String.valueOf(cir);
 
-            boolean isXfr = (ratio != 0.0 && ratio != 1.0) || angle != 0.0;
+            boolean isXfr = ratio != 0.0 || angle != 0.0;
 
             if (!isXfr) {
                 builder.addLine(fromBusId, toBusId, cirId,

@@ -345,15 +345,15 @@ public class PSSEJsonDirectParser {
         String ckt = getString(row, "ckt", "1").trim();
         int stat = getInt(row, "stat", 1);
 
-        double r12 = getDouble(row, "r1-2", 0.0);
-        double x12 = getDouble(row, "x1-2", 0.0);
-        double sbase12 = getDouble(row, "sbase1-2", baseMva);
+        double r12 = getDouble(row, "r1_2", 0.0);
+        double x12 = getDouble(row, "x1_2", 0.0);
+        double sbase12 = getDouble(row, "sbase1_2", baseMva);
         double windv1 = getDouble(row, "windv1", 1.0);
         double windv2 = getDouble(row, "windv2", 1.0);
         double ang1 = getDouble(row, "ang1", 0.0);
-        double rate1 = getDouble(row, "rata1", 0.0);
-        double rate2 = getDouble(row, "ratb1", 0.0);
-        double rate3 = getDouble(row, "ratc1", 0.0);
+        double rate1 = getDouble(row, "wdg1rate1", 0.0);
+        double rate2 = getDouble(row, "wdg1rate2", 0.0);
+        double rate3 = getDouble(row, "wdg1rate3", 0.0);
         double mag1 = getDouble(row, "mag1", 0.0);
         double mag2 = getDouble(row, "mag2", 0.0);
         int cw = getInt(row, "cw", 1);

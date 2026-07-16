@@ -300,29 +300,29 @@ public class PSSEDStabDirectParser {
 
     // ==================== Governor Model Parsers ====================
 
-    // IEEEG1: IBUS 'IEEEG1' ID JBUS K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
-    //         idx:  0    1    2   3   4 5  6  7  8  9  10   11   12 13 14 15 16 17 18 19 20 21 22 23
+    // IEEEG1: IBUS 'IEEEG1' ID JBUS M K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
+    //         idx:  0    1    2   3  4  5  6  7  8  9 10  11   12  13 14 15 16 17 18 19 20 21 22 23 24
     private boolean procGovIeeeg1(String busId, String genId, String[] f) throws InterpssException {
-        double k = getDouble(f, 4, 0);
-        double t1 = getDouble(f, 5, 0);
-        double t2 = getDouble(f, 6, 0);
-        double t3 = getDouble(f, 7, 0);
-        double uo = getDouble(f, 8, 0);
-        double uc = getDouble(f, 9, 0);
-        double pmax = getDouble(f, 10, 0);
-        double pmin = getDouble(f, 11, 0);
-        double t4 = getDouble(f, 12, 0);   // Tch
-        double k1 = getDouble(f, 13, 0);   // Fvhp
-        double k2 = getDouble(f, 14, 0);
-        double t5 = getDouble(f, 15, 0);   // Trh1
-        double k3 = getDouble(f, 16, 0);   // Fhp
-        double k4 = getDouble(f, 17, 0);
-        double t6 = getDouble(f, 18, 0);   // Trh2
-        double k5 = getDouble(f, 19, 0);   // Fip
-        double k6 = getDouble(f, 20, 0);
-        double t7 = getDouble(f, 21, 0);   // Tco
-        double k7 = getDouble(f, 22, 0);   // Flp
-        double k8 = getDouble(f, 23, 0);
+        double k = getDouble(f, 5, 0);
+        double t1 = getDouble(f, 6, 0);
+        double t2 = getDouble(f, 7, 0);
+        double t3 = getDouble(f, 8, 0);
+        double uo = getDouble(f, 9, 0);
+        double uc = getDouble(f, 10, 0);
+        double pmax = getDouble(f, 11, 0);
+        double pmin = getDouble(f, 12, 0);
+        double t4 = getDouble(f, 13, 0);   // Tch
+        double k1 = getDouble(f, 14, 0);   // Fvhp
+        double k2 = getDouble(f, 15, 0);
+        double t5 = getDouble(f, 16, 0);   // Trh1
+        double k3 = getDouble(f, 17, 0);   // Fhp
+        double k4 = getDouble(f, 18, 0);
+        double t6 = getDouble(f, 19, 0);   // Trh2
+        double k5 = getDouble(f, 20, 0);   // Fip
+        double k6 = getDouble(f, 21, 0);
+        double t7 = getDouble(f, 22, 0);   // Tco
+        double k7 = getDouble(f, 23, 0);   // Flp
+        double k8 = getDouble(f, 24, 0);
 
         if (k2 != 0 || k4 != 0 || k6 != 0 || k8 != 0) {
             log.warn("IEEEG1 with dual PMech outputs not supported. Bus: {}", busId);
