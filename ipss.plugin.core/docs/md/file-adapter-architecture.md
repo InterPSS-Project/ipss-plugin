@@ -348,6 +348,160 @@ java org.interpss.fadapter.psse.monitor.MonFileConverter input.mon output.json
 | PSS/E .sub | — | `SubFileParser` | — | Subsystem → bus/branch sets |
 | PSS/E .mon | — | `MonFileParser` | — | Monitored elements → ID sets |
 
+## Tests and Samples (`ipss.test.plugin.core`)
+
+Integration tests, builder unit tests, and runnable samples for `org.interpss.fadapter` live in the **`ipss.test.plugin.core`** Maven module (not in `ipss.plugin.core`). A smaller parser-focused unit test also exists under `ipss.plugin.core/src/test/java/org/interpss/fadapter/`.
+
+### Module layout
+
+```
+ipss.test.plugin.core/
+├── src/test/java/org/interpss/
+│   ├── CorePluginTestSetup.java       # @BeforeAll: IpssCorePlugin.init()
+│   ├── CorePluginTestSuite.java       # Main JUnit suite (adapter + builder + downstream)
+│   └── core/adapter/                  # ~78 adapter-related test classes
+│       ├── builder/                   # Aclf / Acsc / DStab builder unit tests
+│       ├── ieee/                      # IEEE CDF
+│       ├── internal/                  # IpssInternalFormat
+│       ├── matpower/                  # MATPOWER + large Pegase/RTE cases
+│       ├── psse/raw/aclf|acsc|dstab/  # PSS/E RAW, sequence, dynamics
+│       ├── psse/json/aclf/            # RAWX import + JSON export
+│       ├── pwd/, ge/, bpa/, ucte/     # Other format facades
+│       └── CoreAdapterTestSuite.java  # Smaller IEEE + internal subset
+├── src/main/java/sample/              # Runnable main() examples (load → simulate → export)
+└── testData/                          # Fixture files (paths relative to module CWD)
+    ├── adpter/                        # Primary adapter fixtures
+    │   ├── psse/v{29..36}/, json/
+    │   ├── ieee_format/, matpower/, pwd/, bpa/, ge/, ucte/
+    │   └── …
+    └── psse/                          # Large cases, contingency, monitored-branch JSON
+```
+
+Tests assume the working directory is the `ipss.test.plugin.core` module root so paths like `testData/adpter/psse/v30/IEEE9Bus/ieee9.raw` resolve correctly.
+
+### Test infrastructure
+
+| Class | Role |
+|-------|------|
+| `CorePluginTestSetup` | Base class: calls `IpssCorePlugin.init()` once; exposes `msg` hub and `create2BusSystem()` helper |
+| `CorePluginTestSuite` | Broad regression suite — includes builder tests, format adapters, PSSE JSON, MATPOWER, large nets, DStab/Acsc |
+| `CoreAdapterTestSuite` | Narrow suite: IEEE CDF + `IpssInternalFormat` smoke tests |
+| `PSSEAdapterTestSuite` | PSSE RAW user-case subset (`CR_UserTestCases`) |
+
+Most adapter tests extend `CorePluginTestSetup` and load cases via one of:
+
+- `IpssAdapter.importAclfNet(path).setFormat(...).setPsseVersion(...).load().getImportedObj()`
+- `CorePluginFactory.getFileAdapter(FileFormat, Version).load(path).getAclfNet()`
+- Direct parser: `new PSSEDirectParser(ver).parse(path)`, `new PSSEJsonDirectParser().parse(path)`
+- Multi-file: `new PSSEMultiFileLoader(ver).loadAcsc(...)` / `.loadDStab(...)`
+
+### Running tests
+
+From the `ipss-plugin` repo root:
+
+```bash
+# Full core plugin regression (includes fadapter integration tests)
+mvn -pl ipss.test.plugin.core test -Dtest=CorePluginTestSuite
+
+# Smaller adapter-only subset
+mvn -pl ipss.test.plugin.core test -Dtest=CoreAdapterTestSuite
+
+# Builder unit tests (Aclf)
+mvn -pl ipss.test.plugin.core test -Dtest=AclfNetworkBuilderCoreTest
+
+# Single format integration test
+mvn -pl ipss.test.plugin.core test -Dtest=MatpowerFormatTest
+mvn -pl ipss.test.plugin.core test -Dtest=PSSE_IEEE9Bus_Test
+mvn -pl ipss.test.plugin.core test -Dtest=IEEE9_Dstab_Adapter_Test
+mvn -pl ipss.test.plugin.core test -Dtest=PSSEJSon_IEEE9Bus_FAdapter_Test
+
+# Parser unit test in ipss.plugin.core (PSS/E v36 label metadata)
+mvn -pl ipss.plugin.core test -Dtest=PSSEV36RawLabelMetadataMapperTest
+```
+
+### Test coverage by component
+
+#### Network builder unit tests (`core/adapter/builder/`)
+
+| Package | Test classes | What they verify |
+|---------|--------------|------------------|
+| `builder/aclf/` | `AclfNetworkBuilderCoreTest`, `BranchTest`, `AdjDeviceTest`, `HvdcTest`, `3WAndFinalizeTest` | Bus/gen/load codes, branches, tap/PS controls, HVDC, 3W xfr, `finalizeNetwork()` |
+| `builder/acsc/` | `AcscNetworkBuilderCoreTest`, `BranchTest`, `FinalizeTest` | Sequence Z, grounding, branch zero-seq, finalize |
+| `builder/dstab/` | `DStabNetworkBuilderMachineTest`, `ExciterTest`, `GovernorTest` | GENROU/GENSAL, IEEET1/TGOV1, machine attachment |
+
+Fixtures: `DStabBuilderTestFixture`, `AcscBuilderTestFixture`.
+
+#### Format integration tests (`core/adapter/`)
+
+| Area | Representative tests | Entry / parser exercised |
+|------|---------------------|--------------------------|
+| PSS/E RAW ACLF | `PSSE_IEEE9Bus_Test`, `PSSE_5Bus_TestCase`, `Kundur_2Area_*_Test`, `PSSEV31_v36_*` | `IpssAdapter` / `PTIFormat` → `PSSEDirectParser` |
+| PSS/E RAWX | `PSSEJSon_IEEE9Bus_DSL_Test`, `PSSEJSon_IEEE9Bus_FAdapter_Test` | `PSSEJsonDirectParser` |
+| PSS/E JSON export | `PSSEJSon_IEEE9Bus_FAdapter_Test`, `PSSEJSon_IEEE9Bus_BusSet_Test` | `PSSEJSonExporter` + `PSSEJSon*Updater` |
+| PSS/E ACSC | `IEEE9Bus_Acsc_Test`, `IEEE39Bus_Acsc_Test`, `PSSE_Savnw_v33_Acsc_Test` | `PSSEMultiFileLoader.loadAcsc` |
+| PSS/E DStab | `IEEE9_Dstab_Adapter_Test` | `PSSEMultiFileLoader.loadDStab` (`.raw` + `.seq` + `.dyr`) |
+| Large PSSE | `PSSE_ACTIVSg2000Bus_Test`, `PSSE_ACTIVSg25kBus_Test` | `PSSEDirectParser` at scale |
+| IEEE CDF | `IEEE14BusTest`, `IEEE118Bus_Test`, `IEEE300BusTest`, `IEEECommonFormat_CommaTest` | `IeeeCDFFormat` / `CorePluginFactory` |
+| MATPOWER | `MatpowerFormatTest`, `MatpowerCase*PegaseTest`, `MatpowerCase*RteTest` | `MatpowerFormat` + large `.m` cases |
+| UCTE | `UCTEFormatIEEE14BusTest`, `UCTEFormatAusPowerTest`, `UCTE2000CasesTest` | `UCTEFormat` |
+| GE / BPA / PWD | `GESampleTestCases`, `BPASampleTestCases`, `PWDIEEE14BusTestCase`, `SixBus_DclfPsXfr_pwd` | Respective `*DirectParser` facades |
+| Internal format | `IEEE14Test`, `Bus1824Test`, `Bus6384Test`, `Bus11856Test` | `IpssInternalFormat` round-trip |
+| Compare / regression | `IEEE14JsonCompareTest`, `PSSE_ACTIVSg25kObjectCompareTest` | Load twice, `AclfNetJsonComparator` |
+
+#### PSS/E auxiliary files
+
+`.sub` / `.mon` parsing and resolution are covered indirectly by downstream DCLF/contingency tests that consume JSON converted from `.sub`/`.mon` files. Dedicated API docs:
+
+- [psse_subsystem.md](psse_subsystem.md) — `SubFileParser`, `SubsystemFilter`
+- [psse_monitor.md](psse_monitor.md) — `MonFileParser`, `MonElementHelper`
+
+Test fixtures for large-case monitoring/contingency JSON live under `testData/psse/v33/` and `testData/psse/v36/Texas2k/`.
+
+### Runnable samples (`src/main/java/sample/`)
+
+These are `main()` programs (not JUnit). Run from IDE or `exec:java` after building `ipss.test.plugin.core`.
+
+| Sample | Package / class | Demonstrates |
+|--------|-----------------|--------------|
+| PSSE JSON bus-set export | `sample.psse.busset.PSSE_IEEE9Bus_BusSetSample` | `PSSEJsonDirectParser` → loadflow → topo bus set → `PSSEJSonExporter.filterAndUpdate` |
+| IEEE CDF compare | `sample.compare.Ieee14JSonCompareSample` | `CorePluginFactory` + `IpssInternalFormat` / IEEE CDF + `AclfNetJsonComparator` |
+| Result exchange | `sample.exchange.AclfResultExchangeIeee14Sample` | `CorePluginFactory.getFileAdapter(IEEECDF)` → loadflow → `AclfResultExchangeAdapter` |
+| Contingency / DCLF | `sample.contingency.*`, `sample.dclf.*` | Large-case workflows after network import |
+| ACLF large cases | `sample.aclf.ACTIVSg25kBus*` | PSSE large-network load + controls |
+
+**Example — PSSE JSON export with bus filtering** (from `PSSE_IEEE9Bus_BusSetSample`):
+
+```java
+AclfNetwork net = new PSSEJsonDirectParser().parse("testdata/adpter/psse/json/ieee9.rawx");
+// run loadflow, build busIdSet via AclfNetTopoHelper …
+PSSESchema psseJson = new Gson().fromJson(
+    new FileReader("testdata/adpter/psse/json/ieee9.rawx"), PSSESchema.class);
+new PSSEJSonExporter(net, psseJson).filterAndUpdate(busIdSet).export("output/ieee9_busset.rawx");
+```
+
+**Example — multi-file DStab load** (from `IEEE9_Dstab_Adapter_Test`):
+
+```java
+IpssCorePlugin.init();
+SimuContext ctx = new PSSEMultiFileLoader(30).loadDStab(
+    "testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
+    "testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
+    "testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
+BaseDStabNetwork dsNet = ctx.getDStabilityNet();
+```
+
+### Key test data paths
+
+| Path under `testData/` | Contents |
+|------------------------|----------|
+| `adpter/psse/v30/IEEE9Bus/` | `ieee9.raw`, `ieee9.seq`, `ieee9_dyn_onlyGen.dyr` — canonical multi-file IEEE 9 |
+| `adpter/psse/json/ieee9.rawx` | RAWX import + JSON export round-trip |
+| `adpter/psse/v36/` | v36 labeled RAW (`ieee9_v36_labeled.raw`, Texas2k labeled) |
+| `adpter/matpower/case*.m` | case9, case30, case118, Pegase/RTE large cases |
+| `adpter/ieee_format/` | `Ieee14Bus.ieee`, `ieee39.ieee`, etc. |
+| `adpter/pwd/`, `adpter/bpa/`, `adpter/ge/` | PowerWorld AUX, BPA, GE PSLF |
+| `psse/v33/`, `psse/v36/Texas2k/` | ACTIVSg, OpenEI, monitored-branch / contingency JSON |
+
 ## Migration Notes (ODM Removed)
 
 | Former ODM path | Current path |
