@@ -497,7 +497,6 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 				.setPsseVersion(PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		//check the SVC data connected to Bus-5
 		/*

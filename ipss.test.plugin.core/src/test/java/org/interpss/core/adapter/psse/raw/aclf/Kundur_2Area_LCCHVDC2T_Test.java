@@ -338,8 +338,6 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
 	@Test
 	public void test_LCCHVDC_PsetZero_Loadflow() throws Exception {
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		AclfNetwork net = new PSSEDirectParser(33).parse("testData/psse/v33/Kundur_2area_LCC_HVDC_PsetZero.raw");
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);

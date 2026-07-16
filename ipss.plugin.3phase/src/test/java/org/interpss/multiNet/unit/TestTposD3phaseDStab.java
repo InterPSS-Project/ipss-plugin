@@ -266,8 +266,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			
 			PerformanceTimer timer = new PerformanceTimer();
 			
 	 
@@ -421,8 +419,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			
@@ -586,8 +582,6 @@ public class TestTposD3phaseDStab {
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
-				
 				PerformanceTimer timer = new PerformanceTimer();
 				
 		 
@@ -746,8 +740,6 @@ public class TestTposD3phaseDStab {
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
-				
 				PerformanceTimer timer = new PerformanceTimer();
 				
 		 
@@ -905,8 +897,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			
 			PerformanceTimer timer = new PerformanceTimer();
 			
 	 
@@ -1046,8 +1036,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			
 			PerformanceTimer timer = new PerformanceTimer();
 			
 	 
@@ -1173,8 +1161,6 @@ public class TestTposD3phaseDStab {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			

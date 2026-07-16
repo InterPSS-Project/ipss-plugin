@@ -408,8 +408,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			
 			
 	        // Must use this dynamic event process to modify the YMatrixABC
 //			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
@@ -679,9 +677,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				
 	
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-	
-				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				
 				
@@ -757,8 +752,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				PerformanceTimer timer = new PerformanceTimer();
 				timer.start();
@@ -1031,9 +1024,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				
 
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-
-				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				
 				
@@ -1111,8 +1101,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				PerformanceTimer timer = new PerformanceTimer();
 				timer.start();
@@ -1362,11 +1350,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			   double faultStartingTime = 0.5;
 			   double faultDuration = 0.07d;
 			   dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetworkByBusId("Bus5"), SimpleFaultCode.GROUND_3P,new Complex(0.0),null,faultStartingTime,faultDuration),"3phaseFault@Bus10");
-		        
-				
-	
-				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
 				
 				PerformanceTimer timer = new PerformanceTimer();
 				
@@ -1687,9 +1670,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			
 			
@@ -1773,8 +1753,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
@@ -2012,9 +1990,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			
 
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			
 			
@@ -2099,8 +2074,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
@@ -2350,11 +2323,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 				   double faultStartingTime = 0.5;
 				   double faultDuration = 0.07d;
 				   dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetworkByBusId("Bus5"),SimpleFaultCode.GROUND_3P,new Complex(0.0),null,faultStartingTime,faultDuration),"3phaseFault@Bus10");
-			        
-					
-
-					
-					//IpssLogger.getLogger().setLevel(Level.WARNING);
 					
 					PerformanceTimer timer = new PerformanceTimer();
 					
@@ -2694,8 +2662,6 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();

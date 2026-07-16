@@ -115,7 +115,6 @@ public class IpssDStab {
     	if(dstabNet.getMachine(refMachId)!=null)
             this.dstabAlgo.setRefMachine(dstabNet.getMachine(refMachId));
     	else{
-    		//IpssLogger.getLogger().severe("No machine is found for the input "+ refMachId + ", please check!");
     	}
         return this;
     }
@@ -130,7 +129,6 @@ public class IpssDStab {
     	   LfAlgoDSL aclfDsl = IpssAclf.createAclfAlgo(dstabNet);
     	   try {
 			if(!aclfDsl.runLoadflow()){
-				//IpssLogger.getLogger().severe("Load flow is not converged, the first stage of Dstabnetwork initializaiton failed!");
 				return false;
 			}
 				

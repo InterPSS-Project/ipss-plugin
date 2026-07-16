@@ -35,7 +35,6 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			@Disabled("ACTIVSg2000 DStab case requires dynamic models not supported by the current mapper")
 			public void test_ACTIVSg2000_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			SimuContext simuCtx = new PSSEMultiFileLoader(33).loadDStab(
 					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.RAW",
 					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000_dyn_cmld_zone3_v1.dyr");
@@ -143,7 +142,6 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_ACTIVSg2000_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
@@ -195,8 +193,6 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			dstabAlgo.setOutPutPerSteps(10);
 			
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			String faultBusId = "Bus7"; //3, 5, 12 182  157 7 167  135
 			

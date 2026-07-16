@@ -70,8 +70,6 @@ public class TestDynLoad_IEEE39 {
 		LD1PAC ac_504 = (LD1PAC) dsNet.getBus("Bus504").getDynLoadModelList().get(0);
 		System.out.println ("ac motor at 504"+ac_504.toString());
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus4",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.07),"3phaseFault@Bus17");
 		
 

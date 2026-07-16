@@ -200,8 +200,6 @@ public class TestTnD_IEEE9_13busFeeder {
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			
 			PerformanceTimer timer = new PerformanceTimer();
 			
 	        // Must use this dynamic event process to modify the YMatrixABC

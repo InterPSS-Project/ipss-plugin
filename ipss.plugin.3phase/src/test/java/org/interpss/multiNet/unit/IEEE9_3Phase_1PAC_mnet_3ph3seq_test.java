@@ -123,8 +123,6 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setOutPutPerSteps(5);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
         // Must use this dynamic event process to modify the YMatrixABC
@@ -271,8 +269,6 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 		PerformanceTimer timer = new PerformanceTimer();
 		
@@ -459,8 +455,6 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-		
 	
 
 		
@@ -629,8 +623,6 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 	
 		
@@ -845,8 +837,6 @@ public class IEEE9_3Phase_1PAC_mnet_3ph3seq_test {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
 		
 	
 		

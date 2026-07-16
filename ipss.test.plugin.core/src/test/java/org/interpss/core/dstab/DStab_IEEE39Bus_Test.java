@@ -69,8 +69,6 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
-			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.05),"3phaseFault@Bus17");
 			
 
@@ -123,8 +121,6 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(10);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus28",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.07),"3phaseFault@Bus17");
 			

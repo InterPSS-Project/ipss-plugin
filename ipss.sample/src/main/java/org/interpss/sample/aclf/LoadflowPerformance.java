@@ -29,7 +29,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.util.PerformanceTimer;
 
-import com.interpss.common.util.IpssLogger;
+import java.util.logging.Logger;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
@@ -40,7 +40,7 @@ public class LoadflowPerformance {
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
 
-	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+	  	PerformanceTimer timer = new PerformanceTimer(Logger.getLogger(LoadflowPerformance.class.getName()));
 
 	  	/*
 	  	 * time loading data, create ODM and InterPSS Simulation object

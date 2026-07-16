@@ -24,13 +24,10 @@
 
 package org.interpss;
 
-import static com.interpss.common.util.IpssLogger.ipssLogger;
-
 import java.util.logging.Level;
 
 import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.common.util.IpssLogger;
 import com.interpss.core.sparse.SparseEqnObjectFactory;
 import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
 import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
@@ -76,7 +73,6 @@ public class IpssCorePlugin {
 	 * @param level log level
 	 */
 	public static void init(Level level) {
-		IpssLogger.initLogger();
 		setLoggerLevel(level);
 	}
 
@@ -95,8 +91,8 @@ public class IpssCorePlugin {
 	 * @param level
 	 */
 	public static void setLoggerLevel(Level level) {
-		ipssLogger.setLevel(level);
-	}	
+		// Logging levels are configured via SLF4J/Logback externally.
+	}
 
 	public static Selection configureSparseSolverFromSystemProperties() {
 		String solver = System.getProperty(SparseEqnSolverProvider.SOLVER_PROPERTY, "java-klu").trim().toLowerCase();

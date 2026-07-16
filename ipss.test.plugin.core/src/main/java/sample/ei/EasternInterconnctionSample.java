@@ -16,8 +16,6 @@ public class EasternInterconnctionSample {
 	
 	public static void main(String args[]) throws InterpssException {
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
 				.setFormat(PSSE)
 				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 

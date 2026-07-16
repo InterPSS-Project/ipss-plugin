@@ -121,8 +121,6 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		svc.setVSpecified(0.9);
 		svc.setBLimit(new LimitType(1.0, 0.0));
 		
-		//IpssLogger.ipssLogger.setLevel(Level.INFO);
-		
 		//System.out.println(aclfNet.net2String());
 		// map back and forth through the bean model
 		// map AclfNet to AclfNetBean

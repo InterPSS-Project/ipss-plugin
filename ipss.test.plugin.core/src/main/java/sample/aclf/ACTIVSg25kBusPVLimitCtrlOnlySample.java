@@ -20,8 +20,6 @@ public class ACTIVSg25kBusPVLimitCtrlOnlySample {
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		//String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
 		String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 		

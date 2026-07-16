@@ -384,8 +384,6 @@ public class TestTnD_IEEE9_8BusFeeder {
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-			
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 	        // Must use this dynamic event process to modify the YMatrixABC
@@ -624,8 +622,6 @@ public class TestTnD_IEEE9_8BusFeeder {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
