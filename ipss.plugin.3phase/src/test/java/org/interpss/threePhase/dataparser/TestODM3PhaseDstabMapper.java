@@ -75,8 +75,6 @@ public class TestODM3PhaseDstabMapper {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-
 		PerformanceTimer timer = new PerformanceTimer();
 
         // Must use this dynamic event process to modify the YMatrixABC
@@ -180,8 +178,6 @@ public class TestODM3PhaseDstabMapper {
 		// set the output handler
 				dstabAlgo.setSimuOutputHandler(sm);
 				dstabAlgo.setOutPutPerSteps(1);
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		PerformanceTimer timer = new PerformanceTimer();
 

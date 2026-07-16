@@ -255,7 +255,6 @@ public class ThreeBus_3Phase_Test {
 	public void test_3busfeeder_unbalanced_dstab() throws Exception{
 
 		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create3BusFeeder_unbalanced();
 
 		DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(net);
@@ -383,7 +382,6 @@ public class ThreeBus_3Phase_Test {
 	public void testSolvNetwork() throws Exception{
 
 		IpssCorePlugin.init();
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 
 		DStabNetwork3Phase net = create3BusSys();
 

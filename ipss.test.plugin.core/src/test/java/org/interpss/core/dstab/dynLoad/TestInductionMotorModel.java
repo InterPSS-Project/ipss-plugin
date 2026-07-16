@@ -74,8 +74,6 @@ public class TestInductionMotorModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-		
 		
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());
@@ -175,8 +173,6 @@ public class TestInductionMotorModel extends TestSetupBase {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			//IpssLogger.getLogger().setLevel(Level.FINE);
-			
 			
 			if (dstabAlgo.initialization()) {
 				System.out.println(net.getMachineInitCondition());
@@ -264,8 +260,6 @@ public class TestInductionMotorModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-		
 		
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());
@@ -346,8 +340,6 @@ public class TestInductionMotorModel extends TestSetupBase {
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 		
 		
 		if (dstabAlgo.initialization()) {

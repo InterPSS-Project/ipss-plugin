@@ -14,7 +14,6 @@
 //import com.interpss.CoreObjectFactory;
 //import com.interpss.DStabObjectFactory;
 //import com.interpss.common.exp.InterpssException;
-//import com.interpss.common.util.IpssLogger;
 //import com.interpss.core.aclf.AclfBranchCode;
 //import com.interpss.core.aclf.AclfGenCode;
 //import com.interpss.core.aclf.AclfLoadCode;
@@ -92,7 +91,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		
 //		if (dstabAlgo.initialization()) {
@@ -186,7 +184,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		
 //		if (dstabAlgo.initialization()) {
@@ -303,7 +300,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.7;
 //		if (dstabAlgo.initialization()) {
@@ -424,7 +420,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.6;
 //		double startTime = 0.1;
@@ -541,7 +536,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.54;
 //		double startTime = 0.1;
@@ -684,7 +678,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.35;
 //		double startTime = 0.1;
@@ -846,7 +839,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.5;
 //		double startTime = 0.1;
@@ -1018,7 +1010,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.5;
 //		double startTime = 0.1;

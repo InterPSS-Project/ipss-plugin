@@ -70,8 +70,6 @@ public class DStab_MultiIslands_IEEE39 extends DStabTestSetupBase{
 		dstabAlgo.setOutPutPerSteps(10);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus28",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.07),"3phaseFault@Bus17");
 	
 

@@ -69,8 +69,6 @@ public class TestCalBusDStabLoad extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-		
 		
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());

@@ -99,8 +99,6 @@ public class investigate_3PHSubNetYabc {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
-			
 			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
 			
 	        // TODO a special 3-phase 3seq dstab algorithm object, with the following two setting as default
@@ -431,8 +429,6 @@ public class investigate_3PHSubNetYabc {
 			// set the output handler
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
-			
-			//IpssLogger.getLogger().setLevel(Level.INFO);
 			
 			//dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus5",proc.getSubNetwork("SubNet-2"),SimpleFaultCode.GROUND_LG,0.5d,0.05),"3phaseFault@Bus5");
 			
