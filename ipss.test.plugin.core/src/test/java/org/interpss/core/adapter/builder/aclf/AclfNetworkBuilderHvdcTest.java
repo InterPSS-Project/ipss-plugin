@@ -1,4 +1,4 @@
-package org.interpss.fadapter.builder;
+package org.interpss.core.adapter.builder.aclf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.junit.jupiter.api.Test;
