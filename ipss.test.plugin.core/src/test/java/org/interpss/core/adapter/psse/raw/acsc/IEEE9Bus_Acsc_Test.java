@@ -42,14 +42,12 @@ public class IEEE9Bus_Acsc_Test {
 			net.setBusNumberArranged(true);
 			
 			LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		  	algo.setLfMethod(AclfMethodType.PQ);
+		  	algo.setLfMethod(AclfMethodType.NR);
 		  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
 		  	algo.loadflow();
 	  	
 	  		assertTrue( net.isLfConverged());
-	  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
-	  		//System.out.println(net.net2String());
-	  		
+
 	  		//check the transformer type and SC grounding info
 	  		/*com.interpss.core.acsc.impl.AcscBranchImpl@5ac86ba5 (id: Bus2->Bus7(1), name: Gen2_to_Bus2_cirId_1, desc: , number: 0, status: true) (booleanFlag: false, intFlag: 0, weight: (0.0, 0.0), sortNumber: 0, areaId: 1, zoneId: 1, ownerId: , statusChangeInfo: NoChange) (extensionObject: null)
 		     circuitNumber: 1
@@ -92,7 +90,7 @@ public class IEEE9Bus_Acsc_Test {
 	  		
 	        ISparseEqnComplex posYMatrix = net.formScYMatrix(SequenceCode.POSITIVE, ScBusModelType.LOADFLOW_VOLT, false);
 	        
-	        //Gen Bus: Bus 1
+        //Gen Bus: Bus 1
 	        //Yii: 0.0 + (-42.63668430335097i)
 	        assertTrue(posYMatrix.getA(0, 0).getReal()==0);
 	        assertTrue(Math.abs(posYMatrix.getA(0, 0).getImaginary()+42.6366)<1.0E-4);
@@ -102,7 +100,7 @@ public class IEEE9Bus_Acsc_Test {
 	        
 	        //Load Bus: Bus 5
 	        //Yii: 3.81 - j17.84
-	        assertTrue(Math.abs(posYMatrix.getA(4, 4).getReal()-3.81)<1.0E-2);
+        assertTrue(Math.abs(posYMatrix.getA(4, 4).getReal()-3.81)<1.0E-2);
 	        assertTrue(Math.abs(posYMatrix.getA(4, 4).getImaginary()+17.84)<1.0E-2);
 	        
 	        //Y54:-1.37 + j11.60

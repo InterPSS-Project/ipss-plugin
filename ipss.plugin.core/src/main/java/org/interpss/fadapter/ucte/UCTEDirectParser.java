@@ -70,12 +70,10 @@ public class UCTEDirectParser {
 
             if (trimmed.startsWith("##C")) { section = "COMMENT"; continue; }
             if (trimmed.startsWith("##N")) { section = "NODE"; continue; }
+            if (trimmed.startsWith("##Z")) { continue; }  // ISO country code within ##N section
             if (trimmed.startsWith("##L")) { section = "LINE"; continue; }
-            if (trimmed.startsWith("##T")) {
-                if (trimmed.startsWith("##TT")) { section = "XFR_DESC"; }
-                else { section = "TRANSFORMER"; }
-                continue;
-            }
+            if (trimmed.startsWith("##TT")) { section = "XFR_DESC"; continue; }
+            if (trimmed.startsWith("##T")) { section = "TRANSFORMER"; continue; }
             if (trimmed.startsWith("##R")) { section = "REGULATION"; continue; }
             if (trimmed.startsWith("##E")) { section = "EXCHANGE"; continue; }
 
@@ -93,25 +91,31 @@ public class UCTEDirectParser {
     }
 
     // ==================== Node (Bus) Data ====================
-    // UCTE node format: NodeCode(0-7) NodeName(9-20) Status(21) NodeType(24) Voltage(26-31)
-    // P_load(33-39) Q_load(41-47) P_gen(49-55) Q_gen(57-63) Q_min(65-71) Q_max(73-79)
-    // StaticP(81-87) StaticI(89-95) StaticZ(97-103) StatusReg(105-107) ...
+    // UCTE node format (1-indexed columns per spec):
+    // NodeCode(1-8) NodeName(10-21) Status(23) NodeType(25) Voltage(27-32)
+    // P_load(34-40) Q_load(42-48) P_gen(50-56) Q_gen(58-64)
+    // MinPGen(66-72) MaxPGen(74-80) MinQGen(82-88) MaxQGen(90-96)
+    //
+    // UCTE sign convention: "out of node" is positive, so generation values
+    // in the file are negative. We negate them to match InterPSS convention.
 
     private void parseNodeLine(String line) throws InterpssException {
         if (line.length() < 32) return;
 
         String nodeCode = safeSubstring(line, 0, 8).trim();
         String nodeName = safeSubstring(line, 9, 21).trim();
-        int status = parseInt(safeSubstring(line, 21, 22));
+        int status = parseInt(safeSubstring(line, 22, 23));
         int nodeType = parseInt(safeSubstring(line, 24, 25));  // 0=PQ, 1=Q-theta, 2=PV, 3=Slack
         double voltage = parseDouble(safeSubstring(line, 26, 32));
 
         double pLoad = line.length() > 39 ? parseDouble(safeSubstring(line, 33, 40)) : 0.0;
         double qLoad = line.length() > 47 ? parseDouble(safeSubstring(line, 41, 48)) : 0.0;
-        double pGen = line.length() > 55 ? parseDouble(safeSubstring(line, 49, 56)) : 0.0;
-        double qGen = line.length() > 63 ? parseDouble(safeSubstring(line, 57, 64)) : 0.0;
-        double qMin = line.length() > 71 ? parseDouble(safeSubstring(line, 65, 72)) : 0.0;
-        double qMax = line.length() > 79 ? parseDouble(safeSubstring(line, 73, 80)) : 0.0;
+        double pGen = line.length() > 55 ? -parseDouble(safeSubstring(line, 49, 56)) : 0.0;
+        double qGen = line.length() > 63 ? -parseDouble(safeSubstring(line, 57, 64)) : 0.0;
+        double minPGen = line.length() > 71 ? -parseDouble(safeSubstring(line, 65, 72)) : 0.0;
+        double maxPGen = line.length() > 79 ? -parseDouble(safeSubstring(line, 73, 80)) : 0.0;
+        double qMin = line.length() > 87 ? -parseDouble(safeSubstring(line, 81, 88)) : 0.0;
+        double qMax = line.length() > 95 ? -parseDouble(safeSubstring(line, 89, 96)) : 0.0;
 
         // Base voltage determined from the 7th character of node code (voltage level)
         double baseKv = estimateBaseKvFromNodeCode(nodeCode);
@@ -127,11 +131,10 @@ public class UCTEDirectParser {
         if (nodeType == 3) {
             builder.setSwingBus(busId, vpu, 0.0);
         } else if (nodeType == 2) {
-            bus.setGenCode(AclfGenCode.GEN_PV);
             builder.setPVBus(busId, pGen / baseMva, vpu, qMax / baseMva, qMin / baseMva, true);
         } else {
             if (pGen != 0.0 || qGen != 0.0) {
-                bus.setGenCode(AclfGenCode.GEN_PQ);
+                builder.setPQBus(busId, pGen / baseMva, qGen / baseMva, 0.0, 0.0);
             } else {
                 bus.setGenCode(AclfGenCode.NON_GEN);
             }
@@ -140,8 +143,9 @@ public class UCTEDirectParser {
         if (pGen != 0.0 || qGen != 0.0) {
             builder.addContributeGen(busId, "1", true,
                     pGen / baseMva, qGen / baseMva, baseMva, vpu,
-                    qMax / baseMva, qMin / baseMva, 0.0, 0.0,
+                    qMax / baseMva, qMin / baseMva, maxPGen / baseMva, minPGen / baseMva,
                     null, null, 1.0, null, 1.0, 1.0);
+            bus.setGenP(pGen / baseMva);
         }
 
         if (pLoad != 0.0 || qLoad != 0.0) {
