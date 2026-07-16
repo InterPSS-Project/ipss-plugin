@@ -37,7 +37,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		acLoad.setLoadPercent(50.0);
 		acLoad.setMvaBase(50);
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		// System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -101,7 +101,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		acLoad.setMvaBase(100);
 		acLoad.setPowerFactor(0.94);
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		// System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -159,7 +159,7 @@ public class TestLd1pacModel extends TestSetupBase {
 		acLoad.setLoadPercent(50);
 		acLoad.setMvaBase(50);
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		// System.out.println(AclfOutFunc.loadFlowSummary(net));

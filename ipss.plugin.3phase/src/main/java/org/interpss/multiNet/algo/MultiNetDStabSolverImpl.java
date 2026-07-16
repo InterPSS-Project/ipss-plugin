@@ -41,7 +41,7 @@ public class MultiNetDStabSolverImpl extends DStabSolverImpl {
 	protected List<BaseDStabNetwork> subNetList = null;
 
 	public MultiNetDStabSolverImpl(DynamicSimuAlgorithm algo, AbstractMultiNetDStabSimuHelper mNetSimuHelper) {
-		super(algo, IpssCorePlugin.getMsgHub());
+		super(algo);
 		this.multiNetSimuHelper = mNetSimuHelper;
 		this.subNetList = this.multiNetSimuHelper.getSubNetworkProcessor().getSubNetworkList();
 	}

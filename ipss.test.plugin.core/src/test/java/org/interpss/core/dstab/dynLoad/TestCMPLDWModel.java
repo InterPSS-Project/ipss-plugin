@@ -108,7 +108,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 		cmpldw.get1PhaseACMotor().setTh1t(0.7);
 		cmpldw.get1PhaseACMotor().setTh2t(1.9);
 
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 

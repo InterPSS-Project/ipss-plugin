@@ -207,7 +207,7 @@ public class IpssAdapter extends BaseDSL {
 					return this;
 				}
 			} catch (InterpssException e) {
-				psslMsg.sendErrorMsg("Error in loading file: " + e.toString());
+				log.error("Error in loading file: " + e.toString());
 			}
 			return null; 
 		}
@@ -234,7 +234,7 @@ public class IpssAdapter extends BaseDSL {
 				return this;
 			} catch (Exception e) {
 				log.error("Error in multi-file loading: {}", e.toString());
-				psslMsg.sendErrorMsg("Error in loading files: " + e.toString());
+				log.error("Error in loading files: " + e.toString());
 			}
 			return null;
 		}
