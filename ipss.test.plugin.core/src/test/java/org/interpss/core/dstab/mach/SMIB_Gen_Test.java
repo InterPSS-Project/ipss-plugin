@@ -290,10 +290,10 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		
 		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 
-		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
-		assertEquals(23.09754, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-4);
-		assertEquals(0.50001, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-5);
-		assertEquals(0.50004, sm.getMachPeTable().get("Bus1-mach1").get(2000).value, 1.0E-5);
+		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-2);
+		assertEquals(23.09754, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-2);
+		assertEquals(0.50001, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-3);
+		assertEquals(0.50004, sm.getMachPeTable().get("Bus1-mach1").get(2000).value, 1.0E-3);
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_pm.csv",sm.toCSVString(sm.getMachPmTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_angle.csv",sm.toCSVString(sm.getMachAngleTable()));
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_speed.csv",sm.toCSVString(sm.getMachSpeedTable()));

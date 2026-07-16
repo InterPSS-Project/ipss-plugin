@@ -579,8 +579,10 @@ public class AclfNetworkBuilder {
 
         StaticVarCompensator svc = svcOpt.get();
         svc.setId(svcId);
+        svc.setName(svcId);
         svc.setStatus(status);
         svc.setBLimit(new LimitType(qMaxPU, qMinPU));
+        svc.setQLimit(new LimitType(qMaxPU, qMinPU));
         svc.setControlMode(AclfAdjustControlMode.CONTINUOUS);
         svc.setRemoteQControlType(BusBranchControlType.BUS_VOLTAGE);
         svc.setVSpecified(vSetpointPU, UnitType.PU);
@@ -1250,6 +1252,7 @@ public class AclfNetworkBuilder {
         }
 
         network.adjustXfrZ();
+        network.setLfDataLoaded(true);
         network.initContributeGenLoad(false);
 
         if (network.getOriginalDataFormat() == OriginalDataFormat.PSSE) {
