@@ -28,15 +28,12 @@ import org.interpss.IpssCorePlugin;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.interpss.common.CoreCommonFactory;
-import com.interpss.common.msg.IPSSMsgHub;
 
 public class PiecewiseAlgoTestSetup {
-	protected static IPSSMsgHub msg;
 
 	@BeforeAll  
 	public static void initTestEnv() {
 		IpssCorePlugin.init();
-		msg = CoreCommonFactory.getIpssMsgHub();
 	}
 }
 

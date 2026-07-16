@@ -24,32 +24,56 @@
 
 package org.interpss.fadapter;
 
-import org.ieee.odm.ODMFileFormatEnum;
-import org.interpss.fadapter.impl.IpssFileAdapterBase;
+import java.io.File;
 
-import com.interpss.common.msg.IPSSMsgHub;
+import org.interpss.fadapter.impl.IpssFileAdapterBase;
+import org.interpss.fadapter.psse.PSSEDirectParser;
+
+import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.simu.SimuContext;
+import com.interpss.simu.SimuCtxType;
+import com.interpss.simu.SimuObjectFactory;
 
 public class PTIFormat extends IpssFileAdapterBase {
-	public PTIFormat(IPSSMsgHub msgHub) {
-		super(msgHub, ODMFileFormatEnum.PsseV30);
+	private int psseVersion = 30;
+
+	public PTIFormat() {
+		this.psseVersion = 30;
 	}
 
-	public PTIFormat(IpssFileAdapter.Version v, IPSSMsgHub msgHub) {
-		super(msgHub, mapVersionToFormat(v));
+	public PTIFormat(IpssFileAdapter.Version v) {
+		this.psseVersion = mapVersionToInt(v);
 	}
 	
-	private static ODMFileFormatEnum mapVersionToFormat(IpssFileAdapter.Version v) {
+	@Override
+	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {
+		PSSEDirectParser parser = new PSSEDirectParser(psseVersion);
+		AclfNetwork aclfNet = parser.parse(filepath);
+		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
+		simuCtx.setAclfNet(aclfNet);
+		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar) + 1));
+		simuCtx.setDesc("This project is created by input file " + filepath);
+	}
+
+	@Override
+	public AclfNetwork loadAclfNet(String filepath) throws InterpssException {
+		PSSEDirectParser parser = new PSSEDirectParser(psseVersion);
+		return parser.parse(filepath);
+	}
+
+	private static int mapVersionToInt(IpssFileAdapter.Version v) {
 		switch(v) {
-			case PSSE_26: return ODMFileFormatEnum.PsseV26;
-			case PSSE_29: return ODMFileFormatEnum.PsseV29;
-			case PSSE_30: return ODMFileFormatEnum.PsseV30;
-			case PSSE_31: return ODMFileFormatEnum.PsseV31;
-			case PSSE_32: return ODMFileFormatEnum.PsseV32;
-			case PSSE_33: return ODMFileFormatEnum.PsseV33;
-			case PSSE_34: return ODMFileFormatEnum.PsseV34;
-			case PSSE_35: return ODMFileFormatEnum.PsseV35;
-			case PSSE_36: return ODMFileFormatEnum.PsseV36;
-			default: return ODMFileFormatEnum.PsseV30; // Default to V30 if version not recognized
+			case PSSE_26: return 26;
+			case PSSE_29: return 29;
+			case PSSE_30: return 30;
+			case PSSE_31: return 31;
+			case PSSE_32: return 32;
+			case PSSE_33: return 33;
+			case PSSE_34: return 34;
+			case PSSE_35: return 35;
+			case PSSE_36: return 36;
+			default: return 30;
 		}
 	}
 }

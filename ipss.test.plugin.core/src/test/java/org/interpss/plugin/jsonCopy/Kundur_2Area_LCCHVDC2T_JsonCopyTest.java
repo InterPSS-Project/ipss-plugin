@@ -1,21 +1,15 @@
 package org.interpss.plugin.jsonCopy;
 
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
-import org.interpss.CorePluginTestSetup;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class Kundur_2Area_LCCHVDC2T_JsonCopyTest extends CorePluginTestSetup {
 
@@ -46,23 +40,10 @@ public class Kundur_2Area_LCCHVDC2T_JsonCopyTest extends CorePluginTestSetup {
 	}
 	
 
-	private AclfNetwork createTestCase() {
+	private AclfNetwork createTestCase() throws Exception {
 		System.out.println("Kundur 2-area LCC HVDC test case creation ...");
 		
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
-		assertTrue(adapter.parseInputFile("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-  	  		return null;
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
+		AclfNetwork net = new PSSEDirectParser(33).parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
