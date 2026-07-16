@@ -108,8 +108,6 @@ public class TestTnD_IEEE300_13busFeeder {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus39-mach1"));
 		
-		//IpssLogger.getLogger().setLevel(Level.INFO);
-		
 		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus3",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.05),"3phaseFault@Bus17");
 		
 
@@ -518,8 +516,6 @@ public class TestTnD_IEEE300_13busFeeder {
 				dstabAlgo.setOutPutPerSteps(1);
 				//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 				
-				//IpssLogger.getLogger().setLevel(Level.WARNING);
-				
 				PerformanceTimer timer = new PerformanceTimer();
 				
 		        // Must use this dynamic event process to modify the YMatrixABC
@@ -729,8 +725,6 @@ public class TestTnD_IEEE300_13busFeeder {
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(1);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-			
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 			
 			PerformanceTimer timer = new PerformanceTimer();
 			

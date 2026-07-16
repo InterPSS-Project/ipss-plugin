@@ -59,8 +59,6 @@ public class TestLd1pacModel extends TestSetupBase {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(5);
 
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());
 
@@ -127,8 +125,6 @@ public class TestLd1pacModel extends TestSetupBase {
 		net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Swing", net, SimpleFaultCode.GROUND_3P,
 				new Complex(0.01, 0), new Complex(0), 1.0d, 0.08), "3phaseFault@Bus1");
 
-		//IpssLogger.getLogger().setLevel(Level.FINE);
-
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());
 
@@ -183,8 +179,6 @@ public class TestLd1pacModel extends TestSetupBase {
 		// set the output handler
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
-
-		//IpssLogger.getLogger().setLevel(Level.FINE);
 
 		if (dstabAlgo.initialization()) {
 			System.out.println(net.getMachineInitCondition());

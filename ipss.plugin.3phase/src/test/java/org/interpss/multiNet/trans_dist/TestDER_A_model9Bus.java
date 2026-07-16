@@ -137,8 +137,6 @@ public class TestDER_A_model9Bus {
 		dstabAlgo.setOutPutPerSteps(1);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-		
 		PerformanceTimer timer = new PerformanceTimer();
 		
 		timer.start();

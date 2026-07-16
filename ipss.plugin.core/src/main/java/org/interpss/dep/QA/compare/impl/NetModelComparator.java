@@ -14,7 +14,9 @@ import org.interpss.dep.datamodel.bean.base.BaseJSONUtilBean;
 import org.interpss.numeric.util.NumericUtil;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
@@ -36,6 +38,8 @@ public class NetModelComparator<TBus extends AclfBusBean<TBusExt>,
                                 TBusExt extends BaseJSONUtilBean, 
                                 TBraExt extends BaseJSONUtilBean,
                                 TNetExt extends BaseJSONUtilBean> {
+	private static final Logger log = LoggerFactory.getLogger(NetModelComparator.class);
+
 	public static boolean CompareBus = true;
 	public static boolean CompareBusVolt = true;
 	public static boolean CompareBusPower = true;
@@ -245,7 +249,7 @@ public class NetModelComparator<TBus extends AclfBusBean<TBusExt>,
 			AclfBusBean<TBusExt> rec = this.qaResultSet.getBus(b.getId());
 			if (rec == null) {
 				if (b.isActive() && !is3WXfrStarBus(b.getId())) 
-					IpssLogger.getLogger().warning("Active AclfNet Bus not found in QAResult, " + b.getId() + " # of connected active branches " + b.nActiveBranchConnected());
+					log.warn("Active AclfNet Bus not found in QAResult, " + b.getId() + " # of connected active branches " + b.nActiveBranchConnected());
 			}
 			else {
 				if (bus.isActive()) {

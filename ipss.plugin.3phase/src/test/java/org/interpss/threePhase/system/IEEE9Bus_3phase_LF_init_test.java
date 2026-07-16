@@ -261,8 +261,6 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-
 			PerformanceTimer timer = new PerformanceTimer();
 
 	        // Must use this dynamic event process to modify the YMatrixABC
@@ -345,8 +343,6 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(5);
 			// dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 
 			PerformanceTimer timer = new PerformanceTimer();
 
