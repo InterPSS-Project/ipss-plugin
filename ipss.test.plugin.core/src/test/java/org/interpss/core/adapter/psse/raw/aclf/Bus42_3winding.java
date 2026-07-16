@@ -42,8 +42,6 @@ public class Bus42_3winding extends CorePluginTestSetup {
 				.getFileAdapter(IpssFileAdapter.FileFormat.PSSE, IpssFileAdapter.Version.PSSE_30)
 				.load("testData/adpter/psse/v30/42bus_3winding_from_PSSE_V30_NoDC.raw")
 				.getAclfNet();	
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());

@@ -24,10 +24,7 @@
 
 package org.interpss.core.adapter.psse.raw.aclf;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -49,7 +46,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 	public void aclf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
@@ -76,7 +73,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 	public void dclf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
@@ -109,7 +106,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 	public void dclfRef() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
@@ -138,7 +135,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 	public void aclf1() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr_1.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
@@ -164,7 +161,7 @@ public class SixBus_DclfPsXfr extends CorePluginTestSetup {
 	public void dclf1() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr_1.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)

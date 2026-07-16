@@ -87,7 +87,7 @@ public class TestSinglePhaseACMotorModel {
        	// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	//	net.initContributeGenLoad();
 
   			DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-  					net, IpssCorePlugin.getMsgHub());
+  					net);
 
 
   		  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -189,7 +189,7 @@ public class TestSinglePhaseACMotorModel {
        	// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	//	net.initContributeGenLoad();
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 
 	  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -412,7 +412,7 @@ AC motor Pe: time,ACMotor_2@Bus1_phaseB, ACMotor_1@Bus1_phaseA
        	// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	//	net.initContributeGenLoad();
 
   			DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-  					net, IpssCorePlugin.getMsgHub());
+  					net);
 
 
   		  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
