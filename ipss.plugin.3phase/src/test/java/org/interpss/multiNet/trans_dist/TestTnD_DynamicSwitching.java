@@ -449,8 +449,6 @@ public class TestTnD_DynamicSwitching {
 			// 1.0),"LoadReduce40%@Bus18");
 //			dsNet.addDynamicEvent(createGeneratorTripEvent("Bus2", "1", proc.getSubNetworkByBusId("Bus2"), 1),"Bus1_Mach1_trip_1sec");
 
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();
 			// Must use this dynamic event process to modify the YMatrixABC
@@ -799,8 +797,6 @@ public class TestTnD_DynamicSwitching {
 			// proc.getSubNetworkByBusId("Bus28"),LoadChangeEventType.FIXED_TIME,-0.4,
 			// 1.0),"LoadReduce40%@Bus18");
 //			dsNet.addDynamicEvent(createGeneratorTripEvent("Bus2", "1", proc.getSubNetworkByBusId("Bus2"), 1),"Bus1_Mach1_trip_1sec");
-
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 
 			PerformanceTimer timer = new PerformanceTimer();
 			timer.start();

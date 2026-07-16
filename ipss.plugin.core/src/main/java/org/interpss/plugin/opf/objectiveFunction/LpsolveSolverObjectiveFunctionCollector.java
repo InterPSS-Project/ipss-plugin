@@ -30,7 +30,7 @@ public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFuncti
 					NumericCurveModel incType = ((OpfGenBus)b).getIncCost().getCostModel();
 					if(!incType.equals(NumericCurveModel.PIECE_WISE)||
 							((OpfGenBus)b).getIncCost().getPieceWiseCurve()==null){
-						IpssLogger.ipssLogger.severe("LP solver requires piecewise linear gen cost funtion for generator at bus: "
+						log.error("LP solver requires piecewise linear gen cost funtion for generator at bus: "
 								+b.getNumber());						
 					}else{
 						//lpsolver.setColName(genIndex, "Pg" + (b.getSortNumber()+1));
@@ -85,7 +85,7 @@ public class LpsolveSolverObjectiveFunctionCollector extends BaseObjectiveFuncti
 				}			
 			}			
 		}catch(Exception e){
-			IpssLogger.ipssLogger.severe(e.toString());
+			log.error(e.toString());
 		}			
 		
 	}*/

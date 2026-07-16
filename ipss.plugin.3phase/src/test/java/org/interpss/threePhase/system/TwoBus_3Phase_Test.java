@@ -156,8 +156,6 @@ public class TwoBus_3Phase_Test {
 
     @Test
 	public void testSolvNetwork() throws Exception{
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
 
 		//net.initBusVoltage();
@@ -222,8 +220,6 @@ public class TwoBus_3Phase_Test {
 
 	@Test
 	public void testDstab() throws Exception{
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
 
 
