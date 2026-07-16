@@ -35,7 +35,6 @@ import org.interpss.plugin.pssl.simu.net.IpssAclfNet;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
@@ -56,7 +55,7 @@ public class SampleZeroZBranchModelTest extends CorePluginTestSetup {
 				.getAclfNet();
 
 		// set the network data
-	  	set2BusNetworkData(net, msg);
+	  	set2BusNetworkData(net);
 	  	
 	  	// create the default loadflow algorithm
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -77,7 +76,7 @@ public class SampleZeroZBranchModelTest extends CorePluginTestSetup {
 				.getAclfNet();
 
 		// set the network data
-	  	set2BusNetworkData(net, msg);
+	  	set2BusNetworkData(net);
 	  	
 	  	// process zero impedance branches in the network
 	  	net.setZeroZBranchThreshold(0.00001);
@@ -96,7 +95,7 @@ public class SampleZeroZBranchModelTest extends CorePluginTestSetup {
 	  	//System.out.println(net.net2String());
     }	
 
-	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) throws InterpssException {
+	private void set2BusNetworkData(AclfNetwork net) throws InterpssException {
 		IpssAclfNet.addAclfBus("Bus1", "Bus 1", net)
 				.setBaseVoltage(4000.0)
 				.setGenCode(AclfGenCode.SWING)

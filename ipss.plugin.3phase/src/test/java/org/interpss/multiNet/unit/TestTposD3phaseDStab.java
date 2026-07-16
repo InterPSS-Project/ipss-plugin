@@ -86,7 +86,7 @@ public class TestTposD3phaseDStab {
 		 */
 		
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				dsNet, IpssCorePlugin.getMsgHub());
+				dsNet);
 			
 	
 	  	
@@ -217,7 +217,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -375,7 +375,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -532,7 +532,7 @@ public class TestTposD3phaseDStab {
 			 //
 			 //=============dynamic simulation ===============================
 			 //
-			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			    
 			  
 				dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -695,7 +695,7 @@ public class TestTposD3phaseDStab {
 			 //
 			 //=============dynamic simulation ===============================
 			 //
-			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			    
 			  
 				dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -852,7 +852,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -1010,7 +1010,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -1135,7 +1135,7 @@ public class TestTposD3phaseDStab {
 		 //
 		 //=============dynamic simulation ===============================
 		 //
-		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+		  DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 		    
 		  
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

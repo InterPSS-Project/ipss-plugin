@@ -10,7 +10,6 @@ import org.interpss.fadapter.PTIFormat;
 import org.interpss.fadapter.PWDFormat;
 import org.interpss.fadapter.UCTEFormat;
 
-import com.interpss.common.CoreCommonFactory;
 import com.interpss.common.exp.InterpssException;
 
 /**
@@ -19,7 +18,7 @@ import com.interpss.common.exp.InterpssException;
  * 
  * @author mzhou
  */
-public class CorePluginFactory extends CoreCommonFactory {
+public class CorePluginFactory {
 
 	/**
 	 * get input file adapter for the file format
@@ -58,7 +57,7 @@ public class CorePluginFactory extends CoreCommonFactory {
 			return new UCTEFormat();
 		} 
 		else if (f == IpssFileAdapter.FileFormat.IpssInternal) {
-			return new IpssInternalFormat(CoreCommonFactory.getIpssMsgHub());
+			return new IpssInternalFormat();
 		} 
 		throw new InterpssException("Error - File adapter format/version not implemented");
 	}	

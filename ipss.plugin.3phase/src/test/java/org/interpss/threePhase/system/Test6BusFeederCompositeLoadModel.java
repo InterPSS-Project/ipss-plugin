@@ -137,7 +137,7 @@ public class Test6BusFeederCompositeLoadModel extends TestBase {
 		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(distNet));
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				distNet, IpssCorePlugin.getMsgHub());
+				distNet);
 
 
 
