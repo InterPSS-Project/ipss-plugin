@@ -120,7 +120,9 @@ public class AcscNetworkBuilder {
 
     public void setGenZeroSeqZ(String busId, String genId, double r, double x) {
         AcscGen gen = findAcscGen(busId, genId);
-        if (gen != null) gen.setZeroGenZ(new Complex(r, x));
+        if (gen != null) {
+            gen.setZeroGenZ(new Complex(r, x));
+        }
     }
 
     // ==================== Load Sequence Data ====================
@@ -239,7 +241,21 @@ public class AcscNetworkBuilder {
 
     // ==================== Finalize ====================
 
+    @SuppressWarnings("unchecked")
     public void finalizeAcscNetwork() {
+        for (Object busObj : network.getBusList()) {
+            BaseAcscBus<?, ?> bus = (BaseAcscBus<?, ?>) busObj;
+            if (bus.isGen()) {
+                bus.setScCode(BusScCode.CONTRIBUTE);
+            } else {
+                bus.setScCode(BusScCode.NON_CONTRI);
+                bus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.POSITIVE);
+                bus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.NEGATIVE);
+                bus.setScGenZ(NumericConstant.LargeBusZ, SequenceCode.ZERO);
+                bus.getGrounding().setGroundCode(BusGroundCode.UNGROUNDED);
+                bus.getGrounding().setZ(NumericConstant.LargeBusZ);
+            }
+        }
         network.setPositiveSeqDataOnly(false);
         network.setScDataLoaded(true);
     }
