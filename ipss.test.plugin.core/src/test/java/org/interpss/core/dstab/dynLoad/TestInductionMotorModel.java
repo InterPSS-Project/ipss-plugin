@@ -51,7 +51,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		boolean isSysMVABase = true;
 		indMotor.setOutputPowerMVABase(isSysMVABase);
 		
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -150,7 +150,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 			indMotor.setMvaBase(50);
 			indMotor.setH(1.0);
 			
-			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			assertTrue(aclfAlgo.loadflow());
 			//System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -237,7 +237,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		indMotor.setVrc1(0.90);
 		indMotor.setTrc1(0.05);
 		
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -318,7 +318,7 @@ public class TestInductionMotorModel extends TestSetupBase {
 		indMotor.setMvaBase(50);
 		indMotor.setH(1.0);
 		
-		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));

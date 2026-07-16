@@ -61,7 +61,7 @@ public class IpssDStab {
 	
 	public IpssDStab(BaseDStabNetwork net){
 		this.dstabNet = net;
-		this.dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, CoreCommonFactory.getIpssMsgHub());
+		this.dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		this.dstabAlgo.setSimuOutputHandler(outputHdler);
 	}
 	

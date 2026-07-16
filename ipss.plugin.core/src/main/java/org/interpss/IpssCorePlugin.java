@@ -27,7 +27,6 @@ package org.interpss;
 import java.util.logging.Level;
 
 import com.interpss.common.CoreCommonFactory;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.sparse.SparseEqnObjectFactory;
 import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
 import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
@@ -81,9 +80,6 @@ public class IpssCorePlugin {
 	 * 
 	 * @return
 	 */
-	public static IPSSMsgHub getMsgHub() {
-		return CoreCommonFactory.getIpssMsgHub();
-	}
 	
 	/**
 	 * get logger level

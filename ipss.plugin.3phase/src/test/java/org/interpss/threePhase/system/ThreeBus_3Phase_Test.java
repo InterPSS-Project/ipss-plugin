@@ -215,7 +215,7 @@ public class ThreeBus_3Phase_Test {
 		net.initContributeGenLoad(false);
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -282,7 +282,7 @@ public class ThreeBus_3Phase_Test {
 		}
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 
 		dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -346,7 +346,7 @@ public class ThreeBus_3Phase_Test {
 		//net.initContributeGenLoad();
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();

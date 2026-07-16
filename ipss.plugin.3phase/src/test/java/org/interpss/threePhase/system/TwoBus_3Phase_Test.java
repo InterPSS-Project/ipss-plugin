@@ -164,7 +164,7 @@ public class TwoBus_3Phase_Test {
 		net.initContributeGenLoad(false);
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -227,7 +227,7 @@ public class TwoBus_3Phase_Test {
 		net.initContributeGenLoad(false);
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);

@@ -28,7 +28,6 @@ import java.io.BufferedWriter;
 
 import org.interpss.numeric.datatype.Unit.UnitType;
 
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -49,7 +48,7 @@ public class IpssInternalFormat_out {
 	 * @return
 	 * @throws Exception
 	 */
-    public static boolean save(final BufferedWriter out, final SimuContext simuCtx, final IPSSMsgHub msg) throws Exception {
+    public static boolean save(final BufferedWriter out, final SimuContext simuCtx) throws Exception {
     	AclfNetwork net = simuCtx.getAclfNet();
     	
     	// out put network info
