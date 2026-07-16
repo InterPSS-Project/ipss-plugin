@@ -9,6 +9,7 @@ import org.interpss.numeric.datatype.LimitType;
 import org.interpss.plugin.opf.constraint.OpfConstraint;
 import org.interpss.plugin.opf.util.OPFResultOutput;
 import org.interpss.plugin.opf.util.OpfDataHelper;
+import org.interpss.plugin.opf.util.OpfHvdcPreprocessor;
 
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.net.Bus;
@@ -35,6 +36,7 @@ public abstract class AbstractOpfSolver extends BaseOpfAlgorithmImpl implements 
 
 	public AbstractOpfSolver(OpfNetwork opfNet, IOpfSolver.constraintHandleType constType) {
 		this.setNetwork(opfNet);
+		OpfHvdcPreprocessor.preprocess(opfNet);
 		this.helper = new OpfDataHelper();
 		this.constType = constType;
 		this.formBusIndexTable();
