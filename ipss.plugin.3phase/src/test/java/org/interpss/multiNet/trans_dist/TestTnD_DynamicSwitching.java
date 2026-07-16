@@ -333,8 +333,7 @@ public class TestTnD_DynamicSwitching {
 
 			MultiNet3Ph3SeqDStabSimuHelper mNetHelper = new MultiNet3Ph3SeqDStabSimuHelper(dsNet, proc);
 			// create multiNet3Seq3PhDStabHelper and initialize the subsystem
-			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet,
-					IpssCorePlugin.getMsgHub());
+			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 
 			StateMonitor sm = new StateMonitor();
 			sm.addGeneratorStdMonitor(new String[] { "Bus1-mach1", "Bus2-mach1", "Bus3-mach1" });
@@ -729,8 +728,7 @@ public class TestTnD_DynamicSwitching {
 
 			// make sure dynamic event list is empty in the beginning of each loop
 			dsNet.getDynamicEventList().clear();
-			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet,
-					IpssCorePlugin.getMsgHub());
+			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 
 			StateMonitor sm = new StateMonitor();
 			sm.addGeneratorStdMonitor(new String[] { "MachId" });
