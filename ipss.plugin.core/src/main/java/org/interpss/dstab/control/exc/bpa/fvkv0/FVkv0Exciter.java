@@ -115,9 +115,6 @@ public class FVkv0Exciter extends AnnotateExciter {
 		  }
 	   };
 
-    // UI Editor panel
-    private static NBFVkv0ExciterEditPanel _editPanel = new NBFVkv0ExciterEditPanel();
-
 /*
  * Part-2: Define the contructors
  * ==============================
@@ -187,22 +184,6 @@ public class FVkv0Exciter extends AnnotateExciter {
         this.tf = getData().getTf();
         // always add the following statement
         return super.initStates(bus, mach);
-    }
-
-/*
- * Part-4: Define the pluin data object edtior
- * ===========================================
- */
-
-    /**
-     * Get the editor panel for controller data editing
-     *
-     * @return the editor panel object
-     */
-    @Override
-    public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
     }
 
 /*
