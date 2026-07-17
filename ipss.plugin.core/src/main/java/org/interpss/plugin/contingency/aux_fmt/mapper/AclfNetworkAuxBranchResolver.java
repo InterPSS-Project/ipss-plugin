@@ -10,7 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 
 public class AclfNetworkAuxBranchResolver implements AuxBranchResolver {
     private static final Pattern BRANCH_OBJECT = Pattern.compile("(?i)^\\s*BRANCH\\s+'([^']+)'\\s*$");
@@ -19,7 +19,7 @@ public class AclfNetworkAuxBranchResolver implements AuxBranchResolver {
     private final Map<String, AclfBranch> branchesByKey = new HashMap<>();
     private final Set<String> ambiguousKeys = new HashSet<>();
 
-    public AclfNetworkAuxBranchResolver(AclfNetwork network) {
+    public AclfNetworkAuxBranchResolver(BaseAclfNetwork<?, ?> network) {
         for (AclfBranch branch : network.getBranchList()) {
             add(branch.getId(), branch);
             add(branch.getName(), branch);
