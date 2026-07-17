@@ -9,14 +9,14 @@ import org.interpss.plugin.contingency.definition.ContingencyDefinition;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.AclfContingencyObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.aclf.AclfMultiOutage;
 
 public class AclfContingencyDefinitionHelper {
-    private final AclfNetwork network;
+    private final BaseAclfNetwork<?, ?> network;
 
-    public AclfContingencyDefinitionHelper(AclfNetwork network) {
+    public AclfContingencyDefinitionHelper(BaseAclfNetwork<?, ?> network) {
         this.network = network;
     }
 
