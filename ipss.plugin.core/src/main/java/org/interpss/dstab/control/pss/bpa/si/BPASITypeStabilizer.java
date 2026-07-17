@@ -190,9 +190,6 @@ class CustomExciter2 extends AbstractChildAnnotateController {
 }
 
 
-    // UI Editor panel
-    private static NBBpaSITypeStabilizerEditPanel _editPanel = new NBBpaSITypeStabilizerEditPanel();
-
 /*
  * Part-2: Define the contructors
  * ==============================
@@ -268,22 +265,6 @@ class CustomExciter2 extends AbstractChildAnnotateController {
         this.vsmin = getData().getVsMin();
         // always add the following statement
         return super.initStates(bus, mach);
-    }
-
-/*
- * Part-4: Define the pluin data object edtior
- * ===========================================
- */
-
-    /**
-     * Get the editor panel for controller data editing
-     *
-     * @return the editor panel object
-     */
-    @Override
-    public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
     }
 
 /*
