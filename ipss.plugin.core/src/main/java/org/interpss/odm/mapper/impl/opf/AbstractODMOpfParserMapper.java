@@ -150,10 +150,7 @@ public abstract class AbstractODMOpfParserMapper <Tfrom> extends AbstractODMAclf
 						LoadflowBusXmlType busRec = (LoadflowBusXmlType) bus.getValue();
 						if (xmlNet.getOpfNetType() == OpfNetworkEnumType.SIMPLE_DCLF) {
 							OpfBus opfDclfBus = OpfObjectFactory.createOpfBus(busRec.getId(), opfNet);
-							log.error("Fix the compile error, AbstractODMOpfParserMapper");
-							/* TODO
 							aclfNetMapper.mapAclfBusData(busRec, opfDclfBus, opfNet, busHelper);
-							*/
 						} else {
 							OpfBus opfBus = OpfObjectFactory.createOpfBus(busRec.getId(), (OpfNetwork)opfNet);
 							aclfNetMapper.mapAclfBusData(busRec, opfBus, opfNet, busHelper);
