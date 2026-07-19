@@ -6,12 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -21,7 +17,6 @@ import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.model.impl.SinglePhaseACMotor;
-import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
@@ -41,8 +36,6 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class IEEE9_3Phase_1PAC_test {
 
@@ -51,27 +44,7 @@ public class IEEE9_3Phase_1PAC_test {
 	public void test_IEEE9_1pac_Network_solution() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE9Bus/ieee9.raw",
-				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-				"testData/IEEE9Bus/ieee9_dyn.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-
-		//System.out.println(parser.toXmlDoc());
-
-
-
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-
-		// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 
 
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -90,7 +63,6 @@ public class IEEE9_3Phase_1PAC_test {
   		bus5.getPhaseADynLoadList().add(ac1);
 
 
-
   		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus5,"2");
   		ac2.setLoadPercent(50);
   		ac2.setPhase(PhaseCode.B);
@@ -98,13 +70,11 @@ public class IEEE9_3Phase_1PAC_test {
   		bus5.getPhaseBDynLoadList().add(ac2);
 
 
-
   		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus5,"3");
   		ac3.setLoadPercent(50);
   		ac3.setPhase(PhaseCode.C);
   		ac3.setMvaBase(25);
   		bus5.getPhaseCDynLoadList().add(ac3);
-
 
 
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
@@ -133,8 +103,6 @@ public class IEEE9_3Phase_1PAC_test {
 		dstabAlgo.setOutPutPerSteps(5);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-
 		PerformanceTimer timer = new PerformanceTimer();
 
         // Must use this dynamic event process to modify the YMatrixABC
@@ -150,27 +118,7 @@ public class IEEE9_3Phase_1PAC_test {
 	public void test_IEEE9_1pac_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE9Bus/ieee9.raw",
-				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-				"testData/IEEE9Bus/ieee9_dyn.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-
-		//System.out.println(parser.toXmlDoc());
-
-
-
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-
-		// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 
 
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -196,13 +144,11 @@ public class IEEE9_3Phase_1PAC_test {
   		bus5.getPhaseADynLoadList().add(ac1);
 
 
-
   		SinglePhaseACMotor ac2 = new SinglePhaseACMotor(bus5,"2");
   		ac2.setLoadPercent(50);
   		ac2.setPhase(PhaseCode.B);
   		ac2.setMvaBase(25);
   		bus5.getPhaseBDynLoadList().add(ac2);
-
 
 
   		SinglePhaseACMotor ac3 = new SinglePhaseACMotor(bus5,"3");
@@ -239,8 +185,6 @@ public class IEEE9_3Phase_1PAC_test {
 		dstabAlgo.setOutPutPerSteps(5);
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
-
 		PerformanceTimer timer = new PerformanceTimer();
 
         // Must use this dynamic event process to modify the YMatrixABC
@@ -271,28 +215,7 @@ public class IEEE9_3Phase_1PAC_test {
 	public void test_IEEE9_addFeeder_1pac_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE9Bus/ieee9.raw",
-				"testData/IEEE9Bus/ieee9.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr"
-				"testData/IEEE9Bus/ieee9_dyn.dyr"
-				//"testData/IEEE9Bus/ieee9_dyn_fullModel.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-
-		//System.out.println(parser.toXmlDoc());
-
-
-
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-
-		// The only change to the normal data import is the use of ODM3PhaseDStabParserMapper
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 
 
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -362,7 +285,6 @@ public class IEEE9_3Phase_1PAC_test {
 		xfr1.setToGrounding(BusGroundCode.SOLID_GROUNDED, XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
 
 
-
 		DStab3PBranch xfr11_12 = ThreePhaseObjectFactory.create3PBranch("Bus11", "Bus12", "0", dsNet);
 		xfr11_12.setBranchCode(AclfBranchCode.XFORMER);
 		xfr11_12.setZ( new Complex( 0.0, 0.025 ));
@@ -376,7 +298,6 @@ public class IEEE9_3Phase_1PAC_test {
 	    /*
 	     *   create the 1-phase AC model
 	     */
-
 
 
 	    SinglePhaseACMotor ac1 = new SinglePhaseACMotor(bus12,"1");
@@ -416,7 +337,6 @@ public class IEEE9_3Phase_1PAC_test {
 		dstabAlgo.setTotalSimuTimeSec(2);
 
 
-
 		//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
 		//applied the event
@@ -431,8 +351,6 @@ public class IEEE9_3Phase_1PAC_test {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-
-		//IpssLogger.getLogger().setLevel(Level.WARNING);
 
 		PerformanceTimer timer = new PerformanceTimer();
 
@@ -470,7 +388,6 @@ public class IEEE9_3Phase_1PAC_test {
 //		FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch7//ieee9_dist_3p_SLG@Bus10_busVolt.csv", sm.toCSVString(sm.getBusVoltTable()));
 //		FileUtil.writeText2File("E://Dropbox//PhD project//test data and results//comprehensive_ch7//ieee9_dist_3p_SLG@Bus10_ac_Results.txt",sb.toString());
 	}
-
 
 
 }
