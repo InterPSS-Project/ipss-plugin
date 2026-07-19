@@ -114,7 +114,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.DISCRETE);
         bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(1.0, 1.0));
 
-        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
+        //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
@@ -125,7 +125,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
         /*
          * TODO: Error here
@@ -164,7 +164,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         bus4.getFirstSwitchedShunt(true).setControlMode(AclfAdjustControlMode.DISCRETE);
         bus4.getFirstSwitchedShunt(true).setDesiredControlRange(new LimitType(0.89, 0.85));
 
-        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
+        //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
@@ -174,7 +174,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
         assertEquals(0/100.0, 
         		bus4.getFirstSwitchedShunt(true).getQ(), 0.01, "Switched shunt Q at Bus 4");
@@ -204,7 +204,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         //bus4.getSwitchedShunt().setVSpecified(1.02);
 
-        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
+        //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
@@ -214,7 +214,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
@@ -236,10 +236,11 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue(bus4 != null, "Bus 4 should exist");
   		assertTrue(bus4.isSwitchedShunt(), "Bus 4 should have switched shunt");
 
-        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
+        //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
-        //assert the control mode is continuous
-        assertTrue(bus4.getFirstSwitchedShunt(true).getControlMode() == AclfAdjustControlMode.CONTINUOUS, "Bus 4 switched shunt control mode should be continuous");
+        // Fixture MODSW=2 => discrete voltage control (PSS/E); VSWHI/VSWLO = 1.03/1.02
+        assertTrue(bus4.getFirstSwitchedShunt(true).getControlMode() == AclfAdjustControlMode.DISCRETE,
+        		"Bus 4 switched shunt control mode should be discrete (MODSW=2)");
         
         //Check bus4.getSwitchedShunt().getDesiredControlRange is within new LimitType(1.03, 1.02);
         assertTrue(bus4.getFirstSwitchedShunt(true).getDesiredControlRange().getMax() == 1.03 &&
@@ -255,7 +256,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
     
 
@@ -284,7 +285,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         bus4.getFirstSwitchedShunt(true).setVSpecified(1.025);
 
-        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
+        //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
@@ -296,7 +297,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
@@ -329,7 +330,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         //bus4.getSwitchedShunt().setVSpecified(1.02);
 
-        System.out.println(bus4.getFirstSwitchedShunt(true).toString());
+        //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		//algo.getLfAdjAlgo().setApplyAdjustAlgo(false); // Disable adjustment algorithm (locked shunt)
@@ -341,7 +342,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
   		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
-  		System.out.println(AclfOutFunc.loadFlowSummary(net));
+  		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
