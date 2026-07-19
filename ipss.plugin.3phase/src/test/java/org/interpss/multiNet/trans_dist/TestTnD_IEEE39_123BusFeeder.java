@@ -8,12 +8,8 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.interpss.multiNet.algo.powerflow.TposSeqD3PhaseMultiNetPowerflowAlgorithm;
@@ -21,7 +17,6 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.threePhase.basic.dstab.DStab3PBranch;
 import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
-import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
@@ -38,8 +33,6 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.DStabLoad;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class TestTnD_IEEE39_123BusFeeder {
 	
@@ -47,25 +40,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 	public void test_IEEE39_IEEE123Feeder_T3seq_D3phase_Powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE39Bus/IEEE39bus_v30.raw",
-				"testData/IEEE39Bus/IEEE39bus_v30.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
-				"testData/IEEE39Bus/IEEE39bus.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -161,25 +136,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 	public void test_IEEE39_IEEE123Feeder_Tpos_D3phase_Powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.DStabNet, new String[]{
-				"testData/IEEE39Bus/IEEE39bus_v30.raw",
-				"testData/IEEE39Bus/IEEE39bus_v30.seq",
-				//"testData/IEEE9Bus/ieee9_dyn_onlyGen_saturation.dyr"
-				"testData/IEEE39Bus/IEEE39bus.dyr"
-		}));
-		DStabModelParser parser =(DStabModelParser) adapter.getModel();
-		
-		//System.out.println(parser.toXmlDoc());
-
-		
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-		if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub())
-					.map2Model(parser, simuCtx)) {
-			System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-			return;
-		}
+		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();

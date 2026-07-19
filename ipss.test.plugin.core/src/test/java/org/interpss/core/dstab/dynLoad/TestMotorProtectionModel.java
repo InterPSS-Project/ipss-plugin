@@ -14,7 +14,6 @@
 //import com.interpss.CoreObjectFactory;
 //import com.interpss.DStabObjectFactory;
 //import com.interpss.common.exp.InterpssException;
-//import com.interpss.common.util.IpssLogger;
 //import com.interpss.core.aclf.AclfBranchCode;
 //import com.interpss.core.aclf.AclfGenCode;
 //import com.interpss.core.aclf.AclfLoadCode;
@@ -69,7 +68,7 @@
 //		indMotor.setVrc1(0.90);
 //		indMotor.setTrc1(0.05);
 //		
-//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 //		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 //		assertTrue(aclfAlgo.loadflow());
 //		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -92,7 +91,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		
 //		if (dstabAlgo.initialization()) {
@@ -163,7 +161,7 @@
 //		indMotor.getProtectionControlList().add(eleRelay);
 //
 //		
-//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 //		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 //		assertTrue(aclfAlgo.loadflow());
 //		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -186,7 +184,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		
 //		if (dstabAlgo.initialization()) {
@@ -280,7 +277,7 @@
 //		indMotor.getProtectionControlList().add(olProtection);
 //
 //		
-//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 //		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 //		assertTrue(aclfAlgo.loadflow());
 //		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -303,7 +300,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.7;
 //		if (dstabAlgo.initialization()) {
@@ -401,7 +397,7 @@
 //		indMotor.getProtectionControlList().add(thermalProtection);
 //
 //		
-//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 //		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 //		assertTrue(aclfAlgo.loadflow());
 //		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -424,7 +420,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.6;
 //		double startTime = 0.1;
@@ -518,7 +513,7 @@
 //		indMotor.getProtectionControlList().add(contactor);
 //
 //		
-//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 //		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 //		assertTrue(aclfAlgo.loadflow());
 //		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -541,7 +536,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.54;
 //		double startTime = 0.1;
@@ -661,7 +655,7 @@
 //		indMotor.getProtectionControlList().add(ems);
 //
 //		
-//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 //		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 //		assertTrue(aclfAlgo.loadflow());
 //		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -684,7 +678,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.35;
 //		double startTime = 0.1;
@@ -823,7 +816,7 @@
 //		indMotor.getProtectionControlList().add(ems);
 //
 //		
-//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 //		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 //		assertTrue(aclfAlgo.loadflow());
 //		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -846,7 +839,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.5;
 //		double startTime = 0.1;
@@ -995,7 +987,7 @@
 //		indMotor.getProtectionControlList().add(ems);
 //
 //		
-//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, msg);
+//		DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 //		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 //		assertTrue(aclfAlgo.loadflow());
 //		System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -1018,7 +1010,6 @@
 //		dstabAlgo.setSimuOutputHandler(sm);
 //		dstabAlgo.setOutPutPerSteps(1);
 //		
-//		IpssLogger.getLogger().setLevel(Level.FINE);
 //		
 //		double vsag = 0.5;
 //		double startTime = 0.1;
