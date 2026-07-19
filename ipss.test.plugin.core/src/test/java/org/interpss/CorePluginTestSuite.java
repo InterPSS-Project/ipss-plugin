@@ -23,6 +23,7 @@ import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExciterTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGovernorTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
+import org.interpss.core.adapter.ge.GEPslfDirectParser_SectionGate_Test;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
 import org.interpss.core.adapter.ieee.IEEE118Bus_Test;
@@ -354,6 +355,7 @@ import org.junit.platform.suite.api.Suite;
 	IEEE9Bus_Acsc_Test.class,
 	
 	GESampleTestCases.class,
+	GEPslfDirectParser_SectionGate_Test.class,
 	
 	IEEE14Test.class,
 	Bus1824Test.class,
