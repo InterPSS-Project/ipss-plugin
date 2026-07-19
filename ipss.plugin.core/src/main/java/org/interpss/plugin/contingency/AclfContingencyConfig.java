@@ -15,6 +15,7 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
     private boolean nonDivergent = true;
     private int maxIterations = 50;
     private double tolerance = 0.005;
+    private int parallelism = Math.max(1, Runtime.getRuntime().availableProcessors());
     
 
     
@@ -39,6 +40,9 @@ public class AclfContingencyConfig  extends BaseContingencyConfig {
     
     public double getTolerance() { return tolerance; }
     public void setTolerance(double tolerance) { this.tolerance = tolerance; }
+
+    public int getParallelism() { return parallelism; }
+    public void setParallelism(int parallelism) { this.parallelism = Math.max(1, parallelism); }
     
 
     public boolean isDclfScreening() { return dclfScreening; }
