@@ -8,7 +8,10 @@ import org.interpss.core.aclf.Kundur_2Area_LCCHVDC2T_Aclf_Test;
 import org.interpss.core.aclf.SwingBusSubAreaTest;
 import org.interpss.core.algo.cpf.ContinuationPowerFlowPsseTest;
 import org.interpss.core.aclf.svc.IEEE14_PVLimit_SVCTest;
+import org.interpss.core.adapter.bpa.BPADirectParser_CardGate_Test;
 import org.interpss.core.adapter.bpa.BPASampleTestCases;
+import org.interpss.core.adapter.bpa.Bpa07c_0615_Test;
+import org.interpss.core.adapter.bpa.BpaO7CTest;
 import org.interpss.core.adapter.builder.aclf.AclfNetworkBuilder3WAndFinalizeTest;
 import org.interpss.core.adapter.builder.aclf.AclfNetworkBuilderAdjDeviceTest;
 import org.interpss.core.adapter.builder.aclf.AclfNetworkBuilderBranchTest;
@@ -270,6 +273,9 @@ import org.junit.platform.suite.api.Suite;
 	IEEE14BusTest.class,
 	IEEE118Bus_Test.class,
 	BPASampleTestCases.class,
+	BPADirectParser_CardGate_Test.class,
+	Bpa07c_0615_Test.class,
+	BpaO7CTest.class,
 
 	// AclfNetworkBuilder unit tests
 	AclfNetworkBuilderCoreTest.class,
