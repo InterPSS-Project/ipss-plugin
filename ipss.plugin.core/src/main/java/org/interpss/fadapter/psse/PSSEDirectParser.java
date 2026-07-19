@@ -808,9 +808,12 @@ public class PSSEDirectParser {
         int modsw, stat;
         double vswhi, vswlo, binit;
         int swreg;
+        String shuntId = "1";
 
         if (version >= 35) {
             // v35+: I, ID, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, NREG, RMPCT, RMIDNT, BINIT, [NAME for v36], S1, N1, B1, ...
+            shuntId = rec.getString(1, "1").trim();
+            if (shuntId.isEmpty()) shuntId = "1";
             modsw = rec.getInt(2, 1);
             stat = rec.getInt(4, 1);
             vswhi = rec.getDouble(5, 1.0);
@@ -874,7 +877,7 @@ public class PSSEDirectParser {
 
         double bInitPU = binit / baseMva;
 
-        builder.addSwitchedShunt(busId, "1", stat == 1,
+        builder.addSwitchedShunt(busId, shuntId, stat == 1,
                 mode, AclfAdjustControlType.RANGE_CONTROL,
                 bInitPU, vswhi, vswlo, remoteBusId, blocks);
     }
