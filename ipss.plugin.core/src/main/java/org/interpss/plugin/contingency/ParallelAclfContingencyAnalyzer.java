@@ -1,18 +1,25 @@
 package org.interpss.plugin.contingency;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.IntStream;
+import java.util.concurrent.CancellationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.interpss.plugin.contingency.result.AclfContingencyResultContainer;
 import org.interpss.plugin.contingency.result.AclfContingencyResultRec;
+import org.interpss.plugin.contingency.result.AclfContingencyDiagnostic;
 
+import com.interpss.common.util.BoundedParallelExecutor;
 import com.interpss.core.LoadflowAlgoObjectFactory;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 import com.interpss.core.net.ref.impl.NetworkRefImpl;
-import com.interpss.state.aclf.AclfNetworkState;
+import com.interpss.state.aclf.snapshot.BaseAclfNetworkSnapshotFactory;
 
 /**
  * Parallel Contingency Analysis wrapper for Python integration.
@@ -21,13 +28,21 @@ import com.interpss.state.aclf.AclfNetworkState;
  * 
  * @author InterPSS Team
  */
-public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRec> extends NetworkRefImpl<AclfNetwork> { 
+public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRec>
+        extends NetworkRefImpl<BaseAclfNetwork<?, ?>> {
+	private static final Logger log = LoggerFactory.getLogger(ParallelAclfContingencyAnalyzer.class);
+
+	private record CaseResult<T extends AclfContingencyResultRec>(
+	        String branchId,
+	        T result,
+	        AclfContingencyDiagnostic diagnostic) {
+	}
 	/**
 	 * Constructor
 	 * 
 	 * @param net  the AC load flow network
 	 */
-	public ParallelAclfContingencyAnalyzer(AclfNetwork net) {
+	public ParallelAclfContingencyAnalyzer(BaseAclfNetwork<?, ?> net) {
 		setNetwork(net);
 	}
 	
@@ -43,72 +58,115 @@ public class ParallelAclfContingencyAnalyzer <TR extends AclfContingencyResultRe
     public AclfContingencyResultContainer<TR> analyzeContingencies(int totalCases, 
                                                        AclfContingencyConfig config, boolean useParallel) {
         
-        System.out.println("Starting " + (useParallel ? "parallel" : "sequential") + 
-                         " contingency analysis with " + totalCases + " cases...");
-        System.out.println("Active bus size: " + network.getNoActiveBus());
-        System.out.println("Active branch size: " + network.getNoActiveBranch());
-        
         long startTime = System.currentTimeMillis();
-        
-        // Thread-safe map to store results
-        Map<String, TR> caResults = new ConcurrentHashMap<>();
-        
-        // Create stream - parallel or sequential based on parameter
-        IntStream stream = IntStream.range(0, totalCases);
-        if (useParallel) {
-            stream = stream.parallel();
+        Map<String, TR> caResults = new LinkedHashMap<>();
+        List<AclfContingencyDiagnostic> diagnostics = new ArrayList<>();
+
+        int caseCount = Math.min(Math.max(totalCases, 0), network.getBranchList().size());
+        List<String> branchIds = new ArrayList<>(caseCount);
+        for (int i = 0; i < caseCount; i++) {
+            branchIds.add(network.getBranchList().get(i).getId());
         }
-        
-        AclfNetworkState clonedNetBean = new AclfNetworkState(network);
-		
-        long totalSuccessCount = stream
-            .mapToObj(i -> {
-                try {
-                    // Create a copy of the network for each contingency
-                    //AclfNetwork copyNet = network.jsonCopy();
-                	AclfNetwork copyNet = AclfNetworkState.create(clonedNetBean);
-                    
-                    // Remove the i-th branch
-                    if (i < copyNet.getBranchList().size()) {
-                        copyNet.getBranchList().get(i).setStatus(false);
-                        String branchId = copyNet.getBranchList().get(i).getId();
-                        
-                        // Create a new algorithm instance for each thread to avoid conflicts
-                        LoadflowAlgorithm parallelAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(copyNet);
-                        configureAlgorithm(parallelAlgo, config);
-                        
-                        boolean isConverged = parallelAlgo.loadflow();
-                        
-                        // Store result in thread-safe map
-                        AclfContingencyResultRec rec = new AclfContingencyResultRec(isConverged);
-                        caResults.put(branchId, (TR)rec);
-                        
-                        return isConverged;
-                    } else {
-                        System.err.println("Warning: Contingency index " + i + 
-                                         " exceeds branch list size " + copyNet.getBranchList().size());
-                        return false;
-                    }
-                } catch (Exception e) {
-                    synchronized(System.err) {
-                        System.err.println("Error processing contingency " + i + ": " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                    return false;
+
+        boolean snapshotSupported = BaseAclfNetworkSnapshotFactory.supports(network);
+        boolean runParallel = useParallel && snapshotSupported && caseCount > 1;
+        if (useParallel && !snapshotSupported) {
+            String message = "No parallel snapshot provider for " + network.getClass().getName()
+                    + "; using sequential fallback";
+            log.info(message);
+            diagnostics.add(new AclfContingencyDiagnostic(
+                    null, "INFO", "SNAPSHOT_PROVIDER_UNAVAILABLE", message));
+        }
+
+        List<CaseResult<TR>> caseResults = runParallel
+                ? analyzeParallel(branchIds, config, diagnostics)
+                : analyzeSequential(branchIds, config, snapshotSupported);
+        long totalSuccessCount = 0;
+        for (CaseResult<TR> caseResult : caseResults) {
+            if (caseResult.result() != null) {
+                caResults.put(caseResult.branchId(), caseResult.result());
+                if (caseResult.result().isConverged()) {
+                    totalSuccessCount++;
                 }
-            })
-            .mapToLong(converged -> converged ? 1 : 0)
-            .sum();
+            }
+            if (caseResult.diagnostic() != null) {
+                diagnostics.add(caseResult.diagnostic());
+            }
+        }
         
         long endTime = System.currentTimeMillis();
         long executionTime = endTime - startTime;
         
-        System.out.println("Contingency analysis completed!");
-        System.out.println("Total time: " + (executionTime / 1000.0) + " seconds");
-        System.out.println("Total successful contingencies: " + totalSuccessCount + " out of " + totalCases);
-        System.out.println("Success rate: " + String.format("%.2f%%", (double) totalSuccessCount / totalCases * 100));
-        
-        return new AclfContingencyResultContainer<TR>(caResults, totalSuccessCount, totalCases, executionTime);
+        return new AclfContingencyResultContainer<TR>(
+                caResults, totalSuccessCount, caseCount, executionTime, diagnostics);
+    }
+
+    private List<CaseResult<TR>> analyzeParallel(
+            List<String> branchIds,
+            AclfContingencyConfig config,
+            List<AclfContingencyDiagnostic> diagnostics) {
+        int threadCount = Math.min(branchIds.size(), config.getParallelism());
+        try (BoundedParallelExecutor executor = new BoundedParallelExecutor(threadCount)) {
+            return executor.mapOrdered(branchIds, branchId -> analyzeIsolated(branchId, config));
+        } catch (CancellationException ex) {
+            String message = "Contingency analysis was cancelled";
+            log.warn(message);
+            diagnostics.add(new AclfContingencyDiagnostic(
+                    null, "WARN", "ANALYSIS_CANCELLED", message));
+            return List.of();
+        }
+    }
+
+    private List<CaseResult<TR>> analyzeSequential(
+            List<String> branchIds,
+            AclfContingencyConfig config,
+            boolean snapshotSupported) {
+        List<CaseResult<TR>> results = new ArrayList<>(branchIds.size());
+        for (String branchId : branchIds) {
+            results.add(snapshotSupported
+                    ? analyzeIsolated(branchId, config)
+                    : analyzeOnSource(branchId, config));
+        }
+        return results;
+    }
+
+    private CaseResult<TR> analyzeIsolated(String branchId, AclfContingencyConfig config) {
+        try {
+            BaseAclfNetwork<?, ?> copy = BaseAclfNetworkSnapshotFactory.createCopy(network);
+            copy.getBranch(branchId).setStatus(false);
+            return new CaseResult<>(branchId, runLoadflow(copy, config), null);
+        } catch (Exception ex) {
+            log.error("Error processing contingency {}", branchId, ex);
+            return failedCase(branchId, ex);
+        }
+    }
+
+    private CaseResult<TR> analyzeOnSource(String branchId, AclfContingencyConfig config) {
+        boolean originalStatus = network.getBranch(branchId).isActive();
+        try {
+            network.getBranch(branchId).setStatus(false);
+            return new CaseResult<>(branchId, runLoadflow(network, config), null);
+        } catch (Exception ex) {
+            log.error("Error processing sequential contingency {}", branchId, ex);
+            return failedCase(branchId, ex);
+        } finally {
+            network.getBranch(branchId).setStatus(originalStatus);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private TR runLoadflow(BaseAclfNetwork<?, ?> caseNetwork,
+            AclfContingencyConfig config) throws Exception {
+        LoadflowAlgorithm algorithm = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(caseNetwork);
+        configureAlgorithm(algorithm, config);
+        boolean converged = algorithm.loadflow();
+        return (TR) new AclfContingencyResultRec(converged);
+    }
+
+    private CaseResult<TR> failedCase(String branchId, Exception ex) {
+        String message = ex.getMessage() == null ? ex.getClass().getName() : ex.getMessage();
+        return new CaseResult<>(branchId, null, new AclfContingencyDiagnostic(
+                branchId, "ERROR", "CONTINGENCY_FAILED", message));
     }
     
     /**
