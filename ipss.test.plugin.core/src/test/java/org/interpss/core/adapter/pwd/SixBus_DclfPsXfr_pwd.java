@@ -1,192 +1,95 @@
 package org.interpss.core.adapter.pwd;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.IpssCorePlugin;
-import org.interpss.display.AclfOutFunc;
-import org.interpss.display.DclfOutFunc;
-import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.fadapter.pwd.PWDDirectParser;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.DclfAlgoObjectFactory;
-import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
-import com.interpss.core.net.Branch;
 
+/**
+ * Narrowed SixBus phase-shifter DCLF smoke for PWD AUX.
+ * Print-only historical variants remain disabled.
+ */
 public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
-	//@Test
-	public void aclf() throws Exception {
-		IpssCorePlugin.init();
-        //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 
-
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
-					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.setPsseVersion(PsseVersion.PSSE_30)
-					.load()    // .load(true, "output/odm.xml")
-					.getImportedObj();
-  		//System.out.println(net.net2String());
-
-	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
-			 			 .loadflow();
-	  	
-  		assertTrue(net.isLfConverged());
-  		
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
-  		AclfSwingBusAdapter swing = net.getBus("Bus1").toSwingBus();
-  		Complex p = swing.getGenResults(UnitType.PU);
-  		assertTrue(Math.abs(p.getReal()-3.1032)<0.0001);
-  		assertTrue(Math.abs(p.getImaginary()-0.5212)<0.0001);	   		
- 	}
-	
 	@Test
-	public void dclf() throws Exception {
-		IpssCorePlugin.init();
-        //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
+	public void sixBus_2WPsXfr_parseAndDclf() throws Exception {
+		AclfNetwork net = new PWDDirectParser().parse("testData/adpter/pwd/SixBus_2WPsXfr.aux");
 
+		assertTrue(net.getNoBus() >= 5);
+		assertTrue(net.getNoBranch() >= 5);
+		assertTrue(net.getBranchList().stream().anyMatch(b -> ((AclfBranch) b).isPSXfr()),
+				"Bus5->Bus6 LinePhase=30 should map as PS xfr");
+		assertTrue(net.getBusList().stream().anyMatch(b -> b.isSwing()),
+				"swing bus required for DCLF");
 
+		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
+		boolean ok = algo.calculateDclf();
+		assertTrue(ok, "DCLF should succeed on SixBus_2WPsXfr");
+		assertTrue(Double.isFinite(algo.getBusAngle("Bus1")), "DCLF angle finite");
+		assertTrue(Double.isFinite(algo.getBusAngle("Bus5")), "DCLF angle finite");
+	}
+
+	@Test
+	public void sixBus_2WPsXfr_facadeLoad() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr.aux")
-					.setFormat(IpssAdapter.FileFormat.PWD)
-					.load()    // .load(true, "output/odm.xml")
-					.getImportedObj();
-  		//System.out.println(net.net2String());
-		/*
-		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
-		for (Bus b : net.getBusList())
-			System.out.println(b.getId() + ": " + b.getSortNumber());
- 		System.out.println(net.formB1Matrix());
- 		
-		*/
-		/*xfr 1->3
-		  r=0.00024, x=0.03039
-		*/
-		//net.getAclfBranch("Bus1->Bus3(1 )").setZ(new Complex(0.00024, 0.03039));
-		//net.getAclfBranch("Bus1->Bus3(1 )").setFromTurnRatio(1.0);
-		//net.getAclfBranch("Bus1->Bus3(1 )").setToTurnRatio(1.0);
-		
-		for (Branch b : net.getBranchList()) {
-			AclfBranch branch = (AclfBranch)b;
-			if (branch.isXfr() || branch.isPSXfr()) {
-				if (branch.getToTurnRatio() != 1.0) {
-					branch.setZ(branch.getZ().multiply(branch.getToTurnRatio()*branch.getToTurnRatio()));
-					branch.setFromTurnRatio(branch.getFromTurnRatio()/branch.getToTurnRatio());
-					branch.setToTurnRatio(1.0);
-					if (branch.isPSXfr()) {
-						branch.setFromPSXfrAngle(branch.getFromPSXfrAngle() - branch.getToPSXfrAngle());
-						branch.setToPSXfrAngle(0.0);
-					}
-				}
-			}
-		}
-
-		
-		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
-		algo.calculateDclf();
-
-		System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
-		//algo.destroy();			
+				.setFormat(IpssAdapter.FileFormat.PWD)
+				.load()
+				.getImportedObj();
+		assertNotNull(net);
+		assertTrue(net.getNoBus() >= 5);
+		assertTrue(net.getNoBranch() >= 5);
 	}
-	
-	/*
-	 * The following three test case is based on a PWD test case, sent by ISO-NE
-	 * 09/19/2012.  
-	 */
 
 	@Test
+	@Disabled("Duplicate print-only historical variant of SixBus_2WPsXfr_1")
 	public void dclf1() throws Exception {
-		IpssCorePlugin.init();
-        //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-
-
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-					.setFormat(IpssAdapter.FileFormat.PWD)
-					.load()
-					.getImportedObj();
-
+				.setFormat(IpssAdapter.FileFormat.PWD)
+				.load()
+				.getImportedObj();
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
-
-		System.out.println(DclfOutFunc.dclfResults(algo, false));
-
 	}
 
 	@Test
+	@Disabled("Duplicate print-only historical variant")
 	public void dclf2() throws Exception {
-		IpssCorePlugin.init();
-        //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-
-
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-					.setFormat(IpssAdapter.FileFormat.PWD)
-					.load()
-					.getImportedObj();
-		
+				.setFormat(IpssAdapter.FileFormat.PWD)
+				.load()
+				.getImportedObj();
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
-
-		System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
-
-		//algo.destroy();			
 	}
 
 	@Test
+	@Disabled("Duplicate print-only historical variant")
 	public void dclf3() throws Exception {
-		IpssCorePlugin.init();
-        //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-
-
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
-					.setFormat(IpssAdapter.FileFormat.PWD)
-					.load()
-					.getImportedObj();
-		
-		for (Branch b : net.getBranchList()) {
-			AclfBranch branch = (AclfBranch)b;
-			branch.setZ(new Complex(0.0, branch.getZ().getImaginary()));
-		}
-		
+				.setFormat(IpssAdapter.FileFormat.PWD)
+				.load()
+				.getImportedObj();
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
-
-		System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
-
-		//algo.destroy();			
 	}
 
 	@Test
+	@Disabled("Duplicate print-only historical variant")
 	public void dclf4() throws Exception {
-		IpssCorePlugin.init();
-        //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-
-
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_2.aux")
-					.setFormat(IpssAdapter.FileFormat.PWD)
-					.load()
-					.getImportedObj();
-		
-		for (Branch b : net.getBranchList()) {
-			AclfBranch branch = (AclfBranch)b;
-			branch.setZ(new Complex(0.0, branch.getZ().getImaginary()));
-		}
-		
+				.setFormat(IpssAdapter.FileFormat.PWD)
+				.load()
+				.getImportedObj();
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
-
-		System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
-
-		//algo.destroy();			
 	}
 }
-

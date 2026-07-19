@@ -65,7 +65,10 @@ import org.interpss.core.aclf.PSSE_5Bus_SwitchedShunt_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
+import org.interpss.core.adapter.pwd.PWDDirectParser_ObjectGate_Test;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
+import org.interpss.core.adapter.pwd.SixBus_DclfPsXfr_pwd;
+import org.interpss.core.adapter.pwd.SixBus_XfrControl_pwd;
 import org.interpss.core.adapter.ucte.UCTEFormatAusPowerTest;
 import org.interpss.core.ca.IEEE14_N1Scan_Test;
 import org.interpss.core.ca.Ieee14_CA_Test;
@@ -305,11 +308,14 @@ import org.junit.platform.suite.api.Suite;
 	MatpowerCase6468RteTest.class,
 	UCTEFormatAusPowerTest.class,
 
-	// PowerWorld / future-state
+	// PowerWorld AUX ACLF + future-state
 	PowerWorld2PlanMaintainAdapterTest.class,
 	PowerWorld2PlanMaintainWeekAdapterTest.class,
 	SixBus_DclfPsXfr.class,
 	PWDIEEE14BusTestCase.class,
+	PWDDirectParser_ObjectGate_Test.class,
+	SixBus_DclfPsXfr_pwd.class,
+	SixBus_XfrControl_pwd.class,
 
 	// Future-state
 	FSPluginDclfAlgoRunTest.class,
