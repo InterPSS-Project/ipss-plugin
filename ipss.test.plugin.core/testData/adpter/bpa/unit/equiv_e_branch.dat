@@ -1,0 +1,8 @@
+(POWERFLOW,CASEID=EQUIV_E,PROJECT=UNIT)
+/MVA_BASE=100\
+/NETWORK_DATA\
+BS    BusA    230.01                                     1.0
+B     BusB    230.01
+.E equivalent branch
+E     BusA    230. BusB    230.       .0100 .0500       .0200
+(END)
