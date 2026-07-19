@@ -208,6 +208,11 @@ public class PSSEDirectParser {
     private void parseBusLine(PSSEDataRec rec) throws InterpssException {
         int busNum = rec.getInt(0);
         String busId = BUS_ID_PREFIX + busNum;
+        // Bus number 0 is never valid PSS/E bus data (section terminators / misaligned system-wide lines)
+        if (busNum <= 0) {
+            log.warn("Skipping invalid bus record with bus number: " + busNum);
+            return;
+        }
         String name = rec.getString(1);
         double baseKv = rec.getDouble(2);
 
@@ -633,9 +638,15 @@ public class PSSEDirectParser {
             }
 
             String branchId = fromBusId + "->" + toBusId + "(" + ckt + ")";
-            if (Math.abs(cod1) == 1) {
+            // CONT=0 means "control own bus" in PSS/E; do not build vcBusId "Bus0"
+            if (Math.abs(cod1) == 1 && cont1 != 0) {
                 String vcBusId = BUS_ID_PREFIX + Math.abs(cont1);
                 builder.addTapVoltageRangeControl(branchId, vcBusId, cod1 > 0,
+                        vma1, vmi1, rma1, rmi1,
+                        true, true, null, ntp1 > 0 ? ntp1 : null);
+            } else if (Math.abs(cod1) == 1) {
+                // Local voltage control (CONT=0): control the from-bus
+                builder.addTapVoltageRangeControl(branchId, fromBusId, cod1 > 0,
                         vma1, vmi1, rma1, rmi1,
                         true, true, null, ntp1 > 0 ? ntp1 : null);
             }
