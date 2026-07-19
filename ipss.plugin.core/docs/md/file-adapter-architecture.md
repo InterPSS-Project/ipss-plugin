@@ -338,7 +338,7 @@ java org.interpss.fadapter.psse.monitor.MonFileConverter input.mon output.json
 | IEEE CDF | `IEEECDF` | `IeeeCDFFormat` | `IeeeCDFDirectParser` | Standard + Ext1 via Version |
 | MATPOWER | `MATPOWER` | `MatpowerFormat` | `MatpowerDirectParser` | `.m` case files |
 | UCTE-DEF | `UCTE` | `UCTEFormat` | `UCTEDirectParser` | European exchange format |
-| GE PSLF | `GE_PSLF` | `GEFormat` | `GEPslfDirectParser` | |
+| GE PSLF | `GE_PSLF` | `GEFormat` | `GEPslfDirectParser` | Sectioned `.epc` (bus/gen/load/branch/xfr/shunt/area/zone); multi-line records (branch=2, xfr=3, gen=2); `.dyd` dynamics out of ACLF scope; SVD/DC/3W/TCUL control skipped |
 | BPA | `BPA` | `BPAFormat` | `BPADirectParser` | IPF card types B/L/T/E/A; `/MVA_BASE` currently hardcoded 100 MVA; R/TP/+ stubs skipped; LF from first file only (no `.swi`) |
 | PowerWorld | `PWD` | `PWDFormat` | `PWDDirectParser` | Legacy `DATA (…)` AUX; field aliases for BusNomVolt/LoadSMW/BusNum:1/LineC; BRANCH transformers via BranchDeviceType; concise headers / XFAuto controls not supported |
 | InterPSS Internal | `IpssInternal` | `IpssInternalFormat` | `_in` / `_out` | Read + write |
@@ -389,6 +389,7 @@ Tests assume the working directory is the `ipss.test.plugin.core` module root so
 | `PSSEAdapterTestSuite` | Fast PSS/E RAW v30–v36 subset: 5-bus, IEEE9, v31–v36 matrix, version gates, Bus0/auto-version, switched shunt |
 | `BPAAdapterTestSuite` | Fast BPA subset: sample LF (IEEE9 / Test009), card gates (B/L/T/A/E, R/TP/+ skip, OMIB), regional `07c_0615_notBE` smoke |
 | `PWDAdapterTestSuite` | Fast PowerWorld AUX subset: IEEE14, object gates (BUS/GEN/LOAD/BRANCH/SHUNT/AREA/ZONE), SixBus PS-xfr DCLF, XfrControl topology |
+| `GEAdapterTestSuite` | Fast GE PSLF EPC subset: Sample18Bus facade+DirectParser, section gates, UCTE_2002_Summer smoke, unit SHUNT/PS |
 
 Most adapter tests extend `CorePluginTestSetup` and load cases via one of:
 
@@ -418,6 +419,10 @@ mvn -pl ipss.test.plugin.core test -Dtest=BPADirectParser_CardGate_Test,BPASampl
 # Fast PowerWorld AUX DirectParser / adapter subset
 mvn -pl ipss.test.plugin.core test -Dtest=PWDAdapterTestSuite
 mvn -pl ipss.test.plugin.core test -Dtest=PWDDirectParser_ObjectGate_Test,PWDIEEE14BusTestCase
+
+# Fast GE PSLF EPC DirectParser / adapter subset
+mvn -pl ipss.test.plugin.core test -Dtest=GEAdapterTestSuite
+mvn -pl ipss.test.plugin.core test -Dtest=GEPslfDirectParser_SectionGate_Test,GESampleTestCases
 
 # Builder unit tests (Aclf)
 mvn -pl ipss.test.plugin.core test -Dtest=AclfNetworkBuilderCoreTest
@@ -460,7 +465,7 @@ Fixtures: `DStabBuilderTestFixture`, `AcscBuilderTestFixture`.
 | IEEE CDF | `IEEE14BusTest`, `IEEE118Bus_Test`, `IEEE300BusTest`, `IEEECommonFormat_CommaTest` | `IeeeCDFFormat` / `CorePluginFactory` |
 | MATPOWER | `MatpowerFormatTest`, `MatpowerCase*PegaseTest`, `MatpowerCase*RteTest` | `MatpowerFormat` + large `.m` cases |
 | UCTE | `UCTEFormatIEEE14BusTest`, `UCTEFormatAusPowerTest`, `UCTE2000CasesTest` | `UCTEFormat` |
-| GE | `GESampleTestCases` | `GEFormat` / `GEPslfDirectParser` |
+| GE | `GESampleTestCases`, `GEPslfDirectParser_SectionGate_Test` (`GEAdapterTestSuite`) | `GEFormat` + `GEPslfDirectParser`; fixtures under `testData/adpter/ge/` (+ `unit/` for SHUNT / PS angle) |
 | PWD | `PWDIEEE14BusTestCase`, `PWDDirectParser_ObjectGate_Test`, `SixBus_DclfPsXfr_pwd`, `SixBus_XfrControl_pwd` (`PWDAdapterTestSuite`) | `PWDFormat` + `PWDDirectParser`; fixtures under `testData/adpter/pwd/` (+ `unit/` for SHUNT) |
 | BPA | `BPASampleTestCases`, `BPADirectParser_CardGate_Test`, `Bpa07c_0615_Test`, `BpaO7CTest` (`BPAAdapterTestSuite`) | `BPAFormat` + `BPADirectParser`; fixtures under `testData/adpter/bpa/` (+ `unit/` for E / R-TP-skip) |
 | Internal format | `IEEE14Test`, `Bus1824Test`, `Bus6384Test`, `Bus11856Test` | `IpssInternalFormat` round-trip |
@@ -489,6 +494,20 @@ PWD legacy AUX object coverage (`PWDDirectParser`):
 | `AREA` / `ZONE` | Area/zone maps | SixBus Base |
 | `SHUNT` | Fixed shunt Y | `unit/shunt_2bus.aux` |
 | `OWNER` / `PWCASEINFORMATION` / `CONTINGENCY` | Ignored — skip-safe | ObjectGate skip-safety |
+
+GE PSLF EPC section coverage (`GEPslfDirectParser`):
+
+| Section / feature | Meaning | Asserted by |
+|------|---------|-------------|
+| `solution parameters` / `sbase` | System MVA base | `GESampleTestCases` (`baseKva`) |
+| `bus data` | Bus types (swing / PV / PQ), area/zone | Sample18 facade + SectionGate |
+| `generator data` / `load data` | Injections (2-line gen) | Sample18 + SectionGate |
+| `branch data` / `line data` | 2-line AC lines | Sample18 counts |
+| `transformer data` | 3-line xfr; taps; angle → PS | Sample18 taps; `unit/ps_xfr_2bus.epc` |
+| `shunt data` | Fixed shunt `pu_mw` / `pu_mvar` | `unit/shunt_2bus.epc` |
+| `area data` / `zone data` | Named areas/zones | Sample18 + SectionGate |
+| `svd` / `dc *` / `owner` / `interface` / … | Non-core ACLF — skip-safe | Sample18 empty headers |
+| Regional | `UCTE_2002_Summer.EPC` parse smoke (≥1200 buses) | SectionGate `ucte2002_summer_parseSmoke` |
 
 #### PSS/E auxiliary files
 
