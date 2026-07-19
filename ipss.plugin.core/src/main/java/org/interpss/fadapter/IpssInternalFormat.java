@@ -39,7 +39,6 @@ import org.interpss.fadapter.impl.IpssInternalFormat_in;
 import org.interpss.fadapter.impl.IpssInternalFormat_out;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -49,9 +48,9 @@ import org.slf4j.LoggerFactory;
 
 public class IpssInternalFormat extends IpssFileAdapterBase {
     private static final Logger logger = LoggerFactory.getLogger(IpssInternalFormat.class);
-	public IpssInternalFormat(IPSSMsgHub msgHub) {
-		super(msgHub);
-	}	
+
+	public IpssInternalFormat() {
+	}
 
 	/**
 	 * Load the data in the data file, specified by the filepath, into the SimuContext object. An AclfAdjNetwork
@@ -69,7 +68,7 @@ public class IpssInternalFormat extends IpssFileAdapterBase {
 			final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
 			
 			// load the loadflow data into the AclfAdjNetwork object
-			final AclfNetwork adjNet = IpssInternalFormat_in.loadFile(din, msgHub);
+			final AclfNetwork adjNet = IpssInternalFormat_in.loadFile(din);
 	  		// System.out.println(adjNet.net2String());
 
 			// set the simuContext object
@@ -109,7 +108,7 @@ public class IpssInternalFormat extends IpssFileAdapterBase {
 	        final OutputStream stream = new FileOutputStream(file);
 	        final BufferedWriter out = new BufferedWriter(new OutputStreamWriter(stream));
 
-	        boolean r = IpssInternalFormat_out.save(out, simuCtx, msgHub);
+	        boolean r = IpssInternalFormat_out.save(out, simuCtx);
 	        
 	        out.flush();
 	        out.close();

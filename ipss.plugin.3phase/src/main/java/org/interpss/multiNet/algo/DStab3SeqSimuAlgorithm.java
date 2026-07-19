@@ -45,7 +45,7 @@ public class DStab3SeqSimuAlgorithm {
 	
 	public DStab3SeqSimuAlgorithm(BaseDStabNetwork<?,?> net){
 		this.net = net;
-		this.posSeqDstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net, IpssCorePlugin.getMsgHub());
+		this.posSeqDstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(net);
 		
 		threeSeqVoltTable = new Hashtable<>();
 	}

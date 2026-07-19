@@ -1,39 +1,11 @@
- /*
-  * @(#)SampleLoadflow.java   
-  *
-  * Copyright (C) 2006 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 09/15/2006
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.core.zeroz.algo;
 
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
+import org.interpss.fadapter.psse.PSSEDirectParser;
 import static org.interpss.CorePluginFunction.aclfResultBusStyle;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -45,9 +17,6 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.impl.solver.ZbrNrSolver;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 
 public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
@@ -207,24 +176,8 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
 	    		
     }
 	
-	private AclfNetwork createTestCase() {
-		IODMAdapter adapter = new PSSERawAdapter(PSSEAdapter.PsseVersion.PSSE_33);
-		assertTrue(adapter.parseInputFile("testData/psse/v33/ieee9_zbr_v33.raw"));
-		
-		AclfModelParser parser = (AclfModelParser)adapter.getModel();
-		//parser.stdout();
-		
-		SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-		if (!new ODMAclfParserMapper()
-					.map2Model(parser, simuCtx)) {
-  	  		System.out.println("Error: ODM model to InterPSS SimuCtx mapping error");
-  	  		return null;
-		}		
-		
-		AclfNetwork net = simuCtx.getAclfNet();
-		//System.out.println(net.net2String());		
-		
-		return net;
+	private AclfNetwork createTestCase() throws InterpssException {
+		return new PSSEDirectParser(33).parse("testData/psse/v33/ieee9_zbr_v33.raw");
 	}
 	
 }

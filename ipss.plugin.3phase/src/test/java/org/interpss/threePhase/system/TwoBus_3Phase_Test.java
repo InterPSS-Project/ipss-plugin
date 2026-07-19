@@ -156,8 +156,6 @@ public class TwoBus_3Phase_Test {
 
     @Test
 	public void testSolvNetwork() throws Exception{
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
 
 		//net.initBusVoltage();
@@ -166,7 +164,7 @@ public class TwoBus_3Phase_Test {
 		net.initContributeGenLoad(false);
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -222,8 +220,6 @@ public class TwoBus_3Phase_Test {
 
 	@Test
 	public void testDstab() throws Exception{
-
-		//IpssLogger.getLogger().setLevel(Level.INFO);
 		DStabNetwork3Phase net = create2BusSys();
 
 
@@ -231,7 +227,7 @@ public class TwoBus_3Phase_Test {
 		net.initContributeGenLoad(false);
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				net, IpssCorePlugin.getMsgHub());
+				net);
 
 		//create a load flow algorithm object
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);

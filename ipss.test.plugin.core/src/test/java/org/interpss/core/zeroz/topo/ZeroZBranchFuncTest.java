@@ -1,27 +1,3 @@
- /*
-  * @(#)SampleLoadflow.java   
-  *
-  * Copyright (C) 2006 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 09/15/2006
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.core.zeroz.topo;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -35,7 +11,6 @@ import org.interpss.plugin.pssl.simu.net.IpssAclfNet;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
@@ -54,7 +29,7 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 				.getAclfNet();
 
 		// set the network data
-	  	set2BusNetworkData(net, msg);
+	  	set2BusNetworkData(net);
 	  	
 	  	net.getBranchList().forEach(b -> {
 	  		if (b.isZeroZBranch()) {
@@ -101,7 +76,7 @@ public class ZeroZBranchFuncTest extends CorePluginTestSetup {
 	  	assertTrue(!net.getBranch("Bus2->Bus3(Branch 1)").isActive());
 	}
 
-	private void set2BusNetworkData(AclfNetwork net, IPSSMsgHub msg) throws InterpssException {
+	private void set2BusNetworkData(AclfNetwork net) throws InterpssException {
 		IpssAclfNet.addAclfBus("Bus1", "Bus 1", net)
 				.setBaseVoltage(4000.0)
 				.setGenCode(AclfGenCode.SWING)

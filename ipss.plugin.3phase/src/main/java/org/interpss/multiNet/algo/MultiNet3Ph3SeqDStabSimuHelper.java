@@ -359,7 +359,6 @@ public class MultiNet3Ph3SeqDStabSimuHelper extends AbstractMultiNetDStabSimuHel
     		
     	}
     	else{
-    		 //IpssLogger.getLogger().severe("The boundary sub system [Zl] matrix is null");
     		 log.error("The boundary sub system [Zl] matrix is null");
     		 flag = false;
     	}

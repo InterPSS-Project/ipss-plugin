@@ -1,32 +1,5 @@
- /*
-  * @(#)CR_UserTestCases.java   
-  *
-  * Copyright (C) 2008 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 02/15/2008
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.dep.plugin.beanModel;
 
-import java.util.logging.Level;
-
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dep.datamodel.bean.aclf.AclfBranchBean;
@@ -222,7 +195,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	public void testCase_2WPsxfr() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
@@ -255,7 +228,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
 	public void testCase_2WPsxfr_lf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
  
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
