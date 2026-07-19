@@ -340,7 +340,7 @@ java org.interpss.fadapter.psse.monitor.MonFileConverter input.mon output.json
 | UCTE-DEF | `UCTE` | `UCTEFormat` | `UCTEDirectParser` | European exchange format |
 | GE PSLF | `GE_PSLF` | `GEFormat` | `GEPslfDirectParser` | |
 | BPA | `BPA` | `BPAFormat` | `BPADirectParser` | IPF card types B/L/T/E/A; `/MVA_BASE` currently hardcoded 100 MVA; R/TP/+ stubs skipped; LF from first file only (no `.swi`) |
-| PowerWorld | `PWD` | `PWDFormat` | `PWDDirectParser` | |
+| PowerWorld | `PWD` | `PWDFormat` | `PWDDirectParser` | Legacy `DATA (…)` AUX; field aliases for BusNomVolt/LoadSMW/BusNum:1/LineC; BRANCH transformers via BranchDeviceType; concise headers / XFAuto controls not supported |
 | InterPSS Internal | `IpssInternal` | `IpssInternalFormat` | `_in` / `_out` | Read + write |
 | PSS/E sequence | — | `PSSEMultiFileLoader` | `PSSEAcscDirectParser` | `.seq` overlay |
 | PSS/E dynamics | — | `PSSEMultiFileLoader` | `PSSEDStabDirectParser` | `.dyr` overlay |
@@ -388,6 +388,7 @@ Tests assume the working directory is the `ipss.test.plugin.core` module root so
 | `CoreAdapterTestSuite` | Narrow suite: IEEE CDF + `IpssInternalFormat` smoke tests |
 | `PSSEAdapterTestSuite` | Fast PSS/E RAW v30–v36 subset: 5-bus, IEEE9, v31–v36 matrix, version gates, Bus0/auto-version, switched shunt |
 | `BPAAdapterTestSuite` | Fast BPA subset: sample LF (IEEE9 / Test009), card gates (B/L/T/A/E, R/TP/+ skip, OMIB), regional `07c_0615_notBE` smoke |
+| `PWDAdapterTestSuite` | Fast PowerWorld AUX subset: IEEE14, object gates (BUS/GEN/LOAD/BRANCH/SHUNT/AREA/ZONE), SixBus PS-xfr DCLF, XfrControl topology |
 
 Most adapter tests extend `CorePluginTestSetup` and load cases via one of:
 
@@ -413,6 +414,10 @@ mvn -pl ipss.test.plugin.core test -Dtest=PSSEAdapterTestSuite
 # Fast BPA DirectParser / adapter subset
 mvn -pl ipss.test.plugin.core test -Dtest=BPAAdapterTestSuite
 mvn -pl ipss.test.plugin.core test -Dtest=BPADirectParser_CardGate_Test,BPASampleTestCases
+
+# Fast PowerWorld AUX DirectParser / adapter subset
+mvn -pl ipss.test.plugin.core test -Dtest=PWDAdapterTestSuite
+mvn -pl ipss.test.plugin.core test -Dtest=PWDDirectParser_ObjectGate_Test,PWDIEEE14BusTestCase
 
 # Builder unit tests (Aclf)
 mvn -pl ipss.test.plugin.core test -Dtest=AclfNetworkBuilderCoreTest
@@ -455,7 +460,8 @@ Fixtures: `DStabBuilderTestFixture`, `AcscBuilderTestFixture`.
 | IEEE CDF | `IEEE14BusTest`, `IEEE118Bus_Test`, `IEEE300BusTest`, `IEEECommonFormat_CommaTest` | `IeeeCDFFormat` / `CorePluginFactory` |
 | MATPOWER | `MatpowerFormatTest`, `MatpowerCase*PegaseTest`, `MatpowerCase*RteTest` | `MatpowerFormat` + large `.m` cases |
 | UCTE | `UCTEFormatIEEE14BusTest`, `UCTEFormatAusPowerTest`, `UCTE2000CasesTest` | `UCTEFormat` |
-| GE / PWD | `GESampleTestCases`, `PWDIEEE14BusTestCase`, `SixBus_DclfPsXfr_pwd` | Respective `*DirectParser` facades |
+| GE | `GESampleTestCases` | `GEFormat` / `GEPslfDirectParser` |
+| PWD | `PWDIEEE14BusTestCase`, `PWDDirectParser_ObjectGate_Test`, `SixBus_DclfPsXfr_pwd`, `SixBus_XfrControl_pwd` (`PWDAdapterTestSuite`) | `PWDFormat` + `PWDDirectParser`; fixtures under `testData/adpter/pwd/` (+ `unit/` for SHUNT) |
 | BPA | `BPASampleTestCases`, `BPADirectParser_CardGate_Test`, `Bpa07c_0615_Test`, `BpaO7CTest` (`BPAAdapterTestSuite`) | `BPAFormat` + `BPADirectParser`; fixtures under `testData/adpter/bpa/` (+ `unit/` for E / R-TP-skip) |
 | Internal format | `IEEE14Test`, `Bus1824Test`, `Bus6384Test`, `Bus11856Test` | `IpssInternalFormat` round-trip |
 | Compare / regression | `IEEE14JsonCompareTest`, `PSSE_ACTIVSg25kObjectCompareTest` | Load twice, `AclfNetJsonComparator` |
@@ -471,6 +477,18 @@ BPA IPF card coverage (`BPADirectParser`):
 | `R` / `TP` / `+` | Unimplemented — skip-safe | `unit/skip_r_tp_plus.dat` |
 | `/MVA_BASE` | Currently ignored (always 100 MVA) | same skip fixture |
 | Regional | `07c_0615_notBE.dat` parse + LF | `Bpa07c_0615_Test`, `BpaO7CTest` |
+
+PWD legacy AUX object coverage (`PWDDirectParser`):
+
+| Object / feature | Meaning | Asserted by |
+|------|---------|-------------|
+| `BUS` (+ `BusSlack` / `BusNomVolt`) | Buses, swing | `PWDIEEE14BusTestCase`, ObjectGate |
+| `GEN` / `LOAD` | Injections (`GenVoltSet`, `LoadSMW`) | IEEE14 LF + ObjectGate |
+| `BRANCH` | Lines; `BranchDeviceType=Transformer` + `LineTap`/`LinePhase` | SixBus gates |
+| `TRANSFORMER` | Control-only overlay (skipped if no R/X) | indirect |
+| `AREA` / `ZONE` | Area/zone maps | SixBus Base |
+| `SHUNT` | Fixed shunt Y | `unit/shunt_2bus.aux` |
+| `OWNER` / `PWCASEINFORMATION` / `CONTINGENCY` | Ignored — skip-safe | ObjectGate skip-safety |
 
 #### PSS/E auxiliary files
 
