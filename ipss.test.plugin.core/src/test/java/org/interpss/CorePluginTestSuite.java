@@ -52,8 +52,13 @@ import org.interpss.core.adapter.psse.raw.aclf.Mod_SixBus_DclfPsXfr;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_5Bus_TestCase;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_AutoVersion_Bus0_Regression_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_IEEE9Bus_Test;
+import org.interpss.core.adapter.psse.raw.aclf.PSSE_Savnw_v33_Test;
+import org.interpss.core.adapter.psse.raw.aclf.PSSEDirectParser_VersionGate_Test;
+import org.interpss.core.adapter.psse.raw.aclf.PSSEV31_v36_IEEE9_Test;
+import org.interpss.core.adapter.psse.raw.aclf.PSSEV31_v36_Sample_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PsseVersionParserTest;
 import org.interpss.core.adapter.psse.raw.aclf.SixBus_DclfPsXfr;
+import org.interpss.core.aclf.PSSE_5Bus_SwitchedShunt_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
@@ -311,7 +316,12 @@ import org.junit.platform.suite.api.Suite;
 	GuideSample_TestCase.class,
 	Mod_SixBus_DclfPsXfr.class,
 	PSSE_5Bus_TestCase.class,
+	PSSE_5Bus_SwitchedShunt_Test.class,
 	PSSE_IEEE9Bus_Test.class,
+	PSSEV31_v36_Sample_Test.class,
+	PSSEV31_v36_IEEE9_Test.class,
+	PSSE_Savnw_v33_Test.class,
+	PSSEDirectParser_VersionGate_Test.class,
 	PsseVersionParserTest.class,
 	PSSE_AutoVersion_Bus0_Regression_Test.class,
 	IEEE9_Dstab_Adapter_Test.class,
