@@ -8,13 +8,13 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.common.IFileReader;
-import org.ieee.odm.common.ODMLogger;
-import org.ieee.odm.common.ODMTextFileReader;
 import org.interpss.numeric.datatype.Complex3x3;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.interpss.threePhase.basic.LineConfiguration;
 
 public class OpenDSSLineCodeParser {
+	private static final Logger logger = LoggerFactory.getLogger(OpenDSSLineCodeParser.class);
 
 	private OpenDSSDataParser dataParser = null;
 
@@ -28,10 +28,9 @@ public class OpenDSSLineCodeParser {
 		try {
 			final File file = new File(fileName);
 			final InputStream stream = new FileInputStream(file);
-			ODMLogger.getLogger().info("Parse input file and create the parser object, " + fileName);
+			logger.info("Parse input file and create the parser object, {}", fileName);
 
 			final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
-			IFileReader reader = new ODMTextFileReader(din);
 
 
 
@@ -48,7 +47,7 @@ public class OpenDSSLineCodeParser {
 			double[] xMatrixData = new double[6];
 			double[] cMatrixData = new double[6];
 	    	do {
-	          	str = reader.readLine();
+	          	str = din.readLine();
 	        	if (str != null && !str.trim().equals("")) {
 	        		str = str.trim();
 	        		String lowerStr = str.toLowerCase();
@@ -123,7 +122,7 @@ public class OpenDSSLineCodeParser {
 
 			return true;
 		} catch (Exception e) {
-			ODMLogger.getLogger().severe(e.toString());
+			logger.error(e.toString());
 
 			e.printStackTrace();
 			return false;
@@ -193,7 +192,7 @@ public class OpenDSSLineCodeParser {
 			}
 			return true;
 		} catch (Exception e) {
-			ODMLogger.getLogger().severe(e.toString());
+			logger.error(e.toString());
 			e.printStackTrace();
 			return false;
 		}

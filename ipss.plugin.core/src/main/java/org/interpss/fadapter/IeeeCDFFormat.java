@@ -24,62 +24,35 @@
 
 package org.interpss.fadapter;
 
-import org.ieee.odm.ODMFileFormatEnum;
+import java.io.File;
+
+import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 import org.interpss.fadapter.impl.IpssFileAdapterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.msg.IPSSMsgHub;
-import com.interpss.core.aclf.AclfGen;
-import com.interpss.core.aclf.AclfGenCode;
-import com.interpss.core.aclf.AclfLoad;
-import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.simu.SimuContext;
-
-/**
- *  Custom input file adapter for IEEE Common Format. It loads a data file in the format and create an
- *  AclfAdjNetwork object. The data fields could be positional or separeted by comma  
- */
+import com.interpss.simu.SimuCtxType;
 
 public class IeeeCDFFormat extends IpssFileAdapterBase {
     private static final Logger log = LoggerFactory.getLogger(IeeeCDFFormat.class);
 	
-	public IeeeCDFFormat(IPSSMsgHub msgHub) {
-		super(msgHub, ODMFileFormatEnum.IeeeCDF);
-	}
-	
-	public IeeeCDFFormat(IPSSMsgHub msgHub, IpssFileAdapter.Version v) {
-		super(msgHub, v == IpssFileAdapter.Version.IEEECDF? ODMFileFormatEnum.IeeeCDF : ODMFileFormatEnum.IeeeCDFExt1);
-	}
-	
 	@Override
 	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {
-		super.load(simuCtx, filepath, debug, outfile);	
+		IeeeCDFDirectParser parser = new IeeeCDFDirectParser();
+		AclfNetwork aclfNet = parser.parse(filepath);
+		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
+		simuCtx.setAclfNet(aclfNet);
+		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar) + 1));
+		simuCtx.setDesc("This project is created by input file " + filepath);
 		log.debug("IEEECDF Format file " + filepath + " loaded successfully.");
-		
-		// since the IEEE CDF format is not a contributionGen/Load model, we need to 
-		// remove the empty contributionGen/Load objects 
-		simuCtx.getAclfNet().getBusList().forEach(bus -> {
-			if (bus.getContributeGenList().size() > 0) {
-				AclfGen gen = bus.getContributeGenList().get(0);
-				if (bus.getGenCode() == AclfGenCode.GEN_PQ) {
-					if (gen.getGen().abs() == 0.0) {
-						bus.getContributeGenList().remove(0);
-						log.debug("Removed empty contributionGen " + gen.getId());
-					}
-				}
-			}
-			
-			if (bus.getContributeLoadList().size() > 0) {
-				AclfLoad load = bus.getContributeLoadList().get(0);
-				if (load.getCode() == AclfLoadCode.CONST_P) {
-					if (load.getLoadCP().abs() == 0.0) {
-						bus.getContributeLoadList().remove(0);
-						log.debug("Removed empty contributionLoad " + load.getId());
-					}
-				}				
-			}
-		});
+	}
+
+	@Override
+	public AclfNetwork loadAclfNet(String filepath) throws InterpssException {
+		IeeeCDFDirectParser parser = new IeeeCDFDirectParser();
+		return parser.parse(filepath);
 	}
 }

@@ -1,27 +1,3 @@
- /*
-  * @(#)SparseRqnPerformance.java   
-  *
-  * Copyright (C) 2006 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 10/15/2016
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.sample.sparseeqn.perform;
 
 import java.nio.file.Files;
@@ -32,7 +8,7 @@ import java.util.stream.Stream;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.numeric.util.PerformanceTimer;
 
-import com.interpss.common.util.IpssLogger;
+import java.util.logging.Logger;
 import com.interpss.core.sparse.DoubleSEqnRow;
 import com.interpss.core.sparse.SparseEqnObjectFactory;
 import com.interpss.core.sparse.impl.csj.CSJSparseEqnDoubleImpl;
@@ -55,7 +31,7 @@ public class DoubleSparseEqnPerformance {
 		ISparseEqnDouble eqn = buildEqnNewFormat("ipss-plugin/ipss.sample/testData/JMatrix_20kBus.txt", n);
 		
 		eqn.setB2Unity(10);
-	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+	  	PerformanceTimer timer = new PerformanceTimer(Logger.getLogger(DoubleSparseEqnPerformance.class.getName()));
 
 	  	eqn.solveEqn();
 	  	timer.logStd("Time for solving the eqnNew");
@@ -143,7 +119,7 @@ b(17): 0.001294411022165286
 		}
 
 		eqnNew.setB2Unity(10);
-	  	PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+	  	PerformanceTimer timer = new PerformanceTimer(Logger.getLogger(DoubleSparseEqnPerformance.class.getName()));
 	  	
 		eqnNew.factorization(1.0e-10);
 	  	timer.logStd("Time for LU the eqnNew");

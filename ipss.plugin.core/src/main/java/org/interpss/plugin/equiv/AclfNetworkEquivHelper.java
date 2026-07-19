@@ -238,7 +238,6 @@ public class AclfNetworkEquivHelper {
             for(AclfBus bus : equivNet.getBusList()) {
                 if(!keptBusSet.contains(bus.getId())) {
                     bus.setStatus(false);
-                    //IpssLogger.getLogger().info("Turning off bus: " + bus.getId());
                 }
             }
             
@@ -246,7 +245,6 @@ public class AclfNetworkEquivHelper {
             for(AclfBranch branch : equivNet.getBranchList()) {
                 if(!keptBranchSet.contains(branch.getId())) {
                     branch.setStatus(false);
-                   //IpssLogger.getLogger().info("Turning off branch: " + branch.getId());
                 }
             }
             //
@@ -257,7 +255,6 @@ public class AclfNetworkEquivHelper {
             for(Branch bra : equivNet.getSpecialBranchList()) {
                 if(bra != null && !keptBranchSet.contains(bra.getId())) {
                     bra.setStatus(false);
-                    //IpssLogger.getLogger().info("Turning off special branch: " + bra.getId());
                 }
             }
         }

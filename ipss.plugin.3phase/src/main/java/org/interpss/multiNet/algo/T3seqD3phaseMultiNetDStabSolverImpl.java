@@ -675,7 +675,6 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 //			
 //			
 //		     if(i>0 && netSolConverged) {
-//				  IpssLogger.getLogger().fine(getSimuTime()+","+"multi subNetwork solution in the nextStep() is converged, iteration #"+(i+1));
 //				  break;
 //			 }
 //		    

@@ -71,7 +71,7 @@ public class Test6BusFeeder {
 		System.out.println(DistPowerFlowOutFunc.powerflowResultSummary(distNet));
 
 		DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-				distNet, IpssCorePlugin.getMsgHub());
+				distNet);
 
 
 
