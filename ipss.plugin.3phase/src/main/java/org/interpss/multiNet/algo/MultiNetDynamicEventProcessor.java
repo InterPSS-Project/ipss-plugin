@@ -7,7 +7,6 @@ import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 
 import com.interpss.common.exp.InterpssRuntimeException;
-import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
@@ -39,7 +38,7 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 	 * @param eventMsg network dynamic event
 	 * @return false if there is any issue during event handling process 
 	 */
-	@Override public boolean onMsgEventStatus(IpssMessage eventMsg) {
+	@Override public boolean onDynamicEvent(DStabSimuTimeEvent eventMsg) {
 		if (eventMsg instanceof DStabSimuTimeEvent) {
 			DStabSimuTimeEvent dEventMsg = (DStabSimuTimeEvent) eventMsg;
 			if (dEventMsg.getType() == DStabSimuTimeEvent.ProessDynamicEvent) {
@@ -125,10 +124,6 @@ public class MultiNetDynamicEventProcessor extends DynamicEventProcessor {
 			}
 		}
 		return has;
-	}
-
-	@Override public void onMsgEvent(IpssMessage eventMsg) {
-		throw new InterpssRuntimeException("Method not applicable");
 	}
 	
 	// apply event before building the Y-matrix
