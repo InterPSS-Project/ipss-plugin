@@ -28,7 +28,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.dep.datamodel.bean.base.CompareBaseJSONBean;
 import org.interpss.numeric.util.NumericUtil;
 
-import com.interpss.common.util.IpssLogger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Bean class for store a complex number
@@ -37,6 +38,8 @@ import com.interpss.common.util.IpssLogger;
  *
  */
 public class ComplexValueBean  implements Comparable<ComplexValueBean> {
+	private static final Logger log = LoggerFactory.getLogger(ComplexValueBean.class);
+
 	public double
 		re,				// real part
 		im;				// imaginary part
@@ -57,10 +60,10 @@ public class ComplexValueBean  implements Comparable<ComplexValueBean> {
 		int eql = 0;
 		
 		if (!NumericUtil.equals(this.re, bean.re, CompareBaseJSONBean.PU_ERR)) {
-			IpssLogger.ipssLogger.warning("ComplexBean.re is not equal, " + this.re + ", " + bean.re); eql = 1; }
+			log.warn("ComplexBean.re is not equal, " + this.re + ", " + bean.re); eql = 1; }
 		
 		if (!NumericUtil.equals(this.im, bean.im, CompareBaseJSONBean.PU_ERR)) {
-			IpssLogger.ipssLogger.warning("ComplexBean.im is not equal, " + this.im + ", " + bean.im); eql = 1; }	
+			log.warn("ComplexBean.im is not equal, " + this.im + ", " + bean.im); eql = 1; }	
 		
 		return eql;
 	}		

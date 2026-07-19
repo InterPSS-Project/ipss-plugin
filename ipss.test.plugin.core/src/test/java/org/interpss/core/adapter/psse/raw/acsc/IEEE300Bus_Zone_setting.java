@@ -12,16 +12,10 @@ import java.util.Hashtable;
 import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.acsc.AcscModelParser;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.numeric.datatype.Complex3x1;
-import org.interpss.numeric.datatype.ComplexFunc;
-import org.interpss.odm.mapper.ODMAcscParserMapper;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
@@ -43,16 +37,9 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 	//@Test
 	public void testDataInputAndACSC() throws Exception {
 		
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
+		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
 				"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
-				"testData/adpter/psse/v30/IEEE300/IEEE300.seq"
-		}));
-		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-		
-		//acscParser.stdout();
-		
-		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+				"testData/adpter/psse/v30/IEEE300/IEEE300.seq");
 		
 		//set the order in original sequence for better testing
 //		for(int i=1;i<=net.getNoBus();i++){
@@ -94,16 +81,9 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 	public void calcZone3Setting() throws Exception {
 		   
 		
-		PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-		assertTrue(adapter.parseInputFile(NetType.AcscNet, new String[]{
+		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
 				"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
-				"testData/adpter/psse/v30/IEEE300/IEEE300.seq"
-				
-		}));
-		AcscModelParser acscParser =(AcscModelParser) adapter.getModel();
-	
-		//acscParser.stdout();
-		AcscNetwork net = new ODMAcscParserMapper().map2Model(acscParser).getAcscNet();
+				"testData/adpter/psse/v30/IEEE300/IEEE300.seq");
 		
 		//System.out.println(net.net2String());
 		
@@ -285,8 +265,6 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 		
 		try {
 		    Files.write(Paths.get(dyrFileName), zoneSettings.getBytes());
-		    
-		    //IpssLogger.getLogger().info("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		    System.out.println("The zone 1/2/3 protection data is saved to :"+ dyrFileName);
 		
 		} catch (IOException e) {
@@ -352,7 +330,6 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 			relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 			
 			if(relayBranch==null){
-				//IpssLogger.getLogger().severe("No line is found for the input bus numbers and ID:"+relayBusNum+","+relayRemoteBusNum+","+circuitID);
 			    return null;
 			}
 			else
@@ -437,7 +414,6 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 				  }
 			}
 			if(maxZapp<=relayBranch.getAdjustedZ().abs()){
-				//IpssLogger.getLogger().severe("No proper zone 3 setting can be found, relayBus, remoteBus: "+relayBusId+","+relayRemoteBusId);
 			    return null;
 			}
 			 System.out.println("Apparent impedances:"+apparentImpedanceTable.toString());
@@ -490,7 +466,6 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 				if(relayBranch ==null){
 					relayBranch = net.getBranch(relayRemoteBusId,relayBusId,circuitID);
 					if(relayBranch==null){
-						//IpssLogger.getLogger().severe("No line is found for the input bus numbers:"+relayBusNum+","+relayRemoteBusNum);
 					    return null;
 					}
 					else

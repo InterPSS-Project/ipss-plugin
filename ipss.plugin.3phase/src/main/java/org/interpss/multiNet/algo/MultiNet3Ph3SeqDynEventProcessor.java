@@ -11,7 +11,6 @@ import org.interpss.threePhase.basic.dstab.DStab3PBus;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.model.DynLoadModel3Phase;
 
-import com.interpss.common.msg.IpssMessage;
 import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.acsc.fault.AcscBusFault;
@@ -45,10 +44,8 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 	 * @param eventMsg network dynamic event
 	 * @return false if there is any issue during event handling process 
 	 */
-	@Override public boolean onMsgEventStatus(IpssMessage eventMsg) {
-		if (eventMsg instanceof DStabSimuTimeEvent) {
-			DStabSimuTimeEvent dEventMsg = (DStabSimuTimeEvent) eventMsg;
-			if (dEventMsg.getType() == DStabSimuTimeEvent.ProessDynamicEvent) {
+	@Override public boolean onDynamicEvent(DStabSimuTimeEvent dEventMsg) {
+		if (dEventMsg.getType() == DStabSimuTimeEvent.ProessDynamicEvent) {
 				
 				this.net = dEventMsg.getDStabNetData();
 				
@@ -125,7 +122,6 @@ public class MultiNet3Ph3SeqDynEventProcessor extends
 			         this.simuHelper.updateSubNetworkEquivMatrix(faultSubNetworkId);
 					
 				}
-			}
 		}
 		return true;
 	}

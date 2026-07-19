@@ -6,12 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter.NetType;
-import org.ieee.odm.adapter.psse.PSSEAdapter;
-import org.ieee.odm.adapter.psse.PSSEAdapter.PsseVersion;
-import org.ieee.odm.adapter.psse.raw.PSSERawAdapter;
-import org.ieee.odm.model.dstab.DStabModelParser;
 import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -23,7 +19,6 @@ import org.interpss.threePhase.basic.dstab.DStab3PLoad;
 import org.interpss.threePhase.dynamic.DStabNetwork3Phase;
 import org.interpss.threePhase.dynamic.algo.DynamicEventProcessor3Phase;
 import org.interpss.threePhase.dynamic.impl.DStabNetwork3phaseImpl;
-import org.interpss.threePhase.odm.ODM3PhaseDStabParserMapper;
 import org.interpss.threePhase.util.ThreePhaseAclfOutFunc;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
@@ -47,8 +42,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.impl.DStabGenImpl;
 import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class IEEE9Bus_3phase_LF_init_test {
 
@@ -242,12 +235,10 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 //	  		bus5.getPhaseCDynLoadList().add(ac3);
 
 
-
-			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet, IpssCorePlugin.getMsgHub());
+			DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
 			LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 			assertTrue(aclfAlgo.loadflow());
 			System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
-
 
 
 			dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -270,14 +261,10 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 			dstabAlgo.setOutPutPerSteps(5);
 			//dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
-
 			PerformanceTimer timer = new PerformanceTimer();
 
 	        // Must use this dynamic event process to modify the YMatrixABC
 			dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
-
-
 
 
 			if (dstabAlgo.initialization()) {
@@ -304,23 +291,7 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 		public void test_IEEE9_gen_load_update() throws InterpssException {
 			IpssCorePlugin.init();
 			IpssCorePlugin.setLoggerLevel(Level.INFO);
-			PSSEAdapter adapter = new PSSERawAdapter(PsseVersion.PSSE_30);
-			assertTrue(adapter.parseInputFile(NetType.DStabNet,
-					new String[] { "testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq",
-							"testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr" }));
-			DStabModelParser parser = (DStabModelParser) adapter.getModel();
-
-			// System.out.println(parser.toXmlDoc());
-
-			SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
-
-			// The only change to the normal data import is the use of
-			// ODM3PhaseDStabParserMapper
-			if (!new ODM3PhaseDStabParserMapper(IpssCorePlugin.getMsgHub()).map2Model(parser, simuCtx)) {
-				System.out
-						.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-				return;
-			}
+			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 
 			DStabNetwork3Phase dsNet = (DStabNetwork3Phase) simuCtx.getDStabilityNet();
 
@@ -339,14 +310,11 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 			((BaseDStabBus)gen2.getParentBus()).resetSeqEquivLoad();
 
 
-
-
 			/*
 			 * create the 1-phase AC model
 			 */
 
 			DStab3PBus bus5 = dsNet.getBus("Bus5");
-
 
 
 			DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
@@ -375,8 +343,6 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 			dstabAlgo.setSimuOutputHandler(sm);
 			dstabAlgo.setOutPutPerSteps(5);
 			// dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
-
-			//IpssLogger.getLogger().setLevel(Level.WARNING);
 
 			PerformanceTimer timer = new PerformanceTimer();
 
@@ -434,7 +400,6 @@ ca = (0.0, 0.0),cb = (1.734723475976807E-18, -3.469446951953614E-18),cc = (-1.73
 		  		gen1.setNegGenZ(new Complex(0,0.04));
 		  		gen1.setZeroGenZ(new Complex(0,0.04));
 		  		bus1.getContributeGenList().add(gen1);
-
 
 
 		  	// Bus 2
