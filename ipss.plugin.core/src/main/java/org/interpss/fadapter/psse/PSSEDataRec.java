@@ -21,6 +21,8 @@ import java.util.List;
  */
 public class PSSEDataRec {
     private final List<String> fields = new ArrayList<>();
+    private String nameTagDescription;
+    private String externalUid;
 
     public PSSEDataRec() {}
 
@@ -30,6 +32,9 @@ public class PSSEDataRec {
 
     public void parse(String lineStr) {
         fields.clear();
+        nameTagDescription = null;
+        externalUid = null;
+        parseNameTagMetadata(lineStr);
         String str = removeComments(lineStr);
 
         StringBuilder token = new StringBuilder();
@@ -60,6 +65,22 @@ public class PSSEDataRec {
         }
     }
 
+    private void parseNameTagMetadata(String str) {
+        int commentStart = str.indexOf("/*");
+        int commentEnd = commentStart >= 0 ? str.indexOf("*/", commentStart + 2) : -1;
+        if (commentEnd < 0) return;
+
+        int descriptionStart = str.indexOf('[', commentStart + 2);
+        int descriptionEnd = descriptionStart >= 0 ? str.indexOf(']', descriptionStart + 1) : -1;
+        if (descriptionStart < 0 || descriptionEnd < 0 || descriptionEnd > commentEnd) return;
+
+        nameTagDescription = str.substring(descriptionStart, descriptionEnd + 1);
+        String entries = str.substring(descriptionStart + 1, descriptionEnd);
+        int comma = entries.indexOf(',');
+        externalUid = (comma >= 0 ? entries.substring(0, comma) : entries).trim();
+        if (externalUid.isEmpty()) externalUid = null;
+    }
+
     private String removeComments(String str) {
         if (!str.contains("/")) return str;
 
@@ -84,6 +105,12 @@ public class PSSEDataRec {
     }
 
     public int size() { return fields.size(); }
+
+    public boolean hasNameTagMetadata() { return nameTagDescription != null; }
+
+    public String getNameTagDescription() { return nameTagDescription; }
+
+    public String getExternalUid() { return externalUid; }
 
     public String getString(int idx) {
         return idx < fields.size() ? fields.get(idx) : "";
