@@ -1,0 +1,41 @@
+// Minimal legacy AUX: BUS / GEN / BRANCH / SHUNT
+DATA (BUS, [BusNum,BusName,BusNomVolt,BusPUVolt,BusAngle,AreaNum,ZoneNum,BusSlack,BusStatus])
+{
+    1 "Swing   " 138.00 1.000000   0.000000      1      1 "YES" "Connected"
+    2 "Load    " 138.00 1.000000   0.000000      1      1 "NO " "Connected"
+}
+
+DATA (GEN, [BusNum,GenID,GenStatus,GenMW,GenMVR,GenMWMin,GenMWMax,GenVoltSet,GenMVRMin,GenMVRMax,GenMVABase,GenAVRAble])
+{
+    1 "1" "Closed"  100.0000    0.0000    0.0000  200.0000 1.000000 -100.0000  100.0000 100.0000 "YES"
+}
+
+DATA (LOAD, [BusNum,LoadID,LoadStatus,LoadSMW,LoadSMVR])
+{
+    2 "1" "Closed"   50.000    10.000
+}
+
+DATA (BRANCH, [BusNum,BusNum:1,LineCircuit,LineStatus,LineR,LineX,LineC,LineAMVA,BranchDeviceType])
+{
+    1     2 "1" "Closed"  0.010000  0.100000  0.020000   100.000 "Line"
+}
+
+DATA (SHUNT, [BusNum,ShuntID,ShuntStatus,ShuntMW,ShuntMVR])
+{
+    2 "1" "Closed"    0.000    20.000
+}
+
+DATA (AREA, [AreaNum,AreaName])
+{
+     1 "1"
+}
+
+DATA (ZONE, [ZoneNum,ZoneName])
+{
+     1 "1"
+}
+
+DATA (OWNER, [OwnerNum,OwnerName])
+{
+     1 "Owner1"
+}
