@@ -27,6 +27,7 @@ import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2T;
 import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.ContingencyBusDeviceType;
@@ -69,9 +70,9 @@ public class ConToIpssMapper {
 
     private static final Logger log = LoggerFactory.getLogger(ConToIpssMapper.class);
 
-    private final AclfNetwork net;
+    private final BaseAclfNetwork<?, ?> net;
 
-    public ConToIpssMapper(AclfNetwork net) {
+    public ConToIpssMapper(BaseAclfNetwork<?, ?> net) {
         this.net = net;
     }
 
@@ -435,7 +436,7 @@ public class ConToIpssMapper {
      */
     private AclfBus findBusByNumber(int busNum) {
     	// PSS/E busid = "Bus"+busNum in InterPSS implementation.
-    	return net.getBus("Bus"+busNum);
+		return net.getBus("Bus" + busNum) instanceof AclfBus bus ? bus : null;
     	/*
         for (AclfBus bus : net.getBusList()) {
             if ((int) bus.getNumber() == busNum) {
