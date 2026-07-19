@@ -74,15 +74,24 @@ public class IpssAdapter extends BaseDSL {
 			PSSE_29 };
 			
 	/**
-	 * Parses the PSSE version from a PSSE file by reading the first line REV field.
+	 * Parses the PSSE version from a PSSE file by reading the IC/SBASE/REV header line.
+	 * Skips leading {@code @!} comment lines (common in v33+ RAW exports) before
+	 * reading the REV field; otherwise REV is misread and the parser falls back to v30,
+	 * which fails to skip the v34+ system-wide data section and creates bogus {@code Bus0} entries.
 	 */
 	public static PsseVersion parsePsseVersion(String filename) throws InterpssException {
 		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
 			String firstLine = reader.readLine();
+			while (firstLine != null && (firstLine.trim().isEmpty() || firstLine.trim().startsWith("@!"))) {
+				firstLine = reader.readLine();
+			}
 			if (firstLine != null) {
 				String[] parts = firstLine.split(",");
 				if (parts.length >= 3) {
 					String revStr = parts[2].trim();
+					// Strip trailing comment (e.g. "36     / PSS(R)E-36.2")
+					int slash = revStr.indexOf('/');
+					if (slash >= 0) revStr = revStr.substring(0, slash).trim();
 					try {
 						int rev = (int) Double.parseDouble(revStr);
 						if (rev >= 36) return PsseVersion.PSSE_36;
