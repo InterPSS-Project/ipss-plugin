@@ -1,0 +1,28 @@
+title
+UNIT SHUNT 2BUS
+!
+solution parameters
+sbase    100.0    system mva base
+!
+bus data  [    2]             ty  vsched   volt     angle   ar zone  vmax   vmin
+       1 "SWING   " 138.00  :  0 1.00000 1.000000   0.00000  1    1 1.0500 0.9500
+       2 "LOAD    " 138.00  :  1 1.00000 1.000000   0.00000  1    1 1.0500 0.9500
+branch data  [    1]                                 ck  se  long_id_    st resist   react   charge   rate1  rate2  rate3  rate4 aloss  lngth
+       1 "SWING   " 138.00       2 "LOAD    " 138.00 "1 "  1 "        " :  1 0.01000 0.10000  0.02000  100.0    0.0    0.0    0.0 0.000    1.0 /
+ 1    1 0.0000 0.000 0.000
+transformer data  [    0]
+generator data  [    1]     id   long_id_    st ---no--     reg_name       prf  qrf  ar zone   pgen   pmax   pmin   qgen   qmax   qmin   mbase
+       1 "SWING   " 138.00 "1 " "        " :  1       1 "SWING   " 138.00  1.00 1.00  1    1  100.00  200.0   0.0    0.0  100.0 -100.0  100.00 /
+ 0.0000 0.0000 0.0000
+load data  [    1]
+       2 "LOAD    " 138.00 "1 " "        "  :  1   50.000   10.000    0.000    0.000    0.000    0.000  1    1
+shunt data  [    1]          id                               ck  se  long_id_     st ar zone    pu_mw  pu_mvar
+       2 "LOAD    " 138.00 "1 "               1  1 "        " :  1  1    1    0.000   20.000
+svd data  [  0]
+area data  [ 1]
+    1 "AREA 1                          "       1      0.0      5.0      0.0      0.0
+zone data  [   1]
+    1 "Zone1                           "    0.000    0.000
+dc bus data  [ 0]
+owner data  [    0]
+end
