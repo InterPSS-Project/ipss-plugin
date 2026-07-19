@@ -1,62 +1,44 @@
 package org.interpss.core.adapter.bpa;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.interpss.core.dstab.DStabTestSetupBase;
-import org.interpss.display.AclfOutFunc;
+import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.bpa.BPADirectParser;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-public class BpaO7CTest extends DStabTestSetupBase {
-	//@Test
+/**
+ * Minimal re-enabled assertions for BPA 07c cases.
+ * Large {@code 07c-dc2load.dat} remains disabled (size / L+ noise).
+ */
+public class BpaO7CTest extends CorePluginTestSetup {
+
+	@Test
+	public void sys2010_busCount() throws Exception {
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c_0615_notBE.dat");
+		assertEquals(141, net.getBusList().size());
+		assertTrue(net.getBranchList().size() > 100);
+
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
+		assertTrue(algo.loadflow());
+		assertTrue(net.isLfConverged());
+	}
+
+	@Test
+	@Disabled("Large 07c-dc2load case — keep out of default CI (encoding / L+ / runtime)")
 	public void sys2011_lfTestCase() throws Exception {
 		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c-dc2load.dat");
-		System.out.print("branch num="+net.getBranchList().size());
-		System.out.print("bus num="+net.getBusList().size());
-		assertTrue(net.getBranchList().size()==707);
-		assertTrue(net.getBusList().size()==536);
-		
-		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		net.accept(algo);
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		assertEquals(536, net.getBusList().size());
+		assertEquals(707, net.getBranchList().size());
+
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.loadflow();
+		assertTrue(net.isLfConverged());
 	}
-
-	/*Test data: 
-	 * 07c_0615.dat : explicitly add switch shuntVar to compensate the un-planned shuntVar of BPA for BE type Bus
-	 * [test data updated by Tony 06/15]
-	 * 07c_0615_notBE.dat: change BE type for non-Gen Buses to B type.
-	 */
-	//@Test
-	public void sys2010_lfTestCase() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c_0615_notBE.dat");
-		System.out.print("branch num="+net.getBranchList().size());
-		System.out.print("bus num="+net.getBusList().size());
-		//assertTrue(net.getBranchList().size()==215);
-		assertTrue(net.getBusList().size()==141);
-		
-		LoadflowAlgorithm  algo=LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		assertTrue(net.accept(algo));
-
-		//get the genResult
-		
-		for(AclfBus bus:net.getBusList()){
-			if(bus.isGen()){
-				System.out.println(bus.getName()+", "+bus.getId()+" ,p= "+bus.calNetGenResults().getReal()+",q= "+bus.calNetGenResults().getImaginary());
-			}
-		}
-
-		assertTrue(Math.abs(net.getBus("Bus1").getVoltageMag()-1.02484)<0.0001);
-		AclfBranch bra= (AclfBranch) net.getBranchList().get(0);
-		assertTrue(Math.abs(bra.powerFrom2To().getReal()-16.86)<0.001);
-	}
-
-	// NOTE: sys2010_noFaultTestCase and sys2010_XmlLftestCase removed - 
-	// they depend on ODM DStab pipeline (BPAAdapter + DStabModelParser + ODMDStabParserMapper)
-	// and ODM XML parsing (ODMObjectFactory + AclfModelParser + ODMAclfParserMapper)
-	// which are being removed as part of the ODM dependency migration.
 }
