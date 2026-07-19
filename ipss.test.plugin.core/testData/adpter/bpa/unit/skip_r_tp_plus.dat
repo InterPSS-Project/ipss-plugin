@@ -1,0 +1,10 @@
+(POWERFLOW,CASEID=SKIP_RTP,PROJECT=UNIT)
+/MVA_BASE=200\
+/NETWORK_DATA\
+BS    BusA    230.01                                     1.0
+B     BusB    230.01  10.  5.0
++     BusB    230.01  10.  5.0
+R     BusA    230. BusB    230.             1.05
+TP    BusA    230. BusB    230.             .0500
+L     BusA    230. BusB    230.       .0100 .0500       .0200
+(END)
