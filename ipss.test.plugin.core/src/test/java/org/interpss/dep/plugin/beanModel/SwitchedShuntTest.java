@@ -1,27 +1,3 @@
- /*
-  * @(#)SVCTest.java   
-  *
-  * Copyright (C) 2006 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 07/15/2007
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.dep.plugin.beanModel;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -120,8 +96,6 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 				AclfAdjustControlMode.CONTINUOUS, AclfAdjustControlType.POINT_CONTROL).get();
 		svc.setVSpecified(0.9);
 		svc.setBLimit(new LimitType(1.0, 0.0));
-		
-		//IpssLogger.ipssLogger.setLevel(Level.INFO);
 		
 		//System.out.println(aclfNet.net2String());
 		// map back and forth through the bean model

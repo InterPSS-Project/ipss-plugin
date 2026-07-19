@@ -55,9 +55,6 @@ public class SimpleExciter extends AnnotateExciter {
             y0="mach.efd"	)
     DelayControlBlock delayBlock;
  	
-    // UI Editor panel
-    private static NBSimpleExciterEditPanel _editPanel = new NBSimpleExciterEditPanel();
-    
     /**
      * Default Constructor
      *
@@ -106,16 +103,6 @@ public class SimpleExciter extends AnnotateExciter {
         return super.initStates(bus, mach);
     }
 
-    /**
-     * Get the editor panel for controller data editing
-     *
-     * @return the editor panel object
-     */
-    @Override public Object getEditPanel() {
-        _editPanel.init(this);
-        return _editPanel;
-    }
- 
     // the following statement must be added to all CML controller
     @Override public AnController getAnController() {
     	return getClass().getAnnotation(AnController.class);  }

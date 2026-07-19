@@ -80,7 +80,6 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 						 String.format("%5.4f(r), %5.4f(m), %4.3f", rec.v_mag, volt,  
 						     Math.abs(100.0*(rec.v_mag - volt)/rec.v_mag)) + "%" + 
 						 (bus.isGenPV()? " PV" : (bus.isSwing()? " Swing" : ""));
-				//IpssLogger.getLogger().warning(msg);
 				addErrMsg(msg);
 			}
 
@@ -90,7 +89,6 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 				String msg = "Bus voltage ang mismatch: Bus-" + rec.id + ", " + 
 							 String.format("%5.2f(r), %5.2f(m), %4.3f", rec.v_ang, ang,
 								Math.abs(100.0*(rec.v_ang - ang)/rec.v_ang)) + "%";
-				//IpssLogger.getLogger().warning(msg);
 				addErrMsg(msg);
 			}				
 		}
@@ -108,7 +106,6 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 						String msg = "Bus GenP mismatch:        Bus-" + rec.id + ", " + 
 									String.format("%5.1f, %5.1f, %4.3f", rec.gen.re, p,  
 									 Math.abs(100.0*(rec.gen.re - p)/rec.gen.re)) + "%";
-						//IpssLogger.getLogger().warning(msg);
 						addErrMsg(msg);
 					}
 					
@@ -117,7 +114,6 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 									String.format("%5.1f, %5.1f, %4.3f", rec.gen.im, q,  
 									 Math.abs(100.0*(rec.gen.im - q)/rec.gen.im)) + "%" +
 									(bus.isGenPV()? " PV Bus" : "");
-						//IpssLogger.getLogger().warning(msg);
 						addErrMsg(msg);
 					}	
 				}
@@ -136,14 +132,12 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 					String msg = "Bus LoadP mismatch:       Bus-" + rec.id + ", " + 
 								String.format("%5.1f, %5.1f, %4.3f", rec.load.re, p,  
 								 Math.abs(100.0*(rec.load.re - p)/rec.load.re)) + "%";
-					//IpssLogger.getLogger().warning(msg);
 					addErrMsg(msg);
 				}
 				if (!NumericUtil.equals(rec.load.im, q, PQErr)) {
 					String msg = "Bus LoadQ mismatch:       Bus-" + rec.id + ", " + 
 								String.format("%5.1f, %5.1f, %4.3f", rec.load.im, q,  
 								 Math.abs(100.0*(rec.load.im - q)/rec.load.im)) + "%";
-					//IpssLogger.getLogger().warning(msg);
 					addErrMsg(msg);
 				}
 			}
@@ -162,7 +156,6 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 					String msg = "Bus ShuntQ mismatch:     Bus-" + rec.id + ", " + 
 								String.format("%5.3f(r), %5.3f(m), %4.3f", rec.shunt.im, q,  
 								 Math.abs(100.0*(rec.shunt.im - q)/rec.shunt.im)) + "%";
-					//IpssLogger.getLogger().warning(msg);
 					addErrMsg(msg);
 				}		
 			}
@@ -176,7 +169,6 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 					String msg = "Bus Switched ShuntQ mismatch:     Bus-" + rec.id + ", " + 
 								String.format("%5.3f(r), %5.3f(m), %4.3f", rec.shunt.im, q,  
 								 Math.abs(100.0*(rec.shunt.im - q)/rec.shunt.im)) + "%";
-					//IpssLogger.getLogger().warning(msg);
 					addErrMsg(msg);
 				}		
 			}
@@ -201,7 +193,6 @@ public class AclfResultComparator<TBusExt extends BaseJSONUtilBean,
 				String msg = "Xfr tap mismatch: Branch-" + rec.id + ", " + 
 						 String.format("%5.4f, %5.4f  :  %5.4f, %5.4f", branch.getFromTurnRatio(), branch.getToTurnRatio(),
 								 rec.turnRatio.f, rec.turnRatio.t);
-				//IpssLogger.getLogger().warning(msg);
 				addErrMsg(msg);
 			}
 		}
