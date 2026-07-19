@@ -339,7 +339,7 @@ java org.interpss.fadapter.psse.monitor.MonFileConverter input.mon output.json
 | MATPOWER | `MATPOWER` | `MatpowerFormat` | `MatpowerDirectParser` | `.m` case files |
 | UCTE-DEF | `UCTE` | `UCTEFormat` | `UCTEDirectParser` | European exchange format |
 | GE PSLF | `GE_PSLF` | `GEFormat` | `GEPslfDirectParser` | |
-| BPA | `BPA` | `BPAFormat` | `BPADirectParser` | Multi-file: LF from first file via direct parser |
+| BPA | `BPA` | `BPAFormat` | `BPADirectParser` | IPF card types B/L/T/E/A; `/MVA_BASE` currently hardcoded 100 MVA; R/TP/+ stubs skipped; LF from first file only (no `.swi`) |
 | PowerWorld | `PWD` | `PWDFormat` | `PWDDirectParser` | |
 | InterPSS Internal | `IpssInternal` | `IpssInternalFormat` | `_in` / `_out` | Read + write |
 | PSS/E sequence | — | `PSSEMultiFileLoader` | `PSSEAcscDirectParser` | `.seq` overlay |
@@ -387,6 +387,7 @@ Tests assume the working directory is the `ipss.test.plugin.core` module root so
 | `CorePluginTestSuite` | Broad regression suite — includes builder tests, format adapters, PSSE JSON, MATPOWER, large nets, DStab/Acsc |
 | `CoreAdapterTestSuite` | Narrow suite: IEEE CDF + `IpssInternalFormat` smoke tests |
 | `PSSEAdapterTestSuite` | Fast PSS/E RAW v30–v36 subset: 5-bus, IEEE9, v31–v36 matrix, version gates, Bus0/auto-version, switched shunt |
+| `BPAAdapterTestSuite` | Fast BPA subset: sample LF (IEEE9 / Test009), card gates (B/L/T/A/E, R/TP/+ skip, OMIB), regional `07c_0615_notBE` smoke |
 
 Most adapter tests extend `CorePluginTestSetup` and load cases via one of:
 
@@ -408,6 +409,10 @@ mvn -pl ipss.test.plugin.core test -Dtest=CoreAdapterTestSuite
 
 # Fast PSS/E RAW v30–v36 DirectParser / adapter subset
 mvn -pl ipss.test.plugin.core test -Dtest=PSSEAdapterTestSuite
+
+# Fast BPA DirectParser / adapter subset
+mvn -pl ipss.test.plugin.core test -Dtest=BPAAdapterTestSuite
+mvn -pl ipss.test.plugin.core test -Dtest=BPADirectParser_CardGate_Test,BPASampleTestCases
 
 # Builder unit tests (Aclf)
 mvn -pl ipss.test.plugin.core test -Dtest=AclfNetworkBuilderCoreTest
@@ -450,9 +455,22 @@ Fixtures: `DStabBuilderTestFixture`, `AcscBuilderTestFixture`.
 | IEEE CDF | `IEEE14BusTest`, `IEEE118Bus_Test`, `IEEE300BusTest`, `IEEECommonFormat_CommaTest` | `IeeeCDFFormat` / `CorePluginFactory` |
 | MATPOWER | `MatpowerFormatTest`, `MatpowerCase*PegaseTest`, `MatpowerCase*RteTest` | `MatpowerFormat` + large `.m` cases |
 | UCTE | `UCTEFormatIEEE14BusTest`, `UCTEFormatAusPowerTest`, `UCTE2000CasesTest` | `UCTEFormat` |
-| GE / BPA / PWD | `GESampleTestCases`, `BPASampleTestCases`, `PWDIEEE14BusTestCase`, `SixBus_DclfPsXfr_pwd` | Respective `*DirectParser` facades |
+| GE / PWD | `GESampleTestCases`, `PWDIEEE14BusTestCase`, `SixBus_DclfPsXfr_pwd` | Respective `*DirectParser` facades |
+| BPA | `BPASampleTestCases`, `BPADirectParser_CardGate_Test`, `Bpa07c_0615_Test`, `BpaO7CTest` (`BPAAdapterTestSuite`) | `BPAFormat` + `BPADirectParser`; fixtures under `testData/adpter/bpa/` (+ `unit/` for E / R-TP-skip) |
 | Internal format | `IEEE14Test`, `Bus1824Test`, `Bus6384Test`, `Bus11856Test` | `IpssInternalFormat` round-trip |
 | Compare / regression | `IEEE14JsonCompareTest`, `PSSE_ACTIVSg25kObjectCompareTest` | Load twice, `AclfNetJsonComparator` |
+
+BPA IPF card coverage (`BPADirectParser`):
+
+| Card | Meaning | Asserted by |
+|------|---------|-------------|
+| `B` / `BE` / `BQ` / `BS` | AC bus subtypes | `BPASampleTestCases`, `BPADirectParser_CardGate_Test` |
+| `L` / `T` | Line / transformer | IEEE9 + Test009 gates |
+| `E` | Equivalent branch | `unit/equiv_e_branch.dat` |
+| `A` | Area interchange | `IEEE9_cn.dat` |
+| `R` / `TP` / `+` | Unimplemented — skip-safe | `unit/skip_r_tp_plus.dat` |
+| `/MVA_BASE` | Currently ignored (always 100 MVA) | same skip fixture |
+| Regional | `07c_0615_notBE.dat` parse + LF | `Bpa07c_0615_Test`, `BpaO7CTest` |
 
 #### PSS/E auxiliary files
 
