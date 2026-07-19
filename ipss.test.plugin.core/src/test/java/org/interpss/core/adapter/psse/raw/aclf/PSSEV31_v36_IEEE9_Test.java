@@ -40,7 +40,7 @@ public void testV31() throws Exception {
 
 	assertTrue(net.isLfConverged());
 	
-	System.out.println(AclfOutFunc.loadFlowSummary(net));
+	//System.out.println(AclfOutFunc.loadFlowSummary(net));
 	
 	checkData(net);
 

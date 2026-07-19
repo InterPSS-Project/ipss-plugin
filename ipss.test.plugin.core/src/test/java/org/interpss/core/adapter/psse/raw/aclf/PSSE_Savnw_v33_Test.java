@@ -36,7 +36,7 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 
 		assertTrue(net.isLfConverged());
 		
-		System.out.println(AclfOutFunc.loadFlowSummary(net));
+		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 	}
 	
 	@Test
