@@ -16,14 +16,14 @@ import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfMultiOutageContingencyHelper;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 
 public class AuxContingencyConverter {
-    private final AclfNetwork network;
+    private final BaseAclfNetwork<?, ?> network;
 
-    public AuxContingencyConverter(AclfNetwork network) {
+    public AuxContingencyConverter(BaseAclfNetwork<?, ?> network) {
         this.network = Objects.requireNonNull(network, "network");
     }
 
