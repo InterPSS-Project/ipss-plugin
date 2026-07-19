@@ -6,8 +6,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <properties>
-        <revision>1.3.3</revision>
-        <ipss.core.version>1.3.2</ipss.core.version>
+        <revision>1.3.4</revision>
+        <ipss.core.version>1.3.3</ipss.core.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
