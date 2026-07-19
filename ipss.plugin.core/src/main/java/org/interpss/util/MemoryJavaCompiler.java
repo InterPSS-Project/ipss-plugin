@@ -235,7 +235,7 @@ public class MemoryJavaCompiler {
 				diagnosticCollector, null, null, compilationUnits).call();
 
 		if (!Boolean.TRUE.equals(result)) {
-			CoreCommonFactory.getIpssMsgHub().sendErrorMsg(
+			log.error(
 					"Java compile error, "
 							+ diagnosticCollector.getDiagnostics().toString());
 			return null;
@@ -251,7 +251,7 @@ public class MemoryJavaCompiler {
 				Class<?> clazz = Class.forName(classDotName, true, loader);
 				classMap.put(className, clazz);
 			} catch (final ClassNotFoundException e) {
-				CoreCommonFactory.getIpssMsgHub().sendErrorMsg(
+				log.error(
 						"Class loading error, " + e.toString());
 				return null;
 			}

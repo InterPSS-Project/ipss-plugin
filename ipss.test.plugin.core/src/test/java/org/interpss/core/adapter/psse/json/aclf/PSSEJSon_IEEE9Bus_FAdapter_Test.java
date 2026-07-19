@@ -1,41 +1,19 @@
- /*
-  * @(#)IEEE9Bus_Test.java   
-  *
-  * Copyright (C) 2008 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Stephen Hou
-  * @Version 1.0
-  * @Date 02/01/2008
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.core.adapter.psse.json.aclf;
  
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.FileReader;
+
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.bean.PSSESchema;
-import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.interpss.fadapter.psse.bean.PSSESchema;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.psse.PSSEJsonDirectParser;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonBusUpdater;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.util.FileUtil;
@@ -47,29 +25,18 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup { 
 	@Test
 	public void testJSonExport() throws Exception {
-	    IODMAdapter adapter = new PSSEJSonAdapter();
-	    assertTrue(adapter.parseInputFile("testData/adpter/psse/json/ieee9.rawx"));
+	    AclfNetwork net = new PSSEJsonDirectParser().parse("testData/adpter/psse/json/ieee9.rawx");
 	    
-	    AclfModelParser parser = (AclfModelParser)adapter.getModel();
-	    //parser.stdout();
-	    
-	    SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-	    if (!new ODMAclfParserMapper()
-	                .map2Model(parser, simuCtx)) {
-	        System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-	   	 return;
-	    }		
-	    
-	    AclfNetwork net = simuCtx.getAclfNet();
-		
-		PSSESchema psseJson = parser.getJsonObject();
+	    // Read PSSESchema separately from the JSON file
+	    PSSESchema psseJson;
+	    try (FileReader reader = new FileReader("testData/adpter/psse/json/ieee9.rawx")) {
+	        JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+	        psseJson = new Gson().fromJson(root, PSSESchema.class);
+	    }
 		//System.out.println("Before Json String:\n" + json.toString());
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);

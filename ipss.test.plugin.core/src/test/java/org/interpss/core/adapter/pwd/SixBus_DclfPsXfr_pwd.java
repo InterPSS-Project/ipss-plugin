@@ -1,41 +1,13 @@
- /*
-  * @(#) ISONE_CompreResult.java   
-  *
-  * Copyright (C) 2008 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 02/15/2008
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.core.adapter.pwd;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.logging.Level;
-
 import org.apache.commons.math3.complex.Complex;
-import org.ieee.odm.common.ODMLogger;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.display.DclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.odm.mapper.ODMAclfNetMapper;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
@@ -53,7 +25,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void aclf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
@@ -78,7 +50,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr.aux")
 					.setFormat(IpssAdapter.FileFormat.PWD)
@@ -132,10 +104,9 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf1() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
 					.getImportedObj();
@@ -144,19 +115,16 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 		algo.calculateDclf();
 
 		System.out.println(DclfOutFunc.dclfResults(algo, false));
-  		//assertTrue(Math.abs(algo.getBusPower(net.getAclfBus("Bus1"))-3.0723)<0.0001);
 
-		//algo.destroy();			
 	}
 
 	@Test
 	public void dclf2() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
 					.getImportedObj();
@@ -174,7 +142,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf3() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
 					//.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
@@ -200,10 +168,9 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	public void dclf4() throws Exception {
 		IpssCorePlugin.init();
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
-		ODMLogger.getLogger().setLevel(Level.WARNING);
+
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_2.aux")
-					.xfrBranchModel(ODMAclfNetMapper.XfrBranchModel.InterPSS)
 					.setFormat(IpssAdapter.FileFormat.PWD)
 					.load()
 					.getImportedObj();

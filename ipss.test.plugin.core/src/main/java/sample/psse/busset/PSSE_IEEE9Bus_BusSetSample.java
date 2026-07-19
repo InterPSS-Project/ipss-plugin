@@ -1,54 +1,35 @@
 package sample.psse.busset;
- 
+
 import java.util.Set;
 
-import org.ieee.odm.adapter.IODMAdapter;
-import org.ieee.odm.adapter.psse.bean.PSSESchema;
-import org.ieee.odm.adapter.psse.json.PSSEJSonAdapter;
-import org.ieee.odm.model.aclf.AclfModelParser;
+import org.interpss.fadapter.psse.PSSEJsonDirectParser;
+import org.interpss.fadapter.psse.bean.PSSESchema;
 import org.interpss.fadapter.psse.export.PSSEJSonExporter;
-import org.interpss.odm.mapper.ODMAclfParserMapper;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.topo.AclfNetTopoHelper;
-import com.interpss.simu.SimuContext;
-import com.interpss.simu.SimuCtxType;
-import com.interpss.simu.SimuObjectFactory;
 
 public class PSSE_IEEE9Bus_BusSetSample { 
 	public static void main(String args[]) throws Exception {
-	    IODMAdapter adapter = new PSSEJSonAdapter();
-	    adapter.parseInputFile("testdata/adpter/psse/json/ieee9.rawx");
+	    AclfNetwork net = new PSSEJsonDirectParser().parse("testdata/adpter/psse/json/ieee9.rawx");
 	    
-	    AclfModelParser parser = (AclfModelParser)adapter.getModel();
-	    //parser.stdout();
-	    
-	    SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.ACLF_NETWORK);
-	    if (!new ODMAclfParserMapper().map2Model(parser, simuCtx)) {
-	        System.out.println("Error: ODM model to InterPSS SimuCtx mapping error, please contact support@interpss.com");
-	   	 return;
-	    }		
-	    
-	    AclfNetwork net = simuCtx.getAclfNet();
-	    
-	    // run a loadflow
 	    LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
 	  	algo.loadflow();
-  		//System.out.println(net.net2String());
 	    
-	  	// find the bus set connected to Bus1 within 2 hops
-		AclfNetTopoHelper helper = new AclfNetTopoHelper(net);
+	  	AclfNetTopoHelper helper = new AclfNetTopoHelper(net);
 		Set<String> busIdSet = helper.findConnectedBuses(net.getBus("Bus1"), 2);
 		System.out.println("Connected bus set: " + busIdSet);
 		
-		PSSESchema psseJson = parser.getJsonObject();
-		//System.out.println("Before Bus Data: " + psseJson.getNetwork().getBus().getData());
+		// Note: PSSESchema JSON object is no longer available from the direct parser.
+		// To export with bus set filtering, read the JSON file directly with Gson.
+		com.google.gson.Gson gson = new com.google.gson.Gson();
+		PSSESchema psseJson = gson.fromJson(
+				new java.io.FileReader("testdata/adpter/psse/json/ieee9.rawx"), PSSESchema.class);
 		
-		// export the bus set data to a new PSSE json file
 		PSSEJSonExporter exporter = new PSSEJSonExporter(net, psseJson);
 		exporter.filterAndUpdate(busIdSet);
 		exporter.export("output/ieee9_busset.rawx");

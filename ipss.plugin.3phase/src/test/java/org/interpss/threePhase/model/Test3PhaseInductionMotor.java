@@ -90,7 +90,7 @@ public class Test3PhaseInductionMotor extends TestBase {
 	       	// initGenLoad-- summarize the effects of contributive Gen/Load to make equivGen/load for power flow calculation	//	net.initContributeGenLoad();
 
 	  			DynamicSimuAlgorithm dstabAlgo =DStabObjectFactory.createDynamicSimuAlgorithm(
-	  					net, IpssCorePlugin.getMsgHub());
+	  					net);
 
 
 	  		  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);

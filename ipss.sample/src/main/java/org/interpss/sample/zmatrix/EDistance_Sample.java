@@ -1,27 +1,3 @@
- /*
-  * @(#)Ieee14_CASample.java   
-  *
-  * Copyright (C) 2006-2015 www.interpss.org
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU LESSER GENERAL PUBLIC LICENSE
-  * as published by the Free Software Foundation; either version 2.1
-  * of the License, or (at your option) any later version.
-  *
-  * This program is distributed in the hope that it will be useful,
-  * but WITHOUT ANY WARRANTY; without even the implied warranty of
-  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  * GNU General Public License for more details.
-  *
-  * @Author Mike Zhou
-  * @Version 1.0
-  * @Date 03/15/2015
-  * 
-  *   Revision History
-  *   ================
-  *
-  */
-
 package org.interpss.sample.zmatrix;
 
 import java.util.stream.IntStream;
@@ -36,7 +12,7 @@ import org.interpss.plugin.pssl.common.PSSLException;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.common.util.IpssLogger;
+import java.util.logging.Logger;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.common.ReferenceBusException;
@@ -109,7 +85,7 @@ public class EDistance_Sample {
 		
 		int N = 10000;
 	  	
-		PerformanceTimer timer = new PerformanceTimer(IpssLogger.getLogger());
+		PerformanceTimer timer = new PerformanceTimer(Logger.getLogger(EDistance_Sample.class.getName()));
 		for (int n = 0; n < N; n++) {
 			eqn.setB2Zero();
 			eqn.setBi(new Complex(1.0,0.0), i);
