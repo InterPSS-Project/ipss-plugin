@@ -386,7 +386,7 @@ Tests assume the working directory is the `ipss.test.plugin.core` module root so
 | `CorePluginTestSetup` | Base class: calls `IpssCorePlugin.init()` once; exposes `msg` hub and `create2BusSystem()` helper |
 | `CorePluginTestSuite` | Broad regression suite — includes builder tests, format adapters, PSSE JSON, MATPOWER, large nets, DStab/Acsc |
 | `CoreAdapterTestSuite` | Narrow suite: IEEE CDF + `IpssInternalFormat` smoke tests |
-| `PSSEAdapterTestSuite` | PSSE RAW user-case subset (`CR_UserTestCases`) |
+| `PSSEAdapterTestSuite` | Fast PSS/E RAW v30–v36 subset: 5-bus, IEEE9, v31–v36 matrix, version gates, Bus0/auto-version, switched shunt |
 
 Most adapter tests extend `CorePluginTestSetup` and load cases via one of:
 
@@ -406,12 +406,17 @@ mvn -pl ipss.test.plugin.core test -Dtest=CorePluginTestSuite
 # Smaller adapter-only subset
 mvn -pl ipss.test.plugin.core test -Dtest=CoreAdapterTestSuite
 
+# Fast PSS/E RAW v30–v36 DirectParser / adapter subset
+mvn -pl ipss.test.plugin.core test -Dtest=PSSEAdapterTestSuite
+
 # Builder unit tests (Aclf)
 mvn -pl ipss.test.plugin.core test -Dtest=AclfNetworkBuilderCoreTest
 
 # Single format integration test
 mvn -pl ipss.test.plugin.core test -Dtest=MatpowerFormatTest
 mvn -pl ipss.test.plugin.core test -Dtest=PSSE_IEEE9Bus_Test
+mvn -pl ipss.test.plugin.core test -Dtest=PSSEDirectParser_VersionGate_Test
+mvn -pl ipss.test.plugin.core test -Dtest=PSSEV31_v36_Sample_Test
 mvn -pl ipss.test.plugin.core test -Dtest=IEEE9_Dstab_Adapter_Test
 mvn -pl ipss.test.plugin.core test -Dtest=PSSEJSon_IEEE9Bus_FAdapter_Test
 
@@ -435,7 +440,8 @@ Fixtures: `DStabBuilderTestFixture`, `AcscBuilderTestFixture`.
 
 | Area | Representative tests | Entry / parser exercised |
 |------|---------------------|--------------------------|
-| PSS/E RAW ACLF | `PSSE_IEEE9Bus_Test`, `PSSE_5Bus_TestCase`, `Kundur_2Area_*_Test`, `PSSEV31_v36_*` | `IpssAdapter` / `PTIFormat` → `PSSEDirectParser` |
+| PSS/E RAW ACLF (v30–v36) | `PSSE_IEEE9Bus_Test`, `PSSE_5Bus_TestCase`, `PSSEV31_v36_Sample_Test`, `PSSEV31_v36_IEEE9_Test`, `PSSEDirectParser_VersionGate_Test`, `PSSE_Savnw_v33_Test`, `PSSE_5Bus_SwitchedShunt_Test`, `PsseVersionParserTest`, `PSSE_AutoVersion_Bus0_Regression_Test`, `Kundur_2Area_*_Test` | `IpssAdapter` / `PTIFormat` / `new PSSEDirectParser(n)` |
+| PSS/E RAW version gates | Fixed shunt (v31+), DGEN (v34+), switched-shunt S/N/B + multi-ID (v35+), Z-table / skip-safety / series FACTS (v36), wrong-version force | `PSSEDirectParser_VersionGate_Test` |
 | PSS/E RAWX | `PSSEJSon_IEEE9Bus_DSL_Test`, `PSSEJSon_IEEE9Bus_FAdapter_Test` | `PSSEJsonDirectParser` |
 | PSS/E JSON export | `PSSEJSon_IEEE9Bus_FAdapter_Test`, `PSSEJSon_IEEE9Bus_BusSet_Test` | `PSSEJSonExporter` + `PSSEJSon*Updater` |
 | PSS/E ACSC | `IEEE9Bus_Acsc_Test`, `IEEE39Bus_Acsc_Test`, `PSSE_Savnw_v33_Acsc_Test` | `PSSEMultiFileLoader.loadAcsc` |
@@ -497,6 +503,7 @@ BaseDStabNetwork dsNet = ctx.getDStabilityNet();
 | `adpter/psse/v30/IEEE9Bus/` | `ieee9.raw`, `ieee9.seq`, `ieee9_dyn_onlyGen.dyr` — canonical multi-file IEEE 9 |
 | `adpter/psse/json/ieee9.rawx` | RAWX import + JSON export round-trip |
 | `adpter/psse/v36/` | v36 labeled RAW (`ieee9_v36_labeled.raw`, Texas2k labeled) |
+| `psse/v31/` … `psse/v36/` | Official `sample_vXX.raw`, ieee9 matrix, `sample_ztable_v36.raw` |
 | `adpter/matpower/case*.m` | case9, case30, case118, Pegase/RTE large cases |
 | `adpter/ieee_format/` | `Ieee14Bus.ieee`, `ieee39.ieee`, etc. |
 | `adpter/pwd/`, `adpter/bpa/`, `adpter/ge/` | PowerWorld AUX, BPA, GE PSLF |
