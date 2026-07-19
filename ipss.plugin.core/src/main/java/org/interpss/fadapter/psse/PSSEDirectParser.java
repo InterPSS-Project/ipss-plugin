@@ -45,6 +45,7 @@ import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.net.BranchBusSide;
+import com.interpss.core.net.NameTag;
 import com.interpss.core.net.OriginalDataFormat;
 
 /**
@@ -248,6 +249,7 @@ public class PSSEDirectParser {
 
         BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, ownerId);
+        applyNameTagMetadata(rec, bus);
 
         if (ide == 4) bus.setStatus(false);
 
@@ -306,8 +308,8 @@ public class PSSEDirectParser {
             }
         }
 
-        builder.addContributeLoad(busId, loadId, status == 1,
-                constP, constI, constZ, dgenPower, dgenStatus);
+        applyNameTagMetadata(rec, builder.addContributeLoad(busId, loadId, status == 1,
+                constP, constI, constZ, dgenPower, dgenStatus));
     }
 
     // ==================== Generator ====================
@@ -386,14 +388,14 @@ public class PSSEDirectParser {
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
         Complex xfrZ = (rt != 0.0 || xt != 0.0) ? new Complex(rt, xt) : null;
 
-        builder.addContributeGen(busId, genId, genStatus,
+        applyNameTagMetadata(rec, builder.addContributeGen(busId, genId, genStatus,
                 pg / baseMva, qg / baseMva, mbase,
                 vs,
                 qt / baseMva, qb / baseMva,
                 pt / baseMva, pb / baseMva,
                 sourceZ, xfrZ, gtap,
                 remoteBusId,
-                rmpct * 0.01, 1.0);
+                rmpct * 0.01, 1.0));
 
         // Refine bus gen code based on generator data
         if (bus.getGenCode() == AclfGenCode.SWING) {
@@ -510,9 +512,9 @@ public class PSSEDirectParser {
         Complex fromShuntY = (gi != 0.0 || bi != 0.0) ? new Complex(gi, bi) : null;
         Complex toShuntY = (gj != 0.0 || bj != 0.0) ? new Complex(gj, bj) : null;
 
-        builder.addLine(fromBusId, toBusId, ckt,
+        applyNameTagMetadata(rec, builder.addLine(fromBusId, toBusId, ckt,
                 zPU, halfBPU, fromShuntY, toShuntY,
-                ratea, rateb, ratec, st == 1);
+                ratea, rateb, ratec, st == 1));
     }
 
     // ==================== Transformer (multi-line) ====================
@@ -596,6 +598,8 @@ public class PSSEDirectParser {
         PSSEDataRec line4 = new PSSEDataRec(line4Str);
         double windv2 = line4.getDouble(0, 1.0);
         double nomv2 = line4.getDouble(1, 0.0);
+        PSSEDataRec line5 = line5Str != null ? new PSSEDataRec(line5Str) : null;
+        PSSEDataRec metadata = firstNameTagMetadata(line1, line2, line3, line4, line5);
 
         BaseAclfBus fromBus = builder.getBus(fromBusId);
         BaseAclfBus toBus = builder.getBus(toBusId);
@@ -617,25 +621,28 @@ public class PSSEDirectParser {
         Complex magY = convertMagY(cm, mag1, mag2, nomv1Kv, sbase12, fromBaseV);
 
         if (is3W) {
-            parse3WXfr(line1, line2, line3, line4, line5Str,
+            Aclf3WBranch branch3W = parse3WXfr(line1, line2, line3, line4, line5Str,
                     fromBusId, toBusId, BUS_ID_PREFIX + tertNum, ckt,
                     stat, cw, cz, cm, sbase12, nomv1Kv);
+            applyNameTagMetadata(metadata, branch3W);
         } else {
             boolean isPhaseShifter = (ang1 != 0.0);
+            AclfBranch branch;
             if (isPhaseShifter) {
-                builder.addPsXformer(fromBusId, toBusId, ckt,
+                branch = builder.addPsXformer(fromBusId, toBusId, ckt,
                         zPU, fromTap, toTap,
                         ang1, 0.0,
                         magY, null,
                         rata1, ratb1, ratc1,
                         tab1, stat == 1);
             } else {
-                builder.addXformer2W(fromBusId, toBusId, ckt,
+                branch = builder.addXformer2W(fromBusId, toBusId, ckt,
                         zPU, fromTap, toTap,
                         magY, null,
                         rata1, ratb1, ratc1,
                         tab1, stat == 1);
             }
+            applyNameTagMetadata(metadata, branch);
 
             String branchId = fromBusId + "->" + toBusId + "(" + ckt + ")";
             // CONT=0 means "control own bus" in PSS/E; do not build vcBusId "Bus0"
@@ -696,7 +703,7 @@ public class PSSEDirectParser {
         }
     }
 
-    private void parse3WXfr(PSSEDataRec line1, PSSEDataRec line2, PSSEDataRec line3,
+    private Aclf3WBranch parse3WXfr(PSSEDataRec line1, PSSEDataRec line2, PSSEDataRec line3,
                             PSSEDataRec line4, String line5Str,
                             String fromBusId, String toBusId, String tertBusId, String ckt,
                             int stat, int cw, int cz, int cm,
@@ -770,6 +777,7 @@ public class PSSEDirectParser {
             if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
             if (tab3 > 0) branch3W.getTertAclfBranch().setXfrZTableNumber(tab3);
         }
+        return branch3W;
     }
 
     // ==================== Area ====================
@@ -778,7 +786,7 @@ public class PSSEDirectParser {
         // I, ISW, PDES, PTOL, ARNAME
         int areaNum = rec.getInt(0);
         String name = rec.getString(4, "Area " + areaNum);
-        builder.addArea(String.valueOf(areaNum), name, null);
+        applyNameTagMetadata(rec, builder.addArea(String.valueOf(areaNum), name, null));
     }
 
     // ==================== Zone ====================
@@ -787,7 +795,7 @@ public class PSSEDirectParser {
         // I, ZONAME
         int zoneNum = rec.getInt(0);
         String name = rec.getString(1, "Zone " + zoneNum);
-        builder.addZone(String.valueOf(zoneNum), name, null);
+        applyNameTagMetadata(rec, builder.addZone(String.valueOf(zoneNum), name, null));
     }
 
     // ==================== Owner ====================
@@ -877,9 +885,23 @@ public class PSSEDirectParser {
 
         double bInitPU = binit / baseMva;
 
-        builder.addSwitchedShunt(busId, shuntId, stat == 1,
+        applyNameTagMetadata(rec, builder.addSwitchedShunt(busId, shuntId, stat == 1,
                 mode, AclfAdjustControlType.RANGE_CONTROL,
-                bInitPU, vswhi, vswlo, remoteBusId, blocks);
+                bInitPU, vswhi, vswlo, remoteBusId, blocks));
+    }
+
+    private static PSSEDataRec firstNameTagMetadata(PSSEDataRec... records) {
+        for (PSSEDataRec record : records) {
+            if (record != null && record.hasNameTagMetadata()) return record;
+        }
+        return null;
+    }
+
+    private static <T extends NameTag> T applyNameTagMetadata(PSSEDataRec record, T device) {
+        if (record == null || device == null || !record.hasNameTagMetadata()) return device;
+        device.setDesc(record.getNameTagDescription());
+        if (record.getExternalUid() != null) device.setExtUID(record.getExternalUid());
+        return device;
     }
 
     // ==================== HVDC 2T LCC ====================
