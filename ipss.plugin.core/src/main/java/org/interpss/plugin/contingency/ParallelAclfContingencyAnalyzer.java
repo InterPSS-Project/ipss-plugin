@@ -19,7 +19,7 @@ import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 import com.interpss.core.net.ref.impl.NetworkRefImpl;
-import com.interpss.state.aclf.snapshot.BaseAclfNetworkSnapshotFactory;
+import com.interpss.state.snapshot.BaseAclfNetworkSnapshotFactory;
 
 /**
  * Parallel Contingency Analysis wrapper for Python integration.
