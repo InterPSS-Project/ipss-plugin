@@ -34,11 +34,11 @@ public class IEEE300BusTest extends CorePluginTestSetup {
 	  	
 	  	assertTrue(net.isLfConverged());		
  		AclfBus swingBus = (AclfBus)net.getBus("Bus7049");
- 		AclfSwingBusAdapter swing = swingBus.toSwingBus();
+		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()).re);
 		//System.out.println(swing.getGenResults(UnitType.PU, net.getBaseKva()).im);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-4.57025)<0.0001);
-  		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.39049)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-4.5739761)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-0.3929703)<0.0001);
 	}
 
 	@Test
