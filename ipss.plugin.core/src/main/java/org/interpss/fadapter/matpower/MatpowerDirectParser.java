@@ -15,7 +15,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -226,7 +228,7 @@ public class MatpowerDirectParser {
     // MATPOWER gen format: bus(0) Pg(1) Qg(2) Qmax(3) Qmin(4) Vg(5) mBase(6) status(7) Pmax(8) Pmin(9) ...
 
     private void processGenData(List<double[]> genData) throws InterpssException {
-        int[] genCount = new int[100000];  // track gen count per bus
+        Map<Integer, Integer> genCount = new HashMap<>();
 
         for (double[] d : genData) {
             if (d.length < 10) continue;
@@ -248,8 +250,9 @@ public class MatpowerDirectParser {
             BaseAclfBus bus = (BaseAclfBus) builder.getNetwork().getBus(busId);
             if (bus == null) continue;
 
-            genCount[busNum]++;
-            String genId = String.valueOf(genCount[busNum]);
+            int nextGenNumber = genCount.getOrDefault(busNum, 0) + 1;
+            genCount.put(busNum, nextGenNumber);
+            String genId = String.valueOf(nextGenNumber);
 
             builder.addContributeGen(busId, genId, status == 1,
                     pg / baseMva, qg / baseMva, mbase, vg,
@@ -273,8 +276,7 @@ public class MatpowerDirectParser {
     // MATPOWER branch format: fbus(0) tbus(1) r(2) x(3) b(4) rateA(5) rateB(6) rateC(7) ratio(8) angle(9) status(10) ...
 
     private void processBranchData(List<double[]> branchData) throws InterpssException {
-        int[][] branchCount = new int[100000][100000 > 1000 ? 1 : 1]; // too large, use map instead
-        java.util.Map<String, Integer> circuitMap = new java.util.HashMap<>();
+        Map<String, Integer> circuitMap = new HashMap<>();
 
         for (double[] d : branchData) {
             if (d.length < 11) continue;
