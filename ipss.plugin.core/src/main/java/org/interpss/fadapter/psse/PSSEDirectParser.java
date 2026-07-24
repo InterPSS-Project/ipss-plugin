@@ -126,6 +126,10 @@ public class PSSEDirectParser {
             if (version >= 33) parseSection(reader, null);
             if (version >= 33) parseSection(reader, null);
 
+            if (version >= 33) {
+                new PSSESubstationImporter(builder).parse(reader);
+            }
+
             if (version >= 31) parseFixedShuntSection();
 
             builder.finalizeNetwork();
