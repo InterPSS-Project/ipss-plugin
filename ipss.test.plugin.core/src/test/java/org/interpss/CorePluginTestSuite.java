@@ -66,6 +66,7 @@ import org.interpss.core.aclf.PSSE_5Bus_SwitchedShunt_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NodeBreaker_Test;
 import org.interpss.core.adapter.pwd.PWDDirectParser_ObjectGate_Test;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.pwd.SixBus_DclfPsXfr_pwd;
@@ -350,6 +351,9 @@ import org.junit.platform.suite.api.Suite;
 	// PSSE Contingency
 	ConFileParser_Test.class,
 	ConToIpssMapper_Test.class,
+
+	// PSSE Node Breaker
+	PSSE_IEEE14_NodeBreaker_Test.class,
 	
 	///Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,
