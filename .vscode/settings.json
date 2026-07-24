@@ -21,5 +21,9 @@
         "**/.pytest_cache":true,
         "**/.venv":true,
         "**/__pycache__":true,
-      }
+      },
+    "java.test.config": {
+        "workingDirectory": "${workspaceFolder}/ipss.test.plugin.core"
+    }
+
 }
