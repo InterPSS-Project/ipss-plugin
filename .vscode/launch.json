@@ -1,0 +1,22 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "PSSE_IEEE14_NodeBreaker_Test",
+      "request": "launch",
+      "mainClass": "org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NodeBreaker_Test",
+      "projectName": "ipss.test.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.test.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "ipss.test.plugin.core (cwd=module)",
+      "request": "launch",
+      "mainClass": "${file}",
+      "projectName": "ipss.test.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.test.plugin.core"
+    }
+  ]
+}
