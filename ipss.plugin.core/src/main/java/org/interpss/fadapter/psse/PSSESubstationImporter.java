@@ -120,7 +120,7 @@ public class PSSESubstationImporter {
 				sub.addBus(bus);
 			}
 
-			String nodeId = isub + "-" + ni;
+			String nodeId = "NBNode_" + isub + "-" + ni + "@" + sub.getName();
 			NBNode node = NBModelObjectFactory.createNBNode(sub, nodeId, bus);
 			node.setName(nodeName);
 			node.setNumber(ni);
@@ -175,7 +175,7 @@ public class PSSESubstationImporter {
 			}
 
 			NBModelSwitchType swType = mapSwitchType(typeCode);
-			String swId = isub + "-" + ni + "-" + nj + "-" + ckt;
+			String swId = "NBSwitch_" + isub + "-" + ni + "-" + nj + "-" + ckt + "@" + sub.getName();
 			NBSwitch sw = NBModelObjectFactory.createNBSwitch(sub, swId, from, to, ckt, swType);
 			if (!swName.isEmpty()) {
 				sw.setName(swName);
