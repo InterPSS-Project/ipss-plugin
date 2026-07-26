@@ -53,11 +53,13 @@ public class PSSE_IEEE14_NodeBreaker_Test extends CorePluginTestSetup {
 		SubstationNBreakerHelper s1h = new SubstationNBreakerHelper(s1);
 		NBNode ng1 = s1h.findNodeByName("NG1");
 		assertNotNull(ng1);
+		assertEquals("NBNode_1-5@STATION 1", ng1.getId());
 		assertSame(net.getBus("Bus1"), ng1.getBus());
 		assertEquals(1.0, ng1.getVoltageMag(), 1e-9);
 
 		NBSwitch busBar = s1h.findSwitchByName("Sw-BusBars");
 		assertNotNull(busBar);
+		assertEquals("NBSwitch_1-1-2-1@STATION 1", busBar.getId());
 		assertEquals(NBModelSwitchType.BREAKER, busBar.getSwitchType());
 		assertEquals(1, busBar.getCurrentStatus());
 		assertEquals(1, busBar.getNormalStatus());
