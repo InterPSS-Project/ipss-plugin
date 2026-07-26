@@ -1,5 +1,7 @@
 package org.interpss.nbreaker;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,19 +14,19 @@ import com.interpss.core.net.nb.NBNode;
 import com.interpss.core.net.nb.NBSwitch;
 
 public class SubstationNBreakerHelper {
-    private Substation substation;
+	private Substation substation;
 
-    public SubstationNBreakerHelper(Substation substation) {
-        this.substation = substation;
-    }
+	public SubstationNBreakerHelper(Substation substation) {
+		this.substation = substation;
+	}
 
-	List<NBSwitch> getNbSwitchList(boolean activeOnly) {
+	public List<NBSwitch> getNbSwitchList(boolean activeOnly) {
 		return this.substation.getNbSwitchList().stream()
 				.filter(s -> !activeOnly || s.isActive())
 				.collect(Collectors.toList());
 	}
 
-    public NBNode findNodeByName(String name) {
+	public NBNode findNodeByName(String name) {
 		return this.substation.getNbNodeList().stream()
 				.filter(n -> name.equals(n.getName()))
 				.findFirst()
@@ -55,36 +57,108 @@ public class SubstationNBreakerHelper {
 	}
 
 	/**
-	 * Print {@code Substation → AclfBus → NBNode → NBEquipConnection} (equip only; no bus refs on terminals).
+	 * Clear visit / component flags before a topology walk.
 	 */
-		public void printSubstationTree() {
-			System.out.println();
-			System.out.println("Substation " + this.substation.getId() + " (" + this.substation.getName() + ")"
-					+ " nodes=" + this.substation.getNbNodeList().size()
-					+ " switches=" + this.substation.getNbSwitchList().size()
-					+ "(" + this.getNbSwitchList(true).size() + " active)"
-					+ " terminals=" + this.substation.getNbEquipConnectList().size());
-	
-			for (Bus bus : this.substation.getBusList()) {
-				System.out.println("  Bus " + bus.getId() + " (" + bus.getName() + ")");
-				for (NBNode node : this.substation.getNbNodeList()) {
-					if (node.getBus() != bus) {
-						continue;
-					}
-					System.out.println("    NBNode " + node.getId() + " " + node.getName());
-					for (NBEquipConnection term : this.substation.getNbEquipConnectList()) {
-						if (term.getBnNode() != node) {
-							continue;
-						}
-						NameTag equip = term.getEquip();
-						String equipId = equip != null ? equip.getId() : "?";
-						String equipName = equip != null ? equip.getName() : "";
-						System.out.println("      NBEquipConnection " + term.getEquipType()
-								+ " id=" + equipId
-								+ (equipName == null || equipName.isBlank() ? "" : " name=" + equipName.trim()));
-					}
+	public void clearTopoFlags() {
+		for (NBNode node : this.substation.getNbNodeList()) {
+			node.setIntFlag(0);
+			node.setBooleanFlag(false);
+		}
+		for (NBSwitch sw : this.substation.getNbSwitchList()) {
+			sw.setBooleanFlag(false);
+		}
+	}
+
+	/**
+	 * BFS from {@code start} through closed switches ({@code currentStatus != 0}).
+	 * Visited nodes and switches get {@code booleanFlag=true}; connected nodes get
+	 * {@code intFlag=topoGroupNo}.
+	 *
+	 * @return number of nodes in the component
+	 */
+	public int markConnectedComponent(NBNode start, int topoGroupNo) {
+		if (start == null) {
+			return 0;
+		}
+		Deque<NBNode> queue = new ArrayDeque<>();
+		start.setBooleanFlag(true);
+		start.setIntFlag(topoGroupNo);
+		queue.add(start);
+		int count = 1;
+
+		while (!queue.isEmpty()) {
+			NBNode node = queue.poll();
+			for (NBSwitch sw : this.substation.getNbSwitchList()) {
+				if (sw.isBooleanFlag() || sw.getCurrentStatus() == 0) {
+					continue;
+				}
+				NBNode other = null;
+				if (sw.getFromNBNode() == node) {
+					other = sw.getToNBNode();
+				} else if (sw.getToNBNode() == node) {
+					other = sw.getFromNBNode();
+				} else {
+					continue;
+				}
+				sw.setBooleanFlag(true);
+				if (other != null && !other.isBooleanFlag()) {
+					other.setBooleanFlag(true);
+					other.setIntFlag(topoGroupNo);
+					queue.add(other);
+					count++;
 				}
 			}
 		}
-	
+		return count;
+	}
+
+	/**
+	 * Print {@code Substation → AclfBus → NBNode → NBEquipConnection} (equip only; no bus refs on terminals).
+	 */
+	public void printSubstationTree() {
+		System.out.println();
+		System.out.println("Substation " + this.substation.getId() + " (" + this.substation.getName() + ")"
+				+ " nodes=" + this.substation.getNbNodeList().size()
+				+ " switches=" + this.substation.getNbSwitchList().size()
+				+ "(" + this.getNbSwitchList(true).size() + " active)"
+				+ " terminals=" + this.substation.getNbEquipConnectList().size());
+
+		for (Bus bus : this.substation.getBusList()) {
+			System.out.println("  Bus " + bus.getId() + " (" + bus.getName() + ")");
+			for (NBNode node : this.substation.getNbNodeList()) {
+				if (node.getBus() != bus) {
+					continue;
+				}
+				System.out.println("    NBNode " + node.getId() + " " + node.getName());
+				for (NBEquipConnection term : this.substation.getNbEquipConnectList()) {
+					if (term.getBnNode() != node) {
+						continue;
+					}
+					NameTag equip = term.getEquip();
+					String equipId = equip != null ? equip.getId() : "?";
+					String equipName = equip != null ? equip.getName() : "";
+					System.out.println("      NBEquipConnection " + term.getEquipType()
+							+ " id=" + equipId
+							+ (equipName == null || equipName.isBlank() ? "" : " name=" + equipName.trim()));
+				}
+			}
+		}
+	}
+
+	/** Print node/switch visit and component flags after a topology walk. */
+	public void printTopoFlags() {
+		System.out.println();
+		System.out.println("Topo flags (node intFlag / booleanFlag; switch booleanFlag):");
+		for (NBNode node : this.substation.getNbNodeList()) {
+			System.out.println("  Node " + node.getName()
+					+ " intFlag=" + node.getIntFlag()
+					+ " visited=" + node.isBooleanFlag());
+		}
+		for (NBSwitch sw : this.substation.getNbSwitchList()) {
+			System.out.println("  Switch " + sw.getName()
+					+ " status=" + sw.getCurrentStatus()
+					+ " visited=" + sw.isBooleanFlag());
+		}
+	}
+
 }
