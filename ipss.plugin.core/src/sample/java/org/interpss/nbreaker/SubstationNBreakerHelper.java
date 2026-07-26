@@ -76,7 +76,7 @@ public class SubstationNBreakerHelper {
 	 *
 	 * @return number of nodes in the component
 	 */
-	public int markConnectedComponent(NBNode start, int topoGroupNo) {
+	public int markConnectedNode(NBNode start, int topoGroupNo) {
 		if (start == null) {
 			return 0;
 		}
