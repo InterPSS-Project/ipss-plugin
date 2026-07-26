@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.interpss.nbreaker.SubstationNBreakerHelper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -49,29 +50,31 @@ public class PSSE_IEEE14_NodeBreaker_Test extends CorePluginTestSetup {
 		assertEquals(7, s2.getNbSwitchList().size());
 		assertEquals(6, s2.getNbEquipConnectList().size());
 
-		NBNode ng1 = findNodeByName(s1, "NG1");
+		SubstationNBreakerHelper s1h = new SubstationNBreakerHelper(s1);
+		NBNode ng1 = s1h.findNodeByName("NG1");
 		assertNotNull(ng1);
 		assertSame(net.getBus("Bus1"), ng1.getBus());
 		assertEquals(1.0, ng1.getVoltageMag(), 1e-9);
 
-		NBSwitch busBar = findSwitchByName(s1, "Sw-BusBars");
+		NBSwitch busBar = s1h.findSwitchByName("Sw-BusBars");
 		assertNotNull(busBar);
 		assertEquals(NBModelSwitchType.BREAKER, busBar.getSwitchType());
 		assertEquals(1, busBar.getCurrentStatus());
 		assertEquals(1, busBar.getNormalStatus());
 		assertEquals("1", busBar.getCircuitId());
 
-		NBEquipConnection genTerm = findEquip(s1, NBModelEquipType.MACHINE);
+		NBEquipConnection genTerm = s1h.findEquip(NBModelEquipType.MACHINE);
 		assertNotNull(genTerm);
 		assertNotNull(genTerm.getEquip());
 		assertEquals("1", genTerm.getEquip().getId());
 		assertSame(net.getBus("Bus1"), genTerm.getFromBus());
 
-		NBEquipConnection br12 = findBranchEquip(s1, "Bus1", "Bus2");
+		NBEquipConnection br12 = s1h.findBranchEquip("Bus1", "Bus2");
 		assertNotNull(br12);
 		assertNotNull(br12.getEquip());
 
-		NBEquipConnection loadTerm = findEquip(s2, NBModelEquipType.LOAD);
+		SubstationNBreakerHelper s2h = new SubstationNBreakerHelper(s2);
+		NBEquipConnection loadTerm = s2h.findEquip(NBModelEquipType.LOAD);
 		assertNotNull(loadTerm);
 		assertNotNull(loadTerm.getEquip());
 		assertSame(net.getBus("Bus2"), loadTerm.getFromBus());
@@ -83,35 +86,5 @@ public class PSSE_IEEE14_NodeBreaker_Test extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		assertTrue(algo.loadflow());
 		assertTrue(net.isLfConverged());
-	}
-
-	private static NBNode findNodeByName(Substation sub, String name) {
-		return sub.getNbNodeList().stream()
-				.filter(n -> name.equals(n.getName()))
-				.findFirst()
-				.orElse(null);
-	}
-
-	private static NBSwitch findSwitchByName(Substation sub, String name) {
-		return sub.getNbSwitchList().stream()
-				.filter(s -> name.equals(s.getName()))
-				.findFirst()
-				.orElse(null);
-	}
-
-	private static NBEquipConnection findEquip(Substation sub, NBModelEquipType type) {
-		return sub.getNbEquipConnectList().stream()
-				.filter(e -> e.getEquipType() == type)
-				.findFirst()
-				.orElse(null);
-	}
-
-	private static NBEquipConnection findBranchEquip(Substation sub, String fromId, String toId) {
-		return sub.getNbEquipConnectList().stream()
-				.filter(e -> e.getEquipType() == NBModelEquipType.ACLF_BRANCH)
-				.filter(e -> e.getFromBus() != null && e.getToBus() != null)
-				.filter(e -> fromId.equals(e.getFromBus().getId()) && toId.equals(e.getToBus().getId()))
-				.findFirst()
-				.orElse(null);
 	}
 }
