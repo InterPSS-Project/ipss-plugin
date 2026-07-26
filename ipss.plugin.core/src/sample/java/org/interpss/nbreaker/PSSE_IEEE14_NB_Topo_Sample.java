@@ -26,7 +26,7 @@ public class PSSE_IEEE14_NB_Topo_Sample {
 		subHelper.printSubstationTree();
 
 		NBNode node_g1 = subHelper.findNodeByName("NG1");
-		int n = subHelper.markConnectedComponent(node_g1, 1);
+		int n = subHelper.markConnectedNode(node_g1, 1);
 		System.out.println("Connected component size for node_g1: " + n);
 
 		subHelper.printTopoFlags();
@@ -45,10 +45,10 @@ public class PSSE_IEEE14_NB_Topo_Sample {
 
 		// 1) from BusBar from-node, walk closed switches/nodes and mark visited
 		// 2) connected nodes get intFlag = 1
-		n = subHelper.markConnectedComponent(busBar.getFromNBNode(), 1);
+		n = subHelper.markConnectedNode(busBar.getFromNBNode(), 1);
 		System.out.println("Connected component size from BusBar from-node: " + n);
 
-		n = subHelper.markConnectedComponent(busBar.getToNBNode(), 2);
+		n = subHelper.markConnectedNode(busBar.getToNBNode(), 2);
 		System.out.println("Connected component size from BusBar to-node: " + n);
 
 		subHelper.printTopoFlags();
