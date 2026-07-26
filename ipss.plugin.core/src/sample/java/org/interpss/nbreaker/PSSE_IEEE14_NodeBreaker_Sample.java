@@ -4,11 +4,7 @@ import org.interpss.fadapter.psse.PSSEDirectParser;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.net.Bus;
-import com.interpss.core.net.NameTag;
 import com.interpss.core.net.Substation;
-import com.interpss.core.net.nb.NBEquipConnection;
-import com.interpss.core.net.nb.NBNode;
 import com.interpss.core.net.nb.NBSwitch;
 
 /**
@@ -32,6 +28,17 @@ public class PSSE_IEEE14_NodeBreaker_Sample {
 		// 0 open, 1 closed, 2 stuck closed (default 1)
 		busBar.setCurrentStatus(0);
 
+		System.out.println("BusBar Id: " + busBar.getId());
+		System.out.println("BusBar from Node: " + busBar.getFromNBNode().getName());
+		System.out.println("BusBar to Node: " + busBar.getToNBNode().getName());
+
 		subHelper.printSubstationTree();
+
+		sub2.getNbNodeList().stream().forEach(node -> {
+			
+		});
+
+		sub2.getNbSwitchList().stream().forEach(sw -> {
+		});
 	}
 }
