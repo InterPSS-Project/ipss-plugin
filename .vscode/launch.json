@@ -3,6 +3,15 @@
   "configurations": [
     {
       "type": "java",
+      "name": "PSSE_IEEE14_NodeBreaker_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.nbreaker.PSSE_IEEE14_NodeBreaker_Sample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
       "name": "PSSE_IEEE14_NodeBreaker_Test",
       "request": "launch",
       "mainClass": "org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NodeBreaker_Test",
