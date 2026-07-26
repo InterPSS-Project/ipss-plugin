@@ -38,7 +38,7 @@ public class PSSE_IEEE14_NB_Topo_Test extends CorePluginTestSetup {
 		// All switches closed: gen node reaches every node in the station
 		NBNode ng1 = helper.findNodeByName("NG1");
 		assertNotNull(ng1);
-		assertEquals(8, helper.markConnectedComponent(ng1, 1));
+		assertEquals(8, helper.markConnectedNode(ng1, 1));
 		for (NBNode node : sub2.getNbNodeList()) {
 			assertEquals(1, node.getIntFlag(), node.getName());
 			assertTrue(node.isBooleanFlag(), node.getName());
@@ -60,8 +60,8 @@ public class PSSE_IEEE14_NB_Topo_Test extends CorePluginTestSetup {
 		helper.clearTopoFlags();
 
 		// Open busbar splits STATION 5 into two components of 4 nodes each
-		assertEquals(4, helper.markConnectedComponent(busBar.getFromNBNode(), 1));
-		assertEquals(4, helper.markConnectedComponent(busBar.getToNBNode(), 2));
+		assertEquals(4, helper.markConnectedNode(busBar.getFromNBNode(), 1));
+		assertEquals(4, helper.markConnectedNode(busBar.getToNBNode(), 2));
 
 		assertNodeGroup(helper, "NB1", 1);
 		assertNodeGroup(helper, "NL1", 1);
