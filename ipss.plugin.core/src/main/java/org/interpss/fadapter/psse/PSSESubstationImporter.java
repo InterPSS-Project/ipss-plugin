@@ -84,6 +84,7 @@ public class PSSESubstationImporter {
 		sub.setLongitude(longi);
 		sub.setGroundingResistance(srg);
 		builder.getNetwork().addSubstation(sub);
+		builder.getNetwork().setNodeBreakerModel(true);
 
 		Map<Integer, NBNode> nodesByNi = new HashMap<>();
 		parseNodes(reader, sub, isub, nodesByNi);
