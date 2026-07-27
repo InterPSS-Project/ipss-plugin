@@ -49,6 +49,7 @@ public class SubstationBusSplitMergeHelper {
 		bus1Split.setName(bus1.getName() + " Split");
 		bus1Split.setBaseVoltage(bus1.getBaseVoltage());
 		bus1Split.setVoltage(bus1.getVoltage());
+		bus1Split.setSubstation(this.substation);
 		logger.info("Split bus: " + bus1Split.getId()
 				+ " name=" + bus1Split.getName()
 				+ " Vbase=" + bus1Split.getBaseVoltage()

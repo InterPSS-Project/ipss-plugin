@@ -145,6 +145,27 @@ public class SubstationNBreakerHelper {
 		return count;
 	}
 
+	public boolean openSwitch(String swName) {
+		NBSwitch busBar = this.findSwitchByName(swName);
+		// 0 open, 1 closed, 2 stuck closed (default 1)
+		busBar.setCurrentStatus(0);
+
+		int totalGroupNo = this.topoAnalysis();
+		System.out.println("Total number of groups: " + totalGroupNo);
+
+		//this.printTopoFlags();
+	
+		SubstationBusSplitMergeHelper busSplitMergeHelper = new SubstationBusSplitMergeHelper(this.substation);
+		//busSplitMergeHelper.printEquipByGroup(totalGroupNo);
+
+		// split the bus into bus and bus_split
+		int groupN1 = busBar.getFromNBNode().getIntFlag();
+		int groupN2 = busBar.getToNBNode().getIntFlag();
+		busSplitMergeHelper.splitBus(groupN1, groupN2);
+		
+		return true;
+	}
+
 	/**
 	 * Print {@code Substation → AclfBus → NBNode → NBEquipConnection} (equip only; no bus refs on terminals).
 	 */
