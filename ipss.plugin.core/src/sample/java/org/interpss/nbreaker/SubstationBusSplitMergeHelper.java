@@ -57,7 +57,13 @@ public class SubstationBusSplitMergeHelper {
 				+ " (from " + bus1.getId() + ")");
 
 		this.moveEquipToBus(group2, bus1, bus1Split);
-		logger.info("After move group1 -> " + bus1Split.getId()
+		// Retarget all group-N2 nodes (incl. bus-bar nodes with no terminals)
+		for (NBNode node : this.substation.getNbNodeList()) {
+			if (node.getIntFlag() == groupN2) {
+				node.setBus(bus1Split);
+			}
+		}
+		logger.info("After move group2 -> " + bus1Split.getId()
 				+ ": bus1 gens=" + bus1.getContributeGenList().size()
 				+ " loads=" + bus1.getContributeLoadList().size()
 				+ " branches=" + bus1.getBranchList().size()
@@ -65,6 +71,46 @@ public class SubstationBusSplitMergeHelper {
 				+ " loads=" + bus1Split.getContributeLoadList().size()
 				+ " branches=" + bus1Split.getBranchList().size());
 
+		return true;
+	}
+
+	/**
+	 * Merge {@code toMerge} onto {@code retained}: move equipment and NB node
+	 * bus refs, then remove {@code toMerge} from the network.
+	 *
+	 * @param retained bus kept after merge (e.g. Bus2)
+	 * @param toMerge  bus to absorb and delete (e.g. Bus2_split)
+	 * @return true if merge and remove succeeded
+	 */
+	public boolean mergeBus(AclfBus retained, AclfBus toMerge) {
+		if (retained == null || toMerge == null || retained == toMerge) {
+			logger.error("mergeBus: invalid retained/toMerge buses");
+			return false;
+		}
+
+		List<NBEquipConnection> terms = this.substation.getNbEquipConnectList().stream()
+				.filter(term -> term.getBnNode() != null && term.getBnNode().getBus() == toMerge)
+				.collect(Collectors.toList());
+		this.moveEquipToBus(terms, toMerge, retained);
+
+		for (NBNode node : this.substation.getNbNodeList()) {
+			if (node.getBus() == toMerge) {
+				node.setBus(retained);
+			}
+		}
+
+		this.substation.getBusList().remove(toMerge);
+		BaseAclfNetwork<?, ?> aclfNet = (BaseAclfNetwork<?, ?>) this.substation.getNetwork();
+		String toMergeId = toMerge.getId();
+		if (!aclfNet.removeBus(toMergeId)) {
+			logger.error("mergeBus: failed to remove bus " + toMergeId
+					+ " (branches still connected?)");
+			return false;
+		}
+		logger.info("Merged " + toMerge.getId() + " into " + retained.getId()
+				+ "; gens=" + retained.getContributeGenList().size()
+				+ " loads=" + retained.getContributeLoadList().size()
+				+ " branches=" + retained.getBranchList().size());
 		return true;
 	}
 
