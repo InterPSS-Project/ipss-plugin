@@ -10,13 +10,16 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.nbreaker.SubstationBusSplitMergeHelper;
 import org.interpss.nbreaker.SubstationNBreakerHelper;
+import org.interpss.numeric.datatype.LimitType;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.net.Substation;
 import com.interpss.core.net.nb.NBEquipConnection;
 import com.interpss.core.net.nb.NBModelEquipType;
@@ -24,9 +27,9 @@ import com.interpss.core.net.nb.NBNode;
 import com.interpss.core.net.nb.NBSwitch;
 
 /**
- * Mirrors {@link org.interpss.nbreaker.PSSE_IEEE14_NB_BusSplit_Sample}: open
- * {@code Sw-BusBars} on STATION 5, run topo analysis, and split Bus2 so group-2
- * equipment moves onto {@code Bus2_split}.
+ * Mirrors {@link org.interpss.nbreaker.PSSE_IEEE14_NB_BusSplit_Sample}: relax PV
+ * Q limits on Bus3/Bus6, open {@code Sw-BusBars} on STATION 5 (topo + Bus2 split),
+ * then solve load flow on the expanded network.
  */
 public class PSSE_IEEE14_NB_BusSplit_Test extends CorePluginTestSetup {
 
@@ -34,8 +37,17 @@ public class PSSE_IEEE14_NB_BusSplit_Test extends CorePluginTestSetup {
 			"testData/psse/nbreaker/IEEE_14_bus_nodeBreaker_rev35_exported.raw";
 
 	@Test
-	public void testOpenBusBarAndSplitBus2() throws Exception {
+	public void testOpenBusBarSplitAndLoadflow() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+
+		// Same Q-limit relaxation as the sample (needed for post-split convergence)
+		AclfBus bus3 = net.getBus("Bus3");
+		assertNotNull(bus3);
+		bus3.getContributeGenList().get(0).setQGenLimit(new LimitType(1.0, 0));
+		AclfBus bus6 = net.getBus("Bus6");
+		assertNotNull(bus6);
+		bus6.getContributeGenList().get(0).setQGenLimit(new LimitType(0.5, 0));
+
 		Substation sub2 = net.getSubstation("2");
 		assertNotNull(sub2);
 		assertEquals("STATION 5", sub2.getName());
@@ -110,6 +122,10 @@ public class PSSE_IEEE14_NB_BusSplit_Test extends CorePluginTestSetup {
 			assertTrue(term.getEquip() instanceof AclfBranch);
 			assertSame(bus2Split, ((AclfBranch) term.getEquip()).getFromBus(), term.getId());
 		}
+
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		assertTrue(algo.loadflow());
+		assertTrue(net.isLfConverged());
 	}
 
 	private static void assertNodeBus(SubstationNBreakerHelper helper, String name, AclfBus bus) {
