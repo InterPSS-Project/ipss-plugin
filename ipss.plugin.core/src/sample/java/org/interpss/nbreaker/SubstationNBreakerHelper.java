@@ -5,7 +5,13 @@ import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfLoad;
+import com.interpss.core.aclf.AclfLoadCode;
+import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.Bus;
 import com.interpss.core.net.NameTag;
 import com.interpss.core.net.Substation;
@@ -187,54 +193,4 @@ public class SubstationNBreakerHelper {
 					+ " visited=" + sw.isBooleanFlag());
 		}
 	}
-
-	/**
-	 * Equip terminals whose {@link NBNode#getIntFlag()} equals {@code group}
-	 * (after {@link #topoAnalysis()}).
-	 */
-	public List<NBEquipConnection> getEquipByGroup(int group) {
-		return this.substation.getNbEquipConnectList().stream()
-				.filter(term -> term.getBnNode() != null && term.getBnNode().getIntFlag() == group)
-				.collect(Collectors.toList());
-	}
-
-	/**
-	 * Electrical bus linked from any NBNode in the topology {@code group}
-	 * (after {@link #topoAnalysis()}).
-	 */
-	public AclfBus getBusByGroup(int group) {
-		return this.substation.getNbNodeList().stream()
-				.filter(n -> n.getIntFlag() == group && n.getBus() != null)
-				.map(n -> (AclfBus) n.getBus())
-				.findFirst()
-				.orElse(null);
-	}
-
-	/**
-	 * Print {@code NBEquipConnection} terminals for each topology group
-	 * (node {@code intFlag} after {@link #topoAnalysis()}).
-	 */
-	public void printEquipByGroup(int groupNo) {
-		System.out.println();
-		System.out.println("EquipConnection by topo group:");
-		for (int g = 1; g <= groupNo; g++) {
-			System.out.println("  Group " + g + ":");
-			List<NBEquipConnection> terms = this.getEquipByGroup(g);
-			if (terms.isEmpty()) {
-				System.out.println("    (none)");
-				continue;
-			}
-			for (NBEquipConnection term : terms) {
-				NBNode node = term.getBnNode();
-				NameTag equip = term.getEquip();
-				String equipId = equip != null ? equip.getId() : "?";
-				String equipName = equip != null ? equip.getName() : "";
-				System.out.println("    " + term.getEquipType()
-						+ " id=" + equipId
-						+ (equipName == null || equipName.isBlank() ? "" : " name=" + equipName.trim())
-						+ " @ node=" + (node != null ? node.getName() : "?"));
-			}
-		}
-	}
-
 }
