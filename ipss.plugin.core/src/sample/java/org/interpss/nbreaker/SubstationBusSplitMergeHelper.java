@@ -29,6 +29,13 @@ public class SubstationBusSplitMergeHelper {
 		this.substation = substation;
 	}
 
+	/**
+	 * Split a bus into two buses by moving equipments of groupN2 to the newly create bus.
+	 * 
+	 * @param groupN1 the group number of the bus to split
+	 * @param groupN2 the group number of the bus to move equipment to
+	 * @return
+	 */
 	public boolean splitBus(int groupN1, int groupN2) {
 		List<NBEquipConnection> group1 = this.getEquipByGroup(groupN1);
 		System.out.println("Group 1 equip count: " + group1.size());
@@ -101,30 +108,31 @@ public class SubstationBusSplitMergeHelper {
 				continue;
 			}
 			switch (term.getEquipType()) {
-			case MACHINE -> {
-				if (equip instanceof AclfGen gen && gen.getParentBus() == fromBus) {
-					gen.setParentBus(toBus);
-					movedGen = true;
-				}
-			}
-			case LOAD -> {
-				if (equip instanceof AclfLoad load && load.getParentBus() == fromBus) {
-					load.setParentBus(toBus);
-					movedLoad = true;
-				}
-			}
-			case ACLF_BRANCH -> {
-				if (equip instanceof AclfBranch branch) {
-					if (branch.getFromBus() == fromBus) {
-						branch.reconnect(toBus, BranchBusSide.FROM_SIDE, false);
-					} else if (branch.getToBus() == fromBus) {
-						branch.reconnect(toBus, BranchBusSide.TO_SIDE, false);
+				case MACHINE -> {
+					if (equip instanceof AclfGen gen && gen.getParentBus() == fromBus) {
+						gen.setParentBus(toBus);
+						movedGen = true;
 					}
 				}
-			}
-			default -> {
-				// other terminal types not needed for the IEEE14 bus-split sample
-			}
+				case LOAD -> {
+					if (equip instanceof AclfLoad load && load.getParentBus() == fromBus) {
+						load.setParentBus(toBus);
+						movedLoad = true;
+					}
+				}
+				case ACLF_BRANCH -> {
+					if (equip instanceof AclfBranch branch) {
+						if (branch.getFromBus() == fromBus) {
+							branch.reconnect(toBus, BranchBusSide.FROM_SIDE, false);
+						} else if (branch.getToBus() == fromBus) {
+							branch.reconnect(toBus, BranchBusSide.TO_SIDE, false);
+						}
+					}
+				}
+				default -> {
+					// other terminal types not needed for the IEEE14 bus-split sample
+					logger.warn("Unsupported equip type: " + term.getEquipType());
+				}
 			}
 
 			if (term.getFromBus() == fromBus) {
