@@ -166,6 +166,19 @@ public class SubstationNBreakerHelper {
 		return true;
 	}
 
+	public boolean closeSwitch(String swName) {
+		NBSwitch busBar = this.findSwitchByName(swName);
+		busBar.setCurrentStatus(1);
+
+		AclfBus fromBus = (AclfBus) busBar.getFromNBNode().getBus();
+		AclfBus toBus = (AclfBus) busBar.getToNBNode().getBus();
+
+		SubstationBusSplitMergeHelper mergeHelper = new SubstationBusSplitMergeHelper(this.substation);
+		mergeHelper.mergeBus(fromBus, toBus);
+
+		return true;
+	}
+
 	/**
 	 * Print {@code Substation → AclfBus → NBNode → NBEquipConnection} (equip only; no bus refs on terminals).
 	 */
