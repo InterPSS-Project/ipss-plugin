@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
-import org.interpss.nbreaker.SubstationNBreakerHelper;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -17,6 +16,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.funcImpl.topo.SubstationNBreakerHelper;
 import com.interpss.core.net.Substation;
 import com.interpss.core.net.nb.NBNode;
 import com.interpss.core.net.nb.NBSwitch;

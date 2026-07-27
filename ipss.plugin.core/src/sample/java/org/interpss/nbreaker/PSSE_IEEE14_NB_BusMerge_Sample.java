@@ -7,6 +7,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.funcImpl.topo.SubstationNBreakerHelper;
 import com.interpss.core.net.Substation;
 import com.interpss.core.net.nb.NBSwitch;
 
