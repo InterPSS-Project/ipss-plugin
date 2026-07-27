@@ -59,7 +59,7 @@ public class SubstationNBreakerHelper {
 	/**
 	 * Clear visit / component flags before a topology walk.
 	 */
-	public void clearTopoFlags() {
+	private void clearTopoFlags() {
 		for (NBNode node : this.substation.getNbNodeList()) {
 			node.setIntFlag(0);
 			node.setBooleanFlag(false);
@@ -67,6 +67,32 @@ public class SubstationNBreakerHelper {
 		for (NBSwitch sw : this.substation.getNbSwitchList()) {
 			sw.setBooleanFlag(false);
 		}
+	}
+
+	/**
+	 * First NBNode with {@code booleanFlag == false}, or {@code null} if all visited.
+	 */
+	private NBNode findFirstUnvisitedNode() {
+		return this.substation.getNbNodeList().stream()
+				.filter(n -> !n.isBooleanFlag())
+				.findFirst()
+				.orElse(null);
+	}
+
+	public int topoAnalysis() {
+		this.clearTopoFlags();
+
+		// find the first unvisited node
+		int groupNo = 0;
+		while (this.findFirstUnvisitedNode() != null) {
+			NBNode unvisitedNode = this.findFirstUnvisitedNode();
+			//System.out.println("First unvisited node: " + unvisitedNode.getName());
+
+			// mark the connected nodes from the unvisited node
+			int n = this.markConnectedNode(unvisitedNode, ++groupNo);
+			//System.out.println("Connected component size from unvisited node: " + n);
+		}
+		return groupNo;
 	}
 
 	/**
