@@ -81,6 +81,7 @@ import org.interpss.core.ca.aclf.IEEE14_AclfN1Scan_Test;
 import org.interpss.core.contingency.parser.ConFileParser_Test;
 import org.interpss.core.contingency.parser.ConToIpssMapper_Test;
 import org.interpss.core.dclf.IEEE14_Dclf_Test;
+import org.interpss.json.PSSE_IEEE14_NBreakerCompare_Test;
 import org.interpss.json.Texas2KJsonCompareTest;
 import org.interpss.plugin.fstate.AuxFSPluginDclfAlgoRunTest;
 import org.interpss.plugin.fstate.AuxFSPluginWeekDclfAlgoRunTest;
@@ -155,6 +156,7 @@ import org.junit.platform.suite.api.Suite;
 	Texas2KJsonCompareTest.class,
 	PSSE_ACTIVSg25kObjectCompareTest.class,
 	PSSE_ACTIVSg2000BusCompare_Test.class,
+	PSSE_IEEE14_NBreakerCompare_Test.class,
 	
 	// ZeroZ branch
 	///ZeroZBranchNetUtilTest.class,        // TODO needs ODM XML loader
