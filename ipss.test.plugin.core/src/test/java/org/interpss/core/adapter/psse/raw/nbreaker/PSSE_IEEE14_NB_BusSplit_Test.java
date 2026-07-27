@@ -98,13 +98,12 @@ public class PSSE_IEEE14_NB_BusSplit_Test extends CorePluginTestSetup {
 		assertEquals(AclfGenCode.NON_GEN, bus2Split.getGenCode());
 		assertEquals(AclfLoadCode.NON_LOAD, bus2Split.getLoadCode());
 
-		// Nodes with group-1 terminals stay on Bus2; bus-bar NB2 has no terminal so
-		// moveEquipToBus leaves it on Bus2. Group-2 line nodes move to Bus2_split.
+		// Group-1 nodes stay on Bus2; all group-2 nodes (incl. bus-bar NB2) on Bus2_split.
 		assertNodeBus(helper, "NB1", bus2);
 		assertNodeBus(helper, "NL1", bus2);
 		assertNodeBus(helper, "NG1", bus2);
 		assertNodeBus(helper, "NLd1", bus2);
-		assertNodeBus(helper, "NB2", bus2);
+		assertNodeBus(helper, "NB2", bus2Split);
 		assertNodeBus(helper, "NL3", bus2Split);
 		assertNodeBus(helper, "NL4", bus2Split);
 		assertNodeBus(helper, "NL5", bus2Split);
