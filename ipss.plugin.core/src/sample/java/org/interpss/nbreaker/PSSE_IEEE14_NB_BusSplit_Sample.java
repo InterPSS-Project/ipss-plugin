@@ -35,6 +35,9 @@ public class PSSE_IEEE14_NB_BusSplit_Sample {
 		SubstationBusSplitMergeHelper busSplitMergeHelper = new SubstationBusSplitMergeHelper(sub2);
 		busSplitMergeHelper.printEquipByGroup(totalGroupNo);
 
-		busSplitMergeHelper.splitBus(1, 2);
+		// split the bus into bus and bus_split
+		int groupN1 = busBar.getFromNBNode().getIntFlag();
+		int groupN2 = busBar.getToNBNode().getIntFlag();
+		busSplitMergeHelper.splitBus(groupN1, groupN2);
 	}
 }
