@@ -23,21 +23,8 @@ public class PSSE_IEEE14_NB_BusSplit_Sample {
 
 		SubstationNBreakerHelper subHelper = new SubstationNBreakerHelper(sub2);
 
-		NBSwitch busBar = subHelper.findSwitchByName("Sw-BusBars");
-		// 0 open, 1 closed, 2 stuck closed (default 1)
-		busBar.setCurrentStatus(0);
-
-		int totalGroupNo = subHelper.topoAnalysis();
-		System.out.println("Total number of groups: " + totalGroupNo);
-
-		subHelper.printTopoFlags();
-	
-		SubstationBusSplitMergeHelper busSplitMergeHelper = new SubstationBusSplitMergeHelper(sub2);
-		busSplitMergeHelper.printEquipByGroup(totalGroupNo);
-
-		// split the bus into bus and bus_split
-		int groupN1 = busBar.getFromNBNode().getIntFlag();
-		int groupN2 = busBar.getToNBNode().getIntFlag();
-		busSplitMergeHelper.splitBus(groupN1, groupN2);
+		subHelper.openSwitch("Sw-BusBars");
+		
+		subHelper.printSubstationTree();
 	}
 }
