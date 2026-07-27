@@ -35,21 +35,10 @@ public class PSSE_IEEE14_NB_Topo_Sample {
 		// 0 open, 1 closed, 2 stuck closed (default 1)
 		busBar.setCurrentStatus(0);
 
-		System.out.println("BusBar Id: " + busBar.getId());
-		System.out.println("BusBar from Node: " + busBar.getFromNBNode().getName());
-		System.out.println("BusBar to Node: " + busBar.getToNBNode().getName());
-
 		subHelper.printSubstationTree();
 
-		subHelper.clearTopoFlags();
-
-		// 1) from BusBar from-node, walk closed switches/nodes and mark visited
-		// 2) connected nodes get intFlag = 1
-		n = subHelper.markConnectedNode(busBar.getFromNBNode(), 1);
-		System.out.println("Connected component size from BusBar from-node: " + n);
-
-		n = subHelper.markConnectedNode(busBar.getToNBNode(), 2);
-		System.out.println("Connected component size from BusBar to-node: " + n);
+		int groupNo = subHelper.topoAnalysis();
+		System.out.println("Total number of groups: " + groupNo);
 
 		subHelper.printTopoFlags();
 	}

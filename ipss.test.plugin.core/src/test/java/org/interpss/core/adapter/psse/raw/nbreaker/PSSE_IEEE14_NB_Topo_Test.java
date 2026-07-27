@@ -17,7 +17,7 @@ import com.interpss.core.net.nb.NBSwitch;
 
 /**
  * Mirrors {@link org.interpss.nbreaker.PSSE_IEEE14_NB_Topo_Sample}: closed-switch
- * connectivity on STATION 5 before/after opening Sw-BusBars.
+ * connectivity on STATION 5, then {@code topoAnalysis()} after opening Sw-BusBars.
  */
 public class PSSE_IEEE14_NB_Topo_Test extends CorePluginTestSetup {
 
@@ -57,11 +57,8 @@ public class PSSE_IEEE14_NB_Topo_Test extends CorePluginTestSetup {
 		assertFalse(busBar.isActive());
 		assertEquals(6, helper.getNbSwitchList(true).size());
 
-		helper.clearTopoFlags();
-
-		// Open busbar splits STATION 5 into two components of 4 nodes each
-		assertEquals(4, helper.markConnectedNode(busBar.getFromNBNode(), 1));
-		assertEquals(4, helper.markConnectedNode(busBar.getToNBNode(), 2));
+		// Open busbar: topoAnalysis finds two components of 4 nodes each
+		assertEquals(2, helper.topoAnalysis());
 
 		assertNodeGroup(helper, "NB1", 1);
 		assertNodeGroup(helper, "NL1", 1);
