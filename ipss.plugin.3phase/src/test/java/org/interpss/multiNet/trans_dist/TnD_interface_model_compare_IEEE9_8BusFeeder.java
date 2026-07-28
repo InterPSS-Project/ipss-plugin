@@ -7,7 +7,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.threePhase.dataParser.psse.PSSE3PhaseMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.dynLoad.InductionMotor;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
@@ -203,7 +203,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		 */
 		
 		
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -524,7 +524,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			 */
 			
 			
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+			SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 			
 			
 		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -871,7 +871,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			 */
 			
 			
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+			SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 			
 			
 		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -1206,7 +1206,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		 */
 		
 		
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -1530,7 +1530,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		 */
 		
 		
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -1850,7 +1850,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		 */
 		
 		
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -2181,7 +2181,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 			 */
 			
 			
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+			SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 			
 			
 		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -2492,7 +2492,7 @@ public class TnD_interface_model_compare_IEEE9_8BusFeeder {
 		 */
 		
 		
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
