@@ -282,6 +282,22 @@ public class OpenDssTimeSeriesMetadataTest {
 	}
 
 	@Test
+	void dynamicParserCreatesBusForForwardReferencedCapacitor() {
+		OpenDSSDataParser parser = OpenDSSDataParser.forDynamicNetwork();
+
+		parser.getCapacitorParser().parseCapDataString(
+				"New Capacitor.cap4 bus1=680.3 phases=1 kvar=200 kv=4.16");
+
+		var bus = parser.getDistNetwork().getBus("680");
+		assertNotNull(bus);
+		assertEquals(1, bus.getThreePhaseLoadList().size());
+		assertEquals("cap4", bus.getThreePhaseLoadList().get(0).getId());
+		assertEquals(-200.0,
+				bus.getThreePhaseLoadList().get(0).getInit3PhaseLoad().c_2.getImaginary(),
+				1.0e-12);
+	}
+
+	@Test
 	void staticParserCreatesMiniFeederSourceLineLoadAndCapacitor() {
 		OpenDSSDataParser parser = OpenDSSDataParser.forStaticNetwork();
 
