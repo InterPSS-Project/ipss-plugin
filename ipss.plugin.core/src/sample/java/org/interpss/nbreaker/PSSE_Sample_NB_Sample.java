@@ -24,10 +24,11 @@ public class PSSE_Sample_NB_Sample {
 		Substation sub5 = net.getSubstation("5");
 		Substation sub9 = net.getSubstation("9");
 
-		AclfBus bus215 = net.getBus("Bus215");
-		Substation sub = bus215.getSubstation();
-		SubstationNBreakerHelper subHelper = new SubstationNBreakerHelper(sub);
-		subHelper.printSubstationTree();
+		SubstationNBreakerHelper subHelper5 = new SubstationNBreakerHelper(sub5);
+		subHelper5.printSubstationTree();
+
+		SubstationNBreakerHelper subHelper9 = new SubstationNBreakerHelper(sub9);
+		subHelper9.printSubstationTree();
 
 		System.out.println("Substations: " + net.getSubstationMap().size()
 				+ ", sub5=" + (sub5 != null ? sub5.getName() : "null")
