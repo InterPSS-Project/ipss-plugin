@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
+import org.interpss.fadapter.builder.AclfNetworkObjectFactory;
 import org.interpss.fadapter.builder.AclfNetworkBuilder.ShuntBlock;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -71,6 +72,12 @@ public class PSSEDirectParser {
     public PSSEDirectParser(int version, BaseAclfNetwork<?,?> network) {
         this.version = version;
         this.builder = new AclfNetworkBuilder(network);
+    }
+
+    public PSSEDirectParser(int version, BaseAclfNetwork<?,?> network,
+            AclfNetworkObjectFactory objectFactory) {
+        this.version = version;
+        this.builder = new AclfNetworkBuilder(network, objectFactory);
     }
 
     public AclfNetwork parse(String filepath) throws InterpssException {

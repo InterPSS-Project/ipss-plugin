@@ -9,12 +9,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
-import com.interpss.dstab.DStabilityNetwork;
 
 /**
  * Direct PSS/E dynamic data file parser that bypasses the ODM XML intermediate layer.
- * Reads PSS/E dynamic model data and populates a DStabilityNetwork via DStabNetworkBuilder.
+ * Reads PSS/E dynamic model data and populates a BaseDStabNetwork via DStabNetworkBuilder.
  *
  * PSS/E dynamic data file format:
  *   Each record: IBUS 'TYPE' ID DATALIST /
@@ -31,13 +31,13 @@ public class PSSEDStabDirectParser {
         this.builder = builder;
     }
 
-    public DStabilityNetwork parseDynFile(String dynFilePath) throws InterpssException {
+    public BaseDStabNetwork<?, ?> parseDynFile(String dynFilePath) throws InterpssException {
         try (BufferedReader reader = new BufferedReader(new FileReader(dynFilePath))) {
             parseDynData(reader);
         } catch (IOException e) {
             throw new InterpssException("Error reading dynamic file: " + dynFilePath + " - " + e.toString());
         }
-        return builder.getDStabNetwork();
+        return builder.getBaseDStabNetwork();
     }
 
     private void parseDynData(BufferedReader reader) throws IOException, InterpssException {
@@ -157,7 +157,7 @@ public class PSSEDStabDirectParser {
         double[] rating = getGenRating(busId, genId);
 
         double ra = 0, xd1 = 0;
-        DStabilityNetwork net = builder.getDStabNetwork();
+        BaseDStabNetwork<?, ?> net = builder.getBaseDStabNetwork();
         var bus = net.getDStabBus(busId);
         if (bus != null) {
             DStabGen gen = (DStabGen) bus.getContributeGen(genId);
@@ -386,7 +386,7 @@ public class PSSEDStabDirectParser {
 
     @SuppressWarnings("unchecked")
     private double[] getGenRating(String busId, String genId) {
-        DStabilityNetwork net = builder.getDStabNetwork();
+        BaseDStabNetwork<?, ?> net = builder.getBaseDStabNetwork();
         var bus = net.getDStabBus(busId);
         if (bus != null) {
             DStabGen gen = (DStabGen) bus.getContributeGen(genId);
