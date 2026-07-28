@@ -478,6 +478,42 @@ public class AclfNetworkBuilder {
         }
     }
 
+    /**
+     * Add a PSS/E-style fixed shunt as a named {@link ShuntCompensator} on the bus.
+     * Susceptance {@code bPu} is stored on the compensator (LF Yii path); conductance
+     * {@code gPu} is folded into {@code bus.shuntY} only when in service — never put
+     * B into both paths (double-count).
+     *
+     * @param busId bus ID
+     * @param id PSS/E shunt ID
+     * @param status in-service flag
+     * @param gPu conductance in pu on system base
+     * @param bPu susceptance in pu on system base
+     * @param name optional display name (falls back to {@code id})
+     * @return the created compensator, or null if the bus is missing
+     */
+    public ShuntCompensator addFixedShunt(String busId, String id, boolean status,
+                                          double gPu, double bPu, String name) {
+        BaseAclfBus bus = getBus(busId);
+        if (bus == null) {
+            return null;
+        }
+        String shuntId = (id == null || id.isEmpty()) ? "1" : id;
+        ShuntCompensatorType type = bPu >= 0.0
+                ? ShuntCompensatorType.CAPACITOR
+                : ShuntCompensatorType.INDUCTOR;
+        ShuntCompensator shunt = CoreObjectFactory.createShuntCompensator(shuntId, type);
+        shunt.setName((name == null || name.isEmpty()) ? shuntId : name);
+        shunt.setStatus(status);
+        shunt.setSteps(1);
+        shunt.setB(bPu);
+        bus.getCompensatorList().add(shunt);
+        if (status && gPu != 0.0) {
+            addToBusShuntY(busId, new Complex(gPu, 0.0));
+        }
+        return shunt;
+    }
+
     // ==================== Switched Shunt ====================
 
     /**
