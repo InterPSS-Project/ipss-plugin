@@ -134,8 +134,6 @@ public class PSSEDirectParser {
                 new PSSESubstationImporter(builder).parse(reader);
             }
 
-            if (version >= 31) parseFixedShuntSection();
-
             builder.finalizeNetwork();
         } catch (IOException e) {
             throw new InterpssException("Error parsing PSS/E data: " + e.getMessage());
@@ -426,22 +424,10 @@ public class PSSEDirectParser {
 
     // ==================== Fixed Shunt (v31+, separate section) ====================
 
-    private final List<FixedShuntRec> fixedShuntRecords = new ArrayList<>();
-
-    private record FixedShuntRec(String busId, String id, int status, double gl, double bl) {}
-
-    private void parseFixedShuntSection() throws InterpssException {
-        for (FixedShuntRec rec : fixedShuntRecords) {
-            if (rec.status == 1 && (rec.gl != 0.0 || rec.bl != 0.0)) {
-                builder.addToBusShuntY(rec.busId, new Complex(rec.gl / baseMva, rec.bl / baseMva));
-            }
-        }
-    }
-
-    // For the v31+ fixed shunt parsing, we store records during the initial read
-    // (invoked from parseFromReader when version >= 31)
-    // We override parseSection handling for fixed shunts:
-
+    /**
+     * Read fixed-shunt records and create named {@link com.interpss.core.aclf.ShuntCompensator}s
+     * immediately (before substation import so NB type-F terminals can resolve).
+     */
     private void collectFixedShunts(BufferedReader reader) throws IOException {
         String line;
         while ((line = reader.readLine()) != null) {
@@ -454,7 +440,8 @@ public class PSSEDirectParser {
             int status = rec.getInt(2, 1);
             double gl = rec.getDouble(3, 0.0);
             double bl = rec.getDouble(4, 0.0);
-            fixedShuntRecords.add(new FixedShuntRec(busId, id, status, gl, bl));
+            String name = rec.getString(5, "").trim();
+            builder.addFixedShunt(busId, id, status == 1, gl / baseMva, bl / baseMva, name);
         }
     }
 
