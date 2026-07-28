@@ -6,7 +6,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.threePhase.dataParser.psse.PSSE3PhaseMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
@@ -42,7 +42,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	public void test_3phase3SeqMultiSubNetTS_IEEE39Bus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus_onlyGen.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus_onlyGen.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -130,7 +130,7 @@ public class TestIEEE39_MultiNet3ph3seqDstab {
 	public void test_IEEE39Bus_pos_SeqMultiSubNetTS() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus_onlyGen.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus_onlyGen.dyr");
 
 	    DStabilityNetwork dsNet = (DStabilityNetwork) simuCtx.getDStabilityNet();
 		

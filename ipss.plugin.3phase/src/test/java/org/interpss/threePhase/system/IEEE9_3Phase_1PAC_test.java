@@ -7,7 +7,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.threePhase.dataParser.psse.PSSE3PhaseMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Complex3x1;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -44,7 +44,7 @@ public class IEEE9_3Phase_1PAC_test {
 	public void test_IEEE9_1pac_Network_solution() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 
 
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -118,7 +118,7 @@ public class IEEE9_3Phase_1PAC_test {
 	public void test_IEEE9_1pac_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 
 
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -215,7 +215,7 @@ public class IEEE9_3Phase_1PAC_test {
 	public void test_IEEE9_addFeeder_1pac_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn.dyr");
 
 
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
