@@ -306,8 +306,7 @@ public class PSSESubstationImporter {
 			return null;
 		}
 		case FIXED_SHUNT:
-			// Fixed shunts are folded into bus shunt Y by DirectParser; no named object.
-			return null;
+			return bus.getCompensator(eqId);
 		case IND_MACH:
 			return null;
 		default:
