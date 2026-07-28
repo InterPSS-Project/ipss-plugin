@@ -123,8 +123,12 @@ public class PSSEDirectParser {
             parseSection(reader, this::parseFACTSLine);
 
             if (version >= 31) parseSection(reader, this::parseSwitchedShuntLine);
-            if (version >= 33) parseSection(reader, null);
-            if (version >= 33) parseSection(reader, null);
+            if (version >= 33) parseSection(reader, null); // GNE
+            if (version >= 33) parseSection(reader, null); // Induction Machine
+            // v36+: Load Type, Interface, Interface Element precede Substation Data
+            if (version >= 36) parseSection(reader, null); // Load Type
+            if (version >= 36) parseSection(reader, null); // Interface
+            if (version >= 36) parseSection(reader, null); // Interface Element
 
             if (version >= 33) {
                 new PSSESubstationImporter(builder).parse(reader);
