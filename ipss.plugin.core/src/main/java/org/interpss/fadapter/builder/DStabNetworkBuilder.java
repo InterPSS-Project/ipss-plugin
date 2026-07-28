@@ -32,13 +32,23 @@ import com.interpss.dstab.mach.SalientPoleMachine;
 public class DStabNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(DStabNetworkBuilder.class);
 
-    private final DStabilityNetwork network;
+    private final BaseDStabNetwork<?, ?> network;
 
-    public DStabNetworkBuilder(DStabilityNetwork network) {
+    public DStabNetworkBuilder(BaseDStabNetwork<?, ?> network) {
         this.network = network;
     }
 
+    /**
+     * Legacy accessor for the standard positive-sequence network type.
+     */
     public DStabilityNetwork getDStabNetwork() {
+        return (DStabilityNetwork) network;
+    }
+
+    /**
+     * Accessor for standard and specialized DStab network implementations.
+     */
+    public BaseDStabNetwork<?, ?> getBaseDStabNetwork() {
         return network;
     }
 

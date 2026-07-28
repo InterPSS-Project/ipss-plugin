@@ -9,7 +9,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.threePhase.dataParser.psse.PSSE3PhaseMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSolverImpl;
@@ -59,7 +59,7 @@ public class TestTnD_IEEE300_13busFeeder {
         IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -76,7 +76,7 @@ public class TestTnD_IEEE300_13busFeeder {
         IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/IEEE300_Dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/IEEE300_Dyn.dyr");
 		
 		
 	   // DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -132,7 +132,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -201,7 +201,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			IpssCorePlugin.init();
 			
 			IpssCorePlugin.setLoggerLevel(Level.INFO);
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
+			SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 			
 			
 		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -380,7 +380,7 @@ public class TestTnD_IEEE300_13busFeeder {
 			IpssCorePlugin.init();
 			
 			IpssCorePlugin.setLoggerLevel(Level.INFO);
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
+			SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 			
 			
 		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -586,7 +586,7 @@ public class TestTnD_IEEE300_13busFeeder {
 		IpssCorePlugin.init();
 		
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE300/IEEE300Bus_noHVDC_addXfr_v30.raw", "testData/IEEE300/ieee300_generated_seq_1023.seq", "testData/IEEE300/IEEE300_Dyn.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
