@@ -16,6 +16,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
@@ -172,24 +173,105 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	public void testV36SeriesFactsDevice() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_v36.raw");
 
-		// FACTS_DVCE_1 (J=0) → SVC; FACTS_DVCE_2 (J=155, MODE=1) → SVC + target PQ loads
+		// FACTS_DVCE_1 (J=0) → SVC; FACTS_DVCE_2 (J=155, MODE=1) → series branch + SVC
 		AclfBus bus153 = net.getBus("Bus153");
 		assertNotNull(bus153);
 		assertTrue(bus153.getStaticVarCompensatorList().size() >= 2);
+		assertTrue(bus153.getStaticVarCompensatorList().stream()
+				.anyMatch(s -> "FACTS_DVCE_1".equals(((StaticVarCompensator) s).getId())));
 
-		boolean hasSeriesFactsBranch = false;
-		for (AclfBranch bra : net.getBranchList()) {
-			if (bra.getFromBusId().equals("Bus153") && bra.getToBusId().equals("Bus155")
-					&& "FD".equals(bra.getCircuitNumber())) {
-				hasSeriesFactsBranch = true;
-				assertFalse(bra.isActive(), "MODE=1 series FACTS branch is held inactive");
-				break;
-			}
-		}
-		assertTrue(hasSeriesFactsBranch, "series FACTS J≠0 should create Bus153–Bus155(FD)");
+		AclfBranch factsBra = net.getBranch("Bus153", "Bus155", "FACTS_DVCE_2");
+		assertNotNull(factsBra, "series FACTS J≠0 should create Bus153–Bus155(FACTS_DVCE_2)");
+		assertFalse(factsBra.isActive(), "MODE=1 series FACTS branch is held inactive");
+		assertEquals("FACTS_DVCE_2", factsBra.getName());
 
-		StaticVarCompensator svc = bus153.getStaticVarCompensatorList().get(0);
+		StaticVarCompensator svc = bus153.getStaticVarCompensatorList().stream()
+				.map(s -> (StaticVarCompensator) s)
+				.filter(s -> "FACTS_DVCE_1".equals(s.getId()))
+				.findFirst()
+				.orElseThrow();
 		assertEquals(1.015, svc.getVSpecified(), 1.0E-6);
+	}
+
+	@Test
+	public void testV36SystemSwdAndFactsNbTerminalsResolve() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+
+		AclfBranch swd = net.getBranch("Bus151", "Bus201", "*1");
+		assertNotNull(swd, "system switching device *1 should be imported");
+		assertEquals(AclfBranchCode.BREAKER, swd.getBranchCode());
+
+		AclfBranch swd2 = net.getBranch("Bus153", "Bus3006", "@1");
+		assertNotNull(swd2, "system switching device @1 should be imported");
+
+		Substation sub1 = net.getSubstation("1");
+		assertNotNull(sub1);
+		long unresolvedB = sub1.getNbEquipConnectList().stream()
+				.filter(c -> c.getEquipType() == NBModelEquipType.ACLF_BRANCH)
+				.filter(c -> c.getEquip() == null)
+				.filter(c -> c.getName() != null && c.getName().startsWith("B:")
+						&& (c.getName().contains("*1") || c.getName().contains("@1")))
+				.count();
+		assertEquals(0, unresolvedB, "B terminals for *1/@1 should resolve");
+
+		Substation sub2 = net.getSubstation("2");
+		assertNotNull(sub2);
+		long resolvedFacts = sub2.getNbEquipConnectList().stream()
+				.filter(c -> c.getEquipType() == NBModelEquipType.FACTS)
+				.filter(c -> c.getEquip() != null)
+				.filter(c -> c.getName() != null && c.getName().contains("FACTS_DVCE"))
+				.count();
+		assertTrue(resolvedFacts >= 2, "FACTS A terminals should resolve, got " + resolvedFacts);
+	}
+
+	@Test
+	public void testV36NbTerminalsIV3NResolve() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+
+		// 3W created as Bus205–Bus215–Bus208(ckt 3); terminals list windings in other orders
+		assertNotNull(net.get3WXfr("Bus205", "Bus215", "Bus208", "3"));
+		Substation sub5 = net.getSubstation("5");
+		assertNotNull(sub5);
+		long unresolved3 = sub5.getNbEquipConnectList().stream()
+				.filter(c -> c.getEquipType() == NBModelEquipType.W3_XFORMER)
+				.filter(c -> c.getEquip() == null)
+				.count();
+		assertEquals(0, unresolved3, "all type-3 terminals in sub 5 should resolve");
+
+		// VSC name restored after addHvdcLine2T
+		Substation sub8 = net.getSubstation("8");
+		assertNotNull(sub8);
+		long resolvedV = sub8.getNbEquipConnectList().stream()
+				.filter(c -> c.getEquipType() == NBModelEquipType.VSC_HVDC)
+				.filter(c -> c.getEquip() != null)
+				.count();
+		assertTrue(resolvedV >= 1, "VSC VDCLINE1 terminal should resolve");
+
+		Substation sub4 = net.getSubstation("4");
+		assertNotNull(sub4);
+		assertTrue(sub4.getNbEquipConnectList().stream()
+				.anyMatch(c -> c.getEquipType() == NBModelEquipType.VSC_HVDC && c.getEquip() != null));
+
+		// Induction machines registered as NameTags
+		Substation sub3 = net.getSubstation("3");
+		assertNotNull(sub3);
+		assertTrue(sub3.getNbEquipConnectList().stream()
+				.anyMatch(c -> c.getEquipType() == NBModelEquipType.IND_MACH && c.getEquip() != null));
+
+		long unresolvedI = net.getSubstationMap().values().stream()
+				.flatMap(s -> s.getNbEquipConnectList().stream())
+				.filter(c -> c.getEquipType() == NBModelEquipType.IND_MACH)
+				.filter(c -> c.getEquip() == null)
+				.count();
+		assertEquals(0, unresolvedI, "all induction-machine terminals should resolve");
+
+		// Multi-terminal DC stub
+		long unresolvedN = net.getSubstationMap().values().stream()
+				.flatMap(s -> s.getNbEquipConnectList().stream())
+				.filter(c -> c.getEquipType() == NBModelEquipType.MULTI_THVDC)
+				.filter(c -> c.getEquip() == null)
+				.count();
+		assertEquals(0, unresolvedN, "all multi-terminal DC terminals should resolve");
 	}
 
 	@Test
