@@ -7,7 +7,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.threePhase.dataParser.psse.PSSE3PhaseMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.dstab.dynLoad.impl.InductionMotorImpl;
 import org.interpss.multiNet.algo.MultiNet3Ph3SeqDStabSimuHelper;
@@ -57,7 +57,7 @@ public class TestTnD_IEEE39_Feeder {
 		public void test_3phase3Seq_IEEE39Bus_Feeder_powerflow() throws InterpssException{
 			IpssCorePlugin.init();
 			IpssCorePlugin.setLoggerLevel(Level.INFO);
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
+			SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
 			
 			
 		    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -230,7 +230,7 @@ public class TestTnD_IEEE39_Feeder {
 	public void test_3phase3Seq_IEEE39Bus_Feeder() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -594,7 +594,7 @@ public class TestTnD_IEEE39_Feeder {
 	public void test_3phase3Seq_IEEE39Bus_Feeder_constZLoad() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();

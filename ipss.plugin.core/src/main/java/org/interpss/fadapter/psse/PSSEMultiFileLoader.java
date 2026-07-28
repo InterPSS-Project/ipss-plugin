@@ -2,13 +2,13 @@ package org.interpss.fadapter.psse;
 
 import org.interpss.fadapter.builder.AcscNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.fadapter.builder.AclfNetworkObjectFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.acsc.AcscNetwork;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabObjectFactory;
-import com.interpss.dstab.DStabilityNetwork;
-import com.interpss.common.CoreCommonFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.simu.SimuContext;
 import com.interpss.simu.SimuCtxType;
@@ -51,18 +51,38 @@ public class PSSEMultiFileLoader {
     /**
      * Load LF (+ optional sequence + dynamic) files as DStabilityNetwork
      * wrapped in a SimuContext for dynamic simulation.
-     * 
+     *
      * @param files array of file paths: [0]=LF, [1]=seq or dyn, [2]=dyn (optional)
      * @return SimuContext with DStabilityNetwork and DynamicSimuAlgorithm configured
      */
     public SimuContext loadDStab(String... files) throws InterpssException {
+        return loadDStab(DStabObjectFactory.createDStabilityNetwork(), files);
+    }
+
+    /**
+     * Load LF (+ optional sequence + dynamic) files into the supplied
+     * DStab network implementation.
+     *
+     * @param dsNet network instance to populate
+     * @param files array of file paths: [0]=LF, [1]=seq or dyn, [2]=dyn (optional)
+     * @return SimuContext with the supplied network and DynamicSimuAlgorithm configured
+     */
+    public SimuContext loadDStab(BaseDStabNetwork<?, ?> dsNet, String... files) throws InterpssException {
+        return loadDStab(dsNet, null, files);
+    }
+
+    /**
+     * Load PSS/E files into the supplied network using the supplied concrete
+     * bus, branch, generator, and load factory.
+     */
+    public SimuContext loadDStab(BaseDStabNetwork<?, ?> dsNet,
+            AclfNetworkObjectFactory objectFactory, String... files) throws InterpssException {
         if (files == null || files.length == 0) {
             throw new InterpssException("At least one file (LF) is required");
         }
 
-        DStabilityNetwork dsNet = DStabObjectFactory.createDStabilityNetwork();
         dsNet.setPositiveSeqDataOnly(true);
-        new PSSEDirectParser(version, dsNet).parseInto(files[0]);
+        new PSSEDirectParser(version, dsNet, objectFactory).parseInto(files[0]);
 
         SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
         simuCtx.setDStabilityNet(dsNet);

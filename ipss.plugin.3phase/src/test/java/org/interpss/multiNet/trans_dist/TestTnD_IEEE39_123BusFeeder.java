@@ -9,7 +9,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.threePhase.dataParser.psse.PSSE3PhaseMultiFileLoader;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.algo.powerflow.TDMultiNetPowerflowAlgorithm;
 import org.interpss.multiNet.algo.powerflow.TposSeqD3PhaseMultiNetPowerflowAlgorithm;
@@ -40,7 +40,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 	public void test_IEEE39_IEEE123Feeder_T3seq_D3phase_Powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -136,7 +136,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 	public void test_IEEE39_IEEE123Feeder_Tpos_D3phase_Powerflow() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE39Bus/IEEE39bus_v30.raw", "testData/IEEE39Bus/IEEE39bus_v30.seq", "testData/IEEE39Bus/IEEE39bus.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
