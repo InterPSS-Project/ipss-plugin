@@ -6,7 +6,7 @@ import java.util.logging.Level;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.threePhase.dataParser.psse.PSSE3PhaseMultiFileLoader;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.multiNet.algo.SubNetworkProcessor;
 import org.interpss.multiNet.equivalent.NetworkEquivUtil;
@@ -29,7 +29,7 @@ public class TestNetworkEquivUtil {
 	public void test_NetEquiv_IEEE9Bus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
@@ -97,7 +97,7 @@ public class TestNetworkEquivUtil {
 	public void test_SubNetEquiv_IEEE9Bus() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
+		SimuContext simuCtx = new PSSE3PhaseMultiFileLoader(30).loadDStab("testData/IEEE9Bus/ieee9.raw", "testData/IEEE9Bus/ieee9.seq", "testData/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		
 		
 	    DStabNetwork3Phase dsNet =(DStabNetwork3Phase) simuCtx.getDStabilityNet();
