@@ -108,13 +108,20 @@ public class AclfNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(AclfNetworkBuilder.class);
 
     private final BaseAclfNetwork network;
+    private final AclfNetworkObjectFactory objectFactory;
 
     public AclfNetworkBuilder() {
         this.network = CoreObjectFactory.createAclfNetwork();
+        this.objectFactory = null;
     }
 
     public AclfNetworkBuilder(BaseAclfNetwork<?,?> network) {
+        this(network, null);
+    }
+
+    public AclfNetworkBuilder(BaseAclfNetwork<?,?> network, AclfNetworkObjectFactory objectFactory) {
         this.network = network;
+        this.objectFactory = objectFactory;
     }
 
     public AclfNetwork getNetwork() {
@@ -134,6 +141,9 @@ public class AclfNetworkBuilder {
     }
 
     private AclfBranch createBranch() {
+        if (objectFactory != null) {
+            return objectFactory.createBranch();
+        }
         if (network instanceof BaseDStabNetwork) {
             return DStabObjectFactory.createDStabBranch();
         } else if (network instanceof BaseAcscNetwork) {
@@ -147,6 +157,9 @@ public class AclfNetworkBuilder {
     }
 
     private AclfGen createGen(String genId) {
+        if (objectFactory != null) {
+            return objectFactory.createGen(genId);
+        }
         if (network instanceof BaseDStabNetwork) {
             return DStabObjectFactory.createDStabGen(genId);
         } else if (network instanceof BaseAcscNetwork) {
@@ -156,6 +169,9 @@ public class AclfNetworkBuilder {
     }
 
     private AclfLoad createLoad(String loadId) {
+        if (objectFactory != null) {
+            return objectFactory.createLoad(loadId);
+        }
         if (network instanceof BaseDStabNetwork) {
             return DStabObjectFactory.createDStabLoad(loadId);
         } else if (network instanceof BaseAcscNetwork) {
@@ -259,7 +275,9 @@ public class AclfNetworkBuilder {
                           double voltagePU, double angleRad,
                           String areaId, String zoneId, String ownerId) throws InterpssException {
         BaseAclfBus bus;
-        if (network instanceof BaseDStabNetwork) {
+        if (objectFactory != null) {
+            bus = objectFactory.createBus(id, network);
+        } else if (network instanceof BaseDStabNetwork) {
             bus = (BaseAclfBus) DStabObjectFactory.createDStabBus(id, (BaseDStabNetwork) network).get();
         } else if (network instanceof BaseAcscNetwork) {
             bus = (BaseAclfBus) CoreObjectFactory.createAcscBus(id, (BaseAcscNetwork) network).get();
@@ -900,7 +918,9 @@ public class AclfNetworkBuilder {
                                      boolean isPhaseShifting,
                                      double fromAngleDeg, double toAngleDeg, double tertAngleDeg,
                                      boolean status) throws InterpssException {
-        Aclf3WBranch branch3W = CoreObjectFactory.createAclf3WBranch();
+        Aclf3WBranch branch3W = objectFactory != null
+                ? objectFactory.create3WBranch()
+                : CoreObjectFactory.createAclf3WBranch();
         branch3W.setCircuitNumber(cirId);
         network.add3WXfr(branch3W, fromBusId, toBusId, tertBusId);
         branch3W.setNetwork(network);
@@ -1150,7 +1170,7 @@ public class AclfNetworkBuilder {
     private void addFixedPowerLoad(String busId, String id, Complex loadPQPU) {
         BaseAclfBus bus = getBus(busId);
         if (bus == null) return;
-        AclfLoad load = CoreObjectFactory.createAclfLoad(id);
+        AclfLoad load = createLoad(id);
         bus.getContributeLoadList().add(load);
         load.setLoadCP(loadPQPU);
         load.setCode(AclfLoadCode.CONST_P);
