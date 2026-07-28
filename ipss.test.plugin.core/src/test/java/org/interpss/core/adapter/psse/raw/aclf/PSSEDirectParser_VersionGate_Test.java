@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -17,9 +18,12 @@ import org.junit.jupiter.api.Test;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
+import com.interpss.core.net.Substation;
+import com.interpss.core.net.nb.NBModelEquipType;
 
 /**
  * Focused coverage of {@link PSSEDirectParser} version gates for RAW v30–v36.
@@ -39,13 +43,44 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		AclfNetwork net = new PSSEDirectParser(31).parse("testData/psse/v31/sample_v31.raw");
 		assertNull(net.getBus("Bus0"));
 
-		// Fixed shunt at Bus203: F1 GL=-5 BL=30 and F2 GL=5 BL=20 => net Y = j0.50 pu on 100 MVA
+		// Fixed shunt at Bus203: id 1 GL=-5 BL=30 and id 2 GL=5 BL=20 on 100 MVA
+		// BL → ShuntCompensator.B; GL → bus.shuntY (nets to 0)
 		AclfBus bus203 = net.getBus("Bus203");
 		assertNotNull(bus203);
 		Complex y = bus203.getShuntY();
 		assertNotNull(y);
 		assertEquals(0.0, y.getReal(), 1.0E-6);
-		assertEquals(0.50, y.getImaginary(), 1.0E-6);
+		assertEquals(0.0, y.getImaginary(), 1.0E-6);
+
+		assertEquals(2, bus203.getCompensatorList().size());
+		ShuntCompensator f1 = bus203.getCompensator("1");
+		ShuntCompensator f2 = bus203.getCompensator("2");
+		assertNotNull(f1);
+		assertNotNull(f2);
+		assertEquals(0.30, f1.getB(), 1.0E-6);
+		assertEquals(0.20, f2.getB(), 1.0E-6);
+		assertTrue(f1.isStatus());
+		assertTrue(f2.isStatus());
+		assertEquals(0.50, bus203.toCapacitorBus().getB(false), 1.0E-6);
+	}
+
+	@Test
+	public void testV36FixedShuntNbTerminalResolves() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+		AclfBus bus151 = net.getBus("Bus151");
+		assertNotNull(bus151);
+		ShuntCompensator fx1 = bus151.getCompensator("F1");
+		assertNotNull(fx1);
+		assertEquals("FXSH_200001", fx1.getName().trim());
+
+		Substation sub1 = net.getSubstation("1");
+		assertNotNull(sub1);
+		long resolvedF = sub1.getNbEquipConnectList().stream()
+				.filter(c -> c.getEquipType() == NBModelEquipType.FIXED_SHUNT)
+				.filter(c -> c.getEquip() != null)
+				.count();
+		assertTrue(resolvedF >= 3, "expected resolved fixed-shunt NB terminals, got " + resolvedF);
+		assertSame(fx1, bus151.getCompensator("F1"));
 	}
 
 	@Test
