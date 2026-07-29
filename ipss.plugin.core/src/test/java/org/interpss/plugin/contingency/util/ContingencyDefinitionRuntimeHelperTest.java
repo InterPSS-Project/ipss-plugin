@@ -2,7 +2,6 @@ package org.interpss.plugin.contingency.util;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -74,7 +73,7 @@ public class ContingencyDefinitionRuntimeHelperTest {
     }
 
     @Test
-    public void rejectsMixedDclfOpenCloseActionsUntilCoreSupportsMixedRepresentation() throws Exception {
+    public void createsMixedDclfOpenCloseActionsFromGroupedDefinition() throws Exception {
         AclfNetwork net = importIeee9Labeled();
         ContingencyAnalysisAlgorithm dclfAlgo =
                 DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net);
@@ -90,10 +89,11 @@ public class ContingencyDefinitionRuntimeHelperTest {
                 ContingencyActionType.CLOSE,
                 "Bus7->Bus8(0)"));
 
-        InterpssException error = assertThrows(InterpssException.class,
-                () -> new DclfMultiOutageContingencyHelper(dclfAlgo)
-                        .createDclfMultiOutage(definition));
-        assertTrue(error.getMessage().contains("Mixed branch action types are not supported"));
+        DclfMultiOutage outage =
+                new DclfMultiOutageContingencyHelper(dclfAlgo).createDclfMultiOutage(definition);
+
+        assertEquals(ContingencyBranchOutageType.OPEN, outage.getOutageEquips().get(0).getOutageType());
+        assertEquals(ContingencyBranchOutageType.CLOSE, outage.getOutageEquips().get(1).getOutageType());
     }
 
     @Test
