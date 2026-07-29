@@ -1,5 +1,6 @@
 package org.interpss.core.dstab.dynLoad;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Hashtable;
@@ -68,6 +69,42 @@ public class TestDynLoad_IEEE39 {
 		
 		//output AC motor parameters
 		LD1PAC ac_504 = (LD1PAC) dsNet.getBus("Bus504").getDynLoadModelList().get(0);
+		assertEquals("2", ac_504.getId());
+		assertEquals(0.033, ac_504.getTstall(), 1.0E-9);
+		assertEquals(0.40, ac_504.getTrst(), 1.0E-9);
+		assertEquals(0.02, ac_504.getTv(), 1.0E-9);
+		assertEquals(100.0, ac_504.getLoadPercent(), 1.0E-9);
+		assertEquals(1.0, ac_504.getLoadFactor(), 1.0E-9);
+		assertEquals(0.98, ac_504.getPowerFactor(), 1.0E-9);
+		assertEquals(0.5, ac_504.getVstall(), 1.0E-9);
+		assertEquals(0.124, ac_504.getRstall(), 1.0E-9);
+		assertEquals(0.114, ac_504.getXstall(), 1.0E-9);
+		assertEquals(0.3, ac_504.getLFadj(), 1.0E-9);
+		assertEquals(0.0, ac_504.getKp1(), 1.0E-9);
+		assertEquals(1.0, ac_504.getNp1(), 1.0E-9);
+		assertEquals(6.0, ac_504.getKq1(), 1.0E-9);
+		assertEquals(2.0, ac_504.getNq1(), 1.0E-9);
+		assertEquals(12.0, ac_504.getKp2(), 1.0E-9);
+		assertEquals(3.2, ac_504.getNp2(), 1.0E-9);
+		assertEquals(11.0, ac_504.getKq2(), 1.0E-9);
+		assertEquals(2.5, ac_504.getNq2(), 1.0E-9);
+		assertEquals(0.86, ac_504.getVbrk(), 1.0E-9);
+		assertEquals(0.20, ac_504.getFrst(), 1.0E-9);
+		assertEquals(0.95, ac_504.getVrst(), 1.0E-9);
+		assertEquals(1.0, ac_504.getCmpKpf(), 1.0E-9);
+		assertEquals(-3.3, ac_504.getCmpKqf(), 1.0E-9);
+		assertEquals(0.5, ac_504.getVc1off(), 1.0E-9);
+		assertEquals(0.4, ac_504.getVc2off(), 1.0E-9);
+		assertEquals(0.65, ac_504.getVc1on(), 1.0E-9);
+		assertEquals(0.55, ac_504.getVc2on(), 1.0E-9);
+		assertEquals(15.0, ac_504.getTth(), 1.0E-9);
+		assertEquals(1.0, ac_504.getTh1t(), 1.0E-9);
+		assertEquals(2.9, ac_504.getTh2t(), 1.0E-9);
+		assertEquals(0.0, ac_504.getFuvr(), 1.0E-9);
+		assertEquals(0.5, ac_504.getUVtr1(), 1.0E-9);
+		assertEquals(0.02, ac_504.getTtr1(), 1.0E-9);
+		assertEquals(0.90, ac_504.getUVtr2(), 1.0E-9);
+		assertEquals(5.0, ac_504.getTtr2(), 1.0E-9);
 		System.out.println ("ac motor at 504"+ac_504.toString());
 		
 		dsNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus4",dsNet,SimpleFaultCode.GROUND_3P,new Complex(0,0),null,1.0d,0.07),"3phaseFault@Bus17");
