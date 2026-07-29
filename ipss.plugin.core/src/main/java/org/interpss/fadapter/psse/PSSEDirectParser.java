@@ -47,6 +47,7 @@ import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.NameTag;
+import com.interpss.core.net.NetFactory;
 import com.interpss.core.net.OriginalDataFormat;
 
 /**
@@ -113,7 +114,7 @@ public class PSSEDirectParser {
             parseSection(reader, this::parseGenLine);
             if (version >= 36) parseSection(reader, null);
             parseSection(reader, this::parseLineLine);
-            if (version >= 34) parseSection(reader, null);
+            if (version >= 34) parseSection(reader, this::parseSystemSwitchingDeviceLine);
             parseXfrSection(reader);
             parseSection(reader, this::parseAreaLine);
             parseMultiLineSection(reader, 3, this::parseHvdc2TLCCLines);
@@ -122,22 +123,24 @@ public class PSSEDirectParser {
             if (version <= 30) parseSection(reader, this::parseSwitchedShuntLine);
 
             parseXfrZCorrSection(reader);
-            parseSection(reader, null);
-            parseSection(reader, null);
+            parseMultiTerminalDcSection(reader);
+            parseSection(reader, null); // Multi-section line
             parseSection(reader, this::parseZoneLine);
             parseSection(reader, null);
             parseSection(reader, this::parseOwnerLine);
             parseSection(reader, this::parseFACTSLine);
 
             if (version >= 31) parseSection(reader, this::parseSwitchedShuntLine);
-            if (version >= 33) parseSection(reader, null);
-            if (version >= 33) parseSection(reader, null);
+            if (version >= 33) parseSection(reader, null); // GNE
+            if (version >= 33) parseSection(reader, this::parseInductionMachineLine);
+            // v36+: Load Type, Interface, Interface Element precede Substation Data
+            if (version >= 36) parseSection(reader, null); // Load Type
+            if (version >= 36) parseSection(reader, null); // Interface
+            if (version >= 36) parseSection(reader, null); // Interface Element
 
             if (version >= 33) {
                 new PSSESubstationImporter(builder).parse(reader);
             }
-
-            if (version >= 31) parseFixedShuntSection();
 
             builder.finalizeNetwork();
         } catch (IOException e) {
@@ -432,22 +435,10 @@ public class PSSEDirectParser {
 
     // ==================== Fixed Shunt (v31+, separate section) ====================
 
-    private final List<FixedShuntRec> fixedShuntRecords = new ArrayList<>();
-
-    private record FixedShuntRec(String busId, String id, int status, double gl, double bl) {}
-
-    private void parseFixedShuntSection() throws InterpssException {
-        for (FixedShuntRec rec : fixedShuntRecords) {
-            if (rec.status == 1 && (rec.gl != 0.0 || rec.bl != 0.0)) {
-                builder.addToBusShuntY(rec.busId, new Complex(rec.gl / baseMva, rec.bl / baseMva));
-            }
-        }
-    }
-
-    // For the v31+ fixed shunt parsing, we store records during the initial read
-    // (invoked from parseFromReader when version >= 31)
-    // We override parseSection handling for fixed shunts:
-
+    /**
+     * Read fixed-shunt records and create named {@link com.interpss.core.aclf.ShuntCompensator}s
+     * immediately (before substation import so NB type-F terminals can resolve).
+     */
     private void collectFixedShunts(BufferedReader reader) throws IOException {
         String line;
         while ((line = reader.readLine()) != null) {
@@ -460,7 +451,60 @@ public class PSSEDirectParser {
             int status = rec.getInt(2, 1);
             double gl = rec.getDouble(3, 0.0);
             double bl = rec.getDouble(4, 0.0);
-            fixedShuntRecords.add(new FixedShuntRec(busId, id, status, gl, bl));
+            String name = rec.getString(5, "").trim();
+            builder.addFixedShunt(busId, id, status == 1, gl / baseMva, bl / baseMva, name);
+        }
+    }
+
+    // ==================== System Switching Device (v34+) ====================
+
+    /**
+     * PSS/E System Switching Device: I, J, CKT, X, [RSETNAM|RATE…], STAT, NSTAT, MET, STYPE, NAME.
+     * Sample v36 uses rating-set name form (no RATE1–12).
+     */
+    private void parseSystemSwitchingDeviceLine(PSSEDataRec rec) throws InterpssException {
+        int fromNum = Math.abs(rec.getInt(0));
+        int toNum = Math.abs(rec.getInt(1));
+        String ckt = rec.getString(2, "1").trim();
+        if (ckt.isEmpty()) {
+            ckt = "1";
+        }
+        double x = rec.getDouble(3, 0.0001);
+        int status;
+        int stype;
+        String name;
+        // New form: I,J,CKT,X,RSETNAM,STAT,NSTAT,MET,STYPE,NAME
+        // Legacy form packs RATE1..RATE12 before STAT (STAT at index 16).
+        String maybeRset = rec.getString(4, "").trim();
+        if (!maybeRset.isEmpty() && !isNumericToken(maybeRset)) {
+            status = rec.getInt(5, 1);
+            stype = rec.getInt(8, 2);
+            name = rec.getString(9, "").trim();
+        } else {
+            status = rec.getInt(16, 1);
+            stype = rec.getInt(19, 2);
+            name = rec.getString(20, "").trim();
+        }
+
+        String fromBusId = BUS_ID_PREFIX + fromNum;
+        String toBusId = BUS_ID_PREFIX + toNum;
+        // STYPE 1=ZBR, 2=breaker, 3=disconnect — all modeled as BREAKER for LF
+        AclfBranch bra = builder.addBreaker(fromBusId, toBusId, ckt,
+                new Complex(0.0, x), status == 1, AclfBranchCode.BREAKER);
+        if (bra != null && !name.isEmpty()) {
+            bra.setName(name);
+        }
+        if (bra != null) {
+            bra.setDesc("SystemSWD:stype=" + stype);
+        }
+    }
+
+    private static boolean isNumericToken(String s) {
+        try {
+            Double.parseDouble(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
         }
     }
 
@@ -1149,14 +1193,74 @@ public class PSSEDirectParser {
             Complex targetPQ = new Complex(pdes / baseMva, qdes / baseMva);
 
             try {
-                builder.addFactsDevice(busId, toBusId, "FD",
+                AclfBranch factsBra = builder.addFactsDevice(busId, toBusId,
+                        name.isEmpty() ? "FD" : name,
                         mode, linx, set1, set2,
                         qMaxPU, 0.0, vset,
                         remoteBusId, rmpct, targetPQ, mode != 0);
+                if (factsBra != null && !name.isEmpty()) {
+                    factsBra.setName(name);
+                }
             } catch (Exception e) {
                 log.error("Error parsing FACTS device: " + e.getMessage());
             }
         }
+    }
+
+    // ==================== Multi-Terminal DC ====================
+
+    /**
+     * PSS/E multi-terminal DC: for each system, one header + NCONV converters +
+     * NDCBS DC buses + NDCLN DC lines. InterPSS has no MTDC ACLF model yet —
+     * register a NameTag so NB type-N terminals can resolve.
+     */
+    private void parseMultiTerminalDcSection(BufferedReader reader) throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("//") || line.startsWith("@!")) continue;
+            if (PSSEDataRec.isEndRec(line)) break;
+
+            PSSEDataRec header = new PSSEDataRec(line);
+            String name = header.getString(0, "").trim();
+            if (name.isEmpty()) break;
+
+            int nconv = header.getInt(1, 0);
+            int ndcbs = header.getInt(2, 0);
+            int ndcln = header.getInt(3, 0);
+
+            NameTag tag = NetFactory.eINSTANCE.createNameTag();
+            tag.setId(name);
+            tag.setName(name);
+            builder.registerNamedEquipment(name, tag);
+            builder.registerNamedEquipment("N|" + name, tag);
+
+            int remaining = nconv + ndcbs + ndcln;
+            while (remaining > 0 && (line = reader.readLine()) != null) {
+                if (line.startsWith("//") || line.startsWith("@!")) continue;
+                remaining--;
+            }
+        }
+    }
+
+    // ==================== Induction Machine ====================
+
+    /**
+     * Register induction machines as NameTags for NB type-I terminals.
+     * Full IM ACLF model is not built here (avoids colliding with load id "1" on the same bus).
+     */
+    private void parseInductionMachineLine(PSSEDataRec rec) {
+        int busNum = rec.getInt(0);
+        String id = rec.getString(1, "1").trim();
+        if (id.isEmpty()) {
+            id = "1";
+        }
+        String name = rec.getString(8, "").trim();
+        String busId = BUS_ID_PREFIX + busNum;
+
+        NameTag tag = NetFactory.eINSTANCE.createNameTag();
+        tag.setId(id);
+        tag.setName(name.isEmpty() ? id : name);
+        builder.registerNamedEquipment("I|" + busId + "|" + id, tag);
     }
 
     // ==================== Xfr Z Correction Table ====================

@@ -3,6 +3,24 @@
   "configurations": [
     {
       "type": "java",
+      "name": "PSSE_Sample_NB_TopoAnalysis_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.nbreaker.PSSE_Sample_NB_TopoAnalysis_Sample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "PSSE_Sample_NB_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.nbreaker.PSSE_Sample_NB_Sample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
       "name": "PSSE_IEEE14_NB_BusMerge_Sample",
       "request": "launch",
       "mainClass": "org.interpss.nbreaker.PSSE_IEEE14_NB_BusMerge_Sample",
