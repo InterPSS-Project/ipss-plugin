@@ -8,10 +8,10 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
+import org.interpss.core.testdata.LegacyNetworkFixtures;
 import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -30,10 +30,7 @@ public class IEEE14ZeroZBranchAclfDeconTest extends CorePluginTestSetup {
 	@Test 
 	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 
