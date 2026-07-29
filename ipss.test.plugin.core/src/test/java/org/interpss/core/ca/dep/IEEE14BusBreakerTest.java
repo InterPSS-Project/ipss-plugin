@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.core.testdata.LegacyNetworkFixtures;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -22,10 +22,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	//@Test 
 	public void processZeroZBranch() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		
 	  	net.setZeroZBranchThreshold(0.00001);
 	  	net.accept(new ZeroZBranchProcesor(true));
@@ -42,10 +39,7 @@ public class IEEE14BusBreakerTest extends CorePluginTestSetup {
 	//@Test 
 	public void findZeroZPath() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		
 	  	net.setVisitedStatus(false);
 	  	net.setZeroZBranchThreshold(0.00001);
