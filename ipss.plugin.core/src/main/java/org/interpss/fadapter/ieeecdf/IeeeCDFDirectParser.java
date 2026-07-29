@@ -17,13 +17,18 @@ import java.io.IOException;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
+import org.interpss.numeric.datatype.LimitType;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.net.OriginalDataFormat;
 
 /**
@@ -141,8 +146,9 @@ public class IeeeCDFDirectParser {
             }
         }
         // Use the same fixed network id as the legacy ODM import path
-        builder.setNetworkInfo("Base_Case_from_IEEECDF_format", "IEEE CDF Case",
+        builder.setNetworkInfo("Base_Case_from_IEEECDF_format", "ODM Loadflow Case",
                 baseMva * 1000.0, OriginalDataFormat.IEEECDF);
+        builder.getNetwork().setDesc(null);
     }
 
     // ==================== Bus Data ====================
@@ -200,35 +206,38 @@ public class IeeeCDFDirectParser {
         String areaId = areaNum > 0 ? String.valueOf(areaNum) : null;
         String zoneId = lossZone > 0 ? String.valueOf(lossZone) : null;
 
-        if (areaId != null) builder.addArea(areaId, "Area " + areaNum, null);
-        if (zoneId != null) builder.addZone(zoneId, "Zone " + lossZone, null);
+        if (areaId != null) builder.addArea(areaId, areaId, "Area description");
+        if (zoneId != null) builder.addZone(zoneId, zoneId, "Zone description");
 
         BaseAclfBus bus = builder.addBus(busId, name, busNum, baseKv * 1000.0,
                 vm, Math.toRadians(va), areaId, zoneId, null);
 
         // Set bus type
         if (type == 3) {
-            builder.setSwingBus(busId, desiredV, Math.toRadians(va));
+            builder.setSwingBus(busId, vm, Math.toRadians(va));
         } else if (type == 2) {
             String remoteBusId = (remoteBusNum > 0 && remoteBusNum != busNum) ? BUS_ID_PREFIX + remoteBusNum : null;
-            builder.setPVBus(busId, pGen / baseMva, desiredV, qMax / baseMva, qMin / baseMva,
+            double controlledV = remoteBusId == null ? vm : desiredV;
+            builder.setPVBus(busId, pGen / baseMva, controlledV, qMax / baseMva, qMin / baseMva,
                     remoteBusId == null);
         } else {
-            if (pGen != 0.0 || qGen != 0.0) {
-                bus.setGenCode(AclfGenCode.GEN_PQ);
-            } else {
-                bus.setGenCode(AclfGenCode.NON_GEN);
-            }
+            bus.setGenCode(AclfGenCode.GEN_PQ);
         }
 
         // Add generator contribution
         if (pGen != 0.0 || qGen != 0.0) {
             String genId = busId + "-G1";
             var gen = builder.addContributeGen(busId, genId, true,
-                    pGen / baseMva, qGen / baseMva, baseMva, desiredV,
+                    pGen / baseMva, qGen / baseMva, baseMva, vm,
                     qMax / baseMva, qMin / baseMva, 0.0, 0.0,
                     null, null, 1.0, null, 1.0, 1.0);
-            if (gen != null) gen.setName(genId);
+            if (gen != null) {
+                gen.setName(genId);
+                gen.setPGenLimit(null);
+                if (qMax == 0.0 && qMin == 0.0) {
+                    gen.setQGenLimit(null);
+                }
+            }
             bus.setGenP(pGen / baseMva);
         }
 
@@ -250,15 +259,18 @@ public class IeeeCDFDirectParser {
     // ==================== Branch Data ====================
 
     private void parseBranchLine(String line) throws InterpssException {
-        int tapBusNum, zBusNum, brType;
+        int tapBusNum, zBusNum, areaNum, lossZone, brType;
+        int controlBusNum = 0, controlSide = 0;
         String circuitStr;
         double r, x, b, rating1, rating2, rating3, tapRatio, shiftAngle;
+        double minTapAngle = 0.0, maxTapAngle = 0.0, tapStep = 0.0;
+        double minControl = 0.0, maxControl = 0.0;
 
         if (commaFormat) {
             String[] f = line.split(",");
             if (f.length < 9) return;
             tapBusNum = parseInt(f[0]); zBusNum = parseInt(f[1]);
-            // f[2]=area, f[3]=lossZone
+            areaNum = parseInt(f[2]); lossZone = parseInt(f[3]);
             circuitStr = f[4].trim();
             if (circuitStr.isEmpty()) circuitStr = "1";
             brType = parseInt(f[5]);
@@ -269,10 +281,19 @@ public class IeeeCDFDirectParser {
             tapRatio = f.length > 14 ? parseDouble(f[14]) : 0.0;
             if (tapRatio == 0.0) tapRatio = 1.0;
             shiftAngle = f.length > 15 ? parseDouble(f[15]) : 0.0;
+            controlBusNum = f.length > 12 ? parseInt(f[12]) : 0;
+            controlSide = f.length > 13 ? parseInt(f[13]) : 0;
+            minTapAngle = f.length > 16 ? parseDouble(f[16]) : 0.0;
+            maxTapAngle = f.length > 17 ? parseDouble(f[17]) : 0.0;
+            tapStep = f.length > 18 ? parseDouble(f[18]) : 0.0;
+            minControl = f.length > 19 ? parseDouble(f[19]) : 0.0;
+            maxControl = f.length > 20 ? parseDouble(f[20]) : 0.0;
         } else {
             if (line.length() < 56) return;
             tapBusNum = parseInt(safeSubstring(line, 0, 4));
             zBusNum = parseInt(safeSubstring(line, 5, 9));
+            areaNum = parseInt(safeSubstring(line, 10, 12));
+            lossZone = parseInt(safeSubstring(line, 12, 15));
             circuitStr = safeSubstring(line, 16, 17).trim();
             if (circuitStr.isEmpty()) circuitStr = "1";
             brType = parseInt(safeSubstring(line, 18, 19));
@@ -287,23 +308,68 @@ public class IeeeCDFDirectParser {
             if (line.length() >= 82) tapRatio = parseDouble(safeSubstring(line, 76, 82));
             if (tapRatio == 0.0) tapRatio = 1.0;
             if (line.length() >= 90) shiftAngle = parseDouble(safeSubstring(line, 83, 90));
+            if (brType > 1 && line.length() >= 126) {
+                controlBusNum = parseInt(safeSubstring(line, 68, 72));
+                controlSide = parseInt(safeSubstring(line, 73, 74));
+                minTapAngle = parseDouble(safeSubstring(line, 90, 97));
+                maxTapAngle = parseDouble(safeSubstring(line, 97, 104));
+                tapStep = parseDouble(safeSubstring(line, 105, 111));
+                minControl = parseDouble(safeSubstring(line, 112, 119));
+                maxControl = parseDouble(safeSubstring(line, 119, 126));
+            }
         }
 
         String fromBusId = BUS_ID_PREFIX + tapBusNum;
         String toBusId = BUS_ID_PREFIX + zBusNum;
+        BaseAclfBus<?, ?> fromBus = builder.getNetwork().getBus(fromBusId);
+        BaseAclfBus<?, ?> toBus = builder.getNetwork().getBus(toBusId);
+        boolean differentBaseVoltage = fromBus != null && toBus != null
+                && Math.abs(fromBus.getBaseVoltage() - toBus.getBaseVoltage()) > 1.0e-6;
+        int effectiveBranchType = brType == 0 && differentBaseVoltage ? 1 : brType;
+        Complex magnetizingY = b == 0.0 ? null : new Complex(0.0, b);
 
-        if (brType == 0) {
-            builder.addLine(fromBusId, toBusId, circuitStr,
+        AclfBranch branch;
+        if (effectiveBranchType == 0) {
+            branch = builder.addLine(fromBusId, toBusId, circuitStr,
                     new Complex(r, x), new Complex(0.0, b * 0.5),
                     null, null, rating1, rating2, rating3, true);
-        } else if (shiftAngle != 0.0) {
-            builder.addPsXformer(fromBusId, toBusId, circuitStr,
+        } else if (effectiveBranchType == 4) {
+            branch = builder.addPsXformer(fromBusId, toBusId, circuitStr,
                     new Complex(r, x), tapRatio, 1.0, shiftAngle, 0.0,
-                    null, null, rating1, rating2, rating3, 0, true);
+                    magnetizingY, null, rating1, rating2, rating3, 0, true);
         } else {
-            builder.addXformer2W(fromBusId, toBusId, circuitStr,
+            branch = builder.addXformer2W(fromBusId, toBusId, circuitStr,
                     new Complex(r, x), tapRatio, 1.0,
-                    null, null, rating1, rating2, rating3, 0, true);
+                    magnetizingY, null, rating1, rating2, rating3, 0, true);
+        }
+
+        if (areaNum > 0) {
+            String areaId = String.valueOf(areaNum);
+            builder.addArea(areaId, areaId, "Area description");
+            branch.setArea(builder.getNetwork().getArea(areaId));
+        }
+        if (lossZone > 0) {
+            String zoneId = String.valueOf(lossZone);
+            builder.addZone(zoneId, zoneId, "Zone description");
+            branch.setZone(builder.getNetwork().getZone(zoneId));
+        }
+
+        if (brType == 2 && controlBusNum > 0) {
+            builder.addTapVoltageRangeControl(branch.getId(), BUS_ID_PREFIX + controlBusNum, true,
+                    maxControl, minControl, maxTapAngle, minTapAngle,
+                    true, controlSide == 1, tapStep, null);
+        } else if (brType == 3) {
+            TapControl control = builder.addTapMvarControl(branch.getId(),
+                    AclfAdjustControlType.RANGE_CONTROL, true, 0.0, UnitType.mVar,
+                    maxTapAngle, minTapAngle, true, true, tapStep, null);
+            if (control != null) {
+                control.setDesiredControlRange(new LimitType(maxControl, minControl));
+            }
+        } else if (brType == 4) {
+            builder.addPsXfrAngleRangeControl(branch.getId(), true,
+                    maxControl / baseMva, minControl / baseMva,
+                    0.0, UnitType.mW, maxTapAngle, minTapAngle,
+                    false, true, true);
         }
     }
 
