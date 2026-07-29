@@ -20,7 +20,9 @@
 
 package org.interpss.fadapter.builder;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.math3.complex.Complex;
@@ -89,6 +91,7 @@ import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.BranchBusSide;
+import com.interpss.core.net.NameTag;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.core.net.Owner;
 import com.interpss.core.net.Zone;
@@ -109,6 +112,11 @@ public class AclfNetworkBuilder {
 
     private final BaseAclfNetwork network;
     private final AclfNetworkObjectFactory objectFactory;
+    /**
+     * Named equipment not represented as standard ACLF objects (induction machines,
+     * multi-terminal DC stubs, etc.) — keyed for NB terminal resolution.
+     */
+    private final Map<String, NameTag> namedEquipment = new HashMap<>();
 
     public AclfNetworkBuilder() {
         this.network = CoreObjectFactory.createAclfNetwork();
@@ -130,6 +138,23 @@ public class AclfNetworkBuilder {
 
     public BaseAclfNetwork<?,?> getBaseNetwork() {
         return network;
+    }
+
+    /**
+     * Register a named device for later NB terminal lookup (by global name and/or typed key).
+     */
+    public void registerNamedEquipment(String key, NameTag equipment) {
+        if (key == null || key.isEmpty() || equipment == null) {
+            return;
+        }
+        namedEquipment.put(key, equipment);
+    }
+
+    public NameTag getNamedEquipment(String key) {
+        if (key == null || key.isEmpty()) {
+            return null;
+        }
+        return namedEquipment.get(key);
     }
 
     public BaseAclfBus getBus(String busId) {
@@ -494,6 +519,42 @@ public class AclfNetworkBuilder {
             Complex existing = bus.getShuntY();
             bus.setShuntY(existing.add(yShuntPU));
         }
+    }
+
+    /**
+     * Add a PSS/E-style fixed shunt as a named {@link ShuntCompensator} on the bus.
+     * Susceptance {@code bPu} is stored on the compensator (LF Yii path); conductance
+     * {@code gPu} is folded into {@code bus.shuntY} only when in service — never put
+     * B into both paths (double-count).
+     *
+     * @param busId bus ID
+     * @param id PSS/E shunt ID
+     * @param status in-service flag
+     * @param gPu conductance in pu on system base
+     * @param bPu susceptance in pu on system base
+     * @param name optional display name (falls back to {@code id})
+     * @return the created compensator, or null if the bus is missing
+     */
+    public ShuntCompensator addFixedShunt(String busId, String id, boolean status,
+                                          double gPu, double bPu, String name) {
+        BaseAclfBus bus = getBus(busId);
+        if (bus == null) {
+            return null;
+        }
+        String shuntId = (id == null || id.isEmpty()) ? "1" : id;
+        ShuntCompensatorType type = bPu >= 0.0
+                ? ShuntCompensatorType.CAPACITOR
+                : ShuntCompensatorType.INDUCTOR;
+        ShuntCompensator shunt = CoreObjectFactory.createShuntCompensator(shuntId, type);
+        shunt.setName((name == null || name.isEmpty()) ? shuntId : name);
+        shunt.setStatus(status);
+        shunt.setSteps(1);
+        shunt.setB(bPu);
+        bus.getCompensatorList().add(shunt);
+        if (status && gPu != 0.0) {
+            addToBusShuntY(busId, new Complex(gPu, 0.0));
+        }
+        return shunt;
     }
 
     // ==================== Switched Shunt ====================
@@ -996,7 +1057,7 @@ public class AclfNetworkBuilder {
                 HvdcOperationMode.REC1_INV1, id, fromBusId, toBusId);
         network.addHvdcLine2T(lcc, fromBusId, toBusId, id);
         lcc.setNetwork(network);
-        lcc.setName(name != null ? name : "");
+        lcc.setName(name != null ? name.trim() : "");
         lcc.setStatus(status);
         lcc.setPuBasedPowerFlowAlgo(puBasedAlgo);
         lcc.setDcLineControlMode(controlMode);
@@ -1087,10 +1148,10 @@ public class AclfNetworkBuilder {
             boolean status, double rdcOhm, double mvaRating) throws InterpssException {
 
         HvdcLine2TVSC vsc = (HvdcLine2TVSC) HvdcObjectFactory.createHvdc2TVSC();
-        vsc.setId(id);
-        vsc.setName(name != null ? name : "");
         network.addHvdcLine2T(vsc, fromBusId, toBusId, id);
+        // addHvdcLine2T overwrites id/name; restore PSS/E device name for NB terminal lookup
         vsc.setNetwork(network);
+        vsc.setName(name != null ? name.trim() : "");
         vsc.setStatus(status);
         vsc.setRdc(rdcOhm, UnitType.Ohm);
         vsc.setMvaRating(mvaRating);

@@ -123,15 +123,15 @@ public class AclfNetworkBuilderHvdcTest extends CorePluginTestSetup {
 
 		assertNotNull(vsc);
 		assertEquals("Bus1->Bus2(VSC1)", vsc.getId());
-		// addHvdcLine2T overwrites the name with a generated label
-		assertTrue(vsc.getName().contains("Bus1->Bus2(VSC1)"));
+		// addHvdcLine2T overwrites name; builder restores the PSS/E device name
+		assertEquals("VSC Line", vsc.getName());
 		assertTrue(vsc.isStatus());
 		assertEquals(5.0, vsc.getRdc(UnitType.Ohm), TOL);
 		assertEquals(300.0, vsc.getMvaRating(), TOL);
 
 		// Builder setName is applied before addHvdcLine2T; re-apply to verify setter path
-		vsc.setName("VSC Line");
-		assertEquals("VSC Line", vsc.getName());
+		vsc.setName("VSC Line Renamed");
+		assertEquals("VSC Line Renamed", vsc.getName());
 
 		VSCConverter rec = (VSCConverter) vsc.getRecConverter();
 		builder.setVSCConverter(rec, "Bus1",
