@@ -40,6 +40,10 @@ public class PSSEDataRec {
         StringBuilder token = new StringBuilder();
         boolean inQuotes = false;
         char quoteChar = 0;
+        // Only treat whitespace as a field separator right after a closing quote,
+        // e.g. `"MULTERM_DC_1" 4, ...`. Do not split on spaces in `13.2 ,  2`
+        // (trailing space before comma) — that must stay one numeric field.
+        boolean splitOnWhitespaceAfterQuote = false;
 
         for (int i = 0; i <= str.length(); i++) {
             char c = (i == str.length()) ? ',' : str.charAt(i);
@@ -52,13 +56,21 @@ public class PSSEDataRec {
                 } else if (c == quoteChar) {
                     inQuotes = false;
                     quoteChar = 0;
+                    splitOnWhitespaceAfterQuote = true;
                     continue;
                 }
             }
 
-            if ((c == ',' && !inQuotes) || i == str.length()) {
+            if (i == str.length() || (!inQuotes && c == ',')) {
                 fields.add(token.toString().trim());
                 token.setLength(0);
+                splitOnWhitespaceAfterQuote = false;
+            } else if (!inQuotes && Character.isWhitespace(c)) {
+                if (splitOnWhitespaceAfterQuote && token.length() > 0) {
+                    fields.add(token.toString().trim());
+                    token.setLength(0);
+                    splitOnWhitespaceAfterQuote = false;
+                }
             } else {
                 token.append(c);
             }
