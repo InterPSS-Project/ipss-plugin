@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.core.testdata.LegacyNetworkFixtures;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -25,10 +25,7 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 	@Test 
 	public void checkData_test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 
@@ -47,10 +44,7 @@ public class IEEE14ZeroZBranchAclfTest extends CorePluginTestSetup {
 	@Test 
 	public void zeroZProcessing_test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 		
