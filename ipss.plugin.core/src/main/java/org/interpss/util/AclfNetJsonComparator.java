@@ -142,6 +142,11 @@ public class AclfNetJsonComparator {
         else if (obj1.isJsonArray() && obj2.isJsonArray()) {
             compareJsonArrays(path, obj1.getAsJsonArray(), obj2.getAsJsonArray());
         }
+        else if (obj1.isJsonPrimitive() && obj2.isJsonPrimitive()
+                && obj1.getAsJsonPrimitive().isNumber() && obj2.getAsJsonPrimitive().isNumber()
+                && Math.abs(obj1.getAsDouble() - obj2.getAsDouble()) <= 1.0e-12) {
+            return;
+        }
         else if (!obj1.equals(obj2)) {
         	if (outFilter.test(path)) {
         		if (!path.contains("timeStamp")) {

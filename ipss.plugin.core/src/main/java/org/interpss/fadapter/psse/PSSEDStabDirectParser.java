@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
+import org.interpss.dstab.dynLoad.LD1PAC;
+import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
 
@@ -131,7 +134,6 @@ public class PSSEDStabDirectParser {
                 return false;
 
             case "CMPLDW":
-            case "ACMTBLU1":
             case "CIM6BL":
             case "CMLDBLU2":
             case "LDS3BL":
@@ -141,10 +143,72 @@ public class PSSEDStabDirectParser {
                 log.debug("Dynamic load/relay model {} at bus {} - skipped in direct parser", type, busId);
                 return false;
 
+            case "ACMTBLU1":
+                return procAcmtblu1(busId, genId, fields);
+
             default:
                 log.debug("Unsupported dynamic model type: {} at bus {}", type, busId);
                 return false;
         }
+    }
+
+    // USRLOD/ACMTBLU1:
+    // IBUS, 'USRLOD', LID, 'ACMTBLU1', seven model-library fields,
+    // then the 35 LD1PAC parameters.
+    private boolean procAcmtblu1(String busId, String loadId, String[] f) {
+        if (f.length < 46) {
+            log.warn("Incomplete ACMTBLU1 record at bus {}: expected 46 fields, found {}", busId, f.length);
+            return false;
+        }
+
+        BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Cannot attach ACMTBLU1 model {}: bus {} was not found", loadId, busId);
+            return false;
+        }
+
+        double compLf = getDouble(f, 15, 1.0);
+        if (compLf <= 0.0) {
+            compLf = 1.0;
+        }
+
+        LD1PAC acMotor = new LD1PACImpl(bus, trimQuote(loadId));
+        acMotor.setTstall(getDouble(f, 11, 0.0));
+        acMotor.setTrst(getDouble(f, 12, 0.0));
+        acMotor.setTv(getDouble(f, 13, 0.0));
+        acMotor.setLoadPercent(compLf * 100.0);
+        acMotor.setLoadFactor(compLf);
+        acMotor.setPowerFactor(getDouble(f, 16, 0.0));
+        acMotor.setVstall(getDouble(f, 17, 0.0));
+        acMotor.setRstall(getDouble(f, 18, 0.0));
+        acMotor.setXstall(getDouble(f, 19, 0.0));
+        acMotor.setLFadj(getDouble(f, 20, 0.0));
+        acMotor.setKp1(getDouble(f, 21, 0.0));
+        acMotor.setNp1(getDouble(f, 22, 0.0));
+        acMotor.setKq1(getDouble(f, 23, 0.0));
+        acMotor.setNq1(getDouble(f, 24, 0.0));
+        acMotor.setKp2(getDouble(f, 25, 0.0));
+        acMotor.setNp2(getDouble(f, 26, 0.0));
+        acMotor.setKq2(getDouble(f, 27, 0.0));
+        acMotor.setNq2(getDouble(f, 28, 0.0));
+        acMotor.setVbrk(getDouble(f, 29, 0.0));
+        acMotor.setFrst(getDouble(f, 30, 0.0));
+        acMotor.setVrst(getDouble(f, 31, 0.0));
+        acMotor.setCmpKpf(getDouble(f, 32, 0.0));
+        acMotor.setCmpKqf(getDouble(f, 33, 0.0));
+        acMotor.setVc1off(getDouble(f, 34, 0.0));
+        acMotor.setVc2off(getDouble(f, 35, 0.0));
+        acMotor.setVc1on(getDouble(f, 36, 0.0));
+        acMotor.setVc2on(getDouble(f, 37, 0.0));
+        acMotor.setTth(getDouble(f, 38, 0.0));
+        acMotor.setTh1t(getDouble(f, 39, 0.0));
+        acMotor.setTh2t(getDouble(f, 40, 0.0));
+        acMotor.setFuvr(getDouble(f, 41, 0.0));
+        acMotor.setUVtr1(getDouble(f, 42, 0.0));
+        acMotor.setTtr1(getDouble(f, 43, 0.0));
+        acMotor.setUVtr2(getDouble(f, 44, 0.0));
+        acMotor.setTtr2(getDouble(f, 45, 0.0));
+        return true;
     }
 
     // ==================== Generator Model Parsers ====================
