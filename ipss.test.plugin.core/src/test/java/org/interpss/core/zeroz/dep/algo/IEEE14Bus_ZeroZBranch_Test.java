@@ -2,8 +2,8 @@ package org.interpss.core.zeroz.dep.algo;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.core.testdata.LegacyNetworkFixtures;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -22,10 +22,7 @@ public class IEEE14Bus_ZeroZBranch_Test extends CorePluginTestSetup {
 	@Test 
 	public void regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		
 		net.setZeroZBranchThreshold(0.000000000000001);
 		

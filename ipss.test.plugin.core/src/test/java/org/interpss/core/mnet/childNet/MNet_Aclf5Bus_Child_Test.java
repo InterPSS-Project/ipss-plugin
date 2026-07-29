@@ -3,7 +3,7 @@ package org.interpss.core.mnet.childNet;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.core.testdata.LegacyNetworkFixtures;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -22,10 +22,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 	@Test 
 	public void aclfChildNetTest() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/mnet/Aclf_5Bus_AclfChildNet.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.aclfChildNetwork();
 		//System.out.println(net.net2String());	
 		
 		assertTrue(net.getChildNetWrapperList().size() > 0);
@@ -42,10 +39,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 	@Test 
 	public void distChildNetTest() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/mnet/Aclf_5Bus_DistChildNet.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.distChildNetwork(false);
 		//System.out.println(net.net2String());	
 		
 		assertTrue(net.getChildNetWrapperList().size() > 0);
@@ -62,10 +56,7 @@ public class MNet_Aclf5Bus_Child_Test extends CorePluginTestSetup {
 	@Test 
 	public void distDcSysChildNetTest() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/mnet/Aclf_5Bus_DistDcSysChildNet.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.distChildNetwork(true);
 		//System.out.println(net.net2String());	
 		
 		assertTrue(net.getChildNetWrapperList().size() > 0);

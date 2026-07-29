@@ -7,8 +7,8 @@ import java.util.List;
 
 import org.interpss.CorePluginFunction;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.core.testdata.LegacyNetworkFixtures;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -25,10 +25,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	//@Test there is a loop in the system. 
 	public void case1_regularMethod() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 	  	//System.out.println(net.net2String());
 
 	  	// create the default loadflow algorithm
@@ -54,10 +51,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	//@Test 
 	public void case2_zeroZBranchProcessingBranchType()  throws InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		
 	  	// process zero impedance branches in the network
 	  	net.setZeroZBranchThreshold(0.00001);
@@ -89,10 +83,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	//@Test 
 	public void case2_zeroZBranchProcessingZValue()  throws InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
@@ -123,10 +114,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	//@Test 
 	public void case2_zeroZBranch_ProtectedBranch()  throws InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
@@ -164,10 +152,7 @@ public class IEEE14BusBreaker_lf_Test extends CorePluginTestSetup {
 	//@Test 
 	public void case2_zeroZBranchProcessingZValue_1()  throws InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/ieee14Bus_breaker_1.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14BreakerLoop();
 		
 	  	// process zero impedance branches in the network
 		net.setZeroZBranchThreshold(0.00001);
