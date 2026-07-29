@@ -16,7 +16,7 @@ import com.interpss.core.net.Substation;
 /**
  * Sample: import PSS/E v36 sample_nb RAW (node-breaker overlay) and inspect substations.
  */
-public class PSSE_Sample_NB_Sample {
+public class PSSE_Sample_NB_Aclf_Sample {
 
 	/** Relative to {@code ipss.plugin.core} (launch.json cwd). */
 	private static final String CASE = "testData/psse/v36/sample_nb.raw";
