@@ -32,8 +32,10 @@ public class IEEECDFTempTest extends CorePluginTestSetup {
  		AclfBus swingBus = (AclfBus)net.getBus("Bus31");
  		AclfSwingBusAdapter swing = swingBus.toSwingBus();
 //		  31 BUS-31  100   1  1  3 0.982 0.     9.2      4.6       572.8349207.0362 100.    .98200 999900 -99990    0.      0.        0                                                                                                                                                                            
-  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getReal()-5.7286653)<0.0001);
-  		assertTrue( Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.0766519)<0.0001);
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getReal()-5.7286653)<0.0001,
+				"Swing P=" + swing.getGenResults(UnitType.PU).getReal());
+		assertTrue(Math.abs(swing.getGenResults(UnitType.PU).getImaginary()-2.0766519)<0.0001,
+				"Swing Q=" + swing.getGenResults(UnitType.PU).getImaginary());
   		
   		//System.out.println(AclfOut.lfResultsBusStyle(net));
 	}
