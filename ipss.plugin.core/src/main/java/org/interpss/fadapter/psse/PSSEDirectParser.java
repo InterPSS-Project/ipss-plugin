@@ -227,6 +227,9 @@ public class PSSEDirectParser {
         }
         String name = rec.getString(1);
         double baseKv = rec.getDouble(2);
+        if (baseKv == 0.0) {
+            baseKv = 1.0;
+        }
 
         int ide;
         double vm, va;
