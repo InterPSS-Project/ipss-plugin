@@ -40,7 +40,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
-	public void testV31FixedShuntAppliedToBusY() throws Exception {
+	public void testV31FixedShuntsPreserveIdentityAndAdmittance() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(31).parse("testData/psse/v31/sample_v31.raw");
 		assertNull(net.getBus("Bus0"));
 
