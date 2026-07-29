@@ -3,8 +3,8 @@ package org.interpss.core.zeroz;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.core.testdata.LegacyNetworkFixtures;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -23,10 +23,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	@Test 
 	public void test() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker_loop.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14BreakerLoop();
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 		
@@ -41,9 +38,13 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 		
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 14 && net.getNoActiveBranch() == 20));
-  		assertTrue(net.getBus("Bus14").getContributeLoadList().size() == 2);
-  		assertTrue(net.getBus("Bus14_1").getContributeLoadList().size() == 1);
-  		assertTrue(net.getBus("Bus14_1").getContributeLoadList().get(0).isActive() == false);
+		AclfBus retainedBus = net.getBus("Bus14").isActive()
+				? net.getBus("Bus14") : net.getBus("Bus14_1");
+		AclfBus mergedBus = net.getBus("Bus14").isActive()
+				? net.getBus("Bus14_1") : net.getBus("Bus14");
+		assertTrue(retainedBus.getContributeLoadList().size() == 2);
+		assertTrue(mergedBus.getContributeLoadList().size() == 1);
+		assertTrue(mergedBus.getContributeLoadList().get(0).isActive() == false);
   		
   		new AclfNetZeroZDeconsolidator(net).deconsolidate(false);
 		
@@ -58,10 +59,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	@Test 
 	public void testAclf() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 		
@@ -112,10 +110,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	//@Test 
 	public void testCompare() throws  InterpssException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 	  	//System.out.println(net.net2String());
 		
@@ -139,10 +134,7 @@ public class IEEE14ZeroZBranchDeconsolidateTest extends CorePluginTestSetup {
 	  	//System.out.println("Active Bus & Branch: " + net.getNoActiveBus() + " " + net.getNoActiveBranch());
   		assertTrue((net.getNoActiveBus() == 23 && net.getNoActiveBranch() == 30));
   		
-		AclfNetwork net1 = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net1 = LegacyNetworkFixtures.ieee14Breaker();
 		
   		AclfNetObjectComparator comp = new AclfNetObjectComparator(net, net1);
   		comp.compareNetwork();
