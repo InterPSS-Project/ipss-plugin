@@ -238,13 +238,16 @@ public class PSSEJsonDirectParser {
     private void parseFixedShuntRow(Map<String, JsonElement> row) throws InterpssException {
         int busNum = getInt(row, "ibus", 0);
         String busId = BUS_ID_PREFIX + busNum;
+        String id = getString(row, "shntid", "1").trim();
+        if (id.isEmpty()) {
+            id = "1";
+        }
         int status = getInt(row, "stat", 1);
         double gl = getDouble(row, "gl", 0.0);
         double bl = getDouble(row, "bl", 0.0);
+        String name = getString(row, "name", "").trim();
 
-        if (status == 1 && (gl != 0.0 || bl != 0.0)) {
-            builder.addToBusShuntY(busId, new Complex(gl / baseMva, bl / baseMva));
-        }
+        builder.addFixedShunt(busId, id, status == 1, gl / baseMva, bl / baseMva, name);
     }
 
     // ==================== Generator ====================

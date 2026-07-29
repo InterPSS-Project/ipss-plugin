@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.NBModelObjectFactory;
+import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
@@ -269,7 +270,7 @@ public class PSSESubstationImporter {
 			case 'A': {
 				eqId = rec.getString(3, "").trim();
 				connId = isub + "-" + typeCode + "-" + busI + "-" + eqId;
-				equip = resolveNamedSpecial(eqId);
+				equip = resolveNamedSpecial(eqId, fromBus, code);
 				break;
 			}
 			default:
@@ -306,10 +307,9 @@ public class PSSESubstationImporter {
 			return null;
 		}
 		case FIXED_SHUNT:
-			// Fixed shunts are folded into bus shunt Y by DirectParser; no named object.
-			return null;
+			return bus.getCompensator(eqId);
 		case IND_MACH:
-			return null;
+			return builder.getNamedEquipment("I|" + bus.getId() + "|" + eqId);
 		default:
 			return null;
 		}
@@ -332,17 +332,84 @@ public class PSSESubstationImporter {
 			return null;
 		}
 		AclfNetwork net = builder.getNetwork();
-		return net.get3WXfr(fromBus.getId(), toBus.getId(), tertBus.getId(), ckt);
+		String a = fromBus.getId();
+		String b = toBus.getId();
+		String c = tertBus.getId();
+		// Terminal records list windings in arbitrary order vs the 3W creation order
+		String[][] orders = {
+				{ a, b, c }, { a, c, b },
+				{ b, a, c }, { b, c, a },
+				{ c, a, b }, { c, b, a }
+		};
+		for (String[] o : orders) {
+			Aclf3WBranch xfr = net.get3WXfr(o[0], o[1], o[2], ckt);
+			if (xfr != null) {
+				return xfr;
+			}
+		}
+		return null;
 	}
 
-	private NameTag resolveNamedSpecial(String name) {
+	private NameTag resolveNamedSpecial(String name, BaseAclfBus hintBus, char typeCode) {
 		if (name == null || name.isEmpty()) {
 			return null;
 		}
+		String n = name.trim();
 		AclfNetwork net = builder.getNetwork();
-		for (Branch bra : net.getSpecialBranchList()) {
-			if (name.equals(bra.getName()) || name.equals(bra.getId())) {
+		if (typeCode == 'A') {
+			NameTag svc = findSvcByName(hintBus, n);
+			if (svc != null) {
+				return svc;
+			}
+			for (Object busObj : net.getBusList()) {
+				if (busObj instanceof BaseAclfBus bus) {
+					svc = findSvcByName(bus, n);
+					if (svc != null) {
+						return svc;
+					}
+				}
+			}
+		}
+		if (typeCode == 'N') {
+			NameTag mtdc = builder.getNamedEquipment(n);
+			if (mtdc == null) {
+				mtdc = builder.getNamedEquipment("N|" + n);
+			}
+			if (mtdc != null) {
+				return mtdc;
+			}
+		}
+		for (Branch bra : net.getBranchList()) {
+			if (nameMatches(bra, n)) {
 				return bra;
+			}
+		}
+		for (Branch bra : net.getSpecialBranchList()) {
+			if (nameMatches(bra, n)) {
+				return bra;
+			}
+		}
+		return null;
+	}
+
+	private static boolean nameMatches(Branch bra, String n) {
+		return n.equals(trimToEmpty(bra.getName()))
+				|| n.equals(trimToEmpty(bra.getId()))
+				|| n.equals(trimToEmpty(bra.getCircuitNumber()));
+	}
+
+	private static String trimToEmpty(String s) {
+		return s == null ? "" : s.trim();
+	}
+
+	private static NameTag findSvcByName(BaseAclfBus bus, String name) {
+		if (bus == null || !bus.isStaticVarCompensator()) {
+			return null;
+		}
+		for (Object o : bus.getStaticVarCompensatorList()) {
+			if (o instanceof com.interpss.core.aclf.facts.StaticVarCompensator svc
+					&& (name.equals(trimToEmpty(svc.getId())) || name.equals(trimToEmpty(svc.getName())))) {
+				return svc;
 			}
 		}
 		return null;
