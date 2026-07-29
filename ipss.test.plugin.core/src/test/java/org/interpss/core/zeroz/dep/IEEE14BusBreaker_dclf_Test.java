@@ -3,8 +3,8 @@ package org.interpss.core.zeroz.dep;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.core.testdata.LegacyNetworkFixtures;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -19,10 +19,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	//@Test 
 	public void case1_regularMethod() throws  InterpssException, ReferenceBusException, IpssNumericException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 	  	//System.out.println(net.net2String());
 
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
@@ -37,10 +34,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 	//@Test 
 	public void case1_smallZ() throws  InterpssException, ReferenceBusException, IpssNumericException {
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/Ieee14Bus_breaker.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14Breaker();
 	  	//System.out.println(net.net2String());
 		
 	  	net.accept(new ZeroZBranchProcesor(true));
@@ -60,10 +54,7 @@ public class IEEE14BusBreaker_dclf_Test extends CorePluginTestSetup {
 		// test casa with a small-Z brach loop at Bus-14
 		
 		// Create an AclfNetwork object
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/odm/zeroz/ieee14Bus_breaker_1.xml")
-				.setFormat(IpssAdapter.FileFormat.IEEE_ODM)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = LegacyNetworkFixtures.ieee14BreakerLoop();
 	  	//System.out.println(net.net2String());
 		
 	  	net.accept(new ZeroZBranchProcesor(true));
