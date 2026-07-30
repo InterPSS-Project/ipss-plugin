@@ -635,8 +635,14 @@ public class PSSEDirectParser {
             rata1 = line3.getDouble(3, 0.0);
             ratb1 = line3.getDouble(4, 0.0);
             ratc1 = line3.getDouble(5, 0.0);
-            codIdx = 15; contIdx = 16; rmaIdx = 18; rmiIdx = 19;
-            vmaIdx = 20; vmiIdx = 21; ntpIdx = 22; tabIdx = 23;
+            codIdx = 15; contIdx = 16;
+            if (version >= 35) {
+                rmaIdx = 18; rmiIdx = 19; vmaIdx = 20; vmiIdx = 21;
+                ntpIdx = 22; tabIdx = 23;
+            } else {
+                rmaIdx = 17; rmiIdx = 18; vmaIdx = 19; vmiIdx = 20;
+                ntpIdx = 21; tabIdx = 22;
+            }
         } else {
             rata1 = line3.getDouble(3, 0.0);
             ratb1 = line3.getDouble(4, 0.0);
@@ -702,7 +708,7 @@ public class PSSEDirectParser {
             }
             applyNameTagMetadata(metadata, branch);
 
-            String branchId = fromBusId + "->" + toBusId + "(" + ckt + ")";
+            String branchId = branch.getId();
             // CONT=0 means "control own bus" in PSS/E; do not build vcBusId "Bus0"
             if (Math.abs(cod1) == 1 && cont1 != 0) {
                 String vcBusId = BUS_ID_PREFIX + Math.abs(cont1);
@@ -815,7 +821,7 @@ public class PSSEDirectParser {
         Complex magY = convertMagY(cm, mag1, mag2, nomv1_3w, sbase12, fromBaseV);
 
         // Read TAB numbers from lines 3, 4, 5 (version-dependent index)
-        int tabIdx = version >= 34 ? 23 : 13;
+        int tabIdx = version >= 35 ? 23 : version == 34 ? 22 : 13;
         int tab1 = line3.getInt(tabIdx, 0);
         int tab2 = line4.getInt(tabIdx, 0);
         int tab3 = line5 != null ? line5.getInt(tabIdx, 0) : 0;
@@ -1289,7 +1295,7 @@ public class PSSEDirectParser {
         if (tableNum <= 0) return;
 
         List<XfrZCorrection> points = new ArrayList<>();
-        if (version >= 35) {
+        if (version >= 34) {
             for (int i = 1; i + 2 < rec.size(); i += 3) {
                 double t = rec.getDouble(i, 0.0);
                 double reF = rec.getDouble(i + 1, 0.0);
