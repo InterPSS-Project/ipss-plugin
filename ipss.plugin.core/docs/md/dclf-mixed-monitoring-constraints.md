@@ -57,17 +57,17 @@ islanding is handled:
 
 ```java
 DclfContingencyConfig config = new DclfContingencyConfig();
-config.setIslandingTreatment(DclfIslandingTreatment.BOUNDARY_COMPENSATE_ONE_BUS);
+config.setIslandingTreatment(DclfIslandingTreatment.ANCHORED_COMPENSATE_ONE_BUS);
 ```
 
 Supported policies:
 
 - `SKIP`: mark the islanded contingency by omission from DCLF violation results.
-- `BOUNDARY_COMPENSATE_ONE_BUS`: for a one-bus island, use pre-contingency
-  boundary flows and PTDFs on the reference-connected network to approximate
-  the post-contingency monitor flows. Larger islands fall through to topology
-  replay. This is the default production policy because the common islanding
-  impact is local and avoids full 70k-bus post-topology DCLF solves.
+- `ANCHORED_COMPENSATE_ONE_BUS`: for a simple non-reference one-bus island,
+  keep one island boundary line as an anchor, solve the nonsingular anchored
+  topology, then compensate the final anchor-line removal with PTDFs. Larger
+  islands fall through to topology replay. This is the default production
+  policy.
 - `FULL_DCLF_REPLAY`: apply the topology change and solve DCLF on the changed
   topology. Use this when exact replay is explicitly required; it is much
   slower for large systems because it refactors/solves the changed network for
@@ -86,18 +86,22 @@ if topology says no island:
     normal mixed-contingency path
 
 if simple one-bus island:
-    boundary-compensate based on config policy
+    anchored-compensate based on config policy
 
-if larger island or user chooses full DCLF fallback:
+if larger island or exact replay is required:
     topology replay on the changed network
 ```
 
 The local topology screen is deliberately seeded only from opened branch
 endpoints and overlays CLOSE actions in the same contingency, so it avoids a
-full-network island scan for every contingency. If the local screen cannot
-prove a nearby island, the sparse sensitivity path is used; if it finds a local
-island and the policy is `FULL_DCLF_REPLAY`, the replay path expands that local
-hit into the complete island bus set before solving.
+full-network island scan for every contingency. If the bounded local screen
+returns `unknown`, the sparse sensitivity path is still used and the existing
+`[E - PTDF]` singularity check remains the algebraic guard. If the screen finds
+a local island that cannot use anchored one-bus compensation, the replay path
+expands that local hit into the complete island bus set before solving.
+
+See [DCLF Contingency Analysis](dclf-contingency-analysis.md) for the detailed
+multi-line outage decision diagram and islanding treatment notes.
 
 ## Why Flowgates Are Not Just Interfaces
 
