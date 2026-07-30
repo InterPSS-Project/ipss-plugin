@@ -114,6 +114,10 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 		// run Dclf
 		ContingencyAnalysisAlgorithm dclfAlgo = DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net);
 		dclfAlgo.calculateDclf();
+		Map<String, Double> baseDclfFlows = new LinkedHashMap<>();
+		for (DclfAlgoBranch branch : dclfAlgo.getDclfAlgoBranchList()) {
+			baseDclfFlows.put(branch.getId(), branch.getDclfFlow());
+		}
 
 		// define outage branches
 		dclfAlgo.getOutageBranchList().clear();
@@ -127,16 +131,17 @@ public class Ieee14_CA_Test extends CorePluginTestSetup {
 				DclfAlgoObjectFactory.createCaOutageBranch(
 						dclfAlgo.getDclfAlgoBranch("Bus6->Bus11(1)"), ContingencyBranchOutageType.OPEN));
 
-		// define reference bus for the multi-outage calculation. Since Bus1 is connected to an outage branch, we
-		// to choice a different ref bus.
+		// Bus1 is connected to an outage branch. Switch to a reference bus
+		// that remains connected, then rebuild the factorized matrix.
 		dclfAlgo.setRefBus("Bus14");
-		
+		assertTrue(dclfAlgo.calculateDclf());
+
 		// calculate multi-outage LODF and return inv[I-PTDF]
 		Object invE_PTDF = dclfAlgo.calMultiOutageInvE_PTDF("ContId");
 
         double baseMva = net.getBaseMva();
 		for (DclfAlgoBranch dclfBranch : dclfAlgo.getDclfAlgoBranchList()) {
-        	double preFlow = dclfBranch.getDclfFlow()*baseMva,
+			double preFlow = baseDclfFlows.get(dclfBranch.getId())*baseMva,
         		   postFlow = 0.0;
         	// calculate the LODF factors for the monitoring branch
         	// LODF factors are arranged in the OutageBranchList sequence
@@ -163,8 +168,9 @@ Cont 1, Bus6->Bus13(1), 17.03369, 17.88058, 100.0000, 17.88058
        				dclfBranch.getId().equals("Bus3->Bus4(1)")||
        				dclfBranch.getId().equals("Bus6->Bus11(1)"))
        			assertTrue(postFlow == 0.0);
-       		else if (dclfBranch.getId().equals("Bus2->Bus5(1)"))
-       			assertTrue(Math.abs(postFlow - 69.08805) < 0.00001);
+			else if (dclfBranch.getId().equals("Bus2->Bus5(1)"))
+				assertTrue(Math.abs(postFlow - 69.08805) < 0.00001,
+						"Bus2->Bus5(1) postFlow=" + postFlow);
        		else if (dclfBranch.getId().equals("Bus6->Bus16(1)"))
        			assertTrue(Math.abs(postFlow - 17.03369) < 0.00001);
 
