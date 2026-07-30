@@ -652,7 +652,9 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
                 "CTG-" + String.format("%02d", scenarios.size() + 1),
                 type,
                 actions);
-        if (!directDclfSolves(baseNet, scenario)) {
+        if (!directDclfSolves(baseNet, scenario)
+                || ("MIXED".equals(type)
+                        && !"topology=refConnected".equals(topologySummary(baseNet, scenario)))) {
             return false;
         }
         scenarios.add(scenario);
@@ -726,7 +728,10 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
             Comparison comparison = comparisons.get(i);
             Scenario scenario = scenarios.get(i);
             assertTrue(comparison.maxAbsMw() <= MW_TOLERANCE,
-                    () -> caseName + " " + scenario.id() + " maxAbsMW=" + comparison.maxAbsMw());
+                    () -> caseName + " " + scenario.id()
+                            + " actions=" + scenario.actionsSummary()
+                            + " maxAbsMW=" + comparison.maxAbsMw()
+                            + " worstMonitor=" + comparison.worstMonitor());
         }
         return report.toString();
     }
