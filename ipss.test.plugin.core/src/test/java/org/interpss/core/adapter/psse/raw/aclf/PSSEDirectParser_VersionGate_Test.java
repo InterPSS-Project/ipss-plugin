@@ -15,6 +15,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
@@ -22,6 +23,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.SwitchedShunt;
+import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.net.Substation;
 import com.interpss.core.net.nb.NBModelEquipType;
@@ -114,6 +116,43 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		var load6 = bus6.getContributeLoadList().get(0);
 		assertFalse(load6.isDistGenStatus(), "Bus6 DGENF=0 → offline");
 		assertEquals(0.10, load6.getDistGenPower().getReal(), 1.0E-6);
+	}
+
+	@Test
+	public void testV34TransformerControlLayout() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(34).parse("testData/psse/v34/sample_v34.raw");
+
+		AclfBranch xfr = net.getBranch("Bus204", "Bus205", "T8");
+		assertNotNull(xfr);
+		TapControl tap = xfr.getTapControl();
+		assertNotNull(tap);
+		assertEquals(1.0, tap.getDesiredControlRange().getMax(), 1.0E-6);
+		assertEquals(0.98, tap.getDesiredControlRange().getMin(), 1.0E-6);
+		assertEquals(1.05, tap.getTurnRatioLimit().getMax(), 1.0E-6);
+		assertEquals(0.95, tap.getTurnRatioLimit().getMin(), 1.0E-6);
+		assertEquals(16, tap.getTapSteps());
+
+		Aclf3WBranch xfr3W = net.get3WXfr("Bus205", "Bus215", "Bus208", "3");
+		assertNotNull(xfr3W);
+		assertEquals(5, xfr3W.getFromAclfBranch().getXfrZTableNumber());
+	}
+
+	@Test
+	public void testV34ComplexXfrZTableLayout() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(34).parse("testData/psse/v34/sample_v34.raw");
+
+		var table1 = net.getXfrZTableEntry(1);
+		assertNotNull(table1);
+		assertEquals(11, table1.getPointSet().getPoints().size());
+		assertEquals(-30.0, table1.getPointSet().getPoints().get(0).x, 1.0E-6);
+		assertEquals(1.10, table1.getPointSet().getPoints().get(0).y.getReal(), 1.0E-6);
+		assertEquals(30.0, table1.getPointSet().getPoints().get(10).x, 1.0E-6);
+		assertEquals(1.11, table1.getPointSet().getPoints().get(10).y.getReal(), 1.0E-6);
+
+		var table3 = net.getXfrZTableEntry(3);
+		assertNotNull(table3);
+		assertEquals(3, table3.getPointSet().getPoints().size());
+		assertEquals(0.00058, table3.getPointSet().getPoints().get(0).y.getImaginary(), 1.0E-6);
 	}
 
 	@Test

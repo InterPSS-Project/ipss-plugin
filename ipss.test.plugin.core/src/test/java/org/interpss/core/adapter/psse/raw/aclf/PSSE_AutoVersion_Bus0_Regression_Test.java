@@ -77,6 +77,55 @@ public class PSSE_AutoVersion_Bus0_Regression_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void phaseShiftingTransformer_preservesVoltageTapControl() throws Exception {
+		Path raw = Files.createTempFile("psse_phase_shift_tap", ".RAW");
+		try {
+			String phaseShiftCase = minimalV36RawWithLocalTapControl().replace(
+					"1.00000, 115.00,  0.000,",
+					"1.00000, 115.00, 30.000,");
+			Files.writeString(raw, phaseShiftCase);
+
+			AclfNetwork net = loadWithAutoDetectedVersion(raw.toString());
+
+			AclfBranch xfr = net.getBranch("Bus1", "Bus2", "1");
+			assertNotNull(xfr);
+			assertTrue(xfr.isPSXfr());
+			assertNotNull(xfr.getTapControl(),
+					"a phase-shifting transformer with COD=1 must retain voltage tap control");
+		}
+		finally {
+			Files.deleteIfExists(raw);
+		}
+	}
+
+	@Test
+	public void duplicateLineAndTransformerCircuit_attachesControlToTransformer() throws Exception {
+		Path raw = Files.createTempFile("psse_duplicate_line_xfr", ".RAW");
+		try {
+			String duplicateCase = minimalV36RawWithLocalTapControl().replace(
+					"0 / END OF BRANCH DATA, BEGIN SYSTEM SWITCHING DEVICE DATA",
+					"1,2,'1 ',0.01000,0.10000,0.00000\n"
+							+ "0 / END OF BRANCH DATA, BEGIN SYSTEM SWITCHING DEVICE DATA");
+			Files.writeString(raw, duplicateCase);
+
+			AclfNetwork net = loadWithAutoDetectedVersion(raw.toString());
+
+			AclfBranch line = net.getBranch("Bus1", "Bus2", "1");
+			assertNotNull(line);
+			assertFalse(line.isXfr());
+
+			AclfBranch xfr = net.getBranch("Bus1", "Bus2", "2");
+			assertNotNull(xfr, "duplicate circuit should be renumbered to Bus1->Bus2(2)");
+			assertTrue(xfr.isXfr());
+			assertNotNull(xfr.getTapControl(),
+					"tap control must attach to the renumbered transformer, not the original line");
+		}
+		finally {
+			Files.deleteIfExists(raw);
+		}
+	}
+
+	@Test
 	public void skipsInvalidBusNumberZeroRecord() throws Exception {
 		// When system-wide lines leak into the bus section (wrong PSSE version), fields like
 		// "GENERAL" parse as bus number 0. Those lines do not start with '0', so they are
