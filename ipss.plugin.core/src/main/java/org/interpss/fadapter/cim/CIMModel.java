@@ -153,6 +153,14 @@ public class CIMModel {
         return listByType(cimNamespace + "PowerTransformerEnd");
     }
 
+    public List<CIMPropertyBag> transformerMeshImpedances() {
+        return listByType(cimNamespace + "TransformerMeshImpedance");
+    }
+
+    public List<CIMPropertyBag> transformerCoreAdmittances() {
+        return listByType(cimNamespace + "TransformerCoreAdmittance");
+    }
+
     public List<CIMPropertyBag> energyConsumers() {
         return listByType(cimNamespace + "EnergyConsumer");
     }
@@ -162,7 +170,15 @@ public class CIMModel {
     }
 
     public List<CIMPropertyBag> generatingUnits() {
-        return listByType(cimNamespace + "GeneratingUnit");
+        // Concrete GeneratingUnit subclasses are typed separately in RDF
+        List<CIMPropertyBag> result = new ArrayList<>();
+        result.addAll(listByType(cimNamespace + "GeneratingUnit"));
+        result.addAll(listByType(cimNamespace + "ThermalGeneratingUnit"));
+        result.addAll(listByType(cimNamespace + "HydroGeneratingUnit"));
+        result.addAll(listByType(cimNamespace + "NuclearGeneratingUnit"));
+        result.addAll(listByType(cimNamespace + "WindGeneratingUnit"));
+        result.addAll(listByType(cimNamespace + "SolarGeneratingUnit"));
+        return result;
     }
 
     public List<CIMPropertyBag> shuntCompensators() {
@@ -467,7 +483,30 @@ public class CIMModel {
             vlUri = voltageLevelByConnectivityNode.get(topoNodeUri);
         }
         if (vlUri != null) {
-            return getVLRatedVoltage(vlUri);
+            Double v = getVLRatedVoltage(vlUri);
+            if (v != null) return v;
+        }
+        // No VoltageLevel (e.g. IEEE118 hub CIM): resolve from connected equipment
+        return getBaseVoltageFromConnectivityNode(topoNodeUri);
+    }
+
+    /**
+     * Resolve nominal voltage (kV) for a ConnectivityNode from connected equipment
+     * {@code ConductingEquipment.BaseVoltage} via terminals.
+     */
+    public Double getBaseVoltageFromConnectivityNode(String cnUri) {
+        if (cnUri == null) return null;
+        for (Map.Entry<String, String> e : connectivityNodeByTerminal.entrySet()) {
+            if (!cnUri.equals(e.getValue())) continue;
+            String equipId = equipmentByTerminal.get(e.getKey());
+            if (equipId == null) continue;
+            Resource eqRes = jenaModel.getResource(equipId);
+            Property bvProp = jenaModel.createProperty(cimNamespace + "ConductingEquipment.BaseVoltage");
+            Statement st = eqRes.getProperty(bvProp);
+            if (st != null && st.getObject().isResource()) {
+                Double val = getBaseVoltageValue(st.getObject().asResource().getURI());
+                if (val != null) return val;
+            }
         }
         return null;
     }
