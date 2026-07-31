@@ -105,7 +105,7 @@ Open switches and `STATUS=0` nodes appear mainly on the transfer-bus / DBSB stat
 | `I` | 4 | Induction machine |
 | `A` | 3 | FACTS device |
 | `D` | 2 | Two-terminal DC line |
-| `N` | 2 | GNE |
+| `N` | 2 | Multi-terminal DC |
 
 There are also **system switching devices** (bus-to-bus) outside the Substation Data Group: `151–201 '*1'` and `153–3006 '@1'` — those are network-level breakers, not members of a station’s `nbSwitchList`.
 
@@ -223,6 +223,226 @@ Terminals do not create a second containment tree: they are `NBEquipConnection` 
 
 ---
 
+## Station 2 — YANGTZE (multi-bus MBTB walkthrough)
+
+`IS=2` `SS02_YANGTZE_TYP_6_MBTB` — five electrical buses in one station, main/transfer layout. Richest terminal mix in the file: loads, fixed/switched shunts, branches, 2-winding xfmrs, FACTS (`A`), and two-terminal DC (`D`). Five inactive transfer bus-bar nodes (`STATUS=0`) and many open switches.
+
+| Electrical bus | Name | kV | Nodes | Node STATUS | Role |
+|----------------|------|---:|------:|-------------|------|
+| **152** | `MID500` | 500 | **13** | NI=2 out; rest in | 500 kV mid yard (main/transfer) |
+| **153** | `MID230` | 230 | **8** | NI=15 out; rest in | 230 kV mid yard |
+| **3006** | `UPTOWN` | 230 | **4** | NI=23 out; rest in | Uptown 230 kV pocket |
+| **3021** | `WDUM` | 18 | **7** | NI=27 out; rest in | West dummy / DC rectifier LV |
+| **3022** | `EDUM` | 18 | **7** | NI=34 out; rest in | East dummy / DC inverter LV |
+
+Cross-voltage coupling is via transformers / branches / system SWD pinned by terminals — **no** cross-bus substation switches.
+
+### RAW block (abbreviated)
+
+```
+2,'SS02_YANGTZE_TYP_6_MBTB',32.5103989,-86.3657990,0.1200
+1,'SS_YANGTZE_NODE_1',152,1       ← main bus bar Bus 152
+2,'SS_YANGTZE_NODE_2',152,0       ← transfer bus bar (inactive)
+3..13 → 152 equip
+14,'SS_YANGTZE_NODE_14',153,1
+15,'SS_YANGTZE_NODE_15',153,0     ← transfer (inactive)
+…
+22..25 → 3006 (NI=23 out)
+26..32 → 3021 (NI=27 out)
+33..39 → 3022 (NI=34 out)
+0
+… 63 switching devices (29 closed / 34 open) …
+… 29 terminals …
+```
+
+### Contained nodes → buses
+
+| Node `NI` | Electrical bus | STATUS | Role (from switch/terminal pattern) |
+|-----------|----------------|--------|--------------------------------------|
+| 1 | 152 | 1 | Main bus bar |
+| 2 | 152 | **0** | Transfer bus bar (parked) |
+| 3–13 | 152 | 1 | Equipment (branches, xfmrs, load, shunts) |
+| 14 | 153 | 1 | Main bus bar |
+| 15 | 153 | **0** | Transfer bus bar (parked) |
+| 16–21 | 153 | 1 | Equipment (branch, xfmr, load, FACTS) |
+| 22 | 3006 | 1 | Main bus bar |
+| 23 | 3006 | **0** | Transfer bus bar (parked) |
+| 24–25 | 3006 | 1 | Equipment (system SWD / branch) |
+| 26 | 3021 | 1 | Main bus bar |
+| 27 | 3021 | **0** | Transfer bus bar (parked) |
+| 28–32 | 3021 | 1 | Equipment (xfmr, shunts, DC) |
+| 33 | 3022 | 1 | Main bus bar |
+| 34 | 3022 | **0** | Transfer bus bar (parked) |
+| 35–39 | 3022 | 1 | Equipment (xfmr, shunts, DC) |
+
+### How switches connect nodes (MBTB pockets)
+
+Each voltage yard is an independent **MBTB** pocket: main bar feeds equip with **closed** TYPE=2 switches; transfer bar is inactive and all of its TYPE=3 links are **open**; main↔transfer coupler is **open**.
+
+```mermaid
+flowchart TB
+  subgraph YANG["Substation 2 — SS02_YANGTZE (MBTB, multi-bus)"]
+    subgraph B152["Bus 152 MID500"]
+      M1["NI=1 main"] ---|"SW closed"| E152["NI=3..13 equip"]
+      T2["NI=2 transfer STATUS=0"] -.->|"SW open"| E152
+      M1 -.->|"coupler open"| T2
+    end
+    subgraph B153["Bus 153 MID230"]
+      M14["NI=14 main"] ---|"SW closed"| E153["NI=16..21 equip"]
+      T15["NI=15 transfer STATUS=0"] -.->|"SW open"| E153
+    end
+    subgraph B3006["Bus 3006 UPTOWN"]
+      M22["NI=22"] --- E3006["NI=24..25"]
+      T23["NI=23 STATUS=0"] -.-> E3006
+    end
+    subgraph B3021["Bus 3021 WDUM"]
+      M26["NI=26"] --- E3021["NI=28..32"]
+      T27["NI=27 STATUS=0"] -.-> E3021
+    end
+    subgraph B3022["Bus 3022 EDUM"]
+      M33["NI=33"] --- E3022["NI=35..39"]
+      T34["NI=34 STATUS=0"] -.-> E3022
+    end
+  end
+  Bus152[("AclfBus 152")]
+  Bus153[("AclfBus 153")]
+  Bus3006[("AclfBus 3006")]
+  Bus3021[("AclfBus 3021")]
+  Bus3022[("AclfBus 3022")]
+  M1 & T2 & E152 -.-> Bus152
+  M14 & T15 & E153 -.-> Bus153
+  M22 & T23 & E3006 -.-> Bus3006
+  M26 & T27 & E3021 -.-> Bus3021
+  M33 & T34 & E3022 -.-> Bus3022
+```
+
+### Equipment terminals
+
+| Bus | Node | Type | Equipment |
+|-----|------|------|-----------|
+| 152 | 10 | `L` | Load `1` |
+| 152 | 11 | `F` | Fixed shunt `1` |
+| 152 | 12 | `S` | Switched shunt `1` |
+| 152 | 13 | `S` | Switched shunt `2` |
+| 152 | 8 | `B` | Branch 152–151 CKT `1` |
+| 152 | 9 | `B` | Branch 152–151 CKT `2` |
+| 152 | 5 | `2` | Xfmr 152–153 CKT `T3` (500 kV side) |
+| 152 | 3 | `B` | Branch 152–3004 CKT `1` |
+| 152 | 6 | `2` | Xfmr 152–3021 CKT `T4` (500 kV side) |
+| 152 | 7 | `2` | Xfmr 152–3022 CKT `T5` (500 kV side) |
+| 152 | 4 | `B` | Branch 152–70202 CKT `1` |
+| 153 | 19 | `L` | Load `1` |
+| 153 | 18 | `2` | Xfmr 152–153 CKT `T3` (230 kV side) |
+| 153 | 16 | `B` | Branch 153–154 CKT `2` |
+| 153 | 17 | `B` | System SWD 153–3006 CKT `@1` |
+| 153 | 20 | `A` | FACTS `FACTS_DVCE_1` |
+| 153 | 21 | `A` | FACTS `FACTS_DVCE_2` |
+| 3006 | 24 | `B` | System SWD 153–3006 CKT `@1` (far end) |
+| 3006 | 25 | `B` | Branch 3006–3005 CKT `1` |
+| 3021 | 29 | `F` | Fixed shunt `1` |
+| 3021 | 30 | `S` | Switched shunt `1` |
+| 3021 | 31 | `S` | Switched shunt `2` |
+| 3021 | 28 | `2` | Xfmr 152–3021 CKT `T4` (18 kV side) |
+| 3021 | 32 | `D` | Two-terminal DC `TWO_TERM_DC1` |
+| 3022 | 36 | `F` | Fixed shunt `1` |
+| 3022 | 37 | `S` | Switched shunt `1` |
+| 3022 | 38 | `S` | Switched shunt `2` |
+| 3022 | 35 | `2` | Xfmr 152–3022 CKT `T5` (18 kV side) |
+| 3022 | 39 | `D` | Two-terminal DC `TWO_TERM_DC2` |
+
+Buses `3021` / `3022` are the AC ends of the two-terminal DC links toward buses `301` / (paired ends) that have **no** NB overlay — see [`sample-nb-bus-301-401-402.md`](sample-nb-bus-301-401-402.md).
+
+---
+
+## Station 4 — COLORADO (buses 202, 203, 70202)
+
+`IS=4` `SS04_COLORADO_TYP_5_DBSB` — three electrical buses, double-bus single-breaker. All nodes `STATUS=1`; open switches live on the transfer-side disconnects (12 open / 27 closed).
+
+| Electrical bus | Name | kV | Nodes | Role |
+|----------------|------|---:|------:|------|
+| **202** | `EAST500` | 500 | **8** | 500 kV east yard |
+| **203** | `EAST230` | 230 | **16** | Main 230 kV east yard (DBSB) |
+| **70202** | `EAST-MOV` | 500 | **6** | Series / MOV yard between 152 and 202 |
+
+### RAW block (abbreviated)
+
+```
+4,'SS04_COLORADO_TYP_5_DBSB',33.7051010,-84.6633987,0.1500
+1..8   → 202
+9..24  → 203
+25..30 → 70202
+0
+… 39 switching devices (27 closed / 12 open) …
+… 12 terminals …
+```
+
+### Contained nodes → buses
+
+| Node `NI` | Electrical bus | Role (from switch/terminal pattern) |
+|-----------|----------------|--------------------------------------|
+| 1–2 | 202 | Bus bars (NI=1 transfer side mostly open; NI=2 main side closed) |
+| 3–5 | 202 | Equipment nodes (branch / xfmr) |
+| 6–8 | 202 | Equipment nodes paired to 3–5 via TYPE=2 breakers |
+| 9–10 | 203 | Bus bars (same DBSB pattern) |
+| 11–17 | 203 | Equipment (branches, load, shunts, xfmr, VSC) |
+| 18–24 | 203 | Equipment paired to 11–17 via TYPE=2 breakers |
+| 25–26 | 70202 | Bus bars |
+| 27–28 | 70202 | Equipment (branches to 152 / 202) |
+| 29–30 | 70202 | Equipment paired to 27–28 |
+
+### How switches connect nodes (DBSB pockets)
+
+Same **DBSB** pattern as MISSISSIPPI: bus-coupler closed; disconnects from one bus-bar open and from the other closed; each equip pair linked by a closed TYPE=2 breaker.
+
+```mermaid
+flowchart TB
+  subgraph COL["Substation 4 — SS04_COLORADO (DBSB)"]
+    subgraph B202["Bus 202 EAST500"]
+      BB1["NI=1 bus"] ---|"coupler closed"| BB2["NI=2 bus"]
+      BB1 -.->|"TYPE=3 OPEN"| EQ202["NI=6..8"]
+      BB2 ---|"TYPE=3 CLOSED"| EQ202
+      EQ3["NI=3..5"] ---|"TYPE=2"| EQ202
+    end
+    subgraph B203["Bus 203 EAST230"]
+      BB9["NI=9"] ---|"coupler"| BB10["NI=10"]
+      BB9 -.->|"OPEN"| EQ203["NI=18..24"]
+      BB10 ---|"CLOSED"| EQ203
+      EQ11["NI=11..17"] ---|"TYPE=2"| EQ203
+    end
+    subgraph B702["Bus 70202 EAST-MOV"]
+      BB25["NI=25"] --- BB26["NI=26"]
+      BB25 -.->|"OPEN"| EQ702["NI=29..30"]
+      BB26 ---|"CLOSED"| EQ702
+      EQ27["NI=27..28"] ---|"TYPE=2"| EQ702
+    end
+  end
+  Bus202[("AclfBus 202")]
+  Bus203[("AclfBus 203")]
+  Bus70202[("AclfBus 70202")]
+  BB1 & BB2 & EQ3 & EQ202 -.-> Bus202
+  BB9 & BB10 & EQ11 & EQ203 -.-> Bus203
+  BB25 & BB26 & EQ27 & EQ702 -.-> Bus70202
+```
+
+### Equipment terminals
+
+| Bus | Node | Type | Equipment |
+|-----|------|------|-----------|
+| 202 | 5 | `B` | Branch 202–201 CKT `1` |
+| 202 | 4 | `2` | Xfmr 202–203 CKT `T7` (500 kV side) |
+| 202 | 3 | `B` | Branch 202–70202 CKT `1` |
+| 203 | 14 | `L` | Load `1` |
+| 203 | 15 | `F` | Fixed shunt `1` |
+| 203 | 16 | `F` | Fixed shunt `2` |
+| 203 | 12 | `B` | Branch 203–154 CKT `1` |
+| 203 | 13 | `2` | Xfmr 202–203 CKT `T7` (230 kV side) |
+| 203 | 11 | `B` | Branch 203–205 CKT `1` |
+| 203 | 17 | `V` | VSC DC `VDCLINE2` |
+| 70202 | 27 | `B` | Branch 70202–152 CKT `1` |
+| 70202 | 28 | `B` | Branch 70202–202 CKT `1` |
+
+---
+
 ## Station 5 — MISSISSIPPI (buses 205, 208, 215)
 
 Largest station in the file (`IS=5`, 62 nodes). Contains **six** electrical buses; this section focuses on the three the user usually cares about for urban-east topology — **205**, **208**, **215** — plus how they sit with siblings 204 / 206 / 9204 under the same containment root.
@@ -335,6 +555,99 @@ Sibling yards in the same station (not expanded here): Bus 204 terminals for `T8
 
 ---
 
+## Station 8 — BRAHMAPUTRA (buses 3004, 3005, 703005)
+
+`IS=8` `SS08_BRAHMAPUTRA_TYP_4_BH` — three electrical buses, breaker-and-a-half. All 22 nodes in service; all 24 switches closed.
+
+| Electrical bus | Name | kV | Nodes | Role |
+|----------------|------|---:|------:|------|
+| **3004** | `WEST` | 500 | **6** | 500 kV west yard (BH) |
+| **3005** | `WEST` | 230 | **12** | Main 230 kV west yard (BH) |
+| **703005** | `WEST-2-MOV` | 230 | **4** | Series / MOV yard off 3005 |
+
+Cross-voltage coupling is via xfmr CKT `10` (3004↔3005) and branches — no cross-bus NB switches.
+
+### RAW block (abbreviated)
+
+```
+8,'SS08_BRAHMAPUTRA_TYP_4_BH',31.9123001,-88.3123016,0.1900
+1..6   → 3004
+7..18  → 3005
+19..22 → 703005
+0
+… 24 switching devices (all STATUS=1) …
+… 14 terminals …
+```
+
+### Contained nodes → buses
+
+| Node `NI` | Electrical bus | Role (from switch/terminal pattern) |
+|-----------|----------------|--------------------------------------|
+| 1–2 | 3004 | Bus bars (BH diameters) |
+| 3–6 | 3004 | Diameter / equipment midpoints (xfmr, branches) |
+| 7–8 | 3005 | Bus bars |
+| 9–18 | 3005 | Diameter / equipment midpoints (branches, load, shunt, xfmr, VSC) |
+| 19–20 | 703005 | Bus bars |
+| 21–22 | 703005 | Equipment (branches to 3003 / 3005) |
+
+### How switches connect nodes (BH pockets)
+
+Classic **breaker-and-a-half**: two bus bars with closed diameters (midpoint nodes hold equipment terminals). Bus 3004 has two diameters (NI=3–5 and NI=4–6); Bus 3005 has five diameters linking NI=7 to NI=8 via midpoints 9–13 / 14–18.
+
+```mermaid
+flowchart TB
+  subgraph BRAH["Substation 8 — SS08_BRAHMAPUTRA (BH)"]
+    subgraph B3004["Bus 3004 WEST 500 kV"]
+      B4a["NI=1"] ---|"SW"| M3["NI=3 xfmr"]
+      B4a ---|"SW"| M4["NI=4 br 152"]
+      B4b["NI=2"] ---|"SW"| M5["NI=5 br 3002"]
+      B4b ---|"SW"| M6["NI=6"]
+      M3 ---|"diameter"| M5
+      M4 ---|"diameter"| M6
+    end
+    subgraph B3005["Bus 3005 WEST 230 kV"]
+      B5a["NI=7"] --- EQ5["NI=9..13 mid"]
+      B5b["NI=8"] --- EQ5b["NI=14..18 mid"]
+      EQ5 ---|"diameters"| EQ5b
+    end
+    subgraph B703["Bus 703005 WEST-2-MOV"]
+      N19["NI=19"] --- N21["NI=21"]
+      N20["NI=20"] --- N22["NI=22"]
+      N21 --- N22
+    end
+  end
+  X10["2-winding xfmr CKT 10"]
+  M3 -.->|"terminal NI=3"| X10
+  EQ5b -.->|"terminal NI=14"| X10
+  Bus3004[("AclfBus 3004")]
+  Bus3005[("AclfBus 3005")]
+  Bus703005[("AclfBus 703005")]
+  B4a & B4b & M3 & M4 & M5 & M6 -.-> Bus3004
+  B5a & B5b & EQ5 & EQ5b -.-> Bus3005
+  N19 & N20 & N21 & N22 -.-> Bus703005
+```
+
+### Equipment terminals
+
+| Bus | Node | Type | Equipment |
+|-----|------|------|-----------|
+| 3004 | 4 | `B` | Branch 3004–152 CKT `1` |
+| 3004 | 5 | `B` | Branch 3004–3002 CKT `1` |
+| 3004 | 3 | `2` | Xfmr 3004–3005 CKT `10` (500 kV side) |
+| 3005 | 15 | `L` | Load `1` |
+| 3005 | 16 | `S` | Switched shunt `1` |
+| 3005 | 13 | `B` | Branch 3005–3003 CKT `1` |
+| 3005 | 14 | `2` | Xfmr 3004–3005 CKT `10` (230 kV side) |
+| 3005 | 9 | `B` | Branch 3005–3006 CKT `1` |
+| 3005 | 10 | `B` | Branch 3005–3007 CKT `1` |
+| 3005 | 11 | `B` | Branch 3005–3008 CKT `1` |
+| 3005 | 12 | `B` | Branch 3005–703005 CKT `2` |
+| 3005 | 17 | `V` | VSC DC `VDCLINE1` |
+| 703005 | 21 | `B` | Branch 703005–3003 CKT `2` |
+| 703005 | 22 | `B` | Branch 703005–3005 CKT `2` |
+
+---
+
 ## Station 9 — INDUS (bus 3010)
 
 `IS=9` `SS09_INDUS_TYP_6_MBTB` — main/transfer layout with many open switches. Contains four buses; **3010** (`INDMOTOR1`) is the industrial-motor LV pocket.
@@ -406,15 +719,130 @@ Other INDUS terminals (same station, not on 3010): loads/branches/VSC on 3008; g
 
 ---
 
+## Station 12 — GANGES (bus 212, ring bus)
+
+`IS=12` `SS12_GANGES_TYP_2_RB` — smallest interesting multi-terminal DC pin: **one** electrical bus, three nodes in a full ring, all switches closed.
+
+| Electrical bus | Name | kV | Nodes | Role |
+|----------------|------|---:|------:|------|
+| **212** | `INVERT1` | 230 | **3** | Ring-bus inverter / converter yard |
+
+### RAW block
+
+```
+12,'SS12_GANGES_TYP_2_RB',33.5163002,-81.0162964,0.2300
+1,'SS_GANGES_NODE_1',212,1
+2,'SS_GANGES_NODE_2',212,1
+3,'SS_GANGES_NODE_3',212,1
+0
+1,2,'1',… TYPE=2 STATUS=1
+1,3,'1',… TYPE=2 STATUS=1
+2,3,'1',… TYPE=2 STATUS=1
+0
+212,2,'F','1 '
+212,1,'B',205,'1 '
+212,3,'N','MULTERM_DC_1'
+```
+
+### Contained nodes → bus 212
+
+| Node `NI` | Role |
+|-----------|------|
+| 1 | Ring node — branch 212–205 terminal |
+| 2 | Ring node — fixed shunt terminal |
+| 3 | Ring node — multi-terminal DC `MULTERM_DC_1` terminal (`TYP='N'`) |
+
+### How switches connect nodes (RB)
+
+Full triangle of closed TYPE=2 switches — any node can be isolated by opening two adjacent breakers without splitting the remaining ring path.
+
+```mermaid
+flowchart LR
+  subgraph GANG["Substation 12 — SS12_GANGES (RB) — Bus 212"]
+    N1["NI=1 branch"] ---|"SW"| N2["NI=2 shunt"]
+    N2 ---|"SW"| N3["NI=3 MTDC"]
+    N3 ---|"SW"| N1
+  end
+  Bus212[("AclfBus 212 INVERT1")]
+  N1 & N2 & N3 -.-> Bus212
+```
+
+### Equipment terminals
+
+| Bus | Node | Type | Equipment |
+|-----|------|------|-----------|
+| 212 | 2 | `F` | Fixed shunt `1` |
+| 212 | 1 | `B` | Branch 212–205 CKT `1` |
+| 212 | 3 | `N` | Multi-terminal DC `MULTERM_DC_1` |
+
+Together with Station 15 (bus 213), this station pins one of the two AC converter buses of `MULTERM_DC_1` that also reach buses `401` / `402` (no NB overlay) — see [`sample-nb-bus-301-401-402.md`](sample-nb-bus-301-401-402.md).
+
+---
+
+## Station 15 — HEILONG (bus 213, DBDB)
+
+`IS=15` `SS15_HEILONG_TYP_3_DBDB` — single-bus double-bus double-breaker pocket (same layout family as NILE, but one voltage only). Five nodes, six closed switches, three terminals.
+
+| Electrical bus | Name | kV | Nodes | Role |
+|----------------|------|---:|------:|------|
+| **213** | `INVERT2` | 230 | **5** | DBDB inverter / converter yard |
+
+### RAW block
+
+```
+15,'SS15_HEILONG_TYP_3_DBDB',35.0192986,-84.0193024,0.2600
+1,'SS_HEILONG_NODE_1',213,1     ← bus bar
+2,'SS_HEILONG_NODE_2',213,1     ← bus bar
+3,'SS_HEILONG_NODE_3',213,1     ← branch
+4,'SS_HEILONG_NODE_4',213,1     ← shunt
+5,'SS_HEILONG_NODE_5',213,1     ← MTDC
+0
+… 6 switching devices (all STATUS=1): 1↔3,4,5 and 2↔3,4,5 …
+… 3 terminals …
+```
+
+### Contained nodes → bus 213
+
+| Node `NI` | Role |
+|-----------|------|
+| 1–2 | Bus bars |
+| 3 | Equipment — branch 213–214 |
+| 4 | Equipment — fixed shunt |
+| 5 | Equipment — multi-terminal DC `MULTERM_DC_1` |
+
+### How switches connect nodes (DBDB)
+
+Two bus bars, each with a closed breaker to every equipment node — classic DBDB (compare Station 1 NILE pockets at smaller scale).
+
+```mermaid
+flowchart TB
+  subgraph HEI["Substation 15 — SS15_HEILONG (DBDB) — Bus 213"]
+    N1["NI=1"] ---|"SW"| N3["NI=3 branch"]
+    N1 ---|"SW"| N4["NI=4 shunt"]
+    N1 ---|"SW"| N5["NI=5 MTDC"]
+    N2["NI=2"] ---|"SW"| N3
+    N2 ---|"SW"| N4
+    N2 ---|"SW"| N5
+  end
+  Bus213[("AclfBus 213 INVERT2")]
+  N1 & N2 & N3 & N4 & N5 -.-> Bus213
+```
+
+### Equipment terminals
+
+| Bus | Node | Type | Equipment |
+|-----|------|------|-----------|
+| 213 | 4 | `F` | Fixed shunt `1` |
+| 213 | 3 | `B` | Branch 213–214 CKT `1` |
+| 213 | 5 | `N` | Multi-terminal DC `MULTERM_DC_1` |
+
+---
+
 ## Other patterns worth noting
-
-### Station 2 — YANGTZE (open transfer bus)
-
-Same multi-bus idea as NILE, but with many **open** switches (`STATUS=0`) and five inactive nodes — classic main/transfer layout where the second bus is parked. Also the richest terminal mix in the file: loads, fixed/switched shunts, branches, 2-winding xfmrs, FACTS (`A`), and two-terminal DC (`D`). See also MISSISSIPPI (DBSB) and INDUS (MBTB) above for the same open-transfer idea at different layouts.
 
 ### Small single-bus stations
 
-Stations 10–15, 17–18 are the simple end of the spectrum (2–5 nodes, one bus) — closer to the IEEE14 “one station ↔ one bus” mental model, useful as minimal import checks.
+Stations 10–11, 13–14, 16–18 are the simple end of the spectrum (2–5 nodes, one bus) — closer to the IEEE14 “one station ↔ one bus” mental model, useful as minimal import checks. Stations **12** (RB) and **15** (DBDB) above are the same size class but carry the multi-terminal DC pins.
 
 ### Containing vs referencing (summary)
 
@@ -457,7 +885,7 @@ flowchart LR
 1. Ask “which station?” first — `NI` alone is not globally unique.
 2. Ask “which electrical bus?” via `NBNode.bus` / RAW field `I` — in this fixture a station often holds **several** `I` values.
 3. Switches and terminals are siblings of nodes under the **same** `Substation`, not nested under `NBNode` as EMF children.
-4. Open switches / inactive nodes (YANGTZE, MISSISSIPPI, …) are intentional for transfer-bus and bus-split studies — do not assume every switch is closed.
+4. Open switches / inactive nodes (YANGTZE, COLORADO, MISSISSIPPI, INDUS, …) are intentional for transfer-bus and bus-split studies — do not assume every switch is closed.
 5. Buses `301`, `401`, `402` are present in the bus-branch model but have **no** substation overlay in this RAW.
 
 This fixture is the expected large-sample shape for PSS®E v36 node-breaker import (18 stations; 292 / 363 / 171 node / switch / terminal counts).
