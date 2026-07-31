@@ -23,6 +23,7 @@ import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExciterTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGovernorTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
+import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.ge.GEPslfDirectParser_SectionGate_Test;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
@@ -360,6 +361,9 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_IEEE14_NodeBreaker_Test.class,
 	PSSE_IEEE14_NB_Topo_Test.class,
 	PSSE_IEEE14_NB_BusSplit_Test.class,
+	
+	// CIM File Adapter
+	CIMDirectParserTest.class,
 	
 	///Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,
