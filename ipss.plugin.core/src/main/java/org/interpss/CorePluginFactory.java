@@ -1,6 +1,7 @@
 package org.interpss;
 
 import org.interpss.fadapter.BPAFormat;
+import org.interpss.fadapter.CIMFormat;
 import org.interpss.fadapter.GEFormat;
 import org.interpss.fadapter.IeeeCDFFormat;
 import org.interpss.fadapter.IpssFileAdapter;
@@ -58,6 +59,9 @@ public class CorePluginFactory {
 		} 
 		else if (f == IpssFileAdapter.FileFormat.IpssInternal) {
 			return new IpssInternalFormat();
+		} 
+		else if (f == IpssFileAdapter.FileFormat.CIM) {
+			return new CIMFormat();
 		} 
 		throw new InterpssException("Error - File adapter format/version not implemented");
 	}	
