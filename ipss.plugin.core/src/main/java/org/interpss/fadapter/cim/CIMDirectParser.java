@@ -132,6 +132,16 @@ public class CIMDirectParser {
         List<CIMPropertyBag> connNodes = cimModel.connectivityNodes();
         List<CIMPropertyBag> busbars = cimModel.busbarSections();
 
+        // Default area/zone when CIM has no ControlArea / Zone (matches MatPower IEEE cases)
+        final String defaultAreaId = "1";
+        final String defaultZoneId = "1";
+        builder.addArea(defaultAreaId, "Area 1", null);
+        builder.addZone(defaultZoneId, "Zone 1", null);
+
+        // Default voltage band when CIM has no VoltageLimit (MatPower IEEE default)
+        final double defaultVMax = 1.1;
+        final double defaultVMin = 0.9;
+
         int busNumber = 1;
 
         if (!topoNodes.isEmpty()) {
@@ -146,8 +156,11 @@ public class CIMDirectParser {
                 Double baseKV = resolveTopoNodeVoltage(cimModel, tn);
                 double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
 
-                builder.addBus(tn.getLocalId(), name, busNumber++, baseV, 1.0, 0.0, null, null, null);
-                cimModel.mapBusId(tnId, tn.getLocalId());
+                String busId = tn.getLocalId();
+                builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
+                        defaultAreaId, defaultZoneId, null);
+                builder.setBusVoltageLimit(busId, defaultVMax, defaultVMin);
+                cimModel.mapBusId(tnId, busId);
             }
         } else if (!busbars.isEmpty()) {
             log.info("Using {} BusbarSections as bus proxies", busbars.size());
@@ -157,8 +170,11 @@ public class CIMDirectParser {
                 Double baseKV = vlUri != null ? cimModel.getVLRatedVoltage(vlUri) : null;
                 double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
 
-                builder.addBus(bb.getLocalId(), name, busNumber++, baseV, 1.0, 0.0, null, null, null);
-                cimModel.mapBusId(bb.getId(), bb.getLocalId());
+                String busId = bb.getLocalId();
+                builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
+                        defaultAreaId, defaultZoneId, null);
+                builder.setBusVoltageLimit(busId, defaultVMax, defaultVMin);
+                cimModel.mapBusId(bb.getId(), busId);
             }
         } else if (!connNodes.isEmpty()) {
             log.info("Using {} ConnectivityNodes as buses", connNodes.size());
@@ -171,10 +187,17 @@ public class CIMDirectParser {
                 if (containerUri != null) {
                     baseKV = cimModel.getVLRatedVoltage(containerUri);
                 }
+                // IEEE118-style models: no VoltageLevel — use equipment BaseVoltage via terminals
+                if (baseKV == null) {
+                    baseKV = cimModel.getBaseVoltageFromConnectivityNode(cnId);
+                }
                 double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
 
-                builder.addBus(cn.getLocalId(), name, busNumber++, baseV, 1.0, 0.0, null, null, null);
-                cimModel.mapBusId(cnId, cn.getLocalId());
+                String busId = cn.getLocalId();
+                builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
+                        defaultAreaId, defaultZoneId, null);
+                builder.setBusVoltageLimit(busId, defaultVMax, defaultVMin);
+                cimModel.mapBusId(cnId, busId);
             }
         }
     }
@@ -223,6 +246,8 @@ public class CIMDirectParser {
         CIMTransformerMapper xfr2wMapper = new CIMTransformerMapper(DEFAULT_BASE_MVA);
         xfr2wMapper.setCimModel(cimModel);
         xfr2wMapper.indexEnds(cimModel.transformerEnds());
+        xfr2wMapper.indexMeshImpedances(cimModel.transformerMeshImpedances());
+        xfr2wMapper.indexCoreAdmittances(cimModel.transformerCoreAdmittances());
 
         CIMTransformer3WMapper xfr3wMapper = new CIMTransformer3WMapper(DEFAULT_BASE_MVA);
         xfr3wMapper.setCimModel(cimModel);
