@@ -114,7 +114,7 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
             builder.setPQBus(busId, pPU, qPU, 0.0, 0.0);
         }
 
-        log.info(String.format("Created generator: %s on bus %s, type=%s, P=%.2f MW, targetV=%.4f",
+        log.debug(String.format("Created generator: %s on bus %s, type=%s, P=%.2f MW, targetV=%.4f",
             name, busId, genCode, p, targetVPU));
     }
 
@@ -162,7 +162,7 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
 
         builder.setSwingBus(busId, targetVPU, 0.0);
 
-        log.info(String.format("Created ExternalNetworkInjection generator: %s on bus %s, SWING, targetV=%.4f",
+        log.debug(String.format("Created ExternalNetworkInjection generator: %s on bus %s, SWING, targetV=%.4f",
             name, busId, targetVPU));
     }
 
@@ -179,7 +179,7 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
                 // keep default
             }
             builder.setSwingBus(busId, v, 0.0);
-            log.info("Designated bus {} as SWING", busId);
+            log.debug("Designated bus {} as SWING", busId);
             return true;
         }
         return false;
