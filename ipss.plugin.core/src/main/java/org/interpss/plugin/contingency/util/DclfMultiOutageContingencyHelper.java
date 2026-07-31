@@ -73,9 +73,6 @@ public class DclfMultiOutageContingencyHelper {
         DclfMultiOutage contingency = createMultiOutageContingency(name, outageType);
         for (BranchContingencyRecord record : records) {
             ContingencyBranchOutageType recordOutageType = outageType(record);
-            if (recordOutageType != outageType) {
-                throw new InterpssException("Mixed branch action types are not supported for contingency " + name);
-            }
 
             String branchId = resolveBranchId(record);
             DclfAlgoBranch dclfBranch = dclfAlgo.getDclfAlgoBranch(branchId);
@@ -83,7 +80,7 @@ public class DclfMultiOutageContingencyHelper {
                 throw new InterpssException("Could not resolve DCLF branch for contingency "
                         + name + ": " + branchId);
             }
-            DclfOutageBranch outage = createCaOutageBranch(dclfBranch, outageType);
+            DclfOutageBranch outage = createCaOutageBranch(dclfBranch, recordOutageType);
             outage.setDclfFlow(dclfBranch.getDclfFlow());
             contingency.getOutageEquips().add(outage);
         }
