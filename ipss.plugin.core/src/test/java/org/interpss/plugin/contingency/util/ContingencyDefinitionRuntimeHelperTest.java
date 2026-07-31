@@ -19,6 +19,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.aclf.AclfBranchOutage;
 import com.interpss.core.contingency.aclf.AclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
@@ -43,8 +44,56 @@ public class ContingencyDefinitionRuntimeHelperTest {
 
         assertEquals(1, outages.size());
         assertEquals("GROUPED_DCLF", outages.get(0).getId());
+        assertEquals(ContingencyBranchOutageType.OPEN, outages.get(0).getOutageType());
         assertEquals(2, outages.get(0).getOutageEquips().size());
         assertEquals("Bus4->Bus5(0)", outages.get(0).getOutageEquips().get(0).getBranch().getId());
+    }
+
+    @Test
+    public void createsDclfCloseMultiOutageFromGroupedDefinition() throws Exception {
+        AclfNetwork net = importIeee9Labeled();
+        ContingencyAnalysisAlgorithm dclfAlgo =
+                DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net);
+        assertTrue(dclfAlgo.calculateDclf(), "IEEE9 base DCLF should converge");
+
+        ContingencyDefinition definition = definition(
+                "GROUPED_DCLF_CLOSE",
+                ContingencyActionType.CLOSE,
+                "Bus4->Bus5(0)",
+                "Bus7->Bus8(0)");
+
+        List<DclfMultiOutage> outages =
+                new DclfMultiOutageContingencyHelper(dclfAlgo)
+                        .createDclfMultiOutageContListFromDefinitions(List.of(definition));
+
+        assertEquals(1, outages.size());
+        assertEquals(ContingencyBranchOutageType.CLOSE, outages.get(0).getOutageType());
+        assertEquals(ContingencyBranchOutageType.CLOSE,
+                outages.get(0).getOutageEquips().get(0).getOutageType());
+    }
+
+    @Test
+    public void createsMixedDclfOpenCloseActionsFromGroupedDefinition() throws Exception {
+        AclfNetwork net = importIeee9Labeled();
+        ContingencyAnalysisAlgorithm dclfAlgo =
+                DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net);
+        assertTrue(dclfAlgo.calculateDclf(), "IEEE9 base DCLF should converge");
+
+        ContingencyDefinition definition = new ContingencyDefinition("MIXED_DCLF");
+        definition.addAction(new ContingencyAction(
+                ContingencyObjectType.BRANCH,
+                ContingencyActionType.OPEN,
+                "Bus4->Bus5(0)"));
+        definition.addAction(new ContingencyAction(
+                ContingencyObjectType.BRANCH,
+                ContingencyActionType.CLOSE,
+                "Bus7->Bus8(0)"));
+
+        DclfMultiOutage outage =
+                new DclfMultiOutageContingencyHelper(dclfAlgo).createDclfMultiOutage(definition);
+
+        assertEquals(ContingencyBranchOutageType.OPEN, outage.getOutageEquips().get(0).getOutageType());
+        assertEquals(ContingencyBranchOutageType.CLOSE, outage.getOutageEquips().get(1).getOutageType());
     }
 
     @Test
@@ -69,12 +118,36 @@ public class ContingencyDefinitionRuntimeHelperTest {
         assertEquals("Bus4->Bus5(0)", first.getOutageEquip().getId());
     }
 
+    @Test
+    public void createsAclfCloseMultiOutageFromGroupedDefinition() throws Exception {
+        AclfNetwork net = importIeee9Labeled();
+        ContingencyDefinition definition = definition(
+                "GROUPED_ACLF_CLOSE",
+                ContingencyActionType.CLOSE,
+                "Bus4->Bus5(0)");
+
+        List<AclfMultiOutage> outages =
+                new AclfContingencyDefinitionHelper(net)
+                        .createAclfMultiOutageList(List.of(definition));
+
+        AclfBranchOutage first =
+                (AclfBranchOutage) outages.get(0).getOutageEquips().get(0);
+        assertEquals(ContingencyBranchOutageType.CLOSE, first.getOutageType());
+    }
+
     private static ContingencyDefinition definition(String name, String... objectIds) {
+        return definition(name, ContingencyActionType.OPEN, objectIds);
+    }
+
+    private static ContingencyDefinition definition(
+            String name,
+            ContingencyActionType actionType,
+            String... objectIds) {
         ContingencyDefinition definition = new ContingencyDefinition(name);
         for (String objectId : objectIds) {
             definition.addAction(new ContingencyAction(
                     ContingencyObjectType.BRANCH,
-                    ContingencyActionType.OPEN,
+                    actionType,
                     objectId));
         }
         return definition;
