@@ -7,7 +7,7 @@
 package org.interpss.fadapter.cim.util;
 
 /**
- * Converts CIM physical units (Ohms, Siemens, MW, kV) to per-unit values.
+ * Converts CIM physical units (Ohms, Siemens, W/var, kV) to per-unit values.
  */
 public final class CIMUnitConverter {
 
@@ -41,20 +41,46 @@ public final class CIMUnitConverter {
         return siemens / baseY;
     }
 
+    /** CIM ActivePower / ReactivePower are SI (W / var). */
+    private static final double W_PER_MW = 1_000_000.0;
+
     /**
-     * Convert power from MW to per-unit.
-     * Ppu = Pmw / baseMVA
+     * Convert CIM ActivePower (Watts) or ReactivePower (var) to MW / MVAr.
      */
-    public static double pToPU(double mw, double baseMVA) {
-        return mw / baseMVA;
+    public static double siPowerToMVA(double wattsOrVars) {
+        return wattsOrVars / W_PER_MW;
     }
 
     /**
-     * Convert reactive power from MVAr to per-unit.
-     * Qpu = Qmvar / baseMVA
+     * Convert CIM ActivePower (Watts) to per-unit on {@code baseMVA}.
+     * Ppu = (P_W / 1e6) / baseMVA
      */
-    public static double qToPU(double mvar, double baseMVA) {
-        return mvar / baseMVA;
+    public static double pToPU(double watts, double baseMVA) {
+        return siPowerToMVA(watts) / baseMVA;
+    }
+
+    /**
+     * Convert CIM ReactivePower (var) to per-unit on {@code baseMVA}.
+     * Qpu = (Q_var / 1e6) / baseMVA
+     */
+    public static double qToPU(double vars, double baseMVA) {
+        return siPowerToMVA(vars) / baseMVA;
+    }
+
+    /**
+     * Normalize CIM voltage to kV.
+     * Spec uses volts; some exports (ENTSO-E) already use kV.
+     */
+    public static double toKV(double voltage) {
+        return voltage > 1000.0 ? voltage / 1000.0 : voltage;
+    }
+
+    /**
+     * Normalize CIM ApparentPower to MVA.
+     * Spec uses VA; values already in MVA are left unchanged.
+     */
+    public static double apparentPowerToMVA(double apparentPower) {
+        return Math.abs(apparentPower) >= 1e6 ? apparentPower / 1e6 : apparentPower;
     }
 
     /**

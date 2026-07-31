@@ -14,6 +14,7 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.cim.CIMPropertyBag;
+import org.interpss.fadapter.cim.util.CIMUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +22,20 @@ import com.interpss.core.aclf.AclfBranch;
 
 /**
  * Maps CIM PowerTransformer (2-winding) to an AclfNetwork transformer.
+ * <p>
+ * Impedance may be on {@code PowerTransformerEnd.r/x} (CGMES EQ style) or on
+ * {@code TransformerMeshImpedance} between ends (common for converted models).
+ * {@code ratedU} / {@code ratedS} are normalized from SI (V / VA) when needed.
  */
 public class CIMTransformerMapper extends AbstractCIMDataMapper {
     private static final Logger log = LoggerFactory.getLogger(CIMTransformerMapper.class);
 
     private final double baseMVA;
     private final Map<String, List<CIMPropertyBag>> endsByTransformer = new HashMap<>();
+    /** Mesh impedance keyed by FromTransformerEnd URI. */
+    private final Map<String, CIMPropertyBag> meshByFromEnd = new HashMap<>();
+    /** Core admittance keyed by TransformerEnd URI. */
+    private final Map<String, CIMPropertyBag> coreByEnd = new HashMap<>();
 
     public CIMTransformerMapper(double baseMVA) {
         this.baseMVA = baseMVA;
@@ -40,6 +49,27 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
             }
         }
         log.debug("Indexed transformer ends: {} transformers", endsByTransformer.size());
+    }
+
+    public void indexMeshImpedances(List<CIMPropertyBag> meshes) {
+        meshByFromEnd.clear();
+        for (CIMPropertyBag mesh : meshes) {
+            String fromEnd = mesh.getResourceId("TransformerMeshImpedance.FromTransformerEnd");
+            if (fromEnd != null) {
+                meshByFromEnd.put(fromEnd, mesh);
+            }
+        }
+        log.debug("Indexed {} transformer mesh impedances", meshByFromEnd.size());
+    }
+
+    public void indexCoreAdmittances(List<CIMPropertyBag> cores) {
+        coreByEnd.clear();
+        for (CIMPropertyBag core : cores) {
+            String end = core.getResourceId("TransformerCoreAdmittance.TransformerEnd");
+            if (end != null) {
+                coreByEnd.put(end, core);
+            }
+        }
     }
 
     @Override
@@ -66,10 +96,10 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
         CIMPropertyBag end1 = ends.get(0);
         CIMPropertyBag end2 = ends.get(1);
 
-        double ratedU1 = end1.getDouble("PowerTransformerEnd.ratedU",
-                            end1.getDouble("TransformerEnd.ratedU", 0.0));
-        double ratedU2 = end2.getDouble("PowerTransformerEnd.ratedU",
-                            end2.getDouble("TransformerEnd.ratedU", 0.0));
+        double ratedU1 = CIMUnitConverter.toKV(end1.getDouble("PowerTransformerEnd.ratedU",
+                            end1.getDouble("TransformerEnd.ratedU", 0.0)));
+        double ratedU2 = CIMUnitConverter.toKV(end2.getDouble("PowerTransformerEnd.ratedU",
+                            end2.getDouble("TransformerEnd.ratedU", 0.0)));
 
         double r1 = end1.getDouble("PowerTransformerEnd.r", end1.getDouble("TransformerEnd.r", 0.0));
         double x1 = end1.getDouble("PowerTransformerEnd.x", end1.getDouble("TransformerEnd.x", 0.0));
@@ -78,9 +108,24 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
         double r = r1 + r2;
         double x = x1 + x2;
 
-        String[] busIds = resolveBranchBusIds(bag.getId());
-        String fromBusId = busIds[0];
-        String toBusId = busIds[1];
+        // Prefer TransformerMeshImpedance when end r/x are empty (IEEE118 / CIM Hub style)
+        CIMPropertyBag mesh = meshByFromEnd.get(end1.getId());
+        if (mesh == null) {
+            mesh = meshByFromEnd.get(end2.getId());
+        }
+        if (mesh != null && Math.abs(r) + Math.abs(x) == 0.0) {
+            r = mesh.getDouble("TransformerMeshImpedance.r", 0.0);
+            x = mesh.getDouble("TransformerMeshImpedance.x", 0.0);
+        }
+
+        // Resolve buses from winding terminals so from-side matches end1 (Z reference)
+        String fromBusId = resolveBusIdFromEnd(end1);
+        String toBusId = resolveBusIdFromEnd(end2);
+        if (fromBusId == null || toBusId == null) {
+            String[] busIds = resolveBranchBusIds(bag.getId());
+            if (fromBusId == null) fromBusId = busIds[0];
+            if (toBusId == null) toBusId = busIds[1];
+        }
 
         if (fromBusId == null || toBusId == null) {
             log.warn("Skipping transformer {} - cannot resolve buses (from={}, to={})",
@@ -88,34 +133,37 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
             return;
         }
 
-        // Prefer bus base voltages for Z/tap — topology node order may not match end order
         Double baseKV_from = busBaseKV(builder, fromBusId);
         Double baseKV_to = busBaseKV(builder, toBusId);
-        if (baseKV_from == null && cimModel != null) {
-            java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(bag.getId());
-            if (!topoNodes.isEmpty()) {
-                baseKV_from = cimModel.getNominalVoltageForTopoNode(topoNodes.get(0));
-            }
-        }
-        if (baseKV_to == null && cimModel != null) {
-            java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(bag.getId());
-            if (topoNodes.size() >= 2) {
-                baseKV_to = cimModel.getNominalVoltageForTopoNode(topoNodes.get(1));
-            }
-        }
         if (baseKV_from == null || baseKV_from == 0.0) baseKV_from = ratedU1 > 0 ? ratedU1 : 100.0;
         if (baseKV_to == null || baseKV_to == 0.0) baseKV_to = ratedU2 > 0 ? ratedU2 : 100.0;
 
-        // Z on from-side voltage base (system MVA)
-        double baseZ = baseKV_from * baseKV_from / baseMVA;
+        // Mesh / winding Z is in ohms on the from-end (end1) voltage base
+        double zBaseKV = ratedU1 > 0 ? ratedU1 : baseKV_from;
+        double baseZ = zBaseKV * zBaseKV / baseMVA;
         double rPU = r / baseZ;
         double xPU = x / baseZ;
 
-        // Off-nominal taps relative to each bus base voltage (normally ~1.0)
         double fromTurnRatio = ratedU1 > 0 ? ratedU1 / baseKV_from : 1.0;
         double toTurnRatio = ratedU2 > 0 ? ratedU2 / baseKV_to : 1.0;
         fromTurnRatio = clampTap(fromTurnRatio);
         toTurnRatio = clampTap(toTurnRatio);
+
+        double ratingMva = CIMUnitConverter.apparentPowerToMVA(
+                end1.getDouble("PowerTransformerEnd.ratedS",
+                    end2.getDouble("PowerTransformerEnd.ratedS", 0.0)));
+
+        Complex magY = null;
+        CIMPropertyBag core = coreByEnd.get(end1.getId());
+        if (core == null) core = coreByEnd.get(end2.getId());
+        if (core != null) {
+            double g = core.getDouble("TransformerCoreAdmittance.g", 0.0);
+            double b = core.getDouble("TransformerCoreAdmittance.b", 0.0);
+            if (g != 0.0 || b != 0.0) {
+                double baseY = baseMVA / (zBaseKV * zBaseKV);
+                magY = new Complex(g / baseY, b / baseY);
+            }
+        }
 
         String cirId = nextCircuitId(builder, fromBusId, toBusId);
         if (cirId == null) {
@@ -125,12 +173,23 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
 
         AclfBranch branch = builder.addXformer2W(fromBusId, toBusId, cirId,
                 new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
-                null, null, 0.0, 0.0, 0.0, 0, true);
+                magY, null, ratingMva, 0.0, 0.0, 0, true);
         branch.setId(xfrId);
         branch.setName(name.isEmpty() ? xfrId : name);
 
-        log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU",
-            name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU);
+        log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU rating={} MVA",
+            name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva);
+    }
+
+    private String resolveBusIdFromEnd(CIMPropertyBag end) {
+        if (cimModel == null || end == null) return null;
+        String termId = end.getResourceId("TransformerEnd.Terminal");
+        if (termId == null) return null;
+        String tn = cimModel.getTopologicalNodeByTerminal(termId);
+        if (tn != null) return cimModel.getBusId(tn);
+        String cn = cimModel.getConnectivityNodeByTerminal(termId);
+        if (cn != null) return cimModel.getBusId(cn);
+        return null;
     }
 
     private static Double busBaseKV(AclfNetworkBuilder builder, String busId) {
