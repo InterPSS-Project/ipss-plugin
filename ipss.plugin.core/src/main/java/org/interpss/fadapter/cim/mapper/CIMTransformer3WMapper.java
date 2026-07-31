@@ -11,6 +11,7 @@ import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.cim.CIMPropertyBag;
+import org.interpss.fadapter.cim.util.CIMUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -126,8 +127,8 @@ public class CIMTransformer3WMapper extends AbstractCIMDataMapper {
     }
 
     private double getRatedU(CIMPropertyBag end) {
-        return end.getDouble("PowerTransformerEnd.ratedU",
-                end.getDouble("TransformerEnd.ratedU", 0.0));
+        return CIMUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
+                end.getDouble("TransformerEnd.ratedU", 0.0)));
     }
 
     private double getR(CIMPropertyBag end) {
