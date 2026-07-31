@@ -304,7 +304,12 @@ public class PSSESubstationImporter {
 					return shunt;
 				}
 			}
-			return null;
+			// RAW v34 and earlier permit only one switched shunt per bus and
+			// do not carry its ID in the switched-shunt section. Substation
+			// Data may nevertheless use a terminal identifier other than "1".
+			return bus.getSwitchedShuntList().size() == 1
+					? (NameTag) bus.getSwitchedShuntList().get(0)
+					: null;
 		}
 		case FIXED_SHUNT:
 			return bus.getCompensator(eqId);

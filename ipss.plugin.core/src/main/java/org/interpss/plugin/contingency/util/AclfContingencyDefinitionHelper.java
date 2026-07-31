@@ -2,6 +2,7 @@ package org.interpss.plugin.contingency.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.definition.ContingencyDefinition;
@@ -51,9 +52,17 @@ public class AclfContingencyDefinitionHelper {
             outage.getOutageEquips().add(
                     AclfContingencyObjectFactory.createAclfBranchOutage(
                             branch,
-                            ContingencyBranchOutageType.OPEN));
+                            outageType(record)));
         }
         return outage;
+    }
+
+    private static ContingencyBranchOutageType outageType(BranchContingencyRecord record) {
+        String actionType = record.actionType == null ? "" : record.actionType.toLowerCase(Locale.ROOT);
+        if ("close".equals(actionType)) {
+            return ContingencyBranchOutageType.CLOSE;
+        }
+        return ContingencyBranchOutageType.OPEN;
     }
 
     private AclfBranch resolveBranch(BranchContingencyRecord record)
