@@ -129,7 +129,7 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
         branch.setId(xfrId);
         branch.setName(name.isEmpty() ? xfrId : name);
 
-        log.info("Created xfr branch: {} ({}→{}) ratedU1={:.1f} ratedU2={:.1f} r={:.6f} x={:.6f} PU",
+        log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU",
             name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU);
     }
 

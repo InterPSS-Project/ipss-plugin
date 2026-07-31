@@ -63,7 +63,7 @@ public class CIMLoadMapper extends AbstractCIMDataMapper {
         builder.addContributeLoad(busId, loadId, true,
                 new Complex(pPU, qPU), null, null, null, false);
 
-        log.info(String.format("Created load: %s on bus %s, P=%.2f MW, Q=%.2f MVAr", name, busId, p, q));
+        log.debug(String.format("Created load: %s on bus %s, P=%.2f MW, Q=%.2f MVAr", name, busId, p, q));
         mappedCount++;
     }
 }
