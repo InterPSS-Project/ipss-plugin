@@ -155,6 +155,54 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
             }
         }
         assertTrue(found, "Should find line 1_2_1");
+
+        // CIM EnergyConsumer.p is SI Watts (51000000 W = 51 MW → 0.51 pu @ 100 MVA)
+        AclfBus bus1 = null;
+        for (AclfBus bus : net.getBusList()) {
+            if ("1".equals(bus.getName())) {
+                bus1 = bus;
+                break;
+            }
+        }
+        assertNotNull(bus1, "Should find bus named 1");
+        assertEquals(0.51, bus1.getLoadP(), 1e-6, "Bus1 loadP should be PU (W→MW→PU)");
+        assertEquals(0.27, bus1.getLoadQ(), 1e-6, "Bus1 loadQ should be PU (var→MVAr→PU)");
+
+        // Transformer 8_5: Z from TransformerMeshImpedance (x=31.78 Ω @ 345 kV → 0.0267 pu)
+        boolean foundXfr = false;
+        for (AclfBranch b : net.getBranchList()) {
+            if ("8_5_0_1".equals(b.getName()) && b.getBranchCode() == AclfBranchCode.XFORMER) {
+                foundXfr = true;
+                assertEquals(0.0, b.getZ().getReal(), 1e-6);
+                assertEquals(0.0267, b.getZ().getImaginary(), 1e-4);
+                assertEquals(100.0, b.getRatingMva1(), 1e-6);
+                break;
+            }
+        }
+        assertTrue(foundXfr, "Should find transformer 8_5_0_1");
+
+        // Defaults: vLimit 1.1/0.9, area/zone "1"
+        assertEquals(1.1, bus1.getVLimit().getMax(), 1e-9);
+        assertEquals(0.9, bus1.getVLimit().getMin(), 1e-9);
+        assertNotNull(bus1.getArea());
+        assertEquals("1", bus1.getArea().getId());
+        assertNotNull(bus1.getZone());
+        assertEquals("1", bus1.getZone().getId());
+
+        // Gen on LV bus 119: contribute gen + PV + Q limits from SynchronousMachine
+        AclfBus bus119 = null;
+        for (AclfBus bus : net.getBusList()) {
+            if ("119".equals(bus.getName())) {
+                bus119 = bus;
+                break;
+            }
+        }
+        assertNotNull(bus119, "Should find bus named 119");
+        assertEquals(AclfGenCode.GEN_PV, bus119.getGenCode());
+        assertNotNull(bus119.getContributeGenList());
+        assertTrue(bus119.getContributeGenList().size() >= 1);
+        assertTrue(bus119.isPVBusLimit());
+        assertEquals(-0.03104, bus119.getContributeGenList().get(0).getGen().getImaginary(), 1e-5);
     }
 
     @Test
