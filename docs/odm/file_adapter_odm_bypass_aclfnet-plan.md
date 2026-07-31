@@ -1,6 +1,6 @@
 ---
 name: ODM Bypass Direct Adapters
-overview: Replace the current two-stage ODM-based import pipeline (File -> ODM XML -> AclfNetwork) with direct file-to-model adapters for all 7 file formats, eliminating the ipss-odm dependency for import and the XML intermediate representation.
+overview: Replace the two-stage ODM-based import pipeline (File -> ODM XML -> AclfNetwork) with direct file-to-model adapters for all ACLF formats (PSS/E RAW/JSON, IEEE CDF, MATPOWER, UCTE, GE, PWD, BPA, and CIM/CGMES), eliminating the ipss-odm dependency for import and the XML intermediate representation.
 todos:
   - id: phase1-builder
     content: "Phase 1: Create AclfNetworkBuilder -- shared model-construction utility extracted from AclfBusDataHelper, AclfBranchDataHelper, AclfHvdcDataHelper, and AbstractODMAclfNetMapper"
@@ -29,6 +29,9 @@ todos:
   - id: phase4-bpa
     content: "Phase 4f: Create BPA direct adapter"
     status: completed
+  - id: phase4-cim
+    content: "Phase 4g: Create CIM/CGMES direct adapter (CIMDirectParser + Jena RDF stack + builder-backed mappers)"
+    status: completed
   - id: phase5-integration
     content: "Phase 5: Update IpssFileAdapterBase, IpssFileAdapter, CorePluginFactory, IpssAdapter DSL; remove ODM import dependency from pom.xml; migrate tests"
     status: completed
@@ -37,11 +40,27 @@ isProject: false
 
 # Bypass ODM Layer: Direct File-to-Model Adapters
 
-## Current Architecture (to be replaced)
+## Status
+
+**Complete** for all ACLF import formats listed below. Each format has a `*DirectParser` (or CIM equivalent) in `ipss.plugin.core` that builds `AclfNetwork` via `AclfNetworkBuilder`. The historical ODM adapters in ipss-odm remain as reference only.
+
+| Format | Facade | Direct parser package |
+|--------|--------|------------------------|
+| PSS/E RAW | `PTIFormat` | `org.interpss.fadapter.psse.PSSEDirectParser` |
+| PSS/E JSON (RAWX) | `PTIFormat` / DSL | `org.interpss.fadapter.psse.PSSEJsonDirectParser` |
+| IEEE CDF | `IeeeCDFFormat` | `org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser` |
+| MATPOWER | `MatpowerFormat` | `org.interpss.fadapter.matpower.MatpowerDirectParser` |
+| UCTE-DEF | `UCTEFormat` | `org.interpss.fadapter.ucte.UCTEDirectParser` |
+| GE PSLF | `GEFormat` | `org.interpss.fadapter.ge.GEPslfDirectParser` |
+| PowerWorld (PWD) | `PWDFormat` | `org.interpss.fadapter.pwd.PWDDirectParser` |
+| BPA | `BPAFormat` | `org.interpss.fadapter.bpa.BPADirectParser` |
+| CIM/CGMES | `CIMFormat` | `org.interpss.fadapter.cim.CIMDirectParser` |
+
+## Former Architecture (replaced)
 
 ```mermaid
 flowchart LR
-    File["Data File\n(.raw, .ieee, .m, ...)"] --> ODMAdapter["IODMAdapter\n(ipss-odm repo)"]
+    File["Data File\n(.raw, .ieee, .m, CIM RDF, ...)"] --> ODMAdapter["IODMAdapter\n(ipss-odm repo)"]
     ODMAdapter --> XMLModel["AclfModelParser\n(ODM XML Schema)"]
     XMLModel --> Mapper["AbstractODMAclfNetMapper\n+ AclfBusDataHelper\n+ AclfBranchDataHelper\n(ipss-plugin repo)"]
     Mapper --> Network["AclfNetwork\n(in-memory model)"]
@@ -49,24 +68,24 @@ flowchart LR
 
 Key problem: Two separate repos involved (ipss-odm for parsing, ipss-plugin for mapping), with a heavyweight XML intermediate representation (JAXB schema types) in between.
 
-## Target Architecture
+## Target Architecture (implemented)
 
 ```mermaid
 flowchart LR
-    File["Data File\n(.raw, .ieee, .m, ...)"] --> Parser["Format-Specific Parser\n(new, in ipss-plugin)"]
+    File["Data File\n(.raw, .ieee, .m, CIM RDF, ...)"] --> Parser["Format-Specific Parser\n(in ipss-plugin)"]
     Parser --> Builder["AclfNetworkBuilder\n(shared, in ipss-plugin)"]
     Builder --> Network["AclfNetwork\n(in-memory model)"]
 ```
 
-All code lives in ipss-plugin. Each format gets a direct parser that reads the file and calls a shared `AclfNetworkBuilder` to construct the in-memory model. No XML, no ODM dependency.
+All import code lives in ipss-plugin. Each format gets a direct parser that reads the file and calls a shared `AclfNetworkBuilder` to construct the in-memory model. No XML, no ODM dependency for import.
 
 ## Key Design Decisions
 
-- **Shared builder, not shared intermediate model**: Rather than replacing ODM XML types with a new set of intermediate POJOs (which would just recreate ODM with different types), the parsers call `AclfNetworkBuilder` methods directly. The builder encapsulates the model-construction logic currently spread across `AclfBusDataHelper`, `AclfBranchDataHelper`, and `AclfHvdcDataHelper`.
+- **Shared builder, not shared intermediate model**: Rather than replacing ODM XML types with a new set of intermediate POJOs (which would just recreate ODM with different types), the parsers call `AclfNetworkBuilder` methods directly. The builder encapsulates the model-construction logic formerly spread across `AclfBusDataHelper`, `AclfBranchDataHelper`, and `AclfHvdcDataHelper`.
 
-- **Reuse existing parsing logic**: The field-extraction/tokenization logic in the ODM record mappers (e.g., `PSSEBusDataRawMapper`, `PSSELineDataRawMapper`) is well-tested. The new direct parsers should port this logic rather than rewrite from scratch.
+- **Reuse existing parsing logic**: The field-extraction/tokenization logic in the ODM record mappers (e.g., `PSSEBusDataRawMapper`, `PSSELineDataRawMapper`) was well-tested. Direct parsers port this logic rather than rewrite from scratch.
 
-- **IpssInternalFormat_in is the proven pattern**: [IpssInternalFormat_in.java](ipss.plugin.core/src/main/java/org/interpss/fadapter/impl/IpssInternalFormat_in.java) already demonstrates direct file-to-AclfNetwork construction using `CoreObjectFactory.createAclfBus()`, `CoreObjectFactory.createAclfBranch()`, and adapter pattern objects (`toPQBus()`, `toPVBus()`, `toSwingBus()`, `toLine()`). The new parsers follow this same approach but with the builder as the abstraction layer.
+- **IpssInternalFormat_in is the proven pattern**: [IpssInternalFormat_in.java](ipss.plugin.core/src/main/java/org/interpss/fadapter/impl/IpssInternalFormat_in.java) already demonstrated direct file-to-AclfNetwork construction using `CoreObjectFactory.createAclfBus()`, `CoreObjectFactory.createAclfBranch()`, and adapter pattern objects (`toPQBus()`, `toPVBus()`, `toSwingBus()`, `toLine()`). The new parsers follow this same approach but with the builder as the abstraction layer.
 
 ## Data Elements to Handle
 
@@ -84,11 +103,11 @@ Every format needs to map some or all of these elements:
 
 ### Phase 1: AclfNetworkBuilder (shared infrastructure)
 
-Create `org.interpss.fadapter.builder.AclfNetworkBuilder` in [ipss.plugin.core](ipss.plugin.core/src/main/java/org/interpss/fadapter/). This class consolidates model-construction logic currently in:
-- [AclfBusDataHelper.java](ipss.plugin.core/src/main/java/org/interpss/odm/mapper/impl/aclf/AclfBusDataHelper.java) (~680 lines) -- bus, generator, load, fixed/switched shunt, SVC mapping
-- [AclfBranchDataHelper.java](ipss.plugin.core/src/main/java/org/interpss/odm/mapper/impl/aclf/AclfBranchDataHelper.java) -- line, xfr, 3W xfr, PS xfr mapping
-- [AclfHvdcDataHelper.java](ipss.plugin.core/src/main/java/org/interpss/odm/mapper/impl/aclf/AclfHvdcDataHelper.java) -- HVDC LCC and VSC mapping
-- [AbstractODMAclfNetMapper.java](ipss.plugin.core/src/main/java/org/interpss/odm/mapper/impl/aclf/AbstractODMAclfNetMapper.java) -- network-level, area, zone, interface, post-processing
+Create `org.interpss.fadapter.builder.AclfNetworkBuilder` in [ipss.plugin.core](ipss.plugin.core/src/main/java/org/interpss/fadapter/). This class consolidates model-construction logic formerly in:
+- `AclfBusDataHelper` — bus, generator, load, fixed/switched shunt, SVC mapping
+- `AclfBranchDataHelper` — line, xfr, 3W xfr, PS xfr mapping
+- `AclfHvdcDataHelper` — HVDC LCC and VSC mapping
+- `AbstractODMAclfNetMapper` — network-level, area, zone, interface, post-processing
 
 Key builder methods (accepting primitive/simple Java types, no ODM schema types):
 
@@ -184,31 +203,82 @@ Each adapter follows the same pattern: parse format-specific file, call `AclfNet
 - **PowerWorld (PWD)**: Port from `PowerWorldAdapter`. Includes PWD-specific extension data.
 - **BPA**: Port from `BPAAdapter`. Multi-file format (load flow + dynamics). Special handling via `load(ctx, filepathAry, ...)`.
 
+### Phase 4g: CIM/CGMES Direct Adapter (implemented)
+
+Port `org.ieee.odm.adapter.cim` into ipss-plugin as a direct CIM → `AclfNetwork` path. Unlike text/JSON formats, CIM uses multi-profile RDF/XML (EQ/TP/SSH/SV/BD) or a single CIMHub file, parsed with Apache Jena.
+
+```mermaid
+flowchart LR
+  CimFiles["CIM RDF/XML\nEQ/TP/SSH/SV/BD"] --> Rdf["CIMRdfParser\nApache Jena"]
+  Rdf --> Model["CIMModel + indices"]
+  Model --> Direct["CIMDirectParser\n+ equipment mappers"]
+  Direct --> Builder["AclfNetworkBuilder"]
+  Builder --> Net["AclfNetwork"]
+```
+
+**Package layout** under [ipss.plugin.core/.../fadapter/cim/](ipss.plugin.core/src/main/java/org/interpss/fadapter/cim/):
+
+| Class | Role |
+|---|---|
+| [CIMFormat](ipss.plugin.core/src/main/java/org/interpss/fadapter/CIMFormat.java) | Facade → `SimuContext` / `AclfNetwork`; single- and multi-file `load()` |
+| [CIMDirectParser](ipss.plugin.core/src/main/java/org/interpss/fadapter/cim/CIMDirectParser.java) | Orchestrate parse → convert buses/branches/injections → `finalizeNetwork()` |
+| `CIMModel`, `CIMConstants`, `CIMPropertyBag` | Jena model wrap, namespaces, typed property access |
+| `parser/CIMRdfParser` | RDF/XML sanitize + Jena `Model.read` (base-URI merge fix) |
+| `util/CIMUnitConverter` | Ohm/Siemens/MW → PU helpers |
+| `mapper/*` | Builder-backed equipment mappers (no ODM schema types) |
+
+**ODM mapper → builder mapping** (field extraction / PU formulas preserved from ipss-odm):
+
+| ODM source | Direct sink |
+|---|---|
+| `CIMAdapter.convertBuses` (TN → Busbar → ConnNode) | `builder.addBus(...)` + `cimModel.mapBusId`; skip boundary TNs |
+| `CIMLineMapper` / series compensator | `builder.addLine(...)` with half shunt Y; cirId 1–10 |
+| `CIMTransformerMapper` | `builder.addXformer2W(...)`; taps from bus base kV, clamped to (0, 2] |
+| `CIMTransformer3WMapper` | `builder.addXformer3W(...)` star-bus model (adds star bus) |
+| `CIMLoadMapper` | `builder.addContributeLoad(...)` |
+| `CIMGeneratorMapper` / ExtNetInjection | `setPVBus` / `setPQBus` / `setSwingBus`; promote first PV if no swing |
+| `CIMShuntCompensatorMapper` | `builder.addToBusShuntY(...)` |
+
+Placeholder container mappers (`CIMSubstationMapper`, `CIMVoltageLevelMapper`) were not ported — VL voltages are read from `CIMModel` during bus conversion.
+
+**Wiring:**
+- `IpssFileAdapter.FileFormat.CIM` and `IpssAdapter.FileFormat.CIM`
+- [CorePluginFactory](ipss.plugin.core/src/main/java/org/interpss/CorePluginFactory.java) returns `new CIMFormat()`
+- `IpssAdapter.FileImportDSL` routes single- and multi-file CIM loads to `CIMDirectParser`
+- Jena `jena-core` / `jena-arq` **4.10.0** added to [ipss.plugin.core/pom.xml](ipss.plugin.core/pom.xml) (no `org.ieee.odm` dependency)
+
+**Tests:** [CIMDirectParserTest](ipss.test.plugin.core/src/test/java/org/interpss/core/adapter/cim/CIMDirectParserTest.java) against fixtures in `testData/adpter/cim/` (MicroGrid EQ+TP[+SSH/SV], MiniGrid 3W, IEEE118 CIMHub vs MATPOWER counts, boundary handling, factory multi-file).
+
+**Out of scope (same gaps as odm CIM docs):** tap changers, ratings/limits completeness, HVDC, breaker/switch modeling, further PowSyBl parity.
+
+**Note:** ipss-odm `org.ieee.odm.adapter.cim` is left in place as historical reference; it still stops at `AclfModelParser`.
+
 ### Phase 5: Integration, Wiring, and Cleanup
 
 **Update adapter classes:**
 - [PTIFormat.java](ipss.plugin.core/src/main/java/org/interpss/fadapter/PTIFormat.java): Override `load()` to use `PSSEDirectParser` instead of delegating to `IpssFileAdapterBase.loadByODMTransformation()`
-- Similarly update `IeeeCDFFormat`, `MatpowerFormat`, `UCTEFormat`, `GEFormat`, `PWDFormat`, `BPAFormat`
+- Similarly update `IeeeCDFFormat`, `MatpowerFormat`, `UCTEFormat`, `GEFormat`, `PWDFormat`, `BPAFormat`, `CIMFormat`
 
 **Update base class:**
 - [IpssFileAdapterBase.java](ipss.plugin.core/src/main/java/org/interpss/fadapter/impl/IpssFileAdapterBase.java): Remove `loadByODMTransformation()` method and ODM imports once all adapters are migrated
 
 **Update interface:**
-- [IpssFileAdapter.java](ipss.plugin.core/src/main/java/org/interpss/fadapter/IpssFileAdapter.java): Remove or deprecate `getODMModelParser()` method (line 145)
+- [IpssFileAdapter.java](ipss.plugin.core/src/main/java/org/interpss/fadapter/IpssFileAdapter.java): Remove or deprecate `getODMModelParser()` method; add `FileFormat.CIM`
 
 **Update entry points:**
-- [CorePluginFactory.java](ipss.plugin.core/src/main/java/org/interpss/CorePluginFactory.java): Remove `getOdm2AclfParserMapper()` and related ODM mapper factory methods
-- [IpssAdapter.java](ipss.plugin.core/src/main/java/org/interpss/plugin/pssl/plugin/IpssAdapter.java): Rewrite `FileImportDSL.load()` and `getAdapter()` to use direct parsers instead of IODMAdapter. Remove ODM adapter imports.
+- [CorePluginFactory.java](ipss.plugin.core/src/main/java/org/interpss/CorePluginFactory.java): Remove `getOdm2AclfParserMapper()` and related ODM mapper factory methods; register `CIMFormat`
+- [IpssAdapter.java](ipss.plugin.core/src/main/java/org/interpss/plugin/pssl/plugin/IpssAdapter.java): Rewrite `FileImportDSL.load()` and `getAdapter()` to use direct parsers instead of IODMAdapter. Remove ODM adapter imports. Support CIM multi-file via `load(netType, fileNameAry)`.
 
 **Remove ODM dependency:**
-- Update `ipss.plugin.core/pom.xml` to remove `org.ieee.odm` dependency (once all import paths are migrated)
+- Update `ipss.plugin.core/pom.xml` to remove `org.ieee.odm` dependency (once all import paths are migrated). CIM adds Jena instead of ODM.
 
 **Test migration:**
 - Update tests that currently use `PSSERawAdapter` or `IODMAdapter` directly (like the examples in [FileAdapter.md](ipss.plugin.core/docs/md/FileAdapter.md))
-- Existing integration tests in [ipss.test.plugin.core](ipss.test.plugin.core/) serve as regression tests -- they test the final AclfNetwork output, so they validate the new direct adapters produce identical results
+- Existing integration tests in [ipss.test.plugin.core](ipss.test.plugin.core/) serve as regression tests — they test the final AclfNetwork output, so they validate the new direct adapters produce identical results
+- CIM: `CIMDirectParserTest` ported from odm phase/CIMHub expectations onto `AclfNetwork` counts
 
 ## Risk Mitigation
 
 - **Regression testing**: Run all existing tests after each phase. The test suite (`CorePluginTestSuite`) validates end-to-end results (loadflow solutions on IEEE standard systems). If the new direct adapters produce the same AclfNetwork, loadflow results will match.
 - **Phased migration**: Each format can be migrated independently. If a direct adapter has issues, the ODM path can be temporarily retained for that format until resolved.
-- **Unit conversion correctness**: The existing ODM helpers (`ODMUnitHelper`) handle unit conversions (MW/MVA/kV to PU). The new `AclfNetworkBuilder` must replicate these conversions exactly. This is a key source of subtle bugs.
+- **Unit conversion correctness**: The existing ODM helpers (`ODMUnitHelper`) handle unit conversions (MW/MVA/kV to PU). The new `AclfNetworkBuilder` must replicate these conversions exactly. This is a key source of subtle bugs. CIM PU conversion (Ohms/Siemens on voltage base) is preserved from the odm CIM mappers; transformer taps outside InterPSS `(0, 2]` are clamped to `1.0` with a warning.
