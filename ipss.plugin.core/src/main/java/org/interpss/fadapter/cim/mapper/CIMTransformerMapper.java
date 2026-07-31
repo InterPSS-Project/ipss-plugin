@@ -102,18 +102,22 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
                             end2.getDouble("TransformerEnd.ratedU", 0.0)));
 
         double r1 = end1.getDouble("PowerTransformerEnd.r", end1.getDouble("TransformerEnd.r", 0.0));
-        double x1 = end1.getDouble("PowerTransformerEnd.x", end1.getDouble("TransformerEnd.x", 0.0));
+        // Missing PowerTransformerEnd.x → NaN so we can detect "not provided"
+        Double x1Obj = endHasX(end1) ? end1.getDouble("PowerTransformerEnd.x",
+                end1.getDouble("TransformerEnd.x", 0.0)) : null;
         double r2 = end2.getDouble("PowerTransformerEnd.r", end2.getDouble("TransformerEnd.r", 0.0));
-        double x2 = end2.getDouble("PowerTransformerEnd.x", end2.getDouble("TransformerEnd.x", 0.0));
+        Double x2Obj = endHasX(end2) ? end2.getDouble("PowerTransformerEnd.x",
+                end2.getDouble("TransformerEnd.x", 0.0)) : null;
         double r = r1 + r2;
-        double x = x1 + x2;
+        double x = (x1Obj != null ? x1Obj : 0.0) + (x2Obj != null ? x2Obj : 0.0);
+        boolean endXMissing = x1Obj == null && x2Obj == null;
 
-        // Prefer TransformerMeshImpedance when end r/x are empty (IEEE118 / CIM Hub style)
+        // IEEE118 / CIM Hub: ends often carry tiny winding r with no x; series Z is on mesh
         CIMPropertyBag mesh = meshByFromEnd.get(end1.getId());
         if (mesh == null) {
             mesh = meshByFromEnd.get(end2.getId());
         }
-        if (mesh != null && Math.abs(r) + Math.abs(x) == 0.0) {
+        if (mesh != null && (endXMissing || Math.abs(r) + Math.abs(x) == 0.0)) {
             r = mesh.getDouble("TransformerMeshImpedance.r", 0.0);
             x = mesh.getDouble("TransformerMeshImpedance.x", 0.0);
         }
@@ -206,5 +210,10 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
             return 1.0;
         }
         return tap;
+    }
+
+    private static boolean endHasX(CIMPropertyBag end) {
+        return end.getString("PowerTransformerEnd.x") != null
+                || end.getString("TransformerEnd.x") != null;
     }
 }
