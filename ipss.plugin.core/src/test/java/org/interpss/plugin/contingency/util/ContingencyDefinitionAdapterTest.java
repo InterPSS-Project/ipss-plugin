@@ -1,12 +1,12 @@
 package org.interpss.plugin.contingency.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
+import org.interpss.plugin.contingency.definition.ContingencyActionType;
 import org.interpss.plugin.contingency.definition.ContingencyDefinition;
 import org.junit.jupiter.api.Test;
 
@@ -66,12 +66,19 @@ public class ContingencyDefinitionAdapterTest {
     }
 
     @Test
-    public void unsupportedLegacyActionIsRejectedForGroupedDefinitions() {
+    public void branchCloseIsPreservedForGroupedDefinitions() {
         List<BranchContingencyRecord> records = List.of(
                 new BranchContingencyRecord("CTG_CLOSE", "Branch", "CLOSE", "Bus1", "Bus2", "1"));
 
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> ContingencyDefinitionAdapter.fromBranchRecords(records));
+        List<ContingencyDefinition> definitions =
+                ContingencyDefinitionAdapter.fromBranchRecords(records);
+
+        assertEquals(1, definitions.size());
+        assertEquals(ContingencyActionType.CLOSE, definitions.get(0).actions.get(0).actionType);
+
+        List<BranchContingencyRecord> roundTripped =
+                ContingencyDefinitionAdapter.toBranchRecords(definitions);
+        assertEquals(1, roundTripped.size());
+        assertEquals("CLOSE", roundTripped.get(0).actionType);
     }
 }
