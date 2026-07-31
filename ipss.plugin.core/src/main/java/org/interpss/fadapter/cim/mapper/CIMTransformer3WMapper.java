@@ -115,7 +115,7 @@ public class CIMTransformer3WMapper extends AbstractCIMDataMapper {
                         true);
                 branch.setId(xfrId);
                 branch.setName(name.isEmpty() ? xfrId : name);
-                log.info("Created 3W xfr branch: {} ({}→{}→{}) ratedU={:.1f}/{:.1f}/{:.1f} z12={:.6f}+j{:.6f} PU",
+                log.debug("Created 3W xfr branch: {} ({}→{}→{}) ratedU={}/{}/{} z12={}+j{} PU",
                     name, bus1Id, bus2Id, bus3Id, ratedU1, ratedU2, ratedU3, z12_r, z12_x);
                 return;
             } catch (Exception e) {

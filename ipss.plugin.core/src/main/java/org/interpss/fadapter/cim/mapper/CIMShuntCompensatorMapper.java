@@ -122,7 +122,7 @@ public class CIMShuntCompensatorMapper extends AbstractCIMDataMapper {
 
         builder.addToBusShuntY(busId, new Complex(gPU, bPU));
 
-        log.info(String.format("Created shunt: %s on bus %s, B=%.6f S (%.4f PU)",
+        log.debug(String.format("Created shunt: %s on bus %s, B=%.6f S (%.4f PU)",
             name, busId, totalB, bPU));
     }
 }
