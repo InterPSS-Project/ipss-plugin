@@ -70,6 +70,41 @@ public class ContingencyFileUtilTest {
     }
 
     @Test
+    public void importsGroupedJsonAndPreservesCloseAction() throws Exception {
+        Path file = tempDir.resolve("grouped-close-contingencies.json");
+        Files.writeString(file, """
+                {
+                  "contingency_definitions": [
+                    {
+                      "name": "CTG_CLOSE",
+                      "actions": [
+                        {
+                          "object_type": "BRANCH",
+                          "action_type": "CLOSE",
+                          "object_id": "Bus1->Bus2(1)",
+                          "metadata": {
+                            "from_bus": "Bus1",
+                            "to_bus": "Bus2",
+                            "circuit": "1"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                }
+                """, StandardCharsets.UTF_8);
+
+        List<ContingencyDefinition> definitions =
+                ContingencyFileUtil.importContingencyDefinitionsFromJson(file.toFile());
+        assertEquals(ContingencyActionType.CLOSE, definitions.get(0).actions.get(0).actionType);
+
+        List<BranchContingencyRecord> records =
+                ContingencyFileUtil.importContingenciesFromJson(file.toFile());
+        assertEquals(1, records.size());
+        assertEquals("CLOSE", records.get(0).actionType);
+    }
+
+    @Test
     public void importsLegacyFlatJsonAsGroupedDefinitions() throws Exception {
         Path file = tempDir.resolve("flat-contingencies.json");
         Files.writeString(file, """
@@ -86,7 +121,7 @@ public class ContingencyFileUtilTest {
                     {
                       "name": "CTG_A",
                       "element_type": "Branch",
-                      "action_type": "OPEN",
+                      "action_type": "CLOSE",
                       "from_bus": "Bus3",
                       "to_bus": "Bus4",
                       "circuit": "2"
@@ -102,6 +137,7 @@ public class ContingencyFileUtilTest {
         assertEquals("CTG_A", definitions.get(0).name);
         assertEquals(2, definitions.get(0).actions.size());
         assertEquals("Bus3->Bus4(2)", definitions.get(0).actions.get(1).objectId);
+        assertEquals(ContingencyActionType.CLOSE, definitions.get(0).actions.get(1).actionType);
     }
 
     @Test
@@ -123,5 +159,23 @@ public class ContingencyFileUtilTest {
         assertTrue(json.contains("\"object_id\""));
         assertFalse(json.contains("\"contingencies\""));
         assertFalse(json.contains("\"branch_id\""));
+    }
+
+    @Test
+    public void exportsGroupedDefinitionsWithCloseAction() throws Exception {
+        Path file = tempDir.resolve("exported-close-contingencies.json");
+        ContingencyAction action = new ContingencyAction(
+                ContingencyObjectType.BRANCH,
+                ContingencyActionType.CLOSE,
+                "Bus1->Bus2(1)");
+        ContingencyDefinition definition = new ContingencyDefinition("CTG_CLOSE", List.of(action));
+
+        ContingencyFileUtil.exportContingencyDefinitionsToJson(
+                file.toFile(),
+                List.of(definition));
+
+        String json = Files.readString(file, StandardCharsets.UTF_8);
+        assertTrue(json.contains("\"action_type\""));
+        assertTrue(json.contains("\"CLOSE\""));
     }
 }
