@@ -1,5 +1,6 @@
 package org.interpss.nbreaker;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 
 import com.interpss.common.exp.InterpssException;
@@ -8,6 +9,7 @@ import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetInfoHelper;
 import com.interpss.core.funcImpl.topo.SubstationNBreakerHelper;
@@ -24,55 +26,24 @@ public class PSSE_Sample_NB_Aclf_Sample {
 	public static void main(String[] args) throws InterpssException {
 		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 
-		/* 
-		Substation sub5 = net.getSubstation("5");
-		Substation sub9 = net.getSubstation("9");
-
-		SubstationNBreakerHelper subHelper5 = new SubstationNBreakerHelper(sub5);
-		subHelper5.topoAnalysis();
-		//subHelper5.printSubstationTree();
-
-		SubstationNBreakerHelper subHelper9 = new SubstationNBreakerHelper(sub9);
-		subHelper9.topoAnalysis();
-		//subHelper9.printSubstationTree();
-		//subHelper9.printTopoFlags();
-
-		/* 
-		net.getBus("Bus3010").setStatus(false);
-		net.getBus("Bus215").setStatus(false);
+		net.getBus("Bus301").setStatus(false);
 		net.getBus("Bus401").setStatus(false);
 		net.getBus("Bus402").setStatus(false);
-		*/
 
-		AclfBus bus301 = net.getBus("Bus301");
-		// Expected null substation: sample_nb.raw has no SUBSTATION NODE for bus 301
-		// (also 401, 402). Importer assigns via NB node bus I only —
-		// see testData/psse/v36/sample-nb-substation-nbModel.md.
+		// 3021 / 3022  2T Hvdc   
+		net.getBus("Bus3021").setExternalPowerIntoNet(new Complex(-14.298913320926543, 5.616601769590946));
+		net.getBus("Bus3022").setExternalPowerIntoNet(new Complex(-14.359068332519264, 6.156034189594078));
 
-		/* 
-		AclfBranch bus3010Leg = net.getBranch("3WNDTR_3008_3012_3010_2->Bus3010(2)");
-		bus3010Leg.setStatus(true);
-		AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus3010", false);
-		*/
-		
-		net.getSubstationMap().forEach((subName, sub) -> {	
-			SubstationNBreakerHelper subHelper = new SubstationNBreakerHelper(sub);
-			subHelper.topoAnalysis();
+		// Bus 212       Bus 213  Multi-terminal Hvdc
+		net.getBus("Bus212").setExternalPowerIntoNet(new Complex(-2.963798116185913, 1.4096459351954498));
+		net.getBus("Bus213").setExternalPowerIntoNet(new Complex(-3.037951816979418, 1.5965591185481436));
 
-			AclfNetInfoHelper.outputSubstationAclfInfo(net, subName, false);
+		net.getBusList().forEach(bus -> {
+			if (bus.mismatch(AclfMethodType.NR).abs() > 0.1) 
+				System.out.println(bus.getId() + " " + bus.mismatch(AclfMethodType.NR) + " " + bus.getSubstation().getId());
 		});
 
-		//AclfNetInfoHelper.outputSubstationAclfInfo(net, "9", false);
-
-		/* 
-		AclfBranch bus215Leg = net.getBranch("3WNDTR_205_215_208_3->Bus215(3)");
-		bus215Leg.setStatus(true);
-		Aclf3WBranch bus215Xfr = net.get3WXfr("Bus205", "Bus215", "Bus208", "3");
-		bus215Xfr.setStatus(true);
-		AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus215", false);
-		*/
-
-		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.loadflow();
+		//LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		//algo.loadflow();
 	}
 }
