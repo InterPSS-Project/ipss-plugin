@@ -68,7 +68,7 @@ public class CIMLineMapper extends AbstractCIMDataMapper {
         branch.setId(lineId);
         branch.setName(name.isEmpty() ? lineId : name);
 
-        log.info("Created line branch: {} ({}→{}) r={:.6f} x={:.6f} bch={:.6f} PU",
+        log.debug("Created line branch: {} ({}→{}) r={} x={} bch={} PU",
             name, fromBusId, toBusId, rPU, xPU, bPU);
     }
 
@@ -110,7 +110,7 @@ public class CIMLineMapper extends AbstractCIMDataMapper {
         branch.setId(lineId);
         branch.setName(name.isEmpty() ? lineId : name);
 
-        log.info("Created SeriesCompensator as line: {} ({}→{}) r={:.6f} x={:.6f} PU",
+        log.debug("Created SeriesCompensator as line: {} ({}→{}) r={} x={} PU",
             name, fromBusId, toBusId, rPU, xPU);
     }
 
