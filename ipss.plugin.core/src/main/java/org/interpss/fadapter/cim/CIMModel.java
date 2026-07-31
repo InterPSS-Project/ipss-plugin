@@ -27,6 +27,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.interpss.fadapter.cim.util.CIMUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -492,20 +493,49 @@ public class CIMModel {
 
     /**
      * Resolve nominal voltage (kV) for a ConnectivityNode from connected equipment
-     * {@code ConductingEquipment.BaseVoltage} via terminals.
+     * {@code ConductingEquipment.BaseVoltage} via terminals, or from
+     * {@code TransformerEnd.BaseVoltage} / {@code PowerTransformerEnd.ratedU}
+     * when the only connected equipment is a SynchronousMachine without BaseVoltage
+     * (IEEE118 hub style).
      */
     public Double getBaseVoltageFromConnectivityNode(String cnUri) {
         if (cnUri == null) return null;
         for (Map.Entry<String, String> e : connectivityNodeByTerminal.entrySet()) {
             if (!cnUri.equals(e.getValue())) continue;
-            String equipId = equipmentByTerminal.get(e.getKey());
-            if (equipId == null) continue;
-            Resource eqRes = jenaModel.getResource(equipId);
-            Property bvProp = jenaModel.createProperty(cimNamespace + "ConductingEquipment.BaseVoltage");
-            Statement st = eqRes.getProperty(bvProp);
-            if (st != null && st.getObject().isResource()) {
-                Double val = getBaseVoltageValue(st.getObject().asResource().getURI());
+            String termId = e.getKey();
+            String equipId = equipmentByTerminal.get(termId);
+            if (equipId != null) {
+                Resource eqRes = jenaModel.getResource(equipId);
+                Property bvProp = jenaModel.createProperty(cimNamespace + "ConductingEquipment.BaseVoltage");
+                Statement st = eqRes.getProperty(bvProp);
+                if (st != null && st.getObject().isResource()) {
+                    Double val = getBaseVoltageValue(st.getObject().asResource().getURI());
+                    if (val != null) return val;
+                }
+            }
+            Double fromEnd = getBaseVoltageFromTransformerTerminal(termId);
+            if (fromEnd != null) return fromEnd;
+        }
+        return null;
+    }
+
+    /**
+     * Resolve kV from the PowerTransformerEnd that owns {@code terminalUri}.
+     */
+    private Double getBaseVoltageFromTransformerTerminal(String terminalUri) {
+        if (terminalUri == null) return null;
+        for (CIMPropertyBag end : transformerEnds()) {
+            String term = end.getResourceId("TransformerEnd.Terminal");
+            if (!terminalUri.equals(term)) continue;
+            String bvUri = end.getResourceId("TransformerEnd.BaseVoltage");
+            if (bvUri != null) {
+                Double val = getBaseVoltageValue(bvUri);
                 if (val != null) return val;
+            }
+            double ratedU = end.getDouble("PowerTransformerEnd.ratedU",
+                    end.getDouble("TransformerEnd.ratedU", 0.0));
+            if (ratedU > 0) {
+                return CIMUnitConverter.toKV(ratedU);
             }
         }
         return null;
