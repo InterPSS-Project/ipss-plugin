@@ -131,7 +131,8 @@ public final class ContingencyDefinitionAdapter {
         if (action.objectType != ContingencyObjectType.BRANCH) {
             throw new IllegalArgumentException("Unsupported contingency object type: " + action.objectType);
         }
-        if (action.actionType != ContingencyActionType.OPEN) {
+        if (action.actionType != ContingencyActionType.OPEN
+                && action.actionType != ContingencyActionType.CLOSE) {
             throw new IllegalArgumentException("Unsupported contingency action type: " + action.actionType);
         }
         if (isBlank(action.objectId)) {
@@ -143,6 +144,9 @@ public final class ContingencyDefinitionAdapter {
         String normalized = actionType == null ? "" : actionType.trim().toUpperCase(Locale.ROOT);
         if ("OPEN".equals(normalized)) {
             return ContingencyActionType.OPEN;
+        }
+        if ("CLOSE".equals(normalized)) {
+            return ContingencyActionType.CLOSE;
         }
         throw new IllegalArgumentException("Unsupported branch contingency action type: " + actionType);
     }
@@ -176,7 +180,10 @@ public final class ContingencyDefinitionAdapter {
     }
 
     private static String defaultUnnamedName(BranchContingencyRecord record, int sequence) {
-        return "BRANCH_OPEN_" + sequence + "_" + branchId(record);
+        String actionType = record.actionType == null || record.actionType.isBlank()
+                ? ContingencyActionType.OPEN.name()
+                : record.actionType.trim().toUpperCase(Locale.ROOT);
+        return "BRANCH_" + actionType + "_" + sequence + "_" + branchId(record);
     }
 
     private static String metadataValue(ContingencyAction action, String key) {
