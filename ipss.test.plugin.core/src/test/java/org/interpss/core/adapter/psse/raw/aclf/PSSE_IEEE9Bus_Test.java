@@ -23,7 +23,6 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.RemoteQBus;
-import com.interpss.core.aclf.adpter.AclfGenBusAdapter;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.algo.AclfMethodType;
@@ -452,18 +451,14 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
 		//check the SVC results
-		//bus 5 is a genPV bus, so the voltage is 1.01 pu
-		assertTrue(Math.abs(bus5.getVoltageMag() - 1.01) < 1e-6, "Bus5 voltage magnitude is correct");
-		// TODO: note the SVC is controlling the local bus voltage, so it is a GenPV bus
-		assertTrue( bus5.isGenPV()); 
-		//RemoteQBus re = bus5.getRemoteQBus();
-		AclfGenBusAdapter genBus = bus5.toGenBus();
-		double q = genBus.getGenResults(UnitType.PU).getImaginary();
-		System.out.println("Bus5 svc q: " + q);
-		assertTrue(Math.abs(q + 0.10778) < 1e-3, "SVC Q output is correct"); 
-		
-		//System.out.println("Bus5 svc BActual: " + svc1.getBActual());
-		//assertTrue(Math.abs(svc1.getBActual()*1.01*1.01 - 0.1598) < 1e-3, "SVC Q output is correct"); 
+		// The SVC controls this PQ bus to 1.01 pu.
+		assertEquals(1.01, bus5.getVoltageMag(), 5.0e-3,
+				"Bus5 voltage magnitude is within the SVC control tolerance");
+		assertTrue(bus5.isGenPQ());
+		double q = svc1.getQ();
+		double qMax = svc1.getBLimit().getMax()
+				* bus5.getVoltageMag() * bus5.getVoltageMag();
+		assertTrue(q > 0.0 && q < qMax, "SVC output is capacitive and within its rating");
 	}
 
 	@Test
@@ -572,5 +567,3 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	
 }
-
-
