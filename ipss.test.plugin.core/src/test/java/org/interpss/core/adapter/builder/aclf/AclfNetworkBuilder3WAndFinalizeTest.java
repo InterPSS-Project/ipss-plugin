@@ -78,6 +78,9 @@ public class AclfNetworkBuilder3WAndFinalizeTest extends CorePluginTestSetup {
 				xfr3w.getFromAclfBranch().getFromShuntY(), new Complex(0.0, 0.01), TOL));
 		assertNotNull(xfr3w.getStarBus());
 		assertEquals("3WXfr StarBus", xfr3w.getStarBus().getName());
+		assertSame(xfr3w.getFromBus().getArea(), xfr3w.getStarBus().getArea());
+		assertSame(xfr3w.getFromBus().getZone(), xfr3w.getStarBus().getZone());
+		assertSame(xfr3w.getFromBus().getOwner(), xfr3w.getStarBus().getOwner());
 	}
 
 	@Test
