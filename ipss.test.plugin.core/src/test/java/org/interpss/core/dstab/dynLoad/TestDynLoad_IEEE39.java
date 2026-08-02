@@ -132,7 +132,7 @@ public class TestDynLoad_IEEE39 {
         //voltage
 		Hashtable<Integer, MonitorRecord> bus507Volt = sm.getBusVoltTable().get("Bus507");
 		assertTrue(bus507Volt != null);
-		assertTrue(Math.abs(bus507Volt.get(20).value-0.97123)<1.0E-4);
+		assertTrue(Math.abs(bus507Volt.get(0).value-0.97123)<1.0E-4);
 		double minPostFaultVolt = Double.MAX_VALUE;
 		for (MonitorRecord rec : bus507Volt.values()) {
 			if (rec.getTime() >= 1.07) {
