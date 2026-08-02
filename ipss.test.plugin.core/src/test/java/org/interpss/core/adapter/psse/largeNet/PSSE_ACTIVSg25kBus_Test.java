@@ -53,7 +53,7 @@ public class PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
   		System.out.println("Swing bus Gen Results: " + p);
-  		assertEquals(p.getReal(), 5.3614, 0.0001);
-  		assertEquals(p.getImaginary(), 1.2018, 0.0001);
+		assertEquals(5.39015, p.getReal(), 0.0001);
+		assertEquals(1.22856, p.getImaginary(), 0.0001);
 	}
 }

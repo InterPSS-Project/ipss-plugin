@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
@@ -19,6 +20,16 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
+	@Test
+	public void remoteGeneratorVoltageControlIsInitialized() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(33).parse("testData/psse/v33/PSSE_sample_savnw.raw");
+
+		assertTrue(net.getBus("Bus206").isRemoteQBus());
+		assertEquals("Bus205", net.getBus("Bus206").getRemoteQBus().getRemoteBus().getId());
+		assertEquals(0.98, net.getBus("Bus206").getRemoteQBus().getVSpecified(), 1.0e-9);
+		assertEquals(100.0, net.getBus("Bus206").getRemoteQBus().getRemoteControlPercentage(), 1.0e-9);
+	}
+
 	@Test
 	public void testDataInputAndPowerflow() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(33).parse("testData/psse/v33/PSSE_sample_savnw.raw");
