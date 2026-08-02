@@ -238,9 +238,9 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
         //System.out.println(bus4.getFirstSwitchedShunt(true).toString());
 
-        // Fixture MODSW=2 => discrete voltage control (PSS/E); VSWHI/VSWLO = 1.03/1.02
-        assertTrue(bus4.getFirstSwitchedShunt(true).getControlMode() == AclfAdjustControlMode.DISCRETE,
-        		"Bus 4 switched shunt control mode should be discrete (MODSW=2)");
+        // Fixture MODSW=2 => continuous voltage control (PSS/E); VSWHI/VSWLO = 1.03/1.02
+        assertTrue(bus4.getFirstSwitchedShunt(true).getControlMode() == AclfAdjustControlMode.CONTINUOUS,
+        		"Bus 4 switched shunt control mode should be continuous (MODSW=2)");
         
         //Check bus4.getSwitchedShunt().getDesiredControlRange is within new LimitType(1.03, 1.02);
         assertTrue(bus4.getFirstSwitchedShunt(true).getDesiredControlRange().getMax() == 1.03 &&
