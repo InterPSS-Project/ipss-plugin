@@ -7,13 +7,18 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
@@ -22,9 +27,11 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
+import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
+import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.net.Substation;
 import com.interpss.core.net.nb.NBModelEquipType;
 
@@ -32,6 +39,8 @@ import com.interpss.core.net.nb.NBModelEquipType;
  * Focused coverage of {@link PSSEDirectParser} version gates for RAW v30–v36.
  */
 public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
+	@TempDir
+	Path tempDir;
 
 	@Test
 	public void testV30DirectParser_noBus0() throws Exception {
@@ -131,10 +140,49 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		assertEquals(1.05, tap.getTurnRatioLimit().getMax(), 1.0E-6);
 		assertEquals(0.95, tap.getTurnRatioLimit().getMin(), 1.0E-6);
 		assertEquals(16, tap.getTapSteps());
+		assertFalse(tap.isVcBusOnFromSide());
+
+		AclfBranch cw2Xfr = net.getBranch("Bus152", "Bus153", "T3");
+		assertNotNull(cw2Xfr);
+		TapControl cw2Tap = cw2Xfr.getTapControl();
+		assertNotNull(cw2Tap);
+		assertEquals(1.05, cw2Tap.getTurnRatioLimit().getMax(), 1.0E-6);
+		assertEquals(0.95, cw2Tap.getTurnRatioLimit().getMin(), 1.0E-6);
+		assertEquals(0.10 / 9.0, cw2Tap.getTapStepSize(), 1.0E-6);
+		assertEquals(AclfAdjustControlMode.DISCRETE, cw2Tap.getControlMode());
+
+		SwitchedShunt discreteShunt = net.getBus("Bus152").getFirstSwitchedShunt(true);
+		assertNotNull(discreteShunt);
+		assertEquals(AclfAdjustControlMode.DISCRETE, discreteShunt.getControlMode());
+
+		AclfBranch phaseShifter = net.getBranch("Bus203", "Bus202", "T7");
+		assertNotNull(phaseShifter);
+		PSXfrPControl phaseControl = phaseShifter.getPSXfrPControl();
+		assertNotNull(phaseControl);
+		assertEquals(-9.0, phaseControl.getDesiredControlRange().getMax(), 1.0E-6);
+		assertEquals(-9.5, phaseControl.getDesiredControlRange().getMin(), 1.0E-6);
+		assertEquals(12.0, phaseControl.getAngLimit(UnitType.Deg).getMax(), 1.0E-6);
+		assertEquals(-11.0, phaseControl.getAngLimit(UnitType.Deg).getMin(), 1.0E-6);
+
+		assertEquals(1L, net.getArea("1").getNumber());
+		assertEquals(1, net.getArea("1").getRegDeviceList().size());
+		AreaInterchangeControl areaControl = (AreaInterchangeControl)
+				net.getArea("1").getRegDeviceList().get(0);
+		assertEquals("Bus101", areaControl.getSwingBus().getId());
+		assertEquals(-2800.0,
+				areaControl.getPSpecOut(UnitType.mW, net.getBaseKva()), 1.0E-6);
+		assertEquals(10.0,
+				areaControl.getTolerance(UnitType.mW, net.getBaseKva()), 1.0E-6);
+		assertTrue(net.getBus("Bus301").isSwing());
+		assertEquals(0, net.getArea("3").getRegDeviceList().size());
 
 		Aclf3WBranch xfr3W = net.get3WXfr("Bus205", "Bus215", "Bus208", "3");
 		assertNotNull(xfr3W);
 		assertEquals(5, xfr3W.getFromAclfBranch().getXfrZTableNumber());
+		assertTrue(xfr3W.isActive());
+		assertTrue(xfr3W.getFromAclfBranch().isActive(), "STAT=3 keeps winding 1 in service");
+		assertTrue(xfr3W.getToAclfBranch().isActive(), "STAT=3 keeps winding 2 in service");
+		assertFalse(xfr3W.getTertAclfBranch().isActive(), "STAT=3 opens winding 3 only");
 	}
 
 	@Test
@@ -164,7 +212,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		assertNotNull(bus4);
 		assertTrue(bus4.isSwitchedShunt());
 		SwitchedShunt sw = bus4.getFirstSwitchedShunt(true);
-		assertEquals(AclfAdjustControlMode.DISCRETE, sw.getControlMode());
+		assertEquals(AclfAdjustControlMode.CONTINUOUS, sw.getControlMode());
 		assertEquals(1.03, sw.getDesiredControlRange().getMax(), 1.0E-6);
 		assertEquals(1.02, sw.getDesiredControlRange().getMin(), 1.0E-6);
 	}
@@ -230,6 +278,32 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 				.findFirst()
 				.orElseThrow();
 		assertEquals(1.015, svc.getVSpecified(), 1.0E-6);
+		assertEquals(0.5, svc.getBLimit().getMax(), 1.0E-6);
+		assertEquals(-0.5, svc.getBLimit().getMin(), 1.0E-6,
+				"PSS/E SHMX is the symmetric shunt converter rating");
+	}
+
+	@Test
+	public void testV34StatconInitializesSavedReactiveOutput() throws Exception {
+		Path source = Path.of("testData/psse/v34/sample_v34.raw");
+		String raw = Files.readString(source);
+		String modified = raw.replace(
+				"\"FACTS_DVCE_1\",   153,     0,1,     0.000,     0.000,1.01500",
+				"\"FACTS_DVCE_1\",   153,     0,1,     0.000,    -4.000,1.01500");
+		assertFalse(raw.equals(modified), "FACTS fixture row was not updated");
+		Path input = tempDir.resolve("statcon-qdes-v34.raw");
+		Files.writeString(input, modified);
+
+		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfBus bus153 = net.getBus("Bus153");
+		StaticVarCompensator svc = bus153.getStaticVarCompensatorList().stream()
+				.map(device -> (StaticVarCompensator) device)
+				.filter(device -> "FACTS_DVCE_1".equals(device.getId()))
+				.findFirst()
+				.orElseThrow();
+		double expectedB = -0.04 / (bus153.getVoltageMag() * bus153.getVoltageMag());
+		assertEquals(expectedB, svc.getBInit(), 1.0E-10);
+		assertEquals(expectedB, svc.getBActual(), 1.0E-10);
 	}
 
 	@Test
