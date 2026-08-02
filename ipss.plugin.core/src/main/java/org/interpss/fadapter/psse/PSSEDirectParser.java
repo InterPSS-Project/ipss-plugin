@@ -38,6 +38,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
@@ -428,7 +429,11 @@ public class PSSEDirectParser {
                     builder.setPVBus(busId, pg / baseMva, vs,
                             qt / baseMva, qb / baseMva, true);
                 } else {
-                    builder.setPQBus(busId, pg / baseMva, qg / baseMva, 0.0, 0.0);
+                    // Preserve the regulating-bus type until contribution initialization.
+                    // AclfBusInitContriGenLoadHelper converts it to GEN_PQ and creates the
+                    // RemoteQBus from IREG; pre-converting here silently loses that control.
+                    builder.setPVBus(busId, pg / baseMva, vs,
+                            qt / baseMva, qb / baseMva, true);
                 }
             }
         }
@@ -614,6 +619,7 @@ public class PSSEDirectParser {
         int cm = line1.getInt(6, 1);
         double mag1 = line1.getDouble(7, 0.0);
         double mag2 = line1.getDouble(8, 0.0);
+        int nonMeteredEnd = line1.getInt(9, 2);
         int stat = line1.getInt(11, 1);
 
         String fromBusId = BUS_ID_PREFIX + fromNum;
@@ -682,6 +688,9 @@ public class PSSEDirectParser {
 
         double fromTap = convertTap(cw, windv1, nomv1Kv, fromBaseV);
         double toTap = convertTap(cw, windv2, nomv2Kv, toBaseV);
+		double tapMax = convertTap(cw, rma1, nomv1Kv, fromBaseV);
+		double tapMin = convertTap(cw, rmi1, nomv1Kv, fromBaseV);
+		Double tapStepSize = ntp1 > 1 ? (tapMax - tapMin) / (ntp1 - 1) : null;
 
         Complex magY = convertMagY(cm, mag1, mag2, nomv1Kv, sbase12, fromBaseV);
 
@@ -691,7 +700,7 @@ public class PSSEDirectParser {
                     stat, cw, cz, cm, sbase12, nomv1Kv);
             applyNameTagMetadata(metadata, branch3W);
         } else {
-            boolean isPhaseShifter = (ang1 != 0.0);
+            boolean isPhaseShifter = ang1 != 0.0 || Math.abs(cod1) == 3;
             AclfBranch branch;
             if (isPhaseShifter) {
                 branch = builder.addPsXformer(fromBusId, toBusId, ckt,
@@ -714,13 +723,20 @@ public class PSSEDirectParser {
             if (Math.abs(cod1) == 1 && cont1 != 0) {
                 String vcBusId = BUS_ID_PREFIX + Math.abs(cont1);
                 builder.addTapVoltageRangeControl(branchId, vcBusId, cod1 > 0,
-                        vma1, vmi1, rma1, rmi1,
-                        true, true, null, ntp1 > 0 ? ntp1 : null);
+                        vma1, vmi1, tapMax, tapMin,
+                        true, vcBusId.equals(fromBusId), tapStepSize,
+                        ntp1 > 0 ? ntp1 : null);
             } else if (Math.abs(cod1) == 1) {
                 // Local voltage control (CONT=0): control the from-bus
                 builder.addTapVoltageRangeControl(branchId, fromBusId, cod1 > 0,
-                        vma1, vmi1, rma1, rmi1,
-                        true, true, null, ntp1 > 0 ? ntp1 : null);
+                        vma1, vmi1, tapMax, tapMin,
+                        true, true, tapStepSize, ntp1 > 0 ? ntp1 : null);
+            } else if (Math.abs(cod1) == 3) {
+                builder.addPsXfrAngleRangeControl(branchId, cod1 > 0,
+                        vma1 / baseMva, vmi1 / baseMva,
+                        (vma1 + vmi1) / 2.0, UnitType.mW,
+                        rma1, rmi1,
+                        true, true, nonMeteredEnd == 1);
             }
         }
     }
@@ -828,7 +844,6 @@ public class PSSEDirectParser {
         int tab3 = line5 != null ? line5.getInt(tabIdx, 0) : 0;
 
         boolean isPhaseShifting = (ang1 != 0.0 || ang2 != 0.0 || ang3 != 0.0);
-
         // PSS/E 3W STAT: 0=out, 1=in, 2=winding2 out, 3=winding3 out, 4=winding1 out
         boolean inService = stat != 0;
         boolean wind1OffLine = (stat == 4);
@@ -856,8 +871,22 @@ public class PSSEDirectParser {
     private void parseAreaLine(PSSEDataRec rec) throws InterpssException {
         // I, ISW, PDES, PTOL, ARNAME
         int areaNum = rec.getInt(0);
+        int swingBusNum = rec.getInt(1, 0);
+        double desiredPowerMW = rec.getDouble(2, 0.0);
+        double toleranceMW = rec.getDouble(3, 10.0);
         String name = rec.getString(4, "Area " + areaNum);
         applyNameTagMetadata(rec, builder.addArea(String.valueOf(areaNum), name, null));
+        if (swingBusNum > 0) {
+            String swingBusId = BUS_ID_PREFIX + swingBusNum;
+            BaseAclfBus areaSwingBus = builder.getBus(swingBusId);
+            // PSS/E does not enforce area interchange for the area containing
+            // the type-3 system swing bus. ISW remains useful area metadata,
+            // but it must not become an active interchange controller.
+            if (areaSwingBus != null && !areaSwingBus.isSwing()) {
+                builder.addAreaInterchangeControl(areaNum, name,
+                        swingBusId, desiredPowerMW, toleranceMW);
+            }
+        }
     }
 
     // ==================== Zone ====================
@@ -918,10 +947,13 @@ public class PSSEDirectParser {
         }
 
         AclfAdjustControlMode mode;
-        if (modsw == 2 || modsw == 4 || modsw == 6) {
-            mode = AclfAdjustControlMode.DISCRETE;
-        } else if (modsw == 1 || modsw == 3 || modsw == 5) {
+        // PSS/E MODSW=1 is discrete voltage control and MODSW=2 is
+        // continuous voltage control. The remaining supported control modes
+        // also switch discrete blocks; MODSW=0 leaves the shunt fixed.
+        if (modsw == 2) {
             mode = AclfAdjustControlMode.CONTINUOUS;
+        } else if (modsw >= 1 && modsw <= 6) {
+            mode = AclfAdjustControlMode.DISCRETE;
         } else {
             mode = AclfAdjustControlMode.FIXED;
         }
@@ -1166,6 +1198,7 @@ public class PSSEDirectParser {
         int busNum = rec.getInt(1);
         int jBus = rec.getInt(2, 0);
         int mode = rec.getInt(3, 1);
+        double qdes = rec.getDouble(5, 0.0);
         double vset = rec.getDouble(6, 1.0);
         double shmx = rec.getDouble(7, 9999.0);
         double linx = rec.getDouble(13, 0.05);
@@ -1181,20 +1214,25 @@ public class PSSEDirectParser {
         String busId = BUS_ID_PREFIX + busNum;
 
         if (jBus == 0) {
-            double qMaxPU = shmx / baseMva;
-            double qMinPU = 0.0;
+            double qMaxPU = Math.abs(shmx) / baseMva;
+            double qMinPU = -qMaxPU;
 
             String remoteBusId = null;
             if (fcreg > 0 && fcreg != busNum) {
                 remoteBusId = BUS_ID_PREFIX + fcreg;
             }
 
-            builder.addSVC(busId, name, mode != 0,
+            StaticVarCompensator svc = builder.addSVC(busId, name, mode != 0,
                     qMaxPU, qMinPU, vset, remoteBusId, rmpct);
+            BaseAclfBus bus = builder.getBus(busId);
+            if (svc != null && bus != null && bus.getVoltageMag() != 0.0) {
+                // PSS/E QDES is the STATCON's saved reactive output.
+                double voltage = bus.getVoltageMag();
+                svc.setBInit(qdes / baseMva / (voltage * voltage));
+            }
         } else {
             String toBusId = BUS_ID_PREFIX + jBus;
             double pdes = rec.getDouble(4, 0.0);
-            double qdes = rec.getDouble(5, 0.0);
             double set1 = rec.getDouble(16, 0.0);
             double set2 = rec.getDouble(17, 0.0);
 
