@@ -65,6 +65,7 @@ import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.PSXfrPControl;
+import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.Aclf3WPSXformerAdapter;
@@ -239,9 +240,32 @@ public class AclfNetworkBuilder {
         if (area == null) {
             area = CoreObjectFactory.createArea(id, network);
         }
+        try {
+            area.setNumber(Long.parseLong(id));
+        } catch (NumberFormatException ignored) {
+            // Preserve the generated sequential number for non-numeric area IDs.
+        }
         area.setName(name != null ? name : "Area");
         area.setDesc(desc != null ? desc : "Area Desc");
         return area;
+    }
+
+    public AreaInterchangeControl addAreaInterchangeControl(int areaNumber, String areaName,
+                                                             String swingBusId,
+                                                             double desiredPowerMW,
+                                                             double toleranceMW) {
+        BaseAclfBus swingBus = getBus(swingBusId);
+        if (swingBus == null) return null;
+
+        Optional<AreaInterchangeControl> control = CoreObjectFactory.createAreaInterchangeController(
+                areaNumber, areaName, network);
+        if (!control.isPresent()) return null;
+
+        AreaInterchangeControl areaControl = control.get();
+        areaControl.setBus(swingBus);
+        areaControl.setPSpecOut(desiredPowerMW, UnitType.mW, network.getBaseKva());
+        areaControl.setTolerance(toleranceMW, UnitType.mW, network.getBaseKva());
+        return areaControl;
     }
 
     public Zone addZone(String id, String name, String desc) {
@@ -601,7 +625,9 @@ public class AclfNetworkBuilder {
         if (blocks != null) {
             for (ShuntBlock block : blocks) {
                 ShuntCompensator varBank = CoreObjectFactory.createShuntCompensator(
-                        "QBank-" + i++, ShuntCompensatorType.CAPACITOR);
+                        "QBank-" + i++, block.qMvar() < 0.0
+                                ? ShuntCompensatorType.INDUCTOR
+                                : ShuntCompensatorType.CAPACITOR);
                 swchShunt.getShuntCompensatorList().add(varBank);
                 varBank.setSteps(block.steps());
                 varBank.setUnitQMvar(block.qMvar());
@@ -673,14 +699,14 @@ public class AclfNetworkBuilder {
 
         if (remoteBusId != null && !remoteBusId.isEmpty() && !remoteBusId.equals(busId)) {
             svc.setRemoteBusBranchId(remoteBusId);
-            if (bus.getGenCode() != AclfGenCode.GEN_PQ) {
+            if (status && bus.getGenCode() != AclfGenCode.GEN_PQ) {
                 bus.setGenCode(AclfGenCode.GEN_PQ);
             }
         } else {
             svc.setRemoteBusBranchId(busId);
             svc.setRemoteBus(bus);
-            if (bus.getGenCode() != AclfGenCode.GEN_PV) {
-                bus.setGenCode(AclfGenCode.GEN_PV);
+            if (status && bus.getGenCode() == AclfGenCode.NON_GEN) {
+                bus.setGenCode(AclfGenCode.GEN_PQ);
             }
         }
         svc.setRemoteControlPercentage(remoteControlPercent > 0 ? remoteControlPercent : 100.0);
@@ -823,7 +849,10 @@ public class AclfNetworkBuilder {
         tap.setTurnRatioLimit(new LimitType(tapMax, tapMin));
         tap.setControlOnFromSide(controlOnFromSide);
         tap.setVcBusOnFromSide(vcBusOnFromSide);
-        if (stepSize != null) tap.setTapStepSize(stepSize);
+        if (stepSize != null) {
+            tap.setTapStepSize(stepSize);
+            tap.setControlMode(AclfAdjustControlMode.DISCRETE);
+        }
         if (steps != null) tap.setTapSteps(steps);
         return tap;
     }
@@ -849,7 +878,10 @@ public class AclfNetworkBuilder {
         tap.setTurnRatioLimit(new LimitType(tapMax, tapMin));
         tap.setControlOnFromSide(controlOnFromSide);
         tap.setVcBusOnFromSide(vcBusOnFromSide);
-        if (stepSize != null) tap.setTapStepSize(stepSize);
+        if (stepSize != null) {
+            tap.setTapStepSize(stepSize);
+            tap.setControlMode(AclfAdjustControlMode.DISCRETE);
+        }
         if (steps != null) tap.setTapSteps(steps);
         return tap;
     }
@@ -874,7 +906,10 @@ public class AclfNetworkBuilder {
         tap.setTurnRatioLimit(new LimitType(tapMax, tapMin));
         tap.setControlOnFromSide(controlOnFromSide);
         tap.setMeteredOnFromSide(meteredOnFromSide);
-        if (stepSize != null) tap.setTapStepSize(stepSize);
+        if (stepSize != null) {
+            tap.setTapStepSize(stepSize);
+            tap.setControlMode(AclfAdjustControlMode.DISCRETE);
+        }
         if (steps != null) tap.setTapSteps(steps);
         return tap;
     }
@@ -999,6 +1034,11 @@ public class AclfNetworkBuilder {
             branch3W.create2WBranches(AclfBranchCode.XFORMER);
         }
 
+        BaseAclfBus<?, ?> starBus = (BaseAclfBus<?, ?>) branch3W.getStarBus();
+        starBus.setArea(branch3W.getFromBus().getArea());
+        starBus.setZone(branch3W.getFromBus().getZone());
+        starBus.setOwner(branch3W.getFromBus().getOwner());
+
         boolean anyTerminalActive = branch3W.getFromBus().isActive()
                 || branch3W.getToBus().isActive()
                 || branch3W.getTertiaryBus().isActive();
@@ -1043,7 +1083,6 @@ public class AclfNetworkBuilder {
         }
 
         if (starVMagPU != 0.0) {
-            BaseAclfBus<?, ?> starBus = (BaseAclfBus<?, ?>) branch3W.getStarBus();
             starBus.setVoltage(starVMagPU, Math.toRadians(starVAngDeg));
             branch3W.setVoltageStarBus(starBus.getVoltage());
         }
