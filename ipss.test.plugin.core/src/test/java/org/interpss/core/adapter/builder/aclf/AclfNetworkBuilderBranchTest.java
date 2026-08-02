@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.TapControl;
@@ -139,6 +140,7 @@ public class AclfNetworkBuilderBranchTest extends CorePluginTestSetup {
 		assertFalse(tap.isVcBusOnFromSide());
 		assertEquals(0.00625, tap.getTapStepSize(), TOL);
 		assertEquals(32, tap.getTapSteps());
+		assertEquals(AclfAdjustControlMode.DISCRETE, tap.getControlMode());
 		assertTrue(bra.isTapControl());
 	}
 
