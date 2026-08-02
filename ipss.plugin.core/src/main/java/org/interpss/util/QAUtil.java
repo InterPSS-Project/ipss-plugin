@@ -64,7 +64,7 @@ public class QAUtil {
 		double maxDiff = 0;
 		String maxDiffBusId = "";
 		for(AclfBus bus: net.getBusList()) {
-			if(bus.isActive() && !genBusOnly || bus.isGen()) {
+				if(bus.isActive() && (!genBusOnly || bus.isGen())) {
 				Complex v = bus.getVoltage();
 				AclfBus copyBus = copyNet.getBus(bus.getId());
 				Complex vCopy = copyBus.getVoltage();
@@ -76,6 +76,51 @@ public class QAUtil {
 			}
 		}
 		System.out.println("Max bus voltage difference: " + maxDiff + " (Bus ID: " + maxDiffBusId + ")");
+		return maxDiff;
+	}
+
+	/**
+	 * Compare bus-voltage phasors after removing the single uniform angle offset
+	 * between two solutions. Absolute voltage angle is arbitrary; the rotation is
+	 * chosen by the least-squares phasor fit over all active buses. Voltage
+	 * magnitude and relative-angle differences are preserved.
+	 */
+	public static double getMaxBusVoltageDiffAngleAligned(
+			AclfNetwork net, AclfNetwork referenceNet) {
+		double correlationReal = 0.0;
+		double correlationImaginary = 0.0;
+		for (AclfBus bus : net.getBusList()) {
+			AclfBus referenceBus = referenceNet.getBus(bus.getId());
+			if (!bus.isActive() || referenceBus == null || !referenceBus.isActive()) {
+				continue;
+			}
+			Complex voltage = bus.getVoltage();
+			Complex referenceVoltage = referenceBus.getVoltage();
+			correlationReal += referenceVoltage.getReal() * voltage.getReal()
+					+ referenceVoltage.getImaginary() * voltage.getImaginary();
+			correlationImaginary += referenceVoltage.getImaginary() * voltage.getReal()
+					- referenceVoltage.getReal() * voltage.getImaginary();
+		}
+
+		double angle = Math.atan2(correlationImaginary, correlationReal);
+		Complex rotation = new Complex(Math.cos(angle), Math.sin(angle));
+		double maxDiff = 0.0;
+		String maxDiffBusId = "";
+		for (AclfBus bus : net.getBusList()) {
+			AclfBus referenceBus = referenceNet.getBus(bus.getId());
+			if (!bus.isActive() || referenceBus == null || !referenceBus.isActive()) {
+				continue;
+			}
+			double diff = bus.getVoltage().multiply(rotation)
+					.subtract(referenceBus.getVoltage()).abs();
+			if (diff > maxDiff) {
+				maxDiff = diff;
+				maxDiffBusId = bus.getId();
+			}
+		}
+		System.out.println("Max angle-aligned bus voltage difference: " + maxDiff
+				+ " (Bus ID: " + maxDiffBusId + ", reference shift: "
+				+ Math.toDegrees(angle) + " deg)");
 		return maxDiff;
 	}
 

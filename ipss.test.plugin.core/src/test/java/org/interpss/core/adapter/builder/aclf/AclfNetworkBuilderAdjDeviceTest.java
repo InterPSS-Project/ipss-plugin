@@ -22,6 +22,7 @@ import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
+import com.interpss.core.aclf.ShuntCompensatorType;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.aclf.adj.SwitchedShunt;
@@ -72,7 +73,12 @@ public class AclfNetworkBuilderAdjDeviceTest extends CorePluginTestSetup {
 		ShuntCompensator bank0 = sw.getShuntCompensatorList().get(0);
 		assertEquals(5, bank0.getSteps());
 		assertEquals(10.0, bank0.getUnitQMvar(), TOL);
+		assertEquals(ShuntCompensatorType.CAPACITOR, bank0.getType());
 		assertTrue(bank0.isStatus());
+
+		ShuntCompensator bank1 = sw.getShuntCompensatorList().get(1);
+		assertEquals(-5.0, bank1.getUnitQMvar(), TOL);
+		assertEquals(ShuntCompensatorType.INDUCTOR, bank1.getType());
 
 		ShuntCompensator bank2 = sw.getShuntCompensatorList().get(2);
 		assertFalse(bank2.isStatus());
@@ -92,7 +98,7 @@ public class AclfNetworkBuilderAdjDeviceTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	public void addSVC_localSetsPvGenCode() throws Exception {
+	public void addSVC_localSetsPqGenCode() throws Exception {
 		AclfNetworkBuilder builder = twoBusNet();
 		StaticVarCompensator svc = builder.addSVC("Bus1", "SVC1", true,
 				0.5, -0.3, 1.02, null, 100.0);
@@ -105,19 +111,41 @@ public class AclfNetworkBuilderAdjDeviceTest extends CorePluginTestSetup {
 		assertEquals(1.02, svc.getVSpecified(), TOL);
 		assertEquals("Bus1", svc.getRemoteBusBranchId());
 		assertSame(builder.getBus("Bus1"), svc.getRemoteBus());
-		assertEquals(AclfGenCode.GEN_PV, builder.getBus("Bus1").getGenCode());
+		assertEquals(AclfGenCode.GEN_PQ, builder.getBus("Bus1").getGenCode());
 		assertEquals(100.0, svc.getRemoteControlPercentage(), TOL);
 	}
 
 	@Test
 	public void addSVC_remoteSetsPqGenCode() throws Exception {
 		AclfNetworkBuilder builder = twoBusNet();
+		builder.getBus("Bus1").setGenCode(AclfGenCode.GEN_PV);
 		StaticVarCompensator svc = builder.addSVC("Bus1", "SVC1", true,
 				0.4, -0.2, 1.0, "Bus2", 80.0);
 
 		assertEquals("Bus2", svc.getRemoteBusBranchId());
 		assertEquals(AclfGenCode.GEN_PQ, builder.getBus("Bus1").getGenCode());
 		assertEquals(80.0, svc.getRemoteControlPercentage(), TOL);
+	}
+
+	@Test
+	public void addSVC_inactiveDoesNotChangeBusGenCode() throws Exception {
+		AclfNetworkBuilder localBuilder = twoBusNet();
+		assertEquals(AclfGenCode.NON_GEN, localBuilder.getBus("Bus1").getGenCode());
+
+		StaticVarCompensator localSvc = localBuilder.addSVC("Bus1", "SVC1", false,
+				0.5, -0.3, 1.02, null, 100.0);
+
+		assertFalse(localSvc.isStatus());
+		assertEquals(AclfGenCode.NON_GEN, localBuilder.getBus("Bus1").getGenCode());
+
+		AclfNetworkBuilder remoteBuilder = twoBusNet();
+		remoteBuilder.getBus("Bus1").setGenCode(AclfGenCode.GEN_PV);
+
+		StaticVarCompensator remoteSvc = remoteBuilder.addSVC("Bus1", "SVC2", false,
+				0.4, -0.2, 1.0, "Bus2", 80.0);
+
+		assertFalse(remoteSvc.isStatus());
+		assertEquals(AclfGenCode.GEN_PV, remoteBuilder.getBus("Bus1").getGenCode());
 	}
 
 	@Test
