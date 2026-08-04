@@ -3,6 +3,15 @@
   "configurations": [
     {
       "type": "java",
+      "name": "IEEE14_MinitoredInterface_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.mon_interface.IEEE14_MinitoredInterface_Sample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
       "name": "IEEE118CimSample",
       "request": "launch",
       "mainClass": "org.interpss.cim.IEEE118CimSample",
