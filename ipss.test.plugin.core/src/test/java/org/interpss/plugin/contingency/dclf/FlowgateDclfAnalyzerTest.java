@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.IEEE14_SensHelper_SampleCase;
 import org.interpss.plugin.contingency.DclfContingencyConfig;
-import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -35,7 +35,7 @@ import com.interpss.monitor.result.FlowgateViolationResult;
 public class FlowgateDclfAnalyzerTest extends CorePluginTestSetup {
     @Test
     public void baseFlowgateUsesSelectedRealtimeEffectiveLimit() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
         algo.calculateDclf();
 
@@ -74,7 +74,7 @@ public class FlowgateDclfAnalyzerTest extends CorePluginTestSetup {
 
     @Test
     public void branchOutageFlowgateUsesContingencyAwarePostFlow() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
         algo.calculateDclf();
 
@@ -125,7 +125,7 @@ public class FlowgateDclfAnalyzerTest extends CorePluginTestSetup {
 
     @Test
     public void flowgateAnalysisAppliesMonitoringExceptionExclusion() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
         algo.calculateDclf();
 
