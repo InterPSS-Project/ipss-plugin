@@ -18,10 +18,12 @@ import java.util.stream.Collectors;
 
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.IEEE14_SensHelper_SampleCase;
 import org.interpss.fadapter.IpssFileAdapter;
+
 import com.interpss.core.algo.dclf.DclfContingencyConfig;
 import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
-import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
+
 import org.junit.jupiter.api.Test;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
@@ -43,7 +45,7 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
 public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
     @Test
     public void panelMatchesInterpssLineOutageFactors() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
         sourceAlgo.calculateDclf();
 
@@ -80,7 +82,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
 
     @Test
     public void cachedAnalyzerMatchesParallelAnalyzerPostFlows() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
         sourceAlgo.calculateDclf();
 
@@ -120,7 +122,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
 
     @Test
     public void chunkedPanelMatchesFullPanelAndAnalyzerResults() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
         sourceAlgo.calculateDclf();
 
@@ -173,7 +175,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
 
     @Test
     public void parallelAnalyzerWoodburyUsesCachedOpenBranchBatchByDefault() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
         sourceAlgo.calculateDclf();
 
@@ -223,7 +225,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         try {
             System.setProperty(monitorBatchSizeProperty, "2");
 
-            AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+            AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
             ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
             sourceAlgo.calculateDclf();
 
@@ -271,7 +273,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
 
     @Test
     public void parallelAnalyzerSupportsMultiOutageSolutionMethodSelection() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
         sourceAlgo.calculateDclf();
 
@@ -410,7 +412,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
 
     @Test
     public void woodburySingleOpenMatchesInterpssPostOutageFlow() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
         dclfAlgo.calculateDclf();
 
@@ -428,7 +430,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
 
     @Test
     public void woodburyMultiOpenMatchesInterpssMultiOpenAnalysis() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
         dclfAlgo.calculateDclf();
 
@@ -468,7 +470,7 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
 
     @Test
     public void branchResultCombinedShiftingFactorSupportsMultiOutageLodfs() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
         dclfAlgo.calculateDclf();
 
