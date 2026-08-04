@@ -1,5 +1,13 @@
 # DCLF Mixed Monitoring Constraints
 
+Module: `ipss.plugin.core` (JSON import / samples)  
+Core API: `com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer`  
+Definition / check / result: `com.interpss.monitor` (`definition`, `check`, `result`)
+
+Canonical architecture: `ipss-core/ipss.core_EMF/docs/md/monitor-architecture.md`
+
+---
+
 `ParallelDclfContingencyAnalyzer` supports mixed contingency-monitoring
 constraints through `performMixedConstraintAnalysis(...)`.
 
@@ -31,6 +39,27 @@ ConcurrentLinkedQueue<DclfMwLimitViolationResult> violations =
                 parallelismLevel);
 ```
 
+For branch/interface studies without flowgates or nomograms, use the 3-arg
+constructor (empty flowgates/nomograms):
+
+```java
+DclfMonitoringConfigRecord monitoringConfig = new DclfMonitoringConfigRecord(
+        monitoredBranches,
+        monitoredInterfaces,
+        monitoringExceptions);
+```
+
+## JSON Import
+
+Plugin helper `ContingencyFileUtil.importDclfMonitoringConfigFromJson(file)`
+loads a full `DclfMonitoringConfigRecord` (branches, interfaces, flowgates,
+nomograms, exceptions). Interface-only JSON:
+
+```java
+List<MonitoredInterfaceRecord> interfaces =
+        ContingencyFileUtil.importMonitoredInterfaceRecordsFromJson(file);
+```
+
 ## Execution Model
 
 The mixed API does not run separate contingency studies for each constraint
@@ -48,6 +77,15 @@ ParallelDclfContingencyAnalyzer
 
 This keeps the expensive contingency solve shared while preserving separate
 semantics for each monitoring type.
+
+Check implementations (in `com.interpss.monitor.check`):
+
+| Check | Object type | Role |
+|-------|-------------|------|
+| `BranchMwLimitCheck` | `BRANCH` | Per-branch thermal MW vs rating |
+| `MonitoredExpressionMwLimitCheck` | `INTERFACE` (default) | Weighted interface MW limit |
+| `FlowgateEffectiveLimitCheck` | `FLOWGATE` | Expression + contingency-scoped selected limit |
+| `NomogramMwBoundaryCheck` | `NOMOGRAM` | Two-axis linear boundary |
 
 ## Islanding Policy For OPEN Actions
 
@@ -151,3 +189,40 @@ The mixed API returns `DclfMwLimitViolationResult`. Each result includes:
 
 Use `getMonitoredObjectType()` to dispatch results by type, for example
 `BRANCH`, `INTERFACE`, `FLOWGATE`, or `NOMOGRAM`.
+
+## Samples and Tests
+
+| Class / test | Location | Coverage |
+|--------------|----------|----------|
+| `MonInterfaceAclf5BusSample` | `ipss-core` `sample.mon_interface` | 5-bus; interface-only config via 3-arg ctor; `performMixedConstraintAnalysis` → INTERFACE violation |
+| `IEEE14_MinitoredInterface_Sample` | `ipss.plugin.core` `org.interpss.mon_interface` | IEEE14; `performMonitoredConstraintAnalysis` (interface-only specialized path) |
+| `IEEE14_SensHelper_SampleCase` | `ipss.plugin.core` `org.interpss` | Shared IEEE14 fixture for plugin sample + tests |
+| `DclfMixedConstraintAnalysisTest` | `ipss.test.core` | Mixed run: INTERFACE + FLOWGATE in one pass |
+| `DclfMonitoredConstraintTest` | `ipss.test.plugin.core` | Weighted interface CA; exceptions; JSON import of full monitoring config |
+| `FlowgateDclfAnalyzerTest` | `ipss.test.plugin.core` | Flowgate-only analyzer path |
+
+Best mixed-path entry points:
+
+1. Core sample: `MonInterfaceAclf5BusSample` (mixed API, interface config)
+2. Core test: `DclfMixedConstraintAnalysisTest#mixedConstraintAnalysisChecksInterfacesAndFlowgatesInOneRun`
+3. Plugin JSON / exceptions: `DclfMonitoredConstraintTest`
+
+```bash
+# Core mixed sample
+mvn -pl ipss.test.core exec:java -Dexec.mainClass=sample.mon_interface.MonInterfaceAclf5BusSample
+
+# Core mixed test
+mvn -pl ipss.test.core test -Dtest=DclfMixedConstraintAnalysisTest#mixedConstraintAnalysisChecksInterfacesAndFlowgatesInOneRun
+
+# Plugin interface + JSON + flowgate suite
+mvn -pl ipss.test.plugin.core test -Dtest=DclfMonitoredConstraintTest,FlowgateDclfAnalyzerTest
+```
+
+Detailed INTERFACE catalog: `ipss-core/ipss.core_EMF/docs/md/notes/Monitoring-INTERFACE.md`.
+
+## Related Documentation
+
+- [DCLF Contingency Analysis](dclf-contingency-analysis.md) — islanding / multi-outage solver policy
+- [DCLF Monitored Interface Constraints](dclf-monitored-interface-constraints.md) — interface-only JSON and specialized CA path
+- Core architecture: `ipss-core/ipss.core_EMF/docs/md/monitor-architecture.md`
+- INTERFACE samples & tests: `ipss-core/ipss.core_EMF/docs/md/notes/Monitoring-INTERFACE.md`
