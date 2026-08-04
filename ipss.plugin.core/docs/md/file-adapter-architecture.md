@@ -49,7 +49,8 @@ org.interpss.fadapter
 ├── ieeecdf/
 │   └── IeeeCDFDirectParser
 ├── matpower/
-│   └── MatpowerDirectParser
+│   ├── MatpowerDirectParser        # MATPOWER → AclfNetwork
+│   └── MatpowerOpfDirectParser     # MATPOWER → OpfNetwork, including costs/extensions
 ├── ucte/
 │   └── UCTEDirectParser
 ├── ge/
@@ -137,6 +138,7 @@ External File (.raw, .rawx, .ieee, .m, …)
 | — (DSL only)      | `PSSEJsonDirectParser`   |
 | `IeeeCDFFormat`   | `IeeeCDFDirectParser`    |
 | `MatpowerFormat`  | `MatpowerDirectParser`   |
+| — (OPF API)       | `MatpowerOpfDirectParser` |
 | `UCTEFormat`      | `UCTEDirectParser`       |
 | `GEFormat`        | `GEPslfDirectParser`     |
 | `PWDFormat`       | `PWDDirectParser`        |
@@ -337,6 +339,7 @@ java org.interpss.fadapter.psse.monitor.MonFileConverter input.mon output.json
 | PSS/E RAWX/JSON | — | `IpssAdapter` (`PSSE_JSON`) | `PSSEJsonDirectParser` | Import via DSL |
 | IEEE CDF | `IEEECDF` | `IeeeCDFFormat` | `IeeeCDFDirectParser` | Standard + Ext1 via Version |
 | MATPOWER | `MATPOWER` | `MatpowerFormat` | `MatpowerDirectParser` | `.m` case files |
+| MATPOWER OPF | — | `new MatpowerOpfDirectParser().parse(path)` | `MatpowerOpfDirectParser` | Multiple contributed generators, PWL/quadratic `gencost`, generator/branch names, and DC-line equivalent terminal loads |
 | UCTE-DEF | `UCTE` | `UCTEFormat` | `UCTEDirectParser` | European exchange format |
 | GE PSLF | `GE_PSLF` | `GEFormat` | `GEPslfDirectParser` | Sectioned `.epc` (bus/gen/load/branch/xfr/shunt/area/zone); multi-line records (branch=2, xfr=3, gen=2); `.dyd` dynamics out of ACLF scope; SVD/DC/3W/TCUL control skipped |
 | BPA | `BPA` | `BPAFormat` | `BPADirectParser` | IPF card types B/L/T/E/A; `/MVA_BASE` currently hardcoded 100 MVA; R/TP/+ stubs skipped; LF from first file only (no `.swi`) |
@@ -464,6 +467,7 @@ Fixtures: `DStabBuilderTestFixture`, `AcscBuilderTestFixture`.
 | Large PSSE | `PSSE_ACTIVSg2000Bus_Test`, `PSSE_ACTIVSg25kBus_Test` | `PSSEDirectParser` at scale |
 | IEEE CDF | `IEEE14BusTest`, `IEEE118Bus_Test`, `IEEE300BusTest`, `IEEECommonFormat_CommaTest` | `IeeeCDFFormat` / `CorePluginFactory` |
 | MATPOWER | `MatpowerFormatTest`, `MatpowerCase*PegaseTest`, `MatpowerCase*RteTest` | `MatpowerFormat` + large `.m` cases |
+| MATPOWER OPF | `MatpowerOpfMapperTest` | `MatpowerOpfDirectParser` + RTS-style extensions and DC lines |
 | UCTE | `UCTEFormatIEEE14BusTest`, `UCTEFormatAusPowerTest`, `UCTE2000CasesTest` | `UCTEFormat` |
 | GE | `GESampleTestCases`, `GEPslfDirectParser_SectionGate_Test` (`GEAdapterTestSuite`) | `GEFormat` + `GEPslfDirectParser`; fixtures under `testData/adpter/ge/` (+ `unit/` for SHUNT / PS angle) |
 | PWD | `PWDIEEE14BusTestCase`, `PWDDirectParser_ObjectGate_Test`, `SixBus_DclfPsXfr_pwd`, `SixBus_XfrControl_pwd` (`PWDAdapterTestSuite`) | `PWDFormat` + `PWDDirectParser`; fixtures under `testData/adpter/pwd/` (+ `unit/` for SHUNT) |
