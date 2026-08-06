@@ -1,0 +1,1424 @@
+{
+  "contingency_definitions": [
+    {
+      "name": "TX2K_ISLAND_Bus1001",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1064(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1064(2)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1071(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1071(2)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1002",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1007(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1010(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1003",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1022(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1055(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus1003(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1004",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus1003(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus3133(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1005",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1025(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1061(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1067(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1006-\u003eBus1005(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1007",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1007(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1015(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1031(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1008",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1032(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1069(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1009-\u003eBus1008(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1010",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1010(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1015(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1030(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1011-\u003eBus1010(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1012",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1012-\u003eBus1087(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1012-\u003eBus3051(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1013",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1031(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1047(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1086(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1014",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1014-\u003eBus1047(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1014-\u003eBus1083(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1015",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1015(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1015(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1016",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1034(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1068(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1017",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1018(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1029(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1037(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1047(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1018",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1018(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1018-\u003eBus1024(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1022",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1022(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1022-\u003eBus1028(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1022-\u003eBus1028(2)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1023-\u003eBus1022(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1024",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1018-\u003eBus1024(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1024-\u003eBus1090(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1025",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1025(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1020-\u003eBus1025(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1026-\u003eBus1025(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1027",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1027-\u003eBus1045(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1027-\u003eBus1056(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1028",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1022-\u003eBus1028(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1022-\u003eBus1028(2)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1028-\u003eBus3109(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1029",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1029(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1029-\u003eBus1056(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1030",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1030(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1030-\u003eBus1038(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1030-\u003eBus1083(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1031",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1031(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1031(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1032",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1032(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1032-\u003eBus1036(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1032-\u003eBus1038(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1033-\u003eBus1032(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1033",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1033-\u003eBus1032(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1033-\u003eBus1081(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1033-\u003eBus3050(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1034",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1034(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1034-\u003eBus1067(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1035-\u003eBus1034(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1036",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1032-\u003eBus1036(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1036-\u003eBus1088(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1037",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1037(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1037-\u003eBus1071(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1040",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1019-\u003eBus1040(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1040-\u003eBus1090(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_ISLAND_Bus1041",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1041-\u003eBus1065(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1041-\u003eBus1067(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1042-\u003eBus1041(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1043-\u003eBus1041(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_001",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1064(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1064(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_002",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1064(2)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1064(2)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_003",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1071(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1071(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_004",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1071(2)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1071(2)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_005",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1007(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1007(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_006",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1010(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1010(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_007",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1022(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1022(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_008",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1055(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1055(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_009",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus1003(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus1003(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_010",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus3133(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus3133(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_011",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1025(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1025(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_012",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1061(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1061(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_013",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1067(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1067(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_015",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1015(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1015(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_016",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1031(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1031(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_017",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1032(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1032(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_018",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1069(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1069(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_020",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1015(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1015(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_021",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1030(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1030(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_023",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1012-\u003eBus1087(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1012-\u003eBus1087(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_024",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1012-\u003eBus3051(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1012-\u003eBus3051(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_025",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1031(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1031(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_026",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1047(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1047(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_027",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1086(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1086(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_028",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1014-\u003eBus1047(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1014-\u003eBus1047(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_029",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1014-\u003eBus1083(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1014-\u003eBus1083(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_030",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1034(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1034(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_031",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1068(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1068(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_032",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1018(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1018(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_SINGULAR_DUPLICATE_033",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1029(1)"
+        },
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1029(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_001",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1064(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_002",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1064(2)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_003",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1071(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_004",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1001-\u003eBus1071(2)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_005",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1007(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_006",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1002-\u003eBus1010(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_007",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1022(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_008",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1003-\u003eBus1055(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_009",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus1003(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_010",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1004-\u003eBus3133(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_011",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1025(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_012",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1061(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_013",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1005-\u003eBus1067(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_015",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1015(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_016",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1007-\u003eBus1031(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_017",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1032(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_018",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1008-\u003eBus1069(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_020",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1015(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_021",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1010-\u003eBus1030(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_023",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1012-\u003eBus1087(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_024",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1012-\u003eBus3051(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_025",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1031(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_026",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1047(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_027",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1013-\u003eBus1086(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_028",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1014-\u003eBus1047(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_029",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1014-\u003eBus1083(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_030",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1034(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_031",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1016-\u003eBus1068(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_032",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1018(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_033",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1029(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_034",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1037(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_035",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1017-\u003eBus1047(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_036",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1018-\u003eBus1024(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_037",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1019-\u003eBus1040(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_038",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1019-\u003eBus1045(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_039",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1019-\u003eBus1071(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_040",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1019-\u003eBus1071(2)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_041",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1019-\u003eBus1084(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_042",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1020-\u003eBus1025(1)"
+        }
+      ]
+    },
+    {
+      "name": "TX2K_NORMAL_N1_043",
+      "actions": [
+        {
+          "object_type": "BRANCH",
+          "action_type": "OPEN",
+          "object_id": "Bus1020-\u003eBus1084(1)"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "total_count": 100,
+    "created_date": "2026-08-06T17:00:51.881229",
+    "description": "User-defined grouped contingency definitions"
+  }
+}
