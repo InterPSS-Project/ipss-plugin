@@ -74,3 +74,37 @@ If a monitored branch is not present in the custom rating file, the core
 `BranchRatingProvider` logs one warning for that branch id and falls back to
 the branch model's Rating B. The warning is emitted when the analyzer compiles
 the monitored branch data, not inside the per-contingency numeric loop.
+
+## Contingency Pre-Screening
+
+Large DCLF studies can pre-screen a JSON contingency file before running full
+violation analysis:
+
+```java
+ContingencyPreScreenReport report =
+        ContingencyFileUtil.preScreenDclfContingencies(net, new File("contingencies.json"));
+```
+
+The scanner imports the same JSON contingency definitions used by the analyzer,
+runs base DCLF once, and classifies every contingency into four buckets:
+
+| Bucket | Meaning |
+|---|---|
+| `ISLANDING` | OPEN/CLOSE topology creates one or more active bus islands disconnected from the network reference bus. |
+| `E_PTDF_SINGULAR` | Topology remains connected, but the MLODF `[E-PTDF]` matrix is singular or compacted, so special handling is needed. |
+| `NORMAL` | No topology islanding and the MLODF `[E-PTDF]` matrix is full-rank. |
+| `UNSUPPORTED` | The contingency cannot be resolved or contains unsupported action/object types. |
+
+Each result includes action counts, OPEN/CLOSE counts, island count and island
+bus counts, plus the original and effective `[E-PTDF]` matrix size. Aggregate
+counts are available from `ContingencyPreScreenReport`:
+
+```java
+int islanding = report.islandingContingencies();
+int singular = report.ePtdfSingularContingencies();
+int normal = report.normalContingencies();
+```
+
+The topology check is graph-based and does not mutate the network. It applies
+CLOSE actions as temporary edges, removes OPEN actions as temporary edge
+removals, and counts components outside the reference-bus component.
