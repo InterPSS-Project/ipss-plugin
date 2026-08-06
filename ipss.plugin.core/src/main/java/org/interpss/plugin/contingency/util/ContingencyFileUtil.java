@@ -82,6 +82,12 @@ public class ContingencyFileUtil {
         return BranchRatingFileUtil.importBranchRatings(net, file);
     }
 
+    public static DclfContingencyPreScreenUtil.ContingencyPreScreenReport preScreenDclfContingencies(
+            AclfNetwork net,
+            File contingencyJson) throws IOException, com.interpss.common.exp.InterpssException {
+        return DclfContingencyPreScreenUtil.scanJson(net, contingencyJson);
+    }
+
     /**
 	 * Import contingencies from JSON file
 	 */
