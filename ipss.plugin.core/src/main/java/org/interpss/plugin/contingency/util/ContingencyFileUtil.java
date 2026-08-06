@@ -39,6 +39,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.dclf.BranchRatingProvider;
 import com.interpss.monitor.check.MonitoringExceptionRecord;
 import com.interpss.monitor.check.MonitoringExceptionStatus;
 import com.interpss.monitor.check.MonitoringObjectType;
@@ -55,6 +57,30 @@ import com.interpss.monitor.definition.NomogramRecord;
 
 public class ContingencyFileUtil {
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ContingencyFileUtil.class);
+
+    public static BranchRatingProvider importBranchRatingProvider(File file) throws IOException {
+        return BranchRatingFileUtil.importBranchRatingProvider(file);
+    }
+
+    public static Map<String, Double> importBranchRatings(File file) throws IOException {
+        return BranchRatingFileUtil.importBranchRatings(file);
+    }
+
+    public static BranchRatingProvider importBranchRatingProvider(File file, boolean useExtUID) throws IOException {
+        return BranchRatingFileUtil.importBranchRatingProvider(file, useExtUID);
+    }
+
+    public static Map<String, Double> importBranchRatings(File file, boolean useExtUID) throws IOException {
+        return BranchRatingFileUtil.importBranchRatings(file, useExtUID);
+    }
+
+    public static BranchRatingProvider importBranchRatingProvider(AclfNetwork net, File file) throws IOException {
+        return BranchRatingFileUtil.importBranchRatingProvider(net, file);
+    }
+
+    public static Map<String, Double> importBranchRatings(AclfNetwork net, File file) throws IOException {
+        return BranchRatingFileUtil.importBranchRatings(net, file);
+    }
 
     /**
 	 * Import contingencies from JSON file
