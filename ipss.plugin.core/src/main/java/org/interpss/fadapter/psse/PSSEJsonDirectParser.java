@@ -78,6 +78,7 @@ public class PSSEJsonDirectParser {
 
         // Parse generators
         parseFieldData(network, "generator", this::parseGenRow);
+        PSSEGeneratorReactivePower.finalizeBusTypes(builder);
 
         // Parse AC lines
         parseFieldData(network, "acline", this::parseAcLineRow);
@@ -273,11 +274,21 @@ public class PSSEJsonDirectParser {
         double rmpct = getDouble(row, "rmpct", 100.0);
         double pt = getDouble(row, "pt", 0.0);
         double pb = getDouble(row, "pb", 0.0);
+        int wmod = getInt(row, "wmod", 0);
+        double wpf = getDouble(row, "wpf", 1.0);
 
         if (mbase == 0.0) mbase = baseMva;
 
         BaseAclfBus bus = (BaseAclfBus) builder.getNetwork().getBus(busId);
         if (bus == null) return;
+
+        if (bus.getGenCode() != AclfGenCode.SWING) {
+            PSSEGeneratorReactivePower.Data reactiveData =
+                    PSSEGeneratorReactivePower.resolve(pg, qg, qt, qb, wmod, wpf);
+            qg = reactiveData.qGen();
+            qt = reactiveData.qMax();
+            qb = reactiveData.qMin();
+        }
 
         boolean genStatus = (stat == 1);
         if (bus.getGenCode() == AclfGenCode.NON_GEN) genStatus = false;
@@ -294,14 +305,10 @@ public class PSSEJsonDirectParser {
         if (bus.getGenCode() == AclfGenCode.SWING) {
             builder.setSwingBus(busId, vs, bus.getVoltageAng());
             bus.setGenP(pg / baseMva);
-        } else if (bus.getGenCode() == AclfGenCode.GEN_PV && genStatus) {
-            if (qt == qb) {
-                builder.setPQBus(busId, pg / baseMva, qg / baseMva, 0.0, 0.0);
-            } else if (remoteBusId == null || remoteBusId.equals(busId)) {
-                builder.setPVBus(busId, pg / baseMva, vs, qt / baseMva, qb / baseMva, true);
-            } else {
-                builder.setPQBus(busId, pg / baseMva, qg / baseMva, 0.0, 0.0);
-            }
+        } else if (bus.getGenCode() == AclfGenCode.GEN_PV
+                && genStatus && qt != qb) {
+            builder.setPVBus(busId, pg / baseMva, vs,
+                    qt / baseMva, qb / baseMva, true);
         }
     }
 
