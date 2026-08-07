@@ -5,9 +5,11 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +44,7 @@ public class QAUtil {
 
 	public static double getMaxBusVoltageMagDiff (AclfNetwork net, AclfNetwork copyNet) {
 		double maxDiff = 0;
+		String maxDiffBusId = "";
 		for(AclfBus bus: net.getBusList()) {
 			if(bus.isActive()) {
 				double vm = bus.getVoltageMag();
@@ -50,9 +53,12 @@ public class QAUtil {
 				double vmdiff = vm - vmCopy;
 				if(Math.abs(vmdiff) > maxDiff) {
 					maxDiff = Math.abs(vmdiff);
+					maxDiffBusId = bus.getId();
 				}
 			}
 		}
+		System.out.println("Max bus voltage magnitude difference: " + maxDiff
+				+ " (Bus ID: " + maxDiffBusId + ")");
 		return maxDiff;
 	}
 
@@ -122,6 +128,201 @@ public class QAUtil {
 				+ " (Bus ID: " + maxDiffBusId + ", reference shift: "
 				+ Math.toDegrees(angle) + " deg)");
 		return maxDiff;
+	}
+
+	/**
+	 * Compare bus-voltage phasors after independently removing the uniform angle
+	 * offset of each disconnected AC island. HVDC links do not constrain the AC
+	 * phase reference between their terminal islands.
+	 */
+	public static double getMaxBusVoltageDiffAngleAlignedByIsland(
+			AclfNetwork net, AclfNetwork referenceNet) {
+		Set<String> visited = new HashSet<>();
+		double maxDiff = 0.0;
+		String maxDiffBusId = "";
+		double maxDiffIslandShift = 0.0;
+
+		for (AclfBus seed : net.getBusList()) {
+			AclfBus referenceSeed = referenceNet.getBus(seed.getId());
+			if (!seed.isActive() || referenceSeed == null || !referenceSeed.isActive()
+					|| visited.contains(seed.getId())) {
+				continue;
+			}
+
+			List<AclfBus> island = new ArrayList<>();
+			ArrayDeque<AclfBus> queue = new ArrayDeque<>();
+			queue.add(seed);
+			visited.add(seed.getId());
+			while (!queue.isEmpty()) {
+				AclfBus bus = queue.removeFirst();
+				island.add(bus);
+				for (Branch branch : bus.getBranchIterable()) {
+					if (!(branch instanceof AclfBranch) || !branch.isActive()) {
+						continue;
+					}
+					AclfBus oppositeBus = (AclfBus) branch.getOppositeBus(bus);
+					AclfBus referenceBus = referenceNet.getBus(oppositeBus.getId());
+					if (oppositeBus.isActive() && referenceBus != null
+							&& referenceBus.isActive() && visited.add(oppositeBus.getId())) {
+						queue.addLast(oppositeBus);
+					}
+				}
+			}
+
+			double correlationReal = 0.0;
+			double correlationImaginary = 0.0;
+			for (AclfBus bus : island) {
+				Complex voltage = bus.getVoltage();
+				Complex referenceVoltage = referenceNet.getBus(bus.getId()).getVoltage();
+				correlationReal += referenceVoltage.getReal() * voltage.getReal()
+						+ referenceVoltage.getImaginary() * voltage.getImaginary();
+				correlationImaginary += referenceVoltage.getImaginary() * voltage.getReal()
+						- referenceVoltage.getReal() * voltage.getImaginary();
+			}
+
+			double angle = Math.atan2(correlationImaginary, correlationReal);
+			Complex rotation = new Complex(Math.cos(angle), Math.sin(angle));
+			for (AclfBus bus : island) {
+				double diff = bus.getVoltage().multiply(rotation)
+						.subtract(referenceNet.getBus(bus.getId()).getVoltage()).abs();
+				if (diff > maxDiff) {
+					maxDiff = diff;
+					maxDiffBusId = bus.getId();
+					maxDiffIslandShift = angle;
+				}
+			}
+		}
+
+		System.out.println("Max island-aligned bus voltage difference: " + maxDiff
+				+ " (Bus ID: " + maxDiffBusId + ", island reference shift: "
+				+ Math.toDegrees(maxDiffIslandShift) + " deg)");
+		return maxDiff;
+	}
+
+	/**
+	 * Return the Type-3 (swing) bus IDs for every active AC island. The list has
+	 * one entry per island, including an empty set when an island has no Type-3
+	 * bus. HVDC links are not treated as AC island connections.
+	 */
+	public static List<Set<String>> getActiveAcIslandType3BusIds(AclfNetwork net) {
+		List<Set<String>> result = new ArrayList<>();
+		for (List<AclfBus> island : findActiveAcIslands(net)) {
+			Set<String> type3BusIds = new LinkedHashSet<>();
+			for (AclfBus bus : island) {
+				if (bus.isSwing()) {
+					type3BusIds.add(bus.getId());
+				}
+			}
+			result.add(type3BusIds);
+		}
+		return result;
+	}
+
+	/**
+	 * Compare voltage angles after anchoring each active AC island at its Type-3
+	 * bus. The two networks must have identical active-island membership and
+	 * identical Type-3 assignments. The returned value is the largest remaining
+	 * within-island angle difference in degrees.
+	 */
+	public static double getMaxBusVoltageAngleDiffAtType3ReferenceDeg(
+			AclfNetwork net, AclfNetwork referenceNet) {
+		List<List<AclfBus>> islands = findActiveAcIslands(net);
+		List<List<AclfBus>> referenceIslands = findActiveAcIslands(referenceNet);
+		Set<Set<String>> islandBusIds = islandBusIdSets(islands);
+		Set<Set<String>> referenceIslandBusIds = islandBusIdSets(referenceIslands);
+		if (!islandBusIds.equals(referenceIslandBusIds)) {
+			throw new IllegalArgumentException(
+					"Active AC island membership differs between the two networks");
+		}
+
+		double maxDiffDeg = 0.0;
+		String maxDiffBusId = "";
+		String maxDiffReferenceBusId = "";
+		for (List<AclfBus> referenceIsland : referenceIslands) {
+			Set<String> islandIds = new HashSet<>();
+			Set<String> referenceType3Ids = new HashSet<>();
+			for (AclfBus referenceBus : referenceIsland) {
+				islandIds.add(referenceBus.getId());
+				if (referenceBus.isSwing()) {
+					referenceType3Ids.add(referenceBus.getId());
+				}
+			}
+			Set<String> type3Ids = new HashSet<>();
+			for (String busId : islandIds) {
+				if (net.getBus(busId).isSwing()) {
+					type3Ids.add(busId);
+				}
+			}
+			if (!type3Ids.equals(referenceType3Ids)) {
+				throw new IllegalArgumentException("Type-3 bus assignments differ for AC island "
+						+ islandIds + ": actual=" + type3Ids
+						+ ", reference=" + referenceType3Ids);
+			}
+			if (referenceType3Ids.isEmpty()) {
+				throw new IllegalArgumentException(
+						"Active AC island has no Type-3 reference bus: " + islandIds);
+			}
+
+			String referenceBusId = referenceType3Ids.stream().sorted().findFirst().get();
+			double referenceShift = referenceNet.getBus(referenceBusId).getVoltageAng()
+					- net.getBus(referenceBusId).getVoltageAng();
+			for (String busId : islandIds) {
+				double angleDiff = net.getBus(busId).getVoltageAng() + referenceShift
+						- referenceNet.getBus(busId).getVoltageAng();
+				double angleDiffDeg = Math.toDegrees(Math.abs(
+						Math.atan2(Math.sin(angleDiff), Math.cos(angleDiff))));
+				if (angleDiffDeg > maxDiffDeg) {
+					maxDiffDeg = angleDiffDeg;
+					maxDiffBusId = busId;
+					maxDiffReferenceBusId = referenceBusId;
+				}
+			}
+		}
+
+		System.out.println("Max Type-3-anchored bus voltage angle difference: "
+				+ maxDiffDeg + " deg (Bus ID: " + maxDiffBusId
+				+ ", Type-3 reference: " + maxDiffReferenceBusId + ")");
+		return maxDiffDeg;
+	}
+
+	private static List<List<AclfBus>> findActiveAcIslands(AclfNetwork net) {
+		List<List<AclfBus>> islands = new ArrayList<>();
+		Set<String> visited = new HashSet<>();
+		for (AclfBus seed : net.getBusList()) {
+			if (!seed.isActive() || !visited.add(seed.getId())) {
+				continue;
+			}
+			List<AclfBus> island = new ArrayList<>();
+			ArrayDeque<AclfBus> queue = new ArrayDeque<>();
+			queue.add(seed);
+			while (!queue.isEmpty()) {
+				AclfBus bus = queue.removeFirst();
+				island.add(bus);
+				for (Branch branch : bus.getBranchIterable()) {
+					if (!(branch instanceof AclfBranch) || !branch.isActive()) {
+						continue;
+					}
+					AclfBus oppositeBus = (AclfBus) branch.getOppositeBus(bus);
+					if (oppositeBus.isActive() && visited.add(oppositeBus.getId())) {
+						queue.addLast(oppositeBus);
+					}
+				}
+			}
+			islands.add(island);
+		}
+		return islands;
+	}
+
+	private static Set<Set<String>> islandBusIdSets(List<List<AclfBus>> islands) {
+		Set<Set<String>> result = new HashSet<>();
+		for (List<AclfBus> island : islands) {
+			Set<String> busIds = new HashSet<>();
+			for (AclfBus bus : island) {
+				busIds.add(bus.getId());
+			}
+			result.add(busIds);
+		}
+		return result;
 	}
 
 	public static Complex getMaxBranchFlowDiff (AclfNetwork net, AclfNetwork copyNet, double zeroZBranchTreshold) {
