@@ -1,10 +1,14 @@
 package org.interpss.core.adapter.matpower;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.IpssFileAdapter;
+import org.interpss.fadapter.matpower.MatpowerDirectParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
@@ -13,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -30,6 +35,7 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 	private static final String CASE118_FILE = "testData/adpter/matpower/case118.m";
 	private static final String CASE2736SP_FILE = "testData/adpter/matpower/case2736sp.m";
 	private static final double DATA_TOL = 1.0E-6;
+	@TempDir Path temporaryDirectory;
 
 	private AclfNetwork loadMatpowerCase(String path) throws Exception {
 		return CorePluginFactory
@@ -293,6 +299,32 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 		assertEquals(9, net.getNoBus());
 		assertEquals(9, net.getNoBranch());
 		assertTrue(net.getBus("Bus1").isSwing());
+	}
+
+	@Test
+	public void directParserSupportsSparseBusNumbersAboveOneHundredThousand() throws Exception {
+		Path caseFile = temporaryDirectory.resolve("case_high_bus_number.m");
+		Files.writeString(caseFile, """
+				function mpc = case_high_bus_number
+				mpc.version = '2';
+				mpc.baseMVA = 100;
+				mpc.bus = [
+				111180 3 0 0 0 0 1 1.0 0 230 1 1.1 0.9;
+				];
+				mpc.gen = [
+				111180 60 0 50 -50 1.0 100 1 80 0;
+				111180 20 0 20 -20 1.0 100 1 30 0;
+				];
+				mpc.branch = [
+				];
+				""");
+
+		AclfNetwork net = new MatpowerDirectParser().parse(caseFile.toString());
+
+		assertNotNull(net.getBus("Bus111180"));
+		assertEquals(2, net.getBus("Bus111180").getContributeGenList().size());
+		assertEquals("1", net.getBus("Bus111180").getContributeGenList().get(0).getId());
+		assertEquals("2", net.getBus("Bus111180").getContributeGenList().get(1).getId());
 	}
 
 	@Test
