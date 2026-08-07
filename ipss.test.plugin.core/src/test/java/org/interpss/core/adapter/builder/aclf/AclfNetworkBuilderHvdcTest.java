@@ -74,7 +74,10 @@ public class AclfNetworkBuilderHvdcTest extends CorePluginTestSetup {
 		assertEquals(30.0, rec.getFiringAngLimit(UnitType.Deg).getMax(), TOL);
 		assertEquals(5.0, rec.getFiringAngLimit(UnitType.Deg).getMin(), TOL);
 		assertTrue(NumericUtil.equals(rec.getCommutingZ(), new Complex(0.5, 5.0), TOL));
-		assertEquals(230.0, rec.getAcRatedVoltage(), TOL);
+		assertEquals(1.0, rec.getAcRatedVoltage(), TOL,
+				"converter rated voltage is stored in pu on its AC-bus base");
+		assertEquals(230.0, rec.getAcRatedVoltage(UnitType.kV,
+				rec.getBus().getBaseVoltage()), TOL);
 		assertEquals(1.0, rec.getXformerRatio(), TOL);
 		assertEquals(1.0, rec.getXformerTapSetting(), TOL);
 		assertEquals(1.1, rec.getXformerTapLimit().getMax(), TOL);
@@ -91,6 +94,7 @@ public class AclfNetworkBuilderHvdcTest extends CorePluginTestSetup {
 				0.0, 20.0);
 		assertEquals(ConverterType.INVERTER, inv.getConverterType());
 		assertEquals(2, inv.getNBridges());
+		assertEquals(1.0, inv.getAcRatedVoltage(), TOL);
 		assertEquals(20.0, inv.getFiringAng(), TOL);
 		assertSame(inv, lcc.getInverter());
 	}
