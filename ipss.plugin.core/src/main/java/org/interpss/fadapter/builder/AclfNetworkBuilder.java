@@ -517,6 +517,10 @@ public class AclfNetworkBuilder {
         if (distGenPowerPU != null && distGenPowerPU.abs() > 0) {
             load.setDistGenPower(distGenPowerPU);
             load.setDistGenStatus(distGenStatus);
+            if (distGenStatus && code == AclfLoadCode.NON_LOAD) {
+                code = AclfLoadCode.CONST_P;
+                load.setCode(code);
+            }
         }
 
         return load;
@@ -1139,7 +1143,8 @@ public class AclfNetworkBuilder {
         rec.setNBridges(nBridges);
         rec.setFiringAngLimit(new LimitType(maxFiringAngDeg, minFiringAngDeg), UnitType.Deg);
         rec.setCommutingZ(new Complex(rcOhm, xcOhm));
-        rec.setAcRatedVoltage(acRatedVoltageKV);
+        rec.setAcRatedVoltage(acRatedVoltageKV, UnitType.kV,
+                rec.getBus().getBaseVoltage());
         rec.setXformerRatio(xfrRatio);
         rec.setXformerTapSetting(tapSetting);
         rec.setXformerTapLimit(new LimitType(tapMax, tapMin));
@@ -1166,7 +1171,8 @@ public class AclfNetworkBuilder {
         inv.setNBridges(nBridges);
         inv.setFiringAngLimit(new LimitType(maxFiringAngDeg, minFiringAngDeg), UnitType.Deg);
         inv.setCommutingZ(new Complex(rcOhm, xcOhm));
-        inv.setAcRatedVoltage(acRatedVoltageKV);
+        inv.setAcRatedVoltage(acRatedVoltageKV, UnitType.kV,
+                inv.getBus().getBaseVoltage());
         inv.setXformerRatio(xfrRatio);
         inv.setXformerTapSetting(tapSetting);
         inv.setXformerTapLimit(new LimitType(tapMax, tapMin));
