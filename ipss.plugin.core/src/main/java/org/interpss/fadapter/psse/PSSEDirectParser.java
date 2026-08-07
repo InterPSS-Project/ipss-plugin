@@ -15,7 +15,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -64,6 +66,7 @@ public class PSSEDirectParser {
 
     private final int version;
     private final AclfNetworkBuilder builder;
+    private final Map<String, Complex> rawType3BusVoltages = new HashMap<>();
     private double baseMva = 100.0;
 
     public PSSEDirectParser(int version) {
@@ -107,12 +110,14 @@ public class PSSEDirectParser {
 
     private void parseFromReaderInternal(BufferedReader reader) throws InterpssException {
         try {
+            rawType3BusVoltages.clear();
             parseHeader(reader);
             parseSection(reader, this::parseBusLine);
             parseSection(reader, this::parseLoadLine);
             if (version >= 31) collectFixedShunts(reader);
             if (version >= 36) parseSection(reader, null);
             parseSection(reader, this::parseGenLine);
+            PSSEGeneratorReactivePower.finalizeBusTypes(builder);
             if (version >= 36) parseSection(reader, null);
             parseSection(reader, this::parseLineLine);
             if (version >= 34) parseSection(reader, this::parseSystemSwitchingDeviceLine);
@@ -144,6 +149,8 @@ public class PSSEDirectParser {
             }
 
             builder.finalizeNetwork();
+            rawType3BusVoltages.forEach((busId, voltage) ->
+                    builder.getBus(busId).setVoltage(voltage));
         } catch (IOException e) {
             throw new InterpssException("Error parsing PSS/E data: " + e.getMessage());
         }
@@ -273,6 +280,7 @@ public class PSSEDirectParser {
 
         // Bus gen code (initial, will be refined by generator records)
         if (ide == 3) {
+            rawType3BusVoltages.put(busId, bus.getVoltage());
             builder.setSwingBus(busId, vm, Math.toRadians(va));
         } else if (ide == 2) {
             // PV initially - will be set properly by gen record
@@ -339,8 +347,9 @@ public class PSSEDirectParser {
         String genId = rec.getString(1, "1").trim();
 
         double pg, qg, qt, qb, vs;
-        int ireg, stat;
+        int ireg, stat, wmod = 0;
         double mbase, zr, zx, rt, xt, gtap, rmpct, pt, pb;
+        double wpf = 1.0;
 
         if (version >= 35) {
             // V35+: I, ID, PG, QG, QT, QB, VS, IREG, NREG, MBASE, ZR, ZX, RT, XT, GTAP, STAT, RMPCT, PT, PB, BASELOAD...
@@ -361,6 +370,8 @@ public class PSSEDirectParser {
             rmpct = rec.getDouble(16, 100.0);
             pt = rec.getDouble(17, 0.0);
             pb = rec.getDouble(18, 0.0);
+            wmod = rec.getInt(28, 0);
+            wpf = rec.getDouble(29, 1.0);
         } else {
             // V29-34: I, ID, PG, QG, QT, QB, VS, IREG, MBASE, ZR, ZX, RT, XT, GTAP, STAT, RMPCT, PT, PB...
             pg = rec.getDouble(2, 0.0);
@@ -379,6 +390,10 @@ public class PSSEDirectParser {
             rmpct = rec.getDouble(15, 100.0);
             pt = rec.getDouble(16, 0.0);
             pb = rec.getDouble(17, 0.0);
+            if (version >= 32) {
+                wmod = rec.getInt(26, 0);
+                wpf = rec.getDouble(27, 1.0);
+            }
         }
 
         if (mbase == 0.0) mbase = baseMva;
@@ -387,6 +402,14 @@ public class PSSEDirectParser {
         if (bus == null) {
             log.error("Bus " + busId + " not found for generator " + genId);
             return;
+        }
+
+        if (bus.getGenCode() != AclfGenCode.SWING) {
+            PSSEGeneratorReactivePower.Data reactiveData =
+                    PSSEGeneratorReactivePower.resolve(pg, qg, qt, qb, wmod, wpf);
+            qg = reactiveData.qGen();
+            qt = reactiveData.qMax();
+            qb = reactiveData.qMin();
         }
 
         boolean genStatus = (stat == 1);
@@ -419,22 +442,13 @@ public class PSSEDirectParser {
         if (bus.getGenCode() == AclfGenCode.SWING) {
             builder.setSwingBus(busId, vs, bus.getVoltageAng());
             bus.setGenP(pg / baseMva);
-        } else if (bus.getGenCode() == AclfGenCode.GEN_PV && genStatus) {
-            if (qt == qb) {
-                // Fixed Q generator -> PQ bus
-                builder.setPQBus(busId, pg / baseMva, qg / baseMva, 0.0, 0.0);
-            } else {
-                if (remoteBusId == null || remoteBusId.equals(busId)) {
-                    builder.setPVBus(busId, pg / baseMva, vs,
-                            qt / baseMva, qb / baseMva, true);
-                } else {
-                    // Preserve the regulating-bus type until contribution initialization.
-                    // AclfBusInitContriGenLoadHelper converts it to GEN_PQ and creates the
-                    // RemoteQBus from IREG; pre-converting here silently loses that control.
-                    builder.setPVBus(busId, pg / baseMva, vs,
-                            qt / baseMva, qb / baseMva, true);
-                }
-            }
+        } else if (bus.getGenCode() == AclfGenCode.GEN_PV
+                && genStatus && qt != qb) {
+            // Keep the existing PV/remote-Q initialization path for every
+            // machine that can regulate voltage. Fixed-Q machines are
+            // classified only after all generators at the bus are parsed.
+            builder.setPVBus(busId, pg / baseMva, vs,
+                    qt / baseMva, qb / baseMva, true);
         }
     }
 
@@ -721,9 +735,12 @@ public class PSSEDirectParser {
             // CONT=0 means "control own bus" in PSS/E; do not build vcBusId "Bus0"
             if (Math.abs(cod1) == 1 && cont1 != 0) {
                 String vcBusId = BUS_ID_PREFIX + Math.abs(cont1);
+                // PSS/E uses the sign of CONT to define the response side; it is
+                // not determined by whether |CONT| happens to equal a transformer
+                // terminal. Positive means winding 2/3, negative means winding 1.
                 builder.addTapVoltageRangeControl(branchId, vcBusId, cod1 > 0,
                         vma1, vmi1, tapMax, tapMin,
-                        true, vcBusId.equals(fromBusId), tapStepSize,
+                        true, cont1 < 0, tapStepSize,
                         ntp1 > 0 ? ntp1 : null);
             } else if (Math.abs(cod1) == 1) {
                 // Local voltage control (CONT=0): control the from-bus
