@@ -9,14 +9,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.interpss.fadapter.psse.PSSEJsonDirectParser;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import org.interpss.util.QAUtil;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -24,6 +28,7 @@ import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfLoadCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
@@ -77,6 +82,50 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void testV34PreservesRawType3AssignmentsAndSwingVoltage() throws Exception {
+		Path source = Path.of("testData/psse/v34/sample_v34.raw");
+		String raw = Files.readString(source);
+		String originalBus = "   301,'NORTH       ', 765.0000,3,   3,   5,   3,"
+				+ "1.00000,   0.0000,1.10000,0.90000,1.10000,0.90000";
+		String modifiedBus = "   301,'NORTH       ', 765.0000,3,   3,   5,   3,"
+				+ "1.01234,  17.2500,1.10000,0.90000,1.10000,0.90000";
+		String modified = raw.replace(originalBus, modifiedBus)
+				.replace("1.00000,   301,", "1.03456,   301,");
+		assertFalse(raw.equals(modified), "swing-bus fixture values were not replaced");
+		Path input = tempDir.resolve("swing-voltage-v34.raw");
+		Files.writeString(input, modified);
+
+		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		Set<String> type3BusIds = net.getBusList().stream()
+				.filter(AclfBus::isActive)
+				.filter(AclfBus::isSwing)
+				.map(AclfBus::getId)
+				.collect(Collectors.toSet());
+		assertEquals(Set.of("Bus301", "Bus401", "Bus402", "Bus3011"),
+				type3BusIds);
+		Set<Set<String>> type3AssignmentsByIsland =
+				QAUtil.getActiveAcIslandType3BusIds(net).stream()
+						.collect(Collectors.toSet());
+		assertEquals(Set.of(
+				Set.of(),
+				Set.of("Bus301"),
+				Set.of("Bus401"),
+				Set.of("Bus402"),
+				Set.of("Bus3011")), type3AssignmentsByIsland,
+				"RAW IDE=3 assignments must be preserved for every AC island");
+
+		AclfBus swingBus = net.getBus("Bus301");
+		assertEquals(1.01234, swingBus.getVoltageMag(), 1.0E-9,
+				"RAW bus VM must remain the saved initial voltage");
+		assertEquals(17.25, Math.toDegrees(swingBus.getVoltageAng()), 1.0E-9,
+				"RAW bus VA must remain the saved initial angle");
+		assertEquals(1.03456, swingBus.getDesiredVoltMag(), 1.0E-9,
+				"generator VS must become the swing voltage setpoint");
+		assertEquals(17.25, Math.toDegrees(swingBus.getDesiredVoltAng()), 1.0E-9,
+				"the swing angle setpoint must retain the RAW bus VA");
+	}
+
+	@Test
 	public void testV36FixedShuntNbTerminalResolves() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
 		AclfBus bus151 = net.getBus("Bus151");
@@ -125,6 +174,165 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		var load6 = bus6.getContributeLoadList().get(0);
 		assertFalse(load6.isDistGenStatus(), "Bus6 DGENF=0 → offline");
 		assertEquals(0.10, load6.getDistGenPower().getReal(), 1.0E-6);
+	}
+
+	@Test
+	public void testV34ActiveDgenWithoutGrossLoadRemainsAConstantPowerInjection()
+			throws Exception {
+		Path source = Path.of("testData/adpter/psse/v34/ieee9_dgen_v34.raw");
+		String raw = Files.readString(source);
+		String original = "     8,'1 ',   1,   1,   1,   100.000,    35.000,"
+				+ "     0.000,     0.000,     0.000,     0.000,   1,    1,  0,"
+				+ "     0.000,     0.000,   0";
+		String pureDgen = "     8,'1 ',   1,   1,   1,     0.000,     0.000,"
+				+ "     0.000,     0.000,     0.000,     0.000,   1,    1,  0,"
+				+ "    25.000,    10.000,   1";
+		String modified = raw.replace(original, pureDgen);
+		assertFalse(raw.equals(modified), "pure-DGEN fixture row was not replaced");
+		Path input = tempDir.resolve("pure-dgen-v34.raw");
+		Files.writeString(input, modified);
+
+		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfBus bus8 = net.getBus("Bus8");
+		assertEquals(AclfLoadCode.CONST_P, bus8.getLoadCode());
+		assertEquals(AclfLoadCode.CONST_P,
+				bus8.getContributeLoadList().get(0).getCode());
+		assertEquals(-0.25,
+				bus8.getContributeLoadList().get(0).getLoad(bus8.getVoltageMag()).getReal(),
+				1.0E-9);
+	}
+
+	@Test
+	public void testV34MixedFixedAndVariableQMachinesKeepPlantPV() throws Exception {
+		Path source = Path.of("testData/psse/v34/sample_v34.raw");
+		String raw = Files.readString(source);
+		String generatorHeader = "0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA\n"
+				+ "@!   I,'ID',      PG,        QG,        QT,        QB,     VS,    IREG,     MBASE,     ZR,         ZX,         RT,         XT,     GTAP,STAT, RMPCT,      PT,        PB,    O1,    F1,  O2,    F2,  O3,    F3,  O4,    F4,WMOD, WPF,NREG\n";
+		String fixedQMachine = "   101,'FQ',    10.000,     0.000,     5.000,     5.000,1.01000,   101,    20.000, 0.00000E+0, 2.50000E-1, 0.00000E+0, 0.00000E+0,1.00000,1,  100.0,    12.000,     0.000\n";
+		String modified = raw.replace(generatorHeader, generatorHeader + fixedQMachine);
+		assertFalse(raw.equals(modified), "generator fixture row was not inserted");
+		Path input = tempDir.resolve("mixed-fixed-variable-q-v34.raw");
+		Files.writeString(input, modified);
+
+		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfBus bus101 = net.getBus("Bus101");
+		assertTrue(bus101.isGenPV(),
+				"one fixed-Q machine must not disable another machine's voltage control");
+		assertEquals(2, bus101.getContributeGenList().size());
+		var fixedQGen = bus101.getContributeGen("FQ");
+		assertNotNull(fixedQGen);
+		assertEquals(0.05, fixedQGen.getGen().getImaginary(), 1.0E-9);
+		assertEquals(0.05, fixedQGen.getQGenLimit().getMax(), 1.0E-9);
+		assertEquals(0.05, fixedQGen.getQGenLimit().getMin(), 1.0E-9);
+		assertEquals(2.4875, bus101.getQGenLimit().getMax(), 1.0E-9);
+		assertEquals(-0.325, bus101.getQGenLimit().getMin(), 1.0E-9);
+	}
+
+	@Test
+	public void testV34Wmod2DerivesSymmetricReactiveLimitsFromPowerFactor() throws Exception {
+		Path source = Path.of("testData/psse/v34/sample_v34.raw");
+		String raw = Files.readString(source);
+		String wmod2Machine = "   206,'1 ',    80.000,    10.000,   999.000,  -999.000,1.00000,   206,   100.000, 0.00000E+0, 2.00000E-1, 0.00000E+0, 0.00000E+0,1.00000,1,  100.0,   100.000,     0.000,   1,1.0000,   0,1.0000,   0,1.0000,   0,1.0000,2, 0.8000";
+		String modified = replaceLineStartingWith(raw, "   206,'1 '", wmod2Machine);
+		Path input = tempDir.resolve("wmod2-v34.raw");
+		Files.writeString(input, modified);
+
+		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfBus bus206 = net.getBus("Bus206");
+		assertTrue(bus206.isGenPV());
+		var gen = bus206.getContributeGen("1");
+		assertEquals(0.60, gen.getQGenLimit().getMax(), 1.0E-9);
+		assertEquals(-0.60, gen.getQGenLimit().getMin(), 1.0E-9);
+		assertEquals(0.10, gen.getGen().getImaginary(), 1.0E-9,
+				"WMOD=2 changes capability limits, not the saved Q starting point");
+	}
+
+	@Test
+	public void testV35Wmod2UsesPostNregFieldLayout() throws Exception {
+		Path source = Path.of("testData/psse/v35/sample_v35.raw");
+		String raw = Files.readString(source);
+		String wmod2Machine = "   206,'1 ',    80.000,    10.000,   999.000,  -999.000,1.00000,   206,   0,   100.000, 0.00000E+0, 2.00000E-1, 0.00000E+0, 0.00000E+0,1.00000,1,  100.0,   100.000,     0.000, 0,   1,1.0000,   0,1.0000,   0,1.0000,   0,1.0000,2, 0.8000";
+		String modified = replaceLineStartingWith(raw, "   206,'1 '", wmod2Machine);
+		Path input = tempDir.resolve("wmod2-v35.raw");
+		Files.writeString(input, modified);
+
+		AclfNetwork net = new PSSEDirectParser(35).parse(input.toString());
+		var gen = net.getBus("Bus206").getContributeGen("1");
+		assertEquals(0.60, gen.getQGenLimit().getMax(), 1.0E-9);
+		assertEquals(-0.60, gen.getQGenLimit().getMin(), 1.0E-9);
+		assertEquals(0.10, gen.getGen().getImaginary(), 1.0E-9);
+	}
+
+	@Test
+	public void testV34Wmod3DerivesFixedReactiveOutputFromPowerFactor() throws Exception {
+		Path source = Path.of("testData/psse/v34/sample_v34.raw");
+		String raw = Files.readString(source);
+		String wmod3Machine = "   206,'1 ',    80.000,     0.000,   999.000,  -999.000,1.00000,   206,   100.000, 0.00000E+0, 2.00000E-1, 0.00000E+0, 0.00000E+0,1.00000,1,  100.0,   100.000,     0.000,   1,1.0000,   0,1.0000,   0,1.0000,   0,1.0000,3,-0.8000";
+		String modified = replaceLineStartingWith(raw, "   206,'1 '", wmod3Machine);
+		Path input = tempDir.resolve("wmod3-v34.raw");
+		Files.writeString(input, modified);
+
+		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfBus bus206 = net.getBus("Bus206");
+		assertTrue(bus206.isGenPQ());
+		var gen = bus206.getContributeGen("1");
+		assertEquals(-0.60, gen.getGen().getImaginary(), 1.0E-9);
+		assertEquals(-0.60, gen.getQGenLimit().getMax(), 1.0E-9);
+		assertEquals(-0.60, gen.getQGenLimit().getMin(), 1.0E-9);
+		assertEquals(-0.60, bus206.getGenQ(), 1.0E-9);
+	}
+
+	@Test
+	public void testRawxMixedFixedAndVariableQMachinesKeepPlantPV() throws Exception {
+		String rawx = """
+				{"network":{
+				  "caseid":{"fields":["sbase"],"data":[100.0]},
+				  "bus":{"fields":["ibus","name","baskv","ide","vm","va"],
+				         "data":[[1,"MIXED",13.8,2,1.02,0.0],
+				                 [2,"WMOD2",13.8,2,1.01,0.0],
+				                 [3,"WMOD3",13.8,2,1.00,0.0],
+				                 [4,"FIXED",13.8,2,1.00,0.0]]},
+				  "generator":{"fields":["ibus","machid","pg","qg","qt","qb","vs","ireg","mbase","stat","pt","pb","wmod","wpf"],
+				               "data":[[1,"FQ",10.0,0.0,5.0,5.0,1.02,1,20.0,1,12.0,0.0,0,1.0],
+				                       [1,"PV",50.0,10.0,30.0,-20.0,1.02,1,60.0,1,60.0,0.0,0,1.0],
+				                       [2,"W2",80.0,10.0,999.0,-999.0,1.01,2,100.0,1,100.0,0.0,2,0.8],
+				                       [3,"W3",80.0,0.0,999.0,-999.0,1.00,3,100.0,1,100.0,0.0,3,-0.8],
+					                       [4,"FQ",10.0,0.0,0.0,-0.0,1.00,4,20.0,1,12.0,0.0,0,1.0]]}
+				}}
+				""";
+		Path input = tempDir.resolve("mixed-fixed-variable-q.rawx");
+		Files.writeString(input, rawx);
+
+		AclfNetwork net = new PSSEJsonDirectParser().parse(input.toString());
+		AclfBus bus1 = net.getBus("Bus1");
+		assertTrue(bus1.isGenPV());
+		assertEquals(0.35, bus1.getQGenLimit().getMax(), 1.0E-9);
+		assertEquals(-0.15, bus1.getQGenLimit().getMin(), 1.0E-9);
+		assertEquals(0.05, bus1.getContributeGen("FQ").getGen().getImaginary(), 1.0E-9);
+
+		AclfBus bus2 = net.getBus("Bus2");
+		assertTrue(bus2.isGenPV());
+		assertEquals(0.60, bus2.getQGenLimit().getMax(), 1.0E-9);
+		assertEquals(-0.60, bus2.getQGenLimit().getMin(), 1.0E-9);
+
+		AclfBus bus3 = net.getBus("Bus3");
+		assertTrue(bus3.isGenPQ());
+		assertEquals(-0.60, bus3.getGenQ(), 1.0E-9);
+		assertEquals(-0.60, bus3.getQGenLimit().getMax(), 1.0E-9);
+		assertEquals(-0.60, bus3.getQGenLimit().getMin(), 1.0E-9);
+
+		AclfBus bus4 = net.getBus("Bus4");
+		assertTrue(bus4.isGenPQ());
+		assertEquals(0.0, bus4.getGenQ(), 1.0E-9);
+	}
+
+	private static String replaceLineStartingWith(String text, String prefix,
+			String replacement) {
+		int start = text.indexOf(prefix);
+		assertTrue(start >= 0, "fixture line not found: " + prefix);
+		int end = text.indexOf('\n', start);
+		assertTrue(end >= 0, "fixture line has no terminator: " + prefix);
+		return text.substring(0, start) + replacement + text.substring(end);
 	}
 
 	@Test
