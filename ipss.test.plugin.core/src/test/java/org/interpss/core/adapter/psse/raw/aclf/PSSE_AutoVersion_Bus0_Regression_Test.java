@@ -77,6 +77,37 @@ public class PSSE_AutoVersion_Bus0_Regression_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void tapVoltageControl_contSignDefinesResponseSide() throws Exception {
+		Path positiveRaw = Files.createTempFile("psse_cont_positive_tap", ".RAW");
+		Path negativeRaw = Files.createTempFile("psse_cont_negative_tap", ".RAW");
+		try {
+			String localCase = minimalV36RawWithLocalTapControl();
+			Files.writeString(positiveRaw, localCase.replace(
+					" 1,      0,   0,1.10000", " 1,      1,   0,1.10000"));
+			Files.writeString(negativeRaw, localCase.replace(
+					" 1,      0,   0,1.10000", " 1,     -1,   0,1.10000"));
+
+			TapControl positive = loadWithAutoDetectedVersion(positiveRaw.toString())
+					.getBranch("Bus1->Bus2(1)").getTapControl();
+			TapControl negative = loadWithAutoDetectedVersion(negativeRaw.toString())
+					.getBranch("Bus1->Bus2(1)").getTapControl();
+
+			assertNotNull(positive);
+			assertNotNull(negative);
+			assertEquals("Bus1", positive.getVcBusId());
+			assertEquals("Bus1", negative.getVcBusId());
+			assertFalse(positive.isVcBusOnFromSide(),
+					"positive CONT responds as if the controlled bus is on winding 2/3");
+			assertTrue(negative.isVcBusOnFromSide(),
+					"negative CONT responds as if the controlled bus is on winding 1");
+		}
+		finally {
+			Files.deleteIfExists(positiveRaw);
+			Files.deleteIfExists(negativeRaw);
+		}
+	}
+
+	@Test
 	public void phaseShiftingTransformer_preservesVoltageTapControl() throws Exception {
 		Path raw = Files.createTempFile("psse_phase_shift_tap", ".RAW");
 		try {
