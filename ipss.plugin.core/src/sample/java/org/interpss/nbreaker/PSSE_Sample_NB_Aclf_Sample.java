@@ -4,16 +4,9 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 
 import com.interpss.common.exp.InterpssException;
-import com.interpss.core.LoadflowAlgoObjectFactory;
-import com.interpss.core.aclf.Aclf3WBranch;
-import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetInfoHelper;
-import com.interpss.core.funcImpl.topo.SubstationNBreakerHelper;
-import com.interpss.core.net.Substation;
 
 /**
  * Sample: import PSS/E v36 sample_nb RAW (node-breaker overlay) and inspect substations.
@@ -39,8 +32,10 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		net.getBus("Bus213").setExternalPowerIntoNet(new Complex(-3.037951816979418, 1.5965591185481436));
 
 		net.getBusList().forEach(bus -> {
-			if (bus.mismatch(AclfMethodType.NR).abs() > 0.1) 
+			if (bus.mismatch(AclfMethodType.NR).abs() > 0.1) {
 				System.out.println(bus.getId() + " " + bus.mismatch(AclfMethodType.NR) + " " + bus.getSubstation().getId());
+				AclfNetInfoHelper.outputBusAclfDebugInfo(net, bus.getId(), false);
+			}
 		});
 
 		//LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
