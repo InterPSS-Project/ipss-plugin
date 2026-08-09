@@ -96,8 +96,7 @@ public class OpenDSSCapacitorParser {
 		Static3PBus staticBus = this.dataParser.isStaticNetworkMode() ? this.dataParser.getOrCreateStaticBus(busId) : null;
 
 		if(!this.dataParser.isStaticNetworkMode() && bus==null){
-			throw new Error("Bus for a capacitor cannot be found, busId, capId = "+busId+","+capId );
-
+			bus = ThreePhaseObjectFactory.create3PDStabBus(busId, this.dataParser.getDistNetwork());
 		}
 
 		// tentatively modeled by constant Z Type of loads
