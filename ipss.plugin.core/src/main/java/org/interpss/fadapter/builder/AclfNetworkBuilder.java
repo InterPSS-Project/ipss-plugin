@@ -1109,7 +1109,13 @@ public class AclfNetworkBuilder {
         rec.setXformerTapSetting(tapSetting);
         rec.setXformerTapLimit(new LimitType(tapMax, tapMin));
         rec.setXformerTapStepSize(tapStepSize);
-        rec.setCommutingCapacitor(commutingCapacitor);
+        // PSS/E XCAPx is CCC commutating capacitance (ohms), not AC filter Mvar/pu.
+        // Do not map it into ThyConverter.commutingCapacitor (Q offset in pu).
+        rec.setCommutingCapacitor(0.0);
+        if (commutingCapacitor > 0.0) {
+            log.debug("LCC rectifier XCAP={} ohm ignored for ACLF Q (CCC not applied as shunt offset)",
+                    commutingCapacitor);
+        }
         if (firingAngDeg != null) rec.setFiringAng(firingAngDeg);
         return rec;
     }
@@ -1136,7 +1142,12 @@ public class AclfNetworkBuilder {
         inv.setXformerTapSetting(tapSetting);
         inv.setXformerTapLimit(new LimitType(tapMax, tapMin));
         inv.setXformerTapStepSize(tapStepSize);
-        inv.setCommutingCapacitor(commutingCapacitor);
+        // PSS/E XCAPx is CCC commutating capacitance (ohms), not AC filter Mvar/pu.
+        inv.setCommutingCapacitor(0.0);
+        if (commutingCapacitor > 0.0) {
+            log.debug("LCC inverter XCAP={} ohm ignored for ACLF Q (CCC not applied as shunt offset)",
+                    commutingCapacitor);
+        }
         if (firingAngDeg != null) inv.setFiringAng(firingAngDeg);
         return inv;
     }
