@@ -85,6 +85,10 @@ import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcControlSide;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
+import com.interpss.core.aclf.hvdc.HvdcLineMT;
+import com.interpss.core.aclf.hvdc.HvdcMTConverter;
+import com.interpss.core.aclf.hvdc.HvdcMTDcBus;
+import com.interpss.core.aclf.hvdc.HvdcMTDcLink;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.ThyConverter;
 import com.interpss.core.aclf.hvdc.VSCAcControlMode;
@@ -113,8 +117,8 @@ public class AclfNetworkBuilder {
     private final BaseAclfNetwork network;
     private final AclfNetworkObjectFactory objectFactory;
     /**
-     * Named equipment not represented as standard ACLF objects (induction machines,
-     * multi-terminal DC stubs, etc.) — keyed for NB terminal resolution.
+     * Named equipment keyed for NB terminal resolution (induction machines,
+     * multi-terminal HVDC lines, etc.).
      */
     private final Map<String, NameTag> namedEquipment = new HashMap<>();
 
@@ -1178,6 +1182,102 @@ public class AclfNetworkBuilder {
             converter.setRemoteControlBusId(remoteCtrlBusId);
             converter.setRemoteControlPercent(remoteCtrlPercent);
         }
+    }
+
+    // ==================== HVDC Multi-Terminal LCC ====================
+
+    /**
+     * Add a multi-terminal LCC HVDC line (owned by {@code hvdcLineMTList}, not specialBranchList).
+     */
+    public HvdcLineMT addHvdcLineMT(String name, HvdcControlMode controlMode,
+            String vConvBusId, String vConvNBusId, double vcModKv, boolean status) {
+        String id = name != null ? name.trim() : "";
+        HvdcLineMT line = HvdcObjectFactory.createHvdcLineMT(id, controlMode, network);
+        line.setName(id);
+        line.setVConvBusId(vConvBusId != null ? vConvBusId : "");
+        line.setVConvNBusId(vConvNBusId != null ? vConvNBusId : "");
+        line.setVcMod(vcModKv);
+        line.setStatus(status);
+        return line;
+    }
+
+    /**
+     * Add an MTDC converter station record.
+     */
+    public HvdcMTConverter addHvdcMTConverter(HvdcLineMT line, String acBusId,
+            int nBridges, double angMaxDeg, double angMinDeg,
+            double rcOhm, double xcOhm, double ebasKv,
+            double xfrRatio, double tap, double tapMax, double tapMin, double tapStep,
+            double setValue, double dcpf, double marg, int cnvCod) {
+        HvdcMTConverter conv = HvdcObjectFactory.createHvdcMTConverter();
+        conv.setId(acBusId);
+        conv.setName(acBusId);
+        conv.setAcBusId(acBusId);
+        conv.setParentHvdc(line);
+        BaseAclfBus bus = getBus(acBusId);
+        if (bus != null) {
+            conv.setBus(bus);
+        }
+        conv.setNBridges(nBridges);
+        conv.setAngMax(angMaxDeg);
+        conv.setAngMin(angMinDeg);
+        conv.setRc(rcOhm);
+        conv.setXc(xcOhm);
+        conv.setEbas(ebasKv);
+        conv.setXformerRatio(xfrRatio);
+        conv.setXformerTapSetting(tap);
+        conv.setXformerTapLimit(new LimitType(tapMax, tapMin));
+        conv.setXformerTapStepSize(tapStep);
+        conv.setSetValue(setValue);
+        conv.setDcpf(dcpf);
+        conv.setMarg(marg);
+        conv.setCnvCod(cnvCod);
+        if (setValue >= 0.0) {
+            conv.setConverterType(ConverterType.RECTIFIER);
+        } else {
+            conv.setConverterType(ConverterType.INVERTER);
+        }
+        line.getConverterList().add(conv);
+        return conv;
+    }
+
+    /**
+     * Add an MTDC internal DC bus record.
+     */
+    public HvdcMTDcBus addHvdcMTDcBus(HvdcLineMT line, int idc, String acBusId,
+            int area, int zone, String dcName, int idc2, double rgrndOhm, int owner) {
+        HvdcMTDcBus dcBus = HvdcObjectFactory.createHvdcMTDcBus();
+        dcBus.setId("DC" + idc);
+        dcBus.setIdc(idc);
+        dcBus.setAcBusId(acBusId != null ? acBusId : "");
+        dcBus.setArea(area);
+        dcBus.setZone(zone);
+        dcBus.setDcName(dcName != null ? dcName.trim() : "");
+        dcBus.setName(dcBus.getDcName().isEmpty() ? dcBus.getId() : dcBus.getDcName());
+        dcBus.setIdc2(idc2);
+        dcBus.setRgrnd(rgrndOhm);
+        dcBus.setOwner(owner);
+        line.getDcBusList().add(dcBus);
+        return dcBus;
+    }
+
+    /**
+     * Add an MTDC DC link record.
+     */
+    public HvdcMTDcLink addHvdcMTDcLink(HvdcLineMT line, int fromIdc, int toIdc,
+            String ckt, int met, double rdcOhm, double ldcMh) {
+        HvdcMTDcLink link = HvdcObjectFactory.createHvdcMTDcLink();
+        String cir = (ckt == null || ckt.isEmpty()) ? "1" : ckt.trim();
+        link.setId(fromIdc + "->" + toIdc + "(" + cir + ")");
+        link.setName(link.getId());
+        link.setFromIdc(fromIdc);
+        link.setToIdc(toIdc);
+        link.setCkt(cir);
+        link.setMet(met);
+        link.setRdc(rdcOhm);
+        link.setLdc(ldcMh);
+        line.getDcLinkList().add(link);
+        return link;
     }
 
     // ==================== FACTS Device ====================
