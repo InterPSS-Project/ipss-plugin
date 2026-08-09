@@ -823,13 +823,19 @@ public class PSSEDirectParser {
 
         boolean isPhaseShifting = (ang1 != 0.0 || ang2 != 0.0 || ang3 != 0.0);
 
+        // PSS/E 3W STAT: 0=out, 1=in, 2=winding2 out, 3=winding3 out, 4=winding1 out
+        boolean inService = stat != 0;
+        boolean wind1OffLine = (stat == 4);
+        boolean wind2OffLine = (stat == 2);
+        boolean wind3OffLine = (stat == 3);
+
         Aclf3WBranch branch3W = builder.addXformer3W(fromBusId, toBusId, tertBusId, ckt,
                 z12PU, z23PU, z31PU,
                 fromTap, toTap, tertTap,
                 magY, starVMag, starVAng,
-                false, false, false,
+                wind1OffLine, wind2OffLine, wind3OffLine,
                 isPhaseShifting, ang1, ang2, ang3,
-                stat == 1);
+                inService);
 
         if (branch3W != null) {
             if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
