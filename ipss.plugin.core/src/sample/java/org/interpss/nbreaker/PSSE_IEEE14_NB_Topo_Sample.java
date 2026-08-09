@@ -4,6 +4,8 @@ import org.interpss.fadapter.psse.PSSEDirectParser;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.funcImpl.AclfNetInfoHelper;
 import com.interpss.core.funcImpl.topo.SubstationNBreakerHelper;
 import com.interpss.core.net.Substation;
 import com.interpss.core.net.nb.NBNode;
@@ -20,6 +22,13 @@ public class PSSE_IEEE14_NB_Topo_Sample {
 
 	public static void main(String[] args) throws InterpssException {
 		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+
+		net.getBusList().forEach(bus -> {
+			if (bus.mismatch(AclfMethodType.NR).abs() > 0.0001) {
+				System.out.println(bus.getId() + " " + bus.mismatch(AclfMethodType.NR));
+				AclfNetInfoHelper.outputBusAclfDebugInfo(net, bus.getId(), false);
+			}
+		});
 
 		Substation sub2 = net.getSubstation("2");
 
