@@ -3,6 +3,22 @@
   "configurations": [
     {
       "type": "java",
+      "name": "PSSE_MTHVDC_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.mthvdc.PSSE_MTHVDC_Sample",
+      "projectName": "ipss.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "EInterconnectLoadSample",
+      "request": "launch",
+      "mainClass": "org.interpss.mthvdc.EInterconnectLoadSample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
       "name": "IEEE14_MinitoredInterface_Sample",
       "request": "launch",
       "mainClass": "org.interpss.mon_interface.IEEE14_MinitoredInterface_Sample",
