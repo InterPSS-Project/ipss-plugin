@@ -42,6 +42,7 @@ import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
+import com.interpss.core.aclf.hvdc.HvdcLineMT;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.VSCConverter;
@@ -1211,35 +1212,141 @@ public class PSSEDirectParser {
 
     /**
      * PSS/E multi-terminal DC: for each system, one header + NCONV converters +
-     * NDCBS DC buses + NDCLN DC lines. InterPSS has no MTDC ACLF model yet —
-     * register a NameTag so NB type-N terminals can resolve.
+     * NDCBS DC buses + NDCLN DC links. Builds {@link HvdcLineMT} on the network
+     * MT list and registers the line for NB type-N terminal lookup.
      */
     private void parseMultiTerminalDcSection(BufferedReader reader) throws IOException {
         String line;
-        while ((line = reader.readLine()) != null) {
-            if (line.startsWith("//") || line.startsWith("@!")) continue;
+        while ((line = readPsseDataLine(reader)) != null) {
             if (PSSEDataRec.isEndRec(line)) break;
 
             PSSEDataRec header = new PSSEDataRec(line);
             String name = header.getString(0, "").trim();
-            if (name.isEmpty()) break;
+            if (name.isEmpty() || "0".equals(name)) break;
 
             int nconv = header.getInt(1, 0);
             int ndcbs = header.getInt(2, 0);
             int ndcln = header.getInt(3, 0);
+            int mdc = header.getInt(4, 0);
+            int vconv = header.getInt(5, 0);
+            double vcmod = header.getDouble(6, 0.0);
+            int vconvn = header.getInt(7, 0);
 
-            NameTag tag = NetFactory.eINSTANCE.createNameTag();
-            tag.setId(name);
-            tag.setName(name);
-            builder.registerNamedEquipment(name, tag);
-            builder.registerNamedEquipment("N|" + name, tag);
+            HvdcControlMode controlMode = mdc == 1 ? HvdcControlMode.DC_POWER
+                    : mdc == 2 ? HvdcControlMode.DC_CURRENT : HvdcControlMode.BLOCKED;
+            String vConvBusId = vconv > 0 ? BUS_ID_PREFIX + vconv : "";
+            String vConvNBusId = vconvn > 0 ? BUS_ID_PREFIX + vconvn : "";
 
-            int remaining = nconv + ndcbs + ndcln;
-            while (remaining > 0 && (line = reader.readLine()) != null) {
-                if (line.startsWith("//") || line.startsWith("@!")) continue;
-                remaining--;
+            HvdcLineMT mtLine = builder.addHvdcLineMT(
+                    name, controlMode, vConvBusId, vConvNBusId, vcmod, mdc != 0);
+
+            for (int i = 0; i < nconv; i++) {
+                line = readPsseDataLine(reader);
+                if (line == null || PSSEDataRec.isEndRec(line)) {
+                    log.error("MTDC {}: unexpected end while reading converters ({}/{})",
+                            name, i, nconv);
+                    return;
+                }
+                parseMultiTerminalDcConverter(mtLine, new PSSEDataRec(line));
+            }
+            for (int i = 0; i < ndcbs; i++) {
+                line = readPsseDataLine(reader);
+                if (line == null || PSSEDataRec.isEndRec(line)) {
+                    log.error("MTDC {}: unexpected end while reading DC buses ({}/{})",
+                            name, i, ndcbs);
+                    return;
+                }
+                parseMultiTerminalDcBus(mtLine, new PSSEDataRec(line));
+            }
+            for (int i = 0; i < ndcln; i++) {
+                line = readPsseDataLine(reader);
+                if (line == null || PSSEDataRec.isEndRec(line)) {
+                    log.error("MTDC {}: unexpected end while reading DC links ({}/{})",
+                            name, i, ndcln);
+                    return;
+                }
+                parseMultiTerminalDcLink(mtLine, new PSSEDataRec(line));
+            }
+
+            // NB type-N terminals resolve by MTDC system name
+            builder.registerNamedEquipment(name, mtLine);
+            builder.registerNamedEquipment("N|" + name, mtLine);
+
+            String topoErr = mtLine.validateTopology();
+            if (topoErr != null) {
+                log.warn(topoErr);
             }
         }
+    }
+
+    private void parseMultiTerminalDcConverter(HvdcLineMT mtLine, PSSEDataRec rec) {
+        int ib = rec.getInt(0);
+        if (ib <= 0) {
+            log.warn("MTDC {}: converter record missing AC bus IB", mtLine.getId());
+            return;
+        }
+        String acBusId = BUS_ID_PREFIX + ib;
+        builder.addHvdcMTConverter(mtLine, acBusId,
+                rec.getInt(1, 1),
+                rec.getDouble(2, 0.0),
+                rec.getDouble(3, 0.0),
+                rec.getDouble(4, 0.0),
+                rec.getDouble(5, 0.0),
+                rec.getDouble(6, 0.0),
+                rec.getDouble(7, 1.0),
+                rec.getDouble(8, 1.0),
+                rec.getDouble(9, 1.5),
+                rec.getDouble(10, 0.51),
+                rec.getDouble(11, 0.00625),
+                rec.getDouble(12, 0.0),
+                rec.getDouble(13, 1.0),
+                rec.getDouble(14, 0.0),
+                rec.getInt(15, 1));
+    }
+
+    private void parseMultiTerminalDcBus(HvdcLineMT mtLine, PSSEDataRec rec) {
+        int idc = rec.getInt(0);
+        int ib = rec.getInt(1, 0);
+        String acBusId = ib > 0 ? BUS_ID_PREFIX + ib : "";
+        builder.addHvdcMTDcBus(mtLine, idc, acBusId,
+                rec.getInt(2, 1),
+                rec.getInt(3, 1),
+                rec.getString(4, "").trim(),
+                rec.getInt(5, 0),
+                rec.getDouble(6, 0.0),
+                rec.getInt(7, 1));
+    }
+
+    /**
+     * DC link: v33+ is {@code IDC,JDC,CKT,MET,RDC,LDC}; older RAW (e.g. v30)
+     * omits MET ({@code IDC,JDC,CKT,RDC,LDC}).
+     */
+    private void parseMultiTerminalDcLink(HvdcLineMT mtLine, PSSEDataRec rec) {
+        int fromIdc = rec.getInt(0);
+        int toIdc = rec.getInt(1);
+        String ckt = rec.getString(2, "1").trim();
+        int met;
+        double rdc;
+        double ldc;
+        if (rec.size() >= 6) {
+            met = rec.getInt(3, 1);
+            rdc = rec.getDouble(4, 0.0);
+            ldc = rec.getDouble(5, 0.0);
+        } else {
+            met = 1;
+            rdc = rec.getDouble(3, 0.0);
+            ldc = rec.getDouble(4, 0.0);
+        }
+        builder.addHvdcMTDcLink(mtLine, fromIdc, toIdc, ckt, met, rdc, ldc);
+    }
+
+    private static String readPsseDataLine(BufferedReader reader) throws IOException {
+        String line;
+        while ((line = reader.readLine()) != null) {
+            if (line.startsWith("//") || line.startsWith("@!")) continue;
+            return line;
+        }
+        return null;
     }
 
     // ==================== Induction Machine ====================
