@@ -9,15 +9,18 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.junit.jupiter.api.Test;
 
+import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLineMT;
 import com.interpss.core.aclf.hvdc.HvdcMTConverter;
 import com.interpss.core.aclf.hvdc.HvdcMTDcBus;
 import com.interpss.core.aclf.hvdc.HvdcMTDcLink;
+import com.interpss.core.algo.LoadflowAlgorithm;
 
 /**
- * Parser / model wiring for PSS/E multi-terminal DC using {@code psse_mthvdc.raw}
+ * Parser / model wiring and ACLF solve for PSS/E multi-terminal DC using {@code psse_mthvdc.raw}
  * (same case as {@code org.interpss.mthvdc.PSSE_MTHVDC_Sample}).
  */
 public class PSSE_MTHVDC_Test extends CorePluginTestSetup {
@@ -75,5 +78,39 @@ public class PSSE_MTHVDC_Test extends CorePluginTestSetup {
 
 		assertNull(mt.validateTopology());
 		assertEquals(2, mt.getConverterByAcBusId("Bus212").getDcBusNumber());
+	}
+
+	/**
+	 * Full NR loadflow with MTDC AC P/Q boundary conditions (same setup as the sample).
+	 * Requires ZBR deconsolidation so the 153–3006 small-X branch is handled correctly.
+	 */
+	@Test
+	public void testMultiTerminalDcLoadflow() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(30).parse(RAW);
+
+		net.setZeroZBranchThreshold(1.0e-3);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.setNonDivergent(false);
+		algo.setTolerance(1.0e-6);
+		algo.setMaxIterations(100);
+
+		assertTrue(algo.loadflow());
+		assertTrue(net.isLfConverged());
+
+		HvdcLineMT mt = net.getHvdcLineMT("1");
+		assertNotNull(mt);
+		assertNull(mt.validateTopology());
+
+		// Connected inverter terminals remain active after island cleanup of Bus401/402
+		HvdcMTConverter vconv = mt.getConverterByAcBusId("Bus212");
+		HvdcMTConverter inv = mt.getConverterByAcBusId("Bus213");
+		assertNotNull(vconv);
+		assertNotNull(inv);
+		assertTrue(vconv.getPac() < 0.0); // voltage-controlling inverter absorbs P from DC
+		assertEquals(-303.8, inv.getPac(), 1.0); // power-order inverter ~ SETVL MW
+		assertTrue(vconv.getQac() > 0.0);
+		assertTrue(inv.getQac() > 0.0);
 	}
 }

@@ -131,6 +131,8 @@ import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
 import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
 import org.interpss.plugin.piecewise.IEEE9BusTestDStabSubAreaNet;
 import org.interpss.plugin.result.AclfResultDFrameAdapterTest;
+import org.interpss.core.adapter.psse.raw.aclf.PSSE_MTHVDC_Test;
+
 import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.Suite;
 
@@ -362,6 +364,9 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_IEEE14_NodeBreaker_Test.class,
 	PSSE_IEEE14_NB_Topo_Test.class,
 	PSSE_IEEE14_NB_BusSplit_Test.class,
+
+	// PSSE MTHVDC
+	PSSE_MTHVDC_Test.class,
 	
 	// CIM File Adapter
 	CIMDirectParserTest.class,
