@@ -66,13 +66,13 @@ public class PSSE_MTHVDC_Sample {
 					+ " nLink=" + mt.getDcLinkList().size()
 					+ " topo=" + (mt.validateTopology() == null ? "ok" : mt.validateTopology()));
 			for (HvdcMTConverter c : mt.getConverterList()) {
-				System.out.println("    conv " + c.getAcBusId()
+				System.out.println("    conv " + c.getRefBusId()
 						+ " SETVL=" + c.getSetValue()
 						+ " CNVCOD=" + c.getCnvCod()
 						+ " dcBus=" + c.getDcBusNumber()
 						+ " PacMW=" + c.getPac()
 						+ " QacMvar=" + c.getQac()
-						+ " PQpu=" + mt.powerIntoConverter(c.getAcBusId()));
+						+ " PQpu=" + mt.powerIntoConverter(c.getRefBusId()));
 			}
 		}
 
