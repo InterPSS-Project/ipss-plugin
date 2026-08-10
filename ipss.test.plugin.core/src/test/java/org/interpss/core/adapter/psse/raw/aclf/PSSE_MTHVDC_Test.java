@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -103,13 +104,21 @@ public class PSSE_MTHVDC_Test extends CorePluginTestSetup {
 		assertNotNull(mt);
 		assertNull(mt.validateTopology());
 
-		// Connected inverter terminals remain active after island cleanup of Bus401/402
+		// MTDC-only AC terminals must stay active (not treated as island buses)
+		assertTrue(net.getBus("Bus401").isActive());
+		assertTrue(net.getBus("Bus402").isActive());
+		assertFalse(net.getBus("Bus401").isIslandBus());
+		assertFalse(net.getBus("Bus402").isIslandBus());
+
 		HvdcMTConverter vconv = mt.getConverterByAcBusId("Bus212");
 		HvdcMTConverter inv = mt.getConverterByAcBusId("Bus213");
+		HvdcMTConverter rec401 = mt.getConverterByAcBusId("Bus401");
 		assertNotNull(vconv);
 		assertNotNull(inv);
+		assertNotNull(rec401);
 		assertTrue(vconv.getPac() < 0.0); // voltage-controlling inverter absorbs P from DC
 		assertEquals(-303.8, inv.getPac(), 1.0); // power-order inverter ~ SETVL MW
+		assertTrue(rec401.getPac() > 0.0); // rectifier infeed from Bus401
 		assertTrue(vconv.getQac() > 0.0);
 		assertTrue(inv.getQac() > 0.0);
 	}
