@@ -11,6 +11,8 @@ import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.hvdc.HvdcLineMT;
 import com.interpss.core.aclf.hvdc.HvdcMTConverter;
 import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.LoadflowAlgoObjectFactory;
 
 /**
  * Load {@code psse_mthvdc.raw} and print the multi-terminal HVDC model.
@@ -24,10 +26,34 @@ public class PSSE_MTHVDC_Sample {
 				.load()
 				.getImportedObj();
 
-		// Case has Bus153–Bus3006 with X=1e-4; default ZBR threshold 1e-5 misses it.
-		aclfNet.setZeroZBranchThreshold(1.0e-3);
-		aclfNet.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+/*
+ * InterPSS only treats a branch as ZBR when |Z| ≤ zeroZBranchThreshold. The default threshold is 1e-5, 
+   so this branch is not classified as ZBR. With equal voltages on both sides, Ybus flow is ~0 and you get 
+   large opposite NR mismatches on 153/3006.
 
+	Those two lines fix that for the sample:
+
+	aclfNet.setZeroZBranchThreshold(1e-3) — makes X=1e-4 qualify as a zero-Z branch.
+	aclfNet.setAclfNetModelType(ZBR_DECONSOLIDATED) — turns on ZBR-aware powerIntoNet / mismatch 
+	handling so those buses are accounted for correctly.
+ */		
+		aclfNet.setZeroZBranchThreshold(1.0e-3);
+		aclfNet.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);				
+
+		initCondition(aclfNet);		
+
+		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
+
+		aclfAlgo.setNonDivergent(false);
+		//aclfAlgo.getNrMethodConfig().setOptAlgo(NrOptimizeAlgoType.CUBIC_EQN);
+		
+		aclfAlgo.setTolerance(1.0E-6);
+		aclfAlgo.setMaxIterations(100);
+				
+		aclfAlgo.loadflow();
+	}
+
+	private static void initCondition(AclfNetwork aclfNet) {
 		System.out.println("MTDC lines: " + aclfNet.getHvdcLineMTList().size());
 		for (HvdcLineMT mt : aclfNet.getHvdcLineMTList()) {
 			mt.initLoadflow();
