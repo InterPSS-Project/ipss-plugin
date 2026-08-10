@@ -40,7 +40,7 @@ public class PSSE_MTHVDC_Sample {
 		aclfNet.setZeroZBranchThreshold(1.0e-3);
 		aclfNet.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);				
 
-		initCondition(aclfNet);		
+		//initCondition(aclfNet);		
 
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
