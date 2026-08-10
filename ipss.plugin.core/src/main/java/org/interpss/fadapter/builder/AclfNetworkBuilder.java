@@ -1223,7 +1223,7 @@ public class AclfNetworkBuilder {
         HvdcMTConverter conv = HvdcObjectFactory.createHvdcMTConverter();
         conv.setId(acBusId);
         conv.setName(acBusId);
-        conv.setAcBusId(acBusId);
+        conv.setRefBusId(acBusId);
         conv.setParentHvdc(line);
         BaseAclfBus bus = getBus(acBusId);
         if (bus != null) {
