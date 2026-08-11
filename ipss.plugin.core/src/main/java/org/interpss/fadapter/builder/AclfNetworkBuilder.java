@@ -999,9 +999,19 @@ public class AclfNetworkBuilder {
             branch3W.create2WBranches(AclfBranchCode.XFORMER);
         }
 
-        branch3W.getFromAclfBranch().setStatus(status && !wind1OffLine);
-        branch3W.getToAclfBranch().setStatus(status && !wind2OffLine);
-        branch3W.getTertAclfBranch().setStatus(status && !wind3OffLine);
+        boolean anyTerminalActive = branch3W.getFromBus().isActive()
+                || branch3W.getToBus().isActive()
+                || branch3W.getTertiaryBus().isActive();
+        if (!anyTerminalActive) {
+            branch3W.getStarBus().setStatus(false);
+            branch3W.getFromAclfBranch().setStatus(false);
+            branch3W.getToAclfBranch().setStatus(false);
+            branch3W.getTertAclfBranch().setStatus(false);
+        } else {
+            branch3W.getFromAclfBranch().setStatus(status && !wind1OffLine);
+            branch3W.getToAclfBranch().setStatus(status && !wind2OffLine);
+            branch3W.getTertAclfBranch().setStatus(status && !wind3OffLine);
+        }
 
         if (isPhaseShifting) {
             Aclf3WPSXformerAdapter psXfr3W = branch3W.toPS3WXfr();
