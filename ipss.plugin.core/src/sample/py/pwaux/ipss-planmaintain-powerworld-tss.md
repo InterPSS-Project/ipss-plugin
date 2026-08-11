@@ -11,7 +11,7 @@ Bidirectional workflow between InterPSS **PlanMaintainModel** (future-state plan
 
 Canonical mapping doc: `ipss-plugin/ipss.plugin.core/docs/data_fmt/plan-maintain-to-powerworld-tss.md`
 
-Python generators and this skill live under `ipss.plugin.core/src/sample/py/aux/`.
+Python generators and this skill live under `ipss.plugin.core/src/sample/py/pwaux/`.
 
 ## When to use
 
@@ -23,7 +23,7 @@ Python generators and this skill live under `ipss.plugin.core/src/sample/py/aux/
 ## Architecture (two directions)
 
 ```
-PlanMaintainModel JSON  ──src/sample/py/aux/generate_ieee39_*_pw_tss.py──►  PW TSS artifacts
+PlanMaintainModel JSON  ──src/sample/py/pwaux/generate_ieee39_*_pw_tss.py──►  PW TSS artifacts
                                                                                   │
                                                                                   ▼
 PlanMaintainModel       ◄── Aux2PlanMaintainAdapter ────  testData/powerworld/ieee39/*/
@@ -89,10 +89,10 @@ Gen/load schedules compress to ~4 numeric `SchedPoint` rows per device via `comp
 
 ### Week artifact layout
 
-**Generators** (`src/sample/py/aux/`):
+**Generators** (`src/sample/py/pwaux/`):
 
 ```
-ipss.plugin.core/src/sample/py/aux/
+ipss.plugin.core/src/sample/py/pwaux/
 ├── pw_tss_common.py
 ├── generate_ieee39_dayahead_pw_tss.py
 ├── generate_ieee39_week_pw_tss.py
@@ -125,10 +125,10 @@ ipss.test.plugin.core/testData/powerworld/ieee39/week/
 Run from `ipss-plugin` repo root (or `cd` into the script directory):
 
 ```bash
-python3 ipss.plugin.core/src/sample/py/aux/generate_ieee39_week_pw_tss.py
+python3 ipss.plugin.core/src/sample/py/pwaux/generate_ieee39_week_pw_tss.py
 ```
 
-Writes to `ipss.plugin.core/src/sample/py/aux/week/`. Then copy `ieee39_week_schedules.aux`, `ieee39_week_timepoints.csv`, and `ieee39_week_outages.csv` into the `testData/.../week/` fixture dirs above.
+Writes to `ipss.plugin.core/src/sample/py/pwaux/week/`. Then copy `ieee39_week_schedules.aux`, `ieee39_week_timepoints.csv`, and `ieee39_week_outages.csv` into the `testData/.../week/` fixture dirs above.
 
 `ieee39_week_run.aux` sequence:
 
@@ -199,17 +199,17 @@ Week DCLF clones **168** network/DCLF algo instances (vs 96 for day-ahead). Alwa
 | Plan JSON (week) | `ipss-core/ipss.test.core/testdata/json/ieee39_week_plan_maintain_plan.json` |
 | PSSE case | `ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw` |
 | Branch names | `ipss-core/ipss.test.core/testdata/json/ieee39.json` (`branchAry`, `branchCode=LINE`) |
-| Shared utilities | `ipss.plugin.core/src/sample/py/aux/pw_tss_common.py` |
-| Day-ahead generator | `ipss.plugin.core/src/sample/py/aux/generate_ieee39_dayahead_pw_tss.py` |
-| Week generator | `ipss.plugin.core/src/sample/py/aux/generate_ieee39_week_pw_tss.py` |
+| Shared utilities | `ipss.plugin.core/src/sample/py/pwaux/pw_tss_common.py` |
+| Day-ahead generator | `ipss.plugin.core/src/sample/py/pwaux/generate_ieee39_dayahead_pw_tss.py` |
+| Week generator | `ipss.plugin.core/src/sample/py/pwaux/generate_ieee39_week_pw_tss.py` |
 
 ### Generate day-ahead artifacts
 
 ```bash
-python3 ipss.plugin.core/src/sample/py/aux/generate_ieee39_dayahead_pw_tss.py
+python3 ipss.plugin.core/src/sample/py/pwaux/generate_ieee39_dayahead_pw_tss.py
 ```
 
-Writes to `ipss.plugin.core/src/sample/py/aux/dayahead/`:
+Writes to `ipss.plugin.core/src/sample/py/pwaux/dayahead/`:
 
 | File | Purpose |
 |---|---|
@@ -226,10 +226,10 @@ Copy the three adapter input files (`*_schedules.aux`, `*_timepoints.csv`, `*_ou
 ### Generate week artifacts
 
 ```bash
-python3 ipss.plugin.core/src/sample/py/aux/generate_ieee39_week_pw_tss.py
+python3 ipss.plugin.core/src/sample/py/pwaux/generate_ieee39_week_pw_tss.py
 ```
 
-Writes to `ipss.plugin.core/src/sample/py/aux/week/`:
+Writes to `ipss.plugin.core/src/sample/py/pwaux/week/`:
 
 | File | Purpose |
 |---|---|
@@ -398,7 +398,7 @@ All four are in `CorePluginTestSuite`.
 ```
 Task Progress:
 - [ ] 1. Obtain PlanMaintainModel JSON + PSSE case + ieee*.json branch names
-- [ ] 2. Clone/adapt scripts under ipss.plugin.core/src/sample/py/aux/
+- [ ] 2. Clone/adapt scripts under ipss.plugin.core/src/sample/py/pwaux/
 - [ ] 3. Run generator; labeled.aux + golden reference land in aux/ parent dir
 - [ ] 4. Generate schedules.aux + timepoints.csv + outages.csv (dayahead/ or week/ subdir)
 - [ ] 5. Copy 3 adapter input files to testData/powerworld/ieee39/... fixture dirs
@@ -408,7 +408,7 @@ Task Progress:
 - [ ] 9. Update plan-maintain-to-powerworld-tss.md
 ```
 
-For **week** plans: use `generate_ieee39_week_pw_tss.py` in `src/sample/py/aux/`, `createWeekModel(dir)`, `week_*` file suffixes, and `FSPlanMaintainModelType.Week`.
+For **week** plans: use `generate_ieee39_week_pw_tss.py` in `src/sample/py/pwaux/`, `createWeekModel(dir)`, `week_*` file suffixes, and `FSPlanMaintainModelType.Week`.
 
 ---
 
@@ -439,7 +439,7 @@ Date formats:
 |---|---|---|
 | `genNotFoundList` with `Bus31-G1` | PSSE names not renamed | Call `IEEE39_RAW_Info_Sample.addInfo2Network` before DCLF |
 | Adapter `Expected exactly one *dayahead_schedules.aux` | Wrong filename suffix | Rename to `*dayahead_schedules.aux` or `*week_schedules.aux` |
-| MW mismatch at T1/T2 | Old flat T0-only export or stale testData fixtures | Regenerate from `src/sample/py/aux/` and copy to `testData/` |
+| MW mismatch at T1/T2 | Old flat T0-only export or stale testData fixtures | Regenerate from `src/sample/py/pwaux/` and copy to `testData/` |
 | TSB load fails | Text manifest, not binary | Export from Simulator |
 | Branch maint not found | Label mismatch | Use `ieee39.json` LINE branch names in labeled.aux |
 | Week plan 26k-line JSON | Long horizon, JSON only in ipss-core | Generator reads cross-repo path; use `compress_step_hold` to keep AUX small |
@@ -449,7 +449,7 @@ Date formats:
 
 ## Reference links
 
-- This skill: `ipss-plugin/ipss.plugin.core/src/sample/py/aux/ipss-planmaintain-pw-tss_SKILL.md`
+- This skill: `ipss-plugin/ipss.plugin.core/src/sample/py/pwaux/ipss-planmaintain-pw-tss_SKILL.md`
 - Mapping doc: `ipss-plugin/ipss.plugin.core/docs/data_fmt/plan-maintain-to-powerworld-tss.md`
 - Week JSON baseline test: `ipss-core/ipss.test.core/.../WeekMaintainPlanTest.java`
 - Week maintenance definition: `ipss-core/ipss.test.core/.../Ieee39_Week_Info.java`
