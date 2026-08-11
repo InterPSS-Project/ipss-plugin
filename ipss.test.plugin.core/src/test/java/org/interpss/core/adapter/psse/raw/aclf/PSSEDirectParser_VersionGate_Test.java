@@ -67,7 +67,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV36FixedShuntNbTerminalResolves() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 		AclfBus bus151 = net.getBus("Bus151");
 		assertNotNull(bus151);
 		ShuntCompensator fx1 = bus151.getCompensator("F1");
@@ -195,7 +195,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV36SystemSwdAndFactsNbTerminalsResolve() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 
 		AclfBranch swd = net.getBranch("Bus151", "Bus201", "*1");
 		assertNotNull(swd, "system switching device *1 should be imported");
@@ -226,7 +226,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV36NbTerminalsIV3NResolve() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 
 		// 3W created as Bus205–Bus215–Bus208(ckt 3); terminals list windings in other orders
 		assertNotNull(net.get3WXfr("Bus205", "Bus215", "Bus208", "3"));
