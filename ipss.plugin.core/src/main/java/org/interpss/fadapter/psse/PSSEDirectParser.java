@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -64,6 +66,8 @@ import com.interpss.core.net.OriginalDataFormat;
 public class PSSEDirectParser {
     private static final Logger log = LoggerFactory.getLogger(PSSEDirectParser.class);
     private static final String BUS_ID_PREFIX = "Bus";
+    private static final Pattern THRSHZ_PATTERN = Pattern.compile(
+            "(?i)(?:^|[,\\s])THRSHZ\\s*=\\s*([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[Ee][+-]?\\d+)?)");
 
     private final int version;
     private final AclfNetworkBuilder builder;
@@ -183,6 +187,18 @@ public class PSSEDirectParser {
             String line;
             while ((line = reader.readLine()) != null) {
                 if (PSSEDataRec.isEndRec(line)) break;
+                /*
+                 * THRSHZ is part of the solved case, not a global InterPSS
+                 * preference. PSS/E treats a non-transformer line with R=0 and
+                 * |X|<=THRSHZ as one electrical node. Dropping this value makes
+                 * direct parsing use an unrelated default and leaves artificial
+                 * large mismatches across RAW bus ties.
+                 */
+                Matcher threshold = THRSHZ_PATTERN.matcher(line);
+                if (threshold.find()) {
+                    builder.getNetwork().setZeroZBranchThreshold(
+                            Double.parseDouble(threshold.group(1)));
+                }
             }
         }
     }
