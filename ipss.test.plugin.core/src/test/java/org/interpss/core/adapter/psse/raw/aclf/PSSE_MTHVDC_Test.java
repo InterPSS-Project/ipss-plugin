@@ -50,8 +50,8 @@ public class PSSE_MTHVDC_Test extends CorePluginTestSetup {
 		assertNotNull(vconv);
 		assertEquals(500.0, vconv.getSetValue(), 1.0e-6);
 		assertEquals(4, vconv.getNBridges());
-		assertEquals(20.0, vconv.getAngMax(), 1.0e-6);
-		assertEquals(18.0, vconv.getAngMin(), 1.0e-6);
+		assertEquals(20.0, vconv.getFiringAngLimit().getMax(), 1.0e-6);
+		assertEquals(18.0, vconv.getFiringAngLimit().getMin(), 1.0e-6);
 
 		HvdcMTConverter inv = mt.getConverterByAcBusId("Bus213");
 		assertNotNull(inv);
