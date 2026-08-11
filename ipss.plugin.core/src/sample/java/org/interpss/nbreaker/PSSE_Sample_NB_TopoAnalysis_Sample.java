@@ -16,7 +16,7 @@ import com.interpss.core.funcImpl.topo.AclfNetTopoHelper;
 public class PSSE_Sample_NB_TopoAnalysis_Sample {
 
 	/** Relative to {@code ipss.plugin.core} (launch.json cwd). */
-	private static final String CASE = "testData/psse/v36/sample_nb.raw";
+	private static final String CASE = "testData/private/sample_nb.raw";
 
 	private static Set<String> activateBusIds = Set.of("Bus208", "Bus209", "Bus3012");
 	private static Set<String> activateBranchIds = Set.of("3WNDTR_205_215_208_3->Bus208(3)", "Bus209->3WNDTR_209_217_218_4(4)", "3WNDTR_3008_3012_3010_2->Bus3012(2)");
