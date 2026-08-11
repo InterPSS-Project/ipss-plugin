@@ -46,7 +46,14 @@ public final class BranchRatingFileUtil {
      * branch id or branch extUID.
      */
     public static BranchRatingProvider importBranchRatingProvider(File file, boolean useExtUID) throws IOException {
-        return BranchRatingProvider.custom(importBranchRatings(file, useExtUID), useExtUID);
+        Map<String, Double> ratings = importBranchRatings(file, useExtUID);
+        if (!useExtUID) {
+            return BranchRatingProvider.custom(ratings);
+        }
+        return branch -> {
+            Double rating = ratings.get(branch.getExtUID());
+            return rating != null ? rating : branch.getRatingMvaB();
+        };
     }
 
     public static BranchRatingProvider importBranchRatingProvider(Path path, boolean useExtUID) throws IOException {
