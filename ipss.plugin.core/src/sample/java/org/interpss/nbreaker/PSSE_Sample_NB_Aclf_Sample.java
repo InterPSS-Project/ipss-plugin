@@ -37,7 +37,7 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
-		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
 		initCondition(net);
 	}
@@ -49,7 +49,7 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
-		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
 		PSSE_Sample_NB_TopoAnalysis_Sample.activateBusBranch(net);
 
@@ -57,8 +57,7 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		new AclfNetZeroZBranchHelper(net).consolidate();
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
-		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
+		configureSampleSolver(algo);
 		//algo.setTolerance(0.001);
 		algo.loadflow();
 
@@ -72,14 +71,13 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
-		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
 		// Merge ZBR-connected buses (e.g. Bus151↔Bus201 SF6) onto retained buses before LF
 		new AclfNetZeroZBranchHelper(net).consolidate();
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
-		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
+		configureSampleSolver(algo);
 		//algo.setTolerance(0.001);
 		algo.loadflow();
 
@@ -93,7 +91,7 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
-		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
 		PSSE_Sample_NB_TopoAnalysis_Sample.activateBusBranch(net);
 
@@ -103,12 +101,22 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		new AclfNetZeroZBranchHelper(net).consolidate();
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
-		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
+		configureSampleSolver(algo);
 		//algo.setTolerance(0.001);
 		algo.loadflow();
 
 		printInfo(net);
+	}
+
+	private static void configureSampleSolver(LoadflowAlgorithm algo) {
+		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
+		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
+		// sample_nb.raw SOLVER options: ACTAPS=0, AREAIN=0, PHSHFT=0,
+		// DCTAPS=1, SWSHNT=1.
+		algo.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(false);
+		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
+		algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(false);
+		algo.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
 	}
 
 	private static void initCondition(AclfNetwork aclfNet) {
