@@ -23,6 +23,7 @@ import com.interpss.core.algo.config.LimitControlConfig;
 import com.interpss.core.algo.config.PowerAdjControlConfig;
 import com.interpss.core.algo.config.VoltageAdjControlConfig;
 import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
+import com.interpss.core.funcImpl.topo.AclfNetTopoHelper;
 
 /**
  * Sample: import PSS/E v36 sample_nb RAW (node-breaker overlay) and inspect substations.
@@ -36,8 +37,10 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		case0();
 		case1();
 		case2();
+		case3();
 	}
 
+	// check the initial condition
 	private static void case0() throws InterpssException, IpssNumericException {
 		System.out.println("Case 0: init condition");
 
@@ -49,27 +52,16 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		initCondition(net);
 	}
 
+	// activated buses and branches relavent to the open switches
 	private static void case1() throws InterpssException, IpssNumericException {
-		System.out.println("Case 1: fully connected network");
+		System.out.println("Case 1: activated network");
 
 		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
 		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
 
-		net.getBusList().forEach(bus -> {
-			if (!bus.isActive()) {
-				System.out.println(bus.getId() + " set active");
-				bus.setStatus(true);
-			}
-		});
-
-		net.getBranchList().forEach(branch -> {
-			if (!branch.isActive()) {
-				System.out.println(branch.getId() + " set active");
-				branch.setStatus(true);
-			}
-		});
+		PSSE_Sample_NB_TopoAnalysis_Sample.activateBusBranch(net);
 
 		// Merge ZBR-connected buses (e.g. Bus151↔Bus201 SF6) onto retained buses before LF
 		new AclfNetZeroZBranchHelper(net).consolidate();
@@ -77,10 +69,13 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
-		algo.setTolerance(0.01);
+		//algo.setTolerance(0.001);
 		algo.loadflow();
+
+		printInfo(net);
 	}
 
+	// maintenance network due the open switches
 	private static void case2() throws InterpssException, IpssNumericException {
 		System.out.println("Case 2: maintenance network");
 
@@ -95,8 +90,35 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
-		algo.setTolerance(0.01);
+		//algo.setTolerance(0.001);
 		algo.loadflow();
+
+		printInfo(net);
+	}
+
+	// activate the network first and then do the topo processing to create the maintenance network
+	private static void case3() throws InterpssException, IpssNumericException {
+		System.out.println("Case 3: activated the topo processing network");
+
+		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+
+		net.setZeroZBranchThreshold(1.0e-3);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+
+		PSSE_Sample_NB_TopoAnalysis_Sample.activateBusBranch(net);
+
+		new AclfNetTopoHelper(net).topoProcessing();
+
+		// Merge ZBR-connected buses (e.g. Bus151↔Bus201 SF6) onto retained buses before LF
+		new AclfNetZeroZBranchHelper(net).consolidate();
+
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
+		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
+		//algo.setTolerance(0.001);
+		algo.loadflow();
+
+		printInfo(net);
 	}
 
 	private static void initCondition(AclfNetwork aclfNet) {
@@ -117,6 +139,19 @@ public class PSSE_Sample_NB_Aclf_Sample {
 		for (AclfBus bus : aclfNet.getBusList()) {
 			if (bus.mismatch(AclfMethodType.NR).abs() > 1e-1)
 				System.out.println(bus.getId() + ", " + bus.mismatch(AclfMethodType.NR));
+		}
+	}
+
+	private static void printInfo(AclfNetwork net) {
+		// print number of active Buses and Branches
+		System.out.println("Number of active Buses: " + net.getBusList().stream().filter(bus -> bus.isActive()).count());
+		System.out.println("Number of active Branches: " + net.getBranchList().stream().filter(branch -> branch.isActive()).count());
+
+		// print swing bus P and Q
+		for (AclfBus bus : net.getBusList()) {
+			if (bus.isSwing()) {
+				System.out.println("Swing bus " + bus.getId() + " P,Q =" + bus.powerIntoNet());
+			}
 		}
 	}
 
