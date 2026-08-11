@@ -122,7 +122,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         algo.setTolerance(0.0001);
 	  	algo.loadflow();
 	  	
-  		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
+		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -171,7 +171,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
 	  	
-  		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
+		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -211,7 +211,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 		algo.setMaxIterations(30);
 	  	algo.loadflow();
 	  	
-  		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
+		assertTrue(net.isLfConverged(), "Load flow should converge with locked shunt");
 
          //printout the power flow results
   		//System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -219,7 +219,10 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
 
-        assertTrue(bus4.getVoltageMag() > 1.0195 && bus4.getVoltageMag() < 1.0305, "Bus 4 voltage should be within reasonable range");
+		double tolerance = algo.getLfAdjAlgo().getVoltAdjConfig().getAdjTolerance();
+		assertTrue(bus4.getVoltageMag() >= 1.02 - tolerance
+				&& bus4.getVoltageMag() <= 1.03 + tolerance,
+				"Bus 4 voltage should respect the control range and tolerance");
 
 
 	}
@@ -260,7 +263,10 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 
     
 
-        assertTrue(bus4.getVoltageMag() > 1.0195 && bus4.getVoltageMag() < 1.0305, "Bus 4 voltage should be within reasonable range within tolerance");
+		double tolerance = algo.getLfAdjAlgo().getVoltAdjConfig().getAdjTolerance();
+		assertTrue(bus4.getVoltageMag() >= 1.02 - tolerance
+				&& bus4.getVoltageMag() <= 1.03 + tolerance,
+				"Bus 4 voltage should respect the control range and tolerance");
 
 
 	}
@@ -302,7 +308,9 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
 
-        assertEquals(1.025, bus4.getVoltageMag(), 0.003, "Bus 4 voltage should track the point-control target");
+		assertEquals(1.025, bus4.getVoltageMag(),
+				algo.getLfAdjAlgo().getVoltAdjConfig().getAdjTolerance(),
+				"Bus 4 voltage should track the point-control target");
 
 
 	}
