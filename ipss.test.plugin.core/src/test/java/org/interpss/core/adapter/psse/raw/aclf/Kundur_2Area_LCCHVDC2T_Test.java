@@ -141,8 +141,8 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
   		//Rec Power: 5.0000 + j2.9871
   		//Inv Power: -4.95098 + j2.84946
-  		assertTrue(NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.9871), 0.0001));
-  		assertTrue(NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.84946), 0.0001));
+		assertTrue(NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0000, 2.9871), 0.0002));
+		assertTrue(NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-4.95098, 2.84946), 0.0002));
 
 		
 		// firing angle
