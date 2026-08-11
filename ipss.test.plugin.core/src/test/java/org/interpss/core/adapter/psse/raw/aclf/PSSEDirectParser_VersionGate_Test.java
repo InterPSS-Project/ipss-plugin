@@ -126,6 +126,21 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void testV34ParsesSystemWideZeroImpedanceThreshold()
+			throws Exception {
+		Path source = Path.of("testData/psse/v34/sample_v34.raw");
+		String raw = Files.readString(source).replace(
+				"GENERAL, THRSHZ=0.0001,",
+				"GENERAL, THRSHZ=0.00029,");
+		Path input = tempDir.resolve("thrshz-v34.raw");
+		Files.writeString(input, raw);
+
+		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+
+		assertEquals(0.00029, net.getZeroZBranchThreshold(), 1.0E-12);
+	}
+
+	@Test
 	public void testV36FixedShuntNbTerminalResolves() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 		AclfBus bus151 = net.getBus("Bus151");
