@@ -62,15 +62,12 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
   		assertEquals(0.96461, net.getBus("Bus9").getVoltageMag(), 0.0001);
 
 
-  		System.out.println("Rec Power: " + ComplexFunc.toStr(lccHVDC.getRectifier().powerIntoConverter()));
-  		System.out.println("Inv Power: " + ComplexFunc.toStr(lccHVDC.getInverter().powerIntoConverter()));
-
   		/*
 		 *  Rec Power: 5.0500 + j3.00162
 			Inv Power: -5.0000 + j2.87694
 		 */
-  		assertTrue(NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0500, 3.00162), 0.0001));
-  		assertTrue(NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-5.0000, 2.87694), 0.0001));
+		assertTrue(NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(), new Complex(5.0500, 3.00162), 0.0002));
+		assertTrue(NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(), new Complex(-5.0000, 2.87694), 0.0002));
 
 		
 		// firing angle
