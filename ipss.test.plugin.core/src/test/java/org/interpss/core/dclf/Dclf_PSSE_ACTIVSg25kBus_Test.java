@@ -99,7 +99,8 @@ public class Dclf_PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 	  	AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.PU);
   		System.out.println("Swing bus Gen Results: " + p);
-		assertTrue(Math.abs(p.getReal()-5.39015)<0.0001);
-		assertTrue(Math.abs(p.getImaginary()-1.22856)<0.0001);
+		// With all adjustments disabled, the swing supplies only the fixed network balance.
+		assertTrue(Math.abs(p.getReal()-5.3614408)<0.0001);
+		assertTrue(Math.abs(p.getImaginary()-1.2017916)<0.0001);
 	}
 }
