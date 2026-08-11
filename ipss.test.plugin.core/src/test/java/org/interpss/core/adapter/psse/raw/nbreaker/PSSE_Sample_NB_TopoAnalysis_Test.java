@@ -24,7 +24,7 @@ import com.interpss.core.funcImpl.topo.SubstationNBreakerHelper;
  */
 public class PSSE_Sample_NB_TopoAnalysis_Test extends CorePluginTestSetup {
 
-	private static final String CASE = "testData/psse/v36/sample_nb.raw";
+	private static final String CASE = "testData/private/sample_nb.raw";
 
 	private static final Set<String> ACTIVATE_BUS_IDS = Set.of("Bus208", "Bus209", "Bus3012");
 	private static final Set<String> ACTIVATE_BRANCH_IDS = Set.of(
