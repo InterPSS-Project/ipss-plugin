@@ -66,6 +66,7 @@ import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
+import com.interpss.core.aclf.netAdj.NetAdjustFactory;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.adpter.Aclf3WPSXformerAdapter;
@@ -257,11 +258,12 @@ public class AclfNetworkBuilder {
         BaseAclfBus swingBus = getBus(swingBusId);
         if (swingBus == null) return null;
 
-        Optional<AreaInterchangeControl> control = CoreObjectFactory.createAreaInterchangeController(
-                areaNumber, areaName, network);
-        if (!control.isPresent()) return null;
+        Area area = network.getArea(areaNumber);
+        if (area == null) return null;
+        area.setName(areaName);
 
-        AreaInterchangeControl areaControl = control.get();
+        AreaInterchangeControl areaControl = NetAdjustFactory.eINSTANCE.createAreaInterchangeControl();
+        area.getRegDeviceList().add(areaControl);
         areaControl.setBus(swingBus);
         areaControl.setPSpecOut(desiredPowerMW, UnitType.mW, network.getBaseKva());
         areaControl.setTolerance(toleranceMW, UnitType.mW, network.getBaseKva());
