@@ -18,6 +18,7 @@ import com.interpss.core.aclf.hvdc.HvdcLineMT;
 import com.interpss.core.aclf.hvdc.HvdcMTConverter;
 import com.interpss.core.aclf.hvdc.HvdcMTDcBus;
 import com.interpss.core.aclf.hvdc.HvdcMTDcLink;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 /**
@@ -83,21 +84,21 @@ public class PSSE_MTHVDC_Test extends CorePluginTestSetup {
 
 	/**
 	 * Full NR loadflow with MTDC AC P/Q boundary conditions (same setup as the sample).
-	 * Requires ZBR deconsolidation so the 153–3006 small-X branch is handled correctly.
+	 * Uses the explicit ZBR model so the 153–3006 small-X branch is handled correctly.
 	 */
 	@Test
 	public void testMultiTerminalDcLoadflow() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(30).parse(RAW);
 
 		net.setZeroZBranchThreshold(1.0e-3);
-		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setNonDivergent(false);
 		algo.setTolerance(1.0e-6);
 		algo.setMaxIterations(100);
 
-		assertTrue(algo.loadflow());
+		assertTrue(algo.loadflow(), () -> "Final mismatch: " + net.maxMismatch(AclfMethodType.NR));
 		assertTrue(net.isLfConverged());
 
 		HvdcLineMT mt = net.getHvdcLineMT("1");

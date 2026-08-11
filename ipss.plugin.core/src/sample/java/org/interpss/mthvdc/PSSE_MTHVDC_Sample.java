@@ -34,11 +34,11 @@ public class PSSE_MTHVDC_Sample {
 	Those two lines fix that for the sample:
 
 	aclfNet.setZeroZBranchThreshold(1e-3) — makes X=1e-4 qualify as a zero-Z branch.
-	aclfNet.setAclfNetModelType(ZBR_DECONSOLIDATED) — turns on ZBR-aware powerIntoNet / mismatch 
-	handling so those buses are accounted for correctly.
+	aclfNet.setAclfNetModelType(ZBR_MODEL) — identifies the freshly parsed network as an explicit
+	zero-Z model so the augmented NR equations account for those buses correctly.
  */		
 		aclfNet.setZeroZBranchThreshold(1.0e-3);
-		aclfNet.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);				
+		aclfNet.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
 		//initCondition(aclfNet);		
 
