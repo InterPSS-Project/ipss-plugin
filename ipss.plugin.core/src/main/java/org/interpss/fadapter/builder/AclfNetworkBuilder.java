@@ -1240,10 +1240,8 @@ public class AclfNetworkBuilder {
             conv.setBus(bus);
         }
         conv.setNBridges(nBridges);
-        conv.setAngMax(angMaxDeg);
-        conv.setAngMin(angMinDeg);
-        conv.setRc(rcOhm);
-        conv.setXc(xcOhm);
+        conv.setFiringAngLimit(new LimitType(angMaxDeg, angMinDeg));
+        conv.setCommutingZ(new Complex(rcOhm, xcOhm));
         conv.setEbas(ebasKv);
         conv.setXformerRatio(xfrRatio);
         conv.setXformerTapSetting(tap);
