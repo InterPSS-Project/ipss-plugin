@@ -71,6 +71,8 @@ import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_BusSplit_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_Topo_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NodeBreaker_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_Sample_NB_Aclf_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_Sample_NB_TopoAnalysis_Test;
 import org.interpss.core.adapter.pwd.PWDDirectParser_ObjectGate_Test;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.pwd.SixBus_DclfPsXfr_pwd;
@@ -364,6 +366,8 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_IEEE14_NodeBreaker_Test.class,
 	PSSE_IEEE14_NB_Topo_Test.class,
 	PSSE_IEEE14_NB_BusSplit_Test.class,
+	PSSE_Sample_NB_TopoAnalysis_Test.class,
+	PSSE_Sample_NB_Aclf_Test.class,
 
 	// PSSE MTHVDC
 	PSSE_MTHVDC_Test.class,
