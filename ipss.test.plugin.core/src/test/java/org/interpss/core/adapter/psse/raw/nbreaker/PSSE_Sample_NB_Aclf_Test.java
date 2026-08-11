@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.psse.raw.nbreaker;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashSet;
@@ -58,7 +59,7 @@ public class PSSE_Sample_NB_Aclf_Test extends CorePluginTestSetup {
 			}
 		}
 		assertTrue(largeMismatch.contains("Bus3021"), largeMismatch.toString());
-		assertTrue(largeMismatch.contains("Bus3022"), largeMismatch.toString());
+		assertFalse(largeMismatch.contains("Bus3022"), largeMismatch.toString());
 		assertTrue(largeMismatch.contains("Bus9204"), largeMismatch.toString());
 	}
 
@@ -68,15 +69,16 @@ public class PSSE_Sample_NB_Aclf_Test extends CorePluginTestSetup {
 		activateBusBranch(net);
 
 		new AclfNetZeroZBranchHelper(net).consolidate();
-		assertTrue(runSampleLoadflow(net));
+		assertTrue(runSampleLoadflow(net),
+				() -> "Final mismatch: " + net.maxMismatch(AclfMethodType.NR));
 		assertTrue(net.isLfConverged());
 
 		assertEquals(49, countActiveBuses(net));
 		assertEquals(55, countActiveBranches(net));
-		assertSwingPower(net, "Bus301", 29.9065, 36.0172);
+		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 10.5981, 1.5731);
+		assertSwingPower(net, "Bus3011", 11.3487, 1.2182);
 	}
 
 	@Test
@@ -84,15 +86,16 @@ public class PSSE_Sample_NB_Aclf_Test extends CorePluginTestSetup {
 		AclfNetwork net = parseAndConfigure();
 
 		new AclfNetZeroZBranchHelper(net).consolidate();
-		assertTrue(runSampleLoadflow(net));
+		assertTrue(runSampleLoadflow(net),
+				() -> "Final mismatch: " + net.maxMismatch(AclfMethodType.NR));
 		assertTrue(net.isLfConverged());
 
 		assertEquals(46, countActiveBuses(net));
 		assertEquals(52, countActiveBranches(net));
-		assertSwingPower(net, "Bus301", 29.9065, 36.0172);
+		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 10.5981, 1.5731);
+		assertSwingPower(net, "Bus3011", 11.3480, 1.2183);
 	}
 
 	@Test
@@ -102,22 +105,23 @@ public class PSSE_Sample_NB_Aclf_Test extends CorePluginTestSetup {
 		new AclfNetTopoHelper(net).topoProcessing();
 
 		new AclfNetZeroZBranchHelper(net).consolidate();
-		assertTrue(runSampleLoadflow(net));
+		assertTrue(runSampleLoadflow(net),
+				() -> "Final mismatch: " + net.maxMismatch(AclfMethodType.NR));
 		assertTrue(net.isLfConverged());
 
 		// Same footprint as the maintenance network after topo turns off open-switch equipment
 		assertEquals(46, countActiveBuses(net));
 		assertEquals(52, countActiveBranches(net));
-		assertSwingPower(net, "Bus301", 29.9065, 36.0172);
+		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 10.5981, 1.5731);
+		assertSwingPower(net, "Bus3011", 11.3487, 1.2182);
 	}
 
 	private static AclfNetwork parseAndConfigure() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 		net.setZeroZBranchThreshold(1.0e-3);
-		net.setAclfNetModelType(AclfNetModelType.ZBR_DECONSOLIDATED);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 		return net;
 	}
 
@@ -125,6 +129,13 @@ public class PSSE_Sample_NB_Aclf_Test extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
 		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
+		// Mirror sample_nb.raw: ACTAPS=0, AREAIN=0, PHSHFT=0,
+		// DCTAPS=1, and SWSHNT=1. The parser preserves the controller models;
+		// these are per-solve enable flags.
+		algo.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(false);
+		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
+		algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(false);
+		algo.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
 		return algo.loadflow();
 	}
 
