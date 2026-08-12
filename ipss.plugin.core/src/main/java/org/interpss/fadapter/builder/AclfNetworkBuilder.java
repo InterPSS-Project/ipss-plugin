@@ -65,6 +65,7 @@ import com.interpss.core.aclf.adj.BusBranchControlType;
 import com.interpss.core.aclf.adj.PQBusLimit;
 import com.interpss.core.aclf.adj.PVBusLimit;
 import com.interpss.core.aclf.adj.PSXfrPControl;
+import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
@@ -1222,6 +1223,27 @@ public class AclfNetworkBuilder {
         if (remoteCtrlBusId != null && !remoteCtrlBusId.isEmpty()) {
             converter.setRemoteControlBusId(remoteCtrlBusId);
             converter.setRemoteControlPercent(remoteCtrlPercent);
+
+            /*
+             * A remote AC-voltage-controlled VSC is a PQV controller: its
+             * terminal supplies P while Newton solves the converter Q required
+             * to hold the pilot-bus voltage. Materialize that control here so
+             * direct-parser imports participate in the inner P/PQV formulation.
+             */
+            if (bus != null && acMode == VSCAcControlMode.AC_VOLTAGE
+                    && !remoteCtrlBusId.equals(busId)) {
+                bus.setGenCode(AclfGenCode.GEN_PQ);
+                Optional<RemoteQBus> remoteControl =
+                        AclfAdjustObjectFactory.createRemoteQBus(bus,
+                                BusBranchControlType.VSC_RE_BUS_VOLT_CTRL,
+                                remoteCtrlBusId);
+                remoteControl.ifPresent(control -> {
+                    control.setVSpecified(acSetPoint, UnitType.PU);
+                    control.setQLimit(converter.getQMvarLimit(), UnitType.mVar);
+                    control.setRemoteControlPercentage(
+                            remoteCtrlPercent > 0.0 ? remoteCtrlPercent : 100.0);
+                });
+            }
         }
     }
 
