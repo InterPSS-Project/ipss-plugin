@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBus;
@@ -22,6 +23,7 @@ import com.interpss.core.funcImpl.topo.SubstationNBreakerHelper;
  * substation {@code topoAnalysis()}, then activate open-switch equipment and
  * {@link AclfNetTopoHelper#topoProcessing()}.
  */
+@Tag("extended")
 public class PSSE_Sample_NB_TopoAnalysis_Test extends CorePluginTestSetup {
 
 	private static final String CASE = "testData/private/sample_nb.raw";
