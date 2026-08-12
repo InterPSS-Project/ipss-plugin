@@ -13,6 +13,8 @@ import org.interpss.numeric.util.NumericUtil;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.adj.BusBranchControlType;
+import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
@@ -154,6 +156,17 @@ public class AclfNetworkBuilderHvdcTest extends CorePluginTestSetup {
 		assertEquals(-100.0, rec.getQMvarLimit().getMin(), TOL);
 		assertEquals("Bus3", rec.getRemoteControlBusId());
 		assertEquals(75.0, rec.getRemoteControlPercent(), TOL);
+		AclfBus recBus = (AclfBus) rec.getBus();
+		assertTrue(recBus.isGenPQ());
+		RemoteQBus remoteControl = recBus.getRemoteQBus();
+		assertNotNull(remoteControl);
+		assertEquals(BusBranchControlType.VSC_RE_BUS_VOLT_CTRL,
+				remoteControl.getRemoteQControlType());
+		assertSame(builder.getBus("Bus3"), remoteControl.getRemoteBus());
+		assertEquals(1.02, remoteControl.getVSpecified(UnitType.PU), TOL);
+		assertEquals(1.0, remoteControl.getQLimit(UnitType.PU).getMax(), TOL);
+		assertEquals(-1.0, remoteControl.getQLimit(UnitType.PU).getMin(), TOL);
+		assertEquals(75.0, remoteControl.getRemoteControlPercentage(), TOL);
 
 		VSCConverter inv = (VSCConverter) vsc.getInvConverter();
 		builder.setVSCConverter(inv, "Bus2",
