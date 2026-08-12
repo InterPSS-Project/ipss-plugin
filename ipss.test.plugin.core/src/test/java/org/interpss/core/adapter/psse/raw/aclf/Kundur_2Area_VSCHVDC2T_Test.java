@@ -12,9 +12,12 @@ import org.junit.jupiter.api.Test;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.BusBranchControlType;
+import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.config.RemoteQControlMode;
 
 public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	
@@ -106,7 +109,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		assertTrue(net.getSpecialBranchList().size()==1);
 		
 		assertTrue(!net.getBus("Bus7").isGen());
-		assertTrue(!net.getBus("Bus9").isGen());
+		assertTrue(net.getBus("Bus9").isGenPQ());
 		
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
 		//System.out.println(vscHVDC.getId());
@@ -121,7 +124,36 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		assertTrue(vscInv.getRemoteControlBusId().equals("Bus10"));
 		assertTrue(vscInv.getRemoteControlPercent() == 100.0);
 		assertEquals(0.99, vscInv.getAcSetPoint(), 0.0001);
+		RemoteQBus remoteControl = net.getBus("Bus9").getRemoteQBus();
+		assertTrue(remoteControl != null);
+		assertEquals(BusBranchControlType.VSC_RE_BUS_VOLT_CTRL,
+				remoteControl.getRemoteQControlType());
+		assertEquals("Bus10", remoteControl.getRemoteBus().getId());
+		assertEquals(0.99, remoteControl.getVSpecified(UnitType.PU), 0.0001);
+		assertEquals(1.5, remoteControl.getQLimit(UnitType.PU).getMax(), 0.0001);
+		assertEquals(-1.4, remoteControl.getQLimit(UnitType.PU).getMin(), 0.0001);
+		assertEquals(100.0, remoteControl.getRemoteControlPercentage(), 0.0001);
 
+	}
+
+	@Test
+	public void test_VSCHVDC_RemoteBus_InnerPqvLoadflow() throws Exception {
+		AclfNetwork net = createTestCaseV35();
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.setMaxIterations(50);
+		algo.setTolerance(1.0E-6);
+
+		assertEquals(RemoteQControlMode.INNER_PQV,
+				algo.getLfAdjAlgo().getRemoteQControlMode());
+		assertTrue(algo.loadflow());
+
+		AclfBus converterBus = net.getBus("Bus9");
+		RemoteQBus remoteControl = converterBus.getRemoteQBus();
+		assertTrue(converterBus.isGenPQ());
+		assertEquals(remoteControl.getVSpecified(UnitType.PU),
+				net.getBus("Bus10").getVoltageMag(), 1.0E-6);
+		assertTrue(!remoteControl.getQLimit(UnitType.PU)
+				.isViolated(converterBus.getGenQ()));
 	}
 	
 	private void test_VSCHVDC_Data(AclfNetwork net) {
