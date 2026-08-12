@@ -10,6 +10,7 @@ import java.util.Set;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -27,6 +28,7 @@ import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
  * Mirrors {@link org.interpss.nbreaker.PSSE_Sample_NB_Aclf_Sample}: init mismatch,
  * activated / maintenance / activate-then-topo ACLF solves on {@code sample_nb.raw}.
  */
+@Tag("extended")
 public class PSSE_Sample_NB_Aclf_Test extends CorePluginTestSetup {
 
 	private static final String CASE = "testData/private/sample_nb.raw";
