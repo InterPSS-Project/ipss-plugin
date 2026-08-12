@@ -21,6 +21,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.util.QAUtil;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -141,6 +142,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	@Tag("extended")
 	public void testV36FixedShuntNbTerminalResolves() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 		AclfBus bus151 = net.getBus("Bus151");
@@ -530,6 +532,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	@Tag("extended")
 	public void testV36SystemSwdAndFactsNbTerminalsResolve() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 
@@ -561,6 +564,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	@Tag("extended")
 	public void testV36NbTerminalsIV3NResolve() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 
