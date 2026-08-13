@@ -19,4 +19,4 @@ Used by InterPSS tests under `org.interpss.core.adapter.psse` — see coverage m
 **Notes**
 - `PSSEDirectParser` is comma-delimited. Prefer `_exported` / `_updated_exported` or convert space-delimited originals.
 - Whitespace original kept as `parser/IEEE_14_bus_whitespaceAsDelimiter.raw`; smoke uses `_exported` comma form.
-- NB RAWX remains disabled until `PSSEJsonDirectParser` maps SUBSTATION tables.
+- NB RAWX: `PSSEJsonDirectParser` imports flat `sub` / `subnode` / `subswd` / `subterm` via `PSSESubstationImporter.parseRawx`.
