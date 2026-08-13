@@ -94,6 +94,9 @@ public class PSSEJsonDirectParser {
         // Parse owners
         parseFieldData(network, "owner", this::parseOwnerRow);
 
+        // Node-breaker overlay (flat RAWX tables sub / subnode / subswd / subterm)
+        new PSSESubstationImporter(builder).parseRawx(network);
+
         builder.finalizeNetwork();
     }
 
