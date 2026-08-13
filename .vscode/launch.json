@@ -3,6 +3,24 @@
   "configurations": [
     {
       "type": "java",
+      "name": "PSSE_FiveBus_NB_TopoAnalysis_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.nbreaker.PSSE_FiveBus_NB_TopoAnalysis_Sample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "PSSE_TwoSubstations_NB_TopoAnalysis_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.nbreaker.PSSE_TwoSubstations_NB_TopoAnalysis_Sample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
       "name": "PSSE_MTHVDC_Sample",
       "request": "launch",
       "mainClass": "org.interpss.mthvdc.PSSE_MTHVDC_Sample",
