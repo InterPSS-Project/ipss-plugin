@@ -1,4 +1,4 @@
-package org.interpss.core.adapter.psse.raw.aclf;
+package org.interpss.core.adapter.psse.raw.aclf.powsybl;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
