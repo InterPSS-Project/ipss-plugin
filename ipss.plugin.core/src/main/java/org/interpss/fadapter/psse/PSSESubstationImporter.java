@@ -15,6 +15,9 @@ import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.NBModelObjectFactory;
@@ -36,10 +39,13 @@ import com.interpss.core.net.nb.NBSwitch;
  * Imports PSS/E Substation Data Group (node-breaker overlay) into
  * {@link Substation} / {@code com.interpss.core.net.nb} objects.
  * Does not create bus-branch breakers or alter the electrical network topology.
+ * Supports nested RAW blocks and flat RAWX tables ({@code sub}/{@code subnode}/
+ * {@code subswd}/{@code subterm}).
  */
 public class PSSESubstationImporter {
 	private static final Logger log = LoggerFactory.getLogger(PSSESubstationImporter.class);
 	private static final String BUS_ID_PREFIX = "Bus";
+	private static final double DEFAULT_SWITCH_XPU = 0.0001;
 
 	private final AclfNetworkBuilder builder;
 
@@ -66,31 +72,125 @@ public class PSSESubstationImporter {
 		}
 	}
 
+	/**
+	 * Import flat RAWX tables {@code sub}, {@code subnode}, {@code subswd}, {@code subterm}.
+	 * No-op when {@code sub} is absent.
+	 */
+	public void parseRawx(JsonObject network) throws InterpssException {
+		if (network == null || !network.has("sub")) {
+			return;
+		}
+
+		Map<Integer, Substation> substations = new HashMap<>();
+		Map<Integer, Map<Integer, NBNode>> nodesBySub = new HashMap<>();
+
+		forEachRawxRow(network, "sub", row -> {
+			int isub = rawxInt(row, "isub", 0);
+			if (isub <= 0) {
+				return;
+			}
+			String name = rawxString(row, "name", "").trim();
+			double lati = rawxDouble(row, "lati", 0.0);
+			double longi = rawxDouble(row, "long", 0.0);
+			double srg = rawxDouble(row, "srg", 0.1);
+			Substation sub = createSubstation(isub, name, lati, longi, srg);
+			substations.put(isub, sub);
+			nodesBySub.put(isub, new HashMap<>());
+		});
+
+		forEachRawxRow(network, "subnode", row -> {
+			int isub = rawxInt(row, "isub", 0);
+			Substation sub = substations.get(isub);
+			if (sub == null) {
+				log.warn("RAWX subnode references missing substation {}", isub);
+				return;
+			}
+			int ni = rawxInt(row, "inode", 0);
+			if (ni <= 0) {
+				return;
+			}
+			String nodeName = rawxString(row, "name", "").trim();
+			int busNum = rawxInt(row, "ibus", 0);
+			int status = rawxInt(row, "stat", 1);
+			double vm = rawxDouble(row, "vm", 1.0);
+			double va = rawxDouble(row, "va", 0.0);
+			addNode(sub, isub, ni, nodeName, busNum, status, vm, va, nodesBySub.get(isub));
+		});
+
+		forEachRawxRow(network, "subswd", row -> {
+			int isub = rawxInt(row, "isub", 0);
+			Substation sub = substations.get(isub);
+			Map<Integer, NBNode> nodesByNi = nodesBySub.get(isub);
+			if (sub == null || nodesByNi == null) {
+				log.warn("RAWX subswd references missing substation {}", isub);
+				return;
+			}
+			int ni = rawxInt(row, "inode", 0);
+			int nj = rawxInt(row, "jnode", 0);
+			if (ni <= 0) {
+				return;
+			}
+			String ckt = rawxString(row, "swdid", "1").trim();
+			String swName = rawxString(row, "name", "").trim();
+			int typeCode = rawxInt(row, "type", 1);
+			int status = rawxInt(row, "stat", 1);
+			int nstat = rawxInt(row, "nstat", 1);
+			double xpu = rawxDouble(row, "xpu", DEFAULT_SWITCH_XPU);
+			if (xpu == 0.0) {
+				xpu = DEFAULT_SWITCH_XPU;
+			}
+			String rsetnam = rawxString(row, "rsetnam", "").trim();
+			addSwitch(sub, isub, ni, nj, ckt, swName, typeCode, status, nstat, xpu, rsetnam, nodesByNi);
+		});
+
+		forEachRawxRow(network, "subterm", row -> {
+			int isub = rawxInt(row, "isub", 0);
+			Substation sub = substations.get(isub);
+			Map<Integer, NBNode> nodesByNi = nodesBySub.get(isub);
+			if (sub == null || nodesByNi == null) {
+				log.warn("RAWX subterm references missing substation {}", isub);
+				return;
+			}
+			int ni = rawxInt(row, "inode", 0);
+			String typeCode = rawxString(row, "type", "").trim().toUpperCase();
+			String eqId = rawxString(row, "eqid", "").trim();
+			int busI = rawxInt(row, "ibus", 0);
+			Integer jbus = rawxIntOrNull(row, "jbus");
+			Integer kbus = rawxIntOrNull(row, "kbus");
+			if (busI <= 0 || typeCode.isEmpty()) {
+				return;
+			}
+			addTerminalRawx(sub, isub, ni, typeCode, eqId, busI, jbus, kbus, nodesByNi);
+		});
+	}
+
 	private void parseOneSubstation(BufferedReader reader, PSSEDataRec header, int isub)
 			throws IOException, InterpssException {
 		String name = header.getString(1, "").trim();
-		if (name.isEmpty()) {
-			name = "Substation " + isub;
-		}
 		double lati = header.getDouble(2, 0.0);
 		double longi = header.getDouble(3, 0.0);
 		double srg = header.getDouble(4, 0.1);
 
+		Substation sub = createSubstation(isub, name, lati, longi, srg);
+		Map<Integer, NBNode> nodesByNi = new HashMap<>();
+		parseNodes(reader, sub, isub, nodesByNi);
+		parseSwitches(reader, sub, isub, nodesByNi);
+		parseTerminals(reader, sub, isub, nodesByNi);
+	}
+
+	private Substation createSubstation(int isub, String name, double lati, double longi, double srg) {
+		String resolvedName = (name == null || name.isEmpty()) ? "Substation " + isub : name;
 		String subId = String.valueOf(isub);
 		Substation sub = CoreObjectFactory.createSubstation();
 		sub.setId(subId);
-		sub.setName(name);
+		sub.setName(resolvedName);
 		sub.setNumber(isub);
 		sub.setLatitude(lati);
 		sub.setLongitude(longi);
 		sub.setGroundingResistance(srg);
 		builder.getNetwork().addSubstation(sub);
 		builder.getNetwork().setNodeBreakerModel(true);
-
-		Map<Integer, NBNode> nodesByNi = new HashMap<>();
-		parseNodes(reader, sub, isub, nodesByNi);
-		parseSwitches(reader, sub, isub, nodesByNi);
-		parseTerminals(reader, sub, isub, nodesByNi);
+		return sub;
 	}
 
 	private void parseNodes(BufferedReader reader, Substation sub, int isub, Map<Integer, NBNode> nodesByNi)
@@ -106,33 +206,35 @@ public class PSSESubstationImporter {
 				break;
 			}
 			String nodeName = rec.getString(1, "").trim();
-			if (nodeName.isEmpty()) {
-				nodeName = sub.getName() + " " + ni;
-			}
 			int busNum = rec.getInt(2);
 			int status = rec.getInt(3, 1);
 			double vm = rec.getDouble(4, 1.0);
 			double va = rec.getDouble(5, 0.0);
-
-			String busId = BUS_ID_PREFIX + busNum;
-			BaseAclfBus bus = builder.getBus(busId);
-			if (bus == null) {
-				log.warn("Substation {}: node {} references missing bus {}", isub, ni, busId);
-			} else if (bus.getSubstation() == null) {
-				sub.addBus(bus);
-				// 3W star bus follows from-bus substation (even if from-bus / nodes inactive).
-				assign3WStarBusesToSubstation(bus, sub);
-			}
-
-			String nodeId = "NBNode_" + isub + "-" + ni + "@" + sub.getName();
-			NBNode node = NBModelObjectFactory.createNBNode(sub, nodeId, bus);
-			node.setName(nodeName);
-			node.setNumber(ni);
-			node.setStatus(status == 1);
-			node.setVoltageMag(vm);
-			node.setVoltageAng(va);
-			nodesByNi.put(ni, node);
+			addNode(sub, isub, ni, nodeName, busNum, status, vm, va, nodesByNi);
 		}
+	}
+
+	private void addNode(Substation sub, int isub, int ni, String nodeName, int busNum, int status,
+			double vm, double va, Map<Integer, NBNode> nodesByNi) {
+		String resolvedName = (nodeName == null || nodeName.isEmpty()) ? sub.getName() + " " + ni : nodeName;
+		String busId = BUS_ID_PREFIX + busNum;
+		BaseAclfBus bus = builder.getBus(busId);
+		if (bus == null) {
+			log.warn("Substation {}: node {} references missing bus {}", isub, ni, busId);
+		} else if (bus.getSubstation() == null) {
+			sub.addBus(bus);
+			// 3W star bus follows from-bus substation (even if from-bus / nodes inactive).
+			assign3WStarBusesToSubstation(bus, sub);
+		}
+
+		String nodeId = "NBNode_" + isub + "-" + ni + "@" + sub.getName();
+		NBNode node = NBModelObjectFactory.createNBNode(sub, nodeId, bus);
+		node.setName(resolvedName);
+		node.setNumber(ni);
+		node.setStatus(status == 1);
+		node.setVoltageMag(vm);
+		node.setVoltageAng(va);
+		nodesByNi.put(ni, node);
 	}
 
 	private void parseSwitches(BufferedReader reader, Substation sub, int isub, Map<Integer, NBNode> nodesByNi)
@@ -149,14 +251,11 @@ public class PSSESubstationImporter {
 			}
 			int nj = rec.getInt(1);
 			String ckt = rec.getString(2, "1").trim();
-			if (ckt.isEmpty()) {
-				ckt = "1";
-			}
 			String swName = rec.getString(3, "").trim();
 			int typeCode = rec.getInt(4, 1);
 			int status = rec.getInt(5, 1);
 			int nstat = rec.getInt(6, 1);
-			double xpu = rec.getDouble(7, 0.0001);
+			double xpu = rec.getDouble(7, DEFAULT_SWITCH_XPU);
 			String rsetnam = "";
 			// Optional rating-table name may follow numeric fields; skip pure numbers.
 			if (rec.size() > 8) {
@@ -170,25 +269,30 @@ public class PSSESubstationImporter {
 					}
 				}
 			}
-
-			NBNode from = nodesByNi.get(ni);
-			NBNode to = nodesByNi.get(nj);
-			if (from == null || to == null) {
-				log.warn("Substation {}: switch {}-{} CKT={} references missing node(s)", isub, ni, nj, ckt);
-				continue;
-			}
-
-			NBModelSwitchType swType = mapSwitchType(typeCode);
-			String swId = "NBSwitch_" + isub + "-" + ni + "-" + nj + "-" + ckt + "@" + sub.getName();
-			NBSwitch sw = NBModelObjectFactory.createNBSwitch(sub, swId, from, to, ckt, swType);
-			if (!swName.isEmpty()) {
-				sw.setName(swName);
-			}
-			sw.setCurrentStatus(status);
-			sw.setNormalStatus(nstat);
-			sw.setXpu(xpu);
-			sw.setNameRating(rsetnam);
+			addSwitch(sub, isub, ni, nj, ckt, swName, typeCode, status, nstat, xpu, rsetnam, nodesByNi);
 		}
+	}
+
+	private void addSwitch(Substation sub, int isub, int ni, int nj, String ckt, String swName, int typeCode,
+			int status, int nstat, double xpu, String rsetnam, Map<Integer, NBNode> nodesByNi) {
+		String resolvedCkt = (ckt == null || ckt.isEmpty()) ? "1" : ckt.trim();
+		NBNode from = nodesByNi.get(ni);
+		NBNode to = nodesByNi.get(nj);
+		if (from == null || to == null) {
+			log.warn("Substation {}: switch {}-{} CKT={} references missing node(s)", isub, ni, nj, resolvedCkt);
+			return;
+		}
+
+		NBModelSwitchType swType = mapSwitchType(typeCode);
+		String swId = "NBSwitch_" + isub + "-" + ni + "-" + nj + "-" + resolvedCkt + "@" + sub.getName();
+		NBSwitch sw = NBModelObjectFactory.createNBSwitch(sub, swId, from, to, resolvedCkt, swType);
+		if (swName != null && !swName.isEmpty()) {
+			sw.setName(swName);
+		}
+		sw.setCurrentStatus(status);
+		sw.setNormalStatus(nstat);
+		sw.setXpu(xpu);
+		sw.setNameRating(rsetnam != null ? rsetnam : "");
 	}
 
 	private void parseTerminals(BufferedReader reader, Substation sub, int isub, Map<Integer, NBNode> nodesByNi)
@@ -210,84 +314,211 @@ public class PSSESubstationImporter {
 				continue;
 			}
 
-			NBNode node = null;
-			if (ni > 0) {
-				node = nodesByNi.get(ni);
-				if (node == null) {
-					log.warn("Substation {}: terminal type {} references missing node {}", isub, typeCode, ni);
-				}
-			}
-
-			NBModelEquipType equipType = mapEquipType(typeCode);
-			BaseAclfBus fromBus = builder.getBus(BUS_ID_PREFIX + busI);
-			BaseAclfBus toBus = null;
-			BaseAclfBus tertBus = null;
-			NameTag equip = null;
-			String eqId = null;
-			String connId;
-
 			char code = typeCode.charAt(0);
+			String eqId;
+			Integer jbus = null;
+			Integer kbus = null;
 			switch (code) {
 			case 'L':
 			case 'F':
 			case 'M':
 			case 'S':
-			case 'I': {
+			case 'I':
 				eqId = rec.getString(3, "1").trim();
-				if (eqId.isEmpty()) {
-					eqId = "1";
-				}
-				connId = isub + "-" + typeCode + "-" + busI + "-" + eqId;
-				equip = resolveBusEquipment(fromBus, equipType, eqId);
 				break;
-			}
 			case 'B':
-			case '2': {
-				int jbus = rec.getInt(3);
+			case '2':
+				jbus = rec.getInt(3);
 				eqId = rec.getString(4, "1").trim();
-				if (eqId.isEmpty()) {
-					eqId = "1";
-				}
-				toBus = builder.getBus(BUS_ID_PREFIX + jbus);
-				connId = isub + "-" + typeCode + "-" + busI + "-" + jbus + "-" + eqId;
-				equip = resolveBranch(fromBus, toBus, eqId);
 				break;
-			}
-			case '3': {
-				int jbus = rec.getInt(3);
-				int kbus = rec.getInt(4);
+			case '3':
+				jbus = rec.getInt(3);
+				kbus = rec.getInt(4);
 				eqId = rec.getString(5, "1").trim();
-				if (eqId.isEmpty()) {
-					eqId = "1";
-				}
-				toBus = builder.getBus(BUS_ID_PREFIX + jbus);
-				tertBus = builder.getBus(BUS_ID_PREFIX + kbus);
-				connId = isub + "-" + typeCode + "-" + busI + "-" + jbus + "-" + kbus + "-" + eqId;
-				equip = resolve3WBranch(fromBus, toBus, tertBus, eqId);
 				break;
-			}
 			case 'D':
 			case 'V':
 			case 'N':
-			case 'A': {
+			case 'A':
 				eqId = rec.getString(3, "").trim();
-				connId = isub + "-" + typeCode + "-" + busI + "-" + eqId;
-				equip = resolveNamedSpecial(eqId, fromBus, code);
 				break;
-			}
 			default:
 				log.warn("Substation {}: unsupported terminal type '{}'", isub, typeCode);
 				continue;
 			}
+			addTerminal(sub, isub, ni, typeCode, eqId, busI, jbus, kbus, nodesByNi);
+		}
+	}
 
-			if (equip == null && equipType != NBModelEquipType.NOT_DEFINED) {
-				log.warn("Substation {}: unresolved terminal {} at bus {} eqId={}", isub, typeCode, busI,
-						eqId != null ? eqId : "");
+	private void addTerminalRawx(Substation sub, int isub, int ni, String typeCode, String eqId, int busI,
+			Integer jbus, Integer kbus, Map<Integer, NBNode> nodesByNi) {
+		addTerminal(sub, isub, ni, typeCode, eqId, busI, jbus, kbus, nodesByNi);
+	}
+
+	private void addTerminal(Substation sub, int isub, int ni, String typeCode, String eqIdIn, int busI,
+			Integer jbus, Integer kbus, Map<Integer, NBNode> nodesByNi) {
+		NBNode node = null;
+		if (ni > 0) {
+			node = nodesByNi.get(ni);
+			if (node == null) {
+				log.warn("Substation {}: terminal type {} references missing node {}", isub, typeCode, ni);
 			}
+		}
 
-			NBEquipConnection conn = NBModelObjectFactory.createNBEquipConnection(
-					sub, connId, node, equipType, equip, fromBus, toBus, tertBus);
-			conn.setName(typeCode + ":" + (eqId != null ? eqId : ""));
+		NBModelEquipType equipType = mapEquipType(typeCode);
+		BaseAclfBus fromBus = builder.getBus(BUS_ID_PREFIX + busI);
+		BaseAclfBus toBus = null;
+		BaseAclfBus tertBus = null;
+		NameTag equip = null;
+		String eqId = eqIdIn;
+		String connId;
+
+		char code = typeCode.charAt(0);
+		switch (code) {
+		case 'L':
+		case 'F':
+		case 'M':
+		case 'S':
+		case 'I': {
+			if (eqId == null || eqId.isEmpty()) {
+				eqId = "1";
+			}
+			connId = isub + "-" + typeCode + "-" + busI + "-" + eqId;
+			equip = resolveBusEquipment(fromBus, equipType, eqId);
+			break;
+		}
+		case 'B':
+		case '2': {
+			int j = jbus != null ? jbus : 0;
+			if (eqId == null || eqId.isEmpty()) {
+				eqId = "1";
+			}
+			toBus = builder.getBus(BUS_ID_PREFIX + j);
+			connId = isub + "-" + typeCode + "-" + busI + "-" + j + "-" + eqId;
+			equip = resolveBranch(fromBus, toBus, eqId);
+			break;
+		}
+		case '3': {
+			int j = jbus != null ? jbus : 0;
+			int k = kbus != null ? kbus : 0;
+			if (eqId == null || eqId.isEmpty()) {
+				eqId = "1";
+			}
+			toBus = builder.getBus(BUS_ID_PREFIX + j);
+			tertBus = builder.getBus(BUS_ID_PREFIX + k);
+			connId = isub + "-" + typeCode + "-" + busI + "-" + j + "-" + k + "-" + eqId;
+			equip = resolve3WBranch(fromBus, toBus, tertBus, eqId);
+			break;
+		}
+		case 'D':
+		case 'V':
+		case 'N':
+		case 'A': {
+			if (eqId == null) {
+				eqId = "";
+			}
+			connId = isub + "-" + typeCode + "-" + busI + "-" + eqId;
+			equip = resolveNamedSpecial(eqId, fromBus, code);
+			break;
+		}
+		default:
+			log.warn("Substation {}: unsupported terminal type '{}'", isub, typeCode);
+			return;
+		}
+
+		if (equip == null && equipType != NBModelEquipType.NOT_DEFINED) {
+			log.warn("Substation {}: unresolved terminal {} at bus {} eqId={}", isub, typeCode, busI,
+					eqId != null ? eqId : "");
+		}
+
+		NBEquipConnection conn = NBModelObjectFactory.createNBEquipConnection(
+				sub, connId, node, equipType, equip, fromBus, toBus, tertBus);
+		conn.setName(typeCode + ":" + (eqId != null ? eqId : ""));
+	}
+
+	@FunctionalInterface
+	private interface RawxRowConsumer {
+		void accept(Map<String, JsonElement> row) throws InterpssException;
+	}
+
+	private void forEachRawxRow(JsonObject network, String sectionName, RawxRowConsumer consumer)
+			throws InterpssException {
+		if (!network.has(sectionName)) {
+			return;
+		}
+		JsonObject section = network.getAsJsonObject(sectionName);
+		if (!section.has("fields") || !section.has("data")) {
+			return;
+		}
+		JsonArray fields = section.getAsJsonArray("fields");
+		JsonArray data = section.getAsJsonArray("data");
+		String[] fieldNames = new String[fields.size()];
+		for (int i = 0; i < fields.size(); i++) {
+			fieldNames[i] = fields.get(i).getAsString().toLowerCase();
+		}
+		for (JsonElement rowElem : data) {
+			JsonArray row = rowElem.getAsJsonArray();
+			Map<String, JsonElement> rowMap = new HashMap<>();
+			for (int i = 0; i < Math.min(fieldNames.length, row.size()); i++) {
+				rowMap.put(fieldNames[i], row.get(i));
+			}
+			consumer.accept(rowMap);
+		}
+	}
+
+	private static int rawxInt(Map<String, JsonElement> row, String key, int defaultValue) {
+		JsonElement el = row.get(key);
+		if (el == null || el.isJsonNull()) {
+			return defaultValue;
+		}
+		try {
+			return el.getAsInt();
+		} catch (Exception e) {
+			try {
+				return (int) Math.round(el.getAsDouble());
+			} catch (Exception e2) {
+				return defaultValue;
+			}
+		}
+	}
+
+	private static Integer rawxIntOrNull(Map<String, JsonElement> row, String key) {
+		JsonElement el = row.get(key);
+		if (el == null || el.isJsonNull()) {
+			return null;
+		}
+		try {
+			return el.getAsInt();
+		} catch (Exception e) {
+			try {
+				return (int) Math.round(el.getAsDouble());
+			} catch (Exception e2) {
+				return null;
+			}
+		}
+	}
+
+	private static double rawxDouble(Map<String, JsonElement> row, String key, double defaultValue) {
+		JsonElement el = row.get(key);
+		if (el == null || el.isJsonNull()) {
+			return defaultValue;
+		}
+		try {
+			return el.getAsDouble();
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+
+	private static String rawxString(Map<String, JsonElement> row, String key, String defaultValue) {
+		JsonElement el = row.get(key);
+		if (el == null || el.isJsonNull()) {
+			return defaultValue;
+		}
+		try {
+			return el.getAsString();
+		} catch (Exception e) {
+			return defaultValue;
 		}
 	}
 
