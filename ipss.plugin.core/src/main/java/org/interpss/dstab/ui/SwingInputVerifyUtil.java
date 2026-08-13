@@ -60,7 +60,7 @@ public class SwingInputVerifyUtil {
 	 */
 	public static boolean largeThan(javax.swing.JTextField input, double x)
 			throws Exception {
-		double d = new Double(input.getText()).doubleValue();
+		double d = Double.parseDouble(input.getText());
 		if (d > x)
 			return true;
 		return false;
@@ -90,7 +90,7 @@ public class SwingInputVerifyUtil {
 	 */
 	public static boolean within(javax.swing.JTextField input, double low,
 			double high) throws Exception {
-		double d = new Double(input.getText()).doubleValue();
+		double d = Double.parseDouble(input.getText());
 		if (d >= low && d <= high)
 			return true;
 		return false;
@@ -136,7 +136,7 @@ public class SwingInputVerifyUtil {
 	 */
 	public static boolean largeThan(javax.swing.JTextField input, int x)
 			throws Exception {
-		int d = new Integer(input.getText()).intValue();
+		int d = Integer.parseInt(input.getText());
 		if (d > x)
 			return true;
 		return false;
@@ -166,7 +166,7 @@ public class SwingInputVerifyUtil {
 	 */
 	public static boolean largeThan(javax.swing.JComboBox input, double x)
 			throws Exception {
-		double d = new Double((String) (input.getSelectedItem())).doubleValue();
+		double d = Double.parseDouble((String) (input.getSelectedItem()));
 		if (d > x)
 			return true;
 		return false;
@@ -197,7 +197,7 @@ public class SwingInputVerifyUtil {
 	 */
 	public static boolean largeEqualThan(javax.swing.JTextField input, double x)
 			throws Exception {
-		double d = new Double(input.getText()).doubleValue();
+		double d = Double.parseDouble(input.getText());
 		if (d >= x)
 			return true;
 		return false;
@@ -211,7 +211,7 @@ public class SwingInputVerifyUtil {
 	 */
 	public static double getDouble(javax.swing.JTextField input)
 			throws Exception {
-		return new Double(input.getText()).doubleValue();
+		return Double.parseDouble(input.getText());
 	}
 
 	/**
@@ -231,7 +231,7 @@ public class SwingInputVerifyUtil {
 	 * @return the double number
 	 */
 	public static double getDouble(javax.swing.JComboBox input) throws Exception {
-		return new Double((String) (input.getSelectedItem())).doubleValue();
+		return Double.parseDouble((String) (input.getSelectedItem()));
 	}
 
 	/**
@@ -241,6 +241,6 @@ public class SwingInputVerifyUtil {
 	 * @return the int number
 	 */
 	public static int getInt(javax.swing.JTextField input) throws Exception {
-		return new Integer(input.getText()).intValue();
+		return Integer.parseInt(input.getText());
 	}
 }
