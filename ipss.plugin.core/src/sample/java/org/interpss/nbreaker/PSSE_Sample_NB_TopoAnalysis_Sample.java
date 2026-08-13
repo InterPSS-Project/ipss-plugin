@@ -20,7 +20,11 @@ public class PSSE_Sample_NB_TopoAnalysis_Sample {
 
 	private static Set<String> activateBusIds = Set.of("Bus208", "Bus209", "Bus3012");
 	private static Set<String> activateBranchIds = Set.of("3WNDTR_205_215_208_3->Bus208(3)", "Bus209->3WNDTR_209_217_218_4(4)", "3WNDTR_3008_3012_3010_2->Bus3012(2)");
-
+	/**
+	 * The following branches are not active, not due to the topo configuration:
+		Branch Bus3005->Bus3008(1) is not active
+		Branch Bus153->Bus155(FACTS_DVCE_2) is not active
+	 */
 
 	public static void main(String[] args) throws InterpssException {
 		case0();
@@ -50,6 +54,9 @@ public class PSSE_Sample_NB_TopoAnalysis_Sample {
 
 		// at this stage, all active branches in the network should have intFlag set.
 		net.getBranchList().forEach( branch -> {
+			if (!branch.isActive()) {
+				System.out.println("Branch " + branch.getId() + " is not active");
+			}
 			if (branch.isActive() && (branch.getFromBus().getIntFlag() == 0 || branch.getToBus().getIntFlag() == 0)) {
 				System.out.println("Branch " + branch.getId() + " @" + branch.getFromBus().getSubstationId() + " has no intFlag set.");
 				System.out.println("Branch " + branch.getId() + " @" + branch.getToBus().getSubstationId() + " has no intFlag set.");
