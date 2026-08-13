@@ -23,6 +23,8 @@ public class PSSE_NB_BusWithoutInjection_Test extends CorePluginTestSetup {
 			"testData/psse/powsybl/nbreaker/busWithoutInjectionInNodeBreakerModelWithoutSwitches.raw";
 	private static final String ISOLATED =
 			"testData/psse/powsybl/nbreaker/busWithoutInjectionInNodeBreakerModelWithIsolatedInternalConnection.raw";
+	private static final String BUS_BREAKER =
+			"testData/psse/powsybl/nbreaker/busWithoutInjectionInBusBreakerModel.raw";
 
 	@Test
 	public void testWithSwitches() throws Exception {
@@ -49,5 +51,11 @@ public class PSSE_NB_BusWithoutInjection_Test extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() >= 3);
 		assertEquals(3, net.getSubstationMap().size());
 		assertNotNull(net.getSubstation("3"));
+	}
+
+	@Test
+	public void testBusBreakerModelWithoutInjection() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(35).parse(BUS_BREAKER);
+		assertTrue(net.getNoBus() >= 3, "import must not NPE on bus-breaker empty-injection case");
 	}
 }
