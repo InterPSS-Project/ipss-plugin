@@ -36,7 +36,7 @@ public class Excel {
 	 * @return
 	 */
 	public static String int2Str(Cell cell) {
-		return new Integer((int)cell.getNumericCellValue()).toString();
+		return Integer.toString((int)cell.getNumericCellValue());
 	}
 
 	/**
