@@ -158,8 +158,8 @@ Number,Name,              Area Name,  Nom kV,  Angle (Deg), Load MW, Gen MW, Act
 			double baseMva = this.qaSet.base_kva * 0.001;
 			
 			// parse the line field
-			double vMag = new Double(vmag).doubleValue();
-			double vAngDeg = new Double(vang).doubleValue();
+			double vMag = Double.parseDouble(vmag);
+			double vAngDeg = Double.parseDouble(vang);
 			double loadP_pu = getDbl(loadp) / baseMva;
 			double genP_pu = getDbl(genp) / baseMva;
 			double shuntG_pu = getDbl(shuntg) / baseMva;
@@ -200,8 +200,8 @@ Number,Name,             Area Name, Nom kV,  PU Volt,  Volt (kV),  Angle (Deg), 
 			double baseMva = this.qaSet.base_kva * 0.001;
 			
 			// parse the line field
-			double vMagPu = new Double(vmag).doubleValue();
-			double vAngDeg = new Double(vang).doubleValue();
+			double vMagPu = Double.parseDouble(vmag);
+			double vAngDeg = Double.parseDouble(vang);
 			double loadP_pu = getDbl(loadp) / baseMva;
 			double loadQ_pu = getDbl(loadq) / baseMva;
 			double genP_pu = getDbl(genp) / baseMva;

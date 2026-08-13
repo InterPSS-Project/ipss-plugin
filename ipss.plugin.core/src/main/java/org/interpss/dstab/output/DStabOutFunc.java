@@ -56,8 +56,8 @@ public class DStabOutFunc {
 			strFmt = false;
 
 		String str = "";
-		double time = strFmt ? new Double((String) table
-				.get(DStabOutSymbol.OUT_SYMBOL_TIME)).doubleValue()
+		double time = strFmt ? Double.parseDouble((String) table
+				.get(DStabOutSymbol.OUT_SYMBOL_TIME))
 				: ((Double) table.get(DStabOutSymbol.OUT_SYMBOL_TIME))
 						.doubleValue();
 		str += Number2String.toStr(time, "00.000") + " ";
@@ -66,51 +66,51 @@ public class DStabOutFunc {
 				.get(DStabOutSymbol.OUT_SYMBOL_MACH_ID))
 				+ " ";
 
-		double angle = strFmt ? new Double((String) table
-				.get(DStabOutSymbol.OUT_SYMBOL_MACH_ANG)).doubleValue()
+		double angle = strFmt ? Double.parseDouble((String) table
+				.get(DStabOutSymbol.OUT_SYMBOL_MACH_ANG))
 				: ((Double) table.get(DStabOutSymbol.OUT_SYMBOL_MACH_ANG))
 						.doubleValue();
 		str += Number2String.toStr(10, Number2String.toStr(angle, "0.0000"))
 				+ "   ";
 
-		double speed = strFmt ? new Double((String) table
-				.get(DStabOutSymbol.OUT_SYMBOL_MACH_SPEED)).doubleValue()
+		double speed = strFmt ? Double.parseDouble((String) table
+				.get(DStabOutSymbol.OUT_SYMBOL_MACH_SPEED))
 				: ((Double) table.get(DStabOutSymbol.OUT_SYMBOL_MACH_SPEED))
 						.doubleValue();
 		str += Number2String.toStr(10, Number2String.toStr(speed, "0.0000"))
 				+ "   ";
 
-		double pe = strFmt ? new Double((String) table
-				.get(DStabOutSymbol.OUT_SYMBOL_MACH_PE)).doubleValue()
+		double pe = strFmt ? Double.parseDouble((String) table
+				.get(DStabOutSymbol.OUT_SYMBOL_MACH_PE))
 				: ((Double) table.get(DStabOutSymbol.OUT_SYMBOL_MACH_PE))
 						.doubleValue();
 		str += Number2String.toStr(10, Number2String.toStr(pe, "0.0000"))
 				+ "   ";
 
-		double pm = strFmt ? new Double((String) table
-				.get(DStabOutSymbol.OUT_SYMBOL_MACH_PM)).doubleValue()
+		double pm = strFmt ? Double.parseDouble((String) table
+				.get(DStabOutSymbol.OUT_SYMBOL_MACH_PM))
 				: ((Double) table.get(DStabOutSymbol.OUT_SYMBOL_MACH_PM))
 						.doubleValue();
 		str += Number2String.toStr(10, Number2String.toStr(pm, "0.0000"))
 				+ "   ";
 
-		double volt = strFmt ? new Double((String) table
-				.get(DStabOutSymbol.OUT_SYMBOL_BUS_VMAG)).doubleValue()
+		double volt = strFmt ? Double.parseDouble((String) table
+				.get(DStabOutSymbol.OUT_SYMBOL_BUS_VMAG))
 				: ((Double) table.get(DStabOutSymbol.OUT_SYMBOL_BUS_VMAG))
 						.doubleValue();
 		str += Number2String.toStr(10, Number2String.toStr(volt, "0.0000"))
 				+ "   ";
 
 		if (table.get(DStabOutSymbol.OUT_SYMBOL_MACH_E) != null) {
-			double e = strFmt ? new Double((String) table
-					.get(DStabOutSymbol.OUT_SYMBOL_MACH_E)).doubleValue()
+			double e = strFmt ? Double.parseDouble((String) table
+					.get(DStabOutSymbol.OUT_SYMBOL_MACH_E))
 					: ((Double) table.get(DStabOutSymbol.OUT_SYMBOL_MACH_E))
 							.doubleValue();
 			str += Number2String.toStr(10, Number2String.toStr(e, "0.0000"))
 					+ "   ";
 		} else if (table.get(DStabOutSymbol.OUT_SYMBOL_MACH_EQ1) != null) {
-			double eq1 = strFmt ? new Double((String) table
-					.get(DStabOutSymbol.OUT_SYMBOL_MACH_EQ1)).doubleValue()
+			double eq1 = strFmt ? Double.parseDouble((String) table
+					.get(DStabOutSymbol.OUT_SYMBOL_MACH_EQ1))
 					: ((Double) table.get(DStabOutSymbol.OUT_SYMBOL_MACH_EQ1))
 							.doubleValue();
 			str += Number2String.toStr(10, Number2String.toStr(eq1, "0.0000"))
@@ -121,8 +121,8 @@ public class DStabOutFunc {
 		if (table.get(Constants.Token_ExciterState) != null) {
 			Hashtable<String, Object> excStatess = (Hashtable<String, Object>) table
 					.get(Constants.Token_ExciterState);
-			double efd = strFmt ? new Double((String) excStatess
-					.get(DStabOutSymbol.OUT_SYMBOL_EXC_EFD)).doubleValue()
+			double efd = strFmt ? Double.parseDouble((String) excStatess
+					.get(DStabOutSymbol.OUT_SYMBOL_EXC_EFD))
 					: ((Double) excStatess
 							.get(DStabOutSymbol.OUT_SYMBOL_EXC_EFD))
 							.doubleValue();
@@ -134,8 +134,8 @@ public class DStabOutFunc {
 		if (table.get(Constants.Token_StabilizerState) != null) {
 			Hashtable<String, Object> pssStatess = (Hashtable<String, Object>) table
 					.get(Constants.Token_StabilizerState);
-			double pssVs = strFmt ? new Double((String) pssStatess
-					.get(DStabOutSymbol.OUT_SYMBOL_PSS_VS)).doubleValue()
+			double pssVs = strFmt ? Double.parseDouble((String) pssStatess
+					.get(DStabOutSymbol.OUT_SYMBOL_PSS_VS))
 					: ((Double) pssStatess
 							.get(DStabOutSymbol.OUT_SYMBOL_PSS_VS))
 							.doubleValue();
