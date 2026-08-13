@@ -475,7 +475,10 @@ public class PSSESubstationImporter {
 	private static String readDataLine(BufferedReader reader) throws IOException {
 		String line;
 		while ((line = reader.readLine()) != null) {
-			if (line.startsWith("//") || line.startsWith("@!")) {
+			String trimmed = line.trim();
+			// Skip blank lines, @! headers, // comments, and PowSyBl-style "/ BEGIN ..." markers
+			if (trimmed.isEmpty() || trimmed.startsWith("//") || trimmed.startsWith("@!")
+					|| trimmed.startsWith("/")) {
 				continue;
 			}
 			return line;
