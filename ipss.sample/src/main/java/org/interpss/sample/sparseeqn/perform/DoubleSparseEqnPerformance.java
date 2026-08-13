@@ -145,9 +145,9 @@ b(17): 0.001294411022165286
 			if (!line.trim().equals("")) {
 				//System.out.println(line);	
 				String[] strAry = line.split(",");
-				int i = new Integer(strAry[0]).intValue();
-				int j = new Integer(strAry[1]).intValue();
-				double a = new Double(strAry[2]).doubleValue();
+				int i = Integer.parseInt(strAry[0]);
+				int j = Integer.parseInt(strAry[1]);
+				double a = Double.parseDouble(strAry[2]);
 				//System.out.println(i + ", " + j + ", " + a);
 				eqn.setAij(a, i, j);
 			}
@@ -164,9 +164,9 @@ b(17): 0.001294411022165286
 		stream.forEach(line -> {
 			if (!line.trim().equals("")) {
 				//System.out.println(line);	
-				int i = new Integer(line.substring(line.indexOf('(')+1,line.indexOf(','))).intValue();
-				int j = new Integer(line.substring(line.indexOf(',')+1,line.indexOf(')'))).intValue();
-				double a = new Double(line.substring(line.indexOf(':')+2)).doubleValue();
+				int i = Integer.parseInt(line.substring(line.indexOf('(')+1,line.indexOf(',')));
+				int j = Integer.parseInt(line.substring(line.indexOf(',')+1,line.indexOf(')')));
+				double a = Double.parseDouble(line.substring(line.indexOf(':')+2));
 				//System.out.println(i + ", " + j + ", " + a);
 				
 				eqn.setAij(a, i, j);
