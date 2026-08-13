@@ -67,6 +67,7 @@ import org.interpss.core.adapter.psse.raw.aclf.PsseVersionParserTest;
 import org.interpss.core.adapter.psse.raw.aclf.SixBus_DclfPsXfr;
 import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_Equipment_Smoke_Test;
 import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_IEEE_Smoke_Test;
+import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_Parser_Smoke_Test;
 import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_TwoTerminalDc_Test;
 import org.interpss.core.aclf.PSSE_5Bus_SwitchedShunt_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
@@ -389,6 +390,7 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_PowSyBl_IEEE_Smoke_Test.class,
 	PSSE_PowSyBl_TwoTerminalDc_Test.class,
 	PSSE_PowSyBl_Equipment_Smoke_Test.class,
+	PSSE_PowSyBl_Parser_Smoke_Test.class,
 	PSSE_PowSyBl_RAWX_Smoke_Test.class,
 
 	// PSSE MTHVDC

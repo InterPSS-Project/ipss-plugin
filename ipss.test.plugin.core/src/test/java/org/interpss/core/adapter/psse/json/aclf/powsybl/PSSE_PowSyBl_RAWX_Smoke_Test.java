@@ -45,15 +45,34 @@ public class PSSE_PowSyBl_RAWX_Smoke_Test extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Disabled("NB overlay via RAWX not yet wired; track against RAW twoSubstations/IEEE14 NB tests")
-	public void ieee14NodeBreakerRawx() throws Exception {
-		AclfNetwork net = new PSSEJsonDirectParser().parse(DIR + "IEEE_14_bus_nodeBreaker_rev35.rawx");
-		assertTrue(net.getSubstationMap().size() >= 2);
-	}
-
-	@Test
 	public void minimalExampleRawx() throws Exception {
 		AclfNetwork net = new PSSEJsonDirectParser().parse(DIR + "MinimalExample.rawx");
 		assertTrue(net.getNoBus() > 0);
+	}
+
+	@Test
+	public void ieee25BusRawx() throws Exception {
+		AclfNetwork net = new PSSEJsonDirectParser().parse(DIR + "ieee_25_bus.rawx");
+		assertTrue(net.getNoBus() >= 25);
+	}
+
+	@Test
+	public void ieee14CompletedRev35Rawx() throws Exception {
+		AclfNetwork net = new PSSEJsonDirectParser().parse(DIR + "IEEE_14_bus_completed_rev35.rawx");
+		assertTrue(net.getNoBus() >= 14);
+	}
+
+	@Test
+	public void specialCharactersRawx() throws Exception {
+		AclfNetwork net = new PSSEJsonDirectParser().parse(DIR + "RawxCaseWithSpecialCharacters.rawx");
+		assertTrue(net.getNoBus() > 0);
+	}
+
+	@Test
+	@Disabled("NB overlay via RAWX not yet wired in PSSEJsonDirectParser SUBSTATION tables; "
+			+ "track against PSSE_IEEE14_NodeBreaker_Test / PSSE_TwoSubstations_NB_TopoAnalysis_Test (RAW)")
+	public void ieee14NodeBreakerRawx() throws Exception {
+		AclfNetwork net = new PSSEJsonDirectParser().parse(DIR + "IEEE_14_bus_nodeBreaker_rev35.rawx");
+		assertTrue(net.getSubstationMap().size() >= 2);
 	}
 }

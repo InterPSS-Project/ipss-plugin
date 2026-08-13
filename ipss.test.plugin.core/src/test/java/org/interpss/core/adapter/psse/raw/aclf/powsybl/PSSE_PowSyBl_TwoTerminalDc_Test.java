@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.psse.raw.aclf.powsybl;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
@@ -23,14 +24,16 @@ public class PSSE_PowSyBl_TwoTerminalDc_Test extends CorePluginTestSetup {
 		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "twoTerminalDc.raw");
 		assertTrue(net.getNoBus() > 0);
 		assertFalse(net.getSpecialBranchList().isEmpty(), "expected HVDC special branch");
-		assertTrue(net.getSpecialBranchList().get(0) instanceof HvdcLine2TLCC);
+		assertInstanceOf(HvdcLine2TLCC.class, net.getSpecialBranchList().get(0));
+		HvdcLine2TLCC<?> hvdc = (HvdcLine2TLCC<?>) net.getSpecialBranchList().get(0);
+		assertTrue(hvdc.getRectifier() != null && hvdc.getInverter() != null);
 	}
 
 	@Test
 	public void twoTerminalDcNegativeSetvl() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "twoTerminalDc_with_negative_setvl.raw");
 		assertFalse(net.getSpecialBranchList().isEmpty());
-		assertTrue(net.getSpecialBranchList().get(0) instanceof HvdcLine2TLCC);
+		assertInstanceOf(HvdcLine2TLCC.class, net.getSpecialBranchList().get(0));
 		assertTrue(net.getNoBus() >= 9);
 	}
 
@@ -38,6 +41,7 @@ public class PSSE_PowSyBl_TwoTerminalDc_Test extends CorePluginTestSetup {
 	public void twoTerminalDcTwoAreas() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "twoTerminalDcwithTwoAreas.raw");
 		assertFalse(net.getSpecialBranchList().isEmpty());
+		assertInstanceOf(HvdcLine2TLCC.class, net.getSpecialBranchList().get(0));
 		assertTrue(net.getNoBus() > 0);
 	}
 
@@ -46,6 +50,7 @@ public class PSSE_PowSyBl_TwoTerminalDc_Test extends CorePluginTestSetup {
 		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "parallelTwoTerminalDcBetweenSameAcBuses.raw");
 		assertTrue(net.getSpecialBranchList().size() >= 2,
 				"expected two parallel DC lines, got " + net.getSpecialBranchList().size());
+		assertTrue(net.getSpecialBranchList().stream().allMatch(b -> b instanceof HvdcLine2TLCC));
 	}
 
 	@Test

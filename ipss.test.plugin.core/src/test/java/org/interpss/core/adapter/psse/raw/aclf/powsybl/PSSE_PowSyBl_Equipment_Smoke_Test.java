@@ -47,6 +47,11 @@ public class PSSE_PowSyBl_Equipment_Smoke_Test extends CorePluginTestSetup {
 		AclfNetwork net = parse("ThreeMIB_T3W_modified.raw", 33);
 		assertTrue(net.getNoActiveBus() > 0);
 		assertTrue(net.getNoBranch() > 0);
+		// 3-winding creates a star bus in InterPSS
+		boolean has3wStar = net.getBusList().stream()
+				.anyMatch(b -> b.getId() != null && b.getId().contains("3W"));
+		assertTrue(has3wStar || net.getNoBranch() >= 3,
+				"expected 3W topology markers or enough branches");
 	}
 
 	@Test
@@ -83,5 +88,16 @@ public class PSSE_PowSyBl_Equipment_Smoke_Test extends CorePluginTestSetup {
 	@Test
 	public void specialCharacters() throws Exception {
 		assertTrue(parse("RawCaseWithSpecialCharacters.raw", 33).getNoActiveBus() > 0);
+	}
+
+	@Test
+	public void transformersVoltageControlUndefinedBus() throws Exception {
+		assertTrue(parse("TransformersWithVoltageControlAndNotDefinedControlledBus.raw", 33).getNoBus() > 0);
+	}
+
+	@Test
+	public void substationThreeBusesSameNomVTwoAreas() throws Exception {
+		AclfNetwork net = parse("SubstationWithThreeBusesAtTheSameNominalVoltageInTwoDifferentAreas.raw", 33);
+		assertTrue(net.getNoBus() >= 3);
 	}
 }
