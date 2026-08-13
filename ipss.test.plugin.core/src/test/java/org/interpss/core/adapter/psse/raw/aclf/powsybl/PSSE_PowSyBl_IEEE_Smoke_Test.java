@@ -26,6 +26,10 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 		assertTrue(net.getNoBranch() > 0, "expected branches");
 	}
 
+	private static void assertBusCount(AclfNetwork net, int expected) {
+		assertTrue(net.getNoBus() >= expected, "expected >= " + expected + " buses, got " + net.getNoBus());
+	}
+
 	private static void assertLf(AclfNetwork net) throws Exception {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
@@ -36,6 +40,7 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 	public void ieee14_v33() throws Exception {
 		AclfNetwork net = parse("IEEE_14_bus.raw", 33);
 		assertSmoke(net);
+		assertBusCount(net, 14);
 		assertLf(net);
 	}
 
@@ -43,6 +48,7 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 	public void ieee14_rev35() throws Exception {
 		AclfNetwork net = parse("IEEE_14_bus_rev35.raw", 35);
 		assertSmoke(net);
+		assertBusCount(net, 14);
 		assertLf(net);
 	}
 
@@ -82,6 +88,7 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 	public void ieee57() throws Exception {
 		AclfNetwork net = parse("IEEE_57_bus.raw", 33);
 		assertSmoke(net);
+		assertBusCount(net, 57);
 		assertLf(net);
 	}
 
@@ -89,6 +96,7 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 	public void ieee118() throws Exception {
 		AclfNetwork net = parse("IEEE_118_bus.raw", 33);
 		assertSmoke(net);
+		assertBusCount(net, 118);
 		assertLf(net);
 	}
 
