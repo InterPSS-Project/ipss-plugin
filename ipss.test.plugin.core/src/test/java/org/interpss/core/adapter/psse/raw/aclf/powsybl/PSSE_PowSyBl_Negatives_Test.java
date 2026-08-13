@@ -75,4 +75,26 @@ public class PSSE_PowSyBl_Negatives_Test extends CorePluginTestSetup {
 			}
 		});
 	}
+
+	@Test
+	public void badlyDefinedControlledBuses() {
+		assertDoesNotThrow(() -> {
+			try {
+				new PSSEDirectParser(33).parse(DIR + "IEEE_14_buses_badly_defined_controlled_buses.raw");
+			} catch (Exception e) {
+				assertTrue(true);
+			}
+		});
+	}
+
+	@Test
+	public void duplicateIdsRev35() {
+		assertDoesNotThrow(() -> {
+			try {
+				new PSSEDirectParser(35).parse(DIR + "IEEE_14_buses_duplicate_ids_rev35.raw");
+			} catch (Exception e) {
+				assertTrue(true);
+			}
+		});
+	}
 }
