@@ -30,6 +30,6 @@ public abstract class BaseResultFileProcessor implements ITextFileProcessor {
 		if (str.trim().equals(""))
 			return 0.0;
 		else
-			return new Double(str).doubleValue();
+			return Double.parseDouble(str);
 	}	
 }

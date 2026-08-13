@@ -59,7 +59,7 @@ public class Dclf_ACTIVSg25kBusSample {
 				if (baseVoltKv >= 230.0) {
 					cnt.increment();
 				}
-				String strVolt = new Double(baseVoltKv).toString();
+				String strVolt = Double.toString(baseVoltKv);
 				if (!baseVoltSet.contains(strVolt)) {
 					baseVoltSet.add(strVolt);
 				}
