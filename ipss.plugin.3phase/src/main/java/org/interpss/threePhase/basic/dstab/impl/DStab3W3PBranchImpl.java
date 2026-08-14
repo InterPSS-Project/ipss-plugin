@@ -25,7 +25,11 @@ public class DStab3W3PBranchImpl extends DStab3WBranchImpl implements DStab3W3PB
 
 		// create the bus and add it to the net object
 		this.starBus = ThreePhaseObjectFactory.create3PDStabBus(starBusId, net);
-		this.getStarBus().setStatus(this.isActive());
+		boolean starActive = this.isActive()
+				&& (this.getFromBus().isActive()
+						|| this.getToBus().isActive()
+						|| this.getTertiaryBus().isActive());
+		this.getStarBus().setStatus(starActive);
 		this.getStarBus().setName("3W Xfr Star Bus");
 		this.getStarBus().setDesc("Star bus for branch " + this.getId());
 		this.getStarBus().setBaseVoltage(this.getFromBus().getBaseVoltage());
@@ -40,20 +44,20 @@ public class DStab3W3PBranchImpl extends DStab3WBranchImpl implements DStab3W3PB
 		net.addBranch(branch, fromId, starBusId, properties[1]);
 		this.setFromBranch(branch);
 		branch.setBranchCode(branchCode);
-		branch.setStatus(this.isActive());
+		branch.setStatus(starActive);
 
 		// create the to branch: starBusId -> toBusId
 		branch = ThreePhaseObjectFactory.create3PBranch();
 		net.addBranch(branch, starBusId, toId, properties[2]);
 		this.setToBranch(branch);
-		branch.setStatus(this.isActive());
+		branch.setStatus(starActive);
 		branch.setBranchCode(branchCode);
 
 		// create the tert branch: starBusId -> terrBusId
 		branch = ThreePhaseObjectFactory.create3PBranch();
 		net.addBranch(branch, starBusId, tertId, properties[3]);
 		this.setTertiaryBranch(branch);
-		branch.setStatus(this.isActive());
+		branch.setStatus(starActive);
 		branch.setBranchCode(branchCode);
 		return true;
 	}

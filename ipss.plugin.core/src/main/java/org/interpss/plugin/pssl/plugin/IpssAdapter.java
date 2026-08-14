@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.interpss.fadapter.bpa.BPADirectParser;
+import org.interpss.fadapter.cim.CIMDirectParser;
 import org.interpss.fadapter.ge.GEPslfDirectParser;
 import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 import org.interpss.fadapter.matpower.MatpowerDirectParser;
@@ -59,6 +60,7 @@ public class IpssAdapter extends BaseDSL {
 			BPA, 
 			PWD, 
 			MATPOWER,
+			CIM,
 			@Deprecated IEEE_ODM,
 			};
 	
@@ -179,6 +181,8 @@ public class IpssAdapter extends BaseDSL {
 				return new PWDDirectParser().parse(filepath);
 			} else if (this.format == FileFormat.MATPOWER) {
 				return new MatpowerDirectParser().parse(filepath);
+			} else if (this.format == FileFormat.CIM) {
+				return new CIMDirectParser().parse(filepath);
 			}
 			return null;
 		}
@@ -232,8 +236,12 @@ public class IpssAdapter extends BaseDSL {
 			}
 			
 			try {
+				if (this.format == FileFormat.CIM) {
+					this.importedObj = new CIMDirectParser().parse(fileNameAry);
+					return this;
+				}
 				if (this.format != FileFormat.PSSE) {
-					log.error("Multi-file loading only supported for PSS/E format");
+					log.error("Multi-file loading only supported for PSS/E and CIM formats");
 					return null;
 				}
 
