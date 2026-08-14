@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.builder.aclf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -179,5 +180,26 @@ public class AclfNetworkBuilderHvdcTest extends CorePluginTestSetup {
 		assertEquals(0.5, inv.getDcSetPoint(), TOL);
 		assertEquals(VSCAcControlMode.AC_REACTIVE_POWER, inv.getAcControlMode());
 		assertEquals(-0.1, inv.getAcSetPoint(), TOL);
+	}
+
+	@Test
+	public void inactiveVscDoesNotCreateRemoteVoltageControl() throws Exception {
+		AclfNetworkBuilder builder = twoBusNet();
+		builder.addBus("Bus3", "Remote", 3L, 230000.0, 1.0, 0.0,
+				null, null, null);
+		HvdcLine2TVSC<AclfBus> vsc = builder.addHvdcLine2TVSC(
+				"VSC2", "Inactive VSC", "Bus1", "Bus2",
+				false, 5.0, 300.0);
+
+		VSCConverter rec = (VSCConverter) vsc.getRecConverter();
+		builder.setVSCConverter(rec, "Bus1",
+				HvdcControlMode.DC_VOLTAGE, 1.0,
+				VSCAcControlMode.AC_VOLTAGE, 1.02,
+				300.0, 100.0, -100.0,
+				"Bus3", 75.0);
+
+		AclfBus recBus = (AclfBus) rec.getBus();
+		assertFalse(recBus.isGenPQ());
+		assertFalse(recBus.isRemoteQBus());
 	}
 }

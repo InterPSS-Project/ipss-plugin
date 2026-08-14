@@ -36,6 +36,7 @@ import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.net.Substation;
 import com.interpss.core.net.nb.NBModelEquipType;
@@ -276,6 +277,19 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		assertEquals(0.60, gen.getQGenLimit().getMax(), 1.0E-9);
 		assertEquals(-0.60, gen.getQGenLimit().getMin(), 1.0E-9);
 		assertEquals(0.10, gen.getGen().getImaginary(), 1.0E-9);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testV35LccXcapUsesPostNdrFieldLayout() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(35).parse("testData/psse/v35/sample_v35.raw");
+		HvdcLine2TLCC<AclfBus> line = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().stream()
+				.filter(HvdcLine2TLCC.class::isInstance)
+				.findFirst()
+				.orElseThrow();
+
+		assertEquals(2.0034, line.getRectifier().getCommutingCapacitor(), 1.0E-9);
+		assertEquals(2.0000, line.getInverter().getCommutingCapacitor(), 1.0E-9);
 	}
 
 	@Test
