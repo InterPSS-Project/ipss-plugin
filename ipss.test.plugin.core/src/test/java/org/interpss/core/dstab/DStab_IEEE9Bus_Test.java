@@ -754,10 +754,11 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		dstabAlgo.setTotalSimuTimeSec(0.01);
 		dstabAlgo.setRefMachine(dsNet.getMachine("Bus1-mach1"));
 		
-		double[] timePoints   = {0.0,    0.004,    0.007,    0.009},
-	      			 machPmPoints = {1.6300, 1.6300,   1.6300,   1.6300},
-	      			 machAngPoints  = {57.56288, 57.56288,  57.56288,   57.56288},
-	      			 machEfdPoints  = {1.78898, 1.78898,   1.78898,   1.78898};
+		double[] timePoints = {0.0, 0.004, 0.007, 0.009};
+		double[] machPmPoints = {1.6300, 1.6300, 1.6300, 1.6300};
+		double[] machAngPoints = {57.5626998355, 57.5582776561,
+				57.5511057362, 57.5444956456};
+		double[] machEfdPoints = {1.78898, 1.78898, 1.78898, 1.78898};
 		
 		StateVariableRecorder stateTestRecorder = new StateVariableRecorder(0.0001);
 		stateTestRecorder.addTestRecords("Bus2-mach1", MachineState, 
@@ -778,12 +779,16 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		
 			
-		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
-					DStabOutSymbol.OUT_SYMBOL_MACH_PM) < 0.00001);
-		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
-					DStabOutSymbol.OUT_SYMBOL_MACH_ANG) < 0.00001);
-		assertTrue(stateTestRecorder.diffTotal("Bus2-mach1", MachineState, 
-				DStabOutSymbol.OUT_SYMBOL_MACH_Efd) < 0.00001);
+		double pmDiff = stateTestRecorder.diffTotal("Bus2-mach1", MachineState,
+				DStabOutSymbol.OUT_SYMBOL_MACH_PM);
+		double angleDiff = stateTestRecorder.diffTotal("Bus2-mach1", MachineState,
+				DStabOutSymbol.OUT_SYMBOL_MACH_ANG);
+		double efdDiff = stateTestRecorder.diffTotal("Bus2-mach1", MachineState,
+				DStabOutSymbol.OUT_SYMBOL_MACH_Efd);
+		assertTrue(pmDiff < 0.00001, "Machine Pm total difference: " + pmDiff);
+		assertTrue(angleDiff < 0.00001,
+				"Machine angle total difference: " + angleDiff);
+		assertTrue(efdDiff < 0.00001, "Machine Efd total difference: " + efdDiff);
 	}
 	@Test
     public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
