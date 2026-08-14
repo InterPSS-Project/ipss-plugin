@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
+
 /**
  * Tokenizer coverage for PSS/E free-format RAW lines.
  */
@@ -41,5 +43,17 @@ public class PSSEDataRecTest {
 		assertEquals(13.2, rec.getDouble(2), 1.0E-9);
 		assertEquals(2, rec.getInt(3));
 		assertEquals(1, rec.getInt(4));
+	}
+
+	@Test
+	public void supervisorySwitchedShuntModes_doNotBecomeVoltageControls() {
+		assertEquals(AclfAdjustControlMode.FIXED, PSSEDirectParser.switchedShuntControlMode(0));
+		assertEquals(AclfAdjustControlMode.DISCRETE, PSSEDirectParser.switchedShuntControlMode(1));
+		assertEquals(AclfAdjustControlMode.CONTINUOUS, PSSEDirectParser.switchedShuntControlMode(2));
+		for (int modsw = 3; modsw <= 5; modsw++) {
+			assertEquals(AclfAdjustControlMode.FIXED, PSSEDirectParser.switchedShuntControlMode(modsw));
+		}
+		assertEquals(AclfAdjustControlMode.DISCRETE,
+				PSSEDirectParser.switchedShuntControlMode(6));
 	}
 }

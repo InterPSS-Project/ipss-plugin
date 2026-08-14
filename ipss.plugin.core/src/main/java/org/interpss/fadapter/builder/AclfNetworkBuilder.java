@@ -1230,7 +1230,11 @@ public class AclfNetworkBuilder {
              * to hold the pilot-bus voltage. Materialize that control here so
              * direct-parser imports participate in the inner P/PQV formulation.
              */
-            if (bus != null && acMode == VSCAcControlMode.AC_VOLTAGE
+            // Preserve inactive VSC data, but do not let an out-of-service link
+            // change its terminal bus equations or participate in voltage control.
+            if (bus != null && converter.getParentHvdc() != null
+                    && converter.getParentHvdc().isStatus()
+                    && acMode == VSCAcControlMode.AC_VOLTAGE
                     && !remoteCtrlBusId.equals(busId)) {
                 bus.setGenCode(AclfGenCode.GEN_PQ);
                 Optional<RemoteQBus> remoteControl =
