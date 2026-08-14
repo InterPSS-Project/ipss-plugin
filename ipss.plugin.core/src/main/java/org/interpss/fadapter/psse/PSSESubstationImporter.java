@@ -120,6 +120,8 @@ public class PSSESubstationImporter {
 				log.warn("Substation {}: node {} references missing bus {}", isub, ni, busId);
 			} else if (bus.getSubstation() == null) {
 				sub.addBus(bus);
+				// 3W star bus follows from-bus substation (even if from-bus / nodes inactive).
+				assign3WStarBusesToSubstation(bus, sub);
 			}
 
 			String nodeId = "NBNode_" + isub + "-" + ni + "@" + sub.getName();
@@ -330,6 +332,22 @@ public class PSSESubstationImporter {
 			bra = net.getBranch(toBus.getId(), fromBus.getId(), ckt);
 		}
 		return bra;
+	}
+
+	/**
+	 * Star buses of 3W transformers with {@code fromBus} as primary inherit that bus's substation.
+	 */
+	private void assign3WStarBusesToSubstation(BaseAclfBus fromBus, Substation sub) {
+		AclfNetwork net = builder.getNetwork();
+		for (Branch bra : net.getSpecialBranchList()) {
+			if (!(bra instanceof Aclf3WBranch xfr)) {
+				continue;
+			}
+			if (xfr.getFromBus() == fromBus && xfr.getStarBus() != null
+					&& xfr.getStarBus().getSubstation() == null) {
+				sub.addBus(xfr.getStarBus());
+			}
+		}
 	}
 
 	private NameTag resolve3WBranch(BaseAclfBus fromBus, BaseAclfBus toBus, BaseAclfBus tertBus, String ckt) {

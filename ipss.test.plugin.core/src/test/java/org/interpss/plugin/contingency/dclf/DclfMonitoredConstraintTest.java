@@ -14,12 +14,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.IEEE14_SensHelper_SampleCase;
+
 import com.interpss.core.algo.dclf.DclfContingencyLimitStudy;
 import com.interpss.core.algo.dclf.DclfContingencyConfig;
 import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
-import org.interpss.plugin.optadj.IEEE14_SensHelper_Test;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -52,7 +53,7 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
 
     @Test
     public void monitoredConstraintUsesWeightedPostContingencyFlows() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
         algo.calculateDclf();
 
@@ -90,7 +91,7 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
 
     @Test
     public void dclfLimitStudyMatchesExistingMonitoredConstraintPath() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
         algo.calculateDclf();
 
@@ -127,7 +128,7 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
 
     @Test
     public void dclfLimitStudyAppliesMonitoringExceptions() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
         algo.calculateDclf();
 
@@ -356,7 +357,7 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
 
     @Test
     public void branchMwLimitCheckUsesCompiledBranchIndexAndExceptions() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
         algo.calculateDclf();
 
@@ -413,7 +414,7 @@ public class DclfMonitoredConstraintTest extends CorePluginTestSetup {
 
     @Test
     public void nomogramMwBoundaryCheckUsesCompiledInterfaceExpressionsAndExceptions() throws InterpssException {
-        AclfNetwork net = IEEE14_SensHelper_Test.createSenTestCase();
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
         ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
         algo.calculateDclf();
 
