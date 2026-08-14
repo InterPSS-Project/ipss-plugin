@@ -3,6 +3,49 @@
   "configurations": [
     {
       "type": "java",
+      "name": "PSSE_MTHVDC_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.mthvdc.PSSE_MTHVDC_Sample",
+      "projectName": "ipss.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "EInterconnectLoadSample",
+      "request": "launch",
+      "mainClass": "org.interpss.mthvdc.EInterconnectLoadSample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "IEEE14_MinitoredInterface_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.mon_interface.IEEE14_MinitoredInterface_Sample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "IEEE118CimSample",
+      "request": "launch",
+      "mainClass": "org.interpss.cim.IEEE118CimSample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
+      "name": "PSSE_Sample_NB_Aclf_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.nbreaker.PSSE_Sample_NB_Aclf_Sample",
+      "projectName": "ipss.plugin.core",
+      "cwd": "${workspaceFolder}/ipss.plugin.core",
+      "args": ""
+    },
+    {
+      "type": "java",
       "name": "PSSE_Sample_NB_TopoAnalysis_Sample",
       "request": "launch",
       "mainClass": "org.interpss.nbreaker.PSSE_Sample_NB_TopoAnalysis_Sample",

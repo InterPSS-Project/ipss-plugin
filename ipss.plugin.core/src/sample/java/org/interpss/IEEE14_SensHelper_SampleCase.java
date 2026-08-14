@@ -1,15 +1,14 @@
 
-package org.interpss.plugin.optadj;
+package org.interpss;
 
 import org.interpss.CorePluginFactory;
-import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.datatype.LimitType;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 
-public class IEEE14_SensHelper_Test extends CorePluginTestSetup {
+public class IEEE14_SensHelper_SampleCase {
 
 	public static AclfNetwork createSenTestCase() throws InterpssException {
 		AclfNetwork net = CorePluginFactory

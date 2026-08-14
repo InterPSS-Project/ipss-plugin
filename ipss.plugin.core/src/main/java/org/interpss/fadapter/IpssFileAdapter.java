@@ -36,7 +36,7 @@ public interface IpssFileAdapter extends IpssCustomAdapter {
 	public static enum FileFormat { 
 			IEEECDF, PSSE, GE_PSLF, 
 			UCTE, IEEE_ODM, BPA, PWD,MATPOWER,
-			IpssInternal, Custom };
+			IpssInternal, Custom, CIM };
 	public static enum Version { 
 			NotDefined, 
 			IEEECDF, IeeeCDFExt1, 

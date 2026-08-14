@@ -21,6 +21,7 @@ import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.util.QAUtil;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -142,8 +143,9 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	@Tag("extended")
 	public void testV36FixedShuntNbTerminalResolves() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 		AclfBus bus151 = net.getBus("Bus151");
 		assertNotNull(bus151);
 		ShuntCompensator fx1 = bus151.getCompensator("F1");
@@ -281,15 +283,18 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	@SuppressWarnings("unchecked")
-	public void testV35LccXcapUsesPostNdrFieldLayout() throws Exception {
+	public void testV35LccXcapDoesNotBecomeAclfReactiveOffset() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(35).parse("testData/psse/v35/sample_v35.raw");
 		HvdcLine2TLCC<AclfBus> line = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().stream()
 				.filter(HvdcLine2TLCC.class::isInstance)
 				.findFirst()
 				.orElseThrow();
 
-		assertEquals(2.0034, line.getRectifier().getCommutingCapacitor(), 1.0E-9);
-		assertEquals(2.0000, line.getInverter().getCommutingCapacitor(), 1.0E-9);
+		// PSS/E XCAP is commutating-capacitor impedance data in ohms. Core's
+		// commutingCapacitor property is a reactive-power offset, so copying
+		// XCAP into it would mix units and corrupt the converter Q calculation.
+		assertEquals(0.0, line.getRectifier().getCommutingCapacitor(), 1.0E-9);
+		assertEquals(0.0, line.getInverter().getCommutingCapacitor(), 1.0E-9);
 	}
 
 	@Test
@@ -544,8 +549,9 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	@Tag("extended")
 	public void testV36SystemSwdAndFactsNbTerminalsResolve() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 
 		AclfBranch swd = net.getBranch("Bus151", "Bus201", "*1");
 		assertNotNull(swd, "system switching device *1 should be imported");
@@ -575,8 +581,9 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	@Tag("extended")
 	public void testV36NbTerminalsIV3NResolve() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
 
 		// 3W created as Bus205–Bus215–Bus208(ckt 3); terminals list windings in other orders
 		assertNotNull(net.get3WXfr("Bus205", "Bus215", "Bus208", "3"));
