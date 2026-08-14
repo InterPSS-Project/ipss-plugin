@@ -23,6 +23,8 @@ import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExciterTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGovernorTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
+import org.interpss.core.adapter.cim.CIMDirectParserTest;
+import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.GEPslfDirectParser_SectionGate_Test;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
@@ -69,6 +71,8 @@ import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_BusSplit_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_Topo_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NodeBreaker_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_Sample_NB_Aclf_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_Sample_NB_TopoAnalysis_Test;
 import org.interpss.core.adapter.pwd.PWDDirectParser_ObjectGate_Test;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.pwd.SixBus_DclfPsXfr_pwd;
@@ -129,6 +133,8 @@ import org.interpss.plugin.piecewise.IEEE14TestAclfSubNetBuild;
 import org.interpss.plugin.piecewise.IEEE14TestSubAreaSearch;
 import org.interpss.plugin.piecewise.IEEE9BusTestDStabSubAreaNet;
 import org.interpss.plugin.result.AclfResultDFrameAdapterTest;
+import org.interpss.core.adapter.psse.raw.aclf.PSSE_MTHVDC_Test;
+
 import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.Suite;
 
@@ -360,6 +366,15 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_IEEE14_NodeBreaker_Test.class,
 	PSSE_IEEE14_NB_Topo_Test.class,
 	PSSE_IEEE14_NB_BusSplit_Test.class,
+	PSSE_Sample_NB_TopoAnalysis_Test.class,
+	PSSE_Sample_NB_Aclf_Test.class,
+
+	// PSSE MTHVDC
+	PSSE_MTHVDC_Test.class,
+	
+	// CIM File Adapter
+	CIMDirectParserTest.class,
+	IEEE118CimVsMatpowerJsonCompareTest.class,
 	
 	///Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,

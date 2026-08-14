@@ -1,23 +1,30 @@
 # DCLF Monitored Interface Constraints
 
-Module: `ipss.plugin.core`  
-Primary API: `org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer`  
-Definition package: `org.interpss.plugin.contingency.definition`  
-Result package: `org.interpss.plugin.contingency.result`
+Module: `ipss.plugin.core` (JSON import/export, samples)  
+Core API: `com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer`  
+Facade: `com.interpss.core.algo.dclf.DclfContingencyLimitStudy`  
+Definition: `com.interpss.monitor.definition` (`MonitoredInterfaceRecord`, `MonitoredBranchRecord`)  
+Result: `com.interpss.monitor.result.DclfMonitoredConstraintResult`
+
+Canonical architecture: `ipss-core/ipss.core_EMF/docs/md/monitor-architecture.md`  
+INTERFACE samples & tests: `ipss-core/ipss.core_EMF/docs/md/notes/Monitoring-INTERFACE.md`
 
 ---
 
 ## Overview
 
-The DCLF contingency analyzer supports monitored linear transmission constraints for branch groups, interfaces, and nomograms.
+The DCLF contingency analyzer supports monitored linear transmission constraints
+for branch groups and interfaces (weighted MW expressions).
 
 The constraint is evaluated as:
 
 ```text
-C1 * postFlowMW(branch1) + C2 * postFlowMW(branch2) + ... <= limitMW
+C1 * postFlowMW(branch1) + C2 * postFlowMW(branch2) + ...  vs  limitMW
 ```
 
-This matches the common market-modeling form used for nomogram and branch-group limits: a weighted linear expression over two or more monitored flowgates with a right-hand-side limit.
+This matches the common market-modeling form used for branch-group and path
+limits: a weighted linear expression over one or more monitored branches with a
+right-hand-side MW limit.
 
 This feature is additive. Existing branch overload monitoring still uses:
 
@@ -25,11 +32,25 @@ This feature is additive. Existing branch overload monitoring still uses:
 ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(...)
 ```
 
-Use the monitored interface constraint API when the monitored object is not a single branch rating, but a weighted group limit:
+Use the monitored interface constraint API when the monitored object is not a
+single branch rating, but a weighted group limit:
 
 ```java
-ParallelDclfContingencyAnalyzer.executeMonitoredConstraintAnalysis(...)
+// Config-based convenience wrapper
+ParallelDclfContingencyAnalyzer.executeMonitoredConstraintAnalysis(
+        net, contingencies, interfaces, config, parallelism);
+
+// Explicit overload / threshold form (also used by samples and tests)
+ParallelDclfContingencyAnalyzer.performMonitoredConstraintAnalysis(
+        net, contingencies, interfaces, overloadThreshold, dclfInclLoss, parallelism);
+
+// Facade that compiles monitoring exceptions first
+DclfContingencyLimitStudy.performMonitoredExpressionAnalysis(...);
 ```
+
+For studies that also include branch thermal limits, flowgates, and/or
+nomograms in one pass, use the mixed API instead — see
+[DCLF Mixed Monitoring Constraints](dclf-mixed-monitoring-constraints.md).
 
 ---
 
@@ -38,15 +59,22 @@ ParallelDclfContingencyAnalyzer.executeMonitoredConstraintAnalysis(...)
 Use monitored interface constraints for:
 
 - Branch group limits, where multiple circuit flows share one MW limit.
-- Nomograms, where the monitored value is a linear expression of branch flows.
 - Directional path limits, where coefficients encode the path direction.
 - Offline-derived shift-factor or outage-distribution-factor constraints.
 
 Do not use this feature for:
 
-- Ordinary single-branch thermal overload checks. Use monitored branch contingency analysis.
-- Voltage, transient-stability, or reactive margin checks. This DCLF feature only evaluates linear MW flow expressions.
-- Constraints that require nonlinear logic, RAS/SPS event simulation, or dynamic limit recalculation during the scan.
+- Ordinary single-branch thermal overload checks. Use monitored branch
+  contingency analysis (`executeContingencyAnalysis`) or mixed
+  `BranchMwLimitCheck`.
+- Flowgates with contingency-bound tiered limits — use `FlowgateDclfAnalyzer`
+  or mixed analysis (`FlowgateEffectiveLimitCheck`).
+- Two-axis nomograms — use mixed analysis (`NomogramMwBoundaryCheck`) or define
+  axes as interfaces and attach `NomogramRecord` in `DclfMonitoringConfigRecord`.
+- Voltage, transient-stability, or reactive margin checks. This DCLF feature
+  only evaluates linear MW flow expressions.
+- Constraints that require nonlinear logic, RAS/SPS event simulation, or
+  dynamic limit recalculation during the scan.
 
 ---
 
@@ -56,8 +84,8 @@ Each monitored interface requires:
 
 | Field | Required | Meaning |
 |---|---:|---|
-| `id` | yes | Stable name for the branch group, interface, or nomogram. |
-| `limit_mw` | yes | RHS limit in MW. `rating_mw` is accepted as a compatibility alias. |
+| `id` | yes | Stable name for the branch group or interface. |
+| `limit_mw` | yes | RHS limit in MW. `rating_mw` is accepted as a compatibility alias on JSON import. |
 | `branches` | yes | One or more monitored branch terms. |
 | branch identity | yes | Either `branch_id`, or `from_bus` + `to_bus` + `circuit`. |
 | `coefficient` | no | Multiplier for the branch post-contingency MW flow. Defaults to `1.0`. |
@@ -74,13 +102,18 @@ Example:
 Bus2->Bus4(1)
 ```
 
-If a branch is defined with `from_bus`, `to_bus`, and `circuit`, the same branch ID is built internally.
+If a branch is defined with `from_bus`, `to_bus`, and `circuit`, the same
+branch ID is built internally.
+
+Object type on violation results from the specialized path is always
+`INTERFACE` (`MonitoringObjectType.INTERFACE`). The mixed-path check
+`MonitoredExpressionMwLimitCheck` uses the same default.
 
 ---
 
 ## JSON Format
 
-The top-level JSON key is `monitored_interfaces`.
+The top-level JSON key for interface-only files is `monitored_interfaces`.
 
 ```json
 {
@@ -108,26 +141,23 @@ The top-level JSON key is `monitored_interfaces`.
 }
 ```
 
-Import it with:
+Import / export:
 
 ```java
 List<MonitoredInterfaceRecord> interfaces =
     ContingencyFileUtil.importMonitoredInterfaceRecordsFromJson(file);
-```
 
-Export it with:
-
-```java
 ContingencyFileUtil.exportMonitoredInterfaceRecordsToJson(file, interfaces);
 ```
 
-This JSON contract is separate from the existing files:
+Related JSON contracts (plugin `ContingencyFileUtil`):
 
-| File purpose | Root key |
+| File purpose | Root key / API |
 |---|---|
 | Contingencies | `contingencies` |
 | Monitored branches | `monitored_branches` |
-| Monitored interfaces / nomograms | `monitored_interfaces` |
+| Monitored interfaces | `monitored_interfaces` / `importMonitoredInterfaceRecordsFromJson` |
+| Full mixed monitoring config | branches + interfaces + flowgates + nomograms + exceptions / `importDclfMonitoringConfigFromJson` |
 
 ---
 
@@ -135,7 +165,7 @@ This JSON contract is separate from the existing files:
 
 ```java
 AclfNetwork net = ...;
-List<DclfBranchOutage> contingencies = ...;
+List<? extends BaseContingency<DclfMonitoringBranch>> contingencies = ...;
 
 File interfaceFile = new File("monitored-interfaces.json");
 List<MonitoredInterfaceRecord> interfaces =
@@ -166,6 +196,22 @@ for (DclfMonitoredConstraintResult result : results) {
 }
 ```
 
+With monitoring exceptions (INCLUDE / EXCLUDE / DEFAULT):
+
+```java
+ConcurrentLinkedQueue<DclfMonitoredConstraintResult> results =
+    DclfContingencyLimitStudy.performMonitoredExpressionAnalysis(
+        net,
+        contingencies,
+        interfaces,
+        monitoringExceptions,
+        100.0,
+        false,
+        1,
+        solutionMethod,
+        kluEndpointRhsBatchSize);
+```
+
 ---
 
 ## Programmatic Definition
@@ -178,7 +224,9 @@ path.addBranch(new MonitoredBranchRecord("Bus2->Bus4(1)", 0.75));
 path.addBranch(new MonitoredBranchRecord("Bus3->Bus4(1)", -0.25));
 ```
 
-The second constructor argument on `MonitoredInterfaceRecord` is the MW limit. The second constructor argument on `MonitoredBranchRecord` is the coefficient for that branch term.
+The second constructor argument on `MonitoredInterfaceRecord` is the MW limit.
+The second constructor argument on `MonitoredBranchRecord(branchId, coefficient)`
+is the coefficient for that branch term.
 
 ---
 
@@ -212,7 +260,12 @@ With the default `overloadThreshold` of `100.0`, a result means:
 interfaceMW >= limitMW
 ```
 
-The comparison is directional. If the limit applies in the opposite direction, use negative coefficients or define a second interface with reversed signs.
+The comparison is directional. If the limit applies in the opposite direction,
+use negative coefficients or define a second interface with reversed signs.
+
+`DclfMonitoredConstraintResult` stores pre, shifted, and post MW
+(`post = pre + shifted`), the limit, and the EMF contingency object. Check id
+is `MONITORED_EXPRESSION_MW`.
 
 ---
 
@@ -227,7 +280,28 @@ Before running the analysis, verify:
 5. The interface expression and limit use MW, not per-unit.
 6. The contingency list has valid DCLF outage objects with current outage pre-flows.
 
-If a configured branch is not active or cannot be resolved in the DCLF monitor set, the analyzer logs a warning and skips that branch term. If all terms in an interface are skipped, that interface is skipped.
+If a configured branch is not active or cannot be resolved in the DCLF monitor
+set, the analyzer logs a warning and skips that branch term. If all terms in an
+interface are skipped, that interface is skipped.
+
+---
+
+## Samples and Tests
+
+| Class / test | Location | Coverage |
+|--------------|----------|----------|
+| `IEEE14_MinitoredInterface_Sample` | `ipss.plugin.core` `org.interpss.mon_interface` | IEEE14; OPEN `Bus2->Bus3(1)`; weighted `IEEE14_BG`; `performMonitoredConstraintAnalysis` |
+| `IEEE14_SensHelper_SampleCase` | `ipss.plugin.core` `org.interpss` | Shared IEEE14 fixture |
+| `MonInterfaceAclf5BusSample` | `ipss-core` `sample.mon_interface` | 5-bus via **mixed** API with interface-only config (related, not this specialized path) |
+| `DclfMonitoredConstraintTest` | `ipss.test.plugin.core` | Weighted post-flow CA; study facade parity; INCLUDE/EXCLUDE/DEFAULT; JSON import |
+
+```bash
+# Plugin interface suite
+mvn -pl ipss.test.plugin.core test -Dtest=DclfMonitoredConstraintTest
+
+# Matching sample scenario
+# IDE: IEEE14_MinitoredInterface_Sample (cwd ipss.plugin.core)
+```
 
 ---
 
@@ -240,6 +314,8 @@ Supported:
 - Generic core contingency fallback for non-fast DCLF contingency shapes.
 - JSON import/export for monitored interface definitions.
 - Programmatic Java definition.
+- Monitoring exceptions via `DclfContingencyLimitStudy` /
+  `performMonitoredConstraintAnalysis(..., monitoringExceptions, ...)`.
 
 Not yet included:
 
@@ -248,10 +324,11 @@ Not yet included:
 - Dynamic, time-varying RHS limits.
 - AC power-flow validation of interface violations.
 
-Test coverage:
+---
 
-```bash
-mvn -pl ipss.test.plugin.core -am test \
-  -Dtest=org.interpss.plugin.contingency.dclf.DclfMonitoredConstraintTest \
-  -Dsurefire.failIfNoSpecifiedTests=false
-```
+## Related Documentation
+
+- [DCLF Mixed Monitoring Constraints](dclf-mixed-monitoring-constraints.md) — branches + interfaces + flowgates + nomograms in one run
+- [DCLF Contingency Analysis](dclf-contingency-analysis.md) — islanding / multi-outage solver policy
+- Core architecture: `ipss-core/ipss.core_EMF/docs/md/monitor-architecture.md`
+- INTERFACE samples & tests: `ipss-core/ipss.core_EMF/docs/md/notes/Monitoring-INTERFACE.md`
