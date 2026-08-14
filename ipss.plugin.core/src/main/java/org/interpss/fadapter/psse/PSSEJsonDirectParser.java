@@ -30,6 +30,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
@@ -397,9 +398,7 @@ public class PSSEJsonDirectParser {
     // ==================== Transformer ====================
 
     private void parseXfrRow(Map<String, JsonElement> row) throws InterpssException {
-        // JSON transformer data is structured differently - it's a flat record with all fields
-        // Field names vary but typically follow the same naming as RAW format
-        // This is a simplified mapping for the most common transformer configurations
+        // Flat RAWX transformer row: same field names as RAW (kbus != 0 ⇒ 3W)
 
         int fromNum = getInt(row, "ibus", 0);
         int toNum = getInt(row, "jbus", 0);
@@ -420,19 +419,26 @@ public class PSSEJsonDirectParser {
         double mag2 = getDouble(row, "mag2", 0.0);
         int cw = getInt(row, "cw", 1);
         int cz = getInt(row, "cz", 1);
+        int cm = getInt(row, "cm", 1);
         int tab1 = getInt(row, "tab1", 0);
 
         String fromBusId = BUS_ID_PREFIX + fromNum;
         String toBusId = BUS_ID_PREFIX + toNum;
 
+        BaseAclfBus fromBus = (BaseAclfBus) builder.getNetwork().getBus(fromBusId);
+        BaseAclfBus toBus = (BaseAclfBus) builder.getNetwork().getBus(toBusId);
+        if (fromBus == null || toBus == null) return;
+
+        if (tertNum != 0) {
+            parse3WXfrRow(row, fromBusId, toBusId, BUS_ID_PREFIX + tertNum, ckt,
+                    stat, cw, cz, cm, sbase12, mag1, mag2);
+            return;
+        }
+
         double zRatio = 1.0;
         if (cz == 2 && sbase12 > 0 && sbase12 != baseMva) {
             zRatio = baseMva / sbase12;
         }
-
-        BaseAclfBus fromBus = (BaseAclfBus) builder.getNetwork().getBus(fromBusId);
-        BaseAclfBus toBus = (BaseAclfBus) builder.getNetwork().getBus(toBusId);
-        if (fromBus == null || toBus == null) return;
 
         double fromTap = windv1;
         double toTap = windv2;
@@ -447,18 +453,131 @@ public class PSSEJsonDirectParser {
 
         Complex magY = (mag1 != 0.0 || mag2 != 0.0) ? new Complex(mag1, mag2) : null;
 
-        if (tertNum == 0) {
-            if (ang1 != 0.0) {
-                builder.addPsXformer(fromBusId, toBusId, ckt,
-                        new Complex(zr, zx), effFromTap, 1.0, ang1, 0.0,
-                        magY, null, rate1, rate2, rate3, tab1, stat == 1);
-            } else {
-                builder.addXformer2W(fromBusId, toBusId, ckt,
-                        new Complex(zr, zx), effFromTap, 1.0,
-                        magY, null, rate1, rate2, rate3, tab1, stat == 1);
-            }
+        if (ang1 != 0.0) {
+            builder.addPsXformer(fromBusId, toBusId, ckt,
+                    new Complex(zr, zx), effFromTap, 1.0, ang1, 0.0,
+                    magY, null, rate1, rate2, rate3, tab1, stat == 1);
+        } else {
+            builder.addXformer2W(fromBusId, toBusId, ckt,
+                    new Complex(zr, zx), effFromTap, 1.0,
+                    magY, null, rate1, rate2, rate3, tab1, stat == 1);
         }
-        // 3W transformer handling would go here, similar to PSS/E RAW
+    }
+
+    private void parse3WXfrRow(Map<String, JsonElement> row,
+            String fromBusId, String toBusId, String tertBusId, String ckt,
+            int stat, int cw, int cz, int cm, double sbase12,
+            double mag1, double mag2) throws InterpssException {
+        BaseAclfBus tertBus = (BaseAclfBus) builder.getNetwork().getBus(tertBusId);
+        if (tertBus == null) {
+            return;
+        }
+
+        double r12 = getDouble(row, "r1_2", 0.0);
+        double x12 = getDouble(row, "x1_2", 0.0);
+        sbase12 = getDouble(row, "sbase1_2", sbase12);
+        double r23 = getDouble(row, "r2_3", 0.0);
+        double x23 = getDouble(row, "x2_3", 0.0);
+        double sbase23 = getDouble(row, "sbase2_3", baseMva);
+        double r31 = getDouble(row, "r3_1", 0.0);
+        double x31 = getDouble(row, "x3_1", 0.0);
+        double sbase31 = getDouble(row, "sbase3_1", baseMva);
+        double starVMag = getDouble(row, "vmstar", 1.0);
+        double starVAng = getDouble(row, "anstar", 0.0);
+
+        double windv1 = getDouble(row, "windv1", 1.0);
+        double nomv1 = getDouble(row, "nomv1", 0.0);
+        double ang1 = getDouble(row, "ang1", 0.0);
+        double windv2 = getDouble(row, "windv2", 1.0);
+        double nomv2 = getDouble(row, "nomv2", 0.0);
+        double ang2 = getDouble(row, "ang2", 0.0);
+        double windv3 = getDouble(row, "windv3", 1.0);
+        double nomv3 = getDouble(row, "nomv3", 0.0);
+        double ang3 = getDouble(row, "ang3", 0.0);
+        int tab1 = getInt(row, "tab1", 0);
+        int tab2 = getInt(row, "tab2", 0);
+        int tab3 = getInt(row, "tab3", 0);
+
+        BaseAclfBus fromBus = (BaseAclfBus) builder.getNetwork().getBus(fromBusId);
+        BaseAclfBus toBus = (BaseAclfBus) builder.getNetwork().getBus(toBusId);
+        double fromBaseV = fromBus != null ? fromBus.getBaseVoltage() : 1000.0;
+        double toBaseV = toBus != null ? toBus.getBaseVoltage() : 1000.0;
+        double tertBaseV = tertBus.getBaseVoltage();
+
+        if (nomv1 == 0.0) nomv1 = fromBaseV / 1000.0;
+        if (nomv2 == 0.0) nomv2 = toBaseV / 1000.0;
+        if (nomv3 == 0.0) nomv3 = tertBaseV / 1000.0;
+
+        Complex z12PU = convertZ(cz, r12, x12, sbase12);
+        Complex z23PU = convertZ(cz, r23, x23, sbase23);
+        Complex z31PU = convertZ(cz, r31, x31, sbase31);
+
+        double fromTap = convertTap(cw, windv1, nomv1, fromBaseV);
+        double toTap = convertTap(cw, windv2, nomv2, toBaseV);
+        double tertTap = convertTap(cw, windv3, nomv3, tertBaseV);
+
+        Complex magY = convertMagY(cm, mag1, mag2, nomv1, sbase12, fromBaseV);
+
+        boolean isPhaseShifting = (ang1 != 0.0 || ang2 != 0.0 || ang3 != 0.0);
+        // PSS/E 3W STAT: 0=out, 1=in, 2=winding2 out, 3=winding3 out, 4=winding1 out
+        boolean inService = stat != 0;
+        boolean wind1OffLine = (stat == 4);
+        boolean wind2OffLine = (stat == 2);
+        boolean wind3OffLine = (stat == 3);
+
+        Aclf3WBranch branch3W = builder.addXformer3W(fromBusId, toBusId, tertBusId, ckt,
+                z12PU, z23PU, z31PU,
+                fromTap, toTap, tertTap,
+                magY, starVMag, starVAng,
+                wind1OffLine, wind2OffLine, wind3OffLine,
+                isPhaseShifting, ang1, ang2, ang3,
+                inService);
+
+        if (branch3W != null) {
+            if (tab1 > 0) branch3W.getFromAclfBranch().setXfrZTableNumber(tab1);
+            if (tab2 > 0) branch3W.getToAclfBranch().setXfrZTableNumber(tab2);
+            if (tab3 > 0) branch3W.getTertAclfBranch().setXfrZTableNumber(tab3);
+        }
+    }
+
+    private Complex convertZ(int cz, double r, double x, double sbase) {
+        if (cz == 2) {
+            double ratio = (sbase > 0 && sbase != baseMva) ? baseMva / sbase : 1.0;
+            return new Complex(r * ratio, x * ratio);
+        } else if (cz == 3) {
+            double zpu = x * baseMva / sbase;
+            double rpu = r * 1.0E-6 * baseMva / (sbase * sbase);
+            double xpu = Math.sqrt(Math.max(zpu * zpu - rpu * rpu, 0.0));
+            return new Complex(rpu, xpu);
+        }
+        return new Complex(r, x);
+    }
+
+    private double convertTap(int cw, double windv, double nomvKv, double busBaseV) {
+        if (cw == 2) {
+            return windv * 1000.0 / busBaseV;
+        } else if (cw == 3) {
+            return windv * nomvKv * 1000.0 / busBaseV;
+        }
+        return windv;
+    }
+
+    private Complex convertMagY(int cm, double mag1, double mag2,
+            double nomv1Kv, double sbase12, double fromBaseV) {
+        if (mag1 == 0.0 && mag2 == 0.0) {
+            return null;
+        }
+        if (cm == 1) {
+            return new Complex(mag1, mag2);
+        }
+        double fromBaseKv = fromBaseV / 1000.0;
+        double ybase = baseMva / (fromBaseKv * fromBaseKv);
+        double g_rv = mag1 / (nomv1Kv * nomv1Kv) * 1.0E-6;
+        double g_pu = g_rv / ybase;
+        double ybase_w12 = sbase12 / (nomv1Kv * nomv1Kv);
+        double b_rv = -mag2 * ybase_w12;
+        double b_pu = b_rv / ybase;
+        return new Complex(g_pu, b_pu);
     }
 
     // ==================== Area / Zone / Owner ====================

@@ -85,6 +85,7 @@ import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_NB_BusWithoutInjection_T
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_Sample_NB_Aclf_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_Sample_NB_TopoAnalysis_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_TwoSubstations_NB_TopoAnalysis_Test;
+import org.interpss.core.adapter.psse.rawx.PSSE_Sample_NB_Rawx_TopoAnalysis_Test;
 import org.interpss.core.adapter.pwd.PWDDirectParser_ObjectGate_Test;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.pwd.SixBus_DclfPsXfr_pwd;
@@ -385,6 +386,7 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_TwoSubstations_NB_TopoAnalysis_Test.class,
 	PSSE_NB_BusWithoutInjection_Test.class,
 	PSSE_Sample_NB_TopoAnalysis_Test.class,
+	PSSE_Sample_NB_Rawx_TopoAnalysis_Test.class,
 	PSSE_Sample_NB_Aclf_Test.class,
 
 	// PowSyBl catalog coverage
