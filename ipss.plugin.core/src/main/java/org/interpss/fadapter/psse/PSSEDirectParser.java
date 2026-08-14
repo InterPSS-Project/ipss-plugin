@@ -186,6 +186,15 @@ public class PSSEDirectParser {
 
         // For v34+, skip system-wide data section
         if (version >= 34) {
+            /*
+             * Preserve the complete solved-case settings block, including
+             * THRSHZ. PSS/E uses THRSHZ when deciding whether an eligible
+             * non-transformer branch represents one electrical node. Using an
+             * unrelated default can leave artificial mismatches across RAW bus
+             * ties. PsseLoadflowSolutionSettings parses THRSHZ below and the
+             * validated value is applied to the imported network after the
+             * entire block has been read.
+             */
             PsseLoadflowSolutionSettings.Builder settingsBuilder =
                     PsseLoadflowSolutionSettings.builder(version);
             String line;
