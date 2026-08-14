@@ -3,6 +3,55 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Ieee14ZipLoadMismatchInvestigation",
+      "request": "launch",
+      "mainClass": "investigation.powsybl.Ieee14ZipLoadMismatchInvestigation",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "Ieee24RawxMismatchInvestigation",
+      "request": "launch",
+      "mainClass": "investigation.powsybl.done.Ieee24RawxMismatchInvestigation",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "Ieee24RawxMismatchInvestigation",
+      "request": "launch",
+      "mainClass": "investigation.powsybl.Ieee24RawxMismatchInvestigation",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "TwoAreaTrf3wMismatchInvestigation",
+      "request": "launch",
+      "mainClass": "investigation.powsybl.TwoAreaTrf3wMismatchInvestigation",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "Ieee14DelimiterMismatchInvestigation",
+      "request": "launch",
+      "mainClass": "investigation.powsybl.done.Ieee14DelimiterMismatchInvestigation",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "Ieee14CompletedMismatchInvestigation",
+      "request": "launch",
+      "mainClass": "investigation.powsybl.Ieee14CompletedMismatchInvestigation",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "Ieee14DelimiterMismatchInvestigation",
+      "request": "launch",
+      "mainClass": "investigation.powsybl.Ieee14DelimiterMismatchInvestigation",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
       "name": "PSSE_FiveBus_NB_TopoAnalysis_Sample",
       "request": "launch",
       "mainClass": "org.interpss.nbreaker.PSSE_FiveBus_NB_TopoAnalysis_Sample",
