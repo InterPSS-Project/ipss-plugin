@@ -13,12 +13,14 @@ package org.interpss.fadapter.psse;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
+import org.interpss.fadapter.builder.AclfNetworkBuilder.ShuntBlock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +33,8 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
+import com.interpss.core.aclf.adj.AclfAdjustControlType;
 import com.interpss.core.net.OriginalDataFormat;
 
 /**
@@ -75,6 +79,9 @@ public class PSSEJsonDirectParser {
 
         // Parse fixed shunts
         parseFieldData(network, "fixshunt", this::parseFixedShuntRow);
+
+        // Parse switched shunts (v35+ RAWX: swshunt)
+        parseFieldData(network, "swshunt", this::parseSwitchedShuntRow);
 
         // Parse generators
         parseFieldData(network, "generator", this::parseGenRow);
@@ -251,6 +258,55 @@ public class PSSEJsonDirectParser {
         String name = getString(row, "name", "").trim();
 
         builder.addFixedShunt(busId, id, status == 1, gl / baseMva, bl / baseMva, name);
+    }
+
+    // ==================== Switched Shunt ====================
+
+    /**
+     * RAWX {@code swshunt} table (PSS/E v35+ field names). Blocks are {@code sN,nN,bN}
+     * for N=1..8 when present.
+     */
+    private void parseSwitchedShuntRow(Map<String, JsonElement> row) throws InterpssException {
+        int busNum = getInt(row, "ibus", 0);
+        if (busNum == 0) {
+            return;
+        }
+        String busId = BUS_ID_PREFIX + busNum;
+        String shuntId = getString(row, "shntid", "1").trim();
+        if (shuntId.isEmpty()) {
+            shuntId = "1";
+        }
+        int modsw = getInt(row, "modsw", 1);
+        int stat = getInt(row, "stat", 1);
+        double vswhi = getDouble(row, "vswhi", 1.0);
+        double vswlo = getDouble(row, "vswlo", 1.0);
+        int swreg = getInt(row, "swreg", 0);
+        double binit = getDouble(row, "binit", 0.0);
+
+        AclfAdjustControlMode mode;
+        if (modsw == 2 || modsw == 4 || modsw == 6) {
+            mode = AclfAdjustControlMode.DISCRETE;
+        } else if (modsw == 1 || modsw == 3 || modsw == 5) {
+            mode = AclfAdjustControlMode.CONTINUOUS;
+        } else {
+            mode = AclfAdjustControlMode.FIXED;
+        }
+
+        String remoteBusId = (swreg > 0 && swreg != busNum) ? BUS_ID_PREFIX + swreg : null;
+
+        List<ShuntBlock> blocks = new ArrayList<>();
+        for (int i = 1; i <= 8; i++) {
+            int s = getInt(row, "s" + i, 0);
+            int n = getInt(row, "n" + i, 0);
+            double bVal = getDouble(row, "b" + i, 0.0);
+            if (n > 0 || bVal != 0.0) {
+                blocks.add(new ShuntBlock(n, bVal, s == 1));
+            }
+        }
+
+        builder.addSwitchedShunt(busId, shuntId, stat == 1,
+                mode, AclfAdjustControlType.RANGE_CONTROL,
+                binit / baseMva, vswhi, vswlo, remoteBusId, blocks);
     }
 
     // ==================== Generator ====================
