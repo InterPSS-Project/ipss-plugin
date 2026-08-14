@@ -1,17 +1,19 @@
 package org.interpss.nbreaker;
 
 import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.interpss.numeric.exp.IpssNumericException;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
-import com.interpss.core.aclf.Aclf3WBranch;
-import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
+import com.interpss.core.aclf.hvdc.HvdcLineMT;
+import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
-import com.interpss.core.funcImpl.AclfNetInfoHelper;
-import com.interpss.core.funcImpl.topo.SubstationNBreakerHelper;
-import com.interpss.core.net.Substation;
+import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
+import com.interpss.core.funcImpl.topo.AclfNetTopoHelper;
 
 /**
  * Sample: import PSS/E v36 sample_nb RAW (node-breaker overlay) and inspect substations.
@@ -19,60 +21,136 @@ import com.interpss.core.net.Substation;
 public class PSSE_Sample_NB_Aclf_Sample {
 
 	/** Relative to {@code ipss.plugin.core} (launch.json cwd). */
-	private static final String CASE = "testData/psse/v36/sample_nb.raw";
+	private static final String CASE = "testData/private/sample_nb.raw";
 
-	public static void main(String[] args) throws InterpssException {
+	public static void main(String[] args) throws InterpssException, IpssNumericException {
+		case0();
+		case1();
+		case2();
+		case3();
+	}
+
+	// check the initial condition
+	private static void case0() throws InterpssException, IpssNumericException {
+		System.out.println("Case 0: init condition");
+
 		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 
-		/* 
-		Substation sub5 = net.getSubstation("5");
-		Substation sub9 = net.getSubstation("9");
+		net.setZeroZBranchThreshold(1.0e-3);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
-		SubstationNBreakerHelper subHelper5 = new SubstationNBreakerHelper(sub5);
-		subHelper5.topoAnalysis();
-		//subHelper5.printSubstationTree();
+		initCondition(net);
+	}
 
-		SubstationNBreakerHelper subHelper9 = new SubstationNBreakerHelper(sub9);
-		subHelper9.topoAnalysis();
-		//subHelper9.printSubstationTree();
-		//subHelper9.printTopoFlags();
+	// activated buses and branches relavent to the open switches
+	private static void case1() throws InterpssException, IpssNumericException {
+		System.out.println("Case 1: activated network");
 
-		/* 
-		net.getBus("Bus3010").setStatus(false);
-		net.getBus("Bus215").setStatus(false);
-		net.getBus("Bus401").setStatus(false);
-		net.getBus("Bus402").setStatus(false);
-		*/
+		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
 
-		AclfBus bus301 = net.getBus("Bus301");
-		// Expected null substation: sample_nb.raw has no SUBSTATION NODE for bus 301
-		// (also 401, 402). Importer assigns via NB node bus I only —
-		// see testData/psse/v36/sample-nb-substation-nbModel.md.
+		net.setZeroZBranchThreshold(1.0e-3);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
-		/* 
-		AclfBranch bus3010Leg = net.getBranch("3WNDTR_3008_3012_3010_2->Bus3010(2)");
-		bus3010Leg.setStatus(true);
-		AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus3010", false);
-		*/
-		
-		net.getSubstationMap().forEach((subName, sub) -> {	
-			SubstationNBreakerHelper subHelper = new SubstationNBreakerHelper(sub);
-			subHelper.topoAnalysis();
+		PSSE_Sample_NB_TopoAnalysis_Sample.activateBusBranch(net);
 
-			AclfNetInfoHelper.outputSubstationAclfInfo(net, subName, false);
-		});
-
-		//AclfNetInfoHelper.outputSubstationAclfInfo(net, "9", false);
-
-		/* 
-		AclfBranch bus215Leg = net.getBranch("3WNDTR_205_215_208_3->Bus215(3)");
-		bus215Leg.setStatus(true);
-		Aclf3WBranch bus215Xfr = net.get3WXfr("Bus205", "Bus215", "Bus208", "3");
-		bus215Xfr.setStatus(true);
-		AclfNetInfoHelper.outputBusAclfDebugInfo(net, "Bus215", false);
-		*/
+		// Merge ZBR-connected buses (e.g. Bus151↔Bus201 SF6) onto retained buses before LF
+		new AclfNetZeroZBranchHelper(net).consolidate();
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		configureSampleSolver(algo);
+		//algo.setTolerance(0.001);
 		algo.loadflow();
+
+		printInfo(net);
 	}
+
+	// maintenance network due the open switches
+	private static void case2() throws InterpssException, IpssNumericException {
+		System.out.println("Case 2: maintenance network");
+
+		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+
+		net.setZeroZBranchThreshold(1.0e-3);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
+
+		// Merge ZBR-connected buses (e.g. Bus151↔Bus201 SF6) onto retained buses before LF
+		new AclfNetZeroZBranchHelper(net).consolidate();
+
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		configureSampleSolver(algo);
+		//algo.setTolerance(0.001);
+		algo.loadflow();
+
+		printInfo(net);
+	}
+
+	// activate the network first and then do the topo processing to create the maintenance network
+	private static void case3() throws InterpssException, IpssNumericException {
+		System.out.println("Case 3: activated the topo processing network");
+
+		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+
+		net.setZeroZBranchThreshold(1.0e-3);
+		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
+
+		PSSE_Sample_NB_TopoAnalysis_Sample.activateBusBranch(net);
+
+		new AclfNetTopoHelper(net).topoProcessing();
+
+		// Merge ZBR-connected buses (e.g. Bus151↔Bus201 SF6) onto retained buses before LF
+		new AclfNetZeroZBranchHelper(net).consolidate();
+
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		configureSampleSolver(algo);
+		//algo.setTolerance(0.001);
+		algo.loadflow();
+
+		printInfo(net);
+	}
+
+	private static void configureSampleSolver(LoadflowAlgorithm algo) {
+		algo.getLfAdjAlgo().getVoltAdjConfig().setDQ_dVThreshold(0.4);
+		algo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.05);
+		// sample_nb.raw SOLVER options: ACTAPS=0, AREAIN=0, PHSHFT=0,
+		// DCTAPS=1, SWSHNT=1.
+		algo.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(false);
+		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
+		algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(false);
+		algo.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
+	}
+
+	private static void initCondition(AclfNetwork aclfNet) {
+		System.out.println("MTDC lines: " + aclfNet.getHvdcLineMTList().size());
+		for (HvdcLineMT mt : aclfNet.getHvdcLineMTList()) {
+			mt.initLoadflow();
+		}
+
+		aclfNet.getSpecialBranchList().forEach(branch -> {
+			if (branch instanceof HvdcLine2TLCC) {
+				((HvdcLine2TLCC<?>) branch).initLoadflow();
+			}
+		});
+
+		aclfNet.calExternalPowerIntoNet();
+
+		System.out.println("Buses with |mismatch| > 0.1:");
+		for (AclfBus bus : aclfNet.getBusList()) {
+			if (bus.mismatch(AclfMethodType.NR).abs() > 1e-1)
+				System.out.println(bus.getId() + ", " + bus.mismatch(AclfMethodType.NR));
+		}
+	}
+
+	private static void printInfo(AclfNetwork net) {
+		// print number of active Buses and Branches
+		System.out.println("Number of active Buses: " + net.getBusList().stream().filter(bus -> bus.isActive()).count());
+		System.out.println("Number of active Branches: " + net.getBranchList().stream().filter(branch -> branch.isActive()).count());
+
+		// print swing bus P and Q
+		for (AclfBus bus : net.getBusList()) {
+			if (bus.isSwing()) {
+				System.out.println("Swing bus " + bus.getId() + " P,Q =" + bus.powerIntoNet());
+			}
+		}
+	}
+
 }
