@@ -27,7 +27,7 @@ Or run the `main` from the IDE with working directory `ipss.test.plugin.core/`
 | POW-1 | [`done/Ieee14DelimiterMismatchInvestigation`](done/Ieee14DelimiterMismatchInvestigation.java) | `ieee/IEEE_14_bus_delimiter.raw` | Infinity @ Bus5 | Closed: non-standard delimiters unsupported |
 | POW-2 | [`done/Ieee14CompletedMismatchInvestigation`](done/Ieee14CompletedMismatchInvestigation.java) | `parser/IEEE_14_bus_completed*.raw` | ≈3.01 @ Bus12/Bus14 | Closed: WATL 2T residual; MTDC fixture-invalid |
 | POW-3 | [`done/Ieee14ZipLoadMismatchInvestigation`](done/Ieee14ZipLoadMismatchInvestigation.java) | `ieee/IEEE_14_buses_zip_load.raw` | ≈0.105 @ Bus2 | Closed: V-dependent ZIP in mismatch; residual = ZIP(V)−PL |
-| POW-4 | [`TwoAreaTrf3wMismatchInvestigation`](TwoAreaTrf3wMismatchInvestigation.java) | `ieee/two_area_case_trf3w.raw` | ≈1.34 @ Bus9 / 3W star | Closed: 3W star as-read vs 2W baseline |
+| POW-4 | [`done/TwoAreaTrf3wMismatchInvestigation`](done/TwoAreaTrf3wMismatchInvestigation.java) | `ieee/two_area_case_trf3w.raw` | ≈1.34 @ Bus9 / 3W star | Closed: 3W star V/θ defaulted (not solved-as-read) |
 | POW-5 | [`done/Ieee24RawxMismatchInvestigation`](done/Ieee24RawxMismatchInvestigation.java) | `rawx/IEEE_24_bus_rev35.rawx` | ≈0.825 → ≈0.011 | Closed: RAWX `swshunt` import added |
 
 ---
@@ -49,9 +49,9 @@ Or run the `main` from the IDE with working directory `ipss.test.plugin.core/`
 - `AclfLoad.getLoad(|V|)` = CP + CI·|V| + CZ·|V|². At Bus2 (|V|=1.045): ZIP−PL ≈ 0.105 ≡ `|maxMis|`.
 - Fixture voltages are still const-PQ IEEE14; as-read residual is expected until the case is re-solved with ZIP. Keep off allowlist.
 
-### POW-4 — Two-area 3W ~1.3 pu
+### POW-4 — Two-area 3W ~1.3 pu (closed)
 - Sibling `two_area_case.raw` (no 3W) is small (~0.005).
-- Star bus `3WNDTR_4_9_8_1` is worst Q bus — check star V/θ and winding mapping.
+- Star bus `3WNDTR_4_9_8_1` is worst Q bus — star V/θ defaulted (not solved-as-read). Keep off allowlist.
 
 ### POW-5 — RAWX IEEE24 gap (closed)
 - RAW IEEE24 residual ~0.011; RAWX was ~0.825 because `PSSEJsonDirectParser` skipped `swshunt`.
@@ -63,5 +63,5 @@ Or run the `main` from the IDE with working directory `ipss.test.plugin.core/`
 ## Cross-case takeaways
 
 - Allowlist IEEE14/57/118 support “solved LF → small as-read mismatch”.
-- These five fixtures should not be treated as allowlist candidates until each investigation closes (fixture intent vs importer gap).
+- These five fixtures should not be treated as allowlist candidates until each investigation closes (fixture intent vs importer gap). All five POW cases are now closed; residuals are documented in `PSSE_PowSyBl_InitMismatch_Test#knownOutliersDocumentedResiduals`.
 - Prefer fixing importer gaps when the RAW twin is already near-solved; treat Infinity / ~3 pu cases as data or unsupported-equipment until proven otherwise.
