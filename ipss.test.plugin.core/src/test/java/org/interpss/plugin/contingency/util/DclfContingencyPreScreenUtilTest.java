@@ -129,7 +129,8 @@ public class DclfContingencyPreScreenUtilTest extends CorePluginTestSetup {
         List<ContingencyDefinition> definitions = createTexas2kMixedPreScreenDefinitions(net);
         assertEquals(100, definitions.size());
 
-        File file = new File("testData/psse/v36/Texas2k/2k_mixed_prescreen_contingencies_100.json");
+        File file = tempDir.resolve("2k_mixed_prescreen_contingencies_100.json")
+                .toFile();
         ContingencyFileUtil.exportContingencyDefinitionsToJson(file, definitions);
 
         long startNs = System.nanoTime();
