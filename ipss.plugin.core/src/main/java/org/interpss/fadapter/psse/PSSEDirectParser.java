@@ -18,8 +18,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -42,6 +40,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
@@ -66,13 +65,11 @@ import com.interpss.core.net.OriginalDataFormat;
 public class PSSEDirectParser {
     private static final Logger log = LoggerFactory.getLogger(PSSEDirectParser.class);
     private static final String BUS_ID_PREFIX = "Bus";
-    private static final Pattern THRSHZ_PATTERN = Pattern.compile(
-            "(?i)(?:^|[,\\s])THRSHZ\\s*=\\s*([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[Ee][+-]?\\d+)?)");
-
     private final int version;
     private final AclfNetworkBuilder builder;
     private final Map<String, Complex> rawType3BusVoltages = new HashMap<>();
     private double baseMva = 100.0;
+    private PsseLoadflowSolutionSettings solutionSettings;
 
     public PSSEDirectParser(int version) {
         this.version = version;
@@ -111,6 +108,11 @@ public class PSSEDirectParser {
     public AclfNetwork parseFromReader(BufferedReader reader) throws InterpssException {
         parseFromReaderInternal(reader);
         return builder.getNetwork();
+    }
+
+    /** Return the preserved v34+ system-wide load-flow solution profile. */
+    public PsseLoadflowSolutionSettings getSolutionSettings() {
+        return solutionSettings;
     }
 
     private void parseFromReaderInternal(BufferedReader reader) throws InterpssException {
@@ -184,22 +186,40 @@ public class PSSEDirectParser {
 
         // For v34+, skip system-wide data section
         if (version >= 34) {
+            /*
+             * Preserve the complete solved-case settings block, including
+             * THRSHZ. PSS/E uses THRSHZ when deciding whether an eligible
+             * non-transformer branch represents one electrical node. Using an
+             * unrelated default can leave artificial mismatches across RAW bus
+             * ties. PsseLoadflowSolutionSettings parses THRSHZ below and the
+             * validated value is applied to the imported network after the
+             * entire block has been read.
+             */
+            PsseLoadflowSolutionSettings.Builder settingsBuilder =
+                    PsseLoadflowSolutionSettings.builder(version);
             String line;
             while ((line = reader.readLine()) != null) {
                 if (PSSEDataRec.isEndRec(line)) break;
-                /*
-                 * THRSHZ is part of the solved case, not a global InterPSS
-                 * preference. PSS/E treats a non-transformer line with R=0 and
-                 * |X|<=THRSHZ as one electrical node. Dropping this value makes
-                 * direct parsing use an unrelated default and leaves artificial
-                 * large mismatches across RAW bus ties.
-                 */
-                Matcher threshold = THRSHZ_PATTERN.matcher(line);
-                if (threshold.find()) {
-                    builder.getNetwork().setZeroZBranchThreshold(
-                            Double.parseDouble(threshold.group(1)));
-                }
+                settingsBuilder.addLine(line);
             }
+            solutionSettings = settingsBuilder.build();
+            builder.getNetwork().getExtraInfo().put(
+                    com.interpss.core.algo.LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY,
+                    solutionSettings);
+            if (solutionSettings.general().thrshz() != null
+                    && Double.isFinite(solutionSettings.general().thrshz())
+                    && solutionSettings.general().thrshz() >= 0.0) {
+                builder.getNetwork().setZeroZBranchThreshold(
+                        solutionSettings.general().thrshz());
+            }
+            if (solutionSettings.general().pqbrak() != null
+                    && Double.isFinite(solutionSettings.general().pqbrak())
+                    && solutionSettings.general().pqbrak() >= 0.0) {
+                builder.getNetwork().getBusLoadLowVoltConfig().setVConstPMin(
+                        solutionSettings.general().pqbrak());
+            }
+        } else {
+            solutionSettings = null;
         }
     }
 
@@ -879,9 +899,9 @@ public class PSSEDirectParser {
         boolean isPhaseShifting = (ang1 != 0.0 || ang2 != 0.0 || ang3 != 0.0);
         // PSS/E 3W STAT: 0=out, 1=in, 2=winding2 out, 3=winding3 out, 4=winding1 out
         boolean inService = stat != 0;
-        boolean wind1OffLine = (stat == 4);
-        boolean wind2OffLine = (stat == 2);
-        boolean wind3OffLine = (stat == 3);
+        boolean wind1OffLine = !inService || stat == 4;
+        boolean wind2OffLine = !inService || stat == 2;
+        boolean wind3OffLine = !inService || stat == 3;
 
         Aclf3WBranch branch3W = builder.addXformer3W(fromBusId, toBusId, tertBusId, ckt,
                 z12PU, z23PU, z31PU,
@@ -950,6 +970,7 @@ public class PSSEDirectParser {
         double vswhi, vswlo, binit;
         int swreg;
         String shuntId = "1";
+        String remoteDeviceId;
 
         if (version >= 35) {
             // v35+: I, ID, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, NREG, RMPCT, RMIDNT, BINIT, [NAME for v36], S1, N1, B1, ...
@@ -960,6 +981,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(5, 1.0);
             vswlo = rec.getDouble(6, 1.0);
             swreg = rec.getInt(7, 0);
+            remoteDeviceId = rec.getString(10, "").trim();
             binit = rec.getDouble(11, 0.0);
         } else if (version >= 33) {
             // v33-34: I, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, RMPCT, RMIDNT, BINIT, N1, B1, ...
@@ -968,6 +990,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(4, 1.0);
             vswlo = rec.getDouble(5, 1.0);
             swreg = rec.getInt(6, 0);
+            remoteDeviceId = rec.getString(8, "").trim();
             binit = rec.getDouble(9, 0.0);
         } else {
             // v30: I, MODSW, VSWHI, VSWLO, SWREM, RMPCT, RMIDNT, BINIT, N1, B1, ...
@@ -976,20 +999,11 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(2, 1.0);
             vswlo = rec.getDouble(3, 1.0);
             swreg = rec.getInt(4, 0);
+            remoteDeviceId = rec.getString(6, "").trim();
             binit = rec.getDouble(7, 0.0);
         }
 
-        AclfAdjustControlMode mode;
-        // PSS/E MODSW=1 is discrete voltage control and MODSW=2 is
-        // continuous voltage control. The remaining supported control modes
-        // also switch discrete blocks; MODSW=0 leaves the shunt fixed.
-        if (modsw == 2) {
-            mode = AclfAdjustControlMode.CONTINUOUS;
-        } else if (modsw >= 1 && modsw <= 6) {
-            mode = AclfAdjustControlMode.DISCRETE;
-        } else {
-            mode = AclfAdjustControlMode.FIXED;
-        }
+        AclfAdjustControlMode mode = switchedShuntControlMode(modsw);
 
         String remoteBusId = (swreg > 0 && swreg != busNum) ? BUS_ID_PREFIX + swreg : null;
 
@@ -1021,9 +1035,30 @@ public class PSSEDirectParser {
 
         double bInitPU = binit / baseMva;
 
-        applyNameTagMetadata(rec, builder.addSwitchedShunt(busId, shuntId, stat == 1,
+        SwitchedShunt switchedShunt = builder.addSwitchedShunt(busId, shuntId, stat == 1,
                 mode, AclfAdjustControlType.RANGE_CONTROL,
-                bInitPU, vswhi, vswlo, remoteBusId, blocks));
+                bInitPU, vswhi, vswlo, remoteBusId, blocks);
+        if (modsw == 6 && switchedShunt != null) {
+            // PSS/E MODSW=6 regulates the reactive output of the named FACTS
+            // shunt element. Preserve that association for the coordinated
+            // outer controller; VSWHI/VSWLO are fractions of FACTS Q range,
+            // not bus-voltage limits.
+            switchedShunt.setRemoteControlGroupId(remoteDeviceId);
+        }
+        applyNameTagMetadata(rec, switchedShunt);
+    }
+
+    static AclfAdjustControlMode switchedShuntControlMode(int modsw) {
+        // Only MODSW=1/2 regulate voltage. MODSW=3..6 are supervisory
+        // controls for another device's reactive output (plant, VSC dc,
+        // switched shunt, or FACTS shunt element). Mode 6 is represented by
+        // the named FACTS-output outer control; preserve the solved BINIT for
+        // the other unsupported modes. Treating their VSWHI/VSWLO fields as a
+        // voltage band creates a conflicting voltage controller.
+        if (modsw == 1) return AclfAdjustControlMode.DISCRETE;
+        if (modsw == 2) return AclfAdjustControlMode.CONTINUOUS;
+        if (modsw == 6) return AclfAdjustControlMode.DISCRETE;
+        return AclfAdjustControlMode.FIXED;
     }
 
     private static PSSEDataRec firstNameTagMetadata(PSSEDataRec... records) {
@@ -1066,7 +1101,12 @@ public class PSSEDirectParser {
         if (Math.abs(setvl) < 1.0E-3)
             controlMode = HvdcControlMode.BLOCKED;
 
-        // Line 2: IPR, NBR, ANMXR, ANMNR, RCR, XCR, EBASR, TRR, TAPR, TMXR, TMNR, STPR, ICR, IFR, ITR, IDR, XCAPR
+        // v30-33 place XCAP at field 16; v34 appends NDR after XCAP. In
+        // v35+, NDR moves before IFR and shifts XCAP to field 17.
+        int xcapIndex = version >= 35 ? 17 : 16;
+
+        // Line 2 (v35+): IPR, NBR, ANMXR, ANMNR, RCR, XCR, EBASR, TRR, TAPR,
+        // TMXR, TMNR, STPR, ICR, NDR, IFR, ITR, IDR, XCAPR
         int recBusNum = line2.getInt(0);
         int nbr = line2.getInt(1);
         double anmxr = line2.getDouble(2, 0.0);
@@ -1079,9 +1119,10 @@ public class PSSEDirectParser {
         double tmxr = line2.getDouble(9, 1.5);
         double tmnr = line2.getDouble(10, 0.51);
         double stpr = line2.getDouble(11, 0.00625);
-        double xcapr = line2.getDouble(16, 0.0);
+        double xcapr = line2.getDouble(xcapIndex, 0.0);
 
-        // Line 3: IPI, NBI, ANMXI, ANMNI, RCI, XCI, EBASI, TRI, TAPI, TMXI, TMNI, STPI, ICI, IFI, ITI, IDI, XCAPI
+        // Line 3 (v35+): IPI, NBI, ANMXI, ANMNI, RCI, XCI, EBASI, TRI, TAPI,
+        // TMXI, TMNI, STPI, ICI, NDI, IFI, ITI, IDI, XCAPI
         int invBusNum = line3.getInt(0);
         int nbi = line3.getInt(1);
         double anmxi = line3.getDouble(2, 0.0);
@@ -1094,7 +1135,7 @@ public class PSSEDirectParser {
         double tmxi = line3.getDouble(9, 1.5);
         double tmni = line3.getDouble(10, 0.51);
         double stpi = line3.getDouble(11, 0.00625);
-        double xcapi = line3.getDouble(16, 0.0);
+        double xcapi = line3.getDouble(xcapIndex, 0.0);
 
         String fromBusId = BUS_ID_PREFIX + recBusNum;
         String toBusId = BUS_ID_PREFIX + invBusNum;
@@ -1150,7 +1191,11 @@ public class PSSEDirectParser {
         int mode1 = line2.getInt(2, 1);
         double dcSet1 = line2.getDouble(3, 0.0);
         double acSet1 = line2.getDouble(4, 1.0);
+		double lossA1 = line2.getDouble(5, 0.0);
+		double lossB1 = line2.getDouble(6, 0.0);
+		double minLoss1 = line2.getDouble(7, 0.0);
         double smax1 = line2.getDouble(8, 0.0);
+		double imax1 = line2.getDouble(9, 0.0);
         double maxQ1 = line2.getDouble(11, 9999.0);
         double minQ1 = line2.getDouble(12, -9999.0);
         int remot1 = line2.getInt(13, 0);
@@ -1161,7 +1206,11 @@ public class PSSEDirectParser {
         int mode2 = line3.getInt(2, 1);
         double dcSet2 = line3.getDouble(3, 0.0);
         double acSet2 = line3.getDouble(4, 1.0);
+		double lossA2 = line3.getDouble(5, 0.0);
+		double lossB2 = line3.getDouble(6, 0.0);
+		double minLoss2 = line3.getDouble(7, 0.0);
         double smax2 = line3.getDouble(8, 0.0);
+		double imax2 = line3.getDouble(9, 0.0);
         double maxQ2 = line3.getDouble(11, 9999.0);
         double minQ2 = line3.getDouble(12, -9999.0);
         int remot2 = line3.getInt(13, 0);
@@ -1188,6 +1237,8 @@ public class PSSEDirectParser {
             configVSCConverter(recConv, recBusNum,
                     isConv1Rec ? type1 : type2, isConv1Rec ? mode1 : mode2,
                     isConv1Rec ? dcSet1 : dcSet2, isConv1Rec ? acSet1 : acSet2,
+					isConv1Rec ? lossA1 : lossA2, isConv1Rec ? lossB1 : lossB2,
+					isConv1Rec ? minLoss1 : minLoss2, isConv1Rec ? imax1 : imax2,
                     isConv1Rec ? smax1 : smax2,
                     isConv1Rec ? maxQ1 : maxQ2, isConv1Rec ? minQ1 : minQ2,
                     isConv1Rec ? remot1 : remot2, isConv1Rec ? rmpct1 : rmpct2);
@@ -1197,6 +1248,8 @@ public class PSSEDirectParser {
             configVSCConverter(invConv, invBusNum,
                     isConv1Rec ? type2 : type1, isConv1Rec ? mode2 : mode1,
                     isConv1Rec ? dcSet2 : dcSet1, isConv1Rec ? acSet2 : acSet1,
+					isConv1Rec ? lossA2 : lossA1, isConv1Rec ? lossB2 : lossB1,
+					isConv1Rec ? minLoss2 : minLoss1, isConv1Rec ? imax2 : imax1,
                     isConv1Rec ? smax2 : smax1,
                     isConv1Rec ? maxQ2 : maxQ1, isConv1Rec ? minQ2 : minQ1,
                     isConv1Rec ? remot2 : remot1, isConv1Rec ? rmpct2 : rmpct1);
@@ -1207,6 +1260,8 @@ public class PSSEDirectParser {
 
     private void configVSCConverter(VSCConverter converter, int busNum,
                                     int type, int mode, double dcSet, double acSet,
+									double lossA, double lossB, double minimumLoss,
+									double maximumAcCurrent,
                                     double smax, double maxQ, double minQ,
                                     int remoteBusNum, double rmpct) {
         HvdcControlMode dcCtrl = type == 0 ? HvdcControlMode.BLOCKED :
@@ -1218,6 +1273,10 @@ public class PSSEDirectParser {
         // dc set points are stored as positive values; the converter type defines the direction
         builder.setVSCConverter(converter, BUS_ID_PREFIX + busNum, dcCtrl, Math.abs(dcSet),
                 acCtrl, acSet, smax, maxQ, minQ, remoteBusId, rmpct);
+		converter.setLossA(lossA);
+		converter.setLossB(lossB);
+		converter.setMinimumLoss(minimumLoss);
+		converter.setAcCurrentRating(maximumAcCurrent);
     }
 
     // ==================== FACTS Device / SVC ====================
