@@ -17,8 +17,8 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 
 	private static final String DIR = "testData/psse/powsybl/ieee/";
 
-	private static AclfNetwork parse(String file, int version) throws Exception {
-		return new PSSEDirectParser(version).parse(DIR + file);
+	private static AclfNetwork parse(String file) throws Exception {
+		return new PSSEDirectParser().parse(DIR + file);
 	}
 
 	private static void assertSmoke(AclfNetwork net) {
@@ -38,7 +38,7 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee14_v33() throws Exception {
-		AclfNetwork net = parse("IEEE_14_bus.raw", 33);
+		AclfNetwork net = parse("IEEE_14_bus.raw");
 		assertSmoke(net);
 		assertBusCount(net, 14);
 		assertLf(net);
@@ -46,7 +46,7 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee14_rev35() throws Exception {
-		AclfNetwork net = parse("IEEE_14_bus_rev35.raw", 35);
+		AclfNetwork net = parse("IEEE_14_bus_rev35.raw");
 		assertSmoke(net);
 		assertBusCount(net, 14);
 		assertLf(net);
@@ -54,39 +54,39 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee14_delimiter() throws Exception {
-		assertSmoke(parse("IEEE_14_bus_delimiter.raw", 33));
+		assertSmoke(parse("IEEE_14_bus_delimiter.raw"));
 	}
 
 	@Test
 	public void ieee14_zipLoad() throws Exception {
-		assertSmoke(parse("IEEE_14_buses_zip_load.raw", 33));
+		assertSmoke(parse("IEEE_14_buses_zip_load.raw"));
 	}
 
 	@Test
 	public void ieee14_isolatedBuses() throws Exception {
-		AclfNetwork net = parse("IEEE_14_isolated_buses.raw", 33);
+		AclfNetwork net = parse("IEEE_14_isolated_buses.raw");
 		assertTrue(net.getNoBus() >= 14);
 	}
 
 	@Test
 	public void ieee24_v33() throws Exception {
-		assertSmoke(parse("IEEE_24_bus.raw", 33));
+		assertSmoke(parse("IEEE_24_bus.raw"));
 	}
 
 	@Test
 	public void ieee24_rev35() throws Exception {
-		assertSmoke(parse("IEEE_24_bus_rev35.raw", 35));
+		assertSmoke(parse("IEEE_24_bus_rev35.raw"));
 	}
 
 	@Test
 	public void ieee30() throws Exception {
 		// Smoke only — PowSyBl IEEE30 does not always converge under InterPSS NR defaults
-		assertSmoke(parse("IEEE_30_bus.raw", 32));
+		assertSmoke(parse("IEEE_30_bus.raw"));
 	}
 
 	@Test
 	public void ieee57() throws Exception {
-		AclfNetwork net = parse("IEEE_57_bus.raw", 33);
+		AclfNetwork net = parse("IEEE_57_bus.raw");
 		assertSmoke(net);
 		assertBusCount(net, 57);
 		assertLf(net);
@@ -94,7 +94,7 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee118() throws Exception {
-		AclfNetwork net = parse("IEEE_118_bus.raw", 33);
+		AclfNetwork net = parse("IEEE_118_bus.raw");
 		assertSmoke(net);
 		assertBusCount(net, 118);
 		assertLf(net);
@@ -102,11 +102,11 @@ public class PSSE_PowSyBl_IEEE_Smoke_Test extends CorePluginTestSetup {
 
 	@Test
 	public void twoArea() throws Exception {
-		assertSmoke(parse("two_area_case.raw", 33));
+		assertSmoke(parse("two_area_case.raw"));
 	}
 
 	@Test
 	public void twoAreaTrf3w() throws Exception {
-		assertSmoke(parse("two_area_case_trf3w.raw", 33));
+		assertSmoke(parse("two_area_case_trf3w.raw"));
 	}
 }

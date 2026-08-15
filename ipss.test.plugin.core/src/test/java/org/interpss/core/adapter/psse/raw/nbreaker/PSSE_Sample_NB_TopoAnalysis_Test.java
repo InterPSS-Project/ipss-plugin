@@ -39,7 +39,7 @@ public class PSSE_Sample_NB_TopoAnalysis_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testBasecaseTopoAnalysisSetsIntFlags() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		net.getSubstationMap().forEach((subName, sub) -> {
 			new SubstationNBreakerHelper(sub).topoAnalysis();
@@ -81,7 +81,7 @@ public class PSSE_Sample_NB_TopoAnalysis_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testTopoProcessingTurnsOffActivatedOpenSwitchEquipment() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		activateBusBranch(net);
 		for (String busId : ACTIVATE_BUS_IDS) {

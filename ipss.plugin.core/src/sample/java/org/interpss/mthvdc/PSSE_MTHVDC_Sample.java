@@ -22,7 +22,6 @@ public class PSSE_MTHVDC_Sample {
 	public static void main(String args[]) throws Exception {
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v30/psse_mthvdc.raw")
 				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30)
 				.load()
 				.getImportedObj();
 

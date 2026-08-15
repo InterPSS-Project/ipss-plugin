@@ -16,8 +16,7 @@ public class GSFParallel_ACTIVSg25kBusSample {
 		
 		// load the test data V33
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();	
 		

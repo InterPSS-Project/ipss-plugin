@@ -15,8 +15,6 @@ import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -43,7 +41,6 @@ public class OpenEI100k_CASample {
     public static void main(String args[]) throws Exception {
         AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/psse/openEI/Base_Eastern_Interconnect_515GW.RAW")
 				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.psseVersion(PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();	
         

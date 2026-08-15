@@ -364,10 +364,10 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
 	 * Create the test network from the PSSE RAW file
 	 */
 	private AclfNetwork createTestCase() throws Exception {
-		return new PSSEDirectParser(30).parse("testData/psse/v30/PSSE_5Bus_Test_switchShunt_locked.raw");
+		return new PSSEDirectParser().parse("testData/psse/v30/PSSE_5Bus_Test_switchShunt_locked.raw");
 	}
 
     private AclfNetwork createTestCaseContinuousV35() throws Exception {
-		return new PSSEDirectParser(35).parse("testData/psse/v35/PSSE_5Bus_Test_switchShunt_continuous_v35.raw");
+		return new PSSEDirectParser().parse("testData/psse/v35/PSSE_5Bus_Test_switchShunt_continuous_v35.raw");
 	}
 }

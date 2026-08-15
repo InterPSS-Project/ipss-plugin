@@ -22,8 +22,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		IpssCorePlugin.init();
 		
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v30/Texas2k/Texas2k_series24_case1_2016summerPeak_v30.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 	  
@@ -58,8 +57,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		IpssCorePlugin.init();
 		
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v34/Texas2k/Texas2k_series24_case1_2016summerPeak_noSub_v34.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_34) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 	  
@@ -94,8 +92,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		IpssCorePlugin.init();
 		
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v35/Texas2k/Texas2k_series24_case1_2016summerPeak_v35.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_35) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 		
@@ -132,8 +129,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 		IpssCorePlugin.init();
 		
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 		
@@ -167,7 +163,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_v33() throws InterpssException{
 		IpssCorePlugin.init();
 
-		AclfNetwork net = new PSSEDirectParser(33).parse("testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.raw");
 	    
 	  
 	    LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -187,7 +183,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_summerpeak_v34() throws InterpssException{
 		IpssCorePlugin.init();
 
-		AclfNetwork net = new PSSEDirectParser(34).parse("testData/psse/v34/Texas2k/Texas2k_series24_case3_2024summerpeak_noSub.RAW");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v34/Texas2k/Texas2k_series24_case3_2024summerpeak_noSub.RAW");
 	    
 	  
 	    LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -206,7 +202,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_lowload_v34() throws InterpssException{
 		IpssCorePlugin.init();
 
-		AclfNetwork net = new PSSEDirectParser(34).parse("testData/psse/v34/Texas2k/Texas2k_series24_case4_2024lowload.RAW");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v34/Texas2k/Texas2k_series24_case4_2024lowload.RAW");
 	    
 	  
 	    LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -225,7 +221,7 @@ public class PSSE_ACTIVSg2000Bus_Test  extends CorePluginTestSetup {
 	public void test_ACTIVSg2000_highrenewables_v34() throws InterpssException{
 		IpssCorePlugin.init();
 
-		AclfNetwork net = new PSSEDirectParser(34).parse("testData/psse/v34/Texas2k/Texas2k_series24_case5_2024highrenewables.RAW");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v34/Texas2k/Texas2k_series24_case5_2024highrenewables.RAW");
 	    
 	  
 	    LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);

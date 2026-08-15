@@ -36,7 +36,6 @@ public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
 	public static AclfNetwork createTestCaseNetwork() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet(TEXAS2K_RAW)
 				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
 				.load()
 				.getImportedObj();
 

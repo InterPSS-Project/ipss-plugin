@@ -20,10 +20,10 @@ import investigation.powsybl.PowSyBlMismatchInvSupport;
 public class Ieee14ZipLoadMismatchInvestigation {
 
 	public static void main(String[] args) throws InterpssException {
-		AclfNetwork baseline = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_bus.raw", 33);
+		AclfNetwork baseline = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_bus.raw");
 		PowSyBlMismatchInvSupport.printAsReadMismatch(baseline, "Baseline IEEE_14_bus.raw");
 
-		AclfNetwork net = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_buses_zip_load.raw", 33);
+		AclfNetwork net = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_buses_zip_load.raw");
 		Mismatch m = PowSyBlMismatchInvSupport.printAsReadMismatch(net, "IEEE_14_buses_zip_load.raw");
 		PowSyBlMismatchInvSupport.printTopMismatchBuses(net, 8);
 

@@ -234,7 +234,6 @@ public class BranchRatingFileUtilTest extends CorePluginTestSetup {
     private static AclfNetwork loadLabelledTexas2k() throws Exception {
         return IpssAdapter.importAclfNet("testData/adpter/psse/v36/Texas2k_series24_case1_2016summerPeak_v36_labeled.RAW")
                 .setFormat(IpssAdapter.FileFormat.PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
                 .load()
                 .getImportedObj();
     }
