@@ -17,9 +17,6 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.fadapter.psse.PSSEJsonDirectParser;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.util.QAUtil;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -173,10 +170,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV34DgenLoadMapping() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v34/ieee9_dgen_v34.raw")
-				.setFormat(FileFormat.PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v34/ieee9_dgen_v34.raw");
 
 		AclfBus bus5 = net.getBus("Bus5");
 		assertNotNull(bus5);
@@ -503,11 +497,8 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
-	public void testDslAutoDetectRev_withoutSetPsseVersion() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/sample_v36.raw")
-				.setFormat(FileFormat.PSSE)
-				.load()
-				.getImportedObj();
+	public void testAutoDetectRev_viaNoArgParser() throws Exception {
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v36/sample_v36.raw");
 		assertNotNull(net);
 		assertNull(net.getBus("Bus0"));
 		assertTrue(net.getNoActiveBus() > 20);

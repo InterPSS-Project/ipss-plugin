@@ -1,8 +1,5 @@
 package org.interpss.result;
  
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
-
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.result.AclfResultAdapter;
 import org.interpss.plugin.result.AclfResultContainer;
 import org.interpss.util.FileUtil;
@@ -11,15 +8,13 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
+import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 public class IEEE14Bus_Result_Sample { 
 	static String filePath = "data/ieee/ieee14.ieee";
 	
 	public static void main(String args[]) throws Exception {
 		// load the test data V33
-		AclfNetwork netV33 = IpssAdapter.importAclfNet(filePath)
-				.setFormat(IEEECommonFormat)
-				.load()
-				.getImportedObj();
+		AclfNetwork netV33 = new IeeeCDFDirectParser().parse(filePath);
 		
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(netV33);
 	  	algo.loadflow();

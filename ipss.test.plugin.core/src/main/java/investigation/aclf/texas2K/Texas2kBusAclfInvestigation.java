@@ -1,8 +1,5 @@
 package investigation.aclf.texas2K;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.QAUtil;
 
 import com.interpss.common.exp.InterpssException;
@@ -12,16 +9,14 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfNetInfoHelper;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class Texas2kBusAclfInvestigation {
 	//static String RootDir = "";
 	static String RootDir = "ipss.test.plugin.core/";
 	
 	public static void main(String args[]) throws InterpssException {
 		
-		AclfNetwork net = IpssAdapter.importAclfNet(RootDir + "testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
-				.setFormat(PSSE) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse(RootDir + "testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW");
 		
 		AclfNetwork netPsse = net.jsonCopy();
 		

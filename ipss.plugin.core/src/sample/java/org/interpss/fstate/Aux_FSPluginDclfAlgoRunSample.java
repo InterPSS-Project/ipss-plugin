@@ -3,8 +3,6 @@ package org.interpss.fstate;
 import java.nio.file.Path;
 
 import org.interpss.plugin.fstate.aux_fmt.Aux2PlanMaintainAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.algo.fstate.FStateDclfAlgorithm;
 import com.interpss.algo.fstate.datatype.FStateAlgoConfig;
 import com.interpss.algo.fstate.plan.model.PlanMaintainModel;

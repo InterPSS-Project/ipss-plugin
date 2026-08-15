@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.aclf.config.psse.PSSELfAdjControlConfig;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -18,15 +17,12 @@ import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class SwitchedShuntGControlTest extends CorePluginTestSetup {	
 	@Test
 	public void testBaseCase() throws Exception {
 		// load the test data
-		AclfNetwork net = IpssAdapter
-				.importAclfNet(
-						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
-				.setFormat(IpssAdapter.FileFormat.PSSE).load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw");
 		
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
@@ -62,11 +58,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 	@Test
 	public void testLockAll() throws Exception {
 		// load the test data
-		AclfNetwork net = IpssAdapter
-				.importAclfNet(
-						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
-				.setFormat(IpssAdapter.FileFormat.PSSE).load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw");
 		
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
@@ -105,11 +97,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 	@Test
 	public void testContinuousOnly() throws Exception {
 		// load the test data
-		AclfNetwork net = IpssAdapter
-				.importAclfNet(
-						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
-				.setFormat(IpssAdapter.FileFormat.PSSE).load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw");
 		
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");
@@ -174,11 +162,7 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 	@Test
 	public void testEnableAll() throws Exception {
 		// load the test data
-		AclfNetwork net = IpssAdapter
-				.importAclfNet(
-						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
-				.setFormat(IpssAdapter.FileFormat.PSSE).load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw");
 		
 		// Bus4 is a switched shunt bus
 		AclfBus bus4 = net.getBus("Bus4");

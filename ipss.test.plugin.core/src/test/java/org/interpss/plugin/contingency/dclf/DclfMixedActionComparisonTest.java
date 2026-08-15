@@ -3,7 +3,6 @@ package org.interpss.plugin.contingency.dclf;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -23,7 +22,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +36,7 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
     private static final double MW_TOLERANCE = 1.0e-4;
     private static final int CLOSE_TARGET_COUNT = 20;
@@ -1039,10 +1038,7 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
             return new CaseSpec(
                     name,
                     path,
-                    () -> IpssAdapter.importAclfNet(path.toString())
-                            .setFormat(PSSE)
-                            .load()
-                            .getImportedObj());
+                    () -> new PSSEDirectParser().parse(path.toString()));
         }
 
         AclfNetwork load() throws Exception {
