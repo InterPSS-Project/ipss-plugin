@@ -239,8 +239,8 @@ public class BranchRatingFileUtilTest extends CorePluginTestSetup {
                 .getImportedObj();
     }
 
-    private static Path labelledTexas2kRatingFixturePath(String fileName) throws IOException {
-        Path dir = Path.of("testData", "psse", "contingency", "branch-ratings");
+    private Path labelledTexas2kRatingFixturePath(String fileName) throws IOException {
+        Path dir = tempDir.resolve("branch-ratings");
         Files.createDirectories(dir);
         return dir.resolve(fileName);
     }
