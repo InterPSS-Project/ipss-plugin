@@ -163,16 +163,16 @@ public class IpssInternalFormat_in {
              qg=0.0, pl=0.0, ql=0.0;
       	while (st.hasMoreTokens()) {
         	id    = st.nextToken().trim();
-        	vBase = new Double(st.nextToken()).doubleValue();
-        	vAct  = new Double(st.nextToken()).doubleValue();
-        	ang   = new Double(st.nextToken()).doubleValue();
-        	pg    = new Double(st.nextToken()).doubleValue();
-        	qg    = new Double(st.nextToken()).doubleValue();
-        	pl    = new Double(st.nextToken()).doubleValue();
+        	vBase = Double.parseDouble(st.nextToken());
+        	vAct  = Double.parseDouble(st.nextToken());
+        	ang   = Double.parseDouble(st.nextToken());
+        	pg    = Double.parseDouble(st.nextToken());
+        	qg    = Double.parseDouble(st.nextToken());
+        	pl    = Double.parseDouble(st.nextToken());
         	if (!st.hasMoreTokens()) {
         		System.out.println("--->" + str);
         	}
-        	ql    = new Double(st.nextToken()).doubleValue();
+        	ql    = Double.parseDouble(st.nextToken());
         	if (st.hasMoreTokens()) {
 				throw new InterpssRuntimeException("AclfDataFile.loadBusInfo, BusInfo str wrong");
 			}
@@ -216,13 +216,13 @@ public class IpssInternalFormat_in {
              qg=0.0, pl=0.0, ql=0.0;
       	while (st.hasMoreTokens()) {
         	id    = st.nextToken().trim();
-        	vBase = 10000; //new Double(st.nextToken()).doubleValue();
-        	vAct  = new Double(st.nextToken()).doubleValue();
-        	ang   = new Double(st.nextToken()).doubleValue();
-        	pg    = new Double(st.nextToken()).doubleValue();
-        	qg    = new Double(st.nextToken()).doubleValue();
-        	pl    = new Double(st.nextToken()).doubleValue();
-        	ql    = new Double(st.nextToken()).doubleValue();
+        	vBase = 10000; //Double.parseDouble(st.nextToken());
+        	vAct  = Double.parseDouble(st.nextToken());
+        	ang   = Double.parseDouble(st.nextToken());
+        	pg    = Double.parseDouble(st.nextToken());
+        	qg    = Double.parseDouble(st.nextToken());
+        	pl    = Double.parseDouble(st.nextToken());
+        	ql    = Double.parseDouble(st.nextToken());
         	if (st.hasMoreTokens()) {
 				throw new InterpssException("AclfDataFile.loadBusInfoNoBaseV, BusInfo str wrong");
 			}
@@ -288,9 +288,9 @@ public class IpssInternalFormat_in {
     	double v=0.0, qmax=0.0, qmin=0.0;
       	while (st.hasMoreTokens()) {
         	id   = st.nextToken().trim();
-        	v    = new Double(st.nextToken()).doubleValue();
-        	qmin = new Double(st.nextToken()).doubleValue();
-        	qmax = new Double(st.nextToken()).doubleValue();
+        	v    = Double.parseDouble(st.nextToken());
+        	qmin = Double.parseDouble(st.nextToken());
+        	qmax = Double.parseDouble(st.nextToken());
         	if (st.hasMoreTokens()) {
 				throw new InterpssRuntimeException("AclfDataFile.loadPVBusInfo_1, PVBusInfo str wrong");
 			}
@@ -322,7 +322,7 @@ public class IpssInternalFormat_in {
 		double b=0.0;
       	while (st.hasMoreTokens()) {
         	id   = st.nextToken().trim();
-        	b    = new Double(st.nextToken()).doubleValue();
+        	b    = Double.parseDouble(st.nextToken());
         	if (st.hasMoreTokens()) {
 				throw new InterpssRuntimeException("AclfDataFile.loadCapacitorBusInfo_1, CapacitorBusInfo str wrong");
 			}
@@ -357,9 +357,9 @@ public class IpssInternalFormat_in {
       	while (st.hasMoreTokens()) {
         	fid = st.nextToken().trim();
         	tid = st.nextToken().trim();
-        	r   = new Double(st.nextToken()).doubleValue();
-        	x   = new Double(st.nextToken()).doubleValue();
-        	b   = new Double(st.nextToken()).doubleValue();
+        	r   = Double.parseDouble(st.nextToken());
+        	x   = Double.parseDouble(st.nextToken());
+        	b   = Double.parseDouble(st.nextToken());
         	if (st.hasMoreTokens()) {
 				throw new InterpssRuntimeException("AclfDataFile.loadBranchInfo_1, BranchInfo str wrong");
 			}
@@ -387,7 +387,7 @@ public class IpssInternalFormat_in {
         	fid = st.nextToken().trim();
         	tid = st.nextToken().trim();
         	cirNo = st.nextToken();
-        	t     = new Double(st.nextToken()).doubleValue();
+        	t     = Double.parseDouble(st.nextToken());
         	if (st.hasMoreTokens()) {
 				throw new InterpssRuntimeException("AclfDataFile.loadXformerInfo_1, XformerInfo str wrong");
 			}
