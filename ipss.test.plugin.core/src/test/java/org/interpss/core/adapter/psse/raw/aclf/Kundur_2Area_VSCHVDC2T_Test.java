@@ -12,9 +12,12 @@ import org.junit.jupiter.api.Test;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.BusBranchControlType;
+import com.interpss.core.aclf.adj.RemoteQBus;
 import com.interpss.core.aclf.hvdc.HvdcLine2TVSC;
 import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.config.RemoteQControlMode;
 
 public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	
@@ -87,11 +90,14 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
   		//System.out.println("Rec Power: " + ComplexFunc.toStr(vscHVDC.getRecConverter().powerIntoConverter()));
   		//System.out.println("Inv Power: " + ComplexFunc.toStr(vscHVDC.getInvConverter().powerIntoConverter()));
-		//TODO: this results is different from the PSS/E results, because the converter loss is not modeled in InterPSS yet
-  		//Rec Power: 2.0900   + j 0.68695
-  		//Inv Power: -2.086 + j 0.6297
-  		assertTrue(NumericUtil.equals(vscHVDC.getRecConverter().powerIntoConverter(), new Complex(2.0900, 0.68695), 0.0001));
-  		assertTrue(NumericUtil.equals(vscHVDC.getInvConverter().powerIntoConverter(), new Complex(-2.086, 0.6297), 0.001));
+		assertTrue(NumericUtil.equals(vscHVDC.getRecConverter().powerIntoConverter(), new Complex(2.0900, 0.68695), 0.0001));
+		assertEquals(-2.08293,
+				vscHVDC.getInvConverter().powerIntoConverter().getReal(), 0.001);
+		double currentKa = vscHVDC.getIDcKa();
+		double totalLossMw = vscHVDC.getRecConverter().getConverterLossMw()
+				+ currentKa * currentKa * vscHVDC.getRdc(UnitType.Ohm)
+				+ vscHVDC.getInvConverter().getConverterLossMw();
+		assertEquals(209.0 - 208.293, totalLossMw, 0.001);
 	}
 	
 	@Test
@@ -101,12 +107,29 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void testV35ParsesVscConverterLossAndCurrentData() throws Exception {
+		AclfNetwork net = createBasicTestCaseV35();
+		@SuppressWarnings("unchecked")
+		HvdcLine2TVSC<AclfBus> vsc =
+				(HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
+
+		assertEquals(100.0, vsc.getRecConverter().getLossA(), 1.0E-9);
+		assertEquals(0.1, vsc.getRecConverter().getLossB(), 1.0E-9);
+		assertEquals(50.0, vsc.getRecConverter().getMinimumLoss(), 1.0E-9);
+		assertEquals(1200.0, vsc.getRecConverter().getAcCurrentRating(), 1.0E-9);
+		assertEquals(90.0, vsc.getInvConverter().getLossA(), 1.0E-9);
+		assertEquals(0.15, vsc.getInvConverter().getLossB(), 1.0E-9);
+		assertEquals(40.0, vsc.getInvConverter().getMinimumLoss(), 1.0E-9);
+		assertEquals(1200.0, vsc.getInvConverter().getAcCurrentRating(), 1.0E-9);
+	}
+
+	@Test
 	public void test_VSCHVDC_DataInput_RemoteBus() throws Exception {
 		AclfNetwork net = createTestCaseV35();
 		assertTrue(net.getSpecialBranchList().size()==1);
 		
 		assertTrue(!net.getBus("Bus7").isGen());
-		assertTrue(!net.getBus("Bus9").isGen());
+		assertTrue(net.getBus("Bus9").isGenPQ());
 		
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
 		//System.out.println(vscHVDC.getId());
@@ -121,7 +144,36 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 		assertTrue(vscInv.getRemoteControlBusId().equals("Bus10"));
 		assertTrue(vscInv.getRemoteControlPercent() == 100.0);
 		assertEquals(0.99, vscInv.getAcSetPoint(), 0.0001);
+		RemoteQBus remoteControl = net.getBus("Bus9").getRemoteQBus();
+		assertTrue(remoteControl != null);
+		assertEquals(BusBranchControlType.VSC_RE_BUS_VOLT_CTRL,
+				remoteControl.getRemoteQControlType());
+		assertEquals("Bus10", remoteControl.getRemoteBus().getId());
+		assertEquals(0.99, remoteControl.getVSpecified(UnitType.PU), 0.0001);
+		assertEquals(1.5, remoteControl.getQLimit(UnitType.PU).getMax(), 0.0001);
+		assertEquals(-1.4, remoteControl.getQLimit(UnitType.PU).getMin(), 0.0001);
+		assertEquals(100.0, remoteControl.getRemoteControlPercentage(), 0.0001);
 
+	}
+
+	@Test
+	public void test_VSCHVDC_RemoteBus_InnerPqvLoadflow() throws Exception {
+		AclfNetwork net = createTestCaseV35();
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.setMaxIterations(50);
+		algo.setTolerance(1.0E-6);
+
+		assertEquals(RemoteQControlMode.INNER_PQV,
+				algo.getLfAdjAlgo().getRemoteQControlMode());
+		assertTrue(algo.loadflow());
+
+		AclfBus converterBus = net.getBus("Bus9");
+		RemoteQBus remoteControl = converterBus.getRemoteQBus();
+		assertTrue(converterBus.isGenPQ());
+		assertEquals(remoteControl.getVSpecified(UnitType.PU),
+				net.getBus("Bus10").getVoltageMag(), 1.0E-6);
+		assertTrue(!remoteControl.getQLimit(UnitType.PU)
+				.isViolated(converterBus.getGenQ()));
 	}
 	
 	private void test_VSCHVDC_Data(AclfNetwork net) {
