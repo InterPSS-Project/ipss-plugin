@@ -48,6 +48,7 @@ import org.interpss.core.adapter.psse.compare.PSSE_ACTIVSg25kObjectCompareTest;
 import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_BusSet_Test;
 import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_DSL_Test;
 import org.interpss.core.adapter.psse.json.aclf.PSSEJSon_IEEE9Bus_FAdapter_Test;
+import org.interpss.core.adapter.psse.json.aclf.powsybl.PSSE_PowSyBl_RAWX_Smoke_Test;
 import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg2000Bus_Test;
 import org.interpss.core.adapter.psse.largeNet.PSSE_ACTIVSg25kBus_Test;
 import org.interpss.core.adapter.psse.raw.aclf.CR_UserTestCases;
@@ -64,15 +65,27 @@ import org.interpss.core.adapter.psse.raw.aclf.PSSEV31_v36_IEEE9_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PSSEV31_v36_Sample_Test;
 import org.interpss.core.adapter.psse.raw.aclf.PsseVersionParserTest;
 import org.interpss.core.adapter.psse.raw.aclf.SixBus_DclfPsXfr;
+import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_Equipment_Smoke_Test;
+import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_IEEE_Smoke_Test;
+import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_InitMismatch_Test;
+import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_Parser_Smoke_Test;
+import org.interpss.core.adapter.psse.raw.aclf.powsybl.PSSE_PowSyBl_TwoTerminalDc_Test;
 import org.interpss.core.aclf.PSSE_5Bus_SwitchedShunt_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_FiveBus_NB_ExportImport_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_FiveBus_NB_TopoAnalysis_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_BusMerge_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_BusSplit_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_SplitBus_Import_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_Topo_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NodeBreaker_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_NB_BusWithoutInjection_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_Sample_NB_Aclf_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_Sample_NB_TopoAnalysis_Test;
+import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_TwoSubstations_NB_TopoAnalysis_Test;
+import org.interpss.core.adapter.psse.rawx.PSSE_Sample_NB_Rawx_TopoAnalysis_Test;
 import org.interpss.core.adapter.pwd.PWDDirectParser_ObjectGate_Test;
 import org.interpss.core.adapter.pwd.PWDIEEE14BusTestCase;
 import org.interpss.core.adapter.pwd.SixBus_DclfPsXfr_pwd;
@@ -366,8 +379,23 @@ import org.junit.platform.suite.api.Suite;
 	PSSE_IEEE14_NodeBreaker_Test.class,
 	PSSE_IEEE14_NB_Topo_Test.class,
 	PSSE_IEEE14_NB_BusSplit_Test.class,
+	PSSE_IEEE14_NB_BusMerge_Test.class,
+	PSSE_IEEE14_NB_SplitBus_Import_Test.class,
+	PSSE_FiveBus_NB_TopoAnalysis_Test.class,
+	PSSE_FiveBus_NB_ExportImport_Test.class,
+	PSSE_TwoSubstations_NB_TopoAnalysis_Test.class,
+	PSSE_NB_BusWithoutInjection_Test.class,
 	PSSE_Sample_NB_TopoAnalysis_Test.class,
+	PSSE_Sample_NB_Rawx_TopoAnalysis_Test.class,
 	PSSE_Sample_NB_Aclf_Test.class,
+
+	// PowSyBl catalog coverage
+	PSSE_PowSyBl_IEEE_Smoke_Test.class,
+	PSSE_PowSyBl_InitMismatch_Test.class,
+	PSSE_PowSyBl_TwoTerminalDc_Test.class,
+	PSSE_PowSyBl_Equipment_Smoke_Test.class,
+	PSSE_PowSyBl_Parser_Smoke_Test.class,
+	PSSE_PowSyBl_RAWX_Smoke_Test.class,
 
 	// PSSE MTHVDC
 	PSSE_MTHVDC_Test.class,
