@@ -169,11 +169,11 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 	private void procBusInfoLine(String lineStr) {
 		//1: BUS      2 BUS002      500.00 CKT     MW     MVAR     MVA   % 0.9920PU  -29.93  X--- LOSSES ---X X---- AREA -----X X---- ZONE -----X      2
 		String str = lineStr.substring(BusNo_Begin, BusNo_End);
-		fromBusNo = new Integer(str.trim()).intValue();
+		fromBusNo = Integer.parseInt(str.trim());
 		str = lineStr.substring(BusVolt_Begin,BusVolt_End);
-		double busVoltage = new Double(str.trim()).doubleValue();  // 0.9920PU
+		double busVoltage = Double.parseDouble(str.trim());  // 0.9920PU
 		str = lineStr.substring(BusAng_Begin,BusAng_End);
-		double busAngle = new Double(str.trim()).doubleValue();    // deg
+		double busAngle = Double.parseDouble(str.trim());    // deg
 		//System.out.println(this.busNo + ", " + this.busVoltage + ", " + this.busAngle);
 		
 		String busId = BusPrefix+fromBusNo;
@@ -189,8 +189,8 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 		if (lineStr.contains(TKN_GEN)) {
 			//3:   FROM GENERATION                    980.0   187.3R  997.7 998 26.390KV               MW     MVAR    1                 3 HK
 			//3:  FROM GENERATION                   9950.0  3027.0R10400.3  80 20.400KV               MW     MVAR    1                 1 ZONE-001
-			double busP = this.mva2pu * new Double(lineStr.substring(BusP_Begin, BusP_End)).doubleValue();  // Load as positive direction
-			double busQ = this.mva2pu * new Double(lineStr.substring(BusQ_Begin, BusQ_End)).doubleValue();
+			double busP = this.mva2pu * Double.parseDouble(lineStr.substring(BusP_Begin, BusP_End));  // Load as positive direction
+			double busQ = this.mva2pu * Double.parseDouble(lineStr.substring(BusQ_Begin, BusQ_End));
 				
 			curRec.gen = new ComplexValueBean(busP, busQ);
 
@@ -202,8 +202,8 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 		if (lineStr.contains(TKN_LoadPQ)) {
 			//5:  TO LOAD-PQ                        1750.0   -56.0  1750.9
 			String[] strAry = lineStr.trim().split(" +");  // X+ once or more
-			double busP = this.mva2pu * new Double(strAry[2]).doubleValue();  // Load as positive direction
-			double busQ = this.mva2pu * new Double(strAry[3]).doubleValue();
+			double busP = this.mva2pu * Double.parseDouble(strAry[2]);  // Load as positive direction
+			double busQ = this.mva2pu * Double.parseDouble(strAry[3]);
 				
 			curRec.load = new ComplexValueBean(busP, busQ); 
 
@@ -215,7 +215,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 		if (lineStr.contains(TKN_SHUNT) || lineStr.contains(TKN_SWITCHED_SHUNT)) {
 			// TO SWITCHED SHUNT                    0.0   -27.9    27.9
 			// TO SHUNT                             0.0   114.7   114.7
-			double shuntQ = new Double(lineStr.substring(43, 51)).doubleValue();
+			double shuntQ = Double.parseDouble(lineStr.substring(43, 51));
 				
 			curRec.shunt = new ComplexValueBean(0.0, shuntQ); 
 
@@ -244,7 +244,7 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 				toId = strToBusNo.trim();
 			}
 			else {
-				int toBusNo = new Integer(strToBusNo.trim()).intValue();
+				int toBusNo = Integer.parseInt(strToBusNo.trim());
 				toId = BusPrefix+toBusNo;
 			}
 			
@@ -263,19 +263,19 @@ xTO  12015 CEBOLLA     69.000  1     -4.8    -0.2     4.8  15                   
 				// TODO detect PsXfr branch
 				if (existingBranch) {
 					if (tapStr2.equals("UN")) {
-						braRec.turnRatio.f = new Double(tapStr1).doubleValue();
+						braRec.turnRatio.f = Double.parseDouble(tapStr1);
 					}
 					else {
-						braRec.turnRatio.t = new Double(tapStr1).doubleValue();
+						braRec.turnRatio.t = Double.parseDouble(tapStr1);
 					}					
 				}
 				else {
 					braRec.bra_code = BranchCode.Xfr;
 					if (!tapStr2.equals("UN")) {
-						braRec.turnRatio.f = new Double(tapStr1).doubleValue();
+						braRec.turnRatio.f = Double.parseDouble(tapStr1);
 					}
 					else {
-						braRec.turnRatio.t = new Double(tapStr1).doubleValue();
+						braRec.turnRatio.t = Double.parseDouble(tapStr1);
 					}
 				}
 			}
