@@ -35,7 +35,7 @@ public class PSSE_Savnw_v33_Acsc_Test extends CorePluginTestSetup {
 	@Test
 	public void testDataInputAndACSC() throws Exception {
 		
-		AcscNetwork net = new PSSEMultiFileLoader(33).loadAcsc(
+		AcscNetwork net = new PSSEMultiFileLoader().loadAcsc(
 				"testData/psse/v33/PSSE_sample_savnw.raw",
 				"testData/psse/v33/PSSE_sample_savnw.seq");
 		
@@ -165,7 +165,7 @@ Contributing Gen:
 	public void calcZone3Setting() throws Exception {
 		   
 		
-		AcscNetwork net = new PSSEMultiFileLoader(33).loadAcsc(
+		AcscNetwork net = new PSSEMultiFileLoader().loadAcsc(
 				"testData/psse/v33/PSSE_sample_savnw.raw",
 				"testData/psse/v33/PSSE_sample_savnw.seq");
 		

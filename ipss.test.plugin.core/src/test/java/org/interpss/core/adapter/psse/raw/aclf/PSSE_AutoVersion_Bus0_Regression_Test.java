@@ -183,10 +183,8 @@ public class PSSE_AutoVersion_Bus0_Regression_Test extends CorePluginTestSetup {
 	}
 
 	private static AclfNetwork loadWithAutoDetectedVersion(String filename) throws Exception {
-		PsseVersion ver = IpssAdapter.parsePsseVersion(filename);
 		return IpssAdapter.importAclfNet(filename)
 				.setFormat(PSSE)
-				.setPsseVersion(ver)
 				.load()
 				.getImportedObj();
 	}

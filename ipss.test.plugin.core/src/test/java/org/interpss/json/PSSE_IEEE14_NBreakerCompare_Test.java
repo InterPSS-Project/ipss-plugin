@@ -21,7 +21,7 @@ public class PSSE_IEEE14_NBreakerCompare_Test extends CorePluginTestSetup {
 
 	@Test
 	public void test() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		String json = new AclfNetworkState(net).toString();
 		AclfNetworkState state = StateObjectFactory.GSON.fromJson(json, AclfNetworkState.class);

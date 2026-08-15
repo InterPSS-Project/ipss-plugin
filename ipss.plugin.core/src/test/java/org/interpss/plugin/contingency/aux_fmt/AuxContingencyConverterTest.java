@@ -390,7 +390,6 @@ public class AuxContingencyConverterTest {
     private static AclfNetwork importPsse(Path path) throws InterpssException {
         return IpssAdapter.importAclfNet(path.toString())
                 .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
                 .load()
                 .getImportedObj();
     }
@@ -400,7 +399,6 @@ public class AuxContingencyConverterTest {
                         "ipss.test.plugin.core/testData/adpter/psse/v36/ieee9_v36_labeled.raw",
                         "../ipss.test.plugin.core/testData/adpter/psse/v36/ieee9_v36_labeled.raw").toString())
                 .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
                 .load()
                 .getImportedObj();
     }

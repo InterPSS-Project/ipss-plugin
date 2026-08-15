@@ -26,7 +26,7 @@ public class PSSE_IEEE14_NB_Topo_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testConnectedComponentBeforeAndAfterOpenBusBar() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 		Substation sub2 = net.getSubstation("2");
 		assertNotNull(sub2);
 		assertEquals("STATION 5", sub2.getName());

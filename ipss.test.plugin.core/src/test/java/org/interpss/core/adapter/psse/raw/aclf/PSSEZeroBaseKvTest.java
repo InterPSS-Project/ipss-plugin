@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBus;
@@ -18,7 +17,6 @@ public class PSSEZeroBaseKvTest extends CorePluginTestSetup {
 	public void importBusWithZeroBaseKv() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/PSSE_5Bus_ZeroBaseKv.raw")
 				.setFormat(FileFormat.PSSE)
-				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
 				.getImportedObj();
 

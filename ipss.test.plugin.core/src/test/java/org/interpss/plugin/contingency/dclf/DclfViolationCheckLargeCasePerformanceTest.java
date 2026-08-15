@@ -127,7 +127,6 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
 
         AclfNetwork net = IpssAdapter.importAclfNet(rawPath.toString())
                 .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
                 .load()
                 .getImportedObj();
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
@@ -196,7 +195,6 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
 
         AclfNetwork net = IpssAdapter.importAclfNet(rawPath.toString())
                 .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
                 .load()
                 .getImportedObj();
         ContingencyAnalysisAlgorithm dclfAlgo =
@@ -263,7 +261,6 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
 
         AclfNetwork net = IpssAdapter.importAclfNet(rawPath.toString())
                 .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
                 .load()
                 .getImportedObj();
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
@@ -315,7 +312,6 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
 
         AclfNetwork net = IpssAdapter.importAclfNet(rawPath.toString())
                 .setFormat(PSSE)
-                .setPsseVersion(psseVersion)
                 .load()
                 .getImportedObj();
         int maxContingencies = intProperty("interpss.violationCheckPerfMaxCont", 300);

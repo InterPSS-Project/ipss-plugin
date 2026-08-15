@@ -43,31 +43,28 @@ public class PSSE_PowSyBl_InitMismatch_Test extends CorePluginTestSetup {
 		}
 	}
 
-	private record Fixture(String relativePath, int[] versions, boolean rawx) {
-		Fixture(String relativePath, int version, boolean rawx) {
-			this(relativePath, new int[] { version }, rawx);
-		}
+	private record Fixture(String relativePath, boolean rawx) {
 	}
 
 	@Test
 	public void allowlistIeeeSolvedAsRead() throws Exception {
 		List<Fixture> allowlist = List.of(
-				new Fixture("ieee/IEEE_14_bus.raw", 33, false),
-				new Fixture("ieee/IEEE_14_bus_rev35.raw", 35, false),
-				new Fixture("ieee/IEEE_14_isolated_buses.raw", 33, false),
-				new Fixture("ieee/IEEE_57_bus.raw", 33, false),
-				new Fixture("ieee/IEEE_118_bus.raw", 33, false),
-				new Fixture("ieee/two_area_case.raw", 33, false),
-				new Fixture("parser/IEEE_14_bus_Q_record_rev35.raw", 35, false),
-				new Fixture("parser/IEEE_14_bus_non_induction_machine_data.raw", 33, false),
-				new Fixture("parser/IEEE_14_bus_non_induction_machine_data_rev35.raw", 35, false),
-				new Fixture("parser/IEEE_14_isolated_buses_exported.raw", 33, false),
-				new Fixture("parser/IEEE_14_bus_whitespaceAsDelimiter_exported.raw", 33, false),
-				new Fixture("rawx/IEEE_14_bus_rev35.rawx", 35, true),
-				new Fixture("nbreaker/IEEE_14_bus_nodeBreaker_rev35.raw", 35, false),
-				new Fixture("illinois/IEEE_14_bus.raw", new int[] { 33, 30 }, false),
-				new Fixture("illinois/IEEE_57_bus.RAW", new int[] { 33, 30 }, false),
-				new Fixture("illinois/IEEE_118_bus.RAW", new int[] { 33, 30 }, false));
+				new Fixture("ieee/IEEE_14_bus.raw", false),
+				new Fixture("ieee/IEEE_14_bus_rev35.raw", false),
+				new Fixture("ieee/IEEE_14_isolated_buses.raw", false),
+				new Fixture("ieee/IEEE_57_bus.raw", false),
+				new Fixture("ieee/IEEE_118_bus.raw", false),
+				new Fixture("ieee/two_area_case.raw", false),
+				new Fixture("parser/IEEE_14_bus_Q_record_rev35.raw", false),
+				new Fixture("parser/IEEE_14_bus_non_induction_machine_data.raw", false),
+				new Fixture("parser/IEEE_14_bus_non_induction_machine_data_rev35.raw", false),
+				new Fixture("parser/IEEE_14_isolated_buses_exported.raw", false),
+				new Fixture("parser/IEEE_14_bus_whitespaceAsDelimiter_exported.raw", false),
+				new Fixture("rawx/IEEE_14_bus_rev35.rawx", true),
+				new Fixture("nbreaker/IEEE_14_bus_nodeBreaker_rev35.raw", false),
+				new Fixture("illinois/IEEE_14_bus.raw", false),
+				new Fixture("illinois/IEEE_57_bus.RAW", false),
+				new Fixture("illinois/IEEE_118_bus.RAW", false));
 
 		List<CaseResult> results = new ArrayList<>();
 		for (Fixture f : allowlist) {
@@ -84,8 +81,8 @@ public class PSSE_PowSyBl_InitMismatch_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee24RawAndRawxNearSolved() throws Exception {
-		CaseResult raw = measure(new Fixture("ieee/IEEE_24_bus_rev35.raw", 35, false));
-		CaseResult rawx = measure(new Fixture("rawx/IEEE_24_bus_rev35.rawx", 35, true));
+		CaseResult raw = measure(new Fixture("ieee/IEEE_24_bus_rev35.raw", false));
+		CaseResult rawx = measure(new Fixture("rawx/IEEE_24_bus_rev35.rawx", true));
 		System.out.println(raw.logLine("ieee24"));
 		System.out.println(rawx.logLine("ieee24"));
 
@@ -105,16 +102,16 @@ public class PSSE_PowSyBl_InitMismatch_Test extends CorePluginTestSetup {
 	@Test
 	public void knownOutliersDocumentedResiduals() throws Exception {
 		// POW-1: non-standard delimiter → Inf / non-finite
-		CaseResult delim = measure(new Fixture("ieee/IEEE_14_bus_delimiter.raw", 33, false));
+		CaseResult delim = measure(new Fixture("ieee/IEEE_14_bus_delimiter.raw", false));
 		System.out.println(delim.logLine("POW-1"));
 		assertFalse(Double.isFinite(delim.absMis()),
 				() -> "delimiter fixture expected non-finite |maxMis|, got " + delim.absMis());
 
 		// POW-2: 2T WATL extend-load ~3 pu (MTDC fixture-invalid, does not inject).
 		// RAWX twin matches after twotermdc import (was allowlist when HVDC tables were skipped).
-		CaseResult completed = measure(new Fixture("parser/IEEE_14_bus_completed.raw", 33, false));
-		CaseResult completed35 = measure(new Fixture("parser/IEEE_14_bus_completed_rev35.raw", 35, false));
-		CaseResult completedRawx = measure(new Fixture("rawx/IEEE_14_bus_completed_rev35.rawx", 35, true));
+		CaseResult completed = measure(new Fixture("parser/IEEE_14_bus_completed.raw", false));
+		CaseResult completed35 = measure(new Fixture("parser/IEEE_14_bus_completed_rev35.raw", false));
+		CaseResult completedRawx = measure(new Fixture("rawx/IEEE_14_bus_completed_rev35.rawx", true));
 		System.out.println(completed.logLine("POW-2"));
 		System.out.println(completed35.logLine("POW-2"));
 		System.out.println(completedRawx.logLine("POW-2"));
@@ -132,14 +129,14 @@ public class PSSE_PowSyBl_InitMismatch_Test extends CorePluginTestSetup {
 		and mismatch correctly uses ZIP(|V|) via calLoadPQ(). At |V|=1.045, ZIP−PL ≈ 0.105, 
 		which matches |maxMis|.
 		*/
-		CaseResult zip = measure(new Fixture("ieee/IEEE_14_buses_zip_load.raw", 33, false));
+		CaseResult zip = measure(new Fixture("ieee/IEEE_14_buses_zip_load.raw", false));
 		System.out.println(zip.logLine("POW-3"));
 		assertTrue(zip.absMis() > 0.09 && zip.absMis() < 0.12,
 				() -> "zip-load expected ~0.105 pu, got " + zip.absMis());
 		assertEquals("Bus2", zip.maxPBus());
 
 		// POW-4: 3W star as-read residual ~1.34 (star V/θ not solved-as-read)
-		CaseResult trf3w = measure(new Fixture("ieee/two_area_case_trf3w.raw", 33, false));
+		CaseResult trf3w = measure(new Fixture("ieee/two_area_case_trf3w.raw", false));
 		System.out.println(trf3w.logLine("POW-4"));
 		assertTrue(trf3w.absMis() > 1.0 && trf3w.absMis() < 1.5,
 				() -> "two_area trf3w expected ~1.34 pu, got " + trf3w.absMis());
@@ -150,20 +147,7 @@ public class PSSE_PowSyBl_InitMismatch_Test extends CorePluginTestSetup {
 		if (f.rawx()) {
 			net = new PSSEJsonDirectParser().parse(ROOT + f.relativePath());
 		} else {
-			Exception last = null;
-			net = null;
-			for (int v : f.versions()) {
-				try {
-					net = new PSSEDirectParser(v).parse(ROOT + f.relativePath());
-					last = null;
-					break;
-				} catch (Exception e) {
-					last = e;
-				}
-			}
-			if (net == null) {
-				throw last != null ? last : new IllegalStateException("no version tried for " + f.relativePath());
-			}
+			net = new PSSEDirectParser().parse(ROOT + f.relativePath());
 		}
 		initHvdc(net);
 		Mismatch m = net.maxMismatch(AclfMethodType.NR);

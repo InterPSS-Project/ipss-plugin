@@ -30,7 +30,7 @@ public class TestDynLoad_IEEE39 {
 	@Test
 	public void test_IEEE39Bus_DynLoad_ACMotor() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_multiloads_xfmr4_smallX_v30.raw",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_3AC.dyr");

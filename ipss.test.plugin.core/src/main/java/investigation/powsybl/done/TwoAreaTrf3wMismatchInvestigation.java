@@ -15,10 +15,10 @@ import investigation.powsybl.PowSyBlMismatchInvSupport;
 public class TwoAreaTrf3wMismatchInvestigation {
 
 	public static void main(String[] args) throws InterpssException {
-		AclfNetwork twoW = PowSyBlMismatchInvSupport.parseRaw("ieee/two_area_case.raw", 33);
+		AclfNetwork twoW = PowSyBlMismatchInvSupport.parseRaw("ieee/two_area_case.raw");
 		PowSyBlMismatchInvSupport.printAsReadMismatch(twoW, "two_area_case.raw (2W baseline)");
 
-		AclfNetwork net = PowSyBlMismatchInvSupport.parseRaw("ieee/two_area_case_trf3w.raw", 33);
+		AclfNetwork net = PowSyBlMismatchInvSupport.parseRaw("ieee/two_area_case_trf3w.raw");
 		Mismatch m = PowSyBlMismatchInvSupport.printAsReadMismatch(net, "two_area_case_trf3w.raw");
 		System.out.println("Special (3W) branches=" + net.getSpecialBranchList().size());
 		PowSyBlMismatchInvSupport.printTopMismatchBuses(net, 10);

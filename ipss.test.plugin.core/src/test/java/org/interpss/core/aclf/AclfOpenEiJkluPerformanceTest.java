@@ -100,7 +100,6 @@ public class AclfOpenEiJkluPerformanceTest extends CorePluginTestSetup {
 	private static AclfNetwork loadOpenEi() throws InterpssException {
 		return IpssAdapter.importAclfNet(OPEN_EI_RAW)
 				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();
 	}

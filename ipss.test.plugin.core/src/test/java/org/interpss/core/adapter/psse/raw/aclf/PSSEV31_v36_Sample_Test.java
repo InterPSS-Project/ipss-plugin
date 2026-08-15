@@ -89,7 +89,6 @@ public class PSSEV31_v36_Sample_Test extends CorePluginTestSetup {
 	private AclfNetwork loadSample(int version, PsseVersion psseVersion) throws Exception {
 		return IpssAdapter.importAclfNet("testData/psse/v" + version + "/sample_v" + version + ".raw")
 				.setFormat(FileFormat.PSSE)
-				.setPsseVersion(psseVersion)
 				.load()
 				.getImportedObj();
 	}

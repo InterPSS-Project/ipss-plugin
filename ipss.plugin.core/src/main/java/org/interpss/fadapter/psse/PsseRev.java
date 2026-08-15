@@ -11,9 +11,15 @@
 
 package org.interpss.fadapter.psse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Shared PSS/E REV (revision) field parsing from the IC/SBASE/REV header line.
  * Missing or invalid REV falls back to 30 (same as historical IpssAdapter behavior).
+ * <p>
+ * Handles both comma-separated headers and mixed whitespace forms used by some
+ * fixtures, e.g. {@code 0     100.00  33 , 0, 0, 60.00}.
  */
 public final class PsseRev {
     private static final int DEFAULT_REV = 30;
@@ -21,28 +27,38 @@ public final class PsseRev {
     private PsseRev() {}
 
     /**
-     * Parse REV from a raw header data line (comments after {@code /} are stripped
-     * by {@link PSSEDataRec}).
+     * Parse REV from a raw header data line.
      */
     public static int fromHeaderLine(String line) {
         if (line == null || line.isEmpty()) {
             return DEFAULT_REV;
         }
-        return fromHeaderRec(new PSSEDataRec(line));
+        String cleaned = stripSlashComment(line).trim();
+        if (cleaned.isEmpty()) {
+            return DEFAULT_REV;
+        }
+        List<String> fields = expandHeaderFields(cleaned);
+        if (fields.size() < 3) {
+            return DEFAULT_REV;
+        }
+        return parseRevToken(fields.get(2));
     }
 
     /**
      * Read REV from a tokenized header record (field index 2).
+     * Prefer {@link #fromHeaderLine(String)} when the raw line may mix spaces and commas.
      */
     public static int fromHeaderRec(PSSEDataRec rec) {
         if (rec == null || rec.size() < 3) {
             return DEFAULT_REV;
         }
-        String revStr = rec.getString(2);
+        return parseRevToken(rec.getString(2));
+    }
+
+    private static int parseRevToken(String revStr) {
         if (revStr == null || revStr.isEmpty()) {
             return DEFAULT_REV;
         }
-        // Belt-and-suspenders: strip trailing /comment if still present (e.g. "36/PSS...")
         int slash = revStr.indexOf('/');
         if (slash >= 0) {
             revStr = revStr.substring(0, slash).trim();
@@ -55,6 +71,62 @@ public final class PsseRev {
         } catch (NumberFormatException e) {
             return DEFAULT_REV;
         }
+    }
+
+    /**
+     * Expand CSV tokens that themselves contain whitespace-separated numerics
+     * (IC SBASE REV packed into the first comma field).
+     */
+    private static List<String> expandHeaderFields(String cleaned) {
+        List<String> fields = new ArrayList<>();
+        for (String part : cleaned.split(",", -1)) {
+            String trimmed = part.trim();
+            if (trimmed.isEmpty()) {
+                fields.add("");
+                continue;
+            }
+            String[] ws = trimmed.split("\\s+");
+            if (ws.length > 1 && allNumeric(ws)) {
+                for (String w : ws) {
+                    fields.add(w);
+                }
+            } else {
+                fields.add(trimmed);
+            }
+        }
+        return fields;
+    }
+
+    private static boolean allNumeric(String[] tokens) {
+        for (String t : tokens) {
+            try {
+                Double.parseDouble(t);
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static String stripSlashComment(String str) {
+        boolean inQuotes = false;
+        char quoteChar = 0;
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (c == '\'' || c == '"') {
+                if (!inQuotes) {
+                    inQuotes = true;
+                    quoteChar = c;
+                } else if (c == quoteChar) {
+                    inQuotes = false;
+                    quoteChar = 0;
+                }
+            }
+            if (c == '/' && !inQuotes) {
+                return str.substring(0, i);
+            }
+        }
+        return str;
     }
 
     /**

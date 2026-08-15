@@ -196,7 +196,7 @@ public class Kundur_2Area_VSCHVDC2T_Test extends CorePluginTestSetup {
 	}
 	
 	private AclfNetwork createTestCaseV30() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(30).parse("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_vschvdc_v30.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/Kundur_2area/Kundur_2area_vschvdc_v30.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
@@ -231,7 +231,7 @@ VSC HVDC: com.interpss.core.aclf.hvdc.impl.HvdcLine2TVSCImpl@6b3e12b5 (
 	}
 
 	private AclfNetwork createBasicTestCaseV35() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse("testData/adpter/psse/v35/Kundur_2area_vschvdc_v35.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v35/Kundur_2area_vschvdc_v35.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);
@@ -266,7 +266,7 @@ VSC HVDC: com.interpss.core.aclf.hvdc.impl.HvdcLine2TVSCImpl@6b3e12b5 (
 	}
 
 	private AclfNetwork createTestCaseV35() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse("testData/psse/v35/Kundur_2area_vschvdc_remotebus_v35.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v35/Kundur_2area_vschvdc_remotebus_v35.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TVSC<AclfBus> vscHVDC = (HvdcLine2TVSC<AclfBus>) net.getSpecialBranchList().get(0);

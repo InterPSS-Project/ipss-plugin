@@ -158,7 +158,6 @@ class Texas2kSensitivityIslandingTest extends CorePluginTestSetup {
 	private static AclfNetwork loadTexas2k() throws Exception {
 		return IpssAdapter.importAclfNet(CASE)
 				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
 				.load()
 				.getImportedObj();
 	}

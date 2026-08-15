@@ -26,8 +26,7 @@ public class PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 	  

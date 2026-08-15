@@ -177,7 +177,7 @@ public class IEEE9Bus_ZbrNRSolver_Test extends CorePluginTestSetup {
     }
 	
 	private AclfNetwork createTestCase() throws InterpssException {
-		return new PSSEDirectParser(33).parse("testData/psse/v33/ieee9_zbr_v33.raw");
+		return new PSSEDirectParser().parse("testData/psse/v33/ieee9_zbr_v33.raw");
 	}
 	
 }

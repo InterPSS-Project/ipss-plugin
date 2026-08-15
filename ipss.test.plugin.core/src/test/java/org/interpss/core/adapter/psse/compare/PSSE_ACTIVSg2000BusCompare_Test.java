@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -21,8 +20,7 @@ public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 	
 		// load the test data V36
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_36) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 		

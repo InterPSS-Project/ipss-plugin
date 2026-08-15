@@ -34,7 +34,7 @@ public class PSSE_Sample_NB_TopoAnalysis_Sample {
 	private static void case0() throws InterpssException {
 		System.out.println("Case 0: basecase condition");
 
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 		
 		net.getSubstationMap().forEach((subName, sub) -> {	
 			SubstationNBreakerHelper subHelper = new SubstationNBreakerHelper(sub);
@@ -73,7 +73,7 @@ public class PSSE_Sample_NB_TopoAnalysis_Sample {
 	private static void case1() throws InterpssException {
 		System.out.println("Case 1: topo processed network");
 
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		activateBusBranch(net);
 

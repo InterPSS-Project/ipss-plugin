@@ -37,7 +37,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_IEEE300_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+			SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2.dyr");
 			
@@ -98,7 +98,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_IEEE300_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+			SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
 			
@@ -194,7 +194,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void IEEE300_Dstab_compositeLoadModel_generate_results_() throws InterpssException{
 			IpssCorePlugin.init();
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+			SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
 			
@@ -239,7 +239,7 @@ public class DStab_IEEE300Bus_Test  extends DStabTestSetupBase{
 //							   break;
 //						}
 							
-						simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+						simuCtx = new PSSEMultiFileLoader().loadDStab(
 								"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
 								"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_v2_cmld.dyr");
 						

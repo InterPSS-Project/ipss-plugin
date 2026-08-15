@@ -89,7 +89,6 @@ public class JkluPowerSystemMatrixExportTest extends CorePluginTestSetup {
         if (spec.psse) {
             return IpssAdapter.importAclfNet(spec.path)
                     .setFormat(IpssAdapter.FileFormat.PSSE)
-                    .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
                     .load()
                     .getImportedObj();
         }

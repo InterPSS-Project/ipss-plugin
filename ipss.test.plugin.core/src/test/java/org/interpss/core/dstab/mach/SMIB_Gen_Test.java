@@ -30,7 +30,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou.dyr");
 		
@@ -123,7 +123,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_Saturation() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_sat.dyr");
 		
@@ -216,7 +216,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_IEEEG1() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_IEEEG1.dyr");
 		
@@ -299,7 +299,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENROU_IEEET1() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_genrou_IEEET1.dyr");
 		
@@ -396,7 +396,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 	public void test_GENSAL() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/SMIB/SMIB_v30.raw",
 				"testData/adpter/psse/v30/SMIB/SMIB_v30_gensal.dyr");
 		

@@ -51,7 +51,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV30DirectParser_noBus0() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(30).parse("testData/adpter/psse/PSSE_5Bus_Test.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/PSSE_5Bus_Test.raw");
 		assertNull(net.getBus("Bus0"));
 		assertTrue(net.getNoActiveBus() >= 5);
 		assertNotNull(net.getBus("Bus1"));
@@ -59,7 +59,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV31FixedShuntsPreserveIdentityAndAdmittance() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(31).parse("testData/psse/v31/sample_v31.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v31/sample_v31.raw");
 		assertNull(net.getBus("Bus0"));
 
 		// Fixed shunt at Bus203: id 1 GL=-5 BL=30 and id 2 GL=5 BL=20 on 100 MVA
@@ -97,7 +97,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		Path input = tempDir.resolve("swing-voltage-v34.raw");
 		Files.writeString(input, modified);
 
-		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfNetwork net = new PSSEDirectParser().parse(input.toString());
 		Set<String> type3BusIds = net.getBusList().stream()
 				.filter(AclfBus::isActive)
 				.filter(AclfBus::isSwing)
@@ -137,7 +137,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		Path input = tempDir.resolve("thrshz-v34.raw");
 		Files.writeString(input, raw);
 
-		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfNetwork net = new PSSEDirectParser().parse(input.toString());
 
 		assertEquals(0.00029, net.getZeroZBranchThreshold(), 1.0E-12);
 	}
@@ -145,7 +145,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	@Test
 	@Tag("extended")
 	public void testV36FixedShuntNbTerminalResolves() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/private/sample_nb.raw");
 		AclfBus bus151 = net.getBus("Bus151");
 		assertNotNull(bus151);
 		ShuntCompensator fx1 = bus151.getCompensator("F1");
@@ -164,7 +164,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV33DirectParser_sampleMapped() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(33).parse("testData/psse/v33/sample_v33.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v33/sample_v33.raw");
 		assertNull(net.getBus("Bus0"));
 		assertNull(net.getBus("BusGENERAL"));
 		assertNull(net.getBus("BusGAUSS"));
@@ -175,7 +175,6 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	public void testV34DgenLoadMapping() throws Exception {
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v34/ieee9_dgen_v34.raw")
 				.setFormat(FileFormat.PSSE)
-				.setPsseVersion(PsseVersion.PSSE_34)
 				.load()
 				.getImportedObj();
 
@@ -210,7 +209,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		Path input = tempDir.resolve("pure-dgen-v34.raw");
 		Files.writeString(input, modified);
 
-		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfNetwork net = new PSSEDirectParser().parse(input.toString());
 		AclfBus bus8 = net.getBus("Bus8");
 		assertEquals(AclfLoadCode.CONST_P, bus8.getLoadCode());
 		assertEquals(AclfLoadCode.CONST_P,
@@ -232,7 +231,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		Path input = tempDir.resolve("mixed-fixed-variable-q-v34.raw");
 		Files.writeString(input, modified);
 
-		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfNetwork net = new PSSEDirectParser().parse(input.toString());
 		AclfBus bus101 = net.getBus("Bus101");
 		assertTrue(bus101.isGenPV(),
 				"one fixed-Q machine must not disable another machine's voltage control");
@@ -255,7 +254,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		Path input = tempDir.resolve("wmod2-v34.raw");
 		Files.writeString(input, modified);
 
-		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfNetwork net = new PSSEDirectParser().parse(input.toString());
 		AclfBus bus206 = net.getBus("Bus206");
 		assertTrue(bus206.isGenPV());
 		var gen = bus206.getContributeGen("1");
@@ -274,7 +273,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		Path input = tempDir.resolve("wmod2-v35.raw");
 		Files.writeString(input, modified);
 
-		AclfNetwork net = new PSSEDirectParser(35).parse(input.toString());
+		AclfNetwork net = new PSSEDirectParser().parse(input.toString());
 		var gen = net.getBus("Bus206").getContributeGen("1");
 		assertEquals(0.60, gen.getQGenLimit().getMax(), 1.0E-9);
 		assertEquals(-0.60, gen.getQGenLimit().getMin(), 1.0E-9);
@@ -284,7 +283,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testV35LccXcapDoesNotBecomeAclfReactiveOffset() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse("testData/psse/v35/sample_v35.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v35/sample_v35.raw");
 		HvdcLine2TLCC<AclfBus> line = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().stream()
 				.filter(HvdcLine2TLCC.class::isInstance)
 				.findFirst()
@@ -306,7 +305,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		Path input = tempDir.resolve("wmod3-v34.raw");
 		Files.writeString(input, modified);
 
-		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfNetwork net = new PSSEDirectParser().parse(input.toString());
 		AclfBus bus206 = net.getBus("Bus206");
 		assertTrue(bus206.isGenPQ());
 		var gen = bus206.getContributeGen("1");
@@ -371,7 +370,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV34TransformerControlLayout() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(34).parse("testData/psse/v34/sample_v34.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v34/sample_v34.raw");
 
 		AclfBranch xfr = net.getBranch("Bus204", "Bus205", "T8");
 		assertNotNull(xfr);
@@ -429,7 +428,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV34ComplexXfrZTableLayout() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(34).parse("testData/psse/v34/sample_v34.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v34/sample_v34.raw");
 
 		var table1 = net.getXfrZTableEntry(1);
 		assertNotNull(table1);
@@ -447,7 +446,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV35SwitchedShuntLayout() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35)
+		AclfNetwork net = new PSSEDirectParser()
 				.parse("testData/psse/v35/PSSE_5Bus_Test_switchShunt_continuous_v35.raw");
 
 		AclfBus bus4 = net.getBus("Bus4");
@@ -461,7 +460,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV36XfrZTableParsed() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_ztable_v36.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v36/sample_ztable_v36.raw");
 		assertNull(net.getBus("Bus0"));
 		assertNotNull(net.getXfrZTable());
 		assertTrue(net.getXfrZTable().size() >= 1, "v36 complex Z-corr tables should be loaded");
@@ -469,7 +468,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV36SkipSafety_noGeneralGaussBus0() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_v36.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v36/sample_v36.raw");
 		assertNull(net.getBus("Bus0"));
 		assertNull(net.getBus("BusGENERAL"));
 		assertNull(net.getBus("BusGAUSS"));
@@ -516,7 +515,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV36MultiSwitchedShuntIds() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_v36.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v36/sample_v36.raw");
 		AclfBus bus152 = net.getBus("Bus152");
 		assertNotNull(bus152);
 		assertTrue(bus152.getSwitchedShuntList().size() >= 2,
@@ -529,7 +528,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV36SeriesFactsDevice() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_v36.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v36/sample_v36.raw");
 
 		// FACTS_DVCE_1 (J=0) → SVC; FACTS_DVCE_2 (J=155, MODE=1) → series branch + SVC
 		AclfBus bus153 = net.getBus("Bus153");
@@ -565,7 +564,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		Path input = tempDir.resolve("statcon-qdes-v34.raw");
 		Files.writeString(input, modified);
 
-		AclfNetwork net = new PSSEDirectParser(34).parse(input.toString());
+		AclfNetwork net = new PSSEDirectParser().parse(input.toString());
 		AclfBus bus153 = net.getBus("Bus153");
 		StaticVarCompensator svc = bus153.getStaticVarCompensatorList().stream()
 				.map(device -> (StaticVarCompensator) device)
@@ -580,7 +579,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	@Test
 	@Tag("extended")
 	public void testV36SystemSwdAndFactsNbTerminalsResolve() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/private/sample_nb.raw");
 
 		AclfBranch swd = net.getBranch("Bus151", "Bus201", "*1");
 		assertNotNull(swd, "system switching device *1 should be imported");
@@ -612,7 +611,7 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	@Test
 	@Tag("extended")
 	public void testV36NbTerminalsIV3NResolve() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse("testData/private/sample_nb.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/private/sample_nb.raw");
 
 		// 3W created as Bus205–Bus215–Bus208(ckt 3); terminals list windings in other orders
 		assertNotNull(net.get3WXfr("Bus205", "Bus215", "Bus208", "3"));
@@ -662,11 +661,11 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testDirectParserBands_30_33_36() throws Exception {
-		AclfNetwork v30 = new PSSEDirectParser(30)
+		AclfNetwork v30 = new PSSEDirectParser()
 				.parse("testData/adpter/psse/v30/IEEE9Bus/ieee9.raw");
-		AclfNetwork v33 = new PSSEDirectParser(33)
+		AclfNetwork v33 = new PSSEDirectParser()
 				.parse("testData/psse/v33/ieee9_v33.raw");
-		AclfNetwork v36 = new PSSEDirectParser(36)
+		AclfNetwork v36 = new PSSEDirectParser()
 				.parse("testData/psse/v36/ieee9_v36.raw");
 
 		assertEquals(9, v30.getNoActiveBus());

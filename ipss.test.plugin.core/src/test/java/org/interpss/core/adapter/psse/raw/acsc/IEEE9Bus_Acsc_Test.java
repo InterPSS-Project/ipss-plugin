@@ -31,7 +31,7 @@ public class IEEE9Bus_Acsc_Test {
 	@Test
 	public void testIeee9SeqY() throws InterpssException, IpssNumericException{
 			IpssCorePlugin.init();
-			AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
+			AcscNetwork net = new PSSEMultiFileLoader().loadAcsc(
 					"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 					"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq");
 			
@@ -175,7 +175,7 @@ public class IEEE9Bus_Acsc_Test {
 	@Test
 	public void testFaultCalc() throws InterpssException{
 		IpssCorePlugin.init();
-		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
+		AcscNetwork net = new PSSEMultiFileLoader().loadAcsc(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq");
 		
@@ -288,7 +288,7 @@ public class IEEE9Bus_Acsc_Test {
 	@Test
 	public void testFaultCalc_compare() throws InterpssException{
 		IpssCorePlugin.init();
-		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
+		AcscNetwork net = new PSSEMultiFileLoader().loadAcsc(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_newGenBase.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_null.seq");
 		net.setLfDataLoaded(true);

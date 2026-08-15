@@ -25,8 +25,7 @@ public class ACTIVSg25kBusSwShuntCtrlOnlySample1 {
 		
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet(filename)
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 		

@@ -41,7 +41,7 @@ class PsseLoadflowSolutionSettingsTest {
 		Path input = tempDir.resolve("settings-v34.raw");
 		Files.writeString(input, raw);
 
-		PSSEDirectParser parser = new PSSEDirectParser(34);
+		PSSEDirectParser parser = new PSSEDirectParser();
 		AclfNetwork network = parser.parse(input.toString());
 		PsseLoadflowSolutionSettings settings = parser.getSolutionSettings();
 

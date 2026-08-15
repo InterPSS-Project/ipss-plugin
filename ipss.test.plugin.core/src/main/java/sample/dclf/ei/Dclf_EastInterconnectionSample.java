@@ -22,8 +22,7 @@ public class Dclf_EastInterconnectionSample {
 	public static void main(String args[]) throws InterpssException {
 		// load the test data V33
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();	
 		

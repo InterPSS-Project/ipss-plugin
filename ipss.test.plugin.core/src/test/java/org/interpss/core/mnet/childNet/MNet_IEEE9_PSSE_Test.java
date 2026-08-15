@@ -7,7 +7,6 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +34,6 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		
 		AclfNetwork net =IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
                 .setFormat(PSSE)
-                .setPsseVersion(PsseVersion.PSSE_31)
                 .load()
                 .getImportedObj();	
 
@@ -62,7 +60,6 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		//load the IEEE 9 Bus system
 		AclfNetwork net =IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
 		                            .setFormat(PSSE)
-		                            .setPsseVersion(PsseVersion.PSSE_31)
 		                            .load()
 		                            .getImportedObj();	
 
