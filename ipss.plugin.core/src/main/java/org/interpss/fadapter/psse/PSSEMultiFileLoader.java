@@ -22,10 +22,30 @@ import com.interpss.simu.SimuObjectFactory;
  *   PSSEDirectParser -> PSSEAcscDirectParser -> PSSEDStabDirectParser
  */
 public class PSSEMultiFileLoader {
-    private final int version;
+    /** Null means auto-detect REV from the LF RAW header. */
+    private final Integer versionOverride;
 
+    /** Auto-detect PSS/E REV from the LF file header. */
+    public PSSEMultiFileLoader() {
+        this.versionOverride = null;
+    }
+
+    /** Force section layout to {@code version} (override header REV). */
     public PSSEMultiFileLoader(int version) {
-        this.version = version;
+        this.versionOverride = version;
+    }
+
+    private PSSEDirectParser createLfParser(com.interpss.core.aclf.BaseAclfNetwork<?, ?> net) {
+        return versionOverride == null
+                ? new PSSEDirectParser(net)
+                : new PSSEDirectParser(versionOverride, net);
+    }
+
+    private PSSEDirectParser createLfParser(com.interpss.core.aclf.BaseAclfNetwork<?, ?> net,
+            AclfNetworkObjectFactory objectFactory) {
+        return versionOverride == null
+                ? new PSSEDirectParser(net, objectFactory)
+                : new PSSEDirectParser(versionOverride, net, objectFactory);
     }
 
     /**
@@ -34,7 +54,7 @@ public class PSSEMultiFileLoader {
     public AcscNetwork loadAcsc(String lfFile) throws InterpssException {
         AcscNetwork net = CoreObjectFactory.createAcscNetwork();
         net.setPositiveSeqDataOnly(true);
-        new PSSEDirectParser(version, net).parseInto(lfFile);
+        createLfParser(net).parseInto(lfFile);
         return net;
     }
 
@@ -82,7 +102,7 @@ public class PSSEMultiFileLoader {
         }
 
         dsNet.setPositiveSeqDataOnly(true);
-        new PSSEDirectParser(version, dsNet, objectFactory).parseInto(files[0]);
+        createLfParser(dsNet, objectFactory).parseInto(files[0]);
 
         SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
         simuCtx.setDStabilityNet(dsNet);
@@ -98,10 +118,8 @@ public class PSSEMultiFileLoader {
             new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(files[2]);
         }
 
-        DynamicSimuAlgorithm dstabAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(
-                dsNet);
-        simuCtx.setDynSimuAlgorithm(dstabAlgo);
-
+        DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
+        simuCtx.setDynSimuAlgorithm(dynAlgo);
         return simuCtx;
     }
 }

@@ -486,6 +486,35 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void testAutoDetectRev_v36Sample() throws Exception {
+		PSSEDirectParser parser = new PSSEDirectParser();
+		AclfNetwork net = parser.parse("testData/psse/v36/sample_v36.raw");
+		assertEquals(36, parser.getVersion());
+		assertNull(net.getBus("Bus0"));
+		assertTrue(net.getNoActiveBus() > 20);
+	}
+
+	@Test
+	public void testAutoDetectRev_v33Sample() throws Exception {
+		PSSEDirectParser parser = new PSSEDirectParser();
+		AclfNetwork net = parser.parse("testData/psse/v33/sample_v33.raw");
+		assertEquals(33, parser.getVersion());
+		assertNull(net.getBus("Bus0"));
+		assertTrue(net.getNoActiveBus() > 0);
+	}
+
+	@Test
+	public void testDslAutoDetectRev_withoutSetPsseVersion() throws Exception {
+		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/sample_v36.raw")
+				.setFormat(FileFormat.PSSE)
+				.load()
+				.getImportedObj();
+		assertNotNull(net);
+		assertNull(net.getBus("Bus0"));
+		assertTrue(net.getNoActiveBus() > 20);
+	}
+
+	@Test
 	public void testV36MultiSwitchedShuntIds() throws Exception {
 		AclfNetwork net = new PSSEDirectParser(36).parse("testData/psse/v36/sample_v36.raw");
 		AclfBus bus152 = net.getBus("Bus152");
