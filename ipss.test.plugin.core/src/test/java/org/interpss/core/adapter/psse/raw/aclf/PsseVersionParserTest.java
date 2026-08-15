@@ -5,14 +5,24 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
+import org.interpss.fadapter.psse.PsseRev;
 import org.junit.jupiter.api.Test;
 
 /**
- * Covers {@link IpssAdapter#parsePsseVersion(String)} edge cases that previously
- * caused desktop auto-import to fall back to PSSE_30 and create bogus {@code Bus0} entries.
+ * Covers {@link PsseRev} header REV edge cases that previously caused
+ * desktop auto-import to fall back to v30 and create bogus {@code Bus0} entries.
  */
 public class PsseVersionParserTest {
+
+	private static int revFromFile(Path raw) throws Exception {
+		for (String line : Files.readAllLines(raw)) {
+			if (line.trim().isEmpty() || line.trim().startsWith("@!")) {
+				continue;
+			}
+			return PsseRev.fromHeaderLine(line);
+		}
+		return PsseRev.defaultRev();
+	}
 
 	@Test
 	public void parsesRevisionWithPsseCommentSuffix() throws Exception {
@@ -24,7 +34,7 @@ public class PsseVersionParserTest {
 					Random comment line
 					""");
 
-			assertEquals(IpssAdapter.PsseVersion.PSSE_30, IpssAdapter.parsePsseVersion(raw.toString()));
+			assertEquals(30, revFromFile(raw));
 		}
 		finally {
 			Files.deleteIfExists(raw);
@@ -33,7 +43,6 @@ public class PsseVersionParserTest {
 
 	@Test
 	public void skipsAtBangLabelLineBeforeHeader() throws Exception {
-		// Texas2K / modern RAW exports start with @!IC,SBASE,REV,... — parts[2] is "REV", not 36
 		Path raw = Files.createTempFile("psse_atbang_header", ".RAW");
 		try {
 			Files.writeString(raw, """
@@ -43,7 +52,7 @@ public class PsseVersionParserTest {
 					COMMENT LINE
 					""");
 
-			assertEquals(IpssAdapter.PsseVersion.PSSE_36, IpssAdapter.parsePsseVersion(raw.toString()));
+			assertEquals(36, revFromFile(raw));
 		}
 		finally {
 			Files.deleteIfExists(raw);
@@ -62,7 +71,7 @@ public class PsseVersionParserTest {
 					COMMENT
 					""");
 
-			assertEquals(IpssAdapter.PsseVersion.PSSE_35, IpssAdapter.parsePsseVersion(raw.toString()));
+			assertEquals(35, revFromFile(raw));
 		}
 		finally {
 			Files.deleteIfExists(raw);
@@ -79,7 +88,7 @@ public class PsseVersionParserTest {
 					COMMENT
 					""");
 
-			assertEquals(IpssAdapter.PsseVersion.PSSE_36, IpssAdapter.parsePsseVersion(raw.toString()));
+			assertEquals(36, revFromFile(raw));
 		}
 		finally {
 			Files.deleteIfExists(raw);
@@ -88,14 +97,12 @@ public class PsseVersionParserTest {
 
 	@Test
 	public void detectsTexas2kV36RawFile() throws Exception {
-		assertEquals(IpssAdapter.PsseVersion.PSSE_36,
-				IpssAdapter.parsePsseVersion(
-						"testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW"));
+		assertEquals(36, revFromFile(Path.of(
+				"testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")));
 	}
 
 	@Test
 	public void detectsIeee9V36RawFile() throws Exception {
-		assertEquals(IpssAdapter.PsseVersion.PSSE_36,
-				IpssAdapter.parsePsseVersion("testData/psse/v36/ieee9_v36.raw"));
+		assertEquals(36, revFromFile(Path.of("testData/psse/v36/ieee9_v36.raw")));
 	}
 }

@@ -4,7 +4,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +15,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 import com.interpss.core.net.Branch;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /*
  * This test case compares InterPSS and PSS/E xfr branch model
  */
@@ -26,10 +26,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
-					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.load()
-					.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw");
 
 	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
 			 			 .loadflow();
@@ -48,10 +45,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
-					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.load()
-					.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw");
   		//System.out.println(net.net2String());
 
 	  	LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net)
@@ -72,10 +66,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
-					.format(IpssAdapter.FileFormat.PSSE)
-					.load()
-					.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw");
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());
@@ -115,10 +106,7 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
-					.format(IpssAdapter.FileFormat.PSSE)
-					.load()
-					.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw");
   		//System.out.println(net.net2String());
 		/*
 		net.accept(CoreObjectFactory.createBusNoArrangeVisitor());

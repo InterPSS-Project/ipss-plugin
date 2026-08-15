@@ -9,8 +9,6 @@ import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.interpss.numeric.util.PerformanceTimer;
 import org.interpss.plugin.pssl.common.PSSLException;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.common.exp.InterpssException;
 import java.util.logging.Logger;
 import com.interpss.core.CoreObjectFactory;
@@ -21,6 +19,7 @@ import com.interpss.simu.util.sample.SampleTestingCases;
 
 import edu.emory.mathcs.csparsej.tdcomplex.DZcs_common.DZcsa;
 
+import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 public class EDistance_Sample {
 	public static void main(String args[]) throws Exception {
 		IpssCorePlugin.init();
@@ -123,10 +122,7 @@ public class EDistance_Sample {
 
 	
 	public static AclfNetwork getSampleNet() throws InterpssException {
-		AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/ieee14.ieee")
-				.setFormat(IpssAdapter.FileFormat.IEEECommonFormat)
-				.load()
-				.getImportedObj();		
+		AclfNetwork net = new IeeeCDFDirectParser().parse("ipss-plugin/ipss.sample/testData/ieee14.ieee");		
 		
 		return net;
 	}

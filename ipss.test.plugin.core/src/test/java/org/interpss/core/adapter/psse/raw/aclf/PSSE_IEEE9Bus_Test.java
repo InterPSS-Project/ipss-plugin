@@ -1,6 +1,5 @@
 package org.interpss.core.adapter.psse.raw.aclf;
  
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,8 +10,6 @@ import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -29,60 +26,44 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.config.RemoteQControlMode;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.interpss.fadapter.psse.PSSEJsonDirectParser;
 public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup { 
 	//@Test
 	public void load() throws Exception {
 		// load the test data V33
-		AclfNetwork net33 = IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
-				.setFormat(PSSE) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net33 = new PSSEDirectParser().parse("testData/adpter/psse/v31/ieee9_v31.raw");
 	}
 
 	//@Test
 	public void compare() throws Exception {
 		// load the test data V30
-		AclfNetwork net30 = IpssAdapter.importAclfNet("testData/adpter/psse/v30/IEEE9Bus/ieee9.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net30 = new PSSEDirectParser().parse("testData/adpter/psse/v30/IEEE9Bus/ieee9.raw");
 		AclfNetBean netBean30 = new AclfNet2AclfBeanMapper().map2Model(net30);
 		
 		// load the test data V29
-		AclfNetwork net29 = IpssAdapter.importAclfNet("testData/adpter/psse/v29/ieee9_v29.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net29 = new PSSEDirectParser().parse("testData/adpter/psse/v29/ieee9_v29.raw");
 		AclfNetBean netBean29 = new AclfNet2AclfBeanMapper().map2Model(net29);
 		
 		// compare the data model with V30
 		netBean30.compareTo(netBean29);
 
 		// load the test data V31
-		AclfNetwork net31 = IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net31 = new PSSEDirectParser().parse("testData/adpter/psse/v31/ieee9_v31.raw");
 		AclfNetBean netBean31 = new AclfNet2AclfBeanMapper().map2Model(net31);
 		
 		// compare the data model  with V30
 		netBean30.compareTo(netBean31);
 		
 		// load the test data V32
-		AclfNetwork net32 = IpssAdapter.importAclfNet("testData/psse/v32/ieee9_v32.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net32 = new PSSEDirectParser().parse("testData/psse/v32/ieee9_v32.raw");
 		AclfNetBean netBean32 = new AclfNet2AclfBeanMapper().map2Model(net32);
 		
 		// compare the data model  with V30
 		netBean30.compareTo(netBean32);
 		
 		// load the test data V33
-		AclfNetwork net33 = IpssAdapter.importAclfNet("testData/adpter/psse/V33/ieee9_v33.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net33 = new PSSEDirectParser().parse("testData/adpter/psse/V33/ieee9_v33.raw");
 		AclfNetBean netBean33 = new AclfNet2AclfBeanMapper().map2Model(net33);
 		
 		// compare the data model with V30
@@ -91,10 +72,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testV30() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/IEEE9Bus/ieee9.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/IEEE9Bus/ieee9.raw");
 
 		testVAclf(net);
 	}
@@ -102,7 +80,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	//TODO: V29 is not working, and we don't want to support it any more
 	// @Test
 	// public void testV29() throws Exception {
-	// 	AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v29/ieee9_v29.raw")
+	// 	AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v29/ieee9_v29.raw")
 	// 			.setFormat(PSSE)
 	//
 	// 			.load()
@@ -113,30 +91,21 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV31() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v31/ieee9_v31.raw");
 		//System.out.println(net.net2String());
 		testVAclf(net);
 	}
 	
 	@Test
 	public void testV32() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v32/ieee9_v32.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v32/ieee9_v32.raw");
 
 		testVAclf(net);
 	}
 	
 	@Test
 	public void testV33() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/ieee9_v33.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/ieee9_v33.raw");
 
 		testVAclf(net);
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
@@ -144,11 +113,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testRAWXJson() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/json/ieee9.rawx")
-				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_JSON)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEJsonDirectParser().parse("testData/adpter/psse/json/ieee9.rawx");
 
 		testVAclf(net);
 		
@@ -157,10 +122,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testAclfSpeical2WXfrData() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v35/ieee9_qa_v35.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v35/ieee9_qa_v35.raw");
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
@@ -200,10 +162,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testAclfSpeical3WXfrData() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v35/ieee9_qa_3wxfr_v35.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v35/ieee9_qa_3wxfr_v35.raw");
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
@@ -250,10 +209,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testAclf3WXfrZCorrData() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v35/ieee9_qa_3wxfr_zcorr_v35.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v35/ieee9_qa_3wxfr_zcorr_v35.raw");
 
 		// Check the 3W Xfr Z Corr Table 
 		assertNotNull(net.getXfrZTable());
@@ -343,10 +299,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testLoadWithDGen() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v34/ieee9_dgen_v34.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v34/ieee9_dgen_v34.raw");
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
@@ -386,10 +339,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
  
 	@Test
 	public void testSVCLocalControl() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/ieee9_svc_v33.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/ieee9_svc_v33.raw");
 
 		//check the SVC data connected to Bus-5
 		/*
@@ -449,10 +399,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testSVCRemoteControl() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/ieee9_svc_remote_v33.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/ieee9_svc_remote_v33.raw");
 
 		//check the SVC data connected to Bus-5
 		/*
@@ -521,11 +468,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		// Re-import the case so the legacy outer-loop result is independent of the
 		// solved INNER_PQV state above. OUTER_LOOP stops inside the 0.005 pu
 		// adjustment tolerance rather than enforcing the point constraint exactly.
-		AclfNetwork outerNet = IpssAdapter.importAclfNet(
-				"testData/adpter/psse/v33/ieee9_svc_remote_v33.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork outerNet = new PSSEDirectParser().parse("testData/adpter/psse/v33/ieee9_svc_remote_v33.raw");
 		LoadflowAlgorithm outerAlgo = LoadflowAlgoObjectFactory
 				.createLoadflowAlgorithm(outerNet);
 		outerAlgo.setLfMethod(AclfMethodType.NR);
@@ -543,11 +486,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 
 		// A narrower outer-loop voltage tolerance should move its result toward
 		// the exact INNER_PQV solution.
-		AclfNetwork narrowBandNet = IpssAdapter.importAclfNet(
-				"testData/adpter/psse/v33/ieee9_svc_remote_v33.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork narrowBandNet = new PSSEDirectParser().parse("testData/adpter/psse/v33/ieee9_svc_remote_v33.raw");
 		LoadflowAlgorithm narrowBandAlgo = LoadflowAlgoObjectFactory
 				.createLoadflowAlgorithm(narrowBandNet);
 		narrowBandAlgo.setLfMethod(AclfMethodType.NR);

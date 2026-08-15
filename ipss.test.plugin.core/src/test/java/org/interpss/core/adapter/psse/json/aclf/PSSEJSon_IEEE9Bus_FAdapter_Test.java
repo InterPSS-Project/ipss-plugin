@@ -1,6 +1,5 @@
 package org.interpss.core.adapter.psse.json.aclf;
  
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.FileReader;
@@ -14,8 +13,6 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEJsonDirectParser;
 import org.interpss.fadapter.psse.export.psse.PSSEJSonBusUpdater;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.interpss.util.FileUtil;
 import org.junit.jupiter.api.Test;
 
@@ -65,11 +62,7 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
 	
 	@Test
 	public void testJSonImport() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/json/ieee9_export.rawx")
-				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_JSON)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEJsonDirectParser().parse("testData/adpter/psse/json/ieee9_export.rawx");
 		
 		assertTrue(net.maxMismatch(AclfMethodType.PQ).maxMis.abs() < 0.0001);
 		
