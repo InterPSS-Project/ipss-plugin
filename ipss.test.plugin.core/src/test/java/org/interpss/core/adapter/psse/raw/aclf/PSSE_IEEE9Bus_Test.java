@@ -27,6 +27,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.config.RemoteQControlMode;
 
 public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup { 
 	//@Test
@@ -516,14 +517,77 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		
 		//System.out.println(AclfOutFunc.loadFlowSummary(net));
 
-		//check the SVC results
+		// The default INNER_PQV formulation enforces the remote 1.01 pu point
+		// constraint inside the Newton solve. The legacy OUTER_LOOP formulation
+		// stopped at 1.007665 pu with Q=0.124843 pu because its 0.002335 pu
+		// voltage error was within Core's 0.005 pu adjustment tolerance. That
+		// tolerance is numerical; the RAW record does not specify a voltage band.
 		AclfBus bus5 = net.getBus("Bus5");
 		System.out.println("Bus5 voltage: " + bus5.getVoltageMag() + " pu, angle: " + bus5.getVoltageAng() * 180 / Math.PI + " deg");
 		System.out.println("Bus5 svc vspec: " + svc1.getVSpecified() + " pu");
-		assertTrue(Math.abs(bus5.getVoltageMag() - svc1.getVSpecified()) < 1e-2, "Bus5 voltage magnitude is correct");
+		assertEquals(svc1.getVSpecified(), bus5.getVoltageMag(), 1e-8,
+				"The inner P/PQV controller enforces the remote voltage setpoint");
 		double q = bus50.toCapacitorBus().getQResults();
 		System.out.println("Bus50 svc q: " + q);
-		assertTrue(Math.abs(q - 0.1248) < 1e-3, "SVC Q output is correct"+q); // Q output is 0.5 pu, which is the capacitive rating
+		assertEquals(0.1513261176, q, 1e-8,
+				"SVC Q output required to hold Bus5 at 1.01 pu");
+		assertTrue(q > 0.0 && q < svc1.getQLimit().getMax(),
+				"SVC output is capacitive and within its rating");
+
+		// Re-import the case so the legacy outer-loop result is independent of the
+		// solved INNER_PQV state above. OUTER_LOOP stops inside the 0.005 pu
+		// adjustment tolerance rather than enforcing the point constraint exactly.
+		AclfNetwork outerNet = IpssAdapter.importAclfNet(
+				"testData/adpter/psse/v33/ieee9_svc_remote_v33.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_33)
+				.load()
+				.getImportedObj();
+		LoadflowAlgorithm outerAlgo = LoadflowAlgoObjectFactory
+				.createLoadflowAlgorithm(outerNet);
+		outerAlgo.setLfMethod(AclfMethodType.NR);
+		outerAlgo.getLfAdjAlgo().setRemoteQControlMode(
+				RemoteQControlMode.OUTER_LOOP);
+		outerAlgo.loadflow();
+
+		assertTrue(outerNet.isLfConverged(), "Outer-loop loadflow converged");
+		AclfBus outerBus5 = outerNet.getBus("Bus5");
+		double outerQ = outerNet.getBus("Bus50").toCapacitorBus().getQResults();
+		assertEquals(1.0076650864, outerBus5.getVoltageMag(), 1e-8,
+				"Legacy outer loop stops within its voltage adjustment tolerance");
+		assertEquals(0.1248426134, outerQ, 1e-8,
+				"Legacy outer-loop SVC Q output");
+
+		// A narrower outer-loop voltage tolerance should move its result toward
+		// the exact INNER_PQV solution.
+		AclfNetwork narrowBandNet = IpssAdapter.importAclfNet(
+				"testData/adpter/psse/v33/ieee9_svc_remote_v33.raw")
+				.setFormat(PSSE)
+				.setPsseVersion(PsseVersion.PSSE_33)
+				.load()
+				.getImportedObj();
+		LoadflowAlgorithm narrowBandAlgo = LoadflowAlgoObjectFactory
+				.createLoadflowAlgorithm(narrowBandNet);
+		narrowBandAlgo.setLfMethod(AclfMethodType.NR);
+		narrowBandAlgo.getLfAdjAlgo().setRemoteQControlMode(
+				RemoteQControlMode.OUTER_LOOP);
+		narrowBandAlgo.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.0001);
+		narrowBandAlgo.loadflow();
+
+		assertTrue(narrowBandNet.isLfConverged(),
+				"Narrow-band outer-loop loadflow converged");
+		AclfBus narrowBandBus5 = narrowBandNet.getBus("Bus5");
+		double narrowBandQ = narrowBandNet.getBus("Bus50")
+				.toCapacitorBus().getQResults();
+		System.out.println("Bus5 narrow-band outer-loop voltage: "
+				+ narrowBandBus5.getVoltageMag() + " pu");
+		System.out.println("Bus50 narrow-band outer-loop svc q: " + narrowBandQ);
+		assertEquals(1.01, narrowBandBus5.getVoltageMag(), 0.0001,
+				"Narrow-band outer loop holds Bus5 within 0.0001 pu");
+		assertEquals(0.1505952484, narrowBandQ, 1e-8,
+				"Narrow-band outer-loop SVC Q output");
+		assertTrue(Math.abs(narrowBandQ - q) < Math.abs(outerQ - q),
+				"Narrowing the outer-loop tolerance moves its Q output closer to INNER_PQV");
 
 		/*
 		 NOTE: there is no difference in the results below, even though the Qg value is different for Bus 50

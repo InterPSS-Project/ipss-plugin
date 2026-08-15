@@ -37,6 +37,7 @@ import com.interpss.core.aclf.adj.PSXfrPControl;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.adj.TapControl;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.aclf.netAdj.AreaInterchangeControl;
 import com.interpss.core.net.Substation;
 import com.interpss.core.net.nb.NBModelEquipType;
@@ -278,6 +279,22 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		assertEquals(0.60, gen.getQGenLimit().getMax(), 1.0E-9);
 		assertEquals(-0.60, gen.getQGenLimit().getMin(), 1.0E-9);
 		assertEquals(0.10, gen.getGen().getImaginary(), 1.0E-9);
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	public void testV35LccXcapDoesNotBecomeAclfReactiveOffset() throws Exception {
+		AclfNetwork net = new PSSEDirectParser(35).parse("testData/psse/v35/sample_v35.raw");
+		HvdcLine2TLCC<AclfBus> line = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().stream()
+				.filter(HvdcLine2TLCC.class::isInstance)
+				.findFirst()
+				.orElseThrow();
+
+		// PSS/E XCAP is commutating-capacitor impedance data in ohms. Core's
+		// commutingCapacitor property is a reactive-power offset, so copying
+		// XCAP into it would mix units and corrupt the converter Q calculation.
+		assertEquals(0.0, line.getRectifier().getCommutingCapacitor(), 1.0E-9);
+		assertEquals(0.0, line.getInverter().getCommutingCapacitor(), 1.0E-9);
 	}
 
 	@Test
