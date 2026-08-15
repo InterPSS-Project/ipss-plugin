@@ -3,9 +3,7 @@ package org.interpss.plugin.contingency.aux_fmt;
 import java.io.File;
 import java.util.Locale;
 
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import org.interpss.fadapter.psse.PSSEDirectParser;
 
 import com.interpss.core.aclf.AclfNetwork;
 
@@ -17,7 +15,7 @@ public class AuxToContingencyJsonMain {
                 .withUnsupportedElementPolicy(arguments.unsupportedPolicy)
                 .withDefaultCircuitId(arguments.defaultCircuitId);
 
-        AclfNetwork network = loadNetwork(arguments.networkFile, arguments.psseVersion);
+        AclfNetwork network = loadNetwork(arguments.networkFile, arguments.psseVersionOverride);
         AuxConversionReport report =
                 new AuxContingencyConverter(network).convert(arguments.inputFile, arguments.outputFile, options);
         System.out.println("AUX contingencies: " + report.getContingencyCount());
@@ -30,22 +28,19 @@ public class AuxToContingencyJsonMain {
         }
     }
 
-    private static AclfNetwork loadNetwork(File networkFile, PsseVersion psseVersion) throws Exception {
-        PsseVersion version = psseVersion != null
-                ? psseVersion
-                : IpssAdapter.parsePsseVersion(networkFile.toString());
-        return IpssAdapter.importAclfNet(networkFile.toString())
-                .setFormat(FileFormat.PSSE)
-                .setPsseVersion(version)
-                .load()
-                .getImportedObj();
+    private static AclfNetwork loadNetwork(File networkFile, Integer psseVersionOverride) throws Exception {
+        if (psseVersionOverride == null) {
+            return new PSSEDirectParser().parse(networkFile.toString());
+        }
+        return new PSSEDirectParser(psseVersionOverride).parse(networkFile.toString());
     }
 
     private static final class Arguments {
         private File inputFile;
         private File outputFile;
         private File networkFile;
-        private PsseVersion psseVersion;
+        /** Null means auto-detect REV from the RAW header. */
+        private Integer psseVersionOverride;
         private AuxConversionOptions.BusIdMode busIdMode = AuxConversionOptions.BusIdMode.PREFIX_BUS;
         private AuxConversionOptions.UnsupportedElementPolicy unsupportedPolicy =
                 AuxConversionOptions.UnsupportedElementPolicy.WARN;
@@ -66,7 +61,7 @@ public class AuxToContingencyJsonMain {
                         parsed.networkFile = new File(requiredValue(args, ++i, arg));
                         break;
                     case "--psse-version":
-                        parsed.psseVersion = parsePsseVersion(requiredValue(args, ++i, arg));
+                        parsed.psseVersionOverride = parsePsseVersion(requiredValue(args, ++i, arg));
                         break;
                     case "--bus-id-mode":
                         parsed.busIdMode = parseBusIdMode(requiredValue(args, ++i, arg));
@@ -116,15 +111,19 @@ public class AuxToContingencyJsonMain {
             throw new IllegalArgumentException("Unsupported unsupported-element policy: " + value);
         }
 
-        private static PsseVersion parsePsseVersion(String value) {
+        private static Integer parsePsseVersion(String value) {
             String normalized = value.toUpperCase(Locale.ROOT).replace('-', '_');
             if ("AUTO".equals(normalized)) {
                 return null;
             }
-            if (!normalized.startsWith("PSSE_")) {
-                normalized = "PSSE_" + normalized;
+            if (normalized.startsWith("PSSE_")) {
+                normalized = normalized.substring("PSSE_".length());
             }
-            return PsseVersion.valueOf(normalized);
+            try {
+                return Integer.parseInt(normalized);
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Unsupported PSS/E version: " + value);
+            }
         }
 
         private static String usage() {

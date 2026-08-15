@@ -45,11 +45,18 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
- * DSL for file import adapters. All formats use direct parsers
- * that bypass the ODM intermediate layer.
+ * Deprecated file-import DSL kept as a compatibility facade for external repos
+ * (e.g. desktop). Prefer format-specific direct parsers inside ipss-plugin:
+ * {@link org.interpss.fadapter.psse.PSSEDirectParser},
+ * {@link org.interpss.fadapter.psse.PSSEJsonDirectParser},
+ * {@link org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser}, etc.
+ * <p>
+ * All formats use direct parsers that bypass the ODM intermediate layer.
  * 
  * @author mzhou
+ * @deprecated Prefer direct parsers; this class remains for external callers.
  */
+@Deprecated
 public class IpssAdapter extends BaseDSL {
 	private static final Logger log = LoggerFactory.getLogger(IpssAdapter.class);
 	
