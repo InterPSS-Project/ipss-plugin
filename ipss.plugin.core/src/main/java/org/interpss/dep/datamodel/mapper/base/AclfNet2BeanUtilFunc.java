@@ -333,15 +333,15 @@ public class AclfNet2BeanUtilFunc {
 	
 
 	public static Complex format(Complex x) {
-		return new Complex(new Double(Number2String.toStr(x.getReal())).doubleValue(), 
-				           new Double(Number2String.toStr(x.getImaginary())).doubleValue());
+		return new Complex(Double.parseDouble(Number2String.toStr(x.getReal())), 
+				           Double.parseDouble(Number2String.toStr(x.getImaginary())));
 	}
 
 	public static double format(double x) {
-		return new Double(Number2String.toStr(x)).doubleValue();
+		return Double.parseDouble(Number2String.toStr(x));
 	}
 
 	public static double format2(double x) {
-		return new Double(Number2String.toStr(x, "#0.0#")).doubleValue();
+		return Double.parseDouble(Number2String.toStr(x, "#0.0#"));
 	}	
 }

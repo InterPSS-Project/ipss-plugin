@@ -114,7 +114,7 @@ public abstract class BaseControllerData {
 	private static double getParamValue(String s, int position) {
 		for (String[] sAry : rangeParameters) {
 			if (s.equals(sAry[0])) {
-				return new Double(sAry[position]).doubleValue();
+				return Double.parseDouble(sAry[position]);
 			}
 		}
 		return 0.0;
