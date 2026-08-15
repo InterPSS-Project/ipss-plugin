@@ -4,12 +4,11 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.interpss.IpssCorePlugin;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.cpf.CpfConfig;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /** Repeatable CPF benchmark for a PSS/E RAW case. */
 public final class CpfBenchmark {
 	private CpfBenchmark() {
@@ -22,11 +21,7 @@ public final class CpfBenchmark {
 		}
 		IpssCorePlugin.init();
 		double target = args.length > 3 ? Double.parseDouble(args[3]) : 0.01;
-		AclfNetwork network = IpssAdapter.importAclfNet(args[0])
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.valueOf(args[1]))
-				.load()
-				.getImportedObj();
+		AclfNetwork network = new PSSEDirectParser(parsePsseRevArg(args[1])).parse(args[0]);
 		var loadflow = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
 		loadflow.setTolerance(1.0e-7);
 		loadflow.getLfAdjAlgo().setApplyAdjustAlgo(false);
@@ -68,6 +63,14 @@ public final class CpfBenchmark {
 	private static long usedMemory() {
 		Runtime runtime = Runtime.getRuntime();
 		return runtime.totalMemory() - runtime.freeMemory();
+	}
+
+	private static int parsePsseRevArg(String value) {
+		String normalized = value.toUpperCase().replace('-', '_');
+		if (normalized.startsWith("PSSE_")) {
+			normalized = normalized.substring("PSSE_".length());
+		}
+		return Integer.parseInt(normalized);
 	}
 
 	private static void freezeContinuousControls(AclfNetwork network) {

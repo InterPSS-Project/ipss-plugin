@@ -7,8 +7,6 @@ import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisA
 
 import org.interpss.numeric.exp.IpssNumericException;
 import org.interpss.plugin.pssl.common.PSSLException;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -20,6 +18,7 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
+import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 public class Ieee14_CASample {
 	public static void main(String args[]) throws Exception {
 		
@@ -29,10 +28,7 @@ public class Ieee14_CASample {
 	}
 	
 	public static void singleOutageSample() throws InterpssException, ReferenceBusException, IpssNumericException, PSSLException  {
-		AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/ieee14.ieee")
-				.setFormat(IpssAdapter.FileFormat.IEEECommonFormat)
-				.load()
-				.getImportedObj();	
+		AclfNetwork net = new IeeeCDFDirectParser().parse("ipss-plugin/ipss.sample/testData/ieee14.ieee");	
         
 		// run Dclf
 		ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
@@ -67,10 +63,7 @@ public class Ieee14_CASample {
 	} 
 
 	public static void multipleOutageSample() throws InterpssException, ReferenceBusException, IpssNumericException, OutageConnectivityException  {
-		AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/ieee14.ieee")
-				.setFormat(IpssAdapter.FileFormat.IEEECommonFormat)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new IeeeCDFDirectParser().parse("ipss-plugin/ipss.sample/testData/ieee14.ieee");
 		
 		// run Dclf
 		ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);

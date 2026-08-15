@@ -1,6 +1,5 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -9,7 +8,6 @@ import org.interpss.dep.datamodel.bean.aclf.AclfNetBean;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.fadapter.psse.PSSEDirectParser;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -53,17 +51,11 @@ public class PSSE_Savnw_v33_Test extends CorePluginTestSetup {
 	@Disabled("Requires missing fixture testData/adpter/psse/v30/savnw_v30.raw")
 	public void compare() throws Exception {
 		// load the test data V30
-		AclfNetwork net30 = IpssAdapter.importAclfNet("testData/adpter/psse/v30/savnw_v30.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net30 = new PSSEDirectParser().parse("testData/adpter/psse/v30/savnw_v30.raw");
 		AclfNetBean netBean30 = new AclfNet2AclfBeanMapper().map2Model(net30);
 		
 		// load the test data V33
-		AclfNetwork net33 = IpssAdapter.importAclfNet("testData/psse/v33/PSSE_sample_savnw.raw")
-				.setFormat(PSSE)
-				.load()
-				.getImportedObj();
+		AclfNetwork net33 = new PSSEDirectParser().parse("testData/psse/v33/PSSE_sample_savnw.raw");
 		AclfNetBean netBean33 = new AclfNet2AclfBeanMapper().map2Model(net33);
 		
 		// compare the data model with V30

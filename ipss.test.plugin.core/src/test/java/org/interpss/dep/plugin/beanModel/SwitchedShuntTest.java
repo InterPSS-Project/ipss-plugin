@@ -11,7 +11,6 @@ import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2ResultBeanMapper;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -29,6 +28,7 @@ import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class SwitchedShuntTest extends CorePluginTestSetup {
 	@Test
 	public void fixedModeTest() throws InterpssException {
@@ -237,11 +237,7 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 	@Test
 	public void testCase1() throws Exception {
 		// load the test data
-		AclfNetwork net = IpssAdapter
-				.importAclfNet(
-						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
-				.setFormat(IpssAdapter.FileFormat.PSSE).load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw");
 
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);

@@ -14,7 +14,6 @@ import org.interpss.plugin.contingency.DclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -25,6 +24,7 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /**
  * Acknowledgment:
  * The synthetic Eastern Interconnect electric grid test case used in this example is provided by Texas A&M University’s energy and power group researchers.
@@ -39,10 +39,7 @@ import com.interpss.monitor.definition.MonitoredBranchRecord;
 public class OpenEI100k_CASample {
 
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/psse/openEI/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.load()
-				.getImportedObj();	
+        AclfNetwork net = new PSSEDirectParser().parse("ipss-plugin/ipss.sample/testData/psse/openEI/Base_Eastern_Interconnect_515GW.RAW");	
         
 		// run Dclf
 		ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);

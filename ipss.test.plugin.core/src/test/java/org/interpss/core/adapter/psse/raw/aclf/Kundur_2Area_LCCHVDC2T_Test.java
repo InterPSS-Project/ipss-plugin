@@ -10,7 +10,6 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -388,10 +387,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
 	@Test
 	public void test_LCCHVDC_constantCurrent() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_current_control.raw")
-					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.load()
-					.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_current_control.raw");
 
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);

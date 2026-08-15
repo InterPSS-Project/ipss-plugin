@@ -5,7 +5,6 @@ import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -27,7 +26,6 @@ import com.interpss.core.algo.dclf.DclfContingencyConfig;
 import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -54,6 +52,7 @@ import com.interpss.monitor.definition.MonitoredBranchRecord;
 
 import org.apache.commons.math3.complex.Complex;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
     private static final double MW_TOLERANCE = 1.0e-7;
@@ -768,10 +767,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
     }
 
     private static AclfNetwork importPsse(String path) throws InterpssException {
-        return IpssAdapter.importAclfNet(path)
-                .setFormat(PSSE)
-                .load()
-                .getImportedObj();
+        return new PSSEDirectParser().parse(path);
     }
 
     private static List<DclfBranchOutage> firstNonRefBranchOutages(

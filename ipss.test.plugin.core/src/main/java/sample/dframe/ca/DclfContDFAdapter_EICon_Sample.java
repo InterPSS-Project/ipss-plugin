@@ -17,7 +17,6 @@ import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.result.dframe.ca.DclfContingencyDFrameAdapter;
 
 import com.interpss.algo.parallel.BranchCAResultRec;
@@ -29,15 +28,13 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class DclfContDFAdapter_EICon_Sample {
 	//private static final String TEST_ROOT = "ipss.plugin.core/";
 	private static final String TEST_ROOT = "";
 
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.load()
-				.getImportedObj();	
+        AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");	
         
 		// run Dclf
 		ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);
