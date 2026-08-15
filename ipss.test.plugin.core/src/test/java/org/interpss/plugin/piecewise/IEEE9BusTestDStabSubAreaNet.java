@@ -93,7 +93,7 @@ public class IEEE9BusTestDStabSubAreaNet {
 	}
 	
 	private BaseDStabNetwork getTestNet() throws Exception {
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr");

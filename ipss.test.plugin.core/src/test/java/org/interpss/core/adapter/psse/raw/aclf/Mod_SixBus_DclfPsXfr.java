@@ -5,7 +5,6 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +28,6 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
 					.getImportedObj();
 
@@ -52,7 +50,6 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.setPsseVersion(PsseVersion.PSSE_30)
 					.load()
 					.getImportedObj();
   		//System.out.println(net.net2String());
@@ -77,7 +74,6 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.format(IpssAdapter.FileFormat.PSSE)
-					.psseVersion(PsseVersion.PSSE_30)
 					.load()
 					.getImportedObj();
   		//System.out.println(net.net2String());
@@ -121,7 +117,6 @@ public class Mod_SixBus_DclfPsXfr extends CorePluginTestSetup {
 
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/Mod_SixBus_2WPsXfr.raw")
 					.format(IpssAdapter.FileFormat.PSSE)
-					.psseVersion(PsseVersion.PSSE_30)
 					.load()
 					.getImportedObj();
   		//System.out.println(net.net2String());

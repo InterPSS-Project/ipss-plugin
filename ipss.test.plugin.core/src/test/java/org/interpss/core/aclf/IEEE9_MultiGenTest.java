@@ -7,7 +7,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.util.NumericUtil;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -27,7 +26,6 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
 		 */
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw")
 				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_30)
 				.load()
 				.getImportedObj();
 		

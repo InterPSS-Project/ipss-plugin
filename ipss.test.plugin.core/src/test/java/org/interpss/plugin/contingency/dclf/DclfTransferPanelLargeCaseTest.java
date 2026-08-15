@@ -67,17 +67,13 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
 
     @Test
     public void texas2kChunkedPanelMatchesParallelAnalyzer() throws Exception {
-        AclfNetwork net = importPsse(
-                "testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW",
-                IpssAdapter.PsseVersion.PSSE_36);
+        AclfNetwork net = importPsse("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW");
         assertChunkedPanelMatchesParallelAnalyzer(net, 60, 120, 24, 4);
     }
 
     @Test
     public void texas2kJsonRandomMultiOutagesCompareSparseAndWoodburyCa() throws Exception {
-        AclfNetwork net = importPsse(
-                "testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW",
-                IpssAdapter.PsseVersion.PSSE_36);
+        AclfNetwork net = importPsse("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW");
         setDefaultRatings(net);
 
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
@@ -136,17 +132,13 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
 
     @Test
     public void activsg25kChunkedPanelMatchesParallelAnalyzer() throws Exception {
-        AclfNetwork net = importPsse(
-                "testData/psse/v33/ACTIVSg25k.RAW",
-                IpssAdapter.PsseVersion.PSSE_33);
+        AclfNetwork net = importPsse("testData/psse/v33/ACTIVSg25k.RAW");
         assertChunkedPanelMatchesParallelAnalyzer(net, 30, 60, 15, 4);
     }
 
     @Test
     public void activsg25kParallelCaSparseVsWoodburyPerformance() throws Exception {
-        AclfNetwork net = importPsse(
-                "testData/psse/v33/ACTIVSg25k.RAW",
-                IpssAdapter.PsseVersion.PSSE_33);
+        AclfNetwork net = importPsse("testData/psse/v33/ACTIVSg25k.RAW");
         setDefaultRatings(net);
 
         int contingencyCount = intProperty("interpss.performance25kContingencies", 30);
@@ -172,9 +164,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         assumeTrue(Boolean.getBoolean("interpss.full25kDclfTests"),
                 "Set -Dinterpss.full25kDclfTests=true to run full 25k Woodbury DCLF contingency analysis");
 
-        AclfNetwork net = importPsse(
-                "testData/psse/v33/ACTIVSg25k.RAW",
-                IpssAdapter.PsseVersion.PSSE_33);
+        AclfNetwork net = importPsse("testData/psse/v33/ACTIVSg25k.RAW");
         setDefaultRatings(net);
 
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
@@ -212,9 +202,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
                 "Set -Dinterpss.fullJsonDclfTests=true to run OpenEI JSON DCLF performance comparison");
 
-        AclfNetwork net = importPsse(
-                "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW",
-                IpssAdapter.PsseVersion.PSSE_33);
+        AclfNetwork net = importPsse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
         setDefaultRatings(net);
 
         int contingencyCount = intProperty("interpss.performanceOpenEiContingencies", 10);
@@ -250,9 +238,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
                 "Set -Dinterpss.fullJsonDclfTests=true to run OpenEI JSON DCLF performance comparison");
 
-        AclfNetwork net = importPsse(
-                "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW",
-                IpssAdapter.PsseVersion.PSSE_33);
+        AclfNetwork net = importPsse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
         setDefaultRatings(net);
 
         int contingencyCount = intProperty("interpss.performanceOpenEiContingencies", 10);
@@ -308,9 +294,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
                 "Set -Dinterpss.fullJsonDclfTests=true to run full JSON DCLF transfer-panel regressions");
 
-        AclfNetwork net = importPsse(
-                "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW",
-                IpssAdapter.PsseVersion.PSSE_33);
+        AclfNetwork net = importPsse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
         setDefaultRatings(net);
 
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
@@ -374,9 +358,7 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         assumeTrue(Boolean.getBoolean("interpss.hourlyDclfTests"),
                 "Set -Dinterpss.hourlyDclfTests=true to run 24-hour full JSON DCLF performance comparison");
 
-        AclfNetwork net = importPsse(
-                "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW",
-                IpssAdapter.PsseVersion.PSSE_33);
+        AclfNetwork net = importPsse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
         setDefaultRatings(net);
 
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
@@ -785,10 +767,9 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
                 + formatDouble(sparseRun.elapsedNs / (double) woodburyRun.elapsedNs));
     }
 
-    private static AclfNetwork importPsse(String path, IpssAdapter.PsseVersion version) throws InterpssException {
+    private static AclfNetwork importPsse(String path) throws InterpssException {
         return IpssAdapter.importAclfNet(path)
                 .setFormat(PSSE)
-                .setPsseVersion(version)
                 .load()
                 .getImportedObj();
     }

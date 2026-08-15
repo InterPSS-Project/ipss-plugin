@@ -17,8 +17,7 @@ public class EasternInterconnctionJsonCopySample {
 	public static void main(String args[]) throws InterpssException {
 		
 		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 		

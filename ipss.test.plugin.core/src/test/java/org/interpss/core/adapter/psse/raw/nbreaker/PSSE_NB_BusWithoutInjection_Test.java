@@ -28,7 +28,7 @@ public class PSSE_NB_BusWithoutInjection_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testWithSwitches() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(WITH_SWITCHES);
+		AclfNetwork net = new PSSEDirectParser().parse(WITH_SWITCHES);
 		assertTrue(net.getNoBus() >= 3);
 		assertEquals(3, net.getSubstationMap().size());
 		// Substations 1–2 have closed switches → ≥1 component; sub 3 has STATUS=0 switch
@@ -39,7 +39,7 @@ public class PSSE_NB_BusWithoutInjection_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testWithoutSwitches() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(WITHOUT_SWITCHES);
+		AclfNetwork net = new PSSEDirectParser().parse(WITHOUT_SWITCHES);
 		assertTrue(net.getNoBus() >= 3);
 		assertNotNull(net.getSubstationMap());
 		assertEquals(0, net.getSubstationMap().size());
@@ -47,7 +47,7 @@ public class PSSE_NB_BusWithoutInjection_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testIsolatedInternalConnection() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(ISOLATED);
+		AclfNetwork net = new PSSEDirectParser().parse(ISOLATED);
 		assertTrue(net.getNoBus() >= 3);
 		assertEquals(3, net.getSubstationMap().size());
 		assertNotNull(net.getSubstation("3"));
@@ -55,7 +55,7 @@ public class PSSE_NB_BusWithoutInjection_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testBusBreakerModelWithoutInjection() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(BUS_BREAKER);
+		AclfNetwork net = new PSSEDirectParser().parse(BUS_BREAKER);
 		assertTrue(net.getNoBus() >= 3, "import must not NPE on bus-breaker empty-injection case");
 	}
 }

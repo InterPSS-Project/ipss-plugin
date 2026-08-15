@@ -19,8 +19,7 @@ public class Texas2kBusAclfInvestigation {
 	public static void main(String args[]) throws InterpssException {
 		
 		AclfNetwork net = IpssAdapter.importAclfNet(RootDir + "testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 		

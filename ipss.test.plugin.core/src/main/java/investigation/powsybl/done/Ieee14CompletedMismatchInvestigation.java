@@ -21,10 +21,10 @@ import investigation.powsybl.PowSyBlMismatchInvSupport;
 public class Ieee14CompletedMismatchInvestigation {
 
 	public static void main(String[] args) throws InterpssException {
-		AclfNetwork baseline = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_bus.raw", 33);
+		AclfNetwork baseline = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_bus.raw");
 		PowSyBlMismatchInvSupport.printAsReadMismatch(baseline, "Baseline IEEE_14_bus.raw");
 
-		AclfNetwork v33 = PowSyBlMismatchInvSupport.parseRaw("parser/IEEE_14_bus_completed.raw", 33);
+		AclfNetwork v33 = PowSyBlMismatchInvSupport.parseRaw("parser/IEEE_14_bus_completed.raw");
 		Mismatch m33 = PowSyBlMismatchInvSupport.printAsReadMismatch(v33, "IEEE_14_bus_completed.raw");
 		System.out.println("HVDC MT count=" + v33.getHvdcLineMTList().size()
 				+ "  specialBranches=" + v33.getSpecialBranchList().size());
@@ -42,7 +42,7 @@ public class Ieee14CompletedMismatchInvestigation {
 		PowSyBlMismatchInvSupport.debugBus(v33, m33.maxPBus != null ? m33.maxPBus.getId() : "Bus12");
 		PowSyBlMismatchInvSupport.debugBus(v33, m33.maxQBus != null ? m33.maxQBus.getId() : "Bus14");
 
-		AclfNetwork v35 = PowSyBlMismatchInvSupport.parseRaw("parser/IEEE_14_bus_completed_rev35.raw", 35);
+		AclfNetwork v35 = PowSyBlMismatchInvSupport.parseRaw("parser/IEEE_14_bus_completed_rev35.raw");
 		PowSyBlMismatchInvSupport.printAsReadMismatch(v35, "IEEE_14_bus_completed_rev35.raw");
 
 		AclfNetwork rawx = PowSyBlMismatchInvSupport.parseRawx("rawx/IEEE_14_bus_completed_rev35.rawx");

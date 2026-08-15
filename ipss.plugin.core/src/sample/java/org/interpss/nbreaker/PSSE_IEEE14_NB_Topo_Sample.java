@@ -21,7 +21,7 @@ public class PSSE_IEEE14_NB_Topo_Sample {
 			"testData/psse/nbreaker/IEEE_14_bus_nodeBreaker_rev35_exported.raw";
 
 	public static void main(String[] args) throws InterpssException {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		net.getBusList().forEach(bus -> {
 			if (bus.mismatch(AclfMethodType.NR).abs() > 0.0001) {

@@ -240,7 +240,6 @@ public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
     private static AclfNetwork loadActivs25k() throws InterpssException {
         return IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
                 .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
                 .load()
                 .getImportedObj();
     }
@@ -248,7 +247,6 @@ public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
     private static AclfNetwork loadOpenEi() throws InterpssException {
         return IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
                 .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
                 .load()
                 .getImportedObj();
     }

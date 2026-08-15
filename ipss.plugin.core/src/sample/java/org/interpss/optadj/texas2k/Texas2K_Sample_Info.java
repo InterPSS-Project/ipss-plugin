@@ -14,8 +14,7 @@ public class Texas2K_Sample_Info {
     public static AclfNetwork loadNetwork() throws InterpssException {
 		// load the test data V33
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v36/Texas2k_series24_case1_2016summerPeak_v36.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();	
 

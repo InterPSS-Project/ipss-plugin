@@ -57,7 +57,6 @@ public class JacobianMatrixExportTest extends CorePluginTestSetup {
 
         AclfNetwork net = org.interpss.plugin.pssl.plugin.IpssAdapter.importAclfNet(rawFile)
                 .setFormat(PSSE)
-                .setPsseVersion(org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion.PSSE_33)
                 .load()
                 .getImportedObj();
 

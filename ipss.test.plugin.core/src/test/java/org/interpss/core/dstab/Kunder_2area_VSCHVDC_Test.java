@@ -16,7 +16,7 @@ public class Kunder_2area_VSCHVDC_Test  extends DStabTestSetupBase{
 	@Test
 	public void test_Kunder_VSCHVDC_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/Kundur_2area/Kundur_2area_v30.raw",
 				"testData/adpter/psse/v30/Kundur_2area/kundur_2area.dyr");
 		

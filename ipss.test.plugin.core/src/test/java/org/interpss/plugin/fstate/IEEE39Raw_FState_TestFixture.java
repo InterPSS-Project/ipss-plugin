@@ -26,7 +26,6 @@ public final class IEEE39Raw_FState_TestFixture {
     public static AclfNetwork loadIEEE39Raw() throws Exception {
         AclfNetwork aclfNet = IpssAdapter.importAclfNet(IEEE39_RAW)
                 .setFormat(IpssAdapter.FileFormat.PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_30)
                 .load()
                 .getImportedObj();
         IEEE39_RAW_Info_Sample.addInfo2Network(aclfNet);

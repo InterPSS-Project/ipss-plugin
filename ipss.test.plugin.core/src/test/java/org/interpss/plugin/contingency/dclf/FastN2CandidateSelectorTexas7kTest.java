@@ -612,7 +612,6 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	private static AclfNetwork importPsse(Path path) throws InterpssException {
 		return IpssAdapter.importAclfNet(path.toString())
 				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
 				.load()
 				.getImportedObj();
 	}

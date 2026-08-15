@@ -35,7 +35,7 @@ public class PSSE_PowSyBl_RAWX_Smoke_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee14RawVsRawxBusCount() throws Exception {
-		AclfNetwork raw = new PSSEDirectParser(35).parse("testData/psse/powsybl/ieee/IEEE_14_bus_rev35.raw");
+		AclfNetwork raw = new PSSEDirectParser().parse("testData/psse/powsybl/ieee/IEEE_14_bus_rev35.raw");
 		AclfNetwork rawx = new PSSEJsonDirectParser().parse(DIR + "IEEE_14_bus_rev35.rawx");
 		assertEquals(raw.getNoActiveBus(), rawx.getNoActiveBus());
 	}
@@ -52,7 +52,7 @@ public class PSSE_PowSyBl_RAWX_Smoke_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee24RawVsRawxSwitchedShunt() throws Exception {
-		AclfNetwork raw = new PSSEDirectParser(35).parse("testData/psse/powsybl/ieee/IEEE_24_bus_rev35.raw");
+		AclfNetwork raw = new PSSEDirectParser().parse("testData/psse/powsybl/ieee/IEEE_24_bus_rev35.raw");
 		AclfNetwork rawx = new PSSEJsonDirectParser().parse(DIR + "IEEE_24_bus_rev35.rawx");
 		assertEquals(raw.getBus("Bus1").getFirstSwitchedShunt(true).getBInit(),
 				rawx.getBus("Bus1").getFirstSwitchedShunt(true).getBInit(), 1e-9);

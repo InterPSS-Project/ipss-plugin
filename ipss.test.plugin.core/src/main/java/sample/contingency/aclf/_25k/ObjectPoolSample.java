@@ -39,8 +39,7 @@ public class ObjectPoolSample {
         //String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 
         AclfNetwork seedAclfNet = IpssAdapter.importAclfNet(filename)
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+                .setFormat(PSSE) 
                 .load()
                 .getImportedObj();
         
