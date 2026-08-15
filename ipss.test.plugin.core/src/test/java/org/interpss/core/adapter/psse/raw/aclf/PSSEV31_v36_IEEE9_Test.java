@@ -7,7 +7,6 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
 import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -25,7 +24,6 @@ public class PSSEV31_v36_IEEE9_Test extends CorePluginTestSetup {
 public void testV31() throws Exception {
 	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v31/ieee9_v31.raw")
 			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_31)
 			.load()
 			.getImportedObj();
 	
@@ -51,7 +49,6 @@ public void testV31() throws Exception {
 public void testV32() throws Exception {
 	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v32/ieee9_v32.raw")
 			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_32)
 			.load()
 			.getImportedObj();
 	
@@ -76,7 +73,6 @@ public void testV32() throws Exception {
 public void testV33() throws Exception {
 	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/ieee9_v33.raw")
 			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_33)
 			.load()
 			.getImportedObj();
 	
@@ -100,7 +96,6 @@ public void testV33() throws Exception {
 public void testV34() throws Exception {
 	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v34/ieee9_v34.raw")
 			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_34)
 			.load()
 			.getImportedObj();
 	
@@ -124,7 +119,6 @@ public void testV34() throws Exception {
 public void testV35() throws Exception {
 	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v35/ieee9_v35.raw")
 			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_35)
 			.load()
 			.getImportedObj();
 	
@@ -149,7 +143,6 @@ public void testV35() throws Exception {
 public void testV36() throws Exception {
 	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/ieee9_v36.raw")
 			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_36)
 			.load()
 			.getImportedObj();
 	

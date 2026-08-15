@@ -38,7 +38,7 @@ public class testCustomCurInjDstab {
 		 * load transient stability system data set into DynamicStabilityNetwork object
 		 */
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		

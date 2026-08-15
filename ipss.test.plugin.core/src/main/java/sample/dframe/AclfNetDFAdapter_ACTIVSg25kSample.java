@@ -30,8 +30,7 @@ public class AclfNetDFAdapter_ACTIVSg25kSample {
 		
 		// load the test data V33
 		AclfNetwork net = IpssAdapter.importAclfNet(filename)
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+				.setFormat(PSSE) 
 				.load()
 				.getImportedObj();
 		

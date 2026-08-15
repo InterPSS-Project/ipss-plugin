@@ -415,7 +415,6 @@ public class ContinuationPowerFlowPsseTest extends CorePluginTestSetup {
 			String path, IpssAdapter.PsseVersion version) throws Exception {
 		return IpssAdapter.importAclfNet(path)
 				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(version)
 				.load()
 				.getImportedObj();
 	}

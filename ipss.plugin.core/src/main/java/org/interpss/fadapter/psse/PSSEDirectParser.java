@@ -214,7 +214,7 @@ public class PSSEDirectParser {
         baseMva = rec.getDouble(1, 100.0);
         this.version = versionOverride != null
                 ? versionOverride
-                : PsseRev.fromHeaderRec(rec);
+                : PsseRev.fromHeaderLine(line1);
 
         builder.setNetworkInfo("Base_Case_from_PSS_E_format",
                 (line2 != null ? line2.trim() : "PSS/E Case"),

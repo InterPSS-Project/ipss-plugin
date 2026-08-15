@@ -20,7 +20,7 @@ public class IEEE39Bus_Acsc_Test {
 	@Test
 	public void acsc_test() throws InterpssException{
 		IpssCorePlugin.init();
-		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
+		AcscNetwork net = new PSSEMultiFileLoader().loadAcsc(
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq");
 		

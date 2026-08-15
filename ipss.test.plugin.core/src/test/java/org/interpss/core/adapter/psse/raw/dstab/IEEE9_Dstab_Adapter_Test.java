@@ -20,7 +20,7 @@ public class IEEE9_Dstab_Adapter_Test {
 	public void test_IEEE9Bus_Dstab() throws Exception {
 		IpssCorePlugin.init();
 		
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr");

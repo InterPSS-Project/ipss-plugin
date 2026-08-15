@@ -35,7 +35,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			@Disabled("ACTIVSg2000 DStab case requires dynamic models not supported by the current mapper")
 			public void test_ACTIVSg2000_Dstab() throws InterpssException{
 			IpssCorePlugin.init();
-			SimuContext simuCtx = new PSSEMultiFileLoader(33).loadDStab(
+			SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000.RAW",
 					"testData/adpter/psse/v33/ACTIVSg2000/ACTIVSg2000_dyn_cmld_zone3_v1.dyr");
 			
@@ -142,7 +142,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void test_ACTIVSg2000_Dstab_compositeLoadModel() throws InterpssException{
 			IpssCorePlugin.init();
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+			SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 					"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC_v2.raw",
 					"testData/adpter/psse/v30/IEEE300/IEEE300_dyn_cmld_zone1.dyr");
 			

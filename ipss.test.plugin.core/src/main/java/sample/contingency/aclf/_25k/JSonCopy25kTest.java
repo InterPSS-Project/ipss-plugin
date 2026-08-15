@@ -30,8 +30,7 @@ public class JSonCopy25kTest {
         String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 
         AclfNetwork net = IpssAdapter.importAclfNet(filename)
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
+                .setFormat(PSSE) 
                 .load()
                 .getImportedObj();
         

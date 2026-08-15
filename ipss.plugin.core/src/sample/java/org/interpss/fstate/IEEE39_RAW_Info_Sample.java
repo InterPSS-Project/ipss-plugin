@@ -12,8 +12,7 @@ public class IEEE39_RAW_Info_Sample {
 	public static AclfNetwork loadIEEE39Raw() throws Exception {
 		String PSSE_FILE = "ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw";
 		AclfNetwork aclfNet = IpssAdapter.importAclfNet(PSSE_FILE)
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30) 
+				.setFormat(IpssAdapter.FileFormat.PSSE) 
 				.load()
 				.getImportedObj();
 
