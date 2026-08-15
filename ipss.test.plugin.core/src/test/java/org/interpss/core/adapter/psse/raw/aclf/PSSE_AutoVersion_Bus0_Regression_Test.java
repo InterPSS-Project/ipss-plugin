@@ -164,10 +164,9 @@ public class PSSE_AutoVersion_Bus0_Regression_Test extends CorePluginTestSetup {
 		Path raw = Files.createTempFile("psse_busnum0", ".raw");
 		try {
 			String ieee9 = Files.readString(Path.of("testData/psse/v36/ieee9_v36.raw"));
-			String injected = ieee9.replace(
-					"0 / END OF SYSTEM-WIDE DATA, BEGIN BUS DATA\n",
-					"0 / END OF SYSTEM-WIDE DATA, BEGIN BUS DATA\n"
-							+ "GENERAL, THRSHZ=0.0001, PQBRAK=0.7\n"
+			String injected = insertAfterLineStartingWith(ieee9,
+					"0 / END OF SYSTEM-WIDE DATA, BEGIN BUS DATA",
+					"GENERAL, THRSHZ=0.0001, PQBRAK=0.7\n"
 							+ "GAUSS, ITMX=100, ACCP=1.6\n");
 			assertTrue(injected.length() > ieee9.length(), "misaligned system-wide lines should be injected");
 			Files.writeString(raw, injected);
@@ -189,6 +188,15 @@ public class PSSE_AutoVersion_Bus0_Regression_Test extends CorePluginTestSetup {
 				.setPsseVersion(ver)
 				.load()
 				.getImportedObj();
+	}
+
+	private static String insertAfterLineStartingWith(String text, String prefix,
+			String insertion) {
+		int start = text.indexOf(prefix);
+		assertTrue(start >= 0, "fixture line not found: " + prefix);
+		int end = text.indexOf('\n', start);
+		assertTrue(end >= 0, "fixture line has no terminator: " + prefix);
+		return text.substring(0, end + 1) + insertion + text.substring(end + 1);
 	}
 
 	/**
