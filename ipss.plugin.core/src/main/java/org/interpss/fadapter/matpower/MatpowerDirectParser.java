@@ -250,9 +250,8 @@ public class MatpowerDirectParser {
             BaseAclfBus bus = (BaseAclfBus) builder.getNetwork().getBus(busId);
             if (bus == null) continue;
 
-            int nextGenNumber = genCount.getOrDefault(busNum, 0) + 1;
-            genCount.put(busNum, nextGenNumber);
-            String genId = String.valueOf(nextGenNumber);
+            int generatorNumber = genCount.merge(busNum, 1, Integer::sum);
+            String genId = String.valueOf(generatorNumber);
 
             builder.addContributeGen(busId, genId, status == 1,
                     pg / baseMva, qg / baseMva, mbase, vg,
