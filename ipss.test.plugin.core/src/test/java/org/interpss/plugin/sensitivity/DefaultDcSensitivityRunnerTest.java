@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.nio.file.Files;
@@ -104,6 +105,41 @@ class DefaultDcSensitivityRunnerTest extends CorePluginTestSetup {
 		assertEquals(expected, sink.rows().getFirst().factor(), 1.0e-10);
 		assertEquals(1, manifest.candidateCount());
 		assertTrue(manifest.complete());
+	}
+
+	@Test
+	void ptdfThresholdKeepsNegativeFactorsByMagnitude() throws Exception {
+		AclfNetwork net = loadIeee14();
+		List<String> monitorIds = net.getBranchList().stream()
+				.filter(AclfBranch::isActive)
+				.map(AclfBranch::getId)
+				.toList();
+		PtdfSpec spec = new PtdfSpec(List.of(new DcSensitivityStudyDefinition.Direction(
+				"transaction", "Bus 4 to Bus 5", EndpointRef.bus("Bus4"), EndpointRef.bus("Bus5"), true)),
+				new MonitorSet(monitorIds, List.of()));
+		DcSensitivityStudyDefinition fullStudy = new DcSensitivityStudyDefinition(
+				DcSensitivityStudyDefinition.CURRENT_SCHEMA_VERSION, "ptdf-full", "PTDF full",
+				new NetworkReference("", ""), EndpointCatalog.empty(), List.of(spec),
+				new CalculationOptions(DclfMethod.STD, null, ResultRetentionPolicy.FULL, 0.0,
+						100, 100.0, false, 1024));
+		InMemorySensitivityResultSink fullSink = new InMemorySensitivityResultSink();
+		new DefaultDcSensitivityRunner().run(net, fullStudy, fullSink);
+		Row negative = fullSink.rows().stream()
+				.filter(row -> row.factor() < -1.0e-6)
+				.max(Comparator.comparingDouble(row -> Math.abs(row.factor())))
+				.orElseThrow();
+
+		DcSensitivityStudyDefinition thresholdedStudy = new DcSensitivityStudyDefinition(
+				DcSensitivityStudyDefinition.CURRENT_SCHEMA_VERSION, "ptdf-thresholded", "PTDF thresholded",
+				new NetworkReference("", ""), EndpointCatalog.empty(), List.of(spec),
+				new CalculationOptions(DclfMethod.STD, null, ResultRetentionPolicy.THRESHOLDED,
+						Math.abs(negative.factor()) - 1.0e-9, 100, 100.0, false, 1024));
+		InMemorySensitivityResultSink thresholdedSink = new InMemorySensitivityResultSink();
+		new DefaultDcSensitivityRunner().run(loadIeee14(), thresholdedStudy, thresholdedSink);
+
+		assertTrue(thresholdedSink.rows().stream().anyMatch(row ->
+						row.monitorId().equals(negative.monitorId()) && row.factor() < 0.0),
+				"PTDF retention threshold must compare against absolute factor magnitude");
 	}
 
 	@Test
