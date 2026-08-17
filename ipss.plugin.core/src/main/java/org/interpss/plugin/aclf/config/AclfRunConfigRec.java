@@ -57,6 +57,23 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	
 	public boolean applyPowerAdjust = true;
 	public boolean psXfrPControl = true;
+
+	// Core 1.3.12 solver controls. Wrapper types keep null = "leave the
+	// algorithm default (or replayed case mode) untouched".
+	public Boolean areaInterchangeControlEnabled;
+	public Integer maxAreaInterchangeAdjustmentsPerIteration;
+	public Double maxAreaInterchangeAngleStepRad;
+	public Double maxAreaInterchangePowerStepPu;
+	public Double areaInterchangeAdjustmentFactor;
+	public Integer maxPvLimitAdjustmentsPerIteration;
+
+	// Apply the imported PSS/E saved-solution SOLVER activity flags
+	// (ACTAPS/AREAIN/PHSHFT/DCTAPS/SWSHNT/NONDIV) when the network carries
+	// PsseLoadflowSolutionSettings. The desktop run service honors this flag.
+	public boolean savedSolutionReplay = false;
+
+	// Capture the core load-flow detailed iteration/message log in run output.
+	public boolean messageLoggingEnabled = false;
 	
 	// NR method config
 	public boolean nonDivergent = false;
@@ -152,6 +169,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
         double tolPU = this.tolUnitType == UnitType.mVA? this.tolerance/baseMVA : this.tolerance;
         algo.setTolerance(tolPU);
         algo.setMaxIterations(this.maxIterations);
+        algo.setDetailedIterationLoggingEnabled(this.messageLoggingEnabled);
         
         algo.getDataCheckConfig().setAutoSetZeroZBranch(this.autoSetZeroZBranch);
         algo.getDataCheckConfig().setTurnOffIslandBus(this.turnOffIslandBus);
@@ -187,6 +205,20 @@ public class AclfRunConfigRec extends BaseJSONBean {
 
         	algo.getLfAdjAlgo().getPowerAdjConfig().setAdjust(this.applyPowerAdjust);
         	algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(this.psXfrPControl);
+
+			// Core 1.3.12 solver controls; null fields leave defaults untouched
+			if (this.areaInterchangeControlEnabled != null)
+				algo.getNetAdjAlgo().setAreaInterchangeControlEnabled(this.areaInterchangeControlEnabled);
+			if (this.maxAreaInterchangeAdjustmentsPerIteration != null)
+				algo.getNetAdjAlgo().setMaxAreaInterchangeAdjustmentsPerIteration(this.maxAreaInterchangeAdjustmentsPerIteration);
+			if (this.maxAreaInterchangeAngleStepRad != null)
+				algo.getNetAdjAlgo().setMaxAreaInterchangeAngleStep(this.maxAreaInterchangeAngleStepRad);
+			if (this.maxAreaInterchangePowerStepPu != null)
+				algo.getNetAdjAlgo().setMaxAreaInterchangePowerStep(this.maxAreaInterchangePowerStepPu);
+			if (this.areaInterchangeAdjustmentFactor != null)
+				algo.getNetAdjAlgo().setAreaInterchangeAdjustmentFactor(this.areaInterchangeAdjustmentFactor);
+			if (this.maxPvLimitAdjustmentsPerIteration != null)
+				algo.getLfAdjAlgo().setMaxPvLimitAdjustmentsPerIteration(this.maxPvLimitAdjustmentsPerIteration);
         	
 			// Load-flow non-divergent inputs apply to both NR and PQ.
 			algo.setNonDivergent(this.nonDivergent);
