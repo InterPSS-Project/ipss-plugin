@@ -7,10 +7,10 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.ContingencyAction;
-import org.interpss.plugin.contingency.definition.ContingencyActionType;
-import org.interpss.plugin.contingency.definition.ContingencyDefinition;
-import org.interpss.plugin.contingency.definition.ContingencyObjectType;
+import com.interpss.core.contingency.definition.ContingencyAction;
+import com.interpss.core.contingency.definition.ContingencyActionType;
+import com.interpss.core.contingency.definition.ContingencyDefinition;
+import com.interpss.core.contingency.definition.ContingencyObjectType;
 
 public final class ContingencyDefinitionAdapter {
     public static final String METADATA_FROM_BUS = "from_bus";
