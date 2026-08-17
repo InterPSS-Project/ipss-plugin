@@ -12,7 +12,7 @@ import org.interpss.plugin.contingency.con_fmt.bean.ConEquipAction;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipEvent;
 import org.interpss.plugin.contingency.con_fmt.bean.ConEquipType;
 import org.interpss.plugin.contingency.con_fmt.mapper.ConToIpssMapper;
-import org.interpss.plugin.contingency.definition.ContingencyDefinition;
+import com.interpss.core.contingency.definition.ContingencyDefinition;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
