@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.ContingencyDefinition;
+import com.interpss.core.contingency.definition.ContingencyDefinition;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.AclfContingencyObjectFactory;
