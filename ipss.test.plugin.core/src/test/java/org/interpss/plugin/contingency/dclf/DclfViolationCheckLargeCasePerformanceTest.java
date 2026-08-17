@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.ContingencyDefinition;
+import com.interpss.core.contingency.definition.ContingencyDefinition;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.contingency.util.DclfMultiOutageContingencyHelper;
