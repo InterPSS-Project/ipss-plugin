@@ -15,6 +15,8 @@
     <packaging>jar</packaging>
 
     <properties>
+        <ipss.optimization.version>0.5.1</ipss.optimization.version>
+        <ortools.version>9.12.4544</ortools.version>
     </properties>
 
     <dependencies>
@@ -38,7 +40,12 @@
         <dependency>
             <groupId>com.google.ortools</groupId>
             <artifactId>ortools-java</artifactId>
-            <version>9.15.6755</version>
+            <version>${ortools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.interpss</groupId>
+            <artifactId>ipss.optimization.core</artifactId>
+            <version>${ipss.optimization.version}</version>
         </dependency>
     </dependencies>
 
