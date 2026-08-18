@@ -272,47 +272,48 @@ public class ContingencyDefinitionRuntimeHelperTest {
 
     @Test
     public void highImpedanceCachedB1MatchesDirectRebuildForLineAndTransformer() throws Exception {
-        AclfNetwork workspaceNet = importIeee9Labeled();
-        ContingencyAnalysisAlgorithm workspaceAlgo =
-                DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(workspaceNet);
-        DclfMultiOutageContingencyHelper helper =
-                new DclfMultiOutageContingencyHelper(workspaceAlgo);
+        for (DclfMethod method : List.of(DclfMethod.STD, DclfMethod.INC_LOSS)) {
+            AclfNetwork workspaceNet = importIeee9Labeled();
+            ContingencyAnalysisAlgorithm workspaceAlgo =
+                    DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(workspaceNet);
+            AclfBranch lineOutage = workspaceNet.getBranch("Bus4->Bus5(0)");
+            assertNotNull(lineOutage);
+            Complex originalLineZ = lineOutage.getZ();
+            DclfMultiOutageContingencyHelper.HighImpedanceDclfReplayWorkspace workspace =
+                    new DclfMultiOutageContingencyHelper(workspaceAlgo)
+                            .createHighImpedanceDclfReplayWorkspace(method);
+            double[][] baseB1 = snapshotB1(workspace.dclfAlgo().getB1Matrix());
+            try {
+                assertCachedHighZMatchesDirectRebuild(
+                        workspace, lineOutage.getId(), importIeee9Labeled(), method);
+            } finally {
+                workspace.close();
+            }
+            assertEquals(originalLineZ, lineOutage.getZ());
+            assertB1Matches(baseB1, workspaceAlgo.getB1Matrix());
 
-        AclfBranch lineOutage = workspaceNet.getBranch("Bus4->Bus5(0)");
-        assertNotNull(lineOutage);
-        Complex originalLineZ = lineOutage.getZ();
-
-        DclfMultiOutageContingencyHelper.HighImpedanceDclfReplayWorkspace workspace =
-                helper.createHighImpedanceDclfReplayWorkspace(DclfMethod.STD);
-        double[][] baseB1 = snapshotB1(workspace.dclfAlgo().getB1Matrix());
-        try {
-            assertCachedHighZMatchesDirectRebuild(workspace, lineOutage.getId(), importIeee9Labeled());
-        } finally {
-            workspace.close();
+            AclfNetwork transformerNet = importIeee14();
+            assertTrue(DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(transformerNet)
+                    .calculateDclf(method));
+            AclfBranch transformerOutage = firstNonIslandingTransformer(transformerNet);
+            assertNotNull(transformerOutage);
+            assertTrue(transformerOutage.isXfr() || transformerOutage.isPSXfr());
+            Complex originalTransformerZ = transformerOutage.getZ();
+            ContingencyAnalysisAlgorithm transformerAlgo =
+                    DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(transformerNet);
+            DclfMultiOutageContingencyHelper.HighImpedanceDclfReplayWorkspace transformerWorkspace =
+                    new DclfMultiOutageContingencyHelper(transformerAlgo)
+                            .createHighImpedanceDclfReplayWorkspace(method);
+            double[][] transformerBaseB1 = snapshotB1(transformerWorkspace.dclfAlgo().getB1Matrix());
+            try {
+                assertCachedHighZMatchesDirectRebuild(
+                        transformerWorkspace, transformerOutage.getId(), importIeee14(), method);
+            } finally {
+                transformerWorkspace.close();
+            }
+            assertEquals(originalTransformerZ, transformerOutage.getZ());
+            assertB1Matches(transformerBaseB1, transformerAlgo.getB1Matrix());
         }
-        assertEquals(originalLineZ, lineOutage.getZ());
-        assertB1Matches(baseB1, workspaceAlgo.getB1Matrix());
-
-        AclfNetwork transformerNet = importIeee14();
-        assertTrue(DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(transformerNet)
-                .calculateDclf(DclfMethod.STD));
-        AclfBranch transformerOutage = firstNonIslandingTransformer(transformerNet);
-        assertNotNull(transformerOutage);
-        assertTrue(transformerOutage.isXfr() || transformerOutage.isPSXfr());
-        Complex originalTransformerZ = transformerOutage.getZ();
-        ContingencyAnalysisAlgorithm transformerAlgo =
-                DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(transformerNet);
-        DclfMultiOutageContingencyHelper.HighImpedanceDclfReplayWorkspace transformerWorkspace =
-                new DclfMultiOutageContingencyHelper(transformerAlgo)
-                        .createHighImpedanceDclfReplayWorkspace(DclfMethod.STD);
-        double[][] transformerBaseB1 = snapshotB1(transformerWorkspace.dclfAlgo().getB1Matrix());
-        try {
-            assertCachedHighZMatchesDirectRebuild(transformerWorkspace, transformerOutage.getId(), importIeee14());
-        } finally {
-            transformerWorkspace.close();
-        }
-        assertEquals(originalTransformerZ, transformerOutage.getZ());
-        assertB1Matches(transformerBaseB1, transformerAlgo.getB1Matrix());
     }
 
     @Test
@@ -441,7 +442,8 @@ public class ContingencyDefinitionRuntimeHelperTest {
     private static void assertCachedHighZMatchesDirectRebuild(
             DclfMultiOutageContingencyHelper.HighImpedanceDclfReplayWorkspace workspace,
             String outageBranchId,
-            AclfNetwork directNet) throws Exception {
+            AclfNetwork directNet,
+            DclfMethod method) throws Exception {
         double highXPu = DclfMultiOutageContingencyHelper.DEFAULT_HIGH_IMPEDANCE_REACTANCE_PU;
         assertTrue(workspace.solve(definition("HIGH_Z_" + outageBranchId, outageBranchId), highXPu));
 
@@ -449,11 +451,11 @@ public class ContingencyDefinitionRuntimeHelperTest {
         assertNotNull(directOutageBranch);
         Complex originalZ = directOutageBranch.getZ();
         directOutageBranch.setZ(new Complex(
-                originalZ.getReal(),
+                0.0,
                 (originalZ.getImaginary() < 0.0 ? -1.0 : 1.0) * highXPu));
         ContingencyAnalysisAlgorithm directAlgo =
                 DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(directNet);
-        assertTrue(directAlgo.calculateDclf(DclfMethod.STD));
+        assertTrue(directAlgo.calculateDclf(method));
 
         for (AclfBranch directBranch : directNet.getBranchList()) {
             if (directBranch.isGroundBranch()) {
