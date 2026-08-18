@@ -3,6 +3,7 @@ package org.interpss.plugin.contingency.util;
 import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -210,6 +211,7 @@ public class ContingencyDefinitionRuntimeHelperTest {
                 com.interpss.core.algo.dclf.solver.DclfMultiOutageContingencyHelper.Classification.ISLANDING,
                 plan.results().get(0).classification());
         assertEquals(List.of(1), plan.results().get(0).islandBusCounts());
+        assertEquals(List.of("Bus10"), plan.results().get(0).islandBusIds());
     }
 
     @Test
@@ -223,6 +225,8 @@ public class ContingencyDefinitionRuntimeHelperTest {
         DclfContingencyConfig config = new DclfContingencyConfig();
         config.setDclfInclLoss(false);
         config.setOverloadThreshold(0.0);
+        config.setMultiOutageReplayMode(
+                com.interpss.core.algo.dclf.DclfMultiOutageReplayMode.HIGH_IMPEDANCE);
 
         ParallelDclfContingencyAnalyzer.DefinitionAnalysisResult result =
                 ParallelDclfContingencyAnalyzer.executeContingencyDefinitions(
@@ -268,6 +272,23 @@ public class ContingencyDefinitionRuntimeHelperTest {
         }
 
         assertEquals(originalZ, outageBranch.getZ());
+    }
+
+    @Test
+    public void highImpedanceReplayRejectsCloseActionsForExactFallback() throws Exception {
+        AclfNetwork net = importIeee9Labeled();
+        ContingencyAnalysisAlgorithm dclfAlgo =
+                DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(net);
+        DclfMultiOutageContingencyHelper helper = new DclfMultiOutageContingencyHelper(dclfAlgo);
+
+        try (DclfMultiOutageContingencyHelper.HighImpedanceDclfReplayWorkspace workspace =
+                helper.createHighImpedanceDclfReplayWorkspace(DclfMethod.STD)) {
+            ContingencyDefinition close = definition(
+                    "HIGH_Z_CLOSE",
+                    ContingencyActionType.CLOSE,
+                    "Bus4->Bus5(0)");
+            assertThrows(InterpssException.class, () -> workspace.solve(close, 10000.0));
+        }
     }
 
     @Test
@@ -350,6 +371,44 @@ public class ContingencyDefinitionRuntimeHelperTest {
                         workspace.getBranchFlow(workspaceBranch, UnitType.mW),
                         5.0e-2,
                         "Compensated high-Z island replay should match direct island DCLF for "
+                                + directBranch.getId());
+            }
+        }
+    }
+
+    @Test
+    public void highImpedanceReplayCompensatesOneBusIslandInjectionWithLoss() throws Exception {
+        AclfNetwork workspaceNet = importIeee14();
+        ContingencyAnalysisAlgorithm workspaceAlgo =
+                DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(workspaceNet);
+        ContingencyDefinition islanding =
+                definition("BUS14_ISLAND_WITH_LOSS", "Bus9->Bus14(1)", "Bus13->Bus14(1)");
+
+        try (DclfMultiOutageContingencyHelper.HighImpedanceDclfReplayWorkspace workspace =
+                new DclfMultiOutageContingencyHelper(workspaceAlgo)
+                        .createHighImpedanceDclfReplayWorkspace(DclfMethod.INC_LOSS)) {
+            assertTrue(workspace.solve(islanding, 10000.0));
+
+            AclfNetwork directNet = importIeee14();
+            directNet.getBranch("Bus9->Bus14(1)").setStatus(false);
+            directNet.getBranch("Bus13->Bus14(1)").setStatus(false);
+            directNet.getBus("Bus14").setStatus(false);
+            ContingencyAnalysisAlgorithm directAlgo =
+                    DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm(directNet);
+            directAlgo.setSolutionMethod(DclfContingencySolutionMethod.SparseEqnSolve);
+            assertTrue(directAlgo.calculateDclf(DclfMethod.INC_LOSS));
+
+            for (AclfBranch directBranch : directNet.getBranchList()) {
+                if (directBranch.isGroundBranch() || !directBranch.isActive()) {
+                    continue;
+                }
+                AclfBranch workspaceBranch = workspaceNet.getBranch(directBranch.getId());
+                assertNotNull(workspaceBranch);
+                assertEquals(
+                        directAlgo.getBranchFlow(directBranch, UnitType.mW),
+                        workspace.getBranchFlow(workspaceBranch, UnitType.mW),
+                        5.0e-2,
+                        "Compensated loss-inclusive high-Z island replay should match direct DCLF for "
                                 + directBranch.getId());
             }
         }
