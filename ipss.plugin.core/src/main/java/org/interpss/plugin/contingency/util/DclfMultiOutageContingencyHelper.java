@@ -187,11 +187,12 @@ public class DclfMultiOutageContingencyHelper {
 
     /**
      * Creates a plugin-definition wrapper around the core replay workspace.
-     * High-impedance replay currently accepts STD DCLF only.
+     * High-impedance replay supports standard and loss-inclusive DCLF while
+     * retaining the worker's sparse matrix structure.
      *
      * @param method DCLF method, with {@code null} interpreted as STD
      * @return thread-confined high-impedance replay workspace
-     * @throws InterpssException if the method is unsupported or preparation fails
+     * @throws InterpssException if base DCLF preparation fails
      */
     public HighImpedanceDclfReplayWorkspace createHighImpedanceDclfReplayWorkspace(DclfMethod method)
             throws InterpssException {
