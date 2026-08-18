@@ -329,6 +329,6 @@ Not yet included:
 ## Related Documentation
 
 - [DCLF Mixed Monitoring Constraints](dclf-mixed-monitoring-constraints.md) — branches + interfaces + flowgates + nomograms in one run
-- [DCLF Contingency Analysis](https://github.com/interpss/core/blob/master/ipss.core_EMF/docs/algo_impl/dclf-contingency-analysis.md) — islanding / multi-outage solver policy
+- [DCLF Contingency Analysis](dclf-contingency-analysis.md) — islanding / multi-outage solver policy
 - Core architecture: `ipss-core/ipss.core_EMF/docs/md/monitor-architecture.md`
 - INTERFACE samples & tests: `ipss-core/ipss.core_EMF/docs/md/notes/Monitoring-INTERFACE.md`
