@@ -138,7 +138,7 @@ returns `unknown`, the sparse sensitivity path is still used and the existing
 a local island that cannot use anchored one-bus compensation, the replay path
 expands that local hit into the complete island bus set before solving.
 
-See [DCLF Contingency Analysis](dclf-contingency-analysis.md) for the detailed
+See [DCLF Contingency Analysis](https://github.com/interpss/core/blob/master/ipss.core_EMF/docs/algo_impl/dclf-contingency-analysis.md) for the detailed
 multi-line outage decision diagram and islanding treatment notes.
 
 ## Why Flowgates Are Not Just Interfaces
@@ -222,7 +222,7 @@ Detailed INTERFACE catalog: `ipss-core/ipss.core_EMF/docs/md/notes/Monitoring-IN
 
 ## Related Documentation
 
-- [DCLF Contingency Analysis](dclf-contingency-analysis.md) — islanding / multi-outage solver policy
+- [DCLF Contingency Analysis](https://github.com/interpss/core/blob/master/ipss.core_EMF/docs/algo_impl/dclf-contingency-analysis.md) — islanding / multi-outage solver policy
 - [DCLF Monitored Interface Constraints](dclf-monitored-interface-constraints.md) — interface-only JSON and specialized CA path
 - Core architecture: `ipss-core/ipss.core_EMF/docs/md/monitor-architecture.md`
 - INTERFACE samples & tests: `ipss-core/ipss.core_EMF/docs/md/notes/Monitoring-INTERFACE.md`
