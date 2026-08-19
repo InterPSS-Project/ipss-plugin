@@ -258,6 +258,20 @@ public final class DclfContingencyPreScreenUtil {
                         0,
                         "Topology islanding relative to reference bus " + dclfAlgo.getAclfNet().getRefBusId());
             }
+            int uniqueActionCount = uniqueBranchActionCount(dclfAlgo.getAclfNet(), branchActions);
+            if (uniqueActionCount != branchActions.size()) {
+                return new ContingencyPreScreenResult(
+                        id,
+                        Classification.E_PTDF_SINGULAR,
+                        branchActions.size(),
+                        counts.openCount(),
+                        counts.closeCount(),
+                        0,
+                        List.of(),
+                        branchActions.size(),
+                        uniqueActionCount,
+                        "Repeated or conflicting branch actions make the [E-PTDF] matrix singular");
+            }
             if (branchActions.size() <= 1) {
                 return new ContingencyPreScreenResult(
                         id,
@@ -393,6 +407,18 @@ public final class DclfContingencyPreScreenUtil {
             }
         }
         return new ActionCounts(open, close);
+    }
+
+    private static int uniqueBranchActionCount(AclfNetwork net, List<ContingencyAction> actions) {
+        Set<String> branchIds = new HashSet<>();
+        for (ContingencyAction action : actions) {
+            AclfBranch branch = resolveBranch(net, action);
+            if (branch == null) {
+                throw new IllegalArgumentException("Cannot resolve branch action: " + action.objectId);
+            }
+            branchIds.add(branch.getId());
+        }
+        return branchIds.size();
     }
 
     private static TopologyScreen screenTopology(AclfNetwork net, List<ContingencyAction> actions) {
