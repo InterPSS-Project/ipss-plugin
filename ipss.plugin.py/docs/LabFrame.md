@@ -92,7 +92,7 @@ including:
 
 - **InterPSS**: `ipss.core.lib-1.0.16`, `ipss.plugin.core-1.0.16`
 - **IEEE ODM**: `ieee.odm_pss-1.0.1`, `ieee.odm.schema-1.0.1`
-- **Sparse Solver**: `JKLU-1.0.0` + `BTFJ-1.0.1`, `AMDJ-1.0.1`, `COLAMDJ-1.0.1`
+- **Sparse Solver**: `JKLU-2.0.1` + `BTFJ-1.0.1`, `AMDJ-1.0.1`, `COLAMDJ-1.0.1`
 - **JAXB**: `jaxb-api-2.3.1`, `jaxb-runtime-2.3.3`, `jaxb-impl-2.3.1`, `jaxb-core-2.3.0`
 - **Logging**: `log4j-api/core-2.25.4`, `slf4j-api-1.7.36`
 - **Math**: `commons-math3-3.6.1`, `ojalgo-51.2.0`, `colt-1.2.0`
