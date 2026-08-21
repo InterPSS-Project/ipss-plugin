@@ -1,5 +1,7 @@
 package org.interpss.dep.plugin.beanModel;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
@@ -232,6 +234,51 @@ public class SwitchedShuntTest extends CorePluginTestSetup {
 		 */
 		assertTrue(netBean1.compareTo(netBean) == 0);		
 		
+	}
+	
+	@Test
+	public void multiSwitchedShuntBeanRoundTrip() throws Exception {
+  		AclfNetwork net = CoreObjectFactory.createAclfNetwork();
+		SampleTestingCases.load_LF_5BusSystem(net);
+		
+		AclfBus bus = net.getBus("1");
+		SwitchedShunt shunt1 = AclfAdjustObjectFactory.createSwitchedShunt(bus,
+				AclfAdjustControlMode.FIXED, AclfAdjustControlType.POINT_CONTROL).get();
+		shunt1.setId("1");
+		shunt1.setBInit(0.11);
+		shunt1.setBLimit(new LimitType(0.2, 0.0));
+		
+		SwitchedShunt shunt2 = AclfAdjustObjectFactory.createSwitchedShunt(bus,
+				AclfAdjustControlMode.DISCRETE, AclfAdjustControlType.POINT_CONTROL).get();
+		shunt2.setId("2");
+		shunt2.setStatus(false);
+		shunt2.setBInit(0.22);
+		shunt2.setBLimit(new LimitType(0.3, 0.0));
+		
+		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);
+		assertEquals(2, netBean.getBus("1").switchShuntList.size());
+		assertEquals("1", netBean.getBus("1").switchShunt.id);
+		
+		AclfNetwork roundTrip = new AclfBean2AclfNetMapper().map2Model(netBean)
+				.getAclfNet();
+		AclfBus roundTripBus = roundTrip.getBus("1");
+		assertEquals(2, roundTripBus.getSwitchedShuntList().size());
+		assertTrue(roundTripBus.getSwitchedShuntList().stream()
+				.anyMatch(s -> "1".equals(((SwitchedShunt) s).getId())
+						&& Math.abs(((SwitchedShunt) s).getBInit() - 0.11) < 1e-9));
+		assertTrue(roundTripBus.getSwitchedShuntList().stream()
+				.anyMatch(s -> "2".equals(((SwitchedShunt) s).getId())
+						&& !((SwitchedShunt) s).isStatus()
+						&& Math.abs(((SwitchedShunt) s).getBInit() - 0.22) < 1e-9));
+		
+		AclfNetBean roundTripBean = new AclfNet2AclfBeanMapper().map2Model(roundTrip);
+		assertEquals(0, roundTripBean.compareTo(netBean));
+		assertFalse(roundTripBus.getSwitchedShuntList().stream()
+				.filter(s -> "2".equals(((SwitchedShunt) s).getId()))
+				.map(s -> (SwitchedShunt) s)
+				.findFirst()
+				.get()
+				.isStatus());
 	}
 	
 	@Test
