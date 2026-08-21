@@ -46,9 +46,10 @@ final class PSSEGeneratorReactivePower {
     static void finalizeBusTypes(AclfNetworkBuilder builder) {
         for (Object obj : builder.getBaseNetwork().getBusList()) {
             BaseAclfBus bus = (BaseAclfBus) obj;
-            if (bus.getGenCode() != AclfGenCode.GEN_PV) {
-                continue;
-            }
+            if (bus.getGenCode() != AclfGenCode.GEN_PV
+                    && bus.getGenCode() != AclfGenCode.NON_GEN) {
+				continue;
+			}
             double aggregateP = 0.0;
             double aggregateQ = 0.0;
             boolean hasActiveGenerator = false;
@@ -63,7 +64,9 @@ final class PSSEGeneratorReactivePower {
                             > gen.getQGenLimit().getMin();
                 }
             }
-            if (hasActiveGenerator && !hasUsableQRange) {
+            if (hasActiveGenerator && bus.getGenCode() == AclfGenCode.NON_GEN) {
+                builder.setPQBus(bus.getId(), aggregateP, aggregateQ, 0.0, 0.0);
+            } else if (hasActiveGenerator && !hasUsableQRange) {
                 builder.setPQBus(bus.getId(), aggregateP, aggregateQ, 0.0, 0.0);
             }
         }

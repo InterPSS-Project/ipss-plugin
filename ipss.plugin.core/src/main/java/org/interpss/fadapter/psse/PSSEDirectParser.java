@@ -450,8 +450,7 @@ public class PSSEDirectParser {
         }
 
         boolean genStatus = (stat == 1);
-        boolean busOffline = (bus.getGenCode() == AclfGenCode.NON_GEN);
-        if (busOffline) genStatus = false;
+        if (!bus.isActive()) genStatus = false;
 
         String remoteBusId = null;
         if (ireg > 0 && ireg != busNum) {

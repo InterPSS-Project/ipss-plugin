@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.interpss.fadapter.psse.PSSEJsonDirectParser;
 import org.interpss.fadapter.psse.bean.PSSESchema;
-import org.interpss.fadapter.psse.export.PSSEJSonExporter;
+import org.interpss.fadapter.psse.export.PSSEJsonExporter;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -30,7 +30,7 @@ public class PSSE_IEEE9Bus_BusSetSample {
 		PSSESchema psseJson = gson.fromJson(
 				new java.io.FileReader("testdata/adpter/psse/json/ieee9.rawx"), PSSESchema.class);
 		
-		PSSEJSonExporter exporter = new PSSEJSonExporter(net, psseJson);
+		PSSEJsonExporter exporter = new PSSEJsonExporter(net, psseJson);
 		exporter.filterAndUpdate(busIdSet);
 		exporter.export("output/ieee9_busset.rawx");
 	}
