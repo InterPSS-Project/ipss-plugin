@@ -160,14 +160,19 @@ public class AclfNet2BeanUtilFunc {
 		
 		// map switched shunt data
 		if (bus.isSwitchedShunt()) {
-			SwitchedShunt ss = bus.getFirstSwitchedShunt(true);
-			if (ss == null) {
-				ss = bus.getFirstSwitchedShunt(false);
+			if (bean.switchShuntList == null) {
+				bean.switchShuntList = new java.util.ArrayList<>();
 			}
-			if (ss != null) {
+			bean.switchShuntList.clear();
+			bean.switchShunt = null;
+			for (Object shuntObj : bus.getSwitchedShuntList()) {
+				SwitchedShunt ss = (SwitchedShunt) shuntObj;
 				SwitchShuntBean ssb = new SwitchShuntBean();
-				mapSwitchShuntData(ss,ssb);
-				bean.switchShunt = ssb;
+				mapSwitchShuntData(ss, ssb);
+				bean.switchShuntList.add(ssb);
+				if (bean.switchShunt == null) {
+					bean.switchShunt = ssb;
+				}
 			}
 		}
 	}	
@@ -258,6 +263,8 @@ public class AclfNet2BeanUtilFunc {
 	}	
 	
 	private static void mapSwitchShuntData(SwitchedShunt ss, SwitchShuntBean<? extends BaseJSONUtilBean> ssb) {
+		ssb.id = ss.getId();
+		ssb.status = ss.isStatus() ? 1 : 0;
 		ssb.bInit = ss.getBInit();
 		ssb.controlMode = ss.getControlMode() == AclfAdjustControlMode.CONTINUOUS? VarCompensatorControlModeBean.Continuous:
 			ss.getControlMode() == AclfAdjustControlMode.DISCRETE? VarCompensatorControlModeBean.Discrete:
