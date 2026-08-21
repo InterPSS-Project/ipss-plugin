@@ -614,10 +614,24 @@ public class AclfNetworkBuilder {
         BaseAclfBus bus = getBus(busId);
         if (bus == null) return null;
 
+        double savedBInitPU = bInitPU;
+        if (!status && savedBInitPU == 0.0 && blocks != null) {
+            double baseMva = network.getBaseKva() / 1000.0;
+            if (baseMva > 0.0) {
+                savedBInitPU = blocks.stream()
+                        .filter(ShuntBlock::active)
+                        .mapToDouble(block -> block.steps() * block.qMvar())
+                        .sum() / baseMva;
+            }
+        }
+
         SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt(bus);
         swchShunt.setId(shuntId != null && !shuntId.isEmpty() ? shuntId : "1");
         swchShunt.setStatus(status);
-        swchShunt.setBInit(bInitPU);
+        swchShunt.setBInit(savedBInitPU);
+        if (!status) {
+            swchShunt.setBActual(0.0);
+        }
         swchShunt.setControlMode(mode);
         swchShunt.setAdjControlType(controlType);
 

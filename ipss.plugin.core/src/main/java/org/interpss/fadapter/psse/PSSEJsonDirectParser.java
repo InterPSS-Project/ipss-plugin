@@ -11,8 +11,9 @@
 
 package org.interpss.fadapter.psse;
 
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,11 +22,11 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder.ShuntBlock;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.datatype.XfrZCorrection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -40,6 +41,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.AclfAdjustControlMode;
 import com.interpss.core.aclf.adj.AclfAdjustControlType;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.aclf.hvdc.ConverterType;
 import com.interpss.core.aclf.hvdc.HvdcControlMode;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
@@ -71,13 +73,18 @@ public class PSSEJsonDirectParser {
     }
 
     public AclfNetwork parse(String filepath) throws InterpssException {
-        try (FileReader reader = new FileReader(filepath)) {
-            JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+        try {
+            JsonObject root = JsonParser.parseString(readRawxJson(filepath)).getAsJsonObject();
             parseJsonObject(root);
         } catch (IOException e) {
             throw new InterpssException("Error reading PSS/E JSON file: " + filepath + ": " + e.getMessage());
         }
         return builder.getNetwork();
+    }
+
+    private String readRawxJson(String filepath) throws IOException {
+        String json = Files.readString(Path.of(filepath));
+        return json.replaceAll("\\\\U([0-9A-Fa-f]{4})", "\\\\u$1");
     }
 
     private void parseJsonObject(JsonObject root) throws InterpssException {
@@ -327,14 +334,7 @@ public class PSSEJsonDirectParser {
         int swreg = getInt(row, "swreg", 0);
         double binit = getDouble(row, "binit", 0.0);
 
-        AclfAdjustControlMode mode;
-        if (modsw == 2 || modsw == 4 || modsw == 6) {
-            mode = AclfAdjustControlMode.DISCRETE;
-        } else if (modsw == 1 || modsw == 3 || modsw == 5) {
-            mode = AclfAdjustControlMode.CONTINUOUS;
-        } else {
-            mode = AclfAdjustControlMode.FIXED;
-        }
+        AclfAdjustControlMode mode = PSSEDirectParser.switchedShuntControlMode(modsw);
 
         String remoteBusId = (swreg > 0 && swreg != busNum) ? BUS_ID_PREFIX + swreg : null;
 
@@ -392,8 +392,8 @@ public class PSSEJsonDirectParser {
             qb = reactiveData.qMin();
         }
 
-        boolean genStatus = (stat == 1);
-        if (bus.getGenCode() == AclfGenCode.NON_GEN) genStatus = false;
+		boolean genStatus = (stat == 1);
+        if (!bus.isActive()) genStatus = false;
 
         String remoteBusId = (ireg > 0 && ireg != busNum) ? BUS_ID_PREFIX + ireg : null;
         Complex sourceZ = (zr != 0.0 || zx != 0.0) ? new Complex(zr, zx) : null;
@@ -496,8 +496,21 @@ public class PSSEJsonDirectParser {
         double toTap = convertTap(cw, windv2, nomv2, toBaseV);
         Complex magY = convertMagY(cm, mag1, mag2, nomv1, sbase12, fromBaseV);
 
+        int cod1 = getInt(row, "cod1", 0);
+        int cont1 = getInt(row, "cont1", 0);
+        double rma1 = getDouble(row, "rma1", 1.1);
+        double rmi1 = getDouble(row, "rmi1", 0.9);
+        double vma1 = getDouble(row, "vma1", 1.1);
+        double vmi1 = getDouble(row, "vmi1", 0.9);
+        int ntp1 = getInt(row, "ntp1", 33);
+
+        double tapMax = convertTap(cw, rma1, nomv1, fromBaseV);
+        double tapMin = convertTap(cw, rmi1, nomv1, fromBaseV);
+        Double tapStepSize = ntp1 > 1 ? (tapMax - tapMin) / (ntp1 - 1) : null;
+
+        boolean isPhaseShifter = ang1 != 0.0 || Math.abs(cod1) == 3;
         AclfBranch branch;
-        if (ang1 != 0.0) {
+        if (isPhaseShifter) {
             branch = builder.addPsXformer(fromBusId, toBusId, ckt,
                     zPU, fromTap, toTap, ang1, 0.0,
                     magY, null, rate1, rate2, rate3, tab1, stat == 1);
@@ -507,19 +520,27 @@ public class PSSEJsonDirectParser {
                     magY, null, rate1, rate2, rate3, tab1, stat == 1);
         }
 
-        int cod1 = getInt(row, "cod1", 0);
-        int cont1 = getInt(row, "cont1", 0);
-        double rma1 = getDouble(row, "rma1", 1.1);
-        double rmi1 = getDouble(row, "rmi1", 0.9);
-        double vma1 = getDouble(row, "vma1", 1.1);
-        double vmi1 = getDouble(row, "vmi1", 0.9);
-        int ntp1 = getInt(row, "ntp1", 33);
-        if (branch != null && Math.abs(cod1) == 1) {
-            String branchId = fromBusId + "->" + toBusId + "(" + ckt + ")";
-            String vcBusId = cont1 != 0 ? BUS_ID_PREFIX + Math.abs(cont1) : fromBusId;
+        if (branch == null) {
+            return;
+        }
+        String branchId = branch.getId();
+        if (Math.abs(cod1) == 1 && cont1 != 0) {
+            String vcBusId = BUS_ID_PREFIX + Math.abs(cont1);
             builder.addTapVoltageRangeControl(branchId, vcBusId, cod1 > 0,
-                    vma1, vmi1, rma1, rmi1,
-                    true, true, null, ntp1 > 0 ? ntp1 : null);
+                    vma1, vmi1, tapMax, tapMin,
+                    true, cont1 < 0, tapStepSize,
+                    ntp1 > 0 ? ntp1 : null);
+        } else if (Math.abs(cod1) == 1) {
+            builder.addTapVoltageRangeControl(branchId, fromBusId, cod1 > 0,
+                    vma1, vmi1, tapMax, tapMin,
+                    true, true, tapStepSize, ntp1 > 0 ? ntp1 : null);
+        } else if (Math.abs(cod1) == 3) {
+            int nonMeteredEnd = getInt(row, "nmet", 2);
+            builder.addPsXfrAngleRangeControl(branchId, cod1 > 0,
+                    vma1 / baseMva, vmi1 / baseMva,
+                    (vma1 + vmi1) / 2.0, UnitType.mW,
+                    rma1, rmi1,
+                    true, true, nonMeteredEnd == 1);
         }
     }
 
@@ -945,6 +966,7 @@ public class PSSEJsonDirectParser {
         int busNum = getInt(row, "ibus", 0);
         int jBus = getInt(row, "jbus", 0);
         int mode = getInt(row, "mode", 1);
+        double qdes = getDouble(row, "qdes", 0.0);
         double vset = getDouble(row, "vset", 1.0);
         double shmx = getDouble(row, "shmx", 9999.0);
         double linx = getDouble(row, "linx", 0.05);
@@ -956,16 +978,22 @@ public class PSSEJsonDirectParser {
         String busId = BUS_ID_PREFIX + busNum;
 
         if (jBus == 0) {
-            double qMaxPU = shmx / baseMva;
+            double qMaxPU = Math.abs(shmx) / baseMva;
+            double qMinPU = -qMaxPU;
             String remoteBusId = null;
             if (fcreg > 0 && fcreg != busNum) {
                 remoteBusId = BUS_ID_PREFIX + fcreg;
             }
-            builder.addSVC(busId, name, mode != 0, qMaxPU, 0.0, vset, remoteBusId, rmpct);
+            StaticVarCompensator svc = builder.addSVC(busId, name, mode != 0,
+                    qMaxPU, qMinPU, vset, remoteBusId, rmpct);
+            BaseAclfBus bus = builder.getBus(busId);
+            if (svc != null && bus != null && bus.getVoltageMag() != 0.0) {
+                double voltage = bus.getVoltageMag();
+                svc.setBInit(qdes / baseMva / (voltage * voltage));
+            }
         } else {
             String toBusId = BUS_ID_PREFIX + jBus;
             double pdes = getDouble(row, "pdes", 0.0);
-            double qdes = getDouble(row, "qdes", 0.0);
             double set1 = getDouble(row, "set1", 0.0);
             double set2 = getDouble(row, "set2", 0.0);
             double qMaxPU = shmx / baseMva;

@@ -161,9 +161,14 @@ public class AclfNet2BeanUtilFunc {
 		// map switched shunt data
 		if (bus.isSwitchedShunt()) {
 			SwitchedShunt ss = bus.getFirstSwitchedShunt(true);
-			SwitchShuntBean ssb = new SwitchShuntBean();
-			mapSwitchShuntData(ss,ssb);			
-			bean.switchShunt = ssb;
+			if (ss == null) {
+				ss = bus.getFirstSwitchedShunt(false);
+			}
+			if (ss != null) {
+				SwitchShuntBean ssb = new SwitchShuntBean();
+				mapSwitchShuntData(ss,ssb);
+				bean.switchShunt = ssb;
+			}
 		}
 	}	
 	
@@ -226,8 +231,8 @@ public class AclfNet2BeanUtilFunc {
 			bean.shiftAng.t = branch.getToPSXfrAngle();
 			PsXfrTapControlBean tb = new PsXfrTapControlBean();
 			bean.psXfrTapControl = tb;
-			if(branch.getPSXfrPControl() != null){
-				PSXfrPControl tap = branch.getPSXfrPControl();					
+			if(branch.isPSXfrPControl()){
+				PSXfrPControl tap = branch.getPSXfrPControl();
 				mapPsXfrData(tap, tb);
 			}
 		}
