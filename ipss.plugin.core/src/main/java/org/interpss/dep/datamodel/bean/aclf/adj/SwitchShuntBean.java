@@ -23,6 +23,8 @@ public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends CompareBaseJ
 	public VarCompensatorControlModeBean controlMode;		// control mode
 	
 	public String remoteBusId;							    // remote control bus id
+
+	public int status = 1;									// 1: in-service, 0: out-of-service
 	
 	public double 											// control voltage limit
 		vmax,
@@ -50,6 +52,9 @@ public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends CompareBaseJ
 		if (!java.util.Objects.equals(this.remoteBusId, bean.remoteBusId)) {
 			logCompareMsg(str + "remoteBusNumber is not equal, " + this.remoteBusId + ", " + bean.remoteBusId); eql = 1; }
 
+		if (this.status != bean.status) {
+			logCompareMsg(str + "status is not equal, " + this.status + ", " + bean.status); eql = 1; }
+
 		if (!NumericUtil.equals(this.vmax, bean.vmax, PU_ERR)) {
 			logCompareMsg(str + "vmax is not equal, " + this.vmax + ", " + bean.vmax); eql = 1; }
 		if (!NumericUtil.equals(this.vmin, bean.vmin, PU_ERR)) {
@@ -65,11 +70,24 @@ public class SwitchShuntBean<TExt extends BaseJSONUtilBean> extends CompareBaseJ
 			logCompareMsg(str + "vSpecified is not equal, " + this.vSpecified + ", " + bean.vSpecified); eql = 1;	}
 		
 		
-		if (this.controlMode.compareTo(bean.controlMode) != 0) {
+		if (this.controlMode != bean.controlMode) {
 			logCompareMsg(str + "control mode is not equal"); eql = 1; }
 		
-		/*if (this.varBankList != bean.varBankList) {
-			logCompareMsg(str + "varBankList is not equal"); eql = 1; }*/		
+		if (this.varBankList == null && bean.varBankList != null ||
+				this.varBankList != null && bean.varBankList == null) {
+			logCompareMsg(str + "varBankList is not equal"); eql = 1;
+		}
+		else if (this.varBankList != null && bean.varBankList != null) {
+			if (this.varBankList.size() != bean.varBankList.size()) {
+				logCompareMsg(str + "varBankList size is not equal, " + this.varBankList.size()
+						+ ", " + bean.varBankList.size()); eql = 1;
+			}
+			else {
+				for (int i = 0; i < this.varBankList.size(); i++) {
+					if (this.varBankList.get(i).compareTo(bean.varBankList.get(i)) != 0) eql = 1;
+				}
+			}
+		}
 		
 		return eql;
 	}	
