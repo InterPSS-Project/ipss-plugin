@@ -11,7 +11,7 @@ import com.google.gson.JsonParser;
 import org.interpss.fadapter.psse.bean.PSSESchema;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEJsonDirectParser;
-import org.interpss.fadapter.psse.export.PSSEJSonExporter;
+import org.interpss.fadapter.psse.export.PSSEJsonExporter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -45,7 +45,7 @@ public class PSSEJSon_IEEE9Bus_BusSet_Test extends CorePluginTestSetup {
 		//System.out.println("Before Bus Data: " + psseJson.getNetwork().getBus().getData());
 		
 		// export the bus set data to a new PSSE json file
-		PSSEJSonExporter exporter = new PSSEJSonExporter(net, psseJson);
+		PSSEJsonExporter exporter = new PSSEJsonExporter(net, psseJson);
 		exporter.filterAndUpdate(busIdSet);
 		
 		assertEquals(psseJson.getNetwork().getBus().getData().size(), 4);
