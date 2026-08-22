@@ -6,10 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEJsonDirectParser;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBus;
@@ -37,6 +40,7 @@ public class PSSE_Sample_NB_Rawx_TopoAnalysis_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testBasecaseTopoAnalysisSetsIntFlags() throws Exception {
+		assumeCaseAvailable();
 		AclfNetwork net = new PSSEJsonDirectParser().parse(CASE);
 
 		net.getSubstationMap().forEach((subName, sub) -> {
@@ -79,6 +83,7 @@ public class PSSE_Sample_NB_Rawx_TopoAnalysis_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testTopoProcessingTurnsOffActivatedOpenSwitchEquipment() throws Exception {
+		assumeCaseAvailable();
 		AclfNetwork net = new PSSEJsonDirectParser().parse(CASE);
 
 		activateBusBranch(net);
@@ -111,5 +116,10 @@ public class PSSE_Sample_NB_Rawx_TopoAnalysis_Test extends CorePluginTestSetup {
 				branch.setStatus(true);
 			}
 		});
+	}
+
+	private static void assumeCaseAvailable() {
+		Assumptions.assumeTrue(Files.exists(Path.of(CASE)),
+				"Private RAWX fixture unavailable: " + CASE);
 	}
 }

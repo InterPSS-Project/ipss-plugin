@@ -15,10 +15,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.interpss.plugin.contingency.definition.ContingencyAction;
-import org.interpss.plugin.contingency.definition.ContingencyActionType;
-import org.interpss.plugin.contingency.definition.ContingencyDefinition;
-import org.interpss.plugin.contingency.definition.ContingencyObjectType;
+import com.interpss.core.contingency.definition.ContingencyAction;
+import com.interpss.core.contingency.definition.ContingencyActionType;
+import com.interpss.core.contingency.definition.ContingencyDefinition;
+import com.interpss.core.contingency.definition.ContingencyObjectType;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -32,19 +32,36 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
  * Fast pre-screening utility for large DCLF contingency files. It classifies each
  * branch contingency before full violation analysis into:
  * islanding, non-islanding but singular/compacted [E-PTDF], normal MLODF, or
- * unsupported/invalid.
+ * unsupported/invalid. Prefer {@link #scanStructurally(AclfNetwork, List, int)}
+ * for bulk input; the other scan overloads retain the numerical plugin behavior
+ * for compatibility and diagnostics.
  */
 public final class DclfContingencyPreScreenUtil {
     private DclfContingencyPreScreenUtil() {
     }
 
+    /** Execution route indicated by contingency pre-screening. */
     public enum Classification {
+        /** Final branch states disconnect one or more components from the reference. */
         ISLANDING,
+        /** Topology remains connected but the outage E-PTDF system is singular. */
         E_PTDF_SINGULAR,
+        /** Contingency is eligible for normal DCLF contingency processing. */
         NORMAL,
+        /** Definition is invalid or contains an unsupported action. */
         UNSUPPORTED
     }
 
+    /**
+     * Aggregate and detailed results for one pre-screen operation.
+     *
+     * @param totalContingencies number of screened definitions
+     * @param islandingContingencies number classified as islanding
+     * @param ePtdfSingularContingencies number classified as connected singular
+     * @param normalContingencies number eligible for normal processing
+     * @param unsupportedContingencies number rejected as invalid/unsupported
+     * @param results immutable diagnostics in input order
+     */
     public record ContingencyPreScreenReport(
             int totalContingencies,
             int islandingContingencies,
@@ -52,11 +69,26 @@ public final class DclfContingencyPreScreenUtil {
             int normalContingencies,
             int unsupportedContingencies,
             List<ContingencyPreScreenResult> results) {
+        /** Copies detailed diagnostics into an immutable list. */
         public ContingencyPreScreenReport {
             results = List.copyOf(results);
         }
     }
 
+    /**
+     * Diagnostic result for one contingency definition.
+     *
+     * @param contingencyId input contingency identifier
+     * @param classification selected execution route
+     * @param actionCount total branch actions
+     * @param openActionCount OPEN actions
+     * @param closeActionCount CLOSE actions
+     * @param islandCount disconnected components outside the reference component
+     * @param islandBusCounts bus count in each disconnected component
+     * @param ePtdfOriginalSize E-PTDF order before duplicate-action compaction
+     * @param ePtdfEffectiveSize E-PTDF order after compaction
+     * @param message human-readable classification detail
+     */
     public record ContingencyPreScreenResult(
             String contingencyId,
             Classification classification,
@@ -68,16 +100,35 @@ public final class DclfContingencyPreScreenUtil {
             int ePtdfOriginalSize,
             int ePtdfEffectiveSize,
             String message) {
+        /** Copies disconnected-component sizes into an immutable list. */
         public ContingencyPreScreenResult {
             islandBusCounts = List.copyOf(islandBusCounts);
         }
     }
 
+    /**
+     * Imports plugin JSON definitions and runs the compatibility numerical scan.
+     *
+     * @param net network used to resolve and screen branch actions
+     * @param contingencyJson grouped contingency-definition JSON file
+     * @return aggregate and per-definition screening results
+     * @throws IOException if the JSON file cannot be read
+     * @throws InterpssException if DCLF preparation or screening fails
+     */
     public static ContingencyPreScreenReport scanJson(AclfNetwork net, File contingencyJson)
             throws IOException, InterpssException {
         return scan(net, ContingencyFileUtil.importContingencyDefinitionsFromJson(contingencyJson));
     }
 
+    /**
+     * Creates and calculates a DCLF algorithm, then runs the compatibility
+     * numerical scan sequentially.
+     *
+     * @param net network used to resolve and screen actions
+     * @param definitions definitions to screen
+     * @return aggregate and per-definition screening results
+     * @throws InterpssException if base DCLF or screening fails
+     */
     public static ContingencyPreScreenReport scan(
             AclfNetwork net,
             List<ContingencyDefinition> definitions)
@@ -89,6 +140,16 @@ public final class DclfContingencyPreScreenUtil {
         return scan(dclfAlgo, definitions);
     }
 
+    /**
+     * Runs the compatibility numerical scan with an existing DCLF algorithm.
+     * The algorithm's original outage-branch list is restored before return,
+     * including when a contingency fails.
+     *
+     * @param dclfAlgo initialized DCLF algorithm
+     * @param definitions definitions to screen; {@code null} means empty
+     * @return aggregate and per-definition screening results
+     * @throws InterpssException if screening cannot be completed
+     */
     public static ContingencyPreScreenReport scan(
             ContingencyAnalysisAlgorithm dclfAlgo,
             List<ContingencyDefinition> definitions)
@@ -110,6 +171,67 @@ public final class DclfContingencyPreScreenUtil {
             dclfAlgo.getOutageBranchList().addAll(originalOutages);
         }
         return summarize(results);
+    }
+
+    /**
+     * Classifies branch contingencies from graph connectivity and repeated branch
+     * actions. For a connected lossless DC network, a unique branch-outage
+     * [E-PTDF] matrix loses rank exactly when the remaining graph disconnects.
+     * This avoids cloning the network and solving endpoint RHS systems solely for
+     * pre-screening. The topology scan is read-only and shares an immutable graph
+     * index across workers.
+     *
+     * @param net network whose active branch topology is screened
+     * @param definitions definitions to classify
+     * @param parallelismLevel requested maximum screening worker count
+     * @return aggregate and per-definition structural classifications
+     * @throws InterpssException if DCLF preparation, conversion, or screening fails
+     */
+    public static ContingencyPreScreenReport scanStructurally(
+            AclfNetwork net,
+            List<ContingencyDefinition> definitions,
+            int parallelismLevel)
+            throws InterpssException {
+        Objects.requireNonNull(net, "net cannot be null");
+        if (definitions == null || definitions.isEmpty()) {
+            return summarize(List.of());
+        }
+        ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
+        if (!dclfAlgo.calculateDclf()) {
+            throw new InterpssException("DCLF calculation failed before structural pre-screening");
+        }
+        return new DclfMultiOutageContingencyHelper(dclfAlgo)
+                .createPreScreenedDclfMultiOutagePlanFromDefinitions(
+                        definitions, parallelismLevel, com.interpss.core.algo.dclf.DclfMethod.STD)
+                .preScreenReport();
+    }
+
+    /**
+     * Tests whether one definition disconnects buses from the reference component
+     * after applying its effective final branch states.
+     *
+     * @param net network to screen
+     * @param definition definition containing branch OPEN/CLOSE actions
+     * @return {@code true} when the resulting topology is islanded
+     */
+    public static boolean isTopologyIslanding(
+            AclfNetwork net,
+            ContingencyDefinition definition) {
+        return screenTopology(net, branchActions(definition)).islanded();
+    }
+
+    /**
+     * Returns bus-id components disconnected from the reference component after
+     * applying one definition. The reference component itself is omitted.
+     *
+     * @param net network to screen
+     * @param definition definition containing branch OPEN/CLOSE actions
+     * @return disconnected components, each represented by its bus ids
+     */
+    public static List<List<String>> postContingencyIslandBusIdComponents(
+            AclfNetwork net,
+            ContingencyDefinition definition) {
+        return screenTopology(net, branchActions(definition)).islandBusIdComponents();
     }
 
     private static ContingencyPreScreenResult scanOne(
@@ -135,6 +257,20 @@ public final class DclfContingencyPreScreenUtil {
                         0,
                         0,
                         "Topology islanding relative to reference bus " + dclfAlgo.getAclfNet().getRefBusId());
+            }
+            int uniqueActionCount = uniqueBranchActionCount(dclfAlgo.getAclfNet(), branchActions);
+            if (uniqueActionCount != branchActions.size()) {
+                return new ContingencyPreScreenResult(
+                        id,
+                        Classification.E_PTDF_SINGULAR,
+                        branchActions.size(),
+                        counts.openCount(),
+                        counts.closeCount(),
+                        0,
+                        List.of(),
+                        branchActions.size(),
+                        uniqueActionCount,
+                        "Repeated or conflicting branch actions make the [E-PTDF] matrix singular");
             }
             if (branchActions.size() <= 1) {
                 return new ContingencyPreScreenResult(
@@ -273,6 +409,18 @@ public final class DclfContingencyPreScreenUtil {
         return new ActionCounts(open, close);
     }
 
+    private static int uniqueBranchActionCount(AclfNetwork net, List<ContingencyAction> actions) {
+        Set<String> branchIds = new HashSet<>();
+        for (ContingencyAction action : actions) {
+            AclfBranch branch = resolveBranch(net, action);
+            if (branch == null) {
+                throw new IllegalArgumentException("Cannot resolve branch action: " + action.objectId);
+            }
+            branchIds.add(branch.getId());
+        }
+        return branchIds.size();
+    }
+
     private static TopologyScreen screenTopology(AclfNetwork net, List<ContingencyAction> actions) {
         Map<String, AclfBus> activeBuses = new LinkedHashMap<>();
         for (AclfBus bus : net.getBusList()) {
@@ -314,7 +462,7 @@ public final class DclfContingencyPreScreenUtil {
 
         String refBusId = net.getRefBusId();
         Set<String> refComponent = refBusId == null ? Set.of() : connectedComponent(adjacency, refBusId);
-        List<Integer> islandBusCounts = new ArrayList<>();
+        List<List<String>> islandBusIdComponents = new ArrayList<>();
         Set<String> visited = new HashSet<>(refComponent);
         for (String busId : activeBuses.keySet()) {
             if (visited.contains(busId)) {
@@ -322,10 +470,13 @@ public final class DclfContingencyPreScreenUtil {
             }
             Set<String> component = connectedComponent(adjacency, busId);
             visited.addAll(component);
-            islandBusCounts.add(component.size());
+            islandBusIdComponents.add(component.stream().sorted().toList());
         }
-        islandBusCounts.sort(Comparator.reverseOrder());
-        return new TopologyScreen(islandBusCounts);
+        islandBusIdComponents.sort(Comparator
+                .<List<String>>comparingInt(List::size)
+                .reversed()
+                .thenComparing(component -> component.isEmpty() ? "" : component.get(0)));
+        return new TopologyScreen(islandBusIdComponents);
     }
 
     private static AclfBranch resolveBranch(AclfNetwork net, ContingencyAction action) {
@@ -408,9 +559,19 @@ public final class DclfContingencyPreScreenUtil {
     private record ActionCounts(int openCount, int closeCount) {
     }
 
-    private record TopologyScreen(List<Integer> islandBusCounts) {
+    private record TopologyScreen(List<List<String>> islandBusIdComponents) {
+        private TopologyScreen {
+            islandBusIdComponents = List.copyOf(islandBusIdComponents);
+        }
+
         boolean islanded() {
-            return !islandBusCounts.isEmpty();
+            return !islandBusIdComponents.isEmpty();
+        }
+
+        List<Integer> islandBusCounts() {
+            return islandBusIdComponents.stream()
+                    .map(List::size)
+                    .toList();
         }
     }
 }

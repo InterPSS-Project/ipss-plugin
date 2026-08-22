@@ -15,6 +15,9 @@ public final class DistOpfSolverFactory {
 		if (options.getSolverType() == DistOpfSolverType.ORTOOLS) {
 			return new ORToolsDistOpfSolver();
 		}
+		if (options.getSolverType() == DistOpfSolverType.IPSS_OPTIMIZATION) {
+			return new IpssOptimizationDistOpfSolver();
+		}
 		return new OjAlgoDistOpfSolver();
 	}
 }

@@ -236,8 +236,8 @@ public class BranchRatingFileUtilTest extends CorePluginTestSetup {
                 "testData/adpter/psse/v36/Texas2k_series24_case1_2016summerPeak_v36_labeled.RAW");
     }
 
-    private static Path labelledTexas2kRatingFixturePath(String fileName) throws IOException {
-        Path dir = Path.of("testData", "psse", "contingency", "branch-ratings");
+    private Path labelledTexas2kRatingFixturePath(String fileName) throws IOException {
+        Path dir = tempDir.resolve("branch-ratings");
         Files.createDirectories(dir);
         return dir.resolve(fileName);
     }
