@@ -217,10 +217,10 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	public void testV34MixedFixedAndVariableQMachinesKeepPlantPV() throws Exception {
 		Path source = Path.of("testData/psse/v34/sample_v34.raw");
 		String raw = Files.readString(source);
-		String generatorHeader = "0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA\n"
-				+ "@!   I,'ID',      PG,        QG,        QT,        QB,     VS,    IREG,     MBASE,     ZR,         ZX,         RT,         XT,     GTAP,STAT, RMPCT,      PT,        PB,    O1,    F1,  O2,    F2,  O3,    F3,  O4,    F4,WMOD, WPF,NREG\n";
 		String fixedQMachine = "   101,'FQ',    10.000,     0.000,     5.000,     5.000,1.01000,   101,    20.000, 0.00000E+0, 2.50000E-1, 0.00000E+0, 0.00000E+0,1.00000,1,  100.0,    12.000,     0.000\n";
-		String modified = raw.replace(generatorHeader, generatorHeader + fixedQMachine);
+		String modified = insertAfterLineStartingWith(raw,
+				"0 / END OF FIXED SHUNT DATA, BEGIN GENERATOR DATA",
+				"@!   I,'ID'", fixedQMachine);
 		assertFalse(raw.equals(modified), "generator fixture row was not inserted");
 		Path input = tempDir.resolve("mixed-fixed-variable-q-v34.raw");
 		Files.writeString(input, modified);
@@ -360,6 +360,26 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		int end = text.indexOf('\n', start);
 		assertTrue(end >= 0, "fixture line has no terminator: " + prefix);
 		return text.substring(0, start) + replacement + text.substring(end);
+	}
+
+	private static String insertAfterLineStartingWith(String text, String prefix,
+			String insertion) {
+		int start = text.indexOf(prefix);
+		assertTrue(start >= 0, "fixture line not found: " + prefix);
+		int end = text.indexOf('\n', start);
+		assertTrue(end >= 0, "fixture line has no terminator: " + prefix);
+		return text.substring(0, end + 1) + insertion + text.substring(end + 1);
+	}
+
+	private static String insertAfterLineStartingWith(String text,
+			String sectionMarker, String prefix, String insertion) {
+		int sectionStart = text.indexOf(sectionMarker);
+		assertTrue(sectionStart >= 0, "fixture section not found: " + sectionMarker);
+		int start = text.indexOf(prefix, sectionStart);
+		assertTrue(start >= 0, "fixture line not found after section marker: " + prefix);
+		int end = text.indexOf('\n', start);
+		assertTrue(end >= 0, "fixture line has no terminator: " + prefix);
+		return text.substring(0, end + 1) + insertion + text.substring(end + 1);
 	}
 
 	@Test

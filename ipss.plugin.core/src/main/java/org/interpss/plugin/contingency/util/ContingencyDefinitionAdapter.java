@@ -7,23 +7,45 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.ContingencyAction;
-import org.interpss.plugin.contingency.definition.ContingencyActionType;
-import org.interpss.plugin.contingency.definition.ContingencyDefinition;
-import org.interpss.plugin.contingency.definition.ContingencyObjectType;
+import com.interpss.core.contingency.definition.ContingencyAction;
+import com.interpss.core.contingency.definition.ContingencyActionType;
+import com.interpss.core.contingency.definition.ContingencyDefinition;
+import com.interpss.core.contingency.definition.ContingencyObjectType;
 
+/**
+ * Converts between flat plugin branch records and format-neutral core
+ * contingency definitions. Terminal, area, base-kV, and pre-contingency-flow
+ * fields are preserved in action metadata so definitions can be resolved or
+ * serialized without depending on plugin record classes.
+ */
 public final class ContingencyDefinitionAdapter {
+    /** Metadata key for the source from-bus identifier. */
     public static final String METADATA_FROM_BUS = "from_bus";
+    /** Metadata key for the source to-bus identifier. */
     public static final String METADATA_TO_BUS = "to_bus";
+    /** Metadata key for the branch circuit identifier. */
     public static final String METADATA_CIRCUIT = "circuit";
+    /** Metadata key for the source from-bus area. */
     public static final String METADATA_FROM_BUS_AREA = "from_bus_area";
+    /** Metadata key for the source to-bus area. */
     public static final String METADATA_TO_BUS_AREA = "to_bus_area";
+    /** Metadata key for nominal branch voltage in kV. */
     public static final String METADATA_BASE_KV = "base_kv";
+    /** Metadata key for pre-contingency branch flow in MW. */
     public static final String METADATA_PRE_CONTINGENCY_FLOW_MW = "pre_contingency_flow_mw";
 
     private ContingencyDefinitionAdapter() {
     }
 
+    /**
+     * Groups named records into one definition per name. Repeated occurrences of
+     * the same name become ordered actions in the same multi-outage; each unnamed
+     * record receives a generated name and remains a separate definition.
+     *
+     * @param records flat plugin records; {@code null} returns an empty list
+     * @return core definitions in first-name occurrence order
+     * @throws IllegalArgumentException if a record has an unsupported action
+     */
     public static List<ContingencyDefinition> fromBranchRecords(List<BranchContingencyRecord> records) {
         List<ContingencyDefinition> definitions = new ArrayList<>();
         Map<String, ContingencyDefinition> namedDefinitions = new LinkedHashMap<>();
@@ -52,6 +74,14 @@ public final class ContingencyDefinitionAdapter {
         return definitions;
     }
 
+    /**
+     * Flattens definitions to plugin records, emitting one record per action and
+     * restoring terminal/source fields from action metadata where available.
+     *
+     * @param definitions core definitions; {@code null} returns an empty list
+     * @return flat plugin records in definition/action order
+     * @throws IllegalArgumentException if a definition contains a non-branch action
+     */
     public static List<BranchContingencyRecord> toBranchRecords(List<ContingencyDefinition> definitions) {
         List<BranchContingencyRecord> records = new ArrayList<>();
         if (definitions == null) {
@@ -70,6 +100,13 @@ public final class ContingencyDefinitionAdapter {
         return records;
     }
 
+    /**
+     * Extracts branch ids without grouping or de-duplicating them.
+     *
+     * @param definitions core definitions; {@code null} returns an empty list
+     * @return branch ids in definition/action order
+     * @throws IllegalArgumentException if a definition contains a non-branch action
+     */
     public static List<String> flattenBranchIds(List<ContingencyDefinition> definitions) {
         List<String> branchIds = new ArrayList<>();
         if (definitions == null) {

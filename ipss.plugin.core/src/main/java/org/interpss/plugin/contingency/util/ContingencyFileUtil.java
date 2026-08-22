@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
-import org.interpss.plugin.contingency.definition.ContingencyAction;
-import org.interpss.plugin.contingency.definition.ContingencyActionType;
-import org.interpss.plugin.contingency.definition.ContingencyDefinition;
-import org.interpss.plugin.contingency.definition.ContingencyObjectType;
+import com.interpss.core.contingency.definition.ContingencyAction;
+import com.interpss.core.contingency.definition.ContingencyActionType;
+import com.interpss.core.contingency.definition.ContingencyDefinition;
+import com.interpss.core.contingency.definition.ContingencyObjectType;
 import org.interpss.plugin.contingency.definition.json.ContingencyActionJson;
 import org.interpss.plugin.contingency.definition.json.ContingencyDefinitionJson;
 import org.interpss.plugin.contingency.definition.json.ContingencyDefinitionListJson;
