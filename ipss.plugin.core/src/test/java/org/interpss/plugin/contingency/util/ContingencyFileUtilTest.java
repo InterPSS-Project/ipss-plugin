@@ -9,10 +9,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-import org.interpss.plugin.contingency.definition.ContingencyAction;
-import org.interpss.plugin.contingency.definition.ContingencyActionType;
-import org.interpss.plugin.contingency.definition.ContingencyDefinition;
-import org.interpss.plugin.contingency.definition.ContingencyObjectType;
+import com.interpss.core.contingency.definition.ContingencyAction;
+import com.interpss.core.contingency.definition.ContingencyActionType;
+import com.interpss.core.contingency.definition.ContingencyDefinition;
+import com.interpss.core.contingency.definition.ContingencyObjectType;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
