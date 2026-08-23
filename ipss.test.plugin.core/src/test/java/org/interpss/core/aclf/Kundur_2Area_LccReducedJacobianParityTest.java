@@ -55,6 +55,46 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 				HvdcControlMode.FIRING_ANGLE);
 	}
 
+	@Test
+	void normalModeMatchesSequentialSolutionFromFlatAndPerturbedStarts()
+			throws Exception {
+		String rawPath = DATA_ROOT + "Kundur_2area_LCC_HVDC.raw";
+		SolvedCase sequential = solve(rawPath, false, false, StartMode.SAVED);
+		assertStartModeParity(sequential,
+				solve(rawPath, false, true, StartMode.FLAT), StartMode.FLAT);
+		assertStartModeParity(sequential,
+				solve(rawPath, false, true, StartMode.PERTURBED),
+				StartMode.PERTURBED);
+	}
+
+	private static void assertStartModeParity(SolvedCase sequential,
+			SolvedCase reduced, StartMode startMode) {
+		for (AclfBus expectedBus : sequential.network.getBusList()) {
+			AclfBus actualBus = reduced.network.getBus(expectedBus.getId());
+			assertEquals(expectedBus.getVoltageMag(), actualBus.getVoltageMag(),
+					2.0e-5, startMode + " voltage at " + expectedBus.getId());
+			assertEquals(expectedBus.getVoltageAng(), actualBus.getVoltageAng(),
+					2.0e-5, startMode + " angle at " + expectedBus.getId());
+		}
+		assertEquals(sequential.line.getRectifier().powerIntoConverter().getReal(),
+				reduced.line.getRectifier().powerIntoConverter().getReal(),
+				SOLVE_TOLERANCE_PU, startMode.toString());
+		assertEquals(sequential.line.getRectifier().powerIntoConverter().getImaginary(),
+				reduced.line.getRectifier().powerIntoConverter().getImaginary(),
+				SOLVE_TOLERANCE_PU, startMode.toString());
+		assertEquals(sequential.line.getInverter().powerIntoConverter().getReal(),
+				reduced.line.getInverter().powerIntoConverter().getReal(),
+				SOLVE_TOLERANCE_PU, startMode.toString());
+		assertEquals(sequential.line.getInverter().powerIntoConverter().getImaginary(),
+				reduced.line.getInverter().powerIntoConverter().getImaginary(),
+				SOLVE_TOLERANCE_PU, startMode.toString());
+		LccCoupledInjectionModel model = reduced.solver.getLccCoupledModels().get(0);
+		assertEquals(LccCoupledInjectionModel.Status.ELIGIBLE, model.getStatus(),
+				startMode + ": " + model.getDiagnostic());
+		assertTrue(model.getMaxScaledResidual() < 1.0e-10,
+				startMode + " LCC residual=" + model.getMaxScaledResidual());
+	}
+
 	private static void assertForcedModeParity(HvdcControlMode rectifierMode,
 			HvdcControlMode inverterMode) throws Exception {
 		String rawPath = DATA_ROOT + "Kundur_2area_LCC_HVDC.raw";
@@ -174,6 +214,11 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 
 	private static SolvedCase solve(String rawPath, boolean applyAdjustments,
 			boolean reduced) throws Exception {
+		return solve(rawPath, applyAdjustments, reduced, StartMode.SAVED);
+	}
+
+	private static SolvedCase solve(String rawPath, boolean applyAdjustments,
+			boolean reduced, StartMode startMode) throws Exception {
 		AclfNetwork network = new PSSEDirectParser(33).parse(rawPath);
 		@SuppressWarnings("unchecked")
 		HvdcLine2TLCC<AclfBus> line =
@@ -182,6 +227,14 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 				LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
 		algorithm.setTolerance(SOLVE_TOLERANCE_PU);
 		algorithm.getLfAdjAlgo().setApplyAdjustAlgo(applyAdjustments);
+		algorithm.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
+		if (startMode == StartMode.FLAT) {
+			algorithm.setInitBusVoltage(true);
+		}
+		else if (startMode == StartMode.PERTURBED) {
+			perturbSavedStart(network);
+			algorithm.setInitBusVoltage(false);
+		}
 		algorithm.setMaxIterations(30);
 		CoordinatedControlZbrNrSolver solver = null;
 		if (reduced) {
@@ -189,10 +242,36 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 					algorithm.getNrMethodConfig(), algorithm.getTolerance())
 						.setReducedLccCouplingEnabled(true);
 			algorithm.getLfCalculator().setNrSolver(solver);
+			if (startMode != StartMode.SAVED) {
+				algorithm.getLfCalculator().setHvdcOuterControlEnabled(false);
+			}
 		}
-		assertTrue(algorithm.loadflow(), rawPath + " reduced=" + reduced);
+		boolean converged = algorithm.loadflow();
+		String reducedDiagnostic = solver == null ? ""
+				: solver.getLccCoupledModels().stream()
+						.map(model -> model.getLine().getId() + "=" + model.getStatus()
+								+ "(" + model.getDiagnostic() + ")")
+						.reduce((left, right) -> left + ", " + right)
+						.orElse("no reduced LCC models");
+		assertTrue(converged, rawPath + " reduced=" + reduced
+				+ " start=" + startMode + " " + reducedDiagnostic);
 		assertTrue(network.isLfConverged(), rawPath + " reduced=" + reduced);
 		return new SolvedCase(network, line, solver);
+	}
+
+	private static void perturbSavedStart(AclfNetwork network) {
+		for (AclfBus bus : network.getBusList()) {
+			if (!bus.isActive() || bus.isSwing()) {
+				continue;
+			}
+			double signedOffset = (bus.getSortNumber() % 2 == 0 ? 1.0 : -1.0);
+			bus.setVoltageAng(bus.getVoltageAng()
+					+ Math.toRadians(1.5 * signedOffset));
+			if (!bus.isPV()) {
+				bus.setVoltageMag(Math.max(0.90, Math.min(1.10,
+						bus.getVoltageMag() + 0.025 * signedOffset)));
+			}
+		}
 	}
 
 	private static SolvedCase solveForcedTransfer(String rawPath, boolean reduced,
@@ -220,6 +299,7 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 				LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
 		algorithm.setTolerance(SOLVE_TOLERANCE_PU);
 		algorithm.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		algorithm.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
 		algorithm.setMaxIterations(30);
 		algorithm.getLfCalculator().setHvdcOuterControlEnabled(false);
 		CoordinatedControlZbrNrSolver solver = null;
@@ -257,6 +337,12 @@ class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
 		assertTrue(network.isLfConverged());
 		return new SolvedCase(network, line, solver, admittedRectifierTap,
 				admittedInverterTap);
+	}
+
+	private enum StartMode {
+		SAVED,
+		FLAT,
+		PERTURBED
 	}
 
 	private static final class SolvedCase {
