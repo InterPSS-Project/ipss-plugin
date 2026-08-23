@@ -36,7 +36,7 @@ public final class PsseLoadflowSolutionSettings
 					"MXTPSS", "MXSWIM"),
 			"TYSL", Set.of("ITMXTY", "ACCTY", "TOLTY"),
 			"SOLVER", Set.of("$ACTIVITY", "ACTAPS", "AREAIN", "PHSHFT",
-					"DCTAPS", "SWSHNT", "FLATST", "VARLIM", "NONDIV"));
+					"DCTAPS", "SWSHNT", "FLATST", "VARLIM"));
 
 	public record GeneralSettings(Double thrshz, Double pqbrak, Double blowup) {}
 
@@ -117,7 +117,7 @@ public final class PsseLoadflowSolutionSettings
 		this.solver = new SolverSettings(s.get("$ACTIVITY"), integer(s, "ACTAPS"),
 				integer(s, "AREAIN"), integer(s, "PHSHFT"), integer(s, "DCTAPS"),
 				integer(s, "SWSHNT"), integer(s, "FLATST"), integer(s, "VARLIM"),
-				integer(s, "NONDIV"));
+				null);
 	}
 
 	public static Builder builder(int sourceVersion) {
@@ -162,6 +162,13 @@ public final class PsseLoadflowSolutionSettings
 				value -> network.getBusLoadLowVoltConfig().setVConstPMin(value), "pu");
 		applyPositiveInt(result, "NEWTON.ITMXN", raw("NEWTON", "ITMXN"),
 				newton.itmxn(), algorithm::setMaxIterations, "iterations");
+		applyPositiveDouble(result, "NEWTON.DVLIM", raw("NEWTON", "DVLIM"),
+				newton.dvlim(), value -> {
+					algorithm.setVariableUpdateLimit(true);
+					algorithm.setDeltaVMagLimit(value);
+					// PSS/E DVLIM scales both vectors based only on max |dV/V|.
+					algorithm.setDeltaVAngLimit(Double.MAX_VALUE);
+				}, "relative dV/V; uniformly scales magnitude and angle corrections");
 
 		if (newton.toln() != null) {
 			double baseMva = network.getBaseKva() * 0.001;
@@ -199,8 +206,6 @@ public final class PsseLoadflowSolutionSettings
 					.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(enabled));
 			applyBinary(result, "SOLVER.SWSHNT", solver.swshnt(), enabled -> algorithm
 					.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(enabled));
-			applyBinary(result, "SOLVER.NONDIV", solver.nondiv(),
-					algorithm::setNonDivergent);
 		} else {
 			preserveSolverModes(result);
 		}
@@ -219,7 +224,6 @@ public final class PsseLoadflowSolutionSettings
 		unsupported(result, "NEWTON.ACCN", newton.accn());
 		unsupported(result, "NEWTON.VCTOLQ", newton.vctolq());
 		unsupported(result, "NEWTON.VCTOLV", newton.vctolv());
-		unsupported(result, "NEWTON.DVLIM", newton.dvlim());
 		unsupported(result, "NEWTON.NDVFCT", newton.ndvfct());
 		unsupported(result, "ADJUST.ACCTAP", adjust.acctap());
 		unsupported(result, "ADJUST.TAPLIM", adjust.taplim());
@@ -249,7 +253,6 @@ public final class PsseLoadflowSolutionSettings
 		preservedSolverMode(result, "SOLVER.PHSHFT", solver.phshft());
 		preservedSolverMode(result, "SOLVER.DCTAPS", solver.dctaps());
 		preservedSolverMode(result, "SOLVER.SWSHNT", solver.swshnt());
-		preservedSolverMode(result, "SOLVER.NONDIV", solver.nondiv());
 	}
 
 	private void preservedSolverMode(List<Mapping> result, String field,
@@ -264,7 +267,7 @@ public final class PsseLoadflowSolutionSettings
 		}
 		result.add(new Mapping(field, raw(parts[0], parts[1]), null,
 				MappingStatus.UNSUPPORTED,
-				"preserved; applied only by SAVED_SOLUTION_REPLAY policy"));
+				"preserved; not applied by this RAW settings application policy"));
 	}
 
 	private void unsupported(List<Mapping> result, String field, Object value) {

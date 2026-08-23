@@ -784,8 +784,10 @@ public class PSSEDirectParser {
                         vma1, vmi1, tapMax, tapMin,
                         true, true, tapStepSize, ntp1 > 0 ? ntp1 : null);
             } else if (Math.abs(cod1) == 3) {
+                double pRangeMax = Math.max(vma1, vmi1) / baseMva;
+                double pRangeMin = Math.min(vma1, vmi1) / baseMva;
                 builder.addPsXfrAngleRangeControl(branchId, cod1 > 0,
-                        vma1 / baseMva, vmi1 / baseMva,
+                        pRangeMax, pRangeMin,
                         (vma1 + vmi1) / 2.0, UnitType.mW,
                         rma1, rmi1,
                         true, true, nonMeteredEnd == 1);
