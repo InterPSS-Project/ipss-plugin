@@ -1,0 +1,285 @@
+package org.interpss.core.aclf;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import org.interpss.CorePluginTestSetup;
+import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.apache.commons.math3.complex.Complex;
+import org.junit.jupiter.api.Test;
+
+import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
+import com.interpss.core.aclf.hvdc.HvdcControlMode;
+import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.impl.solver.CoordinatedControlZbrNrSolver;
+import com.interpss.core.algo.impl.solver.LccCoupledInjectionModel;
+
+class Kundur_2Area_LccReducedJacobianParityTest extends CorePluginTestSetup {
+	private static final String DATA_ROOT = "testData/adpter/psse/v33/";
+	private static final double SOLVE_TOLERANCE_PU = 1.0e-4;
+
+	@Test
+	void defaultPowerOrderMatchesSequentialSolution() throws Exception {
+		assertReducedParity(DATA_ROOT + "Kundur_2area_LCC_HVDC.raw", false);
+	}
+
+	@Test
+	void inverterPowerOrderMatchesSequentialSolution() throws Exception {
+		assertReducedParity(DATA_ROOT + "Kundur_2area_LCC_HVDC_PsetOnInv.raw", false);
+	}
+
+	@Test
+	void currentOrderMatchesSequentialSolution() throws Exception {
+		assertReducedParity(DATA_ROOT + "Kundur_2area_LCC_HVDC_current_control.raw", true);
+	}
+
+	@Test
+	void firingAngleLimitCaseMatchesSequentialSolution() throws Exception {
+		assertReducedParity(DATA_ROOT + "Kundur_2area_LCC_HVDC_fireangle_limit.raw", false);
+	}
+
+	@Test
+	void postLimitRectifierAngleInverterCurrentModeMatchesSettledSequentialSolution()
+			throws Exception {
+		assertForcedModeParity(HvdcControlMode.FIRING_ANGLE,
+				HvdcControlMode.DC_CURRENT);
+	}
+
+	@Test
+	void postLimitRectifierCurrentInverterAngleModeMatchesSettledSequentialSolution()
+			throws Exception {
+		assertForcedModeParity(HvdcControlMode.DC_CURRENT,
+				HvdcControlMode.FIRING_ANGLE);
+	}
+
+	private static void assertForcedModeParity(HvdcControlMode rectifierMode,
+			HvdcControlMode inverterMode) throws Exception {
+		String rawPath = DATA_ROOT + "Kundur_2area_LCC_HVDC.raw";
+		SolvedCase sequential = solveForcedTransfer(rawPath, false,
+				rectifierMode, inverterMode);
+		SolvedCase reduced = solveForcedTransfer(rawPath, true,
+				rectifierMode, inverterMode);
+
+		assertEquals(rectifierMode,
+				reduced.line.getRectifierControlMode());
+		assertEquals(inverterMode,
+				reduced.line.getInverterControlMode());
+		double maxVoltageDifference = 0.0;
+		double maxAngleDifference = 0.0;
+		for (AclfBus expectedBus : sequential.network.getBusList()) {
+			AclfBus actualBus = reduced.network.getBus(expectedBus.getId());
+			maxVoltageDifference = Math.max(maxVoltageDifference,
+					Math.abs(expectedBus.getVoltageMag() - actualBus.getVoltageMag()));
+			maxAngleDifference = Math.max(maxAngleDifference,
+					Math.abs(expectedBus.getVoltageAng() - actualBus.getVoltageAng()));
+		}
+		assertTrue(maxVoltageDifference < 0.03,
+				"forced transfer max voltage difference=" + maxVoltageDifference);
+		assertTrue(maxAngleDifference < Math.toRadians(1.0),
+				"forced transfer max angle difference rad=" + maxAngleDifference);
+		assertEquals(sequential.line.getRectifier().getIdc(),
+				reduced.line.getRectifier().getIdc(), 1.0e-6);
+		assertEquals(sequential.line.getInverter().getIdc(),
+				reduced.line.getInverter().getIdc(), 1.0e-6);
+		assertEquals(sequential.line.getRectifier().getDcVoltage(),
+				reduced.line.getRectifier().getDcVoltage(), 1.0,
+				() -> forcedStateComparison(sequential, reduced));
+		assertEquals(sequential.line.getInverter().getDcVoltage(),
+				reduced.line.getInverter().getDcVoltage(), 1.0,
+				() -> forcedStateComparison(sequential, reduced));
+		assertEquals(reduced.admittedRectifierTap,
+				reduced.line.getRectifier().getXformerTapSetting(), 1.0e-12);
+		assertEquals(reduced.admittedInverterTap,
+				reduced.line.getInverter().getXformerTapSetting(), 1.0e-12);
+		LccCoupledInjectionModel model = reduced.solver.getLccCoupledModels().get(0);
+		assertEquals(LccCoupledInjectionModel.Status.ELIGIBLE, model.getStatus(),
+				model.getDiagnostic());
+		assertTrue(model.getMaxScaledResidual() < 1.0e-10,
+				"LCC residual=" + model.getMaxScaledResidual());
+		assertEquals(reduced.line.getRectifier().powerIntoConverter().getReal(),
+				model.getRectifierPower().getReal(), 1.0e-9);
+		assertEquals(reduced.line.getRectifier().powerIntoConverter().getImaginary(),
+				model.getRectifierPower().getImaginary(), 1.0e-9);
+		assertEquals(reduced.line.getInverter().powerIntoConverter().getReal(),
+				model.getInverterPower().getReal(), 1.0e-9);
+		assertEquals(reduced.line.getInverter().powerIntoConverter().getImaginary(),
+				model.getInverterPower().getImaginary(), 1.0e-9);
+	}
+
+	private static String forcedStateComparison(SolvedCase sequential,
+			SolvedCase reduced) {
+		return "sequential=" + lccState(sequential.line)
+				+ ", reduced=" + lccState(reduced.line);
+	}
+
+	private static String lccState(HvdcLine2TLCC<AclfBus> line) {
+		return "[mode=" + line.getRectifierControlMode() + "/"
+				+ line.getInverterControlMode() + ", Vr="
+				+ line.getRectifier().getBus().getVoltageMag() + ", Vi="
+				+ line.getInverter().getBus().getVoltageMag() + ", Id="
+				+ line.getRectifier().getIdc() + ", Vdr="
+				+ line.getRectifier().getDcVoltage() + ", Vdi="
+				+ line.getInverter().getDcVoltage() + ", alpha="
+				+ line.getRectifier().getFiringAng() + ", gamma="
+				+ line.getInverter().getFiringAng() + ", tap="
+				+ line.getRectifier().getXformerTapSetting() + "/"
+				+ line.getInverter().getXformerTapSetting() + ", S="
+				+ line.getRectifier().powerIntoConverter() + "/"
+				+ line.getInverter().powerIntoConverter() + "]";
+	}
+
+	private static void assertReducedParity(String rawPath, boolean applyAdjustments)
+			throws Exception {
+		SolvedCase sequential = solve(rawPath, applyAdjustments, false);
+		SolvedCase reduced = solve(rawPath, applyAdjustments, true);
+
+		for (AclfBus expectedBus : sequential.network.getBusList()) {
+			AclfBus actualBus = reduced.network.getBus(expectedBus.getId());
+			assertEquals(expectedBus.getVoltageMag(), actualBus.getVoltageMag(), 2.0e-5,
+					rawPath + " voltage at " + expectedBus.getId());
+			assertEquals(expectedBus.getVoltageAng(), actualBus.getVoltageAng(), 2.0e-5,
+					rawPath + " angle at " + expectedBus.getId());
+		}
+
+		assertEquals(sequential.line.getRectifierControlMode(),
+				reduced.line.getRectifierControlMode(), rawPath);
+		assertEquals(sequential.line.getInverterControlMode(),
+				reduced.line.getInverterControlMode(), rawPath);
+		assertEquals(sequential.line.getRectifier().getXformerTapSetting(),
+				reduced.line.getRectifier().getXformerTapSetting(), 1.0e-8, rawPath);
+		assertEquals(sequential.line.getInverter().getXformerTapSetting(),
+				reduced.line.getInverter().getXformerTapSetting(), 1.0e-8, rawPath);
+		assertEquals(sequential.line.getRectifier().powerIntoConverter().getReal(),
+				reduced.line.getRectifier().powerIntoConverter().getReal(),
+				SOLVE_TOLERANCE_PU, rawPath);
+		assertEquals(sequential.line.getRectifier().powerIntoConverter().getImaginary(),
+				reduced.line.getRectifier().powerIntoConverter().getImaginary(),
+				SOLVE_TOLERANCE_PU,
+				rawPath);
+		assertEquals(sequential.line.getInverter().powerIntoConverter().getReal(),
+				reduced.line.getInverter().powerIntoConverter().getReal(),
+				SOLVE_TOLERANCE_PU, rawPath);
+		assertEquals(sequential.line.getInverter().powerIntoConverter().getImaginary(),
+				reduced.line.getInverter().powerIntoConverter().getImaginary(),
+				SOLVE_TOLERANCE_PU,
+				rawPath);
+
+		LccCoupledInjectionModel model = reduced.solver.getLccCoupledModels().get(0);
+		assertEquals(LccCoupledInjectionModel.Status.ELIGIBLE, model.getStatus(),
+				rawPath + ": " + model.getDiagnostic());
+	}
+
+	private static SolvedCase solve(String rawPath, boolean applyAdjustments,
+			boolean reduced) throws Exception {
+		AclfNetwork network = new PSSEDirectParser(33).parse(rawPath);
+		@SuppressWarnings("unchecked")
+		HvdcLine2TLCC<AclfBus> line =
+				(HvdcLine2TLCC<AclfBus>) network.getSpecialBranchList().get(0);
+		LoadflowAlgorithm algorithm =
+				LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
+		algorithm.setTolerance(SOLVE_TOLERANCE_PU);
+		algorithm.getLfAdjAlgo().setApplyAdjustAlgo(applyAdjustments);
+		algorithm.setMaxIterations(30);
+		CoordinatedControlZbrNrSolver solver = null;
+		if (reduced) {
+			solver = new CoordinatedControlZbrNrSolver(network,
+					algorithm.getNrMethodConfig(), algorithm.getTolerance())
+						.setReducedLccCouplingEnabled(true);
+			algorithm.getLfCalculator().setNrSolver(solver);
+		}
+		assertTrue(algorithm.loadflow(), rawPath + " reduced=" + reduced);
+		assertTrue(network.isLfConverged(), rawPath + " reduced=" + reduced);
+		return new SolvedCase(network, line, solver);
+	}
+
+	private static SolvedCase solveForcedTransfer(String rawPath, boolean reduced,
+			HvdcControlMode rectifierMode, HvdcControlMode inverterMode)
+			throws Exception {
+		AclfNetwork network = new PSSEDirectParser(33).parse(rawPath);
+		@SuppressWarnings("unchecked")
+		HvdcLine2TLCC<AclfBus> line =
+				(HvdcLine2TLCC<AclfBus>) network.getSpecialBranchList().get(0);
+		line.initLoadflow();
+		assertTrue(line.calculateLoadflow(null),
+				"establish normal LCC state before freezing " + rectifierMode
+						+ "/" + inverterMode);
+		line.setRectifierControlMode(rectifierMode);
+		line.setInverterControlMode(inverterMode);
+		if (rectifierMode == HvdcControlMode.DC_CURRENT
+				&& inverterMode == HvdcControlMode.FIRING_ANGLE) {
+			line.getInverter().setXformerTapSetting(1.10);
+		}
+		line.calculateLoadflow(null);
+		double admittedRectifierTap = line.getRectifier().getXformerTapSetting();
+		double admittedInverterTap = line.getInverter().getXformerTapSetting();
+
+		LoadflowAlgorithm algorithm =
+				LoadflowAlgoObjectFactory.createLoadflowAlgorithm(network);
+		algorithm.setTolerance(SOLVE_TOLERANCE_PU);
+		algorithm.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		algorithm.setMaxIterations(30);
+		algorithm.getLfCalculator().setHvdcOuterControlEnabled(false);
+		CoordinatedControlZbrNrSolver solver = null;
+		if (reduced) {
+			solver = new CoordinatedControlZbrNrSolver(network,
+					algorithm.getNrMethodConfig(), algorithm.getTolerance())
+						.setReducedLccCouplingEnabled(true);
+			algorithm.getLfCalculator().setNrSolver(solver);
+			assertTrue(algorithm.loadflow(), "forced transfer reduced solve");
+		}
+		else {
+			Complex previousRectifierPower = Complex.NaN;
+			Complex previousInverterPower = Complex.NaN;
+			for (int outer = 0; outer < 80; outer++) {
+				line.calculateLoadflow(null);
+				Complex refreshedRectifierPower =
+						line.getRectifier().powerIntoConverter();
+				Complex refreshedInverterPower =
+						line.getInverter().powerIntoConverter();
+				assertTrue(algorithm.loadflow(),
+						"forced transfer sequential outer iteration " + outer);
+				if (!previousRectifierPower.isNaN()
+						&& !previousInverterPower.isNaN()
+						&& refreshedRectifierPower.subtract(previousRectifierPower)
+								.abs() < 1.0e-9
+						&& refreshedInverterPower.subtract(previousInverterPower)
+								.abs() < 1.0e-9) {
+					break;
+				}
+				previousRectifierPower = refreshedRectifierPower;
+				previousInverterPower = refreshedInverterPower;
+			}
+			line.calculateLoadflow(null);
+		}
+		assertTrue(network.isLfConverged());
+		return new SolvedCase(network, line, solver, admittedRectifierTap,
+				admittedInverterTap);
+	}
+
+	private static final class SolvedCase {
+		private final AclfNetwork network;
+		private final HvdcLine2TLCC<AclfBus> line;
+		private final CoordinatedControlZbrNrSolver solver;
+		private final double admittedRectifierTap;
+		private final double admittedInverterTap;
+
+		private SolvedCase(AclfNetwork network, HvdcLine2TLCC<AclfBus> line,
+				CoordinatedControlZbrNrSolver solver) {
+			this(network, line, solver, line.getRectifier().getXformerTapSetting(),
+					line.getInverter().getXformerTapSetting());
+		}
+
+		private SolvedCase(AclfNetwork network, HvdcLine2TLCC<AclfBus> line,
+				CoordinatedControlZbrNrSolver solver, double admittedRectifierTap,
+				double admittedInverterTap) {
+			this.network = network;
+			this.line = line;
+			this.solver = solver;
+			this.admittedRectifierTap = admittedRectifierTap;
+			this.admittedInverterTap = admittedInverterTap;
+		}
+	}
+}
