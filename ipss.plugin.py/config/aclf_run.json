@@ -19,7 +19,6 @@
   "checkGenQLimImmediate": false,
   "applyVoltAdjust": true,
   "applyDiscreteAdjust": true,
-  "remoteQBusControl": true,
   "switchedShuntAdjust": true,
   "svcFactsAdjust": true,
   "xfrTapControl": true,
