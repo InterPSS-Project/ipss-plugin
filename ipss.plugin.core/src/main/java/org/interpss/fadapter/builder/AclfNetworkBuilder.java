@@ -629,9 +629,7 @@ public class AclfNetworkBuilder {
         swchShunt.setId(shuntId != null && !shuntId.isEmpty() ? shuntId : "1");
         swchShunt.setStatus(status);
         swchShunt.setBInit(savedBInitPU);
-        if (!status) {
-            swchShunt.setBActual(0.0);
-        }
+        swchShunt.setBActual(status ? savedBInitPU : 0.0);
         swchShunt.setControlMode(mode);
         swchShunt.setAdjControlType(controlType);
 

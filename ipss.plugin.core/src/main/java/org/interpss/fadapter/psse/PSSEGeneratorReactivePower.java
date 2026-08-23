@@ -16,7 +16,7 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.BaseAclfBus;
 
 /** PSS/E machine-level reactive data normalization and plant classification. */
-final class PSSEGeneratorReactivePower {
+public final class PSSEGeneratorReactivePower {
     private static final Logger log = LoggerFactory.getLogger(PSSEGeneratorReactivePower.class);
 
     private PSSEGeneratorReactivePower() {
@@ -43,7 +43,7 @@ final class PSSEGeneratorReactivePower {
         return new Data(qGen, qMax, qMin);
     }
 
-    static void finalizeBusTypes(AclfNetworkBuilder builder) {
+    public static void finalizeBusTypes(AclfNetworkBuilder builder) {
         for (Object obj : builder.getBaseNetwork().getBusList()) {
             BaseAclfBus bus = (BaseAclfBus) obj;
             if (bus.getGenCode() != AclfGenCode.GEN_PV
