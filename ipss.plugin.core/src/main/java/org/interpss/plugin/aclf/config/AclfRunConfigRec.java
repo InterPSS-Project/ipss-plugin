@@ -66,9 +66,12 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public Double maxAreaInterchangePowerStepPu;
 	public Double areaInterchangeAdjustmentFactor;
 	public Integer maxPvLimitAdjustmentsPerIteration;
+	// Couple eligible detailed two-terminal LCC injections directly into the
+	// coordinated NR Jacobian. Null/false preserves the legacy outer-loop model.
+	public Boolean reducedLccCouplingEnabled;
 
 	// Apply the imported PSS/E saved-solution SOLVER activity flags
-	// (ACTAPS/AREAIN/PHSHFT/DCTAPS/SWSHNT/NONDIV) when the network carries
+	// (ACTAPS/AREAIN/PHSHFT/DCTAPS/SWSHNT) when the network carries
 	// PsseLoadflowSolutionSettings. The desktop run service honors this flag.
 	public boolean savedSolutionReplay = false;
 
@@ -220,21 +223,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 			if (this.maxPvLimitAdjustmentsPerIteration != null)
 				algo.getLfAdjAlgo().setMaxPvLimitAdjustmentsPerIteration(this.maxPvLimitAdjustmentsPerIteration);
         	
-			// Load-flow non-divergent inputs apply to both NR and PQ.
-			algo.setNonDivergent(this.nonDivergent);
-			if (this.nonDivergent) {
-				if (this.lfMethod == AclfMethodType.NR)
-					nrConfig.setOptAlgo(this.optAlgo);
-				algo.setVariableUpdateLimit(this.variableUpdateLimit);
-				algo.setDeltaVAngLimit(this.deltaVAngLimit);
-				algo.setDeltaVMagLimit(this.deltaVMagLimit);
-				algo.setStopNoSolutionFound(this.stopNoSolutionFound);
-				algo.setMinScaleFactor(this.minScaleFactor);
-				if (this.lfMethod == AclfMethodType.NR)
-					algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
-			}
-
-        	// Adj/Ctrl Setting tab inputs to be processed
+			// Adj/Ctrl Setting tab inputs to be processed
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(this.limitCtrlStartPoint);
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(this.limitCtrlTolearnceFactor);
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(this.limitCtrlApplyType);
@@ -264,5 +253,20 @@ public class AclfRunConfigRec extends BaseJSONBean {
             	});
 			}
         }
+
+		// Numerical NR settings are independent of adjustment/control inclusion.
+		// In particular, PSS/E applies DVLIM during normal full Newton solves.
+		algo.setNonDivergent(this.nonDivergent);
+		algo.setVariableUpdateLimit(this.variableUpdateLimit);
+		algo.setDeltaVAngLimit(this.deltaVAngLimit);
+		algo.setDeltaVMagLimit(this.deltaVMagLimit);
+		if (this.nonDivergent) {
+			if (this.lfMethod == AclfMethodType.NR)
+				nrConfig.setOptAlgo(this.optAlgo);
+			algo.setStopNoSolutionFound(this.stopNoSolutionFound);
+			algo.setMinScaleFactor(this.minScaleFactor);
+		}
+		if (this.lfMethod == AclfMethodType.NR)
+			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
 	}
 }
