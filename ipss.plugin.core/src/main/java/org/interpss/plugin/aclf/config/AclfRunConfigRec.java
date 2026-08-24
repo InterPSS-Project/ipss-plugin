@@ -25,6 +25,9 @@ import com.interpss.core.algo.NrOptimizeAlgoType;
  * 
  */
 public class AclfRunConfigRec extends BaseJSONBean {
+	public static final int CURRENT_SCHEMA_VERSION = 1;
+
+	public int schemaVersion = CURRENT_SCHEMA_VERSION;
 	public AclfMethodType lfMethod = AclfMethodType.NR;
 	public boolean polarCoordinate = true;
 	public double tolerance = 0.0001;
@@ -139,7 +142,16 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public <T extends BaseJSONBean> T fromString(String json) {
 		Gson gson = new GsonBuilder().registerTypeAdapter(NrOptimizeAlgoType.class,
 				(JsonDeserializer<NrOptimizeAlgoType>) AclfRunConfigRec::deserializeNrOptimizeAlgoType).create();
-		return (T) gson.fromJson(json, AclfRunConfigRec.class);
+		AclfRunConfigRec config = gson.fromJson(json, AclfRunConfigRec.class);
+		config.validateSchemaVersion();
+		return (T) config;
+	}
+
+	public void validateSchemaVersion() {
+		if (this.schemaVersion != CURRENT_SCHEMA_VERSION) {
+			throw new IllegalArgumentException("Unsupported ACLF run config schema version "
+					+ this.schemaVersion + "; expected " + CURRENT_SCHEMA_VERSION);
+		}
 	}
 	
 	public static AclfRunConfigRec loadAclfRunConfig(String configFilename) throws IOException {
