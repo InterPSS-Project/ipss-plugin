@@ -1,4 +1,5 @@
 {
+  "schemaVersion": 1,
   "lfMethod": "NR",
   "polarCoordinate": true,
   "tolerance": 1.0E-4,

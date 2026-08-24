@@ -3,6 +3,7 @@ package org.interpss.plugin.aclf.config;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -12,6 +13,19 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 class AclfRunConfigRecTest {
+	@Test
+	void schemaVersionDefaultsToOneAndRejectsUnsupportedVersions() {
+		AclfRunConfigRec config = new AclfRunConfigRec();
+		assertEquals(AclfRunConfigRec.CURRENT_SCHEMA_VERSION, config.schemaVersion);
+		assertTrue(config.toString().contains("\"schemaVersion\": 1"));
+
+		AclfRunConfigRec legacy = new AclfRunConfigRec().fromString("{\"lfMethod\":\"NR\"}");
+		assertEquals(AclfRunConfigRec.CURRENT_SCHEMA_VERSION, legacy.schemaVersion);
+
+		IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+				() -> new AclfRunConfigRec().fromString("{\"schemaVersion\":2}"));
+		assertTrue(error.getMessage().contains("schema version 2"));
+	}
 
 	@Test
 	void messageLoggingEnabledDefaultsFalseForExistingConfigs() {
