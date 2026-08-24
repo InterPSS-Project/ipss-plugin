@@ -53,6 +53,7 @@ import com.interpss.core.aclf.hvdc.VSCConverter;
 import com.interpss.core.net.NameTag;
 import com.interpss.core.net.NetFactory;
 import com.interpss.core.net.OriginalDataFormat;
+import com.interpss.core.algo.LoadflowAlgorithmInitializer;
 
 /**
  * Direct PSS/E JSON (RAWX) file parser that bypasses the ODM XML intermediate layer.
@@ -92,6 +93,7 @@ public class PSSEJsonDirectParser {
 
         // Parse case ID / system data
         parseCaseData(network);
+        parseSolutionSettings(root);
 
         // Parse buses
         parseFieldData(network, "bus", this::parseBusRow);
@@ -146,6 +148,45 @@ public class PSSEJsonDirectParser {
 
         builder.finalizeNetwork();
     }
+
+	private void parseSolutionSettings(JsonObject root) {
+		if (!root.has("general") || !root.get("general").isJsonObject()) {
+			return;
+		}
+		JsonObject general = root.getAsJsonObject("general");
+		if (!general.has("ipss_loadflow_solution_settings")
+				|| !general.get("ipss_loadflow_solution_settings").isJsonObject()) {
+			return;
+		}
+		JsonObject extension = general.getAsJsonObject(
+				"ipss_loadflow_solution_settings");
+		int sourceVersion = extension.has("source_version")
+				? extension.get("source_version").getAsInt() : 35;
+		PsseLoadflowSolutionSettings.Builder settingsBuilder =
+				PsseLoadflowSolutionSettings.builder(sourceVersion);
+		if (extension.has("raw_lines") && extension.get("raw_lines").isJsonArray()) {
+			for (JsonElement line : extension.getAsJsonArray("raw_lines")) {
+				if (line != null && !line.isJsonNull()) {
+					settingsBuilder.addLine(line.getAsString());
+				}
+			}
+		}
+		PsseLoadflowSolutionSettings settings = settingsBuilder.build();
+		builder.getNetwork().getExtraInfo().put(
+				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY, settings);
+		if (settings.general().thrshz() != null
+				&& Double.isFinite(settings.general().thrshz())
+				&& settings.general().thrshz() >= 0.0) {
+			builder.getNetwork().setZeroZBranchThreshold(
+					settings.general().thrshz());
+		}
+		if (settings.general().pqbrak() != null
+				&& Double.isFinite(settings.general().pqbrak())
+				&& settings.general().pqbrak() >= 0.0) {
+			builder.getNetwork().getBusLoadLowVoltConfig().setVConstPMin(
+					settings.general().pqbrak());
+		}
+	}
 
     // ==================== Parsing Framework ====================
 
@@ -772,7 +813,11 @@ public class PSSEJsonDirectParser {
         int mode1 = getInt(row, "mode1", 1);
         double dcSet1 = getDouble(row, "dcset1", 0.0);
         double acSet1 = getDouble(row, "acset1", 1.0);
+        double lossA1 = getDouble(row, "aloss1", 0.0);
+        double lossB1 = getDouble(row, "bloss1", 0.0);
+        double minLoss1 = getDouble(row, "minloss1", 0.0);
         double smax1 = getDouble(row, "smax1", 0.0);
+        double imax1 = getDouble(row, "imax1", 0.0);
         double maxQ1 = getDouble(row, "maxq1", 9999.0);
         double minQ1 = getDouble(row, "minq1", -9999.0);
         int remot1 = getInt(row, "vsreg1", 0);
@@ -783,7 +828,11 @@ public class PSSEJsonDirectParser {
         int mode2 = getInt(row, "mode2", 1);
         double dcSet2 = getDouble(row, "dcset2", 0.0);
         double acSet2 = getDouble(row, "acset2", 1.0);
+        double lossA2 = getDouble(row, "aloss2", 0.0);
+        double lossB2 = getDouble(row, "bloss2", 0.0);
+        double minLoss2 = getDouble(row, "minloss2", 0.0);
         double smax2 = getDouble(row, "smax2", 0.0);
+        double imax2 = getDouble(row, "imax2", 0.0);
         double maxQ2 = getDouble(row, "maxq2", 9999.0);
         double minQ2 = getDouble(row, "minq2", -9999.0);
         int remot2 = getInt(row, "vsreg2", 0);
@@ -809,6 +858,8 @@ public class PSSEJsonDirectParser {
             configVSCConverter(recConv, recBusNum,
                     isConv1Rec ? type1 : type2, isConv1Rec ? mode1 : mode2,
                     isConv1Rec ? dcSet1 : dcSet2, isConv1Rec ? acSet1 : acSet2,
+                    isConv1Rec ? lossA1 : lossA2, isConv1Rec ? lossB1 : lossB2,
+                    isConv1Rec ? minLoss1 : minLoss2, isConv1Rec ? imax1 : imax2,
                     isConv1Rec ? smax1 : smax2,
                     isConv1Rec ? maxQ1 : maxQ2, isConv1Rec ? minQ1 : minQ2,
                     isConv1Rec ? remot1 : remot2, isConv1Rec ? rmpct1 : rmpct2);
@@ -818,6 +869,8 @@ public class PSSEJsonDirectParser {
             configVSCConverter(invConv, invBusNum,
                     isConv1Rec ? type2 : type1, isConv1Rec ? mode2 : mode1,
                     isConv1Rec ? dcSet2 : dcSet1, isConv1Rec ? acSet2 : acSet1,
+                    isConv1Rec ? lossA2 : lossA1, isConv1Rec ? lossB2 : lossB1,
+                    isConv1Rec ? minLoss2 : minLoss1, isConv1Rec ? imax2 : imax1,
                     isConv1Rec ? smax2 : smax1,
                     isConv1Rec ? maxQ2 : maxQ1, isConv1Rec ? minQ2 : minQ1,
                     isConv1Rec ? remot2 : remot1, isConv1Rec ? rmpct2 : rmpct1);
@@ -828,6 +881,8 @@ public class PSSEJsonDirectParser {
 
     private void configVSCConverter(VSCConverter converter, int busNum,
             int type, int mode, double dcSet, double acSet,
+            double lossA, double lossB, double minimumLoss,
+            double maximumAcCurrent,
             double smax, double maxQ, double minQ,
             int remoteBusNum, double rmpct) {
         HvdcControlMode dcCtrl = type == 0 ? HvdcControlMode.BLOCKED
@@ -838,6 +893,10 @@ public class PSSEJsonDirectParser {
                 ? BUS_ID_PREFIX + remoteBusNum : null;
         builder.setVSCConverter(converter, BUS_ID_PREFIX + busNum, dcCtrl, Math.abs(dcSet),
                 acCtrl, acSet, smax, maxQ, minQ, remoteBusId, rmpct);
+        converter.setLossA(lossA);
+        converter.setLossB(lossB);
+        converter.setMinimumLoss(minimumLoss);
+        converter.setAcCurrentRating(maximumAcCurrent);
     }
 
     // ==================== Multi-terminal DC ====================
