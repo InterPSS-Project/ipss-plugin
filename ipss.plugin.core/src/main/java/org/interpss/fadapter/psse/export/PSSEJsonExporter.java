@@ -378,7 +378,7 @@ public class PSSEJsonExporter {
 				JsonArray data = row(busNumber(bus), shunt.getId(), modsw(shunt), 0,
 						shunt.isActive() ? 1 : 0, limitMax(shunt.getDesiredControlRange(), 1.0),
 						limitMin(shunt.getDesiredControlRange(), 1.0), busNumber(shunt.getRemoteBusBranchId(), busNumber(bus)),
-						0, 100.0, "", exportedB * baseMva);
+						0, shunt.getRemoteControlPercentage(), "", exportedB * baseMva);
 				int count = 0;
 				for (Object compObj : shunt.getShuntCompensatorList()) {
 					if (count++ >= 8) break;

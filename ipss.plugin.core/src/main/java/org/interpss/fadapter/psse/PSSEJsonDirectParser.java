@@ -373,6 +373,7 @@ public class PSSEJsonDirectParser {
         double vswhi = getDouble(row, "vswhi", 1.0);
         double vswlo = getDouble(row, "vswlo", 1.0);
         int swreg = getInt(row, "swreg", 0);
+        double rmpct = getDouble(row, "rmpct", 100.0);
         double binit = getDouble(row, "binit", 0.0);
 
         AclfAdjustControlMode mode = PSSEDirectParser.switchedShuntControlMode(modsw);
@@ -391,7 +392,7 @@ public class PSSEJsonDirectParser {
 
         builder.addSwitchedShunt(busId, shuntId, stat == 1,
                 mode, AclfAdjustControlType.RANGE_CONTROL,
-                binit / baseMva, vswhi, vswlo, remoteBusId, blocks);
+                binit / baseMva, vswhi, vswlo, remoteBusId, rmpct, blocks);
     }
 
     // ==================== Generator ====================
