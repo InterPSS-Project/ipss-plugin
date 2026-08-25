@@ -94,7 +94,7 @@ public class PSSE_MTHVDC_Test extends CorePluginTestSetup {
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.setNonDivergent(false);
+		algo.getNrMethodConfig().setNonDivergent(false);
 		algo.setTolerance(1.0e-6);
 		algo.setMaxIterations(100);
 

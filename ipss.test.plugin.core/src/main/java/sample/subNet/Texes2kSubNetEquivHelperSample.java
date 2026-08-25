@@ -59,7 +59,7 @@ public class Texes2kSubNetEquivHelperSample {
     LoadflowAlgorithm algo2 = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(equivNet);
     algo2.setLfMethod(AclfMethodType.NR);
     algo2.getLfAdjAlgo().setApplyAdjustAlgo(false);
-    //algo2.setNonDivergent(true); // set to true to avoid divergence due to large swing bus gen
+    //algo2.getNrMethodConfig().setNonDivergent(true); // set to true to avoid divergence due to large swing bus gen
     algo2.loadflow();
 
     System.out.println(AclfOutFunc.loadFlowSummary(equivNet));
