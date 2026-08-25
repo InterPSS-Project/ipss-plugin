@@ -83,7 +83,7 @@ public class TestDER_A_model9Bus {
 		 tAlgo.setLfMethod(AclfMethodType.NR);
 		 tAlgo.setTolerance(1.0E-6);
 		 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-		tAlgo.setNonDivergent(true);
+		tAlgo.getNrMethodConfig().setNonDivergent(true);
 		 tAlgo.setInitBusVoltage(true); 
 		 
 		//dsNet.initBusVoltage();

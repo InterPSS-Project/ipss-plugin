@@ -58,7 +58,7 @@ public class ACTIVSg25kBusPVLimitCtrlOnlySample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
-		aclfAlgo.setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
