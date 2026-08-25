@@ -15,7 +15,14 @@ import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.BaseAclfBus;
 
-/** PSS/E machine-level reactive data normalization and plant classification. */
+/**
+ * PSS/E/EPC machine-level reactive-data normalization and plant classification.
+ *
+ * <p>Direct parsers initially create machines independently, but bus PV/PQ type
+ * depends on the aggregate active machines and whether at least one has usable
+ * reactive range. Centralizing this final pass prevents different adapters from
+ * interpreting fixed-Q, wind power-factor, and zero-width Q limits differently.</p>
+ */
 public final class PSSEGeneratorReactivePower {
     private static final Logger log = LoggerFactory.getLogger(PSSEGeneratorReactivePower.class);
 

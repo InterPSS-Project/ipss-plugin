@@ -18,6 +18,17 @@ import com.interpss.core.algo.LoadflowAlgorithmInitializer;
  * records. Recognized fields are exposed with their native types, while the
  * complete key/value block and original lines remain available so unsupported
  * settings are not silently discarded.
+ *
+ * <p>Application is intentionally selective. Numerical fields with a verified
+ * InterPSS equivalent are always eligible; binary device-activity fields are
+ * applied only by {@link ApplicationPolicy#SAVED_SOLUTION_REPLAY}. Unknown,
+ * unsupported, malformed, and non-binary values are reported instead of being
+ * coerced. Normal versus non-divergent NR is an explicit run-configuration
+ * policy and is not inferred from a non-standard solver token.</p>
+ *
+ * <p>Callers should apply these imported values before explicit JSON settings.
+ * That ordering makes source data the baseline while keeping a field supplied
+ * by the user authoritative.</p>
  */
 public final class PsseLoadflowSolutionSettings
 		implements LoadflowAlgorithmInitializer {
