@@ -44,7 +44,7 @@ public class AclfNetDFAdapter_EICon_Sample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
 		aclfAlgo.setTolerance(1.0E-4);
 		aclfAlgo.setMaxIterations(50);

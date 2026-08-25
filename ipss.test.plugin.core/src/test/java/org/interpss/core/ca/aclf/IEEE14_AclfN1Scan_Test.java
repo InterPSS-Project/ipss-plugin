@@ -50,7 +50,7 @@ public class IEEE14_AclfN1Scan_Test extends CorePluginTestSetup {
 			try {
 				LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(netCopy);
 				//aclfAlgo.setMaxIterations(50);
-				//aclfAlgo.setNonDivergent(true);
+				//aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 				aclfAlgo.loadflow();
 				
 				assertTrue(netCopy.isLfConverged());

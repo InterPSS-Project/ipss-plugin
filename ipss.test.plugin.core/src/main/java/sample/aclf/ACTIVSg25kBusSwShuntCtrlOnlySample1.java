@@ -41,7 +41,7 @@ public class ACTIVSg25kBusSwShuntCtrlOnlySample1 {
 
 		aclfAlgo.getLfAdjAlgo().getLimitCtrlConfig().setCheckGenQLimitImmediate(false);
 
-		aclfAlgo.setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);
