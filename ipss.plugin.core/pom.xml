@@ -90,25 +90,25 @@
         <dependency>
             <groupId>org.dflib</groupId>
             <artifactId>dflib</artifactId>
-            <version>2.0.0-M6</version>
+            <version>2.0.0-M7</version>
         </dependency>
 
         <dependency>
             <groupId>org.dflib</groupId>
             <artifactId>dflib-json</artifactId>
-            <version>2.0.0-M6</version>
+            <version>2.0.0-M7</version>
         </dependency>
 
         <dependency>
             <groupId>org.dflib</groupId>
             <artifactId>dflib-csv</artifactId>
-            <version>2.0.0-M6</version>
+            <version>2.0.0-M7</version>
         </dependency>
 
         <dependency>
             <groupId>org.dflib</groupId>
             <artifactId>dflib-parquet</artifactId>
-            <version>2.0.0-M6</version>
+            <version>2.0.0-M7</version>
         </dependency>
 
         <dependency>
