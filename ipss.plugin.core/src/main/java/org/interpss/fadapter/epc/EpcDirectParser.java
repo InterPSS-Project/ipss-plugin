@@ -40,8 +40,19 @@ import com.interpss.core.net.OriginalDataFormat;
 
 /**
  * Direct EPC file parser. EPC files use a colon (:) to separate
- * bus-identification fields from numeric data fields.  Branches span 2 lines
- * and transformers span 3 lines per record.
+ * bus-identification fields from numeric data fields. Branches span two lines
+ * and transformers span three lines per record.
+ *
+ * <p>EPC SVD records appear after the buses and machines whose final PV/PQ
+ * classification depends on them. The parser therefore performs a read-only
+ * SVD pre-scan, builds the network in section order, and creates each SVD device
+ * only during the real parse. This avoids both premature PQ classification and
+ * duplicate shunts.</p>
+ *
+ * <p>Transformer continuation/star records and impedance-correction-table
+ * references are retained because they materially change the solved voltage
+ * pocket. Generator reactive data is finalized with the shared PSS/E helper so
+ * fixed-Q and usable-Q-range rules are identical across direct adapters.</p>
  */
 public class EpcDirectParser {
     private static final Logger log = LoggerFactory.getLogger(EpcDirectParser.class);

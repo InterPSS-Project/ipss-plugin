@@ -61,6 +61,17 @@ import com.interpss.core.net.OriginalDataFormat;
  *
  * The section-by-section parsing order mirrors PSSELFRawAdapter in ipss-odm.
  * Field extraction logic is ported from the individual PSSExxxDataRawParser classes.
+ *
+ * <p>For v34+ files, system-wide load-flow records are retained as
+ * {@link PsseLoadflowSolutionSettings} on network extra info. Parsing does not
+ * unconditionally impose their solver activity flags: the run layer first
+ * chooses whether saved-solution replay is intended, then explicit JSON
+ * configuration may override the imported setting.</p>
+ *
+ * <p>Version-specific switched-shunt fields preserve remote participation and
+ * FACTS supervision. Phase-shifter limits are normalized before builder calls
+ * because source records do not guarantee the two range fields arrive in
+ * numerical max/min order.</p>
  */
 public class PSSEDirectParser {
     private static final Logger log = LoggerFactory.getLogger(PSSEDirectParser.class);
