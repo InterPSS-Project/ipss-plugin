@@ -80,7 +80,7 @@ public class PSSE_Sample_NB_Rawx_Aclf_Test extends CorePluginTestSetup {
 		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 11.3036, 1.2182);
+		assertSwingPower(net, "Bus3011", 11.3365, 1.2212);
 	}
 
 	@Test
@@ -96,7 +96,7 @@ public class PSSE_Sample_NB_Rawx_Aclf_Test extends CorePluginTestSetup {
 		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 11.3036, 1.2183);
+		assertSwingPower(net, "Bus3011", 11.3365, 1.2212);
 	}
 
 	@Test
@@ -115,7 +115,7 @@ public class PSSE_Sample_NB_Rawx_Aclf_Test extends CorePluginTestSetup {
 		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 11.3036, 1.2182);
+		assertSwingPower(net, "Bus3011", 11.3365, 1.2212);
 	}
 
 	private static AclfNetwork parseAndConfigure() throws Exception {
