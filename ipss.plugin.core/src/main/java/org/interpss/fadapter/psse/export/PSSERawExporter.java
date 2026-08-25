@@ -23,7 +23,20 @@ import com.interpss.core.algo.LoadflowAlgorithmInitializer;
 import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings;
 
 /**
- * Standalone PSS/E RAW text exporter for networks produced by the direct PSS/E parsers.
+ * Standalone PSS/E RAW text exporter for networks produced by the direct PSS/E
+ * parsers.
+ *
+ * <p>The exporter serializes the canonical model built by
+ * {@link PSSEJsonExporter}; it does not make a second set of solved-state
+ * decisions. Version-specific writers adapt section order and columns for
+ * v30-v36. System-wide source records are preserved where supported, and bus
+ * voltage magnitude/angle use the shared high-precision numeric formatter so a
+ * solved case can satisfy the iteration-zero mismatch gate after re-import.</p>
+ *
+ * <p>Optional LCC/VSC solved diagnostics are appended as trailing comments.
+ * PSS/E-compatible readers ignore those comments, while InterPSS users retain
+ * firing/extinction angle, tap position, and terminal P/Q evidence for audit or
+ * future initialization.</p>
  */
 public class PSSERawExporter {
 	private final JsonObject network;
