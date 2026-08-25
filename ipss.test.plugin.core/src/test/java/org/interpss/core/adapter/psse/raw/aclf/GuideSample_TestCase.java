@@ -25,7 +25,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.loadflow();
 	  	
   		AclfBus swingBus = net.getBus("Bus3011");
@@ -43,7 +43,7 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 	  	algo.loadflow();
 	  	
   		AclfBus swingBus = net.getBus("Bus3011");

@@ -121,7 +121,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 			 tAlgo.setTolerance(1E-4);
 			
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-			 //tAlgo.setNonDivergent(true);
+			 //tAlgo.getNrMethodConfig().setNonDivergent(true);
 			 tAlgo.setInitBusVoltage(true); 
 			 // TODO initBusVoltage can be updated to set init to true for the first iteration, while
 			 // the remaining iterations can reuse last step solution results as the starting point, such that
@@ -216,7 +216,7 @@ public class TestTnD_IEEE39_123BusFeeder {
 			 tAlgo.setTolerance(1E-4);
 			
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-			 //tAlgo.setNonDivergent(true);
+			 //tAlgo.getNrMethodConfig().setNonDivergent(true);
 			 tAlgo.setInitBusVoltage(true); 
 			 // TODO initBusVoltage can be updated to set init to true for the first iteration, while
 			 // the remaining iterations can reuse last step solution results as the starting point, such that

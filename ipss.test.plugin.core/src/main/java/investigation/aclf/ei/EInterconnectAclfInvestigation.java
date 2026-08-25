@@ -62,7 +62,7 @@ public class EInterconnectAclfInvestigation {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
 		// disable all the controls
 		//AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);

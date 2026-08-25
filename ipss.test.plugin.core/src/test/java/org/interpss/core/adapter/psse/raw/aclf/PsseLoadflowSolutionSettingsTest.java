@@ -77,7 +77,7 @@ class PsseLoadflowSolutionSettingsTest {
 				"automatic numerical settings must not override study control modes");
 		assertTrue(algorithm.getLfAdjAlgo().getVoltAdjConfig().isSwitchedShuntAdjust());
 		assertTrue(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
-		assertFalse(algorithm.isNonDivergent());
+		assertFalse(algorithm.getNrMethodConfig().isNonDivergent());
 
 		ApplicationReport report = (ApplicationReport) network.getExtraInfo().get(
 				PsseLoadflowSolutionSettings.APPLICATION_REPORT_EXTRA_INFO_KEY);
@@ -96,7 +96,7 @@ class PsseLoadflowSolutionSettingsTest {
 		settings.applyTo(algorithm, network, ApplicationPolicy.SAVED_SOLUTION_REPLAY);
 		assertFalse(algorithm.getLfAdjAlgo().getVoltAdjConfig().isHvdcTapControl());
 		assertFalse(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
-		assertTrue(algorithm.isNonDivergent());
+		assertTrue(algorithm.getNrMethodConfig().isNonDivergent());
 	}
 
 	@Test
