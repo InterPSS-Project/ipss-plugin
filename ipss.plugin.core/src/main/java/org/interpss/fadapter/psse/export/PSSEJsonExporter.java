@@ -64,6 +64,17 @@ import com.interpss.core.algo.LoadflowAlgorithmInitializer;
 
 /**
  * Standalone PSS/E RAWX-style JSON exporter for the direct RAWX parser.
+ *
+ * <p>The default constructors export equipment/input state. Passing
+ * {@code exportSolvedState=true} exports the accepted operating point and its
+ * reproducible controller active set. That mode reconciles only generation
+ * allowed to move during load flow, freezes limit-bound or unsettled voltage
+ * controls when needed, and includes optional converter diagnostics.</p>
+ *
+ * <p>This class is also the canonical data source for
+ * {@link PSSERawExporter}. Keeping solved-state decisions here ensures RAW and
+ * RAWX use identical bus types, generator allocation, SVC/shunt treatment, and
+ * fixed-LCC fallback behavior.</p>
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class PSSEJsonExporter {
@@ -289,6 +300,12 @@ public class PSSEJsonExporter {
 		return section;
 	}
 
+	/**
+	 * Writes one terminal of an LCC that core fixed after measured outer-loop
+	 * instability. Standard RAW cannot encode the complete frozen converter state;
+	 * an active constant-P/Q load is therefore the only representation that
+	 * preserves the accepted AC injection without restarting that control loop.
+	 */
 	private void addFixedLccEquivalentLoad(JsonObject section,
 			Map<AclfBus, Set<String>> usedLoadIds, ThyConverter converter,
 			String preferredId, String name) {
@@ -504,6 +521,12 @@ public class PSSEJsonExporter {
 		return buses;
 	}
 
+	/**
+	 * Reconciles machine records to solved bus generation without changing
+	 * scheduled PG at ordinary PV/PQ buses. Active power can move only at the
+	 * system or area swing. Reactive residual is allocated only to active machines
+	 * with a usable range; fixed-Q machines retain their exact output.
+	 */
 	private static List<Complex> solvedGeneratorAllocation(
 			AclfBus bus,
 			List<AclfGen> generators,
@@ -887,6 +910,13 @@ public class PSSEJsonExporter {
 		return Math.round((converter.getXformerTapSetting() - limits.getMin()) / step);
 	}
 
+	/**
+	 * Reconstructs the transformer tap implied by the accepted converter equation.
+	 * Firing angle and terminal voltage are solved continuous values, so retaining
+	 * an older stored tap can recreate a different Q injection on import. A result
+	 * outside physical limits or with invalid arithmetic falls back to the stored
+	 * tap rather than exporting a nonphysical record.
+	 */
 	private double solvedLccTap(HvdcLine2TLCC line, ThyConverter converter) {
 		double storedTap = converter.getXformerTapSetting();
 		if (!exportSolvedState || !line.isActive() || isFixedSolvedLcc(line)

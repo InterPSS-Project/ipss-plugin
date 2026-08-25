@@ -61,6 +61,16 @@ import com.interpss.core.algo.LoadflowAlgorithmInitializer;
  *
  * The RAWX format is a JSON structure where each data type has a "fields" array
  * defining column names and a "data" array with rows of values.
+ *
+ * <p>InterPSS solved-state extensions are optional and additive. Source
+ * solution-setting lines are restored to network extra info for later replay;
+ * appended converter tap/angle/P/Q diagnostics may assist initialization but
+ * do not replace standard PSS/E fields. A RAWX file without these extensions
+ * follows the ordinary parser path unchanged.</p>
+ *
+ * <p>The parser retains control participation, VSC loss/current data, and
+ * switched-shunt saved state because dropping any of them changes terminal
+ * injection or coordinated-Q allocation after round trip.</p>
  */
 public class PSSEJsonDirectParser {
     private static final Logger log = LoggerFactory.getLogger(PSSEJsonDirectParser.class);

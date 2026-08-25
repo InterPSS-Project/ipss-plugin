@@ -21,8 +21,18 @@ import com.interpss.core.algo.NrMethodConfig;
 import com.interpss.core.algo.NrOptimizeAlgoType;
 
 /**
- * Loadflow run configuration record
- * 
+ * Versioned JSON contract for configuring one ACLF run.
+ *
+ * <p>The record contains solver and control policy only; parser selection and
+ * file-format choices belong to the import layer. The intended precedence is
+ * imported RAW settings first and explicit fields in this record second.
+ * Nullable advanced fields preserve an imported/current value when absent,
+ * while primitive fields define schema defaults.</p>
+ *
+ * <p>Adjustment-family switches are independent. Numerical NR controls are
+ * applied even when adjustment is disabled: normal full Newton may use a global
+ * variable update limit, while optimizer/minimum-scale settings are consulted
+ * only when {@link #nonDivergent} is true.</p>
  */
 public class AclfRunConfigRec extends BaseJSONBean {
 	public static final int CURRENT_SCHEMA_VERSION = 1;
@@ -147,6 +157,11 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		return (T) config;
 	}
 
+	/**
+	 * Fails fast when a client sends a schema whose field meanings may differ.
+	 * Silent best-effort parsing would be unsafe for control booleans because an
+	 * omitted or renamed field can materially change the solved active set.
+	 */
 	public void validateSchemaVersion() {
 		if (this.schemaVersion != CURRENT_SCHEMA_VERSION) {
 			throw new IllegalArgumentException("Unsupported ACLF run config schema version "
