@@ -592,6 +592,7 @@ public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 		shunt.setControlMode(AclfAdjustControlMode.FIXED);
 		shunt.setRemoteBusBranchId(bus.getId());
 		shunt.setRemoteBus(bus);
+		shunt.setRemoteControlPercentage(50.0);
 		shunt.setBInit(-0.25);
 
 		Path exported = tempDir.resolve("sample-v34-switched-shunt.raw");
@@ -603,6 +604,8 @@ public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 		assertEquals(1, importedBus.getSwitchedShuntList().size());
 		assertEquals(-0.25,
 				importedBus.getSwitchedShuntList().get(0).getBActual(), TOL);
+		assertEquals(50.0,
+				importedBus.getSwitchedShuntList().get(0).getRemoteControlPercentage(), TOL);
 	}
 
 	@Test
