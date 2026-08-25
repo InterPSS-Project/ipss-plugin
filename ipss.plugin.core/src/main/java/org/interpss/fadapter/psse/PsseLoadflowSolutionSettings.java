@@ -200,7 +200,7 @@ public final class PsseLoadflowSolutionSettings
 			applyBinary(result, "SOLVER.SWSHNT", solver.swshnt(), enabled -> algorithm
 					.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(enabled));
 			applyBinary(result, "SOLVER.NONDIV", solver.nondiv(),
-					algorithm::setNonDivergent);
+					algorithm.getNrMethodConfig()::setNonDivergent);
 		} else {
 			preserveSolverModes(result);
 		}

@@ -47,7 +47,7 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(method);
 		algo.setInitBusVoltage(method != AclfMethodType.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.setMaxIterations(50);
 
 		boolean solved = algo.loadflow();

@@ -221,15 +221,15 @@ public class AclfRunConfigRec extends BaseJSONBean {
 				algo.getLfAdjAlgo().setMaxPvLimitAdjustmentsPerIteration(this.maxPvLimitAdjustmentsPerIteration);
         	
 			// Load-flow non-divergent inputs apply to both NR and PQ.
-			algo.setNonDivergent(this.nonDivergent);
+			algo.getNrMethodConfig().setNonDivergent(this.nonDivergent);
 			if (this.nonDivergent) {
 				if (this.lfMethod == AclfMethodType.NR)
 					nrConfig.setOptAlgo(this.optAlgo);
-				algo.setVariableUpdateLimit(this.variableUpdateLimit);
-				algo.setDeltaVAngLimit(this.deltaVAngLimit);
-				algo.setDeltaVMagLimit(this.deltaVMagLimit);
-				algo.setStopNoSolutionFound(this.stopNoSolutionFound);
-				algo.setMinScaleFactor(this.minScaleFactor);
+				algo.getNrMethodConfig().setVariableUpdateLimit(this.variableUpdateLimit);
+				algo.getNrMethodConfig().setDeltaVAngLimit(this.deltaVAngLimit);
+				algo.getNrMethodConfig().setDeltaVMagLimit(this.deltaVMagLimit);
+				algo.getNrMethodConfig().setStopNoSolutionFound(this.stopNoSolutionFound);
+				algo.getNrMethodConfig().setMinScaleFactor(this.minScaleFactor);
 				if (this.lfMethod == AclfMethodType.NR)
 					algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
 			}

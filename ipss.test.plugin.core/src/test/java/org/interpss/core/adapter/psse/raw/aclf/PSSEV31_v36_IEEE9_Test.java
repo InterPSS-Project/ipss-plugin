@@ -25,7 +25,7 @@ public void testV31() throws Exception {
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -47,7 +47,7 @@ public void testV32() throws Exception {
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -68,7 +68,7 @@ public void testV33() throws Exception {
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -88,7 +88,7 @@ public void testV34() throws Exception {
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -108,7 +108,7 @@ public void testV35() throws Exception {
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -129,7 +129,7 @@ public void testV36() throws Exception {
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	

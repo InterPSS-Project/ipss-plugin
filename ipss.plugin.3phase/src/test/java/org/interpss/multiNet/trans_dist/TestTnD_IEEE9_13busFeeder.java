@@ -141,7 +141,7 @@ public class TestTnD_IEEE9_13busFeeder {
 			 tAlgo.setLfMethod(AclfMethodType.NR);
 			 tAlgo.setTolerance(1.0E-5);
 			 tAlgo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-			 //tAlgo.setNonDivergent(true);
+			 //tAlgo.getNrMethodConfig().setNonDivergent(true);
 			 tAlgo.setInitBusVoltage(true); 
 			 // TODO initBusVoltage can be updated to set init to true for the first iteration, while
 			 // the remaining iterations can reuse last step solution results as the starting point, such that
