@@ -968,7 +968,7 @@ public class PSSEDirectParser {
         String busId = BUS_ID_PREFIX + busNum;
 
         int modsw, stat;
-        double vswhi, vswlo, binit;
+        double vswhi, vswlo, rmpct, binit;
         int swreg;
         String shuntId = "1";
         String remoteDeviceId;
@@ -982,6 +982,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(5, 1.0);
             vswlo = rec.getDouble(6, 1.0);
             swreg = rec.getInt(7, 0);
+            rmpct = rec.getDouble(9, 100.0);
             remoteDeviceId = rec.getString(10, "").trim();
             binit = rec.getDouble(11, 0.0);
         } else if (version >= 33) {
@@ -991,6 +992,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(4, 1.0);
             vswlo = rec.getDouble(5, 1.0);
             swreg = rec.getInt(6, 0);
+            rmpct = rec.getDouble(7, 100.0);
             remoteDeviceId = rec.getString(8, "").trim();
             binit = rec.getDouble(9, 0.0);
         } else {
@@ -1000,6 +1002,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(2, 1.0);
             vswlo = rec.getDouble(3, 1.0);
             swreg = rec.getInt(4, 0);
+            rmpct = rec.getDouble(5, 100.0);
             remoteDeviceId = rec.getString(6, "").trim();
             binit = rec.getDouble(7, 0.0);
         }
@@ -1038,7 +1041,7 @@ public class PSSEDirectParser {
 
         SwitchedShunt switchedShunt = builder.addSwitchedShunt(busId, shuntId, stat == 1,
                 mode, AclfAdjustControlType.RANGE_CONTROL,
-                bInitPU, vswhi, vswlo, remoteBusId, blocks);
+                bInitPU, vswhi, vswlo, remoteBusId, rmpct, blocks);
         if (modsw == 6 && switchedShunt != null) {
             // PSS/E MODSW=6 regulates the reactive output of the named FACTS
             // shunt element. Preserve that association for the coordinated

@@ -57,7 +57,7 @@ public class AclfNetworkBuilderAdjDeviceTest extends CorePluginTestSetup {
 
 		SwitchedShunt sw = builder.addSwitchedShunt("Bus1", "1", true,
 				AclfAdjustControlMode.DISCRETE, AclfAdjustControlType.RANGE_CONTROL,
-				0.05, 1.05, 0.95, "Bus2", blocks);
+				0.05, 1.05, 0.95, "Bus2", 50.0, blocks);
 
 		assertNotNull(sw);
 		assertEquals("1", sw.getId());
@@ -68,6 +68,7 @@ public class AclfNetworkBuilderAdjDeviceTest extends CorePluginTestSetup {
 		assertEquals(1.05, sw.getDesiredControlRange().getMax(), TOL);
 		assertEquals(0.95, sw.getDesiredControlRange().getMin(), TOL);
 		assertEquals("Bus2", sw.getRemoteBusBranchId());
+		assertEquals(50.0, sw.getRemoteControlPercentage(), TOL);
 		assertEquals(3, sw.getShuntCompensatorList().size());
 
 		ShuntCompensator bank0 = sw.getShuntCompensatorList().get(0);
