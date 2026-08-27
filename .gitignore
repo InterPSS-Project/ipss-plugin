@@ -23,6 +23,8 @@
 /ipss.plugin.3phase/logs/*.log
 **/.flattened-pom.xml
 .vscode/settings.json
+codex-plugin-install.log
+codex-plugin-test.log
 
 ipss.plugin.py/sample/results/*.*
 .venv/
