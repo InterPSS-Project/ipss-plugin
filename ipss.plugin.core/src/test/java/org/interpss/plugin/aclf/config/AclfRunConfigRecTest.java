@@ -10,6 +10,8 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.algo.config.ControlInitializationMode;
+import com.interpss.core.algo.config.RemoteQControlMode;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 class AclfRunConfigRecTest {
@@ -25,6 +27,19 @@ class AclfRunConfigRecTest {
 		IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
 				() -> new AclfRunConfigRec().fromString("{\"schemaVersion\":2}"));
 		assertTrue(error.getMessage().contains("schema version 2"));
+	}
+
+	@Test
+	void configJsonRejectsRemovedAclfFields() {
+		assertTrue(assertThrows(IllegalArgumentException.class,
+				() -> AclfRunConfigRec.fromJson("{\"areaInterchangeControlEnabled\":false}"))
+						.getMessage().contains("areaInterchangeControl"));
+		assertTrue(assertThrows(IllegalArgumentException.class,
+				() -> AclfRunConfigRec.fromJson("{\"removeAreaInterchangeControls\":true}"))
+						.getMessage().contains("areaInterchangeControl=false"));
+		assertTrue(assertThrows(IllegalArgumentException.class,
+				() -> AclfRunConfigRec.fromJson("{\"halCoordinatedControlProfile\":true}"))
+						.getMessage().contains("ACLF control fields directly"));
 	}
 
 	@Test
@@ -55,6 +70,58 @@ class AclfRunConfigRecTest {
 		AclfRunConfigRec parsed = new AclfRunConfigRec().fromString(config.toString());
 
 		assertTrue(parsed.reducedLccCouplingEnabled);
+	}
+
+	@Test
+	void advancedAclfControlsParseInSharedConfigModel() {
+		AclfRunConfigRec config = AclfRunConfigRec.fromJson("""
+				{
+				  "schemaVersion": 1,
+				  "coordinatedControlZbrSolver": true,
+				  "remoteQControlMode": "INNER_PQV",
+				  "maxRemoteQAdjustmentsPerIteration": 100,
+				  "controlInitializationMode": "SAVED_SOLUTION_REPLAY",
+				  "localContinuousSvcAsPv": true,
+				  "hvdcOuterControlEnabled": true,
+				  "maxSwitchedShuntAdjustmentIterations": 40,
+				  "zeroZBranchProcessingMode": "CONSOLIDATE"
+				}
+				""");
+
+		assertTrue(config.wasParsedFromJson());
+		assertTrue(config.explicitlyConfigures("remoteQControlMode"));
+		assertFalse(config.explicitlyConfigures("tolerance"));
+		assertTrue(config.coordinatedControlZbrSolver);
+		assertEquals(RemoteQControlMode.INNER_PQV, config.remoteQControlMode);
+		assertEquals(100, config.maxRemoteQAdjustmentsPerIteration);
+		assertEquals(ControlInitializationMode.SAVED_SOLUTION_REPLAY,
+				config.controlInitializationMode);
+		assertTrue(config.localContinuousSvcAsPv);
+		assertTrue(config.hvdcOuterControlEnabled);
+		assertEquals(40, config.maxSwitchedShuntAdjustmentIterations);
+		assertEquals(ZeroZBranchProcessingMode.CONSOLIDATE,
+				config.zeroZBranchProcessingMode);
+	}
+
+	@Test
+	void aclfJsonOverlayKeepsCaseDefaultsForMissingFields() {
+		AclfRunConfigRec caseDefaults = new AclfRunConfigRec();
+		caseDefaults.tolerance = 0.17;
+		caseDefaults.maxIterations = 47;
+		caseDefaults.xfrTapControl = true;
+
+		AclfRunConfigRec merged = AclfRunConfigRec.overlayJson(caseDefaults, """
+				{
+				  "schemaVersion": 1,
+				  "maxIterations": 12,
+				  "xfrTapControl": false
+				}
+				""");
+
+		assertEquals(12, merged.maxIterations);
+		assertFalse(merged.xfrTapControl);
+		assertEquals(0.17, merged.tolerance, 1.0e-12);
+		assertTrue(merged.includeAdjustments);
 	}
 
 	@Test
