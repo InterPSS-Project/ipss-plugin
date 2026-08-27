@@ -138,12 +138,12 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
          */
 
         //the PSS/E result is 47.2 MVAR, two banks of 23.6 MVAR each are switched on
-        assertEquals(84.40476184343791/100.0, 
+        assertEquals(47.2/100.0, 
         		bus4.getFirstSwitchedShunt(true).getQ(), 0.01, "Switched shunt Q at Bus 4");
 
-        assertTrue(bus4.getVoltageMag() > 0.95 && bus4.getVoltageMag() < 1.15, "Bus 4 voltage should be within reasonable range");
+        assertTrue(bus4.getVoltageMag() > 0.95 && bus4.getVoltageMag() < 1.05, "Bus 4 voltage should be within reasonable range");
         
-        assertEquals(1.0910048204057743, bus4.getVoltageMag(), 0.01, "Bus 4 voltage mag");
+        assertEquals(1.0, bus4.getVoltageMag(), 0.005, "Bus 4 voltage mag");
 
 
 	}
@@ -308,8 +308,8 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
 
-		assertEquals(1.0910048204057743, bus4.getVoltageMag(),
-				0.01,
+		assertEquals(1.025, bus4.getVoltageMag(),
+				algo.getLfAdjAlgo().getVoltAdjConfig().getAdjTolerance(),
 				"Bus 4 voltage should track the point-control target");
 
 
@@ -355,7 +355,7 @@ public class PSSE_5Bus_SwitchedShunt_Test extends CorePluginTestSetup {
         // assertEquals(0/100.0, 
         // 		bus4.getSwitchedShunt().getQ(), 0.01, "Switched shunt Q at Bus 4");
 
-        assertEquals(1.0910006617164905, bus4.getVoltageMag(), 0.01, "Bus 4 voltage should track the point-control target");
+        assertEquals(1.02, bus4.getVoltageMag(), 0.004, "Bus 4 voltage should track the point-control target");
 
 
 	}
