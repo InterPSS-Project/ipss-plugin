@@ -1,13 +1,10 @@
 package org.interpss.core.aclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -15,6 +12,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class IEEE9_MultiGenTest extends CorePluginTestSetup{
 	@Test
 	public void multiGenTest() throws InterpssException{
@@ -25,11 +23,7 @@ public class IEEE9_MultiGenTest extends CorePluginTestSetup{
 	     *      3,'2 ',    42.500,   -5.430, 99990.000,-99990.000,1.02500,     0,   100.000,   0.00000,   0.214,   0.00000,   0.00000,1.00000,1,  100.0,  9999.000, -9999.000,   1,1.0000,   0,0.0000,   0,0.0000,   0,0.0000
 		 * 
 		 */
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw")
-				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_30)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw");
 		
 		//System.out.println(net.net2String());
 		

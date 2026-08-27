@@ -22,7 +22,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -38,6 +37,7 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class BranchRatingFileUtilTest extends CorePluginTestSetup {
     @TempDir
     Path tempDir;
@@ -232,11 +232,8 @@ public class BranchRatingFileUtilTest extends CorePluginTestSetup {
     }
 
     private static AclfNetwork loadLabelledTexas2k() throws Exception {
-        return IpssAdapter.importAclfNet("testData/adpter/psse/v36/Texas2k_series24_case1_2016summerPeak_v36_labeled.RAW")
-                .setFormat(IpssAdapter.FileFormat.PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
-                .load()
-                .getImportedObj();
+        return new PSSEDirectParser().parse(
+                "testData/adpter/psse/v36/Texas2k_series24_case1_2016summerPeak_v36_labeled.RAW");
     }
 
     private Path labelledTexas2kRatingFixturePath(String fileName) throws IOException {

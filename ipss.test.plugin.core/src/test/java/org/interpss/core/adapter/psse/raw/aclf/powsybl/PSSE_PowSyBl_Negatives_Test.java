@@ -23,7 +23,7 @@ public class PSSE_PowSyBl_Negatives_Test extends CorePluginTestSetup {
 		// Stub is space-delimited / unsupported rev — DirectParser may return empty net
 		assertDoesNotThrow(() -> {
 			try {
-				AclfNetwork net = new PSSEDirectParser(35).parse(DIR + "version-not-supported.raw");
+				AclfNetwork net = new PSSEDirectParser().parse(DIR + "version-not-supported.raw");
 				assertTrue(net != null);
 			} catch (Exception e) {
 				assertTrue(e.getMessage() == null || e.getMessage().length() >= 0);
@@ -35,7 +35,7 @@ public class PSSE_PowSyBl_Negatives_Test extends CorePluginTestSetup {
 	public void caseFlagNotSupported() {
 		assertDoesNotThrow(() -> {
 			try {
-				AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "case-flag-not-supported.raw");
+				AclfNetwork net = new PSSEDirectParser().parse(DIR + "case-flag-not-supported.raw");
 				assertTrue(net != null);
 			} catch (Exception e) {
 				assertTrue(true);
@@ -47,7 +47,7 @@ public class PSSE_PowSyBl_Negatives_Test extends CorePluginTestSetup {
 	public void invalidIeee14() {
 		assertDoesNotThrow(() -> {
 			try {
-				new PSSEDirectParser(35).parse(DIR + "IEEE_14_bus_invalid.raw");
+				new PSSEDirectParser().parse(DIR + "IEEE_14_bus_invalid.raw");
 			} catch (Exception e) {
 				assertTrue(true);
 			}
@@ -58,7 +58,7 @@ public class PSSE_PowSyBl_Negatives_Test extends CorePluginTestSetup {
 	public void duplicateIds() {
 		assertDoesNotThrow(() -> {
 			try {
-				new PSSEDirectParser(33).parse(DIR + "IEEE_14_buses_duplicate_ids.raw");
+				new PSSEDirectParser().parse(DIR + "IEEE_14_buses_duplicate_ids.raw");
 			} catch (Exception e) {
 				assertTrue(true);
 			}
@@ -69,7 +69,7 @@ public class PSSE_PowSyBl_Negatives_Test extends CorePluginTestSetup {
 	public void badlyConnectedEquipment() {
 		assertDoesNotThrow(() -> {
 			try {
-				new PSSEDirectParser(33).parse(DIR + "IEEE_14_buses_badly_connected_equipment.raw");
+				new PSSEDirectParser().parse(DIR + "IEEE_14_buses_badly_connected_equipment.raw");
 			} catch (Exception e) {
 				assertTrue(true);
 			}
@@ -80,7 +80,7 @@ public class PSSE_PowSyBl_Negatives_Test extends CorePluginTestSetup {
 	public void badlyDefinedControlledBuses() {
 		assertDoesNotThrow(() -> {
 			try {
-				new PSSEDirectParser(33).parse(DIR + "IEEE_14_buses_badly_defined_controlled_buses.raw");
+				new PSSEDirectParser().parse(DIR + "IEEE_14_buses_badly_defined_controlled_buses.raw");
 			} catch (Exception e) {
 				assertTrue(true);
 			}
@@ -91,7 +91,7 @@ public class PSSE_PowSyBl_Negatives_Test extends CorePluginTestSetup {
 	public void duplicateIdsRev35() {
 		assertDoesNotThrow(() -> {
 			try {
-				new PSSEDirectParser(35).parse(DIR + "IEEE_14_buses_duplicate_ids_rev35.raw");
+				new PSSEDirectParser().parse(DIR + "IEEE_14_buses_duplicate_ids_rev35.raw");
 			} catch (Exception e) {
 				assertTrue(true);
 			}

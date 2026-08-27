@@ -1,13 +1,10 @@
 package org.interpss.core.mnet.childNet;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +23,7 @@ import com.interpss.core.net.childnet.ChildNetInterfaceType;
 import com.interpss.core.net.childnet.ChildNetworkWrapper;
 import com.interpss.core.net.childnet.solver.ChildNetworkProcessor;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 @Deprecated
 public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 	
@@ -33,11 +31,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 	public void testFullNetLF() throws Exception{
 		IpssCorePlugin.init();
 		
-		AclfNetwork net =IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
-                .setFormat(PSSE)
-                .setPsseVersion(PsseVersion.PSSE_31)
-                .load()
-                .getImportedObj();	
+		AclfNetwork net =new PSSEDirectParser().parse("testData/adpter/psse/v31/ieee9_v31.raw");	
 
 		
   		assertTrue((net.getBusList().size() == 9&& net.getBranchList().size() == 9));
@@ -60,11 +54,7 @@ public class MNet_IEEE9_PSSE_Test extends CorePluginTestSetup {
 		//IpssCorePlugin.init();
 		
 		//load the IEEE 9 Bus system
-		AclfNetwork net =IpssAdapter.importAclfNet("testData/adpter/psse/v31/ieee9_v31.raw")
-		                            .setFormat(PSSE)
-		                            .setPsseVersion(PsseVersion.PSSE_31)
-		                            .load()
-		                            .getImportedObj();	
+		AclfNetwork net =new PSSEDirectParser().parse("testData/adpter/psse/v31/ieee9_v31.raw");	
 
 		//Create childNet
         ChildNetworkWrapper<AclfBus,AclfBranch> childNet = ChildNetObjectFactory.createChildAclfNet(net, "childNet", ChildNetInterfaceType.BRANCH_INTERFACE);

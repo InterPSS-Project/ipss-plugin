@@ -1,21 +1,16 @@
 package org.interpss.fstate;
 
 import org.interpss.numeric.datatype.LimitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.Substation;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class IEEE39_RAW_Info_Sample {
 	public static AclfNetwork loadIEEE39Raw() throws Exception {
 		String PSSE_FILE = "ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw";
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet(PSSE_FILE)
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30) 
-				.load()
-				.getImportedObj();
+		AclfNetwork aclfNet = new PSSEDirectParser().parse(PSSE_FILE);
 
 		addInfo2Network(aclfNet);
 		return aclfNet;

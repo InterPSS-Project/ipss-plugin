@@ -1,13 +1,11 @@
 package sample.contingency.aclf._25k;
 
 
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.state.aclf.AclfNetworkState;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /**
  * Extended Parallel Contingency Analysis Test with ACTIVSg25k bus system.
  * This test demonstrates large-scale contingency analysis using parallel processing.
@@ -29,11 +27,7 @@ public class JSonCopy25kTest {
         //String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
         String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 
-        AclfNetwork net = IpssAdapter.importAclfNet(filename)
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-                .load()
-                .getImportedObj();
+        AclfNetwork net = new PSSEDirectParser().parse(filename);
         
         long loadEndTime = System.currentTimeMillis();
         System.out.println("Network loaded successfully in " + (loadEndTime - loadStartTime)*0.001 + " s");

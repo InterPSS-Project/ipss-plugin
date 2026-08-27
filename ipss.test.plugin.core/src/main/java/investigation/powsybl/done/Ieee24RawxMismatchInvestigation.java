@@ -14,7 +14,7 @@ import investigation.powsybl.PowSyBlMismatchInvSupport;
 public class Ieee24RawxMismatchInvestigation {
 
 	public static void main(String[] args) throws InterpssException {
-		AclfNetwork raw = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_24_bus_rev35.raw", 35);
+		AclfNetwork raw = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_24_bus_rev35.raw");
 		Mismatch mRaw = PowSyBlMismatchInvSupport.printAsReadMismatch(raw, "IEEE_24_bus_rev35.raw");
 		PowSyBlMismatchInvSupport.printTopMismatchBuses(raw, 5);
 

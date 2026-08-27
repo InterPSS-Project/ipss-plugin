@@ -1,6 +1,5 @@
 package org.interpss.plugin.contingency.dclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -54,6 +52,7 @@ import com.interpss.core.algo.dclf.fastn2.FastN2StreamingPruningResult;
 import com.interpss.core.algo.dclf.fastn2.FastN2StudyInventory;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 
@@ -610,11 +609,7 @@ public class FastN2CandidateSelectorTexas7kTest extends CorePluginTestSetup {
 	}
 
 	private static AclfNetwork importPsse(Path path) throws InterpssException {
-		return IpssAdapter.importAclfNet(path.toString())
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-				.load()
-				.getImportedObj();
+		return new PSSEDirectParser().parse(path.toString());
 	}
 
 	private static int fillMissingRatingsFromBaseDclfFlow(AclfNetwork net, double baseFlowMultiplier) {

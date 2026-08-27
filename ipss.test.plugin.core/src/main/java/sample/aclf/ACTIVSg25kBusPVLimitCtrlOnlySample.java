@@ -1,11 +1,7 @@
 package sample.aclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Counter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -15,6 +11,7 @@ import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class ACTIVSg25kBusPVLimitCtrlOnlySample {
 	
 	public static void main(String args[]) throws Exception {
@@ -24,11 +21,7 @@ public class ACTIVSg25kBusPVLimitCtrlOnlySample {
 		String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 		
 		// load the test data V33
-		AclfNetwork net = IpssAdapter.importAclfNet(filename)
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse(filename);
 		
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
 		System.out.println(AclfAdjCtrlFunction.nOfPVBusLimit.apply(net) + " PV bus limit controls");
@@ -65,7 +58,7 @@ public class ACTIVSg25kBusPVLimitCtrlOnlySample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
-		aclfAlgo.setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
 		// disable all the controls
 		AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);

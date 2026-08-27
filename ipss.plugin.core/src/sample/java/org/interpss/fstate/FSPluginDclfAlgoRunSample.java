@@ -4,8 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.algo.fstate.FStateDclfAlgorithm;
 import com.interpss.algo.fstate.datatype.FStateAlgoConfig;
 import com.interpss.algo.fstate.plan.PlanMaintainModelBuilder;

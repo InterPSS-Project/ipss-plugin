@@ -32,7 +32,7 @@ public class DStab_Relay_LowVoltLoadShed_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_onlyGen.dyr");
 		

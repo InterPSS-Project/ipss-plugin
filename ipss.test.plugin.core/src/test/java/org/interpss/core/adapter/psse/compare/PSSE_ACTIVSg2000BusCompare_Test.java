@@ -1,11 +1,8 @@
 package org.interpss.core.adapter.psse.compare;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -14,17 +11,14 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class PSSE_ACTIVSg2000BusCompare_Test  extends CorePluginTestSetup {
 	
 	@Test
 	public void test_ACTIVSg2000_Compare() throws InterpssException{
 	
 		// load the test data V36
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_36) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW");
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		

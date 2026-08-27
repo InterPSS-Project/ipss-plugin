@@ -47,7 +47,7 @@ public class MatpowerCase13659PegaseTest extends CorePluginTestSetup {
 		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
 
 		NrMethodConfig config = algo.getNrMethodConfig();
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		config.setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		algo.getLfCalculator().getNrSolver().reConfigSolver(config);
 

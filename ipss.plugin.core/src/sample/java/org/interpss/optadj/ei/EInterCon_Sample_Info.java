@@ -1,24 +1,17 @@
 package org.interpss.optadj.ei;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import java.util.HashSet;
 import java.util.Set;
 
 import org.ejml.data.DMatrixSparseCSC;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.funcImpl.dclf.AclfNetSensSparseHelper;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class EInterCon_Sample_Info {
     public static AclfNetwork loadNetwork() throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("ipss.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");	
 
 		//aclfNet.getBranchList().stream().forEach(branch -> {
 		//		branch.setName(branch.getId());

@@ -1,11 +1,7 @@
 package sample.aclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
-
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -16,6 +12,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.impl.solver.optStep.CubicEqnStepSizeCalculator;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class ACTIVSg25kBusAllCtrlSample {
 	
 	public static void main(String args[]) throws Exception {
@@ -24,11 +21,7 @@ public class ACTIVSg25kBusAllCtrlSample {
 		String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 		
 		// load the test data V33
-		AclfNetwork net = IpssAdapter.importAclfNet(filename)
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse(filename);
 		
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
 		System.out.println(AclfAdjCtrlFunction.nOfPVBusLimit.apply(net) + " PV bus limit controls");
@@ -44,7 +37,7 @@ public class ACTIVSg25kBusAllCtrlSample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 
-		aclfAlgo.setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
 		aclfAlgo.setTolerance(1.0E-6);
 		aclfAlgo.setMaxIterations(50);

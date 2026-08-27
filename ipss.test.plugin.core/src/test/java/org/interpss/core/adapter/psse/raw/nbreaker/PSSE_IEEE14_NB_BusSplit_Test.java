@@ -38,7 +38,7 @@ public class PSSE_IEEE14_NB_BusSplit_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testOpenBusBarSplitAndLoadflow() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		// Same Q-limit relaxation as the sample (needed for post-split convergence)
 		AclfBus bus3 = net.getBus("Bus3");

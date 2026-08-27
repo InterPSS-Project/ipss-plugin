@@ -24,7 +24,7 @@ public class PSSE_FiveBus_NB_ExportImport_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testExportedFiveBusStationsAndClosedTopo() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(EXPORTED);
+		AclfNetwork net = new PSSEDirectParser().parse(EXPORTED);
 
 		assertEquals(5, net.getSubstationMap().size());
 		assertEquals("STATION 1", net.getSubstation("1").getName());
@@ -38,7 +38,7 @@ public class PSSE_FiveBus_NB_ExportImport_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testSplitBusesExportOpenBusBarsOnStation1() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(SPLIT);
+		AclfNetwork net = new PSSEDirectParser().parse(SPLIT);
 
 		Substation sub1 = net.getSubstation("1");
 		assertNotNull(sub1);

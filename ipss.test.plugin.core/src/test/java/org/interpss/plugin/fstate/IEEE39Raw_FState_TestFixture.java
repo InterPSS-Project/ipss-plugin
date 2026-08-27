@@ -1,8 +1,6 @@
 package org.interpss.plugin.fstate;
 
 import org.interpss.fstate.IEEE39_RAW_Info_Sample;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.algo.fstate.FStateDclfAlgorithm;
 import com.interpss.algo.fstate.datatype.FStateAlgoConfig;
 import com.interpss.algo.fstate.plan.model.PlanMaintainModel;
@@ -11,6 +9,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.Substation;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /**
  * Test fixture mirroring {@code org.interpss.fstate.IEEE39_RAW_Info_Sample} with
  * paths relative to the {@code ipss.test.plugin.core} module.
@@ -24,11 +23,7 @@ public final class IEEE39Raw_FState_TestFixture {
     }
 
     public static AclfNetwork loadIEEE39Raw() throws Exception {
-        AclfNetwork aclfNet = IpssAdapter.importAclfNet(IEEE39_RAW)
-                .setFormat(IpssAdapter.FileFormat.PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_30)
-                .load()
-                .getImportedObj();
+        AclfNetwork aclfNet = new PSSEDirectParser().parse(IEEE39_RAW);
         IEEE39_RAW_Info_Sample.addInfo2Network(aclfNet);
         ensureSubstations(aclfNet);
         return aclfNet;

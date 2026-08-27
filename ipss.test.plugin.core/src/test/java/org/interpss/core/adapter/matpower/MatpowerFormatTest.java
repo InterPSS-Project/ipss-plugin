@@ -11,7 +11,6 @@ import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.fadapter.matpower.MatpowerDirectParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -48,7 +47,7 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(method);
 		algo.setInitBusVoltage(method != AclfMethodType.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		algo.setMaxIterations(50);
 
 		boolean solved = algo.loadflow();
@@ -288,12 +287,8 @@ public class MatpowerFormatTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	public void testIpssAdapterDslLoadsMatpowerCase() throws Exception {
-		AclfNetwork net = IpssAdapter
-				.importAclfNet(CASE9_FILE)
-				.setFormat(IpssAdapter.FileFormat.MATPOWER)
-				.load()
-				.getImportedObj();
+	public void testMatpowerDirectParserLoadsCase() throws Exception {
+		AclfNetwork net = new MatpowerDirectParser().parse(CASE9_FILE);
 
 		assertNotNull(net);
 		assertEquals(9, net.getNoBus());

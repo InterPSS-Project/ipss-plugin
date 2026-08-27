@@ -15,9 +15,6 @@ import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
@@ -27,16 +24,13 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class EICon_CASample {
 	//private static final String TEST_ROOT = "ipss.plugin.core/";
 	private static final String TEST_ROOT = "";
 	
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("ipss.test.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.psseVersion(PsseVersion.PSSE_33)
-				.load()
-				.getImportedObj();	
+        AclfNetwork net = new PSSEDirectParser().parse("ipss.test.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");	
         
 		// run Dclf
 		ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);

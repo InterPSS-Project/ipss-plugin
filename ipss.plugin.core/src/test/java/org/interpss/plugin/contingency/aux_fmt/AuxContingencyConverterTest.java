@@ -2,7 +2,6 @@ package org.interpss.plugin.contingency.aux_fmt;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -24,7 +23,6 @@ import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import com.interpss.core.contingency.definition.ContingencyDefinition;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfMultiOutageContingencyHelper;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -39,6 +37,7 @@ import com.interpss.core.contingency.dclf.DclfMonitoringBranch;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class AuxContingencyConverterTest {
     private static final Path TEXAS7K_DIR = resolveTexas7kDir();
     private static final Path TEXAS7K_RAW = TEXAS7K_DIR.resolve("Texas7k_20210804.RAW");
@@ -388,21 +387,13 @@ public class AuxContingencyConverterTest {
     }
 
     private static AclfNetwork importPsse(Path path) throws InterpssException {
-        return IpssAdapter.importAclfNet(path.toString())
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-                .load()
-                .getImportedObj();
+        return new PSSEDirectParser().parse(path.toString());
     }
 
     private static AclfNetwork importIeee9Labeled() throws InterpssException {
-        return IpssAdapter.importAclfNet(resolveTestDataPath(
+        return new PSSEDirectParser().parse(resolveTestDataPath(
                         "ipss.test.plugin.core/testData/adpter/psse/v36/ieee9_v36_labeled.raw",
-                        "../ipss.test.plugin.core/testData/adpter/psse/v36/ieee9_v36_labeled.raw").toString())
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
-                .load()
-                .getImportedObj();
+                        "../ipss.test.plugin.core/testData/adpter/psse/v36/ieee9_v36_labeled.raw").toString());
     }
 
     private static AclfBranch branch(AclfNetwork net, String fromBusId, String toBusId, String circuitId) {

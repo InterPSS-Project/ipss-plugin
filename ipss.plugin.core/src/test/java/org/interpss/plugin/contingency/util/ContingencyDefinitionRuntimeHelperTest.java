@@ -1,6 +1,5 @@
 package org.interpss.plugin.contingency.util;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,7 +14,6 @@ import com.interpss.core.contingency.definition.ContingencyAction;
 import com.interpss.core.contingency.definition.ContingencyActionType;
 import com.interpss.core.contingency.definition.ContingencyDefinition;
 import com.interpss.core.contingency.definition.ContingencyObjectType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.numeric.sparse.ISparseEqnDouble;
 import org.interpss.CorePluginFactory;
 import org.junit.jupiter.api.Test;
@@ -37,6 +35,7 @@ import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.plugin.contingency.util.DclfMultiOutageContingencyHelper.DclfMultiOutageContingencyPlan;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class ContingencyDefinitionRuntimeHelperTest {
 
     @Test
@@ -472,13 +471,9 @@ public class ContingencyDefinitionRuntimeHelperTest {
     }
 
     private static AclfNetwork importIeee9Labeled() throws InterpssException {
-        return IpssAdapter.importAclfNet(resolveTestDataPath(
+        return new PSSEDirectParser().parse(resolveTestDataPath(
                         "ipss.test.plugin.core/testData/adpter/psse/v36/ieee9_v36_labeled.raw",
-                        "../ipss.test.plugin.core/testData/adpter/psse/v36/ieee9_v36_labeled.raw").toString())
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
-                .load()
-                .getImportedObj();
+                        "../ipss.test.plugin.core/testData/adpter/psse/v36/ieee9_v36_labeled.raw").toString());
     }
 
     private static AclfNetwork importIeee14() throws Exception {

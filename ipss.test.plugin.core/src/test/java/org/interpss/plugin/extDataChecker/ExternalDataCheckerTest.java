@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.plugin.aclf.config.psse.PSSEExternalDataChecker;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -13,16 +12,12 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class ExternalDataCheckerTest extends CorePluginTestSetup {	
 	@Test
 	public void test() throws Exception {
 		// load the test data
-		AclfNetwork net = IpssAdapter
-				.importAclfNet(
-						"testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw")
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30).load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/PSSE_5Bus_Test_switchShunt.raw");
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.loadflow(new PSSEExternalDataChecker(aclfNet -> {

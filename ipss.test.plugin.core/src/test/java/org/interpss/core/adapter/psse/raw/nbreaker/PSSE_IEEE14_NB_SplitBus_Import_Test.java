@@ -26,7 +26,7 @@ public class PSSE_IEEE14_NB_SplitBus_Import_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testSplitExportOpenBusBarsYieldsTwoGroups() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(SPLIT);
+		AclfNetwork net = new PSSEDirectParser().parse(SPLIT);
 
 		assertEquals(14, net.getNoActiveBus());
 		assertEquals(2, net.getSubstationMap().size());
@@ -48,7 +48,7 @@ public class PSSE_IEEE14_NB_SplitBus_Import_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testNonExportedSourceHasClosedBusBars() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(SOURCE);
+		AclfNetwork net = new PSSEDirectParser().parse(SOURCE);
 
 		assertEquals(2, net.getSubstationMap().size());
 		Substation s1 = net.getSubstation("1");

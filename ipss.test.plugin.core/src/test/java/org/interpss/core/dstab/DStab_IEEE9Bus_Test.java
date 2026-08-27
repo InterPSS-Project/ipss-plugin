@@ -46,7 +46,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr");
@@ -174,7 +174,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab_Load_Change_staticLoad() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr");
@@ -392,7 +392,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab_Load_Change_dynamicLoad() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.WARNING);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr");
@@ -497,7 +497,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab_Generator_Trip() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_fullModel_v33.dyr");
@@ -586,7 +586,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	public void test_IEEE9Bus_Dstab_Generator_Energization() throws InterpssException{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen_v2.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_multiGen.dyr");
 		
@@ -677,7 +677,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
 	public void IEEE9_Dstab_benchMark() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn.dyr");
@@ -731,7 +731,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
 	public void IEEE9_Dstab_GenWithoutMach() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_Gen3NoMach.dyr");
@@ -793,7 +793,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
     public void IEEE9_Dstab_multiGen_Test() throws InterpssException{
             IpssCorePlugin.init();
-            SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+            SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
                             "testData/adpter/psse/v30/IEEE9Bus/ieee9_multiGen.raw",
                             "testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_multiGen.dyr");
             
@@ -847,7 +847,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	@Test
 	public void IEEE9_Dstab_gen_load_status_change() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.seq",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn.dyr");
@@ -928,7 +928,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	//@Test
 	public void test_ieee_1981_exciter() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_Model_1981Exc.dyr");
 		
@@ -974,7 +974,7 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 	//@Test
 	public void test_ieee_2005_exciter() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9.raw",
 				"testData/adpter/psse/v30/IEEE9Bus/ieee9_dyn_Model_2005Exc.dyr");
 		

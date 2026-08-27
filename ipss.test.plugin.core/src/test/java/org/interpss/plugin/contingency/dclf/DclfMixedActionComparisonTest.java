@@ -3,7 +3,6 @@ package org.interpss.plugin.contingency.dclf;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -23,7 +22,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +36,7 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
     private static final double MW_TOLERANCE = 1.0e-4;
     private static final int CLOSE_TARGET_COUNT = 20;
@@ -73,18 +72,9 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
                 "Set -Dinterpss.largeDclfMixedActionTests=true to run Texas2k/Texas7k/ACTIVSg25k mixed-action tests");
 
         for (CaseSpec caseSpec : List.of(
-                CaseSpec.psse(
-                        "Texas2k",
-                        Path.of("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW"),
-                        IpssAdapter.PsseVersion.PSSE_36),
-                CaseSpec.psse(
-                        "Texas7k",
-                        TEXAS7K_DIR.resolve("Texas7k_20210804.RAW"),
-                        IpssAdapter.PsseVersion.PSSE_33),
-                CaseSpec.psse(
-                        "ACTIVSg25k",
-                        ACTIVS25K_DIR.resolve("ACTIVSg25k.RAW"),
-                        IpssAdapter.PsseVersion.PSSE_33))) {
+                CaseSpec.psse("Texas2k", Path.of("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")),
+                CaseSpec.psse("Texas7k", TEXAS7K_DIR.resolve("Texas7k_20210804.RAW")),
+                CaseSpec.psse("ACTIVSg25k", ACTIVS25K_DIR.resolve("ACTIVSg25k.RAW")))) {
             assumeTrue(caseSpec.isAvailable(), caseSpec.name() + " fixture not available: " + caseSpec.path());
             compareCase(caseSpec);
         }
@@ -98,14 +88,8 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
                 "Set -Dinterpss.largeDclfMixedActionTests=true to run Texas7k/ACTIVSg25k mixed stress tests");
 
         for (CaseSpec caseSpec : List.of(
-                CaseSpec.psse(
-                        "Texas7k",
-                        TEXAS7K_DIR.resolve("Texas7k_20210804.RAW"),
-                        IpssAdapter.PsseVersion.PSSE_33),
-                CaseSpec.psse(
-                        "ACTIVSg25k",
-                        ACTIVS25K_DIR.resolve("ACTIVSg25k.RAW"),
-                        IpssAdapter.PsseVersion.PSSE_33))) {
+                CaseSpec.psse("Texas7k", TEXAS7K_DIR.resolve("Texas7k_20210804.RAW")),
+                CaseSpec.psse("ACTIVSg25k", ACTIVS25K_DIR.resolve("ACTIVSg25k.RAW")))) {
             assumeTrue(caseSpec.isAvailable(), caseSpec.name() + " fixture not available: " + caseSpec.path());
             compareStressCase(caseSpec);
         }
@@ -1050,15 +1034,11 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
                             .getAclfNet());
         }
 
-        static CaseSpec psse(String name, Path path, IpssAdapter.PsseVersion psseVersion) {
+        static CaseSpec psse(String name, Path path) {
             return new CaseSpec(
                     name,
                     path,
-                    () -> IpssAdapter.importAclfNet(path.toString())
-                            .setFormat(PSSE)
-                            .setPsseVersion(psseVersion)
-                            .load()
-                            .getImportedObj());
+                    () -> new PSSEDirectParser().parse(path.toString()));
         }
 
         AclfNetwork load() throws Exception {

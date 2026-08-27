@@ -1,8 +1,6 @@
 package sample.dframe;
 
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import java.util.Map;
 import java.util.function.Predicate;
 
@@ -13,7 +11,6 @@ import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.result.dframe.AclfNetDFrameAdapter;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -28,17 +25,14 @@ import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class AclfNetDFAdapter_EICon_Sample {
 	//private static final String TEST_ROOT = "ipss.plugin.core/";
 	private static final String TEST_ROOT = "";
 	
     public static void main(String args[]) throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");	
 		
 		System.out.println("Buses, Branches: " + aclfNet.getNoBus() + ", " + aclfNet.getNoBranch());
 		System.out.println(AclfAdjCtrlFunction.nOfPVBusLimit.apply(aclfNet) + " PV bus limit controls");
@@ -50,7 +44,7 @@ public class AclfNetDFAdapter_EICon_Sample {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
 		aclfAlgo.setTolerance(1.0E-4);
 		aclfAlgo.setMaxIterations(50);

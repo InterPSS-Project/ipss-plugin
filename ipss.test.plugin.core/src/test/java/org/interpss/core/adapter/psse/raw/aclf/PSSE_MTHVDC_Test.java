@@ -31,7 +31,7 @@ public class PSSE_MTHVDC_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testParseMultiTerminalDcSection() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(30).parse(RAW);
+		AclfNetwork net = new PSSEDirectParser().parse(RAW);
 
 		assertEquals(1, net.getHvdcLineMTList().size());
 		HvdcLineMT mt = net.getHvdcLineMT("1");
@@ -88,13 +88,13 @@ public class PSSE_MTHVDC_Test extends CorePluginTestSetup {
 	 */
 	@Test
 	public void testMultiTerminalDcLoadflow() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(30).parse(RAW);
+		AclfNetwork net = new PSSEDirectParser().parse(RAW);
 
 		net.setZeroZBranchThreshold(1.0e-3);
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.setNonDivergent(false);
+		algo.getNrMethodConfig().setNonDivergent(false);
 		algo.setTolerance(1.0e-6);
 		algo.setMaxIterations(100);
 
