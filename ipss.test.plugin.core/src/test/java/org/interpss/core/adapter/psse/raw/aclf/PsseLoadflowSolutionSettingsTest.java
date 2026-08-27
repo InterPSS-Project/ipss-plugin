@@ -3,7 +3,6 @@ package org.interpss.core.adapter.psse.raw.aclf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -43,7 +42,7 @@ class PsseLoadflowSolutionSettingsTest {
 		Path input = tempDir.resolve("settings-v34.raw");
 		Files.writeString(input, raw);
 
-		PSSEDirectParser parser = new PSSEDirectParser(34);
+		PSSEDirectParser parser = new PSSEDirectParser();
 		AclfNetwork network = parser.parse(input.toString());
 		PsseLoadflowSolutionSettings settings = parser.getSolutionSettings();
 
@@ -56,10 +55,9 @@ class PsseLoadflowSolutionSettingsTest {
 		assertEquals(0.007, settings.adjust().adjthr(), 1.0E-12);
 		assertEquals(17, settings.adjust().mxtpss());
 		assertEquals("FDNS", settings.solver().activity());
-		assertNull(settings.solver().nondiv(),
-				"SOLVER.NONDIV is not parsed because InterPSS non-divergent mode has different semantics");
+		assertEquals(1, settings.solver().nondiv());
 		assertEquals("1", settings.rawValues().get("SOLVER").get("NONDIV"),
-				"NONDIV should remain available only as preserved raw metadata");
+				"NONDIV should remain available as raw metadata");
 		assertEquals("7.5", settings.rawValues().get("GENERAL").get("FUTUREKEY"),
 				"unknown keys must remain available to future mappers");
 		assertTrue(settings.rawLines().stream().anyMatch(line -> line.startsWith("RATING,")),
@@ -88,7 +86,7 @@ class PsseLoadflowSolutionSettingsTest {
 				"automatic numerical settings must not override study control modes");
 		assertTrue(algorithm.getLfAdjAlgo().getVoltAdjConfig().isSwitchedShuntAdjust());
 		assertTrue(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
-		assertFalse(algorithm.isNonDivergent());
+		assertFalse(algorithm.getNrMethodConfig().isNonDivergent());
 
 		ApplicationReport report = (ApplicationReport) network.getExtraInfo().get(
 				PsseLoadflowSolutionSettings.APPLICATION_REPORT_EXTRA_INFO_KEY);
@@ -110,14 +108,7 @@ class PsseLoadflowSolutionSettingsTest {
 		settings.applyTo(algorithm, network, ApplicationPolicy.SAVED_SOLUTION_REPLAY);
 		assertFalse(algorithm.getLfAdjAlgo().getVoltAdjConfig().isHvdcTapControl());
 		assertFalse(algorithm.getNetAdjAlgo().isAreaInterchangeControlEnabled());
-		assertFalse(algorithm.isNonDivergent(),
-				"SOLVER.NONDIV is preserved from RAW but not parsed or applied to InterPSS");
-		assertTrue(((ApplicationReport) network.getExtraInfo().get(
-				PsseLoadflowSolutionSettings.APPLICATION_REPORT_EXTRA_INFO_KEY))
-						.mappings().stream().anyMatch(mapping ->
-								mapping.field().equals("SOLVER.NONDIV")
-										&& mapping.status()
-												== MappingStatus.UNSUPPORTED));
+		assertTrue(algorithm.getNrMethodConfig().isNonDivergent());
 	}
 
 	@Test

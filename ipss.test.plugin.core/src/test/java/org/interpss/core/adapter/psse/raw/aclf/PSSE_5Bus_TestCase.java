@@ -17,7 +17,7 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class PSSE_5Bus_TestCase extends CorePluginTestSetup { 
 	@Test
 	public void testCase1() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(30).parse("testData/adpter/psse/PSSE_5Bus_Test.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/PSSE_5Bus_Test.raw");
 		
 		//System.out.println(net.net2String());
 		

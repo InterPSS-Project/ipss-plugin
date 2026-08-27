@@ -1,10 +1,6 @@
 package org.interpss.aclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import org.interpss.display.AclfOutFunc;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
@@ -13,14 +9,11 @@ import com.interpss.core.algo.NrOptimizeAlgoType;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 import com.interpss.core.sparse.SparseEqnObjectFactory;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class EInterconnectLoadSample {
     public static void main(String args[]) throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("ipss.plugin.core/testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");	
 		
 		System.out.println("Buses, Branches: " + aclfNet.getNoBus() + ", " + aclfNet.getNoBranch());
 		System.out.println(AclfAdjCtrlFunction.nOfPVBusLimit.apply(aclfNet) + " PV bus limit controls");

@@ -1,26 +1,19 @@
 package sample.dclf.bus25k;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import org.interpss.IpssCorePlugin;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class GSF_ACTIVSg25kBusSample {
 	public static void main(String args[]) throws InterpssException {
 		IpssCorePlugin.init();
 		
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW");	
 		
 		aclfNet.getBusList().forEach(bus -> {
 			if (bus.isGen()) {

@@ -1,9 +1,5 @@
 package org.interpss.mthvdc;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
@@ -14,17 +10,14 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /**
  * Load {@code psse_mthvdc.raw} and print the multi-terminal HVDC model.
  * Automated coverage: {@code org.interpss.core.adapter.psse.raw.aclf.PSSE_MTHVDC_Test}.
  */
 public class PSSE_MTHVDC_Sample {
 	public static void main(String args[]) throws Exception {
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss.plugin.core/testData/psse/v30/psse_mthvdc.raw")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_30)
-				.load()
-				.getImportedObj();
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("ipss.plugin.core/testData/psse/v30/psse_mthvdc.raw");
 
 /*
  * InterPSS only treats a branch as ZBR when |Z| ≤ zeroZBranchThreshold. The default threshold is 1e-5, 
@@ -44,7 +37,7 @@ public class PSSE_MTHVDC_Sample {
 
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.setNonDivergent(false);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(false);
 		//aclfAlgo.getNrMethodConfig().setOptAlgo(NrOptimizeAlgoType.CUBIC_EQN);
 		
 		aclfAlgo.setTolerance(1.0E-6);
