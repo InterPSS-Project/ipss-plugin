@@ -51,7 +51,7 @@ isProject: false
 | IEEE CDF | `IeeeCDFFormat` | `org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser` |
 | MATPOWER | `MatpowerFormat` | `org.interpss.fadapter.matpower.MatpowerDirectParser` |
 | UCTE-DEF | `UCTEFormat` | `org.interpss.fadapter.ucte.UCTEDirectParser` |
-| GE PSLF | `GEFormat` | `org.interpss.fadapter.ge.GEPslfDirectParser` |
+| EPC | `GEFormat` | `org.interpss.fadapter.epc.EpcDirectParser` |
 | PowerWorld (PWD) | `PWDFormat` | `org.interpss.fadapter.pwd.PWDDirectParser` |
 | BPA | `BPAFormat` | `org.interpss.fadapter.bpa.BPADirectParser` |
 | CIM/CGMES | `CIMFormat` | `org.interpss.fadapter.cim.CIMDirectParser` |
@@ -199,7 +199,7 @@ Each adapter follows the same pattern: parse format-specific file, call `AclfNet
 - **IEEE CDF**: Port from `IeeeCDFAdapter` (ipss-odm). Simple fixed-column format with bus + branch sections. Relatively straightforward.
 - **MATPOWER**: Port from `MatPowerAdapter`. MATLAB .m file format, struct-based.
 - **UCTE-DEF**: Port from `UCTE_DEFAdapter`. European grid exchange format.
-- **GE PSLF**: Port from `GePslfAdapter`. GE Positive Sequence Load Flow format.
+- **EPC**: Port from `GePslfAdapter`. Sectioned EPC load-flow format.
 - **PowerWorld (PWD)**: Port from `PowerWorldAdapter`. Includes PWD-specific extension data.
 - **BPA**: Port from `BPAAdapter`. Multi-file format (load flow + dynamics). Special handling via `load(ctx, filepathAry, ...)`.
 

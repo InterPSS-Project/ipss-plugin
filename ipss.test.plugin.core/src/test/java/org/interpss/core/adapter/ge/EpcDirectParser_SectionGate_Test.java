@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.fadapter.ge.GEPslfDirectParser;
+import org.interpss.fadapter.epc.EpcDirectParser;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -15,13 +15,13 @@ import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
- * Section-type gate coverage for {@link GEPslfDirectParser} (GE PSLF EPC).
+ * Section-type gate coverage for {@link EpcDirectParser} (EPC).
  */
-public class GEPslfDirectParser_SectionGate_Test extends CorePluginTestSetup {
+public class EpcDirectParser_SectionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void sample18_directParser_sections() throws Exception {
-		AclfNetwork net = new GEPslfDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
+		AclfNetwork net = new EpcDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
 
 		assertEquals(18, net.getNoBus());
 		assertEquals(24, net.getNoBranch());
@@ -34,7 +34,7 @@ public class GEPslfDirectParser_SectionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void sample18_areaAndZone() throws Exception {
-		AclfNetwork net = new GEPslfDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
+		AclfNetwork net = new EpcDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
 
 		assertNotNull(net.getArea("1"));
 		assertNotNull(net.getArea("4"));
@@ -46,7 +46,7 @@ public class GEPslfDirectParser_SectionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void sample18_transformerTaps() throws Exception {
-		AclfNetwork net = new GEPslfDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
+		AclfNetwork net = new EpcDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
 
 		boolean foundTap = net.getBranchList().stream()
 				.map(b -> (AclfBranch) b)
@@ -59,14 +59,14 @@ public class GEPslfDirectParser_SectionGate_Test extends CorePluginTestSetup {
 	@Test
 	public void sample18_skipSafety_andComments() throws Exception {
 		// Sample18Bus includes empty SVD/DC/OWNER/INTERFACE headers and # / ! comments
-		AclfNetwork net = new GEPslfDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
+		AclfNetwork net = new EpcDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
 		assertEquals(18, net.getNoBus());
 		assertEquals(24, net.getNoBranch());
 	}
 
 	@Test
 	public void ucte2002_summer_parseSmoke() throws Exception {
-		AclfNetwork net = new GEPslfDirectParser().parse("testData/adpter/ge/UCTE_2002_Summer.EPC");
+		AclfNetwork net = new EpcDirectParser().parse("testData/adpter/ge/UCTE_2002_Summer.EPC");
 
 		assertTrue(net.getNoBus() >= 1200, "expected >=1200 buses, got " + net.getNoBus());
 		assertTrue(net.getNoBranch() > 1500, "expected >1500 branches, got " + net.getNoBranch());
@@ -74,18 +74,18 @@ public class GEPslfDirectParser_SectionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void shunt_unitFixture() throws Exception {
-		AclfNetwork net = new GEPslfDirectParser().parse("testData/adpter/ge/unit/shunt_2bus.epc");
+		AclfNetwork net = new EpcDirectParser().parse("testData/adpter/ge/unit/shunt_2bus.epc");
 
 		assertEquals(2, net.getNoBus());
 		assertEquals(1, net.getNoBranch());
 		Complex y = net.getBus("Bus2").getShuntY();
 		assertNotNull(y);
-		assertTrue(Math.abs(y.getImaginary() - 0.2) < 1.0e-6, "20 MVAR on 100 MVA → 0.2 pu, got " + y);
+		assertTrue(Math.abs(y.getImaginary() - 0.2) < 1.0e-6, "EPC pu_mvar=0.2 should import as 0.2 pu, got " + y);
 	}
 
 	@Test
 	public void psXfr_unitFixture() throws Exception {
-		AclfNetwork net = new GEPslfDirectParser().parse("testData/adpter/ge/unit/ps_xfr_2bus.epc");
+		AclfNetwork net = new EpcDirectParser().parse("testData/adpter/ge/unit/ps_xfr_2bus.epc");
 
 		assertEquals(2, net.getNoBus());
 		assertEquals(1, net.getNoBranch());
