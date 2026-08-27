@@ -2,6 +2,8 @@ package org.interpss.plugin.aclf.config;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import com.interpss.common.datatype.BaseJSONBean;
 
@@ -10,15 +12,21 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.util.FileUtil;
 
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.algo.NrMethodConfig;
 import com.interpss.core.algo.NrOptimizeAlgoType;
+import com.interpss.core.algo.config.ControlInitializationMode;
+import com.interpss.core.algo.config.GenQLimitInitializationMode;
+import com.interpss.core.algo.config.RemoteQControlMode;
 
 /**
  * Versioned JSON contract for configuring one ACLF run.
@@ -37,6 +45,8 @@ import com.interpss.core.algo.NrOptimizeAlgoType;
 public class AclfRunConfigRec extends BaseJSONBean {
 	public static final int CURRENT_SCHEMA_VERSION = 1;
 
+	private transient Set<String> explicitJsonFields;
+
 	public int schemaVersion = CURRENT_SCHEMA_VERSION;
 	public AclfMethodType lfMethod = AclfMethodType.NR;
 	public boolean polarCoordinate = true;
@@ -44,6 +54,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public UnitType tolUnitType = UnitType.PU;
 	public int maxIterations = 20;
 	public boolean autoSetZeroZBranch = true;
+	public ZeroZBranchProcessingMode zeroZBranchProcessingMode;
 	public boolean turnOffIslandBus = true;
 	public boolean autoTurnLine2Xfr = true;
 	
@@ -73,7 +84,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 
 	// Core 1.3.12 solver controls. Wrapper types keep null = "leave the
 	// algorithm default (or replayed case mode) untouched".
-	public Boolean areaInterchangeControlEnabled;
+	public Boolean areaInterchangeControl;
 	public Integer maxAreaInterchangeAdjustmentsPerIteration;
 	public Double maxAreaInterchangeAngleStepRad;
 	public Double maxAreaInterchangePowerStepPu;
@@ -90,6 +101,74 @@ public class AclfRunConfigRec extends BaseJSONBean {
 
 	// Capture the core load-flow detailed iteration/message log in run output.
 	public boolean messageLoggingEnabled = false;
+
+	// Advanced ACLF run controls. Wrapper types keep null = "leave imported,
+	// current, or core default state untouched".
+	public Boolean initBusVoltage;
+	public Boolean nrStepSizeOptimization;
+	public Boolean allowSwingBusWithoutActiveGenerator;
+	public Boolean keepRawFileSettings;
+	public Boolean savedAreaInterchangeReplay;
+	public Boolean rawSettingsReplaySavedDiscreteControls;
+	public Boolean rawSettingsSavedDiscreteReplay;
+	public Boolean rawSettingsSensitivityFallback;
+	public Boolean rawSettingsFallbackVariableUpdate;
+	public Boolean rawSettingsFallbackRegularizeB11;
+	public Integer rawSettingsMaxIterationsOverride;
+	public AclfNetModelType aclfNetModelType;
+	public Boolean configureBusLowVoltageAdjustment;
+	public Boolean initializeHvdcLoadflowWithTapControl;
+	public Boolean disableAllAdjustmentControls;
+	public Boolean enableSwitchedShuntAdjustForAllAreas;
+	public Boolean restoreDevicelessBusCodes;
+	public Boolean zeroInactiveSwitchedShunts;
+	public Boolean coordinatedControlZbrSolver;
+	public Boolean coordinatedControlAugmentedZbr;
+	public Double coordinatedControlTolerance;
+	public Boolean coordinatedControlEnableRemoteQ;
+	public Boolean coordinatedControlReplaySavedState;
+	public Boolean coordinatedControlUseVoltageTolerance;
+
+	public Double hvdcLfSwitchFactor;
+	public Double hvdcOuterAdjustmentFactor;
+	public Boolean hvdcOuterControlEnabled;
+	public Integer maxHvdcOuterOscillationsBeforeLock;
+	public Integer maxAreaInterchangeTrialIterations;
+
+	public RemoteQControlMode remoteQControlMode;
+	public Integer maxRemoteQAdjustmentsPerIteration;
+	public Integer maxSwitchedShuntAdjustmentsPerIteration;
+	public Integer maxSvcAdjustmentsPerIteration;
+	public Integer maxTapAdjustmentsPerIteration;
+	public Integer maxPsXfrPAdjustmentsPerIteration;
+
+	public Double voltageAdjustmentThreshold;
+	public Double highGainVoltageControlDampingThreshold;
+	public Double highGainVoltageControlMaxAccelerationFactor;
+	public Boolean localContinuousSvcAsPv;
+	public Double minimumLocalContinuousSvcPvSensitivity;
+	public Double minimumTapVoltageSensitivity;
+
+	public Integer maxTapAndShuntAdjustmentIterations;
+	public Integer maxTapAdjustmentIterations;
+	public Integer maxSwitchedShuntAdjustmentIterations;
+
+	public Boolean requirePriorPvLimitViolation;
+	public Integer minPvLimitStableIterations;
+	public Integer minPvLimitControlIteration;
+	public Integer maxPvLimitControlIteration;
+	public Integer maxPvLimitRecoveryIterations;
+	public Integer maxPvLimitBuses;
+	public Double minSavedPvLimitAngleMismatch;
+	public ControlInitializationMode controlInitializationMode;
+
+	/** @deprecated use {@link #controlInitializationMode}. */
+	@Deprecated
+	public GenQLimitInitializationMode genQLimitInitializationMode;
+	public Integer maxSavedSolutionQLimitSeeds;
+	public Integer maxAdditionalSavedSolutionQLimitBuses;
+	public Double savedSolutionQLimitTolerance;
+	public Double savedSolutionVoltageEvidenceTolerance;
 	
 	// NR method config
 	public boolean nonDivergent = false;
@@ -150,11 +229,122 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends BaseJSONBean> T fromString(String json) {
-		Gson gson = new GsonBuilder().registerTypeAdapter(NrOptimizeAlgoType.class,
-				(JsonDeserializer<NrOptimizeAlgoType>) AclfRunConfigRec::deserializeNrOptimizeAlgoType).create();
-		AclfRunConfigRec config = gson.fromJson(json, AclfRunConfigRec.class);
+		return (T) parseJson(json, false, false);
+	}
+
+	public static AclfRunConfigRec fromJson(String json) {
+		return parseJson(json, true, true);
+	}
+
+	/**
+	 * Applies only fields explicitly present in {@code json} over an existing
+	 * case-derived configuration. This keeps imported solution settings as defaults
+	 * while making selected JSON fields authoritative.
+	 */
+	public static AclfRunConfigRec overlayJson(AclfRunConfigRec base, String json) {
+		AclfRunConfigRec overlay = fromJson(json);
+		AclfRunConfigRec merged = copyOf(base);
+		for (String fieldName : overlay.explicitJsonFields) {
+			java.lang.reflect.Field source = field(overlay.getClass(), fieldName);
+			java.lang.reflect.Field target = field(merged.getClass(), fieldName);
+			if (source == null || target == null) {
+				continue;
+			}
+			try {
+				target.set(merged, source.get(overlay));
+			} catch (IllegalAccessException ex) {
+				throw new IllegalStateException(
+						"Unable to apply AC loadflow config field '" + fieldName + "'", ex);
+			}
+		}
+		merged.explicitJsonFields = new LinkedHashSet<>(overlay.explicitJsonFields);
+		merged.includeAdjustments = true;
+		return merged;
+	}
+
+	public boolean explicitlyConfigures(String fieldName) {
+		return explicitJsonFields == null || explicitJsonFields.contains(fieldName);
+	}
+
+	public boolean wasParsedFromJson() {
+		return explicitJsonFields != null;
+	}
+
+	public static AclfRunConfigRec copyOf(AclfRunConfigRec config) {
+		AclfRunConfigRec copy = new AclfRunConfigRec();
+		if (config == null) {
+			return copy;
+		}
+		for (java.lang.reflect.Field field : config.getClass().getFields()) {
+			if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) {
+				continue;
+			}
+			try {
+				java.lang.reflect.Field target = field(copy.getClass(), field.getName());
+				if (target != null) {
+					target.set(copy, field.get(config));
+				}
+			} catch (IllegalAccessException ex) {
+				throw new IllegalStateException("Unable to copy AC loadflow run config", ex);
+			}
+		}
+		if (config.explicitJsonFields != null) {
+			copy.explicitJsonFields = new LinkedHashSet<>(config.explicitJsonFields);
+		}
+		return copy;
+	}
+
+	private static AclfRunConfigRec parseJson(
+			String json,
+			boolean trackExplicitFields,
+			boolean forceIncludeAdjustments) {
+		JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+		validateAclfJsonRoot(root);
+		AclfRunConfigRec config = gson().fromJson(json, AclfRunConfigRec.class);
 		config.validateSchemaVersion();
-		return (T) config;
+		if (trackExplicitFields) {
+			config.explicitJsonFields = new LinkedHashSet<>(root.keySet());
+		}
+		if (forceIncludeAdjustments) {
+			config.includeAdjustments = true;
+		}
+		return config;
+	}
+
+	private static Gson gson() {
+		return new GsonBuilder().registerTypeAdapter(NrOptimizeAlgoType.class,
+				(JsonDeserializer<NrOptimizeAlgoType>) AclfRunConfigRec::deserializeNrOptimizeAlgoType).create();
+	}
+
+	private static void validateAclfJsonRoot(JsonObject root) {
+		if (root.has("disablePhaseShifterDeviceControls")) {
+			throw new IllegalArgumentException(
+					"disablePhaseShifterDeviceControls was removed; use psXfrPControl");
+		}
+		if (root.has("areaInterchangeControlEnabled")) {
+			throw new IllegalArgumentException(
+					"areaInterchangeControlEnabled was removed; use areaInterchangeControl");
+		}
+		if (root.has("removeAreaInterchangeControls")) {
+			throw new IllegalArgumentException(
+					"removeAreaInterchangeControls was removed; use areaInterchangeControl=false");
+		}
+		if (root.has("halCoordinatedControlProfile")) {
+			throw new IllegalArgumentException(
+					"halCoordinatedControlProfile was removed; specify the ACLF control fields directly");
+		}
+		if (root.has("psseVersion") || root.has("psseDirectParser")) {
+			throw new IllegalArgumentException(
+					"psseVersion and psseDirectParser are case-loader options, not ACLF run config fields");
+		}
+	}
+
+	private static java.lang.reflect.Field field(Class<?> type, String name) {
+		try {
+			return type.getField(name);
+		} catch (NoSuchFieldException ex) {
+			return null;
+		}
 	}
 
 	/**
@@ -237,8 +427,8 @@ public class AclfRunConfigRec extends BaseJSONBean {
         	algo.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(this.psXfrPControl);
 
 			// Core 1.3.12 solver controls; null fields leave defaults untouched
-			if (this.areaInterchangeControlEnabled != null)
-				algo.getNetAdjAlgo().setAreaInterchangeControlEnabled(this.areaInterchangeControlEnabled);
+			if (this.areaInterchangeControl != null)
+				algo.getNetAdjAlgo().setAreaInterchangeControlEnabled(this.areaInterchangeControl);
 			if (this.maxAreaInterchangeAdjustmentsPerIteration != null)
 				algo.getNetAdjAlgo().setMaxAreaInterchangeAdjustmentsPerIteration(this.maxAreaInterchangeAdjustmentsPerIteration);
 			if (this.maxAreaInterchangeAngleStepRad != null)
