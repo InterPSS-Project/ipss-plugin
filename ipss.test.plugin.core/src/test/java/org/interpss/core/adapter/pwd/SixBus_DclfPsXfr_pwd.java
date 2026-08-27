@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.pwd.PWDDirectParser;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -40,10 +39,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 
 	@Test
 	public void sixBus_2WPsXfr_facadeLoad() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr.aux")
-				.setFormat(IpssAdapter.FileFormat.PWD)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PWDDirectParser().parse("testData/adpter/pwd/SixBus_2WPsXfr.aux");
 		assertNotNull(net);
 		assertTrue(net.getNoBus() >= 5);
 		assertTrue(net.getNoBranch() >= 5);
@@ -52,10 +48,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	@Test
 	@Disabled("Duplicate print-only historical variant of SixBus_2WPsXfr_1")
 	public void dclf1() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-				.setFormat(IpssAdapter.FileFormat.PWD)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PWDDirectParser().parse("testData/adpter/pwd/SixBus_2WPsXfr_1.aux");
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 	}
@@ -63,10 +56,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	@Test
 	@Disabled("Duplicate print-only historical variant")
 	public void dclf2() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-				.setFormat(IpssAdapter.FileFormat.PWD)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PWDDirectParser().parse("testData/adpter/pwd/SixBus_2WPsXfr_1.aux");
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 	}
@@ -74,10 +64,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	@Test
 	@Disabled("Duplicate print-only historical variant")
 	public void dclf3() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_1.aux")
-				.setFormat(IpssAdapter.FileFormat.PWD)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PWDDirectParser().parse("testData/adpter/pwd/SixBus_2WPsXfr_1.aux");
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 	}
@@ -85,10 +72,7 @@ public class SixBus_DclfPsXfr_pwd extends CorePluginTestSetup {
 	@Test
 	@Disabled("Duplicate print-only historical variant")
 	public void dclf4() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/pwd/SixBus_2WPsXfr_2.aux")
-				.setFormat(IpssAdapter.FileFormat.PWD)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PWDDirectParser().parse("testData/adpter/pwd/SixBus_2WPsXfr_2.aux");
 		SenAnalysisAlgorithm algo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(net);
 		algo.calculateDclf();
 	}

@@ -34,6 +34,7 @@ import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 import org.interpss.fadapter.matpower.MatpowerDirectParser;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.interpss.fadapter.psse.PSSEJsonDirectParser;
+import org.interpss.fadapter.psse.PsseRev;
 import org.interpss.fadapter.pwd.PWDDirectParser;
 import org.interpss.fadapter.ucte.UCTEDirectParser;
 import org.interpss.plugin.pssl.simu.BaseDSL;
@@ -44,11 +45,18 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
- * DSL for file import adapters. All formats use direct parsers
- * that bypass the ODM intermediate layer.
+ * Deprecated file-import DSL kept as a compatibility facade for external repos
+ * (e.g. desktop). Prefer format-specific direct parsers inside ipss-plugin:
+ * {@link org.interpss.fadapter.psse.PSSEDirectParser},
+ * {@link org.interpss.fadapter.psse.PSSEJsonDirectParser},
+ * {@link org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser}, etc.
+ * <p>
+ * All formats use direct parsers that bypass the ODM intermediate layer.
  * 
  * @author mzhou
+ * @deprecated Prefer direct parsers; this class remains for external callers.
  */
+@Deprecated
 public class IpssAdapter extends BaseDSL {
 	private static final Logger log = LoggerFactory.getLogger(IpssAdapter.class);
 	
@@ -80,6 +88,9 @@ public class IpssAdapter extends BaseDSL {
 	 * Skips leading {@code @!} comment lines (common in v33+ RAW exports) before
 	 * reading the REV field; otherwise REV is misread and the parser falls back to v30,
 	 * which fails to skip the v34+ system-wide data section and creates bogus {@code Bus0} entries.
+	 * <p>
+	 * Prefer letting {@link org.interpss.fadapter.psse.PSSEDirectParser} auto-detect REV
+	 * on load; use this only when a peek is needed without a full parse.
 	 */
 	public static PsseVersion parsePsseVersion(String filename) throws InterpssException {
 		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
@@ -88,31 +99,23 @@ public class IpssAdapter extends BaseDSL {
 				firstLine = reader.readLine();
 			}
 			if (firstLine != null) {
-				String[] parts = firstLine.split(",");
-				if (parts.length >= 3) {
-					String revStr = parts[2].trim();
-					// Strip trailing comment (e.g. "36     / PSS(R)E-36.2")
-					int slash = revStr.indexOf('/');
-					if (slash >= 0) revStr = revStr.substring(0, slash).trim();
-					try {
-						int rev = (int) Double.parseDouble(revStr);
-						if (rev >= 36) return PsseVersion.PSSE_36;
-						if (rev >= 35) return PsseVersion.PSSE_35;
-						if (rev >= 34) return PsseVersion.PSSE_34;
-						if (rev >= 33) return PsseVersion.PSSE_33;
-						if (rev >= 32) return PsseVersion.PSSE_32;
-						if (rev >= 31) return PsseVersion.PSSE_31;
-						if (rev >= 30) return PsseVersion.PSSE_30;
-						return PsseVersion.PSSE_29;
-					} catch (NumberFormatException e) {
-						return PsseVersion.PSSE_30;
-					}
-				}
+				return mapIntToPsseVersion(PsseRev.fromHeaderLine(firstLine));
 			}
 		} catch (IOException e) {
 			throw new InterpssException("Error parsing PSSE version from: " + filename);
 		}
 		return PsseVersion.PSSE_30;
+	}
+
+	private static PsseVersion mapIntToPsseVersion(int rev) {
+		if (rev >= 36) return PsseVersion.PSSE_36;
+		if (rev >= 35) return PsseVersion.PSSE_35;
+		if (rev >= 34) return PsseVersion.PSSE_34;
+		if (rev >= 33) return PsseVersion.PSSE_33;
+		if (rev >= 32) return PsseVersion.PSSE_32;
+		if (rev >= 31) return PsseVersion.PSSE_31;
+		if (rev >= 30) return PsseVersion.PSSE_30;
+		return PsseVersion.PSSE_29;
 	}
 
 	public static FileImportDSL importAclfNet(String filename) {
@@ -153,7 +156,12 @@ public class IpssAdapter extends BaseDSL {
 		public FileImportDSL setFormat(FileFormat format) { this.format = format; return this; }
 		public FileImportDSL format(FileFormat format) { return this.setFormat(format); }
 		
+		/**
+		 * Optional override of PSS/E section layout. When omitted, {@link PSSEDirectParser}
+		 * auto-detects {@code REV} from the RAW header.
+		 */
 		public FileImportDSL setPsseVersion(PsseVersion ver) { this.psseVersion = ver; return this; }
+		/** @see #setPsseVersion(PsseVersion) */
 		public FileImportDSL psseVersion(PsseVersion ver) { return this.setPsseVersion(ver); }
 		
 		public FileImportDSL setFilename(String name) { this.file1Name = name; return this; }
@@ -167,9 +175,10 @@ public class IpssAdapter extends BaseDSL {
 			} else if (this.format == FileFormat.PSSE) {
 				if (this.psseVersion == PsseVersion.PSSE_JSON) {
 					return new PSSEJsonDirectParser().parse(filepath);
+				} else if (this.psseVersion == null) {
+					return new PSSEDirectParser().parse(filepath);
 				} else {
-					int ver = mapPsseVersionToInt(this.psseVersion);
-					return new PSSEDirectParser(ver).parse(filepath);
+					return new PSSEDirectParser(mapPsseVersionToInt(this.psseVersion)).parse(filepath);
 				}
 			} else if (this.format == FileFormat.GE_PSLF) {
 				return new EpcDirectParser().parse(filepath);
@@ -188,7 +197,6 @@ public class IpssAdapter extends BaseDSL {
 		}
 
 		private int mapPsseVersionToInt(PsseVersion ver) {
-			if (ver == null) return 30;
 			switch (ver) {
 				case PSSE_29: return 29;
 				case PSSE_30: return 30;
@@ -245,8 +253,9 @@ public class IpssAdapter extends BaseDSL {
 					return null;
 				}
 
-				int ver = mapPsseVersionToInt(this.psseVersion);
-				AclfNetwork lfNet = new PSSEDirectParser(ver).parse(fileNameAry[0]);
+				AclfNetwork lfNet = this.psseVersion == null
+						? new PSSEDirectParser().parse(fileNameAry[0])
+						: new PSSEDirectParser(mapPsseVersionToInt(this.psseVersion)).parse(fileNameAry[0]);
 				this.importedObj = lfNet;
 				return this;
 			} catch (Exception e) {

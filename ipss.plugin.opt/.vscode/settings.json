@@ -1,0 +1,9 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "files.exclude": {
+        "**/.apt_*": true,
+        "**/.settings": true,
+        "**/.vscode": true,
+        "**/bin": true
+    }
+}

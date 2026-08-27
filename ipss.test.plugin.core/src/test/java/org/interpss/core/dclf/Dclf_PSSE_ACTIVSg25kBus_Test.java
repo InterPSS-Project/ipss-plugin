@@ -1,6 +1,5 @@
 package org.interpss.core.dclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -8,7 +7,6 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -23,15 +21,12 @@ import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class Dclf_PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 	@Test 
 	public void dclfLossTest() throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("testData/psse/v33/ACTIVSg25k.RAW");	
 		
 		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);
@@ -48,11 +43,7 @@ public class Dclf_PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 	@Test 
 	public void dclfTest() throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("testData/psse/v33/ACTIVSg25k.RAW");	
 		
 		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet);
 		dclfAlgo.calculateDclf();
@@ -71,11 +62,7 @@ public class Dclf_PSSE_ACTIVSg25kBus_Test  extends CorePluginTestSetup {
 		IpssCorePlugin.init();
 
 		// load the test data V33
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v33/ACTIVSg25k.RAW");
 	  
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		

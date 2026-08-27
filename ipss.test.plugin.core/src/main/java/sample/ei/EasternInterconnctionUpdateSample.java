@@ -1,9 +1,5 @@
 package sample.ei;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
@@ -13,15 +9,12 @@ import com.interpss.core.funcImpl.compare.AclfNetObjectComparator;
 import com.interpss.core.funcImpl.compare.AclfNetObjectUpdater;
 import com.interpss.state.aclf.AclfNetworkState;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class EasternInterconnctionUpdateSample {
 	
 	public static void main(String args[]) throws InterpssException {
 		
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
 		
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
 		System.out.println("Before MaxMismatch: " + net.maxMismatch(AclfMethodType.NR));

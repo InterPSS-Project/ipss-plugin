@@ -22,7 +22,7 @@ public class PSSE_IEEE14_NB_BusSplit_Sample {
 			"testData/psse/nbreaker/IEEE_14_bus_nodeBreaker_rev35_exported.raw";
 
 	public static void main(String[] args) throws InterpssException {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		AclfBus bus3 = net.getBus("Bus3");
 		bus3.getContributeGenList().get(0).setQGenLimit(new LimitType(1.0, 0));

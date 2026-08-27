@@ -15,10 +15,10 @@ public class Ieee14DelimiterMismatchInvestigation {
 
 	public static void main(String[] args) throws InterpssException {
 		// Compare against a clean IEEE14 baseline
-		AclfNetwork baseline = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_bus.raw", 33);
+		AclfNetwork baseline = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_bus.raw");
 		PowSyBlMismatchInvSupport.printAsReadMismatch(baseline, "Baseline IEEE_14_bus.raw");
 
-		AclfNetwork net = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_bus_delimiter.raw", 33);
+		AclfNetwork net = PowSyBlMismatchInvSupport.parseRaw("ieee/IEEE_14_bus_delimiter.raw");
 		Mismatch m = PowSyBlMismatchInvSupport.printAsReadMismatch(net, "IEEE_14_bus_delimiter.raw");
 		PowSyBlMismatchInvSupport.printTopMismatchBuses(net, 8);
 

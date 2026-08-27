@@ -59,6 +59,10 @@ import com.interpss.core.net.OriginalDataFormat;
  * Direct PSS/E RAW file parser that bypasses the ODM XML intermediate layer.
  * Reads PSS/E RAW files (v29-v36) and populates AclfNetwork via AclfNetworkBuilder.
  *
+ * By default, the PSS/E revision ({@code REV} on the IC/SBASE/REV header line) is
+ * auto-detected. Constructors that take an {@code int version} force that layout
+ * as an override (useful for tests and deliberate mis-version experiments).
+ *
  * The section-by-section parsing order mirrors PSSELFRawAdapter in ipss-odm.
  * Field extraction logic is ported from the individual PSSExxxDataRawParser classes.
  *
@@ -76,26 +80,56 @@ import com.interpss.core.net.OriginalDataFormat;
 public class PSSEDirectParser {
     private static final Logger log = LoggerFactory.getLogger(PSSEDirectParser.class);
     private static final String BUS_ID_PREFIX = "Bus";
-    private final int version;
+    /** Non-null forces section layout; null means resolve from header REV. */
+    private final Integer versionOverride;
+    /** Resolved after {@link #parseHeader}; used for all version gates. */
+    private int version;
     private final AclfNetworkBuilder builder;
     private final Map<String, Complex> rawType3BusVoltages = new HashMap<>();
     private double baseMva = 100.0;
     private PsseLoadflowSolutionSettings solutionSettings;
 
-    public PSSEDirectParser(int version) {
-        this.version = version;
+    /** Auto-detect REV from the RAW header. */
+    public PSSEDirectParser() {
+        this.versionOverride = null;
         this.builder = new AclfNetworkBuilder();
     }
 
-    public PSSEDirectParser(int version, BaseAclfNetwork<?,?> network) {
-        this.version = version;
+    /** Auto-detect REV; populate the given network. */
+    public PSSEDirectParser(BaseAclfNetwork<?,?> network) {
+        this.versionOverride = null;
         this.builder = new AclfNetworkBuilder(network);
     }
 
+    /** Auto-detect REV; populate the given network with a custom object factory. */
+    public PSSEDirectParser(BaseAclfNetwork<?,?> network,
+            AclfNetworkObjectFactory objectFactory) {
+        this.versionOverride = null;
+        this.builder = new AclfNetworkBuilder(network, objectFactory);
+    }
+
+    /** Force section layout to {@code version} (override header REV). */
+    public PSSEDirectParser(int version) {
+        this.versionOverride = version;
+        this.builder = new AclfNetworkBuilder();
+    }
+
+    /** Force section layout to {@code version}; populate the given network. */
+    public PSSEDirectParser(int version, BaseAclfNetwork<?,?> network) {
+        this.versionOverride = version;
+        this.builder = new AclfNetworkBuilder(network);
+    }
+
+    /** Force section layout to {@code version}; populate with a custom object factory. */
     public PSSEDirectParser(int version, BaseAclfNetwork<?,?> network,
             AclfNetworkObjectFactory objectFactory) {
-        this.version = version;
+        this.versionOverride = version;
         this.builder = new AclfNetworkBuilder(network, objectFactory);
+    }
+
+    /** PSS/E revision used for section layout after parse (override or header REV). */
+    public int getVersion() {
+        return version;
     }
 
     public AclfNetwork parse(String filepath) throws InterpssException {
@@ -189,6 +223,9 @@ public class PSSEDirectParser {
         PSSEDataRec rec = new PSSEDataRec(line1);
         // IC, SBASE, REV, XFRRAT, NXFRAT, BASFRQ
         baseMva = rec.getDouble(1, 100.0);
+        this.version = versionOverride != null
+                ? versionOverride
+                : PsseRev.fromHeaderLine(line1);
 
         builder.setNetworkInfo("Base_Case_from_PSS_E_format",
                 (line2 != null ? line2.trim() : "PSS/E Case"),

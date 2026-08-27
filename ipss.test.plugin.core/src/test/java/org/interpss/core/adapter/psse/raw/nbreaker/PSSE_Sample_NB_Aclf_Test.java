@@ -121,7 +121,7 @@ public class PSSE_Sample_NB_Aclf_Test extends CorePluginTestSetup {
 	}
 
 	private static AclfNetwork parseAndConfigure() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 		net.setZeroZBranchThreshold(1.0e-3);
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
 		return net;

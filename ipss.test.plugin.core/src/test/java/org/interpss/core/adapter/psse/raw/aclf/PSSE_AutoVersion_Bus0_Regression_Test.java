@@ -1,6 +1,5 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,17 +10,17 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adj.TapControl;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
+import org.interpss.fadapter.psse.PsseRev;
 /**
  * Regression for desktop auto-import ({@code AclfDataLoader}):
- * {@link IpssAdapter#parsePsseVersion} + PSSE parse must not invent {@code Bus0}
+ * header REV auto-detect + PSSE parse must not invent {@code Bus0}
  * from v34+ {@code @!} headers / system-wide data, and COD=±1 with CONT=0 must
  * use local (from-bus) tap voltage control instead of {@code Bus0}.
  */
@@ -56,7 +55,7 @@ public class PSSE_AutoVersion_Bus0_Regression_Test extends CorePluginTestSetup {
 		try {
 			Files.writeString(raw, minimalV36RawWithLocalTapControl());
 
-			assertEquals(PsseVersion.PSSE_36, IpssAdapter.parsePsseVersion(raw.toString()));
+			assertEquals(36, revFromFile(raw.toString()));
 
 			AclfNetwork net = loadWithAutoDetectedVersion(raw.toString());
 
@@ -182,12 +181,20 @@ public class PSSE_AutoVersion_Bus0_Regression_Test extends CorePluginTestSetup {
 	}
 
 	private static AclfNetwork loadWithAutoDetectedVersion(String filename) throws Exception {
-		PsseVersion ver = IpssAdapter.parsePsseVersion(filename);
-		return IpssAdapter.importAclfNet(filename)
-				.setFormat(PSSE)
-				.setPsseVersion(ver)
-				.load()
-				.getImportedObj();
+		return new PSSEDirectParser().parse(filename);
+	}
+
+	private static int revFromFile(String filename) throws Exception {
+		try (java.io.BufferedReader reader = java.nio.file.Files.newBufferedReader(java.nio.file.Path.of(filename))) {
+			String line;
+			while ((line = reader.readLine()) != null) {
+				if (line.trim().isEmpty() || line.trim().startsWith("@!")) {
+					continue;
+				}
+				return PsseRev.fromHeaderLine(line);
+			}
+		}
+		return PsseRev.defaultRev();
 	}
 
 	private static String insertAfterLineStartingWith(String text, String prefix,

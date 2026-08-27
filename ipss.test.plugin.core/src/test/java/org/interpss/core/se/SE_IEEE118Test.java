@@ -1,11 +1,9 @@
 package org.interpss.core.se;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.exp.IpssNumericException;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -22,6 +20,7 @@ import com.interpss.state.se.SEBranchState;
 import com.interpss.state.se.SEBusState;
 import com.interpss.state.se.SENetworkState;
 
+import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 public class SE_IEEE118Test extends CorePluginTestSetup {
 	double errorPQ = 0.05;
 	double errorV = 0.01;
@@ -76,10 +75,7 @@ public class SE_IEEE118Test extends CorePluginTestSetup {
 	
 	private SENetwork createTestCase() throws InterpssException {
 		// Load a Loadflow case
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/se/ieee118.ieee")
-				.setFormat(IEEECommonFormat)
-				.load()
-				.getImportedObj();
+		AclfNetwork aclfNet = new IeeeCDFDirectParser().parse("testData/se/ieee118.ieee");
 		
 		// run Loadflow 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);

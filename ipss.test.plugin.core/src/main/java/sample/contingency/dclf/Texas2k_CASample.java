@@ -15,9 +15,6 @@ import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
@@ -28,14 +25,11 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class Texas2k_CASample {
 
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("ipss.test.plugin.core/testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.psseVersion(PsseVersion.PSSE_36)
-				.load()
-				.getImportedObj();	
+        AclfNetwork net = new PSSEDirectParser().parse("ipss.test.plugin.core/testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW");	
         
 		// run Dclf
 		ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);

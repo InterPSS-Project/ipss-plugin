@@ -43,7 +43,7 @@ public class Kundur_2Area_LCCHVDC2T_JsonCopyTest extends CorePluginTestSetup {
 	private AclfNetwork createTestCase() throws Exception {
 		System.out.println("Kundur 2-area LCC HVDC test case creation ...");
 		
-		AclfNetwork net = new PSSEDirectParser(33).parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);

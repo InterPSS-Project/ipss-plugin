@@ -1,7 +1,5 @@
 package org.interpss.plugin.optadj.texas2K;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +10,6 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfNetwork;
@@ -23,6 +19,7 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /** Shared Texas-2K test network setup for optadj regression tests. */
 public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
 
@@ -34,11 +31,7 @@ public class Texas2K_TestCaseInfo extends CorePluginTestSetup {
 			+ "testData/psse/v36/Texas2k/2k_monitored_branches.json";
 
 	public static AclfNetwork createTestCaseNetwork() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet(TEXAS2K_RAW)
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse(TEXAS2K_RAW);
 
 		//net.getBranchList().forEach(branch -> branch.setName(branch.getId()));
 		return net;

@@ -3,16 +3,12 @@ package sample.dclf.bus25k;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.util.PerformanceTimer;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.algo.parallel.ContingencyAnalysisMonad;
 import com.interpss.common.exp.InterpssException;
@@ -23,16 +19,13 @@ import com.interpss.core.contingency.ContingencyBranchOutageType;
 import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class CA_ACTIVSg25kBusSample {
 	public static void main(String args[]) throws InterpssException {
 		IpssCorePlugin.init();
 		
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW");	
 		
 		// set the branch rating, since the original data does not have branch rating
 		double branchLimit = 2500.0;

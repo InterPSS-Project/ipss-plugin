@@ -13,8 +13,6 @@ import org.interpss.dep.datamodel.mapper.aclf.AclfNet2AclfBeanMapper;
 import org.interpss.dep.datamodel.mapper.aclf.AclfNet2ResultBeanMapper;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
@@ -26,6 +24,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.adpter.AclfSwingBusAdapter;
 import com.interpss.simu.util.sample.SampleTestingCases;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class AclfBeanMapperTest extends CorePluginTestSetup {
 	//@Test
 	public void testCase() throws Exception {
@@ -197,11 +196,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 
 
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
-					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.setPsseVersion(PsseVersion.PSSE_30)
-					.load()
-					.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/SixBus_2WPsXfr.raw");
   		
 		
 		// map AclfNet to AclfNetBean
@@ -230,11 +225,7 @@ public class AclfBeanMapperTest extends CorePluginTestSetup {
         //IpssCorePlugin.setSparseEqnSolver(SolverType.Native);
 
  
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/SixBus_2WPsXfr.raw")
-					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.setPsseVersion(PsseVersion.PSSE_30)
-					.load()
-					.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/SixBus_2WPsXfr.raw");
   		
 		// map AclfNet to AclfNetBean
 		AclfNetBean netBean = new AclfNet2AclfBeanMapper().map2Model(net);

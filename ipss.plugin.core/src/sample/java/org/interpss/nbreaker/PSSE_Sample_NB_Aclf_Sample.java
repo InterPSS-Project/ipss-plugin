@@ -34,7 +34,7 @@ public class PSSE_Sample_NB_Aclf_Sample {
 	private static void case0() throws InterpssException, IpssNumericException {
 		System.out.println("Case 0: init condition");
 
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
@@ -46,7 +46,7 @@ public class PSSE_Sample_NB_Aclf_Sample {
 	private static void case1() throws InterpssException, IpssNumericException {
 		System.out.println("Case 1: activated network");
 
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
@@ -68,7 +68,7 @@ public class PSSE_Sample_NB_Aclf_Sample {
 	private static void case2() throws InterpssException, IpssNumericException {
 		System.out.println("Case 2: maintenance network");
 
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
@@ -88,7 +88,7 @@ public class PSSE_Sample_NB_Aclf_Sample {
 	private static void case3() throws InterpssException, IpssNumericException {
 		System.out.println("Case 3: activated the topo processing network");
 
-		AclfNetwork net = new PSSEDirectParser(36).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		net.setZeroZBranchThreshold(1.0e-3);
 		net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);

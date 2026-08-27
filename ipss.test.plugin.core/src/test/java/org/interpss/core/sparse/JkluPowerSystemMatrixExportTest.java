@@ -17,7 +17,6 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBus;
@@ -26,6 +25,7 @@ import com.interpss.core.sparse.ComplexSEqnElem;
 import com.interpss.core.sparse.ComplexSEqnRow;
 import com.interpss.core.sparse.impl.AbstractSparseEqnComplexImpl;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /**
  * Opt-in exporter for generating JKLU Matrix Market replay cases from real
  * InterPSS power-system Y matrices.
@@ -87,11 +87,7 @@ public class JkluPowerSystemMatrixExportTest extends CorePluginTestSetup {
 
     private static AclfNetwork loadCase(CaseSpec spec) throws Exception {
         if (spec.psse) {
-            return IpssAdapter.importAclfNet(spec.path)
-                    .setFormat(IpssAdapter.FileFormat.PSSE)
-                    .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-                    .load()
-                    .getImportedObj();
+            return new PSSEDirectParser().parse(spec.path);
         }
         return CorePluginFactory
                 .getFileAdapter(IpssFileAdapter.FileFormat.IpssInternal)

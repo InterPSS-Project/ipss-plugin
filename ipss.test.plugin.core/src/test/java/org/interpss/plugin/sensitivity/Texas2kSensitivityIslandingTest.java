@@ -22,7 +22,6 @@ import org.interpss.plugin.sensitivity.DcSensitivityStudyDefinition.PtdfSpec;
 import org.interpss.plugin.sensitivity.SensitivityResult.Block;
 import org.interpss.plugin.sensitivity.SensitivityResult.Manifest;
 import org.interpss.plugin.sensitivity.SensitivityResult.RunSnapshot;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -32,6 +31,7 @@ import com.interpss.core.algo.dclf.ContingencyAnalysisAlgorithm;
 import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.funcImpl.AclfNetHelper;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 class Texas2kSensitivityIslandingTest extends CorePluginTestSetup {
 	private static final String CASE =
 			"testData/adpter/psse/v36/Texas2k_series24_case1_2016summerPeak_v36_labeled.RAW";
@@ -156,11 +156,7 @@ class Texas2kSensitivityIslandingTest extends CorePluginTestSetup {
 	}
 
 	private static AclfNetwork loadTexas2k() throws Exception {
-		return IpssAdapter.importAclfNet(CASE)
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
-				.load()
-				.getImportedObj();
+		return new PSSEDirectParser().parse(CASE);
 	}
 
 	private record TwoIslandCase(AclfNetwork net, BaseAclfBus<?, ?> islandBus) {}

@@ -84,7 +84,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public Boolean reducedLccCouplingEnabled;
 
 	// Apply the imported PSS/E saved-solution SOLVER activity flags
-	// (ACTAPS/AREAIN/PHSHFT/DCTAPS/SWSHNT) when the network carries
+	// (ACTAPS/AREAIN/PHSHFT/DCTAPS/SWSHNT/NONDIV) when the network carries
 	// PsseLoadflowSolutionSettings. The desktop run service honors this flag.
 	public boolean savedSolutionReplay = false;
 

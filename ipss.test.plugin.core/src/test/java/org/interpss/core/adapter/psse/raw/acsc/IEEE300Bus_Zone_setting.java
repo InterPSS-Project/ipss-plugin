@@ -37,7 +37,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 	//@Test
 	public void testDataInputAndACSC() throws Exception {
 		
-		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
+		AcscNetwork net = new PSSEMultiFileLoader().loadAcsc(
 				"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
 				"testData/adpter/psse/v30/IEEE300/IEEE300.seq");
 		
@@ -81,7 +81,7 @@ public class IEEE300Bus_Zone_setting  extends CorePluginTestSetup {
 	public void calcZone3Setting() throws Exception {
 		   
 		
-		AcscNetwork net = new PSSEMultiFileLoader(30).loadAcsc(
+		AcscNetwork net = new PSSEMultiFileLoader().loadAcsc(
 				"testData/adpter/psse/v30/IEEE300/IEEE300Bus_modified_noHVDC.raw",
 				"testData/adpter/psse/v30/IEEE300/IEEE300.seq");
 		

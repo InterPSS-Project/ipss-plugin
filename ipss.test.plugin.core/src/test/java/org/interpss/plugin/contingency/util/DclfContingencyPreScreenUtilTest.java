@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import com.interpss.core.contingency.definition.ContingencyAction;
 import com.interpss.core.contingency.definition.ContingencyActionType;
 import com.interpss.core.contingency.definition.ContingencyDefinition;
@@ -37,6 +36,7 @@ import com.interpss.core.algo.dclf.DclfContingencyConfig;
 import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import com.interpss.core.contingency.dclf.DclfMultiOutage;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class DclfContingencyPreScreenUtilTest extends CorePluginTestSetup {
     @TempDir
     Path tempDir;
@@ -229,12 +229,7 @@ public class DclfContingencyPreScreenUtilTest extends CorePluginTestSetup {
     }
 
     private static AclfNetwork loadTexas2k() throws Exception {
-        return IpssAdapter.importAclfNet(
-                        "testData/adpter/psse/v36/Texas2k_series24_case1_2016summerPeak_v36_labeled.RAW")
-                .setFormat(IpssAdapter.FileFormat.PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_36)
-                .load()
-                .getImportedObj();
+        return new PSSEDirectParser().parse("testData/adpter/psse/v36/Texas2k_series24_case1_2016summerPeak_v36_labeled.RAW");
     }
 
     private static List<ContingencyDefinition> createTexas2kMixedPreScreenDefinitions(AclfNetwork net)

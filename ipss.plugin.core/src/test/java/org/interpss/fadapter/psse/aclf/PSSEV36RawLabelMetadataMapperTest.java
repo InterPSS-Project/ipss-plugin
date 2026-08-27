@@ -7,9 +7,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -20,6 +17,7 @@ import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.net.Area;
 import com.interpss.core.net.Zone;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class PSSEV36RawLabelMetadataMapperTest {
 
 	@Test
@@ -87,11 +85,7 @@ public class PSSEV36RawLabelMetadataMapperTest {
 	}
 
 	private AclfNetwork load(String fileName) throws Exception {
-		return IpssAdapter.importAclfNet(casePath(fileName))
-				.setFormat(FileFormat.PSSE)
-				.setPsseVersion(PsseVersion.PSSE_36)
-				.load()
-				.getImportedObj();
+		return new PSSEDirectParser().parse(casePath(fileName));
 	}
 
 	private String casePath(String fileName) {

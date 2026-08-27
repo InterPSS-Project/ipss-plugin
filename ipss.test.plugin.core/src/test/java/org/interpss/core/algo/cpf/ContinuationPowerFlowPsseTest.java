@@ -19,7 +19,6 @@ import java.util.Properties;
 
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -36,6 +35,7 @@ import com.interpss.core.algo.cpf.CpfResult;
 import com.interpss.core.algo.cpf.CpfTerminationStatus;
 import com.interpss.core.algo.cpf.QvResult;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class ContinuationPowerFlowPsseTest extends CorePluginTestSetup {
 	private static final String IEEE39_RAW =
 			"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw";
@@ -110,7 +110,7 @@ public class ContinuationPowerFlowPsseTest extends CorePluginTestSetup {
 		assertEquals("2.0.0", reference.getProperty("andes.version"));
 		assertEquals("eda5163c9ee8d19945a1dd5d1771fec5da608c27",
 				reference.getProperty("andes.commit"));
-		AclfNetwork network = loadPsse(WECC179_RAW, IpssAdapter.PsseVersion.PSSE_32);
+		AclfNetwork network = loadPsse(WECC179_RAW, 32);
 		assertEquals(179, network.getNoBus());
 		assertTrue(configuredBaseLoadflow(network).loadflow());
 		String[] buses = reference.getProperty("comparison.buses").split(",");
@@ -412,16 +412,11 @@ public class ContinuationPowerFlowPsseTest extends CorePluginTestSetup {
 	}
 
 	private static AclfNetwork loadPsse(String path) throws Exception {
-		return loadPsse(path, IpssAdapter.PsseVersion.PSSE_30);
+		return new PSSEDirectParser().parse(path);
 	}
 
-	private static AclfNetwork loadPsse(
-			String path, IpssAdapter.PsseVersion version) throws Exception {
-		return IpssAdapter.importAclfNet(path)
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.setPsseVersion(version)
-				.load()
-				.getImportedObj();
+	private static AclfNetwork loadPsse(String path, int version) throws Exception {
+		return new PSSEDirectParser(version).parse(path);
 	}
 
 	private static Properties loadProperties(String path) throws Exception {

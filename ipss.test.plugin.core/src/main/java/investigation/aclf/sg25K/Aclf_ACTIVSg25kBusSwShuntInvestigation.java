@@ -1,12 +1,8 @@
 package investigation.aclf.sg25K;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
@@ -17,6 +13,7 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class Aclf_ACTIVSg25kBusSwShuntInvestigation {
 	//static String RootDir = "";
 	static String RootDir = "ipss.test.plugin.core/";
@@ -26,11 +23,7 @@ public class Aclf_ACTIVSg25kBusSwShuntInvestigation {
 		String filename = RootDir + "testData/psse/v33/ACTIVSg25k.RAW";
 		
 		// load the test data V33
-		AclfNetwork net = IpssAdapter.importAclfNet(filename)
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse(filename);
 		
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
 		System.out.println(AclfAdjCtrlFunction.nOfSwitchedShuntBus.apply(net) + " Switched shunts");

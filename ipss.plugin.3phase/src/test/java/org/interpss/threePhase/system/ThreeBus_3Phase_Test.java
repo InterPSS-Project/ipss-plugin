@@ -336,7 +336,7 @@ public class ThreeBus_3Phase_Test {
 
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab("testData/threeBusSys.raw", "testData/threeBusSys.dyr");
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab("testData/threeBusSys.raw", "testData/threeBusSys.dyr");
 
 
 	    BaseDStabNetwork net =simuCtx.getDStabilityNet();

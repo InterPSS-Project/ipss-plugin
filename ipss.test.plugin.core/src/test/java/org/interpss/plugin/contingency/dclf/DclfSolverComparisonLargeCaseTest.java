@@ -3,7 +3,6 @@ package org.interpss.plugin.contingency.dclf;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -23,7 +22,6 @@ import com.interpss.core.algo.dclf.solver.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +40,7 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
     private static final double RESULT_TOLERANCE_MW = 1.0e-2;
@@ -238,19 +237,11 @@ public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
     }
 
     private static AclfNetwork loadActivs25k() throws InterpssException {
-        return IpssAdapter.importAclfNet("testData/psse/v33/ACTIVSg25k.RAW")
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-                .load()
-                .getImportedObj();
+        return new PSSEDirectParser().parse("testData/psse/v33/ACTIVSg25k.RAW");
     }
 
     private static AclfNetwork loadOpenEi() throws InterpssException {
-        return IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-                .load()
-                .getImportedObj();
+        return new PSSEDirectParser().parse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
     }
 
     private static CaseConfig activs25kConfig() {

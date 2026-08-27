@@ -21,7 +21,7 @@ public class PSSE_PowSyBl_TwoTerminalDc_Test extends CorePluginTestSetup {
 
 	@Test
 	public void twoTerminalDc() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "twoTerminalDc.raw");
+		AclfNetwork net = new PSSEDirectParser().parse(DIR + "twoTerminalDc.raw");
 		assertTrue(net.getNoBus() > 0);
 		assertFalse(net.getSpecialBranchList().isEmpty(), "expected HVDC special branch");
 		assertInstanceOf(HvdcLine2TLCC.class, net.getSpecialBranchList().get(0));
@@ -31,7 +31,7 @@ public class PSSE_PowSyBl_TwoTerminalDc_Test extends CorePluginTestSetup {
 
 	@Test
 	public void twoTerminalDcNegativeSetvl() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "twoTerminalDc_with_negative_setvl.raw");
+		AclfNetwork net = new PSSEDirectParser().parse(DIR + "twoTerminalDc_with_negative_setvl.raw");
 		assertFalse(net.getSpecialBranchList().isEmpty());
 		assertInstanceOf(HvdcLine2TLCC.class, net.getSpecialBranchList().get(0));
 		assertTrue(net.getNoBus() >= 9);
@@ -39,7 +39,7 @@ public class PSSE_PowSyBl_TwoTerminalDc_Test extends CorePluginTestSetup {
 
 	@Test
 	public void twoTerminalDcTwoAreas() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "twoTerminalDcwithTwoAreas.raw");
+		AclfNetwork net = new PSSEDirectParser().parse(DIR + "twoTerminalDcwithTwoAreas.raw");
 		assertFalse(net.getSpecialBranchList().isEmpty());
 		assertInstanceOf(HvdcLine2TLCC.class, net.getSpecialBranchList().get(0));
 		assertTrue(net.getNoBus() > 0);
@@ -47,7 +47,7 @@ public class PSSE_PowSyBl_TwoTerminalDc_Test extends CorePluginTestSetup {
 
 	@Test
 	public void parallelTwoTerminalDcSameAcBuses() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "parallelTwoTerminalDcBetweenSameAcBuses.raw");
+		AclfNetwork net = new PSSEDirectParser().parse(DIR + "parallelTwoTerminalDcBetweenSameAcBuses.raw");
 		assertTrue(net.getSpecialBranchList().size() >= 2,
 				"expected two parallel DC lines, got " + net.getSpecialBranchList().size());
 		assertTrue(net.getSpecialBranchList().stream().allMatch(b -> b instanceof HvdcLine2TLCC));
@@ -55,7 +55,7 @@ public class PSSE_PowSyBl_TwoTerminalDc_Test extends CorePluginTestSetup {
 
 	@Test
 	public void vscZeroResistance() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(33).parse(DIR + "two_terminal_dc_vsc_with_zero_resistance.raw");
+		AclfNetwork net = new PSSEDirectParser().parse(DIR + "two_terminal_dc_vsc_with_zero_resistance.raw");
 		assertTrue(net.getNoActiveBus() > 0);
 		boolean hasVsc = net.getSpecialBranchList().stream()
 				.anyMatch(b -> b instanceof HvdcLine2TVSC);

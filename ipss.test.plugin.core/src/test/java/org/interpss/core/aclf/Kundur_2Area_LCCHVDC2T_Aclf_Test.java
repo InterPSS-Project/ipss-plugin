@@ -182,6 +182,6 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 
 	
 	private AclfNetwork createTestCase() throws Exception {
-		return new PSSEDirectParser(33).parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_PsetOnInv.raw");
+		return new PSSEDirectParser().parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_PsetOnInv.raw");
 	}
 }

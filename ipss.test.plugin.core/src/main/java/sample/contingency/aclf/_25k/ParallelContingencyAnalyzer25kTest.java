@@ -1,18 +1,15 @@
 package sample.contingency.aclf._25k;
 
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import org.interpss.plugin.contingency.AclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelAclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.result.AclfContingencyResultRec;
 import org.interpss.plugin.contingency.result.AclfContingencyResultContainer;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /**
  * Extended Parallel Contingency Analysis Test with ACTIVSg25k bus system.
  * This test demonstrates large-scale contingency analysis using parallel processing.
@@ -35,11 +32,7 @@ public class ParallelContingencyAnalyzer25kTest {
             //String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
             String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 
-            AclfNetwork net = IpssAdapter.importAclfNet(filename)
-                    .setFormat(PSSE)
-                    .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-                    .load()
-                    .getImportedObj();
+            AclfNetwork net = new PSSEDirectParser().parse(filename);
             
             long loadEndTime = System.currentTimeMillis();
             System.out.println("Network loaded successfully in " + (loadEndTime - loadStartTime) + " ms");

@@ -14,9 +14,6 @@ import org.interpss.plugin.contingency.DclfContingencyConfig;
 import org.interpss.plugin.contingency.ParallelDclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.definition.BranchContingencyRecord;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
-
 import com.interpss.algo.parallel.BranchCAResultRec;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfBranch;
@@ -28,6 +25,7 @@ import com.interpss.core.contingency.dclf.DclfBranchOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 import com.interpss.monitor.definition.MonitoredBranchRecord;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /**
  * Acknowledgment:
  * The synthetic Texas electric grid test case used in this example is provided by Texas A&M University’s energy and power group researchers.
@@ -42,11 +40,7 @@ import com.interpss.monitor.definition.MonitoredBranchRecord;
 public class Texas2k_CASample {
 
     public static void main(String args[]) throws Exception {
-        AclfNetwork net = IpssAdapter.importAclfNet("ipss-plugin/ipss.sample/testData/psse/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")
-				.setFormat(IpssAdapter.FileFormat.PSSE)
-				.psseVersion(PsseVersion.PSSE_36)
-				.load()
-				.getImportedObj();	
+        AclfNetwork net = new PSSEDirectParser().parse("ipss-plugin/ipss.sample/testData/psse/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW");	
         
 		// run Dclf
 		ContingencyAnalysisAlgorithm algo = createContingencyAnalysisAlgorithm(net);

@@ -46,7 +46,7 @@ public class MatpowerCase3012WpTest extends CorePluginTestSetup {
 		algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
 
 		NrMethodConfig config = algo.getNrMethodConfig();
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
 		config.setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		algo.getLfCalculator().getNrSolver().reConfigSolver(config);
 
@@ -69,7 +69,7 @@ public class MatpowerCase3012WpTest extends CorePluginTestSetup {
 		// algo.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(true);
 
 		// NrMethodConfig config = algo.getNrMethodConfig();
-		// algo.setNonDivergent(true);
+		// algo.getNrMethodConfig().setNonDivergent(true);
 		// config.setOptAlgo(NrOptimizeAlgoType.BINARY_SEARCH);
 		// algo.getLfCalculator().getNrSolver().reConfigSolver(config);
 

@@ -1,6 +1,5 @@
 package org.interpss.core.sparse;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -25,6 +24,7 @@ import com.interpss.core.sparse.DoubleSEqnElem;
 import com.interpss.core.sparse.DoubleSEqnRow;
 import com.interpss.core.sparse.impl.AbstractSparseEqnDoubleImpl;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class JacobianMatrixExportTest extends CorePluginTestSetup {
 
     private static final String EXPORT_DIR = "jklu.matrix.output.dir";
@@ -55,11 +55,7 @@ public class JacobianMatrixExportTest extends CorePluginTestSetup {
 
         IpssCorePlugin.init();
 
-        AclfNetwork net = org.interpss.plugin.pssl.plugin.IpssAdapter.importAclfNet(rawFile)
-                .setFormat(PSSE)
-                .setPsseVersion(org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion.PSSE_33)
-                .load()
-                .getImportedObj();
+        AclfNetwork net = new PSSEDirectParser().parse(rawFile);
 
         LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
         algo.getLfAdjAlgo().setApplyAdjustAlgo(false);

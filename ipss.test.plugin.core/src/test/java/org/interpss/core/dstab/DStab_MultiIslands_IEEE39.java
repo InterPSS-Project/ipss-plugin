@@ -29,7 +29,7 @@ public class DStab_MultiIslands_IEEE39 extends DStabTestSetupBase{
 		IpssCorePlugin.init();
 		IpssCorePlugin.setLoggerLevel(Level.INFO);
 		
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
 				"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr");

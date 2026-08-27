@@ -1,11 +1,9 @@
 package org.interpss.core.aclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +16,7 @@ import com.interpss.core.algo.impl.LfNrProfiler;
 import com.interpss.core.sparse.solver.SparseEqnSolverProvider;
 import com.interpss.core.sparse.solver.klu.KLUSolverProfiler;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class AclfOpenEiJkluPerformanceTest extends CorePluginTestSetup {
 	private static final String OPEN_EI_RAW =
@@ -98,11 +97,7 @@ public class AclfOpenEiJkluPerformanceTest extends CorePluginTestSetup {
 	}
 
 	private static AclfNetwork loadOpenEi() throws InterpssException {
-		return IpssAdapter.importAclfNet(OPEN_EI_RAW)
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-				.load()
-				.getImportedObj();
+		return new PSSEDirectParser().parse(OPEN_EI_RAW);
 	}
 
 	private static void printRun(String caseName, String solver, int repeat, boolean warmup, RunResult result) {

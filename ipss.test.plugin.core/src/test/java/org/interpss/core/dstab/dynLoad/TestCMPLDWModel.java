@@ -153,7 +153,7 @@ public class TestCMPLDWModel extends TestSetupBase {
 	//@Test
 	public void testCMPLDWInit() throws InterpssException{
 		IpssCorePlugin.init();
-		SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+		SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 				"testData/adpter/psse/v30/threeBus_cmpldw.raw",
 				"testData/adpter/psse/v30/threeBus_cmpldw.dyr");
 		

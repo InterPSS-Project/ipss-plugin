@@ -1,8 +1,6 @@
 package sample.contingency.aclf._25k;
 
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.IntStream;
@@ -12,7 +10,6 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.interpss.plugin.contingency.ParallelAclfContingencyAnalyzer;
 import org.interpss.plugin.contingency.result.AclfContingencyResultRec;
 import org.interpss.plugin.contingency.result.AclfContingencyResultContainer;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.pool.AclfNetObjPoolManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,6 +21,7 @@ import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 /**
  * Sample code to demonstrate the usage of Object Pooling for AclfNetwork objects
  * in a contingency analysis scenario.
@@ -38,11 +36,7 @@ public class ObjectPoolSample {
 		String filename = "ipss-plugin/ipss.test.plugin.core/testData/psse/v33/ACTIVSg25k.RAW";
         //String filename = "testData/psse/v33/ACTIVSg25k.RAW";
 
-        AclfNetwork seedAclfNet = IpssAdapter.importAclfNet(filename)
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-                .load()
-                .getImportedObj();
+        AclfNetwork seedAclfNet = new PSSEDirectParser().parse(filename);
         
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(seedAclfNet);
 
