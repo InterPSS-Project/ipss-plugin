@@ -7,9 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
+import org.interpss.fadapter.psse.PSSEDirectParser;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -29,44 +27,44 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public class PSSEV31_v36_Sample_Test extends CorePluginTestSetup {
 	@Test
 	public void testV31() throws Exception {
-		assertSampleMapped(31, PsseVersion.PSSE_31);
+		assertSampleMapped(31);
 	}
 
 	@Test
 	public void testV32() throws Exception {
-		assertSampleMapped(32, PsseVersion.PSSE_32);
+		assertSampleMapped(32);
 	}
 
 	@Test
 	public void testV33() throws Exception {
-		assertSampleMapped(33, PsseVersion.PSSE_33);
+		assertSampleMapped(33);
 	}
 
 	@Test
 	public void testV34() throws Exception {
-		assertSampleMapped(34, PsseVersion.PSSE_34);
+		assertSampleMapped(34);
 	}
 
 	@Test
 	public void testV35() throws Exception {
-		assertSampleMapped(35, PsseVersion.PSSE_35);
+		assertSampleMapped(35);
 	}
 
 	@Test
 	public void testV36() throws Exception {
-		assertSampleMapped(36, PsseVersion.PSSE_36);
+		assertSampleMapped(36);
 	}
 
 	@Test
 	@Disabled("Sample NR LF does not converge with adjust algo disabled; mapping covered by testV36")
 	public void testV36Loadflow() throws Exception {
-		runSampleLoadflow(36, PsseVersion.PSSE_36);
+		runSampleLoadflow(36);
 	}
 
 	@Test
 	@Disabled("Sample PQ_NR LF fails on isolated/zero B1 bus in sample case; mapping covered by testV36")
 	public void testV36Pq2ThenNrLoadflow() throws Exception {
-		AclfNetwork net = loadSample(36, PsseVersion.PSSE_36);
+		AclfNetwork net = loadSample(36);
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.PQ_NR);
 		algo.setTolerance(0.001);
@@ -79,23 +77,19 @@ public class PSSEV31_v36_Sample_Test extends CorePluginTestSetup {
 		checkSolvedData(net);
 	}
 
-	private void assertSampleMapped(int version, PsseVersion psseVersion) throws Exception {
-		AclfNetwork net = loadSample(version, psseVersion);
+	private void assertSampleMapped(int version) throws Exception {
+		AclfNetwork net = loadSample(version);
 		assertNull(net.getBus("Bus0"), "version " + version + " must not create Bus0");
 		assertTrue(net.getNoActiveBus() > 0, "version " + version + " must have active buses");
 		checkMappedData(net);
 	}
 
-	private AclfNetwork loadSample(int version, PsseVersion psseVersion) throws Exception {
-		return IpssAdapter.importAclfNet("testData/psse/v" + version + "/sample_v" + version + ".raw")
-				.setFormat(FileFormat.PSSE)
-				.setPsseVersion(psseVersion)
-				.load()
-				.getImportedObj();
+	private AclfNetwork loadSample(int version) throws Exception {
+		return new PSSEDirectParser().parse("testData/psse/v" + version + "/sample_v" + version + ".raw");
 	}
 
-	private void runSampleLoadflow(int version, PsseVersion psseVersion) throws Exception {
-		AclfNetwork net = loadSample(version, psseVersion);
+	private void runSampleLoadflow(int version) throws Exception {
+		AclfNetwork net = loadSample(version);
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setLfMethod(AclfMethodType.NR);
 		if (version >= 36) {

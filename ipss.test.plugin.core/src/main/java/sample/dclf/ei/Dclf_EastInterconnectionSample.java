@@ -1,14 +1,11 @@
 package sample.dclf.ei;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.numeric.datatype.Counter;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBranch;
@@ -18,14 +15,11 @@ import com.interpss.core.algo.dclf.DclfMethod;
 import com.interpss.core.algo.dclf.adapter.DclfAlgoBus;
 import com.interpss.core.algo.dclf.solver.IDclfSolver.CacheType;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class Dclf_EastInterconnectionSample {
 	public static void main(String args[]) throws InterpssException {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");	
 		
 		DclfAlgorithm dclfAlgo = DclfAlgoObjectFactory.createDclfAlgorithm(aclfNet, CacheType.SenNotCached, true);
 		dclfAlgo.calculateDclf(DclfMethod.INC_LOSS);

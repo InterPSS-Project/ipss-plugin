@@ -1,13 +1,10 @@
 package sample.dframe;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
 import java.util.function.Predicate;
 
 import org.dflib.DataFrame;
 import org.dflib.csv.Csv;
 import org.interpss.numeric.datatype.Unit.UnitType;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.result.dframe.AclfNetDFrameAdapter;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -18,6 +15,7 @@ import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class AclfNetDFAdapter_Texas2kSample {
 	private static final String TEST_ROOT = "ipss.test.plugin.core/";
 	//private static final String TEST_ROOT = "";
@@ -28,11 +26,7 @@ public class AclfNetDFAdapter_Texas2kSample {
 		String filename = "ipss.test.plugin.core/testData/psse/v36/texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW";
 		
 		// load the test data V33
-		AclfNetwork net = IpssAdapter.importAclfNet(filename)
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_36) 
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse(filename);
 		
 		System.out.println("Buses, Branches: " + net.getNoBus() + ", " + net.getNoBranch());
 		System.out.println(AclfAdjCtrlFunction.nOfPVBusLimit.apply(net) + " PV bus limit controls");

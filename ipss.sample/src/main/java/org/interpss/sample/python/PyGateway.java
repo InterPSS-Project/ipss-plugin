@@ -1,10 +1,7 @@
 package org.interpss.sample.python;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.IEEECommonFormat;
-
 import org.interpss.CorePluginFunction;
 import org.interpss.IpssCorePlugin;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.plugin.pssl.simu.IpssAclf;
 
 import com.interpss.common.exp.InterpssException;
@@ -13,6 +10,7 @@ import com.interpss.core.algo.AclfMethodType;
 
 import py4j.GatewayServer;
 
+import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 public class PyGateway {
 	private AclfNetwork net;
 	
@@ -22,10 +20,7 @@ public class PyGateway {
 		IpssCorePlugin.init();
 		
 		try {
-			net = IpssAdapter.importAclfNet(filename)
-					.setFormat(IEEECommonFormat)
-					.load()
-					.getImportedObj();
+			net = new IeeeCDFDirectParser().parse(filename);
 			
 		  	IpssAclf.createAclfAlgo(net)
   					.lfMethod(AclfMethodType.NR)

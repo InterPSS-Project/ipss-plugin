@@ -1,14 +1,11 @@
 package org.interpss.core.aclf;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.common.exp.InterpssException;
@@ -16,6 +13,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
 	
 	/*
@@ -31,11 +29,7 @@ public class IEEE9_MultiLoadTest extends CorePluginTestSetup{
 	@Test
 	public void multiLoadTest() throws InterpssException{
 	
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v30/IEEE9Bus/ieee9_multiLoad.raw")
-				.setFormat(PSSE)
-				.setPsseVersion(PsseVersion.PSSE_30)
-				.load()
-				.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v30/IEEE9Bus/ieee9_multiLoad.raw");
 		
 		//System.out.println(net.net2String());
 		

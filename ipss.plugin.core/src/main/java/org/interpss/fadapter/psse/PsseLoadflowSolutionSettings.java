@@ -23,8 +23,8 @@ import com.interpss.core.algo.LoadflowAlgorithmInitializer;
  * InterPSS equivalent are always eligible; binary device-activity fields are
  * applied only by {@link ApplicationPolicy#SAVED_SOLUTION_REPLAY}. Unknown,
  * unsupported, malformed, and non-binary values are reported instead of being
- * coerced. Normal versus non-divergent NR is an explicit run-configuration
- * policy and is not inferred from a non-standard solver token.</p>
+ * coerced. Solver activity fields, including PSS/E saved-solution
+ * non-divergent mode, are applied only by saved-solution replay.</p>
  *
  * <p>Callers should apply these imported values before explicit JSON settings.
  * That ordering makes source data the baseline while keeping a field supplied
@@ -47,7 +47,7 @@ public final class PsseLoadflowSolutionSettings
 					"MXTPSS", "MXSWIM"),
 			"TYSL", Set.of("ITMXTY", "ACCTY", "TOLTY"),
 			"SOLVER", Set.of("$ACTIVITY", "ACTAPS", "AREAIN", "PHSHFT",
-					"DCTAPS", "SWSHNT", "FLATST", "VARLIM"));
+					"DCTAPS", "SWSHNT", "FLATST", "VARLIM", "NONDIV"));
 
 	public record GeneralSettings(Double thrshz, Double pqbrak, Double blowup) {}
 
@@ -128,7 +128,7 @@ public final class PsseLoadflowSolutionSettings
 		this.solver = new SolverSettings(s.get("$ACTIVITY"), integer(s, "ACTAPS"),
 				integer(s, "AREAIN"), integer(s, "PHSHFT"), integer(s, "DCTAPS"),
 				integer(s, "SWSHNT"), integer(s, "FLATST"), integer(s, "VARLIM"),
-				null);
+				integer(s, "NONDIV"));
 	}
 
 	public static Builder builder(int sourceVersion) {
@@ -217,6 +217,8 @@ public final class PsseLoadflowSolutionSettings
 					.getLfAdjAlgo().getVoltAdjConfig().setHvdcTapControl(enabled));
 			applyBinary(result, "SOLVER.SWSHNT", solver.swshnt(), enabled -> algorithm
 					.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(enabled));
+			applyBinary(result, "SOLVER.NONDIV", solver.nondiv(),
+					algorithm.getNrMethodConfig()::setNonDivergent);
 		} else {
 			preserveSolverModes(result);
 		}
@@ -264,6 +266,7 @@ public final class PsseLoadflowSolutionSettings
 		preservedSolverMode(result, "SOLVER.PHSHFT", solver.phshft());
 		preservedSolverMode(result, "SOLVER.DCTAPS", solver.dctaps());
 		preservedSolverMode(result, "SOLVER.SWSHNT", solver.swshnt());
+		preservedSolverMode(result, "SOLVER.NONDIV", solver.nondiv());
 	}
 
 	private void preservedSolverMode(List<Mapping> result, String field,

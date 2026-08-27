@@ -36,20 +36,20 @@ import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
 public class PTIFormat extends IpssFileAdapterBase {
-	private int psseVersion = 30;
+	/** Null means auto-detect REV from the RAW header. */
+	private final Integer psseVersionOverride;
 
 	public PTIFormat() {
-		this.psseVersion = 30;
+		this.psseVersionOverride = null;
 	}
 
 	public PTIFormat(IpssFileAdapter.Version v) {
-		this.psseVersion = mapVersionToInt(v);
+		this.psseVersionOverride = mapVersionToInt(v);
 	}
 	
 	@Override
 	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {
-		PSSEDirectParser parser = new PSSEDirectParser(psseVersion);
-		AclfNetwork aclfNet = parser.parse(filepath);
+		AclfNetwork aclfNet = loadAclfNet(filepath);
 		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
 		simuCtx.setAclfNet(aclfNet);
 		simuCtx.setName(filepath.substring(filepath.lastIndexOf(File.separatorChar) + 1));
@@ -58,7 +58,9 @@ public class PTIFormat extends IpssFileAdapterBase {
 
 	@Override
 	public AclfNetwork loadAclfNet(String filepath) throws InterpssException {
-		PSSEDirectParser parser = new PSSEDirectParser(psseVersion);
+		PSSEDirectParser parser = psseVersionOverride == null
+				? new PSSEDirectParser()
+				: new PSSEDirectParser(psseVersionOverride);
 		return parser.parse(filepath);
 	}
 

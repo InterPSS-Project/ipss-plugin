@@ -30,7 +30,7 @@ public class PSSE_IEEE14_NodeBreaker_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testImportSubstationOverlay() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		assertEquals(14, net.getNoActiveBus());
 		assertEquals(2, net.getSubstationMap().size());
@@ -84,7 +84,7 @@ public class PSSE_IEEE14_NodeBreaker_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testBusBranchStillSolves() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		assertTrue(algo.loadflow());
 		assertTrue(net.isLfConverged());

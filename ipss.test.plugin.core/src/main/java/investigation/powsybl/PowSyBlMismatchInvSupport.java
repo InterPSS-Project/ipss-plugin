@@ -23,8 +23,8 @@ public final class PowSyBlMismatchInvSupport {
 	private PowSyBlMismatchInvSupport() {
 	}
 
-	public static AclfNetwork parseRaw(String relativeUnderPowsybl, int version) throws InterpssException {
-		return new PSSEDirectParser(version).parse(ROOT + "testData/psse/powsybl/" + relativeUnderPowsybl);
+	public static AclfNetwork parseRaw(String relativeUnderPowsybl) throws InterpssException {
+		return new PSSEDirectParser().parse(ROOT + "testData/psse/powsybl/" + relativeUnderPowsybl);
 	}
 
 	public static AclfNetwork parseRawx(String relativeUnderPowsybl) throws InterpssException {

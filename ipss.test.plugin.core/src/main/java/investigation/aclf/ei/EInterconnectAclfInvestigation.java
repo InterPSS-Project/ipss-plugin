@@ -1,8 +1,5 @@
 package investigation.aclf.ei;
 
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
-
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.interpss.util.QAUtil;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -13,17 +10,14 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.core.funcImpl.AclfAdjCtrlFunction;
 import com.interpss.core.funcImpl.AclfNetInfoHelper;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class EInterconnectAclfInvestigation {
 	//static String RootDir = "";
 	static String RootDir = "ipss.test.plugin.core/";
 
     public static void main(String args[]) throws Exception {
 		// load the test data V33
-		AclfNetwork aclfNet = IpssAdapter.importAclfNet(RootDir + "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW")
-				.setFormat(PSSE)
-				.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33) 
-				.load()
-				.getImportedObj();	
+		AclfNetwork aclfNet = new PSSEDirectParser().parse(RootDir + "testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");	
 		
 		System.out.println("Buses, Branches: " + aclfNet.getNoBus() + ", " + aclfNet.getNoBranch());
 		System.out.println(AclfAdjCtrlFunction.nOfPVBusLimit.apply(aclfNet) + " PV bus limit controls");
@@ -68,7 +62,7 @@ public class EInterconnectAclfInvestigation {
 		
 		LoadflowAlgorithm aclfAlgo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(aclfNet);
 
-		aclfAlgo.setNonDivergent(true);
+		aclfAlgo.getNrMethodConfig().setNonDivergent(true);
 		
 		// disable all the controls
 		//AclfAdjCtrlFunction.disableAllAdjControls.accept(aclfAlgo);

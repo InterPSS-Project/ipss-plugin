@@ -32,7 +32,7 @@ public class PSSE_TwoSubstations_NB_TopoAnalysis_Test extends CorePluginTestSetu
 
 	@Test
 	public void testImportAndBasecaseTopoAnalysisSetsIntFlags() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		assertEquals(2, net.getSubstationMap().size());
 		assertEquals("S1", net.getSubstation("1").getName().trim());
@@ -67,7 +67,7 @@ public class PSSE_TwoSubstations_NB_TopoAnalysis_Test extends CorePluginTestSetu
 
 	@Test
 	public void testOpenS1CouplerIncreasesGroupCount() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(35).parse(CASE);
+		AclfNetwork net = new PSSEDirectParser().parse(CASE);
 
 		Substation s1 = net.getSubstation("1");
 		assertNotNull(s1);

@@ -4,7 +4,6 @@ import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
-import static org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat.PSSE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -25,7 +24,6 @@ import com.interpss.core.contingency.definition.ContingencyDefinition;
 import org.interpss.plugin.contingency.util.ContingencyFileUtil;
 import org.interpss.plugin.contingency.util.DclfContingencyHelper;
 import org.interpss.plugin.contingency.util.DclfMultiOutageContingencyHelper;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -66,6 +64,7 @@ import com.interpss.monitor.definition.NomogramRecord;
 import com.interpss.monitor.result.DclfMonitoredConstraintResult;
 import com.interpss.monitor.result.FlowgateViolationResult;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSetup {
     private static final double NO_VIOLATION_LIMIT_MW = 1.0e9;
@@ -87,7 +86,6 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
                 Path.of(property("interpss.violationCheckPerf25k",
                         "testData/psse/v33/ACTIVSg25k.RAW")),
                 optionalPath("interpss.violationCheckPerf25kContJson", null),
-                IpssAdapter.PsseVersion.PSSE_33,
                 true);
 
         runCase("ACTIVSg70k",
@@ -95,7 +93,6 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
                         "/Users/ipssdev/Downloads/ACTIVSg70k/ACTIVSg70k.RAW")),
                 optionalPath("interpss.violationCheckPerf70kContJson",
                         "/Users/ipssdev/Downloads/ACTIVSg70k/ACTIVSg70k_filtered_contingencies.json"),
-                IpssAdapter.PsseVersion.PSSE_33,
                 Boolean.getBoolean("interpss.violationCheckPerfInclude70k"));
     }
 
@@ -125,11 +122,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
                         "interpss.activs70kTimingSolutionMethod",
                         DclfContingencySolutionMethod.SparseEqnSolve.name()));
 
-        AclfNetwork net = IpssAdapter.importAclfNet(rawPath.toString())
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-                .load()
-                .getImportedObj();
+        AclfNetwork net = new PSSEDirectParser().parse(rawPath.toString());
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
         dclfAlgo.calculateDclf();
 
@@ -194,11 +187,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         boolean requireFullRank = Boolean.parseBoolean(
                 property("interpss.activs70kMultiBranchRequireFullRank", "true"));
 
-        AclfNetwork net = IpssAdapter.importAclfNet(rawPath.toString())
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-                .load()
-                .getImportedObj();
+        AclfNetwork net = new PSSEDirectParser().parse(rawPath.toString());
         ContingencyAnalysisAlgorithm dclfAlgo =
                 createContingencyAnalysisAlgorithm(net, CacheType.SenCached, true);
         dclfAlgo.setSolutionMethod(DclfContingencySolutionMethod.SparseEqnSolve);
@@ -261,11 +250,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         int rhsBatchSize = intProperty("interpss.activs70kFullReplayRhsBatchSize", 64);
         String definitionToken = System.getProperty("interpss.activs70kFullReplayDefinitionToken");
 
-        AclfNetwork net = IpssAdapter.importAclfNet(rawPath.toString())
-                .setFormat(PSSE)
-                .setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-                .load()
-                .getImportedObj();
+        AclfNetwork net = new PSSEDirectParser().parse(rawPath.toString());
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
         dclfAlgo.calculateDclf();
 
@@ -305,7 +290,6 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
             String caseName,
             Path rawPath,
             Path contingencyJsonPath,
-            IpssAdapter.PsseVersion psseVersion,
             boolean enabled) throws Exception {
         if (!enabled) {
             System.out.println(caseName + ",skipped,set include property to true");
@@ -313,11 +297,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         }
         assumeTrue(Files.isRegularFile(rawPath), "Case file not found: " + rawPath);
 
-        AclfNetwork net = IpssAdapter.importAclfNet(rawPath.toString())
-                .setFormat(PSSE)
-                .setPsseVersion(psseVersion)
-                .load()
-                .getImportedObj();
+        AclfNetwork net = new PSSEDirectParser().parse(rawPath.toString());
         int maxContingencies = intProperty("interpss.violationCheckPerfMaxCont", 300);
         int maxMonitors = intProperty("interpss.violationCheckPerfMaxMon", 1000);
         int warmups = intProperty("interpss.violationCheckPerfWarmups", 1);

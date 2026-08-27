@@ -5,9 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.display.AclfOutFunc;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.FileFormat;
-import org.interpss.plugin.pssl.plugin.IpssAdapter.PsseVersion;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -16,6 +13,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
+import org.interpss.fadapter.psse.PSSEDirectParser;
 public class PSSEV31_v36_IEEE9_Test extends CorePluginTestSetup {
 
 
@@ -23,15 +21,11 @@ public class PSSEV31_v36_IEEE9_Test extends CorePluginTestSetup {
 	
 @Test
 public void testV31() throws Exception {
-	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v31/ieee9_v31.raw")
-			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_31)
-			.load()
-			.getImportedObj();
+	AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v31/ieee9_v31.raw");
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -49,15 +43,11 @@ public void testV31() throws Exception {
 	
 @Test
 public void testV32() throws Exception {
-	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v32/ieee9_v32.raw")
-			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_32)
-			.load()
-			.getImportedObj();
+	AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v32/ieee9_v32.raw");
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -74,15 +64,11 @@ public void testV32() throws Exception {
 
 @Test
 public void testV33() throws Exception {
-	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v33/ieee9_v33.raw")
-			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_33)
-			.load()
-			.getImportedObj();
+	AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v33/ieee9_v33.raw");
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -98,15 +84,11 @@ public void testV33() throws Exception {
 
 @Test
 public void testV34() throws Exception {
-	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v34/ieee9_v34.raw")
-			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_34)
-			.load()
-			.getImportedObj();
+	AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v34/ieee9_v34.raw");
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -122,15 +104,11 @@ public void testV34() throws Exception {
 
 @Test
 public void testV35() throws Exception {
-	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v35/ieee9_v35.raw")
-			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_35)
-			.load()
-			.getImportedObj();
+	AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v35/ieee9_v35.raw");
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	
@@ -147,15 +125,11 @@ public void testV35() throws Exception {
 
 @Test
 public void testV36() throws Exception {
-	AclfNetwork net = IpssAdapter.importAclfNet("testData/psse/v36/ieee9_v36.raw")
-			.setFormat(FileFormat.PSSE)
-			.setPsseVersion(PsseVersion.PSSE_36)
-			.load()
-			.getImportedObj();
+	AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v36/ieee9_v36.raw");
 	
 	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
   	//algo.setLfMethod(AclfMethod.PQ);
-		algo.setNonDivergent(true);
+		algo.getNrMethodConfig().setNonDivergent(true);
   	algo.setLfMethod(AclfMethodType.NR);
   	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
   	

@@ -10,7 +10,6 @@ import org.interpss.numeric.datatype.ComplexFunc;
 import org.interpss.numeric.datatype.LimitType;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.util.NumericUtil;
-import org.interpss.plugin.pssl.plugin.IpssAdapter;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -338,7 +337,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
 	@Test
 	public void test_LCCHVDC_PsetZero_Loadflow() throws Exception {
-		AclfNetwork net = new PSSEDirectParser(33).parse("testData/psse/v33/Kundur_2area_LCC_HVDC_PsetZero.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/psse/v33/Kundur_2area_LCC_HVDC_PsetZero.raw");
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
 		assertTrue(!lccHVDC.isActive());
@@ -388,11 +387,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 
 	@Test
 	public void test_LCCHVDC_constantCurrent() throws Exception {
-		AclfNetwork net = IpssAdapter.importAclfNet("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_current_control.raw")
-					.setFormat(IpssAdapter.FileFormat.PSSE)
-					.setPsseVersion(IpssAdapter.PsseVersion.PSSE_33)
-					.load()
-					.getImportedObj();
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC_current_control.raw");
 
 		
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -438,7 +433,7 @@ public class Kundur_2Area_LCCHVDC2T_Test extends CorePluginTestSetup {
 	private AclfNetwork createTestCase() throws Exception {
 		System.out.println("Kundur 2-area LCC HVDC test case creation ...");
 		
-		AclfNetwork net = new PSSEDirectParser(33).parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw");
+		AclfNetwork net = new PSSEDirectParser().parse("testData/adpter/psse/v33/Kundur_2area_LCC_HVDC.raw");
 		//System.out.println(net.net2String());		
 
 		HvdcLine2TLCC<AclfBus> lccHVDC = (HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);

@@ -32,7 +32,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		@Test
 		public void test_IEEE39Bus_Dstab_OnlyGen() throws InterpssException{
 			IpssCorePlugin.init();
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+			SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_onlyGen.dyr");
 			
@@ -91,7 +91,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		public void test_IEEE39Bus_Dstab_fullModel() throws InterpssException{
 			IpssCorePlugin.init();
 			
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+			SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.seq",
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus.dyr");
@@ -143,7 +143,7 @@ public class DStab_IEEE39Bus_Test  extends DStabTestSetupBase{
 		//@Test
 		public void IEEE39_Dstab_benchMark() throws InterpssException{
 			IpssCorePlugin.init();
-			SimuContext simuCtx = new PSSEMultiFileLoader(30).loadDStab(
+			SimuContext simuCtx = new PSSEMultiFileLoader().loadDStab(
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_v30.raw",
 					"testData/adpter/psse/v30/IEEE39Bus/IEEE39bus_onlyGen.dyr");
 			
