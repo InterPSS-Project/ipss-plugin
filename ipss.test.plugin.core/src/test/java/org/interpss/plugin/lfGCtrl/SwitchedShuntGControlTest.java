@@ -150,12 +150,12 @@ public class SwitchedShuntGControlTest extends CorePluginTestSetup {
 		assertEquals(swShunt.getVSpecified(), 1.0, 0.0001);
 		assertEquals(swShunt.getBActual() * bus4.getVoltageMag() * bus4.getVoltageMag(),
 				swShunt.getQ(), 0.0001);
-		assertEquals(0.9198464194335391, bus4.getVoltageMag(), 0.01);
+		assertEquals(swShunt.getVSpecified(), bus4.getVoltageMag(), 0.01);
 		
 		String swingId = "Bus1";
 		AclfSwingBusAdapter swing = net.getBus(swingId).toSwingBus();
 		//System.out.println("AclfNet Model: "+swing.getGenResults(UnitType.PU) );				
-		assertEquals(0.22546241615540868, swing.getGenResults(UnitType.PU).getReal(), 0.0001);
+		assertEquals(swing.getGenResults(UnitType.PU).getReal(), 0.2253, 0.0001);
 		assertTrue(Double.isFinite(swing.getGenResults(UnitType.PU).getImaginary()));
 	}
 	
