@@ -21,10 +21,23 @@ import com.interpss.core.algo.NrMethodConfig;
 import com.interpss.core.algo.NrOptimizeAlgoType;
 
 /**
- * Loadflow run configuration record
- * 
+ * Versioned JSON contract for configuring one ACLF run.
+ *
+ * <p>The record contains solver and control policy only; parser selection and
+ * file-format choices belong to the import layer. The intended precedence is
+ * imported RAW settings first and explicit fields in this record second.
+ * Nullable advanced fields preserve an imported/current value when absent,
+ * while primitive fields define schema defaults.</p>
+ *
+ * <p>Adjustment-family switches are independent. Numerical NR controls are
+ * applied even when adjustment is disabled: normal full Newton may use a global
+ * variable update limit, while optimizer/minimum-scale settings are consulted
+ * only when {@link #nonDivergent} is true.</p>
  */
 public class AclfRunConfigRec extends BaseJSONBean {
+	public static final int CURRENT_SCHEMA_VERSION = 1;
+
+	public int schemaVersion = CURRENT_SCHEMA_VERSION;
 	public AclfMethodType lfMethod = AclfMethodType.NR;
 	public boolean polarCoordinate = true;
 	public double tolerance = 0.0001;
@@ -66,6 +79,9 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public Double maxAreaInterchangePowerStepPu;
 	public Double areaInterchangeAdjustmentFactor;
 	public Integer maxPvLimitAdjustmentsPerIteration;
+	// Couple eligible detailed two-terminal LCC injections directly into the
+	// coordinated NR Jacobian. Null/false preserves the legacy outer-loop model.
+	public Boolean reducedLccCouplingEnabled;
 
 	// Apply the imported PSS/E saved-solution SOLVER activity flags
 	// (ACTAPS/AREAIN/PHSHFT/DCTAPS/SWSHNT/NONDIV) when the network carries
@@ -136,7 +152,21 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public <T extends BaseJSONBean> T fromString(String json) {
 		Gson gson = new GsonBuilder().registerTypeAdapter(NrOptimizeAlgoType.class,
 				(JsonDeserializer<NrOptimizeAlgoType>) AclfRunConfigRec::deserializeNrOptimizeAlgoType).create();
-		return (T) gson.fromJson(json, AclfRunConfigRec.class);
+		AclfRunConfigRec config = gson.fromJson(json, AclfRunConfigRec.class);
+		config.validateSchemaVersion();
+		return (T) config;
+	}
+
+	/**
+	 * Fails fast when a client sends a schema whose field meanings may differ.
+	 * Silent best-effort parsing would be unsafe for control booleans because an
+	 * omitted or renamed field can materially change the solved active set.
+	 */
+	public void validateSchemaVersion() {
+		if (this.schemaVersion != CURRENT_SCHEMA_VERSION) {
+			throw new IllegalArgumentException("Unsupported ACLF run config schema version "
+					+ this.schemaVersion + "; expected " + CURRENT_SCHEMA_VERSION);
+		}
 	}
 	
 	public static AclfRunConfigRec loadAclfRunConfig(String configFilename) throws IOException {
@@ -220,21 +250,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 			if (this.maxPvLimitAdjustmentsPerIteration != null)
 				algo.getLfAdjAlgo().setMaxPvLimitAdjustmentsPerIteration(this.maxPvLimitAdjustmentsPerIteration);
         	
-			// Load-flow non-divergent inputs apply to both NR and PQ.
-			algo.getNrMethodConfig().setNonDivergent(this.nonDivergent);
-			if (this.nonDivergent) {
-				if (this.lfMethod == AclfMethodType.NR)
-					nrConfig.setOptAlgo(this.optAlgo);
-				algo.getNrMethodConfig().setVariableUpdateLimit(this.variableUpdateLimit);
-				algo.getNrMethodConfig().setDeltaVAngLimit(this.deltaVAngLimit);
-				algo.getNrMethodConfig().setDeltaVMagLimit(this.deltaVMagLimit);
-				algo.getNrMethodConfig().setStopNoSolutionFound(this.stopNoSolutionFound);
-				algo.getNrMethodConfig().setMinScaleFactor(this.minScaleFactor);
-				if (this.lfMethod == AclfMethodType.NR)
-					algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
-			}
-
-        	// Adj/Ctrl Setting tab inputs to be processed
+			// Adj/Ctrl Setting tab inputs to be processed
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint(this.limitCtrlStartPoint);
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setToleranceFactor(this.limitCtrlTolearnceFactor);
         	algo.getLfAdjAlgo().getLimitCtrlConfig().setAdjustAppType(this.limitCtrlApplyType);
@@ -264,5 +280,20 @@ public class AclfRunConfigRec extends BaseJSONBean {
             	});
 			}
         }
+
+		// Numerical NR settings are independent of adjustment/control inclusion.
+		// In particular, PSS/E applies DVLIM during normal full Newton solves.
+		algo.setNonDivergent(this.nonDivergent);
+		algo.setVariableUpdateLimit(this.variableUpdateLimit);
+		algo.setDeltaVAngLimit(this.deltaVAngLimit);
+		algo.setDeltaVMagLimit(this.deltaVMagLimit);
+		if (this.nonDivergent) {
+			if (this.lfMethod == AclfMethodType.NR)
+				nrConfig.setOptAlgo(this.optAlgo);
+			algo.setStopNoSolutionFound(this.stopNoSolutionFound);
+			algo.setMinScaleFactor(this.minScaleFactor);
+		}
+		if (this.lfMethod == AclfMethodType.NR)
+			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
 	}
 }

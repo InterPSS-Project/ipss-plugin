@@ -505,7 +505,7 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 		System.out.println("Bus50 narrow-band outer-loop svc q: " + narrowBandQ);
 		assertEquals(1.01, narrowBandBus5.getVoltageMag(), 0.0001,
 				"Narrow-band outer loop holds Bus5 within 0.0001 pu");
-		assertEquals(0.1505952484, narrowBandQ, 1e-8,
+		assertEquals(0.1505870989, narrowBandQ, 1e-8,
 				"Narrow-band outer-loop SVC Q output");
 		assertTrue(Math.abs(narrowBandQ - q) < Math.abs(outerQ - q),
 				"Narrowing the outer-loop tolerance moves its Q output closer to INNER_PQV");

@@ -460,8 +460,15 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV35SwitchedShuntLayout() throws Exception {
-		AclfNetwork net = new PSSEDirectParser()
-				.parse("testData/psse/v35/PSSE_5Bus_Test_switchShunt_continuous_v35.raw");
+		Path source = Path.of("testData/psse/v35/PSSE_5Bus_Test_switchShunt_continuous_v35.raw");
+		String raw = Files.readString(source);
+		String modified = raw.replace(
+				"     4,'1 ',   2,  0,  1,1.03,1.02,     4,   0, 100.0,",
+				"     4,'1 ',   2,  0,  1,1.03,1.02,     4,   0,  50.0,");
+		assertFalse(raw.equals(modified), "fixture switched-shunt RMPCT was not updated");
+		Path input = tempDir.resolve("switched-shunt-rmpct-v35.raw");
+		Files.writeString(input, modified);
+		AclfNetwork net = new PSSEDirectParser(35).parse(input.toString());
 
 		AclfBus bus4 = net.getBus("Bus4");
 		assertNotNull(bus4);
@@ -470,6 +477,25 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 		assertEquals(AclfAdjustControlMode.CONTINUOUS, sw.getControlMode());
 		assertEquals(1.03, sw.getDesiredControlRange().getMax(), 1.0E-6);
 		assertEquals(1.02, sw.getDesiredControlRange().getMin(), 1.0E-6);
+		assertEquals(50.0, sw.getRemoteControlPercentage(), 1.0E-6);
+	}
+
+	@Test
+	public void testV35InactiveSwitchedShuntKeepsRecoveredBinit() throws Exception {
+		Path source = Path.of("testData/psse/v35/PSSE_5Bus_Test_switchShunt_continuous_v35.raw");
+		String raw = Files.readString(source);
+		String modified = raw.replace(
+				"     4,'1 ',   2,  0,  1,1.03,1.02,     4,   0, 100.0,'            ',  70.91, 1, 1,  23.64, 1, 1,  23.64, 1, 1,  23.64, 1,",
+				"     4,'1 ',   2,  0,  0,1.03,1.02,     4,   0, 100.0,'            ',   0.00, 1, 1,  23.64, 1, 1,  23.64, 1, 1,  23.64, 1,");
+		assertFalse(raw.equals(modified), "fixture switched-shunt row was not updated");
+		Path input = tempDir.resolve("inactive-swshunt-v35.raw");
+		Files.writeString(input, modified);
+
+		AclfNetwork net = new PSSEDirectParser(35).parse(input.toString());
+		SwitchedShunt sw = net.getBus("Bus4").getFirstSwitchedShunt(false);
+		assertFalse(sw.isActive());
+		assertEquals(0.7092, sw.getBInit(), 1.0E-10);
+		assertEquals(0.0, sw.getBActual(), 1.0E-10);
 	}
 
 	@Test
