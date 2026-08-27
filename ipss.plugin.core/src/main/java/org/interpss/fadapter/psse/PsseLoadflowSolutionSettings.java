@@ -18,6 +18,17 @@ import com.interpss.core.algo.LoadflowAlgorithmInitializer;
  * records. Recognized fields are exposed with their native types, while the
  * complete key/value block and original lines remain available so unsupported
  * settings are not silently discarded.
+ *
+ * <p>Application is intentionally selective. Numerical fields with a verified
+ * InterPSS equivalent are always eligible; binary device-activity fields are
+ * applied only by {@link ApplicationPolicy#SAVED_SOLUTION_REPLAY}. Unknown,
+ * unsupported, malformed, and non-binary values are reported instead of being
+ * coerced. Solver activity fields, including PSS/E saved-solution
+ * non-divergent mode, are applied only by saved-solution replay.</p>
+ *
+ * <p>Callers should apply these imported values before explicit JSON settings.
+ * That ordering makes source data the baseline while keeping a field supplied
+ * by the user authoritative.</p>
  */
 public final class PsseLoadflowSolutionSettings
 		implements LoadflowAlgorithmInitializer {
@@ -162,6 +173,13 @@ public final class PsseLoadflowSolutionSettings
 				value -> network.getBusLoadLowVoltConfig().setVConstPMin(value), "pu");
 		applyPositiveInt(result, "NEWTON.ITMXN", raw("NEWTON", "ITMXN"),
 				newton.itmxn(), algorithm::setMaxIterations, "iterations");
+		applyPositiveDouble(result, "NEWTON.DVLIM", raw("NEWTON", "DVLIM"),
+				newton.dvlim(), value -> {
+					algorithm.setVariableUpdateLimit(true);
+					algorithm.setDeltaVMagLimit(value);
+					// PSS/E DVLIM scales both vectors based only on max |dV/V|.
+					algorithm.setDeltaVAngLimit(Double.MAX_VALUE);
+				}, "relative dV/V; uniformly scales magnitude and angle corrections");
 
 		if (newton.toln() != null) {
 			double baseMva = network.getBaseKva() * 0.001;
@@ -219,7 +237,6 @@ public final class PsseLoadflowSolutionSettings
 		unsupported(result, "NEWTON.ACCN", newton.accn());
 		unsupported(result, "NEWTON.VCTOLQ", newton.vctolq());
 		unsupported(result, "NEWTON.VCTOLV", newton.vctolv());
-		unsupported(result, "NEWTON.DVLIM", newton.dvlim());
 		unsupported(result, "NEWTON.NDVFCT", newton.ndvfct());
 		unsupported(result, "ADJUST.ACCTAP", adjust.acctap());
 		unsupported(result, "ADJUST.TAPLIM", adjust.taplim());
@@ -264,7 +281,7 @@ public final class PsseLoadflowSolutionSettings
 		}
 		result.add(new Mapping(field, raw(parts[0], parts[1]), null,
 				MappingStatus.UNSUPPORTED,
-				"preserved; applied only by SAVED_SOLUTION_REPLAY policy"));
+				"preserved; not applied by this RAW settings application policy"));
 	}
 
 	private void unsupported(List<Mapping> result, String field, Object value) {

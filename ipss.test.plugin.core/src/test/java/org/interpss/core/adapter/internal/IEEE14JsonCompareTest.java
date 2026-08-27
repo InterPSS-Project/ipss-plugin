@@ -6,6 +6,7 @@ import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
 import org.interpss.util.AclfNetJsonComparator;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
 
@@ -20,6 +21,13 @@ public class IEEE14JsonCompareTest extends CorePluginTestSetup {
 					.getAclfNet();	
 		
 		String jsonFile = "testData/json/inter_format/ieee14Bus.json";
+
+		// The historical JSON fixture predates the network-level low-voltage load
+		// configuration. Verify the imported defaults explicitly while keeping the
+		// fixture focused on the internal-format network data.
+		assertTrue(aclfNet.getBusLoadLowVoltConfig().isApplyVoltAdjust());
+		assertEquals(0.7, aclfNet.getBusLoadLowVoltConfig().getVConstPMin(), 1.0e-12);
+		assertEquals(0.5, aclfNet.getBusLoadLowVoltConfig().getVConstIMin(), 1.0e-12);
 		
 		// output aclfNet state to json file
 		//FileUtil.writeText2File(jsonFile, new AclfNetworkState(aclfNet).toString());
@@ -28,7 +36,8 @@ public class IEEE14JsonCompareTest extends CorePluginTestSetup {
 		assertTrue(new AclfNetJsonComparator("Internal format ieee14Bus",
 				path -> !path.endsWith("/extUID")
 						&& !path.equals("/deviceUIDType")
-						&& !path.equals("/nodeBreakerModel"))
+						&& !path.equals("/nodeBreakerModel")
+						&& !path.startsWith("/busLoadLowVoltConfig"))
 							.compareJson(aclfNet, new File(jsonFile)));
 	}
 }

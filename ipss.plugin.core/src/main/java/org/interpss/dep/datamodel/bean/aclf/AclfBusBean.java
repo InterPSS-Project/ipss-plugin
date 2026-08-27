@@ -23,6 +23,8 @@
  */
 package org.interpss.dep.datamodel.bean.aclf;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import org.interpss.dep.datamodel.bean.aclf.adj.SwitchShuntBean;
@@ -77,7 +79,9 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 	public String remoteVControlBusId = "";  // remote control bus id	
 	
 	
-	public SwitchShuntBean<TExt> switchShunt; // switch shunt bean connected to the bus
+	public SwitchShuntBean<TExt> switchShunt; // legacy first switch shunt bean connected to the bus
+
+	public List<SwitchShuntBean<TExt>> switchShuntList = new ArrayList<>(); // all switch shunt beans connected to the bus
 	
 		
 	public AclfBusBean() {}	
@@ -110,17 +114,34 @@ public class AclfBusBean<TExt extends BaseJSONUtilBean>  extends BaseBusBean<TEx
 		if (!NumericUtil.equals(this.qLimit.min, bean.qLimit.min, PU_ERR)) {
 			logCompareMsg(str + "qmin is not equal, " + this.qLimit.min + ", " + bean.qLimit.min); eql = 1;	}
 				
-		if(this.switchShunt == null && bean.switchShunt != null)
+		List<SwitchShuntBean<TExt>> thisShunts = getSwitchShuntBeans();
+		List<SwitchShuntBean<TExt>> otherShunts = bean.getSwitchShuntBeans();
+		if (thisShunts.size() != otherShunts.size()) {
+			logCompareMsg(str + "switchShuntList size is not equal, " + thisShunts.size() + ", " + otherShunts.size());
 			eql = 1;
-		
-		if(this.switchShunt != null && bean.switchShunt == null)
-			eql = 1;
-		
-		if(this.switchShunt != null && bean.switchShunt != null)		
-			if(this.switchShunt.compareTo(bean.switchShunt) != 0 ) eql = 1;
+		}
+		else {
+			for (int i = 0; i < thisShunts.size(); i++) {
+				if (thisShunts.get(i).compareTo(otherShunts.get(i)) != 0) {
+					eql = 1;
+				}
+			}
+		}
 
 		return eql;
 	}	
+
+	private List<SwitchShuntBean<TExt>> getSwitchShuntBeans() {
+		List<SwitchShuntBean<TExt>> shunts = new ArrayList<>();
+		if (this.switchShuntList != null && !this.switchShuntList.isEmpty()) {
+			shunts.addAll(this.switchShuntList);
+		}
+		else if (this.switchShunt != null) {
+			shunts.add(this.switchShunt);
+		}
+		shunts.sort(Comparator.comparing(s -> s.id == null ? "" : s.id));
+		return shunts;
+	}
 	
 	@Override public boolean validate(List<String> msgList) { 
 		return true;

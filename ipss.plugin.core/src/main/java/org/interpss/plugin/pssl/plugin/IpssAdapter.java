@@ -29,7 +29,7 @@ import java.io.IOException;
 
 import org.interpss.fadapter.bpa.BPADirectParser;
 import org.interpss.fadapter.cim.CIMDirectParser;
-import org.interpss.fadapter.ge.GEPslfDirectParser;
+import org.interpss.fadapter.epc.EpcDirectParser;
 import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 import org.interpss.fadapter.matpower.MatpowerDirectParser;
 import org.interpss.fadapter.psse.PSSEDirectParser;
@@ -181,7 +181,7 @@ public class IpssAdapter extends BaseDSL {
 					return new PSSEDirectParser(mapPsseVersionToInt(this.psseVersion)).parse(filepath);
 				}
 			} else if (this.format == FileFormat.GE_PSLF) {
-				return new GEPslfDirectParser().parse(filepath);
+				return new EpcDirectParser().parse(filepath);
 			} else if (this.format == FileFormat.UCTE) {
 				return new UCTEDirectParser().parse(filepath);
 			} else if (this.format == FileFormat.BPA) {

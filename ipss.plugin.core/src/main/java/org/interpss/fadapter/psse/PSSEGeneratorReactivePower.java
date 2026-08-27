@@ -15,8 +15,15 @@ import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.BaseAclfBus;
 
-/** PSS/E machine-level reactive data normalization and plant classification. */
-final class PSSEGeneratorReactivePower {
+/**
+ * PSS/E/EPC machine-level reactive-data normalization and plant classification.
+ *
+ * <p>Direct parsers initially create machines independently, but bus PV/PQ type
+ * depends on the aggregate active machines and whether at least one has usable
+ * reactive range. Centralizing this final pass prevents different adapters from
+ * interpreting fixed-Q, wind power-factor, and zero-width Q limits differently.</p>
+ */
+public final class PSSEGeneratorReactivePower {
     private static final Logger log = LoggerFactory.getLogger(PSSEGeneratorReactivePower.class);
 
     private PSSEGeneratorReactivePower() {
@@ -43,12 +50,13 @@ final class PSSEGeneratorReactivePower {
         return new Data(qGen, qMax, qMin);
     }
 
-    static void finalizeBusTypes(AclfNetworkBuilder builder) {
+    public static void finalizeBusTypes(AclfNetworkBuilder builder) {
         for (Object obj : builder.getBaseNetwork().getBusList()) {
             BaseAclfBus bus = (BaseAclfBus) obj;
-            if (bus.getGenCode() != AclfGenCode.GEN_PV) {
-                continue;
-            }
+            if (bus.getGenCode() != AclfGenCode.GEN_PV
+                    && bus.getGenCode() != AclfGenCode.NON_GEN) {
+				continue;
+			}
             double aggregateP = 0.0;
             double aggregateQ = 0.0;
             boolean hasActiveGenerator = false;
@@ -63,7 +71,9 @@ final class PSSEGeneratorReactivePower {
                             > gen.getQGenLimit().getMin();
                 }
             }
-            if (hasActiveGenerator && !hasUsableQRange) {
+            if (hasActiveGenerator && bus.getGenCode() == AclfGenCode.NON_GEN) {
+                builder.setPQBus(bus.getId(), aggregateP, aggregateQ, 0.0, 0.0);
+            } else if (hasActiveGenerator && !hasUsableQRange) {
                 builder.setPQBus(bus.getId(), aggregateP, aggregateQ, 0.0, 0.0);
             }
         }

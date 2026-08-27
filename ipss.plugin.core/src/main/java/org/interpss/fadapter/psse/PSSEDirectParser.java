@@ -65,6 +65,17 @@ import com.interpss.core.net.OriginalDataFormat;
  *
  * The section-by-section parsing order mirrors PSSELFRawAdapter in ipss-odm.
  * Field extraction logic is ported from the individual PSSExxxDataRawParser classes.
+ *
+ * <p>For v34+ files, system-wide load-flow records are retained as
+ * {@link PsseLoadflowSolutionSettings} on network extra info. Parsing does not
+ * unconditionally impose their solver activity flags: the run layer first
+ * chooses whether saved-solution replay is intended, then explicit JSON
+ * configuration may override the imported setting.</p>
+ *
+ * <p>Version-specific switched-shunt fields preserve remote participation and
+ * FACTS supervision. Phase-shifter limits are normalized before builder calls
+ * because source records do not guarantee the two range fields arrive in
+ * numerical max/min order.</p>
  */
 public class PSSEDirectParser {
     private static final Logger log = LoggerFactory.getLogger(PSSEDirectParser.class);
@@ -487,8 +498,7 @@ public class PSSEDirectParser {
         }
 
         boolean genStatus = (stat == 1);
-        boolean busOffline = (bus.getGenCode() == AclfGenCode.NON_GEN);
-        if (busOffline) genStatus = false;
+        if (!bus.isActive()) genStatus = false;
 
         String remoteBusId = null;
         if (ireg > 0 && ireg != busNum) {
@@ -822,8 +832,10 @@ public class PSSEDirectParser {
                         vma1, vmi1, tapMax, tapMin,
                         true, true, tapStepSize, ntp1 > 0 ? ntp1 : null);
             } else if (Math.abs(cod1) == 3) {
+                double pRangeMax = Math.max(vma1, vmi1) / baseMva;
+                double pRangeMin = Math.min(vma1, vmi1) / baseMva;
                 builder.addPsXfrAngleRangeControl(branchId, cod1 > 0,
-                        vma1 / baseMva, vmi1 / baseMva,
+                        pRangeMax, pRangeMin,
                         (vma1 + vmi1) / 2.0, UnitType.mW,
                         rma1, rmi1,
                         true, true, nonMeteredEnd == 1);
@@ -1004,7 +1016,7 @@ public class PSSEDirectParser {
         String busId = BUS_ID_PREFIX + busNum;
 
         int modsw, stat;
-        double vswhi, vswlo, binit;
+        double vswhi, vswlo, rmpct, binit;
         int swreg;
         String shuntId = "1";
         String remoteDeviceId;
@@ -1018,6 +1030,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(5, 1.0);
             vswlo = rec.getDouble(6, 1.0);
             swreg = rec.getInt(7, 0);
+            rmpct = rec.getDouble(9, 100.0);
             remoteDeviceId = rec.getString(10, "").trim();
             binit = rec.getDouble(11, 0.0);
         } else if (version >= 33) {
@@ -1027,6 +1040,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(4, 1.0);
             vswlo = rec.getDouble(5, 1.0);
             swreg = rec.getInt(6, 0);
+            rmpct = rec.getDouble(7, 100.0);
             remoteDeviceId = rec.getString(8, "").trim();
             binit = rec.getDouble(9, 0.0);
         } else {
@@ -1036,6 +1050,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(2, 1.0);
             vswlo = rec.getDouble(3, 1.0);
             swreg = rec.getInt(4, 0);
+            rmpct = rec.getDouble(5, 100.0);
             remoteDeviceId = rec.getString(6, "").trim();
             binit = rec.getDouble(7, 0.0);
         }
@@ -1074,7 +1089,7 @@ public class PSSEDirectParser {
 
         SwitchedShunt switchedShunt = builder.addSwitchedShunt(busId, shuntId, stat == 1,
                 mode, AclfAdjustControlType.RANGE_CONTROL,
-                bInitPU, vswhi, vswlo, remoteBusId, blocks);
+                bInitPU, vswhi, vswlo, remoteBusId, rmpct, blocks);
         if (modsw == 6 && switchedShunt != null) {
             // PSS/E MODSW=6 regulates the reactive output of the named FACTS
             // shunt element. Preserve that association for the coordinated
