@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Texas2kBusNonDivergentSample",
+      "request": "launch",
+      "mainClass": "sample.aclf.Texas2kBusNonDivergentSample",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
       "name": "Ieee14ZipLoadMismatchInvestigation",
       "request": "launch",
       "mainClass": "investigation.powsybl.Ieee14ZipLoadMismatchInvestigation",
