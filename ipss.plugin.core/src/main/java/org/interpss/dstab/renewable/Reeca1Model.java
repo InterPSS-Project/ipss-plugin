@@ -10,6 +10,7 @@ public final class Reeca1Model implements RenewableElectricalController {
     private final Reeca1Data data;
     private final Regca1Model converter;
     private Repca1Model plantController;
+    private WindControlStack windControlStack;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
     private double q0;
@@ -65,6 +66,7 @@ public final class Reeca1Model implements RenewableElectricalController {
         ipcmd = p / nonzero(v);
         iqcmd = -qCurrent;
         if (plantController != null) plantController.initialize(p, q, sensedV);
+        if (windControlStack != null) windControlStack.initialize(p);
     }
 
     @Override
@@ -77,7 +79,9 @@ public final class Reeca1Model implements RenewableElectricalController {
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
 
         double plantPref = plantController == null ? 0.0 : plantController.getPref();
-        double pref = p0 + plantPref;
+        if (windControlStack != null) windControlStack.step(dt, p, pOrder);
+        double pref = windControlStack != null && windControlStack.getTorqueController() != null
+                ? windControlStack.getPref() : p0 + plantPref;
         double rateTarget = Repca1Model.limit(pref,
                 pFilter + data.dpmin() * dt, pFilter + data.dpmax() * dt);
         pFilter = rateTarget;
@@ -224,6 +228,8 @@ public final class Reeca1Model implements RenewableElectricalController {
     public Reeca1Data getData() { return data; }
     @Override public Repca1Model getPlantController() { return plantController; }
     @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
+    public WindControlStack getWindControlStack() { return windControlStack; }
+    public void setWindControlStack(WindControlStack stack) { windControlStack = stack; }
     @Override public double getIpcmd() { return ipcmd; }
     @Override public double getIqcmd() { return iqcmd; }
 }

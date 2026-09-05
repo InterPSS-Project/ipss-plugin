@@ -27,6 +27,13 @@ import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Repca1Model;
+import org.interpss.dstab.renewable.WindControlStack;
+import org.interpss.dstab.renewable.Wtara1Data;
+import org.interpss.dstab.renewable.Wtara1Model;
+import org.interpss.dstab.renewable.Wtpta1Data;
+import org.interpss.dstab.renewable.Wtpta1Model;
+import org.interpss.dstab.renewable.Wttqa1Data;
+import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -854,10 +861,57 @@ public class DStabNetworkBuilder {
         return controller;
     }
 
+    public Wtara1Model addWtara1(String busId, String genId, Wtara1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTARA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtara1Model model = new Wtara1Model(data);
+        windStack(controller).setAerodynamics(model);
+        return model;
+    }
+
+    public Wtpta1Model addWtpta1(String busId, String genId, Wtpta1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTPTA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtpta1Model model = new Wtpta1Model(data);
+        windStack(controller).setPitchController(model);
+        return model;
+    }
+
+    public Wttqa1Model addWttqa1(String busId, String genId, Wttqa1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTTQA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wttqa1Model model = new Wttqa1Model(data);
+        windStack(controller).setTorqueController(model);
+        return model;
+    }
+
     private Regca1Model findRegca1(String busId, String genId) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
         return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
+    }
+
+    private Reeca1Model findReeca1(String busId, String genId) {
+        Regca1Model converter = findRegca1(busId, genId);
+        return converter == null ? null : converter.getReeca1Controller();
+    }
+
+    private static WindControlStack windStack(Reeca1Model controller) {
+        WindControlStack stack = controller.getWindControlStack();
+        if (stack == null) {
+            stack = new WindControlStack();
+            controller.setWindControlStack(stack);
+        }
+        return stack;
     }
 
     // ==================== Helpers ====================
