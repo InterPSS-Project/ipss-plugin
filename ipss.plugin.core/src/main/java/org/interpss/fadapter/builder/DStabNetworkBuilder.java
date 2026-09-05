@@ -38,6 +38,8 @@ import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.GenqecMachine;
+import org.interpss.dstab.mach.GenqejData;
+import org.interpss.dstab.mach.GenqejMachine;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,8 +145,33 @@ public class DStabNetworkBuilder {
         }
 
         GenqecMachine mach = new GenqecMachine(inputData);
+        configureGenqeMachine(mach, "GENQEC", busId, genId, ratingMva, ratedKv, inputData);
+        return mach;
+    }
+
+    /**
+     * WECC GENQEJ model. Its dynamic equations reuse GENQEC and the core
+     * round-rotor machine; only the published KIS saturation input differs.
+     */
+    public GenqejMachine addGenqej(String busId, String genId,
+            double ratingMva, double ratedKv, GenqejData inputData) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for GENQEJ: {}", busId);
+            return null;
+        }
+
+        GenqejMachine mach = new GenqejMachine(inputData);
+        configureGenqeMachine(mach, "GENQEJ", busId, genId, ratingMva, ratedKv,
+                mach.getGenqecData());
+        return mach;
+    }
+
+    private void configureGenqeMachine(GenqecMachine mach, String modelName,
+            String busId, String genId, double ratingMva, double ratedKv,
+            GenqecData inputData) throws InterpssException {
         mach.setId(busId + "-mach" + genId);
-        mach.setName("GENQEC");
+        mach.setName(modelName);
         mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
         mach.setMachData(DStabObjectFactory.createMachineData());
         mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
@@ -172,7 +199,6 @@ public class DStabNetworkBuilder {
         // fields zero so core initialization uses this model's adjusted Xq path.
         mach.setSe100(0.0);
         mach.setSe120(0.0);
-        return mach;
     }
 
     /**
