@@ -188,6 +188,9 @@ public class PSSEDStabDirectParser {
                 return procGovGast(busId, genId, fields);
             case "IEESGO":
                 return procGovIeesgo(busId, genId, fields);
+            case "IEESGOD":
+            case "IEESGODU":
+                return procGovIeesgod(busId, genId, fields);
             case "GGOV1":
                 return procGovGgov1(busId, genId, fields, false);
             case "GGOV1D":
@@ -954,6 +957,16 @@ public class PSSEDStabDirectParser {
         double pmin = getDouble(f, 13, 0);
         builder.addGovIeesgo(busId, genId, t1, t2, t3, t4, t5, t6, k1, k2, k3, pmax, pmin);
         return true;
+    }
+
+    private boolean procGovIeesgod(String busId, String genId, String[] f) throws InterpssException {
+        if (f.length < 17) return false;
+        return builder.addGovIeesgod(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0)) != null;
     }
 
     // ==================== Utility Methods ====================

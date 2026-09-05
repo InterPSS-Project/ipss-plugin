@@ -911,6 +911,20 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    public PsseIEESGOSteamTurGovernor addGovIeesgod(String busId, String genId,
+            double t1, double t2, double t3, double t4, double t5, double t6,
+            double k1, double k2, double k3, double pmax, double pmin,
+            double dbH, double dbL, double trate) {
+        if (dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) return null;
+        PsseIEESGOSteamTurGovernor gov = addGovIeesgo(busId, genId,
+                t1, t2, t3, t4, t5, t6, k1, k2, k3, pmax, pmin);
+        if (gov == null) return null;
+        gov.setName("IEESGOD");
+        gov.getData().setDbH(dbH); gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
     /** PSS/E IEEEG1D/IEEEG1SDU with a single combined mechanical-power output. */
     public IeeeSteamTCDRGovernor addGovIeeeg1d(String busId, String genId,
             double k, double t1, double t2, double t3, double uo, double uc,
