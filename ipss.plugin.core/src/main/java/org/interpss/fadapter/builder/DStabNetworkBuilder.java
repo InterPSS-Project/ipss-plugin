@@ -11,6 +11,8 @@ import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
+import org.interpss.dstab.control.pss.StabilizerObjectFactory;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
 import org.interpss.dstab.renewable.Regca1Data;
@@ -325,6 +327,58 @@ public class DStabNetworkBuilder {
         return DStabObjectFactory.createInfiniteMachine(
                 machId, "InfiniteBus",
                 (BaseDStabNetwork<?, ?>) network, busId, genId);
+    }
+
+    // ==================== Stabilizer Models ====================
+
+    /**
+     * PSS2A IEEE dual-input stabilizer. The current CML signal path implements
+     * local rotor-speed input 1 and local electrical-power input 2, which is
+     * the sole selector combination present in all six Texas2k cases.
+     */
+    public Ieee1992PSS2AStabilizer addPss2a(String busId, String genId,
+            int ics1, int remoteBus1, int ics2, int remoteBus2, int m, int n,
+            double tw1, double tw2, double t6, double tw3, double tw4, double t7,
+            double ks2, double ks3, double t8, double t9, double ks1,
+            double t1, double t2, double t3, double t4, double vstmax, double vstmin) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS2A: {} {}", busId, genId);
+            return null;
+        }
+        if (ics1 != 1 || remoteBus1 != 0 || ics2 != 3 || remoteBus2 != 0) {
+            log.warn("PSS2A selector combination is not implemented at {} {}: "
+                    + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+                    busId, genId, ics1, remoteBus1, ics2, remoteBus2);
+            return null;
+        }
+        Ieee1992PSS2AStabilizer pss = StabilizerObjectFactory
+                .createIeee1992PSS2AStabilizer(busId + "-pss2a" + genId, "PSS2A", machine);
+        var data = pss.getData();
+        data.setIcs1(ics1);
+        data.setRemoteBus1(remoteBus1);
+        data.setIcs2(ics2);
+        data.setRemoteBus2(remoteBus2);
+        data.setM(m);
+        data.setN(n);
+        data.setTw1(tw1);
+        data.setTw2(tw2);
+        data.setT6(t6);
+        data.setTw3(tw3);
+        data.setTw4(tw4);
+        data.setT7(t7);
+        data.setKs2(ks2);
+        data.setKs3(ks3);
+        data.setT8(t8);
+        data.setT9(t9);
+        data.setKs1(ks1);
+        data.setT1(t1);
+        data.setT2(t2);
+        data.setT3(t3);
+        data.setT4(t4);
+        data.setVstmax(vstmax);
+        data.setVstmin(vstmin);
+        return pss;
     }
 
     // ==================== Exciter Models ====================

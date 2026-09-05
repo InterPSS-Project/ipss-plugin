@@ -28,6 +28,10 @@ package org.interpss.dstab.control.pss.ieee.y1992.pss2a;
 import org.interpss.dstab.control.base.BaseControllerData;
 
 public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
+	private int ics1 = 1;
+	private int remoteBus1;
+	private int ics2 = 3;
+	private int remoteBus2;
 	private double ks1 = 10.0;
 	private double t1 = 0.05;
 	private double t2 = 0.5;
@@ -74,6 +78,15 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 	public Ieee1992PSS2AStabilizerData() {
 		setRangeParameters(controllerParameters);
 	}
+
+	public int getIcs1() { return ics1; }
+	public void setIcs1(int ics1) { this.ics1 = ics1; }
+	public int getRemoteBus1() { return remoteBus1; }
+	public void setRemoteBus1(int remoteBus1) { this.remoteBus1 = remoteBus1; }
+	public int getIcs2() { return ics2; }
+	public void setIcs2(int ics2) { this.ics2 = ics2; }
+	public int getRemoteBus2() { return remoteBus2; }
+	public void setRemoteBus2(int remoteBus2) { this.remoteBus2 = remoteBus2; }
 
 	@Override
 	public void setValue(String name, int value) {
