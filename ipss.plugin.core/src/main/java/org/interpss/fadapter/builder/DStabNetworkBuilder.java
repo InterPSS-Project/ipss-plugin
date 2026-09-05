@@ -8,6 +8,8 @@ import org.interpss.dstab.control.exc.simple.SimpleExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
+import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
@@ -544,6 +546,44 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Governor Models ====================
+
+    /** Attach a PSS/E GGOV1 governor after its record has been mapped exactly. */
+    public PsseGgov1Governor addGovGgov1(String busId, String genId,
+            PsseGgov1GovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for GGOV1 governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseGgov1Governor gov = new PsseGgov1Governor(
+                mach.getId() + "_Gov", "GGOV1", "PSS/E");
+        copyGgov1Data(data, gov.getData());
+        if (!gov.validateParameters()) {
+            log.warn("Unsupported or invalid GGOV1 parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        gov.setMachine(mach);
+        return gov;
+    }
+
+    private static void copyGgov1Data(PsseGgov1GovernorData source, PsseGgov1GovernorData target) {
+        target.setRselect(source.getRselect()); target.setFlag(source.getFlag());
+        target.setR(source.getR()); target.setTpelec(source.getTpelec());
+        target.setMaxerr(source.getMaxerr()); target.setMinerr(source.getMinerr());
+        target.setKpgov(source.getKpgov()); target.setKigov(source.getKigov());
+        target.setKdgov(source.getKdgov()); target.setTdgov(source.getTdgov());
+        target.setVmax(source.getVmax()); target.setVmin(source.getVmin());
+        target.setTact(source.getTact()); target.setKturb(source.getKturb());
+        target.setWfnl(source.getWfnl()); target.setTb(source.getTb()); target.setTc(source.getTc());
+        target.setTeng(source.getTeng()); target.setTfload(source.getTfload());
+        target.setKpload(source.getKpload()); target.setKiload(source.getKiload());
+        target.setLdref(source.getLdref()); target.setDm(source.getDm());
+        target.setRopen(source.getRopen()); target.setRclose(source.getRclose());
+        target.setKimw(source.getKimw()); target.setAset(source.getAset());
+        target.setKa(source.getKa()); target.setTa(source.getTa()); target.setTrate(source.getTrate());
+        target.setDb(source.getDb()); target.setTsa(source.getTsa()); target.setTsb(source.getTsb());
+        target.setRup(source.getRup()); target.setRdown(source.getRdown());
+    }
 
     /**
      * PSS/E TGOV1 steam turbine governor.
