@@ -911,6 +911,29 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    /** PSS/E IEEEG1D/IEEEG1SDU with a single combined mechanical-power output. */
+    public IeeeSteamTCDRGovernor addGovIeeeg1d(String busId, String genId,
+            double k, double t1, double t2, double t3, double uo, double uc,
+            double pmax, double pmin, double t4, double k1, double k2,
+            double t5, double k3, double k4, double t6, double k5, double k6,
+            double t7, double k7, double k8, double dbH, double dbL, double trate) {
+        double fractionSum = k1 + k2 + k3 + k4 + k5 + k6 + k7 + k8;
+        if (k <= 0.0 || t3 <= 0.0 || fractionSum <= 0.0
+                || dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid IEEEG1D parameters at {} {}", busId, genId);
+            return null;
+        }
+        IeeeSteamTCDRGovernor gov = addGovIeeeg1(busId, genId, k, t1, t2, t3,
+                k1 + k2, k3 + k4, t4, k5 + k6, t5, k7 + k8, t6, t7,
+                uc, uo, pmax, pmin);
+        if (gov == null) return null;
+        gov.setName("IEEEG1D");
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
     /** PSS/E TGOV1D with asymmetric speed deadband and turbine MW rating. */
     public PsseTGov1SteamTurGovernor addGovTgov1d(String busId, String genId,
             double r, double t1, double vmax, double vmin,

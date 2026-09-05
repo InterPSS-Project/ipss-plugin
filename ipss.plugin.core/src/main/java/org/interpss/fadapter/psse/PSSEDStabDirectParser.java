@@ -176,6 +176,9 @@ public class PSSEDStabDirectParser {
 
             case "IEEEG1":
                 return procGovIeeeg1(busId, genId, fields);
+            case "IEEEG1D":
+            case "IEEEG1SDU":
+                return procGovIeeeg1d(busId, genId, fields);
             case "TGOV1":
                 return procGovTgov1(busId, genId, fields);
             case "TGOV1D":
@@ -700,6 +703,20 @@ public class PSSEDStabDirectParser {
         double dturb = getDouble(f, 11, 0);
         builder.addGovGast(busId, genId, r, t1, t2, t3, at, kt, vmax, vmin, dturb);
         return true;
+    }
+
+    // IEEEG1D: K T1 T2 T3 Uo Uc Pmax Pmin T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8 dbH dbL Trate
+    private boolean procGovIeeeg1d(String busId, String genId, String[] f) throws InterpssException {
+        if (f.length < 26) return false;
+        return builder.addGovIeeeg1d(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0), getDouble(f, 17, 0),
+                getDouble(f, 18, 0), getDouble(f, 19, 0), getDouble(f, 20, 0),
+                getDouble(f, 21, 0), getDouble(f, 22, 0), getDouble(f, 23, 0),
+                getDouble(f, 24, 0), getDouble(f, 25, 0)) != null;
     }
 
     // GGOV1 PSS/E record order.  Trate is field 30 in the data list even though
