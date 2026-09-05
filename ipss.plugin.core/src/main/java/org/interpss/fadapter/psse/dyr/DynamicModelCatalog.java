@@ -83,6 +83,18 @@ public final class DynamicModelCatalog {
                     "Machine%20Model%20REGFM_A1.htm")
     );
 
+    private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
+            descriptor("GENQEC", Set.of(), SYNCHRONOUS_MACHINE, 20, LOADABLE,
+                    "org.interpss.dstab.mach.GenqecMachine", "Machine%20Model%20GENQEC.htm"),
+            descriptor("GENQEJ", Set.of("GENQEJU"), SYNCHRONOUS_MACHINE, 20, LOADABLE,
+                    "org.interpss.dstab.mach.GenqejMachine", "Machine%20Model%20GENQEJ.htm"),
+            descriptor("GENCLS", Set.of(), SYNCHRONOUS_MACHINE, 2, LOADABLE,
+                    "com.interpss.dstab.mach.EConstMachine", "Machine%20Model%20GENCLS.htm")
+    );
+
+    private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream
+            .concat(TEXAS2K.stream(), ADDITIONAL.stream()).toList();
+
     private static final Map<String, DynamicModelDescriptor> BY_NAME = buildIndex();
 
     private DynamicModelCatalog() {
@@ -90,6 +102,10 @@ public final class DynamicModelCatalog {
 
     public static Collection<DynamicModelDescriptor> texas2kModels() {
         return TEXAS2K;
+    }
+
+    public static Collection<DynamicModelDescriptor> allModels() {
+        return ALL;
     }
 
     public static Optional<DynamicModelDescriptor> find(String name) {
@@ -104,7 +120,7 @@ public final class DynamicModelCatalog {
 
     private static Map<String, DynamicModelDescriptor> buildIndex() {
         Map<String, DynamicModelDescriptor> index = new LinkedHashMap<>();
-        for (DynamicModelDescriptor descriptor : TEXAS2K) {
+        for (DynamicModelDescriptor descriptor : ALL) {
             for (String name : descriptor.allNames()) {
                 DynamicModelDescriptor previous = index.putIfAbsent(name, descriptor);
                 if (previous != null) {

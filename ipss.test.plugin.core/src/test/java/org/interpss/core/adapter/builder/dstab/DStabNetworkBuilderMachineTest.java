@@ -12,7 +12,9 @@ import java.nio.file.Path;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
+import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.dstab.mach.GenqecMachine;
+import org.interpss.dstab.mach.GenqejMachine;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -104,6 +106,25 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertEquals(0.02, mach.getGenqecData().xcomp(), TOL);
 		assertEquals(0.10, mach.getGenqecData().kw(), TOL);
 		assertEquals(1, mach.getGenqecData().satFunc());
+	}
+
+	@Test
+	public void parseGenqej_reusesGenqecDynamicsAndMapsKis() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+		Path dyr = tempDir.resolve("genqej.dyr");
+		Files.writeString(dyr,
+				"1 'GENQEJU' '1' 6.81 0.02 0.85 0.02 3.17 0.0 "
+				+ "2.37 1.87 0.32 0.52 0.28 0.20 0.19 0.233 0.797 "
+				+ "0.003 0.01 0.02 0.15 1 /\n");
+
+		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+		parser.parseDynFile(dyr.toString());
+		GenqejMachine mach = (GenqejMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+		assertNotNull(mach);
+		assertEquals("GENQEJ", mach.getName());
+		assertEquals(0.15, mach.getGenqejData().kis(), TOL);
+		assertEquals(0.0, mach.getGenqecData().kw(), TOL);
+		assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
 	}
 
 	@Test

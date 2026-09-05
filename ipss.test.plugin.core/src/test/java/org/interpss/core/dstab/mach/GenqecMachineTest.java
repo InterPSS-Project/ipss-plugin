@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.GenqecMachine;
+import org.interpss.dstab.mach.GenqejData;
+import org.interpss.dstab.mach.GenqejMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
@@ -139,6 +141,50 @@ class GenqecMachineTest extends TestSetupBase {
         assertTrue(Math.abs(cmlMachVt - rawTerminalVoltage) > 1.0e-5);
         assertEquals(bus.getVoltageMag(), CMLSymbolMapper.getValue(
                 CMLVarEnum.BusVMag, "bus.vmag", legacyCmlExciter), TOL);
+    }
+
+    @Test
+    void genqejAddsKisCurrentMagnitudeToTheSharedSaturationInput() throws Exception {
+        BaseDStabNetwork<?, ?> qecNetwork = SampleDStabCase.createDStabTestNet();
+        GenqecMachine qec = new DStabNetworkBuilder(qecNetwork).addGenqec(
+                "Gen", "G1", 100.0, 1.0, benchmarkData(1));
+        BaseDStabBus<?, ?> qecBus = qecNetwork.getDStabBus("Gen");
+        qecBus.initStates();
+        assertTrue(qec.initStates(qecBus));
+
+        BaseDStabNetwork<?, ?> qejNetwork = SampleDStabCase.createDStabTestNet();
+        GenqecData qecData = benchmarkData(1);
+        GenqejData qejData = new GenqejData(
+                qecData.h(), qecData.d(), qecData.ra(), qecData.xd(), qecData.xq(),
+                qecData.xdp(), qecData.xqp(), qecData.xdpp(), qecData.xqpp(), qecData.xl(),
+                qecData.tdop(), qecData.tqop(), qecData.tdopp(), qecData.tqopp(),
+                qecData.s1(), qecData.s12(), qecData.rcomp(), qecData.xcomp(),
+                qecData.accel(), 0.15, qecData.satFunc());
+        GenqejMachine qej = new DStabNetworkBuilder(qejNetwork).addGenqej(
+                "Gen", "G1", 100.0, 1.0, qejData);
+        BaseDStabBus<?, ?> qejBus = qejNetwork.getDStabBus("Gen");
+        qejBus.initStates();
+        assertTrue(qej.initStates(qejBus));
+
+        assertTrue(qej.getEffectiveSaturationFactor() > qec.getEffectiveSaturationFactor());
+        var qejIdq = qej.getIdq();
+        var qejVdq = qej.getVdq();
+        double airGapFlux = Math.hypot(
+                qejVdq.q + qej.getRa() * qejIdq.q + qej.getXl() * qejIdq.d,
+                qejVdq.d + qej.getRa() * qejIdq.d - qej.getXl() * qejIdq.q);
+        double expectedSaturation = qej.getSatruationFactor(
+                airGapFlux + qejData.kis() * Math.hypot(qejIdq.d, qejIdq.q));
+        assertEquals(expectedSaturation, qej.getEffectiveSaturationFactor(), TOL);
+        assertTrue(Double.isFinite(qej.calculateIfd(MachineIfdBase.MACHINE)));
+
+        double angle0 = qej.getAngle();
+        for (int i = 0; i < 5; i++) {
+            qej.getIgen();
+            assertTrue(qej.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, 0));
+            qej.getIgen();
+            assertTrue(qej.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, 1));
+        }
+        assertEquals(angle0, qej.getAngle(), 2.0e-6);
     }
 
     @Test

@@ -23,6 +23,7 @@ import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.mach.GenqecData;
+import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
@@ -145,6 +146,8 @@ public class PSSEDStabDirectParser {
                 return procGenrou(busId, genId, fields);
             case "GENQEC":
                 return procGenqec(busId, genId, fields);
+            case "GENQEJ":
+                return procGenqej(busId, genId, fields);
             case "GENSAL":
             case "GENSAE":
                 return procGensal(busId, genId, fields);
@@ -724,6 +727,28 @@ public class PSSEDStabDirectParser {
                 0.0, getDouble(f, 21, 0.0), (int) getDouble(f, 22, 0.0));
         double[] rating = getGenRating(busId, genId);
         builder.addGenqec(busId, genId, rating[0], rating[1], data);
+        return true;
+    }
+
+    // GENQEJ has the GENQEC order, with Kis replacing Kw. GENQEJU is
+    // canonicalized by the catalog before dispatch.
+    private boolean procGenqej(String busId, String genId, String[] f) throws InterpssException {
+        if (f.length < 23) {
+            log.warn("Incomplete GENQEJ record at bus {}: expected 23 fields, found {}", busId, f.length);
+            return false;
+        }
+        GenqejData data = new GenqejData(
+                getDouble(f, 7, 0.0), getDouble(f, 8, 0.0), getDouble(f, 18, 0.0),
+                getDouble(f, 9, 0.0), getDouble(f, 10, 0.0),
+                getDouble(f, 11, 0.0), getDouble(f, 12, 0.0),
+                getDouble(f, 13, 0.0), getDouble(f, 14, 0.0), getDouble(f, 15, 0.0),
+                getDouble(f, 3, 0.0), getDouble(f, 5, 0.0),
+                getDouble(f, 4, 0.0), getDouble(f, 6, 0.0),
+                getDouble(f, 16, 0.0), getDouble(f, 17, 0.0),
+                getDouble(f, 19, 0.0), getDouble(f, 20, 0.0),
+                0.0, getDouble(f, 21, 0.0), (int) getDouble(f, 22, 0.0));
+        double[] rating = getGenRating(busId, genId);
+        builder.addGenqej(busId, genId, rating[0], rating[1], data);
         return true;
     }
 

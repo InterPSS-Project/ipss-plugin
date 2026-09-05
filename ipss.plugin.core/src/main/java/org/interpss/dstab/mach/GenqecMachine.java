@@ -126,7 +126,34 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
     }
 
     private double saturatedReactance(double reactance, double flux) {
-        return (reactance - getXl()) / (1.0 + getSatruationFactor(flux)) + getXl();
+        return (reactance - getXl()) / (1.0 + effectiveSaturation(flux)) + getXl();
+    }
+
+    /** Hook used by GENQEJ to add KIS times terminal-current magnitude. */
+    protected double saturationInput(double airGapFlux, double terminalCurrentMagnitude) {
+        return airGapFlux;
+    }
+
+    private double effectiveSaturation(double airGapFlux) {
+        double currentMagnitude;
+        if (genqecSolver != null && genqecSolver.initialized) {
+            currentMagnitude = Math.hypot(genqecSolver.id, genqecSolver.iq);
+        } else if (getParentGen() != null && getDStabBus() != null
+                && getDStabBus().getVoltage().abs() > EPS) {
+            // Rotor angle is initialized before the electrical state solver.
+            // Current magnitude is reference-frame invariant, so derive it
+            // directly from the solved load-flow P/Q and convert to machine base.
+            currentMagnitude = getParentGen().getGen().divide(getDStabBus().getVoltage())
+                    .conjugate().abs() / getIMultiFactor();
+        } else {
+            currentMagnitude = 0.0;
+        }
+        return getSatruationFactor(saturationInput(airGapFlux, currentMagnitude));
+    }
+
+    /** Current operating-point saturation factor, exposed for model verification. */
+    public double getEffectiveSaturationFactor() {
+        return effectiveSaturation(currentAirGapFlux());
     }
 
     private double currentAirGapFlux() {
@@ -189,7 +216,7 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
             double vqag = terminalVoltage.q + getRa() * iq + getXl() * id;
             double vdag = terminalVoltage.d + getRa() * id - getXl() * iq;
             airGapFlux = Math.hypot(vqag, vdag);
-            double sat = 1.0 + getSatruationFactor(airGapFlux);
+            double sat = 1.0 + effectiveSaturation(airGapFlux);
             double xdppSat = saturatedReactance(getXd11(), airGapFlux);
             double xqppSat = saturatedReactance(getXq11(), airGapFlux);
 
@@ -223,7 +250,7 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
             }
 
             updateCurrent();
-            double sat = 1.0 + getSatruationFactor(airGapFlux);
+            double sat = 1.0 + effectiveSaturation(airGapFlux);
             enforceAlgebraicStates(sat);
             Derivatives derivatives = derivatives(sat);
 
@@ -247,7 +274,7 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
                 ed1State = oldEd1 + 0.5 * (dEd1 + derivatives.ed1) * dt;
             }
 
-            sat = 1.0 + getSatruationFactor(airGapFlux);
+            sat = 1.0 + effectiveSaturation(airGapFlux);
             enforceAlgebraicStates(sat);
             updateFluxes();
             updateElectricalOutputs();
@@ -326,7 +353,7 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
         }
 
         private void updateElectricalOutputs() {
-            double sat = 1.0 + getSatruationFactor(airGapFlux);
+            double sat = 1.0 + effectiveSaturation(airGapFlux);
             double dAxisError = -psikdState - (getXd1() - getXl()) * id / sat + eq1State;
             double tempD = (getXd1() - getXd11()) * sat
                     / Math.pow(getXd1() - getXl(), 2.0) * dAxisError;
