@@ -18,6 +18,9 @@ import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Repca1Data;
+import org.interpss.dstab.renewable.Wtara1Data;
+import org.interpss.dstab.renewable.Wtpta1Data;
+import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
@@ -214,6 +217,15 @@ public class PSSEDStabDirectParser {
             case "REECA1":
             case "REECAU1":
                 return procReeca1(busId, genId, fields);
+            case "WTARA1":
+            case "WTARAU1":
+                return procWtara1(busId, genId, fields);
+            case "WTPTA1":
+            case "WTPTAU1":
+                return procWtpta1(busId, genId, fields);
+            case "WTTQA1":
+            case "WTTQAU1":
+                return procWttqa1(busId, genId, fields);
             case "REPCA1":
             case "REPCAU1":
                 return procRepca1(busId, genId, fields);
@@ -770,6 +782,36 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 50, 0), getDouble(f, 51, 0),
                 getDouble(f, 52, 0), getDouble(f, 53, 0));
         return builder.addReeca1(busId, genId, data) != null;
+    }
+
+    private boolean procWtara1(String busId, String genId, String[] f) {
+        if (f.length < 5) return false;
+        return builder.addWtara1(busId, genId,
+                new Wtara1Data(getDouble(f, 3, 0), getDouble(f, 4, 0))) != null;
+    }
+
+    private boolean procWtpta1(String busId, String genId, String[] f) {
+        if (f.length < 13) return false;
+        Wtpta1Data data = new Wtpta1Data(
+                getDouble(f, 3, 0.1), getDouble(f, 4, 0),
+                getDouble(f, 5, 0.1), getDouble(f, 6, 0), getDouble(f, 7, 0),
+                getDouble(f, 8, .3), getDouble(f, 9, 30), getDouble(f, 10, 0),
+                getDouble(f, 11, 5), getDouble(f, 12, -5));
+        return builder.addWtpta1(busId, genId, data) != null;
+    }
+
+    // PSS/E order starts with TFLAG, followed by Kpp, Kip, Tp, and Twref.
+    private boolean procWttqa1(String busId, String genId, String[] f) {
+        if (f.length < 19) return false;
+        Wttqa1Data data = new Wttqa1Data(
+                getInt(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, .1),
+                getDouble(f, 6, .05), getDouble(f, 7, 30),
+                getDouble(f, 8, 1.2), getDouble(f, 9, 0),
+                getDouble(f, 10, .2), getDouble(f, 11, .58),
+                getDouble(f, 12, .4), getDouble(f, 13, .72),
+                getDouble(f, 14, .6), getDouble(f, 15, .86),
+                getDouble(f, 16, .8), getDouble(f, 17, 1), getDouble(f, 18, 0));
+        return builder.addWttqa1(busId, genId, data) != null;
     }
 
     // REPCA1: IBUS MODEL ID IBRANCH JBUS KBus ID VCFlag RefFlag FFlag ...
