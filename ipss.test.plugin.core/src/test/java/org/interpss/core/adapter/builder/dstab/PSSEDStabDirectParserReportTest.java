@@ -50,4 +50,22 @@ class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
         assertEquals("GGOV1", parser.getLastImportReport().failures().get(0).canonicalModelName());
     }
+
+    @Test
+    void strictImportRejectsTruncatedAndUnattachedMachineRecords() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("invalid-machines.dyr");
+        Files.writeString(dyr, "1 'GENROU' '1' 8.0 /\n"
+                + "2 'GENROU' '1' 8.0 0.03 0.4 0.05 5.0 3.0 "
+                + "1.8 1.7 0.3 0.55 0.25 0.15 0.10 0.20 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+
+        assertEquals(2, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+        assertTrue(parser.getLastImportReport().failures().get(0).message()
+                .contains("expected 14 parameters"));
+        assertTrue(parser.getLastImportReport().failures().get(1).message()
+                .contains("could not be attached"));
+    }
 }
