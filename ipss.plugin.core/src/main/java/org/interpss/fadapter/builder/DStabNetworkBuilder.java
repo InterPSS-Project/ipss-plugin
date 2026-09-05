@@ -91,7 +91,7 @@ public class DStabNetworkBuilder {
         mach.setPoles(2);
         mach.setH(h);
         mach.setD(toCoreDamping(d));
-        mach.setRa(0.0);
+        mach.setRa(sourceResistanceOnMachineBase(mach));
         mach.setXl(xl);
         mach.setXd(xd);
         mach.setXq(xq);
@@ -184,7 +184,7 @@ public class DStabNetworkBuilder {
         mach.setPoles(2);
         mach.setH(h);
         mach.setD(toCoreDamping(d));
-        mach.setRa(0.0);
+        mach.setRa(sourceResistanceOnMachineBase(mach));
         mach.setXl(xl);
         mach.setXd(xd);
         mach.setXq(xq);
@@ -686,6 +686,18 @@ public class DStabNetworkBuilder {
     private double toCoreDamping(double psseDamping) {
         double frequency = network.getFrequency();
         return frequency > 0.0 ? psseDamping * 100.0 / frequency : psseDamping;
+    }
+
+    /**
+     * PSS/E stores armature resistance with the static generator source
+     * impedance. InterPSS machines store resistance on machine base.
+     */
+    private double sourceResistanceOnMachineBase(Machine machine) {
+        if (machine.getParentGen().getSourceZ() == null
+                || machine.getZMultiFactor() == 0.0) {
+            return 0.0;
+        }
+        return machine.getParentGen().getSourceZ().getReal() / machine.getZMultiFactor();
     }
 
     @SuppressWarnings("unchecked")

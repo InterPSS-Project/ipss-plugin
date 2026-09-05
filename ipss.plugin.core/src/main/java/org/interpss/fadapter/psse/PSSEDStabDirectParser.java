@@ -83,10 +83,11 @@ public class PSSEDStabDirectParser {
             try {
                 String type = record.canonicalModelName();
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST");
-                if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
+                if (hasExpectedParameterCount(record)
+                        && processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, DynamicModelImportStatus.ATTACHED, "");
                 } else {
-                    report.add(record, rejectedStatus(type), rejectionMessage(type));
+                    report.add(record, rejectedStatus(type), rejectionMessage(type, record));
                 }
             } catch (Exception e) {
                 log.warn("Error processing dynamic record at {}:{}: {}",
@@ -113,6 +114,12 @@ public class PSSEDStabDirectParser {
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
             throw new InterpssException("Strict DYR import failed: " + lastImportReport.failureSummary());
         }
+    }
+
+    private boolean hasExpectedParameterCount(PsseDyrRecord record) {
+        return DynamicModelCatalog.find(record.canonicalModelName())
+                .map(model -> model.parameterCount() == record.parameterCount())
+                .orElse(true);
     }
 
     private boolean processModelRecord(String type, String[] fields, PsseDyrRecord record)
@@ -285,8 +292,7 @@ public class PSSEDStabDirectParser {
             xd1 = 0.00001;
         }
 
-        builder.addGencls(busId, genId, rating[0], rating[1], h, d, ra, xd1);
-        return true;
+        return builder.addGencls(busId, genId, rating[0], rating[1], h, d, ra, xd1) != null;
     }
 
     // GENROU: IBUS 'GENROU' ID T'do T''do T'qo T''qo H D Xd Xq X'd X'q X''d Xl S(1.0) S(1.2)
@@ -307,9 +313,9 @@ public class PSSEDStabDirectParser {
         double s100 = getDouble(f, 15, 0) * 100;
         double s120 = getDouble(f, 16, 0) * 100;
         double[] rating = getGenRating(busId, genId);
-        builder.addGenrou(busId, genId, rating[0], rating[1],
-                td10, td110, tq10, tq110, h, d, xd, xq, xd1, xq1, xd11, xl, s100, s120);
-        return true;
+        return builder.addGenrou(busId, genId, rating[0], rating[1],
+                td10, td110, tq10, tq110, h, d, xd, xq, xd1, xq1, xd11, xl,
+                s100, s120) != null;
     }
 
     // GENSAL: IBUS 'GENSAL' ID T'do T''do T''qo H D Xd Xq X'd X''d Xl S(1.0) S(1.2)
@@ -328,9 +334,8 @@ public class PSSEDStabDirectParser {
         double s100 = getDouble(f, 13, 0) * 100;
         double s120 = getDouble(f, 14, 0) * 100;
         double[] rating = getGenRating(busId, genId);
-        builder.addGensal(busId, genId, rating[0], rating[1],
-                td10, td110, tq110, h, d, xd, xq, xd1, xd11, xl, s100, s120);
-        return true;
+        return builder.addGensal(busId, genId, rating[0], rating[1],
+                td10, td110, tq110, h, d, xd, xq, xd1, xd11, xl, s100, s120) != null;
     }
 
     // ==================== Exciter Model Parsers ====================
@@ -713,11 +718,14 @@ public class PSSEDStabDirectParser {
                 .orElse(DynamicModelImportStatus.UNSUPPORTED);
     }
 
-    private String rejectionMessage(String type) {
+    private String rejectionMessage(String type, PsseDyrRecord record) {
         return DynamicModelCatalog.find(type)
-                .map(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE
-                        ? "model could not be attached to its target device"
-                        : "model support status is " + model.supportStatus())
+                .map(model -> model.parameterCount() != record.parameterCount()
+                        ? "expected " + model.parameterCount() + " parameters but found "
+                                + record.parameterCount()
+                        : model.supportStatus() == DynamicModelSupportStatus.LOADABLE
+                                ? "model could not be attached to its target device"
+                                : "model support status is " + model.supportStatus())
                 .orElse("dynamic model is not implemented by the direct parser");
     }
 }

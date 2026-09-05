@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,6 +24,7 @@ import com.interpss.dstab.mach.Eq1Machine;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.mach.RoundRotorMachine;
 import com.interpss.dstab.mach.SalientPoleMachine;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
  * Unit tests for DStabNetworkBuilder machine APIs.
@@ -102,6 +104,83 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertEquals(0.02, mach.getGenqecData().xcomp(), TOL);
 		assertEquals(0.10, mach.getGenqecData().kw(), TOL);
 		assertEquals(1, mach.getGenqecData().satFunc());
+	}
+
+	@Test
+	public void parseGenrou_mapsEveryPsseParameterToCoreMachine() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+		DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
+				.getContributeGen("1");
+		gen.setMvaBase(125.0);
+		// RAW ZSORCE is on system base here: 0.012 machine-pu Ra * 100/125.
+		gen.setSourceZ(new org.apache.commons.math3.complex.Complex(0.0096, 0.20));
+		Path dyr = tempDir.resolve("genrou.dyr");
+		Files.writeString(dyr, "1 'GENROE' '1' 8.0 0.03 0.4 0.05 5.0 3.0 "
+				+ "1.8 1.7 0.3 0.55 0.25 0.15 0.10 0.20 /\n");
+		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+		parser.parseDynFile(dyr.toString());
+
+		RoundRotorMachine mach = (RoundRotorMachine) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1");
+		assertNotNull(mach);
+		assertEquals(8.0, mach.getTd01(), TOL);
+		assertEquals(0.03, mach.getTd011(), TOL);
+		assertEquals(0.4, mach.getTq01(), TOL);
+		assertEquals(0.05, mach.getTq011(), TOL);
+		assertEquals(5.0, mach.getH(), TOL);
+		assertEquals(3.0 * 100.0 / builder.getDStabNetwork().getFrequency(),
+				mach.getD(), TOL);
+		assertEquals(1.8, mach.getMachData().getXd(), TOL);
+		assertEquals(1.7, mach.getXq(), TOL);
+		assertEquals(0.3, mach.getXd1(), TOL);
+		assertEquals(0.55, mach.getXq1(), TOL);
+		assertEquals(0.25, mach.getXd11(), TOL);
+		assertEquals(0.25, mach.getXq11(), TOL);
+		assertEquals(0.15, mach.getXl(), TOL);
+		assertEquals(0.012, mach.getRa(), TOL);
+		assertEquals(125.0, mach.getRating(UnitType.mVA,
+				builder.getDStabNetwork().getBaseKva()), TOL);
+		assertEquals(10.0, mach.getSe100(), TOL);
+		assertEquals(20.0, mach.getSe120(), TOL);
+		assertEquals("GENROU", parser.getLastImportReport().entries().get(0)
+				.canonicalModelName());
+		assertTrue(parser.getLastImportReport().isStrictlyComplete());
+	}
+
+	@Test
+	public void parseGensal_mapsEveryPsseParameterToCoreMachine() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+		DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
+				.getContributeGen("1");
+		gen.setSourceZ(new org.apache.commons.math3.complex.Complex(0.004, 0.25));
+		Path dyr = tempDir.resolve("gensal.dyr");
+		Files.writeString(dyr, "1 'GENSAE' '1' 8.0 0.04 0.06 4.0 2.0 "
+				+ "1.8 1.7 0.3 0.25 0.15 0.10 0.20 /\n");
+		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+		parser.parseDynFile(dyr.toString());
+
+		SalientPoleMachine mach = (SalientPoleMachine) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1");
+		assertNotNull(mach);
+		assertEquals(8.0, mach.getTd01(), TOL);
+		assertEquals(0.04, mach.getTd011(), TOL);
+		assertEquals(0.06, mach.getTq011(), TOL);
+		assertEquals(4.0, mach.getH(), TOL);
+		assertEquals(2.0 * 100.0 / builder.getDStabNetwork().getFrequency(),
+				mach.getD(), TOL);
+		assertEquals(1.8, mach.getMachData().getXd(), TOL);
+		assertEquals(1.7, mach.getXq(), TOL);
+		assertEquals(0.3, mach.getXd1(), TOL);
+		assertEquals(0.25, mach.getXd11(), TOL);
+		assertEquals(0.25, mach.getXq11(), TOL);
+		assertEquals(0.15, mach.getXl(), TOL);
+		assertEquals(0.004, mach.getRa(), TOL);
+		assertEquals(10.0, mach.getSe100(), TOL);
+		assertEquals(20.0, mach.getSe120(), TOL);
+		assertEquals("GENSAL", parser.getLastImportReport().entries().get(0)
+				.canonicalModelName());
 	}
 
 	@Test
