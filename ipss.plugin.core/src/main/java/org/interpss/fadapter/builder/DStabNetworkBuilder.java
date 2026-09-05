@@ -489,6 +489,32 @@ public class DStabNetworkBuilder {
         return exc;
     }
 
+    /**
+     * PSS/E ESST1A exciter with the complete 20-parameter record schema.
+     */
+    public IEEE1981ST1Exciter addExcEsst1a(String busId, String genId,
+            int uel, int vos, double tr, double vimax, double vimin,
+            double tc, double tb, double tc1, double tb1,
+            double ka, double ta, double vamax, double vamin,
+            double vrmax, double vrmin, double kc, double kf, double tf,
+            double klr, double ilr) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ESST1A exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        IEEE1981ST1Exciter exc = ExciterObjectFactory.createIeee1981ST1Exciter(
+                mach.getId() + "_Exc", "ESST1A", mach);
+        var data = exc.getData();
+        data.setUel(uel); data.setVos(vos); data.setTr(tr);
+        data.setVimax(vimax); data.setVimin(vimin);
+        data.setTc(tc); data.setTb(tb); data.setTc1(tc1); data.setTb1(tb1);
+        data.setKa(ka); data.setTa(ta); data.setVamax(vamax); data.setVamin(vamin);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKc(kc);
+        data.setKf(kf); data.setTf(tf); data.setKlr(klr); data.setIlr(ilr);
+        return exc;
+    }
+
     /** PSS/E ESDC2A exciter. */
     public org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter addExcEsdc2a(
             String busId, String genId,

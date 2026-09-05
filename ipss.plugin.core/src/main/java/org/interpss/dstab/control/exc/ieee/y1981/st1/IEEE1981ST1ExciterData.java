@@ -39,18 +39,31 @@ public class IEEE1981ST1ExciterData extends BaseControllerData {
 
     // We need to put the default values here, so that the controller could be
     // properly initialized
-    private double tr       = 0.02;
-    private double vimax        = 1.4;
-    private double vimin       = 0.0;
-    private double tc       = 0.16;
-    private double tb       = 0.01;
-    private double ka       = 1.0;
-    private double ta       = 0.003;
-    private double vrmax    = 5.0;
-    private double vrmin    = -3.0;
-    private double kc       = 0.067;
-	private double kf       = 0.1;
-    private double tf       = 1.0;
+    private int uel = 1;
+    private int vos = 1;
+    private double tr = 0.02;
+    private double vimax = 1.4;
+    private double vimin = 0.0;
+    private double tc = 0.16;
+    private double tb = 0.01;
+    private double tc1 = 0.0;
+    private double tb1 = 0.0;
+    private double ka = 1.0;
+    private double ta = 0.003;
+    private double vamax = 999.0;
+    private double vamin = -999.0;
+    private double vrmax = 5.0;
+    private double vrmin = -3.0;
+    private double kc = 0.067;
+    private double kf = 0.1;
+    private double tf = 1.0;
+    private double klr = 0.0;
+    private double ilr = 0.0;
+
+    public int getUel() { return uel; }
+    public void setUel(int uel) { this.uel = uel; }
+    public int getVos() { return vos; }
+    public void setVos(int vos) { this.vos = vos; }
 
     /**
      * @return the vimax
@@ -108,6 +121,11 @@ public class IEEE1981ST1ExciterData extends BaseControllerData {
         this.tb = tb;
     }
 
+    public double getTc1() { return tc1; }
+    public void setTc1(double tc1) { this.tc1 = tc1; }
+    public double getTb1() { return tb1; }
+    public void setTb1(double tb1) { this.tb1 = tb1; }
+
     /**
      * @return the ka
      */
@@ -135,6 +153,11 @@ public class IEEE1981ST1ExciterData extends BaseControllerData {
     public void setTa(double ta) {
         this.ta = ta;
     }
+
+    public double getVamax() { return vamax; }
+    public void setVamax(double vamax) { this.vamax = vamax; }
+    public double getVamin() { return vamin; }
+    public void setVamin(double vamin) { this.vamin = vamin; }
 
     /**
      * @return the vrmax
@@ -204,6 +227,11 @@ public class IEEE1981ST1ExciterData extends BaseControllerData {
 	public void setTf(double tf) {
 		this.tf = tf;
 	}
+
+    public double getKlr() { return klr; }
+    public void setKlr(double klr) { this.klr = klr; }
+    public double getIlr() { return ilr; }
+    public void setIlr(double ilr) { this.ilr = ilr; }
 
 	@Override
 	public void setValue(String name, double value) {

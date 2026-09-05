@@ -155,6 +155,8 @@ public class PSSEDStabDirectParser {
                 return procExcIeeex1(busId, genId, fields);
             case "EXST1":
                 return procExcExst1(busId, genId, fields);
+            case "ESST1A":
+                return procExcEsst1a(busId, genId, fields);
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
             case "ESDC2A":
@@ -453,6 +455,35 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 19, 0), getDouble(f, 20, 0),
                 getDouble(f, 21, 0), getDouble(f, 22, 0));
         new St2cutStabilizer(busId + "-st2cut" + genId, data, machine);
+        return true;
+    }
+
+    // ESST1A: IBUS 'ESST1A' ID UEL VOS TR VIMAX VIMIN TC TB TC1 TB1 KA TA
+    //         VAMAX VAMIN VRMAX VRMIN KC KF TF KLR ILR
+    private boolean procExcEsst1a(String busId, String genId, String[] f) throws InterpssException {
+        int uel = getInt(f, 3, 1);
+        int vos = getInt(f, 4, 1);
+        double tr = getDouble(f, 5, 0);
+        double vimax = getDouble(f, 6, 0);
+        double vimin = getDouble(f, 7, 0);
+        double tc = getDouble(f, 8, 0);
+        double tb = getDouble(f, 9, 0);
+        double tc1 = getDouble(f, 10, 0);
+        double tb1 = getDouble(f, 11, 0);
+        double ka = getDouble(f, 12, 0);
+        double ta = getDouble(f, 13, 0);
+        double vamax = getDouble(f, 14, 0);
+        double vamin = getDouble(f, 15, 0);
+        double vrmax = getDouble(f, 16, 0);
+        double vrmin = getDouble(f, 17, 0);
+        double kc = getDouble(f, 18, 0);
+        double kf = getDouble(f, 19, 0);
+        double tf = getDouble(f, 20, 0);
+        double klr = getDouble(f, 21, 0);
+        double ilr = getDouble(f, 22, 0);
+        builder.addExcEsst1a(busId, genId, uel, vos, tr, vimax, vimin,
+                tc, tb, tc1, tb1, ka, ta, vamax, vamin, vrmax, vrmin,
+                kc, kf, tf, klr, ilr);
         return true;
     }
 
