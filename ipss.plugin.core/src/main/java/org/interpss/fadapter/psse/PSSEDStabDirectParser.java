@@ -540,6 +540,7 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 8, 0), getDouble(f, 9, 0),
                 getDouble(f, 10, 0), getDouble(f, 11, 0),
                 getDouble(f, 12, 0), getDouble(f, 13, 0),
+                getDouble(f, 14, 0),
                 getDouble(f, 15, 0), getDouble(f, 16, 0),
                 getDouble(f, 17, 0), getDouble(f, 18, 0)) != null;
     }

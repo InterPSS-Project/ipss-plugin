@@ -23,6 +23,7 @@ import com.interpss.dstab.mach.Machine;
 public class Esdc2aExciter extends AnnotateExciter {
     private final Esdc2aData data;
     public double one = 1.0;
+    public double spdmlt;
 
     public double tr;
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="mach.vt",
@@ -88,12 +89,19 @@ public class Esdc2aExciter extends AnnotateExciter {
         tr=data.getTr(); ka=data.getKa(); ta=data.getTa(); tc=data.getTc(); tb=data.getTb();
         vrmaxVt=data.getVrmax() == 0.0 ? 999.0 : data.getVrmax();
         vrminVt=data.getVrmin(); ke=data.getKe(); te=data.getTe();
-        kf=data.getKf(); tf=data.getTf(); e1=data.getE1(); se1=data.getSe1();
+        kf=data.getKf(); tf=data.getTf(); spdmlt=data.getSpdmlt();
+        e1=data.getE1(); se1=data.getSe1();
         e2=data.getE2(); se2=data.getSe2();
         if (te <= 0.0 || tf <= 0.0) return false;
         integratorGain=1.0/te;
         washoutGain=kf/tf;
         return super.initStates(bus, machine);
+    }
+
+    @Override
+    public double getOutput(Machine machine) {
+        double efd = super.getOutput(machine);
+        return spdmlt != 0.0 ? efd * machine.getSpeed() : efd;
     }
 
     @Override public AnController getAnController() { return getClass().getAnnotation(AnController.class); }
