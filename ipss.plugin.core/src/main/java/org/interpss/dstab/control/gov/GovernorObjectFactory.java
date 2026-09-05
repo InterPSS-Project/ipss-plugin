@@ -35,6 +35,7 @@ import org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
@@ -58,9 +59,9 @@ public class GovernorObjectFactory {
 	 */	
 	public static SimpleGovernor createSimpleGovernor(String id, String name, Machine machine) {
 		SimpleGovernor gov = new SimpleGovernor(id, name, "InterPSS");
-		gov.setMachine(machine); 
+		gov.setMachine(machine);
 		return gov;
-  	}
+	}
 
 	/**
 	 * factory method to create an Ieee Hydro Turbine Governor
@@ -192,9 +193,15 @@ public class GovernorObjectFactory {
 	
 	public static PsseTGov1SteamTurGovernor createPsseTGOV1SteamTurGovernor(String id, String name, Machine machine) {
 		PsseTGov1SteamTurGovernor gov = new PsseTGov1SteamTurGovernor(id, name, "PSS/E");
-		gov.setMachine(machine); 
+		gov.setMachine(machine);
 		return gov;
-  	}
+	}
+
+	public static PsseGgov1Governor createPsseGGOV1Governor(String id, String name, Machine machine) {
+		PsseGgov1Governor gov = new PsseGgov1Governor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
 	
 	public static PsseIEESGOSteamTurGovernor createPsseIEESGOSteamTurGovernor(String id, String name, Machine machine) {
 		PsseIEESGOSteamTurGovernor gov = new PsseIEESGOSteamTurGovernor(id, name, "PSS/E");

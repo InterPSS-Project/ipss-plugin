@@ -22,6 +22,7 @@ import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
+import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,6 +171,8 @@ public class PSSEDStabDirectParser {
                 return procGovGast(busId, genId, fields);
             case "IEESGO":
                 return procGovIeesgo(busId, genId, fields);
+            case "GGOV1":
+                return procGovGgov1(busId, genId, fields);
             case "IEEEG3":
                 log.debug("Governor model IEEEG3 at bus {} - not yet implemented", busId);
                 return false;
@@ -592,6 +595,32 @@ public class PSSEDStabDirectParser {
         double dturb = getDouble(f, 11, 0);
         builder.addGovGast(busId, genId, r, t1, t2, t3, at, kt, vmax, vmin, dturb);
         return true;
+    }
+
+    // GGOV1 PSS/E record order.  Trate is field 30 in the data list even though
+    // PowerWorld's model parameter table presents it first.
+    private boolean procGovGgov1(String busId, String genId, String[] f) {
+        if (f.length < 38) return false;
+        PsseGgov1GovernorData d = new PsseGgov1GovernorData();
+        d.setRselect(getInt(f, 3, 0)); d.setFlag(getInt(f, 4, 0));
+        d.setR(getDouble(f, 5, 0)); d.setTpelec(getDouble(f, 6, 0));
+        d.setMaxerr(getDouble(f, 7, 0)); d.setMinerr(getDouble(f, 8, 0));
+        d.setKpgov(getDouble(f, 9, 0)); d.setKigov(getDouble(f, 10, 0));
+        d.setKdgov(getDouble(f, 11, 0)); d.setTdgov(getDouble(f, 12, 0));
+        d.setVmax(getDouble(f, 13, 0)); d.setVmin(getDouble(f, 14, 0));
+        d.setTact(getDouble(f, 15, 0)); d.setKturb(getDouble(f, 16, 0));
+        d.setWfnl(getDouble(f, 17, 0)); d.setTb(getDouble(f, 18, 0));
+        d.setTc(getDouble(f, 19, 0)); d.setTeng(getDouble(f, 20, 0));
+        d.setTfload(getDouble(f, 21, 0)); d.setKpload(getDouble(f, 22, 0));
+        d.setKiload(getDouble(f, 23, 0)); d.setLdref(getDouble(f, 24, 0));
+        d.setDm(getDouble(f, 25, 0)); d.setRopen(getDouble(f, 26, 0));
+        d.setRclose(getDouble(f, 27, 0)); d.setKimw(getDouble(f, 28, 0));
+        d.setAset(getDouble(f, 29, 0)); d.setKa(getDouble(f, 30, 0));
+        d.setTa(getDouble(f, 31, 0)); d.setTrate(getDouble(f, 32, 0));
+        d.setDb(getDouble(f, 33, 0)); d.setTsa(getDouble(f, 34, 0));
+        d.setTsb(getDouble(f, 35, 0)); d.setRup(getDouble(f, 36, 0));
+        d.setRdown(getDouble(f, 37, 0));
+        return builder.addGovGgov1(busId, genId, d) != null;
     }
 
     // GENQEC (PSLF/PowerDynData order):
