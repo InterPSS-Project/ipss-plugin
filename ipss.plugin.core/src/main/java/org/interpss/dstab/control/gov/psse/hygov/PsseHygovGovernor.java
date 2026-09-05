@@ -5,6 +5,8 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
  * PSS/E HYGOV hydro turbine-governor.
@@ -26,6 +28,7 @@ public class PsseHygovGovernor extends AbstractGovernor {
     private double effectiveGmin;
     private double committedDesiredGate;
     private double currentOutput;
+    private double governorToMachineBase = 1.0;
     private boolean initialized;
 
     public PsseHygovGovernor(String id, String name, String category) {
@@ -41,17 +44,23 @@ public class PsseHygovGovernor extends AbstractGovernor {
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
         if (!validateParameters()) return false;
         PsseHygovGovernorData d = getData();
-        double q0 = mach.getPm() / d.getAt() + d.getQnl();
+        double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+        governorToMachineBase = d.getTrate() > EPS && machineMva > EPS
+                ? d.getTrate() / machineMva : 1.0;
+        double pm0 = mach.getPm() / governorToMachineBase;
+        double q0 = pm0 / d.getAt() + d.getQnl();
         if (q0 <= EPS) return false;
 
         // PowerWorld expands position limits when the solved initial gate lies outside them.
-        effectiveGmax = Math.max(d.getGmax(), q0);
-        effectiveGmin = Math.min(d.getGmin(), q0);
+        double rawMax = Math.max(d.getGmax(), d.getGmin());
+        double rawMin = Math.min(d.getGmax(), d.getGmin());
+        effectiveGmax = Math.max(rawMax, q0);
+        effectiveGmin = Math.min(rawMin, q0);
         pref = d.getR() * q0;
         state = new State(0.0, q0, q0, q0);
         oldState = state;
         committedDesiredGate = q0;
-        currentOutput = mach.getPm();
+        currentOutput = pm0;
         initialized = true;
         return true;
     }
@@ -83,31 +92,41 @@ public class PsseHygovGovernor extends AbstractGovernor {
 
     @Override
     public double getOutput(Machine mach) {
-        return currentOutput;
+        return currentOutput * governorToMachineBase;
     }
 
     @Override
     public void setRefPoint(double value) {
-        pref = getData().getR() * (value / getData().getAt() + getData().getQnl());
+        pref = getData().getR() * (value / governorToMachineBase
+                / getData().getAt() + getData().getQnl());
     }
 
     public double getGatePosition() { return state.gate; }
     public double getWaterFlow() { return state.flow; }
     public double getDesiredGate() { return desiredGate(state); }
+    public double getGovernorBaseMva(Machine mach) {
+        return governorToMachineBase * mach.getRating(UnitType.mVA,
+                mach.getDStabBus().getNetwork().getBaseKva());
+    }
+    public double applyFrequencyDeadband(double speedDeviation) {
+        return AsymmetricDeadbandBlock.apply(
+                speedDeviation, getData().getDbH(), getData().getDbL());
+    }
 
     public boolean validateParameters() {
         PsseHygovGovernorData d = getData();
         return d.getR() > 0.0 && d.getRtemp() > 0.0 && d.getTr() > 0.0
                 && d.getTf() >= 0.0 && d.getTg() > 0.0 && d.getVelm() > 0.0
-                && d.getGmax() >= d.getGmin() && d.getTw() > 0.0
-                && d.getAt() > 0.0 && d.getQnl() >= 0.0;
+                && d.getTw() > 0.0 && d.getAt() > 0.0 && d.getQnl() >= 0.0
+                && d.getDbH() >= 0.0 && d.getDbL() <= 0.0
+                && d.getDbL() <= d.getDbH() && d.getTrate() >= 0.0;
     }
 
     private Derivatives derivatives(State s) {
         PsseHygovGovernorData d = getData();
         double speedDeviation = getMachine().getSpeed() - 1.0;
         double dg = desiredGate(s);
-        double governorInput = pref - speedDeviation - d.getR() * dg;
+        double governorInput = pref - applyFrequencyDeadband(speedDeviation) - d.getR() * dg;
         double filterOutput = d.getTf() > EPS ? s.filter : algebraicFilterOutput(s);
         double filterDot = d.getTf() > EPS
                 ? (governorInput - s.filter) / d.getTf() : 0.0;
@@ -140,7 +159,8 @@ public class PsseHygovGovernor extends AbstractGovernor {
 
     private double algebraicFilterOutput(State s) {
         PsseHygovGovernorData d = getData();
-        return (pref - (getMachine().getSpeed() - 1.0) - d.getR() * s.integrator)
+        return (pref - applyFrequencyDeadband(getMachine().getSpeed() - 1.0)
+                - d.getR() * s.integrator)
                 / (1.0 + d.getR() / d.getRtemp());
     }
 

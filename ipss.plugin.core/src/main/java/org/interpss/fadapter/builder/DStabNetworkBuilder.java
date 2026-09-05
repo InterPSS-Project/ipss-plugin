@@ -676,13 +676,23 @@ public class DStabNetworkBuilder {
     /** Attach a PSS/E HYGOV hydro governor. */
     public PsseHygovGovernor addGovHygov(String busId, String genId,
             PsseHygovGovernorData data) {
+        return addGovHygov(busId, genId, data, "HYGOV");
+    }
+
+    public PsseHygovGovernor addGovHygovd(String busId, String genId,
+            PsseHygovGovernorData data) {
+        return addGovHygov(busId, genId, data, "HYGOVD");
+    }
+
+    private PsseHygovGovernor addGovHygov(String busId, String genId,
+            PsseHygovGovernorData data, String modelName) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) {
-            log.warn("Machine not found for HYGOV governor: bus={}, gen={}", busId, genId);
+            log.warn("Machine not found for {} governor: bus={}, gen={}", modelName, busId, genId);
             return null;
         }
         PsseHygovGovernor gov = new PsseHygovGovernor(
-                mach.getId() + "_Gov", "HYGOV", "PSS/E");
+                mach.getId() + "_Gov", modelName, "PSS/E");
         copyHygovData(data, gov.getData());
         if (!gov.validateParameters()) {
             log.warn("Invalid HYGOV parameters: bus={}, gen={}", busId, genId);
@@ -700,6 +710,8 @@ public class DStabNetworkBuilder {
         target.setGmax(source.getGmax()); target.setGmin(source.getGmin());
         target.setTw(source.getTw()); target.setAt(source.getAt());
         target.setDturb(source.getDturb()); target.setQnl(source.getQnl());
+        target.setDbH(source.getDbH()); target.setDbL(source.getDbL());
+        target.setTrate(source.getTrate());
     }
 
     /** Attach a PSS/E GGOV1 governor after its record has been mapped exactly. */
