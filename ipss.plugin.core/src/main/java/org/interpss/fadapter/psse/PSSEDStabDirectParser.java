@@ -740,13 +740,13 @@ public class PSSEDStabDirectParser {
         return builder.addRegca1(busId, genId, data) != null;
     }
 
-    // PSS/E REGFMA1: IBUS MODEL ID TPf TQf TVf Xe Imax Emax Emin
+    // PSS/E REGFMA1: IBUS MODEL ID Vflag TPf TQf TVf Imax Emax Emin
     // Pmax Pmin Qmax Qmin Mp Mq Kppmax Kipmax Kpqmax Kiqmax Kpv Kiv
     private boolean procRegfma1(String busId, String genId, String[] f) {
         if (f.length < 22) return false;
         Regfma1Data data = new Regfma1Data(
-                getDouble(f, 3, 0.0), getDouble(f, 4, 0.02), getDouble(f, 5, 0.02),
-                getDouble(f, 6, 0.15), getDouble(f, 7, 0.0),
+                getInt(f, 3, 0), getDouble(f, 4, 0.02), getDouble(f, 5, 0.02),
+                getDouble(f, 6, 0.02), getDouble(f, 7, 0.0),
                 getDouble(f, 8, 1.2), getDouble(f, 9, 0.0),
                 getDouble(f, 10, 1.0), getDouble(f, 11, 0.0),
                 getDouble(f, 12, 1.0), getDouble(f, 13, -1.0),

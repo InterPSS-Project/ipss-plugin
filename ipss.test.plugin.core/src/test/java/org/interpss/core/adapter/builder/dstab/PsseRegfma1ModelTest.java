@@ -35,7 +35,12 @@ class PsseRegfma1ModelTest extends CorePluginTestSetup {
         Regfma1Model model = assertInstanceOf(Regfma1Model.class, gen.getDynamicGenDevice());
         assertEquals(new Regfma1Data(0, .02, .03, .04, 2, 1.2, 0, 1, 0, 1, -1,
                 .01, .05, .01, .1, 3, 20, 0, 6), model.getData());
-        assertEquals(.04, gen.getPosGenZ().getImaginary(), 1.0e-12);
+        assertEquals(.02, model.getData().tpf(), 1.0e-12);
+        assertEquals(.03, model.getData().tqf(), 1.0e-12);
+        assertEquals(.04, model.getData().tvf(), 1.0e-12);
+        assertEquals(0, model.getData().vflag());
+        assertEquals(0, model.getData().qvflag());
+        assertEquals(.15, gen.getPosGenZ().getImaginary(), 1.0e-12);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
@@ -57,7 +62,7 @@ class PsseRegfma1ModelTest extends CorePluginTestSetup {
     void severeVoltageDepressionActivatesTheAlgebraicFaultCurrentLimit() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Regfma1Model model = builder.addRegfma1("Bus1", "1",
-                new Regfma1Data(0, .02, .02, .15, 1.25, 1.2, 0, 1, 0, 1, -1,
+                new Regfma1Data(0, .02, .02, .02, 1.25, 1.2, 0, 1, 0, 1, -1,
                         .01, .05, .01, .1, 3, 20, 0, 6));
         assertTrue(model.initStates(model.getDStabBus()));
 
