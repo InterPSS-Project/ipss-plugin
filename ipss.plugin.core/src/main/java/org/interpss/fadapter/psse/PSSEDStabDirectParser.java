@@ -31,6 +31,7 @@ import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
+import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,6 +174,8 @@ public class PSSEDStabDirectParser {
                 return procExcEsst3a(busId, genId, fields);
             case "ESST4B":
                 return procExcEsst4b(busId, genId, fields);
+            case "SCRX":
+                return procExcScrx(busId, genId, fields);
 
             case "IEEEG1":
                 return procGovIeeeg1(busId, genId, fields);
@@ -568,6 +571,21 @@ public class PSSEDStabDirectParser {
         d.setAngKp(getDouble(f, 19, 0));
         if (f.length > 20) d.setVgmax(getDouble(f, 20, d.getVgmax()));
         return builder.addExcEsst4b(busId, genId, d) != null;
+    }
+
+    // SCRX: IBUS 'SCRX' ID Ta/Tb Tb K Te Efdmin Efdmax Cswitch Rc/Rfd
+    private boolean procExcScrx(String busId, String genId, String[] f) {
+        if (f.length < 11) return false;
+        ScrxData data = new ScrxData();
+        data.setTaOverTb(getDouble(f, 3, 0));
+        data.setTb(getDouble(f, 4, 0));
+        data.setK(getDouble(f, 5, 0));
+        data.setTe(getDouble(f, 6, 0));
+        data.setEfdmin(getDouble(f, 7, 0));
+        data.setEfdmax(getDouble(f, 8, 0));
+        data.setCswitch(getInt(f, 9, 0));
+        data.setRcOverRfd(getDouble(f, 10, 0));
+        return builder.addExcScrx(busId, genId, data) != null;
     }
 
     private static boolean isSupportedSt2cutMode(int mode) {

@@ -7,6 +7,8 @@ import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
+import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
+import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
@@ -607,6 +609,22 @@ public class DStabNetworkBuilder {
         var exc = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter(
                 mach.getId() + "_Exc", data, mach);
         return exc;
+    }
+
+    /** Attach the eight-parameter PSS/E SCRX excitation system. */
+    public ScrxExciter addExcScrx(String busId, String genId, ScrxData data) {
+        if (data == null || data.getTb() < 0.0 || data.getTe() < 0.0
+                || data.getK() <= 0.0 || data.getRcOverRfd() < 0.0
+                || (data.getCswitch() != 0 && data.getCswitch() != 1)) {
+            log.warn("Invalid SCRX parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for SCRX exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new ScrxExciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** PSS/E ESST3A mapped to the existing IEEE 2005 ST3A implementation. */
