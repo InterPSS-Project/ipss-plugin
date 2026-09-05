@@ -38,22 +38,29 @@ import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.controller.cml.field.block.IntegrationControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 @AnController(
 		   input="mach.speed - 1.0",
-		   output="this.fvhp*this.chDelayBlock.y + this.fhp*this.rh1DelayBlock.y + this.fip*this.rh2DelayBlock.y + this.flp*this.coDelayBlock.y",
+		   output="this.ratingScale*this.fvhp*this.chDelayBlock.y + this.ratingScale*this.fhp*this.rh1DelayBlock.y + this.ratingScale*this.fip*this.rh2DelayBlock.y + this.ratingScale*this.flp*this.coDelayBlock.y",
 		   refPoint="this.gainBlock.u0 + this.filterBlock.y + this.intBlock.y",
 		   display= {}		)
 public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
    public double fvhp = 0.1, fhp = 0.1, fip = 0.3, flp = 0.5;
+   public double ratingScale = 1.0, invRatingScale = 1.0;
+
+    @AnControllerField(type=CMLFieldEnum.StaticBlock, input="mach.speed - 1.0",
+            y0="0.0")
+    public AsymmetricDeadbandBlock speedDeadbandBlock = new AsymmetricDeadbandBlock();
 
 	public double k = 10.0, t1 = 0.5, t2 = 0.1;
     @AnControllerField(
             type= CMLFieldEnum.ControlBlock,
-            input="mach.speed - 1.0",
+            input="this.speedDeadbandBlock.y",
             parameter={"type.NoLimit", "this.k", "this.t2", "this.t1"},
             y0 = "this.refPoint - this.gainBlock.y - this.intBlock.y" )
-    FilterControlBlock filterBlock;
+    public FilterControlBlock filterBlock;
 	
     public double k3 = 1.0 /* 1.0/t3 */, pup = 1.2, pdown = 0.0;
     @AnControllerField(
@@ -61,7 +68,7 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
             input="this.refPoint - this.filterBlock.y - this.intBlock.y",
             parameter={"type.Limit", "this.k3", "this.pup", "this.pdown"},
             y0="this.intBlock.u0"	)
-    GainBlock gainBlock;
+    public GainBlock gainBlock;
 
     public double kint = 1.0, pmax = 10.0, pmin = 0.0;
     @AnControllerField(
@@ -69,7 +76,7 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
             input="this.gainBlock.y",
             parameter={"type.Limit", "this.kint", "this.pmax", "this.pmin"},
             y0="this.coDelayBlock.u0"	)
-    IntegrationControlBlock intBlock;
+    public IntegrationControlBlock intBlock;
 
     public double kch = 1.0, tch = 1.2;
     @AnControllerField(
@@ -77,7 +84,7 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
             input="this.intBlock.y",
             parameter={"type.NoLimit", "this.kch", "this.tch"},
             y0="this.rh1DelayBlock.u0"	)
-    DelayControlBlock chDelayBlock;
+    public DelayControlBlock chDelayBlock;
 
     public double krh1 = 1.0, trh1 = 1.2;
     @AnControllerField(
@@ -85,7 +92,7 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
             input="this.chDelayBlock.y",
             parameter={"type.NoLimit", "this.krh1", "this.trh1"},
             y0="this.rh2DelayBlock.u0"	)
-    DelayControlBlock rh1DelayBlock;
+    public DelayControlBlock rh1DelayBlock;
 
     public double krh2 = 1.0, trh2 = 1.2;
     @AnControllerField(
@@ -93,15 +100,15 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
             input="this.rh1DelayBlock.y",
             parameter={"type.NoLimit", "this.krh2", "this.trh2"},
             y0="this.coDelayBlock.u0"	)
-    DelayControlBlock rh2DelayBlock;
+    public DelayControlBlock rh2DelayBlock;
 
     public double kco = 1.0, tco = 1.2, factor = 1.0 / (fvhp+fhp+fip+flp);
     @AnControllerField(
             type= CMLFieldEnum.ControlBlock,
             input="this.rh2DelayBlock.y",
             parameter={"type.NoLimit", "this.kco", "this.tco"},
-            y0="this.factor*mach.pm"	)
-    DelayControlBlock coDelayBlock;
+            y0="this.factor*this.invRatingScale*mach.pm"	)
+    public DelayControlBlock coDelayBlock;
  	
     // UI Editor panel
 //    private static NBIeeeSteamTCDREditPanel _editPanel = new NBIeeeSteamTCDREditPanel();
@@ -143,14 +150,29 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
      */
     @Override
 	public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
+        double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+        this.ratingScale = getData().getTrate() > 1.0e-9 && machineMva > 1.0e-9
+                ? getData().getTrate() / machineMva : 1.0;
+        this.invRatingScale = 1.0 / ratingScale;
+        this.speedDeadbandBlock.setThresholds(getData().getDbH(), getData().getDbL());
         this.k = getData().getK();
         this.t1 = getData().getT1();
         this.t2 = getData().getT2();
         this.k3 = 1.0/getData().getT3();
-        this.pmax = getData().getPmax();
-        this.pmin = getData().getPmin();
-        this.pup = getData().getPup();
-        this.pdown = getData().getPdown();
+        double rawMax = Math.max(getData().getPmax(), getData().getPmin());
+        double rawMin = Math.min(getData().getPmax(), getData().getPmin());
+        double initialValve = mach.getPm() * invRatingScale
+                / (getData().getFvhp() + getData().getFhp()
+                        + getData().getFip() + getData().getFlp());
+        this.pmax = Math.max(rawMax, initialValve);
+        this.pmin = Math.min(rawMin, initialValve);
+        double rawOpen = getData().getPup();
+        double rawClose = getData().getPdown();
+        if (rawOpen < rawClose) {
+            double swap = rawOpen; rawOpen = rawClose; rawClose = swap;
+        }
+        this.pup = rawOpen < 0.0 ? -rawOpen : rawOpen;
+        this.pdown = rawClose > 0.0 ? -rawClose : rawClose;
         this.tch = getData().getTch();
         this.trh1 = getData().getTrh1();
         this.trh2 = getData().getTrh2();

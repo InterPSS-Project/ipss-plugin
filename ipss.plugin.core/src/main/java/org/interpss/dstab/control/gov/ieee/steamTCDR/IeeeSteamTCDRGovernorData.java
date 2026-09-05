@@ -43,6 +43,9 @@ public class IeeeSteamTCDRGovernorData extends BaseControllerData {
 	private double fhp = 0.1;
 	private double fip = 0.3;
 	private double flp = 0.5;
+	private double dbH;
+	private double dbL;
+	private double trate;
 	
 	private static String[][] controllerParameters= { 
 		//          min         max
@@ -195,6 +198,13 @@ public class IeeeSteamTCDRGovernorData extends BaseControllerData {
 	public void setFlp(double flp) {
 		this.flp = flp;
 	}
+
+	public double getDbH() { return dbH; }
+	public void setDbH(double value) { dbH = value; }
+	public double getDbL() { return dbL; }
+	public void setDbL(double value) { dbL = value; }
+	public double getTrate() { return trate; }
+	public void setTrate(double value) { trate = value; }
 
 	public double getTco() {
 		return tco;
