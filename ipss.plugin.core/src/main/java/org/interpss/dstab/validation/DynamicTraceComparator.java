@@ -22,8 +22,11 @@ public final class DynamicTraceComparator {
         if (timeToleranceSeconds < 0.0 || !Double.isFinite(timeToleranceSeconds)) {
             throw new IllegalArgumentException("Time tolerance must be finite and non-negative");
         }
-        Map<DynamicTraceKey, List<DynamicTraceSample>> actualByKey = group(actual);
-        Map<DynamicTraceKey, List<DynamicTraceSample>> referenceByKey = group(reference);
+        // InterPSS can report pre- and post-switch solutions at the same event
+        // time. Keep both, in input order. Reference traces are required to
+        // have a unique time grid so each comparison target is unambiguous.
+        Map<DynamicTraceKey, List<DynamicTraceSample>> actualByKey = group(actual, true);
+        Map<DynamicTraceKey, List<DynamicTraceSample>> referenceByKey = group(reference, false);
         if (!actualByKey.keySet().equals(referenceByKey.keySet())) {
             throw new IllegalArgumentException("Trace keys differ; actual=" + actualByKey.keySet()
                     + ", reference=" + referenceByKey.keySet());
@@ -91,7 +94,7 @@ public final class DynamicTraceComparator {
     }
 
     private static Map<DynamicTraceKey, List<DynamicTraceSample>> group(
-            Collection<DynamicTraceSample> samples) {
+            Collection<DynamicTraceSample> samples, boolean allowDuplicateTimes) {
         if (samples == null || samples.isEmpty()) {
             throw new IllegalArgumentException("Trace must contain at least one sample");
         }
@@ -103,8 +106,9 @@ public final class DynamicTraceComparator {
             entry.getValue().sort(Comparator.comparingDouble(DynamicTraceSample::timeSeconds));
             double previous = -1.0;
             for (DynamicTraceSample sample : entry.getValue()) {
-                if (sample.timeSeconds() <= previous) {
-                    throw new IllegalArgumentException("Duplicate or unsorted time for " + entry.getKey());
+                if ((!allowDuplicateTimes && sample.timeSeconds() <= previous)
+                        || sample.timeSeconds() < previous) {
+                    throw new IllegalArgumentException("Duplicate reference time for " + entry.getKey());
                 }
                 previous = sample.timeSeconds();
             }

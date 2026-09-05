@@ -91,6 +91,36 @@ class DynamicTraceValidationTest {
                 actual, reference, DynamicTraceToleranceProfile.engineering(), 1e-9, List.of()));
     }
 
+    @Test
+    void duplicateActualEventTimePreservesPreAndPostEventSolutions() {
+        List<DynamicTraceSample> reference = List.of(
+                sample(0, "Bus1", "BUS_VOLTAGE", 1, "pu", "system:100MVA"),
+                sample(1, "Bus1", "BUS_VOLTAGE", 1, "pu", "system:100MVA"),
+                sample(1.0001, "Bus1", "BUS_VOLTAGE", .2, "pu", "system:100MVA"),
+                sample(1.01, "Bus1", "BUS_VOLTAGE", .3, "pu", "system:100MVA"));
+        List<DynamicTraceSample> actual = List.of(
+                sample(0, "Bus1", "BUS_VOLTAGE", 1, "pu", "system:100MVA"),
+                sample(1, "Bus1", "BUS_VOLTAGE", 1, "pu", "system:100MVA"),
+                sample(1, "Bus1", "BUS_VOLTAGE", .2, "pu", "system:100MVA"),
+                sample(1.01, "Bus1", "BUS_VOLTAGE", .3, "pu", "system:100MVA"));
+
+        DynamicTraceComparison result = DynamicTraceComparator.compare(actual, reference,
+                DynamicTraceToleranceProfile.strict(.01), 1e-9, List.of(1.0));
+
+        assertTrue(result.passed());
+        assertEquals(0.0, result.metrics().get(0).eventAbsoluteErrors().get(1.0), 0.0);
+    }
+
+    @Test
+    void duplicateReferenceTimeIsRejectedAsAmbiguous() {
+        List<DynamicTraceSample> duplicateReference = List.of(
+                sample(0, "Bus1", "BUS_VOLTAGE", 1, "pu", "system:100MVA"),
+                sample(0, "Bus1", "BUS_VOLTAGE", .9, "pu", "system:100MVA"));
+        assertThrows(IllegalArgumentException.class, () -> DynamicTraceComparator.compare(
+                duplicateReference, duplicateReference, DynamicTraceToleranceProfile.strict(1),
+                1e-9, List.of()));
+    }
+
     private static DynamicTraceSample sample(double time, String device, String signal,
             double value, String unit, String base) {
         return new DynamicTraceSample(time, device, signal, value, unit, base);
