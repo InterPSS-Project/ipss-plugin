@@ -19,6 +19,7 @@ import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
 import org.interpss.dstab.renewable.Reeca1Data;
@@ -373,6 +374,40 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Stabilizer Models ====================
+
+    /** PSS1A single-input stabilizer for local speed, power, acceleration, or voltage. */
+    public Ieee1992PSS1AStabilizer addPss1a(String busId, String genId,
+            int ics, double a1, double a2,
+            double t1, double t2, double t3, double t4, double t5, double t6,
+            double ks, double lsmax, double lsmin, double vcu, double vcl) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS1A: {} {}", busId, genId);
+            return null;
+        }
+        if (ics != 1 && ics != 3 && ics != 4 && ics != 5) {
+            log.warn("PSS1A input code is not implemented at {} {}: ICS={}", busId, genId, ics);
+            return null;
+        }
+        Ieee1992PSS1AStabilizer pss = StabilizerObjectFactory
+                .createIeee1992PSS1AStabilizer(busId + "-pss1a" + genId, "PSS1A", machine);
+        var data = pss.getData();
+        data.setIcs(ics);
+        data.setA1(a1);
+        data.setA2(a2);
+        data.setT1(t1);
+        data.setT2(t2);
+        data.setT3(t3);
+        data.setT4(t4);
+        data.setT5(t5);
+        data.setT6(t6);
+        data.setKs(ks);
+        data.setVstmax(lsmax);
+        data.setVstmin(lsmin);
+        data.setVcu(vcu);
+        data.setVcl(vcl);
+        return pss;
+    }
 
     /**
      * PSS2A IEEE dual-input stabilizer. The current CML signal path implements

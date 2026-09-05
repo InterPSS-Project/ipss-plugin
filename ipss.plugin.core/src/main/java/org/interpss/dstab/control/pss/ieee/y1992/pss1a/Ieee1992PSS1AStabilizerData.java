@@ -28,8 +28,9 @@ package org.interpss.dstab.control.pss.ieee.y1992.pss1a;
 import org.interpss.dstab.control.base.BaseControllerData;
 
 public class Ieee1992PSS1AStabilizerData extends BaseControllerData {
+	private int ics = 1;
 	private double ks = 10.0;
-	private double k1 = 10.0;
+	private double k1 = 1.0;
 	private double t1 = 0.05;
 	private double t2 = 0.5;
 	private double t3 = 0.05;
@@ -40,6 +41,8 @@ public class Ieee1992PSS1AStabilizerData extends BaseControllerData {
 	private double vstmin = -0.2;
 	private double a1 = 0.05;
 	private double a2 = 0.5;
+	private double vcu = 0.0;
+	private double vcl = 0.0;
 	
 	private static String[][] controllerParameters= { 
 		//          min         max
@@ -53,8 +56,10 @@ public class Ieee1992PSS1AStabilizerData extends BaseControllerData {
 		{"t6", 		"-1000.0", 	"1000.0"}, 
 		{"vstmax", 	"-1000.0", 	"1000.0"}, 
 		{"vstmin", 	"-1000.0", 	"1000.0"}, 
-		{"a1", 		"-1000.0", 	"1000.0"}, 
-		{"a2", 		"-1000.0", 	"1000.0"} 
+		{"a1", 		"-1000.0", 	"1000.0"},
+		{"a2", 		"-1000.0", 	"1000.0"},
+		{"vcu", 	"-1000.0", 	"1000.0"},
+		{"vcl", 	"-1000.0", 	"1000.0"}
 	};
 
 	public Ieee1992PSS1AStabilizerData() {
@@ -63,6 +68,8 @@ public class Ieee1992PSS1AStabilizerData extends BaseControllerData {
 
 	@Override
 	public void setValue(String name, int value) {
+		if (name.equals("ics"))
+			this.ics = value;
 	}
 
 	@Override
@@ -91,10 +98,22 @@ public class Ieee1992PSS1AStabilizerData extends BaseControllerData {
 			this.a1 = value;
 		else if (name.equals("a2"))
 			this.a2 = value;
+		else if (name.equals("vcu"))
+			this.vcu = value;
+		else if (name.equals("vcl"))
+			this.vcl = value;
 	}
 	
 	public double getA1() {
 		return a1;
+	}
+
+	public int getIcs() {
+		return ics;
+	}
+
+	public void setIcs(int ics) {
+		this.ics = ics;
 	}
 
 	public void setA1(double a1) {
@@ -188,4 +207,20 @@ public class Ieee1992PSS1AStabilizerData extends BaseControllerData {
 	public void setVstmin(double vstmin) {
 		this.vstmin = vstmin;
 	}
-} 
+
+	public double getVcu() {
+		return vcu;
+	}
+
+	public void setVcu(double vcu) {
+		this.vcu = vcu;
+	}
+
+	public double getVcl() {
+		return vcl;
+	}
+
+	public void setVcl(double vcl) {
+		this.vcl = vcl;
+	}
+}
