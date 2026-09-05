@@ -119,7 +119,13 @@ public final class DynamicModelCatalog {
                     "Governor%20TGOV1%20and%20TGOV1D.htm"),
             descriptor("TGOV1D", Set.of("TGOV1DU"), GOVERNOR, 10, LOADABLE,
                     "org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor",
-                    "Governor%20TGOV1%20and%20TGOV1D.htm")
+                    "Governor%20TGOV1%20and%20TGOV1D.htm"),
+            descriptor("GAST", Set.of(), GOVERNOR, 9, LOADABLE,
+                    "org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor",
+                    "Governor%20GAST_PTI%20and%20GASTD.htm"),
+            descriptor("GASTD", Set.of("GASTDU"), GOVERNOR, 12, LOADABLE,
+                    "org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor",
+                    "Governor%20GAST_PTI%20and%20GASTD.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream

@@ -12,6 +12,9 @@ public class PsseGASTGasTurGovernorData extends BaseControllerData {
 		private double loadLimit  = 0.5;
 		private double Kt  = 1.0;
 		private double Dturb =0.0;
+		private double dbH = 0.0;
+		private double dbL = 0.0;
+		private double trate = 0.0;
 		private double VMax =0.0;
 		public double getVMax() {
 			return VMax;
@@ -107,6 +110,12 @@ public class PsseGASTGasTurGovernorData extends BaseControllerData {
 		public void setDturb(double dturb) {
 			Dturb = dturb;
 		}
+		public double getDbH() { return dbH; }
+		public void setDbH(double dbH) { this.dbH = dbH; }
+		public double getDbL() { return dbL; }
+		public void setDbL(double dbL) { this.dbL = dbL; }
+		public double getTrate() { return trate; }
+		public void setTrate(double trate) { this.trate = trate; }
 	   
 	    
 	    

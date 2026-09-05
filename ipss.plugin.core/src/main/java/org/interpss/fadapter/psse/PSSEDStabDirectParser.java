@@ -186,6 +186,9 @@ public class PSSEDStabDirectParser {
                 return procGovTgov1d(busId, genId, fields);
             case "GAST":
                 return procGovGast(busId, genId, fields);
+            case "GASTD":
+            case "GASTDU":
+                return procGovGastd(busId, genId, fields);
             case "IEESGO":
                 return procGovIeesgo(busId, genId, fields);
             case "IEESGOD":
@@ -695,6 +698,7 @@ public class PSSEDStabDirectParser {
     // GAST: IBUS 'GAST' ID R T1 T2 T3 AT KT VMAX VMIN Dturb
     //       idx:  0   1  2  3 4  5  6  7  8   9   10   11
     private boolean procGovGast(String busId, String genId, String[] f) throws InterpssException {
+		if (f.length < 12) return false;
         double r = getDouble(f, 3, 0);
         double t1 = getDouble(f, 4, 0);
         double t2 = getDouble(f, 5, 0);
@@ -704,8 +708,18 @@ public class PSSEDStabDirectParser {
         double vmax = getDouble(f, 9, 0);
         double vmin = getDouble(f, 10, 0);
         double dturb = getDouble(f, 11, 0);
-        builder.addGovGast(busId, genId, r, t1, t2, t3, at, kt, vmax, vmin, dturb);
-        return true;
+		return builder.addGovGast(busId, genId, r, t1, t2, t3,
+		        at, kt, vmax, vmin, dturb) != null;
+	}
+
+    // GASTD: IBUS 'GASTD' ID R T1 T2 T3 AT KT VMAX VMIN Dturb dbH dbL Trate
+    private boolean procGovGastd(String busId, String genId, String[] f) throws InterpssException {
+        if (f.length < 15) return false;
+        return builder.addGovGastd(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0)) != null;
     }
 
     // IEEEG1D: K T1 T2 T3 Uo Uc Pmax Pmin T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8 dbH dbL Trate

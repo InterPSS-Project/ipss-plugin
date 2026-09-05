@@ -12,6 +12,8 @@ import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.controller.cml.field.func.LowValueExpFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
  * This model is corresponding to the PSSE GAST type gas-turbine governor
@@ -28,31 +30,40 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(
 		   input="mach.speed-1.0",
-		   output="this.t2DelayBlock.y - this.Dturb*mach.speed +this.Dturb",
-		   refPoint="mach.pm",
+		   output="this.ratingScale*this.t2DelayBlock.y"
+		           + "-this.ratingScale*this.Dturb*mach.speed+this.ratingScale*this.Dturb",
+		   refPoint="this.invRatingScale*mach.pm",
 		   display= {})
 public class PsseGASTGasTurGovernor extends AnnotateGovernor{
-	public static double k=1;
+	public double k=1;
 	public double loadLimit =1.0;
 	public double Dturb = 0.0;
+	public double dbH = 0.0, dbL = 0.0;
+	public double ratingScale = 1.0, invRatingScale = 1.0;
+
+	@AnControllerField(
+	        type=CMLFieldEnum.StaticBlock,
+	        input="mach.speed-1.0",
+	        y0="0.0", initOrderNumber=-2)
+	public AsymmetricDeadbandBlock speedDeadbandBlock = new AsymmetricDeadbandBlock();
 	
 	//1.1 rGainBlock	
 	public double R=0.05,k1=1/R; 
 	@AnControllerField(
         type= CMLFieldEnum.StaticBlock,
-        input="mach.speed - 1.0",
+	        input="this.speedDeadbandBlock.y",
         parameter={"type.NoLimit", "this.k1"},
         //y0="this.refPoint - this.lValueGate.u0"
         initOrderNumber =-1
         )
-GainBlock rGainBlock;
+public GainBlock rGainBlock;
 
 	//1.2 low value gain
 	@AnFunctionField(
 			type = CMLFieldEnum.FunctionExpression,
 			input ={"this.refPoint - this.rGainBlock.y","this.loadLimit + this.ktGainBlock.y"}
 			)
-	LowValueExpFunction lValueGate;
+	public LowValueExpFunction lValueGate;
 			
 	
 	//1.3 t1 Delay
@@ -63,7 +74,7 @@ GainBlock rGainBlock;
         parameter={"type.NonWindup", "this.k", "this.t1","this.vmax","this.vmin"},
         y0="this.t2DelayBlock.u0",	
         initOrderNumber =1)
-DelayControlBlock t1DelayBlock;
+public DelayControlBlock t1DelayBlock;
 
 
 	//1.4 t2 delay
@@ -72,8 +83,8 @@ DelayControlBlock t1DelayBlock;
         type= CMLFieldEnum.ControlBlock,
         input="this.t1DelayBlock.y",
         parameter={"type.NoLimit", "this.k", "this.t2"},
-        y0="mach.pm")
-DelayControlBlock t2DelayBlock;
+	        y0="this.invRatingScale*mach.pm")
+public DelayControlBlock t2DelayBlock;
 
 	
 	//1.5 t3 delay
@@ -83,7 +94,7 @@ DelayControlBlock t2DelayBlock;
         input="this.t2DelayBlock.y",
         parameter={"type.NoLimit", "this.k", "this.t3"},
         feedback=true)
-DelayControlBlock t3DelayBlock;
+public DelayControlBlock t3DelayBlock;
 	
 	//TODO should this be treated as a feedback
 	//1.6 Kt gain
@@ -93,7 +104,7 @@ DelayControlBlock t3DelayBlock;
 	        input="this.loadLimit-this.t3DelayBlock.y",
 	        parameter={"type.NoLimit", "this.kt"},
 	        feedback=true)
-	GainBlock ktGainBlock;
+	public GainBlock ktGainBlock;
 
 
 	    
@@ -130,6 +141,13 @@ DelayControlBlock t3DelayBlock;
 	     */
 	    @Override
 		public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
+	        this.dbH = getData().getDbH();
+	        this.dbL = getData().getDbL();
+	        this.speedDeadbandBlock.setThresholds(dbH, dbL);
+	        double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+	        this.ratingScale = getData().getTrate() > 1.0e-9 && machineMva > 1.0e-9
+	                ? getData().getTrate() / machineMva : 1.0;
+	        this.invRatingScale = 1.0 / ratingScale;
 	        this.t1 = getData().getT1();
 	        this.t2 = getData().getT2();
 	        this.t3 = getData().getT3();
@@ -137,12 +155,26 @@ DelayControlBlock t3DelayBlock;
             this.loadLimit = getData().getLoadLimit();
             this.R= getData().getR();
             this.Dturb =getData().getDturb();
-            this.vmax = getData().getVMax();
-            this.vmin = getData().getVMin();
+	        double rawMax = getData().getVMax();
+	        double rawMin = getData().getVMin();
+	        if (rawMax < rawMin) {
+	            double swap = rawMax;
+	            rawMax = rawMin;
+	            rawMin = swap;
+	        }
+	        double initialFuel = mach.getPm() * invRatingScale;
+	        this.vmax = Math.max(rawMax, initialFuel);
+	        this.vmin = Math.min(rawMin, initialFuel);
 	        k1=1/R;
 	   
 	        
 	        return super.initStates(bus, mach);
+	    }
+
+	    /** PowerWorld GASTD caps the initialized load reference at the load limit AT. */
+	    @Override
+	    public void setRefPoint(double value) {
+	        super.setRefPoint(Math.min(value, loadLimit));
 	    }
 	    
 	    
