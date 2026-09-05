@@ -60,6 +60,19 @@ class DynamicModelCatalogTest {
     }
 
     @Test
+    void catalogsEveryMay2026GovernorRowAndExposesSupportGaps() {
+        var rows = WeccApprovedDynamicModelCatalog.governors();
+        assertEquals(32, rows.size());
+        assertEquals(25, rows.stream()
+                .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
+        assertEquals(4, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1"))
+                .findFirst().orElseThrow().isImplementedExactly());
+        assertFalse(rows.stream().filter(row -> row.catalogName().equals("TGOV1D"))
+                .findFirst().orElseThrow().isImplementedExactly());
+    }
+
+    @Test
     void loadableDescriptorRequiresRuntimeClass() {
         assertThrows(IllegalArgumentException.class, () -> new DynamicModelDescriptor(
                 "TEST", Set.of(), DynamicModelCategory.GOVERNOR, 1,

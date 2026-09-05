@@ -2,6 +2,7 @@ package org.interpss.fadapter.psse.dyr;
 
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MACHINE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GOVERNOR;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.APPROVED;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.NEVER_APPROVED;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.RETIRED;
@@ -72,6 +73,40 @@ public final class WeccApprovedDynamicModelCatalog {
             stabilizer("PSSSH", "psssh", "", "PSSSH", NEVER_APPROVED,
                     "", "", "Siemens H-infinity stabilizer."));
 
+    private static final List<WeccModelApproval> GOVERNORS = List.of(
+            governor("G2WSCC", "g2wscc", "WSHYDD", "G2WSCC, WSHYDD", RETIRED, "2021-12-02", ""),
+            governor("GAST", "gast", "URGS3T", "GAST_GE, URGS3T", RETIRED, "2018-05-11", ""),
+            governor("GGOV1", "ggov1", "GGOV1", "GGOV1", APPROVED, "2006-08-11", "GGOV1"),
+            governor("GPWSCC", "gpwscc", "WSHYGP", "GPWSCC, WSHYGP", RETIRED, "2021-12-02", ""),
+            governor("H6B", "h6b", "", "H6B", RETIRED, "2016-06-15", ""),
+            governor("H6E", "h6e", "H6EU1", "H6E", APPROVED, "2018-05-11", ""),
+            governor("HYG3", "hyg3", "HYG3U1", "HYG3", APPROVED, "2006-08-11", ""),
+            governor("HYGOV", "hygov", "HYGOV", "HYGOV", APPROVED, "2006-08-11", "HYGOV"),
+            governor("HYGOV4", "hygov4", "IEEEG3", "HYGOV4", APPROVED, "2006-08-11", ""),
+            governor("HYGOVR", "hygovr", "HYGOVR", "HYGOVR", APPROVED, "2008", ""),
+            governor("IEEEG1", "ieeeg1", "WSIEG1", "IEEEG1, WSIEG1", APPROVED, "2006-08-11", "IEEEG1"),
+            governor("IEEEG3", "ieeeg3", "IEEEG3", "IEEEG3", RETIRED, "2021-12-02", ""),
+            governor("LCFB1", "lcfb1", "LCFB1", "LCFB1, LCFB1_PTI", APPROVED, "2006-08-11", ""),
+            governor("PIDGOV", "pidgov", "PIDGOV", "PIDGOV", RETIRED, "2021-12-02", ""),
+            governor("TGOV1", "tgov1", "TGOV1", "TGOV1", APPROVED, "2006-08-11", "TGOV1"),
+            governor("GGOV2", "ggov2", "GGOV2", "GGOV2", NEVER_APPROVED, "", ""),
+            governor("GGOV3", "ggov3", "GGOV3", "GGOV3", APPROVED, "2010", ""),
+            governor("GGOV1D", "", "GGOV1DU, GGOV1D", "GGOV1D", APPROVED, "2019-11", ""),
+            governor("IEEEG1D", "", "IEEEG1SDU, IEEEG1CDU, IEEEG1D", "IEEEG1D", APPROVED, "2019-11", ""),
+            governor("IEESGOD", "", "IEESGODU, IEESGOD", "IEESGOD", APPROVED, "2019-11", ""),
+            governor("WESGOVD", "", "WESGOVDU, WESGOVD", "WESGOVD", APPROVED, "2019-11", ""),
+            governor("WPIDHYD", "", "WPIDHYDU, WPIDHYD", "WPIDHYD", APPROVED, "2019-11", ""),
+            governor("GASTWDD", "", "GASTWDDU, GASTWDD", "GASTWDD", APPROVED, "2019-11", ""),
+            governor("GAST2AD", "", "GAST2ADU, GAST2AD", "GAST2AD", APPROVED, "2019-11", ""),
+            governor("GASTD", "", "GASTDU, GASTD", "GASTD", APPROVED, "2019-11", ""),
+            governor("HYGOVD", "", "HYGOVDU, HYGOVD", "HYGOVD", APPROVED, "2019-11", ""),
+            governor("TGOV1D", "", "TGOV1DU, TGOV1D", "TGOV1D", APPROVED, "2019-11", ""),
+            governor("IEEEG3D", "", "IEEEG3DU, IEEEG3D", "IEEEG3D", APPROVED, "2019-11", ""),
+            governor("DEGOV1D", "DEGOV1", "DEGOV1DU, DEGOV1D", "DEGOV1D", APPROVED, "2019-11", ""),
+            governor("PIDGOVD", "", "PIDGOVDU, PIDGOVD", "PIDGOVD", APPROVED, "2019-11", ""),
+            governor("TGOV3D", "", "TGOV3DU, TGOV3D", "TGOV3D", APPROVED, "2019-11", ""),
+            governor("HYGOV2D", "", "HYGOV2DU, HYGOV2D", "HYGOV2D", APPROVED, "2019-11", ""));
+
     private WeccApprovedDynamicModelCatalog() {
     }
 
@@ -81,6 +116,10 @@ public final class WeccApprovedDynamicModelCatalog {
 
     public static List<WeccModelApproval> stabilizers() {
         return STABILIZERS;
+    }
+
+    public static List<WeccModelApproval> governors() {
+        return GOVERNORS;
     }
 
     public static Optional<WeccModelApproval> findGenerator(String catalogName) {
@@ -101,5 +140,12 @@ public final class WeccApprovedDynamicModelCatalog {
             String interpss, String comments) {
         return new WeccModelApproval(name, STABILIZER, pslf, psse, powerWorld,
                 status, effective, interpss, comments);
+    }
+
+    private static WeccModelApproval governor(String name, String pslf, String psse,
+            String powerWorld, WeccModelApprovalStatus status, String effective,
+            String interpss) {
+        return new WeccModelApproval(name, GOVERNOR, pslf, psse, powerWorld,
+                status, effective, interpss, "");
     }
 }
