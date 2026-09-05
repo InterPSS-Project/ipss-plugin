@@ -69,8 +69,13 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
         angle = internal.getArgument();
         eDroop = internal.abs();
         qReference = data.qvflag() == 0 ? q : 0.0;
-        vReference = data.qvflag() == 0
-                ? vMeasured : vMeasured + data.mq() * q;
+        // Vflag=0 bypasses the terminal-voltage PI controller, so the direct
+        // voltage command must initialize to the internal source magnitude.
+        // Vflag<>0 instead initializes Vcmd to measured terminal voltage and
+        // lets the PI integrator supply the required internal voltage.
+        double initializedVoltageCommand = data.vflag() == 0 ? eDroop : vMeasured;
+        vReference = initializedVoltageCommand
+                - data.mq() * (qReference - qMeasured);
         voltageIntegral = eDroop;
         pUpperIntegral = pLowerIntegral = qUpperIntegral = qLowerIntegral = 0.0;
         speed = 1.0;
