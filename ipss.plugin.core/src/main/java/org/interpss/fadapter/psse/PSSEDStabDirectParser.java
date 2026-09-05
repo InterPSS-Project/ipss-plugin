@@ -1,14 +1,19 @@
 package org.interpss.fadapter.psse;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.interpss.dstab.dynLoad.LD1PAC;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
+import org.interpss.fadapter.psse.dyr.DynamicModelImportReport;
+import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
+import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
+import org.interpss.fadapter.psse.dyr.PsseDyrRecord;
+import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Repca1Data;
@@ -41,81 +46,81 @@ public class PSSEDStabDirectParser {
     private final DStabNetworkBuilder builder;
     private final List<PendingSt2cut> pendingSt2cut = new ArrayList<>();
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
+    private boolean strictImport;
+    private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
 
     public PSSEDStabDirectParser(DStabNetworkBuilder builder) {
         this.builder = builder;
     }
 
+    /** Enable or disable fail-fast coverage checking after a complete DYR import. */
+    public PSSEDStabDirectParser setStrictImport(boolean strictImport) {
+        this.strictImport = strictImport;
+        return this;
+    }
+
+    /** Report for the most recent import, including source line and disposition per record. */
+    public DynamicModelImportReport getLastImportReport() {
+        return lastImportReport;
+    }
+
     public BaseDStabNetwork<?, ?> parseDynFile(String dynFilePath) throws InterpssException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(dynFilePath))) {
-            parseDynData(reader);
+        try {
+            parseDynData(PsseDyrRecordReader.read(Path.of(dynFilePath)), dynFilePath);
         } catch (IOException e) {
             throw new InterpssException("Error reading dynamic file: " + dynFilePath + " - " + e.toString());
+        } catch (IllegalArgumentException e) {
+            throw new InterpssException("Invalid dynamic file: " + dynFilePath + " - " + e.getMessage());
         }
         return builder.getBaseDStabNetwork();
     }
 
-    private void parseDynData(BufferedReader reader) throws IOException, InterpssException {
-        String line;
-        int lineNo = 0;
-        int modelCount = 0;
-        int unsupportedCount = 0;
-
-        while ((line = reader.readLine()) != null) {
-            lineNo++;
-            if (skipInvalidLine(line)) continue;
-            line = line.trim();
-            if (line.isEmpty()) continue;
-
-            while (!isModelDataCompleted(line)) {
-                String next = reader.readLine();
-                if (next == null) break;
-                lineNo++;
-                line += " " + next.trim();
-            }
-
-            int slashIdx = line.lastIndexOf("/");
-            if (slashIdx > 0) {
-                line = line.substring(0, slashIdx);
-            }
-
+    private void parseDynData(List<PsseDyrRecord> records, String source) throws InterpssException {
+        pendingSt2cut.clear();
+        pendingIeeest.clear();
+        DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
+        for (PsseDyrRecord record : records) {
             try {
-                String modelType = getModelType(line);
-                if (modelType == null) {
-                    log.debug("Skipping line {}: cannot determine model type", lineNo);
-                    continue;
-                }
-                if (processModelRecord(modelType.toUpperCase(), line)) {
-                    modelCount++;
+                String type = record.canonicalModelName();
+                boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST");
+                if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
+                    if (!deferred) report.add(record, DynamicModelImportStatus.ATTACHED, "");
                 } else {
-                    unsupportedCount++;
+                    report.add(record, rejectedStatus(type), rejectionMessage(type));
                 }
             } catch (Exception e) {
-                log.warn("Error processing dynamic record at line {}: {}", lineNo, e.getMessage());
+                log.warn("Error processing dynamic record at {}:{}: {}",
+                        record.source(), record.startLine(), e.getMessage());
+                report.add(record, DynamicModelImportStatus.ERROR, e.getMessage());
             }
         }
         for (PendingSt2cut pending : pendingSt2cut) {
-            if (!procPssSt2cut(pending.busId(), pending.genId(), pending.fields())) {
-                unsupportedCount++;
-            }
+            boolean attached = procPssSt2cut(pending.busId(), pending.genId(), pending.fields());
+            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                    : DynamicModelImportStatus.REJECTED,
+                    attached ? "" : "ST2CUT prerequisites or signal mode are unsupported");
         }
         pendingSt2cut.clear();
         for (PendingIeeest pending : pendingIeeest) {
-            if (!procPssIeeest(pending.busId(), pending.genId(), pending.fields())) {
-                unsupportedCount++;
-            }
+            boolean attached = procPssIeeest(pending.busId(), pending.genId(), pending.fields());
+            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                    : DynamicModelImportStatus.REJECTED,
+                    attached ? "" : "IEEEST prerequisites, remote bus, or signal mode are unsupported");
         }
         pendingIeeest.clear();
-        log.info("Dynamic models loaded: {}, unsupported/skipped: {}", modelCount, unsupportedCount);
+        lastImportReport = report.build();
+        log.info("Dynamic model import: {}", lastImportReport.failureSummary());
+        if (strictImport && !lastImportReport.isStrictlyComplete()) {
+            throw new InterpssException("Strict DYR import failed: " + lastImportReport.failureSummary());
+        }
     }
 
-    private boolean processModelRecord(String type, String lineStr) throws InterpssException {
-        String[] fields = splitFields(lineStr);
+    private boolean processModelRecord(String type, String[] fields, PsseDyrRecord record)
+            throws InterpssException {
         if (fields.length < 3) return false;
 
-        int busNum = Math.abs(Integer.parseInt(fields[0]));
-        String busId = BUS_ID_PREFIX + busNum;
-        String genId = trimQuote(fields[2]);
+        String busId = BUS_ID_PREFIX + record.busNumber();
+        String genId = record.deviceId();
 
         switch (type) {
             case "GENCLS":
@@ -163,10 +168,10 @@ public class PSSEDStabDirectParser {
                 return false;
 
             case "ST2CUT":
-                pendingSt2cut.add(new PendingSt2cut(busId, genId, fields.clone()));
+                pendingSt2cut.add(new PendingSt2cut(busId, genId, fields.clone(), record));
                 return true;
             case "IEEEST":
-                pendingIeeest.add(new PendingIeeest(busId, genId, fields.clone()));
+                pendingIeeest.add(new PendingIeeest(busId, genId, fields.clone(), record));
                 return true;
 
             case "CMPLDW":
@@ -467,7 +472,8 @@ public class PSSEDStabDirectParser {
         return mode == 0 || mode == 1 || mode == 3 || mode == 4;
     }
 
-    private record PendingSt2cut(String busId, String genId, String[] fields) {}
+    private record PendingSt2cut(String busId, String genId, String[] fields,
+            PsseDyrRecord record) {}
 
     // IEEEST: IBUS 'IEEEST' ID MODE BUSR A1 A2 A3 A4 A5 A6
     //          T1 T2 T3 T4 T5 T6 KS LSMAX LSMIN VCU VCL
@@ -498,7 +504,8 @@ public class PSSEDStabDirectParser {
         return true;
     }
 
-    private record PendingIeeest(String busId, String genId, String[] fields) {}
+    private record PendingIeeest(String busId, String genId, String[] fields,
+            PsseDyrRecord record) {}
 
     // IEEEG1: IBUS 'IEEEG1' ID JBUS M K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
     //         idx:  0    1    2   3  4  5  6  7  8  9 10  11   12  13 14 15 16 17 18 19 20 21 22 23 24
@@ -672,51 +679,6 @@ public class PSSEDStabDirectParser {
         return new double[]{ net.getBaseKva() / 1000.0, 1.0 };
     }
 
-    private String[] splitFields(String lineStr) {
-        java.util.List<String> fields = new java.util.ArrayList<>();
-        StringBuilder field = new StringBuilder();
-        boolean quoted = false;
-        for (int i = 0; i < lineStr.length(); i++) {
-            char c = lineStr.charAt(i);
-            if (c == '\'') {
-                quoted = !quoted;
-            } else if (!quoted && (c == ',' || Character.isWhitespace(c))) {
-                if (field.length() > 0) {
-                    fields.add(field.toString());
-                    field.setLength(0);
-                }
-            } else {
-                field.append(c);
-            }
-        }
-        if (field.length() > 0) fields.add(field.toString());
-        return fields.toArray(String[]::new);
-    }
-
-    private String getModelType(String lineStr) {
-        String[] strAry = splitFields(lineStr);
-        if (strAry.length > 2) {
-            String field1 = trimQuote(strAry[1]);
-            if (field1.equals("USRLOD") || field1.equals("USRMDL")) {
-                return strAry.length > 3 ? trimQuote(strAry[3]) : null;
-            }
-            return field1;
-        }
-        return null;
-    }
-
-    private boolean isModelDataCompleted(String lineStr) {
-        return lineStr.trim().lastIndexOf("/") > 0;
-    }
-
-    private boolean skipInvalidLine(String lineStr) {
-        String trimmed = lineStr.trim();
-        if (trimmed.isEmpty()) return true;
-        if (trimmed.startsWith("//") || trimmed.startsWith("/")) return true;
-        String[] parts = splitFields(trimmed);
-        return !parts[0].matches("-?\\d+");
-    }
-
     private String trimQuote(String s) {
         if (s == null) return "";
         s = s.trim();
@@ -742,5 +704,20 @@ public class PSSEDStabDirectParser {
         } catch (NumberFormatException e) {
             return defaultVal;
         }
+    }
+
+    private DynamicModelImportStatus rejectedStatus(String type) {
+        return DynamicModelCatalog.find(type)
+                .filter(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE)
+                .map(model -> DynamicModelImportStatus.REJECTED)
+                .orElse(DynamicModelImportStatus.UNSUPPORTED);
+    }
+
+    private String rejectionMessage(String type) {
+        return DynamicModelCatalog.find(type)
+                .map(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE
+                        ? "model could not be attached to its target device"
+                        : "model support status is " + model.supportStatus())
+                .orElse("dynamic model is not implemented by the direct parser");
     }
 }
