@@ -98,7 +98,10 @@ public final class DynamicModelCatalog {
                     "Stabilizer%20IEEEST.htm"),
             descriptor("PSS1A", Set.of(), STABILIZER, 14, LOADABLE,
                     "org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer",
-                    "Stabilizer%20PSS1A.htm")
+                    "Stabilizer%20PSS1A.htm"),
+            descriptor("TGOV1", Set.of(), GOVERNOR, 7, LOADABLE,
+                    "org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor",
+                    "Governor%20TGOV1%20and%20TGOV1D.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream
