@@ -47,7 +47,7 @@ public final class DynamicModelCatalog {
             descriptor("ESST1A", Set.of(), EXCITER, 20, PARTIAL,
                     "org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter",
                     "Exciter%20ESST1A%20and%20ESST1A_GE.htm"),
-            descriptor("ESST4B", Set.of("EXST4B"), EXCITER, 17, PARTIAL,
+            descriptor("ESST4B", Set.of("EXST4B"), EXCITER, 17, LOADABLE,
                     "org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter",
                     "Exciter%20ESST4B.htm"),
             descriptor("IEEEG1", Set.of("WSIEG1"), GOVERNOR, 22, LOADABLE,

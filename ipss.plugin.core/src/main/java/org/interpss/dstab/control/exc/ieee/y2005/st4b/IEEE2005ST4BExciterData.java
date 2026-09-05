@@ -20,6 +20,7 @@ public class IEEE2005ST4BExciterData {
 	private double Kc = 1.1;     // exciter regulation factor
 	private double Xl = 1.1;     // P-bar reactance
 	private double Vbmax = 8.63; // maximum excitation voltage
+	private double Vgmax = 9999.0; // optional PowerWorld feedback limit
 	
 	public double getTr() {
 		return tr;
@@ -128,6 +129,12 @@ public class IEEE2005ST4BExciterData {
 	}
 	public void setVbmax(double vbmax) {
 		Vbmax = vbmax;
+	}
+	public double getVgmax() {
+		return Vgmax;
+	}
+	public void setVgmax(double vgmax) {
+		Vgmax = vgmax;
 	}
 	
 	
