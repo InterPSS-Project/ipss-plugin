@@ -52,6 +52,8 @@ class DynamicModelCatalogTest {
         assertEquals(3, implemented);
         assertTrue(DynamicModelCatalog.find("WSCCST").orElseThrow().supportStatus()
                 == DynamicModelSupportStatus.LOADABLE);
+        assertEquals(DynamicModelSupportStatus.PARTIAL,
+                DynamicModelCatalog.find("PSS1A").orElseThrow().supportStatus());
         assertFalse(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS1A"))
                 .findFirst().orElseThrow().isImplementedExactly());

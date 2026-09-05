@@ -198,6 +198,8 @@ public class PSSEDStabDirectParser {
                 return true;
             case "PSS2A":
                 return procPss2a(busId, genId, fields);
+            case "PSS1A":
+                return procPss1a(busId, genId, fields);
 
             case "CMPLDW":
             case "CIM6BL":
@@ -603,6 +605,18 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 20, 0), getDouble(f, 21, 0),
                 getDouble(f, 22, 0), getDouble(f, 23, 0),
                 getDouble(f, 24, 0), getDouble(f, 25, 0)) != null;
+    }
+
+    // PSS1A: IBUS 'PSS1A' ID ICS A1 A2 T1 T2 T3 T4 T5 T6 KS LSMAX LSMIN VCU VCL
+    private boolean procPss1a(String busId, String genId, String[] f) {
+        if (f.length < 17) return false;
+        return builder.addPss1a(busId, genId,
+                getInt(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0),
+                getDouble(f, 8, 0), getDouble(f, 9, 0),
+                getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0),
+                getDouble(f, 14, 0), getDouble(f, 15, 0), getDouble(f, 16, 0)) != null;
     }
 
     // IEEEG1: IBUS 'IEEEG1' ID JBUS M K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
