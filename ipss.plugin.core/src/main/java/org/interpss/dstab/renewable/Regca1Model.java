@@ -22,6 +22,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
     private final Hashtable<String, Object> states = new Hashtable<>();
     private DStabGen parentGen;
     private Reecb1Model electricalController;
+    private Reeca1Model reeca1Controller;
     private double deviceBaseMva;
     private double systemBaseMva;
     private double vFiltered;
@@ -49,7 +50,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
-        if (parentGen == null || electricalController == null || bus == null) return false;
+        RenewableElectricalController controller = activeController();
+        if (parentGen == null || controller == null || bus == null) return false;
         Complex initial = parentGen.getGen();
         if (initial == null) return false;
         systemBaseMva = bus.getNetwork().getBaseMva();
@@ -65,7 +67,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
         // The WECC REGC_A block uses positive Iq for positive reactive-power output.
         // REEC_B supplies the opposite-signed Iqcmd to the -1/(1+sTg) regulator.
         iqState = q / v;
-        electricalController.initialize(p, q, v);
+        controller.initialize(p, q, v);
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(iqState);
     }
@@ -76,9 +78,10 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
         double frequency = getDStabBus().getFreq();
         // The enclosing DStab solver invokes flag 0 and flag 1 for one modified-Euler
         // step. Advance the composed controls once; flag 1 only corrects REGC_A states.
-        if (flag == 0) electricalController.step(dt, p, q, v, frequency);
-        double ipcmd = electricalController.getIpcmd();
-        double iqcmd = electricalController.getIqcmd();
+        RenewableElectricalController controller = activeController();
+        if (flag == 0) controller.step(dt, p, q, v, frequency);
+        double ipcmd = controller.getIpcmd();
+        double iqcmd = controller.getIqcmd();
 
         if (flag == 0) {
             oldVFiltered = vFiltered;
@@ -194,7 +197,16 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
 
     public Regca1Data getData() { return data; }
     public Reecb1Model getElectricalController() { return electricalController; }
-    public void setElectricalController(Reecb1Model electricalController) { this.electricalController = electricalController; }
+    public void setElectricalController(Reecb1Model electricalController) {
+        this.electricalController = electricalController;
+        this.reeca1Controller = null;
+    }
+    public Reeca1Model getReeca1Controller() { return reeca1Controller; }
+    public void setReeca1Controller(Reeca1Model controller) {
+        this.reeca1Controller = controller;
+        this.electricalController = null;
+    }
+    public RenewableElectricalController getActiveElectricalController() { return activeController(); }
     public double getIp() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
         return ipState * lowVoltageActiveGain(v, data.lvpnt0(), data.lvpnt1());
@@ -202,6 +214,10 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
     public double getIq() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
         return highVoltageReactiveOutput(iqState, v, data.volim(), data.khv(), data.iolim());
+    }
+
+    private RenewableElectricalController activeController() {
+        return reeca1Controller != null ? reeca1Controller : electricalController;
     }
 
     private static boolean finite(double value) { return Double.isFinite(value); }

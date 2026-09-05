@@ -15,6 +15,7 @@ import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecord;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.dstab.renewable.Reecb1Data;
+import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.mach.GenqecData;
@@ -210,6 +211,9 @@ public class PSSEDStabDirectParser {
             case "REECB1":
             case "REECBU1":
                 return procReecb1(busId, genId, fields);
+            case "REECA1":
+            case "REECAU1":
+                return procReeca1(busId, genId, fields);
             case "REPCA1":
             case "REPCAU1":
                 return procRepca1(busId, genId, fields);
@@ -737,6 +741,35 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 29, 1), getDouble(f, 30, 0), getDouble(f, 31, 1.1),
                 getDouble(f, 32, 0.02));
         return builder.addReecb1(busId, genId, data) != null;
+    }
+
+    // REECA1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PFLAG PQFLAG followed by
+    // voltage-dip, reactive-control, active-control, current-limit, and VDL data.
+    private boolean procReeca1(String busId, String genId, String[] f) {
+        if (f.length < 54) return false;
+        Reeca1Data data = new Reeca1Data(
+                getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0),
+                getInt(f, 6, 0), getInt(f, 7, 0), getInt(f, 8, 0),
+                getDouble(f, 9, .8), getDouble(f, 10, 1.2), getDouble(f, 11, .02),
+                getDouble(f, 12, -.02), getDouble(f, 13, .02), getDouble(f, 14, 0),
+                getDouble(f, 15, 999), getDouble(f, 16, -999), getDouble(f, 17, 0),
+                getDouble(f, 18, 0), getDouble(f, 19, 0), getDouble(f, 20, 0),
+                getDouble(f, 21, .02), getDouble(f, 22, 999), getDouble(f, 23, -999),
+                getDouble(f, 24, 999), getDouble(f, 25, -999),
+                getDouble(f, 26, 0), getDouble(f, 27, 0),
+                getDouble(f, 28, 0), getDouble(f, 29, 0), getDouble(f, 30, 0),
+                getDouble(f, 31, .02), getDouble(f, 32, 999), getDouble(f, 33, -999),
+                getDouble(f, 34, 1), getDouble(f, 35, 0),
+                getDouble(f, 36, 1.1), getDouble(f, 37, .02),
+                getDouble(f, 38, 0), getDouble(f, 39, 0),
+                getDouble(f, 40, 0), getDouble(f, 41, 0),
+                getDouble(f, 42, 0), getDouble(f, 43, 0),
+                getDouble(f, 44, 0), getDouble(f, 45, 0),
+                getDouble(f, 46, 0), getDouble(f, 47, 0),
+                getDouble(f, 48, 0), getDouble(f, 49, 0),
+                getDouble(f, 50, 0), getDouble(f, 51, 0),
+                getDouble(f, 52, 0), getDouble(f, 53, 0));
+        return builder.addReeca1(busId, genId, data) != null;
     }
 
     // REPCA1: IBUS MODEL ID IBRANCH JBUS KBus ID VCFlag RefFlag FFlag ...
