@@ -10,6 +10,8 @@ import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
+import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
+import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
@@ -546,6 +548,35 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Governor Models ====================
+
+    /** Attach a PSS/E HYGOV hydro governor. */
+    public PsseHygovGovernor addGovHygov(String busId, String genId,
+            PsseHygovGovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for HYGOV governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseHygovGovernor gov = new PsseHygovGovernor(
+                mach.getId() + "_Gov", "HYGOV", "PSS/E");
+        copyHygovData(data, gov.getData());
+        if (!gov.validateParameters()) {
+            log.warn("Invalid HYGOV parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        gov.setMachine(mach);
+        return gov;
+    }
+
+    private static void copyHygovData(PsseHygovGovernorData source,
+            PsseHygovGovernorData target) {
+        target.setR(source.getR()); target.setRtemp(source.getRtemp());
+        target.setTr(source.getTr()); target.setTf(source.getTf());
+        target.setTg(source.getTg()); target.setVelm(source.getVelm());
+        target.setGmax(source.getGmax()); target.setGmin(source.getGmin());
+        target.setTw(source.getTw()); target.setAt(source.getAt());
+        target.setDturb(source.getDturb()); target.setQnl(source.getQnl());
+    }
 
     /** Attach a PSS/E GGOV1 governor after its record has been mapped exactly. */
     public PsseGgov1Governor addGovGgov1(String busId, String genId,
