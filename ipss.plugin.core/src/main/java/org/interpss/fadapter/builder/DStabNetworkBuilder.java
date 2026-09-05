@@ -4,6 +4,8 @@ import org.interpss.dstab.control.exc.ExciterObjectFactory;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
@@ -523,6 +525,26 @@ public class DStabNetworkBuilder {
         data.setKg(kg); data.setKp(kp); data.setKi(ki); data.setVbmax(vbmax);
         data.setKc(kc); data.setXl(xl); data.setVgmax(vgmax);
         data.setAngKp(thetaP); data.setTm(tm); data.setVmmax(vmmax); data.setVmmin(vmmin);
+        return exc;
+    }
+
+    /** Attach the 17-parameter PSS/E ESST4B exciter. */
+    public IEEE2005ST4BExciter addExcEsst4b(String busId, String genId,
+            IEEE2005ST4BExciterData source) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        IEEE2005ST4BExciter exc = ExciterObjectFactory.createIeee2005ST4BExciter(
+                mach.getId() + "_Exc", "ESST4B", mach);
+        IEEE2005ST4BExciterData target = exc.getData();
+        target.setTr(source.getTr()); target.setKpr(source.getKpr());
+        target.setKir(source.getKir()); target.setVrmax(source.getVrmax());
+        target.setVrmin(source.getVrmin()); target.setTa(source.getTa());
+        target.setKpm(source.getKpm()); target.setKim(source.getKim());
+        target.setVmmax(source.getVmmax()); target.setVmmin(source.getVmmin());
+        target.setKg(source.getKg()); target.setKp(source.getKp());
+        target.setKi(source.getKi()); target.setVbmax(source.getVbmax());
+        target.setKc(source.getKc()); target.setXl(source.getXl());
+        target.setAngKp(source.getAngKp()); target.setVgmax(source.getVgmax());
         return exc;
     }
 

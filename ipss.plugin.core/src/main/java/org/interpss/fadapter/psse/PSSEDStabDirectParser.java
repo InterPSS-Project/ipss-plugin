@@ -24,6 +24,7 @@ import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,8 +162,7 @@ public class PSSEDStabDirectParser {
             case "ESST3A":
                 return procExcEsst3a(busId, genId, fields);
             case "ESST4B":
-                log.debug("Exciter model {} at bus {} - parsed as IEEET1 fallback", type, busId);
-                return false;
+                return procExcEsst4b(busId, genId, fields);
 
             case "IEEEG1":
                 return procGovIeeeg1(busId, genId, fields);
@@ -479,6 +479,22 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 16, 0), getDouble(f, 17, 0), getDouble(f, 18, 0),
                 getDouble(f, 19, 0), getDouble(f, 20, 0), getDouble(f, 21, 0),
                 getDouble(f, 22, 0), getDouble(f, 23, 0)) != null;
+    }
+
+    private boolean procExcEsst4b(String busId, String genId, String[] f) {
+        if (f.length < 20) return false;
+        IEEE2005ST4BExciterData d = new IEEE2005ST4BExciterData();
+        d.setTr(getDouble(f, 3, 0)); d.setKpr(getDouble(f, 4, 0));
+        d.setKir(getDouble(f, 5, 0)); d.setVrmax(getDouble(f, 6, 0));
+        d.setVrmin(getDouble(f, 7, 0)); d.setTa(getDouble(f, 8, 0));
+        d.setKpm(getDouble(f, 9, 0)); d.setKim(getDouble(f, 10, 0));
+        d.setVmmax(getDouble(f, 11, 0)); d.setVmmin(getDouble(f, 12, 0));
+        d.setKg(getDouble(f, 13, 0)); d.setKp(getDouble(f, 14, 0));
+        d.setKi(getDouble(f, 15, 0)); d.setVbmax(getDouble(f, 16, 0));
+        d.setKc(getDouble(f, 17, 0)); d.setXl(getDouble(f, 18, 0));
+        d.setAngKp(getDouble(f, 19, 0));
+        if (f.length > 20) d.setVgmax(getDouble(f, 20, d.getVgmax()));
+        return builder.addExcEsst4b(busId, genId, d) != null;
     }
 
     private static boolean isSupportedSt2cutMode(int mode) {
