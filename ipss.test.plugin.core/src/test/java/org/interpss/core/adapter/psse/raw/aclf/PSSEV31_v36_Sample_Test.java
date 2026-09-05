@@ -15,6 +15,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfLoad;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.aclf.facts.StaticVarCompensator;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
@@ -32,7 +33,13 @@ public class PSSEV31_v36_Sample_Test extends CorePluginTestSetup {
 
 	@Test
 	public void testV32() throws Exception {
-		assertSampleMapped(32);
+		AclfNetwork net = loadSample(32);
+		assertSampleMapped(net, 32);
+		SwitchedShunt shunt = net.getBus("Bus152").getFirstSwitchedShunt(true);
+		assertNotNull(shunt);
+		assertEquals(-1.15, shunt.getBInit(), 1.0E-10,
+				"RAW v32 BINIT follows ADJM and ST and must be read from field 10");
+		assertEquals(-1.15, shunt.getBActual(), 1.0E-10);
 	}
 
 	@Test
@@ -78,9 +85,14 @@ public class PSSEV31_v36_Sample_Test extends CorePluginTestSetup {
 	}
 
 	private void assertSampleMapped(int version) throws Exception {
-		AclfNetwork net = loadSample(version);
+		assertSampleMapped(loadSample(version), version);
+	}
+
+	private void assertSampleMapped(AclfNetwork net, int version) {
 		assertNull(net.getBus("Bus0"), "version " + version + " must not create Bus0");
 		assertTrue(net.getNoActiveBus() > 0, "version " + version + " must have active buses");
+		assertEquals(60.0, net.getFrequency(), 1.0E-10,
+				"PSS/E BASFRQ must be retained for dynamic angle integration");
 		checkMappedData(net);
 	}
 

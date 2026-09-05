@@ -5,15 +5,24 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
+import org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter;
+import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.controller.cml.field.block.GainBlock;
 
 /**
  * Unit tests for DStabNetworkBuilder exciter APIs.
@@ -21,6 +30,9 @@ import com.interpss.dstab.mach.Machine;
 public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 
 	private static final double TOL = 1.0E-6;
+
+	@TempDir
+	Path tempDir;
 
 	@Test
 	public void addExcIeeet1_setsDataAndAttaches() throws Exception {
@@ -85,6 +97,106 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(0.2, exc.getData().getVimax(), TOL);
 		assertEquals(-0.2, exc.getData().getVimin(), TOL);
 		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+	}
+
+	@Test
+	public void addExcEsdc2a_usesDedicatedModelAndAttaches() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Esdc2aExciter exc = builder.addExcEsdc2a("Bus1", "1",
+				0.02, 50.0, 0.05, 0.0, 0.02, 0.0, -3.0,
+				0.0, 0.512, 0.07, 1.3, 3.9825, 0.5, 5.31, 1.049);
+
+		assertNotNull(exc);
+		assertEquals(Esdc2aExciter.class, exc.getClass());
+		assertEquals(0.02, exc.getData().getTr(), TOL);
+		assertEquals(0.0, exc.getData().getVrmax(), TOL);
+		assertEquals(-3.0, exc.getData().getVrmin(), TOL);
+		assertEquals(1.3, exc.getData().getTf(), TOL);
+		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+	}
+
+	@Test
+	public void addExcEsst3a_reusesExistingModelAndMapsAllTailParameters() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		IEEE2005ST3AExciter exc = builder.addExcEsst3a("Bus1", "1",
+				0.02, 0.3, -0.2, 8.0, 1.0, 5.0, 20.0, 0.0,
+				99.0, -99.0, 1.0, 3.67, 0.435, 6.48, 0.01,
+				0.0098, 4.86, 3.33, 0.4, 99.0, 0.0);
+
+		assertNotNull(exc);
+		assertEquals(IEEE2005ST3AExciter.class, exc.getClass());
+		assertEquals(0.02, exc.getData().getTr(), TOL);
+		assertEquals(0.3, exc.getData().getVimax(), TOL);
+		assertEquals(-0.2, exc.getData().getVimin(), TOL);
+		assertEquals(8.0, exc.getData().getKm(), TOL);
+		assertEquals(1.0, exc.getData().getTc(), TOL);
+		assertEquals(5.0, exc.getData().getTb(), TOL);
+		assertEquals(20.0, exc.getData().getKa(), TOL);
+		assertEquals(0.0, exc.getData().getTa(), TOL);
+		assertEquals(99.0, exc.getData().getVrmax(), TOL);
+		assertEquals(-99.0, exc.getData().getVrmin(), TOL);
+		assertEquals(1.0, exc.getData().getKg(), TOL);
+		assertEquals(3.67, exc.getData().getKp(), TOL);
+		assertEquals(0.435, exc.getData().getKi(), TOL);
+		assertEquals(6.48, exc.getData().getVbmax(), TOL);
+		assertEquals(0.01, exc.getData().getKc(), TOL);
+		assertEquals(0.0098, exc.getData().getXl(), TOL);
+		assertEquals(4.86, exc.getData().getVgmax(), TOL);
+		assertEquals(3.33, exc.getData().getAngKp(), TOL);
+		assertEquals(0.4, exc.getData().getTm(), TOL);
+		assertEquals(99.0, exc.getData().getVmmax(), TOL);
+		assertEquals(0.0, exc.getData().getVmmin(), TOL);
+		var kgField = IEEE2005ST3AExciter.class.getDeclaredField("kgGainBlock");
+		// PowerWorld's ESST3A diagram defines KG feedback as an algebraic
+		// limited gain; it is not an additional dynamic state.
+		assertEquals(GainBlock.class, kgField.getType());
+		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+	}
+
+	@Test
+	public void parseEsst3a_mapsPowerWorldPsseRecordOrder() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("esst3a.dyr");
+		Files.writeString(dyr,
+				"1 'ESST3A' '1' 0.02 0.3 -0.2 8.0 1.0 5.0 20.0 0.0 "
+				+ "99.0 -99.0 1.0 3.67 0.435 6.48 0.01 0.0098 4.86 3.33 "
+				+ "0.4 99.0 0.0 /\n");
+
+		new PSSEDStabDirectParser(builder).parseDynFile(dyr.toString());
+		IEEE2005ST3AExciter exc = (IEEE2005ST3AExciter) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1").getExciter();
+		assertNotNull(exc);
+		assertEquals(8.0, exc.getData().getKm(), TOL);
+		assertEquals(20.0, exc.getData().getKa(), TOL);
+		assertEquals(3.67, exc.getData().getKp(), TOL);
+		assertEquals(0.435, exc.getData().getKi(), TOL);
+		assertEquals(6.48, exc.getData().getVbmax(), TOL);
+		assertEquals(4.86, exc.getData().getVgmax(), TOL);
+		assertEquals(3.33, exc.getData().getAngKp(), TOL);
+		assertEquals(0.4, exc.getData().getTm(), TOL);
+		assertEquals(99.0, exc.getData().getVmmax(), TOL);
+		assertEquals(0.0, exc.getData().getVmmin(), TOL);
+	}
+
+	@Test
+	public void parseIeeest_createsDedicatedStabilizerAndMapsWeccParameters() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		builder.addExcSimple("Bus1", "1", 50.0, 0.05, 5.0, -5.0);
+		Path dyr = tempDir.resolve("ieeest.dyr");
+		Files.writeString(dyr,
+				"1 'IEEEST' '1' 3 0 0 0 0 0 0 0 0 0 0 0.75 1.0 4.2 -2.0 0.1 -0.1 0 0 /\n");
+
+		new PSSEDStabDirectParser(builder).parseDynFile(dyr.toString());
+		IeeestStabilizer pss = (IeeestStabilizer) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1").getStabilizer();
+		assertNotNull(pss);
+		assertEquals(3, pss.getData().mode());
+		assertEquals(0.75, pss.getData().t4(), TOL);
+		assertEquals(1.0, pss.getData().t5(), TOL);
+		assertEquals(4.2, pss.getData().t6(), TOL);
+		assertEquals(-2.0, pss.getData().ks(), TOL);
+		assertEquals(0.1, pss.getData().lsmax(), TOL);
+		assertEquals(-0.1, pss.getData().lsmin(), TOL);
 	}
 
 	@Test
