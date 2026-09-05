@@ -11,6 +11,8 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
+import org.interpss.dstab.validation.DynamicTraceCsv;
+import org.interpss.dstab.validation.StateMonitorTraceAdapter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -76,6 +78,8 @@ class Wecc240FaultBenchmarkTest {
         Files.createDirectories(output);
         writeCsv(output.resolve("interpss.csv"), BUSES, MACHINES,
                 monitor.getBusVoltTable(), monitor.getMachSpeedTable());
+        DynamicTraceCsv.write(output.resolve("interpss-long.csv"),
+                StateMonitorTraceAdapter.standard(monitor));
 
         System.out.println("InterPSS WECC240 Bus 2401 fault summary");
         for (String bus : BUSES) {

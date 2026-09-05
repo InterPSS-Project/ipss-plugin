@@ -11,6 +11,8 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
+import org.interpss.dstab.validation.DynamicTraceCsv;
+import org.interpss.dstab.validation.StateMonitorTraceAdapter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -79,6 +81,8 @@ class Wecc179FaultBenchmarkTest {
         Path output = Path.of("target", "wecc179-fault-benchmark");
         Files.createDirectories(output);
         writeCsv(output.resolve("interpss.csv"), monitor);
+        DynamicTraceCsv.write(output.resolve("interpss-long.csv"),
+                StateMonitorTraceAdapter.standard(monitor));
         for (String bus : BUSES) {
             double minimum = monitor.getBusVoltTable().get(bus).values().stream()
                     .mapToDouble(record -> record.value).min().orElseThrow();
