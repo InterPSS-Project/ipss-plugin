@@ -17,6 +17,7 @@ import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Regca1Data;
+import org.interpss.dstab.renewable.Regfma1Data;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
@@ -211,6 +212,8 @@ public class PSSEDStabDirectParser {
             case "REGCA1":
             case "REGCAU1":
                 return procRegca1(busId, genId, fields);
+            case "REGFMA1":
+                return procRegfma1(busId, genId, fields);
             case "REECB1":
             case "REECBU1":
                 return procReecb1(busId, genId, fields);
@@ -735,6 +738,23 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 12, -1.3), getDouble(f, 13, 0.02), getDouble(f, 14, 0.0),
                 getDouble(f, 15, 100.0), getDouble(f, 16, -100.0), getDouble(f, 17, 0.7));
         return builder.addRegca1(busId, genId, data) != null;
+    }
+
+    // PSS/E REGFMA1: IBUS MODEL ID TPf TQf TVf Xe Imax Emax Emin
+    // Pmax Pmin Qmax Qmin Mp Mq Kppmax Kipmax Kpqmax Kiqmax Kpv Kiv
+    private boolean procRegfma1(String busId, String genId, String[] f) {
+        if (f.length < 22) return false;
+        Regfma1Data data = new Regfma1Data(
+                getDouble(f, 3, 0.0), getDouble(f, 4, 0.02), getDouble(f, 5, 0.02),
+                getDouble(f, 6, 0.15), getDouble(f, 7, 0.0),
+                getDouble(f, 8, 1.2), getDouble(f, 9, 0.0),
+                getDouble(f, 10, 1.0), getDouble(f, 11, 0.0),
+                getDouble(f, 12, 1.0), getDouble(f, 13, -1.0),
+                getDouble(f, 14, 0.01), getDouble(f, 15, 0.05),
+                getDouble(f, 16, 0.01), getDouble(f, 17, 0.1),
+                getDouble(f, 18, 3.0), getDouble(f, 19, 20.0),
+                getDouble(f, 20, 0.0), getDouble(f, 21, 6.0));
+        return builder.addRegfma1(busId, genId, data) != null;
     }
 
     // REECB1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PQFLAG followed by

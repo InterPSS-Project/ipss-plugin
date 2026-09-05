@@ -90,6 +90,14 @@ class RenewableControllerModelTest {
                 Regca1Model.highVoltageReactiveOutput(-1.2, 1.5, 1.2, 0.7, -1.3), TOL);
     }
 
+    @Test
+    void regfma1VoltagePiUsesConditionalIntegrationAtBothLimits() {
+        assertEquals(1.2, Regfma1Model.integrateWithAntiWindup(
+                1.2, 6.0, .1, .01, 0.0, 0.0, 1.2), TOL);
+        assertEquals(1.106, Regfma1Model.integrateWithAntiWindup(
+                1.1, 6.0, .1, .01, 0.0, 0.0, 1.2), TOL);
+    }
+
     private static Reecb1Data reecb1Data(double imax) {
         return new Reecb1Data(
                 0, 0, 1, 0, 0,

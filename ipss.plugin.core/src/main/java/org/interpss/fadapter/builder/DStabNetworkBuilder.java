@@ -25,6 +25,8 @@ import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regfma1Data;
+import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.dstab.renewable.WindControlStack;
@@ -826,6 +828,16 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Regca1Model(gen, bus, genId, data);
+    }
+
+    public Regfma1Model addRegfma1(String busId, String genId, Regfma1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for REGFMA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Regfma1Model(gen, bus, genId, data);
     }
 
     public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {
