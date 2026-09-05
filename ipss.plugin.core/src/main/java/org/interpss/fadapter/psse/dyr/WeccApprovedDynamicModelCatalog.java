@@ -100,7 +100,7 @@ public final class WeccApprovedDynamicModelCatalog {
             governor("GAST2AD", "", "GAST2ADU, GAST2AD", "GAST2AD", APPROVED, "2019-11", ""),
             governor("GASTD", "", "GASTDU, GASTD", "GASTD", APPROVED, "2019-11", ""),
             governor("HYGOVD", "", "HYGOVDU, HYGOVD", "HYGOVD", APPROVED, "2019-11", ""),
-            governor("TGOV1D", "", "TGOV1DU, TGOV1D", "TGOV1D", APPROVED, "2019-11", ""),
+            governor("TGOV1D", "", "TGOV1DU, TGOV1D", "TGOV1D", APPROVED, "2019-11", "TGOV1D"),
             governor("IEEEG3D", "", "IEEEG3DU, IEEEG3D", "IEEEG3D", APPROVED, "2019-11", ""),
             governor("DEGOV1D", "DEGOV1", "DEGOV1DU, DEGOV1D", "DEGOV1D", APPROVED, "2019-11", ""),
             governor("PIDGOVD", "", "PIDGOVDU, PIDGOVD", "PIDGOVD", APPROVED, "2019-11", ""),

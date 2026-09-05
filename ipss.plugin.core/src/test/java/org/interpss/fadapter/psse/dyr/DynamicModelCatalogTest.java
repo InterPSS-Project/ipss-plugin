@@ -65,10 +65,10 @@ class DynamicModelCatalogTest {
         assertEquals(32, rows.size());
         assertEquals(25, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
-        assertEquals(4, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(5, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertFalse(rows.stream().filter(row -> row.catalogName().equals("TGOV1D"))
+        assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1D"))
                 .findFirst().orElseThrow().isImplementedExactly());
     }
 
