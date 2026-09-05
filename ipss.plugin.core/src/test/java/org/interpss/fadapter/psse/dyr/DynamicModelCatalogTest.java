@@ -60,6 +60,22 @@ class DynamicModelCatalogTest {
     }
 
     @Test
+    void catalogsEveryMay2026ExciterRowAndExposesSupportGaps() {
+        var rows = WeccApprovedDynamicModelCatalog.exciters();
+        assertEquals(71, rows.size());
+        assertEquals(65, rows.stream()
+                .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
+        assertEquals(6, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esst3a")
+                .orElseThrow().isImplementedExactly());
+        assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esdc2a")
+                .orElseThrow().isImplementedExactly());
+        assertFalse(WeccApprovedDynamicModelCatalog.findExciter("exst4b")
+                .orElseThrow().isImplementedExactly());
+        assertFalse(DynamicModelCatalog.find("EXST4B").isPresent());
+    }
+
+    @Test
     void catalogsEveryMay2026GovernorRowAndExposesSupportGaps() {
         var rows = WeccApprovedDynamicModelCatalog.governors();
         assertEquals(32, rows.size());

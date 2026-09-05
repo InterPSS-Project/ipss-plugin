@@ -3,6 +3,7 @@ package org.interpss.fadapter.psse.dyr;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MACHINE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GOVERNOR;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.EXCITER;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.APPROVED;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.NEVER_APPROVED;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.RETIRED;
@@ -20,6 +21,80 @@ public final class WeccApprovedDynamicModelCatalog {
     public static final URI SOURCE = URI.create(
             "https://www.wecc.org/sites/default/files/documents/progress_report/2026/"
                     + "Approved%20Dynamic%20Models%20May%202026.pdf");
+
+    /** Excitation-system rows through TEXS; OEL/UEL rows are a separate future wave. */
+    private static final List<WeccModelApproval> EXCITERS = List.of(
+            exciter("EXAC1", "exac1", "EXAC1", "EXAC1", APPROVED, "2006-08-11", ""),
+            exciter("ESAC1A", "esac1a", "ESAC1A", "ESAC1A", APPROVED, "2011-01-21", ""),
+            exciter("EXAC1A", "exac1a", "EXAC1A", "EXAC1A", APPROVED, "2006-08-11", ""),
+            exciter("EXAC1M", "exac1m", "ESURRY", "EXAC1M", APPROVED, "2021-12-02", ""),
+            exciter("ESAC1C", "esac1c", "AC1C", "AC1C", APPROVED, "2020-04-22", ""),
+            exciter("EXAC2", "exac2", "EXAC2", "EXAC2", APPROVED, "2006-08-11", ""),
+            exciter("ESAC2A", "esac2a", "ESAC2A", "ESAC2A", APPROVED, "2011-01-21", ""),
+            exciter("EXAC3", "exac3", "EXAC3", "EXAC3", NEVER_APPROVED, "", ""),
+            exciter("ESAC2C", "esac2c", "AC2C", "AC2C", APPROVED, "2020-04-22", ""),
+            exciter("EXAC3A", "exac3a", "ESAC3A", "EXAC3A", APPROVED, "2006-08-11", ""),
+            exciter("ESAC3A", "esac3a", "ESAC3A", "ESAC3A", APPROVED, "2011-01-21", ""),
+            exciter("ESAC3C", "esac3c", "AC3C", "AC3C", APPROVED, "2020-04-22", ""),
+            exciter("EXAC4", "exac4", "EXAC4", "EXAC4", APPROVED, "2006-08-11", ""),
+            exciter("ESAC4A", "esac4a", "ESAC4A", "ESAC4A", APPROVED, "2011-01-21", ""),
+            exciter("ESAC4C", "esac4c", "AC4C", "AC4C", APPROVED, "2020-04-22", ""),
+            exciter("ESAC5A", "esac5a", "ESAC5A", "ESAC5A", APPROVED, "2011-01-21", ""),
+            exciter("ESAC5C", "esac5c", "AC5C", "AC5C", APPROVED, "2020-04-22", ""),
+            exciter("EXAC6A", "exac6a", "ESAC6A", "EXAC6A", NEVER_APPROVED, "", ""),
+            exciter("ESAC6A", "esac6a", "ESAC6A", "ESAC6A", APPROVED, "2011-01-21", ""),
+            exciter("ESAC6C", "esac6c", "AC6C", "AC6C", APPROVED, "2020-04-22", ""),
+            exciter("ESAC7B", "esac7b", "AC7B", "ESAC7B and AC7B", APPROVED, "2011-01-21", ""),
+            exciter("ESAC7C", "esac7c", "AC7C", "AC7C", APPROVED, "2020-04-22", ""),
+            exciter("EXAC8B", "exac8b", "ESAC8B", "EXAC8B", APPROVED, "2006-08-11", ""),
+            exciter("ESAC8B", "esac8b", "AC8B", "ESAC8B_GE and AC8B", APPROVED, "2011-01-21", ""),
+            exciter("ESAC8C", "esac8c", "AC8C", "AC8C", APPROVED, "2020-04-22", ""),
+            exciter("ESAC9C", "esac9c", "AC9C", "AC9C", APPROVED, "2020-04-22", ""),
+            exciter("ESAC10C", "esac10c", "AC10C", "AC10C", APPROVED, "2020-04-22", ""),
+            exciter("ESAC11C", "esac11c", "AC11C", "AC11C", APPROVED, "2020-04-22", ""),
+            exciter("EXBBC", "exbbc", "BBSEX1", "EXBBC and BBSEX1", APPROVED, "2006-08-11", ""),
+            exciter("EXDC1", "exdc1", "IEEEX1", "EXDC1 and IEEEX1", APPROVED, "2006-08-11", ""),
+            exciter("ESDC1A", "esdc1a", "ESDC1A", "ESDC1A", APPROVED, "2011-01-21", ""),
+            exciter("ESDC1C", "esdc1c", "DC1C", "DC1C", APPROVED, "2020-04-22", ""),
+            exciter("EXDC2", "exdc2", "EXDC2", "EXDC2_GE and EXDC2_PTI", APPROVED, "2006-08-11", ""),
+            exciter("EXDC2A", "exdc2a", "EXDC2", "EXDC2A and EXDC2_PTI", APPROVED, "2006-08-11", ""),
+            exciter("ESDC2A", "esdc2a", "ESDC2A", "ESDC2A", APPROVED, "2011-01-21", "ESDC2A"),
+            exciter("ESDC2C", "esdc2c", "DC2C", "DC2C", APPROVED, "2020-04-22", ""),
+            exciter("EXDC4", "exdc4", "IEEET4", "EXDC4 and IEEET4", APPROVED, "2006-08-11", ""),
+            exciter("ESDC3A", "esdc3a", "DC3A", "ESDC3A and DC3A", APPROVED, "2011-01-21", ""),
+            exciter("ESDC4B", "esdc4b", "DC4B", "ESDC4B", APPROVED, "2011-01-21", ""),
+            exciter("ESDC4C", "esdc4c", "DC4C", "DC4C", APPROVED, "2020-04-22", ""),
+            exciter("EXELI", "exeli", "EXELI", "EXELI", APPROVED, "2006-08-11", ""),
+            exciter("EXST1", "exst1", "EXST1", "EXST1_GE and EXST1_PTI", APPROVED, "2006-08-11", "EXST1"),
+            exciter("ESST1A", "esst1a", "ESST1A", "ESST1A and ESST1A_GE", APPROVED, "2011-01-21", "ESST1A"),
+            exciter("ESST1C", "esst1c", "ST1C", "ST1C", APPROVED, "2020-04-22", ""),
+            exciter("EXST2", "exst2", "EXST2", "EXST2", APPROVED, "2006-08-11", ""),
+            exciter("EXST2A", "exst2a", "ESST2A", "EXST2A", APPROVED, "2006-08-11", ""),
+            exciter("ESST2A", "esst2a", "ESST2A", "ESST2A", APPROVED, "2011-01-21", ""),
+            exciter("ESST2C", "esst2c", "ST2C", "ST2C", APPROVED, "2020-04-22", ""),
+            exciter("EXST3", "exst3", "EXST3", "EXST3", APPROVED, "2006-08-11", ""),
+            exciter("EXST3A", "exst3a", "ESST3A", "EXST3A", APPROVED, "2006-08-11", ""),
+            exciter("ESST3A", "esst3a", "ESST3A", "ESST3A", APPROVED, "2011-01-21", "ESST3A"),
+            exciter("ESST3C", "esst3c", "ST3C", "ST3C", APPROVED, "2020-04-22", ""),
+            exciter("EXST4B", "exst4b", "ESST4B", "EXST4B", APPROVED, "2006-08-11", ""),
+            exciter("ESST4B", "esst4b", "ESST4B", "ESST4B", APPROVED, "2011-01-21", "ESST4B"),
+            exciter("ESST4C", "esst4c", "ST4C", "ST4C", APPROVED, "2020-04-22", ""),
+            exciter("ESST5B", "esst5b", "ST5B", "ESST5B and ST5B", APPROVED, "2011-01-21", ""),
+            exciter("ESST5C", "esst5c", "ST5C", "ST5C", APPROVED, "2020-04-22", ""),
+            exciter("ESST6B", "esst6b", "ST6B", "ESST6B and ST6B", APPROVED, "2011-01-21", ""),
+            exciter("ESST6C", "esst6c", "ST6C", "ST6C", APPROVED, "2020-04-22", ""),
+            exciter("ESST7B", "esst7b", "ST7B", "ESST7B and ST7B", APPROVED, "2011-01-21", ""),
+            exciter("ESST7C", "esst7c", "ST7C", "ST7C", APPROVED, "2020-04-22", ""),
+            exciter("ESST8C", "esst8c", "ST8C", "ST8C", APPROVED, "2020-04-22", ""),
+            exciter("ESST9C", "esst9c", "ST9C", "ST9C", APPROVED, "2020-04-22", ""),
+            exciter("ST10C", "ST10C", "ST10C", "ST10C", APPROVED, "2020-04-22", ""),
+            exciter("IEEET1", "ieeet1", "IEEET1", "IEEET1", APPROVED, "2006-08-11", "IEEET1"),
+            exciter("MEXS", "mexs", "Not used", "MEXS", NEVER_APPROVED, "", ""),
+            exciter("PFQRG", "pfqrg", "Not used", "PFQRG", NEVER_APPROVED, "", ""),
+            exciter("REXS", "rexs", "REXSYS", "REXS", APPROVED, "2006-08-11", ""),
+            exciter("SCRX", "scrx", "SCRX", "SCRX", APPROVED, "2006-08-11", ""),
+            exciter("SEXS", "sexs", "SEXS_GE and SEXS_PTI", "SEXS", NEVER_APPROVED, "", ""),
+            exciter("TEXS", "texs", "Not converted", "TEXS", NEVER_APPROVED, "", ""));
 
     private static final List<WeccModelApproval> GENERATORS = List.of(
             row("GENTPF", "gentpf", "GENTPF", "GENTPF", UNAPPROVED, "2022-01-27", "",
@@ -114,6 +189,10 @@ public final class WeccApprovedDynamicModelCatalog {
         return GENERATORS;
     }
 
+    public static List<WeccModelApproval> exciters() {
+        return EXCITERS;
+    }
+
     public static List<WeccModelApproval> stabilizers() {
         return STABILIZERS;
     }
@@ -126,6 +205,12 @@ public final class WeccApprovedDynamicModelCatalog {
         if (catalogName == null || catalogName.isBlank()) return Optional.empty();
         String normalized = catalogName.trim().toUpperCase(Locale.ROOT);
         return GENERATORS.stream().filter(row -> row.catalogName().equals(normalized)).findFirst();
+    }
+
+    public static Optional<WeccModelApproval> findExciter(String catalogName) {
+        if (catalogName == null || catalogName.isBlank()) return Optional.empty();
+        String normalized = catalogName.trim().toUpperCase(Locale.ROOT);
+        return EXCITERS.stream().filter(row -> row.catalogName().equals(normalized)).findFirst();
     }
 
     private static WeccModelApproval row(String name, String pslf, String psse,
@@ -146,6 +231,13 @@ public final class WeccApprovedDynamicModelCatalog {
             String powerWorld, WeccModelApprovalStatus status, String effective,
             String interpss) {
         return new WeccModelApproval(name, GOVERNOR, pslf, psse, powerWorld,
+                status, effective, interpss, "");
+    }
+
+    private static WeccModelApproval exciter(String name, String pslf, String psse,
+            String powerWorld, WeccModelApprovalStatus status, String effective,
+            String interpss) {
+        return new WeccModelApproval(name, EXCITER, pslf, psse, powerWorld,
                 status, effective, interpss, "");
     }
 }

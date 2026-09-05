@@ -46,7 +46,7 @@ public final class DynamicModelCatalog {
             descriptor("ESST1A", Set.of(), EXCITER, 20, LOADABLE,
                     "org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter",
                     "Exciter%20ESST1A%20and%20ESST1A_GE.htm"),
-            descriptor("ESST4B", Set.of("EXST4B"), EXCITER, 17, LOADABLE,
+            descriptor("ESST4B", Set.of(), EXCITER, 17, LOADABLE,
                     "org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter",
                     "Exciter%20ESST4B.htm"),
             descriptor("IEEEG1", Set.of("WSIEG1"), GOVERNOR, 22, LOADABLE,
@@ -125,7 +125,13 @@ public final class DynamicModelCatalog {
                     "Governor%20GAST_PTI%20and%20GASTD.htm"),
             descriptor("GASTD", Set.of("GASTDU"), GOVERNOR, 12, LOADABLE,
                     "org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor",
-                    "Governor%20GAST_PTI%20and%20GASTD.htm")
+                    "Governor%20GAST_PTI%20and%20GASTD.htm"),
+            descriptor("ESDC2A", Set.of(), EXCITER, 16, LOADABLE,
+                    "org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter",
+                    "Exciter%20ESDC2A.htm"),
+            descriptor("ESST3A", Set.of(), EXCITER, 21, LOADABLE,
+                    "org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter",
+                    "Exciter%20ESST3A.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream
