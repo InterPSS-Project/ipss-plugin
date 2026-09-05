@@ -9,7 +9,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
  * WECC REPC_A plant controller. Its outputs are incremental Pref/Qext commands
- * consumed by {@link Reecb1Model}; all internal powers are on converter MVA base.
+ * consumed by a REEC_A or REEC_B controller; all internal powers are on converter MVA base.
  */
 public final class Repca1Model {
     private static final double EPS = 1.0e-9;

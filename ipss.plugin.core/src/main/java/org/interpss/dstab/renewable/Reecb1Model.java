@@ -4,7 +4,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 
 /** WECC REEC_B electrical controller producing REGC_A current commands. */
-public final class Reecb1Model {
+public final class Reecb1Model implements RenewableElectricalController {
     private static final double EPS = 1.0e-9;
 
     private final Reecb1Data data;

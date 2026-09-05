@@ -21,6 +21,8 @@ import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
+import org.interpss.dstab.renewable.Reeca1Data;
+import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Repca1Data;
@@ -830,14 +832,25 @@ public class DStabNetworkBuilder {
         return controller;
     }
 
+    public Reeca1Model addReeca1(String busId, String genId, Reeca1Data data) {
+        Regca1Model converter = findRegca1(busId, genId);
+        if (converter == null) {
+            log.warn("REGCA1 not found for REECA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reeca1Model controller = new Reeca1Model(data, converter);
+        converter.setReeca1Controller(controller);
+        return controller;
+    }
+
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
         Regca1Model converter = findRegca1(busId, genId);
-        if (converter == null || converter.getElectricalController() == null) {
-            log.warn("REGCA1/REECB1 chain not found for REPCA1: bus={}, gen={}", busId, genId);
+        if (converter == null || converter.getActiveElectricalController() == null) {
+            log.warn("REGCA1/REEC chain not found for REPCA1: bus={}, gen={}", busId, genId);
             return null;
         }
         Repca1Model controller = new Repca1Model(data, converter);
-        converter.getElectricalController().setPlantController(controller);
+        converter.getActiveElectricalController().setPlantController(controller);
         return controller;
     }
 
