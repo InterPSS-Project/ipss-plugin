@@ -86,6 +86,34 @@ class PsseGgov1GovernorTest extends CorePluginTestSetup {
     }
 
     @Test
+    void ggov1duParserMapsFinalDeadbandFieldsAndDeadbandsOnlyFrequency(@TempDir Path tempDir)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("ggov1du.dyr");
+        Files.writeString(dyr, "1 'GGOV1DU' 1 0 0 0.0 1 0.05 -0.05 4.18 0.71 0 1 "
+                + "1 0.15 0.4 1.22 0.18 0.16 0 0 3 0 0 1 0 1 -1 0 "
+                + "0.01 0 0.1 50.0 0 4 5 99 -99 0.002 -0.003 /\n");
+
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        parser.parseDynFile(dyr.toString());
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1Governor governor = (PsseGgov1Governor) machine.getGovernor();
+
+        assertNotNull(governor);
+        assertEquals("GGOV1D", governor.getName());
+        assertEquals(0.002, governor.getData().getDbH(), TOL);
+        assertEquals(-0.003, governor.getData().getDbL(), TOL);
+        assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"), machine));
+        assertEquals(0.0, governor.applyFrequencyDeadband(-0.002), TOL);
+        assertEquals(-0.007, governor.applyFrequencyDeadband(-0.010), TOL);
+        assertEquals(0.008, governor.applyFrequencyDeadband(0.010), TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
     void dieselTransportDelayHoldsTurbineInputForItsPhysicalDuration() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");

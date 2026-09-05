@@ -186,7 +186,10 @@ public class PSSEDStabDirectParser {
             case "IEESGO":
                 return procGovIeesgo(busId, genId, fields);
             case "GGOV1":
-                return procGovGgov1(busId, genId, fields);
+                return procGovGgov1(busId, genId, fields, false);
+            case "GGOV1D":
+            case "GGOV1DU":
+                return procGovGgov1(busId, genId, fields, true);
             case "HYGOV":
                 return procGovHygov(busId, genId, fields);
             case "IEEEG3":
@@ -698,8 +701,8 @@ public class PSSEDStabDirectParser {
 
     // GGOV1 PSS/E record order.  Trate is field 30 in the data list even though
     // PowerWorld's model parameter table presents it first.
-    private boolean procGovGgov1(String busId, String genId, String[] f) {
-        if (f.length < 38) return false;
+    private boolean procGovGgov1(String busId, String genId, String[] f, boolean deadbandVariant) {
+        if (f.length < (deadbandVariant ? 40 : 38)) return false;
         PsseGgov1GovernorData d = new PsseGgov1GovernorData();
         d.setRselect(getInt(f, 3, 0)); d.setFlag(getInt(f, 4, 0));
         d.setR(getDouble(f, 5, 0)); d.setTpelec(getDouble(f, 6, 0));
@@ -719,6 +722,11 @@ public class PSSEDStabDirectParser {
         d.setDb(getDouble(f, 33, 0)); d.setTsa(getDouble(f, 34, 0));
         d.setTsb(getDouble(f, 35, 0)); d.setRup(getDouble(f, 36, 0));
         d.setRdown(getDouble(f, 37, 0));
+        if (deadbandVariant) {
+            d.setDbH(getDouble(f, 38, 0));
+            d.setDbL(getDouble(f, 39, 0));
+            return builder.addGovGgov1d(busId, genId, d) != null;
+        }
         return builder.addGovGgov1(busId, genId, d) != null;
     }
 

@@ -705,16 +705,27 @@ public class DStabNetworkBuilder {
     /** Attach a PSS/E GGOV1 governor after its record has been mapped exactly. */
     public PsseGgov1Governor addGovGgov1(String busId, String genId,
             PsseGgov1GovernorData data) {
+        return addGovGgov1(busId, genId, data, "GGOV1");
+    }
+
+    /** Attach a PSS/E GGOV1D/GGOV1DU governor with input-frequency deadband. */
+    public PsseGgov1Governor addGovGgov1d(String busId, String genId,
+            PsseGgov1GovernorData data) {
+        return addGovGgov1(busId, genId, data, "GGOV1D");
+    }
+
+    private PsseGgov1Governor addGovGgov1(String busId, String genId,
+            PsseGgov1GovernorData data, String modelName) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) {
-            log.warn("Machine not found for GGOV1 governor: bus={}, gen={}", busId, genId);
+            log.warn("Machine not found for {} governor: bus={}, gen={}", modelName, busId, genId);
             return null;
         }
         PsseGgov1Governor gov = new PsseGgov1Governor(
-                mach.getId() + "_Gov", "GGOV1", "PSS/E");
+                mach.getId() + "_Gov", modelName, "PSS/E");
         copyGgov1Data(data, gov.getData());
         if (!gov.validateParameters()) {
-            log.warn("Unsupported or invalid GGOV1 parameters: bus={}, gen={}", busId, genId);
+            log.warn("Unsupported or invalid {} parameters: bus={}, gen={}", modelName, busId, genId);
             return null;
         }
         gov.setMachine(mach);
@@ -738,6 +749,7 @@ public class DStabNetworkBuilder {
         target.setKa(source.getKa()); target.setTa(source.getTa()); target.setTrate(source.getTrate());
         target.setDb(source.getDb()); target.setTsa(source.getTsa()); target.setTsb(source.getTsb());
         target.setRup(source.getRup()); target.setRdown(source.getRdown());
+        target.setDbH(source.getDbH()); target.setDbL(source.getDbL());
     }
 
     /**
