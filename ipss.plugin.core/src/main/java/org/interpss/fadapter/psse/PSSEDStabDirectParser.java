@@ -23,6 +23,7 @@ import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
+import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,6 +174,8 @@ public class PSSEDStabDirectParser {
                 return procGovIeesgo(busId, genId, fields);
             case "GGOV1":
                 return procGovGgov1(busId, genId, fields);
+            case "HYGOV":
+                return procGovHygov(busId, genId, fields);
             case "IEEEG3":
                 log.debug("Governor model IEEEG3 at bus {} - not yet implemented", busId);
                 return false;
@@ -621,6 +624,18 @@ public class PSSEDStabDirectParser {
         d.setTsb(getDouble(f, 35, 0)); d.setRup(getDouble(f, 36, 0));
         d.setRdown(getDouble(f, 37, 0));
         return builder.addGovGgov1(busId, genId, d) != null;
+    }
+
+    private boolean procGovHygov(String busId, String genId, String[] f) {
+        if (f.length < 15) return false;
+        PsseHygovGovernorData d = new PsseHygovGovernorData();
+        d.setR(getDouble(f, 3, 0)); d.setRtemp(getDouble(f, 4, 0));
+        d.setTr(getDouble(f, 5, 0)); d.setTf(getDouble(f, 6, 0));
+        d.setTg(getDouble(f, 7, 0)); d.setVelm(getDouble(f, 8, 0));
+        d.setGmax(getDouble(f, 9, 0)); d.setGmin(getDouble(f, 10, 0));
+        d.setTw(getDouble(f, 11, 0)); d.setAt(getDouble(f, 12, 0));
+        d.setDturb(getDouble(f, 13, 0)); d.setQnl(getDouble(f, 14, 0));
+        return builder.addGovHygov(busId, genId, d) != null;
     }
 
     // GENQEC (PSLF/PowerDynData order):
