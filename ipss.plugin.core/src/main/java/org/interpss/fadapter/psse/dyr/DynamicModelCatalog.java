@@ -89,7 +89,13 @@ public final class DynamicModelCatalog {
             descriptor("GENQEJ", Set.of("GENQEJU"), SYNCHRONOUS_MACHINE, 20, LOADABLE,
                     "org.interpss.dstab.mach.GenqejMachine", "Machine%20Model%20GENQEJ.htm"),
             descriptor("GENCLS", Set.of(), SYNCHRONOUS_MACHINE, 2, LOADABLE,
-                    "com.interpss.dstab.mach.EConstMachine", "Machine%20Model%20GENCLS.htm")
+                    "com.interpss.dstab.mach.EConstMachine", "Machine%20Model%20GENCLS.htm"),
+            descriptor("ST2CUT", Set.of("WSCCST"), STABILIZER, 20, LOADABLE,
+                    "org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer",
+                    "Stabilizer%20ST2CUT.htm"),
+            descriptor("IEEEST", Set.of(), STABILIZER, 19, LOADABLE,
+                    "org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer",
+                    "Stabilizer%20IEEEST.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream

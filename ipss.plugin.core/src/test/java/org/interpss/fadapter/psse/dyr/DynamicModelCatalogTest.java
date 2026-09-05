@@ -40,6 +40,24 @@ class DynamicModelCatalogTest {
     }
 
     @Test
+    void catalogsEveryMay2026StabilizerRowAndExposesSupportGaps() {
+        assertEquals(16, WeccApprovedDynamicModelCatalog.stabilizers().size());
+        long approved = WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
+                .count();
+        long implemented = WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(WeccModelApproval::isImplementedExactly)
+                .count();
+        assertEquals(15, approved);
+        assertEquals(3, implemented);
+        assertTrue(DynamicModelCatalog.find("WSCCST").orElseThrow().supportStatus()
+                == DynamicModelSupportStatus.LOADABLE);
+        assertFalse(WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(row -> row.catalogName().equals("PSS1A"))
+                .findFirst().orElseThrow().isImplementedExactly());
+    }
+
+    @Test
     void loadableDescriptorRequiresRuntimeClass() {
         assertThrows(IllegalArgumentException.class, () -> new DynamicModelDescriptor(
                 "TEST", Set.of(), DynamicModelCategory.GOVERNOR, 1,
