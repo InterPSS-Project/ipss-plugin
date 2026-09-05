@@ -57,7 +57,7 @@ public final class DynamicModelCatalog {
                     "Governor%20GGOV1%20and%20GGOV1D.htm"),
             descriptor("HYGOV", Set.of(), GOVERNOR, 12, UNSUPPORTED, "",
                     "Governor%20HYGOV%20and%20HYGOVD.htm"),
-            descriptor("PSS2A", Set.of(), STABILIZER, 23, PARTIAL,
+            descriptor("PSS2A", Set.of(), STABILIZER, 23, LOADABLE,
                     "org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer",
                     "Stabilizer%20PSS2A.htm"),
             descriptor("REGCA1", Set.of("REGCAU1"), CONVERTER_MACHINE, 15, LOADABLE,

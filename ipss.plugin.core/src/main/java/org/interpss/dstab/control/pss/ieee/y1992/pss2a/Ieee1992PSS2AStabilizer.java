@@ -66,7 +66,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	    @AnControllerField(
 	            type= CMLFieldEnum.ControlBlock,
 	            input="this.customBlock1.y + this.ks3*this.customBlock2.y",
-	            parameter={"type.t8", "this.t9", "this.m", "this.n"},
+	            parameter={"this.t8", "this.t9", "this.m", "this.n"},
 	            y0="this.filterBlock1.u0 - this.refPoint + this.customBlock2.y"	)
 	    FilterNthOrderBlock filterNthBlock;
 

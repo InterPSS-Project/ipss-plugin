@@ -180,6 +180,8 @@ public class PSSEDStabDirectParser {
             case "IEEEST":
                 pendingIeeest.add(new PendingIeeest(busId, genId, fields.clone(), record));
                 return true;
+            case "PSS2A":
+                return procPss2a(busId, genId, fields);
 
             case "CMPLDW":
             case "CIM6BL":
@@ -511,6 +513,22 @@ public class PSSEDStabDirectParser {
 
     private record PendingIeeest(String busId, String genId, String[] fields,
             PsseDyrRecord record) {}
+
+    // PSS2A: IBUS 'PSS2A' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
+    //         Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3 T8 T9 Ks1 T1 T2 T3 T4 VSTMAX VSTMIN
+    private boolean procPss2a(String busId, String genId, String[] f) {
+        return builder.addPss2a(busId, genId,
+                getInt(f, 3, 0), getInt(f, 4, 0),
+                getInt(f, 5, 0), getInt(f, 6, 0),
+                getInt(f, 7, 0), getInt(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0),
+                getDouble(f, 17, 0), getDouble(f, 18, 0), getDouble(f, 19, 0),
+                getDouble(f, 20, 0), getDouble(f, 21, 0),
+                getDouble(f, 22, 0), getDouble(f, 23, 0),
+                getDouble(f, 24, 0), getDouble(f, 25, 0)) != null;
+    }
 
     // IEEEG1: IBUS 'IEEEG1' ID JBUS M K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
     //         idx:  0    1    2   3  4  5  6  7  8  9 10  11   12  13 14 15 16 17 18 19 20 21 22 23 24
