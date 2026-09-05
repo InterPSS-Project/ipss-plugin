@@ -11,7 +11,6 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MACHINE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.LOADABLE;
-import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.PARTIAL;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.UNSUPPORTED;
 
 import java.net.URI;
@@ -53,7 +52,7 @@ public final class DynamicModelCatalog {
             descriptor("IEEEG1", Set.of("WSIEG1"), GOVERNOR, 22, LOADABLE,
                     "org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor",
                     "Governor%20IEEEG1%2C%20IEEEG1D%20and%20IEEEG1_GE.htm"),
-            descriptor("GGOV1", Set.of(), GOVERNOR, 35, PARTIAL,
+            descriptor("GGOV1", Set.of(), GOVERNOR, 35, LOADABLE,
                     "org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor",
                     "Governor%20GGOV1%20and%20GGOV1D.htm"),
             descriptor("HYGOV", Set.of(), GOVERNOR, 12, LOADABLE,

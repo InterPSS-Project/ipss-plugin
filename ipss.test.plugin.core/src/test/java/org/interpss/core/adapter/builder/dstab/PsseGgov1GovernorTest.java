@@ -3,7 +3,6 @@ package org.interpss.core.adapter.builder.dstab;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,7 +24,7 @@ class PsseGgov1GovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
-    void builderAttachesExactDataAndRejectsUnsupportedTransportDelay() throws Exception {
+    void builderAttachesExactDataIncludingTransportDelay() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         PsseGgov1GovernorData data = texasData();
         PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
@@ -37,9 +36,9 @@ class PsseGgov1GovernorTest extends CorePluginTestSetup {
         assertEquals(4.0, governor.getData().getTsa(), TOL);
         assertEquals(-99.0, governor.getData().getRdown(), TOL);
 
-        DStabNetworkBuilder unsupportedBuilder = DStabBuilderTestFixture.createWithMachine();
         data.setTeng(0.1);
-        assertNull(unsupportedBuilder.addGovGgov1("Bus1", "1", data));
+        DStabNetworkBuilder delayBuilder = DStabBuilderTestFixture.createWithMachine();
+        assertNotNull(delayBuilder.addGovGgov1("Bus1", "1", data));
     }
 
     @Test
@@ -84,6 +83,27 @@ class PsseGgov1GovernorTest extends CorePluginTestSetup {
                 1, .15, .4, 1.22, .18, .16, 0, 0, 3, 2.56, .85, 1, 0, 1, -1,
                 0, .01, 10, .1, 390.24, 0, 4, 5, 99, -99 }, values(governor.getData()), TOL);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void dieselTransportDelayHoldsTurbineInputForItsPhysicalDuration() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1GovernorData data = texasData();
+        data.setTeng(.05);
+        data.setTb(0.0);
+        data.setTc(0.0);
+        PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
+        assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"), machine));
+
+        machine.setSpeed(.99);
+        for (int i = 0; i < 9; i++) step(governor, machine, .005);
+        assertEquals(.4, governor.getOutput(machine), 1.0e-9);
+        for (int i = 0; i < 20; i++) step(governor, machine, .005);
+        assertTrue(governor.getOutput(machine) > .4);
     }
 
     private static void step(PsseGgov1Governor governor, Machine machine, double dt) {

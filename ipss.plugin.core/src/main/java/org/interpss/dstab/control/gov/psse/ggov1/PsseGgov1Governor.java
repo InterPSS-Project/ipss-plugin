@@ -1,5 +1,8 @@
 package org.interpss.dstab.control.gov.psse.ggov1;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
+
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -12,9 +15,9 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  *
  * <p>The equations follow the PowerWorld GGOV1 block diagram and the OpenIPSL
  * decomposition.  The PI paths include the diagram's FSR tracking feedback so
- * controllers which lose the low-value select do not wind up.  A non-zero
- * engine transport delay is deliberately rejected until a step-size-independent
- * history block is available; all Texas2k Series 24 GGOV1 records use Teng=0.</p>
+ * controllers which lose the low-value select do not wind up. The diesel-engine
+ * transport delay uses time-stamped interpolation, so its duration is independent
+ * of the integration step size.</p>
  */
 public class PsseGgov1Governor extends AbstractGovernor {
     private static final double EPS = 1.0e-9;
@@ -31,6 +34,8 @@ public class PsseGgov1Governor extends AbstractGovernor {
     private double currentFsr;
     private double currentOutput;
     private boolean initialized;
+    private final Deque<DelaySample> engineHistory = new ArrayDeque<>();
+    private double simulationTime;
 
     public PsseGgov1Governor(String id, String name, String category) {
         super(id, name, category);
@@ -70,6 +75,9 @@ public class PsseGgov1Governor extends AbstractGovernor {
         committedFsr = valve0;
         currentFsr = valve0;
         currentOutput = pm0;
+        simulationTime = 0.0;
+        engineHistory.clear();
+        engineHistory.addLast(new DelaySample(0.0, pm0 + damping0));
         initialized = true;
         return true;
     }
@@ -83,20 +91,23 @@ public class PsseGgov1Governor extends AbstractGovernor {
 
         if (flag == 0) {
             oldState = state;
-            Algebraic a = algebraic(oldState, dt, committedFsr);
+            Algebraic a = algebraic(oldState, dt, 0.0, committedFsr);
             oldDerivatives = derivatives(oldState, a);
             state = oldState.plus(oldDerivatives, dt);
-            Algebraic predicted = algebraic(state, dt, committedFsr);
+            Algebraic predicted = algebraic(state, dt, dt, committedFsr);
             currentFsr = predicted.fsr;
             currentOutput = predicted.pmech;
         } else if (flag == 1) {
-            Algebraic predicted = algebraic(state, dt, currentFsr);
+            Algebraic predicted = algebraic(state, dt, dt, currentFsr);
             Derivatives correctedDerivatives = derivatives(state, predicted);
             state = oldState.plusAverage(oldDerivatives, correctedDerivatives, dt);
-            Algebraic corrected = algebraic(state, dt, committedFsr);
+            Algebraic corrected = algebraic(state, dt, dt, committedFsr);
             currentFsr = corrected.fsr;
             committedFsr = currentFsr;
             currentOutput = corrected.pmech;
+            simulationTime += dt;
+            engineHistory.addLast(new DelaySample(simulationTime, corrected.rawTurbineInput));
+            trimEngineHistory(dt);
         } else {
             throw new InterpssRuntimeException("GGOV1 invalid integration flag: " + flag);
         }
@@ -131,14 +142,15 @@ public class PsseGgov1Governor extends AbstractGovernor {
                 && d.getTpelec() >= 0.0 && d.getTdgov() >= 0.0
                 && d.getTact() > EPS && d.getTb() >= 0.0 && d.getTc() >= 0.0
                 && (d.getTb() > EPS || d.getTc() <= EPS)
-                && d.getTeng() <= EPS && d.getTfload() >= 0.0
+                && d.getTeng() >= 0.0 && d.getTfload() >= 0.0
                 && d.getTa() >= 0.0 && d.getTsa() >= 0.0 && d.getTsb() >= 0.0
                 && d.getMaxerr() >= d.getMinerr() && d.getVmax() >= d.getVmin()
                 && d.getRopen() > 0.0 && d.getRclose() < 0.0
                 && d.getKturb() > EPS && d.getTrate() >= 0.0;
     }
 
-    private Algebraic algebraic(State s, double dt, double trackingFsr) {
+    private Algebraic algebraic(State s, double stepSize, double evaluationOffset,
+            double trackingFsr) {
         PsseGgov1GovernorData d = getData();
         double speedDeviation = getMachine().getSpeed() - 1.0;
         double pe = getMachine().getPe() / governorToMachineBase;
@@ -152,7 +164,8 @@ public class PsseGgov1Governor extends AbstractGovernor {
 
         double speedFactor = maximumPowerFactor(speedDeviation);
         double fuelFlow = (d.getFlag() == 1 ? 1.0 + speedDeviation : 1.0) * valve;
-        double turbineInput = d.getKturb() * (fuelFlow - d.getWfnl());
+        double rawTurbineInput = d.getKturb() * (fuelFlow - d.getWfnl());
+        double turbineInput = delayedEngineInput(rawTurbineInput, evaluationOffset);
         double turbinePower = d.getTb() > EPS
                 ? s.turbineLag + d.getTc() / d.getTb() * (turbineInput - s.turbineLag)
                 : turbineInput;
@@ -169,11 +182,43 @@ public class PsseGgov1Governor extends AbstractGovernor {
 
         double acceleration = d.getTa() > EPS
                 ? (speedDeviation - s.accelerationLag) / d.getTa() : 0.0;
-        double fsra = trackingFsr + d.getKa() * dt * (d.getAset() - acceleration);
+        double fsra = trackingFsr + d.getKa() * stepSize * (d.getAset() - acceleration);
         double fsr = clamp(Math.min(1.0, Math.min(fsrn, Math.min(fsrt, fsra))),
                 effectiveVmin, effectiveVmax);
-        return new Algebraic(pe, error, fsrn, fsrt, fsr, valve, turbineInput,
+        return new Algebraic(pe, error, fsrn, fsrt, fsr, valve, rawTurbineInput, turbineInput,
                 temperatureInput, temperatureLeadLag, loadError, pmech);
+    }
+
+    private double delayedEngineInput(double currentInput, double evaluationOffset) {
+        double delay = getData().getTeng();
+        if (delay <= EPS) return currentInput;
+        double target = simulationTime + evaluationOffset - delay;
+        DelaySample first = engineHistory.getFirst();
+        if (target <= first.time) return first.value;
+        DelaySample previous = first;
+        for (DelaySample sample : engineHistory) {
+            if (sample.time >= target) return interpolate(previous, sample, target);
+            previous = sample;
+        }
+        DelaySample future = new DelaySample(simulationTime + evaluationOffset, currentInput);
+        return interpolate(previous, future, target);
+    }
+
+    private void trimEngineHistory(double dt) {
+        double retainAfter = simulationTime - getData().getTeng() - Math.max(dt, EPS);
+        while (engineHistory.size() > 2) {
+            DelaySample first = engineHistory.removeFirst();
+            if (engineHistory.getFirst().time >= retainAfter) {
+                engineHistory.addFirst(first);
+                break;
+            }
+        }
+    }
+
+    private static double interpolate(DelaySample lower, DelaySample upper, double time) {
+        if (upper.time <= lower.time + EPS) return upper.value;
+        double fraction = clamp((time - lower.time) / (upper.time - lower.time), 0.0, 1.0);
+        return lower.value + fraction * (upper.value - lower.value);
     }
 
     private Derivatives derivatives(State s, Algebraic a) {
@@ -244,8 +289,10 @@ public class PsseGgov1Governor extends AbstractGovernor {
     }
 
     private record Algebraic(double pe, double error, double fsrn, double fsrt,
-            double fsr, double valve, double turbineInput, double temperatureInput,
+            double fsr, double valve, double rawTurbineInput, double turbineInput, double temperatureInput,
             double temperatureLeadLag, double loadError, double pmech) { }
+
+    private record DelaySample(double time, double value) { }
 
     private record Derivatives(double peMeasured, double derivativeLag,
             double governorIntegrator, double valve, double turbineLag,
