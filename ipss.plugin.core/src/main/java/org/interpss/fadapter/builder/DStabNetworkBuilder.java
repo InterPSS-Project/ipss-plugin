@@ -911,6 +911,29 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    /**
+     * PowerWorld/WECC GASTD extension of GAST.
+     * Parameters append dbH, dbL, and Trate to the base GAST record.
+     */
+    public PsseGASTGasTurGovernor addGovGastd(String busId, String genId,
+            double r, double t1, double t2, double t3,
+            double at, double kt, double vmax, double vmin, double dturb,
+            double dbH, double dbL, double trate) {
+        if (r <= 0.0 || dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid GASTD parameters at {} {}: R={}, dbH={}, dbL={}, Trate={}",
+                    busId, genId, r, dbH, dbL, trate);
+            return null;
+        }
+        PsseGASTGasTurGovernor gov = addGovGast(busId, genId,
+                r, t1, t2, t3, at, kt, vmax, vmin, dturb);
+        if (gov == null) return null;
+        gov.setName("GASTD");
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
     public PsseIEESGOSteamTurGovernor addGovIeesgod(String busId, String genId,
             double t1, double t2, double t3, double t4, double t5, double t6,
             double k1, double k2, double k3, double pmax, double pmin,
