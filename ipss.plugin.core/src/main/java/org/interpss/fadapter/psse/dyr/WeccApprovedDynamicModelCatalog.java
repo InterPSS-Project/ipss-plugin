@@ -58,7 +58,7 @@ public final class WeccApprovedDynamicModelCatalog {
             exciter("ESDC1C", "esdc1c", "DC1C", "DC1C", APPROVED, "2020-04-22", ""),
             exciter("EXDC2", "exdc2", "EXDC2", "EXDC2_GE and EXDC2_PTI", APPROVED, "2006-08-11", ""),
             exciter("EXDC2A", "exdc2a", "EXDC2", "EXDC2A and EXDC2_PTI", APPROVED, "2006-08-11", ""),
-            exciter("ESDC2A", "esdc2a", "ESDC2A", "ESDC2A", APPROVED, "2011-01-21", "ESDC2A"),
+            exciter("ESDC2A", "esdc2a", "ESDC2A", "ESDC2A", APPROVED, "2011-01-21", ""),
             exciter("ESDC2C", "esdc2c", "DC2C", "DC2C", APPROVED, "2020-04-22", ""),
             exciter("EXDC4", "exdc4", "IEEET4", "EXDC4 and IEEET4", APPROVED, "2006-08-11", ""),
             exciter("ESDC3A", "esdc3a", "DC3A", "ESDC3A and DC3A", APPROVED, "2011-01-21", ""),
@@ -92,7 +92,7 @@ public final class WeccApprovedDynamicModelCatalog {
             exciter("MEXS", "mexs", "Not used", "MEXS", NEVER_APPROVED, "", ""),
             exciter("PFQRG", "pfqrg", "Not used", "PFQRG", NEVER_APPROVED, "", ""),
             exciter("REXS", "rexs", "REXSYS", "REXS", APPROVED, "2006-08-11", ""),
-            exciter("SCRX", "scrx", "SCRX", "SCRX", APPROVED, "2006-08-11", ""),
+            exciter("SCRX", "scrx", "SCRX", "SCRX", APPROVED, "2006-08-11", "SCRX"),
             exciter("SEXS", "sexs", "SEXS_GE and SEXS_PTI", "SEXS", NEVER_APPROVED, "", ""),
             exciter("TEXS", "texs", "Not converted", "TEXS", NEVER_APPROVED, "", ""));
 

@@ -131,7 +131,10 @@ public final class DynamicModelCatalog {
                     "Exciter%20ESDC2A.htm"),
             descriptor("ESST3A", Set.of(), EXCITER, 21, LOADABLE,
                     "org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter",
-                    "Exciter%20ESST3A.htm")
+                    "Exciter%20ESST3A.htm"),
+            descriptor("SCRX", Set.of(), EXCITER, 8, LOADABLE,
+                    "org.interpss.dstab.control.exc.psse.scrx.ScrxExciter",
+                    "Exciter%20SCRX.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream
