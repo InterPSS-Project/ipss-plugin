@@ -39,6 +39,8 @@ public class PsseGgov1GovernorData extends BaseControllerData {
     private double tsb = 5.0;
     private double rup = 99.0;
     private double rdown = -99.0;
+    private double dbH;
+    private double dbL;
 
     public int getRselect() { return rselect; }
     public void setRselect(int value) { rselect = value; }
@@ -110,6 +112,10 @@ public class PsseGgov1GovernorData extends BaseControllerData {
     public void setRup(double value) { rup = value; }
     public double getRdown() { return rdown; }
     public void setRdown(double value) { rdown = value; }
+    public double getDbH() { return dbH; }
+    public void setDbH(double value) { dbH = value; }
+    public double getDbL() { return dbL; }
+    public void setDbL(double value) { dbL = value; }
 
     @Override public void setValue(String name, int value) { }
     @Override public void setValue(String name, double value) { }

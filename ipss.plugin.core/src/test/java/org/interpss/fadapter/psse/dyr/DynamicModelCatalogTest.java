@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 class DynamicModelCatalogTest {
     @Test
     void catalogsEveryTexas2kModelAndResolvesAliases() {
-        assertEquals(17, DynamicModelCatalog.texas2kModels().size());
+        assertEquals(18, DynamicModelCatalog.texas2kModels().size());
         assertEquals("GENROU", DynamicModelCatalog.canonicalName("genroe"));
         assertEquals("REGCA1", DynamicModelCatalog.canonicalName("regcau1"));
         assertEquals("REPCA1", DynamicModelCatalog.canonicalName("repcta1"));
@@ -65,7 +65,7 @@ class DynamicModelCatalogTest {
         assertEquals(32, rows.size());
         assertEquals(25, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
-        assertEquals(5, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(6, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1D"))

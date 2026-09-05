@@ -8,6 +8,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
@@ -132,6 +133,12 @@ public class PsseGgov1Governor extends AbstractGovernor {
                 mach.getDStabBus().getNetwork().getBaseKva());
     }
 
+    /** Apply the GGOV1D deadband to the input speed deviation. */
+    public double applyFrequencyDeadband(double speedDeviation) {
+        return AsymmetricDeadbandBlock.apply(
+                speedDeviation, getData().getDbH(), getData().getDbL());
+    }
+
     /** True when the parameter set is represented without a silent approximation. */
     public boolean validateParameters() {
         PsseGgov1GovernorData d = getData();
@@ -146,7 +153,9 @@ public class PsseGgov1Governor extends AbstractGovernor {
                 && d.getTa() >= 0.0 && d.getTsa() >= 0.0 && d.getTsb() >= 0.0
                 && d.getMaxerr() >= d.getMinerr() && d.getVmax() >= d.getVmin()
                 && d.getRopen() > 0.0 && d.getRclose() < 0.0
-                && d.getKturb() > EPS && d.getTrate() >= 0.0;
+                && d.getKturb() > EPS && d.getTrate() >= 0.0
+                && d.getDbH() >= 0.0 && d.getDbL() <= 0.0
+                && d.getDbL() <= d.getDbH();
     }
 
     private Algebraic algebraic(State s, double stepSize, double evaluationOffset,
@@ -157,7 +166,8 @@ public class PsseGgov1Governor extends AbstractGovernor {
         double peMeasured = d.getTpelec() > EPS ? s.peMeasured : pe;
         double valve = clamp(s.valve, effectiveVmin, effectiveVmax);
         double droop = selectedDroop(peMeasured, valve, trackingFsr);
-        double error = clamp(deadband(pref + s.mwIntegrator - speedDeviation - d.getR() * droop),
+        double frequencySignal = applyFrequencyDeadband(speedDeviation);
+        double error = clamp(deadband(pref + s.mwIntegrator - frequencySignal - d.getR() * droop),
                 d.getMinerr(), d.getMaxerr());
         double derivative = d.getTdgov() > EPS ? d.getKdgov() / d.getTdgov() * (error - s.derivativeLag) : 0.0;
         double fsrn = d.getKpgov() * error + derivative + s.governorIntegrator;
