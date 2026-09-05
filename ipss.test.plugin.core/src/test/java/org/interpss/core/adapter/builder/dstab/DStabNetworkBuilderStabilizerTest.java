@@ -18,6 +18,7 @@ import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import org.apache.commons.math3.complex.Complex;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -132,14 +133,63 @@ class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void strictPss1aImportRejectsUnsupportedFrequencyDerivativeInput() throws Exception {
+    void parsePss1a_supportsBusFrequencyInput() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss1a-unsupported.dyr");
+        Path dyr = tempDir.resolve("pss1a-frequency.dyr");
+        Files.writeString(dyr, "1 'PSS1A' '1' 2 0.061 0.0017 "
+                + "0.30 0.03 0.30 0.03 10.0 0.05 5.0 0.05 -0.05 0 0 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee1992PSS1AStabilizer pss = (Ieee1992PSS1AStabilizer) machine.getStabilizer();
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertEquals(1.0, pss.freqGain, TOL);
+        machine.getDStabBus().setFreq(1.01);
+        for (int i = 0; i < 100; i++) {
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+        assertTrue(pss.getOutput(machine) > 0.0);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void parsePss1a_supportsFilteredBusVoltageDerivativeInput() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("pss1a-voltage-derivative.dyr");
         Files.writeString(dyr, "1 'PSS1A' '1' 6 0.061 0.0017 "
                 + "0.30 0.03 0.30 0.03 10.0 0.05 5.0 0.05 -0.05 0 0 /\n");
         PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
 
+        parser.parseDynFile(dyr.toString());
+
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee1992PSS1AStabilizer pss = (Ieee1992PSS1AStabilizer) machine.getStabilizer();
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertEquals(1.0, pss.derivativeGain, TOL);
+        assertEquals(20.0, pss.derivativeK, TOL);
+        machine.getDStabBus().setVoltage(new Complex(1.01, 0.0));
+        double maxAbsOutput = 0.0;
+        for (int i = 0; i < 100; i++) {
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+            maxAbsOutput = Math.max(maxAbsOutput, Math.abs(pss.getOutput(machine)));
+        }
+        assertTrue(maxAbsOutput > 1.0e-6);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void strictPss1aImportRejectsInvalidInputCode() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("pss1a-invalid.dyr");
+        Files.writeString(dyr, "1 'PSS1A' '1' 7 0.061 0.0017 "
+                + "0.30 0.03 0.30 0.03 10.0 0.05 5.0 0.05 -0.05 0 0 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
         assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
-        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
     }
 }
