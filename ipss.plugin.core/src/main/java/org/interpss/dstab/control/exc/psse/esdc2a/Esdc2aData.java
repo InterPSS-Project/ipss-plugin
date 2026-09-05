@@ -2,7 +2,8 @@ package org.interpss.dstab.control.exc.psse.esdc2a;
 
 /** PSS/E ESDC2A parameters in model units. */
 public class Esdc2aData {
-    private double tr, ka, ta, tb, tc, vrmax, vrmin, ke, te, kf, tf, e1, se1, e2, se2;
+    private double tr, ka, ta, tb, tc, vrmax, vrmin, ke, te, kf, tf;
+    private double spdmlt, e1, se1, e2, se2;
 
     public double getTr() { return tr; }
     public void setTr(double value) { tr = value; }
@@ -26,6 +27,8 @@ public class Esdc2aData {
     public void setKf(double value) { kf = value; }
     public double getTf() { return tf; }
     public void setTf(double value) { tf = value; }
+    public double getSpdmlt() { return spdmlt; }
+    public void setSpdmlt(double value) { spdmlt = value; }
     public double getE1() { return e1; }
     public void setE1(double value) { e1 = value; }
     public double getSe1() { return se1; }

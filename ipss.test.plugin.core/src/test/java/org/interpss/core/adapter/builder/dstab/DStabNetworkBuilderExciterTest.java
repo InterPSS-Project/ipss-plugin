@@ -112,7 +112,29 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(0.0, exc.getData().getVrmax(), TOL);
 		assertEquals(-3.0, exc.getData().getVrmin(), TOL);
 		assertEquals(1.3, exc.getData().getTf(), TOL);
+		assertEquals(0.0, exc.getData().getSpdmlt(), TOL);
 		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+	}
+
+	@Test
+	public void parseEsdc2a_mapsSpeedMultiplierAndAppliesItToEfd() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("esdc2a.dyr");
+		Files.writeString(dyr, "1 'ESDC2A' '1' .02 50 .05 .02 0 0 -3 0 .512 .07 1.3 1 3.9825 .5 5.31 1.049 /\n");
+		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		machine.setSpeed(1.0);
+		machine.setEfd(1.2);
+		Esdc2aExciter exc = (Esdc2aExciter) machine.getExciter();
+		assertEquals(1.0, exc.getData().getSpdmlt(), TOL);
+		assertEquals(3.9825, exc.getData().getE1(), TOL);
+		assertEquals(1.049, exc.getData().getSe2(), TOL);
+		assertEquals(true, exc.initStates(machine.getDStabBus(), machine));
+		assertEquals(1.2, exc.getOutput(machine), TOL);
+
+		machine.setSpeed(0.98);
+		assertEquals(1.176, exc.getOutput(machine), TOL);
 	}
 
 	@Test
