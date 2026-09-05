@@ -9,6 +9,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.google.gson.JsonParser;
+
 class DynamicModelImportReportTest {
     @Test
     void reportsExactSourceAndAttachmentCounts() throws Exception {
@@ -28,6 +30,9 @@ class DynamicModelImportReportTest {
         assertFalse(report.attachedCountsByModel().containsKey("GGOV1"));
         assertFalse(report.isStrictlyComplete());
         assertTrue(report.failureSummary().contains("GGOV1"));
+        var json = JsonParser.parseString(report.toJson()).getAsJsonObject();
+        assertEquals(2, json.getAsJsonArray("entries").size());
+        assertEquals(1, json.getAsJsonObject("countsByStatus").get("UNSUPPORTED").getAsInt());
     }
 
     @Test

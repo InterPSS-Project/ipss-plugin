@@ -8,6 +8,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import com.google.gson.GsonBuilder;
+
 /** Immutable, machine-readable result of importing one DYR file. */
 public final class DynamicModelImportReport {
     private final String source;
@@ -91,6 +98,15 @@ public final class DynamicModelImportReport {
         String models = failures().stream().map(DynamicModelImportEntry::canonicalModelName)
                 .distinct().sorted().collect(Collectors.joining(", "));
         return counts + (models.isEmpty() ? "" : "; failed models: " + models);
+    }
+
+    /** Deterministic, human-readable JSON suitable for a CI evidence artifact. */
+    public String toJson() {
+        return new GsonBuilder().setPrettyPrinting().create().toJson(this);
+    }
+
+    public void writeJson(Path path) throws IOException {
+        Files.writeString(path, toJson(), StandardCharsets.UTF_8);
     }
 
     public static final class Builder {
