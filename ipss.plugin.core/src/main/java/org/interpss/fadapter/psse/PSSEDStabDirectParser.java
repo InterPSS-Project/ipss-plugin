@@ -3,10 +3,20 @@ package org.interpss.fadapter.psse;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.interpss.dstab.dynLoad.LD1PAC;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.dstab.renewable.Reecb1Data;
+import org.interpss.dstab.renewable.Regca1Data;
+import org.interpss.dstab.renewable.Repca1Data;
+import org.interpss.dstab.mach.GenqecData;
+import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
+import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
+import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
+import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,6 +39,8 @@ public class PSSEDStabDirectParser {
     private static final String BUS_ID_PREFIX = "Bus";
 
     private final DStabNetworkBuilder builder;
+    private final List<PendingSt2cut> pendingSt2cut = new ArrayList<>();
+    private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
 
     public PSSEDStabDirectParser(DStabNetworkBuilder builder) {
         this.builder = builder;
@@ -82,6 +94,18 @@ public class PSSEDStabDirectParser {
                 log.warn("Error processing dynamic record at line {}: {}", lineNo, e.getMessage());
             }
         }
+        for (PendingSt2cut pending : pendingSt2cut) {
+            if (!procPssSt2cut(pending.busId(), pending.genId(), pending.fields())) {
+                unsupportedCount++;
+            }
+        }
+        pendingSt2cut.clear();
+        for (PendingIeeest pending : pendingIeeest) {
+            if (!procPssIeeest(pending.busId(), pending.genId(), pending.fields())) {
+                unsupportedCount++;
+            }
+        }
+        pendingIeeest.clear();
         log.info("Dynamic models loaded: {}, unsupported/skipped: {}", modelCount, unsupportedCount);
     }
 
@@ -91,7 +115,7 @@ public class PSSEDStabDirectParser {
 
         int busNum = Math.abs(Integer.parseInt(fields[0]));
         String busId = BUS_ID_PREFIX + busNum;
-        String genId = fields[2].trim();
+        String genId = trimQuote(fields[2]);
 
         switch (type) {
             case "GENCLS":
@@ -99,6 +123,8 @@ public class PSSEDStabDirectParser {
             case "GENROU":
             case "GENROE":
                 return procGenrou(busId, genId, fields);
+            case "GENQEC":
+                return procGenqec(busId, genId, fields);
             case "GENSAL":
             case "GENSAE":
                 return procGensal(busId, genId, fields);
@@ -116,7 +142,10 @@ public class PSSEDStabDirectParser {
                 return procExcExst1(busId, genId, fields);
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
+            case "ESDC2A":
+                return procExcEsdc2a(busId, genId, fields);
             case "ESST3A":
+                return procExcEsst3a(busId, genId, fields);
             case "ESST4B":
                 log.debug("Exciter model {} at bus {} - parsed as IEEET1 fallback", type, busId);
                 return false;
@@ -133,6 +162,13 @@ public class PSSEDStabDirectParser {
                 log.debug("Governor model IEEEG3 at bus {} - not yet implemented", busId);
                 return false;
 
+            case "ST2CUT":
+                pendingSt2cut.add(new PendingSt2cut(busId, genId, fields.clone()));
+                return true;
+            case "IEEEST":
+                pendingIeeest.add(new PendingIeeest(busId, genId, fields.clone()));
+                return true;
+
             case "CMPLDW":
             case "CIM6BL":
             case "CMLDBLU2":
@@ -145,6 +181,16 @@ public class PSSEDStabDirectParser {
 
             case "ACMTBLU1":
                 return procAcmtblu1(busId, genId, fields);
+
+            case "REGCA1":
+            case "REGCAU1":
+                return procRegca1(busId, genId, fields);
+            case "REECB1":
+            case "REECBU1":
+                return procReecb1(busId, genId, fields);
+            case "REPCA1":
+            case "REPCAU1":
+                return procRepca1(busId, genId, fields);
 
             default:
                 log.debug("Unsupported dynamic model type: {} at bus {}", type, busId);
@@ -364,6 +410,96 @@ public class PSSEDStabDirectParser {
 
     // ==================== Governor Model Parsers ====================
 
+    private boolean procPssSt2cut(String busId, String genId, String[] f) {
+        if (f.length < 23) return false;
+        int mode1 = getInt(f, 3, 0);
+        int mode2 = getInt(f, 5, 0);
+        if (!isSupportedSt2cutMode(mode1) || !isSupportedSt2cutMode(mode2)
+                || getInt(f, 4, 0) != 0 || getInt(f, 6, 0) != 0) {
+            log.warn("ST2CUT remote or unsupported signal mode at bus {}", busId);
+            return false;
+        }
+        var machine = builder.getBaseDStabNetwork().getMachine(busId + "-mach" + genId);
+        if (machine == null || machine.getExciter() == null) {
+            log.warn("ST2CUT at bus {} requires a loaded exciter", busId);
+            return false;
+        }
+        St2cutData data = new St2cutData(
+                mode1, getInt(f, 4, 0), mode2, getInt(f, 6, 0),
+                getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0),
+                getDouble(f, 11, 0), getDouble(f, 12, 0),
+                getDouble(f, 13, 0), getDouble(f, 14, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0),
+                getDouble(f, 17, 0), getDouble(f, 18, 0),
+                getDouble(f, 19, 0), getDouble(f, 20, 0),
+                getDouble(f, 21, 0), getDouble(f, 22, 0));
+        new St2cutStabilizer(busId + "-st2cut" + genId, data, machine);
+        return true;
+    }
+
+    private boolean procExcEsdc2a(String busId, String genId, String[] f) {
+        if (f.length < 19) return false;
+        return builder.addExcEsdc2a(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 7, 0), getDouble(f, 6, 0),
+                getDouble(f, 8, 0), getDouble(f, 9, 0),
+                getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0),
+                getDouble(f, 17, 0), getDouble(f, 18, 0)) != null;
+    }
+
+    private boolean procExcEsst3a(String busId, String genId, String[] f) {
+        if (f.length < 24) return false;
+        return builder.addExcEsst3a(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0),
+                getDouble(f, 11, 0), getDouble(f, 12, 0),
+                getDouble(f, 13, 0), getDouble(f, 14, 0), getDouble(f, 15, 0),
+                getDouble(f, 16, 0), getDouble(f, 17, 0), getDouble(f, 18, 0),
+                getDouble(f, 19, 0), getDouble(f, 20, 0), getDouble(f, 21, 0),
+                getDouble(f, 22, 0), getDouble(f, 23, 0)) != null;
+    }
+
+    private static boolean isSupportedSt2cutMode(int mode) {
+        return mode == 0 || mode == 1 || mode == 3 || mode == 4;
+    }
+
+    private record PendingSt2cut(String busId, String genId, String[] fields) {}
+
+    // IEEEST: IBUS 'IEEEST' ID MODE BUSR A1 A2 A3 A4 A5 A6
+    //          T1 T2 T3 T4 T5 T6 KS LSMAX LSMIN VCU VCL
+    private boolean procPssIeeest(String busId, String genId, String[] f) {
+        if (f.length < 22) return false;
+        int mode = getInt(f, 3, 0);
+        int remoteBus = getInt(f, 4, 0);
+        if ((mode < 1 || mode > 5 || mode == 2) || remoteBus != 0) {
+            log.warn("IEEEST remote-bus or unsupported signal mode {} at bus {}", mode, busId);
+            return false;
+        }
+        var machine = builder.getBaseDStabNetwork().getMachine(busId + "-mach" + genId);
+        if (machine == null || machine.getExciter() == null) {
+            log.warn("IEEEST at bus {} requires a loaded exciter", busId);
+            return false;
+        }
+        IeeestData data = new IeeestData(mode, remoteBus,
+                getDouble(f, 5, 0), getDouble(f, 6, 0),
+                getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0),
+                getDouble(f, 11, 0), getDouble(f, 12, 0),
+                getDouble(f, 13, 0), getDouble(f, 14, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0),
+                getDouble(f, 17, 0), getDouble(f, 18, 0),
+                getDouble(f, 19, 0), getDouble(f, 20, 0),
+                getDouble(f, 21, 0));
+        new IeeestStabilizer(busId + "-ieeest" + genId, data, machine);
+        return true;
+    }
+
+    private record PendingIeeest(String busId, String genId, String[] fields) {}
+
     // IEEEG1: IBUS 'IEEEG1' ID JBUS M K T1 T2 T3 Uo Uc PMAX PMIN T4 K1 K2 T5 K3 K4 T6 K5 K6 T7 K7 K8
     //         idx:  0    1    2   3  4  5  6  7  8  9 10  11   12  13 14 15 16 17 18 19 20 21 22 23 24
     private boolean procGovIeeeg1(String busId, String genId, String[] f) throws InterpssException {
@@ -428,6 +564,79 @@ public class PSSEDStabDirectParser {
         return true;
     }
 
+    // GENQEC (PSLF/PowerDynData order):
+    // IBUS 'GENQEC' ID T'do T''do T'qo T''qo H D Xd Xq X'd X'q X''d X''q
+    //                    Xl S(1.0) S(1.2) Ra Rcomp Xcomp Kw SatFunc
+    private boolean procGenqec(String busId, String genId, String[] f) throws InterpssException {
+        if (f.length < 23) {
+            log.warn("Incomplete GENQEC record at bus {}: expected 23 fields, found {}", busId, f.length);
+            return false;
+        }
+        GenqecData data = new GenqecData(
+                getDouble(f, 7, 0.0), getDouble(f, 8, 0.0), getDouble(f, 18, 0.0),
+                getDouble(f, 9, 0.0), getDouble(f, 10, 0.0),
+                getDouble(f, 11, 0.0), getDouble(f, 12, 0.0),
+                getDouble(f, 13, 0.0), getDouble(f, 14, 0.0), getDouble(f, 15, 0.0),
+                getDouble(f, 3, 0.0), getDouble(f, 5, 0.0),
+                getDouble(f, 4, 0.0), getDouble(f, 6, 0.0),
+                getDouble(f, 16, 0.0), getDouble(f, 17, 0.0),
+                getDouble(f, 19, 0.0), getDouble(f, 20, 0.0),
+                0.0, getDouble(f, 21, 0.0), (int) getDouble(f, 22, 0.0));
+        double[] rating = getGenRating(busId, genId);
+        builder.addGenqec(busId, genId, rating[0], rating[1], data);
+        return true;
+    }
+
+    // REGCA1: IBUS MODEL ID LVPLSW Tg Rrpwr Brkpt Zerox Lvpl1 Volim
+    //         Lvpnt1 Lvpnt0 Iolim Tfltr Khv Iqrmax Iqrmin Accel
+    private boolean procRegca1(String busId, String genId, String[] f) {
+        if (f.length < 18) return false;
+        Regca1Data data = new Regca1Data(
+                getInt(f, 3, 1), getDouble(f, 4, 0.02), getDouble(f, 5, 10.0),
+                getDouble(f, 6, 0.9), getDouble(f, 7, 0.4), getDouble(f, 8, 1.22),
+                getDouble(f, 9, 1.2), getDouble(f, 10, 0.9), getDouble(f, 11, 0.5),
+                getDouble(f, 12, -1.3), getDouble(f, 13, 0.02), getDouble(f, 14, 0.0),
+                getDouble(f, 15, 100.0), getDouble(f, 16, -100.0), getDouble(f, 17, 0.7));
+        return builder.addRegca1(busId, genId, data) != null;
+    }
+
+    // REECB1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PQFLAG followed by
+    // voltage, reactive-control, active-control, and current-limit parameters.
+    private boolean procReecb1(String busId, String genId, String[] f) {
+        if (f.length < 33) return false;
+        Reecb1Data data = new Reecb1Data(
+                getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0), getInt(f, 6, 0), getInt(f, 7, 0),
+                getDouble(f, 8, -99), getDouble(f, 9, 99), getDouble(f, 10, 0.02),
+                getDouble(f, 11, 0), getDouble(f, 12, 0), getDouble(f, 13, 0),
+                getDouble(f, 14, 1.1), getDouble(f, 15, -1.1), getDouble(f, 16, 0),
+                getDouble(f, 17, 0.02), getDouble(f, 18, 99), getDouble(f, 19, -99),
+                getDouble(f, 20, 1.1), getDouble(f, 21, -1.1), getDouble(f, 22, 0),
+                getDouble(f, 23, 0.01), getDouble(f, 24, 10), getDouble(f, 25, 60),
+                getDouble(f, 26, 0.02), getDouble(f, 27, 99), getDouble(f, 28, -99),
+                getDouble(f, 29, 1), getDouble(f, 30, 0), getDouble(f, 31, 1.1),
+                getDouble(f, 32, 0.02));
+        return builder.addReecb1(busId, genId, data) != null;
+    }
+
+    // REPCA1: IBUS MODEL ID IBRANCH JBUS KBus ID VCFlag RefFlag FFlag ...
+    private boolean procRepca1(String busId, String genId, String[] f) {
+        if (f.length < 37) return false;
+        Repca1Data data = new Repca1Data(
+                getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0), trimQuote(f[6]),
+                getInt(f, 7, 0), getInt(f, 8, 0), getInt(f, 9, 0),
+                getDouble(f, 10, 0.02), getDouble(f, 11, 1), getDouble(f, 12, 0.1),
+                getDouble(f, 13, 0), getDouble(f, 14, 0.05), getDouble(f, 15, 0),
+                getDouble(f, 16, 0), getDouble(f, 17, 0), getDouble(f, 18, 0),
+                getDouble(f, 19, 99), getDouble(f, 20, -99), getDouble(f, 21, -0.1),
+                getDouble(f, 22, 0.1), getDouble(f, 23, 1), getDouble(f, 24, -1),
+                getDouble(f, 25, 1), getDouble(f, 26, 0.05), getDouble(f, 27, 0.25),
+                getDouble(f, 28, -1), getDouble(f, 29, 1), getDouble(f, 30, 99),
+                getDouble(f, 31, -99), getDouble(f, 32, 1), getDouble(f, 33, 0),
+                getDouble(f, 34, 0.1), getDouble(f, 35, 0), getDouble(f, 36, 0),
+                getInt(f, 37, 0));
+        return builder.addRepca1(busId, genId, data) != null;
+    }
+
     // IEESGO: IBUS 'IEESGO' ID T1 T2 T3 T4 T5 T6 K1 K2 K3 PMAX PMIN
     //         idx:  0    1   2  3  4  5  6  7  8  9 10 11  12   13
     private boolean procGovIeesgo(String busId, String genId, String[] f) throws InterpssException {
@@ -464,10 +673,24 @@ public class PSSEDStabDirectParser {
     }
 
     private String[] splitFields(String lineStr) {
-        if (lineStr.contains(","))
-            return lineStr.split("\\s*(\\s|,)\\s*");
-        else
-            return lineStr.split("\\s+");
+        java.util.List<String> fields = new java.util.ArrayList<>();
+        StringBuilder field = new StringBuilder();
+        boolean quoted = false;
+        for (int i = 0; i < lineStr.length(); i++) {
+            char c = lineStr.charAt(i);
+            if (c == '\'') {
+                quoted = !quoted;
+            } else if (!quoted && (c == ',' || Character.isWhitespace(c))) {
+                if (field.length() > 0) {
+                    fields.add(field.toString());
+                    field.setLength(0);
+                }
+            } else {
+                field.append(c);
+            }
+        }
+        if (field.length() > 0) fields.add(field.toString());
+        return fields.toArray(String[]::new);
     }
 
     private String getModelType(String lineStr) {
@@ -507,6 +730,15 @@ public class PSSEDStabDirectParser {
         if (idx >= fields.length) return defaultVal;
         try {
             return Double.parseDouble(fields[idx].trim());
+        } catch (NumberFormatException e) {
+            return defaultVal;
+        }
+    }
+
+    private int getInt(String[] fields, int idx, int defaultVal) {
+        if (idx >= fields.length) return defaultVal;
+        try {
+            return Integer.parseInt(trimQuote(fields[idx]));
         } catch (NumberFormatException e) {
             return defaultVal;
         }

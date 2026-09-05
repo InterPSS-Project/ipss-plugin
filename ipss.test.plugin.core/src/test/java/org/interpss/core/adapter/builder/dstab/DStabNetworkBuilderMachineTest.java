@@ -5,9 +5,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.fadapter.psse.PSSEDStabDirectParser;
+import org.interpss.dstab.mach.GenqecMachine;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabilityNetwork;
@@ -25,6 +31,9 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 
 	private static final double TOL = 1.0E-6;
 
+	@TempDir
+	Path tempDir;
+
 	@Test
 	public void ctorAndAccessor() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
@@ -39,15 +48,19 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		RoundRotorMachine mach = builder.addGenrou("Bus1", "1",
 				100.0, 16.5,
 				8.0, 0.03, 0.4, 0.05,
-				5.0, 0.0,
+				5.0, 5.0,
 				1.8, 1.7, 0.3, 0.55, 0.25, 0.15,
 				0.1, 0.2);
 
 		assertNotNull(mach);
+		assertEquals("com.interpss.dstab.mach.impl.RoundRotorMachineImpl",
+				mach.getClass().getName());
 		assertEquals("Bus1-mach1", mach.getId());
 		assertEquals(MachineModelType.EQ11_ED11_ROUND_ROTOR, mach.getMachType());
 		assertEquals(5.0, mach.getH(), TOL);
-		assertEquals(0.0, mach.getD(), TOL);
+		// PSS/E D is pu torque / pu speed. The core stores percent MW/Hz.
+		assertEquals(5.0 * 100.0 / builder.getDStabNetwork().getFrequency(),
+				mach.getD(), TOL);
 		assertEquals(0.0, mach.getRa(), TOL);
 		assertEquals(2, mach.getPoles());
 		assertEquals(1.8, mach.getMachData().getXd(), TOL);
@@ -68,6 +81,27 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1").getContributeGen("1");
 		assertSame(mach, gen.getMach());
 		assertSame(mach, builder.getDStabNetwork().getMachine("Bus1-mach1"));
+	}
+
+	@Test
+	public void parseGenqec_createsDedicatedMachine() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+		Path dyr = tempDir.resolve("genqec.dyr");
+		Files.writeString(dyr,
+				"1 'GENQEC' '1' 6.81 0.02 0.85 0.02 3.17 0.0 "
+				+ "2.37 1.87 0.32 0.52 0.28 0.20 0.19 0.233 0.797 "
+				+ "0.003 0.01 0.02 0.10 1 /\n");
+
+		new PSSEDStabDirectParser(builder).parseDynFile(dyr.toString());
+		GenqecMachine mach = (GenqecMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+		assertNotNull(mach);
+		assertEquals(0.28, mach.getXd11(), TOL);
+		assertEquals(0.20, mach.getXq11(), TOL);
+		assertEquals(0.003, mach.getRa(), TOL);
+		assertEquals(0.01, mach.getGenqecData().rcomp(), TOL);
+		assertEquals(0.02, mach.getGenqecData().xcomp(), TOL);
+		assertEquals(0.10, mach.getGenqecData().kw(), TOL);
+		assertEquals(1, mach.getGenqecData().satFunc());
 	}
 
 	@Test

@@ -50,6 +50,9 @@ import com.interpss.core.aclf.hvdc.HvdcLineMT;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.VSCConverter;
+import com.interpss.core.algo.config.BusLowVoltAdjConfig;
+import com.interpss.core.algo.config.LfAdjAlgoConfigFactory;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.NameTag;
 import com.interpss.core.net.NetFactory;
@@ -231,6 +234,14 @@ public class PSSEDirectParser {
                 (line2 != null ? line2.trim() : "PSS/E Case"),
                 baseMva * 1000.0, // convert MVA to kVA
                 OriginalDataFormat.PSSE);
+        // BASFRQ is part of the PSS/E case header and drives rotor-angle,
+        // damping, and frequency-measurement equations in DStab.  Leaving the
+        // core network at its 50-Hz default makes a 60-Hz PSS/E trajectory run
+        // at exactly 5/6 of the correct electrical angular speed.
+        double baseFrequency = rec.getDouble(5, 60.0);
+        if (baseFrequency > 0.0) {
+            builder.getBaseNetwork().setFrequency(baseFrequency);
+        }
 
         // For v34+, skip system-wide data section
         if (version >= 34) {
@@ -251,19 +262,28 @@ public class PSSEDirectParser {
                 settingsBuilder.addLine(line);
             }
             solutionSettings = settingsBuilder.build();
-            builder.getNetwork().getExtraInfo().put(
+            builder.getBaseNetwork().getExtraInfo().put(
                     com.interpss.core.algo.LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY,
                     solutionSettings);
+            if (builder.getBaseNetwork().getBusLoadLowVoltConfig() == null) {
+                BusLowVoltAdjConfig config = LfAdjAlgoConfigFactory.eINSTANCE.createBusLowVoltAdjConfig();
+                // ipss-core 1.3.22's voltage-adjust preprocessing casts to the
+                // concrete AclfNetwork type, so it cannot run on DStabilityNetwork.
+                config.setApplyVoltAdjust(!(builder.getBaseNetwork() instanceof BaseDStabNetwork));
+                config.setVConstPMin(0.7);
+                config.setVConstIMin(0.5);
+                builder.getBaseNetwork().setBusLoadLowVoltConfig(config);
+            }
             if (solutionSettings.general().thrshz() != null
                     && Double.isFinite(solutionSettings.general().thrshz())
                     && solutionSettings.general().thrshz() >= 0.0) {
-                builder.getNetwork().setZeroZBranchThreshold(
+                builder.getBaseNetwork().setZeroZBranchThreshold(
                         solutionSettings.general().thrshz());
             }
             if (solutionSettings.general().pqbrak() != null
                     && Double.isFinite(solutionSettings.general().pqbrak())
                     && solutionSettings.general().pqbrak() >= 0.0) {
-                builder.getNetwork().getBusLoadLowVoltConfig().setVConstPMin(
+                builder.getBaseNetwork().getBusLoadLowVoltConfig().setVConstPMin(
                         solutionSettings.general().pqbrak());
             }
         } else {
@@ -1033,8 +1053,8 @@ public class PSSEDirectParser {
             rmpct = rec.getDouble(9, 100.0);
             remoteDeviceId = rec.getString(10, "").trim();
             binit = rec.getDouble(11, 0.0);
-        } else if (version >= 33) {
-            // v33-34: I, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, RMPCT, RMIDNT, BINIT, N1, B1, ...
+        } else if (version >= 32) {
+            // v32-34: I, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, RMPCT, RMIDNT, BINIT, N1, B1, ...
             modsw = rec.getInt(1, 1);
             stat = rec.getInt(3, 1);
             vswhi = rec.getDouble(4, 1.0);
@@ -1075,7 +1095,7 @@ public class PSSEDirectParser {
             }
         } else {
             // v30-34: N, B pairs
-            int blockStartIdx = version >= 33 ? 10 : 8;
+            int blockStartIdx = version >= 32 ? 10 : 8;
             for (int i = 0; i < 8; i++) {
                 int n = rec.getInt(blockStartIdx + i * 2, 0);
                 double bVal = rec.getDouble(blockStartIdx + i * 2 + 1, 0.0);

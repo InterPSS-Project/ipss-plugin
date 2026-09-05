@@ -3,7 +3,6 @@ package org.interpss.dstab.control.exc.ieee.y2005.st3a;
 import java.lang.reflect.Field;
 
 import org.apache.commons.math3.complex.Complex;
-import org.interpss.numeric.datatype.LimitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,15 +86,15 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	
 //	//KG feedback, gain with upper limit
 	   
-	   public double  kg =1.0 ,vgmax = 8, vgmin = -9999, tg=0.01;
+	   public double kg = 1.0, vgmax = 8, vgmin = -9999;
 	   @AnControllerField(
-		   type= CMLFieldEnum.ControlBlock,
+		   type= CMLFieldEnum.StaticBlock,
 		   input="this.customBlock.y",
-		   parameter={"type.Limit", "this.kg", "this.tg","this.vgmax", "this.vgmin"},
+		   parameter={"type.Limit", "this.kg", "this.vgmax", "this.vgmin"},
 		   feedback = true//,
 		   //debug=true
 		   )
-	   DelayControlBlock kgGainBlock;
+	   GainBlock kgGainBlock;
 	   
 	   
 //	     public double  kg =1.0 ,vgmax = 8, vgmin = -9999, 
@@ -130,17 +129,17 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	      //debug = true
 	      )
 	   public ICMLStaticBlock customBlock = new CMLStaticBlockAdapter() {
-	      private LimitType limit = new LimitType(vbmax, 0.0);
 	      private double VB = 0.0;
 	     
 	      @Override
 	      public boolean initStateY0(double y0) {
-	    	  VB = calcVB(calcVe());
-	    	  
-	    	  if(VB ==0.0){
-	    		  log.error("Error: VB of IEEE 2005 ST4B exciter is 0 for initialization, @ "+getMachine().getId());
-	    	      return false;
-	    	  }
+             VB = calcVB(calcVe());
+
+             if (VB == 0.0) {
+                log.error("Error: VB of IEEE 2005 ST3A exciter is 0 for initialization, @ "
+                        + getMachine().getId());
+                return false;
+             }
 	    	  
 	          this.u = y0/VB;
 	          //System.out.println("Y0, VB, u ="+y0+","+VB+","+u);
@@ -165,43 +164,14 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	         VB = calcVB(calcVe());
 	         return this.u * VB;
 	      }
-	      private double calcVe(){
-	    	  double angleKp = Math.toRadians(angKp_deg);
-			   Complex kpCplx = new Complex( kp*Math.cos(angleKp), 
-			            kp*Math.sin(angleKp));
-			   double ve = 1.0;
-			   Machine mach =(Machine) eInternalContainer();
-			  
-			   Complex vt = mach.getParentGen().getParentBus().getVoltage();
-			  
-			   Complex it = mach.getIxy();
-			   // ve = |kp*vt_ + j*(ki+kp_*xl)*it_| 
-			   ve = (vt.multiply(kp).add(new Complex(0,1).multiply((kpCplx.multiply(xl).add(ki)).multiply(it)))).abs();
-			  
-			   //System.out.println("ve ="+ve);
-			   return ve;
-	    	  
-	      }
-	      
-	      private double calcVB(double ve){
-	    	 // if(getMachine()!=null)
-	    	  VB = ve*fexFunc(ve, getMachine().calculateIfd(MachineIfdBase.EXCITER));
-	    	  return VB = this.limit.limit(VB);
-	    	  
-	      }
-	      private double fexFunc (double ve, double ifd){
-	    	  double In = kc *ifd/ve;
-	  		if (In <= 0.0)
-	  			return 1.0;
-	  		else if (In > 0.0 && In <= 0.433)
-	  			return 1.0 - 0.5777 * In;
-	  		else if (In > 0.433 && In < 0.75)
-	  			return Math.sqrt(0.75 - In * In);
-	  		else if (In >= 0.75 && In <= 1.0)
-	  			return 1.732 * (1.0 - In);
-	  		else
-	  			return 0.0; // In > 1.0
-	      }
+	      private double calcVe() {
+             return calcCompoundSourceVoltage((Machine) eInternalContainer());
+          }
+
+	      private double calcVB(double ve) {
+             return calcBridgeVoltage(ve,
+                     getMachine().calculateIfd(MachineIfdBase.EXCITER));
+          }
 	   };
 	   
 
@@ -226,7 +196,8 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 			   Vector_xy it_xy = DStabFunction.transfer(getMachine().getIdq(),getMachine().getAngle());
 			   Complex it = new Complex(it_xy.x,it_xy.y);
 			   // ve = |kp*vt_ + j*(ki+kp_*xl)*it_|
-			   double ve = (vt.multiply(kp).add(new Complex(0,1).multiply((kpCplx.multiply(xl).add(ki)).multiply(it)))).abs();
+			   double ve = (vt.multiply(kp).add(new Complex(0,1)
+			           .multiply((kpCplx.multiply(xl).add(ki)).multiply(it)))).abs();
 			   
 			   return ve;
 			}		   
@@ -333,10 +304,65 @@ public class IEEE2005ST3AExciter  extends AnnotateExciter{
 	        this.kc = getData().getKc();
 	        
 	        this.vbmax = getData().getVbmax();
+
+	        // PowerWorld expands active limits during initialization so the
+	        // solved operating point is not clipped.  Compute the steady-state
+	        // ESST3A internal signals and apply the same rule before CML creates
+	        // the limited blocks.
+	        if (this.vrmax < this.vrmin) {
+               double swap = this.vrmax;
+               this.vrmax = this.vrmin;
+               this.vrmin = swap;
+	        }
+	        if (this.vimax < this.vimin) {
+               double swap = this.vimax;
+               this.vimax = this.vimin;
+               this.vimin = swap;
+	        }
+	        if (this.vmmax < this.vmmin) {
+               double swap = this.vmmax;
+               this.vmmax = this.vmmin;
+               this.vmmin = swap;
+	        }
+	        double ve0 = calcCompoundSourceVoltage(mach);
+	        double vb0 = calcBridgeVoltage(ve0, mach.calculateIfd(MachineIfdBase.EXCITER));
+	        if (vb0 > 0.0 && Math.abs(this.km) > 1.0e-9 && Math.abs(this.ka) > 1.0e-9) {
+               double vm0 = mach.getEfd() / vb0;
+               double vg0 = Math.min(this.vgmax, this.kg * mach.getEfd());
+               double vr0 = vm0 / this.km + vg0;
+               double vi0 = vr0 / this.ka;
+               this.vmmax = Math.max(this.vmmax, vm0);
+               this.vmmin = Math.min(this.vmmin, vm0);
+               this.vrmax = Math.max(this.vrmax, vr0);
+               this.vrmin = Math.min(this.vrmin, vr0);
+               this.vimax = Math.max(this.vimax, vi0);
+               this.vimin = Math.min(this.vimin, vi0);
+	        }
 	        
 	        this.k1 =1.0;
 	        // always add the following statement
 	        return super.initStates(bus, mach);
+	    }
+
+	    private double calcCompoundSourceVoltage(Machine mach) {
+           double angle = Math.toRadians(angKp_deg);
+           Complex kpCplx = new Complex(kp * Math.cos(angle), kp * Math.sin(angle));
+           Complex vt = mach.getParentGen().getParentBus().getVoltage();
+           Complex it = mach.getIxy();
+           return vt.multiply(kpCplx).add(new Complex(0, 1)
+                   .multiply((kpCplx.multiply(xl).add(ki)).multiply(it))).abs();
+	    }
+
+	    private double calcBridgeVoltage(double ve, double ifd) {
+           if (ve <= 0.0) return 0.0;
+           double in = kc * ifd / ve;
+           double fex;
+           if (in <= 0.0) fex = 1.0;
+           else if (in <= 0.433) fex = 1.0 - 0.577 * in;
+           else if (in < 0.75) fex = Math.sqrt(0.75 - in * in);
+           else if (in <= 1.0) fex = 1.732 * (1.0 - in);
+           else fex = 0.0;
+           return Math.max(0.0, Math.min(vbmax, ve * fex));
 	    }
 
 	/*

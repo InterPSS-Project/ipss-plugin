@@ -119,6 +119,7 @@ public class PSSEMultiFileLoader {
         }
 
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
+        dynAlgo.setSolver(new PsseDStabSolver(dynAlgo));
         simuCtx.setDynSimuAlgorithm(dynAlgo);
         return simuCtx;
     }

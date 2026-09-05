@@ -11,6 +11,14 @@ import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
+import org.interpss.dstab.renewable.Reecb1Data;
+import org.interpss.dstab.renewable.Reecb1Model;
+import org.interpss.dstab.renewable.Regca1Data;
+import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Repca1Data;
+import org.interpss.dstab.renewable.Repca1Model;
+import org.interpss.dstab.mach.GenqecData;
+import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +36,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.mach.RoundRotorMachine;
 import com.interpss.dstab.mach.SalientPoleMachine;
+import com.interpss.core.acsc.AcscFactory;
 
 public class DStabNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(DStabNetworkBuilder.class);
@@ -74,14 +83,14 @@ public class DStabNetworkBuilder {
         String machId = busId + "-mach" + genId;
         RoundRotorMachine mach = (RoundRotorMachine) DStabObjectFactory.createMachine(
                 machId, "GENROU", MachineModelType.EQ11_ED11_ROUND_ROTOR,
-                (BaseDStabNetwork<?, ?>) network, busId, genId);
+                network, busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
         mach.setRatedVoltage(ratedKv, UnitType.kV);
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
+        mach.setD(toCoreDamping(d));
         mach.setRa(0.0);
         mach.setXl(xl);
         mach.setXd(xd);
@@ -97,6 +106,53 @@ public class DStabNetworkBuilder {
         mach.setSliner(0.85);
         mach.setSe100(se100);
         mach.setSe120(se120);
+        return mach;
+    }
+
+    /**
+     * WECC GENQEC model with saturation applied to all mutual inductances.
+     * Parameters are corrected according to the published PowerWorld rules.
+     *
+     * @return the created machine, or null if the bus was not found
+     */
+    public GenqecMachine addGenqec(String busId, String genId,
+            double ratingMva, double ratedKv, GenqecData inputData) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for GENQEC: {}", busId);
+            return null;
+        }
+
+        GenqecMachine mach = new GenqecMachine(inputData);
+        mach.setId(busId + "-mach" + genId);
+        mach.setName("GENQEC");
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(inputData.h());
+        mach.setD(toCoreDamping(inputData.d()));
+        mach.setRa(inputData.ra());
+        mach.setXl(inputData.xl());
+        mach.setXd(inputData.xd());
+        mach.setXq(inputData.xq());
+        mach.setXd1(inputData.xdp());
+        mach.setXq1(inputData.xqp());
+        mach.setXd11(inputData.xdpp());
+        mach.setXq11(inputData.xqpp());
+        mach.setTd01(inputData.tdop());
+        mach.setTq01(inputData.tqop());
+        mach.setTd011(inputData.tdopp());
+        mach.setTq011(inputData.tqopp());
+        // GENQEC owns its saturation function. Keep the inherited percentage
+        // fields zero so core initialization uses this model's adjusted Xq path.
+        mach.setSe100(0.0);
+        mach.setSe120(0.0);
         return mach;
     }
 
@@ -127,7 +183,7 @@ public class DStabNetworkBuilder {
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
+        mach.setD(toCoreDamping(d));
         mach.setRa(0.0);
         mach.setXl(xl);
         mach.setXd(xd);
@@ -171,7 +227,7 @@ public class DStabNetworkBuilder {
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
+        mach.setD(toCoreDamping(d));
         mach.setRa(0.0);
         mach.setXl(xl);
         mach.setXd(xd);
@@ -212,7 +268,7 @@ public class DStabNetworkBuilder {
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
+        mach.setD(toCoreDamping(d));
         mach.setRa(0.0);
         mach.setXl(xl);
         mach.setXd(xd);
@@ -248,7 +304,7 @@ public class DStabNetworkBuilder {
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
+        mach.setD(toCoreDamping(d));
         mach.setRa(ra);
         mach.setXd1(xd1);
         return mach;
@@ -370,6 +426,45 @@ public class DStabNetworkBuilder {
         exc.getData().setKc(kc);
         exc.getData().setVimax(vimax);
         exc.getData().setVimin(vimin);
+        return exc;
+    }
+
+    /** PSS/E ESDC2A exciter. */
+    public org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter addExcEsdc2a(
+            String busId, String genId,
+            double tr, double ka, double ta, double tc, double tb,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var data = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aData();
+        data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTc(tc); data.setTb(tb);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
+        data.setKf(kf); data.setTf(tf); data.setE1(e1); data.setSe1(se1);
+        data.setE2(e2); data.setSe2(se2);
+        var exc = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter(
+                mach.getId() + "_Exc", data, mach);
+        return exc;
+    }
+
+    /** PSS/E ESST3A mapped to the existing IEEE 2005 ST3A implementation. */
+    public org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter addExcEsst3a(
+            String busId, String genId, double tr, double vimax, double vimin,
+            double km, double tc, double tb, double ka, double ta,
+            double vrmax, double vrmin, double kg, double kp, double ki,
+            double vbmax, double kc, double xl, double vgmax, double thetaP,
+            double tm, double vmmax, double vmmin) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var exc = ExciterObjectFactory.createIeee2005ST3AExciter(
+                mach.getId() + "_Exc", "ESST3A", mach);
+        var data = exc.getData();
+        data.setTr(tr); data.setVimax(vimax); data.setVimin(vimin);
+        data.setKm(km); data.setTc(tc); data.setTb(tb);
+        data.setKa(ka); data.setTa(ta); data.setVrmax(vrmax); data.setVrmin(vrmin);
+        data.setKg(kg); data.setKp(kp); data.setKi(ki); data.setVbmax(vbmax);
+        data.setKc(kc); data.setXl(xl); data.setVgmax(vgmax);
+        data.setAngKp(thetaP); data.setTm(tm); data.setVmmax(vmmax); data.setVmmin(vmmin);
         return exc;
     }
 
@@ -539,7 +634,59 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    // ==================== Renewable Models ====================
+
+    public Regca1Model addRegca1(String busId, String genId, Regca1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for REGCA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Regca1Model(gen, bus, genId, data);
+    }
+
+    public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {
+        Regca1Model converter = findRegca1(busId, genId);
+        if (converter == null) {
+            log.warn("REGCA1 not found for REECB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reecb1Model controller = new Reecb1Model(data, converter);
+        converter.setElectricalController(controller);
+        return controller;
+    }
+
+    public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
+        Regca1Model converter = findRegca1(busId, genId);
+        if (converter == null || converter.getElectricalController() == null) {
+            log.warn("REGCA1/REECB1 chain not found for REPCA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Repca1Model controller = new Repca1Model(data, converter);
+        converter.getElectricalController().setPlantController(controller);
+        return controller;
+    }
+
+    private Regca1Model findRegca1(String busId, String genId) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
+    }
+
     // ==================== Helpers ====================
+
+    /**
+     * Convert the PSS/E machine damping coefficient (pu torque / pu speed)
+     * to the core machine convention, percent MW/Hz.  The core swing equation
+     * converts the stored value back with {@code D * 0.01 * frequency}; passing
+     * the PSS/E value through unchanged therefore introduces an erroneous
+     * {@code frequency / 100} multiplier (0.6 at 60 Hz).
+     */
+    private double toCoreDamping(double psseDamping) {
+        double frequency = network.getFrequency();
+        return frequency > 0.0 ? psseDamping * 100.0 / frequency : psseDamping;
+    }
 
     @SuppressWarnings("unchecked")
     private Machine findMachine(String busId, String genId) {
