@@ -50,19 +50,28 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
 	    @AnControllerField(
 	            type= CMLFieldEnum.ControlBlock,
 	            input="this.speedGain*mach.speed-this.speedGain*this.speedRef"
+	                    + "+this.freqGain*bus.freq-this.freqGain*this.freqRef"
 	                    + "+this.peGain*mach.pe-this.peGain*this.peRef"
 	                    + "+this.accelGain*mach.pm-this.accelGain*mach.pe-this.accelGain*this.accelRef"
-	                    + "+this.voltageGain*mach.vt-this.voltageGain*this.vtRef",
+	                    + "+this.voltageGain*bus.vmag-this.voltageGain*this.vtRef",
 	            parameter={"type.NoLimit", "this.one", "this.t6"},
 	            y0="this.washoutBlock.u0", initOrderNumber=1	)
 	    public DelayControlBlock delayBlock;
 
+	    public double derivativeGain, derivativeK = 1.0, derivativeT = 1.0;
+	    @AnControllerField(
+	            type=CMLFieldEnum.ControlBlock,
+	            input="this.derivativeGain*bus.vmag",
+	            parameter={"type.NoLimit", "this.derivativeK", "this.derivativeT"},
+	            y0="this.derivativeGain*this.washoutBlock.u0", initOrderNumber=2)
+	    public WashoutControlBlock voltageDerivativeBlock;
+
 	    public double ks = 1.0, t5 = 0.1;
 	    @AnControllerField(
 	            type= CMLFieldEnum.ControlBlock,
-	            input="this.delayBlock.y",
+	            input="this.delayBlock.y+this.voltageDerivativeBlock.y",
 	            parameter={"type.NoLimit", "this.ks", "this.t5"},
-	            y0="this.order2ndBlock.u0", initOrderNumber=2	)
+	            y0="this.order2ndBlock.u0", initOrderNumber=3	)
 	    public WashoutControlBlock washoutBlock;
 
 	    public double a1 = 0.05, a2 = 0.5;
@@ -70,7 +79,7 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
 	            type= CMLFieldEnum.ControlBlock,
 	            input="this.washoutBlock.y",
 	            parameter={"type.NoLimit", "this.one", "this.a1", "this.a2"},
-	            y0="this.filterBlock1.u0", initOrderNumber=3	)
+	            y0="this.filterBlock1.u0", initOrderNumber=4	)
 	    public TFunc2ndOrderBlock order2ndBlock;
 
 	    public double t1 = 0.05, t2 = 0.5;
@@ -78,7 +87,7 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
 	            type= CMLFieldEnum.ControlBlock,
 	            input="this.order2ndBlock.y",
 	            parameter={"type.NoLimit", "this.one", "this.t1", "this.t2"},
-	            y0="this.filterBlock2.u0", initOrderNumber=4	)
+	            y0="this.filterBlock2.u0", initOrderNumber=5	)
 	    public FilterControlBlock filterBlock1;
 		
 	    public double k2 = 1.0, t3 = 0.05, t4 = 0.25, vmax = 0.2, vmin = -0.2;
@@ -86,16 +95,16 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
 	            type= CMLFieldEnum.ControlBlock,
 	            input="this.filterBlock1.y",
 	            parameter={"type.Limit", "this.k2", "this.t3", "this.t4", "this.vmax", "this.vmin"},
-	            y0="this.outputGate.u0", initOrderNumber=5	)
+	            y0="this.outputGate.u0", initOrderNumber=6	)
 	    public FilterControlBlock filterBlock2;
 
-	    public double speedRef, peRef, accelRef, vtRef;
-	    public double speedGain, peGain, accelGain, voltageGain;
+	    public double speedRef, freqRef, peRef, accelRef, vtRef;
+	    public double speedGain, freqGain, peGain, accelGain, voltageGain;
 	    public double vcu, vcl;
 	    @AnControllerField(
 	            type=CMLFieldEnum.StaticBlock,
 	            input="this.filterBlock2.y",
-	            y0="pss.vs", initOrderNumber=6)
+	            y0="pss.vs", initOrderNumber=7)
 	    public ICMLStaticBlock outputGate = new GainBlock() {
 	        @Override
 	        public boolean initStateY0(double y0) {
@@ -150,13 +159,16 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
 	public boolean initStates(BaseDStabBus<?,?> abus, Machine mach) {
 		int ics = getData().getIcs();
 		speedRef = mach.getSpeed();
+		freqRef = abus.getFreq();
 		peRef = mach.getPe();
 		accelRef = mach.getPm() - mach.getPe();
 		vtRef = abus.getVoltageMag();
 		speedGain = ics == 1 ? 1.0 : 0.0;
+		freqGain = ics == 2 ? 1.0 : 0.0;
 		peGain = ics == 3 ? 1.0 : 0.0;
 		accelGain = ics == 4 ? 1.0 : 0.0;
 		voltageGain = ics == 5 ? 1.0 : 0.0;
+		derivativeGain = ics == 6 ? 1.0 : 0.0;
         this.ks = getData().getKs();
         this.t1 = getData().getT1();
         this.t2 = getData().getT2();
@@ -164,6 +176,8 @@ public class Ieee1992PSS1AStabilizer extends AnnotateStabilizer {
         this.t4 = getData().getT4();
         this.t5 = getData().getT5();
         this.t6 = getData().getT6();
+		this.derivativeT = derivativeGain != 0.0 ? t6 : 1.0;
+		this.derivativeK = derivativeGain != 0.0 ? 1.0 / t6 : 1.0;
         this.vmax = getData().getVstmax();
         this.vmin = getData().getVstmin();
         this.a1 = getData().getA1();

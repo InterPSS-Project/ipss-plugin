@@ -50,7 +50,7 @@ public final class WeccApprovedDynamicModelCatalog {
             stabilizer("PSSSB", "psssb", "PSS2A", "PSSSB", APPROVED,
                     "2006-08-11", "", "PSS2A plus transient stabilizer."),
             stabilizer("PSS1A", "pss1a", "PSS1A", "PSS1A", APPROVED,
-                    "2016-11-17", "", "Generic single-input stabilizer; local input modes are partial."),
+                    "2016-11-17", "PSS1A", "Generic single-input stabilizer."),
             stabilizer("PSS2B", "pss2b", "PSS2B", "PSS2B", APPROVED,
                     "2006-08-11", "", "Dual-input stabilizer with an additional lead/lag block."),
             stabilizer("PSS2C", "pss2c", "PSS2C", "PSS2C", APPROVED,

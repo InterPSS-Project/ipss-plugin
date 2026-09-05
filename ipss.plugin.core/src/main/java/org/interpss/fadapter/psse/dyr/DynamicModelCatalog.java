@@ -11,7 +11,6 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MACHINE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.LOADABLE;
-import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.PARTIAL;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.UNSUPPORTED;
 
 import java.net.URI;
@@ -97,7 +96,7 @@ public final class DynamicModelCatalog {
             descriptor("IEEEST", Set.of(), STABILIZER, 19, LOADABLE,
                     "org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer",
                     "Stabilizer%20IEEEST.htm"),
-            descriptor("PSS1A", Set.of(), STABILIZER, 14, PARTIAL,
+            descriptor("PSS1A", Set.of(), STABILIZER, 14, LOADABLE,
                     "org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer",
                     "Stabilizer%20PSS1A.htm")
     );

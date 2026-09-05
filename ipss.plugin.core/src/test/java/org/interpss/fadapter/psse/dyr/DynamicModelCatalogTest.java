@@ -49,12 +49,12 @@ class DynamicModelCatalogTest {
                 .filter(WeccModelApproval::isImplementedExactly)
                 .count();
         assertEquals(15, approved);
-        assertEquals(3, implemented);
+        assertEquals(4, implemented);
         assertTrue(DynamicModelCatalog.find("WSCCST").orElseThrow().supportStatus()
                 == DynamicModelSupportStatus.LOADABLE);
-        assertEquals(DynamicModelSupportStatus.PARTIAL,
+        assertEquals(DynamicModelSupportStatus.LOADABLE,
                 DynamicModelCatalog.find("PSS1A").orElseThrow().supportStatus());
-        assertFalse(WeccApprovedDynamicModelCatalog.stabilizers().stream()
+        assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS1A"))
                 .findFirst().orElseThrow().isImplementedExactly());
     }

@@ -375,7 +375,7 @@ public class DStabNetworkBuilder {
 
     // ==================== Stabilizer Models ====================
 
-    /** PSS1A single-input stabilizer for local speed, power, acceleration, or voltage. */
+    /** PSS1A single-input stabilizer supporting all six documented local input codes. */
     public Ieee1992PSS1AStabilizer addPss1a(String busId, String genId,
             int ics, double a1, double a2,
             double t1, double t2, double t3, double t4, double t5, double t6,
@@ -385,8 +385,12 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS1A: {} {}", busId, genId);
             return null;
         }
-        if (ics != 1 && ics != 3 && ics != 4 && ics != 5) {
+        if (ics < 1 || ics > 6) {
             log.warn("PSS1A input code is not implemented at {} {}: ICS={}", busId, genId, ics);
+            return null;
+        }
+        if (ics == 6 && t6 <= 0.0) {
+            log.warn("PSS1A voltage-derivative input requires T6 > 0 at {} {}", busId, genId);
             return null;
         }
         Ieee1992PSS1AStabilizer pss = StabilizerObjectFactory
