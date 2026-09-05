@@ -101,6 +101,9 @@ public final class DynamicModelCatalog {
                     "Stabilizer%20PSS1A.htm"),
             descriptor("TGOV1", Set.of(), GOVERNOR, 7, LOADABLE,
                     "org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor",
+                    "Governor%20TGOV1%20and%20TGOV1D.htm"),
+            descriptor("TGOV1D", Set.of("TGOV1DU"), GOVERNOR, 10, LOADABLE,
+                    "org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor",
                     "Governor%20TGOV1%20and%20TGOV1D.htm")
     );
 

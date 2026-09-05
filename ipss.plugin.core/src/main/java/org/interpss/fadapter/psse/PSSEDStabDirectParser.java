@@ -178,6 +178,9 @@ public class PSSEDStabDirectParser {
                 return procGovIeeeg1(busId, genId, fields);
             case "TGOV1":
                 return procGovTgov1(busId, genId, fields);
+            case "TGOV1D":
+            case "TGOV1DU":
+                return procGovTgov1d(busId, genId, fields);
             case "GAST":
                 return procGovGast(busId, genId, fields);
             case "IEESGO":
@@ -663,8 +666,18 @@ public class PSSEDStabDirectParser {
         double t2 = getDouble(f, 7, 0);
         double t3 = getDouble(f, 8, 0);
         double dt = getDouble(f, 9, 0);
-        builder.addGovTgov1(busId, genId, r, t1, vmax, vmin, t2, t3, dt);
-        return true;
+        return builder.addGovTgov1(busId, genId, r, t1, vmax, vmin, t2, t3, dt) != null;
+    }
+
+    // TGOV1D: IBUS 'TGOV1D' ID R T1 VMAX VMIN T2 T3 Dt dbH dbL Trate
+    private boolean procGovTgov1d(String busId, String genId, String[] f) {
+        if (f.length < 13) return false;
+        return builder.addGovTgov1d(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0),
+                getDouble(f, 5, 0), getDouble(f, 6, 0),
+                getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0),
+                getDouble(f, 11, 0), getDouble(f, 12, 0)) != null;
     }
 
     // GAST: IBUS 'GAST' ID R T1 T2 T3 AT KT VMAX VMIN Dturb

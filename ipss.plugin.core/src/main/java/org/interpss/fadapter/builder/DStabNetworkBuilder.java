@@ -749,6 +749,10 @@ public class DStabNetworkBuilder {
     public PsseTGov1SteamTurGovernor addGovTgov1(String busId, String genId,
             double r, double t1, double vmax, double vmin,
             double t2, double t3, double dt) {
+        if (r <= 0.0) {
+            log.warn("Invalid TGOV1 droop at {} {}: R={}", busId, genId, r);
+            return null;
+        }
         Machine mach = findMachine(busId, genId);
         if (mach == null) {
             log.warn("Machine not found for TGOV1 governor: bus={}, gen={}", busId, genId);
@@ -880,6 +884,25 @@ public class DStabNetworkBuilder {
         gov.getData().setT1(t1);
         gov.getData().setPmax(pmax);
         gov.getData().setPmin(pmin);
+        return gov;
+    }
+
+    /** PSS/E TGOV1D with asymmetric speed deadband and turbine MW rating. */
+    public PsseTGov1SteamTurGovernor addGovTgov1d(String busId, String genId,
+            double r, double t1, double vmax, double vmin,
+            double t2, double t3, double dt, double dbH, double dbL, double trate) {
+        if (dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid TGOV1D deadband/rating at {} {}: dbH={}, dbL={}, Trate={}",
+                    busId, genId, dbH, dbL, trate);
+            return null;
+        }
+        PsseTGov1SteamTurGovernor gov = addGovTgov1(
+                busId, genId, r, t1, vmax, vmin, t2, t3, dt);
+        if (gov == null) return null;
+        gov.setName("TGOV1D");
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
         return gov;
     }
 
