@@ -191,7 +191,10 @@ public class PSSEDStabDirectParser {
             case "GGOV1DU":
                 return procGovGgov1(busId, genId, fields, true);
             case "HYGOV":
-                return procGovHygov(busId, genId, fields);
+                return procGovHygov(busId, genId, fields, false);
+            case "HYGOVD":
+            case "HYGOVDU":
+                return procGovHygov(busId, genId, fields, true);
             case "IEEEG3":
                 log.debug("Governor model IEEEG3 at bus {} - not yet implemented", busId);
                 return false;
@@ -730,8 +733,8 @@ public class PSSEDStabDirectParser {
         return builder.addGovGgov1(busId, genId, d) != null;
     }
 
-    private boolean procGovHygov(String busId, String genId, String[] f) {
-        if (f.length < 15) return false;
+    private boolean procGovHygov(String busId, String genId, String[] f, boolean deadbandVariant) {
+        if (f.length < (deadbandVariant ? 18 : 15)) return false;
         PsseHygovGovernorData d = new PsseHygovGovernorData();
         d.setR(getDouble(f, 3, 0)); d.setRtemp(getDouble(f, 4, 0));
         d.setTr(getDouble(f, 5, 0)); d.setTf(getDouble(f, 6, 0));
@@ -739,6 +742,11 @@ public class PSSEDStabDirectParser {
         d.setGmax(getDouble(f, 9, 0)); d.setGmin(getDouble(f, 10, 0));
         d.setTw(getDouble(f, 11, 0)); d.setAt(getDouble(f, 12, 0));
         d.setDturb(getDouble(f, 13, 0)); d.setQnl(getDouble(f, 14, 0));
+        if (deadbandVariant) {
+            d.setDbH(getDouble(f, 15, 0)); d.setDbL(getDouble(f, 16, 0));
+            d.setTrate(getDouble(f, 17, 0));
+            return builder.addGovHygovd(busId, genId, d) != null;
+        }
         return builder.addGovHygov(busId, genId, d) != null;
     }
 

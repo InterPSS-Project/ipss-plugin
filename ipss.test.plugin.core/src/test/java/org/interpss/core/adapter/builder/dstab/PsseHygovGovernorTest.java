@@ -104,6 +104,35 @@ class PsseHygovGovernorTest extends CorePluginTestSetup {
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
+    @Test
+    void hygovduMapsDeadbandAndRatingAndNormalizesReversedGateLimits(@TempDir Path tempDir)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("hygovdu.dyr");
+        Files.writeString(dyr,
+                "1 'HYGOVDU' 1 0.05 0.5 8.38 0.1 0.95 0.11 0 1 1.05 1.09 0.2 0.12 "
+                        + "0.002 -0.003 50.0 /\n");
+
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        parser.parseDynFile(dyr.toString());
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(0.4); machine.setPe(0.4);
+        PsseHygovGovernor governor = (PsseHygovGovernor) machine.getGovernor();
+
+        assertNotNull(governor);
+        assertEquals("HYGOVD", governor.getName());
+        assertEquals(0.002, governor.getData().getDbH(), TOL);
+        assertEquals(-0.003, governor.getData().getDbL(), TOL);
+        assertEquals(50.0, governor.getData().getTrate(), TOL);
+        assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"), machine));
+        assertEquals(50.0, governor.getGovernorBaseMva(machine), TOL);
+        assertEquals(0.4, governor.getOutput(machine), TOL);
+        assertEquals(0.0, governor.applyFrequencyDeadband(-0.002), TOL);
+        assertEquals(-0.007, governor.applyFrequencyDeadband(-0.010), TOL);
+        assertEquals(0.008, governor.applyFrequencyDeadband(0.010), TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
     private static void step(PsseHygovGovernor governor, Machine machine, double dt) {
         governor.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0);
         governor.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1);

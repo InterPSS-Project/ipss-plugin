@@ -16,6 +16,9 @@ public class PsseHygovGovernorData extends BaseControllerData {
     private double at = 1.0;
     private double dturb;
     private double qnl;
+    private double dbH;
+    private double dbL;
+    private double trate;
 
     public double getR() { return r; }
     public void setR(double value) { r = value; }
@@ -41,6 +44,12 @@ public class PsseHygovGovernorData extends BaseControllerData {
     public void setDturb(double value) { dturb = value; }
     public double getQnl() { return qnl; }
     public void setQnl(double value) { qnl = value; }
+    public double getDbH() { return dbH; }
+    public void setDbH(double value) { dbH = value; }
+    public double getDbL() { return dbL; }
+    public void setDbL(double value) { dbL = value; }
+    public double getTrate() { return trate; }
+    public void setTrate(double value) { trate = value; }
 
     @Override public void setValue(String name, int value) { }
     @Override public void setValue(String name, double value) { }
