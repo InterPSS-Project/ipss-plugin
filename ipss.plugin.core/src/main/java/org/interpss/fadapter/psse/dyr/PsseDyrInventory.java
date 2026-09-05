@@ -1,6 +1,8 @@
 package org.interpss.fadapter.psse.dyr;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -9,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import com.google.gson.GsonBuilder;
 
 /** Exact model/count/schema inventory for one or more PSS/E DYR files. */
 public final class PsseDyrInventory {
@@ -57,6 +61,34 @@ public final class PsseDyrInventory {
     public int count(String modelName) {
         ModelStatistics statistics = byModel.get(DynamicModelCatalog.canonicalName(modelName));
         return statistics == null ? 0 : statistics.recordCount();
+    }
+
+    /** Deterministic, human-readable JSON suitable for a CI evidence artifact. */
+    public String toJson() {
+        return new GsonBuilder().setPrettyPrinting().create().toJson(this);
+    }
+
+    public void writeJson(Path path) throws IOException {
+        Files.writeString(path, toJson(), StandardCharsets.UTF_8);
+    }
+
+    /** One summary row per canonical model, ordered by model name. */
+    public String toCsv() {
+        StringBuilder csv = new StringBuilder(
+                "model,record_count,parameter_counts,distinct_parameter_sets\n");
+        byModel.forEach((model, statistics) -> csv.append(model).append(',')
+                .append(statistics.recordCount()).append(',')
+                .append(csvField(statistics.parameterCounts().toString())).append(',')
+                .append(statistics.distinctParameterSetCount()).append('\n'));
+        return csv.toString();
+    }
+
+    public void writeCsv(Path path) throws IOException {
+        Files.writeString(path, toCsv(), StandardCharsets.UTF_8);
+    }
+
+    private static String csvField(String value) {
+        return '"' + value.replace("\"", "\"\"") + '"';
     }
 
     public record ModelStatistics(int recordCount, Set<Integer> parameterCounts,

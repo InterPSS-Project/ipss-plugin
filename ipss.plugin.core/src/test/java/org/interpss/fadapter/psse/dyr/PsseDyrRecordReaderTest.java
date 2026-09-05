@@ -5,12 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gson.JsonParser;
+
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class PsseDyrRecordReaderTest {
+    @TempDir
+    Path tempDir;
+
     @Test
     void readsMultilineCommaAndMultipleRecordsWithLocations() throws Exception {
         String dyr = "// ignored\n"
@@ -61,5 +68,16 @@ class PsseDyrRecordReaderTest {
         PsseDyrInventory.ModelStatistics stats = inventory.byModel().get("GENROU");
         assertEquals(Set.of(2), stats.parameterCounts());
         assertEquals(2, stats.distinctParameterSetCount());
+        assertEquals(3, JsonParser.parseString(inventory.toJson()).getAsJsonObject()
+                .get("totalRecordCount").getAsInt());
+        assertEquals("model,record_count,parameter_counts,distinct_parameter_sets\n"
+                + "GENROU,3,\"[2]\",2\n", inventory.toCsv());
+
+        Path json = tempDir.resolve("inventory.json");
+        Path csv = tempDir.resolve("inventory.csv");
+        inventory.writeJson(json);
+        inventory.writeCsv(csv);
+        assertEquals(inventory.toJson(), java.nio.file.Files.readString(json));
+        assertEquals(inventory.toCsv(), java.nio.file.Files.readString(csv));
     }
 }
