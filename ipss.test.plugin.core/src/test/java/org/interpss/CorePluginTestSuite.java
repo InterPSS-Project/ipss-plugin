@@ -125,6 +125,7 @@ import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
+import org.interpss.core.dstab.cml.block.FilterNthOrderBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
 import org.interpss.core.dstab.cml.block.PIControlBlockTests;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
@@ -245,6 +246,7 @@ import org.junit.platform.suite.api.Suite;
 	// DStab controller building blocks
 	DelayControlBlockTests.class,
 	FilterControlBlockTests.class,
+	FilterNthOrderBlockTests.class,
 	IntegrationControlBlockTests.class,
 	PIControlBlockTests.class,
 	WashoutControlBlockTests.class,
