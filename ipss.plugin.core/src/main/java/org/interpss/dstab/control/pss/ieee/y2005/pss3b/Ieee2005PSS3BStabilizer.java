@@ -73,7 +73,12 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
 
     public Ieee2005PSS3BStabilizer(String id,
             Ieee2005PSS3BStabilizerData data, Machine machine) {
-        super(id, "PSS3B", "IEEE-2005");
+        this(id, "PSS3B", "IEEE-2005", data, machine);
+    }
+
+    protected Ieee2005PSS3BStabilizer(String id, String name, String category,
+            Ieee2005PSS3BStabilizerData data, Machine machine) {
+        super(id, name, category);
         this.data = data;
         setMachine(machine);
     }
@@ -129,7 +134,7 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
         return Math.max(vstmin, Math.min(vstmax, super.getOutput(machine)));
     }
 
-    private double deviationInput(int code, double reference,
+    protected double deviationInput(int code, double reference,
             BaseDStabBus<?, ?> bus, Machine machine, double dt) {
         if (code == 6) {
             return dt > 0.0 ? (bus.getVoltageMag() - previousVoltage) / dt : 0.0;
@@ -137,7 +142,7 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
         return selectedInput(code, bus, machine) - reference;
     }
 
-    private static double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
+    protected double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
         return switch (code) {
             case 1 -> machine.getSpeed();
             case 2 -> bus.getFreq();

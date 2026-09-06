@@ -137,7 +137,7 @@ public final class WeccApprovedDynamicModelCatalog {
             stabilizer("PSS4B", "pss4b", "PSS4B", "PSS4B", APPROVED,
                     "2006-08-11", "PSS4B", "ABB multiband stabilizer."),
             stabilizer("PSS3C", "pss3c", "PSS3C", "PSS3C", APPROVED,
-                    "2020-04-22", "", "IEEE 421.5-2016 PSS3C."),
+                    "2020-04-22", "PSS3C", "IEEE 421.5-2016 PSS3C."),
             stabilizer("PSS4C", "pss4c", "PSS4C", "PSS4C", APPROVED,
                     "2020-04-22", "", "IEEE 421.5-2016 PSS4C."),
             stabilizer("PSS5C", "pss5c", "PSS5C", "PSS5C", APPROVED,

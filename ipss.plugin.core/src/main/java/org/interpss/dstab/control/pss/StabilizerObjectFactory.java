@@ -32,6 +32,8 @@ import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
@@ -106,6 +108,12 @@ public class StabilizerObjectFactory {
 				id, name, "InterPSS");
 		pss.setMachine(machine);
 		return pss;
+	}
+
+	/** Create an IEEE 421.5-2016 PSS3C stabilizer and attach it to its machine. */
+	public static Ieee2016PSS3CStabilizer createIeee2016PSS3CStabilizer(
+			String id, Ieee2016PSS3CStabilizerData data, Machine machine) {
+		return new Ieee2016PSS3CStabilizer(id, data, machine);
 	}
 
 	/** Create an IEEE 421.5-2005 PSS3B stabilizer and attach it to its machine. */
