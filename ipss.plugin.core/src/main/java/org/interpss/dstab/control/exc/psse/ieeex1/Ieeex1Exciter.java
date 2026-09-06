@@ -21,7 +21,7 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
-public final class Ieeex1Exciter extends IEEE1981DC1Exciter {
+public class Ieeex1Exciter extends IEEE1981DC1Exciter {
     private static final double EPS = 1.0e-12;
     private static final int VSENSE = 0;
     private static final int LEAD_LAG = 1;
@@ -43,7 +43,11 @@ public final class Ieeex1Exciter extends IEEE1981DC1Exciter {
     public double outputSignal;
 
     public Ieeex1Exciter(String id, Machine machine) {
-        super(id, "IEEEX1", "PSS/E");
+        this(id, "IEEEX1", machine);
+    }
+
+    protected Ieeex1Exciter(String id, String name, Machine machine) {
+        super(id, name, "PSS/E");
         configureAsPsseIeeex1();
         setMachine(machine);
     }
@@ -72,10 +76,11 @@ public final class Ieeex1Exciter extends IEEE1981DC1Exciter {
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         loadAndCorrectParameters(machine);
-        double efd0 = machine.getEfd();
+        double efd0 = initialInternalField(machine);
         double vr0 = fieldFeedback(efd0);
-        vrmax = Math.max(vrmax, vr0);
-        vrmin = Math.min(vrmin, vr0);
+        double voltageScale = regulatorLimitScale(machine);
+        vrmax = Math.max(vrmax, vr0 / voltageScale);
+        vrmin = Math.min(vrmin, vr0 / voltageScale);
         double leadLag0 = Math.abs(ka) > EPS ? vr0 / ka : 0.0;
         double pss0 = stabilizerSignal(machine);
 
@@ -87,40 +92,50 @@ public final class Ieeex1Exciter extends IEEE1981DC1Exciter {
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
         reference = leadLag0 + state[VSENSE] - vuel - voel - pss0;
-        outputSignal = efd0;
+        outputSignal = machineOutput(efd0, machine);
         initialized = true;
         return true;
     }
 
     private void loadAndCorrectParameters(Machine machine) {
         ka = getData().getKa();
-        ta = correctedBypass(getData().getTa());
-        tb = correctedBypass(getData().getTb());
+        ta = correctedTa(getData().getTa());
+        tb = correctedTb(getData().getTb());
         tc = getData().getTc();
         vrmax = Math.max(getData().getVrmax(), getData().getVrmin());
         vrmin = Math.min(getData().getVrmax(), getData().getVrmin());
         ke = getData().getKe();
-        te = correctedMinimum(getData().getTe());
+        te = correctedTe(getData().getTe());
         kf = getData().getKf();
-        tf = correctedMinimum(getData().getTf());
+        tf = correctedTf(getData().getTf());
         e1 = getData().getE1();
         se_e1 = getData().getSe_e1();
         e2 = getData().getE2();
         se_e2 = getData().getSe_e2();
-        tr = correctedBypass(getSourceTransducerTimeConstant());
+        tr = correctedTr(getSourceTransducerTimeConstant());
         kint = te > EPS ? 1.0 / te : 0.0;
         k = tf > EPS ? kf / tf : 0.0;
     }
 
+    protected double minimumResolvedTimeConstant() {
+        return minimumTimeConstantMultiplier * integrationStep;
+    }
+
+    protected double correctedTr(double value) { return correctedBypass(value); }
+    protected double correctedTa(double value) { return correctedBypass(value); }
+    protected double correctedTb(double value) { return correctedBypass(value); }
+    protected double correctedTe(double value) { return correctedMinimum(value); }
+    protected double correctedTf(double value) { return correctedMinimum(value); }
+
     private double correctedBypass(double value) {
-        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        double minimum = minimumResolvedTimeConstant();
         if (value > 0.0 && value < 0.5 * minimum) return 0.0;
         if (value > 0.5 * minimum && value < minimum) return minimum;
         return value;
     }
 
     private double correctedMinimum(double value) {
-        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        double minimum = minimumResolvedTimeConstant();
         return value > 0.0 && value < minimum ? minimum : value;
     }
 
@@ -148,7 +163,7 @@ public final class Ieeex1Exciter extends IEEE1981DC1Exciter {
             for (int i = 0; i < state.length; i++) state[i] += derivative[i] * dt;
             active = state;
         }
-        outputSignal = algebraics(active, machine).field;
+        outputSignal = machineOutput(algebraics(active, machine).field, machine);
         return true;
     }
 
@@ -160,8 +175,10 @@ public final class Ieeex1Exciter extends IEEE1981DC1Exciter {
 
         double targetVr = ka * a.leadLag;
         double rawRegDerivative = lagDerivative(targetVr, x[REGULATOR], ta);
-        boolean atUpperAndRising = x[REGULATOR] >= vrmax && rawRegDerivative > 0.0;
-        boolean atLowerAndFalling = x[REGULATOR] <= vrmin && rawRegDerivative < 0.0;
+        double upper = regulatorUpper(machine);
+        double lower = regulatorLower(machine);
+        boolean atUpperAndRising = x[REGULATOR] >= upper && rawRegDerivative > 0.0;
+        boolean atLowerAndFalling = x[REGULATOR] <= lower && rawRegDerivative < 0.0;
         dx[REGULATOR] = atUpperAndRising || atLowerAndFalling ? 0.0 : rawRegDerivative;
         dx[FIELD] = te > EPS
                 ? (a.regulator - fieldFeedback(x[FIELD])) / te : 0.0;
@@ -184,8 +201,10 @@ public final class Ieeex1Exciter extends IEEE1981DC1Exciter {
         double leadLag = tb > EPS
                 ? (tc / tb) * error + (1.0 - tc / tb) * x[LEAD_LAG]
                 : error;
-        double regulator = ta > EPS ? clamp(x[REGULATOR], vrmax, vrmin)
-                : clamp(ka * leadLag, vrmax, vrmin);
+        double upper = regulatorUpper(machine);
+        double lower = regulatorLower(machine);
+        double regulator = ta > EPS ? clamp(x[REGULATOR], upper, lower)
+                : clamp(ka * leadLag, upper, lower);
         return new Algebraic(sensed, error, leadLag, regulator, field);
     }
 
@@ -231,8 +250,20 @@ public final class Ieeex1Exciter extends IEEE1981DC1Exciter {
     }
 
     @Override public double getOutput(Machine machine) {
-        outputSignal = algebraics(active, machine).field;
+        outputSignal = machineOutput(algebraics(active, machine).field, machine);
         return outputSignal;
+    }
+
+    protected double regulatorLimitScale(Machine machine) { return 1.0; }
+    protected double regulatorUpper(Machine machine) {
+        return vrmax * regulatorLimitScale(machine);
+    }
+    protected double regulatorLower(Machine machine) {
+        return vrmin * regulatorLimitScale(machine);
+    }
+    protected double initialInternalField(Machine machine) { return machine.getEfd(); }
+    protected double machineOutput(double internalField, Machine machine) {
+        return internalField;
     }
 
     @Override public void setRefPoint(double value) { reference = value; }

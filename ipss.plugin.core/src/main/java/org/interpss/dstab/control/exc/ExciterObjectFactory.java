@@ -40,6 +40,7 @@ import org.interpss.dstab.control.exc.ieee.y1968.type4.Ieee1968Type4Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.ac1.IEEE1981AC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
+import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
@@ -175,6 +176,11 @@ public class ExciterObjectFactory {
 	/** Create a PSS/E IEEEX1 exciter while retaining IEEE DC1 compatibility. */
 	public static Ieeex1Exciter createIeeex1Exciter(String id, Machine machine) {
 		return new Ieeex1Exciter(id, machine);
+	}
+
+	/** Create a PSS/E EXDC2 / PowerWorld EXDC2_PTI exciter. */
+	public static Exdc2Exciter createExdc2Exciter(String id, Machine machine) {
+		return new Exdc2Exciter(id, machine);
 	}
 	
 	/**

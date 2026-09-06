@@ -145,6 +145,7 @@ import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
+import org.interpss.core.dstab.Exdc2AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1SmibIntegrationTest;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
@@ -288,6 +289,7 @@ import org.junit.platform.suite.api.Suite;
 	GensalHydroSmibTest.class,
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
+	Exdc2AndesSmibConformanceTest.class,
 	Ieeex1AndesSmibConformanceTest.class,
 	Ieeex1SmibIntegrationTest.class,
 	MachineSaturationTest.class,
