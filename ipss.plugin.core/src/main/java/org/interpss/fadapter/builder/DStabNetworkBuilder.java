@@ -669,6 +669,7 @@ public class DStabNetworkBuilder {
         }
         IEEE1981DC1Exciter exc = ExciterObjectFactory.createIeee1981DC1Exciter(
                 mach.getId() + "_Exc", "IEEEX1", mach);
+        exc.configureAsPsseIeeex1();
         exc.setTransducerTimeConstant(tr);
         exc.getData().setKa(ka);
         exc.getData().setTa(ta);
