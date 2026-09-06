@@ -1,0 +1,179 @@
+package org.interpss.core.dstab;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import org.interpss.IpssCorePlugin;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import com.interpss.core.algo.AclfMethodType;
+import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.algo.DynamicSimuAlgorithm;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.device.DynamicBusDevice;
+import com.interpss.dstab.datatype.DStabSimuEvent;
+import org.apache.commons.math3.complex.Complex;
+import com.interpss.simu.SimuContext;
+
+/** Full-stack initialization and no-event smoke gate for Texas2k Cases 1 and 2. */
+public class Texas2kCase12DynamicSmokeTest {
+    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
+            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
+                    "private_cases", "Texas2k_series24_cases_with_dynamics",
+                    "Texas2k_series24_cases_with_dynamics").toString()));
+    private static final List<CaseFile> CASES = List.of(
+            new CaseFile("Texas2k_series24_case1_2016summerpeak",
+                    "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr"),
+            new CaseFile("Texas2k_series24_case2_2016lowload",
+                    "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr"));
+    private static final Set<String> REVIEWED_MISSING_MACHINES = Set.of("Bus1090:1", "Bus1090:2");
+
+    @BeforeAll
+    static void initializePlugin() {
+        IpssCorePlugin.init();
+    }
+
+    @Test
+    void completeCase1AndCase2StacksInitializeAndHold() throws Exception {
+        assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
+        for (CaseFile source : CASES) verifyNoEvent(source);
+    }
+
+    private static void verifyNoEvent(CaseFile source) throws Exception {
+        Path directory = ROOT.resolve(source.directory());
+        Path raw = directory.resolve(source.raw());
+        Path dyr = directory.resolve(source.dyr());
+        assumeTrue(Files.isRegularFile(raw), "Missing Texas2k RAW: " + raw);
+        assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
+
+        SimuContext context = new PSSEMultiFileLoader().loadDStab(raw.toString(), dyr.toString());
+        BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
+        network.setBypassDataCheck(true);
+        network.setAllowGenWithoutMach(true);
+
+        DynamicSimuAlgorithm algorithm = context.getDynSimuAlgorithm();
+        LoadflowAlgorithm loadflow = algorithm.getAclfAlgorithm();
+        loadflow.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+        loadflow.getDataCheckConfig().setTurnOffIslandBus(true);
+        loadflow.setNonDivergent(true);
+        loadflow.setMaxIterations(50);
+        loadflow.setTolerance(1.0e-8);
+        assertTrue(loadflow.loadflow(), () -> source.directory() + " load flow: "
+                + network.maxMismatch(AclfMethodType.NR));
+
+        network.setBypassDataCheck(false);
+        network.checkData(loadflow.getDataCheckConfig());
+        List<String> initializationFailures = diagnoseGeneratorInitialization(network);
+        assertTrue(initializationFailures.isEmpty(), () -> source.directory()
+                + " generator initialization failures: " + initializationFailures);
+        assertTrue(network.initDStabNet(), source.directory() + " network initialization call");
+        assertTrue(network.isDStabNetInitialized(),
+                source.directory() + " network did not retain initialized state");
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(1.0 / 240.0);
+        algorithm.setTotalSimuTimeSec(.1);
+        algorithm.setOutPutPerSteps(1);
+        Complex initial1051Voltage = network.getBus("Bus1051").getVoltage();
+        Complex initial2056Voltage = network.getBus("Bus2056").getVoltage();
+        double initial1051Speed = network.getMachine("Bus1051-mach1").getSpeed();
+        double initial2056Speed = network.getMachine("Bus2056-mach1").getSpeed();
+        StateMonitor monitor = new StateMonitor();
+        algorithm.setSimuOutputHandler(monitor);
+
+        List<String> outputStateFailures = diagnoseDynamicOutputStates(network, algorithm, monitor);
+        assertTrue(outputStateFailures.isEmpty(), () -> source.directory()
+                + " dynamic output-state failures: " + outputStateFailures);
+
+        assertTrue(algorithm.initialization(), source.directory() + " initialization");
+        assertTrue(algorithm.performSimulation(), source.directory() + " no-event simulation");
+        assertTrue(network.getBus("Bus1051").getVoltage().subtract(initial1051Voltage).abs()
+                        <= 2.0e-4,
+                source.directory() + " Bus1051 voltage drift");
+        assertTrue(network.getBus("Bus2056").getVoltage().subtract(initial2056Voltage).abs()
+                        <= 2.0e-4,
+                source.directory() + " Bus2056 voltage drift");
+        assertTrue(Math.abs(network.getMachine("Bus1051-mach1").getSpeed() - initial1051Speed)
+                        <= 2.0e-5,
+                source.directory() + " Bus1051 speed drift");
+        assertTrue(Math.abs(network.getMachine("Bus2056-mach1").getSpeed() - initial2056Speed)
+                        <= 2.0e-5,
+                source.directory() + " Bus2056 speed drift");
+    }
+
+    private static List<String> diagnoseGeneratorInitialization(BaseDStabNetwork<?, ?> network) {
+        List<String> failures = new ArrayList<>();
+        network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
+                .filter(DStabGen.class::isInstance)
+                .map(DStabGen.class::cast)
+                .filter(DStabGen::isActive)
+                .forEach(gen -> {
+                    try {
+                        if (gen.getDynamicGenDevice() == null) {
+                            String key = bus.getId() + ":" + gen.getId();
+                            if (!REVIEWED_MISSING_MACHINES.contains(key)) {
+                                failures.add(key + "=missing-device");
+                            }
+                        } else if (!gen.getDynamicGenDevice().initStates(bus)) {
+                            failures.add(bus.getId() + ":" + gen.getId() + "="
+                                    + gen.getDynamicGenDevice().getClass().getSimpleName());
+                        }
+                    } catch (RuntimeException ex) {
+                        failures.add(bus.getId() + ":" + gen.getId() + "="
+                                + gen.getDynamicGenDevice().getClass().getSimpleName()
+                                + "(" + ex.getClass().getSimpleName() + ":" + ex.getMessage() + ")");
+                    }
+                }));
+        return failures;
+    }
+
+    private static List<String> diagnoseDynamicOutputStates(BaseDStabNetwork<?, ?> network,
+            DynamicSimuAlgorithm algorithm, StateMonitor monitor) {
+        List<String> failures = new ArrayList<>();
+        network.getBusList().forEach(bus -> {
+            bus.getContributeGenList().stream()
+                    .filter(DStabGen.class::isInstance)
+                    .map(DStabGen.class::cast)
+                    .filter(gen -> gen.getMach() == null)
+                    .filter(gen -> gen.getDynamicGenDevice() instanceof DynamicBusDevice)
+                    .map(gen -> (DynamicBusDevice) gen.getDynamicGenDevice())
+                    .filter(DynamicBusDevice::isActive)
+                    .forEach(device -> buildDynamicState(
+                            device, bus.getId(), algorithm, monitor, failures));
+            bus.getDynamicBusDeviceList().stream()
+                    .filter(DynamicBusDevice::isActive)
+                    .forEach(device -> buildDynamicState(
+                            device, bus.getId(), algorithm, monitor, failures));
+        });
+        return failures;
+    }
+
+    private static void buildDynamicState(DynamicBusDevice device, String busId,
+            DynamicSimuAlgorithm algorithm, StateMonitor monitor, List<String> failures) {
+        try {
+            var states = com.interpss.dstab.funcImpl.DStabFunction.BuiltDynamicBusDeviceState
+                    .f(device, 0.0, algorithm);
+            if (!monitor.onSimuEvent(new DStabSimuEvent(
+                    DStabSimuEvent.PlotStepDynamicBusDeviceStates, states))) {
+                failures.add(busId + ":" + device.getId() + "="
+                        + device.getClass().getSimpleName() + "(output-handler-rejected)");
+            }
+        } catch (Exception ex) {
+            failures.add(busId + ":" + device.getId() + "="
+                    + device.getClass().getSimpleName() + "("
+                    + ex.getClass().getSimpleName() + ":" + ex.getMessage() + ")");
+        }
+    }
+
+    private record CaseFile(String directory, String raw, String dyr) { }
+}
