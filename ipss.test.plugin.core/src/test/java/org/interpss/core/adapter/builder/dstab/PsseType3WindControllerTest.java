@@ -163,6 +163,20 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void torqueControllerDoesNotAmplifyPartitionedSolverRoundoffAtEquilibrium() {
+        Wttqa1Model model = torqueController(1, 2.7, .5, .08, 60, 1.002, 0);
+        model.initialize(.625);
+        double initialTorque = model.getTorque();
+
+        for (int i = 0; i < 240; i++) {
+            model.step(1.0 / 240.0, .625 - 5.0e-10, model.getSpeedReference());
+        }
+
+        assertEquals(initialTorque, model.getTorque(), 1.0e-12);
+        assertEquals(.625, model.getPref(), 1.0e-11);
+    }
+
+    @Test
     void torqueControllerSpeedErrorModeMatchesAndesEquations() {
         Wttqa1Model model = torqueController(0, 1, 0, 0, 0, 10, 0);
         model.initialize(.5);
