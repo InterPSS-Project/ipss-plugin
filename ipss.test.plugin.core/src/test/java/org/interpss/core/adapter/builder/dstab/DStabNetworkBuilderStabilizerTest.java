@@ -19,6 +19,8 @@ import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
@@ -995,6 +997,156 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         double measuredAmplitude = 0.5 * (max - min);
         assertEquals(expectedAmplitude, measuredAmplitude,
                 expectedAmplitude * 0.01 + 1.0e-7);
+    }
+
+    @Test
+    void parsePss6c_mapsNative35ParameterRecord() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("pss6c.dyr");
+        StringBuilder record = new StringBuilder("1 'PSS6C' '1'");
+        for (int i = 0; i < Ieee2016PSS6CStabilizerData.PARAMETER_COUNT; i++) {
+            double value = i < 4 ? (i % 2 == 0 ? 1 : 0)
+                    : i == 30 ? -1.0 : i == 31 ? -2.0 : i + 1;
+            record.append(' ').append(value);
+        }
+        Files.writeString(dyr, record.append(" /\n").toString());
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee2016PSS6CStabilizer pss = (Ieee2016PSS6CStabilizer) machine.getStabilizer();
+        assertNotNull(pss);
+        assertEquals(1, pss.getData().ics1());
+        assertEquals(0, pss.getData().remoteBus1());
+        assertEquals(5.0, pss.getData().ks1(), TOL);
+        assertEquals(35.0, pss.getData().tcomp(), TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void pss6c_matchesPublishedCanonicalFrequencyResponse() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        double[] p = pss6cParameters();
+        p[4] = 0.0; p[5] = 0.2; p[6] = 0.3;
+        p[7] = 0.0; p[8] = 0.0; p[9] = 0.1; p[10] = 0.2;
+        p[11] = 1.0;
+        p[12] = 1.0; p[13] = 0.4;
+        p[19] = 3.0; p[20] = 0.5;
+        Ieee2016PSS6CStabilizer pss = builder.addPss6c("Bus1", "1", p);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        double frequency = 1.0;
+        double amplitude = 0.001;
+        double omega = 2.0 * Math.PI * frequency;
+        double dt = 0.0005;
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 1; i <= (int) (8.0 / dt); i++) {
+            double time = i * dt;
+            machine.setSpeed(1.0 + amplitude * Math.sin(omega * time));
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+            if (time >= 6.0) {
+                min = Math.min(min, pss.getOutput(machine));
+                max = Math.max(max, pss.getOutput(machine));
+            }
+        }
+
+        Complex s = new Complex(0.0, omega);
+        Complex inputLag = Complex.ONE.divide(Complex.ONE.add(s.multiply(0.2)));
+        Complex washout = s.multiply(1.0).divide(Complex.ONE.add(s.multiply(1.0)));
+        Complex canonical = s.multiply(0.5).add(0.4)
+                .divide(Complex.ONE.add(s.multiply(0.5)));
+        double expected = amplitude * inputLag.multiply(washout)
+                .multiply(canonical).multiply(3.0).abs();
+        assertEquals(expected, 0.5 * (max - min), expected * 0.01 + 1.0e-7);
+    }
+
+    @Test
+    void pss6c_appliesPowerWorldCorrectionsWithoutMutatingSourceData() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        double[] p = pss6cParameters();
+        p[12] = 0.0; p[19] = -1.0;
+        p[24] = -0.2; p[25] = 0.1;
+        p[26] = -0.3; p[27] = 0.2;
+        p[28] = -0.4; p[29] = 0.3;
+        Ieee2016PSS6CStabilizer pss = builder.addPss6c("Bus1", "1", p);
+        pss.configureIntegrationStep(0.01, 2.0);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        assertEquals(0.02, pss.getEffectiveData().k0(), TOL);
+        assertEquals(0.02, pss.getEffectiveData().ks(), TOL);
+        assertEquals(0.1, pss.getEffectiveData().vsi1max(), TOL);
+        assertEquals(-0.2, pss.getEffectiveData().vsi1min(), TOL);
+        assertEquals(0.3, pss.getEffectiveData().vstmax(), TOL);
+        assertEquals(-0.4, pss.getEffectiveData().vstmin(), TOL);
+        assertEquals(0.0, pss.getData().k0(), TOL);
+        assertEquals(-1.0, pss.getData().ks(), TOL);
+    }
+
+    @Test
+    void pss6c_computesCompensatedFrequencyInput() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p = pss6cParameters();
+        p[0] = 7;
+        p[33] = 0.0;
+        p[34] = 0.0;
+        Ieee2016PSS6CStabilizer pss = builder.addPss6c("Bus1", "1", p);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        machine.getDStabBus().setVoltage(new Complex(Math.cos(0.01), Math.sin(0.01)));
+        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+
+        double expected = 0.01 / (2.0 * Math.PI
+                * machine.getDStabBus().getNetwork().getFrequency() * 0.01);
+        assertEquals(expected, pss.getInput1Signal(), 1.0e-8);
+    }
+
+    @Test
+    void pss6c_filtersPowerForActivationHysteresis() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p = pss6cParameters();
+        p[30] = 0.15;
+        p[31] = 0.10;
+        p[32] = 0.02;
+        Ieee2016PSS6CStabilizer pss = builder.addPss6c("Bus1", "1", p);
+        machine.setPe(0.20);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertTrue(pss.isPssActive());
+
+        machine.setPe(0.05);
+        for (int i = 0; i < 20; i++) {
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+        assertTrue(pss.getFilteredPgen() < 0.10);
+        assertTrue(!pss.isPssActive());
+        assertEquals(0.0, pss.getOutput(machine), TOL);
+
+        machine.setPe(0.20);
+        for (int i = 0; i < 20; i++) {
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+        assertTrue(pss.getFilteredPgen() > 0.15);
+        assertTrue(pss.isPssActive());
+    }
+
+    private static double[] pss6cParameters() {
+        double[] p = new double[Ieee2016PSS6CStabilizerData.PARAMETER_COUNT];
+        p[0] = 1; p[1] = 0; p[2] = 1; p[3] = 0;
+        p[24] = 100.0; p[25] = -100.0;
+        p[26] = 100.0; p[27] = -100.0;
+        p[28] = 100.0; p[29] = -100.0;
+        p[30] = -1.0; p[31] = -2.0;
+        return p;
     }
 
     @Test

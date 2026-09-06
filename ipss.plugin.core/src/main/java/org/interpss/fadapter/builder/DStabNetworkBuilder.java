@@ -41,6 +41,8 @@ import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
@@ -738,6 +740,46 @@ public class DStabNetworkBuilder {
         }
         return StabilizerObjectFactory.createIeee2016PSS5CStabilizer(
                 busId + "-pss5c" + genId, data, machine);
+    }
+
+    /** Build PSS6C from its 34/35-value PSS/E/PowerWorld parameter order. */
+    public Ieee2016PSS6CStabilizer addPss6c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS6C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS6CStabilizerData data;
+        try {
+            data = Ieee2016PSS6CStabilizerData.fromPsseParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS6C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        if (data.ics1() < 1 || data.ics1() > 7 || data.ics2() < 1 || data.ics2() > 6
+                || data.t1() < 0.0 || data.t2() < 0.0 || data.t3() < 0.0
+                || data.t4() < 0.0 || data.td() < 0.0 || data.ti1() < 0.0
+                || data.ti2() < 0.0 || data.ti3() < 0.0 || data.ti4() < 0.0
+                || data.tpgfilt() < 0.0 || data.tcomp() < 0.0
+                || data.pssActivation() < data.pssDeactivation()) {
+            log.warn("Invalid PSS6C selectors, time constants, or thresholds at {} {}",
+                    busId, genId);
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = data.ics1() == 7 ? localBus
+                : resolvePss2aSignalBus(localBus, data.ics1(), data.remoteBus1());
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(
+                localBus, data.ics2(), data.remoteBus2());
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSS6C remote bus could not be resolved at {} {}", busId, genId);
+            return null;
+        }
+        Ieee2016PSS6CStabilizer pss = StabilizerObjectFactory
+                .createIeee2016PSS6CStabilizer(busId + "-pss6c" + genId, data, machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        return pss;
     }
 
 	private BaseDStabBus<?, ?> resolvePss2aSignalBus(BaseDStabBus<?, ?> localBus,

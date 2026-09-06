@@ -143,7 +143,7 @@ public final class WeccApprovedDynamicModelCatalog {
             stabilizer("PSS5C", "pss5c", "PSS5C", "PSS5C", APPROVED,
                     "2020-04-22", "PSS5C", "IEEE 421.5-2016 PSS5C."),
             stabilizer("PSS6C", "pss6c", "PSS6C", "PSS6C", APPROVED,
-                    "2020-04-22", "", "IEEE 421.5-2016 PSS6C."),
+                    "2020-04-22", "PSS6C", "IEEE 421.5-2016 PSS6C."),
             stabilizer("PSS7C", "pss7c", "PSS7C", "PSS7C", APPROVED,
                     "2020-04-22", "", "IEEE 421.5-2016 PSS7C."),
             stabilizer("PSSSH", "psssh", "", "PSSSH", NEVER_APPROVED,
