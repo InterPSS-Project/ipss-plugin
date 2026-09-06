@@ -113,9 +113,12 @@ public class PSSEMultiFileLoader {
         simuCtx.setDStabilityNet(dsNet);
 
         List<String> modelFiles = new ArrayList<>();
+        java.util.Set<PsseGnetIdvProcessor.GeneratorKey> gnetRemovedGenerators =
+                new java.util.LinkedHashSet<>();
         for (int i = 1; i < files.length; i++) {
             if (files[i].toLowerCase(Locale.ROOT).endsWith(".idv")) {
-                PsseGnetIdvProcessor.apply(dsNet, files[i]);
+                gnetRemovedGenerators.addAll(PsseGnetIdvProcessor.apply(dsNet, files[i])
+                        .convertedGeneratorKeys());
             } else {
                 modelFiles.add(files[i]);
             }
@@ -124,13 +127,15 @@ public class PSSEMultiFileLoader {
         if (modelFiles.size() == 1) {
             String modelFile = modelFiles.get(0);
             if (modelFile.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
-                new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(modelFile);
+                new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet))
+                        .setGnetRemovedGenerators(gnetRemovedGenerators).parseDynFile(modelFile);
             } else {
                 new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFile);
             }
         } else if (modelFiles.size() >= 2) {
             new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFiles.get(0));
-            new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(modelFiles.get(1));
+            new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet))
+                    .setGnetRemovedGenerators(gnetRemovedGenerators).parseDynFile(modelFiles.get(1));
         }
 
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);

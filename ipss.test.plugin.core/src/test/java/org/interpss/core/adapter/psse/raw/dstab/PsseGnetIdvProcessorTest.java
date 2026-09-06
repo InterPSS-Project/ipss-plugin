@@ -3,6 +3,7 @@ package org.interpss.core.adapter.psse.raw.dstab;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,6 +11,9 @@ import java.nio.file.Path;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor;
+import org.interpss.fadapter.psse.PSSEDStabDirectParser;
+import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
+import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -48,6 +52,7 @@ public class PsseGnetIdvProcessorTest {
         assertEquals(1, result.requestedBuses());
         assertEquals(1, result.convertedBuses());
         assertEquals(2, result.convertedGenerators());
+        assertEquals(2, result.convertedGeneratorKeys().size());
         assertFalse(bus.getContributeGen("1").isActive());
         assertFalse(bus.getContributeGen("2").isActive());
         assertFalse(bus.getContributeGen("OFF").isActive());
@@ -55,6 +60,38 @@ public class PsseGnetIdvProcessorTest {
         assertEquals(new Complex(-.6, -.15), bus.getContributeLoad("GNET-1").getLoadCP());
         assertEquals(new Complex(-.2, .05), bus.getContributeLoad("GNET-2").getLoadCP());
         assertEquals(new Complex(.1, .03), bus.getContributeLoad("1").getLoadCP());
+    }
+
+    @Test
+    void dynamicRecordsForConvertedGeneratorsAreAuditableStrictModeSkips() throws Exception {
+        var network = DStabObjectFactory.createDStabilityNetwork();
+        AclfNetworkBuilder builder = new AclfNetworkBuilder(network);
+        builder.setNetworkInfo("gnet-report", "gnet-report", 100000.0,
+                OriginalDataFormat.PSSE);
+        builder.addBus("Bus1090", "GNET bus", 1090L, 138000.0,
+                1.02, 0.0, null, null, null);
+        builder.setPVBus("Bus1090", .8, 1.02, .5, -.5, true);
+        builder.addContributeGen("Bus1090", "1", true, .8, .1, 100.0, 1.02,
+                .5, -.5, 1.0, 0.0, null, null, 0.0, null, 0.0, 0.0);
+        Path idv = tempDir.resolve("report_gnet.idv");
+        Files.writeString(idv, "GNET\n1090\n0\n");
+        var result = PsseGnetIdvProcessor.apply(network, idv.toString());
+        Path dyr = tempDir.resolve("removed.dyr");
+        Files.writeString(dyr,
+                "1090 'GENROU' 1 6.5 .05 .4 .05 1.8 1.7 .3 .55 .25 .2 0 0 /\n"
+                + "1090 'IEEET1' 1 .06 40 1 -.06 1 1 -.04 5 -5 .2 1 .03 0 /\n");
+
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(
+                new DStabNetworkBuilder(network)).setStrictImport(true)
+                        .setGnetRemovedGenerators(result.convertedGeneratorKeys());
+        parser.parseDynFile(dyr.toString());
+
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+        assertEquals(2, parser.getLastImportReport().count(
+                DynamicModelImportStatus.SKIPPED_GNET));
+        assertTrue(parser.getLastImportReport().failures().isEmpty());
+        assertEquals("generator intentionally removed by GNET preprocessing",
+                parser.getLastImportReport().entries().get(0).message());
     }
 
     @Test

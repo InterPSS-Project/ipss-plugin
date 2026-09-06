@@ -19,8 +19,16 @@ import com.interpss.dstab.BaseDStabNetwork;
 public final class PsseGnetIdvProcessor {
     private PsseGnetIdvProcessor() { }
 
+    /** Stable key for a generator intentionally removed by GNET preprocessing. */
+    public record GeneratorKey(String busId, String generatorId) { }
+
     /** Summary of one IDV application. */
-    public record Result(int requestedBuses, int convertedBuses, int convertedGenerators) { }
+    public record Result(int requestedBuses, int convertedBuses, int convertedGenerators,
+            Set<GeneratorKey> convertedGeneratorKeys) {
+        public Result {
+            convertedGeneratorKeys = Set.copyOf(convertedGeneratorKeys);
+        }
+    }
 
     /**
      * Parse all GNET blocks in {@code idvFile} and apply them to {@code network}.
@@ -40,6 +48,7 @@ public final class PsseGnetIdvProcessor {
         AclfNetworkBuilder builder = new AclfNetworkBuilder(network);
         int convertedBuses = 0;
         int convertedGenerators = 0;
+        Set<GeneratorKey> convertedGeneratorKeys = new LinkedHashSet<>();
         for (String busId : busIds) {
             BaseAclfBus<?, ?> bus = (BaseAclfBus<?, ?>) network.getBus(busId);
             if (bus == null) {
@@ -58,6 +67,7 @@ public final class PsseGnetIdvProcessor {
                 builder.addContributeLoad(busId, loadId, true, injection.negate(),
                         null, null, null, false);
                 gen.setStatus(false);
+                convertedGeneratorKeys.add(new GeneratorKey(busId, gen.getId()));
                 convertedAtBus++;
             }
 
@@ -72,7 +82,8 @@ public final class PsseGnetIdvProcessor {
                 bus.setGenCode(AclfGenCode.NON_GEN);
             }
         }
-        return new Result(busIds.size(), convertedBuses, convertedGenerators);
+        return new Result(busIds.size(), convertedBuses, convertedGenerators,
+                convertedGeneratorKeys);
     }
 
     static Set<String> parseGnetBusIds(Path idvFile) throws IOException {

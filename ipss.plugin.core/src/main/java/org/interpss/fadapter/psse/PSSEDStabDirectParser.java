@@ -3,7 +3,10 @@ package org.interpss.fadapter.psse;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.interpss.dstab.dynLoad.LD1PAC;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
@@ -14,6 +17,7 @@ import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecord;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
+import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Regca1Data;
@@ -64,6 +68,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
     private boolean strictImport;
+    private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
 
     public PSSEDStabDirectParser(DStabNetworkBuilder builder) {
@@ -73,6 +78,13 @@ public class PSSEDStabDirectParser {
     /** Enable or disable fail-fast coverage checking after a complete DYR import. */
     public PSSEDStabDirectParser setStrictImport(boolean strictImport) {
         this.strictImport = strictImport;
+        return this;
+    }
+
+    /** Identify generator records made intentionally non-applicable by GNET. */
+    public PSSEDStabDirectParser setGnetRemovedGenerators(Collection<GeneratorKey> keys) {
+        gnetRemovedGenerators.clear();
+        if (keys != null) gnetRemovedGenerators.addAll(keys);
         return this;
     }
 
@@ -100,6 +112,13 @@ public class PSSEDStabDirectParser {
         for (PsseDyrRecord record : records) {
             try {
                 String type = record.canonicalModelName();
+                GeneratorKey key = new GeneratorKey(BUS_ID_PREFIX + record.busNumber(),
+                        record.deviceId());
+                if (gnetRemovedGenerators.contains(key)) {
+                    report.add(record, DynamicModelImportStatus.SKIPPED_GNET,
+                            "generator intentionally removed by GNET preprocessing");
+                    continue;
+                }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1");
                 if (hasExpectedParameterCount(record)
