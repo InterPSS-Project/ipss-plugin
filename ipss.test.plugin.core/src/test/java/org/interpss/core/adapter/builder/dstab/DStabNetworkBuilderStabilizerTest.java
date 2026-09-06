@@ -121,8 +121,8 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
                 "Bus1", "1",
                 first ? selector : 1, 0, first ? 1 : selector, 0,
                 1, 1,
-                first ? 0.20 : 0.0, first ? 0.20 : 0.0, 0.05,
-                first ? 0.0 : 0.20, first ? 0.0 : 0.20, 0.05,
+                0.20, first ? 0.20 : 0.0, 0.05,
+                0.20, first ? 0.0 : 0.20, 0.05,
                 1.0, 1.0, 0.10, 0.05, 2.0,
                 0.05, 0.05, 0.05, 0.05, 1.0, -1.0);
         assertNotNull(pss);
@@ -154,8 +154,8 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
 
     @Test
     void pss2aMapsAndAppliesPowerWorldOnlyOutputParameters() throws Exception {
-        double lowKs4 = pss2aSecondInputResponse(0.5);
-        double highKs4 = pss2aSecondInputResponse(2.0);
+        double lowKs4 = pss2aSecondInputResponse(1.0, 1.0, 0.0, 0.5);
+        double highKs4 = pss2aSecondInputResponse(1.0, 1.0, 0.0, 2.0);
 
         assertTrue(lowKs4 < 0.0);
         assertEquals(4.0, highKs4 / lowKs4, 1.0e-6);
@@ -181,13 +181,30 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
                 1.0, 0.1, 0.0, 1.0));
     }
 
-    private static double pss2aSecondInputResponse(double ks4) throws Exception {
+    @Test
+    void pss2aAppliesKs1Ks2AndKs3AtPublishedLocations() throws Exception {
+        double base = pss2aSecondInputResponse(1.0, 1.0, 1.0, 0.0);
+        double highKs1 = pss2aSecondInputResponse(3.0, 1.0, 1.0, 0.0);
+        double highKs2 = pss2aSecondInputResponse(1.0, 4.0, 1.0, 0.0);
+        double highKs3 = pss2aSecondInputResponse(1.0, 1.0, 4.0, 0.0);
+
+        assertTrue(base > 0.0);
+        assertEquals(3.0, highKs1 / base, 1.0e-6,
+                "Ks1 must scale the combined signal after both summing junctions");
+        assertEquals(4.0, highKs2 / base, 1.0e-6,
+                "Ks2 must scale input 2 before its Ks3/Ks4 branches");
+        assertEquals(4.0, highKs3 / base, 1.0e-6,
+                "Ks3 must scale input 2 into the pre-ramp summing junction");
+    }
+
+    private static double pss2aSecondInputResponse(
+            double ks1, double ks2, double ks3, double ks4) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee1992PSS2AStabilizer pss = builder.addPss2a(
                 "Bus1", "1", 1, 0, 3, 0, 0, 0,
-                0.0, 0.0, 0.0, 0.2, 0.0, 0.0,
-                1.0, 0.0, 0.0, 0.1, 1.0,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                ks2, ks3, 0.0, 0.1, ks1,
                 0.0, 0.0, 0.0, 0.0, 10.0, -10.0,
                 1.0, 0.0, 0.0, ks4);
         assertNotNull(pss);
