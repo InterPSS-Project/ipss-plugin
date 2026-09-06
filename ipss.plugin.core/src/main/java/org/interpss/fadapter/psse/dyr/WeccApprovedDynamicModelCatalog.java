@@ -131,7 +131,7 @@ public final class WeccApprovedDynamicModelCatalog {
                     "2006-08-11", "PSS2B",
                     "Dual-input stabilizer with an additional lead/lag block."),
             stabilizer("PSS2C", "pss2c", "PSS2C", "PSS2C", APPROVED,
-                    "2020-04-22", "", "IEEE 421.5-2016 PSS2C."),
+                    "2020-04-22", "PSS2C", "IEEE 421.5-2016 PSS2C."),
             stabilizer("PSS3B", "pss3b", "PSS3B", "PSS3B", APPROVED,
                     "2006-08-11", "", "Thyripol/Unitrol stabilizer."),
             stabilizer("PSS4B", "pss4b", "PSS4B", "PSS4B", APPROVED,
