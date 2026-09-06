@@ -34,6 +34,8 @@ import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
@@ -126,6 +128,12 @@ public class StabilizerObjectFactory {
 	public static Ieee2005PSS4BStabilizer createIeee2005PSS4BStabilizer(
 			String id, Ieee2005PSS4BStabilizerData data, Machine machine) {
 		return new Ieee2005PSS4BStabilizer(id, data, machine);
+	}
+
+	/** Create an IEEE 421.5-2016 PSS4C stabilizer and attach it to its machine. */
+	public static Ieee2016PSS4CStabilizer createIeee2016PSS4CStabilizer(
+			String id, Ieee2016PSS4CStabilizerData data, Machine machine) {
+		return new Ieee2016PSS4CStabilizer(id, data, machine);
 	}
 
 	/**

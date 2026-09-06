@@ -35,7 +35,7 @@ public record Ieee2005PSS4BStabilizerData(
     public record InputTransducerData(
             double cli, double dli, double ali, double bli,
             double bwli1, double wli1, double bwli2, double wli2,
-            double th, double ah, double bh, double m,
+            double th, double ah, double bh, double h,
             double bwh1, double wh1, double bwh2, double wh2) {
     }
 
@@ -47,7 +47,7 @@ public record Ieee2005PSS4BStabilizerData(
             double t7, double t8, double t9, double t10, double t11, double t12,
             double gain, double max, double min) {
 
-        private static BandData fromParameters(double[] p, int offset) {
+        public static BandData fromParameters(double[] p, int offset) {
             return new BandData(
                     p[offset], p[offset + 1],
                     p[offset + 2], p[offset + 3], p[offset + 4], p[offset + 5],
