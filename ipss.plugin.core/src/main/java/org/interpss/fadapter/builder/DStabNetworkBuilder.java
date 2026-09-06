@@ -437,6 +437,17 @@ public class DStabNetworkBuilder {
             double tw1, double tw2, double t6, double tw3, double tw4, double t7,
             double ks2, double ks3, double t8, double t9, double ks1,
             double t1, double t2, double t3, double t4, double vstmax, double vstmin) {
+		return addPss2a(busId, genId, ics1, remoteBus1, ics2, remoteBus2, m, n,
+				tw1, tw2, t6, tw3, tw4, t7, ks2, ks3, t8, t9, ks1,
+				t1, t2, t3, t4, vstmax, vstmin, 1.0, 0.0, 0.0, 1.0);
+	}
+
+    public Ieee1992PSS2AStabilizer addPss2a(String busId, String genId,
+            int ics1, int remoteBus1, int ics2, int remoteBus2, int m, int n,
+            double tw1, double tw2, double t6, double tw3, double tw4, double t7,
+            double ks2, double ks3, double t8, double t9, double ks1,
+            double t1, double t2, double t3, double t4, double vstmax, double vstmin,
+            double a, double ta, double tb, double ks4) {
         Machine machine = findMachine(busId, genId);
         if (machine == null) {
             log.warn("Machine not found for PSS2A: {} {}", busId, genId);
@@ -449,6 +460,11 @@ public class DStabNetworkBuilder {
                     busId, genId, ics1, remoteBus1, ics2, remoteBus2);
             return null;
         }
+		if (tb < 0.0 || (Math.abs(tb) < 1.0e-12 && Math.abs(ta) >= 1.0e-12)) {
+			log.warn("PSS2A optional lead-lag is invalid at {} {}: Ta={}, Tb={}",
+					busId, genId, ta, tb);
+			return null;
+		}
         Ieee1992PSS2AStabilizer pss = StabilizerObjectFactory
                 .createIeee1992PSS2AStabilizer(busId + "-pss2a" + genId, "PSS2A", machine);
         var data = pss.getData();
@@ -475,6 +491,10 @@ public class DStabNetworkBuilder {
         data.setT4(t4);
         data.setVstmax(vstmax);
         data.setVstmin(vstmin);
+		data.setA(a);
+		data.setTa(ta);
+		data.setTb(tb);
+		data.setKs4(ks4);
         return pss;
     }
 

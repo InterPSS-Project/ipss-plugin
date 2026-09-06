@@ -2,6 +2,7 @@ package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -129,6 +130,55 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
                     machine.getDStabBus().getVoltage().multiply(1.01));
             default -> throw new IllegalArgumentException("selector=" + selector);
         }
+    }
+
+    @Test
+    void pss2aMapsAndAppliesPowerWorldOnlyOutputParameters() throws Exception {
+        double lowKs4 = pss2aSecondInputResponse(0.5);
+        double highKs4 = pss2aSecondInputResponse(2.0);
+
+        assertTrue(lowKs4 < 0.0);
+        assertEquals(4.0, highKs4 / lowKs4, 1.0e-6);
+
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Ieee1992PSS2AStabilizer pss = builder.addPss2a(
+                "Bus1", "1", 1, 0, 3, 0, 0, 0,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                1.0, 0.0, 0.4, 0.1, 1.0,
+                0.0, 0.0, 0.0, 0.0, 1.0, -1.0,
+                0.75, 0.15, 0.05, 1.25);
+        assertNotNull(pss);
+        assertEquals(0.75, pss.getData().getA(), TOL);
+        assertEquals(0.15, pss.getData().getTa(), TOL);
+        assertEquals(0.05, pss.getData().getTb(), TOL);
+        assertEquals(1.25, pss.getData().getKs4(), TOL);
+
+        assertNull(builder.addPss2a(
+                "Bus1", "1", 1, 0, 3, 0, 0, 0,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                1.0, 0.0, 0.4, 0.1, 1.0,
+                0.0, 0.0, 0.0, 0.0, 1.0, -1.0,
+                1.0, 0.1, 0.0, 1.0));
+    }
+
+    private static double pss2aSecondInputResponse(double ks4) throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee1992PSS2AStabilizer pss = builder.addPss2a(
+                "Bus1", "1", 1, 0, 3, 0, 0, 0,
+                0.0, 0.0, 0.0, 0.2, 0.0, 0.0,
+                1.0, 0.0, 0.0, 0.1, 1.0,
+                0.0, 0.0, 0.0, 0.0, 10.0, -10.0,
+                1.0, 0.0, 0.0, ks4);
+        assertNotNull(pss);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        machine.setPe(machine.getPe() + 0.1);
+        for (int i = 0; i < 20; i++) {
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+        return pss.getOutput(machine);
     }
 
     @Test

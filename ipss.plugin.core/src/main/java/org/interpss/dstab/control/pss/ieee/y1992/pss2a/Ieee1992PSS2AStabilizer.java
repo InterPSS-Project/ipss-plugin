@@ -42,7 +42,7 @@ import com.interpss.dstab.mach.Machine;
 
 @AnController(
         input="mach.speed",
-        output="this.filterBlock2.y",
+        output="this.outputBlock.y",
         refPoint="0.0",
         display= {})
 public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
@@ -74,7 +74,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	    public double ks1 = 10.0, t1 = 0.05, t2 = 0.5;
 	    @AnControllerField(
 	            type= CMLFieldEnum.ControlBlock,
-	            input="this.refPoint + this.filterNthBlock.y - this.customBlock2.y",
+	            input="this.refPoint + this.filterNthBlock.y - this.ks4*this.customBlock2.y",
 	            parameter={"type.NoLimit", "this.ks1", "this.t1", "this.t2"},
 	            y0="this.filterBlock2.u0"	)
 	    FilterControlBlock filterBlock1;
@@ -83,9 +83,17 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	    @AnControllerField(
 	            type= CMLFieldEnum.ControlBlock,
 	            input="this.filterBlock1.y",
-	            parameter={"type.Limit", "this.one", "this.t3", "this.t4", "this.vstmax", "this.vstmin"},
-	            y0="pss.vs"	)
+	            parameter={"type.NoLimit", "this.one", "this.t3", "this.t4"},
+	            y0="this.outputBlock.u0"	)
 	    FilterControlBlock filterBlock2;
+
+	    public double a = 1.0, ta = 0.0, tb = 0.0, ks4 = 1.0;
+	    @AnControllerField(
+	            type= CMLFieldEnum.ControlBlock,
+	            input="this.filterBlock2.y",
+	            parameter={"this.a", "this.ta", "this.tb", "this.vstmax", "this.vstmin"},
+	            y0="pss.vs")
+	    Pss2aLeadLagBlock outputBlock;
 
 	@AnController(
 			output="this.delayBlock.y",
@@ -211,6 +219,10 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
         this.tw2 = getData().getTw2();
         this.tw3 = getData().getTw3();
         this.tw4 = getData().getTw4();
+		this.a = getData().getA();
+		this.ta = getData().getTa();
+		this.tb = getData().getTb();
+		this.ks4 = getData().getKs4();
         
         return super.initStates(abus, mach);
 	}

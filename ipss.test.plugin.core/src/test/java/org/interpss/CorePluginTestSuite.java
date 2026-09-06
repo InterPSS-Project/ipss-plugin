@@ -128,6 +128,7 @@ import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterNthOrderBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
 import org.interpss.core.dstab.cml.block.PIControlBlockTests;
+import org.interpss.core.dstab.cml.block.Pss2aLeadLagBlockTest;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
 import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
 import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
@@ -249,6 +250,7 @@ import org.junit.platform.suite.api.Suite;
 	FilterNthOrderBlockTests.class,
 	IntegrationControlBlockTests.class,
 	PIControlBlockTests.class,
+	Pss2aLeadLagBlockTest.class,
 	WashoutControlBlockTests.class,
 	
 	// DStab Machine
