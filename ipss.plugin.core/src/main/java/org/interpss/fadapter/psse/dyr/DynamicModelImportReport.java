@@ -80,17 +80,24 @@ public final class DynamicModelImportReport {
 
     public boolean isStrictlyComplete() {
         return totalRecordCount() > 0
-                && count(DynamicModelImportStatus.ATTACHED) == totalRecordCount();
+                && count(DynamicModelImportStatus.ATTACHED)
+                        + count(DynamicModelImportStatus.SKIPPED_GNET) == totalRecordCount();
     }
 
     public List<DynamicModelImportEntry> failures() {
         return entries.stream()
-                .filter(entry -> entry.status() != DynamicModelImportStatus.ATTACHED)
+                .filter(entry -> entry.status() != DynamicModelImportStatus.ATTACHED
+                        && entry.status() != DynamicModelImportStatus.SKIPPED_GNET)
                 .toList();
     }
 
     public String failureSummary() {
-        if (isStrictlyComplete()) return "all " + totalRecordCount() + " DYR records attached";
+        if (isStrictlyComplete()) {
+            int skipped = count(DynamicModelImportStatus.SKIPPED_GNET);
+            return skipped == 0 ? "all " + totalRecordCount() + " DYR records attached"
+                    : count(DynamicModelImportStatus.ATTACHED) + " DYR records attached, "
+                            + skipped + " intentionally skipped by GNET";
+        }
         String counts = java.util.Arrays.stream(DynamicModelImportStatus.values())
                 .filter(status -> count(status) > 0)
                 .map(status -> status + "=" + count(status))

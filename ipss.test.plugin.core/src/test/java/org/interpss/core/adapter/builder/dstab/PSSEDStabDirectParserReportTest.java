@@ -37,7 +37,7 @@ class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     }
 
     @Test
-    void strictImportRejectsUnsupportedRecordAndPreservesReport() throws Exception {
+    void strictImportRejectsInvalidSupportedRecordAndPreservesReport() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("unsupported.dyr");
         Files.writeString(dyr, "1 'GGOV1' '1' 0 /\n");
@@ -47,7 +47,7 @@ class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
                 () -> parser.parseDynFile(dyr.toString()));
 
         assertTrue(error.getMessage().contains("Strict DYR import failed"));
-        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
         assertEquals("GGOV1", parser.getLastImportReport().failures().get(0).canonicalModelName());
     }
 
