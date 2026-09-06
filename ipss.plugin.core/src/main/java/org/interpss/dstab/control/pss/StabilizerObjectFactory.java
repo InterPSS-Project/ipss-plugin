@@ -31,6 +31,7 @@ import org.interpss.dstab.control.pss.bpa.ss.BPASSTypeStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
 import org.interpss.dstab.control.pss.simple.SimpleStabilizer;
 
 import com.interpss.dstab.mach.Machine;
@@ -89,6 +90,15 @@ public class StabilizerObjectFactory {
 	public static Ieee1992PSS2BStabilizer createIeee1992PSS2BStabilizer(
 			String id, String name, Machine machine) {
 		Ieee1992PSS2BStabilizer pss = new Ieee1992PSS2BStabilizer(
+				id, name, "InterPSS");
+		pss.setMachine(machine);
+		return pss;
+	}
+
+	/** Create an IEEE 421.5-2016 PSS2C stabilizer and attach it to its machine. */
+	public static Ieee2016PSS2CStabilizer createIeee2016PSS2CStabilizer(
+			String id, String name, Machine machine) {
+		Ieee2016PSS2CStabilizer pss = new Ieee2016PSS2CStabilizer(
 				id, name, "InterPSS");
 		pss.setMachine(machine);
 		return pss;

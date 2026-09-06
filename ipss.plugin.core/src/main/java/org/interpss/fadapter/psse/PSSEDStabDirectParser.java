@@ -283,6 +283,8 @@ public class PSSEDStabDirectParser {
                 return procPss2a(busId, genId, fields);
             case "PSS2B":
                 return procPss2b(busId, genId, fields);
+            case "PSS2C":
+                return procPss2c(busId, genId, fields);
             case "PSS1A":
                 return procPss1a(busId, genId, fields);
 
@@ -810,6 +812,28 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 27, 0), getDouble(f, 28, 0), getDouble(f, 29, 0),
                 getDouble(f, 30, 1), getDouble(f, 31, 0), getDouble(f, 32, 0),
                 getDouble(f, 33, 1)) != null;
+    }
+
+    // PSS2C: IBUS 'PSS2C' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
+    //         Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3 T8 T9 Ks1 T1 T2 T3 T4 T10 T11
+    //         VSI1MAX VSI1MIN VSI2MAX VSI2MIN VSTMAX VSTMIN T12 T13
+    //         PSSActivation PSSDeactivation Xcomp Tcomp
+    private boolean procPss2c(String busId, String genId, String[] f) {
+        return builder.addPss2c(busId, genId,
+                getInt(f, 3, 0), getInt(f, 4, 0),
+                getInt(f, 5, 0), getInt(f, 6, 0),
+                getInt(f, 7, 0), getInt(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0),
+                getDouble(f, 17, 0), getDouble(f, 18, 0), getDouble(f, 19, 0),
+                getDouble(f, 20, 0), getDouble(f, 21, 0), getDouble(f, 22, 0),
+                getDouble(f, 23, 0), getDouble(f, 24, 0), getDouble(f, 25, 0),
+                getDouble(f, 26, 0), getDouble(f, 27, 0), getDouble(f, 28, 0),
+                getDouble(f, 29, 0), getDouble(f, 30, 0), getDouble(f, 31, 0),
+                getDouble(f, 32, 0), getDouble(f, 33, 0),
+                getDouble(f, 34, 0), getDouble(f, 35, 0),
+                0.0, getDouble(f, 36, 0), getDouble(f, 37, 0)) != null;
     }
 
     // PSS1A: IBUS 'PSS1A' ID ICS A1 A2 T1 T2 T3 T4 T5 T6 KS LSMAX LSMIN VCU VCL
