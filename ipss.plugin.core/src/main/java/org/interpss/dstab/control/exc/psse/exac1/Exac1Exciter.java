@@ -80,7 +80,11 @@ public class Exac1Exciter extends AnnotateExciter {
     };
 
     public Exac1Exciter(String id, Exac1Data data, Machine machine) {
-        super(id, "EXAC1", "PSS/E");
+        this(id,"EXAC1",data,machine);
+    }
+
+    protected Exac1Exciter(String id,String name,Exac1Data data,Machine machine) {
+        super(id,name,"PSS/E");
         this.data=data; this._data=data; setMachine(machine);
     }
     public Exac1Data getData() { return data; }
