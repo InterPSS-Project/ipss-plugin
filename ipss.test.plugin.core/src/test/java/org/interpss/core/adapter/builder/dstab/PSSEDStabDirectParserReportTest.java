@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -67,5 +68,25 @@ class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
                 .contains("expected 14 parameters"));
         assertTrue(parser.getLastImportReport().failures().get(1).message()
                 .contains("could not be attached"));
+    }
+
+    @Test
+    void unsupportedGentpjIsNeverSilentlyAttachedAsGenrou() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("gentpj.dyr");
+        Files.writeString(dyr, "1 'GENTPJ' '1' 8.0 0.03 0.4 0.05 5.0 3.0 "
+                + "1.8 1.7 0.3 0.55 0.25 0.15 0.10 0.20 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder)
+                .setStrictImport(true);
+
+        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+
+        assertEquals(1, parser.getLastImportReport()
+                .count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals("GENTPJ", parser.getLastImportReport().failures().get(0)
+                .canonicalModelName());
+        assertTrue(parser.getLastImportReport().failures().get(0).message()
+                .contains("not implemented"));
+        assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1"));
     }
 }
