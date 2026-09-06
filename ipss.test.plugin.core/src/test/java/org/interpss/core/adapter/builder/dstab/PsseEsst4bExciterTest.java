@@ -169,14 +169,66 @@ public class PsseEsst4bExciterTest extends CorePluginTestSetup {
         assertEquals(initialEfd, exciter.getOutput(machine), 1.0e-8);
     }
 
+    @Test
+    void bridgeAndFeedbackLimitsActAtTheirDocumentedIndependentSignals() throws Exception {
+        IEEE2005ST4BExciterData bridgeData = texasData();
+        bridgeData.setVbmax(0.1);
+        IEEE2005ST4BExciter bridgeLimited = initializedExciter(bridgeData, 0.0);
+        assertEquals(0.1, bridgeLimited.getBridgeVoltage(), TOL);
+        assertEquals(bridgeLimited.getMachine().getEfd(),
+                bridgeLimited.getOutput(bridgeLimited.getMachine()), 1.0e-8);
+
+        IEEE2005ST4BExciterData feedbackData = texasData();
+        feedbackData.setKg(2.0);
+        feedbackData.setVgmax(0.1);
+        IEEE2005ST4BExciter feedbackLimited = initializedExciter(feedbackData, 0.0);
+        assertEquals(0.1, feedbackLimited.getExcitationFeedback(), TOL);
+        assertTrue(feedbackLimited.getMachine().getEfd() * feedbackLimited.kg > 0.1);
+    }
+
+    @Test
+    void outerAndInnerPiLimitsClampTheirOwnStatesIndependently() throws Exception {
+        IEEE2005ST4BExciter vrHigh = initializedExciter(0.0);
+        IEEE2005ST4BExciter vrLow = initializedExciter(0.0);
+        vrHigh.setVuel(10.0);
+        vrLow.setVuel(-10.0);
+        step(vrHigh, vrHigh.getMachine());
+        step(vrLow, vrLow.getMachine());
+        assertEquals(vrHigh.getEffectiveVrmax(), vrHigh.getVoltageRegulatorOutput(), TOL);
+        assertEquals(vrLow.getEffectiveVrmin(), vrLow.getVoltageRegulatorOutput(), TOL);
+
+        IEEE2005ST4BExciterData vmData = texasData();
+        vmData.setVmmax(0.31);
+        vmData.setVmmin(0.27);
+        IEEE2005ST4BExciter vmHigh = initializedExciter(vmData, 0.0);
+        IEEE2005ST4BExciter vmLow = initializedExciter(vmData, 0.0);
+        vmHigh.setVuel(10.0);
+        vmLow.setVuel(-10.0);
+        for (int i = 0; i < 20; i++) {
+            step(vmHigh, vmHigh.getMachine());
+            step(vmLow, vmLow.getMachine());
+        }
+        double vmHighOutput = vmHigh.getFieldVoltageRegulatorOutput();
+        double vmLowOutput = vmLow.getFieldVoltageRegulatorOutput();
+        assertTrue(vmHighOutput <= vmHigh.getEffectiveVmmax());
+        assertTrue(vmHigh.getEffectiveVmmax() - vmHighOutput < 2.0e-4);
+        assertTrue(vmLowOutput >= vmLow.getEffectiveVmmin());
+        assertTrue(vmLowOutput - vmLow.getEffectiveVmmin() < 2.0e-4);
+    }
+
     private static IEEE2005ST4BExciter initializedExciter(double vuel) throws Exception {
+        return initializedExciter(texasData(), vuel);
+    }
+
+    private static IEEE2005ST4BExciter initializedExciter(IEEE2005ST4BExciterData data,
+            double vuel) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         LoadflowAlgorithm loadflow = com.interpss.core.LoadflowAlgoObjectFactory
                 .createLoadflowAlgorithm(builder.getDStabNetwork());
         assertTrue(loadflow.loadflow());
         assertTrue(machine.initStates(machine.getDStabBus()));
-        IEEE2005ST4BExciter exciter = builder.addExcEsst4b("Bus1", "1", texasData());
+        IEEE2005ST4BExciter exciter = builder.addExcEsst4b("Bus1", "1", data);
         exciter.setVuel(vuel);
         assertTrue(exciter.initStates(machine.getDStabBus(), machine));
         return exciter;
