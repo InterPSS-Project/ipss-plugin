@@ -14,6 +14,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
@@ -513,6 +514,145 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(maximumOutput > 1.0e-7,
                 "Selected PSS3B input path produced no response");
         assertTrue(maximumOutput <= 1.0 + TOL);
+    }
+
+    @Test
+    void parsePss3c_mapsCompleteRecordAndReusesPss3bDynamicChain() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("pss3c.dyr");
+        Files.writeString(dyr, "1 'PSS3C' '1' 7 3 "
+                + "1 0.02 1.5 0.5 0.03 2.0 0.6 "
+                + "0.1 0.01 0.2 0.02 0.3 0.03 0.4 0.04 "
+                + "0.1 -0.1 0.15 0.10 0.05 0.2 0.02 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee2016PSS3CStabilizer pss =
+                (Ieee2016PSS3CStabilizer) machine.getStabilizer();
+        assertNotNull(pss);
+        assertSame(machine, pss.getMachine());
+        var data = pss.getPss3cData();
+        assertEquals(7, data.ics1());
+        assertEquals(3, data.ics2());
+        assertEquals(1.0, data.k1(), TOL);
+        assertEquals(0.02, data.t1(), TOL);
+        assertEquals(1.5, data.tw1(), TOL);
+        assertEquals(0.5, data.k2(), TOL);
+        assertEquals(0.03, data.t2(), TOL);
+        assertEquals(2.0, data.tw2(), TOL);
+        assertEquals(0.6, data.tw3(), TOL);
+        assertEquals(0.1, data.a1(), TOL);
+        assertEquals(0.04, data.a8(), TOL);
+        assertEquals(0.1, data.vstmax(), TOL);
+        assertEquals(-0.1, data.vstmin(), TOL);
+        assertEquals(0.15, data.pssActivation(), TOL);
+        assertEquals(0.10, data.pssDeactivation(), TOL);
+        assertEquals(0.05, data.tpgfilt(), TOL);
+        assertEquals(0.2, data.xcomp(), TOL);
+        assertEquals(0.02, data.tcomp(), TOL);
+        machine.setPe(0.2);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertTrue(pss.isPssActive());
+        assertEquals(0.0, pss.getOutput(machine), TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void pss3c_computesCompensatedFrequencyInput() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p = pss3cParameters();
+        p[0] = 7;
+        p[22] = 0.0;
+        p[23] = 0.0;
+        p[19] = 0.0;
+        p[20] = -1.0;
+        Ieee2016PSS3CStabilizer pss = builder.addPss3c("Bus1", "1", p);
+        assertNotNull(pss);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        machine.getDStabBus().setVoltage(new Complex(Math.cos(0.01), Math.sin(0.01)));
+        assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+
+        double expected = 0.01 / (2.0 * Math.PI
+                * machine.getDStabBus().getNetwork().getFrequency() * 0.01);
+        assertEquals(expected, pss.getCompensatedFrequencySignal(), 1.0e-8);
+        assertEquals(expected, pss.input1Signal, 1.0e-8);
+    }
+
+    @Test
+    void pss3c_matchesInheritedPss3bAnalyticResponse() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p = pss3cParameters();
+        p[0] = 3;
+        p[2] = 0.2;
+        p[3] = 0.02;
+        p[4] = 1.5;
+        p[5] = 0.0;
+        p[6] = 1.5;
+        p[7] = 1.5;
+        p[8] = -1.0;
+        Ieee2016PSS3CStabilizer pss = builder.addPss3c("Bus1", "1", p);
+        machine.setPe(0.8);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        machine.setPe(0.9);
+        double dt = 0.0005;
+        double elapsed = 0.2;
+        for (int i = 0; i < (int) (elapsed / dt); i++) {
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+
+        double expected = 0.1 * 0.2 * 1.5 / (1.5 - 0.02)
+                * (Math.exp(-elapsed / 1.5) - Math.exp(-elapsed / 0.02));
+        assertEquals(expected, pss.getOutput(machine), 2.0e-5);
+    }
+
+    @Test
+    void pss3c_filtersPowerForActivationHysteresis() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p = pss3cParameters();
+        p[19] = 0.15;
+        p[20] = 0.10;
+        p[21] = 0.02;
+        Ieee2016PSS3CStabilizer pss = builder.addPss3c("Bus1", "1", p);
+        machine.setPe(0.20);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertTrue(pss.isPssActive());
+
+        machine.setPe(0.05);
+        for (int i = 0; i < 20; i++) {
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+        assertTrue(pss.getFilteredPgen() < 0.10);
+        assertTrue(!pss.isPssActive());
+        assertEquals(0.0, pss.getOutput(machine), TOL);
+
+        machine.setPe(0.20);
+        for (int i = 0; i < 20; i++) {
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+        assertTrue(pss.getFilteredPgen() > 0.15);
+        assertTrue(pss.isPssActive());
+    }
+
+    private static double[] pss3cParameters() {
+        return new double[] {
+                1, 3,
+                1.0, 0.02, 1.5,
+                0.0, 0.03, 2.0, 0.6,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.1, -0.1,
+                0.0, -1.0, 0.0, 0.0, 0.0
+        };
     }
 
     @Test

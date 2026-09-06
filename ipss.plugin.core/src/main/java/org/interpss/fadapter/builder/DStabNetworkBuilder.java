@@ -35,6 +35,8 @@ import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
@@ -670,6 +672,30 @@ public class DStabNetworkBuilder {
         }
         return StabilizerObjectFactory.createIeee2005PSS4BStabilizer(
                 busId + "-pss4b" + genId, data, machine);
+    }
+
+    /** Build the complete IEEE 421.5-2016 PSS3C model from its 24 parameters. */
+    public Ieee2016PSS3CStabilizer addPss3c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS3C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS3CStabilizerData data;
+        try {
+            data = Ieee2016PSS3CStabilizerData.fromParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS3C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        if (data.ics1() < 1 || data.ics1() > 7 || data.ics2() < 1 || data.ics2() > 6) {
+            log.warn("Invalid PSS3C input selectors at {} {}: ICS1={}, ICS2={}",
+                    busId, genId, data.ics1(), data.ics2());
+            return null;
+        }
+        return StabilizerObjectFactory.createIeee2016PSS3CStabilizer(
+                busId + "-pss3c" + genId, data, machine);
     }
 
 	private BaseDStabBus<?, ?> resolvePss2aSignalBus(BaseDStabBus<?, ?> localBus,

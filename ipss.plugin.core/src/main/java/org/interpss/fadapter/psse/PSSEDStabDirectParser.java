@@ -289,6 +289,8 @@ public class PSSEDStabDirectParser {
                 return procPss3b(busId, genId, fields);
             case "PSS4B":
                 return procPss4b(busId, genId, fields);
+            case "PSS3C":
+                return procPss3c(busId, genId, fields);
             case "PSS1A":
                 return procPss1a(busId, genId, fields);
 
@@ -861,6 +863,18 @@ public class PSSEDStabDirectParser {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
         return builder.addPss4b(busId, genId, parameters) != null;
+    }
+
+    // PSS3C: IBUS 'PSS3C' ID followed by the 24 IEEE/PSS/E parameters.
+    private boolean procPss3c(String busId, String genId, String[] f) {
+        if (f.length < 27) return false;
+        double[] parameters = new double[24];
+        parameters[0] = getInt(f, 3, 0);
+        parameters[1] = getInt(f, 4, 0);
+        for (int i = 2; i < parameters.length; i++) {
+            parameters[i] = getDouble(f, i + 3, 0.0);
+        }
+        return builder.addPss3c(busId, genId, parameters) != null;
     }
 
     // PSS1A: IBUS 'PSS1A' ID ICS A1 A2 T1 T2 T3 T4 T5 T6 KS LSMAX LSMIN VCU VCL
