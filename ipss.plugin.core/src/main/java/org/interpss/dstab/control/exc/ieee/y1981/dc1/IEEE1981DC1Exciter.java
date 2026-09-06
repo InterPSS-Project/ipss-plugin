@@ -22,6 +22,7 @@ import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.controller.cml.field.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 
 /*
  * Part-1: Define your controller using CML as usual
@@ -35,8 +36,12 @@ import com.interpss.dstab.mach.Machine;
    //debug = true
 )
 
-public class IEEE1981DC1Exciter extends AnnotateExciter {
+public class IEEE1981DC1Exciter extends AnnotateExciter implements IntegrationStepAware {
     private static final Logger log = LoggerFactory.getLogger(IEEE1981DC1Exciter.class);
+	private boolean psseIeeex1Mode;
+	private double integrationStep;
+	private double minimumTimeConstantMultiplier = 1.0;
+	private double sourceTr = 0.02;
 	   public double ke =1.0;
 	   
 		public double k1 = 1.0;/*constant*/
@@ -158,7 +163,41 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
 
     /** Configure the PSS/E IEEEX1 terminal-voltage transducer time constant. */
     public void setTransducerTimeConstant(double tr) {
+        this.sourceTr = tr;
         this.tr = tr;
+    }
+
+    /** Return the uncorrected PSS/E IEEEX1 transducer time constant. */
+    public double getSourceTransducerTimeConstant() {
+        return sourceTr;
+    }
+
+    /** Enable the PSS/E IEEEX1 validation and initialization rules. */
+    public void configureAsPsseIeeex1() {
+        this.psseIeeex1Mode = true;
+    }
+
+    @Override
+    public void configureIntegrationStep(double timeStepSec) {
+        configureIntegrationStep(timeStepSec, 1.0);
+    }
+
+    /**
+     * Configure the PowerWorld minimum-time-constant multiplier used for
+     * PSS/E IEEEX1 autocorrection.
+     */
+    public void configureIntegrationStep(double timeStepSec,
+            double minimumTimeConstantMultiplier) {
+        if (!Double.isFinite(timeStepSec) || timeStepSec < 0.0) {
+            throw new IllegalArgumentException("timeStepSec must be finite and non-negative");
+        }
+        if (!Double.isFinite(minimumTimeConstantMultiplier)
+                || minimumTimeConstantMultiplier < 0.0) {
+            throw new IllegalArgumentException(
+                    "minimumTimeConstantMultiplier must be finite and non-negative");
+        }
+        this.integrationStep = timeStepSec;
+        this.minimumTimeConstantMultiplier = minimumTimeConstantMultiplier;
     }
 
     /**
@@ -185,9 +224,15 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
         this.se_e2 = getData().getSe_e2();
         this.kf = getData().getKf();
         this.tf = getData().getTf();
+
+        if (psseIeeex1Mode) {
+            this.tr = sourceTr;
+            applyPsseIeeex1Corrections(mach);
+        }
+
+        this.kint = te == 0.0 ? 0.0 : 1.0 / te;
         
 		if(tf == 0.0){
-            log.error("Tf =0.0 for Exciter of "+mach.getId());
 			this.k = 0.0;
 		}
 		else
@@ -199,6 +244,42 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
         
         // always add the following statement
         return super.initStates(bus, mach);
+    }
+
+    private void applyPsseIeeex1Corrections(Machine mach) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        this.tr = correctedBypassTimeConstant(this.tr, minimum);
+        this.tb = correctedBypassTimeConstant(this.tb, minimum);
+        this.ta = correctedBypassTimeConstant(this.ta, minimum);
+        this.te = correctedMinimumTimeConstant(this.te, minimum);
+        this.tf = correctedMinimumTimeConstant(this.tf, minimum);
+
+        if (this.vrmax < this.vrmin) {
+            double originalMax = this.vrmax;
+            this.vrmax = this.vrmin;
+            this.vrmin = originalMax;
+        }
+
+        try {
+            double initialEfd = mach.getEfd();
+            double initialVr = (this.ke + new SeFunction(
+                    this.e1, this.se_e1, this.e2, this.se_e2)
+                    .eval(new double[] {initialEfd})) * initialEfd;
+            this.vrmax = Math.max(this.vrmax, initialVr);
+            this.vrmin = Math.min(this.vrmin, initialVr);
+        } catch (Exception e) {
+            log.error("Cannot initialize IEEEX1 saturation for " + mach.getId(), e);
+        }
+    }
+
+    private static double correctedBypassTimeConstant(double value, double minimum) {
+        if (value > 0.0 && value < 0.5 * minimum) return 0.0;
+        if (value > 0.5 * minimum && value < minimum) return minimum;
+        return value;
+    }
+
+    private static double correctedMinimumTimeConstant(double value, double minimum) {
+        return value > 0.0 && value < minimum ? minimum : value;
     }
 
 /*

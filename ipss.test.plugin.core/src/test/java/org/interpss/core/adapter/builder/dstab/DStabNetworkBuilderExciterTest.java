@@ -101,6 +101,56 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void ieeex1_appliesPowerWorldTimeStepCorrectionsWithoutChangingSourceData()
+			throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		IEEE1981DC1Exciter exc = builder.addExcIeeex1("Bus1", "1",
+				0.004, 40.0, 0.012, 0.015, 0.0,
+				5.0, -5.0, 1.0, 0.005, 0.03, 0.003,
+				3.0, 0.1, 4.0, 0.2);
+
+		assertNotNull(exc);
+		exc.configureIntegrationStep(0.01, 2.0);
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		machine.setEfd(1.2);
+		assertEquals(true, exc.initStates(machine.getDStabBus(), machine));
+
+		assertEquals(0.0, exc.tr, TOL);
+		assertEquals(0.02, exc.ta, TOL);
+		assertEquals(0.02, exc.tb, TOL);
+		assertEquals(0.02, exc.te, TOL);
+		assertEquals(0.02, exc.tf, TOL);
+		assertEquals(50.0, exc.kint, TOL);
+		assertEquals(1.5, exc.k, TOL);
+
+		assertEquals(0.004, exc.getSourceTransducerTimeConstant(), TOL);
+		assertEquals(0.012, exc.getData().getTa(), TOL);
+		assertEquals(0.015, exc.getData().getTb(), TOL);
+		assertEquals(0.005, exc.getData().getTe(), TOL);
+		assertEquals(0.003, exc.getData().getTf(), TOL);
+	}
+
+	@Test
+	public void ieeex1_normalizesAndExpandsOnlyEffectiveRegulatorLimits()
+			throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		IEEE1981DC1Exciter exc = builder.addExcIeeex1("Bus1", "1",
+				0.02, 40.0, 0.02, 0.0, 0.0,
+				-0.1, 0.1, 1.0, 0.6, 0.0, 0.0,
+				3.0, 0.0, 4.0, 0.0);
+
+		assertNotNull(exc);
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		machine.setEfd(1.2);
+		assertEquals(true, exc.initStates(machine.getDStabBus(), machine));
+
+		assertEquals(1.2, exc.vrmax, TOL);
+		assertEquals(-0.1, exc.vrmin, TOL);
+		assertEquals(-0.1, exc.getData().getVrmax(), TOL);
+		assertEquals(0.1, exc.getData().getVrmin(), TOL);
+	}
+
+	@Test
 	public void addExcEsdc2a_usesDedicatedModelAndAttaches() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
 		Esdc2aExciter exc = builder.addExcEsdc2a("Bus1", "1",
