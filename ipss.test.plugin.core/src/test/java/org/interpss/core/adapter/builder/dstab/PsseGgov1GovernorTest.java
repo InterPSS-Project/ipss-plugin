@@ -16,11 +16,13 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
 
-class PsseGgov1GovernorTest extends CorePluginTestSetup {
+public class PsseGgov1GovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
@@ -132,6 +134,80 @@ class PsseGgov1GovernorTest extends CorePluginTestSetup {
         assertEquals(.4, governor.getOutput(machine), 1.0e-9);
         for (int i = 0; i < 20; i++) step(governor, machine, .005);
         assertTrue(governor.getOutput(machine) > .4);
+    }
+
+    @ParameterizedTest(name = "GGOV1 Rselect={0}, Flag={1}")
+    @CsvSource({"1,0", "1,1", "0,0", "0,1", "-1,0", "-1,1", "-2,0", "-2,1"})
+    void supportsEveryDocumentedDroopAndFuelSourceCombination(int rselect, int flag)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1GovernorData data = texasData();
+        data.setRselect(rselect);
+        data.setFlag(flag);
+        if (rselect == 0) data.setR(0.0);
+        PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
+
+        assertNotNull(governor);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        machine.setSpeed(0.995);
+        for (int i = 0; i < 20; i++) step(governor, machine, 0.005);
+        assertTrue(Double.isFinite(governor.getOutput(machine)));
+        assertTrue(Double.isFinite(governor.getDroopFeedback()));
+        assertTrue(Double.isFinite(governor.getFuelFlow()));
+    }
+
+    @Test
+    void rselectUsesPublishedElectricalValveAndGovernorOutputSignals() throws Exception {
+        PsseGgov1Governor electrical = initializedGovernor(1, 0);
+        assertEquals(0.4 / 3.9024, electrical.getDroopFeedback(), TOL,
+                "Electrical-power droop feedback is expressed on the Trate governor base");
+
+        PsseGgov1Governor valve = initializedGovernor(-1, 0);
+        valve.getMachine().setSpeed(0.99);
+        for (int i = 0; i < 20; i++) step(valve, valve.getMachine(), 0.005);
+        assertEquals(valve.getValveStroke(), valve.getDroopFeedback(), TOL);
+
+        PsseGgov1Governor governorOutput = initializedGovernor(-2, 0);
+        governorOutput.getMachine().setSpeed(0.99);
+        for (int i = 0; i < 20; i++) step(governorOutput, governorOutput.getMachine(), 0.005);
+        assertEquals(governorOutput.getFsr(), governorOutput.getDroopFeedback(), TOL);
+        assertTrue(Math.abs(governorOutput.getFsr() - governorOutput.getValveStroke()) > 1.0e-5,
+                "Requested and true valve stroke must diverge to distinguish Rselect -2 from -1");
+
+        PsseGgov1Governor isochronous = initializedGovernor(0, 0);
+        assertEquals(0.0, isochronous.getDroopFeedback(), TOL);
+    }
+
+    @Test
+    void flagOneMakesFuelFlowProportionalToShaftSpeed() throws Exception {
+        PsseGgov1Governor independent = initializedGovernor(1, 0);
+        PsseGgov1Governor proportional = initializedGovernor(1, 1);
+        independent.getMachine().setSpeed(0.98);
+        proportional.getMachine().setSpeed(0.98);
+
+        assertEquals(independent.getValveStroke(), independent.getFuelFlow(), TOL);
+        assertEquals(0.98 * proportional.getValveStroke(), proportional.getFuelFlow(), TOL);
+    }
+
+    private static PsseGgov1Governor initializedGovernor(int rselect, int flag)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1GovernorData data = texasData();
+        data.setRselect(rselect);
+        data.setFlag(flag);
+        if (rselect == 0) data.setR(0.0);
+        PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
+        assertNotNull(governor);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        return governor;
     }
 
     private static void step(PsseGgov1Governor governor, Machine machine, double dt) {
