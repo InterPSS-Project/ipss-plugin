@@ -33,6 +33,7 @@ import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
+import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -458,24 +459,17 @@ public class PSSEDStabDirectParser {
         return true;
     }
 
-    // EXAC1: maps to IEEE1981AC1 - use DC1 as close approximation
-    private boolean procExcExac1(String busId, String genId, String[] f) throws InterpssException {
-        double ka = getDouble(f, 6, 0);
-        double ta = getDouble(f, 7, 0);
-        double tb = getDouble(f, 4, 0);
-        double tc = getDouble(f, 5, 0);
-        double vrmax = getDouble(f, 8, 0);
-        double vrmin = getDouble(f, 9, 0);
-        double ke = getDouble(f, 15, 0);
-        double te = getDouble(f, 10, 0);
-        double kf = getDouble(f, 11, 0);
-        double tf = getDouble(f, 12, 0);
-        double e1 = getDouble(f, 16, 0);
-        double seE1 = getDouble(f, 17, 0);
-        double e2 = getDouble(f, 18, 0);
-        double seE2 = getDouble(f, 19, 0);
-        builder.addExcIeee1981Dc1(busId, genId, ka, ta, tc, tb, vrmax, vrmin, ke, te, kf, tf, e1, seE1, e2, seE2);
-        return true;
+    // EXAC1: IBUS 'EXAC1' ID Tr Tb Tc Ka Ta Vrmax Vrmin Te Kf Tf Kc Kd Ke E1 SE1 E2 SE2 [Spdmlt]
+    private boolean procExcExac1(String busId,String genId,String[] f) {
+        if (f.length<20) return false;
+        Exac1Data d=new Exac1Data();
+        d.setTr(getDouble(f,3,0)); d.setTb(getDouble(f,4,0)); d.setTc(getDouble(f,5,0));
+        d.setKa(getDouble(f,6,0)); d.setTa(getDouble(f,7,0)); d.setVrmax(getDouble(f,8,0));
+        d.setVrmin(getDouble(f,9,0)); d.setTe(getDouble(f,10,0)); d.setKf(getDouble(f,11,0));
+        d.setTf(getDouble(f,12,0)); d.setKc(getDouble(f,13,0)); d.setKd(getDouble(f,14,0));
+        d.setKe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0)); d.setSe1(getDouble(f,17,0));
+        d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0)); d.setSpdmlt(getDouble(f,20,0));
+        return builder.addExcExac1(busId,genId,d)!=null;
     }
 
     // ==================== Governor Model Parsers ====================

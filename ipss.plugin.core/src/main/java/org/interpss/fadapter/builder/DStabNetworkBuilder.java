@@ -11,6 +11,8 @@ import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
+import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
+import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
@@ -657,6 +659,19 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Esac5aExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Attach the PSS/E EXAC1 rotating AC exciter. */
+    public Exac1Exciter addExcExac1(String busId, String genId, Exac1Data data) {
+        if (data == null || data.getKa() <= 0.0 || data.getTe() <= 0.0 || data.getTf() <= 0.0
+                || data.getTr() < 0.0 || data.getTb() < 0.0 || data.getTa() < 0.0
+                || data.getKc() < 0.0) {
+            log.warn("Invalid EXAC1 parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) { log.warn("Machine not found for EXAC1: bus={}, gen={}",busId,genId); return null; }
+        return new Exac1Exciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** Attach the eight-parameter PSS/E SCRX excitation system. */
