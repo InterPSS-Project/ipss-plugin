@@ -38,6 +38,8 @@ import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
+import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor;
+import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
@@ -1360,6 +1362,38 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Governor Models ====================
+
+    /** Attach a WECC H6E/PSS/E H6EU1 Kaplan hydro governor. */
+    public PsseH6eGovernor addGovH6e(String busId, String genId, PsseH6eGovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for H6E governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseH6eGovernor gov = new PsseH6eGovernor(mach.getId() + "_Gov", "H6E", "PSS/E");
+        copyH6eData(data, gov.getData());
+        if (!gov.validateParameters()) {
+            log.warn("Invalid H6E parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        gov.setMachine(mach);
+        return gov;
+    }
+
+    private static void copyH6eData(PsseH6eGovernorData s, PsseH6eGovernorData t) {
+        t.setFd(s.getFd()); t.setRe(s.getRe()); t.setRg(s.getRg());
+        t.setTpe(s.getTpe()); t.setTsp(s.getTsp()); t.setKp(s.getKp());
+        t.setKi(s.getKi()); t.setKd(s.getKd()); t.setTd(s.getTd());
+        t.setVelm(s.getVelm()); t.setGmax(s.getGmax()); t.setGmin(s.getGmin());
+        t.setBuf(s.getBuf()); t.setBuv(s.getBuv()); t.setKg(s.getKg());
+        t.setTg(s.getTg()); t.setBlg(s.getBlg()); t.setDbbd(s.getDbbd());
+        t.setTbd(s.getTbd()); t.setBlb(s.getBlb()); t.setDbbs(s.getDbbs());
+        t.setTbs(s.getTbs()); t.setBgvmin(s.getBgvmin()); t.setBlv(s.getBlv());
+        t.setDturb(s.getDturb()); t.setPgc(s.getPgc()); t.setDeff(s.getDeff());
+        t.setHdam(s.getHdam()); t.setTw(s.getTw()); t.setGv(s.getGv());
+        t.setPgv(s.getPgv()); t.setBgv(s.getBgv()); t.setSprate(s.getSprate());
+        t.setDb1(s.getDb1()); t.setEps(s.getEps()); t.setTrate(s.getTrate());
+    }
 
     /** Attach a WECC HYG3/PSS/E HYG3U1 hydro governor. */
     public PsseHyg3Governor addGovHyg3(String busId, String genId,
