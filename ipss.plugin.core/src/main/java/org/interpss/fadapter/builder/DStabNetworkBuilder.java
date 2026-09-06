@@ -43,6 +43,8 @@ import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
@@ -778,6 +780,45 @@ public class DStabNetworkBuilder {
         }
         Ieee2016PSS6CStabilizer pss = StabilizerObjectFactory
                 .createIeee2016PSS6CStabilizer(busId + "-pss6c" + genId, data, machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        return pss;
+    }
+
+    /** Build PSS7C from its 38/39-value PSS/E/PowerWorld parameter order. */
+    public Ieee2016PSS7CStabilizer addPss7c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS7C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS7CStabilizerData data;
+        try {
+            data = Ieee2016PSS7CStabilizerData.fromPsseParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS7C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        if (data.ics1() < 1 || data.ics1() > 7 || data.ics2() < 1 || data.ics2() > 6
+                || data.m() < 0 || data.n() < 0 || (data.n() > 0 && data.m() == 0)
+                || data.t6() < 0.0 || data.t7() < 0.0 || data.t8() < 0.0
+                || data.t9() < 0.0 || data.tpgfilt() < 0.0 || data.tcomp() < 0.0
+                || data.pssActivation() < data.pssDeactivation()) {
+            log.warn("Invalid PSS7C selectors, orders, time constants, or thresholds at {} {}",
+                    busId, genId);
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = data.ics1() == 7 ? localBus
+                : resolvePss2aSignalBus(localBus, data.ics1(), data.remoteBus1());
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(
+                localBus, data.ics2(), data.remoteBus2());
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSS7C remote bus could not be resolved at {} {}", busId, genId);
+            return null;
+        }
+        Ieee2016PSS7CStabilizer pss = StabilizerObjectFactory
+                .createIeee2016PSS7CStabilizer(busId + "-pss7c" + genId, data, machine);
         pss.setInputSignalBuses(input1Bus, input2Bus);
         return pss;
     }
