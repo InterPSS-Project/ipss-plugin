@@ -130,6 +130,7 @@ import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
 import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
 import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
 import org.interpss.core.dstab.mach.EConstMachineTest;
+import org.interpss.core.dstab.mach.GensalConformanceTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
@@ -251,6 +252,7 @@ import org.junit.platform.suite.api.Suite;
 	///Eq1Ed1MachineTest.class,
 	EConstMachineTest.class,
 	///Eq1MachineCaseTest.class,
+	GensalConformanceTest.class,
 	GenrouConformanceTest.class,
 	MachineSaturationTest.class,
 	RoundRotorMachineTest.class,
