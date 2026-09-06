@@ -25,15 +25,23 @@ public final class Wttqa1Model {
     }
 
     public void step(double dt, double electricalPower, double generatorSpeed) {
+        step(dt, electricalPower, generatorSpeed, false);
+    }
+
+    public void step(double dt, double electricalPower, double generatorSpeed,
+            boolean voltageDip) {
         filteredPower = Repca1Model.lag(filteredPower, electricalPower, data.tp(), dt);
         speedReference = Repca1Model.lag(speedReference, speedForPower(filteredPower),
                 data.twref(), dt);
+        // The PowerWorld/WECC diagram forms the TFLAG=1 path from Pref0 minus
+        // filtered Pe, then divides by generator speed.  Using Pe-Pref0 makes
+        // the closed active-power loop self-reinforcing.
         double error = data.tFlag() == 1
-                ? (electricalPower - initialPower) / nonzero(generatorSpeed)
+                ? (initialPower - filteredPower) / nonzero(generatorSpeed)
                 : speedReference - generatorSpeed;
         if (Math.abs(error) <= EQUILIBRIUM_RESIDUAL) error = 0.0;
         torqueIntegral = Repca1Model.integrateWithAntiWindup(torqueIntegral, data.kip(), error,
-                dt, data.kpp(), data.teMin(), data.teMax(), false);
+                dt, data.kpp(), data.teMin(), data.teMax(), voltageDip);
         torque = Repca1Model.limit(data.kpp() * error + torqueIntegral,
                 data.teMin(), data.teMax());
         pref = torque * generatorSpeed;

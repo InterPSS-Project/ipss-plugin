@@ -151,15 +151,30 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void torqueControllerPowerErrorModeMatchesAndesEquations() {
+    void torqueControllerPowerErrorModeUsesPowerworldNegativeFeedback() {
         Wttqa1Model model = torqueController(1, 1, 0, 0, 0, 10, 0);
         model.initialize(.5);
 
         model.step(.1, .6, 1.0);
 
         double initialTorque = .5 / .79;
-        assertEquals(initialTorque + .1, model.getTorque(), 1.0e-12);
-        assertEquals(initialTorque + .1, model.getPref(), 1.0e-12);
+        assertEquals(initialTorque - .1, model.getTorque(), 1.0e-12);
+        assertEquals(initialTorque - .1, model.getPref(), 1.0e-12);
+    }
+
+    @Test
+    void torquePowerErrorUsesFilteredPowerAndFreezesIntegratorDuringDip() {
+        Wttqa1Model model = torqueController(1, 0, 2, .2, 0, 10, 0);
+        model.initialize(.5);
+        double initialIntegral = model.getTorqueIntegral();
+
+        model.step(.1, .7, 1.0, true);
+
+        assertEquals(.6, model.getFilteredPower(), 1.0e-12);
+        assertEquals(initialIntegral, model.getTorqueIntegral(), 1.0e-12);
+
+        model.step(.1, .7, 1.0, false);
+        assertTrue(model.getTorqueIntegral() < initialIntegral);
     }
 
     @Test
@@ -193,11 +208,11 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         Wttqa1Model model = torqueController(1, 0, 1, 0, 0, .7, 0);
         model.initialize(.5);
 
-        for (int i = 0; i < 20; i++) model.step(.01, 1.5, 1.0);
+        for (int i = 0; i < 20; i++) model.step(.01, 0.0, 1.0);
         double saturatedIntegral = model.getTorqueIntegral();
         assertEquals(.7, model.getTorque(), 1.0e-12);
 
-        for (int i = 0; i < 10; i++) model.step(.01, -.5, 1.0);
+        for (int i = 0; i < 10; i++) model.step(.01, 1.5, 1.0);
         assertTrue(model.getTorqueIntegral() < saturatedIntegral);
         assertTrue(model.getTorque() < .7);
     }
