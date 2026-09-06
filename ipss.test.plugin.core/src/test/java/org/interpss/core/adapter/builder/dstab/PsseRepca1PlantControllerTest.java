@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
@@ -16,9 +17,13 @@ import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+
+import com.interpss.core.aclf.AclfBranch;
 
 public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
 
@@ -63,6 +68,75 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
         assertThrows(IllegalArgumentException.class, () -> copyWithFlags(valid, 1, 0, 3));
     }
 
+    @Test
+    void monitoredBranchDirectionAndReactivePowerControlUseRequestedTerminal() throws Exception {
+        MeasurementFixture fixture = measurementFixture();
+        Repca1Model forward = new Repca1Model(
+                plantData(1, 1, 2, 0, 0, 0, 0, 0, 0), fixture.converter());
+        forward.initialize(.8, .2, 1.0);
+        Complex sf = fixture.branch().powerFrom2To(UnitType.PU);
+        assertEquals(sf.getReal(), forward.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(sf.getImaginary(), forward.getMeasuredReactiveOrVoltage(), 1.0e-12);
+
+        Repca1Model reverse = new Repca1Model(
+                plantData(2, 2, 1, 0, 0, 0, 0, 0, 0), fixture.converter());
+        reverse.initialize(.8, .2, 1.0);
+        Complex sr = fixture.branch().powerTo2From(UnitType.PU);
+        assertEquals(sr.getReal(), reverse.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(sr.getImaginary(), reverse.getMeasuredReactiveOrVoltage(), 1.0e-12);
+    }
+
+    @Test
+    void remoteVoltageSupportsDroopAndLineDropCompensation() throws Exception {
+        MeasurementFixture fixture = measurementFixture();
+        Complex s = fixture.branch().powerFrom2To(UnitType.PU);
+        Complex remoteVoltage = fixture.builder().getDStabNetwork().getDStabBus("Bus2").getVoltage();
+
+        Repca1Model droop = new Repca1Model(
+                plantData(2, 1, 2, 0, 1, 0, 0, .4, 0), fixture.converter());
+        droop.initialize(.8, .2, 1.0);
+        assertEquals(remoteVoltage.abs() + .4 * s.getImaginary(),
+                droop.getMeasuredReactiveOrVoltage(), 1.0e-12);
+
+        Repca1Model lineDrop = new Repca1Model(
+                plantData(2, 1, 2, 1, 1, .02, .08, 0, 0), fixture.converter());
+        lineDrop.initialize(.8, .2, 1.0);
+        Complex current = s.divide(fixture.builder().getDStabNetwork()
+                .getDStabBus("Bus1").getVoltage()).conjugate();
+        double expected = remoteVoltage.subtract(new Complex(.02, .08).multiply(current)).abs();
+        assertEquals(expected, lineDrop.getMeasuredReactiveOrVoltage(), 1.0e-12);
+    }
+
+    @Test
+    void zeroBranchFallbackUsesSelectedBusVoltageAndZeroPower() throws Exception {
+        MeasurementFixture fixture = measurementFixture();
+        Repca1Model plant = new Repca1Model(
+                plantData(2, 0, 0, 0, 1, 0, 0, 0, 0), fixture.converter());
+
+        plant.initialize(.8, .2, 1.0);
+
+        assertEquals(0.0, plant.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(.96, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
+        assertEquals(true, plant.isUsingZeroBranchFallback());
+    }
+
+    @Test
+    void branchPowerIsNormalizedToTheGeneratorModelBaseForBothPuDeclarations()
+            throws Exception {
+        MeasurementFixture fixture = measurementFixture();
+        fixture.converter().getParentGen().setMvaBase(50.0);
+        double expected = 2.0 * fixture.branch().powerFrom2To(UnitType.PU).getReal();
+
+        for (int puFlag : new int[] {0, 1}) {
+            Repca1Model plant = new Repca1Model(
+                    plantData(1, 1, 2, 0, 0, 0, 0, 0, puFlag), fixture.converter());
+            plant.initialize(.8, .2, 1.0);
+            assertEquals(50.0, plant.getDeviceBaseMva(), 1.0e-12);
+            assertEquals(expected, plant.getMeasuredActivePower(), 1.0e-12,
+                    "PUflag=" + puFlag);
+        }
+    }
+
     private static Regca1Model addRenewableChain(DStabNetworkBuilder builder) {
         Regca1Model converter = builder.addRegca1("Bus1", "1",
                 new Regca1Data(0, .02, 10, .9, .4, 1.22, 1.2, .8,
@@ -75,6 +149,26 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
                 0, 0, 0, 0, 0, 0, 0, 0));
         return converter;
     }
+
+    private static MeasurementFixture measurementFixture() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        AclfNetworkBuilder topology = new AclfNetworkBuilder(builder.getDStabNetwork());
+        topology.addBus("Bus2", "Remote", 2L, 16500.0, .96, -.04, null, null, null);
+        AclfBranch branch = topology.addLine("Bus1", "Bus2", "X",
+                new Complex(.02, .08), Complex.ZERO, null, null, 0, 0, 0, true);
+        return new MeasurementFixture(builder, addRenewableChain(builder), branch);
+    }
+
+    private static Repca1Data plantData(int remote, int from, int to, int vcFlag,
+            int refFlag, double rc, double xc, double kc, int puFlag) {
+        return new Repca1Data(remote, from, to, "X", vcFlag, refFlag, 0,
+                0, 0, 0, 0, 0, .7, rc, xc, kc,
+                1, -1, 0, 0, 1, -1, 0, 0, 0,
+                0, 0, 1, -1, 1, -1, 0, 0, 0, puFlag);
+    }
+
+    private record MeasurementFixture(DStabNetworkBuilder builder,
+            Regca1Model converter, AclfBranch branch) {}
 
     private static Repca1Data expectedData() {
         return new Repca1Data(2, 3, 4, "X", 1, 0, 1,
