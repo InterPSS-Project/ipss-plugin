@@ -96,7 +96,9 @@ public class SalientPoleMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
 		assertTrue(Math.abs(mach.getPsiq11()+0.4139965935498328) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.880088) < 0.00001);
-		assertTrue(Math.abs(mach.getPe()-0.803158) < 0.00001);
+		// Flux0 electrical power is evaluated at network frequency and does
+		// not acquire an extra rotor-speed multiplier.
+		assertTrue(Math.abs(mach.getPe()-0.803000) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
 	}
 }
