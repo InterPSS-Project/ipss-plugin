@@ -51,6 +51,10 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 	private double tw2 = 0.05;
 	private double tw3 = 0.1;
 	private double tw4 = 0.05;
+	private double a = 1.0;
+	private double ta;
+	private double tb;
+	private double ks4 = 1.0;
 	
 	private static String[][] controllerParameters= { 
 		//          min         max
@@ -71,8 +75,12 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 		{"ks3",		"-1000.0", 	"1000.0"}, 
 		{"tw1",		"-1000.0", 	"1000.0"}, 
 		{"tw2",		"-1000.0", 	"1000.0"}, 
-		{"tw3",		"-1000.0", 	"1000.0"}, 
-		{"tw4",		"-1000.0", 	"1000.0"} 
+		{"tw3",		"-1000.0", 	"1000.0"},
+		{"tw4",		"-1000.0", 	"1000.0"},
+		{"a",		"-1000.0", 	"1000.0"},
+		{"ta",		"0.0", 	"1000.0"},
+		{"tb",		"0.0", 	"1000.0"},
+		{"ks4",		"-1000.0", 	"1000.0"}
 	};
 
 	public Ieee1992PSS2AStabilizerData() {
@@ -132,6 +140,14 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 			this.tw3 = value;
 		else if (name.equals("tw4"))
 			this.tw4 = value;
+		else if (name.equals("a"))
+			this.a = value;
+		else if (name.equals("ta"))
+			this.ta = value;
+		else if (name.equals("tb"))
+			this.tb = value;
+		else if (name.equals("ks4"))
+			this.ks4 = value;
 	}
 	
 	public double getKs1() {
@@ -286,4 +302,13 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 	public void setVstmin(double vstmin) {
 		this.vstmin = vstmin;
 	}
-} 
+
+	public double getA() { return a; }
+	public void setA(double a) { this.a = a; }
+	public double getTa() { return ta; }
+	public void setTa(double ta) { this.ta = ta; }
+	public double getTb() { return tb; }
+	public void setTb(double tb) { this.tb = tb; }
+	public double getKs4() { return ks4; }
+	public void setKs4(double ks4) { this.ks4 = ks4; }
+}

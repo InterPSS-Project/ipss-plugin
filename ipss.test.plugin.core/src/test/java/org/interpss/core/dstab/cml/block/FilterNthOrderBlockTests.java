@@ -28,7 +28,7 @@ public class FilterNthOrderBlockTests {
 
     @Test
     void zeroOverallOrderBypassesRampFilter() {
-        FilterNthOrderBlock block = new FilterNthOrderBlock(0.4, 0.1, 5, 0);
+        FilterNthOrderBlock block = new FilterNthOrderBlock(0.4, 0.1, 0, 0);
 
         assertTrue(block.initStateY0(0.0));
         block.eulerStep1(0.375, 0.01);
