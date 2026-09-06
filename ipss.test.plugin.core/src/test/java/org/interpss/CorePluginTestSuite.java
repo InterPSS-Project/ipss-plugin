@@ -23,6 +23,7 @@ import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExciterTest;
 import org.interpss.core.adapter.builder.dstab.Exdc2aOpenSourceEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ieeex1AndesEquationConformanceTest;
+import org.interpss.core.adapter.builder.dstab.Ieeet4OpenSourceEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac5aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1Test;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1aTest;
@@ -292,6 +293,7 @@ import org.junit.platform.suite.api.Suite;
 	GenrouAndesSmibConformanceTest.class,
 	Exdc2AndesSmibConformanceTest.class,
 	Exdc2aOpenSourceEquationConformanceTest.class,
+	Ieeet4OpenSourceEquationConformanceTest.class,
 	Ieeex1AndesSmibConformanceTest.class,
 	Ieeex1SmibIntegrationTest.class,
 	MachineSaturationTest.class,
