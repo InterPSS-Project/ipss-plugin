@@ -89,4 +89,20 @@ class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
                 .contains("not implemented"));
         assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1"));
     }
+
+    @Test
+    void malformedNumericParameterIsReportedInsteadOfDefaulted() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("malformed-gencls.dyr");
+        Files.writeString(dyr, "1 'GENCLS' '1' NOT_A_NUMBER 0.0 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder)
+                .setStrictImport(true);
+
+        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ERROR));
+        assertTrue(parser.getLastImportReport().failures().get(0).message()
+                .contains("Invalid floating-point DYR field 4"));
+        assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1"));
+    }
 }
