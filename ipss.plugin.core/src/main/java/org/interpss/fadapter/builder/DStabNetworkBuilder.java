@@ -31,6 +31,7 @@ import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
+import org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
@@ -1581,6 +1582,40 @@ public class DStabNetworkBuilder {
         gov.getData().setT1(t1);
         gov.getData().setPmax(pmax);
         gov.getData().setPmin(pmin);
+        return gov;
+    }
+
+    /**
+     * PSS/E IEEEG3 hydro governor, implemented by the matching IEEE 1981
+     * Type-3 core controller.
+     * Parameters: Tg, Tp, Uo, Uc, Pmax, Pmin, Rperm, Rtemp, Tr, Tw,
+     *             A11, A13, A21, A23.
+     */
+    public Ieee1981Type3HydroGovernor addGovIeeeg3(String busId, String genId,
+            double tg, double tp, double uo, double uc,
+            double pmax, double pmin, double rperm, double rtemp,
+            double tr, double tw, double a11, double a13, double a21, double a23) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for IEEEG3 governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Ieee1981Type3HydroGovernor gov = GovernorObjectFactory.createIeee1981Type3HydroGovernor(
+                mach.getId() + "_Gov", "IEEEG3", mach);
+        gov.getData().setTg(tg);
+        gov.getData().setTp(tp);
+        gov.getData().setVelOpen(uo);
+        gov.getData().setVelClose(uc);
+        gov.getData().setPmax(pmax);
+        gov.getData().setPmin(pmin);
+        gov.getData().setSigma(rperm);
+        gov.getData().setDelta(rtemp);
+        gov.getData().setTr(tr);
+        gov.getData().setTw(tw);
+        gov.getData().setA11(a11);
+        gov.getData().setA13(a13);
+        gov.getData().setA21(a21);
+        gov.getData().setA23(a23);
         return gov;
     }
 
