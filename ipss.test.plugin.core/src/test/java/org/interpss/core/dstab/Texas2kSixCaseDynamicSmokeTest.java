@@ -16,8 +16,10 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -60,7 +62,76 @@ public class Texas2kSixCaseDynamicSmokeTest {
         for (CaseFile source : CASES) verifyNoEvent(source);
     }
 
+    @Test
+    void allSixCasesRideThroughThreeCycleFault() throws Exception {
+        assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
+        for (CaseFile source : CASES) verifyFault(source);
+    }
+
+    private static void verifyFault(CaseFile source) throws Exception {
+        SimuContext context = loadCase(source);
+        BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
+        DynamicSimuAlgorithm algorithm = context.getDynSimuAlgorithm();
+        configureSimulation(algorithm, .25);
+
+        StateMonitor monitor = new StateMonitor();
+        monitor.addBusStdMonitor(new String[] {"Bus7159", "Bus7186", "Bus7227"});
+        monitor.addGeneratorStdMonitor(new String[] {"Bus1051-mach1", "Bus2056-mach1"});
+        algorithm.setSimuOutputHandler(monitor);
+        network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
+                "Bus7159", network, SimpleFaultCode.GROUND_3P, Complex.ZERO, null,
+                .05, .05), "ThreeCycleFault@Bus7159");
+
+        assertTrue(algorithm.initialization(), source.directory() + " fault initialization");
+        assertTrue(algorithm.performSimulation(), source.directory() + " fault simulation");
+        var faultVoltage = monitor.getBusVoltTable().get("Bus7159");
+        assertTrue(faultVoltage.values().stream().allMatch(value -> Double.isFinite(value.value)),
+                source.directory() + " finite fault-bus voltage");
+        assertTrue(faultVoltage.values().stream().mapToDouble(value -> value.value).min()
+                        .orElseThrow() < .1,
+                source.directory() + " fault-bus voltage depression");
+        assertTrue(faultVoltage.get(faultVoltage.size() - 1).value > .7,
+                source.directory() + " fault-bus voltage recovery");
+        for (String machineId : List.of("Bus1051-mach1", "Bus2056-mach1")) {
+            var speed = monitor.getMachSpeedTable().get(machineId);
+            assertTrue(speed.values().stream().allMatch(value -> Double.isFinite(value.value)),
+                    source.directory() + " finite speed for " + machineId);
+        }
+    }
+
     private static void verifyNoEvent(CaseFile source) throws Exception {
+        SimuContext context = loadCase(source);
+        BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
+        DynamicSimuAlgorithm algorithm = context.getDynSimuAlgorithm();
+        configureSimulation(algorithm, .1);
+        Complex initial1051Voltage = network.getBus("Bus1051").getVoltage();
+        Complex initial2056Voltage = network.getBus("Bus2056").getVoltage();
+        double initial1051Speed = network.getMachine("Bus1051-mach1").getSpeed();
+        double initial2056Speed = network.getMachine("Bus2056-mach1").getSpeed();
+        StateMonitor monitor = new StateMonitor();
+        algorithm.setSimuOutputHandler(monitor);
+
+        List<String> outputStateFailures = diagnoseDynamicOutputStates(network, algorithm, monitor);
+        assertTrue(outputStateFailures.isEmpty(), () -> source.directory()
+                + " dynamic output-state failures: " + outputStateFailures);
+
+        assertTrue(algorithm.initialization(), source.directory() + " initialization");
+        assertTrue(algorithm.performSimulation(), source.directory() + " no-event simulation");
+        assertTrue(network.getBus("Bus1051").getVoltage().subtract(initial1051Voltage).abs()
+                        <= 2.0e-4,
+                source.directory() + " Bus1051 voltage drift");
+        assertTrue(network.getBus("Bus2056").getVoltage().subtract(initial2056Voltage).abs()
+                        <= 2.0e-4,
+                source.directory() + " Bus2056 voltage drift");
+        assertTrue(Math.abs(network.getMachine("Bus1051-mach1").getSpeed() - initial1051Speed)
+                        <= 2.0e-5,
+                source.directory() + " Bus1051 speed drift");
+        assertTrue(Math.abs(network.getMachine("Bus2056-mach1").getSpeed() - initial2056Speed)
+                        <= 2.0e-5,
+                source.directory() + " Bus2056 speed drift");
+    }
+
+    private static SimuContext loadCase(CaseFile source) throws Exception {
         Path directory = ROOT.resolve(source.directory());
         Path raw = directory.resolve(source.raw());
         Path dyr = directory.resolve(source.dyr());
@@ -90,35 +161,14 @@ public class Texas2kSixCaseDynamicSmokeTest {
         assertTrue(network.initDStabNet(), source.directory() + " network initialization call");
         assertTrue(network.isDStabNetInitialized(),
                 source.directory() + " network did not retain initialized state");
+        return context;
+    }
+
+    private static void configureSimulation(DynamicSimuAlgorithm algorithm, double endTime) {
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(1.0 / 240.0);
-        algorithm.setTotalSimuTimeSec(.1);
+        algorithm.setTotalSimuTimeSec(endTime);
         algorithm.setOutPutPerSteps(1);
-        Complex initial1051Voltage = network.getBus("Bus1051").getVoltage();
-        Complex initial2056Voltage = network.getBus("Bus2056").getVoltage();
-        double initial1051Speed = network.getMachine("Bus1051-mach1").getSpeed();
-        double initial2056Speed = network.getMachine("Bus2056-mach1").getSpeed();
-        StateMonitor monitor = new StateMonitor();
-        algorithm.setSimuOutputHandler(monitor);
-
-        List<String> outputStateFailures = diagnoseDynamicOutputStates(network, algorithm, monitor);
-        assertTrue(outputStateFailures.isEmpty(), () -> source.directory()
-                + " dynamic output-state failures: " + outputStateFailures);
-
-        assertTrue(algorithm.initialization(), source.directory() + " initialization");
-        assertTrue(algorithm.performSimulation(), source.directory() + " no-event simulation");
-        assertTrue(network.getBus("Bus1051").getVoltage().subtract(initial1051Voltage).abs()
-                        <= 2.0e-4,
-                source.directory() + " Bus1051 voltage drift");
-        assertTrue(network.getBus("Bus2056").getVoltage().subtract(initial2056Voltage).abs()
-                        <= 2.0e-4,
-                source.directory() + " Bus2056 voltage drift");
-        assertTrue(Math.abs(network.getMachine("Bus1051-mach1").getSpeed() - initial1051Speed)
-                        <= 2.0e-5,
-                source.directory() + " Bus1051 speed drift");
-        assertTrue(Math.abs(network.getMachine("Bus2056-mach1").getSpeed() - initial2056Speed)
-                        <= 2.0e-5,
-                source.directory() + " Bus2056 speed drift");
     }
 
     private static List<String> diagnoseGeneratorInitialization(BaseDStabNetwork<?, ?> network) {
