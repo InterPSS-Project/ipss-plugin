@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 public class PsseReeca1ControllerTest extends CorePluginTestSetup {
+    private static final double CONTROL_STEP = 1.0 / 960.0;
 
     @Test
     void directParserMapsCompleteFiftyOneParameterRecord(@TempDir Path tempDir) throws Exception {
@@ -74,10 +75,11 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         Reeca1Model controller = new Reeca1Model(sensingData(0, 0, .1), null);
         controller.initialize(.8, .2, 1.0);
 
-        controller.step(.01, .8, .2, .5, 1.0);
+        controller.step(CONTROL_STEP, .8, .2, .5, 1.0);
 
         assertTrue(controller.isVoltageDip());
-        assertEquals(.95, controller.getMeasuredVoltage(), 1.0e-12);
+        assertEquals(1.0 + CONTROL_STEP * (.5 - 1.0) / .1,
+                controller.getMeasuredVoltage(), 1.0e-12);
     }
 
     @Test
@@ -112,10 +114,11 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
 
         converter.getDStabBus().setVoltage(new Complex(.5, 0.0));
         builder.getDStabNetwork().getDStabBus("Bus2").setVoltage(new Complex(.9, 0.0));
-        controller.step(.01, .8, .2, .5, 1.0);
+        controller.step(CONTROL_STEP, .8, .2, .5, 1.0);
 
         assertTrue(!controller.isVoltageDip());
-        assertEquals(.945, controller.getMeasuredVoltage(), 1.0e-12);
+        assertEquals(.95 + CONTROL_STEP * (.9 - .95) / .1,
+                controller.getMeasuredVoltage(), 1.0e-12);
     }
 
     @Test
@@ -125,18 +128,34 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
             controller.setPlantController(frequencyPlantController());
             controller.initialize(.8, .2, 1.0);
 
-            controller.step(.1, .8, .2, 1.0, .9);
-            assertEquals(.805, controller.getActivePowerFilter(), 1.0e-12);
-            double selected = pFlag == 1 ? .9 * .805 : .805;
-            double expectedOrder = .8 + .1 * (selected - .8) / .2;
+            controller.step(CONTROL_STEP, .8, .2, 1.0, .9);
+            double expectedFilter = .8 + .05 * CONTROL_STEP;
+            assertEquals(expectedFilter, controller.getActivePowerFilter(), 1.0e-12);
+            // Network frequency is not the REEC_A turbine-generator-speed input.
+            // Without WTDTA1, wg defaults to 1.0 for either PFLAG setting.
+            double selected = expectedFilter;
+            double expectedOrder = .8 + CONTROL_STEP * (selected - .8) / .2;
             assertEquals(expectedOrder, controller.getActivePowerOrder(), 1.0e-12,
                     "PFLAG=" + pFlag);
 
-            controller.step(.1, .8, .2, .5, .9);
-            assertEquals(.81, controller.getActivePowerFilter(), 1.0e-12);
+            controller.step(CONTROL_STEP, .8, .2, .5, .9);
+            assertEquals(.8 + .1 * CONTROL_STEP, controller.getActivePowerFilter(), 1.0e-12);
             assertEquals(expectedOrder, controller.getActivePowerOrder(), 1.0e-12,
                     "Pord must freeze during a voltage dip");
         }
+    }
+
+    @Test
+    void coordinatedReactiveControlInitializesBothPisAtEquilibrium() {
+        Reeca1Model controller = new Reeca1Model(
+                texasData(1, 1, 1), null);
+        controller.initialize(.36, -.005, 1.0);
+        double initialIntegral = controller.getVoltageControlIntegral();
+
+        controller.step(1.0 / 240.0, .36, -.005, 1.0, .999);
+
+        assertEquals(initialIntegral, controller.getVoltageControlIntegral(), 1.0e-12);
+        assertEquals(.36, controller.getActivePowerOrder(), 1.0e-12);
     }
 
     @Test
@@ -144,10 +163,11 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         Reeca1Model controller = new Reeca1Model(controlData(0, 0, 0, .1, 0, .1), null);
         controller.initialize(.8, .2, 1.0);
 
-        controller.step(.01, .8, .2, .9, 1.0);
+        controller.step(CONTROL_STEP, .8, .2, .9, 1.0);
 
-        double expectedQCurrent = .2 + .01 * (.2 / .9 - .2) / .1;
-        assertEquals(.99, controller.getMeasuredVoltage(), 1.0e-12);
+        double expectedQCurrent = .2 + CONTROL_STEP * (.2 / .9 - .2) / .1;
+        assertEquals(1.0 + CONTROL_STEP * (.9 - 1.0) / .1,
+                controller.getMeasuredVoltage(), 1.0e-12);
         assertEquals(expectedQCurrent, controller.getReactiveCurrentState(), 1.0e-12);
         assertEquals(.8 / .9, controller.getIpcmd(), 1.0e-12);
         assertEquals(-expectedQCurrent, controller.getIqcmd(), 1.0e-12);
@@ -158,23 +178,54 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         Reeca1Model controller = new Reeca1Model(controlData(1, 0, 0, 0, .1, .1), null);
         controller.initialize(.8, .2, 1.0);
 
-        controller.step(.05, .4, .2, 1.0, 1.0);
+        controller.step(CONTROL_STEP, .4, .2, 1.0, 1.0);
 
-        assertEquals(.6, controller.getMeasuredActivePower(), 1.0e-12);
-        assertEquals(.175, controller.getReactiveCurrentState(), 1.0e-12);
-        assertEquals(-.175, controller.getIqcmd(), 1.0e-12);
+        double expectedP = .8 + CONTROL_STEP * (.4 - .8) / .1;
+        double expectedQCurrent = .2 + CONTROL_STEP * (expectedP * .25 - .2) / .1;
+        assertEquals(expectedP, controller.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(expectedQCurrent, controller.getReactiveCurrentState(), 1.0e-12);
+        assertEquals(-expectedQCurrent, controller.getIqcmd(), 1.0e-12);
     }
 
     @Test
-    void qControlFeedsTheInnerVoltagePiAsAnIncrementalError() {
+    void coordinatedQControlSubtractsFilteredTerminalVoltageAtInnerPi() {
         Reeca1Model controller = new Reeca1Model(controlData(0, 1, 1, 0, 0, .1), null);
         controller.initialize(.8, .2, 1.0);
 
-        controller.step(.1, .8, .1, 1.0, 1.0);
+        controller.step(CONTROL_STEP, .8, .3, 1.0, 1.0);
 
-        // Q PI: 2*.1 + integral(1*.1) = .21. Voltage PI starts at Iq=.2:
-        // 1*.21 + [.2 + integral(2*.21)] = .452.
-        assertEquals(-.452, controller.getIqcmd(), 1.0e-12);
+        double qError = -.1;
+        double qIntegral = 1.0 + qError * CONTROL_STEP;
+        double voltageError = 2.0 * qError + qIntegral - 1.0;
+        double vIntegral = .2 + 2.0 * voltageError * CONTROL_STEP;
+        double expectedIqcmd = -(voltageError + vIntegral);
+        assertEquals(expectedIqcmd, controller.getIqcmd(), 1.0e-12);
+    }
+
+    @Test
+    void largeExternalStepMatchesRepeatedBoundedControlSteps() {
+        Reeca1Model internallySubstepped = new Reeca1Model(
+                controlData(0, 1, 1, .1, .1, .1), null);
+        Reeca1Model explicitlyStepped = new Reeca1Model(
+                controlData(0, 1, 1, .1, .1, .1), null);
+        internallySubstepped.initialize(.8, .2, 1.0);
+        explicitlyStepped.initialize(.8, .2, 1.0);
+
+        internallySubstepped.step(.1, .7, .25, .97, 1.0);
+        for (int i = 0; i < 96; i++) {
+            explicitlyStepped.step(CONTROL_STEP, .7, .25, .97, 1.0);
+        }
+
+        assertEquals(explicitlyStepped.getMeasuredVoltage(),
+                internallySubstepped.getMeasuredVoltage(), 1.0e-12);
+        assertEquals(explicitlyStepped.getMeasuredActivePower(),
+                internallySubstepped.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(explicitlyStepped.getActivePowerOrder(),
+                internallySubstepped.getActivePowerOrder(), 1.0e-12);
+        assertEquals(explicitlyStepped.getVoltageControlIntegral(),
+                internallySubstepped.getVoltageControlIntegral(), 1.0e-12);
+        assertEquals(explicitlyStepped.getIpcmd(), internallySubstepped.getIpcmd(), 1.0e-12);
+        assertEquals(explicitlyStepped.getIqcmd(), internallySubstepped.getIqcmd(), 1.0e-12);
     }
 
     @Test
