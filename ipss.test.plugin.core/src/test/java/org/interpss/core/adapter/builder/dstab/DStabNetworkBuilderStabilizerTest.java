@@ -235,6 +235,60 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
     }
 
+    @ParameterizedTest(name = "PSS2A single-washout {0} response")
+    @CsvSource({"step", "ramp", "sine"})
+    void pss2aSyntheticResponsesMatchPublishedWashoutTransferFunction(String waveform)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee1992PSS2AStabilizer pss = builder.addPss2a(
+                "Bus1", "1", 3, 0, 3, 0, 0, 0,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0, 1.0,
+                0.0, 0.0, 0.0, 0.0, 10.0, -10.0,
+                1.0, 0.0, 0.0, 0.0);
+        assertNotNull(pss);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        double initialPe = machine.getPe();
+        double dt = 0.0005;
+        double elapsed = 0.2;
+        for (int i = 0; i < Math.round(elapsed / dt); i++) {
+            double time = (i + 1) * dt;
+            machine.setPe(initialPe + pss2aSyntheticInput(waveform, time));
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+
+        assertEquals(pss2aSyntheticWashoutExpected(waveform, elapsed),
+                pss.getOutput(machine), 2.0e-4);
+    }
+
+    private static double pss2aSyntheticInput(String waveform, double time) {
+        return switch (waveform) {
+            case "step" -> 0.1;
+            case "ramp" -> 0.1 * time;
+            case "sine" -> 0.1 * Math.sin(2.0 * Math.PI * time);
+            default -> throw new IllegalArgumentException("waveform=" + waveform);
+        };
+    }
+
+    private static double pss2aSyntheticWashoutExpected(String waveform, double time) {
+        double washoutTime = 0.2;
+        double decay = Math.exp(-time / washoutTime);
+        return switch (waveform) {
+            case "step" -> 0.1 * decay;
+            case "ramp" -> 0.1 * washoutTime * (1.0 - decay);
+            case "sine" -> {
+                double omegaT = 2.0 * Math.PI * washoutTime;
+                yield 0.1 * (omegaT * omegaT * Math.sin(2.0 * Math.PI * time)
+                        + omegaT * Math.cos(2.0 * Math.PI * time)
+                        - omegaT * decay) / (1.0 + omegaT * omegaT);
+            }
+            default -> throw new IllegalArgumentException("waveform=" + waveform);
+        };
+    }
+
     private static double pss2aSecondInputResponse(
             double ks1, double ks2, double ks3, double ks4) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
