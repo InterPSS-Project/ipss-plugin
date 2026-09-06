@@ -215,5 +215,13 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
     public Regfma1Data getData() { return data; }
     public double getSpeed() { return speed; }
     public double getInternalVoltage() { return eDroop; }
+    public double getMeasuredActivePower() { return pMeasured; }
+    public double getMeasuredReactivePower() { return qMeasured; }
+    public double getMeasuredVoltage() { return vMeasured; }
+    public double getVoltageIntegral() { return voltageIntegral; }
+    public double getActiveUpperLimitIntegral() { return pUpperIntegral; }
+    public double getActiveLowerLimitIntegral() { return pLowerIntegral; }
+    public double getReactiveUpperLimitIntegral() { return qUpperIntegral; }
+    public double getReactiveLowerLimitIntegral() { return qLowerIntegral; }
     public boolean isCurrentLimited() { return currentLimited; }
 }
