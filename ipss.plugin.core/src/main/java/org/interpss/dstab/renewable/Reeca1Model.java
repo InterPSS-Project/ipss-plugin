@@ -6,6 +6,8 @@ import com.interpss.dstab.BaseDStabNetwork;
 /** WECC REEC_A electrical controller producing REGC_A current commands. */
 public final class Reeca1Model implements RenewableElectricalController {
     private static final double EPS = 1.0e-9;
+    /** Maximum internal step for the stiff cascaded Q/voltage PI controls. */
+    private static final double MAX_CONTROL_STEP = 1.0 / 960.0;
 
     private final Reeca1Data data;
     private final Regca1Model converter;
@@ -13,7 +15,7 @@ public final class Reeca1Model implements RenewableElectricalController {
     private WindControlStack windControlStack;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
-    private double q0;
+    private double qReference;
     private double powerFactorRatio;
     private double dipReference;
     private double vMeasured;
@@ -48,20 +50,26 @@ public final class Reeca1Model implements RenewableElectricalController {
         resolveSensedBus();
         double sensedV = sensedVoltage(v);
         p0 = p;
-        q0 = q;
+        // Qext is a Q reference except in QFLAG=1/VFLAG=0 local-voltage
+        // control, where the PowerWorld/WECC diagram routes it as a voltage
+        // bias before the Q limits.  Initialize either path at equilibrium.
+        qReference = data.qFlag() == 1 && data.vFlag() == 0
+                ? sensedV - data.vref1() : q;
         powerFactorRatio = Math.abs(p) > EPS ? q / p : 0.0;
         dipReference = data.vref0() == 0.0 ? sensedV : data.vref0();
         vMeasured = sensedV;
         pMeasured = pFilter = pOrder = p;
         qCurrent = q / nonzero(v);
-        qIntegral = 0.0;
+        // In coordinated Q/V control, PIQ supplies the initial terminal-voltage
+        // reference to the inner PIV summing junction.
+        qIntegral = data.qFlag() == 1 && data.vFlag() == 1 ? sensedV : 0.0;
         vIntegral = qCurrent;
         effectivePmax = Math.max(data.pmax(), pOrder);
         effectivePmin = Math.min(data.pmin(), pOrder);
         effectiveQmax = Math.max(data.qmax(), q);
         effectiveQmin = Math.min(data.qmin(), q);
-        effectiveVmax = Math.max(data.vmax(), 0.0);
-        effectiveVmin = Math.min(data.vmin(), 0.0);
+        effectiveVmax = Math.max(data.vmax(), sensedV);
+        effectiveVmin = Math.min(data.vmin(), sensedV);
         postDipTimer = iqHoldTimer = 0.0;
         heldIpMax = currentLimit();
         ipLimit = iqLimit = currentLimit();
@@ -75,20 +83,35 @@ public final class Reeca1Model implements RenewableElectricalController {
     @Override
     public void step(double dt, double p, double q, double v, double frequency) {
         double sensedV = sensedVoltage(v);
+        if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
+        if (windControlStack != null) windControlStack.step(dt, p, pOrder);
+
+        int substeps = Math.max(1, (int) Math.ceil(dt / MAX_CONTROL_STEP));
+        double controlStep = dt / substeps;
+        for (int i = 0; i < substeps; i++) {
+            stepElectricalControls(controlStep, p, q, v, sensedV);
+        }
+    }
+
+    private void stepElectricalControls(double dt, double p, double q, double v,
+            double sensedV) {
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         updateDipTimers(dt, voltageDip);
         vMeasured = Repca1Model.lag(vMeasured, sensedV, data.trv(), dt);
         pMeasured = Repca1Model.lag(pMeasured, p, data.tp(), dt);
-        if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
 
         double plantPref = plantController == null ? 0.0 : plantController.getPref();
-        if (windControlStack != null) windControlStack.step(dt, p, pOrder);
         double pref = windControlStack != null && windControlStack.getTorqueController() != null
                 ? windControlStack.getPref() : p0 + plantPref;
         double rateTarget = Repca1Model.limit(pref,
                 pFilter + data.dpmin() * dt, pFilter + data.dpmax() * dt);
         pFilter = rateTarget;
-        double selectedP = data.pFlag() == 1 ? frequency * pFilter : pFilter;
+        // PFLAG selects turbine-generator speed wg, not network frequency.  The
+        // current type-3 stack has no WTDTA1 drive-train state, so its REEC_A wg
+        // input is 1.0.  WTTQ_A also resets this input to 1.0 because it already
+        // multiplies torque by generator speed when producing Pref.
+        double generatorSpeed = 1.0;
+        double selectedP = data.pFlag() == 1 ? generatorSpeed * pFilter : pFilter;
         if (!voltageDip) {
             pOrder = Repca1Model.lag(pOrder,
                     Repca1Model.limit(selectedP, effectivePmin, effectivePmax),
@@ -97,8 +120,9 @@ public final class Reeca1Model implements RenewableElectricalController {
         }
 
         double plantQref = plantController == null ? 0.0 : plantController.getQref();
-        double qTarget = data.pfFlag() == 1 ? pMeasured * powerFactorRatio : q0 + plantQref;
-        qTarget = Repca1Model.limit(qTarget, effectiveQmin, effectiveQmax);
+        double selectedQ = data.pfFlag() == 1
+                ? pMeasured * powerFactorRatio : qReference + plantQref;
+        double qTarget = Repca1Model.limit(selectedQ, effectiveQmin, effectiveQmax);
 
         double rawIp = pOrder / nonzero(v);
         double rawQCurrent;
@@ -116,10 +140,11 @@ public final class Reeca1Model implements RenewableElectricalController {
                 voltageBias = Repca1Model.limit(data.kqp() * qError + qIntegral,
                         effectiveVmin, effectiveVmax);
             } else {
-                voltageBias = data.vref1() + qTarget;
+                voltageBias = data.vref1() + selectedQ;
             }
-            double voltageError = data.vFlag() == 1
-                    ? voltageBias : voltageBias - vMeasured;
+            // Vt_filter enters the negative input of the inner summing junction
+            // for both VFLAG positions in the PowerWorld/WECC diagram.
+            double voltageError = voltageBias - vMeasured;
             double preliminaryIqMax = preliminaryReactiveCurrentLimit(rawIp);
             vIntegral = Repca1Model.integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
                     dt, data.kvp(), -preliminaryIqMax, preliminaryIqMax, voltageDip);
