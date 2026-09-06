@@ -45,6 +45,7 @@ import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
 import org.interpss.core.dstab.Texas2kHygovCoverageTest;
 import org.interpss.core.dstab.Texas2kLegacyControllerProfileTest;
 import org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest;
+import org.interpss.core.dstab.Texas2kSynchronousMachineCoverageTest;
 import org.interpss.core.dstab.Texas2kGenrouFaultBenchmarkTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
@@ -380,6 +381,7 @@ import org.junit.platform.suite.api.Suite;
 	Texas2kHygovCoverageTest.class,
 	Texas2kLegacyControllerProfileTest.class,
 	Texas2kSixCaseDynamicSmokeTest.class,
+	Texas2kSynchronousMachineCoverageTest.class,
 	Texas2kGenrouFaultBenchmarkTest.class,
 
 	//matpower
