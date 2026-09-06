@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class DynamicModelCatalogTest {
     @Test
     void catalogsEveryTexas2kModelAndResolvesAliases() {
-        assertEquals(22, DynamicModelCatalog.texas2kModels().size());
+        assertEquals(23, DynamicModelCatalog.texas2kModels().size());
         assertEquals("GENROU", DynamicModelCatalog.canonicalName("genroe"));
         assertEquals("REGCA1", DynamicModelCatalog.canonicalName("regcau1"));
         assertEquals("REPCA1", DynamicModelCatalog.canonicalName("repcta1"));
@@ -166,12 +166,16 @@ class DynamicModelCatalogTest {
         assertEquals(32, rows.size());
         assertEquals(25, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
-        assertEquals(10, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(12, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1D"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("GASTD"))
+                .findFirst().orElseThrow().isImplementedExactly());
+        assertTrue(rows.stream().filter(row -> row.catalogName().equals("HYGOV4"))
+                .findFirst().orElseThrow().isImplementedExactly());
+        assertTrue(rows.stream().filter(row -> row.catalogName().equals("IEEEG3"))
                 .findFirst().orElseThrow().isImplementedExactly());
     }
 

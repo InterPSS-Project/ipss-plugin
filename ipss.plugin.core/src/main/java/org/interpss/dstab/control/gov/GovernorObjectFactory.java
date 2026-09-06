@@ -170,10 +170,10 @@ public class GovernorObjectFactory {
 	  * @return
 	  */
 	 public static Ieee1981Type3HydroGovernor createIeee1981Type3HydroGovernor(String id, String name, Machine machine) {
-		 Ieee1981Type3HydroGovernor gov = new Ieee1981Type3HydroGovernor(id, name, "InterPSS");
-			gov.setMachine(machine); 
-			return gov;
-	  }
+		 Ieee1981Type3HydroGovernor gov = new Ieee1981Type3HydroGovernor(id, name, "PSS/E");
+		 gov.setMachine(machine);
+		 return gov;
+	 }
 	 
     //////////////////////////////////////////////////////////////
 	///      PSS/E Tur-Gov model

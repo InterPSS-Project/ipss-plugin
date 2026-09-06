@@ -281,8 +281,7 @@ public class PSSEDStabDirectParser {
             case "HYGOVDU":
                 return procGovHygov(busId, genId, fields, true);
             case "IEEEG3":
-                log.debug("Governor model IEEEG3 at bus {} - not yet implemented", busId);
-                return false;
+                return procGovIeeeg3(busId, genId, fields);
 
             case "ST2CUT":
                 pendingSt2cut.add(new PendingSt2cut(busId, genId, fields.clone(), record));
@@ -1140,6 +1139,17 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 18, 0), getDouble(f, 19, 0), getDouble(f, 20, 0),
                 getDouble(f, 21, 0), getDouble(f, 22, 0), getDouble(f, 23, 0),
                 getDouble(f, 24, 0), getDouble(f, 25, 0)) != null;
+    }
+
+    // IEEEG3: Tg Tp Uo Uc Pmax Pmin Rperm Rtemp Tr Tw A11 A13 A21 A23
+    private boolean procGovIeeeg3(String busId, String genId, String[] f) {
+        if (f.length < 17) return false;
+        return builder.addGovIeeeg3(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0)) != null;
     }
 
     // GGOV1 PSS/E record order.  Trate is field 30 in the data list even though
