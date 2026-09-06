@@ -28,10 +28,15 @@ public final class WindControlStack {
     }
 
     public void step(double dt, double electricalPower, double pOrder) {
+        step(dt, electricalPower, pOrder, false);
+    }
+
+    public void step(double dt, double electricalPower, double pOrder,
+            boolean voltageDip) {
         if (torqueController != null) {
             // No WTDTA1: use the specified direct-coupling path.
             generatorSpeed = turbineSpeed = torqueController.getSpeedReference();
-            torqueController.step(dt, electricalPower, generatorSpeed);
+            torqueController.step(dt, electricalPower, generatorSpeed, voltageDip);
             pref = torqueController.getPref();
         }
         if (pitchController != null) {
