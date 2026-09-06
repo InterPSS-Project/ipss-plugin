@@ -325,6 +325,24 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	    /** Runtime Vm lower limit after normalization and initialization expansion. */
 	    public double getEffectiveVmmin() { return vmmin; }
 
+	    /** Outer PI output Vr for model diagnostics and reference-trace comparison. */
+	    public double getVoltageRegulatorOutput() { return diagnosticFieldValue("this.vrPIBlock.y"); }
+
+	    /** Inner PI output Vm before the OEL low-value gate. */
+	    public double getFieldVoltageRegulatorOutput() {
+	       return diagnosticFieldValue("this.vmPIBlock.y");
+	    }
+
+	    /** Limited Kg*Efd feedback signal. */
+	    public double getExcitationFeedback() { return diagnosticFieldValue("this.kgGainBlock.y"); }
+
+	    /** Rectifier bridge voltage VB after FEX and VbMax. */
+	    public double getBridgeVoltage() {
+	       Machine mach = getMachine();
+	       return calcBridgeVoltage(calcCompoundSourceVoltage(mach),
+	             mach.calculateIfd(MachineIfdBase.EXCITER));
+	    }
+
 	    /** Set the external under-excitation limiter contribution at the Vref sum. */
 	    public void setVuel(double value) { this.vuel = value; }
 
@@ -333,6 +351,14 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 
 	    /** Make the external over-excitation limiter nonbinding. */
 	    public void clearVoel() { this.voel = Double.POSITIVE_INFINITY; }
+
+	    private double diagnosticFieldValue(String fieldName) {
+	       try {
+	          return getFieldVaule(fieldName);
+	       } catch (Exception e) {
+	          throw new IllegalStateException("Unable to read ESST4B field " + fieldName, e);
+	       }
+	    }
 
 	/*
 	 * Part-4: Define the pluin data object edtior
