@@ -21,7 +21,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
     private final Regca1Data data;
     private final Hashtable<String, Object> states = new Hashtable<>();
     private DStabGen parentGen;
-    private Reecb1Model electricalController;
+    private RenewableElectricalController electricalController;
     private Reeca1Model reeca1Controller;
     private double deviceBaseMva;
     private double systemBaseMva;
@@ -196,8 +196,17 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
     }
 
     public Regca1Data getData() { return data; }
-    public Reecb1Model getElectricalController() { return electricalController; }
+    public Reecb1Model getElectricalController() {
+        return electricalController instanceof Reecb1Model controller ? controller : null;
+    }
     public void setElectricalController(Reecb1Model electricalController) {
+        setActiveElectricalController(electricalController);
+    }
+    /**
+     * Connects a controller through the REGC_A signal contract. This also enables
+     * equation-level verification without coupling the converter to one REEC variant.
+     */
+    public void setActiveElectricalController(RenewableElectricalController electricalController) {
         this.electricalController = electricalController;
         this.reeca1Controller = null;
     }
@@ -207,6 +216,9 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
         this.electricalController = null;
     }
     public RenewableElectricalController getActiveElectricalController() { return activeController(); }
+    public double getFilteredVoltage() { return vFiltered; }
+    public double getIpRegulatorState() { return ipState; }
+    public double getIqRegulatorState() { return iqState; }
     public double getIp() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
         return ipState * lowVoltageActiveGain(v, data.lvpnt0(), data.lvpnt1());
