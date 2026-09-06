@@ -26,6 +26,11 @@ public class Ieeex1SmibIntegrationTest {
         assertSteadyState("EXDC2", "SMIB_v33_genrou_exdc2.dyr");
     }
 
+    @Test
+    void exdc2aRawDyrCaseInitializesAndRemainsAtEquilibrium() throws Exception {
+        assertSteadyState("EXDC2A", "SMIB_v33_genrou_exdc2a.dyr");
+    }
+
     private static void assertSteadyState(String model, String dyrName) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(

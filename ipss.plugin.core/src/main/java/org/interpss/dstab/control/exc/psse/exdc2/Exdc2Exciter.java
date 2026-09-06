@@ -16,11 +16,15 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
-public final class Exdc2Exciter extends Ieeex1Exciter {
+public class Exdc2Exciter extends Ieeex1Exciter {
     private static final double EPS = 1.0e-12;
 
     public Exdc2Exciter(String id, Machine machine) {
-        super(id, "EXDC2", machine);
+        this(id, "EXDC2", machine);
+    }
+
+    protected Exdc2Exciter(String id, String name, Machine machine) {
+        super(id, name, machine);
     }
 
     @Override
