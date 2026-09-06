@@ -482,6 +482,7 @@ public class PSSEDStabDirectParser {
 
     // IEEEX1: same format as IEEET1 -> maps to IEEE1981DC1
     private boolean procExcIeeex1(String busId, String genId, String[] f) throws InterpssException {
+        double tr = getDouble(f, 3, 0);
         double ka = getDouble(f, 4, 0);
         double ta = getDouble(f, 5, 0);
         double tb = getDouble(f, 6, 0);
@@ -496,8 +497,8 @@ public class PSSEDStabDirectParser {
         double seE1 = getDouble(f, 16, 0);
         double e2 = getDouble(f, 17, 0);
         double seE2 = getDouble(f, 18, 0);
-        builder.addExcIeee1981Dc1(busId, genId, ka, ta, tc, tb, vrmax, vrmin, ke, te, kf, tf, e1, seE1, e2, seE2);
-        return true;
+        return builder.addExcIeeex1(busId, genId, tr, ka, ta, tb, tc,
+                vrmax, vrmin, ke, te, kf, tf, e1, seE1, e2, seE2) != null;
     }
 
     // EXST1: IBUS 'EXST1' ID TR VIMAX VIMIN TC TB KA TA VRMAX VRMIN KC KF TF
@@ -1197,7 +1198,7 @@ public class PSSEDStabDirectParser {
 
     private DynamicModelImportStatus rejectedStatus(String type) {
         return DynamicModelCatalog.find(type)
-                .filter(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE)
+                .filter(model -> model.supportStatus() != DynamicModelSupportStatus.UNSUPPORTED)
                 .map(model -> DynamicModelImportStatus.REJECTED)
                 .orElse(DynamicModelImportStatus.UNSUPPORTED);
     }

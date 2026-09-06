@@ -156,6 +156,11 @@ public class IEEE1981DC1Exciter extends AnnotateExciter {
         return (IEEE1981DC1ExciterData)_data;
     }
 
+    /** Configure the PSS/E IEEEX1 terminal-voltage transducer time constant. */
+    public void setTransducerTimeConstant(double tr) {
+        this.tr = tr;
+    }
+
     /**
      *  Init the controller states using the data object
      *
