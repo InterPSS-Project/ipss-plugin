@@ -33,6 +33,7 @@ import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
@@ -509,6 +510,48 @@ public class DStabNetworkBuilder {
 		data.setTa(ta);
 		data.setTb(tb);
 		data.setKs4(ks4);
+        return pss;
+    }
+
+    /** Build the complete PSS/E/PowerWorld PSS2B model. */
+    public Ieee1992PSS2BStabilizer addPss2b(String busId, String genId,
+            int ics1, int ics2, int m, int n,
+            double tw1, double tw2, double t6, double tw3, double tw4, double t7,
+            double ks2, double ks3, double t8, double t9, double ks1,
+            double t1, double t2, double t3, double t4, double t10, double t11,
+            double vsi1max, double vsi1min, double vsi2max, double vsi2min,
+            double vstmax, double vstmin, double a, double ta, double tb, double ks4) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS2B: {} {}", busId, genId);
+            return null;
+        }
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0) {
+            log.warn("Invalid PSS2B selectors/filter orders at {} {}: ICS1={}, ICS2={}, M={}, N={}",
+                    busId, genId, ics1, ics2, m, n);
+            return null;
+        }
+        if (tw1 < 0.0 || tw2 < 0.0 || t6 < 0.0 || tw3 < 0.0 || tw4 < 0.0
+                || t7 < 0.0 || t8 < 0.0 || t9 < 0.0 || t2 < 0.0 || t4 < 0.0
+                || t11 < 0.0 || tb < 0.0
+                || (n > 0 && t9 == 0.0 && t8 != 0.0)
+                || (tb == 0.0 && ta != 0.0)) {
+            log.warn("Invalid PSS2B time constants at {} {}", busId, genId);
+            return null;
+        }
+        Ieee1992PSS2BStabilizer pss = StabilizerObjectFactory
+                .createIeee1992PSS2BStabilizer(busId + "-pss2b" + genId, "PSS2B", machine);
+        var data = pss.getData();
+        data.setIcs1(ics1); data.setIcs2(ics2); data.setM(m); data.setN(n);
+        data.setTw1(tw1); data.setTw2(tw2); data.setT6(t6);
+        data.setTw3(tw3); data.setTw4(tw4); data.setT7(t7);
+        data.setKs2(ks2); data.setKs3(ks3); data.setT8(t8); data.setT9(t9);
+        data.setKs1(ks1); data.setT1(t1); data.setT2(t2);
+        data.setT3(t3); data.setT4(t4); data.setT10(t10); data.setT11(t11);
+        data.setVsi1max(vsi1max); data.setVsi1min(vsi1min);
+        data.setVsi2max(vsi2max); data.setVsi2min(vsi2min);
+        data.setVstmax(vstmax); data.setVstmin(vstmin);
+        data.setA(a); data.setTa(ta); data.setTb(tb); data.setKs4(ks4);
         return pss;
     }
 

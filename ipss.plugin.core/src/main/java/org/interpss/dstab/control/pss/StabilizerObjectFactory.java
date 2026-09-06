@@ -30,6 +30,7 @@ import org.interpss.dstab.control.pss.bpa.sp.BPASPTypeStabilizer;
 import org.interpss.dstab.control.pss.bpa.ss.BPASSTypeStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.simple.SimpleStabilizer;
 
 import com.interpss.dstab.mach.Machine;
@@ -77,11 +78,21 @@ public class StabilizerObjectFactory {
 	 * @param machine parent machine object
 	 * @return
 	 */		
-	public static Ieee1992PSS2AStabilizer createIeee1992PSS2AStabilizer(String id, String name, Machine machine) {
+	public static Ieee1992PSS2AStabilizer createIeee1992PSS2AStabilizer(
+			String id, String name, Machine machine) {
 		Ieee1992PSS2AStabilizer pss = new Ieee1992PSS2AStabilizer(id, name, "InterPSS");
 		pss.setMachine(machine); 
 		return pss;
-  	}
+	}
+
+	/** Create an IEEE PSS2B stabilizer and attach it to its machine. */
+	public static Ieee1992PSS2BStabilizer createIeee1992PSS2BStabilizer(
+			String id, String name, Machine machine) {
+		Ieee1992PSS2BStabilizer pss = new Ieee1992PSS2BStabilizer(
+				id, name, "InterPSS");
+		pss.setMachine(machine);
+		return pss;
+	}
 
 	/**
 	 * factory method to create a BPASITypeStabilizer object

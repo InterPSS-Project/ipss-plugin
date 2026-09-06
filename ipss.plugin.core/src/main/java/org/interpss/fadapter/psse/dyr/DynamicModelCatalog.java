@@ -101,6 +101,10 @@ public final class DynamicModelCatalog {
     );
 
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
+            descriptorWithVariants("PSS2B", Set.of(), STABILIZER, 27,
+                    new int[]{31}, LOADABLE,
+                    "org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer",
+                    "Stabilizer%20PSS2B.htm"),
             descriptor("GENQEC", Set.of(), SYNCHRONOUS_MACHINE, 20, LOADABLE,
                     "org.interpss.dstab.mach.GenqecMachine", "Machine%20Model%20GENQEC.htm"),
             descriptor("GENQEJ", Set.of("GENQEJU"), SYNCHRONOUS_MACHINE, 20, LOADABLE,
