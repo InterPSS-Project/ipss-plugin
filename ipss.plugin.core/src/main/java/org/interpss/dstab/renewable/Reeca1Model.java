@@ -141,7 +141,11 @@ public final class Reeca1Model implements RenewableElectricalController {
                 voltageBias = Repca1Model.limit(data.kqp() * qError + qIntegral,
                         effectiveVmin, effectiveVmax);
             } else {
-                voltageBias = data.vref1() + selectedQ;
+                // VMAX/VMIN are downstream of the VFLAG selector in REEC_A,
+                // so they constrain the direct Vref1+Qext branch as well as
+                // the coordinated Q-PI branch.
+                voltageBias = Repca1Model.limit(data.vref1() + selectedQ,
+                        effectiveVmin, effectiveVmax);
             }
             // Vt_filter enters the negative input of the inner summing junction
             // for both VFLAG positions in the PowerWorld/WECC diagram.
