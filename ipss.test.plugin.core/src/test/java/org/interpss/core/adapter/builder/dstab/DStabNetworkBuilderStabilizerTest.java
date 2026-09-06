@@ -17,13 +17,15 @@ import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import org.apache.commons.math3.complex.Complex;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 
-class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
+public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @TempDir
@@ -82,6 +84,51 @@ class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
 
         assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+    }
+
+    @ParameterizedTest(name = "PSS2A input {0}, selector {1}")
+    @CsvSource({
+            "1,1", "1,2", "1,3", "1,4", "1,5", "1,6",
+            "2,1", "2,2", "2,3", "2,4", "2,5", "2,6"
+    })
+    void pss2aSupportsEveryDocumentedLocalInputSelector(int input, int selector)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        boolean first = input == 1;
+        Ieee1992PSS2AStabilizer pss = builder.addPss2a(
+                "Bus1", "1",
+                first ? selector : 1, 0, first ? 1 : selector, 0,
+                1, 1,
+                first ? 0.20 : 0.0, first ? 0.20 : 0.0, 0.05,
+                first ? 0.0 : 0.20, first ? 0.0 : 0.20, 0.05,
+                1.0, 1.0, 0.10, 0.05, 2.0,
+                0.05, 0.05, 0.05, 0.05, 1.0, -1.0);
+        assertNotNull(pss);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertEquals(0.0, pss.getOutput(machine), TOL);
+
+        perturbSelectedSignal(selector, machine);
+        double maxAbs = 0.0;
+        for (int i = 0; i < 100; i++) {
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+            maxAbs = Math.max(maxAbs, Math.abs(pss.getOutput(machine)));
+        }
+        assertTrue(maxAbs > 1.0e-7, "Selected PSS2A input path produced no response");
+        assertTrue(maxAbs <= 1.0 + TOL);
+    }
+
+    private static void perturbSelectedSignal(int selector, Machine machine) {
+        switch (selector) {
+            case 1 -> machine.setSpeed(machine.getSpeed() + 0.01);
+            case 2 -> machine.getDStabBus().setFreq(machine.getDStabBus().getFreq() + 0.01);
+            case 3 -> machine.setPe(machine.getPe() + 0.10);
+            case 4 -> machine.setPm(machine.getPe() + 0.10);
+            case 5, 6 -> machine.getDStabBus().setVoltage(
+                    machine.getDStabBus().getVoltage().multiply(1.01));
+            default -> throw new IllegalArgumentException("selector=" + selector);
+        }
     }
 
     @Test

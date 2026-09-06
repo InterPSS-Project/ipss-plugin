@@ -28,6 +28,7 @@ package org.interpss.dstab.control.pss.ieee.y1992.pss2a;
 import java.lang.reflect.Field;
 
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AbstractChildAnnotateController;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
@@ -48,7 +49,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	    public double tw1 = 0.1, tw2 = 0.05, t6 = 0.05;
 	    @AnControllerField(
 	            type= CMLFieldEnum.Controller,
-	            input="mach.speed",
+	            input="this.input1Signal",
 	            y0="0.0",
 	            initOrderNumber=-2	)
 	    public CustomExciter customBlock1 = new CustomExciter(tw1, tw2, 1.0, t6);
@@ -56,7 +57,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	    public double tw3 = 0.1, tw4 = 0.05, t7 = 0.05, ks2 = 1.0;
 	    @AnControllerField(
 	            type= CMLFieldEnum.Controller,
-	            input="mach.pe",
+	            input="this.input2Signal",
 	            y0="0.0",
 	            initOrderNumber=-3	)
 	    public CustomExciter customBlock2 = new CustomExciter(tw3, tw4, ks2, t7);
@@ -162,6 +163,23 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	public Ieee1992PSS2AStabilizerData getData() {
 		return (Ieee1992PSS2AStabilizerData)_data;
 	}
+
+	public double input1Signal;
+	public double input2Signal;
+	private double input1PreviousVoltage;
+	private double input2PreviousVoltage;
+
+	private static double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
+		return switch (code) {
+			case 1 -> machine.getSpeed();
+			case 2 -> bus.getFreq();
+			case 3 -> machine.getPe();
+			case 4 -> machine.getPm() - machine.getPe();
+			case 5 -> bus.getVoltageMag();
+			case 6 -> 0.0; // populated from voltage memory in nextStep()
+			default -> throw new IllegalArgumentException("Unsupported PSS2A input code: " + code);
+		};
+	}
 	
 	/**
 	 *  Init the controller states
@@ -170,6 +188,10 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	 */
 	@Override
 	public boolean initStates(BaseDStabBus<?,?> abus, Machine mach) {
+		input1Signal = selectedInput(getData().getIcs1(), abus, mach);
+		input2Signal = selectedInput(getData().getIcs2(), abus, mach);
+		input1PreviousVoltage = abus.getVoltageMag();
+		input2PreviousVoltage = abus.getVoltageMag();
         this.ks1 = getData().getKs1();
         this.t1 = getData().getT1();
         this.t2 = getData().getT2();
@@ -191,6 +213,23 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
         this.tw4 = getData().getTw4();
         
         return super.initStates(abus, mach);
+	}
+
+	@Override
+	public boolean nextStep(double dt, DynamicSimuMethod method, Machine mach, int flag) {
+		BaseDStabBus<?, ?> bus = mach.getDStabBus();
+		input1Signal = getData().getIcs1() == 6
+				? (bus.getVoltageMag() - input1PreviousVoltage) / dt
+				: selectedInput(getData().getIcs1(), bus, mach);
+		input2Signal = getData().getIcs2() == 6
+				? (bus.getVoltageMag() - input2PreviousVoltage) / dt
+				: selectedInput(getData().getIcs2(), bus, mach);
+		boolean ok = super.nextStep(dt, method, mach, flag);
+		if (flag != 0) {
+			input1PreviousVoltage = bus.getVoltageMag();
+			input2PreviousVoltage = bus.getVoltageMag();
+		}
+		return ok;
 	}
 
 	/**
