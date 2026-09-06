@@ -75,6 +75,56 @@ public class PsseRegfma1ModelTest extends CorePluginTestSetup {
 
         assertTrue(model.isCurrentLimited());
         assertEquals(1.25, terminalCurrent.abs(), 1.0e-10);
+
+        model.getDStabBus().setVoltage(new Complex(1.04, 0));
+        model.getOutputObject();
+        assertEquals(false, model.isCurrentLimited());
+    }
+
+    @Test
+    void directVoltageModeAppliesPlantPowerAndReactiveOffsets() throws Exception {
+        Regfma1Model model = model(new Regfma1Data(0, 0, 0, 0, .15, 0,
+                2, 0, 2, -2, 2, -2, .1, .2, 0, 1,
+                0, 0, 0, 0, 0, 0));
+        double initialVoltage = model.getInternalVoltage();
+
+        model.setReferenceOffsets(.2, .1);
+        assertTrue(model.nextStep(.1,
+                com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+
+        assertEquals(1.02, model.getSpeed(), 1.0e-12);
+        assertEquals(initialVoltage + .1, model.getInternalVoltage(), 1.0e-12);
+    }
+
+    @Test
+    void piVoltageModeIntegratesThePlantVoltageOffset() throws Exception {
+        Regfma1Model model = model(new Regfma1Data(0, 0, 0, 0, .15, 0,
+                2, 0, 2, -2, 2, -2, 0, 0, 2, 3,
+                0, 0, 0, 0, 1, 1));
+        double initialVoltage = model.getInternalVoltage();
+
+        model.setReferenceOffsets(0, .1);
+        assertTrue(model.nextStep(.1,
+                com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+
+        assertEquals(initialVoltage + .03, model.getVoltageIntegral(), 1.0e-12);
+        assertEquals(initialVoltage + .23, model.getInternalVoltage(), 1.0e-12);
+    }
+
+    @Test
+    void activeAndReactiveLimitControllersOpposeLimitViolations() throws Exception {
+        Regfma1Model model = model(new Regfma1Data(0, 0, 0, 0, .15, 0,
+                2, 0, .5, -2, .1, -2, .1, 0, 0, 1,
+                1, 2, 1, 2, 0, 0));
+        double initialVoltage = model.getInternalVoltage();
+
+        assertTrue(model.nextStep(.1,
+                com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+
+        assertTrue(model.getActiveUpperLimitIntegral() < 0.0);
+        assertTrue(model.getReactiveUpperLimitIntegral() < 0.0);
+        assertTrue(model.getSpeed() < 1.0);
+        assertTrue(model.getInternalVoltage() < initialVoltage);
     }
 
     @Test
@@ -104,5 +154,12 @@ public class PsseRegfma1ModelTest extends CorePluginTestSetup {
                 com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
         assertTrue(model.getPlantController().getPref() > 0.0);
         assertTrue(model.getSpeed() > 1.0);
+    }
+
+    private static Regfma1Model model(Regfma1Data data) throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Regfma1Model model = builder.addRegfma1("Bus1", "1", data);
+        assertTrue(model.initStates(model.getDStabBus()));
+        return model;
     }
 }
