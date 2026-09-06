@@ -14,6 +14,7 @@ import org.interpss.dstab.renewable.WindControlStack;
 import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtara1Model;
 import org.interpss.dstab.renewable.Wtpta1Data;
+import org.interpss.dstab.renewable.Wtpta1Model;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
@@ -93,5 +94,35 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         assertEquals(.65, model.getMechanicalPower(), 1.0e-12);
         model.step(1.0);
         assertEquals(.81, model.getMechanicalPower(), 1.0e-12);
+    }
+
+    @Test
+    void pitchControllerCombinesSpeedAndPowerCompensationPiPaths() {
+        Wtpta1Model model = new Wtpta1Model(
+                new Wtpta1Data(2, 1, 4, 3, .5, 1, 20, 0, 100, -100));
+        model.initialize(2.0, 1.0);
+
+        model.step(.1, .9, .8, 1.05);
+
+        // Power error=.1: PIc=.3+.04=.34. Speed error=.1: PIw=.1+(2+.02)=2.12.
+        // Target=2.46 and Tp=1 gives pitch=2+.1*(2.46-2)=2.046.
+        assertEquals(.02, model.getSpeedIntegral() - 2.0, 1.0e-12);
+        assertEquals(.04, model.getCompensationIntegral(), 1.0e-12);
+        assertEquals(2.046, model.getPitch(), 1.0e-12);
+    }
+
+    @Test
+    void pitchRateAndAngleLimitsPreventWindupAndPermitRecovery() {
+        Wtpta1Model model = new Wtpta1Model(
+                new Wtpta1Data(10, 0, 0, 0, 0, 0, 1, 0, .5, -.5));
+        model.initialize(0.0, 1.0);
+
+        for (int i = 0; i < 40; i++) model.step(.1, .8, .8, 2.0);
+        assertEquals(1.0, model.getPitch(), 1.0e-12);
+        assertTrue(model.getSpeedIntegral() <= 1.0 + 1.0e-12);
+
+        for (int i = 0; i < 10; i++) model.step(.1, .8, .8, 0.0);
+        assertEquals(.5, model.getPitch(), 1.0e-12);
+        assertTrue(model.getSpeedIntegral() < 1.0);
     }
 }
