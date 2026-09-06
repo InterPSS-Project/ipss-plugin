@@ -132,7 +132,8 @@ public class PSSEDStabDirectParser {
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
-                    if (!deferred) report.add(record, DynamicModelImportStatus.ATTACHED, "");
+                    if (!deferred) report.add(record, attachedStatus(record),
+                            attachedMessage(record));
                 } else {
                     report.add(record, rejectedStatus(type), rejectionMessage(type, record));
                 }
@@ -1199,6 +1200,21 @@ public class PSSEDStabDirectParser {
                 .filter(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE)
                 .map(model -> DynamicModelImportStatus.REJECTED)
                 .orElse(DynamicModelImportStatus.UNSUPPORTED);
+    }
+
+    private DynamicModelImportStatus attachedStatus(PsseDyrRecord record) {
+        return DynamicModelCatalog.find(record.canonicalModelName())
+                .filter(model -> model.supportStatus() == DynamicModelSupportStatus.LOADABLE)
+                .map(model -> DynamicModelImportStatus.ATTACHED)
+                .orElse(DynamicModelImportStatus.FALLBACK);
+    }
+
+    private String attachedMessage(PsseDyrRecord record) {
+        return DynamicModelCatalog.find(record.canonicalModelName())
+                .map(model -> model.supportStatus() == DynamicModelSupportStatus.PARTIAL
+                        ? "compatibility implementation is partial and is not accepted by strict import"
+                        : "cataloged implementation is not accepted by strict import")
+                .orElse("uncataloged compatibility implementation is not accepted by strict import");
     }
 
     private String rejectionMessage(String type, PsseDyrRecord record) {

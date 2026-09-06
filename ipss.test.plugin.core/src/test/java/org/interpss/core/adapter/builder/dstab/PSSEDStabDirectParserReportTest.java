@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
+import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
@@ -105,5 +106,27 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         assertTrue(parser.getLastImportReport().failures().get(0).message()
                 .contains("Invalid floating-point DYR field 4"));
         assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1"));
+    }
+
+    @Test
+    void partialIeeex1CompatibilityPathIsVisibleAndFailsStrictCoverage() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("partial-ieeex1.dyr");
+        Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
+                + "1 'IEEEX1' '1' 0.02 40.0 0.02 0.0 0.0 5.0 -5.0 "
+                + "1.0 0.6 0.03 0.35 0 2.8 0.1 3.7 0.33 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder)
+                .setStrictImport(true);
+
+        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.FALLBACK));
+        var fallback = parser.getLastImportReport().failures().get(0);
+        assertEquals("IEEEX1", fallback.canonicalModelName());
+        assertTrue(fallback.message().contains("partial"));
+        assertEquals(IEEE1981DC1Exciter.class.getName(), fallback.runtimeClassName());
+        assertTrue(builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter()
+                instanceof IEEE1981DC1Exciter);
     }
 }
