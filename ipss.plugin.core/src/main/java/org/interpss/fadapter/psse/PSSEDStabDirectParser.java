@@ -285,6 +285,8 @@ public class PSSEDStabDirectParser {
                 return procPss2b(busId, genId, fields);
             case "PSS2C":
                 return procPss2c(busId, genId, fields);
+            case "PSS3B":
+                return procPss3b(busId, genId, fields);
             case "PSS1A":
                 return procPss1a(busId, genId, fields);
 
@@ -834,6 +836,19 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 32, 0), getDouble(f, 33, 0),
                 getDouble(f, 34, 0), getDouble(f, 35, 0),
                 0.0, getDouble(f, 36, 0), getDouble(f, 37, 0)) != null;
+    }
+
+    // PSS3B: IBUS 'PSS3B' ID ICS1 ICS2 Ks1 T1 Tw1 Ks2 T2 Tw2 Tw3
+    //         A1 A2 A3 A4 A5 A6 A7 A8 VSTMAX VSTMIN
+    private boolean procPss3b(String busId, String genId, String[] f) {
+        return builder.addPss3b(busId, genId,
+                getInt(f, 3, 0), getInt(f, 4, 0),
+                getDouble(f, 5, 0), getDouble(f, 6, 0), getDouble(f, 7, 0),
+                getDouble(f, 8, 0), getDouble(f, 9, 0), getDouble(f, 10, 0),
+                getDouble(f, 11, 0), getDouble(f, 12, 0), getDouble(f, 13, 0),
+                getDouble(f, 14, 0), getDouble(f, 15, 0), getDouble(f, 16, 0),
+                getDouble(f, 17, 0), getDouble(f, 18, 0), getDouble(f, 19, 0),
+                getDouble(f, 20, 0), getDouble(f, 21, 0)) != null;
     }
 
     // PSS1A: IBUS 'PSS1A' ID ICS A1 A2 T1 T2 T3 T4 T5 T6 KS LSMAX LSMIN VCU VCL
