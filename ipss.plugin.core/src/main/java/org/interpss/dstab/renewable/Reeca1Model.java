@@ -230,6 +230,12 @@ public final class Reeca1Model implements RenewableElectricalController {
     @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
     public WindControlStack getWindControlStack() { return windControlStack; }
     public void setWindControlStack(WindControlStack stack) { windControlStack = stack; }
+    public double getMeasuredVoltage() { return vMeasured; }
+    public double getMeasuredActivePower() { return pMeasured; }
+    public double getActivePowerFilter() { return pFilter; }
+    public double getActivePowerOrder() { return pOrder; }
+    public double getReactiveCurrentState() { return qCurrent; }
+    public boolean isVoltageDip() { return previousDip; }
     @Override public double getIpcmd() { return ipcmd; }
     @Override public double getIqcmd() { return iqcmd; }
 }
