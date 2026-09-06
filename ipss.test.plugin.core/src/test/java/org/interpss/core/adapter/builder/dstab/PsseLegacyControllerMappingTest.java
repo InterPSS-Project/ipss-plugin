@@ -16,6 +16,11 @@ import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.device.DynamicDevice;
+import com.interpss.dstab.mach.Machine;
+
 /** Exact PSS/E field-order tests for the legacy controllers used by Texas2k. */
 public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
@@ -111,5 +116,73 @@ public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
         assertEquals(.27, governor.getData().getTco(), TOL);
         assertEquals(.37, governor.getData().getFlp(), TOL);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void texasExst1ZeroTransducerProfileInitializesWithoutDrift(@TempDir Path tempDir)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("texas-exst1.dyr");
+        Files.writeString(dyr,
+                "1 'EXST1' 1 0 .1 -.1 1 8.7 217 .05 5 -5 .12 0 1 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        Machine machine = initializeMachine(builder);
+        IEEE1981ST1Exciter exciter = (IEEE1981ST1Exciter) machine.getExciter();
+
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+        double initial = exciter.getOutput(machine);
+        step(exciter, machine, 20);
+        assertEquals(initial, exciter.getOutput(machine), 1.0e-8);
+    }
+
+    @Test
+    void texasIeeet1ZeroKeProfileInitializesWithoutDrift(@TempDir Path tempDir)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("texas-ieeet1.dyr");
+        Files.writeString(dyr,
+                "1 'IEEET1' 1 0 55.59 .06 1 -1 0 .76 .06 .94 0 2.85 3.27 .07 .24 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        Machine machine = initializeMachine(builder);
+        Ieee1968Type1Exciter exciter = (Ieee1968Type1Exciter) machine.getExciter();
+
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+        double initial = exciter.getOutput(machine);
+        step(exciter, machine, 20);
+        assertEquals(initial, exciter.getOutput(machine), 1.0e-8);
+    }
+
+    @Test
+    void texasIeeeg1SingleMachineProfileInitializesWithoutDrift(@TempDir Path tempDir)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("texas-ieeeg1.dyr");
+        Files.writeString(dyr,
+                "1 'IEEEG1' 1 0 0 21 1 1 .16 1 -10 1 0 .07 .39 0 4.86 .38 0 "
+                        + ".35 .23 0 1 0 0 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        Machine machine = initializeMachine(builder);
+        IeeeSteamTCDRGovernor governor = (IeeeSteamTCDRGovernor) machine.getGovernor();
+
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double initial = governor.getOutput(machine);
+        step(governor, machine, 20);
+        assertEquals(initial, governor.getOutput(machine), 1.0e-8);
+    }
+
+    private static Machine initializeMachine(DStabNetworkBuilder builder) throws Exception {
+        LoadflowAlgorithm loadflow = com.interpss.core.LoadflowAlgoObjectFactory
+                .createLoadflowAlgorithm(builder.getDStabNetwork());
+        assertTrue(loadflow.loadflow());
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        assertTrue(machine.initStates(machine.getDStabBus()));
+        return machine;
+    }
+
+    private static void step(DynamicDevice device, Machine machine, int count) {
+        for (int i = 0; i < count; i++) {
+            assertTrue(device.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(device.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
     }
 }
