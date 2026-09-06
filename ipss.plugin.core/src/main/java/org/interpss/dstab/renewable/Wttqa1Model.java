@@ -56,5 +56,7 @@ public final class Wttqa1Model {
     public Wttqa1Data getData() { return data; }
     public double getPref() { return pref; }
     public double getTorque() { return torque; }
+    public double getFilteredPower() { return filteredPower; }
     public double getSpeedReference() { return speedReference; }
+    public double getTorqueIntegral() { return torqueIntegral; }
 }

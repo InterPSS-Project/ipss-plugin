@@ -16,6 +16,7 @@ import org.interpss.dstab.renewable.Wtara1Model;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtpta1Model;
 import org.interpss.dstab.renewable.Wttqa1Data;
+import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -124,5 +125,72 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         for (int i = 0; i < 10; i++) model.step(.1, .8, .8, 0.0);
         assertEquals(.5, model.getPitch(), 1.0e-12);
         assertTrue(model.getSpeedIntegral() < 1.0);
+    }
+
+    @Test
+    void torqueControllerInterpolatesAndClampsThePowerSpeedCurve() {
+        Wttqa1Model model = torqueController(0, 0, 0, 0, 0, 10, 0);
+
+        assertEquals(.58, model.speedForPower(.1), 1.0e-12);
+        assertEquals(.65, model.speedForPower(.3), 1.0e-12);
+        assertEquals(.79, model.speedForPower(.5), 1.0e-12);
+        assertEquals(.93, model.speedForPower(.7), 1.0e-12);
+        assertEquals(1.0, model.speedForPower(.9), 1.0e-12);
+    }
+
+    @Test
+    void torqueControllerFiltersPowerBeforeTheSpeedCurve() {
+        Wttqa1Model model = torqueController(0, 0, 0, .2, .4, 10, 0);
+        model.initialize(.5);
+
+        model.step(.1, .7, .79);
+
+        assertEquals(.6, model.getFilteredPower(), 1.0e-12);
+        assertEquals(.8075, model.getSpeedReference(), 1.0e-12);
+        assertEquals(.5, model.getPref(), 1.0e-12);
+    }
+
+    @Test
+    void torqueControllerPowerErrorModeMatchesAndesEquations() {
+        Wttqa1Model model = torqueController(1, 1, 0, 0, 0, 10, 0);
+        model.initialize(.5);
+
+        model.step(.1, .6, 1.0);
+
+        double initialTorque = .5 / .79;
+        assertEquals(initialTorque + .1, model.getTorque(), 1.0e-12);
+        assertEquals(initialTorque + .1, model.getPref(), 1.0e-12);
+    }
+
+    @Test
+    void torqueControllerSpeedErrorModeMatchesAndesEquations() {
+        Wttqa1Model model = torqueController(0, 1, 0, 0, 0, 10, 0);
+        model.initialize(.5);
+
+        model.step(.1, .5, .7);
+
+        double expectedTorque = .5 / .79 + .09;
+        assertEquals(expectedTorque, model.getTorque(), 1.0e-12);
+        assertEquals(expectedTorque * .7, model.getPref(), 1.0e-12);
+    }
+
+    @Test
+    void torqueControllerLimitStopsWindupAndAllowsRecovery() {
+        Wttqa1Model model = torqueController(1, 0, 1, 0, 0, .7, 0);
+        model.initialize(.5);
+
+        for (int i = 0; i < 20; i++) model.step(.01, 1.5, 1.0);
+        double saturatedIntegral = model.getTorqueIntegral();
+        assertEquals(.7, model.getTorque(), 1.0e-12);
+
+        for (int i = 0; i < 10; i++) model.step(.01, -.5, 1.0);
+        assertTrue(model.getTorqueIntegral() < saturatedIntegral);
+        assertTrue(model.getTorque() < .7);
+    }
+
+    private static Wttqa1Model torqueController(int tFlag, double kpp, double kip,
+            double tp, double twref, double teMax, double teMin) {
+        return new Wttqa1Model(new Wttqa1Data(tFlag, kpp, kip, tp, twref, teMax, teMin,
+                .2, .58, .4, .72, .6, .86, .8, 1.0, 0));
     }
 }
