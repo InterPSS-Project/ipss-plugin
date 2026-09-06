@@ -193,6 +193,52 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         assertEquals(0.98 * proportional.getValveStroke(), proportional.getFuelFlow(), TOL);
     }
 
+    @Test
+    void normalizesPowerWorldLimitsWithoutOverwritingImportedData() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1GovernorData data = texasData();
+        data.setMaxerr(-0.08);
+        data.setMinerr(0.04);
+        data.setVmax(0.1);
+        data.setVmin(1.2);
+        data.setRopen(1.0);
+        data.setRclose(-0.05);
+        PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
+
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(0.04, governor.getEffectiveMaxerr(), TOL);
+        assertEquals(-0.08, governor.getEffectiveMinerr(), TOL);
+        assertEquals(1.0, governor.getEffectiveVmax(), TOL);
+        assertTrue(governor.getEffectiveVmin() <= governor.getValveStroke());
+        assertEquals(0.1, governor.getEffectiveRopen(), TOL);
+        assertEquals(-0.1, governor.getEffectiveRclose(), TOL);
+
+        assertEquals(-0.08, governor.getData().getMaxerr(), TOL);
+        assertEquals(0.04, governor.getData().getMinerr(), TOL);
+        assertEquals(0.1, governor.getData().getVmax(), TOL);
+        assertEquals(1.2, governor.getData().getVmin(), TOL);
+        assertEquals(1.0, governor.getData().getRopen(), TOL);
+        assertEquals(-0.05, governor.getData().getRclose(), TOL);
+    }
+
+    @Test
+    void correctedOpeningRateBoundsValveMotion() throws Exception {
+        PsseGgov1Governor governor = initializedGovernor(1, 0);
+        Machine machine = governor.getMachine();
+        double initialValve = governor.getValveStroke();
+        machine.setSpeed(0.90);
+
+        double elapsed = 0.2;
+        for (int i = 0; i < 40; i++) step(governor, machine, 0.005);
+
+        assertTrue(governor.getValveStroke() > initialValve);
+        assertTrue(governor.getValveStroke() <= initialValve
+                + governor.getEffectiveRopen() * elapsed + 1.0e-9);
+    }
+
     private static PsseGgov1Governor initializedGovernor(int rselect, int flag)
             throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();

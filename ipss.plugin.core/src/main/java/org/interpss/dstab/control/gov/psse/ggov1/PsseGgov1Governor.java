@@ -30,6 +30,10 @@ public class PsseGgov1Governor extends AbstractGovernor {
     private double pmwset;
     private double effectiveVmax;
     private double effectiveVmin;
+    private double effectiveMaxerr;
+    private double effectiveMinerr;
+    private double effectiveRopen;
+    private double effectiveRclose;
     private double governorToMachineBase = 1.0;
     private double committedFsr;
     private double currentFsr;
@@ -61,9 +65,18 @@ public class PsseGgov1Governor extends AbstractGovernor {
         double damping0 = damping(speedDeviation);
         double valve0 = getData().getWfnl() + (pm0 + damping0) / getData().getKturb();
 
+        // Apply PowerWorld validation corrections without overwriting imported data.
+        double[] errorLimits = normalizedSignedLimits(
+                getData().getMaxerr(), getData().getMinerr());
+        effectiveMaxerr = errorLimits[0];
+        effectiveMinerr = errorLimits[1];
+        double[] valveLimits = normalizedValveLimits(
+                getData().getVmax(), getData().getVmin());
         // PowerWorld expands governor position limits to contain the initialized valve.
-        effectiveVmax = Math.max(getData().getVmax(), valve0);
-        effectiveVmin = Math.min(getData().getVmin(), valve0);
+        effectiveVmax = Math.max(valveLimits[0], valve0);
+        effectiveVmin = Math.min(valveLimits[1], valve0);
+        effectiveRopen = Math.min(getData().getRopen(), 0.1);
+        effectiveRclose = getData().getRclose() > -0.1 ? -0.1 : getData().getRclose();
         double droop0 = selectedDroop(pe0, valve0, valve0);
         pref = speedDeviation + getData().getR() * droop0;
         pmwset = pe0;
@@ -136,6 +149,12 @@ public class PsseGgov1Governor extends AbstractGovernor {
         return (getData().getFlag() == 1 ? 1.0 + speedDeviation : 1.0)
                 * getValveStroke();
     }
+    public double getEffectiveMaxerr() { return effectiveMaxerr; }
+    public double getEffectiveMinerr() { return effectiveMinerr; }
+    public double getEffectiveVmax() { return effectiveVmax; }
+    public double getEffectiveVmin() { return effectiveVmin; }
+    public double getEffectiveRopen() { return effectiveRopen; }
+    public double getEffectiveRclose() { return effectiveRclose; }
     public double getGovernorBaseMva(Machine mach) {
         return governorToMachineBase * mach.getRating(UnitType.mVA,
                 mach.getDStabBus().getNetwork().getBaseKva());
@@ -159,7 +178,6 @@ public class PsseGgov1Governor extends AbstractGovernor {
                 && (d.getTb() > EPS || d.getTc() <= EPS)
                 && d.getTeng() >= 0.0 && d.getTfload() >= 0.0
                 && d.getTa() >= 0.0 && d.getTsa() >= 0.0 && d.getTsb() >= 0.0
-                && d.getMaxerr() >= d.getMinerr() && d.getVmax() >= d.getVmin()
                 && d.getRopen() > 0.0 && d.getRclose() < 0.0
                 && d.getKturb() > EPS && d.getTrate() >= 0.0
                 && d.getDbH() >= 0.0 && d.getDbL() <= 0.0
@@ -176,7 +194,7 @@ public class PsseGgov1Governor extends AbstractGovernor {
         double droop = selectedDroop(peMeasured, valve, trackingFsr);
         double frequencySignal = applyFrequencyDeadband(speedDeviation);
         double error = clamp(deadband(pref + s.mwIntegrator - frequencySignal - d.getR() * droop),
-                d.getMinerr(), d.getMaxerr());
+                effectiveMinerr, effectiveMaxerr);
         double derivative = d.getTdgov() > EPS ? d.getKdgov() / d.getTdgov() * (error - s.derivativeLag) : 0.0;
         double fsrn = d.getKpgov() * error + derivative + s.governorIntegrator;
 
@@ -247,7 +265,8 @@ public class PsseGgov1Governor extends AbstractGovernor {
         if (Math.abs(d.getKpgov()) > EPS) {
             governorIntegralDot += d.getKigov() / d.getKpgov() * (a.fsr - a.fsrn);
         }
-        double valveDot = clamp((a.fsr - a.valve) / d.getTact(), d.getRclose(), d.getRopen());
+        double valveDot = clamp((a.fsr - a.valve) / d.getTact(),
+                effectiveRclose, effectiveRopen);
         double turbineDot = d.getTb() > EPS ? (a.turbineInput - s.turbineLag) / d.getTb() : 0.0;
         double loadIntegralDot = d.getKiload() * a.loadError;
         if (Math.abs(d.getKpload()) > EPS) {
@@ -304,6 +323,26 @@ public class PsseGgov1Governor extends AbstractGovernor {
 
     private static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
+    }
+
+    private static double[] normalizedSignedLimits(double max, double min) {
+        if (max < min) {
+            double swap = max;
+            max = min;
+            min = swap;
+        }
+        if (max < 0.0) max = -max;
+        if (min > 0.0) min = -min;
+        return new double[] {max, min};
+    }
+
+    private static double[] normalizedValveLimits(double max, double min) {
+        if (max < min) {
+            double swap = max;
+            max = min;
+            min = swap;
+        }
+        return new double[] {Math.min(max, 1.0), Math.max(min, 0.0)};
     }
 
     private record Algebraic(double pe, double error, double fsrn, double fsrt,
