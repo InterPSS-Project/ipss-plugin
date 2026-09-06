@@ -139,6 +139,56 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         }
     }
 
+    @Test
+    void directQAndActiveCurrentUseLowerCappedTerminalVoltage() {
+        Reeca1Model controller = new Reeca1Model(controlData(0, 0, 0, .1, 0, .1), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(.01, .8, .2, .9, 1.0);
+
+        double expectedQCurrent = .2 + .01 * (.2 / .9 - .2) / .1;
+        assertEquals(.99, controller.getMeasuredVoltage(), 1.0e-12);
+        assertEquals(expectedQCurrent, controller.getReactiveCurrentState(), 1.0e-12);
+        assertEquals(.8 / .9, controller.getIpcmd(), 1.0e-12);
+        assertEquals(-expectedQCurrent, controller.getIqcmd(), 1.0e-12);
+    }
+
+    @Test
+    void powerFactorModeTracksFilteredActivePower() {
+        Reeca1Model controller = new Reeca1Model(controlData(1, 0, 0, 0, .1, .1), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(.05, .4, .2, 1.0, 1.0);
+
+        assertEquals(.6, controller.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(.175, controller.getReactiveCurrentState(), 1.0e-12);
+        assertEquals(-.175, controller.getIqcmd(), 1.0e-12);
+    }
+
+    @Test
+    void qControlFeedsTheInnerVoltagePiAsAnIncrementalError() {
+        Reeca1Model controller = new Reeca1Model(controlData(0, 1, 1, 0, 0, .1), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(.1, .8, .1, 1.0, 1.0);
+
+        // Q PI: 2*.1 + integral(1*.1) = .21. Voltage PI starts at Iq=.2:
+        // 1*.21 + [.2 + integral(2*.21)] = .452.
+        assertEquals(-.452, controller.getIqcmd(), 1.0e-12);
+    }
+
+    @Test
+    void voltageControlUsesVref1PlusQReferenceAgainstFilteredVoltage() {
+        Reeca1Model controller = new Reeca1Model(controlData(0, 0, 1, 0, 0, .1), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(.1, .8, .2, .9, 1.0);
+
+        // Vref1=.8 and Qref=.2 establish the 1.0 pu initial reference. At .9 pu,
+        // the voltage PI output is 1*.1 + [.2 + integral(2*.1)] = .32.
+        assertEquals(-.32, controller.getIqcmd(), 1.0e-12);
+    }
+
     private static Reeca1Data expectedData() {
         return new Reeca1Data(0, 1, 0, 1, 0, 1,
                 .7, 1.3, .01, -.02, .03, 2, .9, -.8, 1.01, .1, .2, .3,
@@ -171,6 +221,16 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 .8, 1.2, 0, -.02, .02, 0, 1, -1, 0, 0, 0, 0,
                 0, 1, -1, 1, -1, 0, 0, 0, 0, 1, 0,
                 .05, -.05, 2, -2, 10, .2,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    private static Reeca1Data controlData(int pfFlag, int vFlag, int qFlag,
+            double trv, double tp, double tiq) {
+        return new Reeca1Data(0, pfFlag, vFlag, qFlag, 0, 0,
+                .8, 1.2, trv, 0, 0, 0, 1, -1, 1, 0, 0, 0,
+                tp, 2, -2, .5, -.5, 2, 1, 1, 2, .8, tiq,
+                99, -99, 2, -2, 10, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0);
     }
