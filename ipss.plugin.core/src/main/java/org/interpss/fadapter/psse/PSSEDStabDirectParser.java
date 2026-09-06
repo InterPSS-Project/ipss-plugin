@@ -284,6 +284,8 @@ public class PSSEDStabDirectParser {
             case "HYGOVD":
             case "HYGOVDU":
                 return procGovHygov(busId, genId, fields, true);
+            case "HYGOVR":
+                return procGovHygovr1(busId, genId, fields);
             case "HYG3":
                 return procGovHyg3(busId, genId, fields);
             case "H6E":
@@ -1226,6 +1228,28 @@ public class PSSEDStabDirectParser {
             return builder.addGovHygovd(busId, genId, d) != null;
         }
         return builder.addGovHygov(busId, genId, d) != null;
+    }
+
+    // Native PSS/E HYGOVR1 order: 26 CONs, no ICONs.
+    private boolean procGovHygovr1(String busId, String genId, String[] f) {
+        if (f.length < 29) return false;
+        org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData d =
+                new org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData();
+        int p = 3;
+        d.setDb1(getDouble(f, p++, 0)); d.setErr(getDouble(f, p++, 0));
+        d.setTd(getDouble(f, p++, 0)); d.setT1(getDouble(f, p++, 0));
+        d.setT2(getDouble(f, p++, 0)); d.setT3(getDouble(f, p++, 0));
+        d.setT4(getDouble(f, p++, 0)); d.setT5(getDouble(f, p++, 0));
+        d.setT6(getDouble(f, p++, 0)); d.setT7(getDouble(f, p++, 0));
+        d.setT8(getDouble(f, p++, 0)); d.setKp(getDouble(f, p++, 0));
+        d.setR(getDouble(f, p++, 0)); d.setTt(getDouble(f, p++, 0));
+        d.setKg(getDouble(f, p++, 0)); d.setTp(getDouble(f, p++, 0));
+        d.setVelopen(getDouble(f, p++, 0)); d.setVelclose(getDouble(f, p++, 0));
+        d.setPmax(getDouble(f, p++, 0)); d.setPmin(getDouble(f, p++, 0));
+        d.setDb2(getDouble(f, p++, 0)); d.setTw(getDouble(f, p++, 0));
+        d.setAt(getDouble(f, p++, 0)); d.setDturb(getDouble(f, p++, 0));
+        d.setQnl(getDouble(f, p++, 0)); d.setTrate(getDouble(f, p, 0));
+        return builder.addGovHygovr1(busId, genId, d) != null;
     }
 
     // PSS/E HYG3U1 conversion order: one controller ICON followed by 36 CONs.

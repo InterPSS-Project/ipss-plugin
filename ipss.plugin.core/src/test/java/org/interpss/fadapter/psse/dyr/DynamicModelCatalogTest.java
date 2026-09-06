@@ -168,7 +168,7 @@ class DynamicModelCatalogTest {
         assertEquals(32, rows.size());
         assertEquals(25, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
-        assertEquals(14, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(15, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1D"))
@@ -178,6 +178,8 @@ class DynamicModelCatalogTest {
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("HYG3"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("H6E"))
+                .findFirst().orElseThrow().isImplementedExactly());
+        assertTrue(rows.stream().filter(row -> row.catalogName().equals("HYGOVR"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("HYGOV4"))
                 .findFirst().orElseThrow().isImplementedExactly());

@@ -44,6 +44,8 @@ import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
+import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
+import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
@@ -1430,6 +1432,34 @@ public class DStabNetworkBuilder {
         target.setAt(source.getAt()); target.setDturb(source.getDturb());
         target.setTrate(source.getTrate()); target.setDbH(source.getDbH());
         target.setEps(source.getEps()); target.setDbL(source.getDbL());
+    }
+
+    /** Attach a PSS/E HYGOVR1 fourth-order lead-lag hydro governor. */
+    public PsseHygovrGovernor addGovHygovr1(String busId, String genId,
+            PsseHygovrGovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for HYGOVR1 governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseHygovrGovernor gov = GovernorObjectFactory.createPsseHYGOVR1Governor(
+                mach.getId() + "_Gov", "HYGOVR1", mach);
+        PsseHygovrGovernorData t = gov.getData();
+        t.setDb1(data.getDb1()); t.setErr(data.getErr()); t.setTd(data.getTd());
+        t.setT1(data.getT1()); t.setT2(data.getT2()); t.setT3(data.getT3());
+        t.setT4(data.getT4()); t.setT5(data.getT5()); t.setT6(data.getT6());
+        t.setT7(data.getT7()); t.setT8(data.getT8()); t.setKp(data.getKp());
+        t.setR(data.getR()); t.setTt(data.getTt()); t.setKg(data.getKg());
+        t.setTp(data.getTp()); t.setVelopen(data.getVelopen());
+        t.setVelclose(data.getVelclose()); t.setPmax(data.getPmax());
+        t.setPmin(data.getPmin()); t.setDb2(data.getDb2()); t.setTw(data.getTw());
+        t.setAt(data.getAt()); t.setDturb(data.getDturb()); t.setQnl(data.getQnl());
+        t.setTrate(data.getTrate());
+        if (!gov.validateParameters()) {
+            log.warn("Invalid HYGOVR1 parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return gov;
     }
 
     /** Attach a PSS/E HYGOV hydro governor. */
