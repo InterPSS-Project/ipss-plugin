@@ -47,4 +47,6 @@ public final class Wtpta1Model {
     public Wtpta1Data getData() { return data; }
     public double getPitch() { return pitch; }
     public double getSpeedReference() { return speedReference; }
+    public double getSpeedIntegral() { return speedIntegral; }
+    public double getCompensationIntegral() { return compensationIntegral; }
 }
