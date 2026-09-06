@@ -46,9 +46,21 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
 
     public Ieee2005PSS4BStabilizer(String id,
             Ieee2005PSS4BStabilizerData data, Machine machine) {
+        this(id, data, machine, true);
+    }
+
+    private Ieee2005PSS4BStabilizer(String id,
+            Ieee2005PSS4BStabilizerData data, Machine machine,
+            boolean attachToMachine) {
         super(id, "PSS4B", "IEEE-2005");
         sourceData = data;
-        setMachine(machine);
+        if (attachToMachine) setMachine(machine);
+    }
+
+    /** Create a computational engine for PSS4C without occupying the machine slot. */
+    public static Ieee2005PSS4BStabilizer createDetachedEngine(String id,
+            Ieee2005PSS4BStabilizerData data, Machine machine) {
+        return new Ieee2005PSS4BStabilizer(id, data, machine, false);
     }
 
     public Ieee2005PSS4BStabilizerData getData() {
@@ -76,7 +88,7 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
-        effectiveData = correctedData(sourceData);
+        effectiveData = correctedData(sourceData, machine);
         InputTransducerData input = effectiveData.input();
 
         lowInputFilter = new SecondOrderBlock(1.0, input.dli(), input.cli(),
@@ -87,7 +99,7 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
         highInputLag = new FirstOrderBlock(1.0, 0.0, input.th());
         highInputFilter = new SecondOrderBlock(0.0, 0.0, 1.0,
                 input.bh(), input.ah(), false);
-        highRampLag = new FirstOrderBlock(1.0, 0.0, input.m());
+        highRampLag = new FirstOrderBlock(1.0, 0.0, input.h());
         highNotch1 = notch(input.bwh1(), input.wh1());
         highNotch2 = notch(input.bwh2(), input.wh2());
 
@@ -144,14 +156,16 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
     public double getIntermediateOutput() { return intermediateOutput; }
     public double getHighOutput() { return highOutput; }
 
-    private Ieee2005PSS4BStabilizerData correctedData(Ieee2005PSS4BStabilizerData data) {
+    private Ieee2005PSS4BStabilizerData correctedData(
+            Ieee2005PSS4BStabilizerData data, Machine machine) {
         double minimum = minimumTimeConstantMultiplier * integrationStep;
         InputTransducerData input = data.input();
         InputTransducerData correctedInput = new InputTransducerData(
                 input.cli(), input.dli(), input.ali(), input.bli(),
                 input.bwli1(), input.wli1(), input.bwli2(), input.wli2(),
                 positiveOrMinimum(input.th(), minimum),
-                positiveOrMinimum(input.ah(), minimum), input.bh(), input.m(),
+                positiveOrMinimum(input.ah(), minimum), input.bh(),
+                input.h() == 0.0 ? 2.0 * machine.getH() : input.h(),
                 input.bwh1(), input.wh1(), input.bwh2(), input.wh2());
         return new Ieee2005PSS4BStabilizerData(
                 correctedInput,
@@ -162,7 +176,7 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
                 normalizedLow(data.vstmax(), data.vstmin()));
     }
 
-    private static BandData correctedBand(BandData b, double minimum) {
+    public static BandData correctedBand(BandData b, double minimum) {
         return new BandData(
                 positiveOrMinimum(b.k1(), minimum), b.k11(),
                 b.t1(), b.t2(), b.t3(), b.t4(), b.t5(), b.t6(),
@@ -198,7 +212,7 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
         return block.output(input);
     }
 
-    private static double clamp(double value, double max, double min) {
+    public static double clamp(double value, double max, double min) {
         return Math.max(min, Math.min(max, value));
     }
 
@@ -206,7 +220,7 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
     @Override public Field getField(String name) throws Exception { return getClass().getField(name); }
     @Override public Object getFieldObject(Field field) throws Exception { return field.get(this); }
 
-    private final class Band {
+    public static final class Band {
         private final BandData data;
         private final FirstOrderBlock upper1;
         private final FirstOrderBlock upper2;
@@ -215,7 +229,7 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
         private final FirstOrderBlock lower2;
         private final FirstOrderBlock lower3;
 
-        private Band(BandData data) {
+        public Band(BandData data) {
             this.data = data;
             upper1 = new FirstOrderBlock(data.k11(), data.t1(), data.t2());
             upper2 = new FirstOrderBlock(1.0, data.t3(), data.t4());
@@ -225,7 +239,7 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
             lower3 = new FirstOrderBlock(1.0, data.t11(), data.t12());
         }
 
-        private double advance(double input, double dt, int stage) {
+        public double advance(double input, double dt, int stage) {
             double upper = Ieee2005PSS4BStabilizer.advance(
                     upper1, data.k1() * input, dt, stage);
             upper = Ieee2005PSS4BStabilizer.advance(upper2, upper, dt, stage);
