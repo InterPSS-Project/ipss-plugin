@@ -21,6 +21,7 @@ import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderBranchTest;
 import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderCoreTest;
 import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExciterTest;
+import org.interpss.core.adapter.builder.dstab.Ieeex1AndesEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac5aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1Test;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1aTest;
@@ -144,6 +145,8 @@ import org.interpss.core.dclf.edclf.IEEE118_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE14_EDclf_Test;
 import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
+import org.interpss.core.dstab.Ieeex1AndesSmibConformanceTest;
+import org.interpss.core.dstab.Ieeex1SmibIntegrationTest;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterNthOrderBlockTests;
@@ -285,6 +288,8 @@ import org.junit.platform.suite.api.Suite;
 	GensalHydroSmibTest.class,
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
+	Ieeex1AndesSmibConformanceTest.class,
+	Ieeex1SmibIntegrationTest.class,
 	MachineSaturationTest.class,
 	RoundRotorMachineTest.class,
 	SalientPoleMachineTest.class,
@@ -361,6 +366,7 @@ import org.junit.platform.suite.api.Suite;
 	// DStabNetworkBuilder unit tests
 	DStabNetworkBuilderMachineTest.class,
 	DStabNetworkBuilderExciterTest.class,
+	Ieeex1AndesEquationConformanceTest.class,
 	DStabNetworkBuilderEsac5aTest.class,
 	DStabNetworkBuilderExac1Test.class,
 	DStabNetworkBuilderExac1aTest.class,

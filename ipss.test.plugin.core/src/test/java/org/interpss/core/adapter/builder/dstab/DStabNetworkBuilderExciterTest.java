@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
+import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
 import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
@@ -148,6 +149,26 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(-0.1, exc.vrmin, TOL);
 		assertEquals(-0.1, exc.getData().getVrmax(), TOL);
 		assertEquals(0.1, exc.getData().getVrmin(), TOL);
+	}
+
+	@Test
+	public void ieeex1_supportsAlgebraicTeAndAdditiveLimiterPorts() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Ieeex1Exciter exc = builder.addExcIeeex1("Bus1", "1",
+				0.0, 1.0, 0.0, 0.0, 0.0,
+				10.0, -10.0, 1.0, 0.0, 0.0, 0.0, 3.0,
+				3.0, 0.0, 4.0, 0.0);
+
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		machine.setEfd(1.2);
+		assertEquals(true, exc.initStates(machine.getDStabBus(), machine));
+		assertEquals(1.2, exc.getOutput(machine), TOL);
+		assertEquals(3.0, exc.getSwitchValue(), TOL);
+
+		exc.setVuel(0.1);
+		assertEquals(1.3, exc.getOutput(machine), TOL);
+		exc.setVoel(0.2);
+		assertEquals(1.5, exc.getOutput(machine), TOL);
 	}
 
 	@Test

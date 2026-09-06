@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
-import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
+import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
@@ -109,31 +109,28 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     }
 
     @Test
-    void partialIeeex1CompatibilityPathIsVisibleAndFailsStrictCoverage() throws Exception {
+    void exactIeeex1PathLoadsInStrictModeAndPreservesSwitch() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("partial-ieeex1.dyr");
         Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
                 + "1 'IEEEX1' '1' 0.02 40.0 0.02 0.0 0.0 5.0 -5.0 "
-                + "1.0 0.6 0.03 0.35 0 2.8 0.1 3.7 0.33 /\n");
+                + "1.0 0.6 0.03 0.35 7 2.8 0.1 3.7 0.33 /\n");
         PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder)
                 .setStrictImport(true);
 
-        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+        parser.parseDynFile(dyr.toString());
 
-        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
-        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.FALLBACK));
-        var fallback = parser.getLastImportReport().failures().get(0);
-        assertEquals("IEEEX1", fallback.canonicalModelName());
-        assertTrue(fallback.message().contains("partial"));
-        assertEquals(IEEE1981DC1Exciter.class.getName(), fallback.runtimeClassName());
-        IEEE1981DC1Exciter exciter = (IEEE1981DC1Exciter) builder.getDStabNetwork()
+        assertEquals(2, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        assertEquals(0, parser.getLastImportReport().count(DynamicModelImportStatus.FALLBACK));
+        Ieeex1Exciter exciter = (Ieeex1Exciter) builder.getDStabNetwork()
                 .getMachine("Bus1-mach1").getExciter();
         assertEquals(0.02, exciter.tr, 1.0e-12);
+        assertEquals(7.0, exciter.getSwitchValue(), 1.0e-12);
         assertEquals("IEEEX1", exciter.getName());
     }
 
     @Test
-    void ieeex1ZeroTeIsRejectedInsteadOfSilentlyChanged() throws Exception {
+    void ieeex1ZeroTeLoadsAsAlgebraicFieldBlock() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("zero-te-ieeex1.dyr");
         Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
@@ -142,9 +139,10 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder)
                 .setStrictImport(true);
 
-        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+        parser.parseDynFile(dyr.toString());
 
-        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
-        assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+        assertEquals(2, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        assertTrue(builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter()
+                instanceof Ieeex1Exciter);
     }
 }
