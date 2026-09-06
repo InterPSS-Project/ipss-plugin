@@ -19,7 +19,7 @@ public final class Wtara1Model {
 
     public void step(double pitchCommand) {
         pitch = pitchCommand;
-        mechanicalPower = initialPower - data.ka() * (pitch - data.theta0());
+        mechanicalPower = initialPower - data.ka() * pitch * (pitch - data.theta0());
     }
 
     public Wtara1Data getData() { return data; }
