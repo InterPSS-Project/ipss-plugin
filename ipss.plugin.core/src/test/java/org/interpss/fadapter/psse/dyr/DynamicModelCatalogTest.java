@@ -81,6 +81,8 @@ class DynamicModelCatalogTest {
         assertEquals(DynamicModelSupportStatus.LOADABLE,
                 DynamicModelCatalog.find("EXAC1A").orElseThrow().supportStatus());
         assertEquals(DynamicModelSupportStatus.LOADABLE,
+                DynamicModelCatalog.find("EXAC2").orElseThrow().supportStatus());
+        assertEquals(DynamicModelSupportStatus.LOADABLE,
                 DynamicModelCatalog.find("ESAC1A").orElseThrow().supportStatus());
         assertFalse(WeccApprovedDynamicModelCatalog.findExciter("exst4b")
                 .orElseThrow().isImplementedExactly());
