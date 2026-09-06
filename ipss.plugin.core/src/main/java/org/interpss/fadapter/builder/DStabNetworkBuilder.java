@@ -8,6 +8,8 @@ import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
 import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Data;
 import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Exciter;
+import org.interpss.dstab.control.exc.psse.ac7b.Ac7bData;
+import org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
@@ -1078,6 +1080,18 @@ public class DStabNetworkBuilder {
             return null;
         }
         return ExciterObjectFactory.createAc8bExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** IEEE 421.5-2005 AC7B / PSS/E ESAC7B rotating excitation system. */
+    public Ac7bExciter addExcAc7b(String busId, String genId, String modelName,
+            Ac7bData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} exciter: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createAc7bExciter(
+                mach.getId() + "_Exc", modelName, data, mach);
     }
 
     /** PSS/E IEEET4 / WECC EXDC4 IEEE Type 4 excitation system. */

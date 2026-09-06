@@ -218,6 +218,8 @@ public class PSSEDStabDirectParser {
                 return procExcExdc2a(busId, genId, fields);
             case "AC8B":
                 return procExcAc8b(busId, genId, fields);
+            case "AC7B":
+                return procExcAc7b(record.sourceModelName(), busId, genId, fields);
             case "IEEET4":
             case "EXDC4":
                 return procExcIeeet4(type, busId, genId, fields);
@@ -572,6 +574,43 @@ public class PSSEDStabDirectParser {
         d.setSe1(getDouble(f,21,0)); d.setE2(getDouble(f,22,0));
         d.setSe2(getDouble(f,23,0));
         return builder.addExcAc8b(busId,genId,d) != null;
+    }
+
+    // AC7B (27 values): TR KPR KIR KDR TDR VRMAX VRMIN KPA KIA VAMAX VAMIN
+    // KP KL KF1 KF2 KF3 TF KC KD KE TE VFEMAX VEMIN E1 SE1 E2 SE2
+    // ESAC7B (28 values) moves TE,VFEMAX,VEMIN,KE,KC,KD before KF1..TF and
+    // appends SPDMLT. The source name therefore selects the record layout.
+    private boolean procExcAc7b(String modelName, String busId, String genId, String[] f) {
+        int required = modelName.equals("ESAC7B") ? 31 : 30;
+        if (f.length < required) return false;
+        org.interpss.dstab.control.exc.psse.ac7b.Ac7bData d =
+                new org.interpss.dstab.control.exc.psse.ac7b.Ac7bData();
+        d.setTr(getDouble(f,3,0)); d.setKpr(getDouble(f,4,0));
+        d.setKir(getDouble(f,5,0)); d.setKdr(getDouble(f,6,0));
+        d.setTdr(getDouble(f,7,0)); d.setVrmax(getDouble(f,8,0));
+        d.setVrmin(getDouble(f,9,0)); d.setKpa(getDouble(f,10,0));
+        d.setKia(getDouble(f,11,0)); d.setVamax(getDouble(f,12,0));
+        d.setVamin(getDouble(f,13,0)); d.setKp(getDouble(f,14,0));
+        d.setKl(getDouble(f,15,0));
+        if (modelName.equals("ESAC7B")) {
+            d.setTe(getDouble(f,16,0)); d.setVfemax(getDouble(f,17,0));
+            d.setVemin(getDouble(f,18,0)); d.setKe(getDouble(f,19,0));
+            d.setKc(getDouble(f,20,0)); d.setKd(getDouble(f,21,0));
+            d.setKf1(getDouble(f,22,0)); d.setKf2(getDouble(f,23,0));
+            d.setKf3(getDouble(f,24,0)); d.setTf(getDouble(f,25,0));
+            d.setE1(getDouble(f,26,0)); d.setSe1(getDouble(f,27,0));
+            d.setE2(getDouble(f,28,0)); d.setSe2(getDouble(f,29,0));
+            d.setSpdmlt(getDouble(f,30,0));
+        } else {
+            d.setKf1(getDouble(f,16,0)); d.setKf2(getDouble(f,17,0));
+            d.setKf3(getDouble(f,18,0)); d.setTf(getDouble(f,19,0));
+            d.setKc(getDouble(f,20,0)); d.setKd(getDouble(f,21,0));
+            d.setKe(getDouble(f,22,0)); d.setTe(getDouble(f,23,0));
+            d.setVfemax(getDouble(f,24,0)); d.setVemin(getDouble(f,25,0));
+            d.setE1(getDouble(f,26,0)); d.setSe1(getDouble(f,27,0));
+            d.setE2(getDouble(f,28,0)); d.setSe2(getDouble(f,29,0));
+        }
+        return builder.addExcAc7b(busId, genId, modelName, d) != null;
     }
 
     // IEEET4/EXDC4: IBUS MODEL ID KR TRH KV VRMAX VRMIN TE KE E1 SE1 E2 SE2
