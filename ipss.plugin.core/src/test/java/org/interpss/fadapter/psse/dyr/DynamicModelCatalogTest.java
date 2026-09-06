@@ -2,10 +2,14 @@ package org.interpss.fadapter.psse.dyr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -111,5 +115,54 @@ class DynamicModelCatalogTest {
         assertThrows(IllegalArgumentException.class, () -> new DynamicModelDescriptor(
                 "TEST", Set.of(), DynamicModelCategory.GOVERNOR, 1,
                 DynamicModelSupportStatus.LOADABLE, "", URI.create("https://example.invalid")));
+    }
+
+    @Test
+    void catalogNamesReferencesAndRuntimeClassesAreValid() throws Exception {
+        Set<String> names = new HashSet<>();
+        for (DynamicModelDescriptor model : DynamicModelCatalog.allModels()) {
+            assertTrue(names.add(model.canonicalName()),
+                    "Duplicate canonical name " + model.canonicalName());
+            assertTrue(model.reference().isAbsolute(),
+                    "Non-absolute reference for " + model.canonicalName());
+            assertEquals("https", model.reference().getScheme(),
+                    "Non-HTTPS reference for " + model.canonicalName());
+            assertTrue(model.parameterCount() > 0,
+                    "Missing parameter schema length for " + model.canonicalName());
+            if (model.supportStatus() == DynamicModelSupportStatus.LOADABLE) {
+                assertEquals(model.runtimeClassName(),
+                        Class.forName(model.runtimeClassName()).getName(),
+                        "Runtime class is not loadable for " + model.canonicalName());
+            }
+            for (String name : model.allNames()) {
+                assertTrue(names.add(name) || name.equals(model.canonicalName()),
+                        "Duplicate model name or alias " + name);
+                assertSame(model, DynamicModelCatalog.find(name).orElseThrow(),
+                        "Catalog lookup mismatch for " + name);
+            }
+        }
+    }
+
+    @Test
+    void markdownSupportMatrixContainsEveryCatalogModel() {
+        String markdown = DynamicModelSupportMatrix.generateMarkdown();
+        assertTrue(markdown.startsWith("# InterPSS PSS/E dynamic-model support matrix"));
+        assertEquals(DynamicModelCatalog.allModels().size(), markdown.lines()
+                .filter(line -> line.startsWith("| ") && !line.startsWith("| Model"))
+                .count());
+        for (DynamicModelDescriptor model : DynamicModelCatalog.allModels()) {
+            assertTrue(markdown.contains("| " + model.canonicalName() + " |"),
+                    "Missing support-matrix row for " + model.canonicalName());
+        }
+    }
+
+    @Test
+    void checkedInSupportMatrixMatchesCatalog() throws Exception {
+        Path matrix = Path.of("docs", "dynamic-model-support-matrix.md");
+        if (!Files.isRegularFile(matrix)) {
+            matrix = Path.of("..", "docs", "dynamic-model-support-matrix.md");
+        }
+        assertTrue(Files.isRegularFile(matrix), "Missing generated support matrix");
+        assertEquals(DynamicModelSupportMatrix.generateMarkdown(), Files.readString(matrix));
     }
 }
