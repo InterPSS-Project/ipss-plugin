@@ -123,6 +123,70 @@ public class PsseEsst4bExciterTest extends CorePluginTestSetup {
         assertEquals(0.05, data.getVmmin(), TOL);
     }
 
+    @Test
+    void underExcitationLimiterEntersPositivelyAndPreservesInitializedEquilibrium()
+            throws Exception {
+        IEEE2005ST4BExciter withoutUel = initializedExciter(0.0);
+        IEEE2005ST4BExciter withUel = initializedExciter(0.2);
+
+        assertEquals(withoutUel.getRefPoint() - 0.2, withUel.getRefPoint(), TOL);
+        assertEquals(withoutUel.getMachine().getEfd(), withoutUel.getOutput(withoutUel.getMachine()),
+                1.0e-8);
+        assertEquals(withUel.getMachine().getEfd(), withUel.getOutput(withUel.getMachine()), 1.0e-8);
+    }
+
+    @Test
+    void underExcitationLimiterDrivesTheOuterRegulatorWithDocumentedSign()
+            throws Exception {
+        IEEE2005ST4BExciter positive = initializedExciter(0.0);
+        IEEE2005ST4BExciter negative = initializedExciter(0.0);
+        double initialEfd = positive.getOutput(positive.getMachine());
+
+        positive.setVuel(0.05);
+        negative.setVuel(-0.05);
+        for (int i = 0; i < 10; i++) {
+            step(positive, positive.getMachine());
+            step(negative, negative.getMachine());
+        }
+
+        assertTrue(positive.getOutput(positive.getMachine()) > initialEfd);
+        assertTrue(negative.getOutput(negative.getMachine()) < initialEfd);
+    }
+
+    @Test
+    void overExcitationLimiterIsALowValueGateBeforeBridgeVoltageMultiplication()
+            throws Exception {
+        IEEE2005ST4BExciter exciter = initializedExciter(0.0);
+        Machine machine = exciter.getMachine();
+        double initialEfd = exciter.getOutput(machine);
+
+        exciter.setVoel(0.0);
+        step(exciter, machine);
+        assertEquals(0.0, exciter.getOutput(machine), TOL);
+
+        exciter.clearVoel();
+        step(exciter, machine);
+        assertEquals(initialEfd, exciter.getOutput(machine), 1.0e-8);
+    }
+
+    private static IEEE2005ST4BExciter initializedExciter(double vuel) throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        LoadflowAlgorithm loadflow = com.interpss.core.LoadflowAlgoObjectFactory
+                .createLoadflowAlgorithm(builder.getDStabNetwork());
+        assertTrue(loadflow.loadflow());
+        assertTrue(machine.initStates(machine.getDStabBus()));
+        IEEE2005ST4BExciter exciter = builder.addExcEsst4b("Bus1", "1", texasData());
+        exciter.setVuel(vuel);
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+        return exciter;
+    }
+
+    private static void step(IEEE2005ST4BExciter exciter, Machine machine) {
+        exciter.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0);
+        exciter.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1);
+    }
+
     private static IEEE2005ST4BExciterData texasData() {
         IEEE2005ST4BExciterData d = new IEEE2005ST4BExciterData();
         d.setTr(0); d.setKpr(6.46); d.setKir(6.46); d.setVrmax(1); d.setVrmin(-.87);
