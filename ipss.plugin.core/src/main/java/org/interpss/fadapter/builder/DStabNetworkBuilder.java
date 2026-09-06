@@ -472,6 +472,12 @@ public class DStabNetworkBuilder {
 					busId, genId, ta, tb);
 			return null;
 		}
+		if (t8 < 0.0 || t9 < 0.0
+				|| (n > 0 && Math.abs(t9) < 1.0e-12 && Math.abs(t8) >= 1.0e-12)) {
+			log.warn("PSS2A ramp-tracking filter is invalid at {} {}: "
+					+ "M={}, N={}, T8={}, T9={}", busId, genId, m, n, t8, t9);
+			return null;
+		}
         Ieee1992PSS2AStabilizer pss = StabilizerObjectFactory
                 .createIeee1992PSS2AStabilizer(busId + "-pss2a" + genId, "PSS2A", machine);
 		pss.setInputSignalBuses(input1Bus, input2Bus);
