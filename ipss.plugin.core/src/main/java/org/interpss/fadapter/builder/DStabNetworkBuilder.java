@@ -39,6 +39,8 @@ import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
@@ -717,6 +719,25 @@ public class DStabNetworkBuilder {
         }
         return StabilizerObjectFactory.createIeee2016PSS4CStabilizer(
                 busId + "-pss4c" + genId, data, machine);
+    }
+
+    /** Build PSS5C from the 21-value PowerWorld/IEEE parameter order. */
+    public Ieee2016PSS5CStabilizer addPss5c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS5C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS5CStabilizerData data;
+        try {
+            data = Ieee2016PSS5CStabilizerData.fromPowerWorldParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS5C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        return StabilizerObjectFactory.createIeee2016PSS5CStabilizer(
+                busId + "-pss5c" + genId, data, machine);
     }
 
 	private BaseDStabBus<?, ?> resolvePss2aSignalBus(BaseDStabBus<?, ?> localBus,
