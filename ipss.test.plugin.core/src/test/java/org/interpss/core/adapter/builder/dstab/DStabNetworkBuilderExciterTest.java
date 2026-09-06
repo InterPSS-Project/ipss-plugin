@@ -14,6 +14,7 @@ import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
+import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
 import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
@@ -248,6 +249,32 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(1.0, exc.getData().getTf(), TOL);
 		assertEquals(3.0, exc.getData().getE1(), TOL);
 		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+	}
+
+	@Test
+	public void parseIeeet4_mapsRealWeccRecordAndExdc4Alias() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("ieeet4.dyr");
+		Files.writeString(dyr, "1 'IEEET4' '1' 99 20 .0005 5 0 1.83 1 2.6 .1 3.45 .35 /\n");
+		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+
+		Ieeet4Exciter exc = (Ieeet4Exciter) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1").getExciter();
+		assertNotNull(exc);
+		assertEquals("IEEET4", exc.getName());
+		assertEquals(99.0, exc.getData().getKr(), TOL);
+		assertEquals(20.0, exc.getData().getTrh(), TOL);
+		assertEquals(0.0005, exc.getData().getKv(), TOL);
+		assertEquals(1.83, exc.getData().getTe(), TOL);
+		assertEquals(0.35, exc.getData().getSe2(), TOL);
+
+		DStabNetworkBuilder aliasBuilder = DStabBuilderTestFixture.createWithMachine();
+		Files.writeString(dyr, "1 'EXDC4' '1' .5 10 .05 5 -1 1 1 3 .1 4 .2 /\n");
+		new PSSEDStabDirectParser(aliasBuilder).setStrictImport(true).parseDynFile(dyr.toString());
+		Ieeet4Exciter alias = (Ieeet4Exciter) aliasBuilder.getDStabNetwork()
+				.getMachine("Bus1-mach1").getExciter();
+		assertEquals("IEEET4", alias.getName());
+		assertEquals(0.5, alias.getData().getKr(), TOL);
 	}
 
 	@Test

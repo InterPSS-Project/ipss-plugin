@@ -6,6 +6,8 @@ import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
+import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Data;
+import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -1064,6 +1066,23 @@ public class DStabNetworkBuilder {
         exc.getData().setE2(e2);
         exc.getData().setSe_e2(se2);
         return exc;
+    }
+
+    /** PSS/E IEEET4 / WECC EXDC4 IEEE Type 4 excitation system. */
+    public Ieeet4Exciter addExcIeeet4(String busId, String genId, String modelName,
+            double kr, double trh, double kv, double vrmax, double vrmin,
+            double te, double ke, double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} exciter: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        Ieeet4Data data = new Ieeet4Data();
+        data.setKr(kr); data.setTrh(trh); data.setKv(kv);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setTe(te); data.setKe(ke);
+        data.setE1(e1); data.setSe1(se1); data.setE2(e2); data.setSe2(se2);
+        return ExciterObjectFactory.createIeeet4Exciter(
+                mach.getId() + "_Exc", modelName, data, mach);
     }
 
     /**
