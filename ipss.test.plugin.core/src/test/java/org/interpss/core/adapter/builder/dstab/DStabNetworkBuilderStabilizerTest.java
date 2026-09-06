@@ -197,6 +197,44 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
                 "Ks3 must scale input 2 into the pre-ramp summing junction");
     }
 
+    @Test
+    void pss2aRejectsImproperRampFilterButAllowsDefinedBypasses() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+
+        assertNull(builder.addPss2a(
+                "Bus1", "1", 1, 0, 3, 0, 1, 1,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                1.0, 1.0, 0.1, 0.0, 1.0,
+                0.0, 0.0, 0.0, 0.0, 1.0, -1.0),
+                "T9=0 with active nonzero T8 is an improper differentiating transfer function");
+
+        assertNotNull(builder.addPss2a(
+                "Bus1", "1", 1, 0, 3, 0, 1, 1,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                1.0, 1.0, 0.0, 0.0, 1.0,
+                0.0, 0.0, 0.0, 0.0, 1.0, -1.0),
+                "T8=T9=0 is an algebraic unity stage");
+
+        assertNotNull(builder.addPss2a(
+                "Bus1", "1", 1, 0, 3, 0, 0, 0,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                1.0, 1.0, 0.1, 0.0, 1.0,
+                0.0, 0.0, 0.0, 0.0, 1.0, -1.0),
+                "N=0 bypasses the complete ramp-tracking filter");
+    }
+
+    @Test
+    void strictPss2aImportRejectsImproperRampFilter() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("pss2a-improper-ramp-filter.dyr");
+        Files.writeString(dyr, "1 'PSS2A' '1' 1 0 3 0 1 1 "
+                + "0.2 0 0 0.2 0 0 1 1 0.1 0 1 0 0 0 0 1 -1 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+    }
+
     private static double pss2aSecondInputResponse(
             double ks1, double ks2, double ks3, double ks4) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
