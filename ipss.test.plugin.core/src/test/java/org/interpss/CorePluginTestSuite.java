@@ -32,6 +32,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderStabilizerTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
+import org.interpss.core.adapter.builder.dstab.PsseHygovGovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegca1ConverterTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
@@ -40,6 +41,7 @@ import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
 import org.interpss.core.dstab.Texas2kRegfma1CoverageTest;
 import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
+import org.interpss.core.dstab.Texas2kHygovCoverageTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -360,9 +362,11 @@ import org.junit.platform.suite.api.Suite;
 	PsseReeca1ControllerTest.class,
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,
+	PsseHygovGovernorTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,
 	Texas2kFullDynamicCoverageTest.class,
+	Texas2kHygovCoverageTest.class,
 
 	//matpower
 	MatpowerFormatTest.class,

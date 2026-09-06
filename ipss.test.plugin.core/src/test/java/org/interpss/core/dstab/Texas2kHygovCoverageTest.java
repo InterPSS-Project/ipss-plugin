@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
@@ -23,7 +25,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 
 /** Private-data integration gate for all HYGOV records in Texas2k Case 2. */
-class Texas2kHygovCoverageTest {
+public class Texas2kHygovCoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
             Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
                     "private_cases", "Texas2k_series24_cases_with_dynamics",
@@ -31,6 +33,36 @@ class Texas2kHygovCoverageTest {
     private static final Path CASE = ROOT.resolve("Texas2k_series24_case2_2016lowload");
     private static final Path RAW = CASE.resolve("Texas2k_series24_case2_2016lowload.RAW");
     private static final Path DYR = CASE.resolve("dynamic_models_case2.dyr");
+
+    @Test
+    void inventoriesEveryTexas2kHygovParameterProfile() throws Exception {
+        assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
+        List<org.interpss.fadapter.psse.dyr.PsseDyrRecord> records = new ArrayList<>();
+        try (var directories = Files.list(ROOT)) {
+            for (Path directory : directories
+                    .filter(Files::isDirectory)
+                    .sorted()
+                    .collect(Collectors.toList())) {
+                try (var files = Files.list(directory)) {
+                    Path dyr = files.filter(path -> path.getFileName().toString().endsWith(".dyr"))
+                            .findFirst().orElse(null);
+                    if (dyr != null) {
+                        PsseDyrRecordReader.read(dyr).stream()
+                                .filter(record -> record.canonicalModelName().equals("HYGOV"))
+                                .forEach(records::add);
+                    }
+                }
+            }
+        }
+
+        assertEquals(150, records.size(), "25 HYGOV records in each of six cases");
+        assertTrue(records.stream().allMatch(record -> record.parameterCount() == 12),
+                "Every Texas2k HYGOV record must retain all 12 PSS/E parameters");
+        Set<List<String>> profiles = records.stream()
+                .map(record -> List.copyOf(record.parameters()))
+                .collect(Collectors.toSet());
+        assertEquals(25, profiles.size(), "Texas2k HYGOV parameter profiles");
+    }
 
     @Test
     void attachesEveryCase2HygovRecord(@TempDir Path tempDir) throws Exception {
