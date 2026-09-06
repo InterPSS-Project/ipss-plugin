@@ -4,6 +4,7 @@ import org.interpss.dstab.control.exc.ExciterObjectFactory;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
+import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -980,6 +981,38 @@ public class DStabNetworkBuilder {
             return null;
         }
         Ieeex1Exciter exc = ExciterObjectFactory.createIeeex1Exciter(
+                mach.getId() + "_Exc", mach);
+        exc.setTransducerTimeConstant(tr);
+        exc.setSwitchValue(switchValue);
+        exc.getData().setKa(ka);
+        exc.getData().setTa(ta);
+        exc.getData().setTb(tb);
+        exc.getData().setTc(tc);
+        exc.getData().setVrmax(vrmax);
+        exc.getData().setVrmin(vrmin);
+        exc.getData().setKe(ke);
+        exc.getData().setTe(te);
+        exc.getData().setKf(kf);
+        exc.getData().setTf(tf);
+        exc.getData().setE1(e1);
+        exc.getData().setSe_e1(se1);
+        exc.getData().setE2(e2);
+        exc.getData().setSe_e2(se2);
+        return exc;
+    }
+
+    /** PSS/E EXDC2 / PowerWorld EXDC2_PTI excitation system. */
+    public Exdc2Exciter addExcExdc2(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double switchValue,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXDC2 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Exdc2Exciter exc = ExciterObjectFactory.createExdc2Exciter(
                 mach.getId() + "_Exc", mach);
         exc.setTransducerTimeConstant(tr);
         exc.setSwitchValue(switchValue);

@@ -12,6 +12,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
+import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
 import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
+import org.apache.commons.math3.complex.Complex;
 
 /**
  * Unit tests for DStabNetworkBuilder exciter APIs.
@@ -169,6 +171,65 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(1.3, exc.getOutput(machine), TOL);
 		exc.setVoel(0.2);
 		assertEquals(1.5, exc.getOutput(machine), TOL);
+	}
+
+	@Test
+	public void exdc2_appliesItsOwnCorrectionsWithoutChangingSourceData() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Exdc2Exciter exc = builder.addExcExdc2("Bus1", "1",
+				0.004, 40.0, 0.003, 0.004, 0.0,
+				5.0, -5.0, 1.0, 0.005, 0.03, 0.003, 9.0,
+				3.0, 0.0, 4.0, 0.0);
+		exc.configureIntegrationStep(0.01, 2.0);
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		machine.setEfd(1.2);
+		assertEquals(true, exc.initStates(machine.getDStabBus(), machine));
+
+		assertEquals(0.0, exc.tr, TOL);
+		assertEquals(0.003, exc.ta, TOL);
+		assertEquals(0.004, exc.tb, TOL);
+		assertEquals(0.02, exc.te, TOL);
+		assertEquals(0.02, exc.tf, TOL);
+		assertEquals(9.0, exc.getSwitchValue(), TOL);
+		assertEquals(0.004, exc.getSourceTransducerTimeConstant(), TOL);
+		assertEquals(0.005, exc.getData().getTe(), TOL);
+	}
+
+	@Test
+	public void exdc2_scalesRegulatorLimitsByVoltageAndOutputBySpeed() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Exdc2Exciter exc = builder.addExcExdc2("Bus1", "1",
+				0.0, 1.0, 0.0, 0.0, 0.0,
+				2.0, -2.0, 1.0, 0.0, 0.0, 0.0, 0.0,
+				3.0, 0.0, 4.0, 0.0);
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		machine.setEfd(1.2);
+		assertEquals(true, exc.initStates(machine.getDStabBus(), machine));
+
+		machine.getDStabBus().setVoltage(new Complex(0.5, 0.0));
+		exc.setVuel(1.0);
+		assertEquals(1.0, exc.getRegulatorOutput(), TOL);
+		machine.setSpeed(0.98);
+		assertEquals(0.98, exc.getOutput(machine), TOL);
+	}
+
+	@Test
+	public void parseExdc2_mapsReal24HspRecord() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("exdc2.dyr");
+		Files.writeString(dyr, "1 'EXDC2' '1' .016668 100 1 0 0 2.5 -2.5 0 7.5 "
+				+ ".02 3 0 2.4 .221 3.2 .755 /\n");
+		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+
+		Exdc2Exciter exc = (Exdc2Exciter) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1").getExciter();
+		assertNotNull(exc);
+		assertEquals(0.016668, exc.getSourceTransducerTimeConstant(), TOL);
+		assertEquals(100.0, exc.getData().getKa(), TOL);
+		assertEquals(7.5, exc.getData().getTe(), TOL);
+		assertEquals(3.0, exc.getData().getTf(), TOL);
+		assertEquals(2.4, exc.getData().getE1(), TOL);
+		assertEquals(0.755, exc.getData().getSe_e2(), TOL);
 	}
 
 	@Test
