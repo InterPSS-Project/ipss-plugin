@@ -2,6 +2,8 @@ package org.interpss.dstab.renewable;
 
 /** WECC WTTQ_A torque/active-power-reference controller. */
 public final class Wttqa1Model {
+    /** Suppress only algebraic partitioning roundoff at an initialized equilibrium. */
+    private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
     private final Wttqa1Data data;
     private double initialPower;
     private double filteredPower;
@@ -29,6 +31,7 @@ public final class Wttqa1Model {
         double error = data.tFlag() == 1
                 ? (electricalPower - initialPower) / nonzero(generatorSpeed)
                 : speedReference - generatorSpeed;
+        if (Math.abs(error) <= EQUILIBRIUM_RESIDUAL) error = 0.0;
         torqueIntegral = Repca1Model.integrateWithAntiWindup(torqueIntegral, data.kip(), error,
                 dt, data.kpp(), data.teMin(), data.teMax(), false);
         torque = Repca1Model.limit(data.kpp() * error + torqueIntegral,
