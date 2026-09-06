@@ -17,6 +17,8 @@ import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
@@ -865,6 +867,134 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(0.0, pss.getLowOutput(), TOL);
         assertEquals(0.0, pss.getIntermediateOutput(), TOL);
         assertEquals(0.0, pss.getHighOutput(), TOL);
+    }
+
+    @Test
+    void parsePss5c_mapsPowerWorld21ParameterExtension() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("pss5c.dyr");
+        StringBuilder record = new StringBuilder("1 'PSS5C' '1'");
+        for (int i = 1; i <= Ieee2016PSS5CStabilizerData.PARAMETER_COUNT; i++) {
+            record.append(' ').append(i);
+        }
+        Files.writeString(dyr, record.append(" /\n").toString());
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee2016PSS5CStabilizer pss =
+                (Ieee2016PSS5CStabilizer) machine.getStabilizer();
+        assertNotNull(pss);
+        assertEquals(1.0, pss.getData().veryLowBand().gain(), TOL);
+        assertEquals(8.0, pss.getData().lowBand().min(), TOL);
+        assertEquals(13.0, pss.getData().highBand().gain(), TOL);
+        assertEquals(17.0, pss.getData().k1(), TOL);
+        assertEquals(21.0, pss.getData().vstmin(), TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void pss5c_matchesPublishedLowIntermediateAndHighFrequencyResponses() throws Exception {
+        assertPss5cSinusoidalResponse(false);
+        assertPss5cSinusoidalResponse(true);
+    }
+
+    @Test
+    void pss5c_appliesPowerWorldCorrectionsWithoutMutatingSourceData() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        double[] p = new double[Ieee2016PSS5CStabilizerData.PARAMETER_COUNT];
+        p[2] = -0.2; p[3] = 0.1;
+        p[6] = -0.3; p[7] = 0.2;
+        p[10] = -0.4; p[11] = 0.3;
+        p[14] = -0.5; p[15] = 0.4;
+        p[19] = -0.6; p[20] = 0.5;
+        Ieee2016PSS5CStabilizer pss = builder.addPss5c("Bus1", "1", p);
+        pss.configureIntegrationStep(0.01, 2.0);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        var effective = pss.getEffectiveData();
+        assertEquals(0.02, effective.veryLowBand().gain(), TOL);
+        assertEquals(0.02, effective.veryLowBand().frequency(), TOL);
+        assertEquals(0.02, effective.lowBand().frequency(), TOL);
+        assertEquals(0.02, effective.intermediateBand().frequency(), TOL);
+        assertEquals(0.02, effective.highBand().frequency(), TOL);
+        assertEquals(0.02, effective.k1(), TOL);
+        assertEquals(0.02, effective.k2(), TOL);
+        assertEquals(0.02, effective.k3(), TOL);
+        assertEquals(0.5, effective.vstmax(), TOL);
+        assertEquals(-0.6, effective.vstmin(), TOL);
+        assertEquals(0.1, effective.veryLowBand().max(), TOL);
+        assertEquals(-0.2, effective.veryLowBand().min(), TOL);
+
+        assertEquals(0.0, pss.getData().veryLowBand().gain(), TOL);
+        assertEquals(0.0, pss.getData().veryLowBand().frequency(), TOL);
+        assertEquals(0.0, pss.getData().k1(), TOL);
+        assertEquals(-0.6, pss.getData().vstmax(), TOL);
+    }
+
+    private static void assertPss5cSinusoidalResponse(boolean highBand) throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);
+        double[] p = new double[Ieee2016PSS5CStabilizerData.PARAMETER_COUNT];
+        double frequency = highBand ? 2.0 : 0.6;
+        double gain = highBand ? 80.0 : 20.0;
+        int offset = highBand ? 12 : 8;
+        p[offset] = gain;
+        p[offset + 1] = frequency;
+        p[offset + 2] = 1.0;
+        p[offset + 3] = -1.0;
+        p[16] = 5.736;
+        p[17] = 6.883;
+        p[18] = 8.259;
+        p[19] = 1.0;
+        p[20] = -1.0;
+        Ieee2016PSS5CStabilizer pss = builder.addPss5c("Bus1", "1", p);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        double amplitude = 0.001;
+        double omega = 2.0 * Math.PI * frequency;
+        double dt = 0.0005;
+        double duration = highBand ? 4.0 : 8.0;
+        double measureAfter = duration - 2.0 / frequency;
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        int steps = (int) (duration / dt);
+        for (int i = 1; i <= steps; i++) {
+            double time = i * dt;
+            machine.setSpeed(1.0 + amplitude * Math.sin(omega * time));
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+            if (time >= measureAfter) {
+                min = Math.min(min, pss.getOutput(machine));
+                max = Math.max(max, pss.getOutput(machine));
+            }
+        }
+
+        Complex s = new Complex(0.0, omega);
+        Complex upper = Complex.ONE.add(s.divide(8.259 * frequency))
+                .divide(Complex.ONE.add(s.divide(6.883 * frequency)));
+        Complex lower = Complex.ONE.add(s.divide(6.883 * frequency))
+                .divide(Complex.ONE.add(s.divide(5.736 * frequency)));
+        Complex transducer;
+        if (highBand) {
+            transducer = s.multiply(s).multiply(80.0).divide(
+                    s.multiply(s).multiply(s)
+                            .add(s.multiply(s).multiply(82.0))
+                            .add(s.multiply(161.0)).add(80.0));
+        } else {
+            transducer = Complex.ONE.add(s.multiply(1.759e-3)).divide(
+                    Complex.ONE.add(s.multiply(1.7823e-2))
+                            .add(s.multiply(s).multiply(1.2739e-4)));
+        }
+        double expectedAmplitude = amplitude * transducer.multiply(
+                upper.subtract(lower)).multiply(gain).abs();
+        double measuredAmplitude = 0.5 * (max - min);
+        assertEquals(expectedAmplitude, measuredAmplitude,
+                expectedAmplitude * 0.01 + 1.0e-7);
     }
 
     @Test

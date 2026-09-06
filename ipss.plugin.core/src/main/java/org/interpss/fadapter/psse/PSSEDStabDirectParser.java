@@ -293,6 +293,8 @@ public class PSSEDStabDirectParser {
                 return procPss3c(busId, genId, fields);
             case "PSS4C":
                 return procPss4c(busId, genId, fields);
+            case "PSS5C":
+                return procPss5c(busId, genId, fields);
             case "PSS1A":
                 return procPss1a(busId, genId, fields);
 
@@ -888,6 +890,16 @@ public class PSSEDStabDirectParser {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
         return builder.addPss4c(busId, genId, parameters) != null;
+    }
+
+    // PowerWorld DYR extension: WECC lists no native PSS/E PSS5C name.
+    private boolean procPss5c(String busId, String genId, String[] f) {
+        if (f.length < 24) return false;
+        double[] parameters = new double[21];
+        for (int i = 0; i < parameters.length; i++) {
+            parameters[i] = getDouble(f, i + 3, 0.0);
+        }
+        return builder.addPss5c(busId, genId, parameters) != null;
     }
 
     // PSS1A: IBUS 'PSS1A' ID ICS A1 A2 T1 T2 T3 T4 T5 T6 KS LSMAX LSMIN VCU VCL
