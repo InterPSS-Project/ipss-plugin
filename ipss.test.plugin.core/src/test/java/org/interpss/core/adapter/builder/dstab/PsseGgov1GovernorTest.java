@@ -239,6 +239,59 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
                 + governor.getEffectiveRopen() * elapsed + 1.0e-9);
     }
 
+    @Test
+    void supervisoryLoadControlRaisesFuelRequestWhenElectricalPowerFalls() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1GovernorData data = texasData();
+        data.setRselect(0);
+        // GGOV1 limits the supervisory MW integrator to +/-1.1R, even when
+        // Rselect=0 disables the primary droop-feedback signal.
+        data.setR(0.05);
+        data.setKimw(0.5);
+        PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double initialValve = governor.getValveStroke();
+
+        machine.setPe(0.3);
+        for (int i = 0; i < 200; i++) step(governor, machine, 0.005);
+
+        assertTrue(governor.getValveStroke() > initialValve);
+        assertTrue(governor.getOutput(machine) > 0.4);
+    }
+
+    @Test
+    void loadRejectionClosesValveWithinRateAndPositionLimits() throws Exception {
+        PsseGgov1Governor governor = initializedGovernor(1, 0);
+        Machine machine = governor.getMachine();
+        double initialValve = governor.getValveStroke();
+        machine.setSpeed(1.10);
+
+        double elapsed = 0.2;
+        for (int i = 0; i < 40; i++) step(governor, machine, 0.005);
+
+        assertTrue(governor.getValveStroke() < initialValve);
+        assertTrue(governor.getValveStroke() >= initialValve
+                + governor.getEffectiveRclose() * elapsed - 1.0e-9);
+        assertTrue(governor.getValveStroke() >= governor.getEffectiveVmin() - TOL);
+    }
+
+    @Test
+    void valveRemainsInsideExpandedUpperAndLowerPositionLimits() throws Exception {
+        PsseGgov1Governor governor = initializedGovernor(1, 0);
+        Machine machine = governor.getMachine();
+
+        machine.setSpeed(0.8);
+        for (int i = 0; i < 3000; i++) step(governor, machine, 0.005);
+        assertTrue(governor.getValveStroke() <= governor.getEffectiveVmax() + TOL);
+
+        machine.setSpeed(1.2);
+        for (int i = 0; i < 3000; i++) step(governor, machine, 0.005);
+        assertTrue(governor.getValveStroke() >= governor.getEffectiveVmin() - TOL);
+    }
+
     private static PsseGgov1Governor initializedGovernor(int rselect, int flag)
             throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
