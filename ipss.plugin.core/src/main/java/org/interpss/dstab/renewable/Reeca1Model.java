@@ -32,6 +32,8 @@ public final class Reeca1Model implements RenewableElectricalController {
     private double postDipTimer;
     private double iqHoldTimer;
     private double heldIpMax;
+    private double ipLimit;
+    private double iqLimit;
     private boolean previousDip;
     private double ipcmd;
     private double iqcmd;
@@ -62,6 +64,7 @@ public final class Reeca1Model implements RenewableElectricalController {
         effectiveVmin = Math.min(data.vmin(), 0.0);
         postDipTimer = iqHoldTimer = 0.0;
         heldIpMax = currentLimit();
+        ipLimit = iqLimit = currentLimit();
         previousDip = false;
         ipcmd = p / nonzero(v);
         iqcmd = -qCurrent;
@@ -97,6 +100,7 @@ public final class Reeca1Model implements RenewableElectricalController {
         double qTarget = data.pfFlag() == 1 ? pMeasured * powerFactorRatio : q0 + plantQref;
         qTarget = Repca1Model.limit(qTarget, effectiveQmin, effectiveQmax);
 
+        double rawIp = pOrder / nonzero(v);
         double rawQCurrent;
         if (data.qFlag() == 0) {
             if (!voltageDip) {
@@ -116,7 +120,7 @@ public final class Reeca1Model implements RenewableElectricalController {
             }
             double voltageError = data.vFlag() == 1
                     ? voltageBias : voltageBias - vMeasured;
-            double preliminaryIqMax = currentTableLimit(vMeasured, true, currentLimit());
+            double preliminaryIqMax = preliminaryReactiveCurrentLimit(rawIp);
             vIntegral = Repca1Model.integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
                     dt, data.kvp(), -preliminaryIqMax, preliminaryIqMax, voltageDip);
             rawQCurrent = Repca1Model.limit(data.kvp() * voltageError + vIntegral,
@@ -125,7 +129,6 @@ public final class Reeca1Model implements RenewableElectricalController {
 
         double iqInjection = reactiveCurrentInjection(voltageDip);
         double rawIq = -(rawQCurrent + iqInjection);
-        double rawIp = pOrder / nonzero(v);
         applyCurrentLimits(rawIp, rawIq, voltageDip);
         previousDip = voltageDip;
     }
@@ -140,6 +143,8 @@ public final class Reeca1Model implements RenewableElectricalController {
             if (voltageDip) heldIpMax = calculatedIpMax;
             double ipMax = postDipTimer > 0.0 ? heldIpMax : calculatedIpMax;
             rawIp = Repca1Model.limit(rawIp, 0.0, ipMax);
+            iqLimit = iqMax;
+            ipLimit = ipMax;
         } else {
             double calculatedIpMax = Math.min(currentLimit(), ipTable);
             if (voltageDip) heldIpMax = calculatedIpMax;
@@ -147,9 +152,21 @@ public final class Reeca1Model implements RenewableElectricalController {
             rawIp = Repca1Model.limit(rawIp, 0.0, ipMax);
             double iqMax = Math.min(iqTable, remaining(currentLimit(), rawIp));
             rawIq = Repca1Model.limit(rawIq, -iqMax, iqMax);
+            ipLimit = ipMax;
+            iqLimit = iqMax;
         }
         ipcmd = rawIp;
         iqcmd = rawIq;
+    }
+
+    private double preliminaryReactiveCurrentLimit(double rawIp) {
+        double iqTable = currentTableLimit(vMeasured, true, Double.POSITIVE_INFINITY);
+        if (data.pqFlag() == 0) return Math.min(currentLimit(), iqTable);
+        double calculatedIpMax = Math.min(currentLimit(),
+                currentTableLimit(vMeasured, false, Double.POSITIVE_INFINITY));
+        double ipMax = postDipTimer > 0.0 ? heldIpMax : calculatedIpMax;
+        double limitedIp = Repca1Model.limit(rawIp, 0.0, ipMax);
+        return Math.min(iqTable, remaining(currentLimit(), limitedIp));
     }
 
     private double reactiveCurrentInjection(boolean voltageDip) {
@@ -235,6 +252,9 @@ public final class Reeca1Model implements RenewableElectricalController {
     public double getActivePowerFilter() { return pFilter; }
     public double getActivePowerOrder() { return pOrder; }
     public double getReactiveCurrentState() { return qCurrent; }
+    public double getVoltageControlIntegral() { return vIntegral; }
+    public double getActiveCurrentLimit() { return ipLimit; }
+    public double getReactiveCurrentLimit() { return iqLimit; }
     public boolean isVoltageDip() { return previousDip; }
     @Override public double getIpcmd() { return ipcmd; }
     @Override public double getIqcmd() { return iqcmd; }

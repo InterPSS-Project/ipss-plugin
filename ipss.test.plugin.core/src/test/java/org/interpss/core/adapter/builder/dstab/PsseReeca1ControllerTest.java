@@ -189,6 +189,61 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertEquals(-.32, controller.getIqcmd(), 1.0e-12);
     }
 
+    @Test
+    void circularCurrentLimitHonorsQAndPSelectedPriority() {
+        Reeca1Model qPriority = new Reeca1Model(currentLimitData(0, 0, 1, 0, false), null);
+        qPriority.initialize(1.0, .8, 1.0);
+        qPriority.step(.01, 1.0, .8, 1.0, 1.0);
+        assertEquals(.8, Math.abs(qPriority.getIqcmd()), 1.0e-12);
+        assertEquals(.6, qPriority.getIpcmd(), 1.0e-12);
+        assertEquals(.6, qPriority.getActiveCurrentLimit(), 1.0e-12);
+
+        Reeca1Model pPriority = new Reeca1Model(currentLimitData(1, 0, 1, 0, false), null);
+        pPriority.initialize(1.0, .8, 1.0);
+        pPriority.step(.01, 1.0, .8, 1.0, 1.0);
+        assertEquals(1.0, pPriority.getIpcmd(), 1.0e-12);
+        assertEquals(0.0, pPriority.getIqcmd(), 1.0e-12);
+        assertEquals(0.0, pPriority.getReactiveCurrentLimit(), 1.0e-12);
+    }
+
+    @Test
+    void zeroImaxUsesIndependentRectangularVdlLimits() {
+        Reeca1Model controller = new Reeca1Model(currentLimitData(0, 0, 0, 0, true), null);
+        controller.initialize(1.0, 1.0, 1.0);
+        controller.step(.01, 1.0, 1.0, 1.0, 1.0);
+
+        assertEquals(.7, controller.getIpcmd(), 1.0e-12);
+        assertEquals(-.6, controller.getIqcmd(), 1.0e-12);
+        assertTrue(Math.hypot(controller.getIpcmd(), controller.getIqcmd()) > .9);
+    }
+
+    @Test
+    void thld2HoldsTheFaultActiveCurrentLimitAfterVoltageRecovery() {
+        Reeca1Model controller = new Reeca1Model(currentLimitData(1, 0, 0, .1, true), null);
+        controller.initialize(1.0, 0.0, 1.0);
+
+        controller.step(.02, 1.0, 0.0, .5, 1.0);
+        assertEquals(.4, controller.getIpcmd(), 1.0e-12);
+        controller.step(.02, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(.4, controller.getIpcmd(), 1.0e-12);
+        for (int i = 0; i < 5; i++) controller.step(.02, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(.7, controller.getIpcmd(), 1.0e-12);
+    }
+
+    @Test
+    void pPriorityReactiveHeadroomPreventsVoltagePiWindup() {
+        Reeca1Model controller = new Reeca1Model(currentLimitData(1, 1, 1, 0, false), null);
+        controller.initialize(.8, .2, 1.0);
+        double initialIntegral = controller.getVoltageControlIntegral();
+
+        controller.step(.1, .8, .2, .8, 1.0);
+
+        assertEquals(1.0, controller.getIpcmd(), 1.0e-12);
+        assertEquals(0.0, controller.getReactiveCurrentLimit(), 1.0e-12);
+        assertEquals(0.0, controller.getIqcmd(), 1.0e-12);
+        assertEquals(initialIntegral, controller.getVoltageControlIntegral(), 1.0e-12);
+    }
+
     private static Reeca1Data expectedData() {
         return new Reeca1Data(0, 1, 0, 1, 0, 1,
                 .7, 1.3, .01, -.02, .03, 2, .9, -.8, 1.01, .1, .2, .3,
@@ -233,6 +288,19 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 99, -99, 2, -2, 10, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    private static Reeca1Data currentLimitData(int pqFlag, int qFlag,
+            double imax, double thld2, boolean vdlEnabled) {
+        double scale = vdlEnabled ? 1.0 : 0.0;
+        return new Reeca1Data(0, 0, 0, qFlag, 0, pqFlag,
+                .6, 1.4, 0, 0, 0, 0, 1, -1, 1, 0, 0, thld2,
+                0, 2, -2, 2, -2, 0, 0, 1, 2, .8, 0,
+                99, -99, 2, -2, imax, 0,
+                .5 * scale, .3 * scale, .8 * scale, .5 * scale,
+                1.0 * scale, .6 * scale, 1.2 * scale, .7 * scale,
+                .5 * scale, .4 * scale, .8 * scale, .6 * scale,
+                1.0 * scale, .7 * scale, 1.2 * scale, .8 * scale);
     }
 
     private static Repca1Model frequencyPlantController() {
