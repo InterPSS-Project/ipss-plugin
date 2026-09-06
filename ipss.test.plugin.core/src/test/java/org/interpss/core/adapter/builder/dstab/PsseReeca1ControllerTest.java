@@ -295,6 +295,69 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertEquals(initialIntegral, controller.getVoltageControlIntegral(), 1.0e-12);
     }
 
+    @Test
+    void activeAndReactivePowerLimitsClampBothDirectionsAndRecover() {
+        Reeca1Model active = new Reeca1Model(outerLimitData(0, 0, 0,
+                2.0, -2.0, 2.0, -2.0, .9, .7, 10.0, 0.0), null);
+        Repca1Model plant = frequencyPlantController();
+        active.setPlantController(plant);
+        active.initialize(.8, .2, 1.0);
+        active.step(CONTROL_STEP, .8, .2, 1.0, .5);
+        assertTrue(plant.getPref() > .4);
+        assertEquals(.9, active.getActivePowerOrder(), 1.0e-12);
+        active.step(CONTROL_STEP, .8, .2, 1.0, 1.5);
+        assertTrue(plant.getPref() < -.4);
+        assertEquals(.8 + plant.getPref(), active.getActivePowerFilter(), 1.0e-12);
+        assertTrue(!active.isVoltageDip());
+        assertEquals(.7, active.getActivePowerOrder(), 1.0e-12);
+        active.step(CONTROL_STEP, .8, .2, 1.0, 1.0);
+        assertEquals(.8, active.getActivePowerOrder(), 1.0e-12);
+
+        Reeca1Model reactive = new Reeca1Model(outerLimitData(1, 0, 0,
+                .3, -.1, 2.0, -2.0, 2.0, -2.0, 10.0, 0.0), null);
+        reactive.initialize(.8, .2, 1.0);
+        reactive.step(CONTROL_STEP, 2.0, .2, 1.0, 1.0);
+        assertEquals(-.3, reactive.getIqcmd(), 1.0e-12);
+        reactive.step(CONTROL_STEP, -2.0, .2, 1.0, 1.0);
+        assertEquals(.1, reactive.getIqcmd(), 1.0e-12);
+        reactive.step(CONTROL_STEP, .8, .2, 1.0, 1.0);
+        assertEquals(-.2, reactive.getIqcmd(), 1.0e-12);
+    }
+
+    @Test
+    void directVoltageReferencePathHonorsVLimitsAndRecovers() {
+        Reeca1Model controller = new Reeca1Model(outerLimitData(1, 0, 1,
+                2.0, -2.0, 1.1, .9, 2.0, -2.0, 10.0, 0.0), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(CONTROL_STEP, 2.0, .2, 1.0, 1.0);
+        assertEquals(-.3, controller.getIqcmd(), 1.0e-12,
+                "Vref1+Qcpf must be capped by Vmax before the inner voltage PI");
+        controller.step(CONTROL_STEP, -2.0, .2, 1.0, 1.0);
+        assertEquals(-.1, controller.getIqcmd(), 1.0e-12,
+                "Vref1+Qcpf must be floored by Vmin before the inner voltage PI");
+        controller.step(CONTROL_STEP, .8, .2, 1.0, 1.0);
+        assertEquals(-.2, controller.getIqcmd(), 1.0e-12);
+    }
+
+    @Test
+    void reactiveInjectionLimitsAndPositiveHoldRecoverAfterDip() {
+        Reeca1Model controller = new Reeca1Model(injectionRecoveryData(), null);
+        controller.initialize(.8, 0.0, 1.0);
+
+        controller.step(.01, .8, 0.0, .5, 1.0);
+        assertEquals(-.3, controller.getIqcmd(), 1.0e-12,
+                "undervoltage injection must stop at Iqh1");
+        controller.step(.01, .8, 0.0, 1.5, 1.0);
+        assertEquals(.2, controller.getIqcmd(), 1.0e-12,
+                "overvoltage injection must stop at Iql1");
+        controller.step(.01, .8, 0.0, 1.0, 1.0);
+        assertEquals(-.1, controller.getIqcmd(), 1.0e-12,
+                "positive Thld must hold Iqfrz after voltage recovery");
+        for (int i = 0; i < 5; i++) controller.step(.01, .8, 0.0, 1.0, 1.0);
+        assertEquals(0.0, controller.getIqcmd(), 1.0e-12);
+    }
+
     private static Reeca1Data expectedData() {
         return new Reeca1Data(0, 1, 0, 1, 0, 1,
                 .7, 1.3, .01, -.02, .03, 2, .9, -.8, 1.01, .1, .2, .3,
@@ -352,6 +415,26 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 1.0 * scale, .6 * scale, 1.2 * scale, .7 * scale,
                 .5 * scale, .4 * scale, .8 * scale, .6 * scale,
                 1.0 * scale, .7 * scale, 1.2 * scale, .8 * scale);
+    }
+
+    private static Reeca1Data outerLimitData(int pfFlag, int vFlag, int qFlag,
+            double qmax, double qmin, double vmax, double vmin,
+            double pmax, double pmin, double imax, double tiq) {
+        return new Reeca1Data(0, pfFlag, vFlag, qFlag, 0, 0,
+                .8, 1.2, 0, 0, 0, 0, 1, -1, 1, 0, 0, 0,
+                0, qmax, qmin, vmax, vmin, 1, 0, 1, 0, .8, tiq,
+                1.0e9, -1.0e9, pmax, pmin, imax, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    private static Reeca1Data injectionRecoveryData() {
+        return new Reeca1Data(0, 0, 0, 0, 0, 0,
+                .8, 1.2, 0, 0, 0, 10, .3, -.2, 1, .1, .05, 0,
+                0, 2, -2, 2, -2, 0, 0, 0, 0, 1, 0,
+                99, -99, 2, -2, 10, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     private static Repca1Model frequencyPlantController() {
