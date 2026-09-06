@@ -10,12 +10,14 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
 import com.interpss.dstab.controller.cml.field.adapt.CMLStaticBlockAdapter;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.controller.cml.field.block.PIControlBlock;
+import com.interpss.dstab.controller.cml.field.func.LowValueFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
@@ -24,11 +26,15 @@ import com.interpss.dstab.mach.MachineIfdBase;
 @AnController(
 		   input="mach.vt",
 		   output="this.customBlock.y",
-		   refPoint="this.vrPIBlock.u0  - pss.vs  + this.trDelayBlock.y",
+		   refPoint="this.vrPIBlock.u0 - pss.vs + this.trDelayBlock.y - this.vuel",
 		   display= {})
 public class IEEE2005ST4BExciter  extends AnnotateExciter{
     private static final Logger log = LoggerFactory.getLogger(IEEE2005ST4BExciter.class);
 	public double k1 = 1.0;/*constant*/
+	/** External UEL contribution; zero is the nonbinding/absent value. */
+	public double vuel = 0.0;
+	/** External OEL ceiling; positive infinity is the nonbinding/absent value. */
+	public double voel = Double.POSITIVE_INFINITY;
 	
 	/*
 	 * Part-1: Define the blocks
@@ -50,7 +56,7 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	   public double Kpr =1, Kir=1, vrmax =99, vrmin =-99;
 	   @AnControllerField(
 			   type =CMLFieldEnum.ControlBlock,
-			   input="this.refPoint - this.trDelayBlock.y + pss.vs",
+			   input="this.refPoint - this.trDelayBlock.y + pss.vs + this.vuel",
 			   parameter={"type.NonWindup", "this.Kpr", "this.Kir","this.vrmax","this.vrmin"},
 			   y0="this.taDelayBlock.u0"
 			   )
@@ -80,10 +86,6 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 		   )
 	   GainBlock kgGainBlock;
 	   
-	 /*
-	  *NOTE: VOEL LVGate block is omitted 
-	  */
-	   
 	  //KPM KIM---PI CONTROL NON-Windup limits
 	  public double Kpm = 10.0, Kim = 0.01,vmmax = 9,vmmin = -9.0;
 	  @AnControllerField(
@@ -93,12 +95,21 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 			   y0="this.customBlock.u0"
 			   )
 	   PIControlBlock vmPIBlock;
+
+	   // IEEE ST4B over-excitation limiter low-value gate.
+	   @AnFunctionField(
+		   type=CMLFieldEnum.Function,
+		   input={"this.vmPIBlock.y", "this.voel"},
+		   y0="this.customBlock.u0")
+	   LowValueFunction voelGate;
 	   
 	   
 	   public double kc = 1.0, kp = 2.0, ki = 1.0, vbmax = 10.0, angKp_deg =0.0, xl =1.0;
 	   @AnControllerField(
 	      type= CMLFieldEnum.StaticBlock,
-	      input= "this.vmPIBlock.y", 
+	      // Preserve the explicit PI dependency for the CML initialization graph;
+	      // the cancelling terms do not alter the runtime low-value-gate signal.
+	      input= "this.vmPIBlock.y - this.vmPIBlock.y + this.voelGate.y",
 	      y0="mach.efd"
 	      )
 	   public ICMLStaticBlock customBlock = new CMLStaticBlockAdapter() {
@@ -313,6 +324,15 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 
 	    /** Runtime Vm lower limit after normalization and initialization expansion. */
 	    public double getEffectiveVmmin() { return vmmin; }
+
+	    /** Set the external under-excitation limiter contribution at the Vref sum. */
+	    public void setVuel(double value) { this.vuel = value; }
+
+	    /** Set the external over-excitation limiter ceiling at the inner-loop LV gate. */
+	    public void setVoel(double value) { this.voel = value; }
+
+	    /** Make the external over-excitation limiter nonbinding. */
+	    public void clearVoel() { this.voel = Double.POSITIVE_INFINITY; }
 
 	/*
 	 * Part-4: Define the pluin data object edtior
