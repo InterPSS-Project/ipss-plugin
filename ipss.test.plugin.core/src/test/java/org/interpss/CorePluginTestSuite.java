@@ -45,6 +45,7 @@ import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
 import org.interpss.core.dstab.Texas2kHygovCoverageTest;
 import org.interpss.core.dstab.Texas2kLegacyControllerProfileTest;
 import org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest;
+import org.interpss.core.dstab.Texas2kGenrouFaultBenchmarkTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -96,6 +97,7 @@ import org.interpss.core.aclf.PSSE_5Bus_SwitchedShunt_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
+import org.interpss.core.adapter.psse.raw.dstab.PsseGnetIdvProcessorTest;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_FiveBus_NB_ExportImport_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_FiveBus_NB_TopoAnalysis_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_BusMerge_Test;
@@ -219,6 +221,7 @@ import org.junit.platform.suite.api.Suite;
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
 	IEEE39Bus_Acsc_Test.class,
+	PsseGnetIdvProcessorTest.class,
 	
 	// Dclf
 	Mod_SixBus_DclfPsXfr.class,
@@ -373,6 +376,7 @@ import org.junit.platform.suite.api.Suite;
 	Texas2kHygovCoverageTest.class,
 	Texas2kLegacyControllerProfileTest.class,
 	Texas2kSixCaseDynamicSmokeTest.class,
+	Texas2kGenrouFaultBenchmarkTest.class,
 
 	//matpower
 	MatpowerFormatTest.class,

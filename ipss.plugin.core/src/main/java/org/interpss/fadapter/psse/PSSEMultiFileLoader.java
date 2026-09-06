@@ -1,5 +1,9 @@
 package org.interpss.fadapter.psse;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import org.interpss.fadapter.builder.AcscNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkObjectFactory;
@@ -72,7 +76,8 @@ public class PSSEMultiFileLoader {
      * Load LF (+ optional sequence + dynamic) files as DStabilityNetwork
      * wrapped in a SimuContext for dynamic simulation.
      *
-     * @param files array of file paths: [0]=LF, [1]=seq or dyn, [2]=dyn (optional)
+     * @param files file paths: [0]=LF, followed by optional sequence, dynamic,
+     *              and GNET IDV files. GNET is always applied before DYR parsing.
      * @return SimuContext with DStabilityNetwork and DynamicSimuAlgorithm configured
      */
     public SimuContext loadDStab(String... files) throws InterpssException {
@@ -107,15 +112,25 @@ public class PSSEMultiFileLoader {
         SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
         simuCtx.setDStabilityNet(dsNet);
 
-        if (files.length == 2) {
-            if (files[1].endsWith(".dyr")) {
-                new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(files[1]);
+        List<String> modelFiles = new ArrayList<>();
+        for (int i = 1; i < files.length; i++) {
+            if (files[i].toLowerCase(Locale.ROOT).endsWith(".idv")) {
+                PsseGnetIdvProcessor.apply(dsNet, files[i]);
             } else {
-                new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(files[1]);
+                modelFiles.add(files[i]);
             }
-        } else if (files.length >= 3) {
-            new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(files[1]);
-            new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(files[2]);
+        }
+
+        if (modelFiles.size() == 1) {
+            String modelFile = modelFiles.get(0);
+            if (modelFile.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
+                new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(modelFile);
+            } else {
+                new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFile);
+            }
+        } else if (modelFiles.size() >= 2) {
+            new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFiles.get(0));
+            new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(modelFiles.get(1));
         }
 
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);

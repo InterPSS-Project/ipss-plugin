@@ -36,20 +36,29 @@ public class Texas2kSixCaseDynamicSmokeTest {
                     "Texas2k_series24_cases_with_dynamics").toString()));
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
-                    "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr"),
+                    "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
+                    "dynamic_models_case1_gnet.idv", List.of("Bus1090")),
             new CaseFile("Texas2k_series24_case2_2016lowload",
-                    "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr"),
+                    "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr",
+                    "dynamic_models_case2_gnet.idv", List.of("Bus1090")),
             new CaseFile("Texas2k_series24_case3_2024summerpeak",
-                    "Texas2k_series24_case3_2024summerpeak_v30.RAW", "dynamic_models_case3.dyr"),
+                    "Texas2k_series24_case3_2024summerpeak_v30.RAW", "dynamic_models_case3.dyr",
+                    "dynamic_models_case3_gnet.idv",
+                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")),
             new CaseFile("Texas2k_series24_case4_2024lowload",
-                    "Texas2k_series24_case4_2024lowload.RAW", "dynamic_models_case4.dyr"),
+                    "Texas2k_series24_case4_2024lowload.RAW", "dynamic_models_case4.dyr",
+                    "dynamic_models_case4_gnet.idv",
+                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")),
             new CaseFile("Texas2k_series24_case5_2024highrenewables",
-                    "Texas2k_series24_case5_2024highrenewables.RAW", "dynamic_models_case5.dyr"),
+                    "Texas2k_series24_case5_2024highrenewables.RAW", "dynamic_models_case5.dyr",
+                    "dynamic_models_case5_gnet.idv",
+                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")),
             new CaseFile("Texas2k_series24_case6_2024lowloadwithgfm",
-                    "Texas2k_series24_case6_2024lowloadwithgfm.RAW", "dynamic_models_case6.dyr"));
+                    "Texas2k_series24_case6_2024lowloadwithgfm.RAW", "dynamic_models_case6.dyr",
+                    "dynamic_models_case6_gnet.idv",
+                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")));
     private static final Set<String> REVIEWED_MISSING_MACHINES = Set.of(
-            "Bus1090:1", "Bus1090:2", "Bus5045:1", "Bus5394:1", "Bus5395:1",
-            "Bus7095:1", "Bus7099:2");
+            "Bus5045:1", "Bus7099:2");
 
     @BeforeAll
     static void initializePlugin() {
@@ -135,11 +144,22 @@ public class Texas2kSixCaseDynamicSmokeTest {
         Path directory = ROOT.resolve(source.directory());
         Path raw = directory.resolve(source.raw());
         Path dyr = directory.resolve(source.dyr());
+        Path gnet = directory.resolve(source.gnet());
         assumeTrue(Files.isRegularFile(raw), "Missing Texas2k RAW: " + raw);
         assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
+        assumeTrue(Files.isRegularFile(gnet), "Missing Texas2k GNET IDV: " + gnet);
 
-        SimuContext context = new PSSEMultiFileLoader().loadDStab(raw.toString(), dyr.toString());
+        SimuContext context = new PSSEMultiFileLoader().loadDStab(
+                raw.toString(), dyr.toString(), gnet.toString());
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
+        for (String busId : source.gnetBuses()) {
+            var bus = network.getBus(busId);
+            assertTrue(bus.getContributeGenList().stream().noneMatch(gen -> gen.isActive()),
+                    source.directory() + " active generator remains after GNET at " + busId);
+            assertTrue(bus.getContributeLoadList().stream()
+                            .anyMatch(load -> load.isActive() && load.getId().startsWith("GNET-")),
+                    source.directory() + " missing GNET negative load at " + busId);
+        }
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
 
@@ -235,5 +255,6 @@ public class Texas2kSixCaseDynamicSmokeTest {
         }
     }
 
-    private record CaseFile(String directory, String raw, String dyr) { }
+    private record CaseFile(String directory, String raw, String dyr, String gnet,
+            List<String> gnetBuses) { }
 }
