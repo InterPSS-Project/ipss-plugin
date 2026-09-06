@@ -35,6 +35,8 @@ import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
@@ -614,6 +616,39 @@ public class DStabNetworkBuilder {
         data.setPssActivation(pssActivation); data.setPssDeactivation(pssDeactivation);
         data.setTpgfilt(tpgfilt); data.setXcomp(xcomp); data.setTcomp(tcomp);
         return pss;
+    }
+
+    /** Build the complete IEEE 421.5-2005 PSS3B model. */
+    public Ieee2005PSS3BStabilizer addPss3b(String busId, String genId,
+            int ics1, int ics2,
+            double ks1, double t1, double tw1,
+            double ks2, double t2, double tw2, double tw3,
+            double a1, double a2, double a3, double a4,
+            double a5, double a6, double a7, double a8,
+            double vstmax, double vstmin) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS3B: {} {}", busId, genId);
+            return null;
+        }
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6) {
+            log.warn("Invalid PSS3B input selectors at {} {}: ICS1={}, ICS2={}",
+                    busId, genId, ics1, ics2);
+            return null;
+        }
+        // Nonpositive washout constants are a model-defined bypass (Dynawo's
+        // validated IEEE PSS3B case uses Tw3=-1). The notch blocks likewise
+        // apply their specified highest-denominator-coefficient bypass rule,
+        // so only negative transducer time constants are rejected here.
+        if (t1 < 0.0 || t2 < 0.0) {
+            log.warn("Invalid PSS3B transducer time constants at {} {}", busId, genId);
+            return null;
+        }
+        var data = new Ieee2005PSS3BStabilizerData(ics1, ics2,
+                ks1, t1, tw1, ks2, t2, tw2, tw3,
+                a1, a2, a3, a4, a5, a6, a7, a8, vstmax, vstmin);
+        return StabilizerObjectFactory.createIeee2005PSS3BStabilizer(
+                busId + "-pss3b" + genId, data, machine);
     }
 
 	private BaseDStabBus<?, ?> resolvePss2aSignalBus(BaseDStabBus<?, ?> localBus,
