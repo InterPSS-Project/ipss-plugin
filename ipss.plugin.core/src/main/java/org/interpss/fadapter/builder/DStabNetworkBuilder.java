@@ -37,6 +37,8 @@ import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
@@ -649,6 +651,25 @@ public class DStabNetworkBuilder {
                 a1, a2, a3, a4, a5, a6, a7, a8, vstmax, vstmin);
         return StabilizerObjectFactory.createIeee2005PSS3BStabilizer(
                 busId + "-pss3b" + genId, data, machine);
+    }
+
+    /** Build the complete IEEE 421.5-2005 PSS4B model from its 75 parameters. */
+    public Ieee2005PSS4BStabilizer addPss4b(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS4B: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2005PSS4BStabilizerData data;
+        try {
+            data = Ieee2005PSS4BStabilizerData.fromParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS4B record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        return StabilizerObjectFactory.createIeee2005PSS4BStabilizer(
+                busId + "-pss4b" + genId, data, machine);
     }
 
 	private BaseDStabBus<?, ?> resolvePss2aSignalBus(BaseDStabBus<?, ?> localBus,

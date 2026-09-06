@@ -15,6 +15,8 @@ import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
@@ -511,6 +513,154 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(maximumOutput > 1.0e-7,
                 "Selected PSS3B input path produced no response");
         assertTrue(maximumOutput <= 1.0 + TOL);
+    }
+
+    @Test
+    void parsePss4b_mapsExact75ParameterRecord() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("pss4b.dyr");
+        StringBuilder record = new StringBuilder("1 'PSS4B' '1'");
+        for (int i = 1; i <= Ieee2005PSS4BStabilizerData.PARAMETER_COUNT; i++) {
+            record.append(' ').append(i);
+        }
+        Files.writeString(dyr, record.append(" /\n").toString());
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee2005PSS4BStabilizer pss =
+                (Ieee2005PSS4BStabilizer) machine.getStabilizer();
+        assertNotNull(pss);
+        assertSame(machine, pss.getMachine());
+        var data = pss.getData();
+        assertEquals(1.0, data.input().cli(), TOL);
+        assertEquals(16.0, data.input().wh2(), TOL);
+        assertEquals(17.0, data.lowBand().k1(), TOL);
+        assertEquals(35.0, data.lowBand().min(), TOL);
+        assertEquals(36.0, data.intermediateBand().k1(), TOL);
+        assertEquals(54.0, data.intermediateBand().min(), TOL);
+        assertEquals(55.0, data.highBand().k1(), TOL);
+        assertEquals(73.0, data.highBand().min(), TOL);
+        assertEquals(74.0, data.vstmax(), TOL);
+        assertEquals(75.0, data.vstmin(), TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void pss4b_matchesAnalyticSingleBandStepResponse() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p = new double[Ieee2005PSS4BStabilizerData.PARAMETER_COUNT];
+        // Low/intermediate speed transducer and all four notch filters bypass.
+        // Low-band upper path is 1/(1 + 0.1s), followed by two bypass blocks.
+        p[16] = 1.0; // KL1
+        p[17] = 1.0; // KL11
+        p[19] = 0.1; // TL2
+        p[32] = 2.0; // KL
+        p[33] = 1.0; // VLmax
+        p[34] = -1.0; // VLmin
+        p[73] = 1.0;
+        p[74] = -1.0;
+        Ieee2005PSS4BStabilizer pss = builder.addPss4b("Bus1", "1", p);
+        assertNotNull(pss);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        machine.setSpeed(machine.getSpeed() + 0.01);
+        double dt = 0.0005;
+        double elapsed = 0.2;
+        for (int i = 0; i < (int) (elapsed / dt); i++) {
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+
+        double expected = 0.02 * (1.0 - Math.exp(-elapsed / 0.1));
+        assertEquals(expected, pss.getOutput(machine), 2.0e-5);
+        assertEquals(expected, pss.getLowOutput(), 2.0e-5);
+        assertEquals(0.0, pss.getIntermediateOutput(), TOL);
+        assertEquals(0.0, pss.getHighOutput(), TOL);
+    }
+
+    @Test
+    void pss4b_runsElectricalPowerTransducerAndHighBandNotches() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p = new double[Ieee2005PSS4BStabilizerData.PARAMETER_COUNT];
+        p[8] = 0.02; // TH
+        p[9] = 0.01; // AH
+        p[10] = 0.10; // BH
+        p[11] = 0.05; // M
+        p[12] = 0.20; // BWH1
+        p[13] = 8.0; // WH1
+        p[14] = 0.30; // BWH2
+        p[15] = 12.0; // WH2
+        p[54] = 1.0; // KH1
+        p[55] = 1.0; // KH11
+        p[57] = 0.05; // TH2
+        p[70] = 2.0; // KH
+        p[71] = 0.5;
+        p[72] = -0.5;
+        p[73] = 0.1;
+        p[74] = -0.1;
+        Ieee2005PSS4BStabilizer pss = builder.addPss4b("Bus1", "1", p);
+        assertNotNull(pss);
+        machine.setPe(0.8);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        machine.setPe(0.9);
+        double maximumHighInput = 0.0;
+        double maximumOutput = 0.0;
+        for (int i = 0; i < 1000; i++) {
+            assertTrue(pss.nextStep(0.0001, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.0001, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+            maximumHighInput = Math.max(maximumHighInput, Math.abs(pss.getHighInput()));
+            maximumOutput = Math.max(maximumOutput, Math.abs(pss.getOutput(machine)));
+        }
+
+        assertTrue(maximumHighInput > 1.0e-6);
+        assertTrue(maximumOutput > 1.0e-6);
+        assertTrue(maximumOutput <= 0.1 + TOL);
+        assertEquals(0.0, pss.getLowOutput(), TOL);
+        assertEquals(0.0, pss.getIntermediateOutput(), TOL);
+    }
+
+    @Test
+    void pss4b_appliesPowerWorldCorrectionsWithoutChangingSourceData() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p = new double[Ieee2005PSS4BStabilizerData.PARAMETER_COUNT];
+        p[33] = -0.2;
+        p[34] = 0.1;
+        p[52] = -0.3;
+        p[53] = 0.2;
+        p[71] = -0.4;
+        p[72] = 0.3;
+        p[73] = -0.5;
+        p[74] = 0.4;
+        Ieee2005PSS4BStabilizer pss = builder.addPss4b("Bus1", "1", p);
+        pss.configureIntegrationStep(0.01, 2.0);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        var effective = pss.getEffectiveData();
+        assertEquals(0.02, effective.input().th(), TOL);
+        assertEquals(0.02, effective.input().ah(), TOL);
+        assertEquals(0.02, effective.lowBand().k1(), TOL);
+        assertEquals(0.02, effective.lowBand().k2(), TOL);
+        assertEquals(0.1, effective.lowBand().max(), TOL);
+        assertEquals(-0.2, effective.lowBand().min(), TOL);
+        assertEquals(0.2, effective.intermediateBand().max(), TOL);
+        assertEquals(-0.3, effective.intermediateBand().min(), TOL);
+        assertEquals(0.3, effective.highBand().max(), TOL);
+        assertEquals(-0.4, effective.highBand().min(), TOL);
+        assertEquals(0.4, effective.vstmax(), TOL);
+        assertEquals(-0.5, effective.vstmin(), TOL);
+
+        assertEquals(0.0, pss.getData().input().th(), TOL);
+        assertEquals(0.0, pss.getData().lowBand().k1(), TOL);
+        assertEquals(-0.2, pss.getData().lowBand().max(), TOL);
+        assertEquals(0.1, pss.getData().lowBand().min(), TOL);
+        assertEquals(-0.5, pss.getData().vstmax(), TOL);
+        assertEquals(0.4, pss.getData().vstmin(), TOL);
     }
 
     @Test
