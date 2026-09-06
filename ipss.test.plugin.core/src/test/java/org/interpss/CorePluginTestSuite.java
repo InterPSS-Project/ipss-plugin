@@ -30,6 +30,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac2aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGovernorTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderStabilizerTest;
+import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
@@ -344,6 +345,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderEsac2aTest.class,
 	DStabNetworkBuilderGovernorTest.class,
 	DStabNetworkBuilderStabilizerTest.class,
+	PsseEsst4bExciterTest.class,
 	PsseGgov1GovernorTest.class,
 
 	//matpower

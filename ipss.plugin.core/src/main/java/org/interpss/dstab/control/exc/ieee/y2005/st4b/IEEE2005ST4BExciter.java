@@ -228,6 +228,12 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	    	
 	        this.Kpr = getData().getKpr();
 	        this.Kir = getData().getKir();
+	        // PSS/E/PowerWorld validation keeps a zero-integral PI path usable by
+	        // supplying the documented proportional-gain defaults. Keep the
+	        // imported data object unchanged and correct only the runtime fields.
+	        if (Math.abs(this.Kpr) <= 1.0e-9 && Math.abs(this.Kir) <= 1.0e-9) {
+	           this.Kpr = 40.0;
+	        }
 	        this.ka  = 1;
 	        this.ta  = getData().getTa();
 	        this.vrmax = getData().getVrmax();
@@ -235,6 +241,9 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	        
 	        this.Kpm  = getData().getKpm();
 	        this.Kim  = getData().getKim();
+	        if (Math.abs(this.Kpm) <= 1.0e-9 && Math.abs(this.Kim) <= 1.0e-9) {
+	           this.Kpm = 1.0;
+	        }
 	        this.vmmax = getData().getVmmax();
 	        this.vmmin = getData().getVmmin();
 	        

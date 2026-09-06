@@ -20,7 +20,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
-class PsseEsst4bExciterTest extends CorePluginTestSetup {
+public class PsseEsst4bExciterTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
@@ -69,6 +69,29 @@ class PsseEsst4bExciterTest extends CorePluginTestSetup {
             exciter.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1);
         }
         assertEquals(machine.getEfd(), exciter.getOutput(machine), 1.0e-6);
+    }
+
+    @Test
+    void zeroGainPairsUseDocumentedRuntimeDefaultsWithoutMutatingSourceData() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        LoadflowAlgorithm loadflow = com.interpss.core.LoadflowAlgoObjectFactory
+                .createLoadflowAlgorithm(builder.getDStabNetwork());
+        assertTrue(loadflow.loadflow());
+        assertTrue(machine.initStates(builder.getDStabNetwork().getDStabBus("Bus1")));
+        IEEE2005ST4BExciterData data = texasData();
+        data.setKpr(0.0);
+        data.setKir(0.0);
+        data.setKpm(0.0);
+        data.setKim(0.0);
+        IEEE2005ST4BExciter exciter = builder.addExcEsst4b("Bus1", "1", data);
+
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+        assertEquals(40.0, exciter.Kpr, TOL);
+        assertEquals(1.0, exciter.Kpm, TOL);
+        assertEquals(0.0, data.getKpr(), TOL);
+        assertEquals(0.0, data.getKpm(), TOL);
+        assertEquals(machine.getEfd(), exciter.getOutput(machine), 1.0e-8);
     }
 
     private static IEEE2005ST4BExciterData texasData() {
