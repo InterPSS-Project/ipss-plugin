@@ -28,10 +28,11 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
     private static final int REGULATOR = 2;
     private static final int FIELD = 3;
     private static final int WASHOUT_LAG = 4;
+    private static final int FEEDBACK_INPUT_LAG = 5;
 
-    private final double[] state = new double[5];
-    private final double[] trial = new double[5];
-    private final double[] oldDerivative = new double[5];
+    private final double[] state = new double[6];
+    private final double[] trial = new double[6];
+    private final double[] oldDerivative = new double[6];
     private double[] active = state;
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
@@ -60,6 +61,12 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
     public double getVoel() { return voel; }
     public double getSensedVoltage() { return algebraics(active, getMachine()).sensedVoltage; }
     public double getRegulatorOutput() { return algebraics(active, getMachine()).regulator; }
+    public double getRateFeedbackOutput() { return algebraics(active, getMachine()).rateFeedback; }
+    public double getRateFeedbackLagOutput() {
+        Algebraic a = algebraics(active, getMachine());
+        return feedbackLagTimeConstant() > EPS
+                ? active[FEEDBACK_INPUT_LAG] : feedbackInput(a.field, a.regulator);
+    }
 
     @Override
     public void configureIntegrationStep(double timeStepSec) {
@@ -88,7 +95,9 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
         state[LEAD_LAG] = leadLag0;
         state[REGULATOR] = vr0;
         state[FIELD] = efd0;
-        state[WASHOUT_LAG] = efd0;
+        double feedbackInput0 = feedbackInput(efd0, vr0);
+        state[WASHOUT_LAG] = feedbackInput0;
+        state[FEEDBACK_INPUT_LAG] = feedbackInput0;
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
         reference = leadLag0 + state[VSENSE] - vuel - voel - pss0;
@@ -182,7 +191,13 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
         dx[REGULATOR] = atUpperAndRising || atLowerAndFalling ? 0.0 : rawRegDerivative;
         dx[FIELD] = te > EPS
                 ? (a.regulator - fieldFeedback(x[FIELD])) / te : 0.0;
-        dx[WASHOUT_LAG] = lagDerivative(a.field, x[WASHOUT_LAG], tf);
+        double feedbackInput = feedbackInput(a.field, a.regulator);
+        double feedbackLagTime = feedbackLagTimeConstant();
+        dx[FEEDBACK_INPUT_LAG] = feedbackLagTime > EPS
+                ? lagDerivative(feedbackInput, x[FEEDBACK_INPUT_LAG], feedbackLagTime) : 0.0;
+        double rateFeedbackInput = feedbackLagTime > EPS
+                ? x[FEEDBACK_INPUT_LAG] : feedbackInput;
+        dx[WASHOUT_LAG] = lagDerivative(rateFeedbackInput, x[WASHOUT_LAG], tf);
     }
 
     private Algebraic algebraics(double[] x, Machine machine) {
@@ -195,17 +210,47 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
 
     private Algebraic algebraicsForField(double[] x, Machine machine,
             double sensed, double field) {
-        double washout = tf > EPS ? kf * (field - x[WASHOUT_LAG]) / tf : 0.0;
+        double upper = regulatorUpper(machine);
+        double lower = regulatorLower(machine);
+        double regulator = clamp(x[REGULATOR], upper, lower);
+        double rateFeedbackInput = feedbackLagTimeConstant() > EPS
+                ? x[FEEDBACK_INPUT_LAG] : feedbackInput(field, regulator);
+        double washout = tf > EPS
+                ? kf * (rateFeedbackInput - x[WASHOUT_LAG]) / tf : 0.0;
         double error = reference - sensed + vuel + voel
                 + stabilizerSignal(machine) - washout;
         double leadLag = tb > EPS
                 ? (tc / tb) * error + (1.0 - tc / tb) * x[LEAD_LAG]
                 : error;
-        double upper = regulatorUpper(machine);
-        double lower = regulatorLower(machine);
-        double regulator = ta > EPS ? clamp(x[REGULATOR], upper, lower)
-                : clamp(ka * leadLag, upper, lower);
-        return new Algebraic(sensed, error, leadLag, regulator, field);
+        if (ta <= EPS && feedbackLagTimeConstant() > EPS) {
+            regulator = clamp(ka * leadLag, upper, lower);
+        } else if (ta <= EPS) {
+            // A bypassed Tf2 and algebraic regulator form a small feedback
+            // loop. Iterate it to convergence instead of accumulating a
+            // one-step approximation in the dynamic state.
+            for (int iteration = 0; iteration < 30; iteration++) {
+                double previous = regulator;
+                rateFeedbackInput = feedbackInput(field, regulator);
+                washout = tf > EPS
+                        ? kf * (rateFeedbackInput - x[WASHOUT_LAG]) / tf : 0.0;
+                error = reference - sensed + vuel + voel
+                        + stabilizerSignal(machine) - washout;
+                leadLag = tb > EPS
+                        ? (tc / tb) * error + (1.0 - tc / tb) * x[LEAD_LAG]
+                        : error;
+                regulator = clamp(ka * leadLag, upper, lower);
+                if (Math.abs(regulator - previous) < 1.0e-11) break;
+            }
+            rateFeedbackInput = feedbackInput(field, regulator);
+            washout = tf > EPS
+                    ? kf * (rateFeedbackInput - x[WASHOUT_LAG]) / tf : 0.0;
+            error = reference - sensed + vuel + voel
+                    + stabilizerSignal(machine) - washout;
+            leadLag = tb > EPS
+                    ? (tc / tb) * error + (1.0 - tc / tb) * x[LEAD_LAG]
+                    : error;
+        }
+        return new Algebraic(sensed, error, leadLag, regulator, field, washout);
     }
 
     private double solveAlgebraicField(double[] x, Machine machine, double sensed) {
@@ -265,12 +310,16 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
     protected double machineOutput(double internalField, Machine machine) {
         return internalField;
     }
+    protected double feedbackInput(double internalField, double regulatorOutput) {
+        return internalField;
+    }
+    protected double feedbackLagTimeConstant() { return 0.0; }
 
     @Override public void setRefPoint(double value) { reference = value; }
     @Override public double getRefPoint() { return reference; }
 
     private record Algebraic(double sensedVoltage, double error,
-            double leadLag, double regulator, double field) {}
+            double leadLag, double regulator, double field, double rateFeedback) {}
 
     @Override public AnController getAnController() {
         return getClass().getAnnotation(AnController.class);

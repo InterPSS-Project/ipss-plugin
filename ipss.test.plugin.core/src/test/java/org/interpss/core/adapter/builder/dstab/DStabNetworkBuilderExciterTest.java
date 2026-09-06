@@ -13,6 +13,7 @@ import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
+import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
 import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
@@ -230,6 +231,23 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(3.0, exc.getData().getTf(), TOL);
 		assertEquals(2.4, exc.getData().getE1(), TOL);
 		assertEquals(0.755, exc.getData().getSe_e2(), TOL);
+	}
+
+	@Test
+	public void parseExdc2a_mapsTf2AndAttachesDedicatedModel() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("exdc2a.dyr");
+		Files.writeString(dyr, "1 'EXDC2A' '1' .02 40 .05 .5 1 10 -10 1 .6 "
+				+ ".03 1 .25 3 0 4 0 /\n");
+		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+
+		Exdc2aExciter exc = (Exdc2aExciter) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1").getExciter();
+		assertNotNull(exc);
+		assertEquals(0.25, exc.getTf2(), TOL);
+		assertEquals(1.0, exc.getData().getTf(), TOL);
+		assertEquals(3.0, exc.getData().getE1(), TOL);
+		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
 	}
 
 	@Test

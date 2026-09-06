@@ -214,6 +214,8 @@ public class PSSEDStabDirectParser {
                 return procExcIeeex1(busId, genId, fields);
             case "EXDC2":
                 return procExcExdc2(busId, genId, fields);
+            case "EXDC2A":
+                return procExcExdc2a(busId, genId, fields);
             case "EXST1":
                 return procExcExst1(busId, genId, fields);
             case "ESST1A":
@@ -526,6 +528,17 @@ public class PSSEDStabDirectParser {
     // EXDC2: IBUS 'EXDC2' ID TR KA TA TB TC VRMAX VRMIN KE TE KF TF SWITCH E1 SE1 E2 SE2
     private boolean procExcExdc2(String busId, String genId, String[] f) {
         return builder.addExcExdc2(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
+                getDouble(f, 15, 0), getDouble(f, 16, 0), getDouble(f, 17, 0),
+                getDouble(f, 18, 0)) != null;
+    }
+
+    // EXDC2A: IBUS 'EXDC2A' ID TR KA TA TB TC VRMAX VRMIN KE TE KF TF1 TF2 E1 SE1 E2 SE2
+    private boolean procExcExdc2a(String busId, String genId, String[] f) {
+        return builder.addExcExdc2a(busId, genId,
                 getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
                 getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
                 getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
