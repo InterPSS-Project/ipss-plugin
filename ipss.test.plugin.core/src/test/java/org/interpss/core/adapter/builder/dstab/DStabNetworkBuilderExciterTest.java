@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +16,7 @@ import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
 import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Exciter;
+import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
 import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
@@ -275,6 +277,44 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 				.getMachine("Bus1-mach1").getExciter();
 		assertEquals("IEEET4", alias.getName());
 		assertEquals(0.5, alias.getData().getKr(), TOL);
+	}
+
+	@Test
+	public void parseAc8b_mapsSuppliedPsseRecordWithoutUsingExtendedOrdering() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("ac8b.dyr");
+		Files.writeString(dyr, "1 'AC8B' '1' .02 15 .8 10 .03 99 -99 1 .02 "
+				+ "7.43 -.25 0 .6 .4 .2 6 0 5.7 .1 7.6 .4 /\n");
+		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+
+		Ac8bExciter exc = (Ac8bExciter) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1").getExciter();
+		assertNotNull(exc);
+		assertEquals(0.02, exc.getData().getTr(), TOL);
+		assertEquals(15.0, exc.getData().getKpr(), TOL);
+		assertEquals(0.8, exc.getData().getKir(), TOL);
+		assertEquals(99.0, exc.getData().getVpidmax(), TOL);
+		assertEquals(1.0, exc.getData().getVrmax(), TOL);
+		assertEquals(7.43, exc.getData().getVfemax(), TOL);
+		assertEquals(0.6, exc.getData().getKa(), TOL);
+		assertEquals(0.4, exc.getData().getTe(), TOL);
+		assertEquals(0.2, exc.getData().getKc(), TOL);
+		assertEquals(6.0, exc.getData().getKd(), TOL);
+		assertEquals(5.7, exc.getData().getE1(), TOL);
+		assertEquals(0.4, exc.getData().getSe2(), TOL);
+		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		machine.setEfd(1.2);
+		assertTrue(exc.initStates(machine.getDStabBus(), machine));
+		double initial = exc.getOutput(machine);
+		for (int i = 0; i < 200; i++) {
+			exc.nextStep(0.0005, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,
+					machine, 0);
+			exc.nextStep(0.0005, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,
+					machine, 1);
+		}
+		assertEquals(initial, exc.getOutput(machine), 1.0e-10);
 	}
 
 	@Test
