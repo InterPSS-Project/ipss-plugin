@@ -2,6 +2,7 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -21,6 +22,12 @@ import org.interpss.fadapter.psse.PsseGnetIdvProcessor;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportEntry;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportReport;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
+import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
+import org.interpss.fadapter.psse.dyr.DynamicModelCategory;
+import org.interpss.dstab.renewable.Reeca1Model;
+import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regfma1Model;
+import org.interpss.dstab.renewable.WindControlStack;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -89,6 +96,8 @@ public class Texas2kFullDynamicCoverageTest {
             parser.parseDynFile(dyr.toString());
             DynamicModelImportReport report = parser.getLastImportReport();
             assertGnetRemovedDetailedModels(network, gnetResult, source.directory());
+            assertExactAttachedRuntimeClasses(network, report, source.directory());
+            assertNoDuplicateControllerSlots(report, source.directory());
             assertEquals(source.records(), report.totalRecordCount(), source.directory());
             assertEquals(source.reviewedDependencyFailures(), report.failures().size(),
                     () -> source.directory() + ": " + summarize(report.failures()));
@@ -137,6 +146,90 @@ public class Texas2kFullDynamicCoverageTest {
                         source.directory() + " unique model/device diagnostics");
             }
         }
+    }
+
+    private static void assertExactAttachedRuntimeClasses(BaseDStabNetwork<?, ?> network,
+            DynamicModelImportReport report, String caseName) throws ClassNotFoundException {
+        for (DynamicModelImportEntry entry : report.entries()) {
+            if (entry.status() != DynamicModelImportStatus.ATTACHED) {
+                continue;
+            }
+            var descriptor = DynamicModelCatalog.find(entry.canonicalModelName())
+                    .orElseThrow(() -> new AssertionError(caseName
+                            + " attached an uncataloged model " + entry.canonicalModelName()));
+            Object actual = runtimeModelFor(network, entry, descriptor.category());
+            assertNotNull(actual, caseName + " missing attached runtime model "
+                    + entry.canonicalModelName() + "@" + entry.busNumber() + ":"
+                    + entry.deviceId());
+            Class<?> expected = Class.forName(descriptor.runtimeClassName());
+            assertTrue(expected.isInstance(actual), () -> caseName + " mapped "
+                    + entry.canonicalModelName() + "@" + entry.busNumber() + ":"
+                    + entry.deviceId() + " to " + actual.getClass().getName()
+                    + " instead of " + descriptor.runtimeClassName());
+        }
+    }
+
+    private static Object runtimeModelFor(BaseDStabNetwork<?, ?> network,
+            DynamicModelImportEntry entry, DynamicModelCategory category) {
+        DStabGen generator = (DStabGen) network.getDStabBus("Bus" + entry.busNumber())
+                .getContributeGen(entry.deviceId());
+        assertNotNull(generator, "Missing generator for attached record " + entry);
+        var machine = generator.getMach();
+        return switch (category) {
+            case SYNCHRONOUS_MACHINE -> machine;
+            case EXCITER -> machine == null ? null : machine.getExciter();
+            case GOVERNOR -> machine == null ? null : machine.getGovernor();
+            case STABILIZER -> machine == null ? null : machine.getStabilizer();
+            case CONVERTER_MACHINE -> generator.getDynamicGenDevice();
+            case ELECTRICAL_CONTROLLER -> regca(generator) == null ? null
+                    : regca(generator).getActiveElectricalController();
+            case PLANT_CONTROLLER -> plantController(generator);
+            case AERODYNAMIC_CONTROLLER -> windStack(generator) == null ? null
+                    : windStack(generator).getAerodynamics();
+            case PITCH_CONTROLLER -> windStack(generator) == null ? null
+                    : windStack(generator).getPitchController();
+            case TORQUE_CONTROLLER -> windStack(generator) == null ? null
+                    : windStack(generator).getTorqueController();
+        };
+    }
+
+    private static Regca1Model regca(DStabGen generator) {
+        return generator.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
+    }
+
+    private static Object plantController(DStabGen generator) {
+        if (generator.getDynamicGenDevice() instanceof Regca1Model model) {
+            return model.getActiveElectricalController() == null ? null
+                    : model.getActiveElectricalController().getPlantController();
+        }
+        if (generator.getDynamicGenDevice() instanceof Regfma1Model model) {
+            return model.getPlantController();
+        }
+        return null;
+    }
+
+    private static WindControlStack windStack(DStabGen generator) {
+        Regca1Model converter = regca(generator);
+        if (converter == null || !(converter.getActiveElectricalController()
+                instanceof Reeca1Model controller)) {
+            return null;
+        }
+        return controller.getWindControlStack();
+    }
+
+    private static void assertNoDuplicateControllerSlots(DynamicModelImportReport report,
+            String caseName) {
+        Map<String, Long> occupiedSlots = report.entries().stream()
+                .filter(entry -> entry.status() == DynamicModelImportStatus.ATTACHED)
+                .collect(Collectors.groupingBy(entry -> {
+                    DynamicModelCategory category = DynamicModelCatalog
+                            .find(entry.canonicalModelName()).orElseThrow().category();
+                    return entry.busNumber() + ":" + entry.deviceId() + ":" + category;
+                }, Collectors.counting()));
+        Map<String, Long> duplicates = occupiedSlots.entrySet().stream()
+                .filter(entry -> entry.getValue() > 1L)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        assertTrue(duplicates.isEmpty(), caseName + " duplicate dynamic-model slots " + duplicates);
     }
 
     private static void assertGnetRemovedDetailedModels(BaseDStabNetwork<?, ?> network,
