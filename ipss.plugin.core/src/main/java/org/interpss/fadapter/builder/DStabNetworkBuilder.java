@@ -623,6 +623,24 @@ public class DStabNetworkBuilder {
         return exc;
     }
 
+    /** PSS/E ESDC1A reuses the DC model chain with constant regulator limits. */
+    public org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter addExcEsdc1a(
+            String busId, String genId,
+            double tr, double ka, double ta, double tc, double tb,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double spdmlt,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var data = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aData();
+        data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTc(tc); data.setTb(tb);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
+        data.setKf(kf); data.setTf(tf); data.setSpdmlt(spdmlt);
+        data.setE1(e1); data.setSe1(se1); data.setE2(e2); data.setSe2(se2);
+        return new org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter(
+                mach.getId() + "_Exc", data, mach);
+    }
+
     /** Attach the eight-parameter PSS/E SCRX excitation system. */
     public ScrxExciter addExcScrx(String busId, String genId, ScrxData data) {
         if (data == null || data.getTb() < 0.0 || data.getTe() < 0.0

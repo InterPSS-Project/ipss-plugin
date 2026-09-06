@@ -22,6 +22,7 @@ import com.interpss.dstab.mach.Machine;
         display={})
 public class Esdc2aExciter extends AnnotateExciter {
     private final Esdc2aData data;
+    private final boolean voltageDependentLimits;
     public double one = 1.0;
     public double spdmlt;
 
@@ -39,9 +40,17 @@ public class Esdc2aExciter extends AnnotateExciter {
     public FilterControlBlock leadLag;
 
     public double ka, ta, vrmaxVt, vrminVt;
+    @AnFunctionField(input={"mach.vt"})
+    public ICMLFunction regulatorLimitScale = new CMLFunctionAdapter() {
+        @Override public double eval(double[] values) {
+            return voltageDependentLimits ? values[0] : 1.0;
+        }
+    };
+
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="this.leadLag.y",
             parameter={"type.NonWindup", "this.ka", "this.ta",
-                    "this.vrmaxVt*mach.vt", "this.vrminVt*mach.vt"},
+                    "this.vrmaxVt*this.regulatorLimitScale.y",
+                    "this.vrminVt*this.regulatorLimitScale.y"},
             y0="this.fieldIntegrator.u0+this.ke*this.fieldIntegrator.y"
                     + "+this.saturation.y*this.fieldIntegrator.y")
     public DelayControlBlock regulator;
@@ -76,8 +85,14 @@ public class Esdc2aExciter extends AnnotateExciter {
     public WashoutControlBlock washout;
 
     public Esdc2aExciter(String id, Esdc2aData data, Machine machine) {
-        super(id, "ESDC2A", "PSS/E");
+        this(id, "ESDC2A", data, machine, true);
+    }
+
+    protected Esdc2aExciter(String id, String name, Esdc2aData data,
+            Machine machine, boolean voltageDependentLimits) {
+        super(id, name, "PSS/E");
         this.data = data;
+        this.voltageDependentLimits = voltageDependentLimits;
         this._data = data;
         setMachine(machine);
     }
