@@ -158,7 +158,7 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	  		if (In <= 0.0)
 	  			return 1.0;
 	  		else if (In > 0.0 && In <= 0.433)
-	  			return 1.0 - 0.5777 * In;
+				return 1.0 - 0.577 * In;
 	  		else if (In > 0.433 && In < 0.75)
 	  			return Math.sqrt(0.75 - In * In);
 	  		else if (In >= 0.75 && In <= 1.0)
@@ -301,6 +301,18 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	       else fex = 0.0;
 	       return Math.max(0.0, Math.min(vbmax, ve * fex));
 	    }
+
+	    /** Runtime Vr upper limit after normalization and initialization expansion. */
+	    public double getEffectiveVrmax() { return vrmax; }
+
+	    /** Runtime Vr lower limit after normalization and initialization expansion. */
+	    public double getEffectiveVrmin() { return vrmin; }
+
+	    /** Runtime Vm upper limit after normalization and initialization expansion. */
+	    public double getEffectiveVmmax() { return vmmax; }
+
+	    /** Runtime Vm lower limit after normalization and initialization expansion. */
+	    public double getEffectiveVmmin() { return vmmin; }
 
 	/*
 	 * Part-4: Define the pluin data object edtior

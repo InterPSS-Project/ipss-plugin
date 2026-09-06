@@ -94,6 +94,35 @@ public class PsseEsst4bExciterTest extends CorePluginTestSetup {
         assertEquals(machine.getEfd(), exciter.getOutput(machine), 1.0e-8);
     }
 
+    @Test
+    void initializationExpandsVrAndVmLimitsWithoutMutatingSourceData() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        LoadflowAlgorithm loadflow = com.interpss.core.LoadflowAlgoObjectFactory
+                .createLoadflowAlgorithm(builder.getDStabNetwork());
+        assertTrue(loadflow.loadflow());
+        assertTrue(machine.initStates(builder.getDStabNetwork().getDStabBus("Bus1")));
+        IEEE2005ST4BExciterData data = texasData();
+        data.setVrmax(-0.10);
+        data.setVrmin(0.10);
+        data.setVmmax(-0.05);
+        data.setVmmin(0.05);
+        IEEE2005ST4BExciter exciter = builder.addExcEsst4b("Bus1", "1", data);
+
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine),
+                () -> "effective limits Vr=[" + exciter.getEffectiveVrmin() + ","
+                        + exciter.getEffectiveVrmax() + "], Vm=["
+                        + exciter.getEffectiveVmmin() + "," + exciter.getEffectiveVmmax() + "]");
+        assertEquals(-0.10, exciter.getEffectiveVrmin(), TOL);
+        assertTrue(exciter.getEffectiveVrmax() > 0.10);
+        assertEquals(-0.05, exciter.getEffectiveVmmin(), TOL);
+        assertTrue(exciter.getEffectiveVmmax() > 0.05);
+        assertEquals(-0.10, data.getVrmax(), TOL);
+        assertEquals(0.10, data.getVrmin(), TOL);
+        assertEquals(-0.05, data.getVmmax(), TOL);
+        assertEquals(0.05, data.getVmmin(), TOL);
+    }
+
     private static IEEE2005ST4BExciterData texasData() {
         IEEE2005ST4BExciterData d = new IEEE2005ST4BExciterData();
         d.setTr(0); d.setKpr(6.46); d.setKir(6.46); d.setVrmax(1); d.setVrmin(-.87);
