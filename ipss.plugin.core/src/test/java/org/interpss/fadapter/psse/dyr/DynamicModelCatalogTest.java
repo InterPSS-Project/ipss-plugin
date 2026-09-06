@@ -53,7 +53,7 @@ class DynamicModelCatalogTest {
                 .filter(WeccModelApproval::isImplementedExactly)
                 .count();
         assertEquals(15, approved);
-        assertEquals(11, implemented);
+        assertEquals(12, implemented);
         assertTrue(DynamicModelCatalog.find("WSCCST").orElseThrow().supportStatus()
                 == DynamicModelSupportStatus.LOADABLE);
         assertEquals(DynamicModelSupportStatus.LOADABLE,
@@ -95,6 +95,11 @@ class DynamicModelCatalogTest {
                 .filter(row -> row.catalogName().equals("PSS5C"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertEquals(Set.of(21), DynamicModelCatalog.find("PSS5C").orElseThrow()
+                .recordSchema().acceptedParameterCounts());
+        assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(row -> row.catalogName().equals("PSS6C"))
+                .findFirst().orElseThrow().isImplementedExactly());
+        assertEquals(Set.of(34, 35), DynamicModelCatalog.find("PSS6C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
     }
 
