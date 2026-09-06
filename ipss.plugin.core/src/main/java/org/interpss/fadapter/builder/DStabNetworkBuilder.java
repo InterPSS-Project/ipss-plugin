@@ -428,9 +428,8 @@ public class DStabNetworkBuilder {
     }
 
     /**
-     * PSS2A IEEE dual-input stabilizer with all six documented local signal
-     * selectors. Remote-bus inputs remain explicitly rejected until their
-     * machine/bus association can be validated during import.
+     * PSS2A IEEE dual-input stabilizer with all six documented signal
+     * selectors and validated remote-bus measurements for bus-based signals.
      */
     public Ieee1992PSS2AStabilizer addPss2a(String busId, String genId,
             int ics1, int remoteBus1, int ics2, int remoteBus2, int m, int n,
@@ -453,13 +452,21 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS2A: {} {}", busId, genId);
             return null;
         }
-        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6
-                || remoteBus1 != 0 || remoteBus2 != 0) {
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6) {
             log.warn("PSS2A selector combination is not implemented at {} {}: "
                     + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
                     busId, genId, ics1, remoteBus1, ics2, remoteBus2);
             return null;
         }
+		BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+		BaseDStabBus<?, ?> input1Bus = resolvePss2aSignalBus(localBus, ics1, remoteBus1);
+		BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(localBus, ics2, remoteBus2);
+		if (input1Bus == null || input2Bus == null) {
+			log.warn("PSS2A remote bus could not be resolved at {} {}: "
+					+ "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+					busId, genId, ics1, remoteBus1, ics2, remoteBus2);
+			return null;
+		}
 		if (tb < 0.0 || (Math.abs(tb) < 1.0e-12 && Math.abs(ta) >= 1.0e-12)) {
 			log.warn("PSS2A optional lead-lag is invalid at {} {}: Ta={}, Tb={}",
 					busId, genId, ta, tb);
@@ -467,6 +474,7 @@ public class DStabNetworkBuilder {
 		}
         Ieee1992PSS2AStabilizer pss = StabilizerObjectFactory
                 .createIeee1992PSS2AStabilizer(busId + "-pss2a" + genId, "PSS2A", machine);
+		pss.setInputSignalBuses(input1Bus, input2Bus);
         var data = pss.getData();
         data.setIcs1(ics1);
         data.setRemoteBus1(remoteBus1);
@@ -497,6 +505,16 @@ public class DStabNetworkBuilder {
 		data.setKs4(ks4);
         return pss;
     }
+
+	private BaseDStabBus<?, ?> resolvePss2aSignalBus(BaseDStabBus<?, ?> localBus,
+			int inputCode, int remoteBusNumber) {
+		// Rotor speed, generator electrical power, and accelerating power are
+		// unit signals. PSS/E ignores REMBUS for these selector codes.
+		if (inputCode == 1 || inputCode == 3 || inputCode == 4 || remoteBusNumber == 0) {
+			return localBus;
+		}
+		return network.getDStabBus("Bus" + remoteBusNumber);
+	}
 
     // ==================== Exciter Models ====================
 
