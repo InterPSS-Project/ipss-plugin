@@ -35,6 +35,8 @@ import org.interpss.core.adapter.builder.dstab.PsseEsst1aExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovGovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseLegacyControllerMappingTest;
+import org.interpss.core.adapter.builder.dstab.PSSEDStabDirectParserReportTest;
+import org.interpss.core.adapter.builder.dstab.PsseDyrRecordReaderTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegca1ConverterTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
@@ -377,6 +379,8 @@ import org.junit.platform.suite.api.Suite;
 	PsseType3WindControllerTest.class,
 	PsseHygovGovernorTest.class,
 	PsseLegacyControllerMappingTest.class,
+	PSSEDStabDirectParserReportTest.class,
+	PsseDyrRecordReaderTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,
 	Texas2kFullDynamicCoverageTest.class,

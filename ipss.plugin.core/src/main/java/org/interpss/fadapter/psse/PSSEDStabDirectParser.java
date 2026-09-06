@@ -119,10 +119,19 @@ public class PSSEDStabDirectParser {
                             "generator intentionally removed by GNET preprocessing");
                     continue;
                 }
+                if (!hasExpectedParameterCount(record)) {
+                    report.add(record, DynamicModelImportStatus.REJECTED,
+                            rejectionMessage(type, record));
+                    continue;
+                }
+                String missingTarget = missingCatalogTarget(record);
+                if (missingTarget != null) {
+                    report.add(record, DynamicModelImportStatus.MISSING_TARGET, missingTarget);
+                    continue;
+                }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1");
-                if (hasExpectedParameterCount(record)
-                        && processModelRecord(type, record.fields().toArray(String[]::new), record)) {
+                if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, DynamicModelImportStatus.ATTACHED, "");
                 } else {
                     report.add(record, rejectedStatus(type), rejectionMessage(type, record));
@@ -171,6 +180,17 @@ public class PSSEDStabDirectParser {
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .map(model -> model.parameterCount() == record.parameterCount())
                 .orElse(true);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String missingCatalogTarget(PsseDyrRecord record) {
+        if (DynamicModelCatalog.find(record.canonicalModelName()).isEmpty()) return null;
+        String busId = BUS_ID_PREFIX + record.busNumber();
+        BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
+        if (bus == null) return "target bus " + busId + " does not exist";
+        DStabGen gen = (DStabGen) bus.getContributeGen(record.deviceId());
+        return gen == null ? "target generator " + busId + "/" + record.deviceId()
+                + " does not exist" : null;
     }
 
     private boolean processModelRecord(String type, String[] fields, PsseDyrRecord record)
@@ -1189,7 +1209,7 @@ public class PSSEDStabDirectParser {
 
     private String rejectionMessage(String type, PsseDyrRecord record) {
         return DynamicModelCatalog.find(type)
-                .map(model -> model.parameterCount() != record.parameterCount()
+                .map(model -> !hasExpectedParameterCount(record)
                         ? "expected " + model.parameterCount() + " parameters but found "
                                 + record.parameterCount()
                         : model.supportStatus() == DynamicModelSupportStatus.LOADABLE

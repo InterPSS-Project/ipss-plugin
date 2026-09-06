@@ -12,7 +12,7 @@ import org.interpss.fadapter.psse.dyr.PsseDyrRecord;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.junit.jupiter.api.Test;
 
-class PsseDyrRecordReaderTest {
+public class PsseDyrRecordReaderTest {
 
     @Test
     void tokenizesMultilineQuotedCommaAndScientificNotationRecords() throws Exception {
