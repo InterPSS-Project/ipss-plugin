@@ -10,16 +10,19 @@ import java.nio.file.Path;
 
 import com.interpss.dstab.DStabGen;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class PsseReeca1ControllerTest extends CorePluginTestSetup {
+public class PsseReeca1ControllerTest extends CorePluginTestSetup {
 
     @Test
     void directParserMapsCompleteFiftyOneParameterRecord(@TempDir Path tempDir) throws Exception {
@@ -64,6 +67,55 @@ class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertTrue(Math.hypot(controller.getIpcmd(), controller.getIqcmd()) <= 1.3 + 1.0e-9);
     }
 
+    @Test
+    void terminalVoltageFilterUsesRawVoltageForDipDetection() {
+        Reeca1Model controller = new Reeca1Model(sensingData(0, 0, .1), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(.01, .8, .2, .5, 1.0);
+
+        assertTrue(controller.isVoltageDip());
+        assertEquals(.95, controller.getMeasuredVoltage(), 1.0e-12);
+    }
+
+    @Test
+    void dipFreezesReactiveCurrentWhilePowerMeasurementContinues() {
+        Reeca1Model controller = new Reeca1Model(sensingData(0, 1, .1), null);
+        controller.initialize(.8, .2, 1.0);
+        double initialIqState = controller.getReactiveCurrentState();
+
+        controller.step(.01, .4, .2, .5, 1.0);
+        assertTrue(controller.isVoltageDip());
+        assertEquals(.4, controller.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(initialIqState, controller.getReactiveCurrentState(), 1.0e-12);
+
+        controller.step(.01, .4, .2, 1.0, 1.0);
+        assertTrue(!controller.isVoltageDip());
+        assertTrue(controller.getReactiveCurrentState() < initialIqState);
+    }
+
+    @Test
+    void remoteBusVoltageDrivesFilterAndDipComparatorInsteadOfLocalVoltage() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        AclfNetworkBuilder topology = new AclfNetworkBuilder(builder.getDStabNetwork());
+        topology.addBus("Bus2", "Remote", 2L, 16500.0, .95, 0.0,
+                null, null, null);
+        Regca1Model converter = builder.addRegca1("Bus1", "1",
+                new Regca1Data(0, .02, 10, .9, .4, 1.22, 1.2, .8,
+                        .4, -1.3, .02, .7, 0, 0, .8));
+        Reeca1Model controller = new Reeca1Model(sensingData(2, 0, .1), converter);
+        converter.setReeca1Controller(controller);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        assertEquals(.95, controller.getMeasuredVoltage(), 1.0e-12);
+
+        converter.getDStabBus().setVoltage(new Complex(.5, 0.0));
+        builder.getDStabNetwork().getDStabBus("Bus2").setVoltage(new Complex(.9, 0.0));
+        controller.step(.01, .8, .2, .5, 1.0);
+
+        assertTrue(!controller.isVoltageDip());
+        assertEquals(.945, controller.getMeasuredVoltage(), 1.0e-12);
+    }
+
     private static Reeca1Data expectedData() {
         return new Reeca1Data(0, 1, 0, 1, 0, 1,
                 .7, 1.3, .01, -.02, .03, 2, .9, -.8, 1.01, .1, .2, .3,
@@ -78,6 +130,15 @@ class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 .85, 1.15, .02, 0, 0, 5, 1.1, -1.1, 0, 0, 0, .5,
                 .02, .436, -.436, 1.1, .9, 1.2, 1.9, 1, 1.1, 0, .02,
                 99, -99, 1, 0, 1.3, .02,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    private static Reeca1Data sensingData(int remoteBus, int pfFlag, double trv) {
+        return new Reeca1Data(remoteBus, pfFlag, 0, 0, 0, 0,
+                .8, 1.2, trv, -.02, .02, 0, 1, -1, 0, 0, 0, 0,
+                0, 1, -1, 1, -1, 0, 0, 0, 0, 1, .1,
+                99, -99, 2, -2, 10, .1,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0);
     }
