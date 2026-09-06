@@ -133,6 +133,9 @@ public class PSSEDStabDirectParser {
     }
 
     private boolean hasExpectedParameterCount(PsseDyrRecord record) {
+        if (record.canonicalModelName().equals("REPCA1")) {
+            return record.parameterCount() == 34 || record.parameterCount() == 35;
+        }
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .map(model -> model.parameterCount() == record.parameterCount())
                 .orElse(true);
