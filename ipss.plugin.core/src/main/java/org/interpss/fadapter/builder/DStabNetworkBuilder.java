@@ -13,6 +13,8 @@ import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
+import org.interpss.dstab.control.exc.psse.exac1a.Exac1aExciter;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
@@ -674,6 +676,19 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if (mach==null) { log.warn("Machine not found for EXAC1: bus={}, gen={}",busId,genId); return null; }
         return new Exac1Exciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the PSS/E EXAC1A modified rotating AC exciter. */
+    public Exac1aExciter addExcExac1a(String busId,String genId,Exac1aData data) {
+        if (data==null || data.getKa()<=0.0 || data.getTe()<=0.0 || data.getTf()<=0.0
+                || data.getTr()<0.0 || data.getTb()<0.0 || data.getTa()<0.0
+                || data.getKc()<0.0) {
+            log.warn("Invalid EXAC1A parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) { log.warn("Machine not found for EXAC1A: bus={}, gen={}",busId,genId); return null; }
+        return new Exac1aExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** Attach the IEEE 421.5/PSS/E ESAC1A rotating AC exciter. */
