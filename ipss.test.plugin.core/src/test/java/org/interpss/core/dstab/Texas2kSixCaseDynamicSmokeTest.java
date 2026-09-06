@@ -26,8 +26,8 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 import org.apache.commons.math3.complex.Complex;
 import com.interpss.simu.SimuContext;
 
-/** Full-stack initialization and no-event smoke gate for Texas2k Cases 1 and 2. */
-public class Texas2kCase12DynamicSmokeTest {
+/** Full-stack initialization and no-event smoke gate for all Texas2k Series 24 cases. */
+public class Texas2kSixCaseDynamicSmokeTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
             Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
                     "private_cases", "Texas2k_series24_cases_with_dynamics",
@@ -36,8 +36,18 @@ public class Texas2kCase12DynamicSmokeTest {
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr"),
             new CaseFile("Texas2k_series24_case2_2016lowload",
-                    "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr"));
-    private static final Set<String> REVIEWED_MISSING_MACHINES = Set.of("Bus1090:1", "Bus1090:2");
+                    "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr"),
+            new CaseFile("Texas2k_series24_case3_2024summerpeak",
+                    "Texas2k_series24_case3_2024summerpeak_v30.RAW", "dynamic_models_case3.dyr"),
+            new CaseFile("Texas2k_series24_case4_2024lowload",
+                    "Texas2k_series24_case4_2024lowload.RAW", "dynamic_models_case4.dyr"),
+            new CaseFile("Texas2k_series24_case5_2024highrenewables",
+                    "Texas2k_series24_case5_2024highrenewables.RAW", "dynamic_models_case5.dyr"),
+            new CaseFile("Texas2k_series24_case6_2024lowloadwithgfm",
+                    "Texas2k_series24_case6_2024lowloadwithgfm.RAW", "dynamic_models_case6.dyr"));
+    private static final Set<String> REVIEWED_MISSING_MACHINES = Set.of(
+            "Bus1090:1", "Bus1090:2", "Bus5045:1", "Bus5394:1", "Bus5395:1",
+            "Bus7095:1", "Bus7099:2");
 
     @BeforeAll
     static void initializePlugin() {
@@ -45,7 +55,7 @@ public class Texas2kCase12DynamicSmokeTest {
     }
 
     @Test
-    void completeCase1AndCase2StacksInitializeAndHold() throws Exception {
+    void allSixCaseStacksInitializeAndHold() throws Exception {
         assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
         for (CaseFile source : CASES) verifyNoEvent(source);
     }
