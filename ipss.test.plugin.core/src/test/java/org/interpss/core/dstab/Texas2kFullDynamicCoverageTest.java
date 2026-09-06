@@ -1,6 +1,8 @@
 package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -24,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabGen;
 
 /** Whole-file attachment audit for all six Texas2k Series 24 cases. */
 public class Texas2kFullDynamicCoverageTest {
@@ -85,6 +88,7 @@ public class Texas2kFullDynamicCoverageTest {
                     .setGnetRemovedGenerators(gnetResult.convertedGeneratorKeys());
             parser.parseDynFile(dyr.toString());
             DynamicModelImportReport report = parser.getLastImportReport();
+            assertGnetRemovedDetailedModels(network, gnetResult, source.directory());
             assertEquals(source.records(), report.totalRecordCount(), source.directory());
             assertEquals(source.reviewedDependencyFailures(), report.failures().size(),
                     () -> source.directory() + ": " + summarize(report.failures()));
@@ -132,6 +136,21 @@ public class Texas2kFullDynamicCoverageTest {
                                 .collect(Collectors.toSet()).size(),
                         source.directory() + " unique model/device diagnostics");
             }
+        }
+    }
+
+    private static void assertGnetRemovedDetailedModels(BaseDStabNetwork<?, ?> network,
+            PsseGnetIdvProcessor.Result result, String caseName) {
+        for (PsseGnetIdvProcessor.GeneratorKey key : result.convertedGeneratorKeys()) {
+            DStabGen generator = (DStabGen) network.getDStabBus(key.busId())
+                    .getContributeGen(key.generatorId());
+            assertFalse(generator.isActive(), caseName + " active GNET generator " + key);
+            assertNull(generator.getMach(), caseName + " retained GNET machine " + key);
+            assertNull(generator.getDynamicGenDevice(),
+                    caseName + " retained GNET dynamic generator device " + key);
+            assertTrue(network.getDStabBus(key.busId())
+                            .getContributeLoad("GNET-" + key.generatorId()).isActive(),
+                    caseName + " missing active GNET replacement load " + key);
         }
     }
 

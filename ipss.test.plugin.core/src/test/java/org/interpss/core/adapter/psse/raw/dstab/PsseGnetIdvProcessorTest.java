@@ -2,6 +2,7 @@ package org.interpss.core.adapter.psse.raw.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.net.OriginalDataFormat;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabObjectFactory;
 
 public class PsseGnetIdvProcessorTest {
@@ -92,6 +94,11 @@ public class PsseGnetIdvProcessorTest {
         assertTrue(parser.getLastImportReport().failures().isEmpty());
         assertEquals("generator intentionally removed by GNET preprocessing",
                 parser.getLastImportReport().entries().get(0).message());
+        DStabGen convertedGenerator = (DStabGen) network.getDStabBus("Bus1090")
+                .getContributeGen("1");
+        assertNull(convertedGenerator.getMach());
+        assertNull(convertedGenerator.getDynamicGenDevice());
+        assertNull(network.getMachine("Bus1090-mach1"));
     }
 
     @Test
