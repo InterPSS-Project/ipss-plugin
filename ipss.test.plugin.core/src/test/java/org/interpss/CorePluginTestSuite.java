@@ -26,6 +26,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1Test;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac2Test;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac1aTest;
+import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac2aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGovernorTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
@@ -330,6 +331,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderExac1aTest.class,
 	DStabNetworkBuilderExac2Test.class,
 	DStabNetworkBuilderEsac1aTest.class,
+	DStabNetworkBuilderEsac2aTest.class,
 	DStabNetworkBuilderGovernorTest.class,
 
 	//matpower
