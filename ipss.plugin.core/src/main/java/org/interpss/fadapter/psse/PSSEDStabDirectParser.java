@@ -171,14 +171,8 @@ public class PSSEDStabDirectParser {
     }
 
     private boolean hasExpectedParameterCount(PsseDyrRecord record) {
-        if (record.canonicalModelName().equals("REPCA1")) {
-            return record.parameterCount() == 34 || record.parameterCount() == 35;
-        }
-        if (record.canonicalModelName().equals("IEEET1")) {
-            return record.parameterCount() == 14 || record.parameterCount() == 15;
-        }
         return DynamicModelCatalog.find(record.canonicalModelName())
-                .map(model -> model.parameterCount() == record.parameterCount())
+                .map(model -> model.recordSchema().accepts(record.parameterCount()))
                 .orElse(true);
     }
 
@@ -1210,7 +1204,8 @@ public class PSSEDStabDirectParser {
     private String rejectionMessage(String type, PsseDyrRecord record) {
         return DynamicModelCatalog.find(type)
                 .map(model -> !hasExpectedParameterCount(record)
-                        ? "expected " + model.parameterCount() + " parameters but found "
+                        ? "expected " + model.recordSchema().expectedCountsDescription()
+                                + " parameters but found "
                                 + record.parameterCount()
                         : model.supportStatus() == DynamicModelSupportStatus.LOADABLE
                                 ? "model could not be attached to its target device"

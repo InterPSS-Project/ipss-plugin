@@ -113,7 +113,8 @@ class DynamicModelCatalogTest {
     @Test
     void loadableDescriptorRequiresRuntimeClass() {
         assertThrows(IllegalArgumentException.class, () -> new DynamicModelDescriptor(
-                "TEST", Set.of(), DynamicModelCategory.GOVERNOR, 1,
+                "TEST", Set.of(), DynamicModelCategory.GOVERNOR,
+                DynamicModelRecordSchema.exact(1),
                 DynamicModelSupportStatus.LOADABLE, "", URI.create("https://example.invalid")));
     }
 
@@ -129,6 +130,8 @@ class DynamicModelCatalogTest {
                     "Non-HTTPS reference for " + model.canonicalName());
             assertTrue(model.parameterCount() > 0,
                     "Missing parameter schema length for " + model.canonicalName());
+            assertTrue(model.recordSchema().accepts(model.parameterCount()),
+                    "Primary layout is not accepted for " + model.canonicalName());
             if (model.supportStatus() == DynamicModelSupportStatus.LOADABLE) {
                 assertEquals(model.runtimeClassName(),
                         Class.forName(model.runtimeClassName()).getName(),
@@ -141,6 +144,20 @@ class DynamicModelCatalogTest {
                         "Catalog lookup mismatch for " + name);
             }
         }
+    }
+
+    @Test
+    void versionedRecordSchemasAcceptOnlyReviewedLayouts() {
+        var ieeet1 = DynamicModelCatalog.find("IEEET1").orElseThrow().recordSchema();
+        assertEquals(Set.of(14, 15), ieeet1.acceptedParameterCounts());
+        assertTrue(ieeet1.accepts(14));
+        assertTrue(ieeet1.accepts(15));
+        assertFalse(ieeet1.accepts(16));
+
+        var repca1 = DynamicModelCatalog.find("REPCA1").orElseThrow().recordSchema();
+        assertEquals(Set.of(34, 35), repca1.acceptedParameterCounts());
+        assertFalse(repca1.accepts(36));
+        assertEquals("34 or 35", repca1.expectedCountsDescription());
     }
 
     @Test
