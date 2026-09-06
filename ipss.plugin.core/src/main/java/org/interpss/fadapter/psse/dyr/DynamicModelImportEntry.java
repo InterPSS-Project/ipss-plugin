@@ -13,6 +13,8 @@ public record DynamicModelImportEntry(
         String canonicalModelName,
         int parameterCount,
         DynamicModelImportStatus status,
+        boolean aliasConverted,
+        String runtimeClassName,
         String message) {
 
     public DynamicModelImportEntry {
@@ -21,6 +23,7 @@ public record DynamicModelImportEntry(
         sourceModelName = DynamicModelDescriptor.normalizeName(sourceModelName);
         canonicalModelName = DynamicModelDescriptor.normalizeName(canonicalModelName);
         Objects.requireNonNull(status, "status");
+        runtimeClassName = runtimeClassName == null ? "" : runtimeClassName.trim();
         message = message == null ? "" : message;
         if (startLine <= 0 || endLine < startLine) {
             throw new IllegalArgumentException("Invalid import-entry source location");
@@ -29,8 +32,13 @@ public record DynamicModelImportEntry(
 
     public static DynamicModelImportEntry from(PsseDyrRecord record,
             DynamicModelImportStatus status, String message) {
+        String runtimeClass = status == DynamicModelImportStatus.ATTACHED
+                ? DynamicModelCatalog.find(record.canonicalModelName())
+                        .map(DynamicModelDescriptor::runtimeClassName).orElse("")
+                : "";
         return new DynamicModelImportEntry(record.source(), record.startLine(), record.endLine(),
                 record.busNumber(), record.deviceId(), record.sourceModelName(),
-                record.canonicalModelName(), record.parameterCount(), status, message);
+                record.canonicalModelName(), record.parameterCount(), status,
+                !record.sourceModelName().equals(record.canonicalModelName()), runtimeClass, message);
     }
 }

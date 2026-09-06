@@ -21,6 +21,7 @@ public final class DynamicModelImportReport {
     private final List<DynamicModelImportEntry> entries;
     private final Map<DynamicModelImportStatus, Integer> countsByStatus;
     private final Map<String, Integer> sourceCountsByModel;
+    private final Map<String, Integer> sourceCountsBySpelling;
     private final Map<String, Integer> attachedCountsByModel;
 
     private DynamicModelImportReport(String source, List<DynamicModelImportEntry> entries) {
@@ -29,16 +30,19 @@ public final class DynamicModelImportReport {
         EnumMap<DynamicModelImportStatus, Integer> statusCounts =
                 new EnumMap<>(DynamicModelImportStatus.class);
         TreeMap<String, Integer> sourceCounts = new TreeMap<>();
+        TreeMap<String, Integer> spellingCounts = new TreeMap<>();
         TreeMap<String, Integer> attachedCounts = new TreeMap<>();
         for (DynamicModelImportEntry entry : entries) {
             statusCounts.merge(entry.status(), 1, Integer::sum);
             sourceCounts.merge(entry.canonicalModelName(), 1, Integer::sum);
+            spellingCounts.merge(entry.sourceModelName(), 1, Integer::sum);
             if (entry.status() == DynamicModelImportStatus.ATTACHED) {
                 attachedCounts.merge(entry.canonicalModelName(), 1, Integer::sum);
             }
         }
         this.countsByStatus = Collections.unmodifiableMap(statusCounts);
         this.sourceCountsByModel = Collections.unmodifiableMap(sourceCounts);
+        this.sourceCountsBySpelling = Collections.unmodifiableMap(spellingCounts);
         this.attachedCountsByModel = Collections.unmodifiableMap(attachedCounts);
     }
 
@@ -72,6 +76,15 @@ public final class DynamicModelImportReport {
 
     public Map<String, Integer> sourceCountsByModel() {
         return sourceCountsByModel;
+    }
+
+    /** Source-record counts before alias canonicalization. */
+    public Map<String, Integer> sourceCountsBySpelling() {
+        return sourceCountsBySpelling;
+    }
+
+    public long aliasConversionCount() {
+        return entries.stream().filter(DynamicModelImportEntry::aliasConverted).count();
     }
 
     public Map<String, Integer> attachedCountsByModel() {

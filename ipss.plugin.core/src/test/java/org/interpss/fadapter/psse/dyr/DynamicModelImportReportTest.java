@@ -15,7 +15,7 @@ class DynamicModelImportReportTest {
     @Test
     void reportsExactSourceAndAttachmentCounts() throws Exception {
         List<PsseDyrRecord> records = PsseDyrRecordReader.read(new StringReader(
-                "1 'GENROU' 1 1 /\n2 'GGOV1' 1 2 /"), "report.dyr");
+                "1 'GENROE' 1 1 /\n2 'GGOV1' 1 2 /"), "report.dyr");
         DynamicModelImportReport report = DynamicModelImportReport.builder("report.dyr")
                 .add(records.get(0), DynamicModelImportStatus.ATTACHED, "")
                 .add(records.get(1), DynamicModelImportStatus.UNSUPPORTED, "not implemented")
@@ -26,6 +26,8 @@ class DynamicModelImportReportTest {
         assertEquals(1, report.count(DynamicModelImportStatus.UNSUPPORTED));
         assertEquals(1, report.sourceCountsByModel().get("GENROU"));
         assertEquals(1, report.sourceCountsByModel().get("GGOV1"));
+        assertEquals(1, report.sourceCountsBySpelling().get("GENROE"));
+        assertEquals(1, report.aliasConversionCount());
         assertEquals(1, report.attachedCountsByModel().get("GENROU"));
         assertFalse(report.attachedCountsByModel().containsKey("GGOV1"));
         assertFalse(report.isStrictlyComplete());
@@ -33,6 +35,10 @@ class DynamicModelImportReportTest {
         var json = JsonParser.parseString(report.toJson()).getAsJsonObject();
         assertEquals(2, json.getAsJsonArray("entries").size());
         assertEquals(1, json.getAsJsonObject("countsByStatus").get("UNSUPPORTED").getAsInt());
+        var attached = json.getAsJsonArray("entries").get(0).getAsJsonObject();
+        assertTrue(attached.get("aliasConverted").getAsBoolean());
+        assertEquals("com.interpss.dstab.mach.RoundRotorMachine",
+                attached.get("runtimeClassName").getAsString());
     }
 
     @Test
