@@ -16,6 +16,8 @@ import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Repca1Data;
+import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
@@ -116,6 +118,27 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertEquals(.945, controller.getMeasuredVoltage(), 1.0e-12);
     }
 
+    @Test
+    void activeReferenceRampPflagTpordAndDipFreezeFollowTheWeccPath() {
+        for (int pFlag : new int[] {0, 1}) {
+            Reeca1Model controller = new Reeca1Model(activePathData(pFlag), null);
+            controller.setPlantController(frequencyPlantController());
+            controller.initialize(.8, .2, 1.0);
+
+            controller.step(.1, .8, .2, 1.0, .9);
+            assertEquals(.805, controller.getActivePowerFilter(), 1.0e-12);
+            double selected = pFlag == 1 ? .9 * .805 : .805;
+            double expectedOrder = .8 + .1 * (selected - .8) / .2;
+            assertEquals(expectedOrder, controller.getActivePowerOrder(), 1.0e-12,
+                    "PFLAG=" + pFlag);
+
+            controller.step(.1, .8, .2, .5, .9);
+            assertEquals(.81, controller.getActivePowerFilter(), 1.0e-12);
+            assertEquals(expectedOrder, controller.getActivePowerOrder(), 1.0e-12,
+                    "Pord must freeze during a voltage dip");
+        }
+    }
+
     private static Reeca1Data expectedData() {
         return new Reeca1Data(0, 1, 0, 1, 0, 1,
                 .7, 1.3, .01, -.02, .03, 2, .9, -.8, 1.01, .1, .2, .3,
@@ -141,5 +164,23 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 99, -99, 2, -2, 10, .1,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    private static Reeca1Data activePathData(int pFlag) {
+        return new Reeca1Data(0, 0, 0, 0, pFlag, 0,
+                .8, 1.2, 0, -.02, .02, 0, 1, -1, 0, 0, 0, 0,
+                0, 1, -1, 1, -1, 0, 0, 0, 0, 1, 0,
+                .05, -.05, 2, -2, 10, .2,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    private static Repca1Model frequencyPlantController() {
+        return new Repca1Model(new Repca1Data(
+                0, 0, 0, "1", 0, 0, 1,
+                0, 0, 0, 0, 0, 0, 0, 0, 0,
+                1, -1, -.001, .001, 1, -1,
+                1, 0, 0, -.001, .001, 1, -1,
+                1, -1, 0, 1, 1, 1));
     }
 }
