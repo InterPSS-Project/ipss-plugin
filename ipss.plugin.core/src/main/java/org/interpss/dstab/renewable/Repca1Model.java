@@ -187,6 +187,8 @@ public final class Repca1Model {
     public Repca1Data getData() { return data; }
     public double getPref() { return pext; }
     public double getQref() { return qext; }
+    public double getMeasuredActivePower() { return pMeasured; }
+    public double getMeasuredReactiveOrVoltage() { return qOrVMeasured; }
     public boolean isUsingZeroBranchFallback() { return zeroBranchFallback; }
     public double getDeviceBaseMva() { return deviceBaseMva; }
 
