@@ -44,7 +44,7 @@ import org.interpss.core.dstab.Texas2kRegfma1CoverageTest;
 import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
 import org.interpss.core.dstab.Texas2kHygovCoverageTest;
 import org.interpss.core.dstab.Texas2kLegacyControllerProfileTest;
-import org.interpss.core.dstab.Texas2kCase12DynamicSmokeTest;
+import org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -372,7 +372,7 @@ import org.junit.platform.suite.api.Suite;
 	Texas2kFullDynamicCoverageTest.class,
 	Texas2kHygovCoverageTest.class,
 	Texas2kLegacyControllerProfileTest.class,
-	Texas2kCase12DynamicSmokeTest.class,
+	Texas2kSixCaseDynamicSmokeTest.class,
 
 	//matpower
 	MatpowerFormatTest.class,
