@@ -40,6 +40,8 @@ import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
@@ -150,6 +152,12 @@ public class StabilizerObjectFactory {
 	public static Ieee2016PSS6CStabilizer createIeee2016PSS6CStabilizer(
 			String id, Ieee2016PSS6CStabilizerData data, Machine machine) {
 		return new Ieee2016PSS6CStabilizer(id, data, machine);
+	}
+
+	/** Create an IEEE 421.5-2016 PSS7C stabilizer and attach it to its machine. */
+	public static Ieee2016PSS7CStabilizer createIeee2016PSS7CStabilizer(
+			String id, Ieee2016PSS7CStabilizerData data, Machine machine) {
+		return new Ieee2016PSS7CStabilizer(id, data, machine);
 	}
 
 	/**
