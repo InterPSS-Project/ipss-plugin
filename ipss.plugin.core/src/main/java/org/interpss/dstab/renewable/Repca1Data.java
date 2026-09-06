@@ -13,11 +13,20 @@ public record Repca1Data(
 
     public Repca1Data {
         branchId = branchId == null ? "" : branchId.trim();
+        checkFlag(vcFlag, "VCFlag");
+        checkFlag(refFlag, "RefFlag");
+        checkFlag(fFlag, "FreqFlag");
         if (tfltr < 0 || tfv < 0 || tp < 0 || tg < 0)
             throw new IllegalArgumentException("REPCA1 time constants must be non-negative");
         if (emax < emin || qmax < qmin || femax < femin || pmax < pmin)
             throw new IllegalArgumentException("REPCA1 upper limits must be >= lower limits");
         if (puFlag != 0 && puFlag != 1)
             throw new IllegalArgumentException("REPCA1 PUflag must be 0 (system base) or 1 (model base)");
+    }
+
+    private static void checkFlag(int value, String name) {
+        if (value != 0 && value != 1) {
+            throw new IllegalArgumentException("REPCA1 " + name + " must be 0 or 1");
+        }
     }
 }

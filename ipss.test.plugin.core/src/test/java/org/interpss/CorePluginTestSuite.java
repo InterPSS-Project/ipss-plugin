@@ -34,6 +34,7 @@ import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegca1ConverterTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
+import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -351,6 +352,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseGgov1GovernorTest.class,
 	PsseRegca1ConverterTest.class,
 	PsseReeca1ControllerTest.class,
+	PsseRepca1PlantControllerTest.class,
 
 	//matpower
 	MatpowerFormatTest.class,
