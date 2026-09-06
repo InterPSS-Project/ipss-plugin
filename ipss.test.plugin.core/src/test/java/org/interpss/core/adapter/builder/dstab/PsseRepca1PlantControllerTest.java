@@ -137,6 +137,80 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
         }
     }
 
+    @Test
+    void reactivePiFilterAndLeadLagFollowDocumentedBlockOrder() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 0, .1, 2, 1, .05, .1,
+                .7, 1, -1, 0, 0, 0, 0, 0));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.05, .8, 0.0, 1.0, 1.0);
+
+        // Tfltr=.1: Qmeas=.1; error=.1; PI=.205. The .05/.1 lead-lag
+        // produces .5*.205 + .5*(.5*.205) = .15375.
+        assertEquals(.1, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
+        assertEquals(.005, plant.getReactiveControlIntegral(), 1.0e-12);
+        assertEquals(.1025, plant.getLeadLagState(), 1.0e-12);
+        assertEquals(.15375, plant.getQref(), 1.0e-12);
+    }
+
+    @Test
+    void lowVoltageFreezesOnlyTheReactiveIntegratorAndLimitsRemainLive() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 0, 0, 2, 1, 0, 0,
+                .95, .15, -.15, 0, 0, 0, 0, 0));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.1, .8, .1, .9, 1.0);
+
+        assertEquals(0.0, plant.getReactiveControlIntegral(), 1.0e-12);
+        assertEquals(.15, plant.getQref(), 1.0e-12,
+                "the proportional path remains live and is output-limited");
+    }
+
+    @Test
+    void reactivePiDoesNotWindUpAgainstItsOutputLimit() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 0, 0, 2, 1, 0, 0,
+                .7, .1, -.1, 0, 0, 0, 0, 0));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.1, .8, .1, 1.0, 1.0);
+
+        assertEquals(0.0, plant.getReactiveControlIntegral(), 1.0e-12);
+        assertEquals(.1, plant.getQref(), 1.0e-12);
+    }
+
+    @Test
+    void initializationExpandsPiLimitsToIncludeZeroIncrementalOutput() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 0, 0, 2, 1, 0, 0,
+                .7, -.1, -.2, 0, 0, 0, 0, 0));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.1, .8, .1, 1.0, 1.0);
+
+        assertEquals(0.0, plant.getQref(), 1.0e-12);
+        assertEquals(0.0, plant.getReactiveControlIntegral(), 1.0e-12);
+    }
+
+    @Test
+    void frequencyPowerPiAndOutputLagUseDirectionalDroop() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 1, 0, 0, 0, 0, 0,
+                .7, 1, -1, 2, 1, .1, 10, 20));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.05, .7, .2, 1.0, .99);
+
+        // Tp=0 in this fixture, so Perr=(.8-.7)+Dup*(1-.99)=.3.
+        // Active PI=2*.3 + integral(1*.3*.05)=.615; Tg=.1 gives .3075.
+        assertEquals(.015, plant.getActiveControlIntegral(), 1.0e-12);
+        assertEquals(.3075, plant.getActiveLagState(), 1.0e-12);
+        assertEquals(.3075, plant.getPref(), 1.0e-12);
+
+        Repca1Model disabled = new Repca1Model(dynamicData(0, 0, 0, 0, 0, 0, 0,
+                .7, 1, -1, 2, 1, .1, 10, 20));
+        disabled.initialize(.8, .2, 1.0);
+        disabled.step(.05, .7, .2, 1.0, .99);
+        assertEquals(0.0, disabled.getPref(), 1.0e-12);
+    }
+
     private static Regca1Model addRenewableChain(DStabNetworkBuilder builder) {
         Regca1Model converter = builder.addRegca1("Bus1", "1",
                 new Regca1Data(0, .02, 10, .9, .4, 1.22, 1.2, .8,
@@ -165,6 +239,16 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
                 0, 0, 0, 0, 0, .7, rc, xc, kc,
                 1, -1, 0, 0, 1, -1, 0, 0, 0,
                 0, 0, 1, -1, 1, -1, 0, 0, 0, puFlag);
+    }
+
+    private static Repca1Data dynamicData(int refFlag, int fFlag, double tfltr,
+            double kp, double ki, double tft, double tfv, double vfrz,
+            double qmax, double qmin, double kpg, double kig, double tg,
+            double ddn, double dup) {
+        return new Repca1Data(0, 0, 0, "1", 0, refFlag, fFlag,
+                tfltr, kp, ki, tft, tfv, vfrz, 0, 0, 0,
+                1, -1, 0, 0, qmax, qmin, kpg, kig, 0,
+                0, 0, 1, -1, 1, -1, tg, ddn, dup, 0);
     }
 
     private record MeasurementFixture(DStabNetworkBuilder builder,
