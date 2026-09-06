@@ -3,6 +3,7 @@ package org.interpss.fadapter.builder;
 import org.interpss.dstab.control.exc.ExciterObjectFactory;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
+import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -959,29 +960,29 @@ public class DStabNetworkBuilder {
         return exc;
     }
 
-    /**
-     * PSS/E IEEEX1 compatibility implementation with its explicit voltage
-     * transducer. A zero TE is rejected until the algebraic field block is
-     * implemented; it must never be replaced by an undocumented time constant.
-     */
+    /** PSS/E IEEEX1 / WECC EXDC1 excitation system. */
     public IEEE1981DC1Exciter addExcIeeex1(String busId, String genId,
             double tr, double ka, double ta, double tb, double tc,
             double vrmax, double vrmin, double ke, double te,
             double kf, double tf, double e1, double se1, double e2, double se2) {
+        return addExcIeeex1(busId, genId, tr, ka, ta, tb, tc, vrmax, vrmin,
+                ke, te, kf, tf, 0.0, e1, se1, e2, se2);
+    }
+
+    public Ieeex1Exciter addExcIeeex1(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double switchValue,
+            double e1, double se1, double e2, double se2) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) {
             log.warn("Machine not found for IEEEX1 exciter: bus={}, gen={}", busId, genId);
             return null;
         }
-        if (te <= 0.0) {
-            log.warn("IEEEX1 algebraic field block is not implemented: bus={}, gen={}, TE={}",
-                    busId, genId, te);
-            return null;
-        }
-        IEEE1981DC1Exciter exc = ExciterObjectFactory.createIeee1981DC1Exciter(
-                mach.getId() + "_Exc", "IEEEX1", mach);
-        exc.configureAsPsseIeeex1();
+        Ieeex1Exciter exc = ExciterObjectFactory.createIeeex1Exciter(
+                mach.getId() + "_Exc", mach);
         exc.setTransducerTimeConstant(tr);
+        exc.setSwitchValue(switchValue);
         exc.getData().setKa(ka);
         exc.getData().setTa(ta);
         exc.getData().setTb(tb);
