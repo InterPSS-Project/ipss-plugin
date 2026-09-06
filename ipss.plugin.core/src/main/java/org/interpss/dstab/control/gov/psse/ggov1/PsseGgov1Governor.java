@@ -128,6 +128,14 @@ public class PsseGgov1Governor extends AbstractGovernor {
     public double getValveStroke() { return clamp(state.valve, effectiveVmin, effectiveVmax); }
     public double getFsr() { return currentFsr; }
     public double getMeasuredElectricalPower() { return state.peMeasured; }
+    public double getDroopFeedback() {
+        return selectedDroop(state.peMeasured, getValveStroke(), currentFsr);
+    }
+    public double getFuelFlow() {
+        double speedDeviation = getMachine().getSpeed() - 1.0;
+        return (getData().getFlag() == 1 ? 1.0 + speedDeviation : 1.0)
+                * getValveStroke();
+    }
     public double getGovernorBaseMva(Machine mach) {
         return governorToMachineBase * mach.getRating(UnitType.mVA,
                 mach.getDStabBus().getNetwork().getBaseKva());
