@@ -40,7 +40,7 @@ public final class DynamicModelCatalog {
             descriptor("EXST1", Set.of(), EXCITER, 12, LOADABLE,
                     "org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter",
                     "Exciter%20EXST1_PTI.htm"),
-            descriptor("IEEET1", Set.of(), EXCITER, 14, LOADABLE,
+            descriptorWithVariants("IEEET1", Set.of(), EXCITER, 14, new int[]{15}, LOADABLE,
                     "org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter",
                     "Exciter%20IEEET1.htm"),
             descriptor("ESST1A", Set.of(), EXCITER, 20, LOADABLE,
@@ -81,8 +81,9 @@ public final class DynamicModelCatalog {
             descriptor("REECA1", Set.of("REECAU1"), ELECTRICAL_CONTROLLER, 51, LOADABLE,
                     "org.interpss.dstab.renewable.Reeca1Model",
                     "Exciter%20REEC_A.htm"),
-            descriptor("REPCA1", Set.of("REPCAU1", "REPCTA1", "REPCTAU1"), PLANT_CONTROLLER,
-                    34, LOADABLE, "org.interpss.dstab.renewable.Repca1Model",
+            descriptorWithVariants("REPCA1", Set.of("REPCAU1", "REPCTA1", "REPCTAU1"),
+                    PLANT_CONTROLLER, 34, new int[]{35}, LOADABLE,
+                    "org.interpss.dstab.renewable.Repca1Model",
                     "Plant%20Controller%20REPC_A.htm"),
             descriptor("WTARA1", Set.of("WTARAU1"), AERODYNAMIC_CONTROLLER, 2, LOADABLE,
                     "org.interpss.dstab.renewable.Wtara1Model",
@@ -200,7 +201,16 @@ public final class DynamicModelCatalog {
     private static DynamicModelDescriptor descriptor(String name, Set<String> aliases,
             DynamicModelCategory category, int parameterCount, DynamicModelSupportStatus status,
             String runtimeClass, String powerWorldPage) {
-        return new DynamicModelDescriptor(name, aliases, category, parameterCount, status,
+        return new DynamicModelDescriptor(name, aliases, category,
+                DynamicModelRecordSchema.exact(parameterCount), status,
+                runtimeClass, URI.create(PW + powerWorldPage));
+    }
+
+    private static DynamicModelDescriptor descriptorWithVariants(String name, Set<String> aliases,
+            DynamicModelCategory category, int primaryParameterCount, int[] alternativeCounts,
+            DynamicModelSupportStatus status, String runtimeClass, String powerWorldPage) {
+        return new DynamicModelDescriptor(name, aliases, category,
+                DynamicModelRecordSchema.variants(primaryParameterCount, alternativeCounts), status,
                 runtimeClass, URI.create(PW + powerWorldPage));
     }
 }

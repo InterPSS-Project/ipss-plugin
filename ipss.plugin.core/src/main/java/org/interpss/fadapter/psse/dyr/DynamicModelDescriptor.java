@@ -11,7 +11,7 @@ public record DynamicModelDescriptor(
         String canonicalName,
         Set<String> aliases,
         DynamicModelCategory category,
-        int parameterCount,
+        DynamicModelRecordSchema recordSchema,
         DynamicModelSupportStatus supportStatus,
         String runtimeClassName,
         URI reference) {
@@ -19,11 +19,9 @@ public record DynamicModelDescriptor(
     public DynamicModelDescriptor {
         canonicalName = normalizeName(canonicalName);
         Objects.requireNonNull(category, "category");
+        Objects.requireNonNull(recordSchema, "recordSchema");
         Objects.requireNonNull(supportStatus, "supportStatus");
         Objects.requireNonNull(reference, "reference");
-        if (parameterCount < 0) {
-            throw new IllegalArgumentException("parameterCount must be non-negative");
-        }
         LinkedHashSet<String> normalized = new LinkedHashSet<>();
         if (aliases != null) aliases.forEach(alias -> normalized.add(normalizeName(alias)));
         normalized.remove(canonicalName);
@@ -32,6 +30,11 @@ public record DynamicModelDescriptor(
         if (supportStatus == DynamicModelSupportStatus.LOADABLE && runtimeClassName.isEmpty()) {
             throw new IllegalArgumentException("A loadable model requires a runtime class: " + canonicalName);
         }
+    }
+
+    /** Primary PSS/E layout length retained for compatibility and display. */
+    public int parameterCount() {
+        return recordSchema.primaryParameterCount();
     }
 
     public Set<String> allNames() {
