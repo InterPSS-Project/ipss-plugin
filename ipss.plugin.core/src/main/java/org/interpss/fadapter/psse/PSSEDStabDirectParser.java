@@ -220,6 +220,8 @@ public class PSSEDStabDirectParser {
                 return procExcAc8b(busId, genId, fields);
             case "AC7B":
                 return procExcAc7b(record.sourceModelName(), busId, genId, fields);
+            case "REXSYS":
+                return procExcRexsys(busId, genId, fields);
             case "IEEET4":
             case "EXDC4":
                 return procExcIeeet4(type, busId, genId, fields);
@@ -610,6 +612,26 @@ public class PSSEDStabDirectParser {
             d.setE2(getDouble(f,28,0)); d.setSe2(getDouble(f,29,0));
         }
         return builder.addExcAc7b(busId, genId, modelName, d) != null;
+    }
+
+    // REXSYS: TR KVP KVI VIMAX TA TB1 TC1 TB2 TC2 VRMAX VRMIN KF TF TF1 TF2
+    //         FBF KIP KII TP VFMAX VFMIN KH KE TE KC KD E1 SE1 E2 SE2 FLIMF
+    private boolean procExcRexsys(String busId,String genId,String[] f) {
+        if (f.length < 34) return false;
+        org.interpss.dstab.control.exc.psse.rexsys.RexsysData d =
+                new org.interpss.dstab.control.exc.psse.rexsys.RexsysData();
+        d.setTr(getDouble(f,3,0));d.setKvp(getDouble(f,4,0));d.setKvi(getDouble(f,5,0));
+        d.setVimax(getDouble(f,6,0));d.setTa(getDouble(f,7,0));d.setTb1(getDouble(f,8,0));
+        d.setTc1(getDouble(f,9,0));d.setTb2(getDouble(f,10,0));d.setTc2(getDouble(f,11,0));
+        d.setVrmax(getDouble(f,12,0));d.setVrmin(getDouble(f,13,0));d.setKf(getDouble(f,14,0));
+        d.setTf(getDouble(f,15,0));d.setTf1(getDouble(f,16,0));d.setTf2(getDouble(f,17,0));
+        d.setFbf(getInt(f,18,0));d.setKip(getDouble(f,19,0));d.setKii(getDouble(f,20,0));
+        d.setTp(getDouble(f,21,0));d.setVfmax(getDouble(f,22,0));d.setVfmin(getDouble(f,23,0));
+        d.setKh(getDouble(f,24,0));d.setKe(getDouble(f,25,0));d.setTe(getDouble(f,26,0));
+        d.setKc(getDouble(f,27,0));d.setKd(getDouble(f,28,0));d.setE1(getDouble(f,29,0));
+        d.setSe1(getDouble(f,30,0));d.setE2(getDouble(f,31,0));d.setSe2(getDouble(f,32,0));
+        d.setFlimf(getInt(f,33,0));
+        return builder.addExcRexsys(busId,genId,d)!=null;
     }
 
     // IEEET4/EXDC4: IBUS MODEL ID KR TRH KV VRMAX VRMIN TE KE E1 SE1 E2 SE2

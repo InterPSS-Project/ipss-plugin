@@ -91,7 +91,7 @@ public final class WeccApprovedDynamicModelCatalog {
             exciter("IEEET1", "ieeet1", "IEEET1", "IEEET1", APPROVED, "2006-08-11", "IEEET1"),
             exciter("MEXS", "mexs", "Not used", "MEXS", NEVER_APPROVED, "", ""),
             exciter("PFQRG", "pfqrg", "Not used", "PFQRG", NEVER_APPROVED, "", ""),
-            exciter("REXS", "rexs", "REXSYS", "REXS", APPROVED, "2006-08-11", ""),
+            exciter("REXS", "rexs", "REXSYS", "REXS", APPROVED, "2006-08-11", "REXSYS"),
             exciter("SCRX", "scrx", "SCRX", "SCRX", APPROVED, "2006-08-11", "SCRX"),
             exciter("SEXS", "sexs", "SEXS_GE and SEXS_PTI", "SEXS", NEVER_APPROVED, "", ""),
             exciter("TEXS", "texs", "Not converted", "TEXS", NEVER_APPROVED, "", ""));

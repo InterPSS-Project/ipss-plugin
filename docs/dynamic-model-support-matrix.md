@@ -30,6 +30,7 @@ Generated from `DynamicModelCatalog`; do not edit model rows manually.
 | IEEET1 | EXCITER |  | 14 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20IEEET1.htm) |
 | IEEET4 | EXCITER | EXDC4 | 11 | LOADABLE | `org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20IEEET4.htm) |
 | IEEEX1 | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20IEEEX1.htm) |
+| REXSYS | EXCITER |  | 31 | LOADABLE | `org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REXSY1.htm) |
 | SCRX | EXCITER |  | 8 | LOADABLE | `org.interpss.dstab.control.exc.psse.scrx.ScrxExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20SCRX.htm) |
 | GAST | GOVERNOR |  | 9 | LOADABLE | `org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20GAST_PTI%20and%20GASTD.htm) |
 | GASTD | GOVERNOR | GASTDU | 12 | LOADABLE | `org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20GAST_PTI%20and%20GASTD.htm) |

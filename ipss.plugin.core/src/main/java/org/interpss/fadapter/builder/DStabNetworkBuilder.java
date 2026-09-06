@@ -12,6 +12,8 @@ import org.interpss.dstab.control.exc.psse.ac7b.Ac7bData;
 import org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
+import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
+import org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -1093,6 +1095,16 @@ public class DStabNetworkBuilder {
         }
         return ExciterObjectFactory.createAc7bExciter(
                 mach.getId() + "_Exc", modelName, data, mach);
+    }
+
+    /** PSS/E REXSYS general-purpose rotating excitation system. */
+    public RexsysExciter addExcRexsys(String busId, String genId, RexsysData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for REXSYS exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createRexsysExciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** PSS/E IEEET4 / WECC EXDC4 IEEE Type 4 excitation system. */
