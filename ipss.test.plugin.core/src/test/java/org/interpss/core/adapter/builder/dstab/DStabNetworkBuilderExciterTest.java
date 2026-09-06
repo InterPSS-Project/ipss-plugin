@@ -13,6 +13,7 @@ import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
+import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
 import org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
@@ -130,11 +131,31 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(1.0, exc.getData().getSpdmlt(), TOL);
 		assertEquals(3.9825, exc.getData().getE1(), TOL);
 		assertEquals(1.049, exc.getData().getSe2(), TOL);
+		assertEquals(0.8, exc.regulatorLimitScale.eval(new double[] {0.8}), TOL);
 		assertEquals(true, exc.initStates(machine.getDStabBus(), machine));
 		assertEquals(1.2, exc.getOutput(machine), TOL);
 
 		machine.setSpeed(0.98);
 		assertEquals(1.176, exc.getOutput(machine), TOL);
+	}
+
+	@Test
+	public void parseEsdc1a_reusesDcChainWithConstantRegulatorLimits() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Path dyr = tempDir.resolve("esdc1a.dyr");
+		Files.writeString(dyr, "1 'ESDC1A' '1' .02 40 .05 .5 1 5 -5 1 .8 .03 1 0 3 .1 4 .2 /\n");
+		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		machine.setSpeed(1.0);
+		machine.setEfd(1.2);
+		Esdc1aExciter exc = (Esdc1aExciter) machine.getExciter();
+		assertNotNull(exc);
+		assertEquals(1.0, exc.getData().getTc(), TOL);
+		assertEquals(0.5, exc.getData().getTb(), TOL);
+		assertEquals(1.0, exc.regulatorLimitScale.eval(new double[] {0.8}), TOL);
+		assertEquals(true, exc.initStates(machine.getDStabBus(), machine));
+		assertEquals(1.2, exc.getOutput(machine), TOL);
 	}
 
 	@Test
