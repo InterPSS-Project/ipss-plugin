@@ -10,12 +10,14 @@ import java.lang.reflect.Field;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
+import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
+import com.interpss.dstab.controller.cml.field.func.HighValueFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
@@ -27,7 +29,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 @AnController(
 		   input="mach.vt",
 		   output="this.gainCustomBlock.y",
-		   refPoint="this.gainBlock.u0 - pss.vs * this.vosError + this.trDelayBlock.y + this.washoutBlock.y",
+		   refPoint="this.gainBlock.u0 - pss.vs * this.vosError - this.vuel * this.uelError + this.trDelayBlock.y + this.washoutBlock.y",
 		   display= {}//,
 		   //debug = true
 )
@@ -55,16 +57,23 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 	   public double vimax = 5.30, vimin = -5.11;
 	   @AnControllerField(
 		   type= CMLFieldEnum.StaticBlock,
-		   input="this.refPoint - this.trDelayBlock.y + pss.vs * this.vosError - this.washoutBlock.y",
+		   input="this.refPoint - this.trDelayBlock.y + pss.vs * this.vosError + this.vuel * this.uelError - this.washoutBlock.y",
 		   parameter={"type.Limit", "this.k1", "this.vimax", "this.vimin"},
 		   y0="this.filterBlock.u0"	)
 	   GainBlock gainBlock;
+
+	   /** UEL high-value gate 1, selected by UEL=2. */
+	   @AnFunctionField(
+		   type=CMLFieldEnum.Function,
+		   input={"this.gainBlock.y", "this.vuelGate1"})
+	   HighValueFunction uelGate1Function;
 
 	   //filterBlock----(1+sTc)/(1+sTb)
 	   public double tc = 1.0, tb = 6.67;
 	   @AnControllerField(
 		   type=CMLFieldEnum.ControlBlock,
-		   input="this.gainBlock.y",
+		   // Retain the direct block dependency for CML initialization ordering.
+		   input="this.gainBlock.y - this.gainBlock.y + this.uelGate1Function.y",
 		   parameter={"type.NoLimit", "this.k1", "this.tc", "this.tb"},
 		   y0="this.filterBlock1.u0"  )
 	   FilterControlBlock filterBlock;
@@ -84,7 +93,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		   type=CMLFieldEnum.ControlBlock,
 		   input="this.filterBlock1.y",
 		   parameter={"type.NonWindup", "this.ka", "this.ta", "this.vamax", "this.vamin"},
-		   y0="this.gainCustomBlock.u0"  )
+		   y0="this.gainCustomBlock.u0 - pss.vs * this.vosOutput"  )
 	   DelayControlBlock kaDelayBlock;
 	   
 	   
@@ -109,6 +118,13 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
    
 	public double kg = 1.0, kc = 0.0, vrmax = 5.30, vrmin = -5.11;
 	public double klr = 0.0, ilr = 0.0;
+	/** External UEL signal; zero is the absent value for error summation. */
+	public double vuel = 0.0;
+	/** Nonbinding input for gate 1 unless UEL=2. */
+	public double vuelGate1 = Double.NEGATIVE_INFINITY;
+	/** External OEL ceiling; positive infinity denotes no connected OEL. */
+	public double voel = Double.POSITIVE_INFINITY;
+	public double uelError = 1.0;
 	public double vosError = 1.0, vosOutput = 0.0;
 	public int uel = 1, vos = 1;
 	   @AnControllerField(
@@ -129,6 +145,12 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 			  double vmax = calUpperLimit();
 			  double vmin = calLowerLimit();
 			  double y = super.getY() - fieldCurrentLimiter();
+			  // PowerWorld/WECC ESST1A: UEL=3 is the second high-value gate,
+			  // followed by the OEL low-value gate and the terminal-voltage limits.
+			  if (uel == 3) {
+				  y = Math.max(y, vuel);
+			  }
+			  y = Math.min(y, voel);
 			  //System.out.println("Efd max, min, y ="+vmax+","+vmin+","+y);
 			  if(y > vmax) {
 				  return vmax;
@@ -222,6 +244,8 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         // pass the plugin data object values to the controller
 		this.uel = getData().getUel();
 		this.vos = getData().getVos();
+		this.uelError = this.uel < 2 ? 1.0 : 0.0;
+		this.vuelGate1 = this.uel == 2 ? this.vuel : Double.NEGATIVE_INFINITY;
 		this.vosError = this.vos == 1 ? 1.0 : 0.0;
 		this.vosOutput = this.vos == 2 ? 1.0 : 0.0;
 		this.tr = getData().getTr();
@@ -270,6 +294,48 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         // always add the following statement
         return super.initStates(bus, mach);
     }
+
+	/** Set the external under-excitation limiter signal. */
+	public void setVuel(double value) {
+		this.vuel = value;
+		this.vuelGate1 = this.uel == 2 ? value : Double.NEGATIVE_INFINITY;
+	}
+
+	/** Set the external over-excitation limiter ceiling. */
+	public void setVoel(double value) {
+		this.voel = value;
+	}
+
+	/** Disconnect the external over-excitation limiter. */
+	public void clearVoel() {
+		this.voel = Double.POSITIVE_INFINITY;
+	}
+
+	public double getVoltageErrorOutput() {
+		return signal("this.gainBlock.y");
+	}
+
+	public double getUelGate1Output() {
+		return signal("this.uelGate1Function.y");
+	}
+
+	public double getRegulatorOutput() {
+		return signal("this.kaDelayBlock.y");
+	}
+
+	public double getPostRegulatorSignal() {
+		double pss = getMachine().getStabilizer() == null
+				? 0.0 : getMachine().getStabilizer().getOutput(getMachine());
+		return getRegulatorOutput() + pss * this.vosOutput;
+	}
+
+	private double signal(String fieldName) {
+		try {
+			return getFieldVaule(fieldName);
+		} catch (Exception ex) {
+			throw new IllegalStateException("Cannot read ESST1A signal " + fieldName, ex);
+		}
+	}
 
 /*
  * Part-4: Define the pluin data object edtior
