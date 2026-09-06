@@ -32,6 +32,7 @@ import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
+import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,6 +173,8 @@ public class PSSEDStabDirectParser {
                 return procExcEsdc2a(busId, genId, fields);
             case "ESDC1A":
                 return procExcEsdc1a(busId, genId, fields);
+            case "ESAC5A":
+                return procExcEsac5a(busId, genId, fields);
             case "ESST3A":
                 return procExcEsst3a(busId, genId, fields);
             case "ESST4B":
@@ -557,6 +560,21 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
                 getDouble(f, 15, 0), getDouble(f, 16, 0),
                 getDouble(f, 17, 0), getDouble(f, 18, 0)) != null;
+    }
+
+    // ESAC5A: IBUS 'ESAC5A' ID Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf1 Tf2 Tf3 E1 SE1 E2 SE2 [Spdmlt]
+    private boolean procExcEsac5a(String busId, String genId, String[] f) {
+        if (f.length < 18) return false;
+        Esac5aData data = new Esac5aData();
+        data.setTr(getDouble(f, 3, 0)); data.setKa(getDouble(f, 4, 0));
+        data.setTa(getDouble(f, 5, 0)); data.setVrmax(getDouble(f, 6, 0));
+        data.setVrmin(getDouble(f, 7, 0)); data.setKe(getDouble(f, 8, 0));
+        data.setTe(getDouble(f, 9, 0)); data.setKf(getDouble(f, 10, 0));
+        data.setTf1(getDouble(f, 11, 0)); data.setTf2(getDouble(f, 12, 0));
+        data.setTf3(getDouble(f, 13, 0)); data.setE1(getDouble(f, 14, 0));
+        data.setSe1(getDouble(f, 15, 0)); data.setE2(getDouble(f, 16, 0));
+        data.setSe2(getDouble(f, 17, 0)); data.setSpdmlt(getDouble(f, 18, 0));
+        return builder.addExcEsac5a(busId, genId, data) != null;
     }
 
     private boolean procExcEsst3a(String busId, String genId, String[] f) {
