@@ -34,6 +34,7 @@ import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
+import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -170,6 +171,8 @@ public class PSSEDStabDirectParser {
                 return procExcEsst1a(busId, genId, fields);
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
+            case "ESAC1A":
+                return procExcEsac1a(busId, genId, fields);
             case "ESDC2A":
                 return procExcEsdc2a(busId, genId, fields);
             case "ESDC1A":
@@ -470,6 +473,20 @@ public class PSSEDStabDirectParser {
         d.setKe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0)); d.setSe1(getDouble(f,17,0));
         d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0)); d.setSpdmlt(getDouble(f,20,0));
         return builder.addExcExac1(busId,genId,d)!=null;
+    }
+
+    // ESAC1A: IBUS 'ESAC1A' ID Tr Tb Tc Ka Ta VaMax VaMin Te Kf Tf Kc Kd Ke E1 SE1 E2 SE2 VrMax VrMin [Spdmlt]
+    private boolean procExcEsac1a(String busId,String genId,String[] f) {
+        if (f.length<22) return false;
+        Esac1aData d=new Esac1aData();
+        d.setTr(getDouble(f,3,0)); d.setTb(getDouble(f,4,0)); d.setTc(getDouble(f,5,0));
+        d.setKa(getDouble(f,6,0)); d.setTa(getDouble(f,7,0)); d.setVamax(getDouble(f,8,0));
+        d.setVamin(getDouble(f,9,0)); d.setTe(getDouble(f,10,0)); d.setKf(getDouble(f,11,0));
+        d.setTf(getDouble(f,12,0)); d.setKc(getDouble(f,13,0)); d.setKd(getDouble(f,14,0));
+        d.setKe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0)); d.setSe1(getDouble(f,17,0));
+        d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0)); d.setVrmax(getDouble(f,20,0));
+        d.setVrmin(getDouble(f,21,0)); d.setSpdmlt(getDouble(f,22,0));
+        return builder.addExcEsac1a(busId,genId,d)!=null;
     }
 
     // ==================== Governor Model Parsers ====================
