@@ -428,9 +428,9 @@ public class DStabNetworkBuilder {
     }
 
     /**
-     * PSS2A IEEE dual-input stabilizer. The current CML signal path implements
-     * local rotor-speed input 1 and local electrical-power input 2, which is
-     * the sole selector combination present in all six Texas2k cases.
+     * PSS2A IEEE dual-input stabilizer with all six documented local signal
+     * selectors. Remote-bus inputs remain explicitly rejected until their
+     * machine/bus association can be validated during import.
      */
     public Ieee1992PSS2AStabilizer addPss2a(String busId, String genId,
             int ics1, int remoteBus1, int ics2, int remoteBus2, int m, int n,
@@ -442,7 +442,8 @@ public class DStabNetworkBuilder {
             log.warn("Machine not found for PSS2A: {} {}", busId, genId);
             return null;
         }
-        if (ics1 != 1 || remoteBus1 != 0 || ics2 != 3 || remoteBus2 != 0) {
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6
+                || remoteBus1 != 0 || remoteBus2 != 0) {
             log.warn("PSS2A selector combination is not implemented at {} {}: "
                     + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
                     busId, genId, ics1, remoteBus1, ics2, remoteBus2);
