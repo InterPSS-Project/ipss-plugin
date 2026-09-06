@@ -33,6 +33,7 @@ import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
+import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -285,6 +286,8 @@ public class PSSEDStabDirectParser {
                 return procGovHygov(busId, genId, fields, true);
             case "HYG3":
                 return procGovHyg3(busId, genId, fields);
+            case "H6E":
+                return procGovH6e(busId, genId, fields, record);
             case "IEEEG3":
                 return procGovIeeeg3(busId, genId, fields);
 
@@ -1249,6 +1252,61 @@ public class PSSEDStabDirectParser {
         d.setDbH(getDouble(f, 37, 0)); d.setEps(getDouble(f, 38, 0));
         d.setDbL(getDouble(f, 39, 0));
         return builder.addGovHyg3(busId, genId, d) != null;
+    }
+
+    /** Parse native PowerWorld H6E or PSS/E H6EU1 (flat or USRMDL-wrapped). */
+    private boolean procGovH6e(String busId, String genId, String[] f, PsseDyrRecord record) {
+        PsseH6eGovernorData d = new PsseH6eGovernorData();
+        boolean wrapped = "USRMDL".equalsIgnoreCase(f[1]);
+        if (wrapped || "H6EU1".equalsIgnoreCase(record.sourceModelName())) {
+            int icon = wrapped ? 10 : 3;
+            int c = icon + 1;
+            if (f.length < c + 62) return false;
+            d.setFd(getInt(f, icon, 1));
+            d.setRe(getDouble(f, c, 0)); d.setRg(getDouble(f, c + 1, 0));
+            d.setTpe(getDouble(f, c + 2, 0)); d.setTsp(getDouble(f, c + 3, 0));
+            d.setKp(getDouble(f, c + 4, 0)); d.setKi(getDouble(f, c + 5, 0));
+            d.setKd(getDouble(f, c + 6, 0)); d.setTd(getDouble(f, c + 7, 0));
+            d.setVelm(getDouble(f, c + 8, 0)); d.setGmax(getDouble(f, c + 9, 0));
+            d.setGmin(getDouble(f, c + 10, 0)); d.setBuf(getDouble(f, c + 11, 0));
+            d.setBuv(getDouble(f, c + 12, 0)); d.setKg(getDouble(f, c + 13, 0));
+            d.setTg(getDouble(f, c + 14, 0)); d.setBlg(getDouble(f, c + 15, 0));
+            d.setDbbd(getDouble(f, c + 16, 0)); d.setTbd(getDouble(f, c + 17, 0));
+            d.setBlb(getDouble(f, c + 18, 0)); d.setDbbs(getDouble(f, c + 19, 0));
+            d.setTbs(getDouble(f, c + 20, 0)); d.setBgvmin(getDouble(f, c + 21, 0));
+            d.setBlv(getDouble(f, c + 22, 0)); d.setDturb(getDouble(f, c + 23, 0));
+            d.setPgc(getDouble(f, c + 24, 0)); d.setDeff(getDouble(f, c + 25, 0));
+            d.setHdam(getDouble(f, c + 26, 1)); d.setTw(getDouble(f, c + 27, 0));
+            for (int i = 0; i < 10; i++) d.setGv(i, getDouble(f, c + 28 + i, 0));
+            for (int i = 0; i < 10; i++) d.setPgv(i, getDouble(f, c + 38 + i, 0));
+            for (int i = 0; i < 10; i++) d.setBgv(i, getDouble(f, c + 48 + i, 0));
+            d.setSprate(getDouble(f, c + 58, 0)); d.setDb1(getDouble(f, c + 59, 0));
+            d.setEps(getDouble(f, c + 60, 0)); d.setTrate(getDouble(f, c + 61, 0));
+        } else {
+            // PowerWorld display order: Fd, Trate, scalar controls, then three curves.
+            if (f.length < 64) return false;
+            int p = 3;
+            d.setFd(getInt(f, p++, 1)); d.setTrate(getDouble(f, p++, 0));
+            d.setRe(getDouble(f, p++, 0)); d.setRg(getDouble(f, p++, 0));
+            d.setTpe(getDouble(f, p++, 0)); d.setTsp(getDouble(f, p++, 0));
+            d.setKp(getDouble(f, p++, 0)); d.setKi(getDouble(f, p++, 0));
+            d.setKd(getDouble(f, p++, 0)); d.setTd(getDouble(f, p++, 0));
+            d.setVelm(getDouble(f, p++, 0)); d.setGmax(getDouble(f, p++, 0));
+            d.setGmin(getDouble(f, p++, 0)); d.setBuf(getDouble(f, p++, 0));
+            d.setBuv(getDouble(f, p++, 0)); d.setKg(getDouble(f, p++, 0));
+            d.setTg(getDouble(f, p++, 0)); d.setBlg(getDouble(f, p++, 0));
+            d.setDbbd(getDouble(f, p++, 0)); d.setTbd(getDouble(f, p++, 0));
+            d.setBlb(getDouble(f, p++, 0)); d.setDbbs(getDouble(f, p++, 0));
+            d.setTbs(getDouble(f, p++, 0)); d.setBgvmin(getDouble(f, p++, 0));
+            d.setBlv(getDouble(f, p++, 0)); d.setDturb(getDouble(f, p++, 0));
+            d.setPgc(getDouble(f, p++, 0)); d.setDeff(getDouble(f, p++, 0));
+            d.setHdam(getDouble(f, p++, 1)); d.setTw(getDouble(f, p++, 0));
+            d.setSprate(getDouble(f, p++, 0));
+            for (int i = 0; i < 10; i++) d.setGv(i, getDouble(f, p++, 0));
+            for (int i = 0; i < 10; i++) d.setPgv(i, getDouble(f, p++, 0));
+            for (int i = 0; i < 10; i++) d.setBgv(i, getDouble(f, p++, 0));
+        }
+        return builder.addGovH6e(busId, genId, d) != null;
     }
 
     // GENQEC (PSLF/PowerDynData order):
