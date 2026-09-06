@@ -38,4 +38,49 @@ public record PsseDyrRecord(
     public List<String> parameters() {
         return fields.subList(parameterOffset, fields.size());
     }
+
+    /** Return a required parameter by its zero-based position in the model data list. */
+    public String parameter(int index) {
+        if (index < 0 || index >= parameterCount()) {
+            throw parameterError(index, "is missing", null);
+        }
+        return fields.get(parameterOffset + index);
+    }
+
+    /** Return a required floating-point parameter with source-located diagnostics. */
+    public double doubleParameter(int index) {
+        String value = parameter(index);
+        try {
+            return Double.parseDouble(value.trim());
+        } catch (NumberFormatException e) {
+            throw parameterError(index, "must be a floating-point number but was '" + value + "'", e);
+        }
+    }
+
+    /** Return an optional floating-point parameter, defaulting only when it is absent. */
+    public double optionalDoubleParameter(int index, double defaultValue) {
+        return index >= parameterCount() ? defaultValue : doubleParameter(index);
+    }
+
+    /** Return a required integer flag with source-located diagnostics. */
+    public int intParameter(int index) {
+        String value = parameter(index);
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            throw parameterError(index, "must be an integer but was '" + value + "'", e);
+        }
+    }
+
+    /** Return an optional integer flag, defaulting only when it is absent. */
+    public int optionalIntParameter(int index, int defaultValue) {
+        return index >= parameterCount() ? defaultValue : intParameter(index);
+    }
+
+    private IllegalArgumentException parameterError(int index, String detail, Exception cause) {
+        String message = "DYR " + canonicalModelName + " parameter " + (index + 1) + " "
+                + detail + " at " + source + ":" + startLine;
+        return cause == null ? new IllegalArgumentException(message)
+                : new IllegalArgumentException(message, cause);
+    }
 }

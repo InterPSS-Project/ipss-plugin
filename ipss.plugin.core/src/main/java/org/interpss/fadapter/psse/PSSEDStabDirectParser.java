@@ -1165,7 +1165,8 @@ public class PSSEDStabDirectParser {
         try {
             return Double.parseDouble(fields[idx].trim());
         } catch (NumberFormatException e) {
-            return defaultVal;
+            throw new IllegalArgumentException("Invalid floating-point DYR field " + (idx + 1)
+                    + ": '" + fields[idx] + "'", e);
         }
     }
 
@@ -1174,7 +1175,8 @@ public class PSSEDStabDirectParser {
         try {
             return Integer.parseInt(trimQuote(fields[idx]));
         } catch (NumberFormatException e) {
-            return defaultVal;
+            throw new IllegalArgumentException("Invalid integer DYR field " + (idx + 1)
+                    + ": '" + fields[idx] + "'", e);
         }
     }
 
