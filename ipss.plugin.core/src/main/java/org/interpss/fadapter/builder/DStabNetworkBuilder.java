@@ -9,6 +9,8 @@ import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
+import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
+import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
@@ -639,6 +641,22 @@ public class DStabNetworkBuilder {
         data.setE1(e1); data.setSe1(se1); data.setE2(e2); data.setSe2(se2);
         return new org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter(
                 mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Attach the PSS/E/IEEE ESAC5A simplified rotating AC exciter. */
+    public Esac5aExciter addExcEsac5a(String busId, String genId, Esac5aData data) {
+        if (data == null || data.getKa() <= 0.0 || data.getTe() <= 0.0
+                || data.getTr() < 0.0 || data.getTa() < 0.0
+                || data.getTf1() < 0.0 || data.getTf2() < 0.0 || data.getTf3() < 0.0) {
+            log.warn("Invalid ESAC5A parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ESAC5A exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Esac5aExciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** Attach the eight-parameter PSS/E SCRX excitation system. */
