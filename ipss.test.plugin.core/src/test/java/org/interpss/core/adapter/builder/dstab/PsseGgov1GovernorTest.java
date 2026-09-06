@@ -240,6 +240,84 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
     }
 
     @Test
+    void appliesPowerWorldTimeStepAutocorrectionsBeforeInitialization() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1GovernorData data = texasData();
+        data.setTpelec(0.004);
+        data.setTb(0.006);
+        data.setTa(0.004);
+        data.setTsb(0.006);
+        data.setTfload(0.004);
+        data.setKturb(0.004);
+        data.setKpgov(0.004);
+        data.setKigov(1.0);
+        data.setRup(120.0);
+        data.setRdown(-20.0);
+        PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
+        governor.configureIntegrationStep(0.01);
+
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(0.0, governor.getEffectiveTpelec(), TOL);
+        assertEquals(0.01, governor.getEffectiveTb(), TOL);
+        assertEquals(0.0, governor.getEffectiveTa(), TOL);
+        assertEquals(0.01, governor.getEffectiveTsb(), TOL);
+        assertEquals(0.0, governor.getEffectiveTfload(), TOL);
+        assertEquals(0.01, governor.getEffectiveKturb(), TOL);
+        assertEquals(0.0, governor.getEffectiveKpgov(), TOL);
+        assertEquals(99.0, governor.getEffectiveRup(), TOL);
+        assertEquals(-99.0, governor.getEffectiveRdown(), TOL);
+
+        assertEquals(0.004, data.getTpelec(), TOL);
+        assertEquals(0.006, data.getTb(), TOL);
+        assertEquals(0.004, data.getKturb(), TOL);
+        assertEquals(0.004, data.getKpgov(), TOL);
+    }
+
+    @Test
+    void feasibleTimeStepCorrectionsPreserveInitializedEquilibrium() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1GovernorData data = texasData();
+        data.setTpelec(0.004);
+        data.setTb(0.006);
+        data.setTa(0.004);
+        data.setTsb(0.006);
+        data.setTfload(0.004);
+        data.setKpgov(0.004);
+        data.setKigov(1.0);
+        PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
+        governor.configureIntegrationStep(0.01);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+
+        double initialOutput = governor.getOutput(machine);
+        for (int i = 0; i < 100; i++) step(governor, machine, 0.01);
+        assertEquals(initialOutput, governor.getOutput(machine), 1.0e-8,
+                "Corrected parameters must preserve the initialized equilibrium");
+    }
+
+    @Test
+    void honorsPowerWorldTimeStepAutocorrectionBoundaryValues() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setPm(0.4);
+        machine.setPe(0.4);
+        PsseGgov1GovernorData data = texasData();
+        data.setTpelec(0.005);
+        data.setTb(0.01);
+        PsseGgov1Governor governor = builder.addGovGgov1("Bus1", "1", data);
+        governor.configureIntegrationStep(0.01);
+
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(0.005, governor.getEffectiveTpelec(), TOL);
+        assertEquals(0.01, governor.getEffectiveTb(), TOL);
+    }
+
+    @Test
     void supervisoryLoadControlRaisesFuelRequestWhenElectricalPowerFalls() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");

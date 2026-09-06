@@ -6,8 +6,12 @@ import org.apache.commons.math3.complex.Complex;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
+import com.interpss.dstab.device.DynamicDevice;
+import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 
 /**
  * PSS/E dynamic solver adapter that preserves a solved RAW initial condition
@@ -30,6 +34,7 @@ final class PsseDStabSolver extends DStabSolverImpl {
 
     @Override
     public boolean initialization() {
+        configureIntegrationStepAwareModels(dstabAlgo.getNetwork(), dstabAlgo.getSimuStepSec());
         if (!super.initialization()) return false;
 
         BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
@@ -59,6 +64,27 @@ final class PsseDStabSolver extends DStabSolverImpl {
         network.setCustomBusCurrInjHashtable(compensation);
         network.getExtraInfo().put(COMPENSATION_KEY, compensation);
         return true;
+    }
+
+    static void configureIntegrationStepAwareModels(BaseDStabNetwork<?, ?> network,
+            double timeStep) {
+        for (BaseDStabBus<?, ?> bus : network.getBusList()) {
+            for (DStabGen generator : bus.getContributeGenList()) {
+                DynamicDevice device = generator.getDynamicGenDevice();
+                configure(device, timeStep);
+                if (device instanceof Machine machine) {
+                    configure(machine.getExciter(), timeStep);
+                    configure(machine.getGovernor(), timeStep);
+                    configure(machine.getStabilizer(), timeStep);
+                }
+            }
+        }
+    }
+
+    private static void configure(Object model, double timeStep) {
+        if (model instanceof IntegrationStepAware aware) {
+            aware.configureIntegrationStep(timeStep);
+        }
     }
 
 }
