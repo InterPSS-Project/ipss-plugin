@@ -193,12 +193,6 @@ public class PSSEDStabDirectParser {
             case "GENSAL":
             case "GENSAE":
                 return procGensal(busId, genId, fields);
-            case "GENTPF":
-            case "GENTPJ":
-            case "GENTPJU1":
-            case "GENTPJ1":
-                return procGenrou(busId, genId, fields);
-
             case "IEEET1":
                 return procExcIeeet1(busId, genId, fields);
             case "IEEEX1":
