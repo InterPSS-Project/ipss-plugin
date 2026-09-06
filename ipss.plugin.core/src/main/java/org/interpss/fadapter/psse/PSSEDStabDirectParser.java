@@ -470,6 +470,7 @@ public class PSSEDStabDirectParser {
     // EXST1: IBUS 'EXST1' ID TR VIMAX VIMIN TC TB KA TA VRMAX VRMIN KC KF TF
     //        idx:  0   1   2  3   4     5    6  7  8  9   10    11   12 13 14
     private boolean procExcExst1(String busId, String genId, String[] f) throws InterpssException {
+        double tr = getDouble(f, 3, 0);
         double ka = getDouble(f, 8, 0);
         double ta = getDouble(f, 9, 0);
         double tc = getDouble(f, 6, 0);
@@ -481,7 +482,8 @@ public class PSSEDStabDirectParser {
         double kc = getDouble(f, 12, 0);
         double vimax = getDouble(f, 4, 0);
         double vimin = getDouble(f, 5, 0);
-        builder.addExcIeee1981St1(busId, genId, ka, ta, tc, tb, vrmax, vrmin, kf, tf, kc, vimax, vimin);
+        builder.addExcIeee1981St1(busId, genId, tr, ka, ta, tc, tb,
+                vrmax, vrmin, kf, tf, kc, vimax, vimin);
         return true;
     }
 
