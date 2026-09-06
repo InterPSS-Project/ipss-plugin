@@ -20,7 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
 
-class PsseHygovGovernorTest extends CorePluginTestSetup {
+public class PsseHygovGovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
