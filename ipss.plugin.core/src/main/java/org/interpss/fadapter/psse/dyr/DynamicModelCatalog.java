@@ -11,6 +11,7 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MACHINE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.LOADABLE;
+import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.PARTIAL;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.UNSUPPORTED;
 
 import java.net.URI;
@@ -151,6 +152,9 @@ public final class DynamicModelCatalog {
             descriptor("ESDC2A", Set.of(), EXCITER, 16, LOADABLE,
                     "org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter",
                     "Exciter%20ESDC2A.htm"),
+            descriptor("IEEEX1", Set.of(), EXCITER, 16, PARTIAL,
+                    "org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter",
+                    "Exciter%20IEEEX1.htm"),
             descriptor("ESST3A", Set.of(), EXCITER, 21, LOADABLE,
                     "org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter",
                     "Exciter%20ESST3A.htm"),

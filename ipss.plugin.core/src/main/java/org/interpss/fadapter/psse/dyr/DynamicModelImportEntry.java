@@ -33,6 +33,7 @@ public record DynamicModelImportEntry(
     public static DynamicModelImportEntry from(PsseDyrRecord record,
             DynamicModelImportStatus status, String message) {
         String runtimeClass = status == DynamicModelImportStatus.ATTACHED
+                || status == DynamicModelImportStatus.FALLBACK
                 ? DynamicModelCatalog.find(record.canonicalModelName())
                         .map(DynamicModelDescriptor::runtimeClassName).orElse("")
                 : "";
