@@ -24,12 +24,12 @@ public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
     void mapsEveryIeeet1FieldAndAcceptsUnusedSwitch(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("ieeet1.dyr");
-        Files.writeString(dyr, "1 'IEEET1' '1' .01 101 .02 5 -4 .6 .7 .8 .9 7 3 .1 4 .2 /\n");
+        Files.writeString(dyr, "1 'IEEET1' '1' .01 101 .02 5 -4 .6 .7 .8 .9 7 3 .1 4 .2 1 /\n");
 
         PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
         parser.parseDynFile(dyr.toString());
-        Ieee1968Type1Exciter exciter = (Ieee1968Type1Exciter) builder.getDStabNetwork()
-                .getMachine("Bus1-mach1").getExciter();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Ieee1968Type1Exciter exciter = (Ieee1968Type1Exciter) machine.getExciter();
 
         assertNotNull(exciter);
         assertEquals(.01, exciter.getData().getTr(), TOL);
@@ -45,7 +45,13 @@ public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
         assertEquals(.1, exciter.getData().getSeE1(), TOL);
         assertEquals(4, exciter.getData().getE2(), TOL);
         assertEquals(.2, exciter.getData().getSeE2(), TOL);
+        assertEquals(1, exciter.getData().getSpdmlt(), TOL);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
+        machine.setSpeed(1.0);
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+        double nominalSpeedOutput = exciter.getOutput(machine);
+        machine.setSpeed(.98);
+        assertEquals(.98 * nominalSpeedOutput, exciter.getOutput(machine), TOL);
     }
 
     @Test
