@@ -216,6 +216,8 @@ public class PSSEDStabDirectParser {
                 return procExcExdc2(busId, genId, fields);
             case "EXDC2A":
                 return procExcExdc2a(busId, genId, fields);
+            case "AC8B":
+                return procExcAc8b(busId, genId, fields);
             case "IEEET4":
             case "EXDC4":
                 return procExcIeeet4(type, busId, genId, fields);
@@ -548,6 +550,28 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
                 getDouble(f, 15, 0), getDouble(f, 16, 0), getDouble(f, 17, 0),
                 getDouble(f, 18, 0)) != null;
+    }
+
+    // IEEE 421.5-2005/PSS/E AC8B (21 values). This is the schema used by
+    // ANDES and the supplied cases, not PowerWorld's newer extended data form.
+    // IBUS 'AC8B' ID TR KPR KIR KDR TDR VPIDMAX VPIDMIN VRMAX VRMIN
+    //                 VFEMAX VEMIN TA KA TE KC KD KE E1 SE1 E2 SE2
+    private boolean procExcAc8b(String busId, String genId, String[] f) {
+        if (f.length < 24) return false;
+        org.interpss.dstab.control.exc.psse.ac8b.Ac8bData d =
+                new org.interpss.dstab.control.exc.psse.ac8b.Ac8bData();
+        d.setTr(getDouble(f,3,0)); d.setKpr(getDouble(f,4,0));
+        d.setKir(getDouble(f,5,0)); d.setKdr(getDouble(f,6,0));
+        d.setTdr(getDouble(f,7,0)); d.setVpidmax(getDouble(f,8,0));
+        d.setVpidmin(getDouble(f,9,0)); d.setVrmax(getDouble(f,10,0));
+        d.setVrmin(getDouble(f,11,0)); d.setVfemax(getDouble(f,12,0));
+        d.setVemin(getDouble(f,13,0)); d.setTa(getDouble(f,14,0));
+        d.setKa(getDouble(f,15,0)); d.setTe(getDouble(f,16,0));
+        d.setKc(getDouble(f,17,0)); d.setKd(getDouble(f,18,0));
+        d.setKe(getDouble(f,19,0)); d.setE1(getDouble(f,20,0));
+        d.setSe1(getDouble(f,21,0)); d.setE2(getDouble(f,22,0));
+        d.setSe2(getDouble(f,23,0));
+        return builder.addExcAc8b(busId,genId,d) != null;
     }
 
     // IEEET4/EXDC4: IBUS MODEL ID KR TRH KV VRMAX VRMIN TE KE E1 SE1 E2 SE2

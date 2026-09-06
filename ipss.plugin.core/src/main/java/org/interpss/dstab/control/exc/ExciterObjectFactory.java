@@ -44,6 +44,8 @@ import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
+import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
+import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
@@ -195,6 +197,11 @@ public class ExciterObjectFactory {
 	/** Create a PSLF/PowerWorld EXDC2A exciter with the additional Tf2 lag. */
 	public static Exdc2aExciter createExdc2aExciter(String id, Machine machine) {
 		return new Exdc2aExciter(id, machine);
+	}
+
+	/** Create an IEEE 421.5-2005 / PSS/E AC8B rotating exciter. */
+	public static Ac8bExciter createAc8bExciter(String id, Ac8bData data, Machine machine) {
+		return new Ac8bExciter(id, data, machine);
 	}
 	
 	/**
