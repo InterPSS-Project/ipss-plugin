@@ -33,6 +33,7 @@ import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
+import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
@@ -282,6 +283,8 @@ public class PSSEDStabDirectParser {
             case "HYGOVD":
             case "HYGOVDU":
                 return procGovHygov(busId, genId, fields, true);
+            case "HYG3":
+                return procGovHyg3(busId, genId, fields);
             case "IEEEG3":
                 return procGovIeeeg3(busId, genId, fields);
 
@@ -1220,6 +1223,32 @@ public class PSSEDStabDirectParser {
             return builder.addGovHygovd(busId, genId, d) != null;
         }
         return builder.addGovHygov(busId, genId, d) != null;
+    }
+
+    // PSS/E HYG3U1 conversion order: one controller ICON followed by 36 CONs.
+    // ICON 0 selects PID and ICON 1 selects the double-derivative branch.
+    private boolean procGovHyg3(String busId, String genId, String[] f) {
+        if (f.length < 40) return false;
+        PsseHyg3GovernorData d = new PsseHyg3GovernorData();
+        d.setControlFlag(getInt(f, 3, 0));
+        d.setRgate(getDouble(f, 4, 0)); d.setRelec(getDouble(f, 5, 0));
+        d.setTt(getDouble(f, 6, 0)); d.setTd(getDouble(f, 7, 0));
+        d.setK2(getDouble(f, 8, 0)); d.setKi(getDouble(f, 9, 0));
+        d.setK1(getDouble(f, 10, 0)); d.setTf(getDouble(f, 11, 0));
+        d.setKg(getDouble(f, 12, 0)); d.setTp(getDouble(f, 13, 0));
+        d.setVelopen(getDouble(f, 14, 0)); d.setVelclose(getDouble(f, 15, 0));
+        d.setPmax(getDouble(f, 16, 0)); d.setPmin(getDouble(f, 17, 0));
+        d.setDb2(getDouble(f, 18, 0));
+        for (int i = 0; i < 6; i++) {
+            d.setGv(i, getDouble(f, 19 + 2 * i, 0));
+            d.setPgv(i, getDouble(f, 20 + 2 * i, 0));
+        }
+        d.setH0(getDouble(f, 31, 1)); d.setQnl(getDouble(f, 32, 0));
+        d.setTw(getDouble(f, 33, 0)); d.setAt(getDouble(f, 34, 1));
+        d.setDturb(getDouble(f, 35, 0)); d.setTrate(getDouble(f, 36, 0));
+        d.setDbH(getDouble(f, 37, 0)); d.setEps(getDouble(f, 38, 0));
+        d.setDbL(getDouble(f, 39, 0));
+        return builder.addGovHyg3(busId, genId, d) != null;
     }
 
     // GENQEC (PSLF/PowerDynData order):

@@ -38,6 +38,8 @@ import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
+import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
+import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
@@ -1358,6 +1360,43 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Governor Models ====================
+
+    /** Attach a WECC HYG3/PSS/E HYG3U1 hydro governor. */
+    public PsseHyg3Governor addGovHyg3(String busId, String genId,
+            PsseHyg3GovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for HYG3 governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseHyg3Governor gov = new PsseHyg3Governor(
+                mach.getId() + "_Gov", "HYG3", "PSS/E");
+        copyHyg3Data(data, gov.getData());
+        if (!gov.validateParameters()) {
+            log.warn("Invalid HYG3 parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        gov.setMachine(mach);
+        return gov;
+    }
+
+    private static void copyHyg3Data(PsseHyg3GovernorData source,
+            PsseHyg3GovernorData target) {
+        target.setControlFlag(source.getControlFlag());
+        target.setRgate(source.getRgate()); target.setRelec(source.getRelec());
+        target.setTt(source.getTt()); target.setTd(source.getTd());
+        target.setK2(source.getK2()); target.setKi(source.getKi());
+        target.setK1(source.getK1()); target.setTf(source.getTf());
+        target.setKg(source.getKg()); target.setTp(source.getTp());
+        target.setVelopen(source.getVelopen()); target.setVelclose(source.getVelclose());
+        target.setPmax(source.getPmax()); target.setPmin(source.getPmin());
+        target.setDb2(source.getDb2()); target.setGv(source.getGv());
+        target.setPgv(source.getPgv()); target.setH0(source.getH0());
+        target.setQnl(source.getQnl()); target.setTw(source.getTw());
+        target.setAt(source.getAt()); target.setDturb(source.getDturb());
+        target.setTrate(source.getTrate()); target.setDbH(source.getDbH());
+        target.setEps(source.getEps()); target.setDbL(source.getDbL());
+    }
 
     /** Attach a PSS/E HYGOV hydro governor. */
     public PsseHygovGovernor addGovHygov(String busId, String genId,
