@@ -25,9 +25,13 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.algo.DynamicSimuAlgorithm;
+import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.core.acsc.fault.SimpleFaultCode;
 
 /** Strict private-data gate for the five Case-6 REGFMA1 resources. */
-class Texas2kRegfma1CoverageTest {
+public class Texas2kRegfma1CoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
             Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
                     "private_cases", "Texas2k_series24_cases_with_dynamics",
@@ -99,6 +103,10 @@ class Texas2kRegfma1CoverageTest {
                 });
 
         network.setBypassDataCheck(true);
+        // Renewable stacks other than REGFMA1 are intentionally omitted from
+        // this reduced subsystem. Preserve their solved injections using the
+        // core's documented generator-without-machine negative-load equivalent.
+        network.setAllowGenWithoutMach(true);
         LoadflowAlgorithm loadflow = com.interpss.core.LoadflowAlgoObjectFactory
                 .createLoadflowAlgorithm(network);
         loadflow.getDataCheckConfig().setAutoTurnLine2Xfr(true);
@@ -106,6 +114,8 @@ class Texas2kRegfma1CoverageTest {
         loadflow.setNonDivergent(true);
         loadflow.setMaxIterations(50);
         assertTrue(loadflow.loadflow(), "Case 6 load flow must converge");
+        network.setBypassDataCheck(false);
+        network.checkData(loadflow.getDataCheckConfig());
 
         long initialized = network.getBusList().stream()
                 .flatMap(bus -> bus.getContributeGenList().stream())
@@ -115,6 +125,28 @@ class Texas2kRegfma1CoverageTest {
                 .peek(gen -> verifyEquilibrium((Regfma1Model) gen.getDynamicGenDevice(), gen))
                 .count();
         assertEquals(5, initialized);
+
+        DynamicSimuAlgorithm algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(1.0 / 240.0);
+        algorithm.setTotalSimuTimeSec(.3);
+        algorithm.setOutPutPerSteps(1);
+        StateMonitor monitor = new StateMonitor();
+        monitor.addBusStdMonitor(new String[] {"Bus1016"});
+        algorithm.setSimuOutputHandler(monitor);
+        network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
+                "Bus1016", network, SimpleFaultCode.GROUND_3P,
+                new Complex(0, 1.0e-4), null, .05, .05),
+                "ThreeCycleFault@Bus1016");
+
+        assertTrue(algorithm.initialization(), "Case 6 REGFMA1 initialization must converge");
+        assertTrue(algorithm.performSimulation(), "Case 6 REGFMA1 fault must complete");
+        var voltage = monitor.getBusVoltTable().get("Bus1016");
+        double minimum = voltage.values().stream().mapToDouble(value -> value.value)
+                .min().orElseThrow();
+        double finalVoltage = voltage.get(voltage.size() - 1).value;
+        assertTrue(minimum < .2, "three-phase fault must depress Bus1016 voltage");
+        assertTrue(finalVoltage > .8, "Bus1016 voltage must recover after clearing");
     }
 
     private static void verifyEquilibrium(Regfma1Model model, DStabGen gen) {
