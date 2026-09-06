@@ -152,6 +152,7 @@ import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
 import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.GensalConformanceTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
+import org.interpss.core.dstab.mach.GenrouAndesSmibConformanceTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
 import org.interpss.core.dstab.mach.RoundRotorMachineTest;
 import org.interpss.core.dstab.mach.SMIB_Gen_Test;
@@ -277,6 +278,7 @@ import org.junit.platform.suite.api.Suite;
 	///Eq1MachineCaseTest.class,
 	GensalConformanceTest.class,
 	GenrouConformanceTest.class,
+	GenrouAndesSmibConformanceTest.class,
 	MachineSaturationTest.class,
 	RoundRotorMachineTest.class,
 	SalientPoleMachineTest.class,
