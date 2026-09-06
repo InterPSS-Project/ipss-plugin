@@ -16,6 +16,7 @@ public final class Repca1Model {
 
     private final Repca1Data data;
     private final Regca1Model converter;
+    private final Regfma1Model gridFormingConverter;
     private BaseDStabBus<?, ?> regulatedBus;
     private AclfBranch monitoredBranch;
     private boolean branchStoredInRequestedDirection;
@@ -39,12 +40,22 @@ public final class Repca1Model {
     private double effectiveQmin;
 
     public Repca1Model(Repca1Data data) {
-        this(data, null);
+        this(data, null, null);
     }
 
     public Repca1Model(Repca1Data data, Regca1Model converter) {
+        this(data, converter, null);
+    }
+
+    public Repca1Model(Repca1Data data, Regfma1Model converter) {
+        this(data, null, converter);
+    }
+
+    private Repca1Model(Repca1Data data, Regca1Model converter,
+            Regfma1Model gridFormingConverter) {
         this.data = data;
         this.converter = converter;
+        this.gridFormingConverter = gridFormingConverter;
     }
 
     public void initialize(double p, double q, double v) {
@@ -92,11 +103,14 @@ public final class Repca1Model {
     }
 
     private void resolveMeasurements() {
-        if (converter == null) return;
-        BaseDStabBus<?, ?> localBus = converter.getDStabBus();
+        if (converter == null && gridFormingConverter == null) return;
+        BaseDStabBus<?, ?> localBus = converter != null
+                ? converter.getDStabBus() : gridFormingConverter.getDStabBus();
         systemBaseMva = localBus.getNetwork().getBaseMva();
-        deviceBaseMva = converter.getParentGen().getMvaBase() > EPS
-                ? converter.getParentGen().getMvaBase() : systemBaseMva;
+        double configuredBase = converter != null
+                ? converter.getParentGen().getMvaBase()
+                : gridFormingConverter.getParentGen().getMvaBase();
+        deviceBaseMva = configuredBase > EPS ? configuredBase : systemBaseMva;
         BaseDStabNetwork<?, ?> network = (BaseDStabNetwork<?, ?>) localBus.getNetwork();
         regulatedBus = data.remoteBus() == 0 ? localBus : network.getDStabBus(busId(data.remoteBus()));
         if (regulatedBus == null) {
@@ -119,7 +133,7 @@ public final class Repca1Model {
     }
 
     private Measurement measure(double localP, double localQ, double localV, double localFrequency) {
-        if (converter == null) {
+        if (converter == null && gridFormingConverter == null) {
             Complex voltage = regulatedBus == null ? new Complex(localV, 0.0) : regulatedBus.getVoltage();
             double f = regulatedBus == null ? localFrequency : regulatedBus.getFreq();
             return new Measurement(localP, localQ, voltage, Complex.ZERO, f);

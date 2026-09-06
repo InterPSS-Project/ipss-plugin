@@ -33,6 +33,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderStabilizerTest
 import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegca1ConverterTest;
+import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
@@ -353,6 +354,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseEsst4bExciterTest.class,
 	PsseGgov1GovernorTest.class,
 	PsseRegca1ConverterTest.class,
+	PsseRegfma1ModelTest.class,
 	PsseReeca1ControllerTest.class,
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,
