@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
@@ -25,6 +26,7 @@ import org.apache.commons.math3.complex.Complex;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.core.net.OriginalDataFormat;
 
 public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
@@ -74,7 +76,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void strictPss2aImportRejectsUnimplementedSignalSelector() throws Exception {
+    void strictPss2aImportRejectsMissingRemoteBus() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss2a-remote.dyr");
         Files.writeString(dyr, "1 'PSS2A' '1' 2 5 3 0 5 1 "
@@ -85,6 +87,24 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
 
         assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+    }
+
+    @Test
+    void strictPss2aImportAttachesResolvableRemoteBusSignal() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        AclfNetworkBuilder topology = new AclfNetworkBuilder(builder.getDStabNetwork());
+        topology.setNetworkInfo("ut", "ut", 100000.0, OriginalDataFormat.PSSE);
+        topology.addBus("Bus2", "Remote", 2L, 16500.0, 0.97, 0.0, null, null, null);
+        Path dyr = tempDir.resolve("pss2a-valid-remote.dyr");
+        Files.writeString(dyr, "1 'PSS2A' '1' 2 2 3 0 5 1 "
+                + "10 10 0 10 0 10 1.47 1 0.5 0.1 2.4 "
+                + "0.16 0.02 0.16 0.02 0.1 -0.1 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
     }
 
     @ParameterizedTest(name = "PSS2A input {0}, selector {1}")
@@ -179,6 +199,53 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
             assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
         }
         return pss.getOutput(machine);
+    }
+
+    @ParameterizedTest(name = "PSS2A remote bus selector {0}")
+    @CsvSource({"2", "5", "6"})
+    void pss2aResolvesRemoteBusForBusBasedSignals(int selector) throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        AclfNetworkBuilder topology = new AclfNetworkBuilder(builder.getDStabNetwork());
+        topology.setNetworkInfo("ut", "ut", 100000.0, OriginalDataFormat.PSSE);
+        topology.addBus("Bus2", "Remote", 2L, 16500.0, 0.97, 0.0, null, null, null);
+        var remote = builder.getDStabNetwork().getDStabBus("Bus2");
+        remote.setFreq(0.985);
+
+        Ieee1992PSS2AStabilizer pss = builder.addPss2a(
+                "Bus1", "1", selector, 2, 3, 999, 0, 0,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.1, 1.0,
+                0.0, 0.0, 0.0, 0.0, 1.0, -1.0);
+        assertNotNull(pss, "REMBUS is ignored for the local generator-power second input");
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        if (selector == 2) {
+            assertEquals(0.985, pss.input1Signal, TOL);
+        } else if (selector == 5) {
+            assertEquals(0.97, pss.input1Signal, TOL);
+        } else {
+            remote.setVoltage(new Complex(0.96, 0.0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertEquals(-2.0, pss.input1Signal, TOL);
+        }
+    }
+
+    @Test
+    void pss2aRejectsMissingRemoteBusOnlyForBusBasedSignals() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+
+        assertNull(builder.addPss2a(
+                "Bus1", "1", 5, 999, 3, 0, 0, 0,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                1.0, 0.0, 0.0, 0.1, 1.0,
+                0.0, 0.0, 0.0, 0.0, 1.0, -1.0));
+
+        assertNotNull(builder.addPss2a(
+                "Bus1", "1", 1, 999, 3, 999, 0, 0,
+                0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+                1.0, 0.0, 0.0, 0.1, 1.0,
+                0.0, 0.0, 0.0, 0.0, 1.0, -1.0));
     }
 
     @Test

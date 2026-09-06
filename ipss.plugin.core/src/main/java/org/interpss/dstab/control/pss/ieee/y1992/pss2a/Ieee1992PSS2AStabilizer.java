@@ -176,6 +176,14 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	public double input2Signal;
 	private double input1PreviousVoltage;
 	private double input2PreviousVoltage;
+	private BaseDStabBus<?, ?> input1Bus;
+	private BaseDStabBus<?, ?> input2Bus;
+
+	public void setInputSignalBuses(BaseDStabBus<?, ?> input1Bus,
+			BaseDStabBus<?, ?> input2Bus) {
+		this.input1Bus = input1Bus;
+		this.input2Bus = input2Bus;
+	}
 
 	private static double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
 		return switch (code) {
@@ -196,10 +204,12 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	 */
 	@Override
 	public boolean initStates(BaseDStabBus<?,?> abus, Machine mach) {
-		input1Signal = selectedInput(getData().getIcs1(), abus, mach);
-		input2Signal = selectedInput(getData().getIcs2(), abus, mach);
-		input1PreviousVoltage = abus.getVoltageMag();
-		input2PreviousVoltage = abus.getVoltageMag();
+		if (input1Bus == null) input1Bus = abus;
+		if (input2Bus == null) input2Bus = abus;
+		input1Signal = selectedInput(getData().getIcs1(), input1Bus, mach);
+		input2Signal = selectedInput(getData().getIcs2(), input2Bus, mach);
+		input1PreviousVoltage = input1Bus.getVoltageMag();
+		input2PreviousVoltage = input2Bus.getVoltageMag();
         this.ks1 = getData().getKs1();
         this.t1 = getData().getT1();
         this.t2 = getData().getT2();
@@ -229,17 +239,16 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 
 	@Override
 	public boolean nextStep(double dt, DynamicSimuMethod method, Machine mach, int flag) {
-		BaseDStabBus<?, ?> bus = mach.getDStabBus();
 		input1Signal = getData().getIcs1() == 6
-				? (bus.getVoltageMag() - input1PreviousVoltage) / dt
-				: selectedInput(getData().getIcs1(), bus, mach);
+				? (input1Bus.getVoltageMag() - input1PreviousVoltage) / dt
+				: selectedInput(getData().getIcs1(), input1Bus, mach);
 		input2Signal = getData().getIcs2() == 6
-				? (bus.getVoltageMag() - input2PreviousVoltage) / dt
-				: selectedInput(getData().getIcs2(), bus, mach);
+				? (input2Bus.getVoltageMag() - input2PreviousVoltage) / dt
+				: selectedInput(getData().getIcs2(), input2Bus, mach);
 		boolean ok = super.nextStep(dt, method, mach, flag);
 		if (flag != 0) {
-			input1PreviousVoltage = bus.getVoltageMag();
-			input2PreviousVoltage = bus.getVoltageMag();
+			input1PreviousVoltage = input1Bus.getVoltageMag();
+			input2PreviousVoltage = input2Bus.getVoltageMag();
 		}
 		return ok;
 	}
