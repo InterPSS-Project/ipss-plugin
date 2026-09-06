@@ -594,12 +594,25 @@ public class DStabNetworkBuilder {
 
     /**
      * IEEE 1981 ST1 exciter (PSS/E ESST1A).
-     * Parameters: KA, TA, TC, TB, VRMAX, VRMIN, KF, TF, KC, VIMAX, VIMIN
+     * Parameters: TR, KA, TA, TC, TB, VRMAX, VRMIN, KF, TF, KC, VIMAX, VIMIN
      *
      * @return the created exciter, or null if the machine was not found
      */
     public IEEE1981ST1Exciter addExcIeee1981St1(String busId, String genId,
             double ka, double ta, double tc, double tb,
+            double vrmax, double vrmin,
+            double kf, double tf, double kc,
+            double vimax, double vimin) {
+        return addExcIeee1981St1(busId, genId, 0.02, ka, ta, tc, tb,
+                vrmax, vrmin, kf, tf, kc, vimax, vimin);
+    }
+
+    /**
+     * IEEE 1981 ST1 exciter with an explicit terminal-voltage transducer time
+     * constant. This overload is used by the PSS/E EXST1 exchange model.
+     */
+    public IEEE1981ST1Exciter addExcIeee1981St1(String busId, String genId,
+            double tr, double ka, double ta, double tc, double tb,
             double vrmax, double vrmin,
             double kf, double tf, double kc,
             double vimax, double vimin) {
@@ -610,6 +623,7 @@ public class DStabNetworkBuilder {
         }
         IEEE1981ST1Exciter exc = ExciterObjectFactory.createIeee1981ST1Exciter(
                 mach.getId() + "_Exc", "ESST1A", mach);
+        exc.getData().setTr(tr);
         exc.getData().setKa(ka);
         exc.getData().setTa(ta);
         exc.getData().setTc(tc);

@@ -60,6 +60,7 @@ public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
                 .getMachine("Bus1-mach1").getExciter();
 
         assertNotNull(exciter);
+        assertEquals(.01, exciter.getData().getTr(), TOL);
         assertEquals(106, exciter.getData().getKa(), TOL);
         assertEquals(.07, exciter.getData().getTa(), TOL);
         assertEquals(.4, exciter.getData().getTc(), TOL);
