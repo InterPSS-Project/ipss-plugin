@@ -12,6 +12,7 @@ import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.WindControlStack;
 import org.interpss.dstab.renewable.Wtara1Data;
+import org.interpss.dstab.renewable.Wtara1Model;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
@@ -21,7 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.DStabGen;
 
-class PsseType3WindControllerTest extends CorePluginTestSetup {
+public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
     @Test
     void parserMapsAndWiresCompleteWindStackInSourceOrder(@TempDir Path tempDir) throws Exception {
@@ -69,5 +70,28 @@ class PsseType3WindControllerTest extends CorePluginTestSetup {
         assertEquals(.5, stack.getPref(), 1.0e-9);
         assertEquals(0, stack.getPitchController().getPitch(), 1.0e-9);
         assertEquals(.5, stack.getAerodynamics().getMechanicalPower(), 1.0e-9);
+    }
+
+    @Test
+    void aerodynamicPowerUsesTheDocumentedNonlinearPitchProduct() {
+        Wtara1Model model = new Wtara1Model(new Wtara1Data(.007, 0));
+        model.initialize(1.0);
+
+        model.step(5.0);
+        assertEquals(.825, model.getMechanicalPower(), 1.0e-12);
+        model.step(10.0);
+        assertEquals(.3, model.getMechanicalPower(), 1.0e-12);
+    }
+
+    @Test
+    void nonzeroInitialPitchPreservesTheOperatingPointAndBothDirections() {
+        Wtara1Model model = new Wtara1Model(new Wtara1Data(.01, 2.0));
+        model.initialize(.8);
+        assertEquals(.8, model.getMechanicalPower(), 1.0e-12);
+
+        model.step(5.0);
+        assertEquals(.65, model.getMechanicalPower(), 1.0e-12);
+        model.step(1.0);
+        assertEquals(.81, model.getMechanicalPower(), 1.0e-12);
     }
 }
