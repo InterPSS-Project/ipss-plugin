@@ -62,6 +62,7 @@ public class PSSEDStabDirectParser {
     private final DStabNetworkBuilder builder;
     private final List<PendingSt2cut> pendingSt2cut = new ArrayList<>();
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
+    private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
     private boolean strictImport;
     private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
 
@@ -94,11 +95,13 @@ public class PSSEDStabDirectParser {
     private void parseDynData(List<PsseDyrRecord> records, String source) throws InterpssException {
         pendingSt2cut.clear();
         pendingIeeest.clear();
+        pendingRepca1.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
         for (PsseDyrRecord record : records) {
             try {
                 String type = record.canonicalModelName();
-                boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST");
+                boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
+                        || type.equals("REPCA1");
                 if (hasExpectedParameterCount(record)
                         && processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, DynamicModelImportStatus.ATTACHED, "");
@@ -125,6 +128,13 @@ public class PSSEDStabDirectParser {
                     attached ? "" : "IEEEST prerequisites, remote bus, or signal mode are unsupported");
         }
         pendingIeeest.clear();
+        for (PendingRepca1 pending : pendingRepca1) {
+            boolean attached = procRepca1(pending.busId(), pending.genId(), pending.fields());
+            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                    : DynamicModelImportStatus.REJECTED,
+                    attached ? "" : "REPCA1 requires REGCA1/REEC or REGFMA1 on the same generator");
+        }
+        pendingRepca1.clear();
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
@@ -278,7 +288,8 @@ public class PSSEDStabDirectParser {
                 return procWttqa1(busId, genId, fields);
             case "REPCA1":
             case "REPCAU1":
-                return procRepca1(busId, genId, fields);
+                pendingRepca1.add(new PendingRepca1(busId, genId, fields.clone(), record));
+                return true;
 
             default:
                 log.debug("Unsupported dynamic model type: {} at bus {}", type, busId);
@@ -724,6 +735,9 @@ public class PSSEDStabDirectParser {
     }
 
     private record PendingIeeest(String busId, String genId, String[] fields,
+            PsseDyrRecord record) {}
+
+    private record PendingRepca1(String busId, String genId, String[] fields,
             PsseDyrRecord record) {}
 
     // PSS2A: IBUS 'PSS2A' ID ICS1 REMBUS1 ICS2 REMBUS2 M N

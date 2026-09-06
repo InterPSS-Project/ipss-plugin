@@ -1222,13 +1222,20 @@ public class DStabNetworkBuilder {
 
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
         Regca1Model converter = findRegca1(busId, genId);
-        if (converter == null || converter.getActiveElectricalController() == null) {
-            log.warn("REGCA1/REEC chain not found for REPCA1: bus={}, gen={}", busId, genId);
-            return null;
+        if (converter != null && converter.getActiveElectricalController() != null) {
+            Repca1Model controller = new Repca1Model(data, converter);
+            converter.getActiveElectricalController().setPlantController(controller);
+            return controller;
         }
-        Repca1Model controller = new Repca1Model(data, converter);
-        converter.getActiveElectricalController().setPlantController(controller);
-        return controller;
+        Regfma1Model gridForming = findRegfma1(busId, genId);
+        if (gridForming != null) {
+            Repca1Model controller = new Repca1Model(data, gridForming);
+            gridForming.setPlantController(controller);
+            return controller;
+        }
+        log.warn("REGCA1/REEC or REGFMA1 chain not found for REPCA1: bus={}, gen={}",
+                busId, genId);
+        return null;
     }
 
     public Wtara1Model addWtara1(String busId, String genId, Wtara1Data data) {
@@ -1268,6 +1275,12 @@ public class DStabNetworkBuilder {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
         return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
+    }
+
+    private Regfma1Model findRegfma1(String busId, String genId) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        return gen != null && gen.getDynamicGenDevice() instanceof Regfma1Model model ? model : null;
     }
 
     private Reeca1Model findReeca1(String busId, String genId) {

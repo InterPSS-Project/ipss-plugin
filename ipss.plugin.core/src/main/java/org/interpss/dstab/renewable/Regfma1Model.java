@@ -39,6 +39,7 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
     private double qLowerIntegral;
     private double speed = 1.0;
     private boolean currentLimited;
+    private Repca1Model plantController;
 
     public Regfma1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
             Regfma1Data data) {
@@ -80,6 +81,7 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
         pUpperIntegral = pLowerIntegral = qUpperIntegral = qLowerIntegral = 0.0;
         speed = 1.0;
         currentLimited = false;
+        if (plantController != null) plantController.initialize(p, q, vMeasured);
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(eDroop) && finite(angle);
     }
@@ -93,6 +95,11 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
         pMeasured = lag(pMeasured, p, data.tpf(), dt);
         qMeasured = lag(qMeasured, q, data.tqf(), dt);
         vMeasured = lag(vMeasured, voltage.abs(), data.tvf(), dt);
+        if (plantController != null) {
+            plantController.step(dt, p, q, voltage.abs(), getDStabBus().getFreq());
+            prefOffset = plantController.getPref();
+            qvOffset = plantController.getQref();
+        }
 
         double pHighError = data.pmax() - pMeasured;
         double pLowError = data.pmin() - pMeasured;
@@ -161,6 +168,11 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
     public void setReferenceOffsets(double activePower, double reactiveOrVoltage) {
         prefOffset = activePower;
         qvOffset = reactiveOrVoltage;
+    }
+
+    public Repca1Model getPlantController() { return plantController; }
+    public void setPlantController(Repca1Model plantController) {
+        this.plantController = plantController;
     }
 
     static double integrateWithAntiWindup(double integral, double gain, double error, double dt,
