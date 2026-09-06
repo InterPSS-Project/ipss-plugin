@@ -13,11 +13,18 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.Regfma1Data;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.DStabGen;
+import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.DStabilityNetwork;
+import com.interpss.dstab.algo.DynamicSimuAlgorithm;
+import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.core.acsc.fault.SimpleFaultCode;
+import com.interpss.core.net.OriginalDataFormat;
 
 public class PsseRegfma1ModelTest extends CorePluginTestSetup {
 
@@ -154,6 +161,58 @@ public class PsseRegfma1ModelTest extends CorePluginTestSetup {
                 com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
         assertTrue(model.getPlantController().getPref() > 0.0);
         assertTrue(model.getSpeed() > 1.0);
+    }
+
+    @Test
+    void twoBusGfmSurvivesAndRecoversFromAThreeCycleTerminalFault() throws Exception {
+        DStabilityNetwork network = DStabObjectFactory.createDStabilityNetwork();
+        network.setBaseKva(100000.0);
+        AclfNetworkBuilder topology = new AclfNetworkBuilder(network);
+        topology.setNetworkInfo("regfma1-fault", "regfma1-fault", 100000.0,
+                OriginalDataFormat.PSSE);
+        topology.addBus("Gfm", "GFM", 1L, 230000.0, 1.0, 0.0,
+                null, null, null);
+        topology.setPVBus("Gfm", .5, 1.0, 1.0, -1.0, true);
+        topology.addContributeGen("Gfm", "1", true, .5, 0, 100, 1.0,
+                1, -1, 1, -1, new Complex(0, .15), null, 0, null, 0, 0);
+        topology.addBus("Grid", "Infinite grid", 2L, 230000.0, 1.0, 0.0,
+                null, null, null);
+        topology.setSwingBus("Grid", 1.0, 0.0);
+        topology.addContributeGen("Grid", "1", true, 0, 0, 100, 1.0,
+                0, 0, 0, 0, new Complex(0, .01), null, 0, null, 0, 0);
+        topology.addLine("Gfm", "Grid", "1", new Complex(.01, .2), Complex.ZERO,
+                null, null, 0, 0, 0, true);
+
+        DStabNetworkBuilder dynamics = new DStabNetworkBuilder(network);
+        Regfma1Model model = dynamics.addRegfma1("Gfm", "1",
+                new Regfma1Data(0, .02, .02, .02, 1.25, 1.2, 0,
+                        1, 0, 1, -1, .01, .05, .01, .1, 3, 20, 0, 6));
+        dynamics.addInfiniteMachine("Grid", "1");
+
+        DynamicSimuAlgorithm algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
+        algorithm.setSimuMethod(com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(1.0 / 240.0);
+        algorithm.setTotalSimuTimeSec(.3);
+        algorithm.setOutPutPerSteps(1);
+        StateMonitor monitor = new StateMonitor();
+        monitor.addBusStdMonitor(new String[] {"Gfm"});
+        algorithm.setSimuOutputHandler(monitor);
+
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
+                "Gfm", network, SimpleFaultCode.GROUND_3P,
+                new Complex(0, 1.0e-4), null, .05, .05), "ThreeCycleFault@Gfm");
+        assertTrue(algorithm.initialization());
+        assertTrue(algorithm.performSimulation());
+
+        var voltage = monitor.getBusVoltTable().get("Gfm");
+        double minimum = voltage.values().stream().mapToDouble(value -> value.value)
+                .min().orElseThrow();
+        double finalVoltage = voltage.get(voltage.size() - 1).value;
+        assertTrue(minimum < .2, "terminal fault must depress GFM voltage");
+        assertTrue(finalVoltage > .9, "GFM voltage must recover after clearing");
+        assertTrue(Double.isFinite(model.getSpeed()));
+        assertTrue(Double.isFinite(model.getInternalVoltage()));
     }
 
     private static Regfma1Model model(Regfma1Data data) throws Exception {
