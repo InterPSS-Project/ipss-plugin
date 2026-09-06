@@ -19,6 +19,8 @@ import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
 import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
+import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
+import org.interpss.dstab.control.exc.psse.esac2a.Esac2aExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
@@ -717,6 +719,19 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if (mach==null) { log.warn("Machine not found for ESAC1A: bus={}, gen={}",busId,genId); return null; }
         return new Esac1aExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5/PSS/E ESAC2A rotating AC exciter. */
+    public Esac2aExciter addExcEsac2a(String busId,String genId,Esac2aData data) {
+        if (data==null || data.getKa()<=0.0 || data.getKb()<=0.0 || data.getTe()<=0.0
+                || data.getTf()<=0.0 || data.getTr()<0.0 || data.getTb()<0.0
+                || data.getTa()<0.0 || data.getKc()<0.0 || data.getVfemax()<0.0) {
+            log.warn("Invalid ESAC2A parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null){log.warn("Machine not found for ESAC2A: bus={}, gen={}",busId,genId);return null;}
+        return new Esac2aExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** Attach the eight-parameter PSS/E SCRX excitation system. */
