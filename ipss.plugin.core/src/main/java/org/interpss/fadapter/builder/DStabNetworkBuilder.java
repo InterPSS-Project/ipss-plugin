@@ -534,6 +534,15 @@ public class DStabNetworkBuilder {
             double tr, double ka, double ta, double vrmax, double vrmin,
             double ke, double te, double kf, double tf,
             double e1, double se1, double e2, double se2) {
+        return addExcIeeet1(busId, genId, tr, ka, ta, vrmax, vrmin,
+                ke, te, kf, tf, e1, se1, e2, se2, 0.0);
+    }
+
+    /** PSS/E IEEET1 including the optional speed-multiplier field. */
+    public Ieee1968Type1Exciter addExcIeeet1(String busId, String genId,
+            double tr, double ka, double ta, double vrmax, double vrmin,
+            double ke, double te, double kf, double tf,
+            double e1, double se1, double e2, double se2, double spdmlt) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) {
             log.warn("Machine not found for IEEET1 exciter: bus={}, gen={}", busId, genId);
@@ -554,6 +563,7 @@ public class DStabNetworkBuilder {
         exc.getData().setSeE1(se1);
         exc.getData().setE2(e2);
         exc.getData().setSeE2(se2);
+        exc.getData().setSpdmlt(spdmlt);
         return exc;
     }
 

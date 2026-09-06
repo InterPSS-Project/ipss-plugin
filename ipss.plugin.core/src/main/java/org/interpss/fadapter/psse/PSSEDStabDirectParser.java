@@ -146,6 +146,9 @@ public class PSSEDStabDirectParser {
         if (record.canonicalModelName().equals("REPCA1")) {
             return record.parameterCount() == 34 || record.parameterCount() == 35;
         }
+        if (record.canonicalModelName().equals("IEEET1")) {
+            return record.parameterCount() == 14 || record.parameterCount() == 15;
+        }
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .map(model -> model.parameterCount() == record.parameterCount())
                 .orElse(true);
@@ -443,7 +446,9 @@ public class PSSEDStabDirectParser {
         double seE1 = getDouble(f, 14, 0);
         double e2 = getDouble(f, 15, 0);
         double seE2 = getDouble(f, 16, 0);
-        builder.addExcIeeet1(busId, genId, tr, ka, ta, vrmax, vrmin, ke, te, kf, tf, e1, seE1, e2, seE2);
+        double spdmlt = getDouble(f, 17, 0);
+        builder.addExcIeeet1(busId, genId, tr, ka, ta, vrmax, vrmin,
+                ke, te, kf, tf, e1, seE1, e2, seE2, spdmlt);
         return true;
     }
 

@@ -55,6 +55,7 @@ import org.slf4j.LoggerFactory;
 public class Ieee1968Type1Exciter extends AnnotateExciter {
     private static final Logger log = LoggerFactory.getLogger(Ieee1968Type1Exciter.class);
 	   public double ke = 1.0;
+	   public double spdmlt = 0.0;
 
 	   // define a CML delay block, krDelayBlock----1/(1+sTr)
        public double kr = 1.0/*constant*/,tr = 0.04;
@@ -179,6 +180,7 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 		this.seE2 = getData().getSeE2();
 		this.kf  = getData().getKf();
 		this.tf = getData().getTf();
+		this.spdmlt = getData().getSpdmlt();
         
 		if(tf == 0.0){
 			log.error("Tf =0.0 for Exciter of "+mach.getId());
@@ -222,6 +224,12 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 		
 		// call the super method to init CML field/controller states
         return super.initStates(bus, mach);
+    }
+
+    @Override
+    public double getOutput(Machine mach) {
+        double efd = super.getOutput(mach);
+        return spdmlt != 0.0 ? efd * mach.getSpeed() : efd;
     }
 
     /**
