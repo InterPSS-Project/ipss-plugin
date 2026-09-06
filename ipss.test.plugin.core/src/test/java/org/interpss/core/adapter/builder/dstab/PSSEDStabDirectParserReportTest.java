@@ -17,7 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.common.exp.InterpssException;
 
-class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
+public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     @TempDir
     Path tempDir;
 
@@ -63,11 +63,12 @@ class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
 
         assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
 
-        assertEquals(2, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.MISSING_TARGET));
         assertTrue(parser.getLastImportReport().failures().get(0).message()
                 .contains("expected 14 parameters"));
         assertTrue(parser.getLastImportReport().failures().get(1).message()
-                .contains("could not be attached"));
+                .contains("target bus Bus2 does not exist"));
     }
 
     @Test
