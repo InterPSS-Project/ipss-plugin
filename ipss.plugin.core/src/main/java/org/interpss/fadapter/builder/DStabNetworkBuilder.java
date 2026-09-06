@@ -649,6 +649,45 @@ public class DStabNetworkBuilder {
     }
 
     /**
+     * PSS/E IEEEX1 compatibility implementation with its explicit voltage
+     * transducer. A zero TE is rejected until the algebraic field block is
+     * implemented; it must never be replaced by an undocumented time constant.
+     */
+    public IEEE1981DC1Exciter addExcIeeex1(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for IEEEX1 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        if (te <= 0.0) {
+            log.warn("IEEEX1 algebraic field block is not implemented: bus={}, gen={}, TE={}",
+                    busId, genId, te);
+            return null;
+        }
+        IEEE1981DC1Exciter exc = ExciterObjectFactory.createIeee1981DC1Exciter(
+                mach.getId() + "_Exc", "IEEEX1", mach);
+        exc.setTransducerTimeConstant(tr);
+        exc.getData().setKa(ka);
+        exc.getData().setTa(ta);
+        exc.getData().setTb(tb);
+        exc.getData().setTc(tc);
+        exc.getData().setVrmax(vrmax);
+        exc.getData().setVrmin(vrmin);
+        exc.getData().setKe(ke);
+        exc.getData().setTe(te);
+        exc.getData().setKf(kf);
+        exc.getData().setTf(tf);
+        exc.getData().setE1(e1);
+        exc.getData().setSe_e1(se1);
+        exc.getData().setE2(e2);
+        exc.getData().setSe_e2(se2);
+        return exc;
+    }
+
+    /**
      * PSS/E ESST1A exciter with the complete 20-parameter record schema.
      */
     public IEEE1981ST1Exciter addExcEsst1a(String busId, String genId,
