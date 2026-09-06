@@ -120,9 +120,9 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	    @AnControllerField(
 	            type= CMLFieldEnum.ControlBlock,
 	            input="this.washoutBlock1.y",
-	            parameter={"type.NoLimit", "this.one", "this.tw2"},
+	            parameter={"this.one", "this.tw2"},
 	            y0="this.delayBlock.u0"	)
-	    WashoutControlBlock washoutBlock2;
+	    Pss2aWashoutBlock washoutBlock2;
 
 		 public double k = 1.0, t1 = 0.05;
 	    @AnControllerField(
@@ -233,7 +233,13 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 		this.ta = getData().getTa();
 		this.tb = getData().getTb();
 		this.ks4 = getData().getKs4();
-        
+
+		// Child annotated controllers are instantiated with the Java field
+		// defaults before model data is copied into this controller. Recreate
+		// them from the imported values before CML initializes their blocks.
+		this.customBlock1 = new CustomExciter(this.tw1, this.tw2, 1.0, this.t6);
+		this.customBlock2 = new CustomExciter(this.tw3, this.tw4, this.ks2, this.t7);
+
         return super.initStates(abus, mach);
 	}
 
