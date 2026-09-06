@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.interpss.IpssCorePlugin;
@@ -23,7 +24,11 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.BaseDStabNetwork;
 
 /** Whole-file attachment audit for all six Texas2k Series 24 cases. */
-class Texas2kFullDynamicCoverageTest {
+public class Texas2kFullDynamicCoverageTest {
+    private static final Set<String> REVIEWED_INCOMPLETE_STACKS = Set.of(
+            "5045:1", "5394:1", "5395:1", "7095:1", "7099:2");
+    private static final Set<String> REVIEWED_DEPENDENCY_MODELS = Set.of(
+            "REECA1", "REPCA1", "WTARA1", "WTPTA1", "WTTQA1");
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
             Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
                     "private_cases", "Texas2k_series24_cases_with_dynamics",
@@ -77,6 +82,21 @@ class Texas2kFullDynamicCoverageTest {
                 assertEquals(Map.of("REECA1", 5L, "REPCA1", 5L,
                         "WTARA1", 5L, "WTPTA1", 5L, "WTTQA1", 5L), failures,
                         source.directory());
+                assertEquals(REVIEWED_INCOMPLETE_STACKS,
+                        report.failures().stream()
+                                .map(entry -> entry.busNumber() + ":" + entry.deviceId())
+                                .collect(Collectors.toSet()),
+                        source.directory() + " incomplete generator keys");
+                assertEquals(REVIEWED_DEPENDENCY_MODELS,
+                        report.failures().stream()
+                                .map(DynamicModelImportEntry::canonicalModelName)
+                                .collect(Collectors.toSet()),
+                        source.directory() + " rejected controller models");
+                assertEquals(25, report.failures().stream()
+                                .map(entry -> entry.canonicalModelName() + "@"
+                                        + entry.busNumber() + ":" + entry.deviceId())
+                                .collect(Collectors.toSet()).size(),
+                        source.directory() + " unique model/device diagnostics");
             }
         }
     }

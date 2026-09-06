@@ -39,6 +39,7 @@ import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
 import org.interpss.core.dstab.Texas2kRegfma1CoverageTest;
+import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -361,6 +362,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseType3WindControllerTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,
+	Texas2kFullDynamicCoverageTest.class,
 
 	//matpower
 	MatpowerFormatTest.class,
