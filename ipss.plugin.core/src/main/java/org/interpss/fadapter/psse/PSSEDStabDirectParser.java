@@ -35,6 +35,7 @@ import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
 import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
+import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -174,6 +175,8 @@ public class PSSEDStabDirectParser {
                 return procExcExac1(busId, genId, fields);
             case "EXAC1A":
                 return procExcExac1a(busId, genId, fields);
+            case "EXAC2":
+                return procExcExac2(busId, genId, fields);
             case "ESAC1A":
                 return procExcEsac1a(busId, genId, fields);
             case "ESDC2A":
@@ -489,6 +492,21 @@ public class PSSEDStabDirectParser {
         d.setKe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0)); d.setSe1(getDouble(f,17,0));
         d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0)); d.setSpdmlt(getDouble(f,20,0));
         return builder.addExcExac1a(busId,genId,d)!=null;
+    }
+
+    // EXAC2: IBUS MODEL ID Tr Tb Tc Ka Ta VaMax VaMin Kb VrMax VrMin Te Kl Kh Kf Tf Kc Kd Ke VLr E1 SE1 E2 SE2 [Spdmlt]
+    private boolean procExcExac2(String busId,String genId,String[] f) {
+        if(f.length<26)return false;
+        Exac2Data d=new Exac2Data();
+        d.setTr(getDouble(f,3,0));d.setTb(getDouble(f,4,0));d.setTc(getDouble(f,5,0));
+        d.setKa(getDouble(f,6,0));d.setTa(getDouble(f,7,0));d.setVamax(getDouble(f,8,0));
+        d.setVamin(getDouble(f,9,0));d.setKb(getDouble(f,10,0));d.setVrmax(getDouble(f,11,0));
+        d.setVrmin(getDouble(f,12,0));d.setTe(getDouble(f,13,0));d.setKl(getDouble(f,14,0));
+        d.setKh(getDouble(f,15,0));d.setKf(getDouble(f,16,0));d.setTf(getDouble(f,17,0));
+        d.setKc(getDouble(f,18,0));d.setKd(getDouble(f,19,0));d.setKe(getDouble(f,20,0));
+        d.setVlr(getDouble(f,21,0));d.setE1(getDouble(f,22,0));d.setSe1(getDouble(f,23,0));
+        d.setE2(getDouble(f,24,0));d.setSe2(getDouble(f,25,0));d.setSpdmlt(getDouble(f,26,0));
+        return builder.addExcExac2(busId,genId,d)!=null;
     }
 
     // ESAC1A: IBUS 'ESAC1A' ID Tr Tb Tc Ka Ta VaMax VaMin Te Kf Tf Kc Kd Ke E1 SE1 E2 SE2 VrMax VrMin [Spdmlt]
