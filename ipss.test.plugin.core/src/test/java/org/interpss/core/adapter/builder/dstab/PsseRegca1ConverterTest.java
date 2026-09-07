@@ -90,6 +90,29 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
+    void composedControllerCanSupplyACommandAtBothModifiedEulerStages() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Regca1Model model = builder.addRegca1("Bus1", "1", data(0, .1, 10.0, 0.0, 0.0));
+        StageCommandController controller = new StageCommandController();
+        model.setActiveElectricalController(controller);
+        assertTrue(model.initStates(model.getDStabBus()));
+
+        double initial = model.getIpRegulatorState();
+        controller.predictorCommand = initial + .05;
+        controller.correctorCommand = initial + .10;
+        double dt = .01;
+
+        step(model, dt);
+
+        double d0 = (controller.predictorCommand - initial) / .1;
+        double predicted = initial + dt * d0;
+        double d1 = (controller.correctorCommand - predicted) / .1;
+        assertEquals(initial + .5 * dt * (d0 + d1),
+                model.getIpRegulatorState(), TOL);
+        assertEquals(List.of(0, 1), controller.stages);
+    }
+
+    @Test
     void activeLagUsesRecoveryRateLimitBeforeAlgebraicLowVoltageGain() throws Exception {
         Fixture fixture = fixture(data(0.2, 0.8, -0.6));
         double initialState = fixture.model.getIpRegulatorState();
@@ -253,5 +276,28 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
         @Override public double getIqcmd() { return iqcmd; }
         @Override public Repca1Model getPlantController() { return plantController; }
         @Override public void setPlantController(Repca1Model value) { plantController = value; }
+    }
+
+    private static final class StageCommandController implements RenewableElectricalController {
+        private final List<Integer> stages = new java.util.ArrayList<>();
+        private double predictorCommand;
+        private double correctorCommand;
+        private double ipcmd;
+
+        @Override public void initialize(double p, double q, double v) {
+            ipcmd = p / v;
+        }
+        @Override public void step(double dt, double p, double q, double v, double frequency) {
+            throw new AssertionError("stage-aware path expected");
+        }
+        @Override public void step(double dt, double p, double q, double v,
+                double frequency, int flag) {
+            stages.add(flag);
+            ipcmd = flag == 0 ? predictorCommand : correctorCommand;
+        }
+        @Override public double getIpcmd() { return ipcmd; }
+        @Override public double getIqcmd() { return 0.0; }
+        @Override public Repca1Model getPlantController() { return null; }
+        @Override public void setPlantController(Repca1Model value) { }
     }
 }
