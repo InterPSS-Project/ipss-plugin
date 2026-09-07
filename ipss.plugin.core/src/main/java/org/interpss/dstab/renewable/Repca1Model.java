@@ -214,7 +214,11 @@ public final class Repca1Model {
     public double getDeviceBaseMva() { return deviceBaseMva; }
 
     static double lag(double state, double input, double timeConstant, double dt) {
-        return timeConstant <= EPS ? input : state + dt * (input - state) / timeConstant;
+        if (timeConstant <= EPS) return input;
+        double initialDerivative = (input - state) / timeConstant;
+        double predicted = state + dt * initialDerivative;
+        double predictedDerivative = (input - predicted) / timeConstant;
+        return state + 0.5 * dt * (initialDerivative + predictedDerivative);
     }
 
     static double deadband(double value, double lower, double upper) {
