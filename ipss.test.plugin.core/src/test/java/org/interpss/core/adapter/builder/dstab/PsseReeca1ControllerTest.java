@@ -192,6 +192,8 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     void coordinatedQControlRoutesReactivePiDirectlyIntoInnerPi() {
         Reeca1Model controller = new Reeca1Model(controlData(0, 1, 1, 0, 0, .1), null);
         controller.initialize(.8, .2, 1.0);
+        assertEquals(0.0, controller.getReactiveControlIntegral(), 0.0,
+                "WECC Figure 3-2 VFLAG=1 PIQ is incremental at initialization");
 
         controller.step(CONTROL_STEP, .8, .3, 1.0, 1.0);
 

@@ -62,9 +62,10 @@ public final class Reeca1Model implements RenewableElectricalController {
         vMeasured = sensedV;
         pMeasured = pFilter = pOrder = p;
         qCurrent = q / nonzero(v);
-        // In coordinated Q/V control, PIQ is an incremental input to PIV and
-        // therefore initializes to zero. Terminal voltage is subtracted only
-        // by the VFLAG=0 local-voltage path.
+        // WECC Figure 3-2 places the VFLAG selector immediately before PIV:
+        // VFLAG=1 selects incremental PIQ directly, while VFLAG=0 selects the
+        // Vref1/Qext path after it has formed Vref - Vt_filt. PIQ therefore
+        // initializes to zero in coordinated Q control.
         qIntegral = 0.0;
         vIntegral = qCurrent;
         qControlOutput = 0.0;
@@ -163,8 +164,9 @@ public final class Reeca1Model implements RenewableElectricalController {
                         effectiveVmin, effectiveVmax);
             }
             qControlOutput = voltageBias;
-            // WECC REEC_A routes the coordinated-Q PI output directly to PIV.
-            // Only the VFLAG=0 local-voltage branch forms Vref - Vt_filtered.
+            // WECC Figure 3-2 and ANDES both route the VFLAG=1 coordinated-Q
+            // PI output directly to PIV. Only the VFLAG=0 local-voltage branch
+            // forms Vref - Vt_filtered before the selector.
             double voltageError = data.vFlag() == 1
                     ? voltageBias : voltageBias - vMeasured;
             double preliminaryIqMax = preliminaryReactiveCurrentLimit(rawIp);
