@@ -14,6 +14,8 @@ import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
+import org.interpss.dstab.control.exc.psse.st6b.St6bData;
+import org.interpss.dstab.control.exc.psse.st6b.St6bExciter;
 import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
 import org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
@@ -1102,6 +1104,12 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if(mach==null){log.warn("Machine not found for {} exciter: bus={}, gen={}",modelName,busId,genId);return null;}
         return ExciterObjectFactory.createDc4bExciter(mach.getId()+"_Exc",modelName,data,mach);
+    }
+
+    /** IEEE ST6B / PSLF ESST6B static excitation system. */
+    public St6bExciter addExcSt6b(String busId,String genId,String modelName,St6bData data){
+        Machine mach=findMachine(busId,genId);if(mach==null){log.warn("Machine not found for {} exciter: bus={}, gen={}",modelName,busId,genId);return null;}
+        return ExciterObjectFactory.createSt6bExciter(mach.getId()+"_Exc",modelName,data,mach);
     }
 
     /** IEEE 421.5-2005 AC7B / PSS/E ESAC7B rotating excitation system. */
