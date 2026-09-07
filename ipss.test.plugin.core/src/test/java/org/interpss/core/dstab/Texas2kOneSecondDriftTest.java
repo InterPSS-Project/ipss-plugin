@@ -1,6 +1,7 @@
 package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -92,6 +93,17 @@ public class Texas2kOneSecondDriftTest {
         assertFalse(selectedCases.isEmpty(), "No Texas2k case matches: " + caseFilter);
         assertAll("Texas2k one-second no-disturbance drift gates",
                 selectedCases.stream().map(source -> () -> verify(source)));
+    }
+
+    @Test
+    void diagnosticRankingIsLargestFirstAndDeterministicForTies() {
+        List<RankingRow> ranked = rankRows(java.util.stream.Stream.of(
+                new RankingRow("BUS_VOLTAGE", "", "Bus2", "magnitude", 0.2, 1.0, 1.2),
+                new RankingRow("BUS_VOLTAGE", "", "Bus3", "magnitude", 0.1, 1.0, 0.9),
+                new RankingRow("BUS_VOLTAGE", "", "Bus1", "magnitude", 0.2, 1.0, 0.8)), 2);
+
+        assertEquals(List.of("Bus1", "Bus2"), ranked.stream()
+                .map(RankingRow::id).toList());
     }
 
     @Test
@@ -403,7 +415,7 @@ public class Texas2kOneSecondDriftTest {
                     .map(record -> record.rawText() + " /")
                     .collect(Collectors.joining(System.lineSeparator()));
             Files.writeString(effectiveDyr, filtered);
-            copySupplementalSibling(dyr, effectiveDyr, "_MODREMOVE.idv");
+            copyPreparationSibling(dyr, effectiveDyr, "_MODREMOVE.idv");
             System.out.println("Filtered DYR: " + effectiveDyr);
         }
         PSSEMultiFileLoader loader = new PSSEMultiFileLoader();
@@ -482,15 +494,15 @@ public class Texas2kOneSecondDriftTest {
         network.getBusList().stream().filter(bus -> bus.isActive()).forEach(bus ->
                 initialVoltage.put(bus.getId(), bus.getVoltage().abs()));
         Map<String, Double> initialSpeed = new LinkedHashMap<>();
-        PsseDyrRecordReader.read(dyr).stream()
-                .filter(record -> record.canonicalModelName().equals("GENROU")
-                        || record.canonicalModelName().equals("GENSAL"))
-                .forEach(record -> {
-                    String id = "Bus" + record.busNumber() + "-mach" + record.deviceId();
-                    if (network.getMachine(id) != null) {
-                        initialSpeed.put(id, network.getMachine(id).getSpeed());
-                    }
-                });
+        network.getBusList().stream().filter(bus -> bus.isActive()).forEach(bus ->
+                bus.getContributeGenList().stream()
+                        .filter(DStabGen.class::isInstance)
+                        .map(DStabGen.class::cast)
+                        .filter(DStabGen::isActive)
+                        .map(DStabGen::getMach)
+                        .filter(java.util.Objects::nonNull)
+                        .forEach(machine -> initialSpeed.put(
+                                machine.getId(), machine.getSpeed())));
         Map<String, WindSnapshot> initialWind = new LinkedHashMap<>();
         Map<String, ReecaSnapshot> initialReeca = new LinkedHashMap<>();
         Map<String, RepcaSnapshot> initialRepca = new LinkedHashMap<>();
@@ -610,6 +622,8 @@ public class Texas2kOneSecondDriftTest {
         }
         Difference voltage = worstVoltageDifference(network, initialVoltage);
         Difference speed = worstSpeedDifference(network, initialSpeed);
+        reportFinalRanking(source, network, initialVoltage, initialSpeed,
+                initialReeca, initialRepca);
         Difference wind = initialWind.entrySet().stream().map(entry -> {
             String[] key = entry.getKey().split(":", 2);
             DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
@@ -663,8 +677,8 @@ public class Texas2kOneSecondDriftTest {
                         source.directory() + " worst speed drift " + speed));
     }
 
-    /** Preserve source-only models and removal directives in filtered diagnostics. */
-    private static void copySupplementalSibling(Path sourceDyr, Path filteredDyr,
+    /** Preserve PSS/E case-preparation directives in filtered DYR diagnostics. */
+    private static void copyPreparationSibling(Path sourceDyr, Path filteredDyr,
             String suffix) throws java.io.IOException {
         String sourceName = sourceDyr.getFileName().toString();
         String sourceStem = sourceName.substring(0, sourceName.length() - 4);
@@ -680,6 +694,9 @@ public class Texas2kOneSecondDriftTest {
     private record Difference(String id, double value) { }
 
     private record StateDifference(String model, String id, String state,
+            double delta, double initial, double current) { }
+
+    private record RankingRow(String category, String model, String id, String state,
             double delta, double initial, double current) { }
 
     private record ConverterPowerSnapshot(double p, double q) { }
@@ -722,6 +739,66 @@ public class Texas2kOneSecondDriftTest {
                 .orElse(new Difference("none", 0.0));
     }
 
+    private static void reportFinalRanking(CaseFile source,
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
+            Map<String, Double> initialVoltage, Map<String, Double> initialSpeed,
+            Map<String, ReecaSnapshot> initialReeca,
+            Map<String, RepcaSnapshot> initialRepca) throws java.io.IOException {
+        int limit = Math.max(1, Integer.getInteger("texas2k.drift.rankingLimit", 10));
+        List<RankingRow> voltage = rankRows(initialVoltage.entrySet().stream().map(entry -> {
+            double current = network.getBus(entry.getKey()).getVoltage().abs();
+            return new RankingRow("BUS_VOLTAGE", "", entry.getKey(), "magnitude",
+                    Math.abs(current - entry.getValue()), entry.getValue(), current);
+        }), limit);
+        List<RankingRow> speed = rankRows(initialSpeed.entrySet().stream().map(entry -> {
+            double current = network.getMachine(entry.getKey()).getSpeed();
+            return new RankingRow("MACHINE_SPEED", "", entry.getKey(), "speed",
+                    Math.abs(current - entry.getValue()), entry.getValue(), current);
+        }), limit);
+        List<RankingRow> controllers = rankRows(controllerStateDifferences(
+                network, initialReeca, initialRepca).map(value -> new RankingRow(
+                        "CONTROLLER_STATE", value.model(), value.id(), value.state(),
+                        value.delta(), value.initial(), value.current())), limit);
+
+        System.out.println(source.directory() + " final top-" + limit + " drift ranking:");
+        java.util.stream.Stream.of(voltage, speed, controllers).flatMap(List::stream)
+                .forEach(row -> System.out.printf(java.util.Locale.ROOT,
+                        "  %s %s %s %s delta=%.9g initial=%.9g final=%.9g%n",
+                        row.category(), row.model(), row.id(), row.state(), row.delta(),
+                        row.initial(), row.current()));
+        writeRankingCsv(source, java.util.stream.Stream.of(voltage, speed, controllers)
+                .flatMap(List::stream).toList());
+    }
+
+    private static List<RankingRow> rankRows(java.util.stream.Stream<RankingRow> rows,
+            int limit) {
+        return rows.sorted(java.util.Comparator.comparingDouble(RankingRow::delta).reversed()
+                        .thenComparing(RankingRow::category)
+                        .thenComparing(RankingRow::model)
+                        .thenComparing(RankingRow::id)
+                        .thenComparing(RankingRow::state))
+                .limit(limit).toList();
+    }
+
+    private static void writeRankingCsv(CaseFile source, List<RankingRow> rows)
+            throws java.io.IOException {
+        Path reportDirectory = Path.of(System.getProperty("texas2k.drift.reportDir",
+                Path.of("target", "dynamic-model-validation",
+                        "texas2k-flat-ranking").toString()));
+        Files.createDirectories(reportDirectory);
+        StringBuilder csv = new StringBuilder(
+                "category,model,id,state,absolute_delta,initial,final\n");
+        for (RankingRow row : rows) {
+            csv.append(row.category()).append(',').append(row.model()).append(',')
+                    .append(row.id()).append(',').append(row.state()).append(',')
+                    .append(String.format(java.util.Locale.ROOT, "%.17g,%.17g,%.17g%n",
+                            row.delta(), row.initial(), row.current()));
+        }
+        Path output = reportDirectory.resolve(source.directory() + ".csv");
+        Files.writeString(output, csv);
+        System.out.println("  ranking CSV: " + output.toAbsolutePath());
+    }
+
     private static void reportFirstDivergence(CaseFile source, double time,
             Difference voltage, Difference speed,
             com.interpss.dstab.BaseDStabNetwork<?, ?> network,
@@ -759,6 +836,15 @@ public class Texas2kOneSecondDriftTest {
             com.interpss.dstab.BaseDStabNetwork<?, ?> network,
             Map<String, ReecaSnapshot> initialReeca,
             Map<String, RepcaSnapshot> initialRepca) {
+        return controllerStateDifferences(network, initialReeca, initialRepca)
+                .max(java.util.Comparator.comparingDouble(StateDifference::delta))
+                .orElse(new StateDifference("none", "none", "none", 0.0, 0.0, 0.0));
+    }
+
+    private static java.util.stream.Stream<StateDifference> controllerStateDifferences(
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
+            Map<String, ReecaSnapshot> initialReeca,
+            Map<String, RepcaSnapshot> initialRepca) {
         java.util.stream.Stream<StateDifference> reeca = initialReeca.entrySet().stream()
                 .flatMap(entry -> {
                     String[] key = entry.getKey().split(":", 2);
@@ -775,9 +861,7 @@ public class Texas2kOneSecondDriftTest {
                             .getReeca1Controller().getPlantController());
                     return entry.getValue().stateDifferences("REPCA1", entry.getKey(), current);
                 });
-        return java.util.stream.Stream.concat(reeca, repca)
-                .max(java.util.Comparator.comparingDouble(StateDifference::delta))
-                .orElse(new StateDifference("none", "none", "none", 0.0, 0.0, 0.0));
+        return java.util.stream.Stream.concat(reeca, repca);
     }
 
     private static void reportPflagAggregate(double time,
