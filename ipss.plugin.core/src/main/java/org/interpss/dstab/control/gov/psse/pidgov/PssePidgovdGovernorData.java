@@ -1,0 +1,93 @@
+package org.interpss.dstab.control.gov.psse.pidgov;
+
+import org.interpss.dstab.control.base.BaseControllerData;
+
+/** Parameter data for the PSS/E PIDGOVD hydro turbine-governor. */
+public class PssePidgovdGovernorData extends BaseControllerData {
+    private int feedback;
+    private double rperm, treg, kp, ki, kd, ta, tb, dturb;
+    private double g0, g1, p1, g2, p2, p3, gmax, gmin;
+    private double atw, tw, velmax, velmin, dbH, dbL, trate;
+
+    public int getFeedback() { return feedback; }
+    public void setFeedback(int value) { feedback = value; }
+    public double getRperm() { return rperm; }
+    public void setRperm(double value) { rperm = value; }
+    public double getTreg() { return treg; }
+    public void setTreg(double value) { treg = value; }
+    public double getKp() { return kp; }
+    public void setKp(double value) { kp = value; }
+    public double getKi() { return ki; }
+    public void setKi(double value) { ki = value; }
+    public double getKd() { return kd; }
+    public void setKd(double value) { kd = value; }
+    public double getTa() { return ta; }
+    public void setTa(double value) { ta = value; }
+    public double getTb() { return tb; }
+    public void setTb(double value) { tb = value; }
+    public double getDturb() { return dturb; }
+    public void setDturb(double value) { dturb = value; }
+    public double getG0() { return g0; }
+    public void setG0(double value) { g0 = value; }
+    public double getG1() { return g1; }
+    public void setG1(double value) { g1 = value; }
+    public double getP1() { return p1; }
+    public void setP1(double value) { p1 = value; }
+    public double getG2() { return g2; }
+    public void setG2(double value) { g2 = value; }
+    public double getP2() { return p2; }
+    public void setP2(double value) { p2 = value; }
+    public double getP3() { return p3; }
+    public void setP3(double value) { p3 = value; }
+    public double getGmax() { return gmax; }
+    public void setGmax(double value) { gmax = value; }
+    public double getGmin() { return gmin; }
+    public void setGmin(double value) { gmin = value; }
+    public double getAtw() { return atw; }
+    public void setAtw(double value) { atw = value; }
+    public double getTw() { return tw; }
+    public void setTw(double value) { tw = value; }
+    public double getVelmax() { return velmax; }
+    public void setVelmax(double value) { velmax = value; }
+    public double getVelmin() { return velmin; }
+    public void setVelmin(double value) { velmin = value; }
+    public double getDbH() { return dbH; }
+    public void setDbH(double value) { dbH = value; }
+    public double getDbL() { return dbL; }
+    public void setDbL(double value) { dbL = value; }
+    public double getTrate() { return trate; }
+    public void setTrate(double value) { trate = value; }
+
+    @Override public void setValue(String name, int value) {
+        if ("feedback".equalsIgnoreCase(name)) feedback = value;
+    }
+
+    @Override public void setValue(String name, double value) {
+        switch (name.toLowerCase()) {
+            case "rperm" -> rperm = value;
+            case "treg" -> treg = value;
+            case "kp" -> kp = value;
+            case "ki" -> ki = value;
+            case "kd" -> kd = value;
+            case "ta" -> ta = value;
+            case "tb" -> tb = value;
+            case "dturb" -> dturb = value;
+            case "g0" -> g0 = value;
+            case "g1" -> g1 = value;
+            case "p1" -> p1 = value;
+            case "g2" -> g2 = value;
+            case "p2" -> p2 = value;
+            case "p3" -> p3 = value;
+            case "gmax" -> gmax = value;
+            case "gmin" -> gmin = value;
+            case "atw" -> atw = value;
+            case "tw" -> tw = value;
+            case "velmax" -> velmax = value;
+            case "velmin" -> velmin = value;
+            case "dbh" -> dbH = value;
+            case "dbl" -> dbL = value;
+            case "trate" -> trate = value;
+            default -> { }
+        }
+    }
+}

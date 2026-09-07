@@ -42,6 +42,7 @@ import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
@@ -243,6 +244,13 @@ public class GovernorObjectFactory {
 	public static PsseDegov1dGovernor createPsseDEGOV1DGovernor(
 			String id, String name, Machine machine) {
 		PsseDegov1dGovernor gov = new PsseDegov1dGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PssePidgovdGovernor createPssePIDGOVDGovernor(
+			String id, String name, Machine machine) {
+		PssePidgovdGovernor gov = new PssePidgovdGovernor(id, name, "PSS/E");
 		gov.setMachine(machine);
 		return gov;
 	}

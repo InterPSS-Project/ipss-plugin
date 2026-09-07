@@ -70,6 +70,7 @@ import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
@@ -1888,6 +1889,51 @@ public class DStabNetworkBuilder {
         gov.getData().setTrate(trate);
         if (!gov.validateParameters()) {
             log.warn("Invalid DEGOV1D parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E PIDGOVD hydro turbine-governor. */
+    public PssePidgovdGovernor addGovPidgovd(String busId, String genId,
+            int feedback, double rperm, double treg, double kp, double ki,
+            double kd, double ta, double tb, double dturb, double g0, double g1,
+            double p1, double g2, double p2, double p3, double gmax, double gmin,
+            double atw, double tw, double velmax, double velmin, double dbH,
+            double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for PIDGOVD governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PssePidgovdGovernor gov = GovernorObjectFactory.createPssePIDGOVDGovernor(
+                mach.getId() + "_Gov", "PIDGOVD", mach);
+        gov.getData().setFeedback(feedback);
+        gov.getData().setRperm(rperm);
+        gov.getData().setTreg(treg);
+        gov.getData().setKp(kp);
+        gov.getData().setKi(ki);
+        gov.getData().setKd(kd);
+        gov.getData().setTa(ta);
+        gov.getData().setTb(tb);
+        gov.getData().setDturb(dturb);
+        gov.getData().setG0(g0);
+        gov.getData().setG1(g1);
+        gov.getData().setP1(p1);
+        gov.getData().setG2(g2);
+        gov.getData().setP2(p2);
+        gov.getData().setP3(p3);
+        gov.getData().setGmax(gmax);
+        gov.getData().setGmin(gmin);
+        gov.getData().setAtw(atw);
+        gov.getData().setTw(tw);
+        gov.getData().setVelmax(velmax);
+        gov.getData().setVelmin(velmin);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid PIDGOVD parameters at {} {}", busId, genId);
             return null;
         }
         return gov;
