@@ -13,9 +13,7 @@ public record Reecb1Data(
     public Reecb1Data {
         if (trv < 0 || tp < 0 || tiq < 0 || tpord < 0)
             throw new IllegalArgumentException("REECB1 time constants must be non-negative");
-        if (iqh1 < iql1 || qmax < qmin || vmax < vmin || pmax < pmin || dpmax < dpmin)
-            throw new IllegalArgumentException("REECB1 upper limits must be >= lower limits");
-        if (imax <= 0)
-            throw new IllegalArgumentException("REECB1 Imax must be positive");
+        // The runtime normalizes limit-pair ordering and treats a non-positive
+        // Imax as disabled, while preserving the imported source values here.
     }
 }

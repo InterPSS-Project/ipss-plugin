@@ -3,6 +3,7 @@ package org.interpss.dstab.renewable;
 import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
@@ -15,7 +16,8 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * Positive-sequence WECC REGC_A converter model. REECB1 and REPCA1 are
  * composed as controllers while this device owns the network current source.
  */
-public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGenDevice {
+public final class Regca1Model extends DynamicBusDeviceImpl
+        implements DynamicGenDevice, IntegrationStepAware {
     private static final double EPS = 1.0e-9;
 
     private final Regca1Data data;
@@ -39,6 +41,14 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
     private double dv0;
     private double dip0;
     private double diq0;
+    private double integrationStep;
+
+    @Override
+    public void configureIntegrationStep(double timeStepSec) {
+        integrationStep = timeStepSec;
+        RenewableElectricalController controller = activeController();
+        if (controller != null) controller.configureIntegrationStep(timeStepSec);
+    }
 
     public Regca1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id, Regca1Data data) {
         this.data = data;
@@ -209,11 +219,17 @@ public final class Regca1Model extends DynamicBusDeviceImpl implements DynamicGe
     public void setActiveElectricalController(RenewableElectricalController electricalController) {
         this.electricalController = electricalController;
         this.reeca1Controller = null;
+        if (electricalController != null && integrationStep > 0.0) {
+            electricalController.configureIntegrationStep(integrationStep);
+        }
     }
     public Reeca1Model getReeca1Controller() { return reeca1Controller; }
     public void setReeca1Controller(Reeca1Model controller) {
         this.reeca1Controller = controller;
         this.electricalController = null;
+        if (controller != null && integrationStep > 0.0) {
+            controller.configureIntegrationStep(integrationStep);
+        }
     }
     public RenewableElectricalController getActiveElectricalController() { return activeController(); }
     public double getFilteredVoltage() { return vFiltered; }

@@ -1,7 +1,6 @@
 package org.interpss.dstab.renewable;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 import org.apache.commons.math3.complex.Complex;
@@ -71,8 +70,12 @@ class RenewableControllerModelTest {
     }
 
     @Test
-    void rejectsNonPositiveReecb1CurrentLimit() {
-        assertThrows(IllegalArgumentException.class, () -> reecb1Data(0.0));
+    void nonPositiveReecb1CurrentLimitDisablesCircularLimiting() {
+        Reecb1Model model = new Reecb1Model(reecb1Data(0.0));
+        model.initialize(2.0, 1.0, 1.0);
+        model.step(1.0 / 120.0, 2.0, 1.0, 1.0, 1.0);
+        assertEquals(2.0, model.getIpcmd(), TOL);
+        assertEquals(-1.0, model.getIqcmd(), TOL);
     }
 
     @Test
