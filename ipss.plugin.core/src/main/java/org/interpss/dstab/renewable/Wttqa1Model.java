@@ -11,6 +11,8 @@ public final class Wttqa1Model {
     private double torqueIntegral;
     private double torque;
     private double pref;
+    private TorqueState predictorStart;
+    private TorqueDerivative predictorDerivative;
 
     public Wttqa1Model(Wttqa1Data data) {
         this.data = data;
@@ -73,6 +75,123 @@ public final class Wttqa1Model {
         pref = torque * generatorSpeed;
     }
 
+    /**
+     * Advances one modified-Euler stage without changing the established
+     * complete-step API. Flag 0 exposes a predictor; flag 1 accepts corrected
+     * electrical-power, speed, reference, and dip inputs and commits the
+     * trapezoidal state. The staged renewable-stack coordinator uses this path.
+     */
+    public void step(double dt, double electricalPower, double generatorSpeed,
+            double powerReference, boolean voltageDip, int flag) {
+        if (!Double.isFinite(dt) || dt < 0.0
+                || !Double.isFinite(electricalPower)
+                || !Double.isFinite(generatorSpeed) || generatorSpeed <= 0.0
+                || !Double.isFinite(powerReference)) {
+            throw new IllegalArgumentException(
+                    "WTTQA1 staged inputs must be finite; dt non-negative and speed positive");
+        }
+        if (flag != 0 && flag != 1) {
+            throw new IllegalArgumentException("WTTQA1 integration flag must be 0 or 1");
+        }
+        if (dt <= 0.0) {
+            apply(applyBypasses(state(), electricalPower));
+            updateStageOutputs(generatorSpeed, powerReference);
+            return;
+        }
+        if (flag == 0) {
+            predictorStart = state();
+            predictorDerivative = derivatives(predictorStart, electricalPower,
+                    generatorSpeed, powerReference, voltageDip);
+            apply(applyBypasses(add(predictorStart, predictorDerivative, dt),
+                    electricalPower));
+        } else {
+            if (predictorStart == null || predictorDerivative == null) {
+                throw new IllegalStateException("WTTQA1 corrector called without predictor");
+            }
+            TorqueDerivative corrected = derivatives(state(), electricalPower,
+                    generatorSpeed, powerReference, voltageDip);
+            apply(applyBypasses(correct(predictorStart, predictorDerivative,
+                    corrected, dt), electricalPower));
+            predictorStart = null;
+            predictorDerivative = null;
+        }
+        updateStageOutputs(generatorSpeed, powerReference);
+    }
+
+    private TorqueDerivative derivatives(TorqueState state, double electricalPower,
+            double generatorSpeed, double powerReference, boolean voltageDip) {
+        double powerRate = lagRate(state.filteredPower(), electricalPower, data.tp());
+        double speedReferenceRate = lagRate(state.speedReference(),
+                speedForPower(state.filteredPower()), data.twref());
+        double error = controlError(state, generatorSpeed, powerReference);
+        double integralRate = integralRate(state.torqueIntegral(), data.kip(), error,
+                data.kpp(), data.teMin(), data.teMax(), voltageDip);
+        return new TorqueDerivative(powerRate, speedReferenceRate, integralRate);
+    }
+
+    private TorqueState applyBypasses(TorqueState state, double electricalPower) {
+        double filtered = data.tp() <= 0.0 ? electricalPower : state.filteredPower();
+        double speedRef = data.twref() <= 0.0
+                ? speedForPower(filtered) : state.speedReference();
+        return new TorqueState(filtered, speedRef, state.torqueIntegral());
+    }
+
+    private void updateStageOutputs(double generatorSpeed, double powerReference) {
+        double error = controlError(state(), generatorSpeed, powerReference);
+        torque = Repca1Model.limit(data.kpp() * error + torqueIntegral,
+                data.teMin(), data.teMax());
+        pref = torque * generatorSpeed;
+    }
+
+    private double controlError(TorqueState state, double generatorSpeed,
+            double powerReference) {
+        double error = data.tFlag() == 1
+                ? (powerReference - state.filteredPower()) / nonzero(generatorSpeed)
+                : state.speedReference() - generatorSpeed;
+        return Math.abs(error) <= EQUILIBRIUM_RESIDUAL ? 0.0 : error;
+    }
+
+    private TorqueState state() {
+        return new TorqueState(filteredPower, speedReference, torqueIntegral);
+    }
+
+    private void apply(TorqueState state) {
+        filteredPower = state.filteredPower();
+        speedReference = state.speedReference();
+        torqueIntegral = state.torqueIntegral();
+    }
+
+    private static TorqueState add(TorqueState state, TorqueDerivative derivative,
+            double dt) {
+        return new TorqueState(
+                state.filteredPower() + dt * derivative.filteredPower(),
+                state.speedReference() + dt * derivative.speedReference(),
+                state.torqueIntegral() + dt * derivative.torqueIntegral());
+    }
+
+    private static TorqueState correct(TorqueState start, TorqueDerivative first,
+            TorqueDerivative second, double dt) {
+        return new TorqueState(
+                start.filteredPower() + .5 * dt
+                        * (first.filteredPower() + second.filteredPower()),
+                start.speedReference() + .5 * dt
+                        * (first.speedReference() + second.speedReference()),
+                start.torqueIntegral() + .5 * dt
+                        * (first.torqueIntegral() + second.torqueIntegral()));
+    }
+
+    private static double lagRate(double state, double input, double timeConstant) {
+        return timeConstant <= 0.0 ? 0.0 : (input - state) / timeConstant;
+    }
+
+    private static double integralRate(double integral, double gain, double error,
+            double proportionalGain, double lower, double upper, boolean frozen) {
+        if (frozen) return 0.0;
+        double output = proportionalGain * error + integral;
+        if ((output >= upper && error > 0.0) || (output <= lower && error < 0.0)) return 0.0;
+        return gain * error;
+    }
+
     public double speedForPower(double power) {
         double[] p = {data.p1(), data.p2(), data.p3(), data.p4()};
         double[] s = {data.sp1(), data.sp2(), data.sp3(), data.sp4()};
@@ -97,4 +216,10 @@ public final class Wttqa1Model {
     public double getSpeedReference() { return speedReference; }
     public double getTorqueIntegral() { return torqueIntegral; }
     public double getInitialPower() { return initialPower; }
+
+    private record TorqueState(double filteredPower, double speedReference,
+            double torqueIntegral) { }
+
+    private record TorqueDerivative(double filteredPower, double speedReference,
+            double torqueIntegral) { }
 }
