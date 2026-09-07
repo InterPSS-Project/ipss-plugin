@@ -119,11 +119,12 @@ public final class Reeca1Model implements RenewableElectricalController {
         double rateTarget = Repca1Model.limit(pref,
                 pFilter + data.dpmin() * dt, pFilter + data.dpmax() * dt);
         pFilter = rateTarget;
-        // PFLAG selects turbine-generator speed wg, not network frequency.  The
-        // current type-3 stack has no WTDTA1 drive-train state, so its REEC_A wg
-        // input is 1.0.  WTTQ_A also resets this input to 1.0 because it already
-        // multiplies torque by generator speed when producing Pref.
-        double generatorSpeed = 1.0;
+        // PFLAG selects drive-train generator speed wg, not network frequency.
+        // WTTQ_A already multiplies torque by wg when producing Pref and, as in
+        // ANDES, resets the REEC_A multiplier to 1.0 to avoid applying speed
+        // twice.
+        double generatorSpeed = windControlStack == null ? 1.0
+                : windControlStack.getElectricalControllerSpeed();
         double selectedP = data.pFlag() == 1 ? generatorSpeed * pFilter : pFilter;
         if (!voltageDip) {
             pOrder = Repca1Model.lag(pOrder,

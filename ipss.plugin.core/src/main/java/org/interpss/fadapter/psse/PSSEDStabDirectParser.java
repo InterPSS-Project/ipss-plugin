@@ -24,6 +24,7 @@ import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Regfma1Data;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Wtara1Data;
+import org.interpss.dstab.renewable.Wtdta1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.mach.GenqecData;
@@ -402,6 +403,10 @@ public class PSSEDStabDirectParser {
             case "REECA1":
             case "REECAU1":
                 return procReeca1(busId, genId, fields);
+            case "WTDTA1":
+            case "WTDTAU1":
+            case "WTDAT1":
+                return procWtdta1(busId, genId, fields);
             case "WTARA1":
             case "WTARAU1":
                 return procWtara1(busId, genId, fields);
@@ -1707,6 +1712,16 @@ public class PSSEDStabDirectParser {
         if (f.length < 5) return false;
         return builder.addWtara1(busId, genId,
                 new Wtara1Data(getDouble(f, 3, 0), getDouble(f, 4, 0))) != null;
+    }
+
+    // PSS/E WTDTA1: IBUS MODEL ID H DAMP Htfrac Freq1 Dshaft.
+    private boolean procWtdta1(String busId, String genId, String[] f) {
+        if (f.length < 8) return false;
+        Wtdta1Data data = new Wtdta1Data(
+                getDouble(f, 3, 3.0), getDouble(f, 4, 0.0),
+                getDouble(f, 5, 0.5), getDouble(f, 6, 1.0),
+                getDouble(f, 7, 1.0));
+        return builder.addWtdta1(busId, genId, data) != null;
     }
 
     private boolean procWtpta1(String busId, String genId, String[] f) {

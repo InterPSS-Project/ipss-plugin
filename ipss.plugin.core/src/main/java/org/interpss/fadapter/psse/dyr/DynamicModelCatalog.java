@@ -3,6 +3,7 @@ package org.interpss.fadapter.psse.dyr;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.AERODYNAMIC_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.CONVERTER_MACHINE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.DRIVE_TRAIN;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.EXCITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GOVERNOR;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PITCH_CONTROLLER;
@@ -104,6 +105,9 @@ public final class DynamicModelCatalog {
     );
 
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
+            descriptor("WTDTA1", Set.of("WTDTAU1", "WTDAT1"), DRIVE_TRAIN, 5, LOADABLE,
+                    "org.interpss.dstab.renewable.Wtdta1Model",
+                    "Governor%20WTDTA1.htm"),
             descriptorWithVariants("PSS2B", Set.of(), STABILIZER, 27,
                     new int[]{31}, LOADABLE,
                     "org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer",

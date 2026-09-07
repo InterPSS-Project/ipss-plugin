@@ -191,6 +191,8 @@ public class Texas2kFullDynamicCoverageTest {
             case ELECTRICAL_CONTROLLER -> regca(generator) == null ? null
                     : regca(generator).getActiveElectricalController();
             case PLANT_CONTROLLER -> plantController(generator);
+            case DRIVE_TRAIN -> windStack(generator) == null ? null
+                    : windStack(generator).getDriveTrain();
             case AERODYNAMIC_CONTROLLER -> windStack(generator) == null ? null
                     : windStack(generator).getAerodynamics();
             case PITCH_CONTROLLER -> windStack(generator) == null ? null

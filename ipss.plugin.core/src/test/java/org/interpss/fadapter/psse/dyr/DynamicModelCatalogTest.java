@@ -23,6 +23,10 @@ class DynamicModelCatalogTest {
         assertEquals("REPCA1", DynamicModelCatalog.canonicalName("repcta1"));
         assertEquals(51, DynamicModelCatalog.find("REECA1").orElseThrow().parameterCount());
         assertEquals(30, DynamicModelCatalog.find("REECB1").orElseThrow().parameterCount());
+        assertEquals(DynamicModelCategory.DRIVE_TRAIN,
+                DynamicModelCatalog.find("WTDTA1").orElseThrow().category());
+        assertEquals(5, DynamicModelCatalog.find("WTDTAU1").orElseThrow().parameterCount());
+        assertEquals("WTDTA1", DynamicModelCatalog.canonicalName("WTDAT1"));
         assertEquals("GENQEJ", DynamicModelCatalog.canonicalName("genqeju"));
         assertEquals(20, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
         assertFalse(DynamicModelCatalog.find("unknown-model").isPresent());

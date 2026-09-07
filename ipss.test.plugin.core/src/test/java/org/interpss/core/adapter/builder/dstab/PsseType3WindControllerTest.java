@@ -13,6 +13,8 @@ import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.WindControlStack;
 import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtara1Model;
+import org.interpss.dstab.renewable.Wtdta1Data;
+import org.interpss.dstab.renewable.Wtdta1Model;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtpta1Model;
 import org.interpss.dstab.renewable.Wttqa1Data;
@@ -33,13 +35,14 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         Files.writeString(dyr,
                 "1 'REGCA1' 1 1 .02 10 .9 .4 1.22 1.2 .9 .5 -1.3 .02 0 100 -100 .7 /\n"
                 + "1 'REECA1' 1 0 0 1 1 0 0 .85 1.15 .02 0 0 5 1.1 -1.1 0 0 0 .5 .02 .436 -.436 1.1 .9 1.3 2.4 .6 1.5 0 .02 99 -99 1 0 1.3 .02 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 /\n"
+                + "1 'WTDTA1' 1 5.0 .1 .8 1.5 .2 /\n"
                 + "1 'WTPTA1' 1 28 137 22.03 1.17 .27 .3 27 0 10 -10 /\n"
                 + "1 'WTTQA1' 1 1 1.9 .5 .04 60 1.002 0 .2 .58 .4 .72 .6 .86 .8 1 0 /\n"
                 + "1 'WTARA1' 1 .007 0 /\n");
 
         PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
         parser.parseDynFile(dyr.toString());
-        assertEquals(5, parser.getLastImportReport().totalRecordCount());
+        assertEquals(6, parser.getLastImportReport().totalRecordCount());
 
         Regca1Model converter = (Regca1Model) ((DStabGen) builder.getDStabNetwork()
                 .getDStabBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
@@ -47,6 +50,8 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         WindControlStack stack = electrical.getWindControlStack();
         assertNotNull(stack);
         assertTrue(stack.isComplete());
+        assertEquals(new Wtdta1Data(5.0, .1, .8, 1.5, .2),
+                stack.getDriveTrain().getData());
         assertEquals(new Wtara1Data(.007, 0), stack.getAerodynamics().getData());
         assertEquals(new Wtpta1Data(28, 137, 22.03, 1.17, .27, .3, 27, 0, 10, -10),
                 stack.getPitchController().getData());
@@ -72,6 +77,69 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         assertEquals(.5, stack.getPref(), 1.0e-9);
         assertEquals(0, stack.getPitchController().getPitch(), 1.0e-9);
         assertEquals(.5, stack.getAerodynamics().getMechanicalPower(), 1.0e-9);
+    }
+
+    @Test
+    void driveTrainInitializesAtTheTorqueControllersPowerSpeedOperatingPoint() {
+        WindControlStack stack = new WindControlStack();
+        stack.setDriveTrain(new Wtdta1Model(new Wtdta1Data(5, .1, .8, 1.5, .2)));
+        stack.setAerodynamics(new Wtara1Model(new Wtara1Data(.007, 0)));
+        stack.setTorqueController(torqueController(0, 1, .5, .04, 60, 1.2, 0));
+
+        stack.initialize(.5);
+
+        assertEquals(.79, stack.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(.79, stack.getTurbineSpeed(), 1.0e-12);
+        assertEquals(.5 / .79, stack.getDriveTrain().getShaftTorque(), 1.0e-12);
+        for (int i = 0; i < 20; i++) stack.step(.005, .5, .5);
+        assertEquals(.79, stack.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(.5, stack.getPref(), 1.0e-12);
+        // WTTQA1 already forms Pref=torque*wg, so REECA1 must not multiply by wg again.
+        assertEquals(1.0, stack.getElectricalControllerSpeed(), 1.0e-12);
+    }
+
+    @Test
+    void driveTrainUsesAndesTwoMassEquationsWithModifiedEuler() {
+        Wtdta1Model model = new Wtdta1Model(new Wtdta1Data(5, .1, .8, 1.5, .2));
+        model.initialize(.8, 1.0);
+
+        model.step(.1, .8, 1.0);
+
+        // Predictor derivatives: dwt=0, dwg=-0.1, dTshaft=0.
+        // At the predicted state (wt=1, wg=.99, T=.8), the ANDES equations give
+        // dwt=-.00025, dwg=-.103550505..., dTshaft=.036.
+        assertEquals(.9999875, model.getTurbineSpeed(), 1.0e-12);
+        assertEquals(.9898224747474748, model.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(.8018, model.getShaftTorque(), 1.0e-12);
+        assertEquals(3.6, model.shaftStiffness(), 1.0e-12);
+    }
+
+    @Test
+    void zeroTurbineInertiaFractionUsesTheDocumentedSingleMassModel() {
+        Wtdta1Model model = new Wtdta1Model(new Wtdta1Data(4, 0, 0, 0, 0));
+        model.initialize(.8, 1.0);
+
+        model.step(.1, .8, 1.0);
+
+        double d0 = -.2 / 8.0;
+        double predicted = 1.0 + .1 * d0;
+        double d1 = (.8 / predicted - 1.0 / predicted) / 8.0;
+        double expected = 1.0 + .05 * (d0 + d1);
+        assertTrue(model.isSingleMass());
+        assertEquals(expected, model.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(expected, model.getTurbineSpeed(), 1.0e-12);
+    }
+
+    @Test
+    void driveTrainWithoutTorqueControllerExposesGeneratorSpeedToReeca() {
+        WindControlStack stack = new WindControlStack();
+        stack.setDriveTrain(new Wtdta1Model(new Wtdta1Data(4, 0, 0, 0, 0)));
+        stack.initialize(.8);
+
+        stack.step(.1, 1.0, .8);
+
+        assertEquals(stack.getGeneratorSpeed(), stack.getElectricalControllerSpeed(), 0.0);
+        assertTrue(stack.getElectricalControllerSpeed() < 1.0);
     }
 
     @Test

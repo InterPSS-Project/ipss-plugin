@@ -1,14 +1,15 @@
 package org.interpss.dstab.renewable;
 
 /**
- * Typed signal hub for the WTAR_A/WTPT_A/WTTQ_A stack. Texas2k omits WTDTA1;
- * in that documented direct-coupling path turbine and generator speed follow
- * the torque controller's filtered power-speed characteristic.
+ * Typed signal hub for the WTAR_A/WTDTA1/WTPT_A/WTTQ_A stack. If WTDTA1 is
+ * absent, turbine and generator speed follow the explicit direct-coupling
+ * fallback used by a DYR-only stack.
  */
 public final class WindControlStack {
     private Wtara1Model aerodynamics;
     private Wtpta1Model pitchController;
     private Wttqa1Model torqueController;
+    private Wtdta1Model driveTrain;
     private double generatorSpeed = 1.0;
     private double turbineSpeed = 1.0;
     private double pref;
@@ -19,6 +20,11 @@ public final class WindControlStack {
             torqueController.initialize(power);
             generatorSpeed = turbineSpeed = torqueController.getSpeedReference();
             pref = torqueController.getPref();
+        }
+        if (driveTrain != null) {
+            driveTrain.initialize(power, generatorSpeed);
+            generatorSpeed = driveTrain.getGeneratorSpeed();
+            turbineSpeed = driveTrain.getTurbineSpeed();
         }
         if (aerodynamics != null) aerodynamics.initialize(power);
         if (pitchController != null) {
@@ -33,9 +39,17 @@ public final class WindControlStack {
 
     public void step(double dt, double electricalPower, double pOrder,
             boolean voltageDip) {
+        if (driveTrain != null) {
+            double mechanicalPower = aerodynamics == null
+                    ? driveTrain.getInitialPower() : aerodynamics.getMechanicalPower();
+            driveTrain.step(dt, mechanicalPower, electricalPower);
+            generatorSpeed = driveTrain.getGeneratorSpeed();
+            turbineSpeed = driveTrain.getTurbineSpeed();
+        }
         if (torqueController != null) {
-            // No WTDTA1: use the specified direct-coupling path.
-            generatorSpeed = turbineSpeed = torqueController.getSpeedReference();
+            if (driveTrain == null) {
+                generatorSpeed = turbineSpeed = torqueController.getSpeedReference();
+            }
             torqueController.step(dt, electricalPower, generatorSpeed, voltageDip);
             pref = torqueController.getPref();
         }
@@ -59,7 +73,13 @@ public final class WindControlStack {
     public void setPitchController(Wtpta1Model model) { pitchController = model; }
     public Wttqa1Model getTorqueController() { return torqueController; }
     public void setTorqueController(Wttqa1Model model) { torqueController = model; }
+    public Wtdta1Model getDriveTrain() { return driveTrain; }
+    public void setDriveTrain(Wtdta1Model model) { driveTrain = model; }
     public double getGeneratorSpeed() { return generatorSpeed; }
     public double getTurbineSpeed() { return turbineSpeed; }
+    /** WTTQA1 already multiplies torque by speed, matching the ANDES wiring. */
+    public double getElectricalControllerSpeed() {
+        return torqueController == null ? generatorSpeed : 1.0;
+    }
     public double getPref() { return pref; }
 }
