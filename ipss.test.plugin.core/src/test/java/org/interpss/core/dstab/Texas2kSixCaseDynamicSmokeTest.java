@@ -149,8 +149,10 @@ public class Texas2kSixCaseDynamicSmokeTest {
         assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
         assumeTrue(Files.isRegularFile(gnet), "Missing Texas2k GNET IDV: " + gnet);
 
+        // Deliberately omit the IDV argument: the production loader must discover
+        // <dyr-stem>_gnet.idv and apply it before mapping any dynamic records.
         SimuContext context = new PSSEMultiFileLoader().loadDStab(
-                raw.toString(), dyr.toString(), gnet.toString());
+                raw.toString(), dyr.toString());
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
         for (String busId : source.gnetBuses()) {
             var bus = network.getBus(busId);
