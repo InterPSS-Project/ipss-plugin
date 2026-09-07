@@ -57,7 +57,7 @@ public class Texas2kSixCaseDynamicSmokeTest {
                     "Texas2k_series24_case6_2024lowloadwithgfm.RAW", "dynamic_models_case6.dyr",
                     "dynamic_models_case6_gnet.idv",
                     List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")));
-    private static final Set<String> REVIEWED_MISSING_MACHINES = Set.of(
+    private static final Set<String> INTENTIONALLY_MODEL_REMOVED_GENERATORS = Set.of(
             "Bus5045:1", "Bus7099:2");
 
     @BeforeAll
@@ -149,8 +149,8 @@ public class Texas2kSixCaseDynamicSmokeTest {
         assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
         assumeTrue(Files.isRegularFile(gnet), "Missing Texas2k GNET IDV: " + gnet);
 
-        // Deliberately omit the IDV argument: the production loader must discover
-        // <dyr-stem>_gnet.idv and apply it before mapping any dynamic records.
+        // Deliberately omit IDV arguments: the production loader must discover
+        // both sibling GNET and MODREMOVE files before mapping dynamic records.
         SimuContext context = new PSSEMultiFileLoader().loadDStab(
                 raw.toString(), dyr.toString());
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
@@ -203,7 +203,7 @@ public class Texas2kSixCaseDynamicSmokeTest {
                     try {
                         if (gen.getDynamicGenDevice() == null) {
                             String key = bus.getId() + ":" + gen.getId();
-                            if (!REVIEWED_MISSING_MACHINES.contains(key)) {
+                            if (!INTENTIONALLY_MODEL_REMOVED_GENERATORS.contains(key)) {
                                 failures.add(key + "=missing-device");
                             }
                         } else if (!gen.getDynamicGenDevice().initStates(bus)) {

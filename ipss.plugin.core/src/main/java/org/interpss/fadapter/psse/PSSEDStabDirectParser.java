@@ -83,6 +83,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private boolean strictImport;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
+    private final Set<GeneratorKey> modelRemovedGenerators = new HashSet<>();
     private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
 
     public PSSEDStabDirectParser(DStabNetworkBuilder builder) {
@@ -99,6 +100,13 @@ public class PSSEDStabDirectParser {
     public PSSEDStabDirectParser setGnetRemovedGenerators(Collection<GeneratorKey> keys) {
         gnetRemovedGenerators.clear();
         if (keys != null) gnetRemovedGenerators.addAll(keys);
+        return this;
+    }
+
+    /** Identify complete dynamic stacks removed by BAT_PLMOD_REMOVE type 1. */
+    public PSSEDStabDirectParser setModelRemovedGenerators(Collection<GeneratorKey> keys) {
+        modelRemovedGenerators.clear();
+        if (keys != null) modelRemovedGenerators.addAll(keys);
         return this;
     }
 
@@ -132,6 +140,11 @@ public class PSSEDStabDirectParser {
                 if (gnetRemovedGenerators.contains(key)) {
                     report.add(record, DynamicModelImportStatus.SKIPPED_GNET,
                             "generator intentionally removed by GNET preprocessing");
+                    continue;
+                }
+                if (modelRemovedGenerators.contains(key)) {
+                    report.add(record, DynamicModelImportStatus.SKIPPED_MODEL_REMOVE,
+                            "dynamic stack intentionally removed by BAT_PLMOD_REMOVE type 1");
                     continue;
                 }
                 if (!hasExpectedParameterCount(record)) {

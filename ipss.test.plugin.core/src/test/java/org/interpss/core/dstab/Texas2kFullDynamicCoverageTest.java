@@ -19,6 +19,7 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor;
+import org.interpss.fadapter.psse.PsseModelRemoveIdvProcessor;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportEntry;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportReport;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
@@ -37,7 +38,7 @@ import com.interpss.dstab.DStabGen;
 
 /** Whole-file attachment audit for all six Texas2k Series 24 cases. */
 public class Texas2kFullDynamicCoverageTest {
-    private static final Set<String> REVIEWED_INCOMPLETE_STACKS = Set.of(
+    private static final Set<String> MODEL_REMOVED_STACKS = Set.of(
             "5045:1", "7099:2");
     private static final Set<String> GNET_REMOVED_STACKS = Set.of(
             "5394:1", "5395:1", "7095:1");
@@ -50,22 +51,28 @@ public class Texas2kFullDynamicCoverageTest {
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
-                    "dynamic_models_case1_gnet.idv", 2223, 0, 0),
+                    "dynamic_models_case1_gnet.idv", "dynamic_models_case1_MODREMOVE.idv",
+                    2223, 0, 0),
             new CaseFile("Texas2k_series24_case2_2016lowload",
                     "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr",
-                    "dynamic_models_case2_gnet.idv", 2223, 0, 0),
+                    "dynamic_models_case2_gnet.idv", "dynamic_models_case2_MODREMOVE.idv",
+                    2223, 0, 0),
             new CaseFile("Texas2k_series24_case3_2024summerpeak",
                     "Texas2k_series24_case3_2024summerpeak_v30.RAW", "dynamic_models_case3.dyr",
-                    "dynamic_models_case3_gnet.idv", 2965, 10, 15),
+                    "dynamic_models_case3_gnet.idv", "dynamic_models_case3_MODREMOVE.idv",
+                    2965, 10, 15),
             new CaseFile("Texas2k_series24_case4_2024lowload",
                     "Texas2k_series24_case4_2024lowload.RAW", "dynamic_models_case4.dyr",
-                    "dynamic_models_case4_gnet.idv", 2965, 10, 15),
+                    "dynamic_models_case4_gnet.idv", "dynamic_models_case4_MODREMOVE.idv",
+                    2965, 10, 15),
             new CaseFile("Texas2k_series24_case5_2024highrenewables",
                     "Texas2k_series24_case5_2024highrenewables.RAW", "dynamic_models_case5.dyr",
-                    "dynamic_models_case5_gnet.idv", 2965, 10, 15),
+                    "dynamic_models_case5_gnet.idv", "dynamic_models_case5_MODREMOVE.idv",
+                    2965, 10, 15),
             new CaseFile("Texas2k_series24_case6_2024lowloadwithgfm",
                     "Texas2k_series24_case6_2024lowloadwithgfm.RAW", "dynamic_models_case6.dyr",
-                    "dynamic_models_case6_gnet.idv", 2970, 10, 15));
+                    "dynamic_models_case6_gnet.idv", "dynamic_models_case6_MODREMOVE.idv",
+                    2970, 10, 15));
 
     @BeforeAll
     static void initializePlugin() {
@@ -73,7 +80,7 @@ public class Texas2kFullDynamicCoverageTest {
     }
 
     @Test
-    void everyRecordEitherAttachesOrIsAReviewedMissingMachineDependency(@TempDir Path tempDir)
+    void everyRecordEitherAttachesOrIsIntentionallyRemovedByCasePreparation(@TempDir Path tempDir)
             throws Exception {
         assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
         Path emptyDyr = tempDir.resolve("empty.dyr");
@@ -84,25 +91,34 @@ public class Texas2kFullDynamicCoverageTest {
             Path raw = directory.resolve(source.raw());
             Path dyr = directory.resolve(source.dyr());
             Path gnet = directory.resolve(source.gnet());
+            Path modelRemove = directory.resolve(source.modelRemove());
             assumeTrue(Files.isRegularFile(raw), "Missing Texas2k RAW: " + raw);
             assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
             assumeTrue(Files.isRegularFile(gnet), "Missing Texas2k GNET: " + gnet);
+            assumeTrue(Files.isRegularFile(modelRemove),
+                    "Missing Texas2k model-removal IDV: " + modelRemove);
 
             BaseDStabNetwork<?, ?> network = new PSSEMultiFileLoader()
                     .loadDStab(raw.toString(), emptyDyr.toString()).getDStabilityNet();
             var gnetResult = PsseGnetIdvProcessor.apply(network, gnet.toString());
+            var modelRemoveResult = PsseModelRemoveIdvProcessor.apply(network,
+                    modelRemove.toString());
             PSSEDStabDirectParser parser = new PSSEDStabDirectParser(new DStabNetworkBuilder(network))
-                    .setGnetRemovedGenerators(gnetResult.convertedGeneratorKeys());
+                    .setGnetRemovedGenerators(gnetResult.convertedGeneratorKeys())
+                    .setModelRemovedGenerators(modelRemoveResult.removedGeneratorKeys());
             parser.parseDynFile(dyr.toString());
             DynamicModelImportReport report = parser.getLastImportReport();
             assertGnetRemovedDetailedModels(network, gnetResult, source.directory());
             assertExactAttachedRuntimeClasses(network, report, source.directory());
             assertNoDuplicateControllerSlots(report, source.directory());
             assertEquals(source.records(), report.totalRecordCount(), source.directory());
-            assertEquals(source.reviewedDependencyFailures(), report.failures().size(),
+            assertEquals(0, report.failures().size(),
                     () -> source.directory() + ": " + summarize(report.failures()));
             assertEquals(source.gnetSkippedRecords(),
                     report.count(DynamicModelImportStatus.SKIPPED_GNET), source.directory());
+            assertEquals(source.modelRemovedRecords(),
+                    report.count(DynamicModelImportStatus.SKIPPED_MODEL_REMOVE),
+                    source.directory());
             if (source.gnetSkippedRecords() > 0) {
                 List<DynamicModelImportEntry> skipped = report.entries().stream()
                         .filter(entry -> entry.status() == DynamicModelImportStatus.SKIPPED_GNET)
@@ -121,30 +137,21 @@ public class Texas2kFullDynamicCoverageTest {
                         .collect(Collectors.toSet()).size(),
                         source.directory() + " unique GNET skips");
             }
-            if (source.reviewedDependencyFailures() == 0) {
-                assertTrue(report.isStrictlyComplete(), source.directory());
-            } else {
-                Map<String, Long> failures = report.failures().stream().collect(Collectors.groupingBy(
-                        DynamicModelImportEntry::canonicalModelName, Collectors.counting()));
-                assertEquals(Map.of("REECA1", 2L, "REPCA1", 2L,
-                        "WTARA1", 2L, "WTPTA1", 2L, "WTTQA1", 2L), failures,
-                        source.directory());
-                assertEquals(REVIEWED_INCOMPLETE_STACKS,
-                        report.failures().stream()
-                                .map(entry -> entry.busNumber() + ":" + entry.deviceId())
-                                .collect(Collectors.toSet()),
-                        source.directory() + " incomplete generator keys");
+            if (source.modelRemovedRecords() > 0) {
+                List<DynamicModelImportEntry> removed = report.entries().stream()
+                        .filter(entry -> entry.status()
+                                == DynamicModelImportStatus.SKIPPED_MODEL_REMOVE)
+                        .toList();
+                assertEquals(MODEL_REMOVED_STACKS,
+                        removed.stream().map(entry -> entry.busNumber() + ":"
+                                + entry.deviceId()).collect(Collectors.toSet()),
+                        source.directory() + " model-removed generator keys");
                 assertEquals(REVIEWED_DEPENDENCY_MODELS,
-                        report.failures().stream()
-                                .map(DynamicModelImportEntry::canonicalModelName)
+                        removed.stream().map(DynamicModelImportEntry::canonicalModelName)
                                 .collect(Collectors.toSet()),
-                        source.directory() + " rejected controller models");
-                assertEquals(10, report.failures().stream()
-                                .map(entry -> entry.canonicalModelName() + "@"
-                                        + entry.busNumber() + ":" + entry.deviceId())
-                                .collect(Collectors.toSet()).size(),
-                        source.directory() + " unique model/device diagnostics");
+                        source.directory() + " model-removed controller types");
             }
+            assertTrue(report.isStrictlyComplete(), source.directory());
         }
     }
 
@@ -254,6 +261,7 @@ public class Texas2kFullDynamicCoverageTest {
                 .collect(Collectors.joining(", "));
     }
 
-    private record CaseFile(String directory, String raw, String dyr, String gnet, int records,
-            int reviewedDependencyFailures, int gnetSkippedRecords) { }
+    private record CaseFile(String directory, String raw, String dyr, String gnet,
+            String modelRemove, int records, int modelRemovedRecords,
+            int gnetSkippedRecords) { }
 }

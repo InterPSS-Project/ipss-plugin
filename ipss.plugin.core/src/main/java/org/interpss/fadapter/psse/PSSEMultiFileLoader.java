@@ -81,7 +81,8 @@ public class PSSEMultiFileLoader {
      * wrapped in a SimuContext for dynamic simulation.
      *
      * @param files file paths: [0]=LF, followed by optional sequence, dynamic,
-     *              and GNET IDV files. GNET is always applied before DYR parsing.
+     *              and case-preparation IDV files. GNET and model-removal
+     *              directives are always applied before DYR parsing.
      * @return SimuContext with DStabilityNetwork and DynamicSimuAlgorithm configured
      */
     public SimuContext loadDStab(String... files) throws InterpssException {
@@ -117,35 +118,44 @@ public class PSSEMultiFileLoader {
         simuCtx.setDStabilityNet(dsNet);
 
         List<String> modelFiles = new ArrayList<>();
-        Set<Path> gnetFiles = new LinkedHashSet<>();
+        Set<Path> preparationFiles = new LinkedHashSet<>();
         for (int i = 1; i < files.length; i++) {
             if (files[i].toLowerCase(Locale.ROOT).endsWith(".idv")) {
-                gnetFiles.add(Path.of(files[i]).toAbsolutePath().normalize());
+                preparationFiles.add(Path.of(files[i]).toAbsolutePath().normalize());
             } else {
                 modelFiles.add(files[i]);
             }
         }
         for (String modelFile : modelFiles) {
-            discoverSiblingGnet(modelFile).ifPresent(gnetFiles::add);
+            discoverSiblingIdv(modelFile, "_gnet.idv").ifPresent(preparationFiles::add);
+            discoverSiblingIdv(modelFile, "_MODREMOVE.idv").ifPresent(preparationFiles::add);
         }
         Set<PsseGnetIdvProcessor.GeneratorKey> gnetRemovedGenerators = new LinkedHashSet<>();
-        for (Path gnetFile : gnetFiles) {
-            gnetRemovedGenerators.addAll(PsseGnetIdvProcessor.apply(dsNet, gnetFile.toString())
+        Set<PsseGnetIdvProcessor.GeneratorKey> modelRemovedGenerators = new LinkedHashSet<>();
+        for (Path preparationFile : preparationFiles) {
+            gnetRemovedGenerators.addAll(PsseGnetIdvProcessor.apply(dsNet,
+                    preparationFile.toString())
                     .convertedGeneratorKeys());
+            modelRemovedGenerators.addAll(PsseModelRemoveIdvProcessor.apply(dsNet,
+                    preparationFile.toString()).removedGeneratorKeys());
         }
 
         if (modelFiles.size() == 1) {
             String modelFile = modelFiles.get(0);
             if (modelFile.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
                 new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet))
-                        .setGnetRemovedGenerators(gnetRemovedGenerators).parseDynFile(modelFile);
+                        .setGnetRemovedGenerators(gnetRemovedGenerators)
+                        .setModelRemovedGenerators(modelRemovedGenerators)
+                        .parseDynFile(modelFile);
             } else {
                 new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFile);
             }
         } else if (modelFiles.size() >= 2) {
             new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFiles.get(0));
             new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet))
-                    .setGnetRemovedGenerators(gnetRemovedGenerators).parseDynFile(modelFiles.get(1));
+                    .setGnetRemovedGenerators(gnetRemovedGenerators)
+                    .setModelRemovedGenerators(modelRemovedGenerators)
+                    .parseDynFile(modelFiles.get(1));
         }
 
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
@@ -154,14 +164,14 @@ public class PSSEMultiFileLoader {
         return simuCtx;
     }
 
-    private static java.util.Optional<Path> discoverSiblingGnet(String modelFile) {
+    private static java.util.Optional<Path> discoverSiblingIdv(String modelFile, String suffix) {
         Path path = Path.of(modelFile).toAbsolutePath().normalize();
         String name = path.getFileName().toString();
         if (!name.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
             return java.util.Optional.empty();
         }
         String stem = name.substring(0, name.length() - 4);
-        Path sibling = path.resolveSibling(stem + "_gnet.idv");
+        Path sibling = path.resolveSibling(stem + suffix);
         return Files.isRegularFile(sibling)
                 ? java.util.Optional.of(sibling)
                 : java.util.Optional.empty();
