@@ -489,6 +489,7 @@ public class Texas2kOneSecondDriftTest {
         Map<String, WindSnapshot> initialWind = new LinkedHashMap<>();
         Map<String, ReecaSnapshot> initialReeca = new LinkedHashMap<>();
         Map<String, RepcaSnapshot> initialRepca = new LinkedHashMap<>();
+        Map<String, ConverterPowerSnapshot> initialConverterPower = new LinkedHashMap<>();
         Map<String, ControlStatus> initialControlStatus = new LinkedHashMap<>();
         network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
                 .filter(DStabGen.class::isInstance)
@@ -497,9 +498,10 @@ public class Texas2kOneSecondDriftTest {
                 .filter(gen -> gen.getDynamicGenDevice() instanceof Regca1Model)
                 .forEach(gen -> {
                     Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
+                    String deviceId = bus.getId() + ":" + gen.getId();
+                    initialConverterPower.put(deviceId, converterPower(converter));
                     var controller = converter.getReeca1Controller();
                     if (controller != null) {
-                        String deviceId = bus.getId() + ":" + gen.getId();
                         initialReeca.put(deviceId,
                                 reecaSnapshot(converter, controller));
                         initialControlStatus.put(deviceId, controlStatus(controller));
@@ -553,20 +555,39 @@ public class Texas2kOneSecondDriftTest {
 
         if (Boolean.getBoolean("texas2k.drift.traceFirstDivergence")) {
             boolean reported = false;
+            boolean controllerMovementReported = false;
             boolean dipTransitionReported = false;
             boolean limitTransitionReported = false;
+            double controllerMovementLimit = Double.parseDouble(System.getProperty(
+                    "texas2k.drift.controllerMovementLimit", "1.0e-10"));
             double endTime = algorithm.getTotalSimuTimeSec();
             // Match AbstractDStabSolver.performSimulation(): it executes the step
             // whose starting time is exactly the configured end time.
             while (algorithm.getSimuTime() <= endTime) {
                 assertTrue(algorithm.solveDEqnStep(true), source.directory() + " simulation step");
+                if (!controllerMovementReported) {
+                    StateDifference movement = worstControllerStateDifference(
+                            network, initialReeca, initialRepca);
+                    if (movement.delta() > controllerMovementLimit) {
+                        System.out.printf(java.util.Locale.ROOT,
+                                "%s first controller movement at t=%.9g: %s %s %s "
+                                        + "delta=%.9g initial=%.9g current=%.9g%n",
+                                source.directory(), algorithm.getSimuTime(), movement.model(),
+                                movement.id(), movement.state(), movement.delta(),
+                                movement.initial(), movement.current());
+                        reportPflagAggregate(algorithm.getSimuTime(), network,
+                                initialConverterPower);
+                        controllerMovementReported = true;
+                    }
+                }
                 if (!reported) {
                     Difference stepVoltage = worstVoltageDifference(network, initialVoltage);
                     Difference stepSpeed = worstSpeedDifference(network, initialSpeed);
                     if (stepVoltage.value() > VOLTAGE_DRIFT_LIMIT
                             || stepSpeed.value() > SPEED_DRIFT_LIMIT) {
                         reportFirstDivergence(source, algorithm.getSimuTime(), stepVoltage,
-                                stepSpeed, network, initialReeca, initialRepca);
+                                stepSpeed, network, initialReeca, initialRepca,
+                                initialConverterPower);
                         reported = true;
                     }
                 }
@@ -639,6 +660,11 @@ public class Texas2kOneSecondDriftTest {
 
     private record Difference(String id, double value) { }
 
+    private record StateDifference(String model, String id, String state,
+            double delta, double initial, double current) { }
+
+    private record ConverterPowerSnapshot(double p, double q) { }
+
     private record ModeParticipation(String busId, double magnitude, double sign) { }
 
     private record DeviceAtBus(String busId, DStabGen gen, Regca1Model converter) { }
@@ -681,10 +707,12 @@ public class Texas2kOneSecondDriftTest {
             Difference voltage, Difference speed,
             com.interpss.dstab.BaseDStabNetwork<?, ?> network,
             Map<String, ReecaSnapshot> initialReeca,
-            Map<String, RepcaSnapshot> initialRepca) {
+            Map<String, RepcaSnapshot> initialRepca,
+            Map<String, ConverterPowerSnapshot> initialConverterPower) {
         System.out.printf(java.util.Locale.ROOT,
                 "%s first drift threshold at t=%.9g: voltage=%.9g@%s speed=%.9g@%s%n",
                 source.directory(), time, voltage.value(), voltage.id(), speed.value(), speed.id());
+        reportPflagAggregate(time, network, initialConverterPower);
         initialReeca.entrySet().stream().map(entry -> {
             String[] key = entry.getKey().split(":", 2);
             DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
@@ -706,6 +734,67 @@ public class Texas2kOneSecondDriftTest {
                     current.toString());
         }).sorted(java.util.Comparator.comparingDouble(ControllerDifference::value).reversed())
                 .limit(10).forEach(Texas2kOneSecondDriftTest::printControllerDifference);
+    }
+
+    private static StateDifference worstControllerStateDifference(
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
+            Map<String, ReecaSnapshot> initialReeca,
+            Map<String, RepcaSnapshot> initialRepca) {
+        java.util.stream.Stream<StateDifference> reeca = initialReeca.entrySet().stream()
+                .flatMap(entry -> {
+                    String[] key = entry.getKey().split(":", 2);
+                    DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
+                    ReecaSnapshot current = reecaSnapshot((Regca1Model) gen.getDynamicGenDevice(),
+                            ((Regca1Model) gen.getDynamicGenDevice()).getReeca1Controller());
+                    return entry.getValue().stateDifferences("REECA1", entry.getKey(), current);
+                });
+        java.util.stream.Stream<StateDifference> repca = initialRepca.entrySet().stream()
+                .flatMap(entry -> {
+                    String[] key = entry.getKey().split(":", 2);
+                    DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
+                    RepcaSnapshot current = repcaSnapshot(((Regca1Model) gen.getDynamicGenDevice())
+                            .getReeca1Controller().getPlantController());
+                    return entry.getValue().stateDifferences("REPCA1", entry.getKey(), current);
+                });
+        return java.util.stream.Stream.concat(reeca, repca)
+                .max(java.util.Comparator.comparingDouble(StateDifference::delta))
+                .orElse(new StateDifference("none", "none", "none", 0.0, 0.0, 0.0));
+    }
+
+    private static void reportPflagAggregate(double time,
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
+            Map<String, ConverterPowerSnapshot> initialPower) {
+        for (int pFlag : List.of(0, 1)) {
+            double initialP = 0.0;
+            double initialQ = 0.0;
+            double currentP = 0.0;
+            double currentQ = 0.0;
+            int count = 0;
+            for (Map.Entry<String, ConverterPowerSnapshot> entry : initialPower.entrySet()) {
+                String[] key = entry.getKey().split(":", 2);
+                DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
+                Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
+                Reeca1Model controller = converter.getReeca1Controller();
+                if (controller == null || controller.getData().pFlag() != pFlag) continue;
+                ConverterPowerSnapshot current = converterPower(converter);
+                initialP += entry.getValue().p();
+                initialQ += entry.getValue().q();
+                currentP += current.p();
+                currentQ += current.q();
+                count++;
+            }
+            System.out.printf(java.util.Locale.ROOT,
+                    "  t=%.9g PFLAG=%d devices=%d aggregate dP=%.9g dQ=%.9g "
+                            + "initial[P=%.9g,Q=%.9g] current[P=%.9g,Q=%.9g]%n",
+                    time, pFlag, count, currentP - initialP, currentQ - initialQ,
+                    initialP, initialQ, currentP, currentQ);
+        }
+    }
+
+    private static ConverterPowerSnapshot converterPower(Regca1Model converter) {
+        Map<String, Object> states = converter.getStates(null);
+        return new ConverterPowerSnapshot(((Number) states.get("REGCA1_P")).doubleValue(),
+                ((Number) states.get("REGCA1_Q")).doubleValue());
     }
 
     private static void printControllerDifference(ControllerDifference difference) {
@@ -836,6 +925,20 @@ public class Texas2kOneSecondDriftTest {
                     Math.abs(leadLagState - other.leadLagState),
                     Math.abs(pLagState - other.pLagState)).max().orElse(0.0);
         }
+
+        java.util.stream.Stream<StateDifference> stateDifferences(
+                String model, String id, RepcaSnapshot current) {
+            return java.util.stream.Stream.of(
+                    stateDifference(model, id, "pref", pref, current.pref),
+                    stateDifference(model, id, "qref", qref, current.qref),
+                    stateDifference(model, id, "pMeasured", pMeasured, current.pMeasured),
+                    stateDifference(model, id, "qvMeasured", qvMeasured, current.qvMeasured),
+                    stateDifference(model, id, "pIntegral", pIntegral, current.pIntegral),
+                    stateDifference(model, id, "qIntegral", qIntegral, current.qIntegral),
+                    stateDifference(model, id, "leadLagState", leadLagState,
+                            current.leadLagState),
+                    stateDifference(model, id, "pLagState", pLagState, current.pLagState));
+        }
     }
 
     private static ReecaSnapshot reecaSnapshot(Regca1Model converter, Reeca1Model controller) {
@@ -862,6 +965,27 @@ public class Texas2kOneSecondDriftTest {
                     Math.abs(ipState - other.ipState), Math.abs(iqState - other.iqState))
                     .max().orElse(0.0);
         }
+
+        java.util.stream.Stream<StateDifference> stateDifferences(
+                String model, String id, ReecaSnapshot current) {
+            return java.util.stream.Stream.of(
+                    stateDifference(model, id, "vMeasured", vMeasured, current.vMeasured),
+                    stateDifference(model, id, "pMeasured", pMeasured, current.pMeasured),
+                    stateDifference(model, id, "pFilter", pFilter, current.pFilter),
+                    stateDifference(model, id, "pOrder", pOrder, current.pOrder),
+                    stateDifference(model, id, "qCurrent", qCurrent, current.qCurrent),
+                    stateDifference(model, id, "vIntegral", vIntegral, current.vIntegral),
+                    stateDifference(model, id, "ipcmd", ipcmd, current.ipcmd),
+                    stateDifference(model, id, "iqcmd", iqcmd, current.iqcmd),
+                    stateDifference(model, id, "ipState", ipState, current.ipState),
+                    stateDifference(model, id, "iqState", iqState, current.iqState),
+                    stateDifference(model, id, "iqOut", iqOut, current.iqOut));
+        }
+    }
+
+    private static StateDifference stateDifference(String model, String id, String state,
+            double initial, double current) {
+        return new StateDifference(model, id, state, Math.abs(current - initial), initial, current);
     }
 
     private record CaseFile(String directory, String raw, String dyr, String gnet) { }

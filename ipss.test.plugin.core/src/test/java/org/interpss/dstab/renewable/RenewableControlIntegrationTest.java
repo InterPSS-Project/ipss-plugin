@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 /** Numerical-method contract shared by the hand-coded renewable controllers. */
-class RenewableControlIntegrationTest {
+public class RenewableControlIntegrationTest {
 
     @Test
     void firstOrderLagUsesTheExplicitModifiedEulerCorrector() {
