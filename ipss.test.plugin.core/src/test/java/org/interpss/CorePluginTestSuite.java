@@ -73,6 +73,7 @@ import org.interpss.core.dstab.Texas2kRegfma1CoverageTest;
 import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
 import org.interpss.core.dstab.Texas2kHygovCoverageTest;
 import org.interpss.core.dstab.Texas2kLegacyControllerProfileTest;
+import org.interpss.core.dstab.Texas2kOneSecondDriftTest;
 import org.interpss.core.dstab.Texas2kPowerWorldRenewableParameterParityTest;
 import org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest;
 import org.interpss.core.dstab.Texas2kSynchronousMachineCoverageTest;
@@ -461,6 +462,7 @@ import org.junit.platform.suite.api.Suite;
 	Texas2kFullDynamicCoverageTest.class,
 	Texas2kHygovCoverageTest.class,
 	Texas2kLegacyControllerProfileTest.class,
+	Texas2kOneSecondDriftTest.class,
 	Texas2kPowerWorldRenewableParameterParityTest.class,
 	Texas2kSixCaseDynamicSmokeTest.class,
 	Texas2kSynchronousMachineCoverageTest.class,
