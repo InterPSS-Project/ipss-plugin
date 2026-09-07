@@ -50,6 +50,7 @@ import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
+import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.st5b.St5bData;
 import org.slf4j.Logger;
@@ -245,6 +246,8 @@ public class PSSEDStabDirectParser {
                 return procExcDc3a(record.sourceModelName(),busId,genId,fields);
             case "ST6B":
                 return procExcSt6b(record.sourceModelName(),busId,genId,fields);
+            case "ST7B":
+                return procExcSt7b(record.sourceModelName(),busId,genId,fields);
             case "AC7B":
                 return procExcAc7b(record.sourceModelName(), busId, genId, fields);
             case "REXSYS":
@@ -694,6 +697,21 @@ public class PSSEDStabDirectParser {
             d.setKg(getDouble(f,18,0));d.setTg(getDouble(f,19,0));
         }
         return builder.addExcSt6b(busId,genId,sourceName,d)!=null;
+    }
+
+    // ST7B: OEL UEL Tr Tg Tf Vmax Vmin Kpa Vrmax Vrmin Kh Kl Tc Tb Kia Tia
+    // ESST7B: Tr Kpa Kia Tia Tb Tc Tf Tg Kl Kh Vrmax Vrmin Vmax Vmin UEL OEL Ts
+    private boolean procExcSt7b(String sourceName,String busId,String genId,String[] f){
+        boolean es="ESST7B".equalsIgnoreCase(sourceName);if((es&&f.length<20)||(!es&&f.length<19))return false;St7bData d=new St7bData();
+        if(es){d.setTr(getDouble(f,3,0));d.setKpa(getDouble(f,4,0));d.setKia(getDouble(f,5,0));d.setTia(getDouble(f,6,0));
+            d.setTb(getDouble(f,7,0));d.setTc(getDouble(f,8,0));d.setTf(getDouble(f,9,0));d.setTg(getDouble(f,10,0));
+            d.setKl(getDouble(f,11,0));d.setKh(getDouble(f,12,0));d.setVrmax(getDouble(f,13,0));d.setVrmin(getDouble(f,14,0));
+            d.setVmax(getDouble(f,15,0));d.setVmin(getDouble(f,16,0));d.setUel(getInt(f,17,0));d.setOel(getInt(f,18,0));d.setTs(getDouble(f,19,0));
+        }else{d.setOel(getInt(f,3,0));d.setUel(getInt(f,4,0));d.setTr(getDouble(f,5,0));d.setTg(getDouble(f,6,0));
+            d.setTf(getDouble(f,7,0));d.setVmax(getDouble(f,8,0));d.setVmin(getDouble(f,9,0));d.setKpa(getDouble(f,10,0));
+            d.setVrmax(getDouble(f,11,0));d.setVrmin(getDouble(f,12,0));d.setKh(getDouble(f,13,0));d.setKl(getDouble(f,14,0));
+            d.setTc(getDouble(f,15,0));d.setTb(getDouble(f,16,0));d.setKia(getDouble(f,17,0));d.setTia(getDouble(f,18,0));}
+        return builder.addExcSt7b(busId,genId,sourceName,d)!=null;
     }
 
     // ESST2A: Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf Kp Ki Kc Efdmax.
