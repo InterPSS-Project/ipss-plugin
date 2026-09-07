@@ -14,6 +14,8 @@ import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter;
+import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
+import org.interpss.dstab.control.exc.psse.exac4.Exac4Exciter;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
@@ -1117,6 +1119,16 @@ public class DStabNetworkBuilder {
             return null;
         }
         return ExciterObjectFactory.createEsac4aExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** PSS/E EXAC4 / IEEE Type AC4 excitation system. */
+    public Exac4Exciter addExcExac4(String busId, String genId, Exac4Data data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXAC4 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createExac4Exciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** IEEE 421.5 DC4B / PSS/E ESDC4B excitation system. */
