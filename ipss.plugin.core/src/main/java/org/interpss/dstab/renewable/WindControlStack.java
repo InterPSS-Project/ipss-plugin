@@ -13,6 +13,11 @@ public final class WindControlStack {
     private double generatorSpeed = 1.0;
     private double turbineSpeed = 1.0;
     private double pref;
+    private boolean predictorActive;
+    private double predictorGeneratorSpeed;
+    private double predictorTurbineSpeed;
+    private double predictorPref;
+    private double predictorMechanicalPower;
 
     public void initialize(double power) {
         pref = power;
@@ -74,6 +79,88 @@ public final class WindControlStack {
                     ? aerodynamics.getData().theta0() : pitchController.getPitch();
             aerodynamics.step(pitch);
         }
+    }
+
+    /**
+     * Advances the complete wind-control stack on one modified-Euler stage.
+     * Every flag-1 component evaluates its derivative with the same predicted
+     * internal endpoint captured at flag 0; no component observes another
+     * component's already-corrected final state during that evaluation.
+     */
+    public void step(double dt, double electricalPower, double pOrder,
+            double powerReference, boolean voltageDip, int flag) {
+        if (flag != 0 && flag != 1) {
+            throw new IllegalArgumentException("wind-stack integration flag must be 0 or 1");
+        }
+        if (flag == 1 && !predictorActive) {
+            throw new IllegalStateException("wind-stack corrector called without predictor");
+        }
+        if (flag == 0) {
+            stepPredictor(dt, electricalPower, pOrder, powerReference, voltageDip);
+        } else {
+            stepCorrector(dt, electricalPower, pOrder, powerReference, voltageDip);
+        }
+    }
+
+    private void stepPredictor(double dt, double electricalPower, double pOrder,
+            double powerReference, boolean voltageDip) {
+        double mechanicalPower = aerodynamics == null
+                ? driveTrain == null ? electricalPower : driveTrain.getInitialInputPower()
+                : aerodynamics.getMechanicalPower();
+        if (driveTrain != null) {
+            driveTrain.step(dt, mechanicalPower, electricalPower, 0);
+            generatorSpeed = driveTrain.getGeneratorSpeed();
+            turbineSpeed = driveTrain.getTurbineSpeed();
+        }
+        if (torqueController != null) {
+            if (driveTrain == null) {
+                generatorSpeed = turbineSpeed = torqueController.getSpeedReference();
+            }
+            torqueController.step(dt, electricalPower, generatorSpeed,
+                    powerReference, voltageDip, 0);
+            pref = torqueController.getPref();
+        }
+        if (pitchController != null) {
+            pitchController.step(dt, pOrder, pref, turbineSpeed, 0);
+        }
+        if (aerodynamics != null) {
+            double pitch = pitchController == null
+                    ? aerodynamics.getData().theta0() : pitchController.getPitch();
+            aerodynamics.step(pitch);
+        }
+        predictorGeneratorSpeed = generatorSpeed;
+        predictorTurbineSpeed = turbineSpeed;
+        predictorPref = pref;
+        predictorMechanicalPower = aerodynamics == null
+                ? mechanicalPower : aerodynamics.getMechanicalPower();
+        predictorActive = true;
+    }
+
+    private void stepCorrector(double dt, double electricalPower, double pOrder,
+            double powerReference, boolean voltageDip) {
+        if (driveTrain != null) {
+            driveTrain.step(dt, predictorMechanicalPower, electricalPower, 1);
+        }
+        if (torqueController != null) {
+            torqueController.step(dt, electricalPower, predictorGeneratorSpeed,
+                    powerReference, voltageDip, 1);
+        }
+        if (pitchController != null) {
+            pitchController.step(dt, pOrder, predictorPref,
+                    predictorTurbineSpeed, 1);
+        }
+        generatorSpeed = driveTrain == null
+                ? torqueController == null ? generatorSpeed
+                        : torqueController.getSpeedReference()
+                : driveTrain.getGeneratorSpeed();
+        turbineSpeed = driveTrain == null ? generatorSpeed : driveTrain.getTurbineSpeed();
+        if (torqueController != null) pref = torqueController.getPref();
+        if (aerodynamics != null) {
+            double pitch = pitchController == null
+                    ? aerodynamics.getData().theta0() : pitchController.getPitch();
+            aerodynamics.step(pitch);
+        }
+        predictorActive = false;
     }
 
     public boolean isComplete() {

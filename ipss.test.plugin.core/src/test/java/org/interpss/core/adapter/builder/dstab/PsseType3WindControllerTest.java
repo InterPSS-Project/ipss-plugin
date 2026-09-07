@@ -409,6 +409,58 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void stagedWindStackCorrectorsShareTheSamePredictedInternalEndpoint() {
+        WindControlStack stack = stagedWindStack();
+        stack.initialize(.5);
+
+        Wtdta1Model drive = new Wtdta1Model(new Wtdta1Data(5, .1, .8, 1.5, .2));
+        Wtara1Model aero = new Wtara1Model(new Wtara1Data(.007, 0));
+        Wttqa1Model torque = torqueController(1, 1, .5, .04, 60, 1.2, 0);
+        Wtpta1Model pitch = new Wtpta1Model(
+                new Wtpta1Data(2, 1, 4, 3, .5, 1, 20, 0, 100, -100));
+        torque.initialize(.5);
+        drive.initialize(.5, torque.getSpeedReference());
+        torque.initialize(.5, drive.getGeneratorSpeed());
+        aero.initialize(.5);
+        pitch.initialize(aero.getData().theta0(), drive.getTurbineSpeed());
+
+        stack.step(.01, .55, .52, .54, false, 0);
+        drive.step(.01, aero.getMechanicalPower(), .55, 0);
+        double predictedGeneratorSpeed = drive.getGeneratorSpeed();
+        double predictedTurbineSpeed = drive.getTurbineSpeed();
+        torque.step(.01, .55, predictedGeneratorSpeed, .54, false, 0);
+        double predictedPref = torque.getPref();
+        pitch.step(.01, .52, predictedPref, predictedTurbineSpeed, 0);
+        aero.step(pitch.getPitch());
+
+        stack.step(.01, .53, .51, .56, false, 1);
+        drive.step(.01, aero.getMechanicalPower(), .53, 1);
+        torque.step(.01, .53, predictedGeneratorSpeed, .56, false, 1);
+        pitch.step(.01, .51, predictedPref, predictedTurbineSpeed, 1);
+        aero.step(pitch.getPitch());
+
+        assertEquals(drive.getGeneratorSpeed(), stack.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(drive.getTurbineSpeed(), stack.getTurbineSpeed(), 1.0e-12);
+        assertEquals(torque.getFilteredPower(),
+                stack.getTorqueController().getFilteredPower(), 1.0e-12);
+        assertEquals(torque.getTorqueIntegral(),
+                stack.getTorqueController().getTorqueIntegral(), 1.0e-12);
+        assertEquals(torque.getPref(), stack.getPref(), 1.0e-12);
+        assertEquals(pitch.getPitch(), stack.getPitchController().getPitch(), 1.0e-12);
+        assertEquals(aero.getMechanicalPower(),
+                stack.getAerodynamics().getMechanicalPower(), 1.0e-12);
+    }
+
+    @Test
+    void stagedWindStackCorrectorRequiresPredictor() {
+        WindControlStack stack = stagedWindStack();
+        stack.initialize(.5);
+
+        assertThrows(IllegalStateException.class,
+                () -> stack.step(.01, .5, .5, .5, false, 1));
+    }
+
+    @Test
     void torquePowerErrorUsesFilteredPowerAndFreezesIntegratorDuringDip() {
         Wttqa1Model model = torqueController(1, 0, 2, .2, 0, 10, 0);
         model.initialize(.5);
@@ -524,5 +576,15 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
             double tp, double twref, double teMax, double teMin) {
         return new Wttqa1Model(new Wttqa1Data(tFlag, kpp, kip, tp, twref, teMax, teMin,
                 .2, .58, .4, .72, .6, .86, .8, 1.0, 0));
+    }
+
+    private static WindControlStack stagedWindStack() {
+        WindControlStack stack = new WindControlStack();
+        stack.setDriveTrain(new Wtdta1Model(new Wtdta1Data(5, .1, .8, 1.5, .2)));
+        stack.setAerodynamics(new Wtara1Model(new Wtara1Data(.007, 0)));
+        stack.setTorqueController(torqueController(1, 1, .5, .04, 60, 1.2, 0));
+        stack.setPitchController(new Wtpta1Model(
+                new Wtpta1Data(2, 1, 4, 3, .5, 1, 20, 0, 100, -100)));
+        return stack;
     }
 }
