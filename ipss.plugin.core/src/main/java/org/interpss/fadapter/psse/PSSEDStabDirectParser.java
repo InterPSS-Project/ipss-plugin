@@ -36,6 +36,7 @@ import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
+import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
@@ -69,6 +70,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingSt2cut> pendingSt2cut = new ArrayList<>();
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
+    private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private boolean strictImport;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
@@ -110,6 +112,7 @@ public class PSSEDStabDirectParser {
         pendingSt2cut.clear();
         pendingIeeest.clear();
         pendingRepca1.clear();
+        pendingLcfb1.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
         for (PsseDyrRecord record : records) {
             try {
@@ -132,7 +135,7 @@ public class PSSEDStabDirectParser {
                     continue;
                 }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
-                        || type.equals("REPCA1");
+                        || type.equals("REPCA1") || type.equals("LCFB1");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
@@ -166,6 +169,13 @@ public class PSSEDStabDirectParser {
                     attached ? "" : "REPCA1 requires REGCA1/REEC or REGFMA1 on the same generator");
         }
         pendingRepca1.clear();
+        for (PendingLcfb1 pending : pendingLcfb1) {
+            boolean attached = procLcfb1(pending.busId(), pending.genId(), pending.fields());
+            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                    : DynamicModelImportStatus.REJECTED,
+                    attached ? "" : "LCFB1 requires a loaded machine and turbine governor");
+        }
+        pendingLcfb1.clear();
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
@@ -292,6 +302,9 @@ public class PSSEDStabDirectParser {
                 return procGovH6e(busId, genId, fields, record);
             case "IEEEG3":
                 return procGovIeeeg3(busId, genId, fields);
+            case "LCFB1":
+                pendingLcfb1.add(new PendingLcfb1(busId, genId, fields.clone(), record));
+                return true;
 
             case "ST2CUT":
                 pendingSt2cut.add(new PendingSt2cut(busId, genId, fields.clone(), record));
@@ -925,6 +938,21 @@ public class PSSEDStabDirectParser {
 
     private record PendingRepca1(String busId, String genId, String[] fields,
             PsseDyrRecord record) {}
+
+    private record PendingLcfb1(String busId, String genId, String[] fields,
+            PsseDyrRecord record) {}
+
+    // LCFB1: fbf pbf Fb Tpelec db emax Kp Ki Lrmax
+    private boolean procLcfb1(String busId, String genId, String[] f) {
+        if (f.length < 12) return false;
+        Lcfb1Data data = new Lcfb1Data(
+                getInt(f, 3, 0), getInt(f, 4, 0),
+                getDouble(f, 5, 0), getDouble(f, 6, 0),
+                getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0),
+                getDouble(f, 11, 0));
+        return builder.addLcfb1(busId, genId, data) != null;
+    }
 
     // PSS2A: IBUS 'PSS2A' ID ICS1 REMBUS1 ICS2 REMBUS2 M N
     //         Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3 T8 T9 Ks1 T1 T2 T3 T4 VSTMAX VSTMIN
