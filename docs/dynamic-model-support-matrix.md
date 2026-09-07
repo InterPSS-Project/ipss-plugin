@@ -7,21 +7,18 @@ does **not** mean that the model has passed equation conformance, a stationary
 flat run, a representative disturbance matrix, or an independent-tool
 trajectory comparison. Those acceptance results are tracked in
 `dynamic-model-coverage-development-plan.md`. In particular, the six Texas2k
-cases are currently loadable, but only Cases 1 and 2 pass the strict one-second
-flat-run gate; the Texas2k verification milestone remains open.
+cases are currently loadable, but the PSS/E-only flat and fault acceptance
+matrix must be rerun; the Texas2k verification milestone remains open.
 
 Current Texas2k audit (2026-09-07): `17/17` PSS/E DYR model names are
-loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
-runtime path. The production loader also discovers the sibling PowerWorld DYD,
-PowerWorld DYD files contain `WTGT_A` records (85 per case in Cases 1-2 and
-184 per case in Cases 3-6), and attaches 85/85 and 179/184 respectively; the
-remaining five records are explicitly dispositioned by GNET/model removal.
-Separately, `6/6` prepared cases pass the
-short flat and common Bus-7159 fault execution smokes, `2/6` pass the strict
-one-second flat-run gate, `0/6` have completed the required location-specific
-fault acceptance matrix, and `0/6` have full-stack independent trajectory
-acceptance. See the plan's release checklist before interpreting any `LOADABLE`
-row as completed model validation.
+loadable, and the standard PSS/E `WTDTA1` drive train has a parser and runtime
+path. Current acceptance scope is PSS/E RAW/DYR plus `_gnet.idv` and
+`_MODREMOVE.idv`; GE PSLF `.dyd` data is deferred. Earlier `6/6` short-flat and
+common-fault results and the historical `2/6` strict result consumed sibling
+`.dyd` data, so they are diagnostic only and must be rerun in PSS/E-only mode.
+No case has completed the required location-specific fault acceptance matrix or
+full-stack independent trajectory acceptance. See the plan's release checklist
+before interpreting any `LOADABLE` row as completed model validation.
 
 | Model | Category | Aliases | Parameters | Support | Runtime class | Reference |
 |---|---|---|---:|---|---|---|
