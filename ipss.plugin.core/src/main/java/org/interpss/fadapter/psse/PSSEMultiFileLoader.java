@@ -11,7 +11,6 @@ import java.util.Set;
 import org.interpss.fadapter.builder.AcscNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkObjectFactory;
-import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
@@ -33,8 +32,6 @@ import com.interpss.simu.SimuObjectFactory;
 public class PSSEMultiFileLoader {
     /** Null means auto-detect REV from the LF RAW header. */
     private final Integer versionOverride;
-    private PowerWorldDydWtgtAImporter.Result lastPowerWorldDydReport =
-            PowerWorldDydWtgtAImporter.Result.empty();
 
     /** Auto-detect PSS/E REV from the LF file header. */
     public PSSEMultiFileLoader() {
@@ -44,11 +41,6 @@ public class PSSEMultiFileLoader {
     /** Force section layout to {@code version} (override header REV). */
     public PSSEMultiFileLoader(int version) {
         this.versionOverride = version;
-    }
-
-    /** Supplemental PowerWorld DYD result from the most recent load. */
-    public PowerWorldDydWtgtAImporter.Result getLastPowerWorldDydReport() {
-        return lastPowerWorldDydReport;
     }
 
     private PSSEDirectParser createLfParser(com.interpss.core.aclf.BaseAclfNetwork<?, ?> net) {
@@ -119,7 +111,6 @@ public class PSSEMultiFileLoader {
             throw new InterpssException("At least one file (LF) is required");
         }
 
-        lastPowerWorldDydReport = PowerWorldDydWtgtAImporter.Result.empty();
         dsNet.setPositiveSeqDataOnly(true);
         createLfParser(dsNet, objectFactory).parseInto(files[0]);
 
@@ -129,7 +120,12 @@ public class PSSEMultiFileLoader {
         List<String> modelFiles = new ArrayList<>();
         Set<Path> preparationFiles = new LinkedHashSet<>();
         for (int i = 1; i < files.length; i++) {
-            if (files[i].toLowerCase(Locale.ROOT).endsWith(".idv")) {
+            String lowerCaseFile = files[i].toLowerCase(Locale.ROOT);
+            if (lowerCaseFile.endsWith(".dyd")) {
+                throw new InterpssException("GE PSLF .dyd is not a PSS/E input: "
+                        + files[i]);
+            }
+            if (lowerCaseFile.endsWith(".idv")) {
                 preparationFiles.add(Path.of(files[i]).toAbsolutePath().normalize());
             } else {
                 modelFiles.add(files[i]);
@@ -178,12 +174,6 @@ public class PSSEMultiFileLoader {
                 .setGnetRemovedGenerators(gnetRemovedGenerators)
                 .setModelRemovedGenerators(modelRemovedGenerators)
                 .parseDynFile(modelFile);
-        java.util.Optional<Path> supplemental = discoverSibling(modelFile, ".dyd");
-        if (supplemental.isPresent()) {
-            lastPowerWorldDydReport = new PowerWorldDydWtgtAImporter().importFile(
-                    supplemental.get(), builder, gnetRemovedGenerators,
-                    modelRemovedGenerators);
-        }
     }
 
     private static java.util.Optional<Path> discoverSiblingIdv(String modelFile, String suffix) {
@@ -199,14 +189,4 @@ public class PSSEMultiFileLoader {
                 : java.util.Optional.empty();
     }
 
-    private static java.util.Optional<Path> discoverSibling(String modelFile, String extension) {
-        Path path = Path.of(modelFile).toAbsolutePath().normalize();
-        String name = path.getFileName().toString();
-        if (!name.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
-            return java.util.Optional.empty();
-        }
-        Path sibling = path.resolveSibling(name.substring(0, name.length() - 4) + extension);
-        return Files.isRegularFile(sibling) ? java.util.Optional.of(sibling)
-                : java.util.Optional.empty();
-    }
 }

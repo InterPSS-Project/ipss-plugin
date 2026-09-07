@@ -25,8 +25,6 @@ import org.interpss.fadapter.psse.dyr.DynamicModelImportReport;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelCategory;
-import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter;
-import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter.Status;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Regfma1Model;
@@ -54,27 +52,27 @@ public class Texas2kFullDynamicCoverageTest {
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
                     "dynamic_models_case1_gnet.idv", "dynamic_models_case1_MODREMOVE.idv",
-                    2223, 0, 0, 85, 85),
+                    2223, 0, 0),
             new CaseFile("Texas2k_series24_case2_2016lowload",
                     "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr",
                     "dynamic_models_case2_gnet.idv", "dynamic_models_case2_MODREMOVE.idv",
-                    2223, 0, 0, 85, 85),
+                    2223, 0, 0),
             new CaseFile("Texas2k_series24_case3_2024summerpeak",
                     "Texas2k_series24_case3_2024summerpeak_v30.RAW", "dynamic_models_case3.dyr",
                     "dynamic_models_case3_gnet.idv", "dynamic_models_case3_MODREMOVE.idv",
-                    2965, 10, 15, 184, 179),
+                    2965, 10, 15),
             new CaseFile("Texas2k_series24_case4_2024lowload",
                     "Texas2k_series24_case4_2024lowload.RAW", "dynamic_models_case4.dyr",
                     "dynamic_models_case4_gnet.idv", "dynamic_models_case4_MODREMOVE.idv",
-                    2965, 10, 15, 184, 179),
+                    2965, 10, 15),
             new CaseFile("Texas2k_series24_case5_2024highrenewables",
                     "Texas2k_series24_case5_2024highrenewables.RAW", "dynamic_models_case5.dyr",
                     "dynamic_models_case5_gnet.idv", "dynamic_models_case5_MODREMOVE.idv",
-                    2965, 10, 15, 184, 179),
+                    2965, 10, 15),
             new CaseFile("Texas2k_series24_case6_2024lowloadwithgfm",
                     "Texas2k_series24_case6_2024lowloadwithgfm.RAW", "dynamic_models_case6.dyr",
                     "dynamic_models_case6_gnet.idv", "dynamic_models_case6_MODREMOVE.idv",
-                    2970, 10, 15, 184, 179));
+                    2970, 10, 15));
 
     @BeforeAll
     static void initializePlugin() {
@@ -94,13 +92,11 @@ public class Texas2kFullDynamicCoverageTest {
             Path dyr = directory.resolve(source.dyr());
             Path gnet = directory.resolve(source.gnet());
             Path modelRemove = directory.resolve(source.modelRemove());
-            Path dyd = directory.resolve(source.dyr().replaceFirst("(?i)\\.dyr$", ".dyd"));
             assumeTrue(Files.isRegularFile(raw), "Missing Texas2k RAW: " + raw);
             assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
             assumeTrue(Files.isRegularFile(gnet), "Missing Texas2k GNET: " + gnet);
             assumeTrue(Files.isRegularFile(modelRemove),
                     "Missing Texas2k model-removal IDV: " + modelRemove);
-            assumeTrue(Files.isRegularFile(dyd), "Missing PowerWorld DYD: " + dyd);
 
             BaseDStabNetwork<?, ?> network = new PSSEMultiFileLoader()
                     .loadDStab(raw.toString(), emptyDyr.toString()).getDStabilityNet();
@@ -113,8 +109,6 @@ public class Texas2kFullDynamicCoverageTest {
                     .setModelRemovedGenerators(modelRemoveResult.removedGeneratorKeys());
             parser.parseDynFile(dyr.toString());
             DynamicModelImportReport report = parser.getLastImportReport();
-            var wtgtReport = new PowerWorldDydWtgtAImporter().importFile(dyd, builder,
-                    gnetResult.convertedGeneratorKeys(), modelRemoveResult.removedGeneratorKeys());
             assertGnetRemovedDetailedModels(network, gnetResult, source.directory());
             assertExactAttachedRuntimeClasses(network, report, source.directory());
             assertNoDuplicateControllerSlots(report, source.directory());
@@ -159,33 +153,6 @@ public class Texas2kFullDynamicCoverageTest {
                         source.directory() + " model-removed controller types");
             }
             assertTrue(report.isStrictlyComplete(), source.directory());
-            assertEquals(source.wtgtRecords(), wtgtReport.totalRecordCount(),
-                    source.directory() + " WTGT_A source count");
-            assertEquals(source.wtgtAttached(), wtgtReport.count(Status.ATTACHED),
-                    source.directory() + " WTGT_A attached count");
-            assertEquals(source.wtgtRecords() == 184 ? 3 : 0,
-                    wtgtReport.count(Status.SKIPPED_GNET),
-                    source.directory() + " WTGT_A GNET count");
-            assertEquals(source.wtgtRecords() == 184 ? 2 : 0,
-                    wtgtReport.count(Status.SKIPPED_MODEL_REMOVE),
-                    source.directory() + " WTGT_A model-remove count");
-            assertTrue(wtgtReport.isStrictlyComplete(), source.directory() + " WTGT_A");
-            wtgtReport.entries().stream()
-                    .filter(entry -> entry.status() == Status.ATTACHED)
-                    .forEach(entry -> {
-                        DStabGen generator = (DStabGen) network
-                                .getDStabBus("Bus" + entry.record().busNumber())
-                                .getContributeGen(entry.record().deviceId());
-                        WindControlStack stack = windStack(generator);
-                        assertNotNull(stack, source.directory() + " WTGT_A stack "
-                                + entry.record().busNumber() + ":" + entry.record().deviceId());
-                        assertNotNull(stack.getDriveTrain(), source.directory()
-                                + " WTGT_A runtime " + entry.record().busNumber() + ":"
-                                + entry.record().deviceId());
-                        assertEquals(entry.record().data(),
-                                stack.getDriveTrain().getPowerWorldData(),
-                                source.directory() + " WTGT_A source mapping");
-                    });
         }
     }
 
@@ -299,5 +266,5 @@ public class Texas2kFullDynamicCoverageTest {
 
     private record CaseFile(String directory, String raw, String dyr, String gnet,
             String modelRemove, int records, int modelRemovedRecords,
-            int gnetSkippedRecords, int wtgtRecords, int wtgtAttached) { }
+            int gnetSkippedRecords) { }
 }

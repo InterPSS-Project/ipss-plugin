@@ -12,7 +12,6 @@ import java.util.Set;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter.Status;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -39,26 +38,26 @@ public class Texas2kSixCaseDynamicSmokeTest {
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
-                    "dynamic_models_case1_gnet.idv", List.of("Bus1090"), 85),
+                    "dynamic_models_case1_gnet.idv", List.of("Bus1090")),
             new CaseFile("Texas2k_series24_case2_2016lowload",
                     "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr",
-                    "dynamic_models_case2_gnet.idv", List.of("Bus1090"), 85),
+                    "dynamic_models_case2_gnet.idv", List.of("Bus1090")),
             new CaseFile("Texas2k_series24_case3_2024summerpeak",
                     "Texas2k_series24_case3_2024summerpeak_v30.RAW", "dynamic_models_case3.dyr",
                     "dynamic_models_case3_gnet.idv",
-                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095"), 179),
+                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")),
             new CaseFile("Texas2k_series24_case4_2024lowload",
                     "Texas2k_series24_case4_2024lowload.RAW", "dynamic_models_case4.dyr",
                     "dynamic_models_case4_gnet.idv",
-                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095"), 179),
+                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")),
             new CaseFile("Texas2k_series24_case5_2024highrenewables",
                     "Texas2k_series24_case5_2024highrenewables.RAW", "dynamic_models_case5.dyr",
                     "dynamic_models_case5_gnet.idv",
-                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095"), 179),
+                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")),
             new CaseFile("Texas2k_series24_case6_2024lowloadwithgfm",
                     "Texas2k_series24_case6_2024lowloadwithgfm.RAW", "dynamic_models_case6.dyr",
                     "dynamic_models_case6_gnet.idv",
-                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095"), 179));
+                    List.of("Bus1090", "Bus5394", "Bus5395", "Bus7095")));
     private static final Set<String> INTENTIONALLY_MODEL_REMOVED_GENERATORS = Set.of(
             "Bus5045:1", "Bus7099:2");
 
@@ -151,14 +150,10 @@ public class Texas2kSixCaseDynamicSmokeTest {
         assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
         assumeTrue(Files.isRegularFile(gnet), "Missing Texas2k GNET IDV: " + gnet);
 
-        // Deliberately omit IDV arguments: the production loader must discover
-        // both sibling GNET and MODREMOVE files before mapping dynamic records.
+        // Deliberately omit IDV arguments: the PSS/E loader must discover both
+        // sibling GNET and MODREMOVE files, but not the sibling PSLF DYD.
         PSSEMultiFileLoader loader = new PSSEMultiFileLoader();
         SimuContext context = loader.loadDStab(raw.toString(), dyr.toString());
-        var wtgtReport = loader.getLastPowerWorldDydReport();
-        assertTrue(wtgtReport.isStrictlyComplete(), source.directory() + " WTGT_A import");
-        assertTrue(wtgtReport.count(Status.ATTACHED) == source.wtgtAttached(),
-                source.directory() + " WTGT_A attached count");
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
         for (String busId : source.gnetBuses()) {
             var bus = network.getBus(busId);
@@ -311,5 +306,5 @@ public class Texas2kSixCaseDynamicSmokeTest {
     }
 
     private record CaseFile(String directory, String raw, String dyr, String gnet,
-            List<String> gnetBuses, int wtgtAttached) { }
+            List<String> gnetBuses) { }
 }
