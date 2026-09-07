@@ -64,6 +64,7 @@ import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
+import org.interpss.dstab.control.gov.psse.hygov2.PsseHygov2dGovernor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
 import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData;
@@ -1976,6 +1977,45 @@ public class DStabNetworkBuilder {
         gov.getData().setTrate(trate);
         if (!gov.validateParameters()) {
             log.warn("Invalid TGOV3D parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E HYGOV2D hydro turbine-governor with speed deadband. */
+    public PsseHygov2dGovernor addGovHygov2d(String busId, String genId,
+            double kp, double ki, double ka, double t1, double t2, double t3,
+            double t4, double t5, double t6, double tr, double rtemp, double r,
+            double vgmax, double gmax, double gmin, double pmax, double dbH,
+            double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for HYGOV2D governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseHygov2dGovernor gov = GovernorObjectFactory.createPsseHYGOV2DGovernor(
+                mach.getId() + "_Gov", "HYGOV2D", mach);
+        gov.getData().setKp(kp);
+        gov.getData().setKi(ki);
+        gov.getData().setKa(ka);
+        gov.getData().setT1(t1);
+        gov.getData().setT2(t2);
+        gov.getData().setT3(t3);
+        gov.getData().setT4(t4);
+        gov.getData().setT5(t5);
+        gov.getData().setT6(t6);
+        gov.getData().setTr(tr);
+        gov.getData().setRtemp(rtemp);
+        gov.getData().setR(r);
+        gov.getData().setVgmax(vgmax);
+        gov.getData().setGmax(gmax);
+        gov.getData().setGmin(gmin);
+        gov.getData().setPmax(pmax);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid HYGOV2D parameters at {} {}", busId, genId);
             return null;
         }
         return gov;
