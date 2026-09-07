@@ -45,6 +45,8 @@ import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
 import org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter;
+import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
+import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
 import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
 import org.interpss.dstab.control.exc.psse.ac7b.Ac7bData;
 import org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter;
@@ -217,6 +219,11 @@ public class ExciterObjectFactory {
 	/** Create a PSS/E REXSYS general-purpose rotating exciter. */
 	public static RexsysExciter createRexsysExciter(String id, RexsysData data, Machine machine) {
 		return new RexsysExciter(id, data, machine);
+	}
+
+	/** Create a PSS/E ESAC6A / IEEE AC6A rotating exciter. */
+	public static Esac6aExciter createEsac6aExciter(String id, Esac6aData data, Machine machine) {
+		return new Esac6aExciter(id, data, machine);
 	}
 	
 	/**
