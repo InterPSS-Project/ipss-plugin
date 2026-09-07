@@ -2,7 +2,9 @@ package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -23,6 +25,7 @@ import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter;
 import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter.Status;
 import org.junit.jupiter.api.Test;
@@ -89,6 +92,30 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         assertEquals(1, result.count(Status.REJECTED));
         assertSame(original, converter.getReeca1Controller().getWindControlStack()
                 .getDriveTrain());
+    }
+
+    @Test
+    void multiFileLoaderDoesNotConsumeSiblingPslfDyd(@TempDir Path tempDir)
+            throws Exception {
+        Path raw = tempDir.resolve("type3.raw");
+        Files.copy(Path.of("testData", "adpter", "psse", "v33", "SMIB",
+                "SMIB_v33.raw"), raw);
+        Path dyr = tempDir.resolve("type3.dyr");
+        Files.writeString(dyr,
+                "1 'REGCA1' 1 1 .02 10 .9 .4 1.22 1.2 .9 .5 -1.3 .02 0 100 -100 .7 /\n"
+                + "1 'REECA1' 1 0 0 1 1 0 0 .85 1.15 .02 0 0 5 1.1 -1.1 0 0 0 .5 .02 .436 -.436 1.1 .9 1.3 2.4 .6 1.5 0 .02 99 -99 1 0 1.3 .02 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 /\n");
+        Files.writeString(tempDir.resolve("type3.dyd"),
+                "wtgt_a 1 \"BUS 1\" 230.00 \"1\" : #9 0 4 1 .2 3.2 1\n");
+
+        PSSEMultiFileLoader pssELoader = new PSSEMultiFileLoader();
+        var pssEContext = pssELoader.loadDStab(raw.toString(), dyr.toString());
+        Regca1Model pssEConverter = (Regca1Model) ((DStabGen) pssEContext
+                .getDStabilityNet().getDStabBus("Bus1").getContributeGen("1"))
+                        .getDynamicGenDevice();
+        assertNull(pssEConverter.getReeca1Controller().getWindControlStack());
+        assertThrows(com.interpss.common.exp.InterpssException.class,
+                () -> new PSSEMultiFileLoader().loadDStab(raw.toString(),
+                        tempDir.resolve("type3.dyd").toString()));
     }
 
     @Test

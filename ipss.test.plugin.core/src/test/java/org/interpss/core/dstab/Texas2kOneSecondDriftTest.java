@@ -403,12 +403,12 @@ public class Texas2kOneSecondDriftTest {
                     .map(record -> record.rawText() + " /")
                     .collect(Collectors.joining(System.lineSeparator()));
             Files.writeString(effectiveDyr, filtered);
-            copySupplementalSibling(dyr, effectiveDyr, ".dyd");
             copySupplementalSibling(dyr, effectiveDyr, "_MODREMOVE.idv");
             System.out.println("Filtered DYR: " + effectiveDyr);
         }
-        var context = new PSSEMultiFileLoader().loadDStab(
-                raw.toString(), effectiveDyr.toString(), gnet.toString());
+        PSSEMultiFileLoader loader = new PSSEMultiFileLoader();
+        var context = loader.loadDStab(raw.toString(), effectiveDyr.toString(),
+                gnet.toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         if (Boolean.getBoolean("texas2k.drift.freezeElectricalControllers")) {

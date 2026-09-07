@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -48,10 +47,8 @@ public class Texas2kRegfma1CoverageTest {
         Path caseDir = ROOT.resolve("Texas2k_series24_case6_2024lowloadwithgfm");
         Path raw = caseDir.resolve("Texas2k_series24_case6_2024lowloadwithgfm.RAW");
         Path dyr = caseDir.resolve("dynamic_models_case6.dyr");
-        Path dyd = caseDir.resolve("dynamic_models_case6.dyd");
         assumeTrue(Files.isRegularFile(raw), "Missing private Texas2k RAW: " + raw);
         assumeTrue(Files.isRegularFile(dyr), "Missing private Texas2k DYR: " + dyr);
-        assumeTrue(Files.isRegularFile(dyd), "Missing private Texas2k DYD: " + dyd);
 
         List<PsseDyrRecord> records = PsseDyrRecordReader.read(dyr);
         StringBuilder machines = new StringBuilder();
@@ -81,11 +78,6 @@ public class Texas2kRegfma1CoverageTest {
         assertEquals(5, parser.getLastImportReport().totalRecordCount());
         assertEquals(5, parser.getLastImportReport().attachedCountsByModel().get("REGFMA1"));
 
-        // The companion PowerWorld export expands the same PSS/E record to
-        // TPf/TQf/TVf=.02, Re/Xe=0/.15 and Vflag/QVflag=0/0. This guards
-        // against shifting Vflag into TPf (and TVf into Xe) during import.
-        String powerWorld = Files.readString(dyd, Charset.forName("windows-1252"));
-        assertTrue(powerWorld.contains("mva=100 0.02 0.02 0.02 0 0.15 2 1.2"));
         network.getBusList().stream()
                 .flatMap(bus -> bus.getContributeGenList().stream())
                 .filter(DStabGen.class::isInstance)
