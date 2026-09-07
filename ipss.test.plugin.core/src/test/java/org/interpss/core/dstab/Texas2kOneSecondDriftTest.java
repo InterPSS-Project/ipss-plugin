@@ -2,6 +2,7 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -13,13 +14,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
-import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.RenewableElectricalController;
 import org.interpss.dstab.renewable.Repca1Model;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
+import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -79,6 +82,76 @@ public class Texas2kOneSecondDriftTest {
         assertFalse(selectedCases.isEmpty(), "No Texas2k case matches: " + caseFilter);
         assertAll("Texas2k one-second no-disturbance drift gates",
                 selectedCases.stream().map(source -> () -> verify(source)));
+    }
+
+    @Test
+    void case5ReportsPassiveDrivingPointImpedances() throws Exception {
+        assumeTrue(Boolean.getBoolean("texas2k.gridStrength.enabled"),
+                "Enable the private diagnostic with -Dtexas2k.gridStrength.enabled=true");
+        CaseFile source = CASES.get(4);
+        Path directory = ROOT.resolve(source.directory());
+        Path raw = directory.resolve(source.raw());
+        Path dyr = directory.resolve(source.dyr());
+        Path gnet = directory.resolve(source.gnet());
+        assumeTrue(Files.isRegularFile(raw), "Missing private Texas2k RAW: " + raw);
+        assumeTrue(Files.isRegularFile(dyr), "Missing private Texas2k DYR: " + dyr);
+        assumeTrue(Files.isRegularFile(gnet), "Missing private Texas2k GNET IDV: " + gnet);
+
+        var context = new PSSEMultiFileLoader().loadDStab(
+                raw.toString(), dyr.toString(), gnet.toString());
+        var network = context.getDStabilityNet();
+        network.setBypassDataCheck(true);
+        network.setAllowGenWithoutMach(true);
+        var loadflow = context.getDynSimuAlgorithm().getAclfAlgorithm();
+        loadflow.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+        loadflow.getDataCheckConfig().setTurnOffIslandBus(true);
+        loadflow.setNonDivergent(true);
+        loadflow.setMaxIterations(50);
+        loadflow.setTolerance(1.0e-8);
+        assertTrue(loadflow.loadflow(), () -> "Case 5 grid-strength load flow: "
+                + network.maxMismatch(AclfMethodType.NR));
+        ISparseEqnComplex y = network.formYMatrix();
+        network.getBusList().stream().filter(bus -> bus.isSwing()).forEach(bus ->
+                y.setA(new Complex(0.0, 1.0e10), bus.getSortNumber(), bus.getSortNumber()));
+        y.factorization(1.0e-20);
+
+        for (String busId : List.of("Bus1083", "Bus1011", "Bus1046", "Bus3051")) {
+            var bus = network.getBus(busId);
+            assertNotNull(bus, "Missing diagnostic bus " + busId);
+            y.setB2Zero();
+            y.setB2Unity(bus.getSortNumber());
+            y.solveEqn();
+            Complex z = y.getX(bus.getSortNumber());
+            System.out.printf(java.util.Locale.ROOT,
+                    "Texas2k Case 5 driving-point impedance %s: %.9g+j%.9g |Z|=%.9g pu%n",
+                    busId, z.getReal(), z.getImaginary(), z.abs());
+            assertTrue(Double.isFinite(z.abs()) && z.abs() > 0.0,
+                    "invalid driving-point impedance at " + busId + ": " + z);
+        }
+
+        List<String> interactingBuses = List.of(
+                "Bus1004", "Bus1006", "Bus1007", "Bus1009", "Bus1011", "Bus1016",
+                "Bus1021", "Bus1022", "Bus1023", "Bus1026", "Bus1027", "Bus1028",
+                "Bus1029", "Bus1030", "Bus1032", "Bus1033", "Bus1035", "Bus1036",
+                "Bus1037", "Bus1039", "Bus1040", "Bus1042", "Bus1043", "Bus1044",
+                "Bus1046", "Bus1055", "Bus1057", "Bus1061", "Bus1062", "Bus1063",
+                "Bus1083");
+        y.setB2Zero();
+        Complex perBusReactiveCurrent = new Complex(0.0, -1.0 / interactingBuses.size());
+        interactingBuses.forEach(busId -> y.setBi(perBusReactiveCurrent,
+                network.getBus(busId).getSortNumber()));
+        y.solveEqn();
+        Difference commonMode = interactingBuses.stream().map(busId -> {
+            var bus = network.getBus(busId);
+            Complex voltage = bus.getVoltage();
+            Complex deltaVoltage = y.getX(bus.getSortNumber());
+            double deltaMagnitude = deltaVoltage.multiply(voltage.conjugate()).getReal()
+                    / voltage.abs();
+            return new Difference(busId, Math.abs(deltaMagnitude));
+        }).max(java.util.Comparator.comparingDouble(Difference::value)).orElseThrow();
+        System.out.printf(java.util.Locale.ROOT,
+                "Texas2k Case 5 normalized common-Q voltage sensitivity: %.9g pu/pu@%s%n",
+                commonMode.value(), commonMode.id());
     }
 
     private static void verify(CaseFile source) throws Exception {
