@@ -94,22 +94,30 @@ public final class DynamicModelImportReport {
     public boolean isStrictlyComplete() {
         return totalRecordCount() > 0
                 && count(DynamicModelImportStatus.ATTACHED)
-                        + count(DynamicModelImportStatus.SKIPPED_GNET) == totalRecordCount();
+                        + count(DynamicModelImportStatus.SKIPPED_GNET)
+                        + count(DynamicModelImportStatus.SKIPPED_MODEL_REMOVE)
+                        == totalRecordCount();
     }
 
     public List<DynamicModelImportEntry> failures() {
         return entries.stream()
                 .filter(entry -> entry.status() != DynamicModelImportStatus.ATTACHED
                         && entry.status() != DynamicModelImportStatus.SKIPPED_GNET)
+                .filter(entry -> entry.status()
+                        != DynamicModelImportStatus.SKIPPED_MODEL_REMOVE)
                 .toList();
     }
 
     public String failureSummary() {
         if (isStrictlyComplete()) {
             int skipped = count(DynamicModelImportStatus.SKIPPED_GNET);
-            return skipped == 0 ? "all " + totalRecordCount() + " DYR records attached"
-                    : count(DynamicModelImportStatus.ATTACHED) + " DYR records attached, "
-                            + skipped + " intentionally skipped by GNET";
+            int removed = count(DynamicModelImportStatus.SKIPPED_MODEL_REMOVE);
+            if (skipped == 0 && removed == 0) {
+                return "all " + totalRecordCount() + " DYR records attached";
+            }
+            return count(DynamicModelImportStatus.ATTACHED) + " DYR records attached, "
+                    + skipped + " intentionally skipped by GNET, " + removed
+                    + " intentionally skipped by BAT_PLMOD_REMOVE";
         }
         String counts = java.util.Arrays.stream(DynamicModelImportStatus.values())
                 .filter(status -> count(status) > 0)

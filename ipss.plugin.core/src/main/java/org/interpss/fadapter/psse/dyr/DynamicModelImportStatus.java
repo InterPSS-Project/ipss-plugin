@@ -5,6 +5,8 @@ public enum DynamicModelImportStatus {
     ATTACHED,
     /** Source model is deliberately inapplicable because preprocessing disabled its device. */
     SKIPPED_GNET,
+    /** Source model is deliberately removed by a BAT_PLMOD_REMOVE type-1 command. */
+    SKIPPED_MODEL_REMOVE,
     UNSUPPORTED,
     REJECTED,
     MISSING_TARGET,

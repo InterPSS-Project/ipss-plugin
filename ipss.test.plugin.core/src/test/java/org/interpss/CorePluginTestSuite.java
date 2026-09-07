@@ -124,6 +124,7 @@ import org.interpss.core.adapter.psse.raw.acsc.IEEE39Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.acsc.IEEE9Bus_Acsc_Test;
 import org.interpss.core.adapter.psse.raw.dstab.IEEE9_Dstab_Adapter_Test;
 import org.interpss.core.adapter.psse.raw.dstab.PsseGnetIdvProcessorTest;
+import org.interpss.core.adapter.psse.raw.dstab.PsseModelRemoveIdvProcessorTest;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_FiveBus_NB_ExportImport_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_FiveBus_NB_TopoAnalysis_Test;
 import org.interpss.core.adapter.psse.raw.nbreaker.PSSE_IEEE14_NB_BusMerge_Test;
@@ -254,6 +255,7 @@ import org.junit.platform.suite.api.Suite;
 	IEEE9Bus_Acsc_Test.class,
 	IEEE39Bus_Acsc_Test.class,
 	PsseGnetIdvProcessorTest.class,
+	PsseModelRemoveIdvProcessorTest.class,
 	
 	// Dclf
 	Mod_SixBus_DclfPsXfr.class,
