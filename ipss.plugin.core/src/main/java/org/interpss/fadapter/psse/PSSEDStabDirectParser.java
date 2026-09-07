@@ -45,6 +45,7 @@ import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.ac1c.Ac1cData;
 import org.interpss.dstab.control.exc.psse.ac2c.Ac2cData;
 import org.interpss.dstab.control.exc.psse.ac3c.Ac3cData;
+import org.interpss.dstab.control.exc.psse.ac4c.Ac4cData;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
 import org.interpss.dstab.control.exc.psse.esurry.EsurryData;
 import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
@@ -311,6 +312,8 @@ public class PSSEDStabDirectParser {
                 return procExcAc2c(busId, genId, fields);
             case "AC3C":
                 return procExcAc3c(busId, genId, fields);
+            case "AC4C":
+                return procExcAc4c(busId, genId, fields);
             case "ESAC2A":
                 return procExcEsac2a(busId, genId, fields);
             case "ESAC6A":
@@ -1063,6 +1066,17 @@ public class PSSEDStabDirectParser {
         d.setKpr(getDouble(f,27,0));d.setKir(getDouble(f,28,0));d.setKdr(getDouble(f,29,0));d.setTdr(getDouble(f,30,0));
         d.setVpidmax(getDouble(f,31,0));d.setVpidmin(getDouble(f,32,0));
         return builder.addExcAc3c(busId,genId,d)!=null;
+    }
+
+    // AC4C: IBUS 'AC4C' ID OEL UEL Tr ViMax ViMin Tc Tb Ka Ta VrMax VrMin Kc.
+    // SCL is an IEEE/PowerWorld typed input and is not a PSS/E DYR field.
+    private boolean procExcAc4c(String busId,String genId,String[] f) {
+        if(f.length<15)return false;
+        Ac4cData d=new Ac4cData();d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
+        d.setTr(getDouble(f,5,0));d.setVimax(getDouble(f,6,0));d.setVimin(getDouble(f,7,0));
+        d.setTc(getDouble(f,8,0));d.setTb(getDouble(f,9,0));d.setKa(getDouble(f,10,0));
+        d.setTa(getDouble(f,11,0));d.setVrmax(getDouble(f,12,0));d.setVrmin(getDouble(f,13,0));
+        d.setKc(getDouble(f,14,0));return builder.addExcAc4c(busId,genId,d)!=null;
     }
 
     // ESAC2A: IBUS MODEL ID Tr Tb Tc Ka Ta VaMax VaMin Kb VrMax VrMin Te VfeMax Kh Kf Tf Kc Kd Ke E1 SE1 E2 SE2 [Spdmlt]
