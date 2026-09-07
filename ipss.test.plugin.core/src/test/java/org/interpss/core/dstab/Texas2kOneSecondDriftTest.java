@@ -15,6 +15,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
+import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
@@ -40,6 +43,13 @@ public class Texas2kOneSecondDriftTest {
     private static final double SPEED_DRIFT_LIMIT = 1.0e-7;
     private static final Set<String> RENEWABLE_MODELS = Set.of(
             "REGCA1", "REECA1", "REPCA1", "WTARA1", "WTPTA1", "WTTQA1", "REGFMA1");
+    private static final List<String> CASE5_INTERACTING_BUSES = List.of(
+            "Bus1004", "Bus1006", "Bus1007", "Bus1009", "Bus1011", "Bus1016",
+            "Bus1021", "Bus1022", "Bus1023", "Bus1026", "Bus1027", "Bus1028",
+            "Bus1029", "Bus1030", "Bus1032", "Bus1033", "Bus1035", "Bus1036",
+            "Bus1037", "Bus1039", "Bus1040", "Bus1042", "Bus1043", "Bus1044",
+            "Bus1046", "Bus1055", "Bus1057", "Bus1061", "Bus1062", "Bus1063",
+            "Bus1083");
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
             Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
                     "private_cases", "Texas2k_series24_cases_with_dynamics",
@@ -85,7 +95,7 @@ public class Texas2kOneSecondDriftTest {
     }
 
     @Test
-    void case5ReportsPassiveDrivingPointImpedances() throws Exception {
+    void case5ReportsControllerWeightedQvMode() throws Exception {
         assumeTrue(Boolean.getBoolean("texas2k.gridStrength.enabled"),
                 "Enable the private diagnostic with -Dtexas2k.gridStrength.enabled=true");
         CaseFile source = CASES.get(4);
@@ -129,19 +139,13 @@ public class Texas2kOneSecondDriftTest {
                     "invalid driving-point impedance at " + busId + ": " + z);
         }
 
-        List<String> interactingBuses = List.of(
-                "Bus1004", "Bus1006", "Bus1007", "Bus1009", "Bus1011", "Bus1016",
-                "Bus1021", "Bus1022", "Bus1023", "Bus1026", "Bus1027", "Bus1028",
-                "Bus1029", "Bus1030", "Bus1032", "Bus1033", "Bus1035", "Bus1036",
-                "Bus1037", "Bus1039", "Bus1040", "Bus1042", "Bus1043", "Bus1044",
-                "Bus1046", "Bus1055", "Bus1057", "Bus1061", "Bus1062", "Bus1063",
-                "Bus1083");
         y.setB2Zero();
-        Complex perBusReactiveCurrent = new Complex(0.0, -1.0 / interactingBuses.size());
-        interactingBuses.forEach(busId -> y.setBi(perBusReactiveCurrent,
+        Complex perBusReactiveCurrent = new Complex(0.0,
+                -1.0 / CASE5_INTERACTING_BUSES.size());
+        CASE5_INTERACTING_BUSES.forEach(busId -> y.setBi(perBusReactiveCurrent,
                 network.getBus(busId).getSortNumber()));
         y.solveEqn();
-        Difference commonMode = interactingBuses.stream().map(busId -> {
+        Difference commonMode = CASE5_INTERACTING_BUSES.stream().map(busId -> {
             var bus = network.getBus(busId);
             Complex voltage = bus.getVoltage();
             Complex deltaVoltage = y.getX(bus.getSortNumber());
@@ -152,6 +156,189 @@ public class Texas2kOneSecondDriftTest {
         System.out.printf(java.util.Locale.ROOT,
                 "Texas2k Case 5 normalized common-Q voltage sensitivity: %.9g pu/pu@%s%n",
                 commonMode.value(), commonMode.id());
+
+        double[][] coupling = new double[CASE5_INTERACTING_BUSES.size()]
+                [CASE5_INTERACTING_BUSES.size()];
+        for (int column = 0; column < CASE5_INTERACTING_BUSES.size(); column++) {
+            y.setB2Zero();
+            var injectionBus = network.getBus(CASE5_INTERACTING_BUSES.get(column));
+            y.setBi(new Complex(0.0, -1.0), injectionBus.getSortNumber());
+            y.solveEqn();
+            for (int row = 0; row < CASE5_INTERACTING_BUSES.size(); row++) {
+                var responseBus = network.getBus(CASE5_INTERACTING_BUSES.get(row));
+                Complex voltage = responseBus.getVoltage();
+                Complex deltaVoltage = y.getX(responseBus.getSortNumber());
+                coupling[row][column] = deltaVoltage.multiply(voltage.conjugate()).getReal()
+                        / voltage.abs();
+            }
+        }
+        var decomposition = new SingularValueDecomposition(
+                new Array2DRowRealMatrix(coupling, false));
+        double dominantValue = decomposition.getSingularValues()[0];
+        double[] responseMode = decomposition.getU().getColumn(0);
+        double[] injectionMode = decomposition.getV().getColumn(0);
+        List<ModeParticipation> dominantResponses = rankMode(responseMode);
+        List<ModeParticipation> dominantInjections = rankMode(injectionMode);
+        System.out.printf(java.util.Locale.ROOT,
+                "Texas2k Case 5 Q-to-|V| coupling dominant singular value: %.9g%n",
+                dominantValue);
+        System.out.println("  dominant voltage-response buses: " + dominantResponses);
+        System.out.println("  dominant reactive-injection buses: " + dominantInjections);
+        assertTrue(Double.isFinite(dominantValue) && dominantValue > 0.0,
+                "invalid dominant Q-to-|V| coupling singular value: " + dominantValue);
+
+        List<LinearQvDevice> devices = CASE5_INTERACTING_BUSES.stream()
+                .flatMap(busId -> network.getBus(busId).getContributeGenList().stream()
+                        .filter(DStabGen.class::isInstance).map(DStabGen.class::cast)
+                        .filter(DStabGen::isActive)
+                        .filter(gen -> gen.getDynamicGenDevice() instanceof Regca1Model)
+                        .map(gen -> new DeviceAtBus(busId, gen,
+                                (Regca1Model) gen.getDynamicGenDevice())))
+                .filter(item -> item.converter().getReeca1Controller() != null)
+                .filter(item -> item.converter().getReeca1Controller().getData().qFlag() == 1)
+                .filter(item -> item.converter().getReeca1Controller().getData().vFlag() == 1)
+                .map(item -> {
+                    Reeca1Model controller = item.converter().getReeca1Controller();
+                    Repca1Model plant = controller.getPlantController();
+                    assertNotNull(plant, "Missing REPCA1 for " + item.busId() + ":"
+                            + item.gen().getId());
+                    assertTrue(plant.getData().refFlag() == 1
+                                    && plant.getData().remoteBus() == 0
+                                    && plant.getData().branchFromBus() == 0
+                                    && plant.getData().branchToBus() == 0,
+                            "Linearization currently requires the Texas2k local-voltage "
+                                    + "REPCA1 profile at " + item.busId() + ":"
+                                    + item.gen().getId());
+                    double deviceBase = item.gen().getMvaBase() > 0.0
+                            ? item.gen().getMvaBase() : network.getBaseMva();
+                    double q0 = item.gen().getGen().getImaginary()
+                            * network.getBaseMva() / deviceBase;
+                    double v0 = network.getBus(item.busId()).getVoltageMag();
+                    return new LinearQvDevice(item.busId(), item.gen().getId(),
+                            CASE5_INTERACTING_BUSES.indexOf(item.busId()),
+                            deviceBase / network.getBaseMva(), v0, q0 / v0,
+                            item.converter().getData().tg(),
+                            controller.getData().kqp(), controller.getData().kqi(),
+                            controller.getData().kvp(), controller.getData().kvi(),
+                            plant.getData().tfltr(), plant.getData().kp(),
+                            plant.getData().ki(), plant.getData().tft(),
+                            plant.getData().tfv());
+                }).toList();
+        LinearMode qvMode = dominantLinearQvMode(coupling, devices);
+        System.out.printf(java.util.Locale.ROOT,
+                "Texas2k Case 5 unsaturated Q/V linearization: devices=%d max eigenvalue="
+                        + "%.9g%+.9gj 1/s%n",
+                devices.size(), qvMode.real(), qvMode.imaginary());
+        System.out.println("  dominant controller states: " + qvMode.participation());
+        assertTrue(Double.isFinite(qvMode.real()) && Double.isFinite(qvMode.imaginary()),
+                "invalid controller-weighted Q/V eigenvalue: " + qvMode);
+    }
+
+    private static List<ModeParticipation> rankMode(double[] vector) {
+        double maximum = java.util.Arrays.stream(vector).map(Math::abs).max().orElseThrow();
+        return java.util.stream.IntStream.range(0, vector.length)
+                .mapToObj(index -> new ModeParticipation(CASE5_INTERACTING_BUSES.get(index),
+                        Math.abs(vector[index]) / maximum, Math.signum(vector[index])))
+                .sorted(java.util.Comparator.comparingDouble(ModeParticipation::magnitude)
+                        .reversed())
+                .limit(10)
+                .toList();
+    }
+
+    /**
+     * Linearizes the local-voltage REPC_A loop, unsaturated QFLAG=1/VFLAG=1
+     * REEC_A cascade, and REGC_A reactive-current lag around the solved
+     * operating point. The passive coupling matrix maps system-base
+     * reactive-current injection to |V|.
+     * This intentionally excludes limit switching and active-power coupling;
+     * it is a localization diagnostic, not an acceptance stability model.
+     */
+    private static LinearMode dominantLinearQvMode(double[][] coupling,
+            List<LinearQvDevice> devices) {
+        int count = devices.size();
+        int statesPerDevice = 6;
+        double[][] state = new double[statesPerDevice * count][statesPerDevice * count];
+        for (int i = 0; i < count; i++) {
+            LinearQvDevice device = devices.get(i);
+            double tg = Math.max(1.0e-9, device.tg());
+            double tfltr = Math.max(1.0e-9, device.tfltr());
+            double tfv = Math.max(1.0e-9, device.tfv());
+            double leadRatio = device.tft() / tfv;
+            int base = statesPerDevice * i;
+            // REPC_A: filtered local voltage, Q-PI integral, and lead-lag state.
+            state[base][base] = -1.0 / tfltr;
+            state[base + 1][base] = -device.plantKi();
+            state[base + 2][base] = -device.plantKp() / tfv;
+            state[base + 2][base + 1] = 1.0 / tfv;
+            state[base + 2][base + 2] = -1.0 / tfv;
+
+            // qError = Qext - Qe, where Qext is the REPC_A lead-lag output.
+            double[] qError = new double[state.length];
+            qError[base] = -leadRatio * device.plantKp();
+            qError[base + 1] = leadRatio;
+            qError[base + 2] = 1.0 - leadRatio;
+            for (int j = 0; j < count; j++) {
+                LinearQvDevice source = devices.get(j);
+                double qSensitivity = device.iq0()
+                        * coupling[device.busIndex()][source.busIndex()] * source.systemScale();
+                if (i == j) qSensitivity += device.v0();
+                int sourceIq = statesPerDevice * j + 5;
+                qError[sourceIq] -= qSensitivity;
+                state[base][sourceIq] += coupling[device.busIndex()][source.busIndex()]
+                        * source.systemScale() / tfltr;
+            }
+            for (int column = 0; column < state.length; column++) {
+                state[base + 3][column] += device.kqi() * qError[column];
+                state[base + 4][column] +=
+                        device.kvi() * device.kqp() * qError[column];
+                state[base + 5][column] +=
+                        device.kvp() * device.kqp() * qError[column] / tg;
+            }
+            state[base + 4][base + 3] += device.kvi();
+            state[base + 5][base + 3] += device.kvp() / tg;
+            state[base + 5][base + 4] += 1.0 / tg;
+            state[base + 5][base + 5] -= 1.0 / tg;
+        }
+        EigenDecomposition decomposition = new EigenDecomposition(
+                new Array2DRowRealMatrix(state, false));
+        int dominant = java.util.stream.IntStream.range(0, state.length)
+                .boxed().max(java.util.Comparator.comparingDouble(
+                        decomposition::getRealEigenvalue)).orElseThrow();
+        double[] vector = decomposition.getEigenvector(dominant).toArray();
+        double[] vectorMagnitude = java.util.Arrays.stream(vector).map(Math::abs).toArray();
+        double imaginary = decomposition.getImagEigenvalue(dominant);
+        if (Math.abs(imaginary) > 1.0e-9) {
+            int conjugate = java.util.stream.IntStream.range(0, state.length)
+                    .filter(index -> index != dominant)
+                    .filter(index -> Math.abs(decomposition.getRealEigenvalue(index)
+                                    - decomposition.getRealEigenvalue(dominant)) < 1.0e-8
+                            && Math.abs(decomposition.getImagEigenvalue(index) + imaginary)
+                                    < 1.0e-8)
+                    .findFirst().orElseThrow();
+            double[] quadrature = decomposition.getEigenvector(conjugate).toArray();
+            for (int index = 0; index < vectorMagnitude.length; index++) {
+                vectorMagnitude[index] = Math.hypot(vector[index], quadrature[index]);
+            }
+        }
+        double maximum = java.util.Arrays.stream(vectorMagnitude).max().orElseThrow();
+        List<StateParticipation> participation = java.util.stream.IntStream
+                .range(0, vector.length)
+                .mapToObj(index -> new StateParticipation(
+                        devices.get(index / statesPerDevice).busId() + ":"
+                                + devices.get(index / statesPerDevice).unitId(),
+                        switch (index % statesPerDevice) {
+                            case 0 -> "REPCA_VFILT";
+                            case 1 -> "REPCA_Q_PI";
+                            case 2 -> "REPCA_LEAD_LAG";
+                            case 3 -> "REECA_Q_PI";
+                            case 4 -> "REECA_V_PI";
+                            default -> "REGCA_IQ";
+                        }, vectorMagnitude[index] / maximum))
+                .sorted(java.util.Comparator.comparingDouble(StateParticipation::magnitude)
+                        .reversed())
+                .limit(12).toList();
+        return new LinearMode(decomposition.getRealEigenvalue(dominant),
+                imaginary, participation);
     }
 
     private static void verify(CaseFile source) throws Exception {
@@ -439,6 +626,20 @@ public class Texas2kOneSecondDriftTest {
     }
 
     private record Difference(String id, double value) { }
+
+    private record ModeParticipation(String busId, double magnitude, double sign) { }
+
+    private record DeviceAtBus(String busId, DStabGen gen, Regca1Model converter) { }
+
+    private record LinearQvDevice(String busId, String unitId, int busIndex,
+            double systemScale, double v0, double iq0, double tg,
+            double kqp, double kqi, double kvp, double kvi,
+            double tfltr, double plantKp, double plantKi, double tft, double tfv) { }
+
+    private record StateParticipation(String deviceId, String state, double magnitude) { }
+
+    private record LinearMode(double real, double imaginary,
+            List<StateParticipation> participation) { }
 
     private static String deviceKey(org.interpss.fadapter.psse.dyr.PsseDyrRecord record) {
         return record.busNumber() + ":" + record.deviceId();
