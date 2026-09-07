@@ -47,6 +47,7 @@ import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
+import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
@@ -240,6 +241,8 @@ public class PSSEDStabDirectParser {
                 return procExcAc8b(busId, genId, fields);
             case "ESAC4A":
                 return procExcEsac4a(busId, genId, fields);
+            case "EXAC4":
+                return procExcExac4(busId, genId, fields);
             case "DC4B":
                 return procExcDc4b(record.sourceModelName(),busId,genId,fields);
             case "DC3A":
@@ -655,6 +658,15 @@ public class PSSEDStabDirectParser {
         d.setTc(getDouble(f,6,0));d.setTb(getDouble(f,7,0));d.setKa(getDouble(f,8,0));
         d.setTa(getDouble(f,9,0));d.setVrmax(getDouble(f,10,0));d.setVrmin(getDouble(f,11,0));
         d.setKc(getDouble(f,12,0));return builder.addExcEsac4a(busId,genId,d)!=null;
+    }
+
+    // EXAC4: Tr Vimax Vimin Tc Tb Ka Ta Vrmax Vrmin Kc.
+    private boolean procExcExac4(String busId,String genId,String[] f) {
+        if(f.length<13)return false;Exac4Data d=new Exac4Data();
+        d.setTr(getDouble(f,3,0));d.setVimax(getDouble(f,4,0));d.setVimin(getDouble(f,5,0));
+        d.setTc(getDouble(f,6,0));d.setTb(getDouble(f,7,0));d.setKa(getDouble(f,8,0));
+        d.setTa(getDouble(f,9,0));d.setVrmax(getDouble(f,10,0));d.setVrmin(getDouble(f,11,0));
+        d.setKc(getDouble(f,12,0));return builder.addExcExac4(busId,genId,d)!=null;
     }
 
     // DC3A: Tr Kv Vrmax Vrmin Trh Te Ke Vemin E1 SE1 E2 SE2
