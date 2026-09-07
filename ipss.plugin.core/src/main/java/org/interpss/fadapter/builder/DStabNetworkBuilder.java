@@ -76,6 +76,8 @@ import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
 import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
 import org.interpss.dstab.control.gov.psse.wpidhy.PsseWpidhydGovernor;
+import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernor;
+import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernorData;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
@@ -2062,6 +2064,24 @@ public class DStabNetworkBuilder {
         gov.getData().setTrate(trate);
         if (!gov.validateParameters()) {
             log.warn("Invalid WPIDHYD parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E GASTWDD Woodward gas-turbine governor. */
+    public PsseGastwddGovernor addGovGastwdd(String busId, String genId,
+            PsseGastwddGovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for GASTWDD governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseGastwddGovernor gov = GovernorObjectFactory.createPsseGASTWDDGovernor(
+                mach.getId() + "_Gov", "GASTWDD", mach);
+        gov.setData(data);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid GASTWDD parameters at {} {}", busId, genId);
             return null;
         }
         return gov;
