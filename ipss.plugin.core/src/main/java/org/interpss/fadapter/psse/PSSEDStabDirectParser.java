@@ -48,6 +48,7 @@ import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
+import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -248,6 +249,8 @@ public class PSSEDStabDirectParser {
                 return procExcExst1(busId, genId, fields);
             case "ESST1A":
                 return procExcEsst1a(busId, genId, fields);
+            case "ESST2A":
+                return procExcEsst2a(busId, genId, fields);
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
             case "EXAC1A":
@@ -653,6 +656,21 @@ public class PSSEDStabDirectParser {
             d.setKg(getDouble(f,18,0));d.setTg(getDouble(f,19,0));
         }
         return builder.addExcSt6b(busId,genId,sourceName,d)!=null;
+    }
+
+    // ESST2A: Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf Kp Ki Kc Efdmax.
+    // PSS/E fixes PowerWorld's optional UEL, Tb, and Tc extensions at zero.
+    private boolean procExcEsst2a(String busId, String genId, String[] f) {
+        if (f.length < 16) return false;
+        Esst2aData d = new Esst2aData();
+        d.setTr(getDouble(f, 3, 0)); d.setKa(getDouble(f, 4, 0));
+        d.setTa(getDouble(f, 5, 0)); d.setVrmax(getDouble(f, 6, 0));
+        d.setVrmin(getDouble(f, 7, 0)); d.setKe(getDouble(f, 8, 0));
+        d.setTe(getDouble(f, 9, 0)); d.setKf(getDouble(f, 10, 0));
+        d.setTf(getDouble(f, 11, 0)); d.setKp(getDouble(f, 12, 0));
+        d.setKi(getDouble(f, 13, 0)); d.setKc(getDouble(f, 14, 0));
+        d.setEfdmax(getDouble(f, 15, 0));
+        return builder.addExcEsst2a(busId, genId, d) != null;
     }
 
     // AC7B (27 values): TR KPR KIR KDR TDR VRMAX VRMIN KPA KIA VAMAX VAMIN

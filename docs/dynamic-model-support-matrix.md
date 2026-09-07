@@ -21,6 +21,7 @@ Generated from `DynamicModelCatalog`; do not edit model rows manually.
 | ESDC1A | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESDC1A.htm) |
 | ESDC2A | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESDC2A.htm) |
 | ESST1A | EXCITER |  | 20 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST1A%20and%20ESST1A_GE.htm) |
+| ESST2A | EXCITER |  | 13 | LOADABLE | `org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST2A.htm) |
 | ESST3A | EXCITER |  | 21 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST3A.htm) |
 | ESST4B | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST4B.htm) |
 | EXAC1 | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC1.htm) |
