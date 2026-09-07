@@ -103,6 +103,10 @@ public class Texas2kOneSecondDriftTest {
                             System.getProperty("texas2k.drift.renewableBuses", "").split(","))
                     .map(String::trim).filter(value -> !value.isEmpty())
                     .map(Integer::parseInt).collect(Collectors.toSet());
+            Set<String> selectedRenewableDevices = java.util.Arrays.stream(
+                            System.getProperty("texas2k.drift.renewableDevices", "").split(","))
+                    .map(String::trim).filter(value -> !value.isEmpty())
+                    .collect(Collectors.toSet());
             String selectedQFlag = System.getProperty("texas2k.drift.qFlag", "");
             Set<String> selectedQFlagDevices = selectedQFlag.isEmpty() ? Set.of()
                     : sourceRecords.stream()
@@ -115,8 +119,10 @@ public class Texas2kOneSecondDriftTest {
                     "texas2k.drift.onlySelectedRenewables");
             String filtered = sourceRecords.stream()
                     .filter(record -> (selectedRenewables.contains(record.canonicalModelName())
-                                    && (selectedRenewableBuses.isEmpty()
-                                            || selectedRenewableBuses.contains(record.busNumber()))
+                                    && ((selectedRenewableBuses.isEmpty()
+                                                    && selectedRenewableDevices.isEmpty())
+                                            || selectedRenewableBuses.contains(record.busNumber())
+                                            || selectedRenewableDevices.contains(deviceKey(record)))
                                     && (selectedQFlag.isEmpty()
                                             || selectedQFlagDevices.contains(deviceKey(record))))
                             || (!onlySelectedRenewables
