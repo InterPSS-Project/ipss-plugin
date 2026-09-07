@@ -375,6 +375,13 @@ public class Texas2kOneSecondDriftTest {
                             .filter(record -> record.parameters().get(3).equals(selectedQFlag))
                             .map(Texas2kOneSecondDriftTest::deviceKey)
                             .collect(Collectors.toSet());
+            String selectedPFlag = System.getProperty("texas2k.drift.pFlag", "");
+            Set<String> selectedPFlagDevices = selectedPFlag.isEmpty() ? Set.of()
+                    : sourceRecords.stream()
+                            .filter(record -> record.canonicalModelName().equals("REECA1"))
+                            .filter(record -> record.parameters().get(4).equals(selectedPFlag))
+                            .map(Texas2kOneSecondDriftTest::deviceKey)
+                            .collect(Collectors.toSet());
             effectiveDyr = Files.createTempFile("texas2k-conventional-", ".dyr");
             boolean onlySelectedRenewables = Boolean.getBoolean(
                     "texas2k.drift.onlySelectedRenewables");
@@ -385,7 +392,9 @@ public class Texas2kOneSecondDriftTest {
                                             || selectedRenewableBuses.contains(record.busNumber())
                                             || selectedRenewableDevices.contains(deviceKey(record)))
                                     && (selectedQFlag.isEmpty()
-                                            || selectedQFlagDevices.contains(deviceKey(record))))
+                                            || selectedQFlagDevices.contains(deviceKey(record)))
+                                    && (selectedPFlag.isEmpty()
+                                            || selectedPFlagDevices.contains(deviceKey(record))))
                             || (!onlySelectedRenewables
                                     && !RENEWABLE_MODELS.contains(record.canonicalModelName())))
                     .map(record -> record.rawText() + " /")
