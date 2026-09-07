@@ -28,8 +28,8 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
 
     @Test
     void aggregateProfileIsStationaryAndRecoversFromThreeCyclePoiFault() throws Exception {
-        RunResult aggregate = run(30, false);
-        RunResult faulted = run(30, true);
+        RunResult aggregate = run(30, false, .20, STEP);
+        RunResult faulted = run(30, true, .20, STEP);
 
         System.out.printf(java.util.Locale.ROOT,
                 "Renewable aggregate Q/V mode: thirtyPlants=%.9g faultMin=%.9g "
@@ -44,7 +44,27 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "aggregate renewable voltage must recover after clearing");
     }
 
-    private static RunResult run(int plantCount, boolean withFault) throws Exception {
+    @Test
+    void weakGridProfileExposesNoEventGrowthForReferenceComparison() throws Exception {
+        RunResult strongerGrid = run(30, false, .8, STEP);
+        RunResult weakGrid = run(30, false, 1.2, STEP);
+        RunResult weakGridFineStep = run(30, false, 1.2, 1.0 / 960.0);
+
+        System.out.printf(java.util.Locale.ROOT,
+                "Renewable aggregate Q/V grid strength: x=.8 drift=%.9g "
+                        + "x=1.2 drift=%.9g x=1.2/fine drift=%.9g%n",
+                strongerGrid.maximumVoltageDrift(), weakGrid.maximumVoltageDrift(),
+                weakGridFineStep.maximumVoltageDrift());
+        assertTrue(strongerGrid.maximumVoltageDrift() < 1.0e-6,
+                "stronger-grid flat-run drift " + strongerGrid.maximumVoltageDrift());
+        assertTrue(weakGrid.maximumVoltageDrift() > 1.0e-5,
+                "weak-grid mode was not reproduced at the production step");
+        assertTrue(weakGridFineStep.maximumVoltageDrift() > 1.0e-5,
+                "weak-grid mode disappeared at the finer step");
+    }
+
+    private static RunResult run(int plantCount, boolean withFault, double gridReactance,
+            double simulationStep) throws Exception {
         DStabilityNetwork network = DStabObjectFactory.createDStabilityNetwork();
         network.setBaseKva(100000.0);
         AclfNetworkBuilder topology = new AclfNetworkBuilder(network);
@@ -58,7 +78,7 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         topology.addBus("Poi", "Common POI", 2L, 230000.0, 1.0, 0.0,
                 null, null, null);
         topology.setNonGenBus("Poi");
-        topology.addLine("Poi", "Grid", "1", new Complex(.01, .20), Complex.ZERO,
+        topology.addLine("Poi", "Grid", "1", new Complex(.01, gridReactance), Complex.ZERO,
                 null, null, 0, 0, 0, true);
 
         for (int i = 1; i <= plantCount; i++) {
@@ -84,7 +104,7 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
 
         DynamicSimuAlgorithm algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(STEP);
+        algorithm.setSimuStepSec(simulationStep);
         algorithm.setTotalSimuTimeSec(withFault ? .5 : 1.0);
         algorithm.setOutPutPerSteps(1);
         StateMonitor monitor = new StateMonitor();
