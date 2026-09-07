@@ -2,6 +2,7 @@ package org.interpss.core.dstab.cml.block;
 
 import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.Limit;
 import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.NonWindup;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -30,17 +31,17 @@ public class FilterControlBlockTests {
 		assertTrue(Math.abs(block.getStateX()-0.9) < 0.0001);
 		assertTrue(Math.abs(block.getY()-1.0) < 0.0001);
 
-		/* 
-		 * u = 2.0, x(0) = 0.9, K = 1.0, dt = 0.01, T1 = 0.1, T2=1.0
-		 * dXdt1 = (K(1-T1/T2)u-x(0))/T2 = [1.0(1.0-0.1/1.0)*2.0 - 1.0]/1.0 = 0.9
-		 * X(1) = x(0) + dXdt*dt = 0.9 + 0.9 * 0.01 = 0.909
-		 * dXdt2 = [1.0(1.0-0.1/1.0)*2.0 - 0.909]/1.0 = 0.981
-		 * X1 = x(0) + 0.5*(dXdt1+dXdt2)*dt = 0.9 + 0.5 * (0.9 + 0.891) * 0.01 = 0.908955
+		/*
+		 * The unconstrained CML lead-lag uses the implicit trapezoidal
+		 * corrector on its lag state, with input gain K*(1-T1/T2).
 		 */
 		u = 2.0;
 		block.eulerStep1(u, dt);
 		block.eulerStep2(u, dt);
-		assertTrue(Math.abs(block.getStateX()-0.908955) < 0.0001);
+		double inputGain = 1.0 * (1.0 - 0.1 / 1.0);
+		double expected = ((2.0 * 1.0 - dt) * 0.9
+				+ dt * inputGain * (1.0 + u)) / (2.0 * 1.0 + dt);
+		assertEquals(expected, block.getStateX(), 1.0e-12);
 
 		for (int i = 0; i < 1000; i++) {
 			block.eulerStep1(u, dt);
