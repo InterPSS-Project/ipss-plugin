@@ -16,7 +16,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 /** IEEE 421.5-2005 Type ST2A compound-source rectifier excitation system. */
 @AnController(input = "mach.vt", output = "this.outputSignal",
         refPoint = "this.reference", display = {})
-public final class Esst2aExciter extends AnnotateExciter implements IntegrationStepAware {
+public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAware {
     private static final double EPS = 1.0e-12;
     private static final int EFD = 0, VSENSE = 1, VR = 2, VF_FILTER = 3, LEAD_LAG = 4;
 
@@ -27,24 +27,37 @@ public final class Esst2aExciter extends AnnotateExciter implements IntegrationS
     private double[] active = state;
     private boolean initialized;
     private boolean hasVuel;
+    private boolean hasVoel;
+    private final boolean additiveBridge;
+    private final boolean bothLimitersAtError;
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
     private double vuel;
+    private double voel;
 
     public double tr, ka, ta, vrmax, vrmin, ke, te, kf, tf, kp, ki, kc, efdmax;
     public int uel;
     public double tb, tc, reference, outputSignal;
 
     public Esst2aExciter(String id, Esst2aData data, Machine machine) {
-        super(id, "ESST2A", "IEEE");
+        this(id, "ESST2A", data, machine, false, false);
+    }
+
+    protected Esst2aExciter(String id, String modelName, Esst2aData data,
+            Machine machine, boolean additiveBridge, boolean bothLimitersAtError) {
+        super(id, modelName, "IEEE");
         this.data = data;
         this._data = data;
+        this.additiveBridge = additiveBridge;
+        this.bothLimitersAtError = bothLimitersAtError;
         setMachine(machine);
     }
 
     public Esst2aData getData() { return data; }
     public void setVuel(double value) { vuel = value; hasVuel = true; }
     public double getVuel() { return vuel; }
+    public void setVoel(double value) { voel = value; hasVoel = true; }
+    public double getVoel() { return voel; }
 
     @Override public void configureIntegrationStep(double stepSeconds) {
         configureIntegrationStep(stepSeconds, 1.0);
@@ -62,10 +75,11 @@ public final class Esst2aExciter extends AnnotateExciter implements IntegrationS
         double efd0 = machine.getEfd();
         double vt0 = machine.getDStabBus().getVoltageMag();
         double vb0 = bridgeVoltage(machine);
-        if (!Double.isFinite(efd0) || !Double.isFinite(vt0) || vb0 <= EPS) return false;
+        if (!Double.isFinite(efd0) || !Double.isFinite(vt0)
+                || (!additiveBridge && vb0 <= EPS)) return false;
         if (efd0 < -EPS || (te <= EPS && Math.abs(ke) <= EPS)) return false;
 
-        double vr0 = ke * efd0 / vb0;
+        double vr0 = additiveBridge ? ke * efd0 - vb0 : ke * efd0 / vb0;
         double error0 = vr0 / ka;
         vrmax = Math.max(vrmax, vr0);
         vrmin = Math.min(vrmin, vr0);
@@ -79,8 +93,10 @@ public final class Esst2aExciter extends AnnotateExciter implements IntegrationS
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
 
-        double uelAdd = uel < 2 && hasVuel ? vuel : 0.0;
-        reference = error0 + vt0 - stabilizerSignal(machine) - uelAdd;
+        double limiterAdd = bothLimitersAtError
+                ? (hasVuel ? vuel : 0.0) + (hasVoel ? voel : 0.0)
+                : (uel < 2 && hasVuel ? vuel : 0.0);
+        reference = error0 + vt0 - stabilizerSignal(machine) - limiterAdd;
         outputSignal = efd0;
         initialized = true;
         return true;
@@ -88,12 +104,15 @@ public final class Esst2aExciter extends AnnotateExciter implements IntegrationS
 
     private void loadAndCorrectParameters() {
         tr = correctedBypass(data.getTr());
+        if (additiveBridge) tr = Math.min(tr, 0.5);
         ka = data.getKa() == 0.0 ? minimumTimeConstantMultiplier * integrationStep : data.getKa();
         ta = correctedBypass(data.getTa());
         vrmax = Math.max(data.getVrmax(), data.getVrmin());
         vrmin = Math.min(data.getVrmax(), data.getVrmin());
-        ke = data.getKe(); te = correctedBypass(data.getTe());
-        kf = data.getKf(); tf = correctedBypass(data.getTf());
+        ke = data.getKe(); te = additiveBridge
+                ? correctedRequired(data.getTe()) : correctedBypass(data.getTe());
+        kf = data.getKf(); tf = additiveBridge
+                ? correctedRequired(data.getTf()) : correctedBypass(data.getTf());
         kp = data.getKp(); ki = data.getKi(); kc = data.getKc();
         efdmax = data.getEfdmax(); uel = data.getUel();
         tb = correctedBypass(data.getTb()); tc = data.getTc();
@@ -104,6 +123,11 @@ public final class Esst2aExciter extends AnnotateExciter implements IntegrationS
         if (value > 0.0 && value < 0.5 * minimum) return 0.0;
         if (value > 0.5 * minimum && value < minimum) return minimum;
         return value;
+    }
+
+    private double correctedRequired(double value) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        return value > 0.0 && value < minimum ? minimum : value;
     }
 
     @Override public boolean nextStep(double dt, DynamicSimuMethod method,
@@ -147,7 +171,8 @@ public final class Esst2aExciter extends AnnotateExciter implements IntegrationS
                 || (x[VR] <= vrmin + EPS && vrRate < 0.0)) vrRate = 0.0;
         derivative[VR] = vrRate;
 
-        double efdRate = te > EPS ? (a.vr * a.vb - ke * x[EFD]) / te : 0.0;
+        double drive = additiveBridge ? a.vr + a.vb : a.vr * a.vb;
+        double efdRate = te > EPS ? (drive - ke * x[EFD]) / te : 0.0;
         if ((x[EFD] >= efdmax - EPS && efdRate > 0.0)
                 || (x[EFD] <= EPS && efdRate < 0.0)) efdRate = 0.0;
         derivative[EFD] = efdRate;
@@ -158,13 +183,17 @@ public final class Esst2aExciter extends AnnotateExciter implements IntegrationS
         double sensed = tr > EPS ? x[VSENSE] : vt;
         double efd = te > EPS ? x[EFD] : algebraicEfd(x[VR], machine);
         double vf = tf > EPS ? kf * (efd - x[VF_FILTER]) / tf : 0.0;
-        double leadLagInput = reference - sensed + stabilizerSignal(machine) - vf
-                + (uel < 2 && hasVuel ? vuel : 0.0);
-        if (uel == 2 && hasVuel) leadLagInput = Math.max(leadLagInput, vuel);
+        double leadLagInput = reference - sensed + stabilizerSignal(machine) - vf;
+        if (bothLimitersAtError) {
+            leadLagInput += (hasVuel ? vuel : 0.0) + (hasVoel ? voel : 0.0);
+        } else {
+            leadLagInput += uel < 2 && hasVuel ? vuel : 0.0;
+            if (uel == 2 && hasVuel) leadLagInput = Math.max(leadLagInput, vuel);
+        }
         double leadLagOutput = tb > EPS
                 ? (tc / tb) * leadLagInput + (1.0 - tc / tb) * x[LEAD_LAG]
                 : leadLagInput;
-        double regulatorInput = uel == 3 && hasVuel
+        double regulatorInput = !bothLimitersAtError && uel == 3 && hasVuel
                 ? Math.max(leadLagOutput, vuel) : leadLagOutput;
         double vr = ta > EPS ? x[VR] : clamp(ka * regulatorInput, vrmin, vrmax);
         double vb = bridgeVoltage(machine);
@@ -174,7 +203,9 @@ public final class Esst2aExciter extends AnnotateExciter implements IntegrationS
 
     private double algebraicEfd(double vr, Machine machine) {
         if (Math.abs(ke) <= EPS) return 0.0;
-        return clamp(vr * bridgeVoltage(machine) / ke, 0.0, efdmax);
+        double vb = bridgeVoltage(machine);
+        double drive = additiveBridge ? vr + vb : vr * vb;
+        return clamp(drive / ke, 0.0, efdmax);
     }
 
     private void constrain(double[] values) {

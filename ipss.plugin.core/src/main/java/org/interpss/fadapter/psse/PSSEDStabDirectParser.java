@@ -53,6 +53,7 @@ import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
+import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
 import org.interpss.dstab.control.exc.psse.st5b.St5bData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -264,6 +265,8 @@ public class PSSEDStabDirectParser {
                 return procExcEsst1a(busId, genId, fields);
             case "ESST2A":
                 return procExcEsst2a(busId, genId, fields);
+            case "EXST2":
+                return procExcExst2(busId, genId, fields);
             case "ST5B":
                 return procExcSt5b(record.sourceModelName(), busId, genId, fields);
             case "EXAC1":
@@ -739,6 +742,21 @@ public class PSSEDStabDirectParser {
         d.setKi(getDouble(f, 13, 0)); d.setKc(getDouble(f, 14, 0));
         d.setEfdmax(getDouble(f, 15, 0));
         return builder.addExcEsst2a(busId, genId, d) != null;
+    }
+
+    // EXST2: Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf Kp Ki Kc Efdmax.
+    // PSS/E omits PowerWorld/PSLF's optional Tb and Tc fields.
+    private boolean procExcExst2(String busId, String genId, String[] f) {
+        if (f.length < 16) return false;
+        Exst2Data d = new Exst2Data();
+        d.setTr(getDouble(f, 3, 0)); d.setKa(getDouble(f, 4, 0));
+        d.setTa(getDouble(f, 5, 0)); d.setVrmax(getDouble(f, 6, 0));
+        d.setVrmin(getDouble(f, 7, 0)); d.setKe(getDouble(f, 8, 0));
+        d.setTe(getDouble(f, 9, 0)); d.setKf(getDouble(f, 10, 0));
+        d.setTf(getDouble(f, 11, 0)); d.setKp(getDouble(f, 12, 0));
+        d.setKi(getDouble(f, 13, 0)); d.setKc(getDouble(f, 14, 0));
+        d.setEfdmax(getDouble(f, 15, 0));
+        return builder.addExcExst2(busId, genId, d) != null;
     }
 
     // ST5B: Tr Tc1 Tb1 Tc2 Tb2 Kr Vrmax Vrmin T1 Kc Tuc1 Tub1 Tuc2 Tub2 Toc1 Tob1 Toc2 Tob2
