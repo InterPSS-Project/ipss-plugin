@@ -87,9 +87,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         double v = Math.max(0.01, getDStabBus().getVoltageMag());
         double frequency = getDStabBus().getFreq();
         // The enclosing DStab solver invokes flag 0 and flag 1 for one modified-Euler
-        // step. Advance the composed controls once; flag 1 only corrects REGC_A states.
+        // step. Deliver both stages to the composed control so stage-aware REEC/REPC
+        // implementations can sample the corrected network endpoint. The interface
+        // default preserves the former predictor-only behavior for legacy controls.
         RenewableElectricalController controller = activeController();
-        if (flag == 0) controller.step(dt, p, q, v, frequency);
+        controller.step(dt, p, q, v, frequency, flag);
         double ipcmd = controller.getIpcmd();
         double iqcmd = controller.getIqcmd();
 
