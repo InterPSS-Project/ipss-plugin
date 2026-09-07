@@ -49,6 +49,7 @@ import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
+import org.interpss.dstab.control.exc.psse.st5b.St5bData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -251,6 +252,8 @@ public class PSSEDStabDirectParser {
                 return procExcEsst1a(busId, genId, fields);
             case "ESST2A":
                 return procExcEsst2a(busId, genId, fields);
+            case "ST5B":
+                return procExcSt5b(record.sourceModelName(), busId, genId, fields);
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
             case "EXAC1A":
@@ -671,6 +674,33 @@ public class PSSEDStabDirectParser {
         d.setKi(getDouble(f, 13, 0)); d.setKc(getDouble(f, 14, 0));
         d.setEfdmax(getDouble(f, 15, 0));
         return builder.addExcEsst2a(busId, genId, d) != null;
+    }
+
+    // ST5B: Tr Tc1 Tb1 Tc2 Tb2 Kr Vrmax Vrmin T1 Kc Tuc1 Tub1 Tuc2 Tub2 Toc1 Tob1 Toc2 Tob2
+    // ESST5B: Tr Kr T1 Kc Vrmax Vrmin Tc1 Tb1 Tc2 Tb2 Toc1 Tob1 Toc2 Tob2 Tuc1 Tub1 Tuc2 Tub2
+    private boolean procExcSt5b(String sourceName, String busId, String genId, String[] f) {
+        if (f.length < 21) return false;
+        St5bData d = new St5bData(); d.setTr(getDouble(f, 3, 0));
+        if ("ESST5B".equalsIgnoreCase(sourceName)) {
+            d.setKr(getDouble(f,4,0));d.setT1(getDouble(f,5,0));d.setKc(getDouble(f,6,0));
+            d.setVrmax(getDouble(f,7,0));d.setVrmin(getDouble(f,8,0));
+            d.setTc1(getDouble(f,9,0));d.setTb1(getDouble(f,10,0));
+            d.setTc2(getDouble(f,11,0));d.setTb2(getDouble(f,12,0));
+            d.setToc1(getDouble(f,13,0));d.setTob1(getDouble(f,14,0));
+            d.setToc2(getDouble(f,15,0));d.setTob2(getDouble(f,16,0));
+            d.setTuc1(getDouble(f,17,0));d.setTub1(getDouble(f,18,0));
+            d.setTuc2(getDouble(f,19,0));d.setTub2(getDouble(f,20,0));
+        } else {
+            d.setTc1(getDouble(f,4,0));d.setTb1(getDouble(f,5,0));
+            d.setTc2(getDouble(f,6,0));d.setTb2(getDouble(f,7,0));
+            d.setKr(getDouble(f,8,0));d.setVrmax(getDouble(f,9,0));
+            d.setVrmin(getDouble(f,10,0));d.setT1(getDouble(f,11,0));d.setKc(getDouble(f,12,0));
+            d.setTuc1(getDouble(f,13,0));d.setTub1(getDouble(f,14,0));
+            d.setTuc2(getDouble(f,15,0));d.setTub2(getDouble(f,16,0));
+            d.setToc1(getDouble(f,17,0));d.setTob1(getDouble(f,18,0));
+            d.setToc2(getDouble(f,19,0));d.setTob2(getDouble(f,20,0));
+        }
+        return builder.addExcSt5b(busId, genId, sourceName, d) != null;
     }
 
     // AC7B (27 values): TR KPR KIR KDR TDR VRMAX VRMIN KPA KIA VAMAX VAMIN
