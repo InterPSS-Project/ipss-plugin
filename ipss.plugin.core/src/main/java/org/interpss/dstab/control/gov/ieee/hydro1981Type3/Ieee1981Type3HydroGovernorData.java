@@ -18,6 +18,9 @@ public class Ieee1981Type3HydroGovernorData extends BaseControllerData {
 		private double a13  = 1.0;
 		private double a21  = 1.5;
 		private double a23  = 1.0;
+		private double dbH  = 0.0;
+		private double dbL  = 0.0;
+		private double trate = 0.0;
 		/**
 		 * @return the pmax
 		 */
@@ -166,6 +169,24 @@ public class Ieee1981Type3HydroGovernorData extends BaseControllerData {
 		public void setA23(double a23) {
 			this.a23 = a23;
 		}
+		public double getDbH() {
+			return dbH;
+		}
+		public void setDbH(double dbH) {
+			this.dbH = dbH;
+		}
+		public double getDbL() {
+			return dbL;
+		}
+		public void setDbL(double dbL) {
+			this.dbL = dbL;
+		}
+		public double getTrate() {
+			return trate;
+		}
+		public void setTrate(double trate) {
+			this.trate = trate;
+		}
 		@Override
 		public void setValue(String name, double value) {
 			if(name.equalsIgnoreCase("pmax"))
@@ -196,6 +217,12 @@ public class Ieee1981Type3HydroGovernorData extends BaseControllerData {
 				a21  = value;
 		    else if(name.equalsIgnoreCase("a23"))
 				a23  = value;
+		    else if(name.equalsIgnoreCase("dbH"))
+				dbH = value;
+		    else if(name.equalsIgnoreCase("dbL"))
+				dbL = value;
+		    else if(name.equalsIgnoreCase("trate"))
+				trate = value;
 			
 		}
 		@Override
