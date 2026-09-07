@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.interpss.dstab.dynLoad.LD1PAC;
@@ -117,6 +118,12 @@ public class PSSEDStabDirectParser {
     }
 
     public BaseDStabNetwork<?, ?> parseDynFile(String dynFilePath) throws InterpssException {
+        String fileName = Path.of(dynFilePath).getFileName().toString()
+                .toLowerCase(Locale.ROOT);
+        if (fileName.endsWith(".dyd")) {
+            throw new InterpssException("GE PSLF .dyd is not PSS/E DYR input: "
+                    + dynFilePath);
+        }
         try {
             parseDynData(PsseDyrRecordReader.read(Path.of(dynFilePath)), dynFilePath);
         } catch (IOException e) {

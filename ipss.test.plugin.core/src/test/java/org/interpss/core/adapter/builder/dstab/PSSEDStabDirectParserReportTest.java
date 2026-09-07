@@ -23,6 +23,19 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     Path tempDir;
 
     @Test
+    void directPssEDynamicParserRejectsPslfDydInput() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyd = tempDir.resolve("wrong-format.dyd");
+        Files.writeString(dyd, "wtgt_a 1 \"BUS 1\" 230.00 \"1\" : #9 0 4 1 .2 3.2 1\n");
+
+        InterpssException error = assertThrows(InterpssException.class,
+                () -> new PSSEDStabDirectParser(builder).parseDynFile(dyd.toString()));
+
+        assertTrue(error.getMessage().contains("GE PSLF .dyd is not PSS/E DYR input"));
+        assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1"));
+    }
+
+    @Test
     void strictImportPassesWhenEverySourceRecordIsAttached() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("complete.dyr");
