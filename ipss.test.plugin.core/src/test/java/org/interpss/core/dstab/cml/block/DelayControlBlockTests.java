@@ -2,6 +2,7 @@ package org.interpss.core.dstab.cml.block;
 
 import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.Limit;
 import static com.interpss.dstab.controller.cml.field.ICMLStaticBlock.StaticBlockType.NonWindup;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -31,17 +32,16 @@ public class DelayControlBlockTests {
 		
 		assertTrue(Math.abs(block.getStateX()-1.0) < 0.0001);
 
-		/* 
-		 * u = 2.0, x(0) = 1.0, K = 1.0, dt = 0.01, T = 0.1
-		 * dXdt1 = (Ku-x(0))/T = [1.0*2.0 - 1.0]/0.1 = 10.0
-		 * X(1) = x(0) + dXdt*dt = 1.0 + 10.0 * 0.01 = 1.1
-		 * dXdt2 = [1.0*2.0 - 1.1]/0.1 = 9.0
-		 * X1 = x(0) + 0.5*(dXdt1+dXdt2)*dt = 1.0 + 0.5 * (10.0 + 9.0) * 0.01 = 1.095
+		/*
+		 * The unconstrained CML lag uses the implicit trapezoidal corrector:
+		 * x1 = ((2T-dt)x0 + dt*K*(u0+u1))/(2T+dt).
 		 */
 		u = 2.0;
 		block.eulerStep1(u, dt);
 		block.eulerStep2(u, dt);
-		assertTrue(Math.abs(block.getStateX()-1.095) < 0.0001);
+		double expected = ((2.0 * 0.1 - dt) * 1.0
+				+ dt * 1.0 * (1.0 + u)) / (2.0 * 0.1 + dt);
+		assertEquals(expected, block.getStateX(), 1.0e-12);
 
 		for (int i = 0; i < 1000; i++) {
 			block.eulerStep1(u, dt);
