@@ -10,8 +10,13 @@ trajectory comparison. Those acceptance results are tracked in
 cases are currently loadable, but only Cases 1 and 2 pass the strict one-second
 flat-run gate; the Texas2k verification milestone remains open.
 
-Current Texas2k audit checkpoint (`5aceb69b9`, 2026-09-07): `17/17` source
-model names are loadable, `6/6` prepared cases pass the short flat and common
+Current Texas2k audit checkpoint (`d8b64b3b5`, 2026-09-07): `17/17` PSS/E DYR
+model names are loadable, but this is not complete supplied-source coverage.
+The sibling PowerWorld DYD files additionally contain `WTGT_A` drive trains
+(85 records per case in Cases 1–2 and 184 per case in Cases 3–6); InterPSS does
+not yet implement/import the equivalent `WTDTA1`/`WTDTAU1` model. The existing
+direct-coupling behavior is explicitly a DYR-only fallback. Separately, `6/6`
+prepared cases pass the short flat and common
 Bus-7159 fault execution smokes, `2/6` pass the strict one-second flat-run gate,
 `0/6` have completed the required location-specific fault acceptance matrix,
 and `0/6` have full-stack independent trajectory acceptance. See the plan's
