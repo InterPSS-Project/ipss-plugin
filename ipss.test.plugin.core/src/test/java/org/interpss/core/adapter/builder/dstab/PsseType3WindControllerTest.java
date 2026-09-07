@@ -411,6 +411,54 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         assertEquals(.625, model.getPref(), 1.0e-11);
     }
 
+    @Test
+    void stagedTorquePowerModeUsesCorrectedPowerSpeedAndReference() {
+        Wttqa1Model model = torqueController(1, 1, 2, .2, 0, 10, 0);
+        model.initialize(.5);
+        double initialIntegral = model.getTorqueIntegral();
+
+        model.step(.1, .7, .8, .6, false, 0);
+        assertEquals(.6, model.getFilteredPower(), 1.0e-12);
+        assertEquals(initialIntegral + .025, model.getTorqueIntegral(), 1.0e-12);
+
+        model.step(.1, .6, .82, .65, false, 1);
+        double d0Integral = 2.0 * ((.6 - .5) / .8);
+        double d1Integral = 2.0 * ((.65 - .6) / .82);
+        double expectedIntegral = initialIntegral + .05 * (d0Integral + d1Integral);
+        double expectedTorque = expectedIntegral + (.65 - .55) / .82;
+        assertEquals(.55, model.getFilteredPower(), 1.0e-12);
+        assertEquals(expectedIntegral, model.getTorqueIntegral(), 1.0e-12);
+        assertEquals(expectedTorque, model.getTorque(), 1.0e-12);
+        assertEquals(expectedTorque * .82, model.getPref(), 1.0e-12);
+    }
+
+    @Test
+    void stagedTorqueSpeedModeCorrectsThePowerToSpeedFilterCascade() {
+        Wttqa1Model model = torqueController(0, 1, 0, .2, .4, 10, 0);
+        model.initialize(.5);
+        double initialTorque = model.getTorque();
+
+        model.step(.1, .7, .79, .5, false, 0);
+        assertEquals(.6, model.getFilteredPower(), 1.0e-12);
+        assertEquals(.79, model.getSpeedReference(), 1.0e-12);
+
+        model.step(.1, .6, .75, .5, false, 1);
+        double expectedSpeedReference = .79 + .05 * ((.86 - .79) / .4);
+        assertEquals(.55, model.getFilteredPower(), 1.0e-12);
+        assertEquals(expectedSpeedReference, model.getSpeedReference(), 1.0e-12);
+        assertEquals(initialTorque + expectedSpeedReference - .75,
+                model.getTorque(), 1.0e-12);
+    }
+
+    @Test
+    void stagedTorqueCorrectorRequiresPredictor() {
+        Wttqa1Model model = torqueController(1, 1, 2, .2, 0, 10, 0);
+        model.initialize(.5);
+
+        assertThrows(IllegalStateException.class,
+                () -> model.step(.1, .5, .79, .5, false, 1));
+    }
+
     private static double modifiedEulerLag(double state, double input,
             double timeConstant, double dt) {
         double initialDerivative = (input - state) / timeConstant;
