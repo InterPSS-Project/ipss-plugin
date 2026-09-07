@@ -2,6 +2,14 @@
 
 Generated from `DynamicModelCatalog`; do not edit model rows manually.
 
+`LOADABLE` means that a catalog entry, parser path, and runtime class exist. It
+does **not** mean that the model has passed equation conformance, a stationary
+flat run, a representative disturbance matrix, or an independent-tool
+trajectory comparison. Those acceptance results are tracked in
+`dynamic-model-coverage-development-plan.md`. In particular, the six Texas2k
+cases are currently loadable, but only Cases 1 and 2 pass the strict one-second
+flat-run gate; the Texas2k verification milestone remains open.
+
 | Model | Category | Aliases | Parameters | Support | Runtime class | Reference |
 |---|---|---|---:|---|---|---|
 | GENCLS | SYNCHRONOUS_MACHINE |  | 2 | LOADABLE | `com.interpss.dstab.mach.EConstMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENCLS.htm) |
