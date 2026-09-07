@@ -382,7 +382,10 @@ public class Texas2kOneSecondDriftTest {
                             .filter(record -> record.parameters().get(4).equals(selectedPFlag))
                             .map(Texas2kOneSecondDriftTest::deviceKey)
                             .collect(Collectors.toSet());
-            effectiveDyr = Files.createTempFile("texas2k-conventional-", ".dyr");
+            Path filteredDirectory = Files.createTempDirectory("texas2k-filtered-");
+            filteredDirectory.toFile().deleteOnExit();
+            effectiveDyr = filteredDirectory.resolve("selected.dyr");
+            effectiveDyr.toFile().deleteOnExit();
             boolean onlySelectedRenewables = Boolean.getBoolean(
                     "texas2k.drift.onlySelectedRenewables");
             String filtered = sourceRecords.stream()
@@ -400,6 +403,8 @@ public class Texas2kOneSecondDriftTest {
                     .map(record -> record.rawText() + " /")
                     .collect(Collectors.joining(System.lineSeparator()));
             Files.writeString(effectiveDyr, filtered);
+            copySupplementalSibling(dyr, effectiveDyr, ".dyd");
+            copySupplementalSibling(dyr, effectiveDyr, "_MODREMOVE.idv");
             System.out.println("Filtered DYR: " + effectiveDyr);
         }
         var context = new PSSEMultiFileLoader().loadDStab(
@@ -656,6 +661,20 @@ public class Texas2kOneSecondDriftTest {
                 () -> assertTrue(Double.isFinite(speed.value())
                                 && speed.value() <= SPEED_DRIFT_LIMIT,
                         source.directory() + " worst speed drift " + speed));
+    }
+
+    /** Preserve source-only models and removal directives in filtered diagnostics. */
+    private static void copySupplementalSibling(Path sourceDyr, Path filteredDyr,
+            String suffix) throws java.io.IOException {
+        String sourceName = sourceDyr.getFileName().toString();
+        String sourceStem = sourceName.substring(0, sourceName.length() - 4);
+        Path source = sourceDyr.resolveSibling(sourceStem + suffix);
+        if (!Files.isRegularFile(source)) return;
+        String filteredName = filteredDyr.getFileName().toString();
+        String filteredStem = filteredName.substring(0, filteredName.length() - 4);
+        Path target = filteredDyr.resolveSibling(filteredStem + suffix);
+        Files.copy(source, target);
+        target.toFile().deleteOnExit();
     }
 
     private record Difference(String id, double value) { }

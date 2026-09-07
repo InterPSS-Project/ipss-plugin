@@ -97,7 +97,10 @@ public final class Reeca1Model implements RenewableElectricalController {
         double sensedV = sensedVoltage(v);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
-        if (windControlStack != null) windControlStack.step(dt, p, pOrder, voltageDip);
+        double plantPref = plantController == null ? 0.0 : plantController.getPref();
+        if (windControlStack != null) {
+            windControlStack.step(dt, p, pOrder, p0 + plantPref, voltageDip);
+        }
 
         int substeps = Math.max(1, (int) Math.ceil(dt / MAX_CONTROL_STEP));
         double controlStep = dt / substeps;

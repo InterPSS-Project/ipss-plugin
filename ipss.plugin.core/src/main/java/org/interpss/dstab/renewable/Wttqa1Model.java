@@ -42,15 +42,28 @@ public final class Wttqa1Model {
 
     public void step(double dt, double electricalPower, double generatorSpeed,
             boolean voltageDip) {
+        step(dt, electricalPower, generatorSpeed, initialPower, voltageDip);
+    }
+
+    /**
+     * Advance the controller with the current plant-level active-power
+     * reference. WECC connects REPCA1's active output to WTTQA1 {@code Pref0};
+     * it is therefore an input to the power-error branch rather than an
+     * increment added after the torque controller.
+     */
+    public void step(double dt, double electricalPower, double generatorSpeed,
+            double powerReference, boolean voltageDip) {
+        if (!Double.isFinite(powerReference)) {
+            throw new IllegalArgumentException("WTTQA1 Pref0 must be finite");
+        }
         filteredPower = Repca1Model.lag(filteredPower, electricalPower, data.tp(), dt);
         speedReference = Repca1Model.lag(speedReference, speedForPower(filteredPower),
                 data.twref(), dt);
-        // PowerWorld/WECC define TFLAG=1 as torque/power control and TFLAG=0
-        // as speed control. The torque path forms Pref0 minus filtered Pe, then
-        // divides by generator speed. Using Pe-Pref0 would make that closed
-        // active-power loop self-reinforcing.
+        // WECC Figure 3-6 selects (Pref0-filtered Pe)/wg for TFLAG=1 and
+        // (wref-wg) for TFLAG=0. This sign is also the physically negative-
+        // feedback form of the active-power loop.
         double error = data.tFlag() == 1
-                ? (initialPower - filteredPower) / nonzero(generatorSpeed)
+                ? (powerReference - filteredPower) / nonzero(generatorSpeed)
                 : speedReference - generatorSpeed;
         if (Math.abs(error) <= EQUILIBRIUM_RESIDUAL) error = 0.0;
         torqueIntegral = Repca1Model.integrateWithAntiWindup(torqueIntegral, data.kip(), error,
@@ -83,4 +96,5 @@ public final class Wttqa1Model {
     public double getFilteredPower() { return filteredPower; }
     public double getSpeedReference() { return speedReference; }
     public double getTorqueIntegral() { return torqueIntegral; }
+    public double getInitialPower() { return initialPower; }
 }
