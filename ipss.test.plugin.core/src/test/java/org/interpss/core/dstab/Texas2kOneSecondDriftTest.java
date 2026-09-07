@@ -93,6 +93,8 @@ public class Texas2kOneSecondDriftTest {
         Path effectiveDyr = dyr;
         String renewableSelection = System.getProperty("texas2k.drift.renewables");
         if (Boolean.getBoolean("texas2k.drift.excludeRenewables") || renewableSelection != null) {
+            List<org.interpss.fadapter.psse.dyr.PsseDyrRecord> sourceRecords =
+                    PsseDyrRecordReader.read(dyr);
             Set<String> selectedRenewables = renewableSelection == null ? Set.of()
                     : java.util.Arrays.stream(renewableSelection.split(","))
                             .map(String::trim).filter(value -> !value.isEmpty())
@@ -102,16 +104,21 @@ public class Texas2kOneSecondDriftTest {
                     .map(String::trim).filter(value -> !value.isEmpty())
                     .map(Integer::parseInt).collect(Collectors.toSet());
             String selectedQFlag = System.getProperty("texas2k.drift.qFlag", "");
+            Set<String> selectedQFlagDevices = selectedQFlag.isEmpty() ? Set.of()
+                    : sourceRecords.stream()
+                            .filter(record -> record.canonicalModelName().equals("REECA1"))
+                            .filter(record -> record.parameters().get(3).equals(selectedQFlag))
+                            .map(Texas2kOneSecondDriftTest::deviceKey)
+                            .collect(Collectors.toSet());
             effectiveDyr = Files.createTempFile("texas2k-conventional-", ".dyr");
             boolean onlySelectedRenewables = Boolean.getBoolean(
                     "texas2k.drift.onlySelectedRenewables");
-            String filtered = PsseDyrRecordReader.read(dyr).stream()
+            String filtered = sourceRecords.stream()
                     .filter(record -> (selectedRenewables.contains(record.canonicalModelName())
                                     && (selectedRenewableBuses.isEmpty()
                                             || selectedRenewableBuses.contains(record.busNumber()))
-                                    && (!record.canonicalModelName().equals("REECA1")
-                                            || selectedQFlag.isEmpty()
-                                            || record.parameters().get(3).equals(selectedQFlag)))
+                                    && (selectedQFlag.isEmpty()
+                                            || selectedQFlagDevices.contains(deviceKey(record))))
                             || (!onlySelectedRenewables
                                     && !RENEWABLE_MODELS.contains(record.canonicalModelName())))
                     .map(record -> record.rawText() + " /")
@@ -206,6 +213,7 @@ public class Texas2kOneSecondDriftTest {
         Map<String, WindSnapshot> initialWind = new LinkedHashMap<>();
         Map<String, ReecaSnapshot> initialReeca = new LinkedHashMap<>();
         Map<String, RepcaSnapshot> initialRepca = new LinkedHashMap<>();
+        Map<String, ControlStatus> initialControlStatus = new LinkedHashMap<>();
         network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
                 .filter(DStabGen.class::isInstance)
                 .map(DStabGen.class::cast)
@@ -218,6 +226,7 @@ public class Texas2kOneSecondDriftTest {
                         String deviceId = bus.getId() + ":" + gen.getId();
                         initialReeca.put(deviceId,
                                 reecaSnapshot(converter, controller));
+                        initialControlStatus.put(deviceId, controlStatus(controller));
                         if (controller.getPlantController() != null) {
                             initialRepca.put(deviceId,
                                     repcaSnapshot(controller.getPlantController()));
@@ -268,6 +277,8 @@ public class Texas2kOneSecondDriftTest {
 
         if (Boolean.getBoolean("texas2k.drift.traceFirstDivergence")) {
             boolean reported = false;
+            boolean dipTransitionReported = false;
+            boolean limitTransitionReported = false;
             double endTime = algorithm.getTotalSimuTimeSec();
             while (algorithm.getSimuTime() < endTime - 0.5 * algorithm.getSimuStepSec()) {
                 assertTrue(algorithm.solveDEqnStep(true), source.directory() + " simulation step");
@@ -280,6 +291,14 @@ public class Texas2kOneSecondDriftTest {
                                 stepSpeed, network, initialReeca, initialRepca);
                         reported = true;
                     }
+                }
+                if (!dipTransitionReported) {
+                    dipTransitionReported = reportControlTransitions(source,
+                            algorithm.getSimuTime(), network, initialControlStatus, true);
+                }
+                if (!limitTransitionReported) {
+                    limitTransitionReported = reportControlTransitions(source,
+                            algorithm.getSimuTime(), network, initialControlStatus, false);
                 }
             }
         } else {
@@ -342,6 +361,10 @@ public class Texas2kOneSecondDriftTest {
 
     private record Difference(String id, double value) { }
 
+    private static String deviceKey(org.interpss.fadapter.psse.dyr.PsseDyrRecord record) {
+        return record.busNumber() + ":" + record.deviceId();
+    }
+
     private static Difference worstVoltageDifference(
             com.interpss.dstab.BaseDStabNetwork<?, ?> network,
             Map<String, Double> initialVoltage) {
@@ -402,6 +425,46 @@ public class Texas2kOneSecondDriftTest {
 
     private record ControllerDifference(String model, String id, double value,
             String initial, String current) { }
+
+    private static ControlStatus controlStatus(Reeca1Model controller) {
+        double tolerance = 1.0e-8;
+        return new ControlStatus(controller.isVoltageDip(),
+                Math.abs(controller.getIpcmd()) >= controller.getActiveCurrentLimit() - tolerance,
+                Math.abs(controller.getIqcmd()) >= controller.getReactiveCurrentLimit() - tolerance);
+    }
+
+    private static boolean reportControlTransitions(CaseFile source, double time,
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
+            Map<String, ControlStatus> initialStatus, boolean dipTransition) {
+        List<String> transitions = initialStatus.entrySet().stream().filter(entry -> {
+            String[] key = entry.getKey().split(":", 2);
+            DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
+            Reeca1Model controller = ((Regca1Model) gen.getDynamicGenDevice())
+                    .getReeca1Controller();
+            ControlStatus current = controlStatus(controller);
+            return dipTransition
+                    ? !entry.getValue().voltageDip() && current.voltageDip()
+                    : (!entry.getValue().ipLimited() && current.ipLimited())
+                            || (!entry.getValue().iqLimited() && current.iqLimited());
+        }).limit(10).map(Map.Entry::getKey).toList();
+        if (transitions.isEmpty()) return false;
+        System.out.printf(java.util.Locale.ROOT, "%s first %s transition at t=%.9g:%n",
+                source.directory(), dipTransition ? "voltage-dip" : "current-limit", time);
+        transitions.forEach(id -> {
+            String[] key = id.split(":", 2);
+            DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
+            Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
+            Reeca1Model controller = converter.getReeca1Controller();
+            System.out.printf(java.util.Locale.ROOT,
+                    "  %s V=%.9g status=%s Ipcmd=%.9g/%.9g Iqcmd=%.9g/%.9g%n",
+                    id, network.getBus(key[0]).getVoltageMag(), controlStatus(controller),
+                    controller.getIpcmd(), controller.getActiveCurrentLimit(),
+                    controller.getIqcmd(), controller.getReactiveCurrentLimit());
+        });
+        return true;
+    }
+
+    private record ControlStatus(boolean voltageDip, boolean ipLimited, boolean iqLimited) { }
 
     /** Diagnostic controller used to isolate REGCA1 from its electrical controls. */
     private static final class FixedCurrentController implements RenewableElectricalController {
