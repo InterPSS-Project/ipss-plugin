@@ -52,6 +52,8 @@ import org.interpss.dstab.control.exc.psse.ac7b.Ac7bData;
 import org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
+import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
+import org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
@@ -218,6 +220,12 @@ public class ExciterObjectFactory {
 	/** Create an IEEE 421.5-2005 / PSS/E AC8B rotating exciter. */
 	public static Ac8bExciter createAc8bExciter(String id, Ac8bData data, Machine machine) {
 		return new Ac8bExciter(id, data, machine);
+	}
+
+	/** Create a PSS/E ESAC4A (IEEE Type AC4A) excitation system. */
+	public static Esac4aExciter createEsac4aExciter(String id, Esac4aData data,
+			Machine machine) {
+		return new Esac4aExciter(id, data, machine);
 	}
 
 	/** Create an IEEE 421.5 DC4B or PSS/E ESDC4B excitation system. */
