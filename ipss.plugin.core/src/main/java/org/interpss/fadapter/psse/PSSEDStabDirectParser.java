@@ -42,6 +42,7 @@ import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
+import org.interpss.dstab.control.exc.psse.ac1c.Ac1cData;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
 import org.interpss.dstab.control.exc.psse.esurry.EsurryData;
 import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
@@ -302,6 +303,8 @@ public class PSSEDStabDirectParser {
                 return procExcExac2(busId, genId, fields);
             case "ESAC1A":
                 return procExcEsac1a(busId, genId, fields);
+            case "AC1C":
+                return procExcAc1c(busId, genId, fields);
             case "ESAC2A":
                 return procExcEsac2a(busId, genId, fields);
             case "ESAC6A":
@@ -998,6 +1001,26 @@ public class PSSEDStabDirectParser {
         d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0)); d.setVrmax(getDouble(f,20,0));
         d.setVrmin(getDouble(f,21,0)); d.setSpdmlt(getDouble(f,22,0));
         return builder.addExcEsac1a(busId,genId,d)!=null;
+    }
+
+    // AC1C: IBUS 'AC1C' ID OEL UEL Tr Tb Tc Ka Ta VaMax VaMin Te Kf Tf
+    //       Kc Kd Ke E1 SE1 E2 SE2 EfeMax EfeMin VfeMax VeMin
+    // PSS/E exposes OEL/UEL locations; the IEEE SCL location remains available
+    // through the typed API and defaults to unused for DYR records.
+    private boolean procExcAc1c(String busId,String genId,String[] f) {
+        if (f.length<26) return false;
+        Ac1cData d=new Ac1cData();
+        d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
+        d.setTr(getDouble(f,5,0));d.setTb(getDouble(f,6,0));d.setTc(getDouble(f,7,0));
+        d.setKa(getDouble(f,8,0));d.setTa(getDouble(f,9,0));
+        d.setVamax(getDouble(f,10,0));d.setVamin(getDouble(f,11,0));
+        d.setTe(getDouble(f,12,0));d.setKf(getDouble(f,13,0));d.setTf(getDouble(f,14,0));
+        d.setKc(getDouble(f,15,0));d.setKd(getDouble(f,16,0));d.setKe(getDouble(f,17,0));
+        d.setE1(getDouble(f,18,0));d.setSe1(getDouble(f,19,0));
+        d.setE2(getDouble(f,20,0));d.setSe2(getDouble(f,21,0));
+        d.setEfemax(getDouble(f,22,0));d.setEfemin(getDouble(f,23,0));
+        d.setVfemax(getDouble(f,24,0));d.setVemin(getDouble(f,25,0));
+        return builder.addExcAc1c(busId,genId,d)!=null;
     }
 
     // ESAC2A: IBUS MODEL ID Tr Tb Tc Ka Ta VaMax VaMin Kb VrMax VrMin Te VfeMax Kh Kf Tf Kc Kd Ke E1 SE1 E2 SE2 [Spdmlt]
