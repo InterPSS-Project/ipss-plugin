@@ -221,6 +221,28 @@ public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
         assertEquals(initial, governor.getOutput(machine), 1.0e-8);
     }
 
+    @Test
+    void ieeeg1AppliesPowerWorldStepAndLimitCorrections() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = initializeMachine(builder);
+        IeeeSteamTCDRGovernor governor = builder.addGovIeeeg1("Bus1", "1",
+                20, 1, 1, .004, .8, .6, .003, .4, .007, .2, .006, .008,
+                .1, -.1, -.1, .1);
+        governor.configureIntegrationStep(.01);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+
+        assertEquals(.01, governor.getValvePositionerTimeConstant(), TOL);
+        assertEquals(0.0, governor.tch, TOL);
+        assertEquals(.01, governor.trh1, TOL);
+        assertEquals(.01, governor.trh2, TOL);
+        assertEquals(.01, governor.tco, TOL);
+        assertEquals(1.0, governor.fvhp + governor.fhp + governor.fip + governor.flp, TOL);
+        assertTrue(governor.pup > 0.0);
+        assertTrue(governor.pdown < 0.0);
+        assertTrue(governor.pmax >= governor.getValvePosition());
+        assertTrue(governor.pmin <= governor.getValvePosition());
+    }
+
     private static Machine initializeMachine(DStabNetworkBuilder builder) throws Exception {
         LoadflowAlgorithm loadflow = com.interpss.core.LoadflowAlgoObjectFactory
                 .createLoadflowAlgorithm(builder.getDStabNetwork());
