@@ -1858,6 +1858,31 @@ public class DStabNetworkBuilder {
     }
 
     /**
+     * PSS/E IEEEG3D/IEEEG3DU extension of IEEEG3.
+     * Parameters append dbH, dbL, and Trate to the shared IEEEG3 record.
+     */
+    public Ieee1981Type3HydroGovernor addGovIeeeg3d(String busId, String genId,
+            double tg, double tp, double uo, double uc,
+            double pmax, double pmin, double rperm, double rtemp,
+            double tr, double tw, double a11, double a13, double a21, double a23,
+            double dbH, double dbL, double trate) {
+        if (dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid IEEEG3D deadband/rating at {} {}: dbH={}, dbL={}, Trate={}",
+                    busId, genId, dbH, dbL, trate);
+            return null;
+        }
+        Ieee1981Type3HydroGovernor gov = addGovIeeeg3(busId, genId,
+                tg, tp, uo, uc, pmax, pmin, rperm, rtemp,
+                tr, tw, a11, a13, a21, a23);
+        if (gov == null) return null;
+        gov.setName("IEEEG3D");
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
+    /**
      * PowerWorld/WECC GASTD extension of GAST.
      * Parameters append dbH, dbL, and Trate to the base GAST record.
      */

@@ -2,7 +2,9 @@ package org.interpss.dstab.control.gov.ieee.hydro1981Type3;
 
 import java.lang.reflect.Field;
 
+import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
@@ -46,6 +48,8 @@ public class Ieee1981Type3HydroGovernor extends AnnotateGovernor implements Inte
 	public double pmin = 0.0;
 	public double pmax = 1.0	;// input as PU unit
 	public double sigma=0.05;//permanent speed droop coefficient
+	public double dbH = 0.0, dbL = 0.0;
+	public double ratingScale = 1.0, invRatingScale = 1.0;
 
 	//1.1 GainBlock	
 	public double k1=1.0; 
@@ -168,7 +172,17 @@ public FilterControlBlock wFilterBlock;
 	        this.a13 = getData().getA13();
 	        this.a21 = getData().getA21();
 	        this.a23 = getData().getA23();
+	        this.dbH = getData().getDbH();
+	        this.dbL = getData().getDbL();
+	        if (dbH < 0.0 || dbL > 0.0 || dbL > dbH || getData().getTrate() < 0.0) {
+	            return false;
+	        }
+	        double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+	        this.ratingScale = getData().getTrate() > EPS && machineMva > EPS
+	                ? getData().getTrate() / machineMva : 1.0;
+	        this.invRatingScale = 1.0 / ratingScale;
 	        double initialGate = mach.getPm() / a23;
+	        initialGate *= invRatingScale;
 	        this.pmax = Math.max(rawMax, initialGate);
 	        this.pmin = Math.min(rawMin, initialGate);
 	        
@@ -221,7 +235,9 @@ public FilterControlBlock wFilterBlock;
 
 	private Derivatives derivatives(State s, Machine mach) {
 		double temporaryDroop = delta * (s.gate - s.transientLag);
-		double error = reference - (mach.getSpeed() - 1.0) - sigma * s.gate - temporaryDroop;
+		double speedDeviation = AsymmetricDeadbandBlock.apply(
+				mach.getSpeed() - 1.0, dbH, dbL);
+		double error = reference - speedDeviation - sigma * s.gate - temporaryDroop;
 		double servo = tp <= EPS ? error / tg : s.servo;
 		double dServo = tp <= EPS ? 0.0 : (error / tg - s.servo) / tp;
 		double dGate = Math.max(velClose, Math.min(velOpen, servo));
@@ -239,7 +255,9 @@ public FilterControlBlock wFilterBlock;
 	private double effectiveServo(State s, Machine mach) {
 		if (tp > EPS) return s.servo;
 		double temporaryDroop = delta * (s.gate - s.transientLag);
-		return (reference - (mach.getSpeed() - 1.0) - sigma * s.gate - temporaryDroop) / tg;
+		double speedDeviation = AsymmetricDeadbandBlock.apply(
+				mach.getSpeed() - 1.0, dbH, dbL);
+		return (reference - speedDeviation - sigma * s.gate - temporaryDroop) / tg;
 	}
 
 	@Override
@@ -249,7 +267,7 @@ public FilterControlBlock wFilterBlock;
 
 	@Override
 	public void setRefPoint(double value) {
-		reference = sigma * value / a23;
+		reference = sigma * value * invRatingScale / a23;
 	}
 
 	public double getServoPosition() { return effectiveServo(state, getMachine()); }
@@ -258,7 +276,8 @@ public FilterControlBlock wFilterBlock;
 	public double getTemporaryDroopFeedback() { return delta * (state.gate - state.transientLag); }
 	public double getMechanicalPower() {
 		double leadRatio = t1 / tw_2;
-		return a23 * (leadRatio * state.gate + (1.0 - leadRatio) * state.turbineLag);
+		return ratingScale * a23
+				* (leadRatio * state.gate + (1.0 - leadRatio) * state.turbineLag);
 	}
 
 	private record State(double servo, double gate, double transientLag, double turbineLag) {
