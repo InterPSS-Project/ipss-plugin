@@ -48,6 +48,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderTgov3dTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderHygov2dTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderWpidhydTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGastwddTest;
+import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGast2adTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderStabilizerTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
@@ -436,6 +437,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderHygov2dTest.class,
 	DStabNetworkBuilderWpidhydTest.class,
 	DStabNetworkBuilderGastwddTest.class,
+	DStabNetworkBuilderGast2adTest.class,
 	DStabNetworkBuilderStabilizerTest.class,
 	PsseEsst4bExciterTest.class,
 	PsseEsst1aExciterTest.class,
