@@ -37,6 +37,7 @@ import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.controller.cml.field.func.SeFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,10 +53,22 @@ import org.slf4j.LoggerFactory;
    display= {}
    //debug = true
    )
-public class Ieee1968Type1Exciter extends AnnotateExciter {
+public class Ieee1968Type1Exciter extends AnnotateExciter implements IntegrationStepAware {
     private static final Logger log = LoggerFactory.getLogger(Ieee1968Type1Exciter.class);
 	   public double ke = 1.0;
 	   public double spdmlt = 0.0;
+       private double integrationStep;
+       private double minimumTimeConstantMultiplier = 1.0;
+
+       @Override
+       public void configureIntegrationStep(double timeStepSec) {
+           configureIntegrationStep(timeStepSec, 1.0);
+       }
+
+       public void configureIntegrationStep(double timeStepSec, double multiplier) {
+           this.integrationStep = timeStepSec;
+           this.minimumTimeConstantMultiplier = multiplier;
+       }
 
 	   // define a CML delay block, krDelayBlock----1/(1+sTr)
        public double kr = 1.0/*constant*/,tr = 0.04;
@@ -166,21 +179,25 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
 	public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
     	// init the controller parameters using the data defined in the 
     	// data object
-    	this.tr=getData().getTr();
+		this.tr = correctedBypassTimeConstant(getData().getTr());
         this.ka = getData().getKa();
-        this.ta = getData().getTa();
+        this.ta = correctedBypassTimeConstant(getData().getTa());
         this.vrmax = getData().getVrmax();
         this.vrmin = getData().getVrmin();
 		this.ke = getData().getKe();
 		
-		this.te = getData().getTe();
+		this.te = correctedPositiveTimeConstant(getData().getTe());
 		this.e1 = getData().getE1();
 		this.seE1 = getData().getSeE1();
 		this.e2 = getData().getE2();
 		this.seE2 = getData().getSeE2();
 		this.kf  = getData().getKf();
-		this.tf = getData().getTf();
+		this.tf = correctedPositiveTimeConstant(getData().getTf());
 		this.spdmlt = getData().getSpdmlt();
+
+		if (this.vrmax < this.vrmin) {
+			double swap = this.vrmax; this.vrmax = this.vrmin; this.vrmin = swap;
+		}
         
 		if(tf == 0.0){
 			log.error("Tf =0.0 for Exciter of "+mach.getId());
@@ -206,30 +223,75 @@ public class Ieee1968Type1Exciter extends AnnotateExciter {
          */
 
 		
+		SeFunction initSaturation;
+		try {
+			initSaturation = new SeFunction(e1, seE1, e2, seE2);
+		} catch (InterpssException ex) {
+			log.error("Invalid IEEET1 saturation data for {}", mach.getId(), ex);
+			return false;
+		}
 		if(this.ke==0.0) {
 			
 			double vr_target = 0.0;
 			if (this.vrmax > 0.0)
 				vr_target = this.vrmax/10;
 			
-			try {
-				this.seFunc = new SeFunction(e1, seE1, e2, seE2);
-			} catch (InterpssException e) {
-				e.printStackTrace();
-			}
-			double se= this.seFunc.eval(new double[] {mach.getEfd()});
+			double se= initSaturation.eval(new double[] {mach.getEfd()});
 			
 			this.ke = (vr_target-se*mach.getEfd())/mach.getEfd();
 		}
+		double se0 = initSaturation.eval(new double[] {mach.getEfd()});
+		double vr0 = (this.ke + se0) * mach.getEfd();
+		this.vrmax = Math.max(this.vrmax, vr0 + 1.0e-9);
+		this.vrmin = Math.min(this.vrmin, vr0 - 1.0e-9);
 		
 		// call the super method to init CML field/controller states
         return super.initStates(bus, mach);
+    }
+
+    private double correctedBypassTimeConstant(double value) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        if (value > 0.0 && value < 0.5 * minimum) return 0.0;
+        if (value > 0.5 * minimum && value < minimum) return minimum;
+        return value;
+    }
+
+    private double correctedPositiveTimeConstant(double value) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        return value > 0.0 && value < minimum ? minimum : value;
     }
 
     @Override
     public double getOutput(Machine mach) {
         double efd = super.getOutput(mach);
         return spdmlt != 0.0 ? efd * mach.getSpeed() : efd;
+    }
+
+    public boolean hasInitializedBlocks() {
+        return getFieldWrapperList() != null && !getFieldWrapperList().isEmpty();
+    }
+
+    public double getSensedVoltage() { return signal("this.krDelayBlock.y"); }
+    public double getVoltageError() {
+        return getRefPoint() - getSensedVoltage() - getRateFeedback();
+    }
+    public double getRegulatorOutput() { return signal("this.kaDelayBlock.y"); }
+    public double getFieldVoltageState() { return signal("this.teIntBlock.y"); }
+    public double getSaturationFactor() { return signal("this.seFunc.y"); }
+    public double getSaturationVoltage() {
+        return getSaturationFactor() * getFieldVoltageState();
+    }
+    public double getCombinedFieldFeedback() {
+        return ke * getFieldVoltageState() + getSaturationVoltage();
+    }
+    public double getRateFeedback() { return signal("this.washoutBlock.y"); }
+
+    private double signal(String fieldName) {
+        try {
+            return getFieldVaule(fieldName);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Cannot read IEEET1 signal " + fieldName, ex);
+        }
     }
 
     /**

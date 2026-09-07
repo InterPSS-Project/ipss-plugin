@@ -184,6 +184,26 @@ public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
     }
 
     @Test
+    void ieeet1AppliesPowerWorldStepCorrectionsAndInitializationLimitExpansion()
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = initializeMachine(builder);
+        Ieee1968Type1Exciter exciter = builder.addExcIeeet1("Bus1", "1",
+                .003, 50, .007, -.1, .1, 1, .004, .1, .002,
+                .8, .1, 1.2, .2, 0);
+        exciter.configureIntegrationStep(.01);
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+
+        assertEquals(0.0, exciter.tr, TOL);
+        assertEquals(.01, exciter.ta, TOL);
+        assertEquals(.01, exciter.te, TOL);
+        assertEquals(.01, exciter.tf, TOL);
+        assertEquals(-.1, exciter.vrmin, TOL);
+        assertTrue(exciter.vrmax >= exciter.getRegulatorOutput(),
+                "initial regulator output must be inside the expanded limits");
+    }
+
+    @Test
     void texasIeeeg1SingleMachineProfileInitializesWithoutDrift(@TempDir Path tempDir)
             throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
