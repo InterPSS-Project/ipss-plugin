@@ -12,6 +12,7 @@ import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.net.OriginalDataFormat;
@@ -33,9 +34,10 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
 
         System.out.printf(java.util.Locale.ROOT,
                 "Renewable aggregate Q/V mode: thirtyPlants=%.9g faultMin=%.9g "
-                        + "faultFinal=%.9g%n",
+                        + "faultFinal=%.9g qvSensitivity=%.9g%n",
                 aggregate.maximumVoltageDrift(),
-                faulted.minimumPoiVoltage(), faulted.finalPoiVoltage());
+                faulted.minimumPoiVoltage(), faulted.finalPoiVoltage(),
+                aggregate.commonModeQvSensitivity());
         assertTrue(aggregate.maximumVoltageDrift() < 1.0e-6,
                 "aggregate flat-run drift " + aggregate.maximumVoltageDrift());
         assertTrue(faulted.minimumPoiVoltage() < .2,
@@ -51,9 +53,10 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         RunResult weakGridFineStep = run(30, false, 1.2, 1.0 / 960.0);
 
         System.out.printf(java.util.Locale.ROOT,
-                "Renewable aggregate Q/V grid strength: x=.8 drift=%.9g "
-                        + "x=1.2 drift=%.9g x=1.2/fine drift=%.9g%n",
-                strongerGrid.maximumVoltageDrift(), weakGrid.maximumVoltageDrift(),
+                "Renewable aggregate Q/V grid strength: x=.8 drift=%.9g sens=%.9g "
+                        + "x=1.2 drift=%.9g sens=%.9g x=1.2/fine drift=%.9g%n",
+                strongerGrid.maximumVoltageDrift(), strongerGrid.commonModeQvSensitivity(),
+                weakGrid.maximumVoltageDrift(), weakGrid.commonModeQvSensitivity(),
                 weakGridFineStep.maximumVoltageDrift());
         assertTrue(strongerGrid.maximumVoltageDrift() < 1.0e-6,
                 "stronger-grid flat-run drift " + strongerGrid.maximumVoltageDrift());
@@ -111,6 +114,7 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         monitor.addBusStdMonitor(new String[] {"Poi"});
         algorithm.setSimuOutputHandler(monitor);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "reduced-network load flow");
+        double commonModeQvSensitivity = commonModeQvSensitivity(network, plantCount);
         if (withFault) {
             network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                     "Poi", network, SimpleFaultCode.GROUND_3P,
@@ -130,7 +134,32 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         double minimumPoiVoltage = poiVoltage.values().stream()
                 .mapToDouble(value -> value.value).min().orElseThrow();
         double finalPoiVoltage = poiVoltage.get(poiVoltage.size() - 1).value;
-        return new RunResult(maximumDrift, minimumPoiVoltage, finalPoiVoltage);
+        return new RunResult(maximumDrift, minimumPoiVoltage, finalPoiVoltage,
+                commonModeQvSensitivity);
+    }
+
+    private static double commonModeQvSensitivity(DStabilityNetwork network, int plantCount)
+            throws Exception {
+        ISparseEqnComplex y = network.formYMatrix();
+        network.getBusList().stream().filter(bus -> bus.isSwing()).forEach(bus ->
+                y.setA(new Complex(0.0, 1.0e10), bus.getSortNumber(), bus.getSortNumber()));
+        y.factorization(1.0e-20);
+        y.setB2Zero();
+        Complex perPlantReactiveCurrent = new Complex(0.0, -1.0 / plantCount);
+        for (int i = 1; i <= plantCount; i++) {
+            y.setBi(perPlantReactiveCurrent, network.getBus("Plant" + i).getSortNumber());
+        }
+        y.solveEqn();
+        double maximum = 0.0;
+        for (int i = 1; i <= plantCount; i++) {
+            var bus = network.getBus("Plant" + i);
+            Complex voltage = bus.getVoltage();
+            Complex deltaVoltage = y.getX(bus.getSortNumber());
+            double deltaMagnitude = deltaVoltage.multiply(voltage.conjugate()).getReal()
+                    / voltage.abs();
+            maximum = Math.max(maximum, Math.abs(deltaMagnitude));
+        }
+        return maximum;
     }
 
     private static Regca1Data regcaData() {
@@ -155,5 +184,5 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     private record RunResult(double maximumVoltageDrift, double minimumPoiVoltage,
-            double finalPoiVoltage) { }
+            double finalPoiVoltage, double commonModeQvSensitivity) { }
 }
