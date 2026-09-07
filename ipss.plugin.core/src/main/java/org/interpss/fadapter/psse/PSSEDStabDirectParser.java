@@ -349,6 +349,9 @@ public class PSSEDStabDirectParser {
             case "IEEEG3D":
             case "IEEEG3DU":
                 return procGovIeeeg3d(busId, genId, fields);
+            case "WESGOVD":
+            case "WESGOVDU":
+                return procGovWesgovd(busId, genId, fields);
             case "LCFB1":
                 pendingLcfb1.add(new PendingLcfb1(busId, genId, fields.clone(), record));
                 return true;
@@ -1448,6 +1451,16 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
                 getDouble(f, 15, 0), getDouble(f, 16, 0), getDouble(f, 17, 0),
                 getDouble(f, 18, 0), getDouble(f, 19, 0)) != null;
+    }
+
+    // WESGOVD: DeltaTC DeltaTP Droop Kp Ti T1 T2 Alim Tpe dbH dbL Trate
+    private boolean procGovWesgovd(String busId, String genId, String[] f) {
+        if (f.length < 15) return false;
+        return builder.addGovWesgovd(busId, genId,
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0)) != null;
     }
 
     // GGOV1 PSS/E record order.  Trate is field 30 in the data list even though

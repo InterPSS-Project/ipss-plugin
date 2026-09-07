@@ -70,6 +70,7 @@ import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
@@ -1820,6 +1821,39 @@ public class DStabNetworkBuilder {
         gov.getData().setT1(t1);
         gov.getData().setPmax(pmax);
         gov.getData().setPmin(pmin);
+        return gov;
+    }
+
+    /** PSS/E WESGOVD Westinghouse sampled-data gas-turbine governor. */
+    public PsseWesgovdGovernor addGovWesgovd(String busId, String genId,
+            double deltaTc, double deltaTp, double droop, double kp, double ti,
+            double t1, double t2, double alim, double tpe,
+            double dbH, double dbL, double trate) {
+        if (deltaTc < 0.0 || deltaTp < 0.0 || droop < 0.0 || ti <= 0.0
+                || t1 < 0.0 || t2 < 0.0 || alim < 0.0 || tpe < 0.0
+                || dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid WESGOVD parameters at {} {}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for WESGOVD governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseWesgovdGovernor gov = GovernorObjectFactory.createPsseWESGOVDGovernor(
+                mach.getId() + "_Gov", "WESGOVD", mach);
+        gov.getData().setDeltaTc(deltaTc);
+        gov.getData().setDeltaTp(deltaTp);
+        gov.getData().setDroop(droop);
+        gov.getData().setKp(kp);
+        gov.getData().setTi(ti);
+        gov.getData().setT1(t1);
+        gov.getData().setT2(t2);
+        gov.getData().setAlim(alim);
+        gov.getData().setTpe(tpe);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
         return gov;
     }
 
