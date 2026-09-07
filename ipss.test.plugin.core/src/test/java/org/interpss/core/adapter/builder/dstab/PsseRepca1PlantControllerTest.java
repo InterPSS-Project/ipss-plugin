@@ -158,6 +158,69 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void stageAwareReactivePathUsesTheCorrectedEndpoint() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 0, .1, 2, 1, .05, .1,
+                .7, 1, -1, 0, 0, 0, 0, 0));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.05, .8, 0.0, 1.0, 1.0, 0);
+        assertEquals(.1, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
+        assertEquals(.2, plant.getReactiveControlOutput(), 1.0e-12);
+        assertEquals(.1, plant.getQref(), 1.0e-12);
+
+        plant.step(.05, .8, 0.0, 1.0, 1.0, 1);
+        assertEquals(.125, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
+        assertEquals(.0025, plant.getReactiveControlIntegral(), 1.0e-12);
+        assertEquals(.05, plant.getLeadLagState(), 1.0e-12);
+        assertEquals(.1525, plant.getReactiveControlOutput(), 1.0e-12);
+        assertEquals(.10125, plant.getQref(), 1.0e-12);
+    }
+
+    @Test
+    void stageAwareCorrectorRequiresItsPredictor() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 0, .1, 2, 1, .05, .1,
+                .7, 1, -1, 0, 0, 0, 0, 0));
+        plant.initialize(.8, .2, 1.0);
+
+        assertThrows(IllegalStateException.class,
+                () -> plant.step(.05, .8, 0.0, 1.0, 1.0, 1));
+    }
+
+    @Test
+    void stageAwareActivePathCorrectsThePiAndOutputLag() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 1, 0, 0, 0, 0, 0,
+                .7, 1, -1, 2, 1, .1, 10, 20));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.05, .7, .2, 1.0, .99, 0);
+        assertEquals(.01, plant.getActiveControlIntegral(), 1.0e-12);
+        assertEquals(.2, plant.getActiveLagState(), 1.0e-12);
+
+        plant.step(.05, .7, .2, 1.0, .99, 1);
+        assertEquals(.0125, plant.getActiveControlIntegral(), 1.0e-12);
+        assertEquals(.2025, plant.getActiveLagState(), 1.0e-12);
+        assertEquals(.2025, plant.getPref(), 1.0e-12);
+    }
+
+    @Test
+    void stageAwareAlgebraicBypassesAndAntiWindupDoNotCreateStates() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 1, 0, 2, 1, 0, 0,
+                .7, .1, -.1, 2, 1, 0, 10, 20));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.05, .7, .1, 1.0, .99, 0);
+        plant.step(.05, .7, .1, 1.0, .99, 1);
+
+        assertEquals(.1, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
+        assertEquals(0.0, plant.getReactiveControlIntegral(), 1.0e-12);
+        assertEquals(.1, plant.getReactiveControlOutput(), 1.0e-12);
+        assertEquals(.1, plant.getLeadLagState(), 1.0e-12);
+        assertEquals(.1, plant.getQref(), 1.0e-12);
+        assertEquals(.6125, plant.getActiveLagState(), 1.0e-12);
+        assertEquals(.6125, plant.getPref(), 1.0e-12);
+    }
+
+    @Test
     void lowVoltageFreezesOnlyTheReactiveIntegratorAndLimitsRemainLive() {
         Repca1Model plant = new Repca1Model(dynamicData(0, 0, 0, 2, 1, 0, 0,
                 .95, .15, -.15, 0, 0, 0, 0, 0));

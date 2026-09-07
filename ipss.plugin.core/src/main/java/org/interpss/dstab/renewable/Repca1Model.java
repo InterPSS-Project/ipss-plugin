@@ -39,6 +39,8 @@ public final class Repca1Model {
     private double effectivePmin;
     private double effectiveQmax;
     private double effectiveQmin;
+    private PlantState predictorStart;
+    private PlantDerivatives predictorDerivatives;
 
     public Repca1Model(Repca1Data data) {
         this(data, null, null);
@@ -102,6 +104,167 @@ public final class Repca1Model {
         } else {
             pext = pLagState = 0.0;
         }
+    }
+
+    /**
+     * Advances REPCA1 using the enclosing solver's modified-Euler stages.
+     * Flag 0 stores the old endpoint and produces an explicit predictor; flag 1
+     * evaluates the equations at the predicted network endpoint and applies the
+     * trapezoidal correction. Algebraic bypasses are evaluated at the applicable
+     * endpoint and are never integrated as artificial states.
+     */
+    public void step(double dt, double p, double q, double v, double frequency, int flag) {
+        if (flag != 0 && flag != 1) {
+            throw new IllegalArgumentException("REPCA1 integration flag must be 0 or 1");
+        }
+        Measurement measurement = measure(p, q, v, frequency);
+        if (dt <= 0.0) {
+            PlantState endpoint = applyBypasses(state(), measurement);
+            apply(endpoint);
+            updateStageOutputs(endpoint);
+            return;
+        }
+        if (flag == 0) {
+            predictorStart = state();
+            predictorDerivatives = derivatives(predictorStart, measurement);
+            apply(advance(predictorStart, predictorDerivatives, measurement, dt));
+        } else if (flag == 1) {
+            if (predictorStart == null || predictorDerivatives == null) {
+                throw new IllegalStateException("REPCA1 corrector called without predictor");
+            }
+            PlantDerivatives correctedDerivatives = derivatives(state(), measurement);
+            apply(correct(predictorStart, predictorDerivatives,
+                    correctedDerivatives, measurement, dt));
+            predictorStart = null;
+            predictorDerivatives = null;
+        }
+        updateStageOutputs(state());
+    }
+
+    private PlantDerivatives derivatives(PlantState state, Measurement measurement) {
+        double pRate = lagRate(state.pMeasured(), measurement.p(), data.tp());
+        double qRate = lagRate(state.qOrVMeasured(), reactiveMeasurement(measurement),
+                data.tfltr());
+
+        double qError = reactiveError(state.qOrVMeasured());
+        boolean freezeIntegrator = measurement.vMag() < data.vfrz();
+        double qIntegralRate = integralRate(state.qIntegral(), data.ki(), qError,
+                data.kp(), effectiveQmin, effectiveQmax, freezeIntegrator);
+        double qPi = limit(data.kp() * qError + state.qIntegral(),
+                effectiveQmin, effectiveQmax);
+        double leadLagRate = lagRate(state.leadLagState(), qPi, data.tfv());
+
+        if (data.fFlag() != 1) {
+            return new PlantDerivatives(pRate, qRate, 0.0, qIntegralRate,
+                    leadLagRate, 0.0);
+        }
+        double pError = activeError(state.pMeasured(), measurement.frequency());
+        double pIntegralRate = integralRate(state.pIntegral(), data.kig(), pError,
+                data.kpg(), effectivePmin, effectivePmax, false);
+        double pPi = limit(data.kpg() * pError + state.pIntegral(),
+                effectivePmin, effectivePmax);
+        double pLagRate = lagRate(state.pLagState(), pPi, data.tg());
+        return new PlantDerivatives(pRate, qRate, pIntegralRate, qIntegralRate,
+                leadLagRate, pLagRate);
+    }
+
+    private PlantState advance(PlantState start, PlantDerivatives rate,
+            Measurement measurement, double dt) {
+        PlantState advanced = add(start, rate, dt);
+        return applyBypasses(advanced, measurement);
+    }
+
+    private PlantState correct(PlantState start, PlantDerivatives first,
+            PlantDerivatives second, Measurement measurement, double dt) {
+        PlantDerivatives average = new PlantDerivatives(
+                .5 * (first.pMeasured() + second.pMeasured()),
+                .5 * (first.qOrVMeasured() + second.qOrVMeasured()),
+                .5 * (first.pIntegral() + second.pIntegral()),
+                .5 * (first.qIntegral() + second.qIntegral()),
+                .5 * (first.leadLagState() + second.leadLagState()),
+                .5 * (first.pLagState() + second.pLagState()));
+        return applyBypasses(add(start, average, dt), measurement);
+    }
+
+    private PlantState add(PlantState state, PlantDerivatives rate, double dt) {
+        return new PlantState(
+                state.pMeasured() + dt * rate.pMeasured(),
+                state.qOrVMeasured() + dt * rate.qOrVMeasured(),
+                state.pIntegral() + dt * rate.pIntegral(),
+                state.qIntegral() + dt * rate.qIntegral(),
+                state.leadLagState() + dt * rate.leadLagState(),
+                state.pLagState() + dt * rate.pLagState());
+    }
+
+    private PlantState applyBypasses(PlantState state, Measurement measurement) {
+        double measuredP = data.tp() <= EPS ? measurement.p() : state.pMeasured();
+        double measuredQv = data.tfltr() <= EPS
+                ? reactiveMeasurement(measurement) : state.qOrVMeasured();
+        double qError = reactiveError(measuredQv);
+        double qPi = limit(data.kp() * qError + state.qIntegral(),
+                effectiveQmin, effectiveQmax);
+        double leadState = data.tfv() <= EPS ? qPi : state.leadLagState();
+        double pLag = state.pLagState();
+        if (data.fFlag() != 1) {
+            pLag = 0.0;
+        } else if (data.tg() <= EPS) {
+            double pError = activeError(measuredP, measurement.frequency());
+            pLag = limit(data.kpg() * pError + state.pIntegral(),
+                    effectivePmin, effectivePmax);
+        }
+        return new PlantState(measuredP, measuredQv, state.pIntegral(),
+                state.qIntegral(), leadState, pLag);
+    }
+
+    private void updateStageOutputs(PlantState state) {
+        double qError = reactiveError(state.qOrVMeasured());
+        qPiOutput = limit(data.kp() * qError + state.qIntegral(),
+                effectiveQmin, effectiveQmax);
+        if (data.tfv() <= EPS) {
+            qext = qPiOutput;
+        } else {
+            double ratio = data.tft() / data.tfv();
+            qext = ratio * qPiOutput + (1.0 - ratio) * state.leadLagState();
+        }
+        pext = data.fFlag() == 1 ? state.pLagState() : 0.0;
+    }
+
+    private double reactiveError(double measured) {
+        double error = qvReference - measured;
+        return limit(deadband(error, data.dbd1(), data.dbd2()),
+                data.emin(), data.emax());
+    }
+
+    private double activeError(double measuredP, double frequency) {
+        double fError = deadband(1.0 - frequency, data.fdbd1(), data.fdbd2());
+        double droop = fError >= 0.0 ? data.dup() * fError : data.ddn() * fError;
+        return limit(pReference - measuredP + droop, data.femin(), data.femax());
+    }
+
+    private PlantState state() {
+        return new PlantState(pMeasured, qOrVMeasured, pIntegral, qIntegral,
+                leadLagState, pLagState);
+    }
+
+    private void apply(PlantState state) {
+        pMeasured = state.pMeasured();
+        qOrVMeasured = state.qOrVMeasured();
+        pIntegral = state.pIntegral();
+        qIntegral = state.qIntegral();
+        leadLagState = state.leadLagState();
+        pLagState = state.pLagState();
+    }
+
+    private static double lagRate(double state, double input, double timeConstant) {
+        return timeConstant <= EPS ? 0.0 : (input - state) / timeConstant;
+    }
+
+    private static double integralRate(double integral, double gain, double error,
+            double proportionalGain, double lower, double upper, boolean frozen) {
+        if (frozen) return 0.0;
+        double output = proportionalGain * error + integral;
+        if ((output >= upper && error > 0.0) || (output <= lower && error < 0.0)) return 0.0;
+        return gain * error;
     }
 
     private void resolveMeasurements() {
@@ -240,4 +403,10 @@ public final class Repca1Model {
     private record Measurement(double p, double q, Complex voltage, Complex current, double frequency) {
         double vMag() { return voltage.abs(); }
     }
+
+    private record PlantState(double pMeasured, double qOrVMeasured,
+            double pIntegral, double qIntegral, double leadLagState, double pLagState) { }
+
+    private record PlantDerivatives(double pMeasured, double qOrVMeasured,
+            double pIntegral, double qIntegral, double leadLagState, double pLagState) { }
 }
