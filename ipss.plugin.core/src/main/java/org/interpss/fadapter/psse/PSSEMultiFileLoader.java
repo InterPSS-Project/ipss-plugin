@@ -11,6 +11,7 @@ import java.util.Set;
 import org.interpss.fadapter.builder.AcscNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkObjectFactory;
+import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.CoreObjectFactory;
@@ -32,6 +33,8 @@ import com.interpss.simu.SimuObjectFactory;
 public class PSSEMultiFileLoader {
     /** Null means auto-detect REV from the LF RAW header. */
     private final Integer versionOverride;
+    private PowerWorldDydWtgtAImporter.Result lastPowerWorldDydReport =
+            PowerWorldDydWtgtAImporter.Result.empty();
 
     /** Auto-detect PSS/E REV from the LF file header. */
     public PSSEMultiFileLoader() {
@@ -41,6 +44,11 @@ public class PSSEMultiFileLoader {
     /** Force section layout to {@code version} (override header REV). */
     public PSSEMultiFileLoader(int version) {
         this.versionOverride = version;
+    }
+
+    /** Supplemental PowerWorld DYD result from the most recent load. */
+    public PowerWorldDydWtgtAImporter.Result getLastPowerWorldDydReport() {
+        return lastPowerWorldDydReport;
     }
 
     private PSSEDirectParser createLfParser(com.interpss.core.aclf.BaseAclfNetwork<?, ?> net) {
@@ -111,6 +119,7 @@ public class PSSEMultiFileLoader {
             throw new InterpssException("At least one file (LF) is required");
         }
 
+        lastPowerWorldDydReport = PowerWorldDydWtgtAImporter.Result.empty();
         dsNet.setPositiveSeqDataOnly(true);
         createLfParser(dsNet, objectFactory).parseInto(files[0]);
 
@@ -143,25 +152,38 @@ public class PSSEMultiFileLoader {
         if (modelFiles.size() == 1) {
             String modelFile = modelFiles.get(0);
             if (modelFile.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
-                new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet))
-                        .setGnetRemovedGenerators(gnetRemovedGenerators)
-                        .setModelRemovedGenerators(modelRemovedGenerators)
-                        .parseDynFile(modelFile);
+                parseDynamicModels(dsNet, modelFile, gnetRemovedGenerators,
+                        modelRemovedGenerators);
             } else {
                 new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFile);
             }
         } else if (modelFiles.size() >= 2) {
             new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFiles.get(0));
-            new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet))
-                    .setGnetRemovedGenerators(gnetRemovedGenerators)
-                    .setModelRemovedGenerators(modelRemovedGenerators)
-                    .parseDynFile(modelFiles.get(1));
+            parseDynamicModels(dsNet, modelFiles.get(1), gnetRemovedGenerators,
+                    modelRemovedGenerators);
         }
 
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
         dynAlgo.setSolver(new PsseDStabSolver(dynAlgo));
         simuCtx.setDynSimuAlgorithm(dynAlgo);
         return simuCtx;
+    }
+
+    private void parseDynamicModels(BaseDStabNetwork<?, ?> dsNet, String modelFile,
+            Set<PsseGnetIdvProcessor.GeneratorKey> gnetRemovedGenerators,
+            Set<PsseGnetIdvProcessor.GeneratorKey> modelRemovedGenerators)
+            throws InterpssException {
+        DStabNetworkBuilder builder = new DStabNetworkBuilder(dsNet);
+        new PSSEDStabDirectParser(builder)
+                .setGnetRemovedGenerators(gnetRemovedGenerators)
+                .setModelRemovedGenerators(modelRemovedGenerators)
+                .parseDynFile(modelFile);
+        java.util.Optional<Path> supplemental = discoverSibling(modelFile, ".dyd");
+        if (supplemental.isPresent()) {
+            lastPowerWorldDydReport = new PowerWorldDydWtgtAImporter().importFile(
+                    supplemental.get(), builder, gnetRemovedGenerators,
+                    modelRemovedGenerators);
+        }
     }
 
     private static java.util.Optional<Path> discoverSiblingIdv(String modelFile, String suffix) {
@@ -174,6 +196,17 @@ public class PSSEMultiFileLoader {
         Path sibling = path.resolveSibling(stem + suffix);
         return Files.isRegularFile(sibling)
                 ? java.util.Optional.of(sibling)
+                : java.util.Optional.empty();
+    }
+
+    private static java.util.Optional<Path> discoverSibling(String modelFile, String extension) {
+        Path path = Path.of(modelFile).toAbsolutePath().normalize();
+        String name = path.getFileName().toString();
+        if (!name.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
+            return java.util.Optional.empty();
+        }
+        Path sibling = path.resolveSibling(name.substring(0, name.length() - 4) + extension);
+        return Files.isRegularFile(sibling) ? java.util.Optional.of(sibling)
                 : java.util.Optional.empty();
     }
 }

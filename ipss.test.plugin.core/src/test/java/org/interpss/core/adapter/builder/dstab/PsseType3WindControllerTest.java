@@ -2,6 +2,7 @@ package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -17,10 +18,13 @@ import org.interpss.dstab.renewable.Wtdta1Data;
 import org.interpss.dstab.renewable.Wtdta1Model;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtpta1Model;
+import org.interpss.dstab.renewable.WtgtAData;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
+import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter;
+import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter.Status;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -58,6 +62,33 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         assertEquals(new Wttqa1Data(1, 1.9, .5, .04, 60, 1.002, 0,
                 .2, .58, .4, .72, .6, .86, .8, 1, 0),
                 stack.getTorqueController().getData());
+    }
+
+    @Test
+    void supplementalWtgtADoesNotReplaceAnExplicitDyrDriveTrain(@TempDir Path tempDir)
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("type3.dyr");
+        Files.writeString(dyr,
+                "1 'REGCA1' 1 1 .02 10 .9 .4 1.22 1.2 .9 .5 -1.3 .02 0 100 -100 .7 /\n"
+                + "1 'REECA1' 1 0 0 1 1 0 0 .85 1.15 .02 0 0 5 1.1 -1.1 0 0 0 .5 .02 .436 -.436 1.1 .9 1.3 2.4 .6 1.5 0 .02 99 -99 1 0 1.3 .02 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 /\n"
+                + "1 'WTDTA1' 1 5.0 .1 .8 1.5 .2 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true)
+                .parseDynFile(dyr.toString());
+        Regca1Model converter = (Regca1Model) ((DStabGen) builder.getDStabNetwork()
+                .getDStabBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
+        Wtdta1Model original = converter.getReeca1Controller().getWindControlStack()
+                .getDriveTrain();
+        Path dyd = tempDir.resolve("type3.dyd");
+        Files.writeString(dyd,
+                "wtgt_a 1 \"BUS 1\" 230.00 \"1\" : #9 0 4 1 .2 3.2 1\n");
+
+        var result = new PowerWorldDydWtgtAImporter().importFile(dyd, builder,
+                java.util.List.of(), java.util.List.of());
+
+        assertEquals(1, result.count(Status.REJECTED));
+        assertSame(original, converter.getReeca1Controller().getWindControlStack()
+                .getDriveTrain());
     }
 
     @Test
@@ -128,6 +159,40 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         assertTrue(model.isSingleMass());
         assertEquals(expected, model.getGeneratorSpeed(), 1.0e-12);
         assertEquals(expected, model.getTurbineSpeed(), 1.0e-12);
+    }
+
+    @Test
+    void powerWorldWtgtAConversionPreservesMassesStiffnessBaseAndInitialSpeed() {
+        WtgtAData source = new WtgtAData(4.0, 1.0, .2, 3.2, 100.0, 1.05);
+        Wtdta1Model model = new Wtdta1Model(source, 200.0);
+
+        model.initialize(.4, .8);
+
+        assertEquals(5.0, model.getData().h(), 0.0);
+        assertEquals(.8, model.getData().htfrac(), 0.0);
+        assertEquals(3.2, model.shaftStiffness(), 1.0e-12);
+        assertEquals(2.0, model.getInputPowerScale(), 0.0);
+        assertEquals(.8, model.getInitialPower(), 0.0);
+        assertEquals(1.05, model.getInitialSpeed(), 0.0);
+        model.step(.01, .4, .4);
+        assertEquals(1.05, model.getTurbineSpeed(), 1.0e-12);
+        assertEquals(1.05, model.getGeneratorSpeed(), 1.0e-12);
+    }
+
+    @Test
+    void powerWorldDriveTrainInitializesTorqueControllerAtW0WithoutPrefJump() {
+        WindControlStack stack = new WindControlStack();
+        stack.setDriveTrain(new Wtdta1Model(
+                new WtgtAData(4.0, 1.0, .2, 3.2, 0.0, 1.0), 100.0));
+        stack.setAerodynamics(new Wtara1Model(new Wtara1Data(.007, 0)));
+        stack.setTorqueController(torqueController(1, 2.6, .5, .04, 60, 1.002, 0));
+
+        stack.initialize(.625);
+        stack.step(1.0 / 240.0, .625, .625);
+
+        assertEquals(1.0, stack.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(.625, stack.getTorqueController().getTorque(), 1.0e-12);
+        assertEquals(.625, stack.getPref(), 1.0e-12);
     }
 
     @Test
@@ -223,7 +288,7 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
     @Test
     void torqueControllerPowerErrorModeUsesPowerworldNegativeFeedback() {
-        Wttqa1Model model = torqueController(0, 1, 0, 0, 0, 10, 0);
+        Wttqa1Model model = torqueController(1, 1, 0, 0, 0, 10, 0);
         model.initialize(.5);
 
         model.step(.1, .6, 1.0);
@@ -235,7 +300,7 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
     @Test
     void torquePowerErrorUsesFilteredPowerAndFreezesIntegratorDuringDip() {
-        Wttqa1Model model = torqueController(0, 0, 2, .2, 0, 10, 0);
+        Wttqa1Model model = torqueController(1, 0, 2, .2, 0, 10, 0);
         model.initialize(.5);
         double initialIntegral = model.getTorqueIntegral();
 
@@ -251,7 +316,7 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
     @Test
     void torqueControllerDoesNotAmplifyPartitionedSolverRoundoffAtEquilibrium() {
-        Wttqa1Model model = torqueController(0, 2.7, .5, .08, 60, 1.002, 0);
+        Wttqa1Model model = torqueController(1, 2.7, .5, .08, 60, 1.002, 0);
         model.initialize(.625);
         double initialTorque = model.getTorque();
 
@@ -273,7 +338,7 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
     @Test
     void torqueControllerSpeedErrorModeMatchesPowerworldFlagDefinition() {
-        Wttqa1Model model = torqueController(1, 1, 0, 0, 0, 10, 0);
+        Wttqa1Model model = torqueController(0, 1, 0, 0, 0, 10, 0);
         model.initialize(.5);
 
         model.step(.1, .5, .7);
@@ -285,7 +350,7 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
     @Test
     void torqueControllerLimitStopsWindupAndAllowsRecovery() {
-        Wttqa1Model model = torqueController(0, 0, 1, 0, 0, .7, 0);
+        Wttqa1Model model = torqueController(1, 0, 1, 0, 0, .7, 0);
         model.initialize(.5);
 
         for (int i = 0; i < 20; i++) model.step(.01, 0.0, 1.0);

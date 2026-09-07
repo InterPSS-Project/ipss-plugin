@@ -105,6 +105,7 @@ import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtara1Model;
 import org.interpss.dstab.renewable.Wtdta1Data;
 import org.interpss.dstab.renewable.Wtdta1Model;
+import org.interpss.dstab.renewable.WtgtAData;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtpta1Model;
 import org.interpss.dstab.renewable.Wttqa1Data;
@@ -2027,6 +2028,27 @@ public class DStabNetworkBuilder {
         }
         Wtdta1Model model = new Wtdta1Model(data);
         windStack(controller).setDriveTrain(model);
+        return model;
+    }
+
+    /** Attach a PowerWorld WTGT_A record without replacing an existing drive train. */
+    public Wtdta1Model addWtgtA(String busId, String genId, WtgtAData data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTGT_A: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        WindControlStack stack = windStack(controller);
+        if (stack.getDriveTrain() != null) {
+            log.warn("Drive train already exists for WTGT_A: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = (DStabGen) bus.getContributeGen(genId);
+        double machineBaseMva = gen.getMvaBase() > 1.0e-9
+                ? gen.getMvaBase() : network.getBaseMva();
+        Wtdta1Model model = new Wtdta1Model(data, machineBaseMva);
+        stack.setDriveTrain(model);
         return model;
     }
 

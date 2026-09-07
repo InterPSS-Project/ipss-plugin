@@ -25,6 +25,10 @@ public final class WindControlStack {
             driveTrain.initialize(power, generatorSpeed);
             generatorSpeed = driveTrain.getGeneratorSpeed();
             turbineSpeed = driveTrain.getTurbineSpeed();
+            if (torqueController != null) {
+                torqueController.initialize(power, generatorSpeed);
+                pref = torqueController.getPref();
+            }
         }
         if (aerodynamics != null) aerodynamics.initialize(power);
         if (pitchController != null) {
@@ -41,7 +45,7 @@ public final class WindControlStack {
             boolean voltageDip) {
         if (driveTrain != null) {
             double mechanicalPower = aerodynamics == null
-                    ? driveTrain.getInitialPower() : aerodynamics.getMechanicalPower();
+                    ? driveTrain.getInitialInputPower() : aerodynamics.getMechanicalPower();
             driveTrain.step(dt, mechanicalPower, electricalPower);
             generatorSpeed = driveTrain.getGeneratorSpeed();
             turbineSpeed = driveTrain.getTurbineSpeed();

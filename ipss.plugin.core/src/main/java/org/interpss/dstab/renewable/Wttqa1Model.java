@@ -17,10 +17,22 @@ public final class Wttqa1Model {
     }
 
     public void initialize(double power) {
+        initialize(power, speedForPower(power));
+    }
+
+    /** Initialize torque and PI bias at the connected drive train's speed. */
+    public void initialize(double power, double generatorSpeed) {
+        if (!Double.isFinite(power) || !Double.isFinite(generatorSpeed)
+                || generatorSpeed <= 0.0) {
+            throw new IllegalArgumentException(
+                    "WTTQA1 initial power and generator speed must be finite and positive");
+        }
         initialPower = filteredPower = power;
         speedReference = speedForPower(power);
-        torque = power / nonzero(speedReference);
-        torqueIntegral = torque;
+        double initialError = data.tFlag() == 1 ? 0.0
+                : speedReference - generatorSpeed;
+        torque = power / nonzero(generatorSpeed);
+        torqueIntegral = torque - data.kpp() * initialError;
         pref = power;
     }
 
@@ -33,11 +45,11 @@ public final class Wttqa1Model {
         filteredPower = Repca1Model.lag(filteredPower, electricalPower, data.tp(), dt);
         speedReference = Repca1Model.lag(speedReference, speedForPower(filteredPower),
                 data.twref(), dt);
-        // PowerWorld defines TFLAG=0 as torque/power control and TFLAG=1 as
-        // speed control. The torque path forms Pref0 minus filtered Pe, then
+        // PowerWorld/WECC define TFLAG=1 as torque/power control and TFLAG=0
+        // as speed control. The torque path forms Pref0 minus filtered Pe, then
         // divides by generator speed. Using Pe-Pref0 would make that closed
         // active-power loop self-reinforcing.
-        double error = data.tFlag() == 0
+        double error = data.tFlag() == 1
                 ? (initialPower - filteredPower) / nonzero(generatorSpeed)
                 : speedReference - generatorSpeed;
         if (Math.abs(error) <= EQUILIBRIUM_RESIDUAL) error = 0.0;
