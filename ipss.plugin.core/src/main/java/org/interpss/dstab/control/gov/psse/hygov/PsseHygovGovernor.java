@@ -6,6 +6,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
@@ -17,7 +18,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * {@code Tr} dependence that is currently absent from the ANDES HYGOV state
  * equation.</p>
  */
-public class PsseHygovGovernor extends AbstractGovernor {
+public class PsseHygovGovernor extends AbstractGovernor implements IntegrationStepAware {
     private static final double EPS = 1.0e-9;
 
     private State state = State.zero();
@@ -29,6 +30,12 @@ public class PsseHygovGovernor extends AbstractGovernor {
     private double committedDesiredGate;
     private double currentOutput;
     private double governorToMachineBase = 1.0;
+    private double integrationStep;
+    private double minimumTimeConstantMultiplier = 1.0;
+    private double effectiveTr;
+    private double effectiveTf;
+    private double effectiveTg;
+    private double effectiveTw;
     private boolean initialized;
 
     public PsseHygovGovernor(String id, String name, String category) {
@@ -41,9 +48,23 @@ public class PsseHygovGovernor extends AbstractGovernor {
     }
 
     @Override
+    public void configureIntegrationStep(double timeStepSec) {
+        configureIntegrationStep(timeStepSec, 1.0);
+    }
+
+    public void configureIntegrationStep(double timeStepSec, double multiplier) {
+        integrationStep = timeStepSec;
+        minimumTimeConstantMultiplier = multiplier;
+    }
+
+    @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
         if (!validateParameters()) return false;
         PsseHygovGovernorData d = getData();
+        effectiveTr = correctedPositiveTimeConstant(d.getTr());
+        effectiveTf = correctedPositiveTimeConstant(d.getTf());
+        effectiveTg = correctedPositiveTimeConstant(d.getTg());
+        effectiveTw = correctedPositiveTimeConstant(d.getTw());
         double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
         governorToMachineBase = d.getTrate() > EPS && machineMva > EPS
                 ? d.getTrate() / machineMva : 1.0;
@@ -103,7 +124,22 @@ public class PsseHygovGovernor extends AbstractGovernor {
 
     public double getGatePosition() { return state.gate; }
     public double getWaterFlow() { return state.flow; }
+    public double getTurbineHead() {
+        return square(state.flow / Math.max(EPS, state.gate));
+    }
     public double getDesiredGate() { return desiredGate(state); }
+    public double getGovernorInput() {
+        return pref - applyFrequencyDeadband(getMachine().getSpeed() - 1.0)
+                - getData().getR() * desiredGate(state);
+    }
+    public double getGovernorFilterOutput() {
+        return effectiveTf > EPS ? state.filter : algebraicFilterOutput(state);
+    }
+    public double getTemporaryDroopState() { return state.integrator; }
+    public double getEffectiveTr() { return effectiveTr; }
+    public double getEffectiveTf() { return effectiveTf; }
+    public double getEffectiveTg() { return effectiveTg; }
+    public double getEffectiveTw() { return effectiveTw; }
     public double getGovernorBaseMva(Machine mach) {
         return governorToMachineBase * mach.getRating(UnitType.mVA,
                 mach.getDStabBus().getNetwork().getBaseKva());
@@ -127,13 +163,13 @@ public class PsseHygovGovernor extends AbstractGovernor {
         double speedDeviation = getMachine().getSpeed() - 1.0;
         double dg = desiredGate(s);
         double governorInput = pref - applyFrequencyDeadband(speedDeviation) - d.getR() * dg;
-        double filterOutput = d.getTf() > EPS ? s.filter : algebraicFilterOutput(s);
-        double filterDot = d.getTf() > EPS
-                ? (governorInput - s.filter) / d.getTf() : 0.0;
+        double filterOutput = effectiveTf > EPS ? s.filter : algebraicFilterOutput(s);
+        double filterDot = effectiveTf > EPS
+                ? (governorInput - s.filter) / effectiveTf : 0.0;
 
-        double integratorDot = filterOutput / (d.getRtemp() * d.getTr());
-        double zeroTfFactor = d.getTf() > EPS ? 1.0 : 1.0 + d.getR() / d.getRtemp();
-        double desiredGateDot = d.getTf() > EPS
+        double integratorDot = filterOutput / (d.getRtemp() * effectiveTr);
+        double zeroTfFactor = effectiveTf > EPS ? 1.0 : 1.0 + d.getR() / d.getRtemp();
+        double desiredGateDot = effectiveTf > EPS
                 ? integratorDot + filterDot / d.getRtemp()
                 : integratorDot / zeroTfFactor;
         desiredGateDot = clamp(desiredGateDot, -d.getVelm(), d.getVelm());
@@ -141,19 +177,19 @@ public class PsseHygovGovernor extends AbstractGovernor {
                 || (dg <= effectiveGmin && desiredGateDot < 0.0)) {
             desiredGateDot = 0.0;
         }
-        integratorDot = d.getTf() > EPS
+        integratorDot = effectiveTf > EPS
                 ? desiredGateDot - filterDot / d.getRtemp()
                 : desiredGateDot * zeroTfFactor;
 
-        double gateDot = (clamp(dg, effectiveGmin, effectiveGmax) - s.gate) / d.getTg();
+        double gateDot = (clamp(dg, effectiveGmin, effectiveGmax) - s.gate) / effectiveTg;
         double safeGate = Math.max(EPS, s.gate);
         double head = square(s.flow / safeGate);
-        double flowDot = (1.0 - head) / d.getTw();
+        double flowDot = (1.0 - head) / effectiveTw;
         return new Derivatives(filterDot, integratorDot, gateDot, flowDot);
     }
 
     private double desiredGate(State s) {
-        double filterOutput = getData().getTf() > EPS ? s.filter : algebraicFilterOutput(s);
+        double filterOutput = effectiveTf > EPS ? s.filter : algebraicFilterOutput(s);
         return s.integrator + filterOutput / getData().getRtemp();
     }
 
@@ -170,7 +206,7 @@ public class PsseHygovGovernor extends AbstractGovernor {
                 Math.max(effectiveGmin, priorDesiredGate - getData().getVelm() * dt),
                 Math.min(effectiveGmax, priorDesiredGate + getData().getVelm() * dt));
         if (Math.abs(target - raw) <= EPS) return s;
-        double correctionFactor = getData().getTf() > EPS
+        double correctionFactor = effectiveTf > EPS
                 ? 1.0 : 1.0 + getData().getR() / getData().getRtemp();
         return new State(s.filter, s.integrator + (target - raw) * correctionFactor,
                 s.gate, s.flow);
@@ -185,6 +221,10 @@ public class PsseHygovGovernor extends AbstractGovernor {
     }
 
     private static double square(double value) { return value * value; }
+    private double correctedPositiveTimeConstant(double value) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        return value > 0.0 && value < minimum ? minimum : value;
+    }
     private static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }

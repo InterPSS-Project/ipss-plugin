@@ -88,6 +88,25 @@ public class PsseHygovGovernorTest extends CorePluginTestSetup {
     }
 
     @Test
+    void appliesPowerWorldMinimumTimeConstantCorrections() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(0.4); machine.setPe(0.4);
+        PsseHygovGovernorData data = texasData();
+        data.setTr(.004); data.setTf(.003); data.setTg(.002); data.setTw(.001);
+        PsseHygovGovernor governor = builder.addGovHygov("Bus1", "1", data);
+        governor.configureIntegrationStep(.01);
+
+        assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"), machine));
+        assertEquals(.01, governor.getEffectiveTr(), TOL);
+        assertEquals(.01, governor.getEffectiveTf(), TOL);
+        assertEquals(.01, governor.getEffectiveTg(), TOL);
+        assertEquals(.01, governor.getEffectiveTw(), TOL);
+        assertEquals(.004, governor.getData().getTr(), TOL,
+                "source parameters remain unchanged for diagnostics");
+    }
+
+    @Test
     void directParserUsesPsseFieldOrder(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("hygov.dyr");
