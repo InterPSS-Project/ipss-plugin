@@ -32,6 +32,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
+import com.interpss.dstab.controller.cml.annotate.util.AnControllerInitializer;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
@@ -39,6 +40,7 @@ import com.interpss.dstab.controller.cml.field.block.IntegrationControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 @AnController(
@@ -46,9 +48,21 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 		   output="this.ratingScale*this.fvhp*this.chDelayBlock.y + this.ratingScale*this.fhp*this.rh1DelayBlock.y + this.ratingScale*this.fip*this.rh2DelayBlock.y + this.ratingScale*this.flp*this.coDelayBlock.y",
 		   refPoint="this.gainBlock.u0 + this.filterBlock.y + this.intBlock.y",
 		   display= {}		)
-public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
+public class IeeeSteamTCDRGovernor extends AnnotateGovernor implements IntegrationStepAware {
    public double fvhp = 0.1, fhp = 0.1, fip = 0.3, flp = 0.5;
    public double ratingScale = 1.0, invRatingScale = 1.0;
+   private double integrationStep;
+   private double minimumTimeConstantMultiplier = 1.0;
+
+   @Override
+   public void configureIntegrationStep(double timeStepSec) {
+       configureIntegrationStep(timeStepSec, 1.0);
+   }
+
+   public void configureIntegrationStep(double timeStepSec, double multiplier) {
+       this.integrationStep = timeStepSec;
+       this.minimumTimeConstantMultiplier = multiplier;
+   }
 
     @AnControllerField(type=CMLFieldEnum.StaticBlock, input="mach.speed - 1.0",
             y0="0.0")
@@ -158,12 +172,17 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
         this.k = getData().getK();
         this.t1 = getData().getT1();
         this.t2 = getData().getT2();
-        this.k3 = 1.0/getData().getT3();
+        double t3 = correctedPositiveTimeConstant(getData().getT3());
+        this.k3 = 1.0 / t3;
+        this.fvhp = getData().getFvhp();
+        this.fhp = getData().getFhp();
+        this.fip = getData().getFip();
+        this.flp = getData().getFlp();
+        normalizeSingleMachineFractionsIfNeeded();
         double rawMax = Math.max(getData().getPmax(), getData().getPmin());
         double rawMin = Math.min(getData().getPmax(), getData().getPmin());
         double initialValve = mach.getPm() * invRatingScale
-                / (getData().getFvhp() + getData().getFhp()
-                        + getData().getFip() + getData().getFlp());
+                / (fvhp + fhp + fip + flp);
         this.pmax = Math.max(rawMax, initialValve);
         this.pmin = Math.min(rawMin, initialValve);
         double rawOpen = getData().getPup();
@@ -173,16 +192,91 @@ public class IeeeSteamTCDRGovernor extends AnnotateGovernor {
         }
         this.pup = rawOpen < 0.0 ? -rawOpen : rawOpen;
         this.pdown = rawClose > 0.0 ? -rawClose : rawClose;
-        this.tch = getData().getTch();
-        this.trh1 = getData().getTrh1();
-        this.trh2 = getData().getTrh2();
-        this.tco = getData().getTco();
- 	   	this.fvhp = getData().getFvhp();
- 	   	this.fhp = getData().getFhp();
- 	   	this.fip = getData().getFip();
- 	   	this.flp = getData().getFlp();
+        this.tch = correctedBypassTimeConstant(getData().getTch());
+        this.trh1 = correctedBypassTimeConstant(getData().getTrh1());
+        this.trh2 = correctedBypassTimeConstant(getData().getTrh2());
+        this.tco = correctedBypassTimeConstant(getData().getTco());
 	    this.factor = 1.0 / (this.fvhp+this.fhp+this.fip+this.flp);
-        return super.initStates(bus, mach);
+        boolean initialized = super.initStates(bus, mach);
+        if (initialized) bindCmlBlocks();
+        return initialized;
+    }
+
+    private void bindCmlBlocks() {
+        speedDeadbandBlock = (AsymmetricDeadbandBlock) AnControllerInitializer.getBlock(
+                "speedDeadbandBlock", getFieldWrapperList());
+        filterBlock = (FilterControlBlock) AnControllerInitializer.getBlock(
+                "filterBlock", getFieldWrapperList());
+        gainBlock = (GainBlock) AnControllerInitializer.getBlock(
+                "gainBlock", getFieldWrapperList());
+        intBlock = (IntegrationControlBlock) AnControllerInitializer.getBlock(
+                "intBlock", getFieldWrapperList());
+        chDelayBlock = (DelayControlBlock) AnControllerInitializer.getBlock(
+                "chDelayBlock", getFieldWrapperList());
+        rh1DelayBlock = (DelayControlBlock) AnControllerInitializer.getBlock(
+                "rh1DelayBlock", getFieldWrapperList());
+        rh2DelayBlock = (DelayControlBlock) AnControllerInitializer.getBlock(
+                "rh2DelayBlock", getFieldWrapperList());
+        coDelayBlock = (DelayControlBlock) AnControllerInitializer.getBlock(
+                "coDelayBlock", getFieldWrapperList());
+    }
+
+    private double correctedBypassTimeConstant(double value) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        if (value > 0.0 && value < 0.5 * minimum) return 0.0;
+        if (value > 0.5 * minimum && value < minimum) return minimum;
+        return value;
+    }
+
+    private double correctedPositiveTimeConstant(double value) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        return value > 0.0 && value < minimum ? minimum : value;
+    }
+
+    private void normalizeSingleMachineFractionsIfNeeded() {
+        double sum = fvhp + fhp + fip + flp;
+        if (sum > 1.0) {
+            fvhp /= sum;
+            fhp /= sum;
+            fip /= sum;
+            flp /= sum;
+        }
+    }
+
+    public double getValvePositionerTimeConstant() {
+        return 1.0 / k3;
+    }
+
+    public double getSpeedSignal() {
+        return speedDeadbandBlock.getY();
+    }
+
+    public double getGovernorSignal() {
+        return filterBlock.getY();
+    }
+
+    public double getValveRate() {
+        return gainBlock.getY();
+    }
+
+    public double getValvePosition() {
+        return intBlock.getY();
+    }
+
+    public double getFirstStageOutput() {
+        return chDelayBlock.getY();
+    }
+
+    public double getSecondStageOutput() {
+        return rh1DelayBlock.getY();
+    }
+
+    public double getThirdStageOutput() {
+        return rh2DelayBlock.getY();
+    }
+
+    public double getFourthStageOutput() {
+        return coDelayBlock.getY();
     }
 
     /**
