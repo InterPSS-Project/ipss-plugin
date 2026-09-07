@@ -374,6 +374,9 @@ public class PSSEDStabDirectParser {
             case "WPIDHYD":
             case "WPIDHYDU":
                 return procGovWpidhyd(busId, genId, fields);
+            case "GASTWDD":
+            case "GASTWDDU":
+                return procGovGastwdd(busId, genId, fields);
             case "LCFB1":
                 pendingLcfb1.add(new PendingLcfb1(busId, genId, fields.clone(), record));
                 return true;
@@ -1552,6 +1555,26 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 18, 0), getDouble(f, 19, 0), getDouble(f, 20, 0),
                 getDouble(f, 21, 0), getDouble(f, 22, 0), getDouble(f, 23, 0),
                 getDouble(f, 24, 0), getDouble(f, 25, 0), getDouble(f, 26, 0)) != null;
+    }
+
+    // GASTWDD: Kdroop Kp Ki Kd Etd Tcd Trate T Max Min Ecr K3 A B C
+    //           TauF Kf K5 K4 T3 T4 TauT T5 Af1 Bf1 Af2 Bf2 Cf2 Tr K6 Tc Td dbH dbL
+    private boolean procGovGastwdd(String busId, String genId, String[] f) {
+        if (f.length < 37) return false;
+        var d = new org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernorData();
+        d.setKdroop(getDouble(f,3,0)); d.setKp(getDouble(f,4,0)); d.setKi(getDouble(f,5,0));
+        d.setKd(getDouble(f,6,0)); d.setEtd(getDouble(f,7,0)); d.setTcd(getDouble(f,8,0));
+        d.setTrate(getDouble(f,9,0)); d.setT(getDouble(f,10,0)); d.setMaxLimit(getDouble(f,11,0));
+        d.setMinLimit(getDouble(f,12,0)); d.setEcr(getDouble(f,13,0)); d.setK3(getDouble(f,14,0));
+        d.setA(getDouble(f,15,0)); d.setB(getDouble(f,16,0)); d.setC(getDouble(f,17,0));
+        d.setTauF(getDouble(f,18,0)); d.setKf(getDouble(f,19,0)); d.setK5(getDouble(f,20,0));
+        d.setK4(getDouble(f,21,0)); d.setT3(getDouble(f,22,0)); d.setT4(getDouble(f,23,0));
+        d.setTauT(getDouble(f,24,0)); d.setT5(getDouble(f,25,0)); d.setAf1(getDouble(f,26,0));
+        d.setBf1(getDouble(f,27,0)); d.setAf2(getDouble(f,28,0)); d.setBf2(getDouble(f,29,0));
+        d.setCf2(getDouble(f,30,0)); d.setTr(getDouble(f,31,0)); d.setK6(getDouble(f,32,0));
+        d.setTc(getDouble(f,33,0)); d.setTd(getDouble(f,34,0)); d.setDbH(getDouble(f,35,0));
+        d.setDbL(getDouble(f,36,0));
+        return builder.addGovGastwdd(busId, genId, d) != null;
     }
 
     // GGOV1 PSS/E record order.  Trate is field 30 in the data list even though

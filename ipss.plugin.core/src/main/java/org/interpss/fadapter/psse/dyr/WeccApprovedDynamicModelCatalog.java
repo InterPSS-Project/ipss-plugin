@@ -176,7 +176,7 @@ public final class WeccApprovedDynamicModelCatalog {
             governor("IEESGOD", "", "IEESGODU, IEESGOD", "IEESGOD", APPROVED, "2019-11", "IEESGOD"),
             governor("WESGOVD", "", "WESGOVDU, WESGOVD", "WESGOVD", APPROVED, "2019-11", "WESGOVD"),
             governor("WPIDHYD", "", "WPIDHYDU, WPIDHYD", "WPIDHYD", APPROVED, "2019-11", "WPIDHYD"),
-            governor("GASTWDD", "", "GASTWDDU, GASTWDD", "GASTWDD", APPROVED, "2019-11", ""),
+            governor("GASTWDD", "", "GASTWDDU, GASTWDD", "GASTWDD", APPROVED, "2019-11", "GASTWDD"),
             governor("GAST2AD", "", "GAST2ADU, GAST2AD", "GAST2AD", APPROVED, "2019-11", ""),
             governor("GASTD", "", "GASTDU, GASTD", "GASTD", APPROVED, "2019-11", "GASTD"),
             governor("HYGOVD", "", "HYGOVDU, HYGOVD", "HYGOVD", APPROVED, "2019-11", "HYGOVD"),
