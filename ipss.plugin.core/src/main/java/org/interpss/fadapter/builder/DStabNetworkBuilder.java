@@ -42,6 +42,8 @@ import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import org.interpss.dstab.control.exc.psse.esurry.EsurryData;
+import org.interpss.dstab.control.exc.psse.esurry.EsurryExciter;
 import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
 import org.interpss.dstab.control.exc.psse.exac1a.Exac1aExciter;
 import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
@@ -1349,6 +1351,22 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if (mach==null) { log.warn("Machine not found for EXAC1: bus={}, gen={}",busId,genId); return null; }
         return new Exac1Exciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the PSS/E ESURRY (WECC EXAC1M) excitation system. */
+    public EsurryExciter addExcEsurry(String busId,String genId,EsurryData data) {
+        if (data==null || data.getK10()<=0.0 || data.getTe()<=0.0 || data.getTf()<=0.0
+                || data.getTr()<0.0 || data.getT1()<0.0 || data.getTb()<0.0
+                || data.getTd()<0.0 || data.getKc()<0.0) {
+            log.warn("Invalid ESURRY parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) {
+            log.warn("Machine not found for ESURRY: bus={}, gen={}",busId,genId);
+            return null;
+        }
+        return new EsurryExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** Attach the PSS/E EXAC1A modified rotating AC exciter. */

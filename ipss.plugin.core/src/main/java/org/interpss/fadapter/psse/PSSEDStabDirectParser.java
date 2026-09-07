@@ -43,6 +43,7 @@ import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
+import org.interpss.dstab.control.exc.psse.esurry.EsurryData;
 import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
 import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
@@ -292,6 +293,9 @@ public class PSSEDStabDirectParser {
                 return procExcSt5b(record.sourceModelName(), busId, genId, fields);
             case "EXAC1":
                 return procExcExac1(busId, genId, fields);
+            case "ESURRY":
+            case "EXAC1M":
+                return procExcEsurry(busId, genId, fields);
             case "EXAC1A":
                 return procExcExac1a(busId, genId, fields);
             case "EXAC2":
@@ -935,6 +939,23 @@ public class PSSEDStabDirectParser {
         d.setKe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0)); d.setSe1(getDouble(f,17,0));
         d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0)); d.setSpdmlt(getDouble(f,20,0));
         return builder.addExcExac1(busId,genId,d)!=null;
+    }
+
+    // ESURRY/EXAC1M: Tr T1 Ta Tb Tc Td K10 K16 Kf Tf Vrmax Vrmin Te E1 SE1 E2 SE2 Kc Kd Ke
+    private boolean procExcEsurry(String busId,String genId,String[] f) {
+        if (f.length<23) return false;
+        EsurryData d=new EsurryData();
+        d.setTr(getDouble(f,3,0)); d.setT1(getDouble(f,4,0));
+        d.setTa(getDouble(f,5,0)); d.setTb(getDouble(f,6,0));
+        d.setTc(getDouble(f,7,0)); d.setTd(getDouble(f,8,0));
+        d.setK10(getDouble(f,9,0)); d.setK16(getDouble(f,10,0));
+        d.setKf(getDouble(f,11,0)); d.setTf(getDouble(f,12,0));
+        d.setVrmax(getDouble(f,13,0)); d.setVrmin(getDouble(f,14,0));
+        d.setTe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0));
+        d.setSe1(getDouble(f,17,0)); d.setE2(getDouble(f,18,0));
+        d.setSe2(getDouble(f,19,0)); d.setKc(getDouble(f,20,0));
+        d.setKd(getDouble(f,21,0)); d.setKe(getDouble(f,22,0));
+        return builder.addExcEsurry(busId,genId,d)!=null;
     }
 
     // EXAC1A: EXAC1 parameters, with EFD rather than VFE driving the washout feedback.
