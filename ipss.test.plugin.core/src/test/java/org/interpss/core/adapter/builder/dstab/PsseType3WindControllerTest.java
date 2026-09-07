@@ -304,6 +304,33 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void stagedPitchControllerUsesCorrectedPowerAndSpeedInputs() {
+        Wtpta1Model model = new Wtpta1Model(
+                new Wtpta1Data(2, 1, 4, 3, .5, 1, 20, 0, 100, -100));
+        model.initialize(2.0, 1.0);
+
+        model.step(.1, .9, .8, 1.05, 0);
+        assertEquals(2.02, model.getSpeedIntegral(), 1.0e-12);
+        assertEquals(.04, model.getCompensationIntegral(), 1.0e-12);
+        assertEquals(2.04, model.getPitch(), 1.0e-12);
+
+        model.step(.1, .85, .8, 1.02, 1);
+        assertEquals(2.0145, model.getSpeedIntegral(), 1.0e-12);
+        assertEquals(.03, model.getCompensationIntegral(), 1.0e-12);
+        assertEquals(2.03075, model.getPitch(), 1.0e-12);
+    }
+
+    @Test
+    void stagedPitchCorrectorRequiresPredictor() {
+        Wtpta1Model model = new Wtpta1Model(
+                new Wtpta1Data(2, 1, 4, 3, .5, 1, 20, 0, 100, -100));
+        model.initialize(2.0, 1.0);
+
+        assertThrows(IllegalStateException.class,
+                () -> model.step(.1, .9, .8, 1.05, 1));
+    }
+
+    @Test
     void pitchRateAndAngleLimitsPreventWindupAndPermitRecovery() {
         Wtpta1Model model = new Wtpta1Model(
                 new Wtpta1Data(10, 0, 0, 0, 0, 0, 1, 0, .5, -.5));
