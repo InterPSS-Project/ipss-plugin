@@ -1748,7 +1748,11 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 28, -1), getDouble(f, 29, 1), getDouble(f, 30, 99),
                 getDouble(f, 31, -99), getDouble(f, 32, 1), getDouble(f, 33, 0),
                 getDouble(f, 34, 0.1), getDouble(f, 35, 0), getDouble(f, 36, 0),
-                getInt(f, 37, 0));
+                // The 34-parameter PSS/E REPCA1 layout ends at Dup. PowerWorld
+                // imports the omitted optional PUflag as 1 (model-MVA base), as
+                // shown by its TSFlag export. Retain an explicitly supplied
+                // extension at field 37, but use the reference-tool default.
+                getInt(f, 37, 1));
         return builder.addRepca1(busId, genId, data) != null;
     }
 

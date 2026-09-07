@@ -47,7 +47,7 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void optionalPuFlagDefaultsToSystemBase(@TempDir Path tempDir) throws Exception {
+    void optionalPuFlagDefaultsToPowerWorldModelBase(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Regca1Model converter = addRenewableChain(builder);
         Path dyr = tempDir.resolve("repca1-default-puflag.dyr");
@@ -57,7 +57,7 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
 
         new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
 
-        assertEquals(0, converter.getReeca1Controller().getPlantController().getData().puFlag());
+        assertEquals(1, converter.getReeca1Controller().getPlantController().getData().puFlag());
     }
 
     @Test
