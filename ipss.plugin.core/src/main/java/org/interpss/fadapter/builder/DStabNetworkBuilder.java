@@ -72,6 +72,7 @@ import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
 import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.dstab.control.pss.StabilizerObjectFactory;
@@ -1934,6 +1935,47 @@ public class DStabNetworkBuilder {
         gov.getData().setTrate(trate);
         if (!gov.validateParameters()) {
             log.warn("Invalid PIDGOVD parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E TGOV3D modified IEEE Type-1 steam governor. */
+    public PsseTgov3dGovernor addGovTgov3d(String busId, String genId,
+            double k, double t1, double t2, double t3, double uo, double uc,
+            double pmax, double pmin, double t4, double k1, double t5,
+            double k2, double t6, double k3, double ta, double tb, double tc,
+            double prmax, double dbH, double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for TGOV3D governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseTgov3dGovernor gov = GovernorObjectFactory.createPsseTGOV3DGovernor(
+                mach.getId() + "_Gov", "TGOV3D", mach);
+        gov.getData().setK(k);
+        gov.getData().setT1(t1);
+        gov.getData().setT2(t2);
+        gov.getData().setT3(t3);
+        gov.getData().setUo(uo);
+        gov.getData().setUc(uc);
+        gov.getData().setPmax(pmax);
+        gov.getData().setPmin(pmin);
+        gov.getData().setT4(t4);
+        gov.getData().setK1(k1);
+        gov.getData().setT5(t5);
+        gov.getData().setK2(k2);
+        gov.getData().setT6(t6);
+        gov.getData().setK3(k3);
+        gov.getData().setTa(ta);
+        gov.getData().setTb(tb);
+        gov.getData().setTc(tc);
+        gov.getData().setPrmax(prmax);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid TGOV3D parameters at {} {}", busId, genId);
             return null;
         }
         return gov;
