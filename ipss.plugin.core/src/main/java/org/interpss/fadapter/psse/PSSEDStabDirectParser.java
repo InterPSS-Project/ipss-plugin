@@ -47,6 +47,7 @@ import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
+import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.st5b.St5bData;
@@ -237,6 +238,8 @@ public class PSSEDStabDirectParser {
                 return procExcAc8b(busId, genId, fields);
             case "DC4B":
                 return procExcDc4b(record.sourceModelName(),busId,genId,fields);
+            case "DC3A":
+                return procExcDc3a(record.sourceModelName(),busId,genId,fields);
             case "ST6B":
                 return procExcSt6b(record.sourceModelName(),busId,genId,fields);
             case "AC7B":
@@ -637,6 +640,26 @@ public class PSSEDStabDirectParser {
             d.setE2(getDouble(f,21,0));d.setSe2(getDouble(f,22,0));
         }
         return builder.addExcDc4b(busId,genId,sourceName,d)!=null;
+    }
+
+    // DC3A: Tr Kv Vrmax Vrmin Trh Te Ke Vemin E1 SE1 E2 SE2
+    // ESDC3A: Tr Trh Kv Vrmax Vrmin Te Ke E1 SE1 E2 SE2 Spdmlt exclim
+    private boolean procExcDc3a(String sourceName,String busId,String genId,String[] f) {
+        boolean es="ESDC3A".equalsIgnoreCase(sourceName);
+        if((es&&f.length<16)||(!es&&f.length<15))return false;
+        Dc3aData d=new Dc3aData();d.setTr(getDouble(f,3,0));
+        if(es){
+            d.setTrh(getDouble(f,4,0));d.setKv(getDouble(f,5,0));d.setVrmax(getDouble(f,6,0));
+            d.setVrmin(getDouble(f,7,0));d.setTe(getDouble(f,8,0));d.setKe(getDouble(f,9,0));
+            d.setE1(getDouble(f,10,0));d.setSe1(getDouble(f,11,0));d.setE2(getDouble(f,12,0));
+            d.setSe2(getDouble(f,13,0));d.setSpdmlt(getDouble(f,14,0));d.setExclim(getInt(f,15,0));
+        }else{
+            d.setKv(getDouble(f,4,0));d.setVrmax(getDouble(f,5,0));d.setVrmin(getDouble(f,6,0));
+            d.setTrh(getDouble(f,7,0));d.setTe(getDouble(f,8,0));d.setKe(getDouble(f,9,0));
+            d.setVemin(getDouble(f,10,0));d.setE1(getDouble(f,11,0));d.setSe1(getDouble(f,12,0));
+            d.setE2(getDouble(f,13,0));d.setSe2(getDouble(f,14,0));
+        }
+        return builder.addExcDc3a(busId,genId,sourceName,d)!=null;
     }
 
     // ST6B: OEL Tr Kpa Kia Kda Tda VaMax VaMin Kff Km Kcl Klr Ilr Vrmax Vrmin Kg Tg
