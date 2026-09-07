@@ -136,11 +136,15 @@ public final class Reeca1Model implements RenewableElectricalController {
                 ? pMeasured * powerFactorRatio : qReference + plantQref;
         double qTarget = Repca1Model.limit(selectedQ, effectiveQmin, effectiveQmax);
 
-        double rawIp = pOrder / nonzero(v);
+        // The published PowerWorld/WECC REEC_A diagram feeds State 1
+        // (Vt_filt), with the 0.01 pu floor, to both current-command dividers.
+        double currentConversionVoltage = nonzero(vMeasured);
+        double rawIp = pOrder / currentConversionVoltage;
         double rawQCurrent;
         if (data.qFlag() == 0) {
             if (!voltageDip) {
-                qCurrent = Repca1Model.lag(qCurrent, qTarget / nonzero(v), data.tiq(), dt);
+                qCurrent = Repca1Model.lag(qCurrent, qTarget / currentConversionVoltage,
+                        data.tiq(), dt);
             }
             rawQCurrent = qCurrent;
         } else {

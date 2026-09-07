@@ -159,17 +159,18 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void directQAndActiveCurrentUseLowerCappedTerminalVoltage() {
+    void directQAndActiveCurrentUseLowerCappedFilteredTerminalVoltage() {
         Reeca1Model controller = new Reeca1Model(controlData(0, 0, 0, .1, 0, .1), null);
         controller.initialize(.8, .2, 1.0);
 
         controller.step(CONTROL_STEP, .8, .2, .9, 1.0);
 
-        double expectedQCurrent = .2 + CONTROL_STEP * (.2 / .9 - .2) / .1;
-        assertEquals(1.0 + CONTROL_STEP * (.9 - 1.0) / .1,
-                controller.getMeasuredVoltage(), 1.0e-12);
+        double expectedVoltage = 1.0 + CONTROL_STEP * (.9 - 1.0) / .1;
+        double expectedQCurrent = .2
+                + CONTROL_STEP * (.2 / expectedVoltage - .2) / .1;
+        assertEquals(expectedVoltage, controller.getMeasuredVoltage(), 1.0e-12);
         assertEquals(expectedQCurrent, controller.getReactiveCurrentState(), 1.0e-12);
-        assertEquals(.8 / .9, controller.getIpcmd(), 1.0e-12);
+        assertEquals(.8 / expectedVoltage, controller.getIpcmd(), 1.0e-12);
         assertEquals(-expectedQCurrent, controller.getIqcmd(), 1.0e-12);
     }
 
