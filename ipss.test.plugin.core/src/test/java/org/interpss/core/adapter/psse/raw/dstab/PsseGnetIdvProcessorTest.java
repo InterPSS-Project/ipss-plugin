@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor;
+import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
@@ -99,6 +100,28 @@ public class PsseGnetIdvProcessorTest {
         assertNull(convertedGenerator.getMach());
         assertNull(convertedGenerator.getDynamicGenDevice());
         assertNull(network.getMachine("Bus1090-mach1"));
+    }
+
+    @Test
+    void multiFileLoaderAutoDiscoversSiblingGnetBeforeDyrAttachment() throws Exception {
+        Path raw = tempDir.resolve("case.raw");
+        Files.copy(Path.of("testData", "adpter", "psse", "v33", "SMIB", "SMIB_v33.raw"),
+                raw);
+        Path dyr = tempDir.resolve("model.dyr");
+        Files.writeString(dyr,
+                "1 'GENROU' 1 6.0 .033 .54 .078 6.4 0 .8958 .8645 .1189 .1969 "
+                        + ".089 .0521 0 0 /\n");
+        Files.writeString(tempDir.resolve("model_gnet.idv"), "GNET\n1\n0\n");
+
+        var context = new PSSEMultiFileLoader().loadDStab(raw.toString(), dyr.toString());
+        var network = context.getDStabilityNet();
+        DStabGen generator = (DStabGen) network.getDStabBus("Bus1").getContributeGen("1");
+
+        assertFalse(generator.isActive());
+        assertNull(generator.getMach());
+        assertNull(generator.getDynamicGenDevice());
+        assertNull(network.getMachine("Bus1-mach1"));
+        assertTrue(network.getDStabBus("Bus1").getContributeLoad("GNET-1").isActive());
     }
 
     @Test
