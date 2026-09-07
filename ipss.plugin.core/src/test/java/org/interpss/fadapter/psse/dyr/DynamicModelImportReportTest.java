@@ -53,7 +53,7 @@ class DynamicModelImportReportTest {
     }
 
     @Test
-    void strictGateRejectsEveryDegradedDisposition() throws Exception {
+    void strictGateAcceptsOnlyAttachedOrExplicitlyRemovedRecords() throws Exception {
         PsseDyrRecord record = PsseDyrRecordReader.read(new StringReader(
                 "1 'GENROU' 1 1 /"), "degraded.dyr").get(0);
         for (DynamicModelImportStatus status : DynamicModelImportStatus.values()) {
@@ -61,7 +61,8 @@ class DynamicModelImportReportTest {
                     .add(record, status, status.name())
                     .build();
             if (status == DynamicModelImportStatus.ATTACHED
-                    || status == DynamicModelImportStatus.SKIPPED_GNET) {
+                    || status == DynamicModelImportStatus.SKIPPED_GNET
+                    || status == DynamicModelImportStatus.SKIPPED_MODEL_REMOVE) {
                 assertTrue(report.isStrictlyComplete(), status.name());
             } else {
                 assertFalse(report.isStrictlyComplete(), status.name());
