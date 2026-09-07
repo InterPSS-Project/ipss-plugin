@@ -30,6 +30,7 @@ public final class Repca1Model {
     private double qOrVMeasured;
     private double pIntegral;
     private double qIntegral;
+    private double qPiOutput;
     private double leadLagState;
     private double pLagState;
     private double pReference;
@@ -66,7 +67,7 @@ public final class Repca1Model {
 
         // REPC_A outputs are increments into REEC_B, hence both PI paths must
         // initialize to zero even when measured P and Q are nonzero.
-        pext = qext = pIntegral = qIntegral = leadLagState = pLagState = 0.0;
+        pext = qext = pIntegral = qIntegral = qPiOutput = leadLagState = pLagState = 0.0;
         effectivePmax = Math.max(data.pmax(), 0.0);
         effectivePmin = Math.min(data.pmin(), 0.0);
         effectiveQmax = Math.max(data.qmax(), 0.0);
@@ -86,6 +87,7 @@ public final class Repca1Model {
         qIntegral = integrateWithAntiWindup(qIntegral, data.ki(), qError, dt,
                 data.kp(), effectiveQmin, effectiveQmax, freezeIntegrator);
         double qPi = limit(data.kp() * qError + qIntegral, effectiveQmin, effectiveQmax);
+        qPiOutput = qPi;
         qext = leadLag(qPi, dt);
 
         if (data.fFlag() == 1) {
@@ -205,6 +207,7 @@ public final class Repca1Model {
     public double getMeasuredReactiveOrVoltage() { return qOrVMeasured; }
     public double getActiveControlIntegral() { return pIntegral; }
     public double getReactiveControlIntegral() { return qIntegral; }
+    public double getReactiveControlOutput() { return qPiOutput; }
     public double getLeadLagState() { return leadLagState; }
     public double getActiveLagState() { return pLagState; }
     public boolean isUsingZeroBranchFallback() { return zeroBranchFallback; }
