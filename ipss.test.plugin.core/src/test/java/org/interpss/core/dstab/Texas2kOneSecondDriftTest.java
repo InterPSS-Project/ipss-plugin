@@ -16,8 +16,10 @@ import java.util.stream.Collectors;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
-import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Reeca1Model;
+import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.RenewableElectricalController;
+import org.interpss.dstab.renewable.Repca1Model;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -121,6 +123,29 @@ public class Texas2kOneSecondDriftTest {
                 raw.toString(), effectiveDyr.toString(), gnet.toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        if (Boolean.getBoolean("texas2k.drift.freezeElectricalControllers")) {
+            network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
+                    .filter(DStabGen.class::isInstance)
+                    .map(DStabGen.class::cast)
+                    .map(DStabGen::getDynamicGenDevice)
+                    .filter(Regca1Model.class::isInstance)
+                    .map(Regca1Model.class::cast)
+                    .forEach(converter -> converter.setActiveElectricalController(
+                            new FixedCurrentController())));
+        } else if (Boolean.getBoolean("texas2k.drift.freezeActiveCommand")
+                || Boolean.getBoolean("texas2k.drift.freezeReactiveCommand")) {
+            boolean freezeActive = Boolean.getBoolean("texas2k.drift.freezeActiveCommand");
+            boolean freezeReactive = Boolean.getBoolean("texas2k.drift.freezeReactiveCommand");
+            network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
+                    .filter(DStabGen.class::isInstance)
+                    .map(DStabGen.class::cast)
+                    .map(DStabGen::getDynamicGenDevice)
+                    .filter(Regca1Model.class::isInstance)
+                    .map(Regca1Model.class::cast)
+                    .forEach(converter -> converter.setActiveElectricalController(
+                            new FrozenAxisController(converter.getActiveElectricalController(),
+                                    freezeActive, freezeReactive))));
+        }
         if (Boolean.getBoolean("texas2k.drift.disablePlantControllers")) {
             network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
                     .filter(DStabGen.class::isInstance)
@@ -300,6 +325,59 @@ public class Texas2kOneSecondDriftTest {
     }
 
     private record Difference(String id, double value) { }
+
+    /** Diagnostic controller used to isolate REGCA1 from its electrical controls. */
+    private static final class FixedCurrentController implements RenewableElectricalController {
+        private double ipcmd;
+        private double iqcmd;
+
+        @Override public void initialize(double p, double q, double v) {
+            ipcmd = p / Math.max(.01, Math.abs(v));
+            iqcmd = -q / Math.max(.01, Math.abs(v));
+        }
+        @Override public void step(double dt, double p, double q, double v, double frequency) { }
+        @Override public double getIpcmd() { return ipcmd; }
+        @Override public double getIqcmd() { return iqcmd; }
+        @Override public Repca1Model getPlantController() { return null; }
+        @Override public void setPlantController(Repca1Model controller) { }
+    }
+
+    /** Diagnostic wrapper that freezes one REECA1 command at its initial value. */
+    private static final class FrozenAxisController implements RenewableElectricalController {
+        private final RenewableElectricalController delegate;
+        private final boolean freezeActive;
+        private final boolean freezeReactive;
+        private double initialIp;
+        private double initialIq;
+
+        private FrozenAxisController(RenewableElectricalController delegate,
+                boolean freezeActive, boolean freezeReactive) {
+            this.delegate = delegate;
+            this.freezeActive = freezeActive;
+            this.freezeReactive = freezeReactive;
+        }
+        @Override public void configureIntegrationStep(double step) {
+            delegate.configureIntegrationStep(step);
+        }
+        @Override public void initialize(double p, double q, double v) {
+            delegate.initialize(p, q, v);
+            initialIp = delegate.getIpcmd();
+            initialIq = delegate.getIqcmd();
+        }
+        @Override public void step(double dt, double p, double q, double v, double frequency) {
+            delegate.step(dt, p, q, v, frequency);
+        }
+        @Override public double getIpcmd() {
+            return freezeActive ? initialIp : delegate.getIpcmd();
+        }
+        @Override public double getIqcmd() {
+            return freezeReactive ? initialIq : delegate.getIqcmd();
+        }
+        @Override public Repca1Model getPlantController() { return delegate.getPlantController(); }
+        @Override public void setPlantController(Repca1Model controller) {
+            delegate.setPlantController(controller);
+        }
+    }
 
     private record WindSnapshot(double p, double pref, double torque,
             double filteredPower, double speedReference) { }
