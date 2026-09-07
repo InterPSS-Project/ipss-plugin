@@ -163,18 +163,11 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		  }
 
 		  private double calUpperLimit() {
-			  	Machine mach = getMachine();
-			  	BaseDStabBus<?,?> dbus = mach.getDStabBus();
-			  double vt = dbus.getVoltageMag();
-		     // double ifd = mach.calculateIfd(dbus);
-			  double ifd_Exc_pu = mach.calculateIfd(MachineIfdBase.EXCITER);
-		     // System.out.println(mach.getDStabBus().getId()+", exc based IFD ="+ifd_Exc_pu+", ifd="+mach.calculateIfd(dbus));
-			  return vt * vrmax - kc * ifd_Exc_pu;
-		     // return vt * vrlimit - kc * ifd;
+			  return getFieldVoltageUpperLimit();
 		  }
 
 		  private double calLowerLimit() {
-			  return getMachine().getDStabBus().getVoltageMag() * vrmin;
+			  return getFieldVoltageLowerLimit();
 		  }
 
 		  private double fieldCurrentLimiter() {
@@ -368,6 +361,18 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 
 	/** Rate-feedback washout output. */
 	public double getRateFeedback() { return signal("this.washoutBlock.y"); }
+
+	/** PTI/PowerWorld EFD upper bound, including terminal voltage and field current. */
+	public double getFieldVoltageUpperLimit() {
+		Machine mach = getMachine();
+		return mach.getDStabBus().getVoltageMag() * vrmax
+				- kc * mach.calculateIfd(MachineIfdBase.EXCITER);
+	}
+
+	/** PTI/PowerWorld voltage-dependent EFD lower bound. */
+	public double getFieldVoltageLowerLimit() {
+		return getMachine().getDStabBus().getVoltageMag() * vrmin;
+	}
 
 	private double stabilizerSignal() {
 		return getMachine().getStabilizer() == null
