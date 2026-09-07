@@ -20,6 +20,8 @@ import org.interpss.dstab.control.exc.psse.ac4c.Ac4cData;
 import org.interpss.dstab.control.exc.psse.ac4c.Ac4cExciter;
 import org.interpss.dstab.control.exc.psse.ac5c.Ac5cData;
 import org.interpss.dstab.control.exc.psse.ac5c.Ac5cExciter;
+import org.interpss.dstab.control.exc.psse.ac6c.Ac6cData;
+import org.interpss.dstab.control.exc.psse.ac6c.Ac6cExciter;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
@@ -1490,6 +1492,21 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if(mach==null){log.warn("Machine not found for AC5C: bus={}, gen={}",busId,genId);return null;}
         return new Ac5cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC6C alternator-rectifier exciter. */
+    public Ac6cExciter addExcAc6c(String busId,String genId,Ac6cData data){
+        if(data==null||data.getTr()<0||data.getTa()<0||data.getTk()<0||data.getTb()<0
+                ||data.getTc()<0||data.getTe()<=0||data.getTh()<0||data.getTj()<0
+                ||data.getKc()<0||data.getKd()<0||data.getVhmax()<0||data.getKa()==0
+                ||data.getOelLocation()<0||data.getOelLocation()>2
+                ||data.getUelLocation()<0||data.getUelLocation()>2
+                ||data.getSclLocation()<0||data.getSclLocation()>2){
+            log.warn("Invalid AC6C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC6C: bus={}, gen={}",busId,genId);return null;}
+        return new Ac6cExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** Attach the IEEE 421.5/PSS/E ESAC2A rotating AC exciter. */

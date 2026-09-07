@@ -119,7 +119,7 @@ class DynamicModelCatalogTest {
         assertEquals(71, rows.size());
         assertEquals(65, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
-        assertEquals(28, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(29, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exac1m")
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esac1c")
@@ -131,6 +131,8 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esac4c")
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esac5c")
+                .orElseThrow().isImplementedExactly());
+        assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esac6c")
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esst3a")
                 .orElseThrow().isImplementedExactly());
@@ -162,11 +164,14 @@ class DynamicModelCatalogTest {
                 .recordSchema().acceptedParameterCounts());
         assertEquals(Set.of(21), DynamicModelCatalog.find("AC5C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
+        assertEquals(Set.of(27), DynamicModelCatalog.find("AC6C").orElseThrow()
+                .recordSchema().acceptedParameterCounts());
         assertTrue(DynamicModelCatalog.find("ESAC1C").isEmpty());
         assertTrue(DynamicModelCatalog.find("ESAC2C").isEmpty());
         assertTrue(DynamicModelCatalog.find("ESAC3C").isEmpty());
         assertTrue(DynamicModelCatalog.find("ESAC4C").isEmpty());
         assertTrue(DynamicModelCatalog.find("ESAC5C").isEmpty());
+        assertTrue(DynamicModelCatalog.find("ESAC6C").isEmpty());
         assertEquals(DynamicModelSupportStatus.LOADABLE,
                 DynamicModelCatalog.find("ESAC2A").orElseThrow().supportStatus());
         assertEquals(DynamicModelSupportStatus.LOADABLE,
