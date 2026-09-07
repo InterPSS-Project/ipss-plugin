@@ -66,6 +66,8 @@ import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
+import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
+import org.interpss.dstab.control.exc.psse.exst2.Exst2Exciter;
 import org.interpss.dstab.control.exc.psse.st5b.St5bData;
 import org.interpss.dstab.control.exc.psse.st5b.St5bExciter;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
@@ -262,6 +264,12 @@ public class ExciterObjectFactory {
 	public static Esst2aExciter createEsst2aExciter(String id, Esst2aData data,
 			Machine machine) {
 		return new Esst2aExciter(id, data, machine);
+	}
+
+	/** Create a PSS/E EXST2 additive compound-source excitation system. */
+	public static Exst2Exciter createExst2Exciter(String id, Exst2Data data,
+			Machine machine) {
+		return new Exst2Exciter(id, data, machine);
 	}
 
 	/** Create an IEEE ST5B or PSLF ESST5B excitation system. */

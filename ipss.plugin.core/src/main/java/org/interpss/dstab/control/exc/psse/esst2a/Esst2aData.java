@@ -3,7 +3,7 @@ package org.interpss.dstab.control.exc.psse.esst2a;
 import org.interpss.dstab.control.base.BaseControllerData;
 
 /** IEEE 421.5-2005 / PSS/E ESST2A excitation-system parameters. */
-public final class Esst2aData extends BaseControllerData {
+public class Esst2aData extends BaseControllerData {
     private double tr, ka, ta, vrmax, vrmin, ke, te, kf, tf, kp, ki, kc, efdmax;
     // PowerWorld exposes these extensions. PSS/E ESST2A fixes them at zero.
     private int uel;
