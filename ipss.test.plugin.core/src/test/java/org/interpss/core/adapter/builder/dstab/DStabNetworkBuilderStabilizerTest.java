@@ -89,6 +89,89 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
+	@Test
+	void pss2a_appliesDocumentedPowerWorldCorrectionsWithoutChangingImportedData()
+			throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Ieee1992PSS2AStabilizer pss = builder.addPss2a(
+				"Bus1", "1", 1, 0, 3, 0, 1, 1,
+				0.005, 0.004, 0.0015, 0.015, 0.015, 0.004,
+				1.0, 1.0, 0.0, 0.003, 1.0,
+				0.1, 0.0015, 0.1, 0.0008, -0.1, 0.2,
+				1.0, 0.0, 0.003, 1.0);
+		assertNotNull(pss);
+		pss.configureIntegrationStep(0.01, 2.0);
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+		assertEquals(0.02, pss.tw1, TOL);
+		assertEquals(0.0, pss.tw2, TOL);
+		assertEquals(0.0, pss.t6, TOL);
+		assertEquals(0.02, pss.tw3, TOL);
+		assertEquals(0.02, pss.tw4, TOL);
+		assertEquals(0.0, pss.t7, TOL);
+		assertEquals(0.005, pss.t9, TOL);
+		assertEquals(0.002, pss.t2, TOL);
+		assertEquals(0.0, pss.t4, TOL);
+		assertEquals(0.005, pss.tb, TOL);
+		assertEquals(0.2, pss.vstmax, TOL);
+		assertEquals(-0.1, pss.vstmin, TOL);
+
+		assertEquals(0.005, pss.getData().getTw1(), TOL);
+		assertEquals(0.004, pss.getData().getTw2(), TOL);
+		assertEquals(0.0015, pss.getData().getT6(), TOL);
+		assertEquals(0.003, pss.getData().getT9(), TOL);
+		assertEquals(0.0015, pss.getData().getT2(), TOL);
+		assertEquals(0.0008, pss.getData().getT4(), TOL);
+		assertEquals(0.003, pss.getData().getTb(), TOL);
+		assertEquals(-0.1, pss.getData().getVstmax(), TOL);
+		assertEquals(0.2, pss.getData().getVstmin(), TOL);
+	}
+
+	@Test
+	void pss2a_rejectsInvalidIntegrationStepConfiguration() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Ieee1992PSS2AStabilizer pss = builder.addPss2a(
+				"Bus1", "1", 1, 0, 3, 0, 0, 0,
+				0.2, 0.0, 0.0, 0.2, 0.0, 0.0,
+				1.0, 1.0, 0.0, 0.0, 1.0,
+				0.0, 0.0, 0.0, 0.0, 1.0, -1.0);
+		assertNotNull(pss);
+
+		assertThrows(IllegalArgumentException.class,
+				() -> pss.configureIntegrationStep(Double.NaN));
+		assertThrows(IllegalArgumentException.class,
+				() -> pss.configureIntegrationStep(-0.01));
+		assertThrows(IllegalArgumentException.class,
+				() -> pss.configureIntegrationStep(0.01, -1.0));
+	}
+
+	@Test
+	void pss2a_preservesPowerWorldAutocorrectionBoundaryValues() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+		Ieee1992PSS2AStabilizer pss = builder.addPss2a(
+				"Bus1", "1", 1, 0, 3, 0, 1, 1,
+				0.02, 0.01, 0.0025, 0.02, 0.01, 0.01,
+				1.0, 1.0, 0.0, 0.0025, 1.0,
+				0.1, 0.001, 0.1, 0.001, 0.1, -0.1,
+				1.0, 0.0, 0.0025, 1.0);
+		assertNotNull(pss);
+		pss.configureIntegrationStep(0.01, 2.0);
+		Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+		assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+		assertEquals(0.02, pss.tw1, TOL);
+		assertEquals(0.01, pss.tw2, TOL);
+		assertEquals(0.0025, pss.t6, TOL);
+		assertEquals(0.02, pss.tw3, TOL);
+		assertEquals(0.01, pss.tw4, TOL);
+		assertEquals(0.01, pss.t7, TOL);
+		assertEquals(0.0025, pss.t9, TOL);
+		assertEquals(0.001, pss.t2, TOL);
+		assertEquals(0.001, pss.t4, TOL);
+		assertEquals(0.0025, pss.tb, TOL);
+	}
+
     @Test
     void parsePss2b_mapsCompleteRecordAndRunsDedicatedThreeLeadLagModel()
             throws Exception {
