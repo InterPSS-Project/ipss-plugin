@@ -329,6 +329,56 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		return getRegulatorOutput() + pss * this.vosOutput;
 	}
 
+	/** Whether the CML runtime blocks have completed initialization. */
+	public boolean hasInitializedBlocks() {
+		return getFieldWrapperList() != null && !getFieldWrapperList().isEmpty();
+	}
+
+	/** Terminal-voltage transducer output. */
+	public double getSensedVoltage() { return signal("this.trDelayBlock.y"); }
+
+	/** Voltage-error sum before the input limiter. */
+	public double getVoltageErrorInput() {
+		return getRefPoint() - getSensedVoltage()
+				+ stabilizerSignal() * this.vosError + this.vuel * this.uelError
+				- getRateFeedback();
+	}
+
+	/** Voltage-error signal after Vi limits and the first UEL high-value gate. */
+	public double getLimitedVoltageError() { return signal("this.uelGate1Function.y"); }
+
+	/** Output of the first lead-lag compensator. */
+	public double getLeadLagOutput() { return signal("this.filterBlock.y"); }
+
+	/** Output of the second lead-lag compensator. */
+	public double getLeadLag1Output() { return signal("this.filterBlock1.y"); }
+
+	/** Regulator output after subtracting the field-current limiter and adding VOS=2. */
+	public double getPostFieldCurrentLimiterSignal() {
+		return getRegulatorOutput() - fieldCurrentLimiterSignal()
+				+ stabilizerSignal() * this.vosOutput;
+	}
+
+	/** Signal after the UEL=3 high-value and OEL low-value gates, before EFD limits. */
+	public double getPreFieldVoltageSignal() {
+		double value = getPostFieldCurrentLimiterSignal();
+		if (uel == 3) value = Math.max(value, vuel);
+		return Math.min(value, voel);
+	}
+
+	/** Rate-feedback washout output. */
+	public double getRateFeedback() { return signal("this.washoutBlock.y"); }
+
+	private double stabilizerSignal() {
+		return getMachine().getStabilizer() == null
+				? 0.0 : getMachine().getStabilizer().getOutput(getMachine());
+	}
+
+	private double fieldCurrentLimiterSignal() {
+		double ifd = getMachine().calculateIfd(MachineIfdBase.EXCITER);
+		return Math.max(0.0, this.klr * (ifd - this.ilr));
+	}
+
 	private double signal(String fieldName) {
 		try {
 			return getFieldVaule(fieldName);
