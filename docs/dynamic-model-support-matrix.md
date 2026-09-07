@@ -45,6 +45,7 @@ row as completed model validation.
 | ESST2A | EXCITER |  | 13 | LOADABLE | `org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST2A.htm) |
 | ESST3A | EXCITER |  | 21 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST3A.htm) |
 | ESST4B | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST4B.htm) |
+| ESURRY | EXCITER | EXAC1M | 20 | LOADABLE | `org.interpss.dstab.control.exc.psse.esurry.EsurryExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter.htm) |
 | EXAC1 | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC1.htm) |
 | EXAC1A | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.exac1a.Exac1aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC1A.htm) |
 | EXAC2 | EXCITER |  | 23 | LOADABLE | `org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXAC2.htm) |
