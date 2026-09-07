@@ -5,14 +5,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.Reeca1Data;
+import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Data;
+import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Repca1Data;
+import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
@@ -20,7 +25,9 @@ import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.net.OriginalDataFormat;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -110,7 +117,15 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "Bus2", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0, .05), null, .05, .05), "ThreeCycleFault@Poi");
         assertTrue(algorithm.initialization(), "public PSS/E fixture initialization");
-        assertTrue(algorithm.performSimulation(), "public PSS/E fixture simulation");
+        Regca1Model converter = (Regca1Model) ((DStabGen) network.getBus("Bus1")
+                .getContributeGen("1")).getDynamicGenDevice();
+        List<double[]> internalTrace = new ArrayList<>();
+        recordInternalTrace(internalTrace, algorithm.getSimuTime(), network, converter);
+        while (algorithm.getSimuTime() <= algorithm.getTotalSimuTimeSec()) {
+            assertTrue(algorithm.solveDEqnStep(true),
+                    "public PSS/E fixture failed at t=" + algorithm.getSimuTime());
+            recordInternalTrace(internalTrace, algorithm.getSimuTime(), network, converter);
+        }
 
         double plantMin = minimum(monitor, "Bus1");
         double plantFinal = last(monitor, "Bus1");
@@ -124,8 +139,60 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "interpss.csv");
         Files.createDirectories(output.getParent());
         writeBusTrace(output, monitor, "Bus1", "Bus2");
+        writeInternalTrace(output.resolveSibling("interpss-internal.csv"), internalTrace);
         assertTrue(plantMin < .7 && poiMin < .7, "fault must depress fixture voltages");
         assertTrue(plantFinal > .9 && poiFinal > .9, "fixture must retain finite recovery");
+    }
+
+    private static void recordInternalTrace(List<double[]> trace, double time,
+            BaseDStabNetwork<?, ?> network, Regca1Model converter) {
+        Reeca1Model reeca = converter.getReeca1Controller();
+        Repca1Model repca = reeca.getPlantController();
+        trace.add(new double[] {
+                time,
+                network.getBus("Bus1").getVoltageMag(),
+                network.getBus("Bus2").getVoltageMag(),
+                converter.getFilteredVoltage(),
+                converter.getIpRegulatorState(),
+                converter.getIqRegulatorState(),
+                converter.getIp(),
+                converter.getIq(),
+                reeca.getMeasuredVoltage(),
+                reeca.getMeasuredActivePower(),
+                reeca.getReactiveControlIntegral(),
+                reeca.getReactiveControlOutput(),
+                reeca.getVoltageControlIntegral(),
+                reeca.getVoltageControlOutput(),
+                reeca.getActivePowerFilter(),
+                reeca.getActivePowerOrder(),
+                reeca.getIpcmd(),
+                reeca.getIqcmd(),
+                repca.getMeasuredReactiveOrVoltage(),
+                repca.getReactiveControlIntegral(),
+                repca.getReactiveControlOutput(),
+                repca.getLeadLagState(),
+                repca.getQref()
+        });
+    }
+
+    private static void writeInternalTrace(Path path, List<double[]> rows) throws Exception {
+        String[] headings = {
+                "time_s", "Bus1", "Bus2", "REGCA_VF", "REGCA_IP_STATE",
+                "REGCA_IQ_STATE", "REGCA_IP", "REGCA_IQ", "REECA_VMEAS",
+                "REECA_PMEAS", "REECA_Q_PI_XI", "REECA_Q_PI_Y", "REECA_V_PI_XI",
+                "REECA_V_PI_Y", "REECA_PFILT",
+                "REECA_PORD", "REECA_IPCMD", "REECA_IQCMD", "REPCA_QV_MEAS",
+                "REPCA_Q_PI_XI", "REPCA_Q_PI_Y", "REPCA_LEAD_LAG", "REPCA_QEXT"
+        };
+        StringBuilder csv = new StringBuilder(String.join(",", headings)).append('\n');
+        for (double[] row : rows) {
+            for (int index = 0; index < row.length; index++) {
+                if (index > 0) csv.append(',');
+                csv.append(String.format(java.util.Locale.ROOT, "%.12g", row[index]));
+            }
+            csv.append('\n');
+        }
+        Files.writeString(path, csv, StandardCharsets.UTF_8);
     }
 
     private static double minimum(StateMonitor monitor, String busId) {

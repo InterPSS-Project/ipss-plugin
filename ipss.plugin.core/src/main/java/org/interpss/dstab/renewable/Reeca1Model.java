@@ -25,6 +25,8 @@ public final class Reeca1Model implements RenewableElectricalController {
     private double qCurrent;
     private double qIntegral;
     private double vIntegral;
+    private double qControlOutput;
+    private double voltageControlOutput;
     private double effectivePmax;
     private double effectivePmin;
     private double effectiveQmax;
@@ -65,6 +67,8 @@ public final class Reeca1Model implements RenewableElectricalController {
         // by the VFLAG=0 local-voltage path.
         qIntegral = 0.0;
         vIntegral = qCurrent;
+        qControlOutput = 0.0;
+        voltageControlOutput = qCurrent;
         effectivePmax = Math.max(data.pmax(), pOrder);
         effectivePmin = Math.min(data.pmin(), pOrder);
         effectiveQmax = Math.max(data.qmax(), q);
@@ -154,6 +158,7 @@ public final class Reeca1Model implements RenewableElectricalController {
                 voltageBias = Repca1Model.limit(data.vref1() + selectedQ,
                         effectiveVmin, effectiveVmax);
             }
+            qControlOutput = voltageBias;
             // WECC REEC_A routes the coordinated-Q PI output directly to PIV.
             // Only the VFLAG=0 local-voltage branch forms Vref - Vt_filtered.
             double voltageError = data.vFlag() == 1
@@ -163,6 +168,7 @@ public final class Reeca1Model implements RenewableElectricalController {
                     dt, data.kvp(), -preliminaryIqMax, preliminaryIqMax, voltageDip);
             rawQCurrent = Repca1Model.limit(data.kvp() * voltageError + vIntegral,
                     -preliminaryIqMax, preliminaryIqMax);
+            voltageControlOutput = rawQCurrent;
         }
 
         double iqInjection = reactiveCurrentInjection(voltageDip);
@@ -290,7 +296,10 @@ public final class Reeca1Model implements RenewableElectricalController {
     public double getActivePowerFilter() { return pFilter; }
     public double getActivePowerOrder() { return pOrder; }
     public double getReactiveCurrentState() { return qCurrent; }
+    public double getReactiveControlIntegral() { return qIntegral; }
+    public double getReactiveControlOutput() { return qControlOutput; }
     public double getVoltageControlIntegral() { return vIntegral; }
+    public double getVoltageControlOutput() { return voltageControlOutput; }
     public double getActiveCurrentLimit() { return ipLimit; }
     public double getReactiveCurrentLimit() { return iqLimit; }
     public boolean isVoltageDip() { return previousDip; }
