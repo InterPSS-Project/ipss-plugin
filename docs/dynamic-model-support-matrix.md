@@ -10,6 +10,14 @@ trajectory comparison. Those acceptance results are tracked in
 cases are currently loadable, but only Cases 1 and 2 pass the strict one-second
 flat-run gate; the Texas2k verification milestone remains open.
 
+Current Texas2k audit checkpoint (`5aceb69b9`, 2026-09-07): `17/17` source
+model names are loadable, `6/6` prepared cases pass the short flat and common
+Bus-7159 fault execution smokes, `2/6` pass the strict one-second flat-run gate,
+`0/6` have completed the required location-specific fault acceptance matrix,
+and `0/6` have full-stack independent trajectory acceptance. See the plan's
+release checklist before interpreting any `LOADABLE` row as completed model
+validation.
+
 | Model | Category | Aliases | Parameters | Support | Runtime class | Reference |
 |---|---|---|---:|---|---|---|
 | GENCLS | SYNCHRONOUS_MACHINE |  | 2 | LOADABLE | `com.interpss.dstab.mach.EConstMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENCLS.htm) |
