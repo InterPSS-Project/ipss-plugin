@@ -3,7 +3,6 @@ package org.interpss.core.adapter.builder.dstab;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -26,8 +25,6 @@ import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter;
-import org.interpss.fadapter.pwd.dyd.PowerWorldDydWtgtAImporter.Status;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -68,32 +65,24 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void standalonePslfAdapterCannotReplaceAnExistingPssEDriveTrain(@TempDir Path tempDir)
+    void multiFileLoaderRejectsExplicitlyMixedPssEDyrAndPslfDyd(@TempDir Path tempDir)
             throws Exception {
-        // This is a defensive adapter-isolation test, not a supported mixed-input
-        // workflow. PSSEMultiFileLoader never sends DYD to the DYR reader.
-        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path raw = tempDir.resolve("type3.raw");
+        Files.copy(Path.of("testData", "adpter", "psse", "v33", "SMIB",
+                "SMIB_v33.raw"), raw);
         Path dyr = tempDir.resolve("type3.dyr");
         Files.writeString(dyr,
                 "1 'REGCA1' 1 1 .02 10 .9 .4 1.22 1.2 .9 .5 -1.3 .02 0 100 -100 .7 /\n"
                 + "1 'REECA1' 1 0 0 1 1 0 0 .85 1.15 .02 0 0 5 1.1 -1.1 0 0 0 .5 .02 .436 -.436 1.1 .9 1.3 2.4 .6 1.5 0 .02 99 -99 1 0 1.3 .02 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 /\n"
                 + "1 'WTDTA1' 1 5.0 .1 .8 1.5 .2 /\n");
-        new PSSEDStabDirectParser(builder).setStrictImport(true)
-                .parseDynFile(dyr.toString());
-        Regca1Model converter = (Regca1Model) ((DStabGen) builder.getDStabNetwork()
-                .getDStabBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
-        Wtdta1Model original = converter.getReeca1Controller().getWindControlStack()
-                .getDriveTrain();
         Path dyd = tempDir.resolve("type3.dyd");
         Files.writeString(dyd,
                 "wtgt_a 1 \"BUS 1\" 230.00 \"1\" : #9 0 4 1 .2 3.2 1\n");
 
-        var result = new PowerWorldDydWtgtAImporter().importFile(dyd, builder,
-                java.util.List.of(), java.util.List.of());
-
-        assertEquals(1, result.count(Status.REJECTED));
-        assertSame(original, converter.getReeca1Controller().getWindControlStack()
-                .getDriveTrain());
+        var error = assertThrows(com.interpss.common.exp.InterpssException.class,
+                () -> new PSSEMultiFileLoader().loadDStab(raw.toString(),
+                        dyr.toString(), dyd.toString()));
+        assertTrue(error.getMessage().contains("GE PSLF .dyd is not a PSS/E input"));
     }
 
     @Test
