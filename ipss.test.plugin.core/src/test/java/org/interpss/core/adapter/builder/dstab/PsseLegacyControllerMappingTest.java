@@ -16,6 +16,8 @@ import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+import org.apache.commons.math3.complex.Complex;
+
 import com.interpss.core.algo.LoadflowAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.device.DynamicDevice;
@@ -133,6 +135,35 @@ public class PsseLegacyControllerMappingTest extends CorePluginTestSetup {
         double initial = exciter.getOutput(machine);
         step(exciter, machine, 20);
         assertEquals(initial, exciter.getOutput(machine), 1.0e-8);
+    }
+
+    @Test
+    void exst1UsesPtiVoltageDependentFieldLimits(@TempDir Path tempDir) throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("exst1-limits.dyr");
+        Files.writeString(dyr,
+                "1 'EXST1' 1 0 .8 -.8 1 1 80 .04 8 -8 .12 .1 1 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        Machine machine = initializeMachine(builder);
+        IEEE1981ST1Exciter exciter = (IEEE1981ST1Exciter) machine.getExciter();
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+
+        machine.getDStabBus().setVoltage(new Complex(.8, 0.0));
+        exciter.vrmax = .5;
+        exciter.vrmin = -.5;
+        exciter.kc = .1;
+        double expectedUpper = .8 * .5
+                - .1 * machine.calculateIfd(com.interpss.dstab.mach.MachineIfdBase.EXCITER);
+        assertEquals(expectedUpper, exciter.getFieldVoltageUpperLimit(), TOL);
+        assertEquals(-.8 * .5, exciter.getFieldVoltageLowerLimit(), TOL);
+        assertEquals(expectedUpper, exciter.getOutput(machine), TOL,
+                "EXST1 output must enforce the voltage/current-dependent upper limit");
+
+        exciter.vrmax = 3.0;
+		exciter.vrmin = 2.5;
+        exciter.kc = 0.0;
+		assertEquals(.8 * 2.5, exciter.getOutput(machine), TOL,
+                "EXST1 output must enforce the voltage-dependent lower limit");
     }
 
     @Test
