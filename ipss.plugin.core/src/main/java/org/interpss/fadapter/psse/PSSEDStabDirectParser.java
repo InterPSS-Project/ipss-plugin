@@ -46,6 +46,7 @@ import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
+import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -231,6 +232,8 @@ public class PSSEDStabDirectParser {
                 return procExcExdc2a(busId, genId, fields);
             case "AC8B":
                 return procExcAc8b(busId, genId, fields);
+            case "DC4B":
+                return procExcDc4b(record.sourceModelName(),busId,genId,fields);
             case "AC7B":
                 return procExcAc7b(record.sourceModelName(), busId, genId, fields);
             case "REXSYS":
@@ -599,6 +602,32 @@ public class PSSEDStabDirectParser {
         d.setSe1(getDouble(f,21,0)); d.setE2(getDouble(f,22,0));
         d.setSe2(getDouble(f,23,0));
         return builder.addExcAc8b(busId,genId,d) != null;
+    }
+
+    // DC4B: OEL UEL Tr Kp Ki Kd Td Vrmax Vrmin Ka Ta Ke Te Kf Tf Vemin E1 SE1 E2 SE2
+    // ESDC4B: Tr Ka Ta Kp Ki Kd Td Vrmax Vrmin Ke Te Kf Tf E1 SE1 E2 SE2 Vemin OEL UEL Spdmlt
+    private boolean procExcDc4b(String sourceName,String busId,String genId,String[] f) {
+        if(("ESDC4B".equalsIgnoreCase(sourceName)&&f.length<24)
+                ||(!"ESDC4B".equalsIgnoreCase(sourceName)&&f.length<23))return false;
+        Dc4bData d=new Dc4bData();
+        if("ESDC4B".equalsIgnoreCase(sourceName)){
+            d.setTr(getDouble(f,3,0));d.setKa(getDouble(f,4,0));d.setTa(getDouble(f,5,0));
+            d.setKp(getDouble(f,6,0));d.setKi(getDouble(f,7,0));d.setKd(getDouble(f,8,0));
+            d.setTd(getDouble(f,9,0));d.setVrmax(getDouble(f,10,0));d.setVrmin(getDouble(f,11,0));
+            d.setKe(getDouble(f,12,0));d.setTe(getDouble(f,13,0));d.setKf(getDouble(f,14,0));
+            d.setTf(getDouble(f,15,0));d.setE1(getDouble(f,16,0));d.setSe1(getDouble(f,17,0));
+            d.setE2(getDouble(f,18,0));d.setSe2(getDouble(f,19,0));d.setVemin(getDouble(f,20,0));
+            d.setOel(getInt(f,21,0));d.setUel(getInt(f,22,0));d.setSpdmlt(getDouble(f,23,0));
+        } else {
+            d.setOel(getInt(f,3,0));d.setUel(getInt(f,4,0));d.setTr(getDouble(f,5,0));
+            d.setKp(getDouble(f,6,0));d.setKi(getDouble(f,7,0));d.setKd(getDouble(f,8,0));
+            d.setTd(getDouble(f,9,0));d.setVrmax(getDouble(f,10,0));d.setVrmin(getDouble(f,11,0));
+            d.setKa(getDouble(f,12,0));d.setTa(getDouble(f,13,0));d.setKe(getDouble(f,14,0));
+            d.setTe(getDouble(f,15,0));d.setKf(getDouble(f,16,0));d.setTf(getDouble(f,17,0));
+            d.setVemin(getDouble(f,18,0));d.setE1(getDouble(f,19,0));d.setSe1(getDouble(f,20,0));
+            d.setE2(getDouble(f,21,0));d.setSe2(getDouble(f,22,0));
+        }
+        return builder.addExcDc4b(busId,genId,sourceName,d)!=null;
     }
 
     // AC7B (27 values): TR KPR KIR KDR TDR VRMAX VRMIN KPA KIA VAMAX VAMIN
