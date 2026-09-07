@@ -177,6 +177,38 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
                 (double) model.getStates(null).get("REGCA1_Q"), TOL);
     }
 
+    @Test
+    void nortonOutputReadsArePureAndPowerFeedbackUsesMachineLifecycle() throws Exception {
+        Fixture fixture = fixture(data(10.0, .8, -.6));
+        Regca1Model model = fixture.model;
+        double initialP = (double) model.getStates(null).get("REGCA1_P");
+        double initialQ = (double) model.getStates(null).get("REGCA1_Q");
+
+        model.getDStabBus().setVoltage(new Complex(1.1, 0.0));
+        Complex first = (Complex) model.getOutputObject();
+        Complex second = (Complex) model.getOutputObject();
+
+        assertEquals(first.getReal(), second.getReal(), TOL);
+        assertEquals(first.getImaginary(), second.getImaginary(), TOL);
+        assertEquals(initialP, (double) model.getStates(null).get("REGCA1_P"), TOL);
+        assertEquals(initialQ, (double) model.getStates(null).get("REGCA1_Q"), TOL);
+
+        assertTrue(model.updateAttributes(false));
+        double sampledP = 1.1 * model.getIp();
+        double sampledQ = 1.1 * model.getIq();
+        assertEquals(sampledP, (double) model.getStates(null).get("REGCA1_P"), TOL);
+        assertEquals(sampledQ, (double) model.getStates(null).get("REGCA1_Q"), TOL);
+
+        model.getDStabBus().setVoltage(new Complex(.95, 0.0));
+        double eventP = .95 * model.getIp();
+        double eventQ = .95 * model.getIq();
+        assertTrue(model.updateAttributes(true));
+        assertEquals(.5 * (sampledP + eventP),
+                (double) model.getStates(null).get("REGCA1_P"), TOL);
+        assertEquals(.5 * (sampledQ + eventQ),
+                (double) model.getStates(null).get("REGCA1_Q"), TOL);
+    }
+
     private static Fixture fixture(Regca1Data data) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Regca1Model model = builder.addRegca1("Bus1", "1", data);

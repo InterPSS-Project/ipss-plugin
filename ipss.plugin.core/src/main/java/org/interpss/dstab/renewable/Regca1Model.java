@@ -166,23 +166,25 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     @Override
     public Object getOutputObject() {
         Complex voltage = getDStabBus().getVoltage();
-        double ip = ipState * lowVoltageActiveGain(voltage.abs(), data.lvpnt0(), data.lvpnt1());
-        double iq = highVoltageReactiveOutput(iqState, voltage.abs(),
-                data.volim(), data.khv(), data.iolim());
-        double theta = voltage.getArgument();
-        double scale = deviceBaseMva / systemBaseMva;
-        Complex injected = new Complex(
-                scale * (ip * Math.cos(theta) + iq * Math.sin(theta)),
-                scale * (ip * Math.sin(theta) - iq * Math.cos(theta)));
+        Complex injected = injectedCurrent(voltage);
         Complex z = parentGen.getPosGenZ();
         Complex norton = injected;
         if (z != null) {
             z = z.multiply(parentGen.getZMultiFactor());
             if (z.abs() > EPS) norton = norton.add(voltage.divide(z));
         }
-        p = voltage.multiply(injected.conjugate()).getReal() * systemBaseMva / deviceBaseMva;
-        q = voltage.multiply(injected.conjugate()).getImaginary() * systemBaseMva / deviceBaseMva;
         return norton;
+    }
+
+    private Complex injectedCurrent(Complex voltage) {
+        double ip = ipState * lowVoltageActiveGain(voltage.abs(), data.lvpnt0(), data.lvpnt1());
+        double iq = highVoltageReactiveOutput(iqState, voltage.abs(),
+                data.volim(), data.khv(), data.iolim());
+        double theta = voltage.getArgument();
+        double scale = deviceBaseMva / systemBaseMva;
+        return new Complex(
+                scale * (ip * Math.cos(theta) + iq * Math.sin(theta)),
+                scale * (ip * Math.sin(theta) - iq * Math.cos(theta)));
     }
 
     @Override
@@ -195,7 +197,23 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         return states;
     }
 
-    @Override public boolean updateAttributes(boolean netChange) { return true; }
+    @Override
+    public boolean updateAttributes(boolean netChange) {
+        if (getDStabBus() == null || deviceBaseMva <= EPS || systemBaseMva <= EPS) return false;
+        Complex voltage = getDStabBus().getVoltage();
+        Complex power = voltage.multiply(injectedCurrent(voltage).conjugate())
+                .multiply(systemBaseMva / deviceBaseMva);
+        double newP = power.getReal();
+        double newQ = power.getImaginary();
+        if (netChange) {
+            p = 0.5 * (p + newP);
+            q = 0.5 * (q + newQ);
+        } else {
+            p = newP;
+            q = newQ;
+        }
+        return finite(p) && finite(q);
+    }
     @Override public boolean afterStep(double dt) { return true; }
     @Override public DStabGen getParentGen() { return parentGen; }
 

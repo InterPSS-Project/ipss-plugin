@@ -556,7 +556,9 @@ public class Texas2kOneSecondDriftTest {
             boolean dipTransitionReported = false;
             boolean limitTransitionReported = false;
             double endTime = algorithm.getTotalSimuTimeSec();
-            while (algorithm.getSimuTime() < endTime - 0.5 * algorithm.getSimuStepSec()) {
+            // Match AbstractDStabSolver.performSimulation(): it executes the step
+            // whose starting time is exactly the configured end time.
+            while (algorithm.getSimuTime() <= endTime) {
                 assertTrue(algorithm.solveDEqnStep(true), source.directory() + " simulation step");
                 if (!reported) {
                     Difference stepVoltage = worstVoltageDifference(network, initialVoltage);
