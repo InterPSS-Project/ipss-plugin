@@ -3,6 +3,7 @@ package org.interpss.dstab.control.exc.ieee.y2005.st4b;
 import java.lang.reflect.Field;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +29,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 		   output="this.customBlock.y",
 		   refPoint="this.vrPIBlock.u0 - pss.vs + this.trDelayBlock.y - this.vuel",
 		   display= {})
-public class IEEE2005ST4BExciter  extends AnnotateExciter{
+public class IEEE2005ST4BExciter extends AnnotateExciter implements IntegrationStepAware {
     private static final Logger log = LoggerFactory.getLogger(IEEE2005ST4BExciter.class);
 	public double k1 = 1.0;/*constant*/
 	/** External UEL contribution; zero is the nonbinding/absent value. */
@@ -76,7 +77,7 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	
      //KG feedback, gain with upper limit
 	   
-	   public double kg = 1.0, vgmax = 9999.0, vgmin = -9999.0;
+	   public double kg = 1.0, vgmax = Double.POSITIVE_INFINITY, vgmin = -9999.0;
 	   @AnControllerField(
 		   type= CMLFieldEnum.StaticBlock,
 		   input="this.customBlock.y",
@@ -211,6 +212,19 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	        _data = new IEEE2005ST4BExciterData();
 	    }
 
+    private double integrationStep;
+    private double minimumTimeConstantMultiplier = 1.0;
+
+    @Override
+    public void configureIntegrationStep(double timeStepSec) {
+        configureIntegrationStep(timeStepSec, 1.0);
+    }
+
+    public void configureIntegrationStep(double timeStepSec, double multiplier) {
+        this.integrationStep = timeStepSec;
+        this.minimumTimeConstantMultiplier = multiplier;
+    }
+
 	/*
 	 * Part-3: Define and init the data object
 	 * =======================================
@@ -235,7 +249,7 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	    @Override
 	    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
 	        // pass the plugin data object values to the controller
-	    	this.tr = getData().getTr();
+        this.tr = correctedBypassTimeConstant(getData().getTr());
 	    	
 	        this.Kpr = getData().getKpr();
 	        this.Kir = getData().getKir();
@@ -246,7 +260,7 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	           this.Kpr = 40.0;
 	        }
 	        this.ka  = 1;
-	        this.ta  = getData().getTa();
+	        this.ta  = correctedBypassTimeConstant(getData().getTa());
 	        this.vrmax = getData().getVrmax();
 	        this.vrmin = getData().getVrmin();
 	        
@@ -292,6 +306,13 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	        return super.initStates(bus, mach);
 	    }
 
+    private double correctedBypassTimeConstant(double value) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        if (value > 0.0 && value < 0.5 * minimum) return 0.0;
+        if (value > 0.5 * minimum && value < minimum) return minimum;
+        return value;
+    }
+
 	    private double calcCompoundSourceVoltage(Machine mach) {
 	       double angle = Math.toRadians(angKp_deg);
 	       Complex kpCplx = new Complex(kp * Math.cos(angle), kp * Math.sin(angle));
@@ -316,6 +337,12 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	    /** Runtime Vr upper limit after normalization and initialization expansion. */
 	    public double getEffectiveVrmax() { return vrmax; }
 
+        /** Runtime transducer time constant after PowerWorld step-size correction. */
+        public double getEffectiveTr() { return tr; }
+
+        /** Runtime regulator time constant after PowerWorld step-size correction. */
+        public double getEffectiveTa() { return ta; }
+
 	    /** Runtime Vr lower limit after normalization and initialization expansion. */
 	    public double getEffectiveVrmin() { return vrmin; }
 
@@ -328,10 +355,31 @@ public class IEEE2005ST4BExciter  extends AnnotateExciter{
 	    /** Outer PI output Vr for model diagnostics and reference-trace comparison. */
 	    public double getVoltageRegulatorOutput() { return diagnosticFieldValue("this.vrPIBlock.y"); }
 
+        /** Outer PI integral state. */
+        public double getVoltageRegulatorIntegrator() {
+            return diagnosticFieldValue("this.vrPIBlock.state");
+        }
+
+        /** Whether the CML runtime blocks have completed initialization. */
+        public boolean hasInitializedBlocks() {
+            return getFieldWrapperList() != null && !getFieldWrapperList().isEmpty();
+        }
+
+        /** Regulator delay output Va. */
+        public double getRegulatorDelayOutput() { return diagnosticFieldValue("this.taDelayBlock.y"); }
+
 	    /** Inner PI output Vm before the OEL low-value gate. */
 	    public double getFieldVoltageRegulatorOutput() {
 	       return diagnosticFieldValue("this.vmPIBlock.y");
 	    }
+
+        /** Inner PI integral state. */
+        public double getFieldVoltageRegulatorIntegrator() {
+            return diagnosticFieldValue("this.vmPIBlock.state");
+        }
+
+        /** Terminal-voltage transducer output. */
+        public double getSensedVoltage() { return diagnosticFieldValue("this.trDelayBlock.y"); }
 
 	    /** Limited Kg*Efd feedback signal. */
 	    public double getExcitationFeedback() { return diagnosticFieldValue("this.kgGainBlock.y"); }

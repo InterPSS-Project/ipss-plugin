@@ -187,6 +187,26 @@ public class PsseEsst4bExciterTest extends CorePluginTestSetup {
     }
 
     @Test
+    void powerWorldTimeConstantCorrectionsAreRuntimeOnly() throws Exception {
+        IEEE2005ST4BExciterData data = texasData();
+        data.setTr(.004);
+        data.setTa(.012);
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        assertTrue(com.interpss.core.LoadflowAlgoObjectFactory
+                .createLoadflowAlgorithm(builder.getDStabNetwork()).loadflow());
+        assertTrue(machine.initStates(machine.getDStabBus()));
+        IEEE2005ST4BExciter exciter = builder.addExcEsst4b("Bus1", "1", data);
+        exciter.configureIntegrationStep(.01, 2.0);
+
+        assertTrue(exciter.initStates(machine.getDStabBus(), machine));
+        assertEquals(0.0, exciter.getEffectiveTr(), TOL);
+        assertEquals(.02, exciter.getEffectiveTa(), TOL);
+        assertEquals(.004, data.getTr(), TOL);
+        assertEquals(.012, data.getTa(), TOL);
+    }
+
+    @Test
     void outerAndInnerPiLimitsClampTheirOwnStatesIndependently() throws Exception {
         IEEE2005ST4BExciter vrHigh = initializedExciter(0.0);
         IEEE2005ST4BExciter vrLow = initializedExciter(0.0);
@@ -214,6 +234,27 @@ public class PsseEsst4bExciterTest extends CorePluginTestSetup {
         assertTrue(vmHigh.getEffectiveVmmax() - vmHighOutput < 2.0e-4);
         assertTrue(vmLowOutput >= vmLow.getEffectiveVmmin());
         assertTrue(vmLowOutput - vmLow.getEffectiveVmmin() < 2.0e-4);
+    }
+
+    @Test
+    void outerPiAntiWindupDoesNotAccumulateStateWhileSaturated() throws Exception {
+        IEEE2005ST4BExciter high = initializedExciter(0.0);
+        IEEE2005ST4BExciter low = initializedExciter(0.0);
+        high.setVuel(10.0);
+        low.setVuel(-10.0);
+        step(high, high.getMachine());
+        step(low, low.getMachine());
+        double highState = high.getVoltageRegulatorIntegrator();
+        double lowState = low.getVoltageRegulatorIntegrator();
+
+        for (int i = 0; i < 100; i++) {
+            step(high, high.getMachine());
+            step(low, low.getMachine());
+        }
+        assertEquals(high.getEffectiveVrmax(), high.getVoltageRegulatorOutput(), TOL);
+        assertEquals(low.getEffectiveVrmin(), low.getVoltageRegulatorOutput(), TOL);
+        assertEquals(highState, high.getVoltageRegulatorIntegrator(), TOL);
+        assertEquals(lowState, low.getVoltageRegulatorIntegrator(), TOL);
     }
 
     private static IEEE2005ST4BExciter initializedExciter(double vuel) throws Exception {
