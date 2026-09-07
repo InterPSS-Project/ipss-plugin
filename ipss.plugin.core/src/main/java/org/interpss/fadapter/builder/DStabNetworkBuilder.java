@@ -46,6 +46,8 @@ import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
 import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData;
+import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
+import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
@@ -1814,6 +1816,17 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Renewable Models ====================
+
+    /** Attach an LCFB1 secondary Pref controller without replacing the governor. */
+    public Lcfb1PrefController addLcfb1(String busId, String genId, Lcfb1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (bus == null || machine == null || !machine.hasGovernor()) {
+            log.warn("Machine/governor not found for LCFB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Lcfb1PrefController(bus, machine, genId, data);
+    }
 
     public Regca1Model addRegca1(String busId, String genId, Regca1Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);

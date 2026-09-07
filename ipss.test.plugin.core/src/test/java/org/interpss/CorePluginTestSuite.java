@@ -43,6 +43,7 @@ import org.interpss.core.adapter.builder.dstab.PsseEsst1aExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseH6eGovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovrGovernorTest;
+import org.interpss.core.adapter.builder.dstab.Lcfb1PrefControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovGovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseLegacyControllerMappingTest;
 import org.interpss.core.adapter.builder.dstab.PSSEDStabDirectParserReportTest;
@@ -400,6 +401,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseGgov1GovernorTest.class,
 	PsseH6eGovernorTest.class,
 	PsseHygovrGovernorTest.class,
+	Lcfb1PrefControllerTest.class,
 	PsseRegca1ConverterTest.class,
 	PsseRegfma1ModelTest.class,
 	PsseReeca1ControllerTest.class,
