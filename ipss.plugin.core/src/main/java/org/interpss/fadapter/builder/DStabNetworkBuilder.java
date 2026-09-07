@@ -56,6 +56,7 @@ import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.degov1.PsseDegov1dGovernor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor;
@@ -1854,6 +1855,41 @@ public class DStabNetworkBuilder {
         gov.getData().setDbH(dbH);
         gov.getData().setDbL(dbL);
         gov.getData().setTrate(trate);
+        return gov;
+    }
+
+    /** PSS/E DEGOV1D Woodward diesel governor. */
+    public PsseDegov1dGovernor addGovDegov1d(String busId, String genId,
+            int droopControl, double t1, double t2, double t3, double k,
+            double t4, double t5, double t6, double td, double tmax, double tmin,
+            double droop, double te, double dbH, double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for DEGOV1D governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseDegov1dGovernor gov = GovernorObjectFactory.createPsseDEGOV1DGovernor(
+                mach.getId() + "_Gov", "DEGOV1D", mach);
+        gov.getData().setDroopControl(droopControl);
+        gov.getData().setT1(t1);
+        gov.getData().setT2(t2);
+        gov.getData().setT3(t3);
+        gov.getData().setK(k);
+        gov.getData().setT4(t4);
+        gov.getData().setT5(t5);
+        gov.getData().setT6(t6);
+        gov.getData().setTd(td);
+        gov.getData().setTmax(tmax);
+        gov.getData().setTmin(tmin);
+        gov.getData().setDroop(droop);
+        gov.getData().setTe(te);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid DEGOV1D parameters at {} {}", busId, genId);
+            return null;
+        }
         return gov;
     }
 
