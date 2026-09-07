@@ -13,7 +13,10 @@ public final class Wtdta1Model {
     private static final double MIN_SPEED = 0.01;
 
     private final Wtdta1Data data;
+    private final WtgtAData powerWorldData;
+    private final double inputPowerScale;
     private double initialSpeed = 1.0;
+    private double initialInputPower;
     private double initialPower;
     private double turbineSpeed = 1.0;
     private double generatorSpeed = 1.0;
@@ -22,6 +25,15 @@ public final class Wtdta1Model {
 
     public Wtdta1Model(Wtdta1Data data) {
         this.data = data;
+        this.powerWorldData = null;
+        this.inputPowerScale = 1.0;
+    }
+
+    /** Build the equivalent kernel while retaining PowerWorld source/base semantics. */
+    public Wtdta1Model(WtgtAData data, double machineBaseMva) {
+        this.data = data.toWtdta1Data();
+        this.powerWorldData = data;
+        this.inputPowerScale = machineBaseMva / data.effectiveModelBaseMva(machineBaseMva);
     }
 
     public void initialize(double power) {
@@ -33,9 +45,11 @@ public final class Wtdta1Model {
         if (!Double.isFinite(power) || !Double.isFinite(speed) || speed <= 0.0) {
             throw new IllegalArgumentException("WTDTA1 initial power and speed must be finite; speed must be positive");
         }
-        initialPower = power;
-        initialSpeed = turbineSpeed = generatorSpeed = speed;
-        shaftTorque = power / nonzeroSpeed(speed);
+        initialInputPower = power;
+        initialPower = scalePower(power);
+        double initializedSpeed = powerWorldData == null ? speed : powerWorldData.w0();
+        initialSpeed = turbineSpeed = generatorSpeed = initializedSpeed;
+        shaftTorque = initialPower / nonzeroSpeed(initializedSpeed);
         dampingPower = 0.0;
     }
 
@@ -46,6 +60,8 @@ public final class Wtdta1Model {
             throw new IllegalArgumentException("WTDTA1 step inputs must be finite and dt must be non-negative");
         }
         if (dt == 0.0) return;
+        mechanicalPower = scalePower(mechanicalPower);
+        electricalPower = scalePower(electricalPower);
         if (isSingleMass()) {
             stepSingleMass(dt, mechanicalPower, electricalPower);
             return;
@@ -121,12 +137,17 @@ public final class Wtdta1Model {
     }
 
     public Wtdta1Data getData() { return data; }
+    public WtgtAData getPowerWorldData() { return powerWorldData; }
+    public double getInputPowerScale() { return inputPowerScale; }
+    public double getInitialInputPower() { return initialInputPower; }
     public double getInitialPower() { return initialPower; }
     public double getInitialSpeed() { return initialSpeed; }
     public double getTurbineSpeed() { return turbineSpeed; }
     public double getGeneratorSpeed() { return generatorSpeed; }
     public double getShaftTorque() { return shaftTorque; }
     public double getDampingPower() { return dampingPower; }
+
+    private double scalePower(double power) { return power * inputPowerScale; }
 
     private record State(double turbineSpeed, double generatorSpeed, double shaftTorque) {
         State advance(double dt, Derivative derivative) {
