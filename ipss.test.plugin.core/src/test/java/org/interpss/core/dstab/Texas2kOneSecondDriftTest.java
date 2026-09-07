@@ -205,6 +205,7 @@ public class Texas2kOneSecondDriftTest {
                 });
         Map<String, WindSnapshot> initialWind = new LinkedHashMap<>();
         Map<String, ReecaSnapshot> initialReeca = new LinkedHashMap<>();
+        Map<String, RepcaSnapshot> initialRepca = new LinkedHashMap<>();
         network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
                 .filter(DStabGen.class::isInstance)
                 .map(DStabGen.class::cast)
@@ -214,8 +215,13 @@ public class Texas2kOneSecondDriftTest {
                     Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
                     var controller = converter.getReeca1Controller();
                     if (controller != null) {
-                        initialReeca.put(bus.getId() + ":" + gen.getId(),
+                        String deviceId = bus.getId() + ":" + gen.getId();
+                        initialReeca.put(deviceId,
                                 reecaSnapshot(converter, controller));
+                        if (controller.getPlantController() != null) {
+                            initialRepca.put(deviceId,
+                                    repcaSnapshot(controller.getPlantController()));
+                        }
                     }
                     if (controller == null || controller.getWindControlStack() == null
                             || controller.getWindControlStack().getTorqueController() == null) return;
@@ -260,17 +266,27 @@ public class Texas2kOneSecondDriftTest {
                 "%s initial REGCA1 Iq boundary mismatch=%.9g@%s REECA1 dips=%d%n",
                 source.directory(), iqBoundary.value(), iqBoundary.id(), initialDipCount);
 
-        assertTrue(algorithm.performSimulation(), source.directory() + " simulation");
-        Difference voltage = initialVoltage.entrySet().stream()
-                .map(entry -> new Difference(entry.getKey(), Math.abs(
-                        network.getBus(entry.getKey()).getVoltage().abs() - entry.getValue())))
-                .max(java.util.Comparator.comparingDouble(Difference::value))
-                .orElse(new Difference("none", 0.0));
-        Difference speed = initialSpeed.entrySet().stream()
-                .map(entry -> new Difference(entry.getKey(), Math.abs(
-                        network.getMachine(entry.getKey()).getSpeed() - entry.getValue())))
-                .max(java.util.Comparator.comparingDouble(Difference::value))
-                .orElse(new Difference("none", 0.0));
+        if (Boolean.getBoolean("texas2k.drift.traceFirstDivergence")) {
+            boolean reported = false;
+            double endTime = algorithm.getTotalSimuTimeSec();
+            while (algorithm.getSimuTime() < endTime - 0.5 * algorithm.getSimuStepSec()) {
+                assertTrue(algorithm.solveDEqnStep(true), source.directory() + " simulation step");
+                if (!reported) {
+                    Difference stepVoltage = worstVoltageDifference(network, initialVoltage);
+                    Difference stepSpeed = worstSpeedDifference(network, initialSpeed);
+                    if (stepVoltage.value() > VOLTAGE_DRIFT_LIMIT
+                            || stepSpeed.value() > SPEED_DRIFT_LIMIT) {
+                        reportFirstDivergence(source, algorithm.getSimuTime(), stepVoltage,
+                                stepSpeed, network, initialReeca, initialRepca);
+                        reported = true;
+                    }
+                }
+            }
+        } else {
+            assertTrue(algorithm.performSimulation(), source.directory() + " simulation");
+        }
+        Difference voltage = worstVoltageDifference(network, initialVoltage);
+        Difference speed = worstSpeedDifference(network, initialSpeed);
         Difference wind = initialWind.entrySet().stream().map(entry -> {
             String[] key = entry.getKey().split(":", 2);
             DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
@@ -325,6 +341,67 @@ public class Texas2kOneSecondDriftTest {
     }
 
     private record Difference(String id, double value) { }
+
+    private static Difference worstVoltageDifference(
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
+            Map<String, Double> initialVoltage) {
+        return initialVoltage.entrySet().stream()
+                .map(entry -> new Difference(entry.getKey(), Math.abs(
+                        network.getBus(entry.getKey()).getVoltage().abs() - entry.getValue())))
+                .max(java.util.Comparator.comparingDouble(Difference::value))
+                .orElse(new Difference("none", 0.0));
+    }
+
+    private static Difference worstSpeedDifference(
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
+            Map<String, Double> initialSpeed) {
+        return initialSpeed.entrySet().stream()
+                .map(entry -> new Difference(entry.getKey(), Math.abs(
+                        network.getMachine(entry.getKey()).getSpeed() - entry.getValue())))
+                .max(java.util.Comparator.comparingDouble(Difference::value))
+                .orElse(new Difference("none", 0.0));
+    }
+
+    private static void reportFirstDivergence(CaseFile source, double time,
+            Difference voltage, Difference speed,
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
+            Map<String, ReecaSnapshot> initialReeca,
+            Map<String, RepcaSnapshot> initialRepca) {
+        System.out.printf(java.util.Locale.ROOT,
+                "%s first drift threshold at t=%.9g: voltage=%.9g@%s speed=%.9g@%s%n",
+                source.directory(), time, voltage.value(), voltage.id(), speed.value(), speed.id());
+        initialReeca.entrySet().stream().map(entry -> {
+            String[] key = entry.getKey().split(":", 2);
+            DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
+            Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
+            ReecaSnapshot current = reecaSnapshot(converter, converter.getReeca1Controller());
+            return new ControllerDifference("REECA1", entry.getKey(),
+                    current.maxDifference(entry.getValue()), entry.getValue().toString(),
+                    current.toString());
+        }).sorted(java.util.Comparator.comparingDouble(ControllerDifference::value).reversed())
+                .limit(10).forEach(Texas2kOneSecondDriftTest::printControllerDifference);
+        initialRepca.entrySet().stream().map(entry -> {
+            String[] key = entry.getKey().split(":", 2);
+            DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
+            Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
+            RepcaSnapshot current = repcaSnapshot(
+                    converter.getReeca1Controller().getPlantController());
+            return new ControllerDifference("REPCA1", entry.getKey(),
+                    current.maxDifference(entry.getValue()), entry.getValue().toString(),
+                    current.toString());
+        }).sorted(java.util.Comparator.comparingDouble(ControllerDifference::value).reversed())
+                .limit(10).forEach(Texas2kOneSecondDriftTest::printControllerDifference);
+    }
+
+    private static void printControllerDifference(ControllerDifference difference) {
+        System.out.printf(java.util.Locale.ROOT,
+                "  %s %s maxDelta=%.9g%n    initial=%s%n    current=%s%n",
+                difference.model(), difference.id(), difference.value(),
+                difference.initial(), difference.current());
+    }
+
+    private record ControllerDifference(String model, String id, double value,
+            String initial, String current) { }
 
     /** Diagnostic controller used to isolate REGCA1 from its electrical controls. */
     private static final class FixedCurrentController implements RenewableElectricalController {
@@ -381,6 +458,30 @@ public class Texas2kOneSecondDriftTest {
 
     private record WindSnapshot(double p, double pref, double torque,
             double filteredPower, double speedReference) { }
+
+    private static RepcaSnapshot repcaSnapshot(Repca1Model controller) {
+        return new RepcaSnapshot(controller.getPref(), controller.getQref(),
+                controller.getMeasuredActivePower(),
+                controller.getMeasuredReactiveOrVoltage(),
+                controller.getActiveControlIntegral(),
+                controller.getReactiveControlIntegral(), controller.getLeadLagState(),
+                controller.getActiveLagState());
+    }
+
+    private record RepcaSnapshot(double pref, double qref, double pMeasured,
+            double qvMeasured, double pIntegral, double qIntegral,
+            double leadLagState, double pLagState) {
+        double maxDifference(RepcaSnapshot other) {
+            return java.util.stream.DoubleStream.of(
+                    Math.abs(pref - other.pref), Math.abs(qref - other.qref),
+                    Math.abs(pMeasured - other.pMeasured),
+                    Math.abs(qvMeasured - other.qvMeasured),
+                    Math.abs(pIntegral - other.pIntegral),
+                    Math.abs(qIntegral - other.qIntegral),
+                    Math.abs(leadLagState - other.leadLagState),
+                    Math.abs(pLagState - other.pLagState)).max().orElse(0.0);
+        }
+    }
 
     private static ReecaSnapshot reecaSnapshot(Regca1Model converter, Reeca1Model controller) {
         return new ReecaSnapshot(controller.getMeasuredVoltage(),

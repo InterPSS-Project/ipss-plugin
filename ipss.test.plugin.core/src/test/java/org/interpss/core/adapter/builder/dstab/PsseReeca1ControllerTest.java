@@ -188,15 +188,15 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void coordinatedQControlSubtractsFilteredTerminalVoltageAtInnerPi() {
+    void coordinatedQControlRoutesReactivePiDirectlyIntoInnerPi() {
         Reeca1Model controller = new Reeca1Model(controlData(0, 1, 1, 0, 0, .1), null);
         controller.initialize(.8, .2, 1.0);
 
         controller.step(CONTROL_STEP, .8, .3, 1.0, 1.0);
 
         double qError = -.1;
-        double qIntegral = 1.0 + qError * CONTROL_STEP;
-        double voltageError = 2.0 * qError + qIntegral - 1.0;
+        double qIntegral = qError * CONTROL_STEP;
+        double voltageError = 2.0 * qError + qIntegral;
         double vIntegral = .2 + 2.0 * voltageError * CONTROL_STEP;
         double expectedIqcmd = -(voltageError + vIntegral);
         assertEquals(expectedIqcmd, controller.getIqcmd(), 1.0e-12);

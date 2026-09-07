@@ -60,16 +60,23 @@ public final class Reeca1Model implements RenewableElectricalController {
         vMeasured = sensedV;
         pMeasured = pFilter = pOrder = p;
         qCurrent = q / nonzero(v);
-        // In coordinated Q/V control, PIQ supplies the initial terminal-voltage
-        // reference to the inner PIV summing junction.
-        qIntegral = data.qFlag() == 1 && data.vFlag() == 1 ? sensedV : 0.0;
+        // In coordinated Q/V control, PIQ is an incremental input to PIV and
+        // therefore initializes to zero. Terminal voltage is subtracted only
+        // by the VFLAG=0 local-voltage path.
+        qIntegral = 0.0;
         vIntegral = qCurrent;
         effectivePmax = Math.max(data.pmax(), pOrder);
         effectivePmin = Math.min(data.pmin(), pOrder);
         effectiveQmax = Math.max(data.qmax(), q);
         effectiveQmin = Math.min(data.qmin(), q);
-        effectiveVmax = Math.max(data.vmax(), sensedV);
-        effectiveVmin = Math.min(data.vmin(), sensedV);
+        // VMAX/VMIN limit different quantities on the two VFLAG branches:
+        // the incremental PIQ output for coordinated Q/V control, and the
+        // absolute local-voltage reference otherwise. Expand around the actual
+        // initialized signal so initialization never introduces a step.
+        double initialVoltagePath = data.qFlag() == 1 && data.vFlag() == 1
+                ? 0.0 : sensedV;
+        effectiveVmax = Math.max(data.vmax(), initialVoltagePath);
+        effectiveVmin = Math.min(data.vmin(), initialVoltagePath);
         postDipTimer = iqHoldTimer = 0.0;
         heldIpMax = currentLimit();
         ipLimit = iqLimit = currentLimit();
@@ -147,9 +154,10 @@ public final class Reeca1Model implements RenewableElectricalController {
                 voltageBias = Repca1Model.limit(data.vref1() + selectedQ,
                         effectiveVmin, effectiveVmax);
             }
-            // Vt_filter enters the negative input of the inner summing junction
-            // for both VFLAG positions in the PowerWorld/WECC diagram.
-            double voltageError = voltageBias - vMeasured;
+            // WECC REEC_A routes the coordinated-Q PI output directly to PIV.
+            // Only the VFLAG=0 local-voltage branch forms Vref - Vt_filtered.
+            double voltageError = data.vFlag() == 1
+                    ? voltageBias : voltageBias - vMeasured;
             double preliminaryIqMax = preliminaryReactiveCurrentLimit(rawIp);
             vIntegral = Repca1Model.integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
                     dt, data.kvp(), -preliminaryIqMax, preliminaryIqMax, voltageDip);
