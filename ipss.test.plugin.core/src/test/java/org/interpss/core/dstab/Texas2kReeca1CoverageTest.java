@@ -118,6 +118,9 @@ class Texas2kReeca1CoverageTest {
                     Reeca1Model controller = model.getReeca1Controller();
                     assertNotNull(controller, model.getExtendedDeviceId());
                     assertNotNull(controller.getPlantController(), model.getExtendedDeviceId());
+                    assertEquals(1, controller.getPlantController().getData().puFlag(),
+                            model.getExtendedDeviceId()
+                                    + " omitted REPCA1 PUflag must use PowerWorld default");
                     assertTrue(Double.isFinite(controller.getIpcmd()));
                     assertTrue(Double.isFinite(controller.getIqcmd()));
                 })
