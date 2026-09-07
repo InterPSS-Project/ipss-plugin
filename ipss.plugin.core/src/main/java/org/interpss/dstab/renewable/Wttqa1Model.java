@@ -33,10 +33,11 @@ public final class Wttqa1Model {
         filteredPower = Repca1Model.lag(filteredPower, electricalPower, data.tp(), dt);
         speedReference = Repca1Model.lag(speedReference, speedForPower(filteredPower),
                 data.twref(), dt);
-        // The PowerWorld/WECC diagram forms the TFLAG=1 path from Pref0 minus
-        // filtered Pe, then divides by generator speed.  Using Pe-Pref0 makes
-        // the closed active-power loop self-reinforcing.
-        double error = data.tFlag() == 1
+        // PowerWorld defines TFLAG=0 as torque/power control and TFLAG=1 as
+        // speed control. The torque path forms Pref0 minus filtered Pe, then
+        // divides by generator speed. Using Pe-Pref0 would make that closed
+        // active-power loop self-reinforcing.
+        double error = data.tFlag() == 0
                 ? (initialPower - filteredPower) / nonzero(generatorSpeed)
                 : speedReference - generatorSpeed;
         if (Math.abs(error) <= EQUILIBRIUM_RESIDUAL) error = 0.0;
