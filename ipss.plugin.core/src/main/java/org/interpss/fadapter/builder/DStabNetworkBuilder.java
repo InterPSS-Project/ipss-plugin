@@ -32,6 +32,8 @@ import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aExciter;
+import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
+import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
 import org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
@@ -1285,6 +1287,21 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if (mach==null){log.warn("Machine not found for ESAC2A: bus={}, gen={}",busId,genId);return null;}
         return new Esac2aExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5/PSS/E ESAC6A rotating AC exciter. */
+    public Esac6aExciter addExcEsac6a(String busId,String genId,Esac6aData data) {
+        if (data==null || data.getKa()<=0.0 || data.getTe()<=0.0
+                || data.getTr()<0.0 || data.getTa()<0.0 || data.getTk()<0.0
+                || data.getTb()<0.0 || data.getTc()<0.0 || data.getTh()<0.0
+                || data.getTj()<0.0 || data.getKc()<0.0 || data.getKd()<0.0
+                || data.getVhmax()<0.0) {
+            log.warn("Invalid ESAC6A parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null){log.warn("Machine not found for ESAC6A: bus={}, gen={}",busId,genId);return null;}
+        return new Esac6aExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** Attach the eight-parameter PSS/E SCRX excitation system. */
