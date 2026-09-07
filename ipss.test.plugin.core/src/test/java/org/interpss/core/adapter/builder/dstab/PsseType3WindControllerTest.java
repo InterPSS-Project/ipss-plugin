@@ -287,7 +287,7 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void torqueControllerPowerErrorModeUsesPowerworldNegativeFeedback() {
+    void torqueControllerPowerErrorModeMatchesWeccFigure() {
         Wttqa1Model model = torqueController(1, 1, 0, 0, 0, 10, 0);
         model.initialize(.5);
 
@@ -296,6 +296,31 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         double initialTorque = .5 / .79;
         assertEquals(initialTorque - .1, model.getTorque(), 1.0e-12);
         assertEquals(initialTorque - .1, model.getPref(), 1.0e-12);
+    }
+
+    @Test
+    void torqueControllerUsesPlantControllerPref0InPowerErrorBranch() {
+        Wttqa1Model model = torqueController(1, 1, 0, 0, 0, 10, 0);
+        model.initialize(.5, 1.0);
+
+        model.step(.1, .5, 1.0, .6, false);
+
+        assertEquals(.6, model.getTorque(), 1.0e-12);
+        assertEquals(.6, model.getPref(), 1.0e-12);
+    }
+
+    @Test
+    void windStackForwardsAbsolutePlantReferenceToTorqueController() {
+        WindControlStack stack = new WindControlStack();
+        stack.setTorqueController(torqueController(1, 1, 0, 0, 0, 10, 0));
+        stack.initialize(.5);
+
+        stack.step(.1, .5, .5, .6, false);
+
+        double generatorSpeed = stack.getGeneratorSpeed();
+        assertEquals(.5 / generatorSpeed + .1 / generatorSpeed,
+                stack.getTorqueController().getTorque(), 1.0e-12);
+        assertEquals(.6, stack.getPref(), 1.0e-12);
     }
 
     @Test

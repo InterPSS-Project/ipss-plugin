@@ -43,6 +43,14 @@ public final class WindControlStack {
 
     public void step(double dt, double electricalPower, double pOrder,
             boolean voltageDip) {
+        double powerReference = torqueController == null
+                ? electricalPower : torqueController.getInitialPower();
+        step(dt, electricalPower, pOrder, powerReference, voltageDip);
+    }
+
+    /** Advance the complete stack with REPCA1's absolute {@code Pref0}. */
+    public void step(double dt, double electricalPower, double pOrder,
+            double powerReference, boolean voltageDip) {
         if (driveTrain != null) {
             double mechanicalPower = aerodynamics == null
                     ? driveTrain.getInitialInputPower() : aerodynamics.getMechanicalPower();
@@ -54,7 +62,8 @@ public final class WindControlStack {
             if (driveTrain == null) {
                 generatorSpeed = turbineSpeed = torqueController.getSpeedReference();
             }
-            torqueController.step(dt, electricalPower, generatorSpeed, voltageDip);
+            torqueController.step(dt, electricalPower, generatorSpeed,
+                    powerReference, voltageDip);
             pref = torqueController.getPref();
         }
         if (pitchController != null) {

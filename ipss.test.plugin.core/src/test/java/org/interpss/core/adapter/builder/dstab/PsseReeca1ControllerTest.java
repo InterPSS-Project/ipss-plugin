@@ -18,6 +18,9 @@ import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Repca1Model;
+import org.interpss.dstab.renewable.WindControlStack;
+import org.interpss.dstab.renewable.Wttqa1Data;
+import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
@@ -143,6 +146,26 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
             assertEquals(expectedOrder, controller.getActivePowerOrder(), 1.0e-12,
                     "Pord must freeze during a voltage dip");
         }
+    }
+
+    @Test
+    void plantFrequencyControllerFeedsTorqueControllerPref0() {
+        Reeca1Model controller = new Reeca1Model(activePathData(0), null);
+        controller.setPlantController(frequencyPlantController());
+        WindControlStack stack = new WindControlStack();
+        stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
+                1, 1, 0, 0, 0, 2, 0,
+                .2, .58, .4, .72, .6, .86, 1.0, 1.0, 0)));
+        controller.setWindControlStack(stack);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(CONTROL_STEP, .8, .2, 1.0, .9);
+
+        double plantIncrement = controller.getPlantController().getPref();
+        assertTrue(plantIncrement > 0.0);
+        assertEquals(.8 + plantIncrement, stack.getPref(), 1.0e-12);
+        assertEquals(.8 + .05 * CONTROL_STEP,
+                controller.getActivePowerFilter(), 1.0e-12);
     }
 
     @Test
