@@ -125,7 +125,8 @@ public class Texas2kOneSecondDriftTest {
                 y.setA(new Complex(0.0, 1.0e10), bus.getSortNumber(), bus.getSortNumber()));
         y.factorization(1.0e-20);
 
-        for (String busId : List.of("Bus1083", "Bus1011", "Bus1046", "Bus3051")) {
+        for (String busId : List.of(
+                "Bus1083", "Bus1011", "Bus1046", "Bus1062", "Bus3051")) {
             var bus = network.getBus(busId);
             assertNotNull(bus, "Missing diagnostic bus " + busId);
             y.setB2Zero();
