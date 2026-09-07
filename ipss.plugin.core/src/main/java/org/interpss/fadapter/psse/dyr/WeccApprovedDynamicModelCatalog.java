@@ -168,7 +168,9 @@ public final class WeccApprovedDynamicModelCatalog {
             governor("PIDGOV", "pidgov", "PIDGOV", "PIDGOV", RETIRED, "2021-12-02", ""),
             governor("TGOV1", "tgov1", "TGOV1", "TGOV1", APPROVED, "2006-08-11", "TGOV1"),
             governor("GGOV2", "ggov2", "GGOV2", "GGOV2", NEVER_APPROVED, "", ""),
-            governor("GGOV3", "ggov3", "GGOV3", "GGOV3", APPROVED, "2010", ""),
+            // The May 2026 table has no PTI PSS/E entry for GGOV3.  It is a
+            // GE PSLF model implemented by PowerWorld, not a PSS/E DYR model.
+            governor("GGOV3", "ggov3", "", "GGOV3", APPROVED, "2010", ""),
             governor("GGOV1D", "", "GGOV1DU, GGOV1D", "GGOV1D", APPROVED, "2019-11", "GGOV1D"),
             governor("IEEEG1D", "", "IEEEG1SDU, IEEEG1CDU, IEEEG1D", "IEEEG1D", APPROVED, "2019-11", "IEEEG1D"),
             governor("IEESGOD", "", "IEESGODU, IEESGOD", "IEESGOD", APPROVED, "2019-11", "IEESGOD"),

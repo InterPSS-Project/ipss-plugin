@@ -185,6 +185,12 @@ class DynamicModelCatalogTest {
         assertEquals(22, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
                 .filter(WeccModelApproval::isImplementedExactly).count());
+        var ggov3 = rows.stream().filter(row -> row.catalogName().equals("GGOV3"))
+                .findFirst().orElseThrow();
+        assertEquals("ggov3", ggov3.pslfModel());
+        assertEquals("", ggov3.psseModel());
+        assertEquals("GGOV3", ggov3.powerWorldModel());
+        assertFalse(ggov3.isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1"))
                 .findFirst().orElseThrow().isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1D"))
