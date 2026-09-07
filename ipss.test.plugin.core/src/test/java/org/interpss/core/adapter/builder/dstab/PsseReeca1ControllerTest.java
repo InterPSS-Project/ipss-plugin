@@ -78,7 +78,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         controller.step(CONTROL_STEP, .8, .2, .5, 1.0);
 
         assertTrue(controller.isVoltageDip());
-        assertEquals(1.0 + CONTROL_STEP * (.5 - 1.0) / .1,
+        assertEquals(modifiedEulerLag(1.0, .5, .1, CONTROL_STEP),
                 controller.getMeasuredVoltage(), 1.0e-12);
     }
 
@@ -117,7 +117,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         controller.step(CONTROL_STEP, .8, .2, .5, 1.0);
 
         assertTrue(!controller.isVoltageDip());
-        assertEquals(.95 + CONTROL_STEP * (.9 - .95) / .1,
+        assertEquals(modifiedEulerLag(.95, .9, .1, CONTROL_STEP),
                 controller.getMeasuredVoltage(), 1.0e-12);
     }
 
@@ -134,7 +134,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
             // Network frequency is not the REEC_A turbine-generator-speed input.
             // Without WTDTA1, wg defaults to 1.0 for either PFLAG setting.
             double selected = expectedFilter;
-            double expectedOrder = .8 + CONTROL_STEP * (selected - .8) / .2;
+            double expectedOrder = modifiedEulerLag(.8, selected, .2, CONTROL_STEP);
             assertEquals(expectedOrder, controller.getActivePowerOrder(), 1.0e-12,
                     "PFLAG=" + pFlag);
 
@@ -165,9 +165,9 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
 
         controller.step(CONTROL_STEP, .8, .2, .9, 1.0);
 
-        double expectedVoltage = 1.0 + CONTROL_STEP * (.9 - 1.0) / .1;
-        double expectedQCurrent = .2
-                + CONTROL_STEP * (.2 / expectedVoltage - .2) / .1;
+        double expectedVoltage = modifiedEulerLag(1.0, .9, .1, CONTROL_STEP);
+        double expectedQCurrent = modifiedEulerLag(
+                .2, .2 / expectedVoltage, .1, CONTROL_STEP);
         assertEquals(expectedVoltage, controller.getMeasuredVoltage(), 1.0e-12);
         assertEquals(expectedQCurrent, controller.getReactiveCurrentState(), 1.0e-12);
         assertEquals(.8 / expectedVoltage, controller.getIpcmd(), 1.0e-12);
@@ -181,8 +181,8 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
 
         controller.step(CONTROL_STEP, .4, .2, 1.0, 1.0);
 
-        double expectedP = .8 + CONTROL_STEP * (.4 - .8) / .1;
-        double expectedQCurrent = .2 + CONTROL_STEP * (expectedP * .25 - .2) / .1;
+        double expectedP = modifiedEulerLag(.8, .4, .1, CONTROL_STEP);
+        double expectedQCurrent = modifiedEulerLag(.2, expectedP * .25, .1, CONTROL_STEP);
         assertEquals(expectedP, controller.getMeasuredActivePower(), 1.0e-12);
         assertEquals(expectedQCurrent, controller.getReactiveCurrentState(), 1.0e-12);
         assertEquals(-expectedQCurrent, controller.getIqcmd(), 1.0e-12);
@@ -201,6 +201,14 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         double vIntegral = .2 + 2.0 * voltageError * CONTROL_STEP;
         double expectedIqcmd = -(voltageError + vIntegral);
         assertEquals(expectedIqcmd, controller.getIqcmd(), 1.0e-12);
+    }
+
+    private static double modifiedEulerLag(double state, double input,
+            double timeConstant, double dt) {
+        double initialDerivative = (input - state) / timeConstant;
+        double predicted = state + dt * initialDerivative;
+        return state + .5 * dt * (initialDerivative
+                + (input - predicted) / timeConstant);
     }
 
     @Test

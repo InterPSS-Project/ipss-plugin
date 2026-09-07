@@ -145,8 +145,11 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
         model.step(.1, .7, .79);
 
-        assertEquals(.6, model.getFilteredPower(), 1.0e-12);
-        assertEquals(.8075, model.getSpeedReference(), 1.0e-12);
+        double filteredPower = modifiedEulerLag(.5, .7, .2, .1);
+        double speedReference = modifiedEulerLag(.79,
+                model.speedForPower(filteredPower), .4, .1);
+        assertEquals(filteredPower, model.getFilteredPower(), 1.0e-12);
+        assertEquals(speedReference, model.getSpeedReference(), 1.0e-12);
         assertEquals(.5, model.getPref(), 1.0e-12);
     }
 
@@ -170,7 +173,8 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
         model.step(.1, .7, 1.0, true);
 
-        assertEquals(.6, model.getFilteredPower(), 1.0e-12);
+        assertEquals(modifiedEulerLag(.5, .7, .2, .1),
+                model.getFilteredPower(), 1.0e-12);
         assertEquals(initialIntegral, model.getTorqueIntegral(), 1.0e-12);
 
         model.step(.1, .7, 1.0, false);
@@ -189,6 +193,14 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
 
         assertEquals(initialTorque, model.getTorque(), 1.0e-12);
         assertEquals(.625, model.getPref(), 1.0e-11);
+    }
+
+    private static double modifiedEulerLag(double state, double input,
+            double timeConstant, double dt) {
+        double initialDerivative = (input - state) / timeConstant;
+        double predicted = state + dt * initialDerivative;
+        return state + .5 * dt * (initialDerivative
+                + (input - predicted) / timeConstant);
     }
 
     @Test

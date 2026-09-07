@@ -145,12 +145,16 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
 
         plant.step(.05, .8, 0.0, 1.0, 1.0);
 
-        // Tfltr=.1: Qmeas=.1; error=.1; PI=.205. The .05/.1 lead-lag
-        // produces .5*.205 + .5*(.5*.205) = .15375.
-        assertEquals(.1, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
-        assertEquals(.005, plant.getReactiveControlIntegral(), 1.0e-12);
-        assertEquals(.1025, plant.getLeadLagState(), 1.0e-12);
-        assertEquals(.15375, plant.getQref(), 1.0e-12);
+        double measuredQ = modifiedEulerLag(.2, 0.0, .1, .05);
+        double error = .2 - measuredQ;
+        double integral = error * .05;
+        double piOutput = 2.0 * error + integral;
+        double leadLagState = modifiedEulerLag(0.0, piOutput, .1, .05);
+        double leadLagOutput = .5 * piOutput + .5 * leadLagState;
+        assertEquals(measuredQ, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
+        assertEquals(integral, plant.getReactiveControlIntegral(), 1.0e-12);
+        assertEquals(leadLagState, plant.getLeadLagState(), 1.0e-12);
+        assertEquals(leadLagOutput, plant.getQref(), 1.0e-12);
     }
 
     @Test
@@ -199,10 +203,12 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
         plant.step(.05, .7, .2, 1.0, .99);
 
         // Tp=0 in this fixture, so Perr=(.8-.7)+Dup*(1-.99)=.3.
-        // Active PI=2*.3 + integral(1*.3*.05)=.615; Tg=.1 gives .3075.
+        // Active PI=2*.3 + integral(1*.3*.05)=.615; Tg=.1 is integrated
+        // with the renewable stack's modified-Euler corrector.
         assertEquals(.015, plant.getActiveControlIntegral(), 1.0e-12);
-        assertEquals(.3075, plant.getActiveLagState(), 1.0e-12);
-        assertEquals(.3075, plant.getPref(), 1.0e-12);
+        double expectedOutput = modifiedEulerLag(0.0, .615, .1, .05);
+        assertEquals(expectedOutput, plant.getActiveLagState(), 1.0e-12);
+        assertEquals(expectedOutput, plant.getPref(), 1.0e-12);
 
         Repca1Model disabled = new Repca1Model(dynamicData(0, 0, 0, 0, 0, 0, 0,
                 .7, 1, -1, 2, 1, .1, 10, 20));
@@ -222,6 +228,14 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0));
         return converter;
+    }
+
+    private static double modifiedEulerLag(double state, double input,
+            double timeConstant, double dt) {
+        double initialDerivative = (input - state) / timeConstant;
+        double predicted = state + dt * initialDerivative;
+        return state + .5 * dt * (initialDerivative
+                + (input - predicted) / timeConstant);
     }
 
     private static MeasurementFixture measurementFixture() throws Exception {
