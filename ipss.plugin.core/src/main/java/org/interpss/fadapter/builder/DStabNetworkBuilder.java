@@ -103,6 +103,8 @@ import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.dstab.renewable.WindControlStack;
 import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtara1Model;
+import org.interpss.dstab.renewable.Wtdta1Data;
+import org.interpss.dstab.renewable.Wtdta1Model;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtpta1Model;
 import org.interpss.dstab.renewable.Wttqa1Data;
@@ -2014,6 +2016,17 @@ public class DStabNetworkBuilder {
         }
         Wtara1Model model = new Wtara1Model(data);
         windStack(controller).setAerodynamics(model);
+        return model;
+    }
+
+    public Wtdta1Model addWtdta1(String busId, String genId, Wtdta1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTDTA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtdta1Model model = new Wtdta1Model(data);
+        windStack(controller).setDriveTrain(model);
         return model;
     }
 

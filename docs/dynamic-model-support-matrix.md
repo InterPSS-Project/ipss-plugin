@@ -10,18 +10,17 @@ trajectory comparison. Those acceptance results are tracked in
 cases are currently loadable, but only Cases 1 and 2 pass the strict one-second
 flat-run gate; the Texas2k verification milestone remains open.
 
-Current Texas2k audit checkpoint (`d8b64b3b5`, 2026-09-07): `17/17` PSS/E DYR
-model names are loadable, but this is not complete supplied-source coverage.
-The sibling PowerWorld DYD files additionally contain `WTGT_A` drive trains
-(85 records per case in Cases 1–2 and 184 per case in Cases 3–6); InterPSS does
-not yet implement/import the equivalent `WTDTA1`/`WTDTAU1` model. The existing
-direct-coupling behavior is explicitly a DYR-only fallback. Separately, `6/6`
-prepared cases pass the short flat and common
-Bus-7159 fault execution smokes, `2/6` pass the strict one-second flat-run gate,
-`0/6` have completed the required location-specific fault acceptance matrix,
-and `0/6` have full-stack independent trajectory acceptance. See the plan's
-release checklist before interpreting any `LOADABLE` row as completed model
-validation.
+Current Texas2k audit (2026-09-07): `17/17` PSS/E DYR model names are
+loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
+runtime path. This is still not complete supplied-source coverage: the sibling
+PowerWorld DYD files contain `WTGT_A` records (85 per case in Cases 1-2 and
+184 per case in Cases 3-6) that are absent from the DYR exports and do not yet
+have a supplemental import path. Separately, `6/6` prepared cases pass the
+short flat and common Bus-7159 fault execution smokes, `2/6` pass the strict
+one-second flat-run gate, `0/6` have completed the required location-specific
+fault acceptance matrix, and `0/6` have full-stack independent trajectory
+acceptance. See the plan's release checklist before interpreting any `LOADABLE`
+row as completed model validation.
 
 | Model | Category | Aliases | Parameters | Support | Runtime class | Reference |
 |---|---|---|---:|---|---|---|
@@ -96,6 +95,7 @@ validation.
 | REECA1 | ELECTRICAL_CONTROLLER | REECAU1 | 51 | LOADABLE | `org.interpss.dstab.renewable.Reeca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_A.htm) |
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |
 | REPCA1 | PLANT_CONTROLLER | REPCAU1, REPCTA1, REPCTAU1 | 34 | LOADABLE | `org.interpss.dstab.renewable.Repca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Plant%20Controller%20REPC_A.htm) |
+| WTDTA1 | DRIVE_TRAIN | WTDAT1, WTDTAU1 | 5 | LOADABLE | `org.interpss.dstab.renewable.Wtdta1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WTDTA1.htm) |
 | WTARA1 | AERODYNAMIC_CONTROLLER | WTARAU1 | 2 | LOADABLE | `org.interpss.dstab.renewable.Wtara1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Aerodynamic%20Model%20WTGA_A.htm) |
 | WTPTA1 | PITCH_CONTROLLER | WTPTAU1 | 10 | LOADABLE | `org.interpss.dstab.renewable.Wtpta1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pitch%20Controller%20WTGPT_A.htm) |
 | WTTQA1 | TORQUE_CONTROLLER | WTTQAU1 | 16 | LOADABLE | `org.interpss.dstab.renewable.Wttqa1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pref%20Controller%20WTGTRQ_A.htm) |
