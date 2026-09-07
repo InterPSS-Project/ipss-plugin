@@ -164,6 +164,46 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void stagedDriveTrainCorrectorUsesCorrectedEndpointPowers() {
+        Wtdta1Model model = new Wtdta1Model(new Wtdta1Data(5, .1, .8, 1.5, .2));
+        model.initialize(.8, 1.0);
+
+        model.step(.1, .8, 1.0, 0);
+        assertEquals(1.0, model.getTurbineSpeed(), 1.0e-12);
+        assertEquals(.99, model.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(.8, model.getShaftTorque(), 1.0e-12);
+
+        model.step(.1, .7, .9, 1);
+        assertEquals(.9993625, model.getTurbineSpeed(), 1.0e-12);
+        assertEquals(.9923477272727272, model.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(.8018, model.getShaftTorque(), 1.0e-12);
+    }
+
+    @Test
+    void stagedSingleMassCorrectorUsesCorrectedEndpointPowers() {
+        Wtdta1Model model = new Wtdta1Model(new Wtdta1Data(4, 0, 0, 0, 0));
+        model.initialize(.8, 1.0);
+
+        model.step(.1, .8, 1.0, 0);
+        assertEquals(.9975, model.getGeneratorSpeed(), 1.0e-12);
+        model.step(.1, .7, .9, 1);
+
+        double correctedDerivative = (.7 / .9975 - .9 / .9975) / 8.0;
+        assertEquals(1.0 + .05 * (-.025 + correctedDerivative),
+                model.getGeneratorSpeed(), 1.0e-12);
+        assertEquals(.9 / model.getGeneratorSpeed(), model.getShaftTorque(), 1.0e-12);
+    }
+
+    @Test
+    void stagedDriveTrainCorrectorRequiresPredictor() {
+        Wtdta1Model model = new Wtdta1Model(new Wtdta1Data(5, .1, .8, 1.5, .2));
+        model.initialize(.8, 1.0);
+
+        assertThrows(IllegalStateException.class,
+                () -> model.step(.1, .8, 1.0, 1));
+    }
+
+    @Test
     void zeroTurbineInertiaFractionUsesTheDocumentedSingleMassModel() {
         Wtdta1Model model = new Wtdta1Model(new Wtdta1Data(4, 0, 0, 0, 0));
         model.initialize(.8, 1.0);
