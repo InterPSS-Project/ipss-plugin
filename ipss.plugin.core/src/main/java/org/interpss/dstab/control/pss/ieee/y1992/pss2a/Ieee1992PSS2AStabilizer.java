@@ -27,6 +27,8 @@ package org.interpss.dstab.control.pss.ieee.y1992.pss2a;
 
 import java.lang.reflect.Field;
 
+import org.interpss.dstab.control.util.IntegrationStepAware;
+
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AbstractChildAnnotateController;
@@ -45,7 +47,15 @@ import com.interpss.dstab.mach.Machine;
         output="this.outputBlock.y",
         refPoint="0.0",
         display= {})
-public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
+/**
+ * IEEE PSS2A dual-input stabilizer.
+ *
+ * <p>Runtime time constants and output limits follow PowerWorld's documented
+ * validation/autocorrection rules without modifying the imported source data:
+ * https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2A.htm</p>
+ */
+public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
+		implements IntegrationStepAware {
 	    public double tw1 = 0.1, tw2 = 0.05, t6 = 0.05;
 	    @AnControllerField(
 	            type= CMLFieldEnum.Controller,
@@ -178,6 +188,23 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 	private double input2PreviousVoltage;
 	private BaseDStabBus<?, ?> input1Bus;
 	private BaseDStabBus<?, ?> input2Bus;
+	private double integrationStep;
+	private double minimumTimeConstantMultiplier = 1.0;
+
+	@Override
+	public void configureIntegrationStep(double timeStepSec) {
+		configureIntegrationStep(timeStepSec, 1.0);
+	}
+
+	public void configureIntegrationStep(double timeStepSec, double multiplier) {
+		if (!Double.isFinite(timeStepSec) || timeStepSec < 0.0
+				|| !Double.isFinite(multiplier) || multiplier < 0.0) {
+			throw new IllegalArgumentException(
+					"PSS2A integration-step settings must be finite and non-negative");
+		}
+		integrationStep = timeStepSec;
+		minimumTimeConstantMultiplier = multiplier;
+	}
 
 	public void setInputSignalBuses(BaseDStabBus<?, ?> input1Bus,
 			BaseDStabBus<?, ?> input2Bus) {
@@ -233,6 +260,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 		this.ta = getData().getTa();
 		this.tb = getData().getTb();
 		this.ks4 = getData().getKs4();
+		applyPowerWorldCorrections();
 
 		// Child annotated controllers are instantiated with the Java field
 		// defaults before model data is copied into this controller. Recreate
@@ -241,6 +269,54 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer {
 		this.customBlock2 = new CustomExciter(this.tw3, this.tw4, this.ks2, this.t7);
 
         return super.initStates(abus, mach);
+	}
+
+	private void applyPowerWorldCorrections() {
+		double minimum = minimumTimeConstantMultiplier * integrationStep;
+		tw1 = minimumPositive(tw1, minimum);
+		tw3 = minimumPositive(tw3, minimum);
+		tw2 = halfMinimumBypass(tw2, minimum);
+		tw4 = halfMinimumBypass(tw4, minimum);
+		t7 = halfMinimumBypass(t7, minimum);
+		t6 = quarterMinimumBypass(t6, minimum);
+		t9 = quarterMinimumBypass(t9, minimum);
+		tb = quarterMinimumBypass(tb, minimum);
+		t2 = tenthMinimumBypass(t2, minimum);
+		t4 = tenthMinimumBypass(t4, minimum);
+
+		if (vstmax < vstmin) {
+			double swap = vstmax;
+			vstmax = vstmin;
+			vstmin = swap;
+		}
+		if (vstmax < 0.0) vstmax = -vstmax;
+		if (vstmin > 0.0) vstmin = -vstmin;
+	}
+
+	private static double minimumPositive(double value, double minimum) {
+		return value > 0.0 && value < minimum ? minimum : value;
+	}
+
+	private static double halfMinimumBypass(double value, double minimum) {
+		if (value > 0.0 && value < 0.5 * minimum) return 0.0;
+		if (value > 0.5 * minimum && value < minimum) return minimum;
+		return value;
+	}
+
+	private static double quarterMinimumBypass(double value, double minimum) {
+		if (value > 0.0 && value < 0.125 * minimum) return 0.0;
+		if (value > 0.125 * minimum && value < 0.25 * minimum) {
+			return 0.25 * minimum;
+		}
+		return value;
+	}
+
+	private static double tenthMinimumBypass(double value, double minimum) {
+		if (value > 0.0 && value < 0.05 * minimum) return 0.0;
+		if (value > 0.05 * minimum && value < 0.1 * minimum) {
+			return 0.1 * minimum;
+		}
+		return value;
 	}
 
 	@Override
