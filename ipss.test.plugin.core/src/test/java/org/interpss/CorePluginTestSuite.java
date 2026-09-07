@@ -54,6 +54,7 @@ import org.interpss.core.adapter.builder.dstab.PsseDyrRecordReaderTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegca1ConverterTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
+import org.interpss.core.adapter.builder.dstab.PsseReecb1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
@@ -411,6 +412,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseRegca1ConverterTest.class,
 	PsseRegfma1ModelTest.class,
 	PsseReeca1ControllerTest.class,
+	PsseReecb1ControllerTest.class,
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,
 	PsseHygovGovernorTest.class,
