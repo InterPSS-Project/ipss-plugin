@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.interpss.IpssCorePlugin;
+import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -183,7 +184,54 @@ public class Texas2kSixCaseDynamicSmokeTest {
         assertTrue(network.initDStabNet(), source.directory() + " network initialization call");
         assertTrue(network.isDStabNetInitialized(),
                 source.directory() + " network did not retain initialized state");
+        assertRegcaInitialPowerBases(source, network);
         return context;
+    }
+
+    private static void assertRegcaInitialPowerBases(CaseFile source,
+            BaseDStabNetwork<?, ?> network) {
+        List<String> failures = new ArrayList<>();
+        double systemBase = network.getBaseMva();
+        network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
+                .filter(DStabGen.class::isInstance)
+                .map(DStabGen.class::cast)
+                .filter(DStabGen::isActive)
+                .filter(gen -> gen.getDynamicGenDevice() instanceof Regca1Model)
+                .forEach(gen -> {
+                    Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
+                    double deviceBase = gen.getMvaBase() > 1.0e-9
+                            ? gen.getMvaBase() : systemBase;
+                    double deviceScale = systemBase / deviceBase;
+                    Complex sourcePower = gen.getGen();
+                    double feedbackP = ((Number) converter.getStates(null)
+                            .get("REGCA1_P")).doubleValue();
+                    double feedbackQ = ((Number) converter.getStates(null)
+                            .get("REGCA1_Q")).doubleValue();
+                    double feedbackError = Math.max(
+                            Math.abs(feedbackP - sourcePower.getReal() * deviceScale),
+                            Math.abs(feedbackQ - sourcePower.getImaginary() * deviceScale));
+
+                    Complex voltage = bus.getVoltage();
+                    Complex injected = (Complex) converter.getOutputObject();
+                    Complex z = gen.getPosGenZ();
+                    if (z != null) {
+                        z = z.multiply(gen.getZMultiFactor());
+                        if (z.abs() > 1.0e-9) injected = injected.subtract(voltage.divide(z));
+                    }
+                    Complex reconstructed = voltage.multiply(injected.conjugate());
+                    double injectionError = Math.max(
+                            Math.abs(reconstructed.getReal() - sourcePower.getReal()),
+                            Math.abs(reconstructed.getImaginary() - sourcePower.getImaginary()));
+                    if (feedbackError > 1.0e-8 || injectionError > 1.0e-8) {
+                        failures.add(bus.getId() + ":" + gen.getId()
+                                + " feedbackError=" + feedbackError
+                                + " injectionError=" + injectionError
+                                + " systemBase=" + systemBase
+                                + " deviceBase=" + deviceBase);
+                    }
+                }));
+        assertTrue(failures.isEmpty(), () -> source.directory()
+                + " REGCA1 initial P/Q base mismatches: " + failures);
     }
 
     private static void configureSimulation(DynamicSimuAlgorithm algorithm, double endTime) {
