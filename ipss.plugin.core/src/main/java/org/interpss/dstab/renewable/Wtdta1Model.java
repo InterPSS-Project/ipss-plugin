@@ -22,6 +22,9 @@ public final class Wtdta1Model {
     private double generatorSpeed = 1.0;
     private double shaftTorque;
     private double dampingPower;
+    private State predictorStart;
+    private Derivative predictorDerivative;
+    private double predictorSingleMassDerivative;
 
     public Wtdta1Model(Wtdta1Data data) {
         this.data = data;
@@ -55,41 +58,93 @@ public final class Wtdta1Model {
 
     /** Advances one complete modified-Euler predictor/corrector step. */
     public void step(double dt, double mechanicalPower, double electricalPower) {
+        step(dt, mechanicalPower, electricalPower, 0);
+        step(dt, mechanicalPower, electricalPower, 1);
+    }
+
+    /**
+     * Advances one stage of the enclosing modified-Euler step. Flag 0 exposes
+     * the explicit predictor; flag 1 reevaluates the equations with corrected
+     * endpoint powers and commits the trapezoidal state. This lets WTDTA1
+     * participate in a staged renewable-control/network solve without losing
+     * the standalone complete-step API above.
+     */
+    public void step(double dt, double mechanicalPower, double electricalPower, int flag) {
         if (!Double.isFinite(dt) || dt < 0.0
                 || !Double.isFinite(mechanicalPower) || !Double.isFinite(electricalPower)) {
             throw new IllegalArgumentException("WTDTA1 step inputs must be finite and dt must be non-negative");
+        }
+        if (flag != 0 && flag != 1) {
+            throw new IllegalArgumentException("WTDTA1 integration flag must be 0 or 1");
         }
         if (dt == 0.0) return;
         mechanicalPower = scalePower(mechanicalPower);
         electricalPower = scalePower(electricalPower);
         if (isSingleMass()) {
-            stepSingleMass(dt, mechanicalPower, electricalPower);
+            stepSingleMass(dt, mechanicalPower, electricalPower, flag);
             return;
         }
-
-        State old = new State(turbineSpeed, generatorSpeed, shaftTorque);
-        Derivative d0 = derivatives(old, mechanicalPower, electricalPower);
-        State predicted = old.advance(dt, d0);
-        Derivative d1 = derivatives(predicted, mechanicalPower, electricalPower);
-        turbineSpeed = old.turbineSpeed() + 0.5 * dt
-                * (d0.turbineSpeed() + d1.turbineSpeed());
-        generatorSpeed = old.generatorSpeed() + 0.5 * dt
-                * (d0.generatorSpeed() + d1.generatorSpeed());
-        shaftTorque = old.shaftTorque() + 0.5 * dt
-                * (d0.shaftTorque() + d1.shaftTorque());
+        if (flag == 0) {
+            predictorStart = state();
+            predictorDerivative = derivatives(predictorStart, mechanicalPower,
+                    electricalPower);
+            apply(predictorStart.advance(dt, predictorDerivative));
+        } else {
+            requirePredictor();
+            Derivative corrected = derivatives(state(), mechanicalPower, electricalPower);
+            turbineSpeed = predictorStart.turbineSpeed() + 0.5 * dt
+                    * (predictorDerivative.turbineSpeed() + corrected.turbineSpeed());
+            generatorSpeed = predictorStart.generatorSpeed() + 0.5 * dt
+                    * (predictorDerivative.generatorSpeed() + corrected.generatorSpeed());
+            shaftTorque = predictorStart.shaftTorque() + 0.5 * dt
+                    * (predictorDerivative.shaftTorque() + corrected.shaftTorque());
+            clearPredictor();
+        }
         dampingPower = data.dshaft() * (turbineSpeed - generatorSpeed);
         requireFiniteState();
     }
 
-    private void stepSingleMass(double dt, double mechanicalPower, double electricalPower) {
-        double oldSpeed = generatorSpeed;
-        double d0 = singleMassDerivative(oldSpeed, mechanicalPower, electricalPower);
-        double predicted = oldSpeed + dt * d0;
-        double d1 = singleMassDerivative(predicted, mechanicalPower, electricalPower);
-        generatorSpeed = turbineSpeed = oldSpeed + 0.5 * dt * (d0 + d1);
+    private void stepSingleMass(double dt, double mechanicalPower,
+            double electricalPower, int flag) {
+        if (flag == 0) {
+            predictorStart = state();
+            predictorSingleMassDerivative = singleMassDerivative(generatorSpeed,
+                    mechanicalPower, electricalPower);
+            generatorSpeed = turbineSpeed = generatorSpeed
+                    + dt * predictorSingleMassDerivative;
+        } else {
+            requirePredictor();
+            double corrected = singleMassDerivative(generatorSpeed, mechanicalPower,
+                    electricalPower);
+            generatorSpeed = turbineSpeed = predictorStart.generatorSpeed()
+                    + 0.5 * dt * (predictorSingleMassDerivative + corrected);
+            clearPredictor();
+        }
         shaftTorque = electricalPower / nonzeroSpeed(generatorSpeed);
         dampingPower = 0.0;
         requireFiniteState();
+    }
+
+    private State state() {
+        return new State(turbineSpeed, generatorSpeed, shaftTorque);
+    }
+
+    private void apply(State state) {
+        turbineSpeed = state.turbineSpeed();
+        generatorSpeed = state.generatorSpeed();
+        shaftTorque = state.shaftTorque();
+    }
+
+    private void requirePredictor() {
+        if (predictorStart == null) {
+            throw new IllegalStateException("WTDTA1 corrector called without predictor");
+        }
+    }
+
+    private void clearPredictor() {
+        predictorStart = null;
+        predictorDerivative = null;
+        predictorSingleMassDerivative = 0.0;
     }
 
     private Derivative derivatives(State state, double mechanicalPower,
