@@ -68,8 +68,10 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void supplementalWtgtADoesNotReplaceAnExplicitDyrDriveTrain(@TempDir Path tempDir)
+    void standalonePslfAdapterCannotReplaceAnExistingPssEDriveTrain(@TempDir Path tempDir)
             throws Exception {
+        // This is a defensive adapter-isolation test, not a supported mixed-input
+        // workflow. PSSEMultiFileLoader never sends DYD to the DYR reader.
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("type3.dyr");
         Files.writeString(dyr,

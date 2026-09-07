@@ -23,7 +23,13 @@ import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
 /**
- * Convenience loader for multi-file PSS/E data (LF + sequence + dynamic).
+ * Convenience loader for multi-file PSS/E data (RAW + sequence + DYR, with
+ * optional IDV case-preparation files).
+ *
+ * <p>GE PSLF DYD is a different source format and is deliberately rejected by
+ * this loader. A PSLF adapter must be invoked as a separate import workflow;
+ * DYD and DYR are never combined as inputs to this reader.</p>
+ *
  * Replaces the old ODM-based pipeline:
  *   PSSERawAdapter -> ODMAcsc/DStabParserMapper -> SimuContext
  * with direct parsers:
