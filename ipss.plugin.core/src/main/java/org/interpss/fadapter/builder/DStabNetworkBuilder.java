@@ -75,6 +75,7 @@ import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
 import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
+import org.interpss.dstab.control.gov.psse.wpidhy.PsseWpidhydGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
@@ -2016,6 +2017,51 @@ public class DStabNetworkBuilder {
         gov.getData().setTrate(trate);
         if (!gov.validateParameters()) {
             log.warn("Invalid HYGOV2D parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E WPIDHYD Woodward PID hydro turbine-governor. */
+    public PsseWpidhydGovernor addGovWpidhyd(String busId, String genId,
+            double treg, double reg, double kp, double ki, double kd,
+            double ta, double tb, double velmax, double velmin, double gmax,
+            double gmin, double tw, double pmax, double pmin, double damping,
+            double g0, double g1, double p1, double g2, double p2, double p3,
+            double dbH, double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for WPIDHYD governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseWpidhydGovernor gov = GovernorObjectFactory.createPsseWPIDHYDGovernor(
+                mach.getId() + "_Gov", "WPIDHYD", mach);
+        gov.getData().setTreg(treg);
+        gov.getData().setReg(reg);
+        gov.getData().setKp(kp);
+        gov.getData().setKi(ki);
+        gov.getData().setKd(kd);
+        gov.getData().setTa(ta);
+        gov.getData().setTb(tb);
+        gov.getData().setVelmax(velmax);
+        gov.getData().setVelmin(velmin);
+        gov.getData().setGmax(gmax);
+        gov.getData().setGmin(gmin);
+        gov.getData().setTw(tw);
+        gov.getData().setPmax(pmax);
+        gov.getData().setPmin(pmin);
+        gov.getData().setD(damping);
+        gov.getData().setG0(g0);
+        gov.getData().setG1(g1);
+        gov.getData().setP1(p1);
+        gov.getData().setG2(g2);
+        gov.getData().setP2(p2);
+        gov.getData().setP3(p3);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid WPIDHYD parameters at {} {}", busId, genId);
             return null;
         }
         return gov;
