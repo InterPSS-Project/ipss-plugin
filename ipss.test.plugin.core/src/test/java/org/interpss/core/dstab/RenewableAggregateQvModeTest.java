@@ -107,7 +107,8 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     @Test
-    void texas1062Unit2PublicLinearizationHasGrowingOscillatoryMode() throws Exception {
+    void texas1062Unit2PublicLinearizationReportsCandidateModeAndLimiterBoundary()
+            throws Exception {
         PlantProfile profile = texas1062Unit2Profile();
         DStabilityNetwork network = buildNetwork(1, .05, profile);
         assertTrue(DStabObjectFactory.createDynamicSimuAlgorithm(network)
@@ -117,6 +118,10 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         assertEquals(1, analysis.devices().size());
         assertEquals(LocalRenewableQvEigenAnalyzer.STATES_PER_DEVICE,
                 analysis.stateMatrix().length);
+        assertTrue(!analysis.isTwoSidedLinearizationValid(),
+                "the zero-initialized PIQ output is on its expanded lower limit");
+        assertEquals(1, analysis.operatingPointConstraints().size());
+        assertEquals("REECA_PIQ", analysis.operatingPointConstraints().get(0).signal());
         double originalEntry = analysis.stateMatrix()[0][0];
         double[][] callerCopy = analysis.stateMatrix();
         callerCopy[0][0] = Double.NaN;
@@ -124,10 +129,10 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "analysis matrices must be defensive copies");
 
         System.out.printf(java.util.Locale.ROOT,
-                "Bus-1062-unit-2 public Q/V linearization: sensitivity=%.9g "
-                        + "eigenvalue=%.9g%+.9gj 1/s states=%s%n",
+                "Bus-1062-unit-2 public Q/V candidate linearization: sensitivity=%.9g "
+                        + "eigenvalue=%.9g%+.9gj 1/s constraints=%s states=%s%n",
                 analysis.couplingMatrix()[0][0], mode.real(), mode.imaginary(),
-                mode.participation());
+                analysis.operatingPointConstraints(), mode.participation());
         assertTrue(Math.abs(mode.real() - CASE5_MODE_GROWTH) / CASE5_MODE_GROWTH < .05,
                 "public Bus-1062 growth rate does not reproduce the Case-5 mode");
         assertTrue(Math.abs(Math.abs(mode.imaginary()) - CASE5_MODE_FREQUENCY)

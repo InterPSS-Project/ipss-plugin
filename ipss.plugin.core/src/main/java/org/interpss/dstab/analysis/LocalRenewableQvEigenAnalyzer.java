@@ -19,14 +19,16 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
 
 /**
- * Small-signal analyzer for the unsaturated local-voltage
+ * Candidate small-signal analyzer for the unsaturated local-voltage
  * REPC_A/REEC_A/REGC_A reactive-control loop.
  *
  * <p>The analyzer combines the solved network's incremental reactive-current
  * to voltage-magnitude sensitivity with analytic controller derivatives. It
  * intentionally excludes limit switching, voltage-dip logic, active-power
  * coupling, remote measurements, and non-local plant-control configurations.
- * It is a model-localization diagnostic, not a general DStab eigenanalysis.</p>
+ * It is a model-localization diagnostic, not a general DStab eigenanalysis.
+ * The returned operating-point constraints must be empty before interpreting
+ * the eigenvalues as a two-sided linearization.</p>
  */
 public final class LocalRenewableQvEigenAnalyzer {
     public static final int STATES_PER_DEVICE = 6;
@@ -50,7 +52,7 @@ public final class LocalRenewableQvEigenAnalyzer {
         }
         double[][] stateMatrix = stateMatrix(coupling, devices);
         return new Analysis(selectedBuses, coupling, devices, stateMatrix,
-                dominantMode(stateMatrix, devices));
+                dominantMode(stateMatrix, devices), operatingPointConstraints(devices));
     }
 
     private static List<String> validateBuses(BaseDStabNetwork<?, ?> network,
@@ -128,7 +130,8 @@ public final class LocalRenewableQvEigenAnalyzer {
                         converterData.tg(), reecaData.kqp(), reecaData.kqi(),
                         reecaData.kvp(), reecaData.kvi(), plantData.tfltr(),
                         plantData.kp(), plantData.ki(), plantData.tft(),
-                        plantData.tfv()));
+                        plantData.tfv(), reecaData.vmin(), reecaData.vmax(),
+                        plantData.qmin(), plantData.qmax()));
             }
         }
         return List.copyOf(devices);
@@ -139,6 +142,33 @@ public final class LocalRenewableQvEigenAnalyzer {
         if (!(value > 0.0)) {
             throw new IllegalArgumentException(name + " must be positive for eigenanalysis at "
                     + busId + ":" + gen.getId() + "; algebraic elimination is not supported");
+        }
+    }
+
+    private static List<OperatingPointConstraint> operatingPointConstraints(
+            List<Device> devices) {
+        List<OperatingPointConstraint> constraints = new ArrayList<>();
+        for (Device device : devices) {
+            // Both controllers produce incremental signals at initialization.
+            // PowerWorld expands a limit only far enough to contain that initial
+            // value. If zero becomes an endpoint, the anti-windup limiter has a
+            // directional derivative and a conventional two-sided Jacobian does
+            // not exist at the operating point.
+            addBoundaryConstraint(constraints, device.deviceId(), "REECA_PIQ", 0.0,
+                    Math.min(device.reecaVmin(), 0.0), Math.max(device.reecaVmax(), 0.0));
+            addBoundaryConstraint(constraints, device.deviceId(), "REPCA_Q_PI", 0.0,
+                    Math.min(device.plantQmin(), 0.0), Math.max(device.plantQmax(), 0.0));
+        }
+        return List.copyOf(constraints);
+    }
+
+    private static void addBoundaryConstraint(List<OperatingPointConstraint> constraints,
+            String deviceId, String signal, double value, double lower, double upper) {
+        double tolerance = 1.0e-10 * Math.max(1.0, Math.max(Math.abs(lower), Math.abs(upper)));
+        if (Math.abs(value - lower) <= tolerance || Math.abs(value - upper) <= tolerance) {
+            constraints.add(new OperatingPointConstraint(deviceId, signal, value, lower, upper,
+                    "initial output is on an anti-windup limit; the candidate Jacobian "
+                            + "is not a valid two-sided linearization"));
         }
     }
 
@@ -237,9 +267,24 @@ public final class LocalRenewableQvEigenAnalyzer {
             double systemScale, double v0, double iq0, double tg,
             double kqp, double kqi, double kvp, double kvi,
             double tfltr, double plantKp, double plantKi,
-            double tft, double tfv) {
+            double tft, double tfv, double reecaVmin, double reecaVmax,
+            double plantQmin, double plantQmax) {
+        public Device(String busId, String unitId, int busIndex,
+                double systemScale, double v0, double iq0, double tg,
+                double kqp, double kqi, double kvp, double kvi,
+                double tfltr, double plantKp, double plantKi,
+                double tft, double tfv) {
+            this(busId, unitId, busIndex, systemScale, v0, iq0, tg,
+                    kqp, kqi, kvp, kvi, tfltr, plantKp, plantKi, tft, tfv,
+                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+                    Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        }
+
         public String deviceId() { return busId + ":" + unitId; }
     }
+
+    public record OperatingPointConstraint(String deviceId, String signal,
+            double value, double lower, double upper, String explanation) { }
 
     public record StateComponent(String deviceId, String state,
             double normalizedReal, double normalizedImaginary, double magnitude) { }
@@ -265,17 +310,22 @@ public final class LocalRenewableQvEigenAnalyzer {
     }
 
     public record Analysis(List<String> busIds, double[][] couplingMatrix,
-            List<Device> devices, double[][] stateMatrix, Mode dominantMode) {
+            List<Device> devices, double[][] stateMatrix, Mode dominantMode,
+            List<OperatingPointConstraint> operatingPointConstraints) {
         public Analysis {
             busIds = List.copyOf(busIds);
             couplingMatrix = copy(couplingMatrix);
             devices = List.copyOf(devices);
             stateMatrix = copy(stateMatrix);
             Objects.requireNonNull(dominantMode, "dominantMode");
+            operatingPointConstraints = List.copyOf(operatingPointConstraints);
         }
 
         @Override public double[][] couplingMatrix() { return copy(couplingMatrix); }
         @Override public double[][] stateMatrix() { return copy(stateMatrix); }
+        public boolean isTwoSidedLinearizationValid() {
+            return operatingPointConstraints.isEmpty();
+        }
     }
 
     private static double[][] copy(double[][] matrix) {
