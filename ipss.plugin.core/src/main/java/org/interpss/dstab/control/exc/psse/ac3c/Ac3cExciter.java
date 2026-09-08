@@ -56,7 +56,7 @@ public final class Ac3cExciter extends AnnotateExciter implements IntegrationSte
         double ampInput0=va0/ka;
         vpidmax=Math.max(vpidmax,ampInput0);vpidmin=Math.min(vpidmin,ampInput0);
         state[VE]=ve0;state[VSENSE]=machine.getDStabBus().getVoltageMag();state[VA]=va0;
-        state[LEAD_LAG]=ampInput0;state[VN_LAG]=nonlinearFeedback(vfe0);state[PI]=ampInput0;state[DERIV_LAG]=0;
+        state[LEAD_LAG]=ampInput0;state[VN_LAG]=nonlinearFeedback(efd0);state[PI]=ampInput0;state[DERIV_LAG]=0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
         reference=state[VSENSE]-stabilizerSignal(machine)-summationLimiterInput();
         outputSignal=efd0;initialized=true;return true;
@@ -104,7 +104,8 @@ public final class Ac3cExciter extends AnnotateExciter implements IntegrationSte
         double field=solveAlgebraicField(x,machine,sensed);return algebraicsForField(x,machine,sensed,field);
     }
     private Algebraic algebraicsForField(double[] x,Machine machine,double sensed,double field){
-        double ifd=exciterIfd(machine),vfe=fieldFeedback(field,ifd),vn=nonlinearFeedback(vfe);
+        double ifd=exciterIfd(machine),vfe=fieldFeedback(field,ifd),efd=rectifierOutput(field,ifd);
+        double vn=nonlinearFeedback(efd);
         double feedback=tf>EPS?(vn-x[VN_LAG])/tf:0;
         double error=reference-sensed+stabilizerSignal(machine)+summationLimiterInput();
         double derivative=tdr>EPS?kdr*(error-x[DERIV_LAG])/tdr:0;
@@ -112,7 +113,7 @@ public final class Ac3cExciter extends AnnotateExciter implements IntegrationSte
         double leadLag=tb>EPS?(tc/tb)*pid+(1-tc/tb)*x[LEAD_LAG]:pid;
         double gated=takeoverLimiterOutput(leadLag),amplifierInput=gated-feedback;
         double va=ta>EPS?clamp(x[VA],vamin,vamax):clamp(ka*amplifierInput,vamin,vamax);
-        double efd=rectifierOutput(field,ifd),efe=va*kr*efd,limitedField=clamp(field,vemin,fieldUpperLimit(field,ifd));
+        double efe=va*kr*efd,limitedField=clamp(field,vemin,fieldUpperLimit(field,ifd));
         return new Algebraic(sensed,error,pid,leadLag,gated,amplifierInput,va,efe,limitedField,vfe,vn,feedback,derivative);
     }
     private double solveAlgebraicField(double[] x,Machine machine,double sensed){
