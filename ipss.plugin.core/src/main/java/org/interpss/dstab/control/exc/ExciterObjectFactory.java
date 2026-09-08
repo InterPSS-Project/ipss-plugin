@@ -54,6 +54,8 @@ import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
 import org.interpss.dstab.control.exc.psse.ac8c.Ac8cData;
 import org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter;
+import org.interpss.dstab.control.exc.psse.ac9c.Ac9cData;
+import org.interpss.dstab.control.exc.psse.ac9c.Ac9cExciter;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
@@ -233,6 +235,11 @@ public class ExciterObjectFactory {
 	/** Create an IEEE 421.5-2016 / PSS/E AC8C controlled-rectifier exciter. */
 	public static Ac8cExciter createAc8cExciter(String id, Ac8cData data, Machine machine) {
 		return new Ac8cExciter(id, data, machine);
+	}
+
+	/** Create an IEEE 421.5-2016 / PSS/E AC9C cascaded regulator exciter. */
+	public static Ac9cExciter createAc9cExciter(String id, Ac9cData data, Machine machine) {
+		return new Ac9cExciter(id, data, machine);
 	}
 
 	/** Create a PSS/E ESAC4A (IEEE Type AC4A) excitation system. */
