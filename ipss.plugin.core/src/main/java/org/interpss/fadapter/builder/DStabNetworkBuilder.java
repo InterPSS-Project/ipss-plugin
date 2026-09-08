@@ -26,6 +26,8 @@ import org.interpss.dstab.control.exc.psse.ac7c.Ac7cData;
 import org.interpss.dstab.control.exc.psse.ac7c.Ac7cExciter;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
+import org.interpss.dstab.control.exc.psse.esac8b.Esac8bData;
+import org.interpss.dstab.control.exc.psse.esac8b.Esac8bExciter;
 import org.interpss.dstab.control.exc.psse.ac8c.Ac8cData;
 import org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter;
 import org.interpss.dstab.control.exc.psse.ac9c.Ac9cData;
@@ -1174,6 +1176,16 @@ public class DStabNetworkBuilder {
             return null;
         }
         return ExciterObjectFactory.createAc8bExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E ESAC8B (Basler DECS), sharing the verified AC8B PID engine. */
+    public Esac8bExciter addExcEsac8b(String busId, String genId, Esac8bData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ESAC8B exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createEsac8bExciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** PSS/E ESAC4A / IEEE Type AC4A excitation system. */

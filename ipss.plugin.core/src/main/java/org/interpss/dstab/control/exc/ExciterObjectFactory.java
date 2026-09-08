@@ -52,6 +52,8 @@ import org.interpss.dstab.control.exc.psse.ac7b.Ac7bData;
 import org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
 import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
+import org.interpss.dstab.control.exc.psse.esac8b.Esac8bData;
+import org.interpss.dstab.control.exc.psse.esac8b.Esac8bExciter;
 import org.interpss.dstab.control.exc.psse.ac8c.Ac8cData;
 import org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter;
 import org.interpss.dstab.control.exc.psse.ac9c.Ac9cData;
@@ -258,6 +260,11 @@ public class ExciterObjectFactory {
 	/** Create an IEEE 421.5-2005 / PSS/E AC8B rotating exciter. */
 	public static Ac8bExciter createAc8bExciter(String id, Ac8bData data, Machine machine) {
 		return new Ac8bExciter(id, data, machine);
+	}
+
+	/** Create the native PSS/E ESAC8B / Basler DECS exciter. */
+	public static Esac8bExciter createEsac8bExciter(String id, Esac8bData data, Machine machine) {
+		return new Esac8bExciter(id, data, machine);
 	}
 
 	/** Create an IEEE 421.5-2016 / PSS/E AC8C controlled-rectifier exciter. */

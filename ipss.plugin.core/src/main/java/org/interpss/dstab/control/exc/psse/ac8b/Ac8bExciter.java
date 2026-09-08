@@ -23,7 +23,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
  */
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
-public final class Ac8bExciter extends AnnotateExciter implements IntegrationStepAware {
+public class Ac8bExciter extends AnnotateExciter implements IntegrationStepAware {
     private static final double EPS = 1.0e-12;
     private static final double PID_TRACKING_GAIN = 2.0;
     private static final int VE = 0;
@@ -50,7 +50,11 @@ public final class Ac8bExciter extends AnnotateExciter implements IntegrationSte
     public double outputSignal;
 
     public Ac8bExciter(String id, Ac8bData data, Machine machine) {
-        super(id, "AC8B", "PSS/E");
+        this(id, "AC8B", data, machine);
+    }
+
+    protected Ac8bExciter(String id, String modelName, Ac8bData data, Machine machine) {
+        super(id, modelName, "PSS/E");
         this.data = data;
         this._data = data;
         setMachine(machine);
@@ -73,7 +77,8 @@ public final class Ac8bExciter extends AnnotateExciter implements IntegrationSte
 
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         loadAndCorrectParameters();
-        if (tr < 0.0 || tdr < 0.0 || ta < 0.0 || te < 0.0 || Math.abs(ka) <= EPS) {
+        if (tr < 0.0 || tdr < 0.0 || ta < 0.0 || te < 0.0 || Math.abs(ka) <= EPS
+                || (data.isEsac8bPti() && te <= EPS)) {
             return false;
         }
 
@@ -101,8 +106,10 @@ public final class Ac8bExciter extends AnnotateExciter implements IntegrationSte
     }
 
     private void loadAndCorrectParameters() {
-        tr = correctedTransducer(data.getTr());
+        tr = data.isEsac8bPti() ? correctedBypass(data.getTr())
+                : correctedTransducer(data.getTr());
         kpr = data.getKpr(); kir = data.getKir(); kdr = data.getKdr();
+        if (Math.abs(kpr) <= EPS && Math.abs(kir) <= EPS) kpr = 40.0;
         tdr = correctedBypass(data.getTdr());
         vpidmax = Math.max(data.getVpidmax(), data.getVpidmin());
         vpidmin = Math.min(data.getVpidmax(), data.getVpidmin());
@@ -110,6 +117,7 @@ public final class Ac8bExciter extends AnnotateExciter implements IntegrationSte
         vrmin = Math.min(data.getVrmax(), data.getVrmin());
         vfemax = data.getVfemax(); vemin = data.getVemin();
         ta = correctedBypass(data.getTa()); ka = data.getKa();
+        if (data.isEsac8bPti() && Math.abs(ka) <= EPS) ka = minimumResolvedTimeConstant();
         te = correctedMinimum(data.getTe()); kc = data.getKc();
         kd = data.getKd(); ke = data.getKe();
         e1 = data.getE1(); se1 = data.getSe1(); e2 = data.getE2(); se2 = data.getSe2();
@@ -122,14 +130,14 @@ public final class Ac8bExciter extends AnnotateExciter implements IntegrationSte
     private double correctedTransducer(double value) {
         double minimum = minimumResolvedTimeConstant();
         if (value > 0.0 && value < 0.25 * minimum) return 0.0;
-        if (value > 0.25 * minimum && value < 0.5 * minimum) return 0.5 * minimum;
+        if (value >= 0.25 * minimum && value < 0.5 * minimum) return 0.5 * minimum;
         return value;
     }
 
     private double correctedBypass(double value) {
         double minimum = minimumResolvedTimeConstant();
         if (value > 0.0 && value < 0.5 * minimum) return 0.0;
-        if (value > 0.5 * minimum && value < minimum) return minimum;
+        if (value >= 0.5 * minimum && value < minimum) return minimum;
         return value;
     }
 
@@ -273,6 +281,7 @@ public final class Ac8bExciter extends AnnotateExciter implements IntegrationSte
     public double getPidOutput() { return algebraics(active, getMachine()).pidOutput; }
     public double getRegulatorOutput() { return algebraics(active, getMachine()).regulator; }
     public double getInternalFieldVoltage() { return algebraics(active, getMachine()).field; }
+    public double[] getStateSnapshot() { return active.clone(); }
 
     @Override public double getOutput(Machine machine) {
         Algebraic a = algebraics(active, machine);

@@ -9,7 +9,7 @@ import org.interpss.dstab.control.base.BaseControllerData;
  * and by the supplied cases. It is intentionally distinct from PowerWorld's
  * newer, extended AC8B data form.</p>
  */
-public final class Ac8bData extends BaseControllerData {
+public class Ac8bData extends BaseControllerData {
     private double tr, kpr, kir, kdr, tdr;
     private double vpidmax, vpidmin, vrmax, vrmin;
     private double vfemax, vemin, ta, ka, te, kc, kd, ke;
@@ -68,4 +68,7 @@ public final class Ac8bData extends BaseControllerData {
     public double getSe1(){return se1;} public void setSe1(double v){se1=v;}
     public double getE2(){return e2;} public void setE2(double v){e2=v;}
     public double getSe2(){return se2;} public void setSe2(double v){se2=v;}
+
+    /** Selects the native 15-CON PSS/E ESAC8B profile on the shared engine. */
+    public boolean isEsac8bPti() { return false; }
 }
