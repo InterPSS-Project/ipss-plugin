@@ -8,6 +8,7 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.mach.Machine;
@@ -33,7 +34,7 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
 
     public double tr,ka,ta,tk,tb,tc,vamax,vamin,vrmax,vrmin,te;
     public double vfelim,kh,vhmax,th,tj,kc,kd,ke,e1,se1,e2,se2,spdmlt;
-    public double reference,outputSignal;
+    public double reference,outputSignal,vuel;
 
     public Esac6aExciter(String id, Esac6aData data, Machine machine) {
         super(id,"ESAC6A","PSS/E"); this.data=data; this._data=data; setMachine(machine);
@@ -49,23 +50,24 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
         if (ka<=0||tr<0||ta<0||tk<0||tb<0||tc<0||te<=EPS||th<0||tj<0
                 || kc<0||kd<0||vhmax<0) return false;
         double ifd=exciterIfd(machine);
-        double ve0=Exac1Exciter.solveInternalVoltage(machine.getEfd(),kc*ifd);
+        double targetEfd=machine.getEfd()/(spdmlt!=0?safeSpeed(machine):1);
+        double ve0=Exac1Exciter.solveInternalVoltage(targetEfd,kc*ifd);
         if(!Double.isFinite(ve0)) return false;
         double vfe0=fieldFeedback(ve0,ifd);
         double vh0=clamp(kh*(vfe0-vfelim),0,vhmax);
         double vf0=vh0;
         double va0=vfe0+vf0;
         vamax=Math.max(vamax,va0); vamin=Math.min(vamin,va0);
-        double vt0=bus.getVoltageMag();
-        if(vt0<=EPS) return false;
+        double vt0=bus.getVoltageMag(),ec0=sensingVoltage(machine);
+        if(vt0<=EPS||ec0<=EPS) return false;
         vrmax=Math.max(vrmax,vfe0/vt0); vrmin=Math.min(vrmin,vfe0/vt0);
         double error0=va0/ka;
-        state[VE]=ve0; state[VSENSE]=vt0;
+        state[VE]=ve0; state[VSENSE]=ec0;
         state[TA_BLOCK]=transferState(error0,va0,ka,tk,ta);
         state[VLL]=transferState(va0,va0,1,tc,tb);
         state[VF]=transferState(vh0,vf0,1,tj,th);
         System.arraycopy(state,0,trial,0,state.length); active=state;
-        reference=error0+vt0-stabilizerSignal(machine);
+        reference=error0+ec0-stabilizerSignal(machine)-vuel;
         outputSignal=rectifierOutput(ve0,ifd,machine); initialized=true; return true;
     }
 
@@ -101,7 +103,7 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
 
     private void derivatives(double[] x,double[] dx,Machine machine){
         Arrays.fill(dx,0); Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        dx[VSENSE]=lagDerivative(sensingVoltage(machine),x[VSENSE],tr);
         dx[TA_BLOCK]=transferDerivative(a.error,x[TA_BLOCK],ka,tk,ta);
         dx[VLL]=transferDerivative(a.taOutput,x[VLL],1,tc,tb);
         dx[VF]=transferDerivative(a.vh,x[VF],1,tj,th);
@@ -111,8 +113,8 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
 
     private Algebraic algebraics(double[] x,Machine machine){
         double vt=machine.getDStabBus().getVoltageMag();
-        double sensed=tr>EPS?x[VSENSE]:vt;
-        double error=reference+stabilizerSignal(machine)-sensed;
+        double sensed=tr>EPS?x[VSENSE]:sensingVoltage(machine);
+        double error=reference+stabilizerSignal(machine)+vuel-sensed;
         double taOutput=transferOutput(error,x[TA_BLOCK],ka,tk,ta);
         double va=clamp(transferOutput(taOutput,x[VLL],1,tc,tb),vamin,vamax);
         double ifd=exciterIfd(machine),vfe=fieldFeedback(x[VE],ifd);
@@ -128,7 +130,7 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
     private double rectifierOutput(double ve,double ifd,Machine machine){
         if(Math.abs(ve)<=EPS)return 0;
         double efd=ve*Exac1Exciter.rectifierFactor(kc*ifd/ve);
-        return spdmlt!=0?efd*machine.getSpeed():efd;
+        return spdmlt!=0?efd*safeSpeed(machine):efd;
     }
     private static double transferState(double input,double output,double gain,double numeratorT,double denominatorT){
         return denominatorT>EPS?output-gain*numeratorT/denominatorT*input:0;
@@ -149,6 +151,16 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
     private static double exciterIfd(Machine machine){
         double value=machine.calculateIfd(MachineIfdBase.EXCITER);return Double.isFinite(value)?value:0;
     }
+    private static double sensingVoltage(Machine machine){
+        if(machine instanceof ICMLMachineVoltageProvider provider){
+            double value=provider.getCmlMachineVoltage();
+            if(Double.isFinite(value))return value;
+        }
+        return machine.getDStabBus().getVoltageMag();
+    }
+    private static double safeSpeed(Machine machine){
+        double speed=machine.getSpeed();return Double.isFinite(speed)&&Math.abs(speed)>EPS?speed:1;
+    }
 
     public double getInternalFieldVoltage(){return active[VE];}
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}
@@ -163,6 +175,8 @@ public final class Esac6aExciter extends AnnotateExciter implements IntegrationS
     }
     @Override public void setRefPoint(double value){reference=value;}
     @Override public double getRefPoint(){return reference;}
+    public void setVuel(double value){vuel=value;}
+    public double getVuel(){return vuel;}
     private record Algebraic(double sensed,double error,double taOutput,double va,double vfe,double vh,double vf,double vr){}
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
     @Override public Field getField(String name)throws Exception{return getClass().getField(name);}

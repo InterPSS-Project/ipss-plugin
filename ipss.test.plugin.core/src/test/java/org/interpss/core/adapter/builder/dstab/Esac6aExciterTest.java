@@ -1,20 +1,30 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
+import org.interpss.dstab.mach.GenqecData;
+import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
+import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
+import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -23,10 +33,14 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.util.sample.SampleDStabCase;
 
 /** Import, correction, equation and solver regression tests for ESAC6A. */
 public class Esac6aExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
+    private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
+            Path.of(System.getProperty("user.home"),"OneDrive","Documents","qiuhua","private_cases").toString()));
 
     @Test void parsesRealCorpusRecordAndHoldsEquilibrium(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
@@ -50,11 +64,29 @@ public class Esac6aExciterTest extends CorePluginTestSetup {
         assertEquals(initial,exciter.getOutput(machine),1e-9);
     }
 
-    @Test void catalogDefinesPsseAndOptionalSpeedMultiplierVariants(){
+    @Test void allTwoHundredSeventyFiveSuppliedRecordsUseExactTwentyThreeParameterSchema()throws Exception{
+        List<Path> files=List.of(
+                CORPUS_ROOT.resolve("31hs1ap/31hs1ap_348 (1)/31hs1ap.dyr"),
+                CORPUS_ROOT.resolve("private_case_package/24HSP11p.dyr"),
+                CORPUS_ROOT.resolve("Texas7k_20210804_Plus2023/Texas7k_20210804.dyr"),
+                CORPUS_ROOT.resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr"),
+                CORPUS_ROOT.resolve("TamuTestCases/ACTIVSg10k/ACTIVSg10k_dynamics.dyr"),
+                CORPUS_ROOT.resolve("TamuTestCases/ACTIVSg25k/ACTIVSg25k.dyr"));
+        assumeTrue(files.stream().allMatch(Files::isRegularFile),"Missing supplied ESAC6A corpus under "+CORPUS_ROOT);
+        Pattern pattern=Pattern.compile("(?ims)^\\s*\\d+\\s+'ESAC6A'\\s+[^/]+/");int count=0;
+        for(Path file:files){Matcher matcher=pattern.matcher(Files.readString(file));while(matcher.find()){
+            String record=matcher.group();assertEquals(26,
+                    PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size(),file.toString());count++;}}
+        assertEquals(275,count);
+    }
+
+    @Test void catalogDefinesExactPsseSchemaAndTypedOnlySpeedMultiplier(){
         var descriptor=DynamicModelCatalog.find("ESAC6A").orElseThrow();
         assertEquals(23,descriptor.parameterCount());
-        assertTrue(descriptor.recordSchema().accepts(24));
+        assertTrue(descriptor.recordSchema().accepts(23));
+        assertFalse(descriptor.recordSchema().accepts(24));
         assertEquals(DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
+        assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESAC6A").orElseThrow().isImplementedExactly());
     }
 
     @Test void fiveStateTrajectoryMatchesPublishedBlockEquations() throws Exception {
@@ -104,6 +136,50 @@ public class Esac6aExciterTest extends CorePluginTestSetup {
         assertEquals(1.0,f.exciter.getRegulatorOutput(),TOL);
     }
 
+    @Test void routesVuelAndPreservesItsInitializationEquilibrium()throws Exception{
+        DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
+        Esac6aExciter exciter=builder.addExcEsac6a("Bus1","1",baseData());
+        Machine machine=builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1);machine.setEfd(1.2);exciter.setVuel(.2);
+        assertTrue(exciter.initStates(machine.getDStabBus(),machine));
+        double initial=exciter.getOutput(machine),ta0=exciter.getTaOutput();
+        for(int i=0;i<1000;i++)step(exciter,machine,.0001);
+        assertEquals(initial,exciter.getOutput(machine),1e-9);
+        exciter.setVuel(.25);
+        assertEquals(ta0+.02,exciter.getTaOutput(),TOL);
+    }
+
+    @Test void honorsTypedSpeedMultiplierAtNonUnitSpeed()throws Exception{
+        Esac6aData data=baseData();data.setSpdmlt(1);Fixture f=fixture(data,1.02);
+        assertEquals(1.2,f.exciter.getOutput(f.machine),1e-8);
+        assertEquals(1.2/1.02,f.exciter.getInternalFieldVoltage(),1e-8);
+    }
+
+    @Test void sensesCompensatedMachineVoltageButKeepsRawTerminalLimitScaling()throws Exception{
+        BaseDStabNetwork<?,?> network=SampleDStabCase.createDStabTestNet();
+        DStabNetworkBuilder builder=new DStabNetworkBuilder(network);
+        GenqecData machineData=new GenqecData(3.17,0,.003,2.37,1.87,.32,.52,.28,.20,.19,
+                6.81,.85,.02,.02,.233,.797,.02,.10,0,.1,1);
+        GenqecMachine machine=builder.addGenqec("Gen","G1",100,1,machineData);
+        var bus=network.getDStabBus("Gen");bus.initStates();assertTrue(machine.initStates(bus));
+        Esac6aData data=baseData();data.setTr(0);data.setVrmax(2);data.setVrmin(-2);
+        Esac6aExciter exciter=builder.addExcEsac6a("Gen","G1",data);
+        assertTrue(exciter.initStates(bus,machine));
+        assertEquals(machine.getCompensatedVoltage(),exciter.getSensedVoltage(),TOL);
+        assertTrue(Math.abs(exciter.getSensedVoltage()-bus.getVoltageMag())>1e-5);
+        double rawLimit=bus.getVoltageMag()*exciter.vrmax;
+        double compensatedLimit=exciter.getSensedVoltage()*exciter.vrmax;
+        exciter.setRefPoint(exciter.getRefPoint()+100);
+        assertEquals(rawLimit,exciter.getRegulatorOutput(),TOL);
+        assertTrue(Math.abs(exciter.getRegulatorOutput()-compensatedLimit)>1e-5);
+    }
+
+    @Test void rejectsInvalidParameters()throws Exception{
+        DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
+        Esac6aData data=baseData();data.setTe(0);assertNull(builder.addExcEsac6a("Bus1","1",data));
+        data=baseData();data.setTh(-.1);assertNull(builder.addExcEsac6a("Bus1","1",data));
+    }
+
     @Test void participatesInFullDynamicSimulation() throws Exception {
         DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
         assertNotNull(builder.addExcEsac6a("Bus1","1",baseData()));
@@ -118,11 +194,12 @@ public class Esac6aExciterTest extends CorePluginTestSetup {
         assertTrue(Double.isFinite(machine.getExciter().getOutput(machine)));
     }
 
-    private static Fixture fixture(Esac6aData data) throws Exception {
+    private static Fixture fixture(Esac6aData data) throws Exception {return fixture(data,1);}
+    private static Fixture fixture(Esac6aData data,double speed) throws Exception {
         DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
         Esac6aExciter exciter=builder.addExcEsac6a("Bus1","1",data);
         Machine machine=builder.getDStabNetwork().getMachine("Bus1-mach1");
-        machine.setSpeed(1);machine.setEfd(1.2);
+        machine.setSpeed(speed);machine.setEfd(1.2);
         assertNotNull(exciter);assertTrue(exciter.initStates(machine.getDStabBus(),machine));
         return new Fixture(machine,exciter);
     }

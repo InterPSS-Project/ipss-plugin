@@ -1292,7 +1292,8 @@ public class PSSEDStabDirectParser {
     }
 
     // ESAC6A: IBUS MODEL ID Tr Ka Ta Tk Tb Tc VaMax VaMin VrMax VrMin Te
-    //          VfeLim Kh VhMax Th Tj Kc Kd Ke E1 SE1 E2 SE2 [Spdmlt]
+    //          VfeLim Kh VhMax Th Tj Kc Kd Ke E1 SE1 E2 SE2
+    // Spdmlt is a typed PowerWorld property, not a native PSS/E DYR parameter.
     private boolean procExcEsac6a(String busId,String genId,String[] f) {
         if (f.length<26) return false;
         Esac6aData d=new Esac6aData();
@@ -1306,7 +1307,6 @@ public class PSSEDStabDirectParser {
         d.setKc(getDouble(f,19,0));d.setKd(getDouble(f,20,0));d.setKe(getDouble(f,21,0));
         d.setE1(getDouble(f,22,0));d.setSe1(getDouble(f,23,0));
         d.setE2(getDouble(f,24,0));d.setSe2(getDouble(f,25,0));
-        d.setSpdmlt(getDouble(f,26,0));
         return builder.addExcEsac6a(busId,genId,d)!=null;
     }
 
