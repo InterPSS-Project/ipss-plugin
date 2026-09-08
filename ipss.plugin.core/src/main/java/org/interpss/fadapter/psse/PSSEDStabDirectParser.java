@@ -58,6 +58,7 @@ import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.st1c.St1cData;
 import org.interpss.dstab.control.exc.psse.st2c.St2cData;
+import org.interpss.dstab.control.exc.psse.st3c.St3cData;
 import org.interpss.dstab.control.exc.psse.st4c.St4cData;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
@@ -302,6 +303,8 @@ public class PSSEDStabDirectParser {
                 return procExcSt1c(busId, genId, fields);
             case "ST2C":
                 return procExcSt2c(busId, genId, fields);
+            case "ST3C":
+                return procExcSt3c(busId,genId,fields);
             case "ST4C":
                 return procExcSt4c(busId, genId, fields);
             case "ST7B":
@@ -1013,6 +1016,20 @@ public class PSSEDStabDirectParser {
         d.setKp(getDouble(f,22,0));d.setKi(getDouble(f,23,0));d.setXl(getDouble(f,24,0));
         d.setThetaP(getDouble(f,25,0));d.setKc(getDouble(f,26,0));d.setVbmax(getDouble(f,27,0));
         return builder.addExcSt2c(busId,genId,d)!=null;
+    }
+
+    // ST3C: OEL UEL SCL SW1, then the 27 CONs in PSS/E 36 Model Library 6.78.
+    private boolean procExcSt3c(String busId,String genId,String[] f){
+        if(f.length<34)return false;St3cData d=new St3cData();
+        d.setOel(getInt(f,3,1));d.setUel(getInt(f,4,1));d.setScl(getInt(f,5,0));d.setSw1(getInt(f,6,2));
+        d.setTr(getDouble(f,7,0));d.setVimax(getDouble(f,8,0));d.setVimin(getDouble(f,9,0));
+        d.setKpr(getDouble(f,10,0));d.setKir(getDouble(f,11,0));d.setKdr(getDouble(f,12,0));d.setTdr(getDouble(f,13,0));
+        d.setVpidmax(getDouble(f,14,0));d.setVpidmin(getDouble(f,15,0));d.setTc(getDouble(f,16,0));d.setTb(getDouble(f,17,0));
+        d.setKa(getDouble(f,18,0));d.setTa(getDouble(f,19,0));d.setVrmax(getDouble(f,20,0));d.setVrmin(getDouble(f,21,0));
+        d.setKm(getDouble(f,22,0));d.setTm(getDouble(f,23,0));d.setVmmax(getDouble(f,24,0));d.setVmmin(getDouble(f,25,0));
+        d.setKg(getDouble(f,26,0));d.setVgmax(getDouble(f,27,0));d.setKp(getDouble(f,28,0));d.setKi(getDouble(f,29,0));
+        d.setXl(getDouble(f,30,0));d.setThetaP(getDouble(f,31,0));d.setKc(getDouble(f,32,0));d.setVbmax(getDouble(f,33,0));
+        return builder.addExcSt3c(busId,genId,d)!=null;
     }
 
     // ST7B: OEL UEL Tr Tg Tf Vmax Vmin Kpa Vrmax Vrmin Kh Kl Tc Tb Kia Tia
