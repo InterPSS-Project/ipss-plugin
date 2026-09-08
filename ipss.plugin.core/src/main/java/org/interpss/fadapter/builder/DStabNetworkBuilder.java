@@ -30,6 +30,8 @@ import org.interpss.dstab.control.exc.psse.ac8c.Ac8cData;
 import org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter;
 import org.interpss.dstab.control.exc.psse.ac9c.Ac9cData;
 import org.interpss.dstab.control.exc.psse.ac9c.Ac9cExciter;
+import org.interpss.dstab.control.exc.psse.ac11c.Ac11cData;
+import org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
@@ -1561,6 +1563,24 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if(mach==null){log.warn("Machine not found for AC9C: bus={}, gen={}",busId,genId);return null;}
         return ExciterObjectFactory.createAc9cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC11C brushless exciter. */
+    public Ac11cExciter addExcAc11c(String busId,String genId,Ac11cData data){
+        if(data==null||data.getTr()<0||data.getTia()<0||data.getTiu()<0
+                ||data.getTb()<0||data.getTio()<0||data.getTe()<0
+                ||data.getKc()<0||data.getKd()<0||data.getKc1()<0||data.getKc2()<0
+                ||data.getVbmax1()<0||data.getVbmax2()<0
+                ||data.getOelLocation()<0||data.getOelLocation()>3
+                ||data.getUelLocation()<0||data.getUelLocation()>3
+                ||data.getSclLocation()<0||data.getSclLocation()>3
+                ||data.getVosLocation()<1||data.getVosLocation()>3
+                ||data.getSw1()<1||data.getSw1()>2){
+            log.warn("Invalid AC11C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC11C: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createAc11cExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** Attach the IEEE 421.5/PSS/E ESAC2A rotating AC exciter. */
