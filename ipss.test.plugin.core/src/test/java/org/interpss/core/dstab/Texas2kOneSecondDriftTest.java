@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.numeric.sparse.ISparseEqnComplex;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.dstab.DStabGen;
@@ -245,6 +247,47 @@ public class Texas2kOneSecondDriftTest {
         System.out.println("  dominant controller states: " + qvMode.participation());
         assertTrue(Double.isFinite(qvMode.real()) && Double.isFinite(qvMode.imaginary()),
                 "invalid controller-weighted Q/V eigenvalue: " + qvMode);
+        Path reportDirectory = Path.of(System.getProperty("texas2k.gridStrength.reportDir",
+                Path.of("target", "dynamic-model-validation", "texas2k-case5-qv")
+                        .toString()));
+        writeQvBenchmark(reportDirectory, CASE5_INTERACTING_BUSES,
+                coupling, devices, qvMode);
+        System.out.println("  machine-readable Q/V benchmark: "
+                + reportDirectory.toAbsolutePath());
+    }
+
+    @Test
+    void machineReadableQvReportPreservesFullMatricesAndEigenvector(@TempDir Path directory)
+            throws Exception {
+        List<String> buses = List.of("Bus1");
+        double[][] coupling = {{0.125}};
+        LinearQvDevice device = new LinearQvDevice("Bus1", "1", 0,
+                0.75, 1.02, -0.04, .02, .3, .4, .5, .6,
+                .07, .8, .9, .1, .2);
+        double[][] state = new double[6][6];
+        for (int index = 0; index < state.length; index++) state[index][index] = -index - 1.0;
+        List<StateComponent> vector = new ArrayList<>();
+        for (int index = 0; index < 6; index++) {
+            vector.add(new StateComponent("Bus1:1", stateName(index),
+                    index / 10.0, -index / 20.0, Math.hypot(index / 10.0, index / 20.0)));
+        }
+        LinearMode mode = new LinearMode(.01, -.25,
+                List.of(new StateParticipation("Bus1:1", "REGCA_IQ", 1.0)),
+                state, vector);
+
+        writeQvBenchmark(directory, buses, coupling, List.of(device), mode);
+
+        List<String> couplingRows = Files.readAllLines(directory.resolve("coupling.csv"));
+        List<String> stateRows = Files.readAllLines(directory.resolve("state-matrix.csv"));
+        List<String> vectorRows = Files.readAllLines(directory.resolve("dominant-mode.csv"));
+        assertEquals(2, couplingRows.size());
+        assertEquals("response_bus,Bus1", couplingRows.get(0));
+        assertEquals(7, stateRows.size());
+        assertEquals(7, vectorRows.size());
+        assertTrue(vectorRows.get(6).startsWith("Bus1:1,REGCA_IQ,"));
+        assertTrue(Files.readString(directory.resolve("summary.csv"))
+                .contains("dominant_eigenvalue_imaginary,-0.25"));
+        assertEquals(2, Files.readAllLines(directory.resolve("devices.csv")).size());
     }
 
     private static List<ModeParticipation> rankMode(double[] vector) {
@@ -318,6 +361,7 @@ public class Texas2kOneSecondDriftTest {
                 .boxed().max(java.util.Comparator.comparingDouble(
                         decomposition::getRealEigenvalue)).orElseThrow();
         double[] vector = decomposition.getEigenvector(dominant).toArray();
+        double[] quadrature = new double[vector.length];
         double[] vectorMagnitude = java.util.Arrays.stream(vector).map(Math::abs).toArray();
         double imaginary = decomposition.getImagEigenvalue(dominant);
         if (Math.abs(imaginary) > 1.0e-9) {
@@ -328,30 +372,103 @@ public class Texas2kOneSecondDriftTest {
                             && Math.abs(decomposition.getImagEigenvalue(index) + imaginary)
                                     < 1.0e-8)
                     .findFirst().orElseThrow();
-            double[] quadrature = decomposition.getEigenvector(conjugate).toArray();
+            quadrature = decomposition.getEigenvector(conjugate).toArray();
             for (int index = 0; index < vectorMagnitude.length; index++) {
                 vectorMagnitude[index] = Math.hypot(vector[index], quadrature[index]);
             }
         }
         double maximum = java.util.Arrays.stream(vectorMagnitude).max().orElseThrow();
-        List<StateParticipation> participation = java.util.stream.IntStream
+        double[] quadratureVector = quadrature;
+        List<StateComponent> components = java.util.stream.IntStream
                 .range(0, vector.length)
-                .mapToObj(index -> new StateParticipation(
+                .mapToObj(index -> new StateComponent(
                         devices.get(index / statesPerDevice).busId() + ":"
                                 + devices.get(index / statesPerDevice).unitId(),
-                        switch (index % statesPerDevice) {
-                            case 0 -> "REPCA_VFILT";
-                            case 1 -> "REPCA_Q_PI";
-                            case 2 -> "REPCA_LEAD_LAG";
-                            case 3 -> "REECA_Q_PI";
-                            case 4 -> "REECA_V_PI";
-                            default -> "REGCA_IQ";
-                        }, vectorMagnitude[index] / maximum))
+                        stateName(index % statesPerDevice), vector[index] / maximum,
+                        quadratureVector[index] / maximum, vectorMagnitude[index] / maximum))
+                .toList();
+        List<StateParticipation> participation = components.stream()
+                .map(component -> new StateParticipation(component.deviceId(),
+                        component.state(), component.magnitude()))
                 .sorted(java.util.Comparator.comparingDouble(StateParticipation::magnitude)
                         .reversed())
                 .limit(12).toList();
         return new LinearMode(decomposition.getRealEigenvalue(dominant),
-                imaginary, participation);
+                imaginary, participation, state, components);
+    }
+
+    private static String stateName(int index) {
+        return switch (index) {
+            case 0 -> "REPCA_VFILT";
+            case 1 -> "REPCA_Q_PI";
+            case 2 -> "REPCA_LEAD_LAG";
+            case 3 -> "REECA_Q_PI";
+            case 4 -> "REECA_V_PI";
+            case 5 -> "REGCA_IQ";
+            default -> throw new IllegalArgumentException("Unknown Q/V state index: " + index);
+        };
+    }
+
+    private static void writeQvBenchmark(Path directory, List<String> buses,
+            double[][] coupling, List<LinearQvDevice> devices, LinearMode mode)
+            throws java.io.IOException {
+        Files.createDirectories(directory);
+        writeMatrix(directory.resolve("coupling.csv"), "response_bus", buses, buses,
+                coupling);
+        List<String> stateLabels = mode.components().stream()
+                .map(component -> component.deviceId() + "/" + component.state()).toList();
+        writeMatrix(directory.resolve("state-matrix.csv"), "state", stateLabels,
+                stateLabels, mode.stateMatrix());
+
+        StringBuilder deviceCsv = new StringBuilder("device_id,bus_index,system_scale,v0,iq0,tg,"
+                + "reeca_kqp,reeca_kqi,reeca_kvp,reeca_kvi,repca_tfltr,repca_kp,"
+                + "repca_ki,repca_tft,repca_tfv\n");
+        for (LinearQvDevice device : devices) {
+            deviceCsv.append(device.busId()).append(':').append(device.unitId()).append(',')
+                    .append(device.busIndex()).append(',').append(device.systemScale()).append(',')
+                    .append(device.v0()).append(',').append(device.iq0()).append(',')
+                    .append(device.tg()).append(',').append(device.kqp()).append(',')
+                    .append(device.kqi()).append(',').append(device.kvp()).append(',')
+                    .append(device.kvi()).append(',').append(device.tfltr()).append(',')
+                    .append(device.plantKp()).append(',').append(device.plantKi()).append(',')
+                    .append(device.tft()).append(',').append(device.tfv()).append('\n');
+        }
+        Files.writeString(directory.resolve("devices.csv"), deviceCsv);
+
+        StringBuilder vectorCsv = new StringBuilder(
+                "device_id,state,normalized_real,normalized_imaginary,normalized_magnitude\n");
+        for (StateComponent component : mode.components()) {
+            vectorCsv.append(component.deviceId()).append(',').append(component.state()).append(',')
+                    .append(component.real()).append(',').append(component.imaginary()).append(',')
+                    .append(component.magnitude()).append('\n');
+        }
+        Files.writeString(directory.resolve("dominant-mode.csv"), vectorCsv);
+        Files.writeString(directory.resolve("summary.csv"),
+                "metric,value\n"
+                + "bus_count," + buses.size() + "\n"
+                + "device_count," + devices.size() + "\n"
+                + "state_count," + mode.stateMatrix().length + "\n"
+                + "dominant_eigenvalue_real," + mode.real() + "\n"
+                + "dominant_eigenvalue_imaginary," + mode.imaginary() + "\n");
+    }
+
+    private static void writeMatrix(Path path, String rowHeader, List<String> rowLabels,
+            List<String> columnLabels, double[][] values) throws java.io.IOException {
+        if (values.length != rowLabels.size()) {
+            throw new IllegalArgumentException("Matrix row count does not match labels");
+        }
+        StringBuilder csv = new StringBuilder(rowHeader);
+        columnLabels.forEach(label -> csv.append(',').append(label));
+        csv.append('\n');
+        for (int row = 0; row < values.length; row++) {
+            if (values[row].length != columnLabels.size()) {
+                throw new IllegalArgumentException("Matrix column count does not match labels");
+            }
+            csv.append(rowLabels.get(row));
+            for (double value : values[row]) csv.append(',').append(value);
+            csv.append('\n');
+        }
+        Files.writeString(path, csv);
     }
 
     private static void verify(CaseFile source) throws Exception {
@@ -712,8 +829,12 @@ public class Texas2kOneSecondDriftTest {
 
     private record StateParticipation(String deviceId, String state, double magnitude) { }
 
+    private record StateComponent(String deviceId, String state,
+            double real, double imaginary, double magnitude) { }
+
     private record LinearMode(double real, double imaginary,
-            List<StateParticipation> participation) { }
+            List<StateParticipation> participation, double[][] stateMatrix,
+            List<StateComponent> components) { }
 
     private static String deviceKey(org.interpss.fadapter.psse.dyr.PsseDyrRecord record) {
         return record.busNumber() + ":" + record.deviceId();
