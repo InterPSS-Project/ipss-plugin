@@ -56,6 +56,7 @@ import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
+import org.interpss.dstab.control.exc.psse.st1c.St1cData;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
@@ -295,6 +296,8 @@ public class PSSEDStabDirectParser {
                 return procExcSt6c(busId,genId,fields);
             case "EXELI":
                 return procExcExeli(busId, genId, fields);
+            case "ST1C":
+                return procExcSt1c(busId, genId, fields);
             case "ST7B":
                 return procExcSt7b(record.sourceModelName(),busId,genId,fields);
             case "AC7B":
@@ -957,6 +960,20 @@ public class PSSEDStabDirectParser {
         d.setKs2(getDouble(f, 15, 0)); d.setTs1(getDouble(f, 16, 0));
         d.setTs2(getDouble(f, 17, 0)); d.setSmax(getDouble(f, 18, 0));
         return builder.addExcExeli(busId, genId, d) != null;
+    }
+
+    // ST1C: UEL VOS OEL, then the 18 CONs in PSS/E 36 Model Library 6.76.
+    private boolean procExcSt1c(String busId, String genId, String[] f) {
+        if (f.length < 24) return false;
+        St1cData d = new St1cData();
+        d.setUel(getInt(f,3,1)); d.setVos(getInt(f,4,1)); d.setOel(getInt(f,5,1));
+        d.setTr(getDouble(f,6,0)); d.setVimax(getDouble(f,7,0)); d.setVimin(getDouble(f,8,0));
+        d.setTc(getDouble(f,9,0)); d.setTb(getDouble(f,10,0)); d.setTc1(getDouble(f,11,0));
+        d.setTb1(getDouble(f,12,0)); d.setKa(getDouble(f,13,0)); d.setTa(getDouble(f,14,0));
+        d.setVamax(getDouble(f,15,0)); d.setVamin(getDouble(f,16,0)); d.setVrmax(getDouble(f,17,0));
+        d.setVrmin(getDouble(f,18,0)); d.setKc(getDouble(f,19,0)); d.setKf(getDouble(f,20,0));
+        d.setTf(getDouble(f,21,0)); d.setKlr(getDouble(f,22,0)); d.setIlr(getDouble(f,23,0));
+        return builder.addExcSt1c(busId,genId,d) != null;
     }
 
     // ST7B: OEL UEL Tr Tg Tf Vmax Vmin Kpa Vrmax Vrmin Kh Kl Tc Tb Kia Tia
