@@ -58,6 +58,7 @@ import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
+import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
@@ -282,6 +283,8 @@ public class PSSEDStabDirectParser {
                 return procExcExac4(busId, genId, fields);
             case "DC4B":
                 return procExcDc4b(record.sourceModelName(),busId,genId,fields);
+            case "DC4C":
+                return procExcDc4c(busId,genId,fields);
             case "DC3A":
                 return procExcDc3a(record.sourceModelName(),busId,genId,fields);
             case "ST6B":
@@ -842,6 +845,22 @@ public class PSSEDStabDirectParser {
             d.setE2(getDouble(f,21,0));d.setSe2(getDouble(f,22,0));
         }
         return builder.addExcDc4b(busId,genId,sourceName,d)!=null;
+    }
+
+    // DC4C: OEL UEL SCL SW1 Tr Kpr Kir Kdr Tdr Vrmax Vrmin Ka Ta Ke Te Kf Tf
+    //        Vemin E1 SE1 E2 SE2 Kp Ki XL ThetaP KC1 Vbmax.
+    private boolean procExcDc4c(String busId,String genId,String[] f) {
+        if(f.length<31)return false;Dc4cData d=new Dc4cData();
+        d.setOel(getInt(f,3,0));d.setUel(getInt(f,4,0));d.setScl(getInt(f,5,0));
+        d.setSw1(getInt(f,6,1));d.setTr(getDouble(f,7,0));d.setKpr(getDouble(f,8,0));
+        d.setKir(getDouble(f,9,0));d.setKdr(getDouble(f,10,0));d.setTdr(getDouble(f,11,0));
+        d.setVrmax(getDouble(f,12,0));d.setVrmin(getDouble(f,13,0));d.setKa(getDouble(f,14,0));
+        d.setTa(getDouble(f,15,0));d.setKe(getDouble(f,16,0));d.setTe(getDouble(f,17,0));
+        d.setKf(getDouble(f,18,0));d.setTf(getDouble(f,19,0));d.setVemin(getDouble(f,20,0));
+        d.setE1(getDouble(f,21,0));d.setSe1(getDouble(f,22,0));d.setE2(getDouble(f,23,0));
+        d.setSe2(getDouble(f,24,0));d.setKp(getDouble(f,25,0));d.setKi(getDouble(f,26,0));
+        d.setXl(getDouble(f,27,0));d.setThetaP(getDouble(f,28,0));d.setKc1(getDouble(f,29,0));
+        d.setVbmax(getDouble(f,30,0));return builder.addExcDc4c(busId,genId,d)!=null;
     }
 
     // ESAC4A: Tr Vimax Vimin Tc Tb Ka Ta Vrmax Vrmin Kc.

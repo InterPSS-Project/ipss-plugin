@@ -48,6 +48,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc11cTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderBbsex1Test;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsdc1a2aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderDc1c2cTest;
+import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderDc4cTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac2Test;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac1aTest;
@@ -355,6 +356,7 @@ import org.junit.platform.suite.api.Suite;
 	RexsysExciterTest.class,
 	Esac6aExciterTest.class,
 	Dc4bExciterTest.class,
+	DStabNetworkBuilderDc4cTest.class,
 	St6bExciterTest.class,
 	Esst2aExciterTest.class,
 	Ieeex1AndesSmibConformanceTest.class,

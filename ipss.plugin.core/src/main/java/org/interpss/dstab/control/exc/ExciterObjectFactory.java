@@ -66,6 +66,8 @@ import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Exciter;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
+import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
+import org.interpss.dstab.control.exc.psse.dc4c.Dc4cExciter;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aExciter;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
@@ -272,6 +274,11 @@ public class ExciterObjectFactory {
 	public static Dc4bExciter createDc4bExciter(String id, String modelName,
 			Dc4bData data, Machine machine) {
 		return new Dc4bExciter(id, modelName, data, machine);
+	}
+
+	/** Create an IEEE 421.5-2016 / native PSS/E DC4C excitation system. */
+	public static Dc4cExciter createDc4cExciter(String id, Dc4cData data, Machine machine) {
+		return new Dc4cExciter(id, data, machine);
 	}
 
 	/** Create an IEEE DC3A or PSLF ESDC3A excitation system. */
