@@ -2,12 +2,15 @@ package org.interpss.dstab.control.exc.psse.exac1;
 
 import java.lang.reflect.Field;
 
+import org.interpss.dstab.control.util.IntegrationStepAware;
+
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.controller.cml.field.ICMLFunction;
+import com.interpss.dstab.controller.cml.field.ICMLControlBlock;
 import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
 import com.interpss.dstab.controller.cml.field.adapt.CMLFunctionAdapter;
 import com.interpss.dstab.controller.cml.field.adapt.CMLStaticBlockAdapter;
@@ -15,6 +18,7 @@ import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.field.block.IntegrationControlBlock;
 import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
+import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
@@ -22,10 +26,12 @@ import com.interpss.dstab.mach.MachineIfdBase;
 /** PSS/E/PowerWorld EXAC1 rotating AC exciter with loaded-rectifier output. */
 @AnController(input="mach.vt", output="this.rectifier.y",
         refPoint="this.leadLag.u0+this.transducer.y+this.washout.y-pss.vs", display={})
-public class Exac1Exciter extends AnnotateExciter {
+public class Exac1Exciter extends AnnotateExciter implements IntegrationStepAware {
+    private static final double EPS = 1.0e-12;
     private final Exac1Data data;
     public double one=1.0, tr, tb, tc, ka, ta, vrmax, vrmin, integratorGain;
-    public double kf, tf, kc, kd, ke, e1, se1, e2, se2, spdmlt;
+    public double kf, tf, washoutGain, kc, kd, ke, e1, se1, e2, se2, spdmlt;
+    private double integrationStep, minimumTimeConstantMultiplier = 1.0;
 
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="mach.vt",
             parameter={"type.NoLimit", "this.one", "this.tr"}, y0="mach.vt", initOrderNumber=-1)
@@ -60,7 +66,7 @@ public class Exac1Exciter extends AnnotateExciter {
     };
 
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="this.vfe.y",
-            parameter={"type.NoLimit", "this.kf", "this.tf"}, feedback=true)
+            parameter={"type.NoLimit", "this.washoutGain", "this.tf"}, feedback=true)
     public WashoutControlBlock washout;
 
     @AnControllerField(type=CMLFieldEnum.StaticBlock, input="this.fieldIntegrator.y", y0="mach.efd")
@@ -89,12 +95,27 @@ public class Exac1Exciter extends AnnotateExciter {
     }
     public Exac1Data getData() { return data; }
 
+    @Override public void configureIntegrationStep(double seconds) {
+        configureIntegrationStep(seconds, 1.0);
+    }
+
+    public void configureIntegrationStep(double seconds, double multiplier) {
+        integrationStep = seconds;
+        minimumTimeConstantMultiplier = multiplier;
+    }
+
     @Override public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
-        tr=data.getTr(); tb=data.getTb(); tc=data.getTc(); ka=data.getKa(); ta=data.getTa();
-        kc=data.getKc(); kd=data.getKd(); ke=data.getKe(); kf=data.getKf(); tf=data.getTf();
+        tr=correctedOptionalTime(data.getTr()); tb=correctedOptionalTime(data.getTb());
+        tc=data.getTc(); ka=data.getKa(); ta=correctedOptionalTime(data.getTa());
+        kc=data.getKc(); kd=data.getKd(); ke=data.getKe(); kf=data.getKf();
+        tf=correctedRequiredTime(data.getTf());
         e1=data.getE1(); se1=data.getSe1(); e2=data.getE2(); se2=data.getSe2(); spdmlt=data.getSpdmlt();
-        if (data.getTe() <= 0.0 || tf <= 0.0) return false;
-        integratorGain=1.0/data.getTe();
+        double te=correctedRequiredTime(data.getTe());
+        if (te <= EPS || tf <= EPS || tr < 0 || tb < 0 || ta < 0 || tc < 0
+                || kc < 0 || !finiteParameters(te)) return false;
+        integratorGain=1.0/te;
+        // CML's washout is K*T*s/(1+s*T); EXAC1 requires Kf*s/(1+s*Tf).
+        washoutGain=kf/tf;
         double ifd=exciterIfd();
         double ve0=solveInternalVoltage(machine.getEfd(), kc*ifd);
         double vr0=ve0*(ke+saturation(ve0,e1,se1,e2,se2))+kd*ifd;
@@ -103,9 +124,66 @@ public class Exac1Exciter extends AnnotateExciter {
         return super.initStates(bus,machine);
     }
 
+    private double minimumTime() {
+        return minimumTimeConstantMultiplier * integrationStep;
+    }
+
+    private double correctedOptionalTime(double value) {
+        double minimum = minimumTime();
+        if (value > 0 && value < .5 * minimum) return 0;
+        if (value > .5 * minimum && value < minimum) return minimum;
+        return value;
+    }
+
+    private double correctedRequiredTime(double value) {
+        double minimum = minimumTime();
+        return value > 0 && value < minimum ? minimum : value;
+    }
+
+    private boolean finiteParameters(double te) {
+        double[] values={tr,tb,tc,ka,ta,data.getVrmax(),data.getVrmin(),te,
+                kf,tf,kc,kd,ke,e1,se1,e2,se2,spdmlt};
+        for(double value:values) if(!Double.isFinite(value)) return false;
+        return true;
+    }
+
     private double exciterIfd() {
         double ifd=getMachine().calculateIfd(MachineIfdBase.EXCITER);
         return Double.isFinite(ifd) ? ifd : 0.0;
+    }
+
+    /** Five PSS/E states: sensed ET, lead-lag, VR, VE, and washout low-pass state. */
+    public double[] getStateSnapshot() {
+        return new double[]{runtimeBlock("transducer").getStateX(),
+                getLeadLagLowPassState(), runtimeBlock("regulator").getStateX(),
+                runtimeBlock("fieldIntegrator").getStateX(), getWashoutLowPassState()};
+    }
+
+    private double getLeadLagLowPassState() {
+        if (Math.abs(tb) <= EPS) return 0.0;
+        double dynamicGain=1.0-tc/tb;
+        return Math.abs(dynamicGain) > EPS ? runtimeBlock("leadLag").getStateX()/dynamicGain : 0.0;
+    }
+
+    private double getWashoutLowPassState() {
+        return Math.abs(washoutGain) > EPS ? runtimeBlock("washout").getStateX()/washoutGain : 0.0;
+    }
+
+    /** Runtime inputs for the five state blocks, in the same documented order. */
+    public double[] getStateInputSnapshot() {
+        return new double[]{runtimeBlock("transducer").getU(), runtimeBlock("leadLag").getU(),
+                runtimeBlock("regulator").getU(), runtimeBlock("fieldIntegrator").getU(),
+                runtimeBlock("washout").getU()};
+    }
+
+    public double getRegulatorOutput() { return runtimeBlock("regulator").getY(); }
+
+    private ICMLControlBlock runtimeBlock(String name) {
+        for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
+            if (wrapper.getFieldName().equals(name) && wrapper.getField() instanceof ICMLControlBlock block)
+                return block;
+        }
+        throw new IllegalStateException("EXAC1 CML block is not initialized: " + name);
     }
 
     public static double rectifierFactor(double in) {

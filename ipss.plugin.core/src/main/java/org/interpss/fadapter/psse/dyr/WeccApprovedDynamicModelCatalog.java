@@ -24,7 +24,7 @@ public final class WeccApprovedDynamicModelCatalog {
 
     /** Excitation-system rows through TEXS; OEL/UEL rows are a separate future wave. */
     private static final List<WeccModelApproval> EXCITERS = List.of(
-            exciter("EXAC1", "exac1", "EXAC1", "EXAC1", APPROVED, "2006-08-11", ""),
+            exciter("EXAC1", "exac1", "EXAC1", "EXAC1", APPROVED, "2006-08-11", "EXAC1"),
             exciter("ESAC1A", "esac1a", "ESAC1A", "ESAC1A", APPROVED, "2011-01-21", ""),
             exciter("EXAC1A", "exac1a", "EXAC1A", "EXAC1A", APPROVED, "2006-08-11", ""),
             exciter("EXAC1M", "exac1m", "ESURRY", "EXAC1M", APPROVED, "2021-12-02", "ESURRY"),

@@ -1277,7 +1277,7 @@ public class PSSEDStabDirectParser {
         return true;
     }
 
-    // EXAC1: IBUS 'EXAC1' ID Tr Tb Tc Ka Ta Vrmax Vrmin Te Kf Tf Kc Kd Ke E1 SE1 E2 SE2 [Spdmlt]
+    // Native PSS/E EXAC1: exactly 17 CONs; PowerWorld's Spdmlt is not a DYR field.
     private boolean procExcExac1(String busId,String genId,String[] f) {
         if (f.length<20) return false;
         Exac1Data d=new Exac1Data();
@@ -1286,7 +1286,7 @@ public class PSSEDStabDirectParser {
         d.setVrmin(getDouble(f,9,0)); d.setTe(getDouble(f,10,0)); d.setKf(getDouble(f,11,0));
         d.setTf(getDouble(f,12,0)); d.setKc(getDouble(f,13,0)); d.setKd(getDouble(f,14,0));
         d.setKe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0)); d.setSe1(getDouble(f,17,0));
-        d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0)); d.setSpdmlt(getDouble(f,20,0));
+        d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0));
         return builder.addExcExac1(busId,genId,d)!=null;
     }
 
