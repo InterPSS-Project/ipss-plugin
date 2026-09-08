@@ -72,6 +72,7 @@ row as completed model validation.
 | EXELI | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.exeli.ExeliExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXELI.htm) |
 | EXST1 | EXCITER |  | 12 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXST1_PTI.htm) |
 | EXST2 | EXCITER |  | 13 | LOADABLE | `org.interpss.dstab.control.exc.psse.exst2.Exst2Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXST2.htm) |
+| EXST3 | EXCITER |  | 18 | LOADABLE | `org.interpss.dstab.control.exc.psse.exst3.Exst3Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20EXST3.htm) |
 | IEEET1 | EXCITER |  | 14 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20IEEET1.htm) |
 | IEEET4 | EXCITER | EXDC4 | 11 | LOADABLE | `org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20IEEET4.htm) |
 | IEEEX1 | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20IEEEX1.htm) |
