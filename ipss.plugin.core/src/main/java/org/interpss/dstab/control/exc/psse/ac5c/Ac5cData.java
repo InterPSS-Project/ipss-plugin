@@ -3,7 +3,7 @@ package org.interpss.dstab.control.exc.psse.ac5c;
 import org.interpss.dstab.control.base.BaseControllerData;
 
 /** IEEE 421.5-2016 / PSS/E AC5C excitation-system parameters. */
-public final class Ac5cData extends BaseControllerData {
+public class Ac5cData extends BaseControllerData {
     // PSS/E carries OEL and UEL. SCL and Spdmlt remain typed PowerWorld/IEEE inputs.
     private int oelLocation,uelLocation,sclLocation;
     private double tr,ka,ta,vamax,vamin,ke,te,kf,tf1,tf2,tf3;

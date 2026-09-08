@@ -1426,7 +1426,8 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 20, 0), getDouble(f, 21, 0)) != null;
     }
 
-    // ESAC5A: IBUS 'ESAC5A' ID Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf1 Tf2 Tf3 E1 SE1 E2 SE2 [Spdmlt]
+    // ESAC5A: IBUS 'ESAC5A' ID Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf1 Tf2 Tf3 E1 SE1 E2 SE2.
+    // PowerWorld Spdmlt is a typed-only extension, not a native PSS/E DYR field.
     private boolean procExcEsac5a(String busId, String genId, String[] f) {
         if (f.length < 18) return false;
         Esac5aData data = new Esac5aData();
@@ -1437,7 +1438,7 @@ public class PSSEDStabDirectParser {
         data.setTf1(getDouble(f, 11, 0)); data.setTf2(getDouble(f, 12, 0));
         data.setTf3(getDouble(f, 13, 0)); data.setE1(getDouble(f, 14, 0));
         data.setSe1(getDouble(f, 15, 0)); data.setE2(getDouble(f, 16, 0));
-        data.setSe2(getDouble(f, 17, 0)); data.setSpdmlt(getDouble(f, 18, 0));
+        data.setSe2(getDouble(f, 17, 0));
         return builder.addExcEsac5a(busId, genId, data) != null;
     }
 
