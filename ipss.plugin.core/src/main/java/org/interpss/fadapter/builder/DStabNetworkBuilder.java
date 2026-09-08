@@ -64,6 +64,8 @@ import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
 import org.interpss.dstab.control.exc.psse.st7c.St7cData;
 import org.interpss.dstab.control.exc.psse.st7c.St7cExciter;
+import org.interpss.dstab.control.exc.psse.st8c.St8cData;
+import org.interpss.dstab.control.exc.psse.st8c.St8cExciter;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
@@ -1284,6 +1286,13 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if(mach==null){log.warn("Machine not found for ST7C exciter: bus={}, gen={}",busId,genId);return null;}
         return ExciterObjectFactory.createSt7cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST8C static excitation system. */
+    public St8cExciter addExcSt8c(String busId,String genId,St8cData data){
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for ST8C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt8cExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** IEEE 421.5-2005 / PSS/E ESST2A compound-source excitation system. */
