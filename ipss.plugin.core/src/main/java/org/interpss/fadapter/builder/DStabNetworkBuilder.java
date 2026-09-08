@@ -40,6 +40,8 @@ import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Exciter;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
+import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
+import org.interpss.dstab.control.exc.psse.dc4c.Dc4cExciter;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aExciter;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
@@ -1175,6 +1177,13 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if(mach==null){log.warn("Machine not found for {} exciter: bus={}, gen={}",modelName,busId,genId);return null;}
         return ExciterObjectFactory.createDc4bExciter(mach.getId()+"_Exc",modelName,data,mach);
+    }
+
+    /** IEEE 421.5-2016 / native PSS/E DC4C excitation system. */
+    public Dc4cExciter addExcDc4c(String busId,String genId,Dc4cData data) {
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for DC4C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createDc4cExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** IEEE 421.5-2005 DC3A / PSLF ESDC3A rheostatic excitation system. */
