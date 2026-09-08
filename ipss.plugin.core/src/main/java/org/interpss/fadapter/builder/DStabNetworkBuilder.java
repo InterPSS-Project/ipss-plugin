@@ -62,6 +62,8 @@ import org.interpss.dstab.control.exc.psse.st5c.St5cData;
 import org.interpss.dstab.control.exc.psse.st5c.St5cExciter;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
+import org.interpss.dstab.control.exc.psse.st7c.St7cData;
+import org.interpss.dstab.control.exc.psse.st7c.St7cExciter;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
@@ -1271,10 +1273,17 @@ public class DStabNetworkBuilder {
         return ExciterObjectFactory.createSt4cExciter(mach.getId() + "_Exc", data, mach);
     }
 
-    /** IEEE 421.5-2005 ST7B / PSLF ESST7B excitation system. */
-    public St7bExciter addExcSt7b(String busId,String genId,String modelName,St7bData data){
-        Machine mach=findMachine(busId,genId);if(mach==null){log.warn("Machine not found for {} exciter: bus={}, gen={}",modelName,busId,genId);return null;}
-        return ExciterObjectFactory.createSt7bExciter(mach.getId()+"_Exc",modelName,data,mach);
+    /** Native PSS/E IEEE 421.5-2005 ST7B excitation system. */
+    public St7bExciter addExcSt7b(String busId,String genId,St7bData data){
+        Machine mach=findMachine(busId,genId);if(mach==null){log.warn("Machine not found for ST7B exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt7bExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST7C static excitation system. */
+    public St7cExciter addExcSt7c(String busId,String genId,St7cData data){
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for ST7C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt7cExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** IEEE 421.5-2005 / PSS/E ESST2A compound-source excitation system. */

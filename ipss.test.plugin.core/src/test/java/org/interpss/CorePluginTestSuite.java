@@ -36,6 +36,8 @@ import org.interpss.core.adapter.builder.dstab.St4cExciterTest;
 import org.interpss.core.adapter.builder.dstab.St2cExciterTest;
 import org.interpss.core.adapter.builder.dstab.St3cExciterTest;
 import org.interpss.core.adapter.builder.dstab.St5cExciterTest;
+import org.interpss.core.adapter.builder.dstab.St7bExciterTest;
+import org.interpss.core.adapter.builder.dstab.St7cExciterTest;
 import org.interpss.core.adapter.builder.dstab.St1cExciterTest;
 import org.interpss.core.adapter.builder.dstab.ExeliExciterTest;
 import org.interpss.core.adapter.builder.dstab.Esst2aExciterTest;
@@ -372,6 +374,8 @@ import org.junit.platform.suite.api.Suite;
 	St2cExciterTest.class,
 	St3cExciterTest.class,
 	St5cExciterTest.class,
+	St7bExciterTest.class,
+	St7cExciterTest.class,
 	St1cExciterTest.class,
 	ExeliExciterTest.class,
 	Esst2aExciterTest.class,
