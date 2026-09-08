@@ -54,6 +54,7 @@ import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
 import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
+import org.interpss.dstab.control.exc.psse.esac3a.Esac3aData;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.st1c.St1cData;
@@ -368,6 +369,8 @@ public class PSSEDStabDirectParser {
                 return procExcAc7c(busId, genId, fields);
             case "ESAC2A":
                 return procExcEsac2a(busId, genId, fields);
+            case "ESAC3A":
+                return procExcEsac3a(busId, genId, fields);
             case "ESAC6A":
                 return procExcEsac6a(busId, genId, fields);
             case "ESDC2A":
@@ -1489,6 +1492,24 @@ public class PSSEDStabDirectParser {
         d.setE1(getDouble(f,21,0));d.setSe1(getDouble(f,22,0));d.setE2(getDouble(f,23,0));
         d.setSe2(getDouble(f,24,0));
         return builder.addExcEsac2a(busId,genId,d)!=null;
+    }
+
+    // Native PSS/E ESAC3A: 22 CONs. EXAC3A is a PowerWorld/PSLF cross-catalog
+    // name, not a second PSS/E DYR model or alias.
+    // IBUS MODEL ID Tr Tb Tc Ka Ta VaMax VaMin Te VeMin Kr Kf Tf Kn Efdn
+    //               Kc Kd Ke VfeMax E1 SE1 E2 SE2
+    private boolean procExcEsac3a(String busId,String genId,String[] f) {
+        if (f.length<25) return false;
+        Esac3aData d=new Esac3aData();
+        d.setTr(getDouble(f,3,0));d.setTb(getDouble(f,4,0));d.setTc(getDouble(f,5,0));
+        d.setKa(getDouble(f,6,0));d.setTa(getDouble(f,7,0));d.setVamax(getDouble(f,8,0));
+        d.setVamin(getDouble(f,9,0));d.setTe(getDouble(f,10,0));d.setVemin(getDouble(f,11,0));
+        d.setKr(getDouble(f,12,0));d.setKf(getDouble(f,13,0));d.setTf(getDouble(f,14,0));
+        d.setKn(getDouble(f,15,0));d.setEfdn(getDouble(f,16,0));d.setKc(getDouble(f,17,0));
+        d.setKd(getDouble(f,18,0));d.setKe(getDouble(f,19,0));d.setVfemax(getDouble(f,20,0));
+        d.setE1(getDouble(f,21,0));d.setSe1(getDouble(f,22,0));d.setE2(getDouble(f,23,0));
+        d.setSe2(getDouble(f,24,0));
+        return builder.addExcEsac3a(busId,genId,d)!=null;
     }
 
     // ESAC6A: IBUS MODEL ID Tr Ka Ta Tk Tb Tc VaMax VaMin VrMax VrMin Te

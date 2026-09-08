@@ -125,9 +125,11 @@ public class DStabNetworkBuilderAc3cTest extends CorePluginTestSetup {
         assertEquals(.24,below.getNonlinearFeedback(),TOL);
 
         Ac3cData aboveData=simpleData();aboveData.setKf(.2);aboveData.setKn(.4);aboveData.setEfdn(.5);
+        aboveData.setKd(.5);
         Ac3cExciter above=builder.addExcAc3c("Bus1","1",aboveData);
         assertTrue(above.initStates(machine.getDStabBus(),machine));
-        assertEquals(.38,above.getNonlinearFeedback(),TOL);
+        assertEquals(.38,above.getNonlinearFeedback(),TOL,
+                "AC3C nonlinear feedback is a characteristic of EFD, not VFE");
     }
 
     private static Ac3cData simpleData() {
