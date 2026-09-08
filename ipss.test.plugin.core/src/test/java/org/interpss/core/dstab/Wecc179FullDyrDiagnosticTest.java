@@ -399,30 +399,19 @@ class Wecc179FullDyrDiagnosticTest {
             String[] machineIds, List<Double> times, List<double[]> outputs, double time)
             throws Exception {
         times.add(time);
-        String[] fields = {"transducer", "leadLag", "regulator", "fieldIntegrator", "washout"};
         double[] values = new double[machineIds.length * 7];
         for (int index = 0; index < machineIds.length; index++) {
             Esdc2aExciter exciter = (Esdc2aExciter)
                     network.getMachine(machineIds[index]).getExciter();
-            ICMLStaticBlock lg = (ICMLStaticBlock) AnControllerInitializer.getBlock(fields[0],
-                    exciter.getFieldWrapperList());
-            ICMLStaticBlock ll = (ICMLStaticBlock) AnControllerInitializer.getBlock(fields[1],
-                    exciter.getFieldWrapperList());
-            ICMLStaticBlock la = (ICMLStaticBlock) AnControllerInitializer.getBlock(fields[2],
-                    exciter.getFieldWrapperList());
-            ICMLStaticBlock integrator = (ICMLStaticBlock) AnControllerInitializer.getBlock(fields[3],
-                    exciter.getFieldWrapperList());
-            ICMLStaticBlock wf = (ICMLStaticBlock) AnControllerInitializer.getBlock(fields[4],
-                    exciter.getFieldWrapperList());
-            double efd = integrator.getY();
+            double efd = exciter.getInternalFieldVoltage();
             int offset = index * 7;
-            values[offset] = lg.getY();
-            values[offset + 1] = ll.getU();
-            values[offset + 2] = ll.getY();
-            values[offset + 3] = la.getY();
+            values[offset] = exciter.getSensedVoltage();
+            values[offset + 1] = exciter.getVoltageError();
+            values[offset + 2] = exciter.getLeadLagOutput();
+            values[offset + 3] = exciter.getRegulatorOutput();
             values[offset + 4] = exciter.saturation.eval(new double[] {efd}) * efd;
             values[offset + 5] = efd;
-            values[offset + 6] = wf.getY();
+            values[offset + 6] = exciter.getRateFeedbackOutput();
         }
         outputs.add(values);
     }
@@ -509,6 +498,11 @@ class Wecc179FullDyrDiagnosticTest {
                             + controller.getClass().getName());
         }
         if (controller instanceof AbstractAnnotateController annotated) {
+            if (controller instanceof Esdc2aExciter) {
+                // ESDC1A/2A deliberately use direct five-state equations so
+                // valid algebraic time constants do not require CML wrappers.
+                return;
+            }
             assertTrue(annotated.getFieldWrapperList() != null,
                     () -> machineId + " active " + role + " was not initialized: "
                             + controller.getClass().getName());

@@ -1308,19 +1308,19 @@ public class DStabNetworkBuilder {
                 ke, te, kf, tf, 0.0, e1, se1, e2, se2);
     }
 
-    /** PSS/E ESDC2A exciter including the output speed-multiplier flag. */
+    /** PSS/E ESDC2A exciter including the documented-but-unused Switch field. */
     public org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter addExcEsdc2a(
             String busId, String genId,
             double tr, double ka, double ta, double tc, double tb,
             double vrmax, double vrmin, double ke, double te,
-            double kf, double tf, double spdmlt,
+            double kf, double tf, double switchValue,
             double e1, double se1, double e2, double se2) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) return null;
         var data = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aData();
         data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTc(tc); data.setTb(tb);
         data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
-        data.setKf(kf); data.setTf(tf); data.setSpdmlt(spdmlt);
+        data.setKf(kf); data.setTf(tf); data.setSwitchValue(switchValue);
         data.setE1(e1); data.setSe1(se1);
         data.setE2(e2); data.setSe2(se2);
         var exc = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter(
@@ -1333,14 +1333,14 @@ public class DStabNetworkBuilder {
             String busId, String genId,
             double tr, double ka, double ta, double tc, double tb,
             double vrmax, double vrmin, double ke, double te,
-            double kf, double tf, double spdmlt,
+            double kf, double tf, double switchValue,
             double e1, double se1, double e2, double se2) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) return null;
         var data = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aData();
         data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTc(tc); data.setTb(tb);
         data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
-        data.setKf(kf); data.setTf(tf); data.setSpdmlt(spdmlt);
+        data.setKf(kf); data.setTf(tf); data.setSwitchValue(switchValue);
         data.setE1(e1); data.setSe1(se1); data.setE2(e2); data.setSe2(se2);
         return new org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter(
                 mach.getId() + "_Exc", data, mach);
