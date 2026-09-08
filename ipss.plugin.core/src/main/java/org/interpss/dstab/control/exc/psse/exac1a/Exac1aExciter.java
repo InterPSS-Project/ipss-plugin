@@ -17,7 +17,8 @@ public class Exac1aExciter extends Exac1Exciter {
     private final Exac1aData data;
 
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="this.rectifier.y",
-            parameter={"type.NoLimit", "this.kf", "this.tf"}, feedback=true)
+            // CML implements K*T*s/(1+s*T); EXAC1A specifies Kf*s/(1+s*Tf).
+            parameter={"type.NoLimit", "this.washoutGain", "this.tf"}, feedback=true)
     public WashoutControlBlock washout;
 
     public Exac1aExciter(String id,Exac1aData data,Machine machine) {
