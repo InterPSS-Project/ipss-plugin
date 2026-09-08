@@ -23,6 +23,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Device;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Mode;
+import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.OperatingPointConstraint;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.StateComponent;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
@@ -196,17 +197,23 @@ public class Texas2kOneSecondDriftTest {
         List<Device> devices = qvAnalysis.devices();
         Mode qvMode = qvAnalysis.dominantMode();
         System.out.printf(java.util.Locale.ROOT,
-                "Texas2k Case 5 unsaturated Q/V linearization: devices=%d max eigenvalue="
-                        + "%.9g%+.9gj 1/s%n",
-                devices.size(), qvMode.real(), qvMode.imaginary());
+                "Texas2k Case 5 candidate Q/V linearization: devices=%d max eigenvalue="
+                        + "%.9g%+.9gj 1/s validTwoSided=%s%n",
+                devices.size(), qvMode.real(), qvMode.imaginary(),
+                qvAnalysis.isTwoSidedLinearizationValid());
         System.out.println("  dominant controller states: " + qvMode.participation());
+        System.out.println("  operating-point constraints: "
+                + qvAnalysis.operatingPointConstraints());
         assertTrue(Double.isFinite(qvMode.real()) && Double.isFinite(qvMode.imaginary()),
                 "invalid controller-weighted Q/V eigenvalue: " + qvMode);
+        assertFalse(qvAnalysis.isTwoSidedLinearizationValid(),
+                "Case 5 PIQ limit boundaries must prevent an unconditional mode claim");
         Path reportDirectory = Path.of(System.getProperty("texas2k.gridStrength.reportDir",
                 Path.of("target", "dynamic-model-validation", "texas2k-case5-qv")
                         .toString()));
         writeQvBenchmark(reportDirectory, CASE5_INTERACTING_BUSES,
-                coupling, devices, qvAnalysis.stateMatrix(), qvMode);
+                coupling, devices, qvAnalysis.stateMatrix(), qvMode,
+                qvAnalysis.operatingPointConstraints());
         System.out.println("  machine-readable Q/V benchmark: "
                 + reportDirectory.toAbsolutePath());
     }
@@ -229,7 +236,7 @@ public class Texas2kOneSecondDriftTest {
         }
         Mode mode = new Mode(.01, -.25, vector);
 
-        writeQvBenchmark(directory, buses, coupling, List.of(device), state, mode);
+        writeQvBenchmark(directory, buses, coupling, List.of(device), state, mode, List.of());
 
         List<String> couplingRows = Files.readAllLines(directory.resolve("coupling.csv"));
         List<String> stateRows = Files.readAllLines(directory.resolve("state-matrix.csv"));
@@ -241,6 +248,9 @@ public class Texas2kOneSecondDriftTest {
         assertTrue(vectorRows.get(6).startsWith("Bus1:1,REGCA_IQ,"));
         assertTrue(Files.readString(directory.resolve("summary.csv"))
                 .contains("dominant_eigenvalue_imaginary,-0.25"));
+        assertTrue(Files.readString(directory.resolve("summary.csv"))
+                .contains("two_sided_linearization_valid,true"));
+        assertEquals(1, Files.readAllLines(directory.resolve("constraints.csv")).size());
         assertEquals(2, Files.readAllLines(directory.resolve("devices.csv")).size());
     }
 
@@ -256,7 +266,8 @@ public class Texas2kOneSecondDriftTest {
     }
 
     private static void writeQvBenchmark(Path directory, List<String> buses,
-            double[][] coupling, List<Device> devices, double[][] stateMatrix, Mode mode)
+            double[][] coupling, List<Device> devices, double[][] stateMatrix, Mode mode,
+            List<OperatingPointConstraint> constraints)
             throws java.io.IOException {
         Files.createDirectories(directory);
         writeMatrix(directory.resolve("coupling.csv"), "response_bus", buses, buses,
@@ -268,7 +279,8 @@ public class Texas2kOneSecondDriftTest {
 
         StringBuilder deviceCsv = new StringBuilder("device_id,bus_index,system_scale,v0,iq0,tg,"
                 + "reeca_kqp,reeca_kqi,reeca_kvp,reeca_kvi,repca_tfltr,repca_kp,"
-                + "repca_ki,repca_tft,repca_tfv\n");
+                + "repca_ki,repca_tft,repca_tfv,reeca_vmin,reeca_vmax,"
+                + "repca_qmin,repca_qmax\n");
         for (Device device : devices) {
             deviceCsv.append(device.busId()).append(':').append(device.unitId()).append(',')
                     .append(device.busIndex()).append(',').append(device.systemScale()).append(',')
@@ -277,7 +289,9 @@ public class Texas2kOneSecondDriftTest {
                     .append(device.kqi()).append(',').append(device.kvp()).append(',')
                     .append(device.kvi()).append(',').append(device.tfltr()).append(',')
                     .append(device.plantKp()).append(',').append(device.plantKi()).append(',')
-                    .append(device.tft()).append(',').append(device.tfv()).append('\n');
+                    .append(device.tft()).append(',').append(device.tfv()).append(',')
+                    .append(device.reecaVmin()).append(',').append(device.reecaVmax()).append(',')
+                    .append(device.plantQmin()).append(',').append(device.plantQmax()).append('\n');
         }
         Files.writeString(directory.resolve("devices.csv"), deviceCsv);
 
@@ -290,11 +304,22 @@ public class Texas2kOneSecondDriftTest {
                     .append(component.magnitude()).append('\n');
         }
         Files.writeString(directory.resolve("dominant-mode.csv"), vectorCsv);
+        StringBuilder constraintCsv = new StringBuilder(
+                "device_id,signal,value,lower,upper,explanation\n");
+        for (OperatingPointConstraint constraint : constraints) {
+            constraintCsv.append(constraint.deviceId()).append(',')
+                    .append(constraint.signal()).append(',').append(constraint.value()).append(',')
+                    .append(constraint.lower()).append(',').append(constraint.upper()).append(',')
+                    .append(constraint.explanation()).append('\n');
+        }
+        Files.writeString(directory.resolve("constraints.csv"), constraintCsv);
         Files.writeString(directory.resolve("summary.csv"),
                 "metric,value\n"
                 + "bus_count," + buses.size() + "\n"
                 + "device_count," + devices.size() + "\n"
                 + "state_count," + stateMatrix.length + "\n"
+                + "two_sided_linearization_valid," + constraints.isEmpty() + "\n"
+                + "operating_point_constraint_count," + constraints.size() + "\n"
                 + "dominant_eigenvalue_real," + mode.real() + "\n"
                 + "dominant_eigenvalue_imaginary," + mode.imaginary() + "\n");
     }
