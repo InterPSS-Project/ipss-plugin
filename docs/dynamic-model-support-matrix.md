@@ -85,6 +85,7 @@ row as completed model validation.
 | ST6C | EXCITER |  | 29 | LOADABLE | `org.interpss.dstab.control.exc.psse.st6c.St6cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST6C.htm) |
 | ST7B | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.st7b.St7bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST7B%20and%20ST7B.htm) |
 | ST7C | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.st7c.St7cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST7C.htm) |
+| ST8C | EXCITER |  | 28 | LOADABLE | `org.interpss.dstab.control.exc.psse.st8c.St8cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST8C.htm) |
 | DEGOV1D | GOVERNOR | DEGOV1DU | 16 | LOADABLE | `org.interpss.dstab.control.gov.psse.degov1.PsseDegov1dGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20DEGOV1%20and%20DEGOV1D.htm) |
 | GAST | GOVERNOR |  | 9 | LOADABLE | `org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20GAST_PTI%20and%20GASTD.htm) |
 | GAST2AD | GOVERNOR | GAST2ADU | 33 | LOADABLE | `org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernor` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20GAST2A.htm) |
