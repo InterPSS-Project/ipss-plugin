@@ -1475,7 +1475,8 @@ public class PSSEDStabDirectParser {
         return builder.addExcAc7c(busId,genId,d)!=null;
     }
 
-    // ESAC2A: IBUS MODEL ID Tr Tb Tc Ka Ta VaMax VaMin Kb VrMax VrMin Te VfeMax Kh Kf Tf Kc Kd Ke E1 SE1 E2 SE2 [Spdmlt]
+    // Native PSS/E ESAC2A: 22 CONs; PowerWorld/PSLF Spdmlt is not a DYR field.
+    // IBUS MODEL ID Tr Tb Tc Ka Ta VaMax VaMin Kb VrMax VrMin Te VfeMax Kh Kf Tf Kc Kd Ke E1 SE1 E2 SE2
     private boolean procExcEsac2a(String busId,String genId,String[] f) {
         if (f.length<25) return false;
         Esac2aData d=new Esac2aData();
@@ -1486,7 +1487,7 @@ public class PSSEDStabDirectParser {
         d.setKh(getDouble(f,15,0));d.setKf(getDouble(f,16,0));d.setTf(getDouble(f,17,0));
         d.setKc(getDouble(f,18,0));d.setKd(getDouble(f,19,0));d.setKe(getDouble(f,20,0));
         d.setE1(getDouble(f,21,0));d.setSe1(getDouble(f,22,0));d.setE2(getDouble(f,23,0));
-        d.setSe2(getDouble(f,24,0));d.setSpdmlt(getDouble(f,25,0));
+        d.setSe2(getDouble(f,24,0));
         return builder.addExcEsac2a(busId,genId,d)!=null;
     }
 
