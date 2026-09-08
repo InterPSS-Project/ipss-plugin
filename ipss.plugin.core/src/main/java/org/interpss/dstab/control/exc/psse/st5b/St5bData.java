@@ -3,7 +3,7 @@ package org.interpss.dstab.control.exc.psse.st5b;
 import org.interpss.dstab.control.base.BaseControllerData;
 
 /** IEEE 421.5-2005 ST5B / PSLF ESST5B excitation-system parameters. */
-public final class St5bData extends BaseControllerData {
+public class St5bData extends BaseControllerData {
     private double tr, tc1, tb1, tc2, tb2, kr, vrmax, vrmin, t1, kc;
     private double tuc1, tub1, tuc2, tub2, toc1, tob1, toc2, tob2;
 

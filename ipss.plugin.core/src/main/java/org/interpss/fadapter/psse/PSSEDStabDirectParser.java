@@ -60,6 +60,7 @@ import org.interpss.dstab.control.exc.psse.st1c.St1cData;
 import org.interpss.dstab.control.exc.psse.st2c.St2cData;
 import org.interpss.dstab.control.exc.psse.st3c.St3cData;
 import org.interpss.dstab.control.exc.psse.st4c.St4cData;
+import org.interpss.dstab.control.exc.psse.st5c.St5cData;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
 import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
 import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
@@ -307,6 +308,8 @@ public class PSSEDStabDirectParser {
                 return procExcSt3c(busId,genId,fields);
             case "ST4C":
                 return procExcSt4c(busId, genId, fields);
+            case "ST5C":
+                return procExcSt5c(busId,genId,fields);
             case "ST7B":
                 return procExcSt7b(record.sourceModelName(),busId,genId,fields);
             case "AC7B":
@@ -1102,6 +1105,17 @@ public class PSSEDStabDirectParser {
             d.setToc2(getDouble(f,19,0));d.setTob2(getDouble(f,20,0));
         }
         return builder.addExcSt5b(busId, genId, sourceName, d) != null;
+    }
+
+    // ST5C: OEL UEL, then the 18 CONs in PSS/E 36 Model Library 6.81.
+    private boolean procExcSt5c(String busId,String genId,String[] f){
+        if(f.length<23)return false;St5cData d=new St5cData();
+        d.setOel(getInt(f,3,1));d.setUel(getInt(f,4,1));d.setTr(getDouble(f,5,0));
+        d.setTc1(getDouble(f,6,0));d.setTb1(getDouble(f,7,0));d.setTc2(getDouble(f,8,0));d.setTb2(getDouble(f,9,0));
+        d.setKr(getDouble(f,10,0));d.setVrmax(getDouble(f,11,0));d.setVrmin(getDouble(f,12,0));d.setT1(getDouble(f,13,0));
+        d.setKc(getDouble(f,14,0));d.setTuc1(getDouble(f,15,0));d.setTub1(getDouble(f,16,0));
+        d.setTuc2(getDouble(f,17,0));d.setTub2(getDouble(f,18,0));d.setToc1(getDouble(f,19,0));d.setTob1(getDouble(f,20,0));
+        d.setToc2(getDouble(f,21,0));d.setTob2(getDouble(f,22,0));return builder.addExcSt5c(busId,genId,d)!=null;
     }
 
     // AC7B (27 values): TR KPR KIR KDR TDR VRMAX VRMIN KPA KIA VAMAX VAMIN

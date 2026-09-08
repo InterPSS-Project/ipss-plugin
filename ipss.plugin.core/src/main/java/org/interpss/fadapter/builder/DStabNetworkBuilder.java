@@ -58,6 +58,8 @@ import org.interpss.dstab.control.exc.psse.st3c.St3cData;
 import org.interpss.dstab.control.exc.psse.st3c.St3cExciter;
 import org.interpss.dstab.control.exc.psse.st4c.St4cData;
 import org.interpss.dstab.control.exc.psse.st4c.St4cExciter;
+import org.interpss.dstab.control.exc.psse.st5c.St5cData;
+import org.interpss.dstab.control.exc.psse.st5c.St5cExciter;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
@@ -1305,6 +1307,13 @@ public class DStabNetworkBuilder {
         }
         return ExciterObjectFactory.createSt5bExciter(
                 mach.getId() + "_Exc", modelName, data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST5C static excitation system. */
+    public St5cExciter addExcSt5c(String busId,String genId,St5cData data){
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for ST5C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt5cExciter(mach.getId()+"_Exc",data,mach);
     }
 
     /** IEEE 421.5-2005 AC7B / PSS/E ESAC7B rotating excitation system. */
