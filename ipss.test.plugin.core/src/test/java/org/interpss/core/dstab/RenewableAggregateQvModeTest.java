@@ -113,7 +113,9 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         network.setAllowGenWithoutMach(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "public PSS/E fixture load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(STEP);
+        double simulationStep = Double.parseDouble(System.getProperty(
+                "renewable.bus1062.step", Double.toString(STEP)));
+        algorithm.setSimuStepSec(simulationStep);
         algorithm.setTotalSimuTimeSec(4.0);
         algorithm.setOutPutPerSteps(1);
         StateMonitor monitor = new StateMonitor();
@@ -141,7 +143,9 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "InterPSS Bus-1062 public benchmark: plantMin=%.9g plantFinal=%.9g "
                         + "poiMin=%.9g poiFinal=%.9g%n",
                 plantMin, plantFinal, poiMin, poiFinal);
-        Path output = Path.of("target", "andes-benchmarks", "bus1062-public",
+        String outputVariant = System.getProperty(
+                "renewable.bus1062.output", "bus1062-public");
+        Path output = Path.of("target", "andes-benchmarks", outputVariant,
                 "interpss.csv");
         Files.createDirectories(output.getParent());
         writeBusTrace(output, monitor, "Bus1", "Bus2");
