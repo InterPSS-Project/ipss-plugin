@@ -107,22 +107,29 @@ public final class WindControlStack {
         double mechanicalPower = aerodynamics == null
                 ? driveTrain == null ? electricalPower : driveTrain.getInitialInputPower()
                 : aerodynamics.getMechanicalPower();
+        // Every predictor derivative must use the same old internal endpoint.
+        // Do not let the torque controller observe an already-predicted drive-
+        // train speed or let the pitch controller observe an already-predicted
+        // torque command.
+        double oldGeneratorSpeed = generatorSpeed;
+        double oldTurbineSpeed = turbineSpeed;
+        double oldPref = pref;
         if (driveTrain != null) {
             driveTrain.step(dt, mechanicalPower, electricalPower, 0);
-            generatorSpeed = driveTrain.getGeneratorSpeed();
-            turbineSpeed = driveTrain.getTurbineSpeed();
         }
         if (torqueController != null) {
-            if (driveTrain == null) {
-                generatorSpeed = turbineSpeed = torqueController.getSpeedReference();
-            }
-            torqueController.step(dt, electricalPower, generatorSpeed,
+            torqueController.step(dt, electricalPower, oldGeneratorSpeed,
                     powerReference, voltageDip, 0);
-            pref = torqueController.getPref();
         }
         if (pitchController != null) {
-            pitchController.step(dt, pOrder, pref, turbineSpeed, 0);
+            pitchController.step(dt, pOrder, oldPref, oldTurbineSpeed, 0);
         }
+        generatorSpeed = driveTrain == null
+                ? torqueController == null ? oldGeneratorSpeed
+                        : torqueController.getSpeedReference()
+                : driveTrain.getGeneratorSpeed();
+        turbineSpeed = driveTrain == null ? generatorSpeed : driveTrain.getTurbineSpeed();
+        if (torqueController != null) pref = torqueController.getPref();
         if (aerodynamics != null) {
             double pitch = pitchController == null
                     ? aerodynamics.getData().theta0() : pitchController.getPitch();
