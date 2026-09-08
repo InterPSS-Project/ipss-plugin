@@ -274,6 +274,8 @@ public class PSSEDStabDirectParser {
                 return procExcAc9c(busId, genId, fields);
             case "AC11C":
                 return procExcAc11c(busId, genId, fields);
+            case "BBSEX1":
+                return procExcBbsex1(busId, genId, fields);
             case "ESAC4A":
                 return procExcEsac4a(busId, genId, fields);
             case "EXAC4":
@@ -790,6 +792,26 @@ public class PSSEDStabDirectParser {
         d.setKc2(getDouble(f,39,0));d.setVbmax2(getDouble(f,40,0));
         d.setKboost(getDouble(f,41,0));d.setVboost(getDouble(f,42,0));
         return builder.addExcAc11c(busId,genId,d)!=null;
+    }
+
+    // Native PSS/E BBSEX1 (11 values):
+    // IBUS 'BBSEX1' ID Tf K T1 T2 T3 T4 Vrmax Vrmin Efdmax Efdmin Switch
+    private boolean procExcBbsex1(String busId, String genId, String[] f) {
+        if (f.length < 14) return false;
+        org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data d =
+                new org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data();
+        d.setTf(getDouble(f, 3, 0.0));
+        d.setK(getDouble(f, 4, 0.0));
+        d.setT1(getDouble(f, 5, 0.0));
+        d.setT2(getDouble(f, 6, 0.0));
+        d.setT3(getDouble(f, 7, 0.0));
+        d.setT4(getDouble(f, 8, 0.0));
+        d.setVrmax(getDouble(f, 9, 0.0));
+        d.setVrmin(getDouble(f, 10, 0.0));
+        d.setEfdmax(getDouble(f, 11, 0.0));
+        d.setEfdmin(getDouble(f, 12, 0.0));
+        d.setSwitchLocation(getInt(f, 13, 0));
+        return builder.addExcBbsex1(busId, genId, d) != null;
     }
 
     // DC4B: OEL UEL Tr Kp Ki Kd Td Vrmax Vrmin Ka Ta Ke Te Kf Tf Vemin E1 SE1 E2 SE2
