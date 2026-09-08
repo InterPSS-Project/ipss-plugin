@@ -23,7 +23,7 @@ public final class DynamicModelSupportMatrix {
                 .append("`dynamic-model-coverage-development-plan.md`. In particular, the six Texas2k\n")
                 .append("cases are currently loadable, but only Cases 1 and 2 pass the strict one-second\n")
                 .append("flat-run gate; the Texas2k verification milestone remains open.\n\n")
-                .append("Current Texas2k audit (2026-09-07): `17/17` PSS/E DYR model names are\n")
+                .append("Current Texas2k audit (2026-09-08): `17/17` PSS/E DYR model names are\n")
                 .append("loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and\n")
                 .append("runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and\n")
                 .append("`_MODREMOVE.idv`. GE PSLF `.dyd` input and coverage are out of scope.\n")
