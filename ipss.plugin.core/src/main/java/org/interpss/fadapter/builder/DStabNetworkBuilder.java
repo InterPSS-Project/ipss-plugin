@@ -1346,6 +1346,50 @@ public class DStabNetworkBuilder {
                 mach.getId() + "_Exc", data, mach);
     }
 
+    /** Native 19-parameter PSS/E DC1C exciter. */
+    public org.interpss.dstab.control.exc.psse.dc1c.Dc1cExciter addExcDc1c(
+            String busId, String genId, int oel, int uel,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te, double kf, double tf,
+            double e1, double se1, double e2, double se2,
+            double vemax, double vemin) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var data = dc1cData(oel, uel, tr, ka, ta, tb, tc, vrmax, vrmin,
+                ke, te, kf, tf, e1, se1, e2, se2, vemax, vemin);
+        return new org.interpss.dstab.control.exc.psse.dc1c.Dc1cExciter(
+                mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native 19-parameter PSS/E DC2C exciter. */
+    public org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter addExcDc2c(
+            String busId, String genId, int oel, int uel,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te, double kf, double tf,
+            double e1, double se1, double e2, double se2,
+            double vemax, double vemin) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var data = dc1cData(oel, uel, tr, ka, ta, tb, tc, vrmax, vrmin,
+                ke, te, kf, tf, e1, se1, e2, se2, vemax, vemin);
+        return new org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter(
+                mach.getId() + "_Exc", data, mach);
+    }
+
+    private static org.interpss.dstab.control.exc.psse.dc1c.Dc1cData dc1cData(
+            int oel, int uel, double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te, double kf, double tf,
+            double e1, double se1, double e2, double se2,
+            double vemax, double vemin) {
+        var data = new org.interpss.dstab.control.exc.psse.dc1c.Dc1cData();
+        data.setOelLocation(oel); data.setUelLocation(uel);
+        data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTb(tb); data.setTc(tc);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
+        data.setKf(kf); data.setTf(tf); data.setE1(e1); data.setSe1(se1);
+        data.setE2(e2); data.setSe2(se2); data.setVemax(vemax); data.setVemin(vemin);
+        return data;
+    }
+
     /** Attach the PSS/E/IEEE ESAC5A simplified rotating AC exciter. */
     public Esac5aExciter addExcEsac5a(String busId, String genId, Esac5aData data) {
         if (data == null || data.getKa() <= 0.0 || data.getTe() <= 0.0
