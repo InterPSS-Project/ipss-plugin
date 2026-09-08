@@ -424,14 +424,17 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         aero.initialize(.5);
         pitch.initialize(aero.getData().theta0(), drive.getTurbineSpeed());
 
+        double oldGeneratorSpeed = drive.getGeneratorSpeed();
+        double oldTurbineSpeed = drive.getTurbineSpeed();
+        double oldPref = torque.getPref();
         stack.step(.01, .55, .52, .54, false, 0);
         drive.step(.01, aero.getMechanicalPower(), .55, 0);
+        torque.step(.01, .55, oldGeneratorSpeed, .54, false, 0);
+        pitch.step(.01, .52, oldPref, oldTurbineSpeed, 0);
+        aero.step(pitch.getPitch());
         double predictedGeneratorSpeed = drive.getGeneratorSpeed();
         double predictedTurbineSpeed = drive.getTurbineSpeed();
-        torque.step(.01, .55, predictedGeneratorSpeed, .54, false, 0);
         double predictedPref = torque.getPref();
-        pitch.step(.01, .52, predictedPref, predictedTurbineSpeed, 0);
-        aero.step(pitch.getPitch());
 
         stack.step(.01, .53, .51, .56, false, 1);
         drive.step(.01, aero.getMechanicalPower(), .53, 1);
