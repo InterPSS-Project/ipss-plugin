@@ -272,6 +272,8 @@ public class PSSEDStabDirectParser {
                 return procExcAc8c(busId, genId, fields);
             case "AC9C":
                 return procExcAc9c(busId, genId, fields);
+            case "AC11C":
+                return procExcAc11c(busId, genId, fields);
             case "ESAC4A":
                 return procExcEsac4a(busId, genId, fields);
             case "EXAC4":
@@ -758,6 +760,36 @@ public class PSSEDStabDirectParser {
         d.setThetaP(getDouble(f,43,0));d.setVbmax1(getDouble(f,44,0));
         d.setVbmax2(getDouble(f,45,0));d.setVlim1(getDouble(f,46,0));d.setVlim2(getDouble(f,47,0));
         return builder.addExcAc9c(busId,genId,d)!=null;
+    }
+
+    // IEEE 421.5-2016/PSS/E AC11C (40 values; SCL is a typed input).
+    // IBUS 'AC11C' ID OEL UEL VOS SW1 TR KPA TIA KPU TIU KB TB KPO TIO
+    // VRSMAX VRSMIN VRMAX VRMIN VAMAX VAMIN TE KC KD KE VFEMAX VEMIN
+    // E1 SE1 E2 SE2 KP KI XL THETAP KC1 VBMAX1 KI2 KC2 VBMAX2 KBOOST VBOOST
+    private boolean procExcAc11c(String busId,String genId,String[] f){
+        if(f.length<43)return false;
+        org.interpss.dstab.control.exc.psse.ac11c.Ac11cData d=
+                new org.interpss.dstab.control.exc.psse.ac11c.Ac11cData();
+        d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
+        d.setVosLocation(getInt(f,5,1));d.setSw1(getInt(f,6,1));d.setTr(getDouble(f,7,0));
+        d.setKpa(getDouble(f,8,0));d.setTia(getDouble(f,9,0));
+        d.setKpu(getDouble(f,10,0));d.setTiu(getDouble(f,11,0));
+        d.setKb(getDouble(f,12,0));d.setTb(getDouble(f,13,0));
+        d.setKpo(getDouble(f,14,0));d.setTio(getDouble(f,15,0));
+        d.setVrsmax(getDouble(f,16,0));d.setVrsmin(getDouble(f,17,0));
+        d.setVrmax(getDouble(f,18,0));d.setVrmin(getDouble(f,19,0));
+        d.setVamax(getDouble(f,20,0));d.setVamin(getDouble(f,21,0));
+        d.setTe(getDouble(f,22,0));d.setKc(getDouble(f,23,0));
+        d.setKd(getDouble(f,24,0));d.setKe(getDouble(f,25,0));
+        d.setVfemax(getDouble(f,26,0));d.setVemin(getDouble(f,27,0));
+        d.setE1(getDouble(f,28,0));d.setSe1(getDouble(f,29,0));
+        d.setE2(getDouble(f,30,0));d.setSe2(getDouble(f,31,0));
+        d.setKp(getDouble(f,32,0));d.setKi(getDouble(f,33,0));d.setXl(getDouble(f,34,0));
+        d.setThetaP(getDouble(f,35,0));d.setKc1(getDouble(f,36,0));
+        d.setVbmax1(getDouble(f,37,0));d.setKi2(getDouble(f,38,0));
+        d.setKc2(getDouble(f,39,0));d.setVbmax2(getDouble(f,40,0));
+        d.setKboost(getDouble(f,41,0));d.setVboost(getDouble(f,42,0));
+        return builder.addExcAc11c(busId,genId,d)!=null;
     }
 
     // DC4B: OEL UEL Tr Kp Ki Kd Td Vrmax Vrmin Ka Ta Ke Te Kf Tf Vemin E1 SE1 E2 SE2
