@@ -89,6 +89,7 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         double outputSpeedScale = outputSpeedScale(machine);
         if (Math.abs(outputSpeedScale) <= EPS) return false;
         double field = machine.getEfd() / outputSpeedScale;
+        if (field < fieldLowerLimit() - EPS || field > fieldUpperLimit() + EPS) return false;
         double vr = fieldFeedback(field);
         double scale = regulatorLimitScale(machine);
         if (!Double.isFinite(vr) || !Double.isFinite(scale) || scale <= EPS) return false;
@@ -103,8 +104,8 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         state[LEAD_LAG] = input;
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
-        reference = vt + input - stabilizerSignal(machine);
-        outputSignal = field;
+        reference = vt + input - stabilizerSignal(machine) - summationLimiterInput();
+        outputSignal = field * outputSpeedScale;
         initialized = true;
         return true;
     }
@@ -176,7 +177,8 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
             active = state;
         }
         for (double value : active) if (!Double.isFinite(value)) return false;
-        outputSignal = algebraics(active, machine).field;
+        constrainField(active);
+        outputSignal = algebraics(active, machine).field * outputSpeedScale(machine);
         return Double.isFinite(outputSignal);
     }
 
@@ -194,8 +196,14 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
         boolean lowerAndFalling = values[REGULATOR] <= lower && rawVrDerivative < 0.0;
         derivative[REGULATOR] = ta <= EPS || upperAndRising || lowerAndFalling
                 ? 0.0 : rawVrDerivative;
-        derivative[FIELD] = te > EPS
+        double fieldDerivative = te > EPS
                 ? (a.regulator - fieldFeedback(values[FIELD])) / te : 0.0;
+        boolean fieldUpperAndRising = values[FIELD] >= fieldUpperLimit() - EPS
+                && fieldDerivative > 0.0;
+        boolean fieldLowerAndFalling = values[FIELD] <= fieldLowerLimit() + EPS
+                && fieldDerivative < 0.0;
+        derivative[FIELD] = fieldUpperAndRising || fieldLowerAndFalling
+                ? 0.0 : fieldDerivative;
         derivative[WASHOUT_LAG] = lagDerivative(a.field,
                 values[WASHOUT_LAG], tf);
     }
@@ -212,13 +220,16 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
             double sensed, double field) {
         double washout = tf > EPS
                 ? kf * (field - values[WASHOUT_LAG]) / tf : 0.0;
-        double error = reference - sensed + stabilizerSignal(machine) - washout;
+        double error = reference - sensed + stabilizerSignal(machine)
+                + summationLimiterInput() - washout;
         double leadLag = tb > EPS
                 ? tc / tb * error + (1.0 - tc / tb) * values[LEAD_LAG]
                 : error;
         double regulator = ta > EPS
                 ? clamp(values[REGULATOR], regulatorLower(machine), regulatorUpper(machine))
                 : clamp(ka * leadLag, regulatorLower(machine), regulatorUpper(machine));
+        regulator = takeoverLimiterOutput(regulator);
+        field = clamp(field, fieldLowerLimit(), fieldUpperLimit());
         return new Algebraic(sensed, error, leadLag, regulator, field, washout);
     }
 
@@ -236,7 +247,7 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
             if (Math.abs(next - field) < 1.0e-11) return next;
             field = next;
         }
-        return field;
+        return clamp(field, fieldLowerLimit(), fieldUpperLimit());
     }
 
     private double fieldResidual(double field, double[] values,
@@ -255,6 +266,16 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
 
     protected double regulatorLimitScale(Machine machine) {
         return voltageDependentLimits ? machine.getDStabBus().getVoltageMag() : 1.0;
+    }
+
+    /** Extension points used by IEEE revision-C DC1C/DC2C models. */
+    protected double summationLimiterInput() { return 0.0; }
+    protected double takeoverLimiterOutput(double regulator) { return regulator; }
+    protected double fieldUpperLimit() { return Double.POSITIVE_INFINITY; }
+    protected double fieldLowerLimit() { return Double.NEGATIVE_INFINITY; }
+
+    private void constrainField(double[] values) {
+        values[FIELD] = clamp(values[FIELD], fieldLowerLimit(), fieldUpperLimit());
     }
 
     private double regulatorUpper(Machine machine) {

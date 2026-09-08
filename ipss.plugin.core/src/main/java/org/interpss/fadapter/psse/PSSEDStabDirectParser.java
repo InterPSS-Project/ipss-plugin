@@ -338,6 +338,10 @@ public class PSSEDStabDirectParser {
                 return procExcEsdc2a(busId, genId, fields);
             case "ESDC1A":
                 return procExcEsdc1a(busId, genId, fields);
+            case "DC1C":
+                return procExcDc1c(busId, genId, fields);
+            case "DC2C":
+                return procExcDc2c(busId, genId, fields);
             case "ESAC5A":
                 return procExcEsac5a(busId, genId, fields);
             case "ESST3A":
@@ -1371,6 +1375,36 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
                 getDouble(f, 15, 0), getDouble(f, 16, 0),
                 getDouble(f, 17, 0), getDouble(f, 18, 0)) != null;
+    }
+
+    // DC1C/DC2C: OEL UEL Tr Ka Ta Tb Tc Vrmax Vrmin Ke Te Kf Tf1
+    //             E1 SE1 E2 SE2 Vemax Vemin. SCL/Spdmlt are typed-only.
+    private boolean procExcDc1c(String busId, String genId, String[] f) {
+        if (f.length < 22) return false;
+        return builder.addExcDc1c(busId, genId,
+                getInt(f, 3, 0), getInt(f, 4, 0),
+                getDouble(f, 5, 0), getDouble(f, 6, 0), getDouble(f, 7, 0),
+                getDouble(f, 8, 0), getDouble(f, 9, 0),
+                getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0),
+                getDouble(f, 14, 0), getDouble(f, 15, 0),
+                getDouble(f, 16, 0), getDouble(f, 17, 0),
+                getDouble(f, 18, 0), getDouble(f, 19, 0),
+                getDouble(f, 20, 0), getDouble(f, 21, 0)) != null;
+    }
+
+    private boolean procExcDc2c(String busId, String genId, String[] f) {
+        if (f.length < 22) return false;
+        return builder.addExcDc2c(busId, genId,
+                getInt(f, 3, 0), getInt(f, 4, 0),
+                getDouble(f, 5, 0), getDouble(f, 6, 0), getDouble(f, 7, 0),
+                getDouble(f, 8, 0), getDouble(f, 9, 0),
+                getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0),
+                getDouble(f, 14, 0), getDouble(f, 15, 0),
+                getDouble(f, 16, 0), getDouble(f, 17, 0),
+                getDouble(f, 18, 0), getDouble(f, 19, 0),
+                getDouble(f, 20, 0), getDouble(f, 21, 0)) != null;
     }
 
     // ESAC5A: IBUS 'ESAC5A' ID Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf1 Tf2 Tf3 E1 SE1 E2 SE2 [Spdmlt]
