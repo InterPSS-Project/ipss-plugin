@@ -76,6 +76,7 @@ row as completed model validation.
 | REXSYS | EXCITER |  | 31 | LOADABLE | `org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REXSY1.htm) |
 | SCRX | EXCITER |  | 8 | LOADABLE | `org.interpss.dstab.control.exc.psse.scrx.ScrxExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20SCRX.htm) |
 | ST1C | EXCITER |  | 21 | LOADABLE | `org.interpss.dstab.control.exc.psse.st1c.St1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST1C.htm) |
+| ST4C | EXCITER |  | 26 | LOADABLE | `org.interpss.dstab.control.exc.psse.st4c.St4cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST4C.htm) |
 | ST5B | EXCITER | ESST5B | 18 | LOADABLE | `org.interpss.dstab.control.exc.psse.st5b.St5bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST5B%20and%20ST5B.htm) |
 | ST6B | EXCITER | ESST6B | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.st6b.St6bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST6B%20and%20ST6B.htm) |
 | ST6C | EXCITER |  | 29 | LOADABLE | `org.interpss.dstab.control.exc.psse.st6c.St6cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST6C.htm) |
