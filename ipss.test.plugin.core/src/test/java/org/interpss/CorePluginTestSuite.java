@@ -99,6 +99,7 @@ import org.interpss.core.adapter.builder.dstab.PsseReecb1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
 import org.interpss.dstab.renewable.RenewableControlIntegrationTest;
+import org.interpss.core.dstab.RenewableAggregateQvModeTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
 import org.interpss.core.dstab.Texas2kRegfma1CoverageTest;
 import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
@@ -527,6 +528,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,
 	RenewableControlIntegrationTest.class,
+	RenewableAggregateQvModeTest.class,
 	PsseHygovGovernorTest.class,
 	PsseLegacyControllerMappingTest.class,
 	PSSEDStabDirectParserReportTest.class,

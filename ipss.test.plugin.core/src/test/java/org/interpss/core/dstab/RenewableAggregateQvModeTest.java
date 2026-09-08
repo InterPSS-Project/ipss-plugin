@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.EigenDecomposition;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
@@ -35,8 +37,10 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 
 /** Public reduced-network reproducer for an aggregate REGCA1/REECA1/REPCA1 Q/V mode. */
-class RenewableAggregateQvModeTest extends CorePluginTestSetup {
+public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     private static final double STEP = 1.0 / 240.0;
+    private static final double CASE5_MODE_GROWTH = .8512333985675469;
+    private static final double CASE5_MODE_FREQUENCY = 3.8082198136353123;
 
     @Test
     void aggregateProfileIsStationaryAndRecoversFromThreeCyclePoiFault() throws Exception {
@@ -99,6 +103,98 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "Bus-1062 controller mode was not excited at the production step");
         assertTrue(fineStep.maximumVoltageDrift() > 1.0e-4,
                 "Bus-1062 controller mode disappeared at the finer step");
+    }
+
+    @Test
+    void texas1062Unit2PublicLinearizationHasGrowingOscillatoryMode() throws Exception {
+        PlantProfile profile = texas1062Unit2Profile();
+        RunResult operatingPoint = run(1, false, .05, STEP, profile, .05);
+        LinearMode mode = singleDeviceLinearMode(operatingPoint.commonModeQvSensitivity(),
+                operatingPoint.plantVoltage(), operatingPoint.plantReactiveCurrent(),
+                profile);
+
+        System.out.printf(java.util.Locale.ROOT,
+                "Bus-1062-unit-2 public Q/V linearization: sensitivity=%.9g "
+                        + "eigenvalue=%.9g%+.9gj 1/s states=%s%n",
+                operatingPoint.commonModeQvSensitivity(), mode.real(), mode.imaginary(),
+                mode.participation());
+        assertTrue(Math.abs(mode.real() - CASE5_MODE_GROWTH) / CASE5_MODE_GROWTH < .05,
+                "public Bus-1062 growth rate does not reproduce the Case-5 mode");
+        assertTrue(Math.abs(Math.abs(mode.imaginary()) - CASE5_MODE_FREQUENCY)
+                        / CASE5_MODE_FREQUENCY < .02,
+                "public Bus-1062 frequency does not reproduce the Case-5 mode");
+        assertTrue(mode.participation().get(0).state().equals("REECA_V_PI"),
+                "public mode must be led by the Bus-1062 REECA voltage PI");
+        assertTrue(mode.participation().get(1).state().equals("REGCA_IQ"),
+                "public mode must retain the Case-5 REGCA reactive-current component");
+    }
+
+    private static LinearMode singleDeviceLinearMode(double coupling, double v0,
+            double iq0, PlantProfile profile) {
+        Reeca1Data reeca = profile.reeca();
+        Repca1Data repca = profile.repca();
+        double tg = regcaData().tg();
+        double leadRatio = repca.tft() / repca.tfv();
+        double[][] state = new double[6][6];
+        state[0][0] = -1.0 / repca.tfltr();
+        state[1][0] = -repca.ki();
+        state[2][0] = -repca.kp() / repca.tfv();
+        state[2][1] = 1.0 / repca.tfv();
+        state[2][2] = -1.0 / repca.tfv();
+
+        double[] qError = new double[6];
+        qError[0] = -leadRatio * repca.kp();
+        qError[1] = leadRatio;
+        qError[2] = 1.0 - leadRatio;
+        qError[5] = -(iq0 * coupling + v0);
+        state[0][5] = coupling / repca.tfltr();
+        for (int column = 0; column < state.length; column++) {
+            state[3][column] += reeca.kqi() * qError[column];
+            state[4][column] += reeca.kvi() * reeca.kqp() * qError[column];
+            state[5][column] += reeca.kvp() * reeca.kqp() * qError[column] / tg;
+        }
+        state[4][3] += reeca.kvi();
+        state[5][3] += reeca.kvp() / tg;
+        state[5][4] += 1.0 / tg;
+        state[5][5] -= 1.0 / tg;
+
+        EigenDecomposition decomposition = new EigenDecomposition(
+                new Array2DRowRealMatrix(state, false));
+        int dominant = java.util.stream.IntStream.range(0, state.length).boxed()
+                .max(java.util.Comparator.comparingDouble(
+                        decomposition::getRealEigenvalue)).orElseThrow();
+        double[] real = decomposition.getEigenvector(dominant).toArray();
+        double[] magnitude = java.util.Arrays.stream(real).map(Math::abs).toArray();
+        double imaginary = decomposition.getImagEigenvalue(dominant);
+        if (Math.abs(imaginary) > 1.0e-9) {
+            int conjugate = java.util.stream.IntStream.range(0, state.length)
+                    .filter(index -> index != dominant)
+                    .filter(index -> Math.abs(decomposition.getRealEigenvalue(index)
+                                    - decomposition.getRealEigenvalue(dominant)) < 1.0e-8
+                            && Math.abs(decomposition.getImagEigenvalue(index) + imaginary)
+                                    < 1.0e-8)
+                    .findFirst().orElseThrow();
+            double[] quadrature = decomposition.getEigenvector(conjugate).toArray();
+            for (int index = 0; index < magnitude.length; index++) {
+                magnitude[index] = Math.hypot(real[index], quadrature[index]);
+            }
+        }
+        double maximum = java.util.Arrays.stream(magnitude).max().orElseThrow();
+        List<StateParticipation> participation = java.util.stream.IntStream
+                .range(0, magnitude.length)
+                .mapToObj(index -> new StateParticipation(switch (index) {
+                    case 0 -> "REPCA_VFILT";
+                    case 1 -> "REPCA_Q_PI";
+                    case 2 -> "REPCA_LEAD_LAG";
+                    case 3 -> "REECA_Q_PI";
+                    case 4 -> "REECA_V_PI";
+                    default -> "REGCA_IQ";
+                }, magnitude[index] / maximum))
+                .sorted(java.util.Comparator.comparingDouble(StateParticipation::magnitude)
+                        .reversed())
+                .toList();
+        return new LinearMode(decomposition.getRealEigenvalue(dominant),
+                imaginary, participation);
     }
 
     @Test
@@ -309,6 +405,9 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         algorithm.setSimuOutputHandler(monitor);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "reduced-network load flow");
         double commonModeQvSensitivity = commonModeQvSensitivity(network, plantCount);
+        double plantVoltage = network.getBus("Plant1").getVoltageMag();
+        double plantReactiveCurrent = ((DStabGen) network.getBus("Plant1")
+                .getContributeGen("1")).getGen().getImaginary() / plantVoltage;
         if (withFault) {
             network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                     "Poi", network, SimpleFaultCode.GROUND_3P,
@@ -329,7 +428,8 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 .mapToDouble(value -> value.value).min().orElseThrow();
         double finalPoiVoltage = poiVoltage.get(poiVoltage.size() - 1).value;
         return new RunResult(maximumDrift, minimumPoiVoltage, finalPoiVoltage,
-                commonModeQvSensitivity);
+                commonModeQvSensitivity, initialVoltage.get("Plant1"),
+                plantReactiveCurrent);
     }
 
     private static double commonModeQvSensitivity(DStabilityNetwork network, int plantCount)
@@ -392,7 +492,13 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     private record RunResult(double maximumVoltageDrift, double minimumPoiVoltage,
-            double finalPoiVoltage, double commonModeQvSensitivity) { }
+            double finalPoiVoltage, double commonModeQvSensitivity,
+            double plantVoltage, double plantReactiveCurrent) { }
+
+    private record LinearMode(double real, double imaginary,
+            List<StateParticipation> participation) { }
+
+    private record StateParticipation(String state, double magnitude) { }
 
     private record PlantProfile(double p, double q, double collectorX,
             Reeca1Data reeca, Repca1Data repca) { }
