@@ -15,7 +15,8 @@ loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
 runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 `_MODREMOVE.idv`. Approved-list rows without a native PSS/E model name are
 excluded
-from coverage counts and the unsupported-model TODO.
+from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
+not discovered, parsed, inventoried, or tested by this workflow.
 `6/6` prepared cases pass the
 short flat and common Bus-7159 fault execution smokes, `2/6` pass the strict
 one-second flat-run gate, `0/6` have completed the required location-specific
