@@ -68,6 +68,12 @@ public class Esst2aExciterTest extends CorePluginTestSetup {
         assertEquals(DynamicModelSupportStatus.LOADABLE, descriptor.supportStatus());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESST2A")
                 .orElseThrow().isImplementedExactly());
+        assertEquals("ESST2A", WeccApprovedDynamicModelCatalog.findExciter("EXST2A")
+                .orElseThrow().interpssModel());
+        assertTrue(WeccApprovedDynamicModelCatalog.findExciter("EXST2A")
+                .orElseThrow().isImplementedExactly());
+        assertTrue(DynamicModelCatalog.find("EXST2A").isEmpty(),
+                "EXST2A is a cross-catalog row, not a native PSS/E model name");
     }
 
     @Test
