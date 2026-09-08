@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.mach.Machine;
-import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import org.apache.commons.math3.complex.Complex;
 
 /**
@@ -405,10 +404,7 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 		assertEquals(0.4, exc.getData().getTm(), TOL);
 		assertEquals(99.0, exc.getData().getVmmax(), TOL);
 		assertEquals(0.0, exc.getData().getVmmin(), TOL);
-		var kgField = IEEE2005ST3AExciter.class.getDeclaredField("kgGainBlock");
-		// PowerWorld's ESST3A diagram defines KG feedback as an algebraic
-		// limited gain; it is not an additional dynamic state.
-		assertEquals(GainBlock.class, kgField.getType());
+		assertTrue(exc instanceof org.interpss.dstab.control.util.IntegrationStepAware);
 		assertSame(exc, builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
 	}
 

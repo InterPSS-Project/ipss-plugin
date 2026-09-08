@@ -358,17 +358,18 @@ class Wecc179FullDyrDiagnosticTest {
             String[] machineIds, List<Double> times, List<double[]> outputs, double time)
             throws Exception {
         times.add(time);
-        String[] fields = {"trDelayBlock", "viLimitBlock", "filterBlock", "taDelayBlock",
-                "kgGainBlock", "tmDelayBlock", "customBlock"};
-        double[] values = new double[machineIds.length * fields.length];
+        double[] values = new double[machineIds.length * 7];
         for (int index = 0; index < machineIds.length; index++) {
             IEEE2005ST3AExciter exciter = (IEEE2005ST3AExciter)
                     network.getMachine(machineIds[index]).getExciter();
-            for (int fieldIndex = 0; fieldIndex < fields.length; fieldIndex++) {
-                values[index * fields.length + fieldIndex] =
-                        ((ICMLStaticBlock) AnControllerInitializer.getBlock(fields[fieldIndex],
-                                exciter.getFieldWrapperList())).getY();
-            }
+            int offset = index * 7;
+            values[offset] = exciter.getSensedVoltage();
+            values[offset + 1] = exciter.getLimitedInput();
+            values[offset + 2] = exciter.getLeadLagOutput();
+            values[offset + 3] = exciter.getRegulatorOutput();
+            values[offset + 4] = exciter.getFeedbackVoltage();
+            values[offset + 5] = exciter.getInnerRegulatorOutput();
+            values[offset + 6] = exciter.getOutput(exciter.getMachine());
         }
         outputs.add(values);
     }
@@ -498,9 +499,10 @@ class Wecc179FullDyrDiagnosticTest {
                             + controller.getClass().getName());
         }
         if (controller instanceof AbstractAnnotateController annotated) {
-            if (controller instanceof Esdc2aExciter) {
-                // ESDC1A/2A deliberately use direct five-state equations so
-                // valid algebraic time constants do not require CML wrappers.
+            if (controller instanceof Esdc2aExciter
+                    || controller instanceof IEEE2005ST3AExciter) {
+                // These controllers deliberately use direct staged equations,
+                // so valid initialization does not create CML wrappers.
                 return;
             }
             assertTrue(annotated.getFieldWrapperList() != null,
