@@ -15,11 +15,12 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** IEEE 421.5-2016 / PSS/E AC5C simplified rotating-rectifier exciter. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class Ac5cExciter extends AnnotateExciter implements IntegrationStepAware {
+public class Ac5cExciter extends AnnotateExciter implements IntegrationStepAware {
     public static final int INPUT_UNUSED=0,INPUT_SUMMATION=1,INPUT_TAKEOVER=2;
     private static final double EPS=1e-12;
     private static final int VE=0,VSENSE=1,VR=2,FEEDBACK_1=3,FEEDBACK_2=4;
     private final Ac5cData data;
+    private final boolean simplifiedEsac5a;
     private final double[] state=new double[5],trial=new double[5],oldDerivative=new double[5];
     private double[] active=state;
     private boolean initialized,hasVuel,hasVoel,hasVsclSum,hasVsclUel,hasVsclOel;
@@ -32,7 +33,12 @@ public final class Ac5cExciter extends AnnotateExciter implements IntegrationSte
     public double reference,outputSignal;
 
     public Ac5cExciter(String id,Ac5cData data,Machine machine){
-        super(id,"AC5C","PSS/E");this.data=data;this._data=data;setMachine(machine);
+        this(id,"AC5C",data,machine,false);
+    }
+    protected Ac5cExciter(String id,String modelName,Ac5cData data,Machine machine,
+            boolean simplifiedEsac5a){
+        super(id,modelName,"PSS/E");this.data=data;this.simplifiedEsac5a=simplifiedEsac5a;
+        this._data=data;setMachine(machine);
     }
     public Ac5cData getData(){return data;}
     public void setVuel(double v){vuel=v;hasVuel=true;}public void setVoel(double v){voel=v;hasVoel=true;}
@@ -47,7 +53,8 @@ public final class Ac5cExciter extends AnnotateExciter implements IntegrationSte
         if(!validLocation(oelLocation)||!validLocation(uelLocation)||!validLocation(sclLocation)
                 ||tr<0||ta<0||te<=EPS||tf1<=EPS||tf2<0||kc<0||kd<0||Math.abs(ka)<=EPS)return false;
         double vt0=bus.getVoltageMag(),ifd0=exciterIfd(machine);
-        double ve0=Exac1Exciter.solveInternalVoltage(machine.getEfd(),kc*ifd0);
+        double targetEfd=machine.getEfd()/(spdmlt!=0?safeSpeed(machine):1);
+        double ve0=Exac1Exciter.solveInternalVoltage(targetEfd,kc*ifd0);
         if(!Double.isFinite(vt0)||!Double.isFinite(ve0))return false;
         double upper=fieldUpperLimit(ve0,ifd0);
         if(ve0<vemin-EPS||ve0>upper+EPS)return false;
@@ -61,13 +68,17 @@ public final class Ac5cExciter extends AnnotateExciter implements IntegrationSte
     }
 
     private void loadAndCorrect(){
-        oelLocation=data.getOelLocation();uelLocation=data.getUelLocation();sclLocation=data.getSclLocation();
+        oelLocation=simplifiedEsac5a?INPUT_UNUSED:data.getOelLocation();
+        uelLocation=simplifiedEsac5a?INPUT_UNUSED:data.getUelLocation();
+        sclLocation=simplifiedEsac5a?INPUT_UNUSED:data.getSclLocation();
         tr=correctedBypass(data.getTr());ka=data.getKa();ta=correctedBypass(data.getTa());
         vamax=Math.max(data.getVamax(),data.getVamin());vamin=Math.min(data.getVamax(),data.getVamin());
         ke=data.getKe();te=correctedRequired(data.getTe());kf=data.getKf();
         tf1=correctedRequired(data.getTf1());tf2=correctedBypass(data.getTf2());tf3=data.getTf3();
         e1=data.getE1();se1=data.getSe1();e2=data.getE2();se2=data.getSe2();
-        kc=data.getKc();kd=data.getKd();vfemax=data.getVfemax();vemin=data.getVemin();spdmlt=data.getSpdmlt();
+        kc=simplifiedEsac5a?0:data.getKc();kd=simplifiedEsac5a?0:data.getKd();
+        vfemax=simplifiedEsac5a?Double.POSITIVE_INFINITY:data.getVfemax();
+        vemin=simplifiedEsac5a?Double.NEGATIVE_INFINITY:data.getVemin();spdmlt=data.getSpdmlt();
     }
     private double minimumResolvedTimeConstant(){return minimumTimeConstantMultiplier*integrationStep;}
     private double correctedBypass(double v){double m=minimumResolvedTimeConstant();if(v>0&&v<.5*m)return 0;if(v>.5*m&&v<m)return m;return v;}
@@ -130,13 +141,14 @@ public final class Ac5cExciter extends AnnotateExciter implements IntegrationSte
         return Math.max(vemin,(vfemax-kd*ifd)/denominator);
     }
     private double fieldFeedback(double field,double ifd){return field*(ke+Exac1Exciter.saturation(field,e1,se1,e2,se2))+kd*ifd;}
-    private double fieldOutput(double[] x,Machine machine){double field=algebraics(x,machine).field,ifd=exciterIfd(machine);double efd=field*Exac1Exciter.rectifierFactor(Math.abs(field)>EPS?kc*ifd/field:0);return spdmlt!=0?efd*machine.getSpeed():efd;}
+    private double fieldOutput(double[] x,Machine machine){double field=algebraics(x,machine).field,ifd=exciterIfd(machine);double efd=field*Exac1Exciter.rectifierFactor(Math.abs(field)>EPS?kc*ifd/field:0);return spdmlt!=0?efd*safeSpeed(machine):efd;}
     private static boolean validLocation(int v){return v>=INPUT_UNUSED&&v<=INPUT_TAKEOVER;}
     private static double lagDerivative(double input,double value,double time){return time>EPS?(input-value)/time:0;}
     private static void add(double[] x,double[] d,double dt,double[] y){for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;}
     private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
     private static double stabilizerSignal(Machine m){return m.getStabilizer()==null?0:m.getStabilizer().getOutput(m);}
     private static double exciterIfd(Machine m){double v=m.calculateIfd(MachineIfdBase.EXCITER);return Double.isFinite(v)?v:0;}
+    private static double safeSpeed(Machine m){double v=m.getSpeed();return Double.isFinite(v)&&Math.abs(v)>EPS?v:1;}
 
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}
     public double getRegulatorState(){return active[VR];}public double getRegulatorOutput(){return algebraics(active,getMachine()).va;}

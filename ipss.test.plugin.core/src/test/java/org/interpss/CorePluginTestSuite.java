@@ -94,6 +94,7 @@ import org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest;
 import org.interpss.core.dstab.Texas2kSynchronousMachineCoverageTest;
 import org.interpss.core.dstab.Texas2kGenrouFaultBenchmarkTest;
 import org.interpss.core.dstab.Esst4bAndesSmibConformanceTest;
+import org.interpss.core.dstab.Esac5aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovAndesSmibConformanceTest;
@@ -341,6 +342,7 @@ import org.junit.platform.suite.api.Suite;
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
 	Esst4bAndesSmibConformanceTest.class,
+	Esac5aAndesSmibConformanceTest.class,
 	Esst1aAndesSmibConformanceTest.class,
 	Exst1AndesSmibConformanceTest.class,
 	Ieeet1AndesSmibConformanceTest.class,
