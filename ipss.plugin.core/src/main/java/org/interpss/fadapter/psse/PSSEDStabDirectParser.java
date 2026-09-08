@@ -1307,7 +1307,8 @@ public class PSSEDStabDirectParser {
         return builder.addExcEsurry(busId,genId,d)!=null;
     }
 
-    // EXAC1A: EXAC1 parameters, with EFD rather than VFE driving the washout feedback.
+    // Native PSS/E EXAC1A: 17 CONs, with EFD rather than VFE driving the washout feedback.
+    // PowerWorld's Spdmlt is a typed extension and is not an 18th PSS/E value.
     private boolean procExcExac1a(String busId,String genId,String[] f) {
         if (f.length<20) return false;
         Exac1aData d=new Exac1aData();
@@ -1316,7 +1317,7 @@ public class PSSEDStabDirectParser {
         d.setVrmin(getDouble(f,9,0)); d.setTe(getDouble(f,10,0)); d.setKf(getDouble(f,11,0));
         d.setTf(getDouble(f,12,0)); d.setKc(getDouble(f,13,0)); d.setKd(getDouble(f,14,0));
         d.setKe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0)); d.setSe1(getDouble(f,17,0));
-        d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0)); d.setSpdmlt(getDouble(f,20,0));
+        d.setE2(getDouble(f,18,0)); d.setSe2(getDouble(f,19,0));
         return builder.addExcExac1a(busId,genId,d)!=null;
     }
 

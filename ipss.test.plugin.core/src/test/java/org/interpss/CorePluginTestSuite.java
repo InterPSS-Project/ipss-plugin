@@ -108,6 +108,7 @@ import org.interpss.core.dstab.Texas2kGenrouFaultBenchmarkTest;
 import org.interpss.core.dstab.Esst4bAndesSmibConformanceTest;
 import org.interpss.core.dstab.Esac5aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Exac1AndesSmibConformanceTest;
+import org.interpss.core.dstab.Exac1aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Esac1aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
@@ -358,6 +359,7 @@ import org.junit.platform.suite.api.Suite;
 	Esst4bAndesSmibConformanceTest.class,
 	Esac5aAndesSmibConformanceTest.class,
 	Exac1AndesSmibConformanceTest.class,
+	Exac1aAndesSmibConformanceTest.class,
 	Esac1aAndesSmibConformanceTest.class,
 	Esst1aAndesSmibConformanceTest.class,
 	Exst1AndesSmibConformanceTest.class,
