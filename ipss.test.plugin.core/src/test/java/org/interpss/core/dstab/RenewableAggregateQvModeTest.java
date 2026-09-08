@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -11,9 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
-import org.apache.commons.math3.linear.Array2DRowRealMatrix;
-import org.apache.commons.math3.linear.EigenDecomposition;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Data;
@@ -108,15 +109,24 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     @Test
     void texas1062Unit2PublicLinearizationHasGrowingOscillatoryMode() throws Exception {
         PlantProfile profile = texas1062Unit2Profile();
-        RunResult operatingPoint = run(1, false, .05, STEP, profile, .05);
-        LinearMode mode = singleDeviceLinearMode(operatingPoint.commonModeQvSensitivity(),
-                operatingPoint.plantVoltage(), operatingPoint.plantReactiveCurrent(),
-                profile);
+        DStabilityNetwork network = buildNetwork(1, .05, profile);
+        assertTrue(DStabObjectFactory.createDynamicSimuAlgorithm(network)
+                .getAclfAlgorithm().loadflow(), "public eigenmode load flow");
+        var analysis = LocalRenewableQvEigenAnalyzer.analyze(network, List.of("Plant1"));
+        var mode = analysis.dominantMode();
+        assertEquals(1, analysis.devices().size());
+        assertEquals(LocalRenewableQvEigenAnalyzer.STATES_PER_DEVICE,
+                analysis.stateMatrix().length);
+        double originalEntry = analysis.stateMatrix()[0][0];
+        double[][] callerCopy = analysis.stateMatrix();
+        callerCopy[0][0] = Double.NaN;
+        assertEquals(originalEntry, analysis.stateMatrix()[0][0], 0.0,
+                "analysis matrices must be defensive copies");
 
         System.out.printf(java.util.Locale.ROOT,
                 "Bus-1062-unit-2 public Q/V linearization: sensitivity=%.9g "
                         + "eigenvalue=%.9g%+.9gj 1/s states=%s%n",
-                operatingPoint.commonModeQvSensitivity(), mode.real(), mode.imaginary(),
+                analysis.couplingMatrix()[0][0], mode.real(), mode.imaginary(),
                 mode.participation());
         assertTrue(Math.abs(mode.real() - CASE5_MODE_GROWTH) / CASE5_MODE_GROWTH < .05,
                 "public Bus-1062 growth rate does not reproduce the Case-5 mode");
@@ -129,72 +139,16 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "public mode must retain the Case-5 REGCA reactive-current component");
     }
 
-    private static LinearMode singleDeviceLinearMode(double coupling, double v0,
-            double iq0, PlantProfile profile) {
-        Reeca1Data reeca = profile.reeca();
-        Repca1Data repca = profile.repca();
-        double tg = regcaData().tg();
-        double leadRatio = repca.tft() / repca.tfv();
-        double[][] state = new double[6][6];
-        state[0][0] = -1.0 / repca.tfltr();
-        state[1][0] = -repca.ki();
-        state[2][0] = -repca.kp() / repca.tfv();
-        state[2][1] = 1.0 / repca.tfv();
-        state[2][2] = -1.0 / repca.tfv();
-
-        double[] qError = new double[6];
-        qError[0] = -leadRatio * repca.kp();
-        qError[1] = leadRatio;
-        qError[2] = 1.0 - leadRatio;
-        qError[5] = -(iq0 * coupling + v0);
-        state[0][5] = coupling / repca.tfltr();
-        for (int column = 0; column < state.length; column++) {
-            state[3][column] += reeca.kqi() * qError[column];
-            state[4][column] += reeca.kvi() * reeca.kqp() * qError[column];
-            state[5][column] += reeca.kvp() * reeca.kqp() * qError[column] / tg;
-        }
-        state[4][3] += reeca.kvi();
-        state[5][3] += reeca.kvp() / tg;
-        state[5][4] += 1.0 / tg;
-        state[5][5] -= 1.0 / tg;
-
-        EigenDecomposition decomposition = new EigenDecomposition(
-                new Array2DRowRealMatrix(state, false));
-        int dominant = java.util.stream.IntStream.range(0, state.length).boxed()
-                .max(java.util.Comparator.comparingDouble(
-                        decomposition::getRealEigenvalue)).orElseThrow();
-        double[] real = decomposition.getEigenvector(dominant).toArray();
-        double[] magnitude = java.util.Arrays.stream(real).map(Math::abs).toArray();
-        double imaginary = decomposition.getImagEigenvalue(dominant);
-        if (Math.abs(imaginary) > 1.0e-9) {
-            int conjugate = java.util.stream.IntStream.range(0, state.length)
-                    .filter(index -> index != dominant)
-                    .filter(index -> Math.abs(decomposition.getRealEigenvalue(index)
-                                    - decomposition.getRealEigenvalue(dominant)) < 1.0e-8
-                            && Math.abs(decomposition.getImagEigenvalue(index) + imaginary)
-                                    < 1.0e-8)
-                    .findFirst().orElseThrow();
-            double[] quadrature = decomposition.getEigenvector(conjugate).toArray();
-            for (int index = 0; index < magnitude.length; index++) {
-                magnitude[index] = Math.hypot(real[index], quadrature[index]);
-            }
-        }
-        double maximum = java.util.Arrays.stream(magnitude).max().orElseThrow();
-        List<StateParticipation> participation = java.util.stream.IntStream
-                .range(0, magnitude.length)
-                .mapToObj(index -> new StateParticipation(switch (index) {
-                    case 0 -> "REPCA_VFILT";
-                    case 1 -> "REPCA_Q_PI";
-                    case 2 -> "REPCA_LEAD_LAG";
-                    case 3 -> "REECA_Q_PI";
-                    case 4 -> "REECA_V_PI";
-                    default -> "REGCA_IQ";
-                }, magnitude[index] / maximum))
-                .sorted(java.util.Comparator.comparingDouble(StateParticipation::magnitude)
-                        .reversed())
-                .toList();
-        return new LinearMode(decomposition.getRealEigenvalue(dominant),
-                imaginary, participation);
+    @Test
+    void qvAnalyzerRejectsInvalidBusSelections() throws Exception {
+        DStabilityNetwork network = buildNetwork(1, .05, texas1062Unit2Profile());
+        assertThrows(IllegalArgumentException.class,
+                () -> LocalRenewableQvEigenAnalyzer.analyze(network, List.of()));
+        assertThrows(IllegalArgumentException.class,
+                () -> LocalRenewableQvEigenAnalyzer.analyze(
+                        network, List.of("Plant1", "Plant1")));
+        assertThrows(IllegalArgumentException.class,
+                () -> LocalRenewableQvEigenAnalyzer.analyze(network, List.of("MissingBus")));
     }
 
     @Test
@@ -358,6 +312,42 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
 
     private static RunResult run(int plantCount, boolean withFault, double gridReactance,
             double simulationStep, PlantProfile profile, double endTime) throws Exception {
+        DStabilityNetwork network = buildNetwork(plantCount, gridReactance, profile);
+        DynamicSimuAlgorithm algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(simulationStep);
+        algorithm.setTotalSimuTimeSec(endTime);
+        algorithm.setOutPutPerSteps(1);
+        StateMonitor monitor = new StateMonitor();
+        monitor.addBusStdMonitor(new String[] {"Poi"});
+        algorithm.setSimuOutputHandler(monitor);
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "reduced-network load flow");
+        double commonModeQvSensitivity = commonModeQvSensitivity(network, plantCount);
+        if (withFault) {
+            network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
+                    "Poi", network, SimpleFaultCode.GROUND_3P,
+                    new Complex(0, 1.0e-4), null, .05, .05),
+                    "ThreeCycleFault@Poi");
+        }
+        assertTrue(algorithm.initialization(), "reduced-network dynamic initialization");
+
+        Map<String, Double> initialVoltage = new LinkedHashMap<>();
+        network.getBusList().forEach(bus -> initialVoltage.put(bus.getId(), bus.getVoltageMag()));
+        assertTrue(algorithm.performSimulation(), "reduced-network no-event simulation");
+        double maximumDrift = initialVoltage.entrySet().stream()
+                .mapToDouble(entry -> Math.abs(network.getBus(entry.getKey()).getVoltageMag()
+                        - entry.getValue()))
+                .max().orElseThrow();
+        var poiVoltage = monitor.getBusVoltTable().get("Poi");
+        double minimumPoiVoltage = poiVoltage.values().stream()
+                .mapToDouble(value -> value.value).min().orElseThrow();
+        double finalPoiVoltage = poiVoltage.get(poiVoltage.size() - 1).value;
+        return new RunResult(maximumDrift, minimumPoiVoltage, finalPoiVoltage,
+                commonModeQvSensitivity);
+    }
+
+    private static DStabilityNetwork buildNetwork(int plantCount, double gridReactance,
+            PlantProfile profile) throws Exception {
         DStabilityNetwork network = DStabObjectFactory.createDStabilityNetwork();
         network.setBaseKva(100000.0);
         AclfNetworkBuilder topology = new AclfNetworkBuilder(network);
@@ -394,42 +384,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
             dynamics.addReeca1(bus, "1", profile.reeca());
             dynamics.addRepca1(bus, "1", profile.repca());
         }
-
-        DynamicSimuAlgorithm algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
-        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(simulationStep);
-        algorithm.setTotalSimuTimeSec(endTime);
-        algorithm.setOutPutPerSteps(1);
-        StateMonitor monitor = new StateMonitor();
-        monitor.addBusStdMonitor(new String[] {"Poi"});
-        algorithm.setSimuOutputHandler(monitor);
-        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "reduced-network load flow");
-        double commonModeQvSensitivity = commonModeQvSensitivity(network, plantCount);
-        double plantVoltage = network.getBus("Plant1").getVoltageMag();
-        double plantReactiveCurrent = ((DStabGen) network.getBus("Plant1")
-                .getContributeGen("1")).getGen().getImaginary() / plantVoltage;
-        if (withFault) {
-            network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
-                    "Poi", network, SimpleFaultCode.GROUND_3P,
-                    new Complex(0, 1.0e-4), null, .05, .05),
-                    "ThreeCycleFault@Poi");
-        }
-        assertTrue(algorithm.initialization(), "reduced-network dynamic initialization");
-
-        Map<String, Double> initialVoltage = new LinkedHashMap<>();
-        network.getBusList().forEach(bus -> initialVoltage.put(bus.getId(), bus.getVoltageMag()));
-        assertTrue(algorithm.performSimulation(), "reduced-network no-event simulation");
-        double maximumDrift = initialVoltage.entrySet().stream()
-                .mapToDouble(entry -> Math.abs(network.getBus(entry.getKey()).getVoltageMag()
-                        - entry.getValue()))
-                .max().orElseThrow();
-        var poiVoltage = monitor.getBusVoltTable().get("Poi");
-        double minimumPoiVoltage = poiVoltage.values().stream()
-                .mapToDouble(value -> value.value).min().orElseThrow();
-        double finalPoiVoltage = poiVoltage.get(poiVoltage.size() - 1).value;
-        return new RunResult(maximumDrift, minimumPoiVoltage, finalPoiVoltage,
-                commonModeQvSensitivity, initialVoltage.get("Plant1"),
-                plantReactiveCurrent);
+        return network;
     }
 
     private static double commonModeQvSensitivity(DStabilityNetwork network, int plantCount)
@@ -492,13 +447,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     private record RunResult(double maximumVoltageDrift, double minimumPoiVoltage,
-            double finalPoiVoltage, double commonModeQvSensitivity,
-            double plantVoltage, double plantReactiveCurrent) { }
-
-    private record LinearMode(double real, double imaginary,
-            List<StateParticipation> participation) { }
-
-    private record StateParticipation(String state, double magnitude) { }
+            double finalPoiVoltage, double commonModeQvSensitivity) { }
 
     private record PlantProfile(double p, double q, double collectorX,
             Reeca1Data reeca, Repca1Data repca) { }
