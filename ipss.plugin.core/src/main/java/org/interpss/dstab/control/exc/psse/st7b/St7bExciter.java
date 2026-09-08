@@ -7,87 +7,143 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.mach.Machine;
 
-/** IEEE 421.5-2005 ST7B / PSLF ESST7B excitation system. */
+/** IEEE 421.5-2005 ST7B excitation system and shared ST7 equation engine. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class St7bExciter extends AnnotateExciter implements IntegrationStepAware {
+public class St7bExciter extends AnnotateExciter implements IntegrationStepAware {
     private static final double EPS=1e-12;
-    private static final int EFIELD=0,VSENSE=1,INPUT_LL=2,LL2=3,FEEDBACK_LAG=4;
+    private static final int VSENSE=0,INPUT_LL=1,REG_LL=2,FEEDBACK=3,EFIELD=4;
     private final St7bData data;private final String modelName;
     private final double[] state=new double[5],trial=new double[5],oldDerivative=new double[5];
     private double[] active=state;private boolean initialized,vuelConfigured,voelConfigured;
-    private double integrationStep,minimumTimeConstantMultiplier=1;
-    public int oel,uel;public double tr,tg,tf,vmax,vmin,kpa,vrmax,vrmin,kh,kl,tc,tb,kia,tia,ts;
+    private double integrationStep,minimumTimeConstantMultiplier=1,ta;
+    public int oel,uel;public double tr,tg,tf,vmax,vmin,kpa,vrmax,vrmin,kh,kl,tc,tb,kia,tia;
     public double reference,outputSignal,vuel,voel,vdroop,vscl;
-    public St7bExciter(String id,String modelName,St7bData data,Machine machine){super(id,modelName,"IEEE");this.modelName=modelName;this.data=data;this._data=data;setMachine(machine);}
+
+    public St7bExciter(String id,St7bData data,Machine machine){this(id,"ST7B",data,machine);}
+    protected St7bExciter(String id,String modelName,St7bData data,Machine machine){
+        super(id,modelName,"IEEE");this.modelName=modelName;this.data=data;this._data=data;setMachine(machine);
+    }
     public St7bData getData(){return data;}public String getModelName(){return modelName;}
     @Override public void configureIntegrationStep(double stepSeconds){configureIntegrationStep(stepSeconds,1);}
     public void configureIntegrationStep(double stepSeconds,double multiplier){integrationStep=stepSeconds;minimumTimeConstantMultiplier=multiplier;}
+
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
-        loadAndCorrect();if(tr<0||tf<0||tb<0||tia<=EPS||ts<0||kpa<=EPS||kia<0||kh<0||kl<0)return false;
-        double vt0=bus.getVoltageMag(),efd0=machine.getEfd();if(vt0<=EPS||!Double.isFinite(efd0))return false;
-        vrmax=Math.max(vrmax,efd0/vt0);vrmin=Math.min(vrmin,efd0/vt0);
-        double error0=efd0/kpa,vref0=vt0+error0-stabilizerSignal(machine)-vdroop-vscl;
-        vmax=Math.max(vmax,vref0);vmin=Math.min(vmin,vref0);reference=vref0;
-        state[EFIELD]=efd0;state[VSENSE]=vt0;state[INPUT_LL]=transferState(vt0,vt0,tg,tf);
-        state[LL2]=transferState(efd0,efd0,tc,tb);state[FEEDBACK_LAG]=efd0;
-        System.arraycopy(state,0,trial,0,5);active=state;outputSignal=efd0;initialized=true;return true;
+        loadAndCorrect();
+        if(tr<0||tf<0||tb<0||tia<=EPS||kpa<=EPS||kia<=EPS||ta<0||!finiteParameters())return false;
+        double vt0=bus.getVoltageMag(),sensed0=sensingVoltage(machine),efd0=machine.getEfd();
+        if(vt0<=EPS||!Double.isFinite(sensed0)||!Double.isFinite(efd0))return false;
+        double feedback0=kia*efd0,regulator0=efd0+feedback0;
+        vrmax=Math.max(vrmax,Math.max(efd0/vt0,(regulator0+kl*feedback0)/vt0));
+        vrmin=Math.min(vrmin,Math.min(efd0/vt0,(regulator0+kh*feedback0)/vt0));
+        double error0=regulator0/kpa;
+        double vrefFb0=sensed0+error0-stabilizerSignal(machine);
+        vmax=Math.max(vmax,vrefFb0);vmin=Math.min(vmin,vrefFb0);
+        double direct=(oel==1&&voelConfigured?voel:0)+(uel==1&&vuelConfigured?vuel:0);
+        reference=vrefFb0-vdroop-vscl-direct;
+        state[VSENSE]=sensed0;state[INPUT_LL]=transferState(sensed0,sensed0,tg,tf);
+        state[REG_LL]=transferState(regulator0,regulator0,tc,tb);
+        state[FEEDBACK]=feedback0;state[EFIELD]=efd0;
+        System.arraycopy(state,0,trial,0,state.length);active=state;outputSignal=efd0;initialized=true;return true;
     }
-    private void loadAndCorrect(){oel=normalizeSelector(data.getOel());uel=normalizeSelector(data.getUel());tr=correctedTransducer(data.getTr());
+    private void loadAndCorrect(){
+        oel=normalizeSelector(data.getOel());uel=normalizeSelector(data.getUel());tr=correctedTransducer(data.getTr());
         tg=data.getTg();tf=data.getTf();vmax=Math.max(data.getVmax(),data.getVmin());vmin=Math.min(data.getVmax(),data.getVmin());
         kpa=data.getKpa();vrmax=Math.max(data.getVrmax(),data.getVrmin());vrmin=Math.min(data.getVrmax(),data.getVrmin());
-        kh=data.getKh();kl=data.getKl();tc=data.getTc();tb=data.getTb();kia=data.getKia();tia=data.getTia();ts=correctedFiring(data.getTs());
-        if(!voelConfigured)voel=oel>=2?Double.POSITIVE_INFINITY:0;if(!vuelConfigured)vuel=uel>=2?Double.NEGATIVE_INFINITY:0;}
-    private static int normalizeSelector(int v){return v>=1&&v<=3?v:0;}
-    private double minTime(){return minimumTimeConstantMultiplier*integrationStep;}
-    private double correctedTransducer(double v){double m=minTime();if(v>0&&v<.25*m)return 0;if(v>.25*m&&v<.5*m)return .5*m;return v;}
-    private double correctedFiring(double v){double m=minTime();if(v>0&&v<.5*m)return 0;if(v>.5*m&&v<m)return m;return v;}
+        kh=data.getKh();kl=data.getKl();tc=data.getTc();tb=data.getTb();kia=data.getKia();tia=data.getTia();
+        ta=hasFiringController()?correctedFiring(rawFiringTimeConstant()):0;
+        if(!voelConfigured)voel=oel>=2?Double.POSITIVE_INFINITY:0;
+        if(!vuelConfigured)vuel=uel>=2?Double.NEGATIVE_INFINITY:0;
+    }
+    protected boolean hasFiringController(){return false;}
+    protected double rawFiringTimeConstant(){return 0;}
+    private static int normalizeSelector(int value){return value>=1&&value<=3?value:0;}
+    private double minimumTime(){return minimumTimeConstantMultiplier*integrationStep;}
+    private double correctedTransducer(double value){double minimum=minimumTime();
+        if(value>0&&value<.25*minimum)return 0;if(value>.25*minimum&&value<.5*minimum)return .5*minimum;return value;}
+    private double correctedFiring(double value){double minimum=minimumTime();
+        if(value>0&&value<.5*minimum)return 0;if(value>.5*minimum&&value<minimum)return minimum;return value;}
+    private boolean finiteParameters(){double[] values={tr,tg,tf,vmax,vmin,kpa,vrmax,vrmin,kh,kl,tc,tb,kia,tia,ta};
+        for(double value:values)if(!Double.isFinite(value))return false;return true;}
+
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag){
-        if(!initialized||dt<0)return false;if(dt==0){outputSignal=output(active,machine);return true;}int stage=method==DynamicSimuMethod.MODIFIED_EULER?flag:2;
+        if(!initialized||dt<0)return false;if(dt==0){outputSignal=output(active,machine);return true;}
+        int stage=method==DynamicSimuMethod.MODIFIED_EULER?flag:2;
         if(stage==0){derivatives(state,oldDerivative,machine);add(state,oldDerivative,dt,trial);constrain(trial,machine);active=trial;}
-        else if(stage==1){double[] d=new double[5];derivatives(trial,d,machine);for(int i=0;i<5;i++)state[i]+=.5*(oldDerivative[i]+d[i])*dt;constrain(state,machine);active=state;}
-        else{double[] d=new double[5];derivatives(state,d,machine);add(state,d,dt,state);constrain(state,machine);active=state;}
+        else if(stage==1){double[] correctedDerivative=new double[state.length];derivatives(trial,correctedDerivative,machine);
+            for(int i=0;i<state.length;i++)state[i]+=.5*(oldDerivative[i]+correctedDerivative[i])*dt;
+            constrain(state,machine);active=state;}
+        else{double[] derivative=new double[state.length];derivatives(state,derivative,machine);add(state,derivative,dt,state);constrain(state,machine);active=state;}
         outputSignal=output(active,machine);return true;
     }
-    private void derivatives(double[] x,double[] dx,Machine machine){Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
-        dx[VSENSE]=tr>EPS?(machine.getDStabBus().getVoltageMag()-x[VSENSE])/tr:0;
-        dx[INPUT_LL]=transferDerivative(a.sensed,x[INPUT_LL],tg,tf);dx[LL2]=transferDerivative(a.regulator,x[LL2],tc,tb);
-        dx[FEEDBACK_LAG]=(a.preField-x[FEEDBACK_LAG])/tia;if(ts>EPS)dx[EFIELD]=(a.preField-x[EFIELD])/ts;
+    private void derivatives(double[] x,double[] derivative,Machine machine){
+        Arrays.fill(derivative,0);Algebraic a=algebraics(x,machine);
+        derivative[VSENSE]=tr>EPS?(sensingVoltage(machine)-x[VSENSE])/tr:0;
+        derivative[INPUT_LL]=transferDerivative(a.sensed,x[INPUT_LL],tg,tf);
+        derivative[REG_LL]=transferDerivative(a.regulator,x[REG_LL],tc,tb);
+        derivative[FEEDBACK]=(kia*a.efd-x[FEEDBACK])/tia;
+        if(ta>EPS)derivative[EFIELD]=(a.preField-x[EFIELD])/ta;
     }
     private Algebraic algebraics(double[] x,Machine machine){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt,inputLl=transferOutput(sensed,x[INPUT_LL],tg,tf);
-        double rawRef=reference+vdroop+vscl;if(oel==1)rawRef+=voel;if(uel==1)rawRef+=vuel;
-        double gatedRef=oel==2?Math.min(rawRef,voel):rawRef;if(uel==2)gatedRef=Math.max(gatedRef,vuel);
-        double vrefFb=clamp(gatedRef,vmin,vmax),error=vrefFb+stabilizerSignal(machine)-inputLl,amplifier=kpa*error;
-        double beta=kia/tia,feedback=0;
-        for(int i=0;i<12;i++){FieldPath p=fieldPath(amplifier,x,vt,feedback);double residual=feedback-beta*(p.preField-x[FEEDBACK_LAG]);
-            if(Math.abs(residual)<1e-12)break;double h=1e-7*(1+Math.abs(feedback));FieldPath shifted=fieldPath(amplifier,x,vt,feedback+h);
-            double slope=1-beta*(shifted.preField-p.preField)/h;
-            feedback=Math.abs(slope)>1e-10?feedback-residual/slope:beta*(p.preField-x[FEEDBACK_LAG]);if(!Double.isFinite(feedback)){feedback=0;break;}}
-        FieldPath p=fieldPath(amplifier,x,vt,feedback);return new Algebraic(sensed,inputLl,vrefFb,error,amplifier,p.regulator,p.ll2,feedback,p.preField);
+        double vt=machine.getDStabBus().getVoltageMag();
+        double sensed=tr>EPS?x[VSENSE]:sensingVoltage(machine);
+        double inputLeadLag=transferOutput(sensed,x[INPUT_LL],tg,tf);
+        double rawReference=reference+vdroop+vscl;
+        if(oel==1&&voelConfigured)rawReference+=voel;if(uel==1&&vuelConfigured)rawReference+=vuel;
+        double inputLowGate=oel==2?Math.min(rawReference,voel):rawReference;
+        double inputHighGate=uel==2?Math.max(inputLowGate,vuel):inputLowGate;
+        double referenceFeedback=clamp(inputHighGate,vmin,vmax);
+        double error=referenceFeedback+stabilizerSignal(machine)-inputLeadLag;
+        double amplifier=kpa*error,feedback=x[FEEDBACK];
+        double lower=vt*vrmin-kh*feedback,upper=vt*vrmax-kl*feedback;
+        double regulator=Math.min(Math.max(amplifier,lower),upper);
+        double secondLeadLag=transferOutput(regulator,x[REG_LL],tc,tb);
+        double preField=secondLeadLag-feedback;
+        if(oel==3)preField=Math.min(preField,voel);if(uel==3)preField=Math.max(preField,vuel);
+        preField=clamp(preField,vt*vrmin,vt*vrmax);
+        double efd=ta>EPS?clamp(x[EFIELD],vt*vrmin,vt*vrmax):preField;
+        return new Algebraic(sensed,inputLeadLag,referenceFeedback,error,amplifier,regulator,
+                secondLeadLag,feedback,preField,efd);
     }
-    private FieldPath fieldPath(double amplifier,double[] x,double vt,double feedback){double lower=vt*vrmin-kh*feedback,upper=Math.max(lower,vt*vrmax-kl*feedback);
-        double regulator=clamp(amplifier,lower,upper),ll2=transferOutput(regulator,x[LL2],tc,tb),pre=ll2+feedback;
-        if(oel==3)pre=Math.min(pre,voel);if(uel==3)pre=Math.max(pre,vuel);pre=clamp(pre,vt*vrmin,vt*vrmax);return new FieldPath(regulator,ll2,pre);}
-    private double output(double[] x,Machine machine){return ts>EPS?x[EFIELD]:algebraics(x,machine).preField;}
-    private void constrain(double[] x,Machine machine){double vt=machine.getDStabBus().getVoltageMag();if(ts>EPS)x[EFIELD]=clamp(x[EFIELD],vt*vrmin,vt*vrmax);for(int i=0;i<5;i++)if(!Double.isFinite(x[i]))x[i]=0;}
+    private double output(double[] x,Machine machine){return algebraics(x,machine).efd;}
+    private void constrain(double[] x,Machine machine){
+        if(ta>EPS){double vt=machine.getDStabBus().getVoltageMag();x[EFIELD]=clamp(x[EFIELD],vt*vrmin,vt*vrmax);}
+        for(int i=0;i<x.length;i++)if(!Double.isFinite(x[i]))x[i]=0;
+    }
     private static double transferState(double input,double output,double lead,double lag){return lag>EPS?output-lead/lag*input:0;}
-    private static double transferOutput(double input,double x,double lead,double lag){return lag>EPS?lead/lag*input+x:input;}
-    private static double transferDerivative(double input,double x,double lead,double lag){return lag>EPS?((1-lead/lag)*input-x)/lag:0;}
-    private static void add(double[] x,double[] d,double dt,double[] y){for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;}
-    private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
-    private static double stabilizerSignal(Machine m){return m.getStabilizer()==null?0:m.getStabilizer().getOutput(m);}
-    public void setVuel(double v){vuel=v;vuelConfigured=true;}public void setVoel(double v){voel=v;voelConfigured=true;}public void setVdroop(double v){vdroop=v;}public void setVscl(double v){vscl=v;}
-    public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}public double getInputLeadLag(){return algebraics(active,getMachine()).inputLl;}
-    public double getReferenceFeedback(){return algebraics(active,getMachine()).vrefFb;}public double getVoltageError(){return algebraics(active,getMachine()).error;}
-    public double getAmplifierOutput(){return algebraics(active,getMachine()).amplifier;}public double getRegulatorOutput(){return algebraics(active,getMachine()).regulator;}
-    public double getSecondLeadLagOutput(){return algebraics(active,getMachine()).ll2;}public double getFeedbackOutput(){return algebraics(active,getMachine()).feedback;}
-    public double getPreFiringField(){return algebraics(active,getMachine()).preField;}public double getInternalFieldVoltage(){return active[EFIELD];}
-    @Override public double getOutput(Machine machine){outputSignal=output(active,machine);return outputSignal;}@Override public void setRefPoint(double v){reference=v;}@Override public double getRefPoint(){return reference;}
-    private record Algebraic(double sensed,double inputLl,double vrefFb,double error,double amplifier,double regulator,double ll2,double feedback,double preField){}
-    private record FieldPath(double regulator,double ll2,double preField){}
-    @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}@Override public Field getField(String n)throws Exception{return getClass().getField(n);}@Override public Object getFieldObject(Field f)throws Exception{return f.get(this);}
+    private static double transferOutput(double input,double stateValue,double lead,double lag){return lag>EPS?lead/lag*input+stateValue:input;}
+    private static double transferDerivative(double input,double stateValue,double lead,double lag){return lag>EPS?((1-lead/lag)*input-stateValue)/lag:0;}
+    private static void add(double[] x,double[] derivative,double dt,double[] result){for(int i=0;i<x.length;i++)result[i]=x[i]+derivative[i]*dt;}
+    private static double clamp(double value,double lower,double upper){return Math.max(lower,Math.min(upper,value));}
+    private static double stabilizerSignal(Machine machine){return machine.getStabilizer()==null?0:machine.getStabilizer().getOutput(machine);}
+    private static double sensingVoltage(Machine machine){
+        if(machine instanceof ICMLMachineVoltageProvider provider){double value=provider.getCmlMachineVoltage();if(Double.isFinite(value))return value;}
+        return machine.getDStabBus().getVoltageMag();
+    }
+
+    public void setVuel(double value){vuel=value;vuelConfigured=true;}public void setVoel(double value){voel=value;voelConfigured=true;}
+    public void clearVuel(){vuelConfigured=false;}public void clearVoel(){voelConfigured=false;}
+    public void setVdroop(double value){vdroop=value;}public void setVscl(double value){vscl=value;}
+    public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}
+    public double getInputLeadLag(){return algebraics(active,getMachine()).inputLeadLag;}
+    public double getReferenceFeedback(){return algebraics(active,getMachine()).referenceFeedback;}
+    public double getVoltageError(){return algebraics(active,getMachine()).error;}
+    public double getAmplifierOutput(){return algebraics(active,getMachine()).amplifier;}
+    public double getRegulatorOutput(){return algebraics(active,getMachine()).regulator;}
+    public double getSecondLeadLagOutput(){return algebraics(active,getMachine()).secondLeadLag;}
+    public double getFeedbackOutput(){return algebraics(active,getMachine()).feedback;}
+    public double getPreFiringField(){return algebraics(active,getMachine()).preField;}
+    public double getInternalFieldVoltage(){return output(active,getMachine());}
+    public double getFiringTimeConstant(){return ta;}public double[] getStateSnapshot(){return active.clone();}
+    @Override public double getOutput(Machine machine){outputSignal=output(active,machine);return outputSignal;}
+    @Override public void setRefPoint(double value){reference=value;}@Override public double getRefPoint(){return reference;}
+    private record Algebraic(double sensed,double inputLeadLag,double referenceFeedback,double error,
+            double amplifier,double regulator,double secondLeadLag,double feedback,double preField,double efd){}
+    @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
+    @Override public Field getField(String name)throws Exception{return getClass().getField(name);}
+    @Override public Object getFieldObject(Field field)throws Exception{return field.get(this);}
 }
