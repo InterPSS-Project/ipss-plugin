@@ -7,6 +7,7 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.mach.Machine;
@@ -14,7 +15,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** IEEE 421.5-2005 ST5B static potential-source excitation system. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class St5bExciter extends AnnotateExciter implements IntegrationStepAware {
+public class St5bExciter extends AnnotateExciter implements IntegrationStepAware {
     private static final double EPS=1e-12;
     private static final int EFD=0,VSENSE=1,N1=2,N2=3,U1=4,U2=5,O1=6,O2=7;
     private final St5bData data;
@@ -34,14 +35,16 @@ public final class St5bExciter extends AnnotateExciter implements IntegrationSte
     public St5bData getData(){return data;}
     public void setVuel(double value){vuel=value;hasVuel=true;}
     public void setVoel(double value){voel=value;hasVoel=true;}
+    public void clearVuel(){hasVuel=false;}public void clearVoel(){hasVoel=false;}
     public double getVuel(){return vuel;}public double getVoel(){return voel;}
     @Override public void configureIntegrationStep(double stepSeconds){configureIntegrationStep(stepSeconds,1.0);}
     public void configureIntegrationStep(double stepSeconds,double multiplier){integrationStep=stepSeconds;minimumTimeConstantMultiplier=multiplier;}
 
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
         loadAndCorrect();
-        if(tr<0||tb1<0||tb2<0||tub1<0||tub2<0||tob1<0||tob2<0||t1<0||kr<=EPS)return false;
-        double efd0=machine.getEfd(),vt0=machine.getDStabBus().getVoltageMag();
+        if(tr<0||tc1<0||tb1<0||tc2<0||tb2<0||tuc1<0||tub1<0||tuc2<0||tub2<0
+                ||toc1<0||tob1<0||toc2<0||tob2<0||t1<0||kr<=EPS||!finiteParameters())return false;
+        double efd0=machine.getEfd(),vt0=sensingVoltage(machine);
         double ifd0=fieldCurrent(machine),vr0=efd0+kc*ifd0;
         if(!Double.isFinite(vr0)||!Double.isFinite(vt0))return false;
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
@@ -49,13 +52,14 @@ public final class St5bExciter extends AnnotateExciter implements IntegrationSte
         state[EFD]=efd0;state[VSENSE]=vt0;
         for(int i=N1;i<=O2;i++)state[i]=path0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
-        reference=path0+vt0;outputSignal=efd0;initialized=true;return true;
+        double directBias=(hasVuel&&uelInputMode()==1?vuel:0)+(hasVoel&&oelInputMode()==1?voel:0);
+        reference=path0+vt0-stabilizerSignal(machine)-directBias;outputSignal=efd0;initialized=true;return true;
     }
     private void loadAndCorrect(){
         tr=correctedBypass(data.getTr());tc1=data.getTc1();tb1=correctedBypass(data.getTb1());
         tc2=data.getTc2();tb2=correctedBypass(data.getTb2());kr=data.getKr();
         vrmax=Math.max(data.getVrmax(),data.getVrmin());vrmin=Math.min(data.getVrmax(),data.getVrmin());
-        t1=data.getT1();kc=data.getKc();tuc1=data.getTuc1();tub1=correctedBypass(data.getTub1());
+        t1=correctedInverseTime(data.getT1());kc=data.getKc();tuc1=data.getTuc1();tub1=correctedBypass(data.getTub1());
         tuc2=data.getTuc2();tub2=correctedBypass(data.getTub2());toc1=data.getToc1();
         tob1=correctedBypass(data.getTob1());toc2=data.getToc2();tob2=correctedBypass(data.getTob2());
     }
@@ -65,6 +69,21 @@ public final class St5bExciter extends AnnotateExciter implements IntegrationSte
         if(value>.5*minimum&&value<minimum)return minimum;
         return value;
     }
+    private double correctedInverseTime(double value){
+        double minimum=minimumTimeConstantMultiplier*integrationStep;
+        // PowerWorld's published inverse-timing rule: raise T1 to min/4 when
+        // it is below min/4, otherwise raise a sub-minimum T1 to min.
+        if(value>0&&minimum>4*value)return .25*minimum;
+        if(value>0&&value<minimum)return minimum;
+        return value;
+    }
+    private boolean finiteParameters(){
+        double[] values={tr,tc1,tb1,tc2,tb2,kr,vrmax,vrmin,t1,kc,tuc1,tub1,tuc2,tub2,toc1,tob1,toc2,tob2};
+        for(double value:values)if(!Double.isFinite(value))return false;return true;
+    }
+    /** ST5B always uses the published takeover gates; ST5C overrides these source flags. */
+    protected int oelInputMode(){return 2;}
+    protected int uelInputMode(){return 2;}
 
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag){
         if(!initialized||dt<0)return false;if(dt==0)return true;
@@ -76,7 +95,7 @@ public final class St5bExciter extends AnnotateExciter implements IntegrationSte
     }
     private void derivatives(double[] x,double[] d,Machine machine){
         Arrays.fill(d,0);Algebraic a=algebraics(x,machine);
-        d[VSENSE]=lagDerivative(machine.getDStabBus().getVoltageMag(),x[VSENSE],tr);
+        d[VSENSE]=lagDerivative(sensingVoltage(machine),x[VSENSE],tr);
         leadLagDerivative(x,d,N1,a.input,tc1,tb1);leadLagDerivative(x,d,N2,a.normal1,tc2,tb2);
         leadLagDerivative(x,d,U1,a.input,tuc1,tub1);leadLagDerivative(x,d,U2,a.under1,tuc2,tub2);
         leadLagDerivative(x,d,O1,a.input,toc1,tob1);leadLagDerivative(x,d,O2,a.over1,toc2,tob2);
@@ -92,18 +111,22 @@ public final class St5bExciter extends AnnotateExciter implements IntegrationSte
         d[index]=rate;
     }
     private Algebraic algebraics(double[] x,Machine machine){
-        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:vt;
-        double error=reference-sensed;
-        double gated=error;if(hasVuel)gated=Math.max(gated,vuel);if(hasVoel)gated=Math.min(gated,voel);
+        double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:sensingVoltage(machine);
+        double error=reference-sensed,summed=error;
+        boolean uelDirect=hasVuel&&uelInputMode()==1&&Math.abs(vuel)>EPS;
+        boolean oelDirect=hasVoel&&oelInputMode()==1&&Math.abs(voel)>EPS;
+        if(hasVuel&&uelInputMode()==1)summed+=vuel;if(hasVoel&&oelInputMode()==1)summed+=voel;
+        boolean uelGate=hasVuel&&uelInputMode()==2&&vuel>summed;double hv=uelGate?vuel:summed;
+        boolean oelGate=hasVoel&&oelInputMode()==2&&voel<hv;double gated=oelGate?voel:hv;
         double input=gated+stabilizerSignal(machine);
         double normal1=limitedLeadLag(input,x[N1],tc1,tb1),normal2=limitedLeadLag(normal1,x[N2],tc2,tb2);
         double under1=limitedLeadLag(input,x[U1],tuc1,tub1),under2=limitedLeadLag(under1,x[U2],tuc2,tub2);
         double over1=limitedLeadLag(input,x[O1],toc1,tob1),over2=limitedLeadLag(over1,x[O2],toc2,tob2);
-        int selector=hasVoel&&voel<error?1:hasVuel&&vuel>error?-1:0;
+        int selector=oelDirect||oelGate?1:uelDirect||uelGate?-1:0;
         double selected=selector>0?over2:selector<0?under2:normal2;
         double vr=clamp(kr*selected,vrmin,vrmax),finalInput=vr-kc*fieldCurrent(machine);
         double efd=t1>EPS?x[EFD]:clamp(finalInput,vt*vrmin,vt*vrmax);
-        return new Algebraic(sensed,error,gated,input,normal1,normal2,under1,under2,over1,over2,selector,vr,finalInput,efd);
+        return new Algebraic(sensed,error,summed,hv,gated,input,normal1,normal2,under1,under2,over1,over2,selector,vr,finalInput,efd);
     }
     private double limitedLeadLag(double input,double stateValue,double tc,double tb){
         return clamp(leadLagOutput(input,stateValue,tc,tb),vrmin/kr,vrmax/kr);
@@ -118,18 +141,25 @@ public final class St5bExciter extends AnnotateExciter implements IntegrationSte
     private static double lagDerivative(double input,double value,double timeConstant){return timeConstant>EPS?(input-value)/timeConstant:0;}
     private static double fieldCurrent(Machine machine){double v=machine.calculateIfd(MachineIfdBase.EXCITER);return Double.isFinite(v)?v:0;}
     private static double stabilizerSignal(Machine machine){return machine.getStabilizer()==null?0:machine.getStabilizer().getOutput(machine);}
+    private static double sensingVoltage(Machine machine){
+        if(machine instanceof ICMLMachineVoltageProvider provider){double value=provider.getCmlMachineVoltage();if(Double.isFinite(value))return value;}
+        return machine.getDStabBus().getVoltageMag();
+    }
     private static double clamp(double value,double lower,double upper){return Math.max(lower,Math.min(upper,value));}
 
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}
     public double getVoltageError(){return algebraics(active,getMachine()).error;}
+    public double getSummedError(){return algebraics(active,getMachine()).summed;}
+    public double getHighGateOutput(){return algebraics(active,getMachine()).hv;}
     public double getGatedError(){return algebraics(active,getMachine()).gated;}
     public int getSelectedPath(){return algebraics(active,getMachine()).selector;}
     public double getSelectedPathOutput(){Algebraic a=algebraics(active,getMachine());return a.selector>0?a.over2:a.selector<0?a.under2:a.normal2;}
     public double getRegulatorOutput(){return algebraics(active,getMachine()).vr;}
     public double getFinalLagInput(){return algebraics(active,getMachine()).finalInput;}
+    public double[] getStateSnapshot(){return active.clone();}
     @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double value){reference=value;}@Override public double getRefPoint(){return reference;}
-    private record Algebraic(double sensed,double error,double gated,double input,double normal1,double normal2,
+    private record Algebraic(double sensed,double error,double summed,double hv,double gated,double input,double normal1,double normal2,
             double under1,double under2,double over1,double over2,int selector,double vr,double finalInput,double efd){}
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
     @Override public Field getField(String name)throws Exception{return getClass().getField(name);}

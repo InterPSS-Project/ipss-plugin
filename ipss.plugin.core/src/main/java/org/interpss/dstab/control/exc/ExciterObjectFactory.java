@@ -76,6 +76,8 @@ import org.interpss.dstab.control.exc.psse.st3c.St3cData;
 import org.interpss.dstab.control.exc.psse.st3c.St3cExciter;
 import org.interpss.dstab.control.exc.psse.st4c.St4cData;
 import org.interpss.dstab.control.exc.psse.st4c.St4cExciter;
+import org.interpss.dstab.control.exc.psse.st5c.St5cData;
+import org.interpss.dstab.control.exc.psse.st5c.St5cExciter;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aExciter;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
@@ -353,6 +355,12 @@ public class ExciterObjectFactory {
 	public static St5bExciter createSt5bExciter(String id, String modelName,
 			St5bData data, Machine machine) {
 		return new St5bExciter(id, modelName, data, machine);
+	}
+
+	/** Create a native PSS/E IEEE 421.5-2016 ST5C excitation system. */
+	public static St5cExciter createSt5cExciter(String id, St5cData data,
+			Machine machine) {
+		return new St5cExciter(id, data, machine);
 	}
 
 	/** Create an IEEE 421.5-2005 AC7B or PSS/E ESAC7B rotating exciter. */
