@@ -10,7 +10,7 @@ trajectory comparison. Those acceptance results are tracked in
 cases are currently loadable, but only Cases 1 and 2 pass the strict one-second
 flat-run gate; the Texas2k verification milestone remains open.
 
-Current Texas2k audit (2026-09-07): `17/17` PSS/E DYR model names are
+Current Texas2k audit (2026-09-08): `17/17` PSS/E DYR model names are
 loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
 runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 `_MODREMOVE.idv`. GE PSLF `.dyd` input and coverage are out of scope.
