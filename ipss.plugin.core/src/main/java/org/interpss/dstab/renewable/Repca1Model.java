@@ -368,8 +368,19 @@ public final class Repca1Model {
     public double getQref() { return qext; }
     public double getMeasuredActivePower() { return pMeasured; }
     public double getMeasuredReactiveOrVoltage() { return qOrVMeasured; }
+    public double getReactiveReference() { return qvReference; }
+    public double getReactiveControlRawError() { return qvReference - qOrVMeasured; }
+    public double getReactiveControlDeadbandOutput() {
+        return deadband(getReactiveControlRawError(), data.dbd1(), data.dbd2());
+    }
+    public double getReactiveControlLimitedError() {
+        return limit(getReactiveControlDeadbandOutput(), data.emin(), data.emax());
+    }
     public double getActiveControlIntegral() { return pIntegral; }
     public double getReactiveControlIntegral() { return qIntegral; }
+    public double getReactiveControlPreLimitOutput() {
+        return data.kp() * getReactiveControlLimitedError() + qIntegral;
+    }
     public double getReactiveControlOutput() { return qPiOutput; }
     public double getLeadLagState() { return leadLagState; }
     public double getActiveLagState() { return pLagState; }

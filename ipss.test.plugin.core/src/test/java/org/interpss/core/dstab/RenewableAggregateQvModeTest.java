@@ -174,6 +174,11 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 reeca.getIpcmd(),
                 reeca.getIqcmd(),
                 repca.getMeasuredReactiveOrVoltage(),
+                repca.getReactiveReference(),
+                repca.getReactiveControlRawError(),
+                repca.getReactiveControlDeadbandOutput(),
+                repca.getReactiveControlLimitedError(),
+                repca.getReactiveControlPreLimitOutput(),
                 repca.getReactiveControlIntegral(),
                 repca.getReactiveControlOutput(),
                 repca.getLeadLagState(),
@@ -188,6 +193,8 @@ class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "REECA_PMEAS", "REECA_Q_PI_XI", "REECA_Q_PI_Y", "REECA_V_PI_XI",
                 "REECA_V_PI_Y", "REECA_PFILT",
                 "REECA_PORD", "REECA_IPCMD", "REECA_IQCMD", "REPCA_QV_MEAS",
+                "REPCA_QV_REF", "REPCA_ERROR_RAW", "REPCA_ERROR_DB",
+                "REPCA_ERROR_LIMITED", "REPCA_PI_PRELIMIT",
                 "REPCA_Q_PI_XI", "REPCA_Q_PI_Y", "REPCA_LEAD_LAG", "REPCA_QEXT"
         };
         StringBuilder csv = new StringBuilder(String.join(",", headings)).append('\n');
