@@ -76,6 +76,8 @@ import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Exciter;
+import org.interpss.dstab.control.exc.psse.exst3.Exst3Data;
+import org.interpss.dstab.control.exc.psse.exst3.Exst3Exciter;
 import org.interpss.dstab.control.exc.psse.st5b.St5bData;
 import org.interpss.dstab.control.exc.psse.st5b.St5bExciter;
 import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
@@ -1351,6 +1353,16 @@ public class DStabNetworkBuilder {
             return null;
         }
         return ExciterObjectFactory.createExst2Exciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE Type ST3 excitation system. */
+    public Exst3Exciter addExcExst3(String busId, String genId, Exst3Data data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXST3 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createExst3Exciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** IEEE 421.5-2005 ST5B / PSLF ESST5B static excitation system. */
