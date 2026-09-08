@@ -119,7 +119,9 @@ class DynamicModelCatalogTest {
         assertEquals(71, rows.size());
         assertEquals(65, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
-        assertEquals(42, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(43, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertTrue(WeccApprovedDynamicModelCatalog.findExciter("EXELI")
+                .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exac1m")
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esac1c")

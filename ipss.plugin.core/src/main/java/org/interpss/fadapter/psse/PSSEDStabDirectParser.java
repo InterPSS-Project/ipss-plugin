@@ -62,6 +62,7 @@ import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
 import org.interpss.dstab.control.exc.psse.st6b.St6bData;
 import org.interpss.dstab.control.exc.psse.st6c.St6cData;
+import org.interpss.dstab.control.exc.psse.exeli.ExeliData;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
@@ -292,6 +293,8 @@ public class PSSEDStabDirectParser {
                 return procExcSt6b(record.sourceModelName(),busId,genId,fields);
             case "ST6C":
                 return procExcSt6c(busId,genId,fields);
+            case "EXELI":
+                return procExcExeli(busId, genId, fields);
             case "ST7B":
                 return procExcSt7b(record.sourceModelName(),busId,genId,fields);
             case "AC7B":
@@ -939,6 +942,21 @@ public class PSSEDStabDirectParser {
         d.setTa(getDouble(f,25,0));d.setKp(getDouble(f,26,0));d.setKi(getDouble(f,27,0));
         d.setXl(getDouble(f,28,0));d.setThetaP(getDouble(f,29,0));d.setKc(getDouble(f,30,0));
         d.setVbmax(getDouble(f,31,0));return builder.addExcSt6c(busId,genId,d)!=null;
+    }
+
+    // EXELI: Tfv Tfi Tnu Vpu Vpi Vpnf Dpnf Efdmin Efdmax Xe Tw Ks1 Ks2 Ts1 Ts2 Smax
+    private boolean procExcExeli(String busId, String genId, String[] f) {
+        if (f.length < 19) return false;
+        ExeliData d = new ExeliData();
+        d.setTfv(getDouble(f, 3, 0)); d.setTfi(getDouble(f, 4, 0));
+        d.setTnu(getDouble(f, 5, 0)); d.setVpu(getDouble(f, 6, 0));
+        d.setVpi(getDouble(f, 7, 0)); d.setVpnf(getDouble(f, 8, 0));
+        d.setDpnf(getDouble(f, 9, 0)); d.setEfdmin(getDouble(f, 10, 0));
+        d.setEfdmax(getDouble(f, 11, 0)); d.setXe(getDouble(f, 12, 0));
+        d.setTw(getDouble(f, 13, 0)); d.setKs1(getDouble(f, 14, 0));
+        d.setKs2(getDouble(f, 15, 0)); d.setTs1(getDouble(f, 16, 0));
+        d.setTs2(getDouble(f, 17, 0)); d.setSmax(getDouble(f, 18, 0));
+        return builder.addExcExeli(busId, genId, d) != null;
     }
 
     // ST7B: OEL UEL Tr Tg Tf Vmax Vmin Kpa Vrmax Vrmin Kh Kl Tc Tb Kia Tia
