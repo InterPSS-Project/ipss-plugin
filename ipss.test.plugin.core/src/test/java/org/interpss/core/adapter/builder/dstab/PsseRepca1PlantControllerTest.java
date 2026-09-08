@@ -152,6 +152,11 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
         double leadLagState = modifiedEulerLag(0.0, piOutput, .1, .05);
         double leadLagOutput = .5 * piOutput + .5 * leadLagState;
         assertEquals(measuredQ, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
+        assertEquals(.2, plant.getReactiveReference(), 1.0e-12);
+        assertEquals(error, plant.getReactiveControlRawError(), 1.0e-12);
+        assertEquals(error, plant.getReactiveControlDeadbandOutput(), 1.0e-12);
+        assertEquals(error, plant.getReactiveControlLimitedError(), 1.0e-12);
+        assertEquals(piOutput, plant.getReactiveControlPreLimitOutput(), 1.0e-12);
         assertEquals(integral, plant.getReactiveControlIntegral(), 1.0e-12);
         assertEquals(leadLagState, plant.getLeadLagState(), 1.0e-12);
         assertEquals(leadLagOutput, plant.getQref(), 1.0e-12);
