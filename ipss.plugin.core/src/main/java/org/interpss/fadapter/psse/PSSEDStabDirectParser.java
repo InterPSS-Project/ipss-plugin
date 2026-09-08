@@ -71,6 +71,7 @@ import org.interpss.dstab.control.exc.psse.exeli.ExeliData;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.st7c.St7cData;
 import org.interpss.dstab.control.exc.psse.st8c.St8cData;
+import org.interpss.dstab.control.exc.psse.st9c.St9cData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
 import org.interpss.dstab.control.exc.psse.st5b.St5bData;
@@ -318,6 +319,8 @@ public class PSSEDStabDirectParser {
                 return procExcSt7c(busId,genId,fields);
             case "ST8C":
                 return procExcSt8c(busId,genId,fields);
+            case "ST9C":
+                return procExcSt9c(busId, genId, fields);
             case "AC7B":
                 return procExcAc7b(record.sourceModelName(), busId, genId, fields);
             case "REXSYS":
@@ -1075,6 +1078,24 @@ public class PSSEDStabDirectParser {
         d.setXl(getDouble(f,25,0));d.setThetaP(getDouble(f,26,0));d.setVb1max(getDouble(f,27,0));
         d.setKc2(getDouble(f,28,0));d.setKi2(getDouble(f,29,0));d.setVb2max(getDouble(f,30,0));
         return builder.addExcSt8c(busId,genId,d)!=null;
+    }
+
+    // ST9C: OEL UEL SCL SW1, then the 18 CONs in the native PSS/E record.
+    private boolean procExcSt9c(String busId, String genId, String[] f) {
+        if (f.length < 25) return false;
+        St9cData d = new St9cData();
+        d.setOel(getInt(f, 3, 1)); d.setUel(getInt(f, 4, 1));
+        d.setScl(getInt(f, 5, 1)); d.setSw1(getInt(f, 6, 1));
+        d.setTr(getDouble(f, 7, 0)); d.setTcd(getDouble(f, 8, 0));
+        d.setTbd(getDouble(f, 9, 0)); d.setZa(getDouble(f, 10, 0));
+        d.setKa(getDouble(f, 11, 0)); d.setKu(getDouble(f, 12, 0));
+        d.setTa(getDouble(f, 13, 0)); d.setTauel(getDouble(f, 14, 0));
+        d.setVrmax(getDouble(f, 15, 0)); d.setVrmin(getDouble(f, 16, 0));
+        d.setKas(getDouble(f, 17, 0)); d.setTas(getDouble(f, 18, 0));
+        d.setKp(getDouble(f, 19, 0)); d.setThetaP(getDouble(f, 20, 0));
+        d.setKi(getDouble(f, 21, 0)); d.setXl(getDouble(f, 22, 0));
+        d.setKc(getDouble(f, 23, 0)); d.setVbmax(getDouble(f, 24, 0));
+        return builder.addExcSt9c(busId, genId, d) != null;
     }
 
     // ESST2A: Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf Kp Ki Kc Efdmax.
