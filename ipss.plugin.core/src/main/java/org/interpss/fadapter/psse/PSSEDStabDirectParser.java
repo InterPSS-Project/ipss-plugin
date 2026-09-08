@@ -268,6 +268,8 @@ public class PSSEDStabDirectParser {
                 return procExcExdc2a(busId, genId, fields);
             case "AC8B":
                 return procExcAc8b(busId, genId, fields);
+            case "AC8C":
+                return procExcAc8c(busId, genId, fields);
             case "ESAC4A":
                 return procExcEsac4a(busId, genId, fields);
             case "EXAC4":
@@ -702,6 +704,28 @@ public class PSSEDStabDirectParser {
         d.setSe1(getDouble(f,21,0)); d.setE2(getDouble(f,22,0));
         d.setSe2(getDouble(f,23,0));
         return builder.addExcAc8b(busId,genId,d) != null;
+    }
+
+    // IEEE 421.5-2016/PSS/E AC8C (31 values; SCL and Spdmlt are typed inputs).
+    // IBUS 'AC8C' ID OEL UEL VOS SW1 TR KPR KIR KDR TDR VPIDMAX VPIDMIN
+    // KA TA VRMAX VRMIN KC KD KE TE VFEMAX VEMIN E1 SE1 E2 SE2
+    // KP KI XL THETAP KC1 VBMAX
+    private boolean procExcAc8c(String busId,String genId,String[] f){
+        if(f.length<34)return false;
+        org.interpss.dstab.control.exc.psse.ac8c.Ac8cData d=
+                new org.interpss.dstab.control.exc.psse.ac8c.Ac8cData();
+        d.setOelLocation(getInt(f,3,0));d.setUelLocation(getInt(f,4,0));
+        d.setVosLocation(getInt(f,5,1));d.setSw1(getInt(f,6,1));d.setTr(getDouble(f,7,0));
+        d.setKpr(getDouble(f,8,0));d.setKir(getDouble(f,9,0));d.setKdr(getDouble(f,10,0));
+        d.setTdr(getDouble(f,11,0));d.setVpidmax(getDouble(f,12,0));d.setVpidmin(getDouble(f,13,0));
+        d.setKa(getDouble(f,14,0));d.setTa(getDouble(f,15,0));d.setVrmax(getDouble(f,16,0));
+        d.setVrmin(getDouble(f,17,0));d.setKc(getDouble(f,18,0));d.setKd(getDouble(f,19,0));
+        d.setKe(getDouble(f,20,0));d.setTe(getDouble(f,21,0));d.setVfemax(getDouble(f,22,0));
+        d.setVemin(getDouble(f,23,0));d.setE1(getDouble(f,24,0));d.setSe1(getDouble(f,25,0));
+        d.setE2(getDouble(f,26,0));d.setSe2(getDouble(f,27,0));d.setKp(getDouble(f,28,0));
+        d.setKi(getDouble(f,29,0));d.setXl(getDouble(f,30,0));d.setThetaP(getDouble(f,31,0));
+        d.setKc1(getDouble(f,32,0));d.setVbmax(getDouble(f,33,0));
+        return builder.addExcAc8c(busId,genId,d)!=null;
     }
 
     // DC4B: OEL UEL Tr Kp Ki Kd Td Vrmax Vrmin Ka Ta Ke Te Kf Tf Vemin E1 SE1 E2 SE2

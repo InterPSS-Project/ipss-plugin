@@ -39,6 +39,7 @@ row as completed model validation.
 | AC7B | EXCITER | ESAC7B | 27 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC7B%20and%20ESAC7B.htm) |
 | AC7C | EXCITER |  | 38 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac7c.Ac7cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC7C.htm) |
 | AC8B | EXCITER |  | 21 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC8B.htm) |
+| AC8C | EXCITER |  | 31 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC8C.htm) |
 | DC3A | EXCITER | ESDC3A | 12 | LOADABLE | `org.interpss.dstab.control.exc.psse.dc3a.Dc3aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20DC3A%20and%20ESDC3A.htm) |
 | DC4B | EXCITER | ESDC4B | 20 | LOADABLE | `org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20DC4B%20and%20ESDC4B.htm) |
 | ESAC1A | EXCITER |  | 19 | LOADABLE | `org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESAC1A.htm) |
