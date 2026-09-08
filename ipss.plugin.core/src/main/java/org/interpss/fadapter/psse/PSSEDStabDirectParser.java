@@ -1346,6 +1346,7 @@ public class PSSEDStabDirectParser {
         return true;
     }
 
+    // ESDC2A: Tr Ka Ta Tb Tc Vrmax Vrmin Ke Te Kf Tf1 Switch E1 SE1 E2 SE2
     private boolean procExcEsdc2a(String busId, String genId, String[] f) {
         if (f.length < 19) return false;
         return builder.addExcEsdc2a(busId, genId,
@@ -1359,6 +1360,7 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 17, 0), getDouble(f, 18, 0)) != null;
     }
 
+    // ESDC1A: Tr Ka Ta Tb Tc Vrmax Vrmin Ke Te Kf Tf1 Switch E1 SE1 E2 SE2
     private boolean procExcEsdc1a(String busId, String genId, String[] f) {
         if (f.length < 19) return false;
         return builder.addExcEsdc1a(busId, genId,
