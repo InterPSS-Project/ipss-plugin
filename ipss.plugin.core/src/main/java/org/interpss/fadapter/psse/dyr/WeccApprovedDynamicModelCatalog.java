@@ -42,7 +42,7 @@ public final class WeccApprovedDynamicModelCatalog {
             exciter("ESAC5A", "esac5a", "ESAC5A", "ESAC5A", APPROVED, "2011-01-21", "ESAC5A"),
             exciter("ESAC5C", "esac5c", "AC5C", "AC5C", APPROVED, "2020-04-22", "AC5C"),
             exciter("EXAC6A", "exac6a", "ESAC6A", "EXAC6A", NEVER_APPROVED, "", ""),
-            exciter("ESAC6A", "esac6a", "ESAC6A", "ESAC6A", APPROVED, "2011-01-21", ""),
+            exciter("ESAC6A", "esac6a", "ESAC6A", "ESAC6A", APPROVED, "2011-01-21", "ESAC6A"),
             exciter("ESAC6C", "esac6c", "AC6C", "AC6C", APPROVED, "2020-04-22", "AC6C"),
             exciter("ESAC7B", "esac7b", "AC7B", "ESAC7B and AC7B", APPROVED, "2011-01-21", "AC7B"),
             exciter("ESAC7C", "esac7c", "AC7C", "AC7C", APPROVED, "2020-04-22", "AC7C"),
