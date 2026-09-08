@@ -1,0 +1,16 @@
+case,category,bus,selection_reason
+1,conventional-terminal,Bus1051,GENROU terminal retained across every Series-24 case
+2,conventional-terminal,Bus1051,GENROU terminal retained across every Series-24 case
+3,conventional-terminal,Bus1051,GENROU terminal retained across every Series-24 case
+4,conventional-terminal,Bus1051,GENROU terminal retained across every Series-24 case
+5,conventional-terminal,Bus1051,GENROU terminal retained across every Series-24 case
+6,conventional-terminal,Bus1051,GENROU terminal retained across every Series-24 case
+3,renewable-plant,Bus1062,Highest-participation REECA1 state in the localized Case-5 Q-V mode
+4,renewable-plant,Bus1062,Highest-participation REECA1 state in the localized Case-5 Q-V mode
+5,renewable-plant,Bus1062,Highest-participation REECA1 state in the localized Case-5 Q-V mode
+6,renewable-plant,Bus1062,Highest-participation REECA1 state in the localized Case-5 Q-V mode
+3,weak-grid,Bus1011,Largest passive-voltage response in the localized Q-current sensitivity matrix
+4,weak-grid,Bus1011,Largest passive-voltage response in the localized Q-current sensitivity matrix
+5,weak-grid,Bus1011,Largest passive-voltage response in the localized Q-current sensitivity matrix
+6,weak-grid,Bus1011,Largest passive-voltage response in the localized Q-current sensitivity matrix
+6,gfm-terminal,Bus1016,Terminal of a retained Case-6 REGFMA1 resource
