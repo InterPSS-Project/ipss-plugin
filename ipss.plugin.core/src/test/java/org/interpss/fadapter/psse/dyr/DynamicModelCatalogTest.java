@@ -120,6 +120,13 @@ class DynamicModelCatalogTest {
         assertEquals(65, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
         assertEquals(44, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(64, rows.stream()
+                .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
+                .filter(WeccModelApproval::hasPsseModel).count());
+        assertEquals(44, rows.stream()
+                .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
+                .filter(WeccModelApproval::hasPsseModel)
+                .filter(WeccModelApproval::isImplementedExactly).count());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("EXELI")
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exac1m")
@@ -140,6 +147,7 @@ class DynamicModelCatalogTest {
         assertEquals("esac10c",esac10c.pslfModel());
         assertEquals("",esac10c.psseModel());
         assertEquals("AC10C",esac10c.powerWorldModel());
+        assertFalse(esac10c.hasPsseModel());
         assertFalse(esac10c.isImplementedExactly());
         assertTrue(DynamicModelCatalog.find("AC10C").isEmpty());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esst3a")
@@ -261,6 +269,7 @@ class DynamicModelCatalogTest {
         assertEquals("ggov3", ggov3.pslfModel());
         assertEquals("", ggov3.psseModel());
         assertEquals("GGOV3", ggov3.powerWorldModel());
+        assertFalse(ggov3.hasPsseModel());
         assertFalse(ggov3.isImplementedExactly());
         assertTrue(rows.stream().filter(row -> row.catalogName().equals("TGOV1"))
                 .findFirst().orElseThrow().isImplementedExactly());
