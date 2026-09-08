@@ -25,8 +25,15 @@ public final class Reeca1Model implements RenewableElectricalController {
     private double qCurrent;
     private double qIntegral;
     private double vIntegral;
+    private double reactivePowerTarget;
+    private double reactiveControlError;
+    private double reactiveControlPreLimitOutput;
     private double qControlOutput;
+    private double voltageControlError;
+    private double voltageControlPreLimitOutput;
     private double voltageControlOutput;
+    private double preliminaryIqLimit;
+    private double reactiveCurrentInjection;
     private double effectivePmax;
     private double effectivePmin;
     private double effectiveQmax;
@@ -68,7 +75,12 @@ public final class Reeca1Model implements RenewableElectricalController {
         // initializes to zero in coordinated Q control.
         qIntegral = 0.0;
         vIntegral = qCurrent;
+        reactivePowerTarget = q;
+        reactiveControlError = 0.0;
+        reactiveControlPreLimitOutput = 0.0;
         qControlOutput = 0.0;
+        voltageControlError = 0.0;
+        voltageControlPreLimitOutput = qCurrent;
         voltageControlOutput = qCurrent;
         effectivePmax = Math.max(data.pmax(), pOrder);
         effectivePmin = Math.min(data.pmin(), pOrder);
@@ -85,6 +97,8 @@ public final class Reeca1Model implements RenewableElectricalController {
         postDipTimer = iqHoldTimer = 0.0;
         heldIpMax = currentLimit();
         ipLimit = iqLimit = currentLimit();
+        preliminaryIqLimit = currentLimit();
+        reactiveCurrentInjection = 0.0;
         previousDip = false;
         ipcmd = p / nonzero(v);
         iqcmd = -qCurrent;
@@ -140,6 +154,7 @@ public final class Reeca1Model implements RenewableElectricalController {
         double selectedQ = data.pfFlag() == 1
                 ? pMeasured * powerFactorRatio : qReference + plantQref;
         double qTarget = Repca1Model.limit(selectedQ, effectiveQmin, effectiveQmax);
+        reactivePowerTarget = qTarget;
 
         // The published PowerWorld/WECC REEC_A diagram feeds State 1
         // (Vt_filt), with the 0.01 pu floor, to both current-command dividers.
@@ -147,18 +162,27 @@ public final class Reeca1Model implements RenewableElectricalController {
         double rawIp = pOrder / currentConversionVoltage;
         double rawQCurrent;
         if (data.qFlag() == 0) {
+            reactiveControlError = 0.0;
+            reactiveControlPreLimitOutput = 0.0;
+            qControlOutput = 0.0;
             if (!voltageDip) {
                 qCurrent = Repca1Model.lag(qCurrent, qTarget / currentConversionVoltage,
                         data.tiq(), dt);
             }
             rawQCurrent = qCurrent;
+            voltageControlError = 0.0;
+            voltageControlPreLimitOutput = rawQCurrent;
+            voltageControlOutput = rawQCurrent;
+            preliminaryIqLimit = preliminaryReactiveCurrentLimit(rawIp);
         } else {
             double voltageBias;
             if (data.vFlag() == 1) {
                 double qError = qTarget - q;
+                reactiveControlError = qError;
                 qIntegral = Repca1Model.integrateWithAntiWindup(qIntegral, data.kqi(), qError,
                         dt, data.kqp(), effectiveVmin, effectiveVmax, voltageDip);
-                voltageBias = Repca1Model.limit(data.kqp() * qError + qIntegral,
+                reactiveControlPreLimitOutput = data.kqp() * qError + qIntegral;
+                voltageBias = Repca1Model.limit(reactiveControlPreLimitOutput,
                         effectiveVmin, effectiveVmax);
             } else {
                 // VMAX/VMIN are downstream of the VFLAG selector in REEC_A,
@@ -166,6 +190,8 @@ public final class Reeca1Model implements RenewableElectricalController {
                 // the coordinated Q-PI branch.
                 voltageBias = Repca1Model.limit(data.vref1() + selectedQ,
                         effectiveVmin, effectiveVmax);
+                reactiveControlError = 0.0;
+                reactiveControlPreLimitOutput = data.vref1() + selectedQ;
             }
             qControlOutput = voltageBias;
             // WECC Figure 3-2 and ANDES both route the VFLAG=1 coordinated-Q
@@ -174,14 +200,18 @@ public final class Reeca1Model implements RenewableElectricalController {
             double voltageError = data.vFlag() == 1
                     ? voltageBias : voltageBias - vMeasured;
             double preliminaryIqMax = preliminaryReactiveCurrentLimit(rawIp);
+            voltageControlError = voltageError;
+            preliminaryIqLimit = preliminaryIqMax;
             vIntegral = Repca1Model.integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
                     dt, data.kvp(), -preliminaryIqMax, preliminaryIqMax, voltageDip);
-            rawQCurrent = Repca1Model.limit(data.kvp() * voltageError + vIntegral,
+            voltageControlPreLimitOutput = data.kvp() * voltageError + vIntegral;
+            rawQCurrent = Repca1Model.limit(voltageControlPreLimitOutput,
                     -preliminaryIqMax, preliminaryIqMax);
             voltageControlOutput = rawQCurrent;
         }
 
         double iqInjection = reactiveCurrentInjection(voltageDip);
+        reactiveCurrentInjection = iqInjection;
         double rawIq = -(rawQCurrent + iqInjection);
         applyCurrentLimits(rawIp, rawIq, voltageDip);
         previousDip = voltageDip;
@@ -306,10 +336,17 @@ public final class Reeca1Model implements RenewableElectricalController {
     public double getActivePowerFilter() { return pFilter; }
     public double getActivePowerOrder() { return pOrder; }
     public double getReactiveCurrentState() { return qCurrent; }
+    public double getReactivePowerTarget() { return reactivePowerTarget; }
+    public double getReactiveControlError() { return reactiveControlError; }
     public double getReactiveControlIntegral() { return qIntegral; }
+    public double getReactiveControlPreLimitOutput() { return reactiveControlPreLimitOutput; }
     public double getReactiveControlOutput() { return qControlOutput; }
+    public double getVoltageControlError() { return voltageControlError; }
     public double getVoltageControlIntegral() { return vIntegral; }
+    public double getVoltageControlPreLimitOutput() { return voltageControlPreLimitOutput; }
     public double getVoltageControlOutput() { return voltageControlOutput; }
+    public double getPreliminaryReactiveCurrentLimit() { return preliminaryIqLimit; }
+    public double getReactiveCurrentInjection() { return reactiveCurrentInjection; }
     public double getActiveCurrentLimit() { return ipLimit; }
     public double getReactiveCurrentLimit() { return iqLimit; }
     public boolean isVoltageDip() { return previousDip; }

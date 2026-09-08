@@ -225,6 +225,19 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         double voltageError = 2.0 * qError + qIntegral;
         double vIntegral = .2 + 2.0 * voltageError * CONTROL_STEP;
         double expectedIqcmd = -(voltageError + vIntegral);
+        assertEquals(.2, controller.getReactivePowerTarget(), 1.0e-12);
+        assertEquals(qError, controller.getReactiveControlError(), 1.0e-12);
+        assertEquals(voltageError,
+                controller.getReactiveControlPreLimitOutput(), 1.0e-12);
+        assertEquals(voltageError, controller.getReactiveControlOutput(), 1.0e-12);
+        assertEquals(voltageError, controller.getVoltageControlError(), 1.0e-12);
+        assertEquals(voltageError + vIntegral,
+                controller.getVoltageControlPreLimitOutput(), 1.0e-12);
+        assertEquals(voltageError + vIntegral,
+                controller.getVoltageControlOutput(), 1.0e-12);
+        assertTrue(controller.getPreliminaryReactiveCurrentLimit()
+                >= Math.abs(voltageError + vIntegral));
+        assertEquals(0.0, controller.getReactiveCurrentInjection(), 1.0e-12);
         assertEquals(expectedIqcmd, controller.getIqcmd(), 1.0e-12);
     }
 
