@@ -72,6 +72,7 @@ import org.interpss.dstab.control.exc.psse.st7b.St7bData;
 import org.interpss.dstab.control.exc.psse.st7c.St7cData;
 import org.interpss.dstab.control.exc.psse.st8c.St8cData;
 import org.interpss.dstab.control.exc.psse.st9c.St9cData;
+import org.interpss.dstab.control.exc.psse.st10c.St10cData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
 import org.interpss.dstab.control.exc.psse.st5b.St5bData;
@@ -321,6 +322,8 @@ public class PSSEDStabDirectParser {
                 return procExcSt8c(busId,genId,fields);
             case "ST9C":
                 return procExcSt9c(busId, genId, fields);
+            case "ST10C":
+                return procExcSt10c(busId, genId, fields);
             case "AC7B":
                 return procExcAc7b(record.sourceModelName(), busId, genId, fields);
             case "REXSYS":
@@ -1096,6 +1099,28 @@ public class PSSEDStabDirectParser {
         d.setKi(getDouble(f, 21, 0)); d.setXl(getDouble(f, 22, 0));
         d.setKc(getDouble(f, 23, 0)); d.setVbmax(getDouble(f, 24, 0));
         return builder.addExcSt9c(busId, genId, d) != null;
+    }
+
+    // ST10C: PSS OEL UEL SCL SW1, then the 25 CONs in the native PSS/E record.
+    private boolean procExcSt10c(String busId, String genId, String[] f) {
+        if (f.length < 33) return false;
+        St10cData d = new St10cData();
+        d.setPss(getInt(f, 3, 1)); d.setOel(getInt(f, 4, 1));
+        d.setUel(getInt(f, 5, 1)); d.setScl(getInt(f, 6, 1));
+        d.setSw1(getInt(f, 7, 1)); d.setTr(getDouble(f, 8, 0));
+        d.setKr(getDouble(f, 9, 0)); d.setTc1(getDouble(f, 10, 0));
+        d.setTb1(getDouble(f, 11, 0)); d.setTc2(getDouble(f, 12, 0));
+        d.setTb2(getDouble(f, 13, 0)); d.setTuc1(getDouble(f, 14, 0));
+        d.setTub1(getDouble(f, 15, 0)); d.setTuc2(getDouble(f, 16, 0));
+        d.setTub2(getDouble(f, 17, 0)); d.setToc1(getDouble(f, 18, 0));
+        d.setTob1(getDouble(f, 19, 0)); d.setToc2(getDouble(f, 20, 0));
+        d.setTob2(getDouble(f, 21, 0)); d.setVrsmax(getDouble(f, 22, 0));
+        d.setVrsmin(getDouble(f, 23, 0)); d.setVrmax(getDouble(f, 24, 0));
+        d.setVrmin(getDouble(f, 25, 0)); d.setT1(getDouble(f, 26, 0));
+        d.setKp(getDouble(f, 27, 0)); d.setKc(getDouble(f, 28, 0));
+        d.setKi(getDouble(f, 29, 0)); d.setXl(getDouble(f, 30, 0));
+        d.setThetaP(getDouble(f, 31, 0)); d.setVbmax(getDouble(f, 32, 0));
+        return builder.addExcSt10c(busId, genId, d) != null;
     }
 
     // ESST2A: Tr Ka Ta Vrmax Vrmin Ke Te Kf Tf Kp Ki Kc Efdmax.

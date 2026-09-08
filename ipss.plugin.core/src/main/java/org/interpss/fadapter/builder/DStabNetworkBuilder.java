@@ -68,6 +68,8 @@ import org.interpss.dstab.control.exc.psse.st8c.St8cData;
 import org.interpss.dstab.control.exc.psse.st8c.St8cExciter;
 import org.interpss.dstab.control.exc.psse.st9c.St9cData;
 import org.interpss.dstab.control.exc.psse.st9c.St9cExciter;
+import org.interpss.dstab.control.exc.psse.st10c.St10cData;
+import org.interpss.dstab.control.exc.psse.st10c.St10cExciter;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
@@ -1305,6 +1307,16 @@ public class DStabNetworkBuilder {
             return null;
         }
         return ExciterObjectFactory.createSt9cExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST10C static excitation system. */
+    public St10cExciter addExcSt10c(String busId, String genId, St10cData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ST10C exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createSt10cExciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** IEEE 421.5-2005 / PSS/E ESST2A compound-source excitation system. */
