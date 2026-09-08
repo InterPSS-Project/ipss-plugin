@@ -76,7 +76,9 @@ public final class WeccApprovedDynamicModelCatalog {
             exciter("EXST3A", "exst3a", "ESST3A", "EXST3A", APPROVED, "2006-08-11", "ESST3A"),
             exciter("ESST3A", "esst3a", "ESST3A", "ESST3A", APPROVED, "2011-01-21", "ESST3A"),
             exciter("ESST3C", "esst3c", "ST3C", "ST3C", APPROVED, "2020-04-22", "ST3C"),
-            exciter("EXST4B", "exst4b", "ESST4B", "EXST4B", APPROVED, "2006-08-11", ""),
+            // PowerWorld translates the PSLF EXST4B row to native PSS/E ESST4B
+            // when exporting DYR. Keep EXST4B itself out of the PSS/E parser.
+            exciter("EXST4B", "exst4b", "ESST4B", "EXST4B", APPROVED, "2006-08-11", "ESST4B"),
             exciter("ESST4B", "esst4b", "ESST4B", "ESST4B", APPROVED, "2011-01-21", "ESST4B"),
             exciter("ESST4C", "esst4c", "ST4C", "ST4C", APPROVED, "2020-04-22", "ST4C"),
             exciter("ESST5B", "esst5b", "ST5B", "ESST5B and ST5B", APPROVED, "2011-01-21", "ST5B"),
