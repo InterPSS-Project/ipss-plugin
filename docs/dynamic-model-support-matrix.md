@@ -55,6 +55,7 @@ row as completed model validation.
 | ESAC4A | EXCITER |  | 10 | LOADABLE | `org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESAC4A.htm) |
 | ESAC5A | EXCITER |  | 15 | LOADABLE | `org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESAC5A.htm) |
 | ESAC6A | EXCITER |  | 23 | LOADABLE | `org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESAC6A.htm) |
+| ESAC8B | EXCITER |  | 15 | LOADABLE | `org.interpss.dstab.control.exc.psse.esac8b.Esac8bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESAC8B_PTI.htm) |
 | ESDC1A | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESDC1A.htm) |
 | ESDC2A | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESDC2A.htm) |
 | ESST1A | EXCITER |  | 20 | LOADABLE | `org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST1A%20and%20ESST1A_GE.htm) |

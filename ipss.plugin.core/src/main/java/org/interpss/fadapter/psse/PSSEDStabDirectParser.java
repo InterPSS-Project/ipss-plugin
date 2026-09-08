@@ -55,6 +55,7 @@ import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
 import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
 import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
 import org.interpss.dstab.control.exc.psse.esac3a.Esac3aData;
+import org.interpss.dstab.control.exc.psse.esac8b.Esac8bData;
 import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.st1c.St1cData;
@@ -281,6 +282,8 @@ public class PSSEDStabDirectParser {
                 return procExcExdc2a(busId, genId, fields);
             case "AC8B":
                 return procExcAc8b(busId, genId, fields);
+            case "ESAC8B":
+                return procExcEsac8b(busId, genId, fields);
             case "AC8C":
                 return procExcAc8c(busId, genId, fields);
             case "AC9C":
@@ -753,6 +756,19 @@ public class PSSEDStabDirectParser {
         d.setSe1(getDouble(f,21,0)); d.setE2(getDouble(f,22,0));
         d.setSe2(getDouble(f,23,0));
         return builder.addExcAc8b(busId,genId,d) != null;
+    }
+
+    // Native PSS/E ESAC8B (15 CONs), not positionally interchangeable with AC8B.
+    // IBUS 'ESAC8B' ID TR KPR KIR KDR TD KA TA VRMAX VRMIN TE KE E1 SE1 E2 SE2
+    private boolean procExcEsac8b(String busId,String genId,String[] f) {
+        if (f.length < 18) return false;
+        Esac8bData d=new Esac8bData();
+        d.setTr(getDouble(f,3,0));d.setKpr(getDouble(f,4,0));d.setKir(getDouble(f,5,0));
+        d.setKdr(getDouble(f,6,0));d.setTdr(getDouble(f,7,0));d.setKa(getDouble(f,8,0));
+        d.setTa(getDouble(f,9,0));d.setVrmax(getDouble(f,10,0));d.setVrmin(getDouble(f,11,0));
+        d.setTe(getDouble(f,12,0));d.setKe(getDouble(f,13,0));d.setE1(getDouble(f,14,0));
+        d.setSe1(getDouble(f,15,0));d.setE2(getDouble(f,16,0));d.setSe2(getDouble(f,17,0));
+        return builder.addExcEsac8b(busId,genId,d)!=null;
     }
 
     // IEEE 421.5-2016/PSS/E AC8C (31 values; SCL and Spdmlt are typed inputs).
