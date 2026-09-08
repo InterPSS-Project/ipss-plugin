@@ -52,6 +52,8 @@ import org.interpss.dstab.control.exc.psse.exeli.ExeliData;
 import org.interpss.dstab.control.exc.psse.exeli.ExeliExciter;
 import org.interpss.dstab.control.exc.psse.st1c.St1cData;
 import org.interpss.dstab.control.exc.psse.st1c.St1cExciter;
+import org.interpss.dstab.control.exc.psse.st2c.St2cData;
+import org.interpss.dstab.control.exc.psse.st2c.St2cExciter;
 import org.interpss.dstab.control.exc.psse.st4c.St4cData;
 import org.interpss.dstab.control.exc.psse.st4c.St4cExciter;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
@@ -1236,6 +1238,16 @@ public class DStabNetworkBuilder {
             return null;
         }
         return ExciterObjectFactory.createSt1cExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST2C static excitation system. */
+    public St2cExciter addExcSt2c(String busId, String genId, St2cData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ST2C exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createSt2cExciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** Native PSS/E IEEE 421.5-2016 ST4C static excitation system. */
