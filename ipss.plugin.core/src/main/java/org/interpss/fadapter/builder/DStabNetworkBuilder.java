@@ -1575,9 +1575,9 @@ public class DStabNetworkBuilder {
 
     /** Attach the PSS/E EXAC2 rotating AC exciter. */
     public Exac2Exciter addExcExac2(String busId,String genId,Exac2Data data) {
-        if(data==null || data.getKa()<=0 || data.getKb()<=0 || data.getKl()<=0
+        if(data==null || data.getKa()<0 || data.getKb()<=0 || data.getKl()<=0
                 || data.getTe()<=0 || data.getTf()<=0 || data.getTr()<0
-                || data.getTb()<0 || data.getTa()<0 || data.getKc()<0) {
+                || data.getTb()<0 || data.getTc()<0 || data.getTa()<0 || data.getKc()<0) {
             log.warn("Invalid EXAC2 parameters at bus={}, gen={}",busId,genId);
             return null;
         }
