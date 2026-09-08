@@ -32,6 +32,8 @@ import org.interpss.dstab.control.exc.psse.ac9c.Ac9cData;
 import org.interpss.dstab.control.exc.psse.ac9c.Ac9cExciter;
 import org.interpss.dstab.control.exc.psse.ac11c.Ac11cData;
 import org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter;
+import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data;
+import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Exciter;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
@@ -1581,6 +1583,24 @@ public class DStabNetworkBuilder {
         Machine mach=findMachine(busId,genId);
         if(mach==null){log.warn("Machine not found for AC11C: bus={}, gen={}",busId,genId);return null;}
         return ExciterObjectFactory.createAc11cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the native PSS/E BBSEX1 transformer-fed static exciter. */
+    public Bbsex1Exciter addExcBbsex1(String busId, String genId, Bbsex1Data data) {
+        if (data == null || data.getTf() < 0.0 || data.getK() <= 0.0
+                || data.getT1() <= 0.0 || data.getT2() <= 0.0
+                || data.getT3() < 0.0 || data.getT4() <= 0.0
+                || (data.getSwitchLocation() != Bbsex1Exciter.SUPPLEMENT_AT_ERROR
+                        && data.getSwitchLocation() != Bbsex1Exciter.SUPPLEMENT_AT_OUTPUT)) {
+            log.warn("Invalid BBSEX1 parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for BBSEX1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createBbsex1Exciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** Attach the IEEE 421.5/PSS/E ESAC2A rotating AC exciter. */

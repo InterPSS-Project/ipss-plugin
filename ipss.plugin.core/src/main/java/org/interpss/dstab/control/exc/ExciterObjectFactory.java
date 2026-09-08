@@ -58,6 +58,8 @@ import org.interpss.dstab.control.exc.psse.ac9c.Ac9cData;
 import org.interpss.dstab.control.exc.psse.ac9c.Ac9cExciter;
 import org.interpss.dstab.control.exc.psse.ac11c.Ac11cData;
 import org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter;
+import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data;
+import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Exciter;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter;
 import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
@@ -247,6 +249,11 @@ public class ExciterObjectFactory {
 	/** Create an IEEE 421.5-2016 / PSS/E AC11C brushless exciter. */
 	public static Ac11cExciter createAc11cExciter(String id, Ac11cData data, Machine machine) {
 		return new Ac11cExciter(id, data, machine);
+	}
+
+	/** Create a native PSS/E BBSEX1 transformer-fed static exciter. */
+	public static Bbsex1Exciter createBbsex1Exciter(String id, Bbsex1Data data, Machine machine) {
+		return new Bbsex1Exciter(id, data, machine);
 	}
 
 	/** Create a PSS/E ESAC4A (IEEE Type AC4A) excitation system. */
