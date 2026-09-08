@@ -13,9 +13,8 @@ flat-run gate; the Texas2k verification milestone remains open.
 Current Texas2k audit (2026-09-08): `17/17` PSS/E DYR model names are
 loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
 runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
-`_MODREMOVE.idv`. GE PSLF `.dyd` data is out of scope: it is neither loaded nor
-counted by the Texas2k acceptance tests, and it must not be supplied to the
-PSS/E reader. Approved-list rows without a native PSS/E model name are excluded
+`_MODREMOVE.idv`. Approved-list rows without a native PSS/E model name are
+excluded
 from coverage counts and the unsupported-model TODO.
 `6/6` prepared cases pass the
 short flat and common Bus-7159 fault execution smokes, `2/6` pass the strict
