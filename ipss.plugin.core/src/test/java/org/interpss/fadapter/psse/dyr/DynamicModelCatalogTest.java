@@ -134,6 +134,12 @@ class DynamicModelCatalogTest {
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esac6c")
                 .orElseThrow().isImplementedExactly());
+        var esac10c=WeccApprovedDynamicModelCatalog.findExciter("esac10c").orElseThrow();
+        assertEquals("esac10c",esac10c.pslfModel());
+        assertEquals("",esac10c.psseModel());
+        assertEquals("AC10C",esac10c.powerWorldModel());
+        assertFalse(esac10c.isImplementedExactly());
+        assertTrue(DynamicModelCatalog.find("AC10C").isEmpty());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esst3a")
                 .orElseThrow().isImplementedExactly());
         assertFalse(WeccApprovedDynamicModelCatalog.findExciter("esdc2a")
