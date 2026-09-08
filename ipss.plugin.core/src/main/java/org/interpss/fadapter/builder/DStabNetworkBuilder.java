@@ -1774,7 +1774,7 @@ public class DStabNetworkBuilder {
 
     /** Attach the IEEE 421.5/PSS/E ESAC2A rotating AC exciter. */
     public Esac2aExciter addExcEsac2a(String busId,String genId,Esac2aData data) {
-        if (data==null || data.getKa()<=0.0 || data.getKb()<=0.0 || data.getTe()<=0.0
+        if (data==null || data.getKa()<0.0 || data.getKb()<0.0 || data.getTe()<=0.0
                 || data.getTf()<=0.0 || data.getTr()<0.0 || data.getTb()<0.0
                 || data.getTa()<0.0 || data.getKc()<0.0 || data.getVfemax()<0.0) {
             log.warn("Invalid ESAC2A parameters at bus={}, gen={}",busId,genId);
