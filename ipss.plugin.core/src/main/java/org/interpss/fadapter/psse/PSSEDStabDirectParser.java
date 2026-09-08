@@ -77,6 +77,7 @@ import org.interpss.dstab.control.exc.psse.st9c.St9cData;
 import org.interpss.dstab.control.exc.psse.st10c.St10cData;
 import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
 import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
+import org.interpss.dstab.control.exc.psse.exst3.Exst3Data;
 import org.interpss.dstab.control.exc.psse.st5b.St5bData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -343,6 +344,8 @@ public class PSSEDStabDirectParser {
                 return procExcEsst2a(busId, genId, fields);
             case "EXST2":
                 return procExcExst2(busId, genId, fields);
+            case "EXST3":
+                return procExcExst3(busId, genId, fields);
             case "ST5B":
                 return procExcSt5b(record.sourceModelName(), busId, genId, fields);
             case "EXAC1":
@@ -1170,6 +1173,19 @@ public class PSSEDStabDirectParser {
         d.setKi(getDouble(f, 13, 0)); d.setKc(getDouble(f, 14, 0));
         d.setEfdmax(getDouble(f, 15, 0));
         return builder.addExcExst2(busId, genId, d) != null;
+    }
+
+    // EXST3: native PSS/E 18-CON record. Spdmlt is not a PTI field.
+    private boolean procExcExst3(String busId, String genId, String[] f) {
+        if (f.length < 21) return false;
+        Exst3Data d = new Exst3Data();
+        d.setTr(getDouble(f,3,0));d.setVimax(getDouble(f,4,0));d.setVimin(getDouble(f,5,0));
+        d.setKj(getDouble(f,6,0));d.setTc(getDouble(f,7,0));d.setTb(getDouble(f,8,0));
+        d.setKa(getDouble(f,9,0));d.setTa(getDouble(f,10,0));d.setVrmax(getDouble(f,11,0));
+        d.setVrmin(getDouble(f,12,0));d.setKg(getDouble(f,13,0));d.setKp(getDouble(f,14,0));
+        d.setKi(getDouble(f,15,0));d.setEfdmax(getDouble(f,16,0));d.setKc(getDouble(f,17,0));
+        d.setXl(getDouble(f,18,0));d.setVgmax(getDouble(f,19,0));d.setThetaP(getDouble(f,20,0));
+        return builder.addExcExst3(busId,genId,d)!=null;
     }
 
     // ST5B: Tr Tc1 Tb1 Tc2 Tb2 Kr Vrmax Vrmin T1 Kc Tuc1 Tub1 Tuc2 Tub2 Toc1 Tob1 Toc2 Tob2
