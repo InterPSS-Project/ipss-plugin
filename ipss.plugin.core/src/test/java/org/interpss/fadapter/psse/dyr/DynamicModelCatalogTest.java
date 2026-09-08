@@ -119,11 +119,11 @@ class DynamicModelCatalogTest {
         assertEquals(71, rows.size());
         assertEquals(65, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
-        assertEquals(62, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(63, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         assertEquals(64, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
                 .filter(WeccModelApproval::hasPsseModel).count());
-        assertEquals(62, rows.stream()
+        assertEquals(63, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
                 .filter(WeccModelApproval::hasPsseModel)
                 .filter(WeccModelApproval::isImplementedExactly).count());
@@ -298,6 +298,12 @@ class DynamicModelCatalogTest {
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst3")
                 .orElseThrow().isImplementedExactly());
+        assertEquals("ESST3A", WeccApprovedDynamicModelCatalog.findExciter("exst3a")
+                .orElseThrow().interpssModel());
+        assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst3a")
+                .orElseThrow().isImplementedExactly());
+        assertFalse(DynamicModelCatalog.find("EXST3A").isPresent(),
+                "PowerWorld/PSLF EXST3A must not become a native PSS/E DYR alias");
         assertEquals("IEEET4", DynamicModelCatalog.canonicalName("EXDC4"));
         assertFalse(WeccApprovedDynamicModelCatalog.findExciter("exst4b")
                 .orElseThrow().isImplementedExactly());

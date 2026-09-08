@@ -1,401 +1,258 @@
 package org.interpss.dstab.control.exc.ieee.y2005.st3a;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import org.apache.commons.math3.complex.Complex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
+import org.interpss.dstab.control.util.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AnController;
-import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
-import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
-import com.interpss.dstab.controller.cml.field.adapt.CMLStaticBlockAdapter;
-import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
-import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
-import com.interpss.dstab.controller.cml.field.block.GainBlock;
-import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
 
+/** IEEE/PSS/E ESST3A static excitation system. */
+@AnController(input = "mach.vt", output = "this.outputSignal",
+        refPoint = "this.reference", display = {})
+public class IEEE2005ST3AExciter extends AnnotateExciter implements IntegrationStepAware {
+    private static final double EPS = 1.0e-12;
+    private static final int VM = 0, VSENSE = 1, VR = 2, LEAD_LAG = 3;
 
-@AnController(
-		   input="mach.vt",
-		   output="this.customBlock.y",
-		   refPoint="this.viLimitBlock.u0  - pss.vs  + this.trDelayBlock.y",
-		   display= {})
-public class IEEE2005ST3AExciter  extends AnnotateExciter{
-    private static final Logger log = LoggerFactory.getLogger(IEEE2005ST3AExciter.class);
-	public double k1 = 1.0;/*constant*/
-	
-	/*
-	 * Part-1: Define the blocks
-	 * ==============================
-	 */
-	
-	// transducer block
-	 public double tr = 0.04;
-     @AnControllerField(
-          type= CMLFieldEnum.ControlBlock,
-          input="mach.vt",
-          parameter={"type.NoLimit", "this.k1", "this.tr"},
-          y0="mach.vt",//debug = true,
-         initOrderNumber=-1 
-          )
-     DelayControlBlock trDelayBlock;
-	
-	
-	// gain limit
-     public double  vimax = 5.30, vimin = -5.11;
-	   @AnControllerField(
-		   type= CMLFieldEnum.StaticBlock,
-		   input="this.refPoint - this.trDelayBlock.y + pss.vs",
-		   parameter={"type.Limit", "this.k1", "this.vimax", "this.vimin"},
-		   y0="this.filterBlock.u0"//,
-		   //debug = true
-		   )//initOrderNumber = 1
-	   GainBlock viLimitBlock;
-	
-	//HV Gain
-	
-	
-	   //tb-tc lead-lag block
-	   //filterBlock----(1+sTc)/(1+sTb)
-	   public double  tc = 1.0, tb = 6.67;
-	   @AnControllerField(
-		   type=CMLFieldEnum.ControlBlock,
-		   input="this.viLimitBlock.y",
-		   parameter={"type.NoLimit", "this.k1", "this.tc", "this.tb"},
-		   y0="this.taDelayBlock.u0"//,
-		   //debug = true
-		   )//initOrderNumber = 2
-	   FilterControlBlock filterBlock;
+    private final double[] state = new double[4];
+    private final double[] trial = new double[4];
+    private final double[] oldDerivative = new double[4];
+    private double[] active = state;
+    private boolean initialized, hasVuel;
+    private double vuel, integrationStep, minimumTimeConstantMultiplier = 1.0;
 
-	   //taDelayBlock----Ka/(1+sTa) with limits
-	   public double ka = 300.0, ta = 0.01,vrmax = 9,vrmin = -9.0;
-	   @AnControllerField(
-		   type=CMLFieldEnum.ControlBlock,
-		   input="this.filterBlock.y",
-		   parameter={"type.NonWindup", "this.ka", "this.ta","this.vrmax","this.vrmin"},
-		   y0="this.tmDelayBlock.u0 + this.kgGainBlock.y"//,//this.customBlock.y",//
-		  // debug = true
-		   )//initOrderNumber = 3
-	   DelayControlBlock taDelayBlock;
-	
-	
-//	//KG feedback, gain with upper limit
-	   
-	   public double kg = 1.0, vgmax = 8, vgmin = -9999;
-	   @AnControllerField(
-		   type= CMLFieldEnum.StaticBlock,
-		   input="this.customBlock.y",
-		   parameter={"type.Limit", "this.kg", "this.vgmax", "this.vgmin"},
-		   feedback = true//,
-		   //debug=true
-		   )
-	   GainBlock kgGainBlock;
-	   
-	   
-//	     public double  kg =1.0 ,vgmax = 8, vgmin = -9999, 
-//		   @AnControllerField(
-//			   type= CMLFieldEnum.StaticBlock,
-//			   input="this.customBlock.y",
-//			   parameter={"type.Limit", "this.kg","this.vgmax", "this.vgmin"},
-//			   feedback = true,
-//			   debug=true)
-//		   GainBlock kgGainBlock;
-	
-			
-		//TM delayed block
-		   //tmDelayBlock----KM/(1+sTM) with NON-Windup limits
-		   public double km = 10.0, tm = 0.01,vmmax = 9,vmmin = -9.0;
-		   @AnControllerField(
-			   type=CMLFieldEnum.ControlBlock,
-			   input="this.taDelayBlock.y - this.kgGainBlock.y",
-			   parameter={"type.NonWindup", "this.km", "this.tm","this.vmmax","this.vmmin"},
-			   y0="this.customBlock.u0"/// / this.vbGainBlock.y
-			  // initOrderNumber = 4,
-			  // debug = true
-			   )
-		   DelayControlBlock tmDelayBlock;
-	   
-	   
-	   public double kc = 1.0, kp = 2.0, ki = 1.0, vbmax = 10.0, angKp_deg =0.0, xl =1.0;
-	   @AnControllerField(
-	      type= CMLFieldEnum.StaticBlock,
-	      input= "this.tmDelayBlock.y", 
-	      y0="mach.efd"//,
-	      //debug = true
-	      )
-	   public ICMLStaticBlock customBlock = new CMLStaticBlockAdapter() {
-	      private double VB = 0.0;
-	     
-	      @Override
-	      public boolean initStateY0(double y0) {
-             VB = calcVB(calcVe());
+    public double tr, vimax, vimin, km, tc, tb, ka, ta, vrmax, vrmin;
+    public double kg, kp, ki, vbmax, kc, xl, vgmax, angKp_deg, tm, vmmax, vmmin;
+    public double reference, outputSignal;
 
-             if (VB == 0.0) {
-                log.error("Error: VB of IEEE 2005 ST3A exciter is 0 for initialization, @ "
-                        + getMachine().getId());
-                return false;
-             }
-	    	  
-	          this.u = y0/VB;
-	          //System.out.println("Y0, VB, u ="+y0+","+VB+","+u);
-	          return true;
-	      }
-	      @Override
-	      public double getU0(){
-	    	  return this.u;
-	      }
-	      
-	     
-	      @Override
-	      public void eulerStep1(double u, double dt) {
-	         this.u = u;
-	      }
-	      @Override
-	      public void eulerStep2(double u, double dt) {
-	         this.u = u;
-	      }
-	      @Override
-	      public double getY() {
-	         VB = calcVB(calcVe());
-	         return this.u * VB;
-	      }
-	      private double calcVe() {
-             return calcCompoundSourceVoltage((Machine) eInternalContainer());
-          }
+    public IEEE2005ST3AExciter() {
+        this("id", "IEEE2005ST3A", "IEEE");
+    }
 
-	      private double calcVB(double ve) {
-             return calcBridgeVoltage(ve,
-                     getMachine().calculateIfd(MachineIfdBase.EXCITER));
-          }
-	   };
-	   
+    public IEEE2005ST3AExciter(String id, String name, String category) {
+        super(id, name, category);
+        _data = new IEEE2005ST3AExciterData();
+    }
 
-	   
-	/*
-	
-	//Compound source to calculate VE
-	   public double kp = 2.0, ki = 1.0, angKp_deg =0.0, xl =1.0;
-	   @AnFunctionField(
-		  type=CMLFieldEnum.Function,
-	      input= "0.0" 
-	      )
-	   public ICMLFunction VeFunc = new CMLFunctionAdapter() {
-		   double angleKp = Math.toRadians(angKp_deg);
-		   Complex kpCplx = new Complex( kp*Math.cos(angleKp), 
-		            kp*Math.sin(angleKp));
-		   
-		   @Override		   
-		   public double eval(double[] dAry) {
-		
-			   Complex vt = getMachine().getDStabBus().getVoltage();
-			   Vector_xy it_xy = DStabFunction.transfer(getMachine().getIdq(),getMachine().getAngle());
-			   Complex it = new Complex(it_xy.x,it_xy.y);
-			   // ve = |kp*vt_ + j*(ki+kp_*xl)*it_|
-			   double ve = (vt.multiply(kp).add(new Complex(0,1)
-			           .multiply((kpCplx.multiply(xl).add(ki)).multiply(it)))).abs();
-			   
-			   return ve;
-			}		   
-	   
-	   };
-	
-	//FexFunc Expression 
-	   public double kc = 0.5;
-	   @AnFunctionField(
-	      input= {"this.VeFunc.y","mach.ifd"},
-	      parameter={"this.kc"}	
-	      )
-	   FexComboFunction fexFunc;
-	  
-	   
-	
-	//VbGain block, gain with upper limit
-	     public double  vbmax = 8, vbmin = -9999;
-		   @AnControllerField(
-			   type= CMLFieldEnum.StaticBlock,
-			   input="this.VeFunc.y*this.fexFunc.y",
-			   parameter={"type.Limit", "this.k1", "this.vbmax", "this.vbmin"},
-			   initOrderNumber = 1,
-			   debug = true)
-		   GainBlock vbGainBlock;	   
-	
-	*/
-	/*
-	 * Part-2: Define the contructors
-	 * ==============================
-	 */
+    public IEEE2005ST3AExciterData getData() {
+        return (IEEE2005ST3AExciterData) _data;
+    }
 
-	    /**
-	     * Default Constructor
-	     *
-	     */
-	    public IEEE2005ST3AExciter() {
-		this("id", "name", "caty");
-	        this.setName("IEEE2005ST3A");
-	        this.setCategory("IEEE");
-	    }
+    public void setVuel(double value) { vuel = value; hasVuel = true; }
+    public void clearVuel() { hasVuel = false; }
+    public double getVuel() { return vuel; }
 
-	     /**
-	     * Constructor
-	     *
-	     * @param id exciter id
-	     * @param name exciter name
-	     * @param caty exciter category
-	     */
-	    public IEEE2005ST3AExciter(String id, String name, String caty) {
-	        super(id, name, caty);
-	        // _data is defined in the parent class. your need to initialize with
-	        // the correct type, the data object to be edited
-	        _data = new IEEE2005ST3AExciterData();
-	    }
+    @Override
+    public void configureIntegrationStep(double value) {
+        configureIntegrationStep(value, 1.0);
+    }
 
-	/*
-	 * Part-3: Define and init the data object
-	 * =======================================
-	 */
+    public void configureIntegrationStep(double value, double multiplier) {
+        integrationStep = value;
+        minimumTimeConstantMultiplier = multiplier;
+    }
 
-	    /**
-	     * Get the plugin data object
-	     *
-	     * @return the data object
-	     */
-	    public IEEE2005ST3AExciterData getData() {
-	        return (IEEE2005ST3AExciterData)_data;
-	    }
+    @Override
+    public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
+        loadAndCorrectParameters();
+        if (tr < 0.0 || tb < 0.0 || ta < 0.0 || tm < 0.0
+                || Math.abs(ka) <= EPS || Math.abs(km) <= EPS) return false;
+        double efd0 = machine.getEfd();
+        double vt0 = machine.getDStabBus().getVoltageMag();
+        double vb0 = bridgeVoltage(machine);
+        if (!Double.isFinite(efd0) || !Double.isFinite(vt0) || vb0 <= EPS) return false;
 
-	    /**
-	     *  Init the controller states using the data object
-	     *
-	     *  @param bus the bus object where the machine object is connected
-	     *  @param mach the machine object of this controller object
-	     *  @param msg the SessionMsg object
-	     */
-	    @Override
-	    public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
-	        // pass the plugin data object values to the controller
-	    	this.tr = getData().getTr();
-	    	
-	        this.vimax = getData().getVimax();
-	        this.vimin = getData().getVimin();
-	        this.tc = getData().getTc();
-	        this.tb = getData().getTb();
-	        this.ka = getData().getKa();
-	        this.ta = getData().getTa();
-	        this.vrmax = getData().getVrmax();
-	        this.vrmin = getData().getVrmin();
-	        this.vgmax = getData().getVgmax();
-	        this.vgmin = -9999.0; // not defined in input data, to be compatible with interPSS only
-	        
-	        this.km  = getData().getKm();
-	        this.tm  = getData().getTm();
-	        this.vmmax = getData().getVmmax();
-	        this.vmmin = getData().getVmmin();
-	        this.kg   = getData().getKg();
-	        this.kp = getData().getKp();
-	        this.ki = getData().getKi();
-	        this.angKp_deg = getData().getAngKp();
-	        this.xl    =getData().getXl();
-	        
-	        this.kc = getData().getKc();
-	        
-	        this.vbmax = getData().getVbmax();
+        double vm0 = efd0 / vb0;
+        double vg0 = Math.min(vgmax, kg * efd0);
+        double vr0 = vm0 / km + vg0;
+        double vi0 = vr0 / ka;
+        vmmax = Math.max(vmmax, vm0); vmmin = Math.min(vmmin, vm0);
+        vrmax = Math.max(vrmax, vr0); vrmin = Math.min(vrmin, vr0);
+        vimax = Math.max(vimax, vi0); vimin = Math.min(vimin, vi0);
+        state[VM] = vm0; state[VSENSE] = vt0; state[VR] = vr0; state[LEAD_LAG] = vi0;
+        System.arraycopy(state, 0, trial, 0, state.length);
+        active = state;
+        reference = vi0 + vt0 - stabilizerSignal(machine);
+        outputSignal = efd0;
+        initialized = true;
+        return true;
+    }
 
-	        // PowerWorld expands active limits during initialization so the
-	        // solved operating point is not clipped.  Compute the steady-state
-	        // ESST3A internal signals and apply the same rule before CML creates
-	        // the limited blocks.
-	        if (this.vrmax < this.vrmin) {
-               double swap = this.vrmax;
-               this.vrmax = this.vrmin;
-               this.vrmin = swap;
-	        }
-	        if (this.vimax < this.vimin) {
-               double swap = this.vimax;
-               this.vimax = this.vimin;
-               this.vimin = swap;
-	        }
-	        if (this.vmmax < this.vmmin) {
-               double swap = this.vmmax;
-               this.vmmax = this.vmmin;
-               this.vmmin = swap;
-	        }
-	        double ve0 = calcCompoundSourceVoltage(mach);
-	        double vb0 = calcBridgeVoltage(ve0, mach.calculateIfd(MachineIfdBase.EXCITER));
-	        if (vb0 > 0.0 && Math.abs(this.km) > 1.0e-9 && Math.abs(this.ka) > 1.0e-9) {
-               double vm0 = mach.getEfd() / vb0;
-               double vg0 = Math.min(this.vgmax, this.kg * mach.getEfd());
-               double vr0 = vm0 / this.km + vg0;
-               double vi0 = vr0 / this.ka;
-               this.vmmax = Math.max(this.vmmax, vm0);
-               this.vmmin = Math.min(this.vmmin, vm0);
-               this.vrmax = Math.max(this.vrmax, vr0);
-               this.vrmin = Math.min(this.vrmin, vr0);
-               this.vimax = Math.max(this.vimax, vi0);
-               this.vimin = Math.min(this.vimin, vi0);
-	        }
-	        
-	        this.k1 =1.0;
-	        // always add the following statement
-	        return super.initStates(bus, mach);
-	    }
+    private void loadAndCorrectParameters() {
+        IEEE2005ST3AExciterData data = getData();
+        tr = correctedBypass(data.getTr());
+        vimax = Math.max(data.getVimax(), data.getVimin());
+        vimin = Math.min(data.getVimax(), data.getVimin());
+        km = correctedGain(data.getKm()); tc = data.getTc(); tb = correctedBypass(data.getTb());
+        ka = correctedGain(data.getKa()); ta = correctedBypass(data.getTa());
+        vrmax = Math.max(data.getVrmax(), data.getVrmin());
+        vrmin = Math.min(data.getVrmax(), data.getVrmin());
+        kg = data.getKg(); kp = data.getKp(); ki = data.getKi(); vbmax = data.getVbmax();
+        kc = data.getKc(); xl = data.getXl(); vgmax = data.getVgmax();
+        angKp_deg = data.getAngKp(); tm = correctedBypass(data.getTm());
+        vmmax = Math.max(data.getVmmax(), data.getVmmin());
+        vmmin = Math.min(data.getVmmax(), data.getVmmin());
+    }
 
-	    private double calcCompoundSourceVoltage(Machine mach) {
-           double angle = Math.toRadians(angKp_deg);
-           Complex kpCplx = new Complex(kp * Math.cos(angle), kp * Math.sin(angle));
-           Complex vt = mach.getParentGen().getParentBus().getVoltage();
-           Complex it = mach.getIxy();
-           return vt.multiply(kpCplx).add(new Complex(0, 1)
-                   .multiply((kpCplx.multiply(xl).add(ki)).multiply(it))).abs();
-	    }
+    private double correctedGain(double value) {
+        return Math.abs(value) <= EPS ? minimumTimeConstantMultiplier * integrationStep : value;
+    }
 
-	    private double calcBridgeVoltage(double ve, double ifd) {
-           if (ve <= 0.0) return 0.0;
-           double in = kc * ifd / ve;
-           double fex;
-           if (in <= 0.0) fex = 1.0;
-           else if (in <= 0.433) fex = 1.0 - 0.577 * in;
-           else if (in < 0.75) fex = Math.sqrt(0.75 - in * in);
-           else if (in <= 1.0) fex = 1.732 * (1.0 - in);
-           else fex = 0.0;
-           return Math.max(0.0, Math.min(vbmax, ve * fex));
-	    }
+    private double correctedBypass(double value) {
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        if (value > 0.0 && value < 0.5 * minimum) return 0.0;
+        if (value >= 0.5 * minimum && value < minimum) return minimum;
+        return value;
+    }
 
-	/*
-	 * Part-4: Define the pluin data object edtior
-	 * ===========================================
-	 */
+    @Override
+    public boolean nextStep(double dt, DynamicSimuMethod method, Machine machine, int flag) {
+        if (!initialized || dt < 0.0) return false;
+        if (dt == 0.0) return true;
+        int stage = method == DynamicSimuMethod.MODIFIED_EULER ? flag : 2;
+        if (stage == 0) {
+            derivatives(state, oldDerivative, machine);
+            for (int i = 0; i < state.length; i++) trial[i] = state[i] + oldDerivative[i] * dt;
+            constrain(trial); active = trial;
+        } else if (stage == 1) {
+            double[] derivative = new double[state.length];
+            derivatives(trial, derivative, machine);
+            for (int i = 0; i < state.length; i++)
+                state[i] += 0.5 * (oldDerivative[i] + derivative[i]) * dt;
+            constrain(state); active = state;
+        } else {
+            double[] derivative = new double[state.length];
+            derivatives(state, derivative, machine);
+            for (int i = 0; i < state.length; i++) state[i] += derivative[i] * dt;
+            constrain(state); active = state;
+        }
+        outputSignal = algebraics(active, machine).efd;
+        return true;
+    }
 
-	    /**
-	     * Get the editor panel for controller data editing
-	     *
-	     * @return the editor panel object
-	     */
-//	    @Override
-//	    public Object getEditPanel() {
-//	        _editPanel.init(this);
-//	        return _editPanel;
-//	    }
+    private void derivatives(double[] values, double[] derivatives, Machine machine) {
+        Arrays.fill(derivatives, 0.0);
+        Algebraic a = algebraics(values, machine);
+        derivatives[VSENSE] = lag(machine.getDStabBus().getVoltageMag(), values[VSENSE], tr);
+        derivatives[LEAD_LAG] = lag(a.gatedInput, values[LEAD_LAG], tb);
+        derivatives[VR] = limitedRate(ka * a.leadLag, values[VR], ta, vrmin, vrmax);
+        derivatives[VM] = limitedRate(km * a.vrs, values[VM], tm, vmmin, vmmax);
+    }
 
-	/*
-	 * do not modify the following part
-	 */
-	    @Override
-		public AnController getAnController() {
-	    	return getClass().getAnnotation(AnController.class);  }
-	    @Override
-		public Field getField(String fieldName) throws Exception {
-	    	return getClass().getField(fieldName);   }
-	    @Override
-		public Object getFieldObject(Field field) throws Exception {
-	    	return field.get(this);    }
-	
-	
-	
-	
+    private Algebraic algebraics(double[] values, Machine machine) {
+        double sensed = tr > EPS ? values[VSENSE] : machine.getDStabBus().getVoltageMag();
+        double error = reference - sensed + stabilizerSignal(machine);
+        double limitedInput = clamp(error, vimin, vimax);
+        double gatedInput = hasVuel ? Math.max(limitedInput, vuel) : limitedInput;
+        double leadLag = tb > EPS
+                ? tc / tb * gatedInput + (1.0 - tc / tb) * values[LEAD_LAG]
+                : gatedInput;
+        double regulator = ta > EPS ? clamp(values[VR], vrmin, vrmax)
+                : clamp(ka * leadLag, vrmin, vrmax);
+        double vb = bridgeVoltage(machine);
+        double inner = tm > EPS ? clamp(values[VM], vmmin, vmmax)
+                : solveAlgebraicVm(regulator, vb, values[VM]);
+        double efd = inner * vb;
+        double feedback = Math.min(vgmax, kg * efd);
+        return new Algebraic(sensed, error, limitedInput, gatedInput, leadLag,
+                regulator, feedback, regulator - feedback, inner, vb, efd);
+    }
 
+    private double solveAlgebraicVm(double regulator, double vb, double initial) {
+        double value = clamp(initial, vmmin, vmmax);
+        for (int n = 0; n < 30; n++) {
+            double residual = innerResidual(value, regulator, vb);
+            if (Math.abs(residual) < 1.0e-11) break;
+            double h = 1.0e-6 * Math.max(1.0, Math.abs(value));
+            double slope = (innerResidual(value + h, regulator, vb)
+                    - innerResidual(value - h, regulator, vb)) / (2.0 * h);
+            if (!Double.isFinite(slope) || Math.abs(slope) <= EPS) break;
+            double next = clamp(value - residual / slope, vmmin, vmmax);
+            if (!Double.isFinite(next)) break;
+            value = next;
+        }
+        return value;
+    }
+
+    private double innerResidual(double inner, double regulator, double vb) {
+        double feedback = Math.min(vgmax, kg * inner * vb);
+        return inner - clamp(km * (regulator - feedback), vmmin, vmmax);
+    }
+
+    private void constrain(double[] values) {
+        if (ta > EPS) values[VR] = clamp(values[VR], vrmin, vrmax);
+        if (tm > EPS) values[VM] = clamp(values[VM], vmmin, vmmax);
+        for (int i = 0; i < values.length; i++) if (!Double.isFinite(values[i])) values[i] = 0.0;
+    }
+
+    public double getCompoundSourceVoltage() { return compoundSourceVoltage(getMachine()); }
+    public double getBridgeVoltage() { return bridgeVoltage(getMachine()); }
+
+    private double compoundSourceVoltage(Machine machine) {
+        double angle = Math.toRadians(angKp_deg);
+        Complex kpComplex = new Complex(kp * Math.cos(angle), kp * Math.sin(angle));
+        Complex vt = machine.getParentGen().getParentBus().getVoltage();
+        Complex it = machine.getIxy();
+        return vt.multiply(kpComplex).add(Complex.I
+                .multiply(kpComplex.multiply(xl).add(ki)).multiply(it)).abs();
+    }
+
+    private double bridgeVoltage(Machine machine) {
+        double ve = compoundSourceVoltage(machine);
+        if (ve <= EPS) return 0.0;
+        double ifd = machine.calculateIfd(MachineIfdBase.EXCITER);
+        if (!Double.isFinite(ifd)) ifd = 0.0;
+        return Math.max(0.0, Math.min(vbmax,
+                ve * Esst2aExciter.rectifierFactor(kc * ifd / ve)));
+    }
+
+    private static double limitedRate(double command, double value, double time,
+            double lower, double upper) {
+        if (time <= EPS) return 0.0;
+        double rate = (command - value) / time;
+        if ((value >= upper - EPS && rate > 0.0) || (value <= lower + EPS && rate < 0.0)) return 0.0;
+        return rate;
+    }
+
+    private static double lag(double input, double value, double time) {
+        return time > EPS ? (input - value) / time : 0.0;
+    }
+
+    private static double clamp(double value, double lower, double upper) {
+        return Math.max(lower, Math.min(upper, value));
+    }
+
+    private static double stabilizerSignal(Machine machine) {
+        return machine.getStabilizer() == null ? 0.0 : machine.getStabilizer().getOutput(machine);
+    }
+
+    public double getSensedVoltage() { return algebraics(active, getMachine()).sensed; }
+    public double getLimitedInput() { return algebraics(active, getMachine()).limitedInput; }
+    public double getHighValueInput() { return algebraics(active, getMachine()).gatedInput; }
+    public double getLeadLagOutput() { return algebraics(active, getMachine()).leadLag; }
+    public double getRegulatorOutput() { return algebraics(active, getMachine()).regulator; }
+    public double getFeedbackVoltage() { return algebraics(active, getMachine()).feedback; }
+    public double getInnerRegulatorOutput() { return algebraics(active, getMachine()).inner; }
+    public double[] getStateSnapshot() { return active.clone(); }
+
+    @Override public double getOutput(Machine machine) {
+        outputSignal = algebraics(active, machine).efd;
+        return outputSignal;
+    }
+    @Override public void setRefPoint(double value) { reference = value; }
+    @Override public double getRefPoint() { return reference; }
+    @Override public AnController getAnController() { return getClass().getAnnotation(AnController.class); }
+    @Override public Field getField(String name) throws Exception { return getClass().getField(name); }
+    @Override public Object getFieldObject(Field field) throws Exception { return field.get(this); }
+
+    private record Algebraic(double sensed, double error, double limitedInput,
+            double gatedInput, double leadLag, double regulator, double feedback,
+            double vrs, double inner, double vb, double efd) {}
 }
