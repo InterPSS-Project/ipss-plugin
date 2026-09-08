@@ -72,6 +72,8 @@ import org.interpss.dstab.control.exc.psse.st1c.St1cData;
 import org.interpss.dstab.control.exc.psse.st1c.St1cExciter;
 import org.interpss.dstab.control.exc.psse.st2c.St2cData;
 import org.interpss.dstab.control.exc.psse.st2c.St2cExciter;
+import org.interpss.dstab.control.exc.psse.st3c.St3cData;
+import org.interpss.dstab.control.exc.psse.st3c.St3cExciter;
 import org.interpss.dstab.control.exc.psse.st4c.St4cData;
 import org.interpss.dstab.control.exc.psse.st4c.St4cExciter;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
@@ -319,6 +321,11 @@ public class ExciterObjectFactory {
 	/** Create a native PSS/E IEEE 421.5-2016 ST2C excitation system. */
 	public static St2cExciter createSt2cExciter(String id, St2cData data, Machine machine) {
 		return new St2cExciter(id, data, machine);
+	}
+
+	/** Create a native PSS/E IEEE 421.5-2016 ST3C excitation system. */
+	public static St3cExciter createSt3cExciter(String id, St3cData data, Machine machine) {
+		return new St3cExciter(id, data, machine);
 	}
 
 	/** Create a native PSS/E IEEE 421.5-2016 ST4C excitation system. */

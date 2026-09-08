@@ -119,11 +119,11 @@ class DynamicModelCatalogTest {
         assertEquals(71, rows.size());
         assertEquals(65, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED).count());
-        assertEquals(46, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(47, rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         assertEquals(64, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
                 .filter(WeccModelApproval::hasPsseModel).count());
-        assertEquals(46, rows.stream()
+        assertEquals(47, rows.stream()
                 .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
                 .filter(WeccModelApproval::hasPsseModel)
                 .filter(WeccModelApproval::isImplementedExactly).count());
@@ -157,6 +157,10 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esst2c")
                 .orElseThrow().isImplementedExactly());
         assertEquals(Set.of(25),DynamicModelCatalog.find("ST2C").orElseThrow()
+                .recordSchema().acceptedParameterCounts());
+        assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esst3c")
+                .orElseThrow().isImplementedExactly());
+        assertEquals(Set.of(31),DynamicModelCatalog.find("ST3C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("esdc1a")
                 .orElseThrow().isImplementedExactly());
