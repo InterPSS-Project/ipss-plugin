@@ -91,6 +91,7 @@ import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst1aExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseH6eGovernorTest;
+import org.interpss.core.adapter.builder.dstab.PsseHyg3GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovrGovernorTest;
 import org.interpss.core.adapter.builder.dstab.Lcfb1PrefControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseHygovGovernorTest;
@@ -153,6 +154,7 @@ import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovAndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ggov1IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Hyg3IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1AndesSmibConformanceTest;
@@ -450,6 +452,7 @@ import org.junit.platform.suite.api.Suite;
 	HygovAndesSmibConformanceTest.class,
 	HygovIndependentSmibConformanceTest.class,
 	Ggov1IndependentSmibConformanceTest.class,
+	Hyg3IndependentSmibConformanceTest.class,
 	Pss2aIndependentSmibConformanceTest.class,
 	Exdc2AndesSmibConformanceTest.class,
 	Ac8bAndesSmibConformanceTest.class,
@@ -603,6 +606,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseEsst1aExciterTest.class,
 	PsseGgov1GovernorTest.class,
 	PsseH6eGovernorTest.class,
+	PsseHyg3GovernorTest.class,
 	PsseHygovrGovernorTest.class,
 	Lcfb1PrefControllerTest.class,
 	PsseRegca1ConverterTest.class,
