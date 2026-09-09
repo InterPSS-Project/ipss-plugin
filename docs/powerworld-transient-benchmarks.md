@@ -121,6 +121,9 @@ The initial suite deliberately covers both renewable and conventional stacks:
   including its UEL high-value gate and asymmetric field-voltage limits.
 - `smib-genrou-esac6a.json`: the IEEE Type AC6A rotating exciter, including
   both lead-lag stages, field-current feedback, saturation, and rectifier load.
+- `smib-genrou-esac8b.json`: the native 15-parameter Basler DECS ESAC8B
+  profile with core GENROU and all five official PowerWorld exciter states:
+  `EFD`, sensed `Vt`, derivative output, integral output, and `VR`.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
