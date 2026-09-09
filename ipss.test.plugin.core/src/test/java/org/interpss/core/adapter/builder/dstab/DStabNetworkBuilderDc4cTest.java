@@ -68,10 +68,12 @@ public class DStabNetworkBuilderDc4cTest extends CorePluginTestSetup {
             double[] d0=derivatives(x,.1),p=add(x,d0,dt),d1=derivatives(p,.1);
             for(int j=0;j<x.length;j++)x[j]+=.5*(d0[j]+d1[j])*dt;step(f.exciter,f.machine,dt);
             double fb=.2*(x[0]-x[5])/.3,error=1.14-x[1]-fb;
-            double pid=3*error+x[2]+.5*(error-x[3])/.1;
+            double pi=3*error+x[2],derivative=.5*(error-x[3])/.1,pid=pi+derivative;
             max=Math.max(max,Math.abs(x[0]-f.exciter.getInternalFieldVoltage()));
             max=Math.max(max,Math.abs(x[1]-f.exciter.getSensedVoltage()));
             max=Math.max(max,Math.abs(pid-f.exciter.getPidOutput()));
+            max=Math.max(max,Math.abs(pi-f.exciter.getProportionalIntegralOutput()));
+            max=Math.max(max,Math.abs(derivative-f.exciter.getDerivativeOutput()));
             max=Math.max(max,Math.abs(x[4]-f.exciter.getRegulatorOutput()));
             max=Math.max(max,Math.abs(fb-f.exciter.getFeedbackOutput()));
         }

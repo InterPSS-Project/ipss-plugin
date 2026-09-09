@@ -155,8 +155,12 @@ public final class Dc4cExciter extends AnnotateExciter implements IntegrationSte
     public double getInternalFieldVoltage(){return algebraics(active,getMachine()).field;}
     public double getFieldFeedback(){return algebraics(active,getMachine()).vfe;}
     public double getPidError(){return algebraics(active,getMachine()).error;}
+    public double getPidIntegralState(){return active[PI_I];}
+    public double getProportionalIntegralOutput(){return kpr*getPidError()+active[PI_I];}
     public double getPidUnlimitedOutput(){return algebraics(active,getMachine()).pidUnlimited;}
     public double getPidOutput(){return algebraics(active,getMachine()).pid;}
+    public double getDerivativeOutput(){Algebraic a=algebraics(active,getMachine());
+        return tdr>EPS?kdr*(a.error-active[DERIV_LAG])/tdr:0;}
     public double getGatedPidOutput(){return algebraics(active,getMachine()).gatedPid;}
     public double getRegulatorOutput(){return algebraics(active,getMachine()).vr;}
     public double getCompoundSource(){return compoundSource(getMachine());}
