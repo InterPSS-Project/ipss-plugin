@@ -24,14 +24,20 @@ import com.interpss.dstab.DStabGen;
  *
  * <p>The analyzer combines the solved network's incremental reactive-current
  * to voltage-magnitude sensitivity with analytic controller derivatives. It
- * intentionally excludes limit switching, voltage-dip logic, active-power
- * coupling, remote measurements, and non-local plant-control configurations.
- * It is a model-localization diagnostic, not a general DStab eigenanalysis.
- * The returned operating-point constraints must be empty before interpreting
- * the eigenvalues as a two-sided linearization.</p>
+ * reports regional Jacobians for incremental REECA/REPCA PI outputs that are
+ * exactly on anti-windup limits. These distinguish an inward-moving active PI
+ * branch from an outward-moving clamped branch, but do not prove that a modal
+ * eigenvector remains inside either directional cone or predict the switching
+ * sequence. Other limit switching, voltage-dip logic, active-power coupling,
+ * remote measurements, and non-local plant-control configurations remain
+ * excluded. This is a model-localization diagnostic, not a general DStab
+ * eigenanalysis. The returned operating-point constraints must be empty before
+ * interpreting the original state matrix as a conventional two-sided
+ * linearization.</p>
  */
 public final class LocalRenewableQvEigenAnalyzer {
     public static final int STATES_PER_DEVICE = 6;
+    private static final int MAX_ENUMERATED_BOUNDARIES = 8;
     private static final double SWING_GROUND_ADMITTANCE = 1.0e10;
 
     private LocalRenewableQvEigenAnalyzer() { }
@@ -50,9 +56,12 @@ public final class LocalRenewableQvEigenAnalyzer {
             throw new IllegalArgumentException(
                     "No eligible local-voltage REPC_A/REEC_A/REGC_A devices");
         }
-        double[][] stateMatrix = stateMatrix(coupling, devices);
+        double[][] stateMatrix = stateMatrix(coupling, devices, null, null);
+        List<OperatingPointConstraint> constraints = operatingPointConstraints(devices);
+        RegionSet regions = limiterRegions(coupling, devices, constraints);
         return new Analysis(selectedBuses, coupling, devices, stateMatrix,
-                dominantMode(stateMatrix, devices), operatingPointConstraints(devices));
+                dominantMode(stateMatrix, devices), constraints, regions.modes(),
+                regions.complete());
     }
 
     private static List<String> validateBuses(BaseDStabNetwork<?, ?> network,
@@ -172,23 +181,30 @@ public final class LocalRenewableQvEigenAnalyzer {
         }
     }
 
-    private static double[][] stateMatrix(double[][] coupling, List<Device> devices) {
+    private static double[][] stateMatrix(double[][] coupling, List<Device> devices,
+            boolean[] plantPiActive, boolean[] reecaPiActive) {
         int count = devices.size();
         double[][] state = new double[STATES_PER_DEVICE * count]
                 [STATES_PER_DEVICE * count];
         for (int i = 0; i < count; i++) {
             Device device = devices.get(i);
+            boolean plantActive = plantPiActive == null || plantPiActive[i];
+            boolean reecaActive = reecaPiActive == null || reecaPiActive[i];
             double leadRatio = device.tft() / device.tfv();
             int base = STATES_PER_DEVICE * i;
             state[base][base] = -1.0 / device.tfltr();
-            state[base + 1][base] = -device.plantKi();
-            state[base + 2][base] = -device.plantKp() / device.tfv();
-            state[base + 2][base + 1] = 1.0 / device.tfv();
+            if (plantActive) {
+                state[base + 1][base] = -device.plantKi();
+                state[base + 2][base] = -device.plantKp() / device.tfv();
+                state[base + 2][base + 1] = 1.0 / device.tfv();
+            }
             state[base + 2][base + 2] = -1.0 / device.tfv();
 
             double[] qError = new double[state.length];
-            qError[base] = -leadRatio * device.plantKp();
-            qError[base + 1] = leadRatio;
+            if (plantActive) {
+                qError[base] = -leadRatio * device.plantKp();
+                qError[base + 1] = leadRatio;
+            }
             qError[base + 2] = 1.0 - leadRatio;
             for (int j = 0; j < count; j++) {
                 Device source = devices.get(j);
@@ -201,19 +217,69 @@ public final class LocalRenewableQvEigenAnalyzer {
                 state[base][sourceIq] += coupling[device.busIndex()][source.busIndex()]
                         * source.systemScale() / device.tfltr();
             }
-            for (int column = 0; column < state.length; column++) {
-                state[base + 3][column] += device.kqi() * qError[column];
-                state[base + 4][column] += device.kvi() * device.kqp()
-                        * qError[column];
-                state[base + 5][column] += device.kvp() * device.kqp()
-                        * qError[column] / device.tg();
+            if (reecaActive) {
+                for (int column = 0; column < state.length; column++) {
+                    state[base + 3][column] += device.kqi() * qError[column];
+                    state[base + 4][column] += device.kvi() * device.kqp()
+                            * qError[column];
+                    state[base + 5][column] += device.kvp() * device.kqp()
+                            * qError[column] / device.tg();
+                }
+                state[base + 4][base + 3] += device.kvi();
+                state[base + 5][base + 3] += device.kvp() / device.tg();
             }
-            state[base + 4][base + 3] += device.kvi();
-            state[base + 5][base + 3] += device.kvp() / device.tg();
             state[base + 5][base + 4] += 1.0 / device.tg();
             state[base + 5][base + 5] -= 1.0 / device.tg();
         }
         return state;
+    }
+
+    private static RegionSet limiterRegions(double[][] coupling, List<Device> devices,
+            List<OperatingPointConstraint> constraints) {
+        int boundaryCount = constraints.size();
+        boolean complete = boundaryCount <= MAX_ENUMERATED_BOUNDARIES;
+        long combinations = complete ? 1L << boundaryCount : 2L;
+        List<RegionalMode> modes = new ArrayList<>((int) combinations);
+        for (long region = 0; region < combinations; region++) {
+            boolean allActiveEnvelope = !complete && region == 1;
+            boolean[] plantActive = allTrue(devices.size());
+            boolean[] reecaActive = allTrue(devices.size());
+            List<LimiterAssumption> assumptions = new ArrayList<>(boundaryCount);
+            for (int boundary = 0; boundary < boundaryCount; boundary++) {
+                OperatingPointConstraint constraint = constraints.get(boundary);
+                boolean active = complete ? (region & (1L << boundary)) != 0
+                        : allActiveEnvelope;
+                int deviceIndex = deviceIndex(devices, constraint.deviceId());
+                if (constraint.signal().equals("REECA_PIQ")) {
+                    reecaActive[deviceIndex] = active;
+                } else if (constraint.signal().equals("REPCA_Q_PI")) {
+                    plantActive[deviceIndex] = active;
+                } else {
+                    throw new IllegalStateException(
+                            "Unknown limiter-boundary signal: " + constraint.signal());
+                }
+                assumptions.add(new LimiterAssumption(constraint.deviceId(),
+                        constraint.signal(), active ? BoundaryBranch.INWARD_ACTIVE
+                                : BoundaryBranch.OUTWARD_CLAMPED));
+            }
+            double[][] matrix = stateMatrix(coupling, devices, plantActive, reecaActive);
+            modes.add(new RegionalMode(assumptions, matrix,
+                    dominantMode(matrix, devices)));
+        }
+        return new RegionSet(List.copyOf(modes), complete);
+    }
+
+    private static boolean[] allTrue(int size) {
+        boolean[] values = new boolean[size];
+        java.util.Arrays.fill(values, true);
+        return values;
+    }
+
+    private static int deviceIndex(List<Device> devices, String deviceId) {
+        for (int index = 0; index < devices.size(); index++) {
+            if (devices.get(index).deviceId().equals(deviceId)) return index;
+        }
+        throw new IllegalStateException("Limiter constraint has no device: " + deviceId);
     }
 
     private static Mode dominantMode(double[][] state, List<Device> devices) {
@@ -286,6 +352,16 @@ public final class LocalRenewableQvEigenAnalyzer {
     public record OperatingPointConstraint(String deviceId, String signal,
             double value, double lower, double upper, String explanation) { }
 
+    public enum BoundaryBranch {
+        /** Perturbation moves the PI output into its admissible interval. */
+        INWARD_ACTIVE,
+        /** Perturbation drives outward and the PI output remains clamped. */
+        OUTWARD_CLAMPED
+    }
+
+    public record LimiterAssumption(String deviceId, String signal,
+            BoundaryBranch branch) { }
+
     public record StateComponent(String deviceId, String state,
             double normalizedReal, double normalizedImaginary, double magnitude) { }
 
@@ -309,9 +385,22 @@ public final class LocalRenewableQvEigenAnalyzer {
         }
     }
 
+    public record RegionalMode(List<LimiterAssumption> assumptions,
+            double[][] stateMatrix, Mode dominantMode) {
+        public RegionalMode {
+            assumptions = List.copyOf(assumptions);
+            stateMatrix = copy(stateMatrix);
+            Objects.requireNonNull(dominantMode, "dominantMode");
+        }
+
+        @Override public double[][] stateMatrix() { return copy(stateMatrix); }
+    }
+
     public record Analysis(List<String> busIds, double[][] couplingMatrix,
             List<Device> devices, double[][] stateMatrix, Mode dominantMode,
-            List<OperatingPointConstraint> operatingPointConstraints) {
+            List<OperatingPointConstraint> operatingPointConstraints,
+            List<RegionalMode> limiterRegionModes,
+            boolean limiterRegionEnumerationComplete) {
         public Analysis {
             busIds = List.copyOf(busIds);
             couplingMatrix = copy(couplingMatrix);
@@ -319,6 +408,7 @@ public final class LocalRenewableQvEigenAnalyzer {
             stateMatrix = copy(stateMatrix);
             Objects.requireNonNull(dominantMode, "dominantMode");
             operatingPointConstraints = List.copyOf(operatingPointConstraints);
+            limiterRegionModes = List.copyOf(limiterRegionModes);
         }
 
         @Override public double[][] couplingMatrix() { return copy(couplingMatrix); }
@@ -326,7 +416,19 @@ public final class LocalRenewableQvEigenAnalyzer {
         public boolean isTwoSidedLinearizationValid() {
             return operatingPointConstraints.isEmpty();
         }
+
+        /**
+         * True when {@link #limiterRegionModes()} contains every active/clamped
+         * combination. For more than eight simultaneous boundaries it contains
+         * only the all-clamped and all-active envelopes to avoid exponential
+         * computation.
+         */
+        public boolean limiterRegionEnumerationComplete() {
+            return limiterRegionEnumerationComplete;
+        }
     }
+
+    private record RegionSet(List<RegionalMode> modes, boolean complete) { }
 
     private static double[][] copy(double[][] matrix) {
         double[][] result = new double[matrix.length][];

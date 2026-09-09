@@ -208,6 +208,14 @@ public class Texas2kOneSecondDriftTest {
                 "invalid controller-weighted Q/V eigenvalue: " + qvMode);
         assertFalse(qvAnalysis.isTwoSidedLinearizationValid(),
                 "Case 5 PIQ limit boundaries must prevent an unconditional mode claim");
+        assertFalse(qvAnalysis.limiterRegionEnumerationComplete(),
+                "34 simultaneous boundaries must use the bounded envelope calculation");
+        assertEquals(2, qvAnalysis.limiterRegionModes().size());
+        System.out.println("  limiter-region envelopes: "
+                + qvAnalysis.limiterRegionModes().stream().map(region ->
+                        region.assumptions().get(0).branch() + "="
+                                + region.dominantMode().real() + "+j"
+                                + region.dominantMode().imaginary()).toList());
         Path reportDirectory = Path.of(System.getProperty("texas2k.gridStrength.reportDir",
                 Path.of("target", "dynamic-model-validation", "texas2k-case5-qv")
                         .toString()));

@@ -122,16 +122,40 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "the zero-initialized PIQ output is on its expanded lower limit");
         assertEquals(1, analysis.operatingPointConstraints().size());
         assertEquals("REECA_PIQ", analysis.operatingPointConstraints().get(0).signal());
+        assertTrue(analysis.limiterRegionEnumerationComplete(),
+                "one boundary must produce a complete regional enumeration");
+        assertEquals(2, analysis.limiterRegionModes().size());
+        var clampedRegion = analysis.limiterRegionModes().stream()
+                .filter(region -> region.assumptions().get(0).branch()
+                        == LocalRenewableQvEigenAnalyzer.BoundaryBranch.OUTWARD_CLAMPED)
+                .findFirst().orElseThrow();
+        var activeRegion = analysis.limiterRegionModes().stream()
+                .filter(region -> region.assumptions().get(0).branch()
+                        == LocalRenewableQvEigenAnalyzer.BoundaryBranch.INWARD_ACTIVE)
+                .findFirst().orElseThrow();
+        assertEquals(mode.real(), activeRegion.dominantMode().real(), 1.0e-12,
+                "the legacy candidate is the inward-active regional Jacobian");
+        assertEquals(mode.imaginary(), activeRegion.dominantMode().imaginary(), 1.0e-12);
+        assertTrue(clampedRegion.dominantMode().real() <= 1.0e-10,
+                "the outward-clamped region must not retain the growing tangent");
         double originalEntry = analysis.stateMatrix()[0][0];
         double[][] callerCopy = analysis.stateMatrix();
         callerCopy[0][0] = Double.NaN;
         assertEquals(originalEntry, analysis.stateMatrix()[0][0], 0.0,
                 "analysis matrices must be defensive copies");
+        double regionalEntry = clampedRegion.stateMatrix()[0][0];
+        double[][] regionalCopy = clampedRegion.stateMatrix();
+        regionalCopy[0][0] = Double.NaN;
+        assertEquals(regionalEntry, clampedRegion.stateMatrix()[0][0], 0.0,
+                "regional matrices must be defensive copies");
 
         System.out.printf(java.util.Locale.ROOT,
                 "Bus-1062-unit-2 public Q/V candidate linearization: sensitivity=%.9g "
-                        + "eigenvalue=%.9g%+.9gj 1/s constraints=%s states=%s%n",
+                        + "active=%.9g%+.9gj clamped=%.9g%+.9gj 1/s "
+                        + "constraints=%s states=%s%n",
                 analysis.couplingMatrix()[0][0], mode.real(), mode.imaginary(),
+                clampedRegion.dominantMode().real(),
+                clampedRegion.dominantMode().imaginary(),
                 analysis.operatingPointConstraints(), mode.participation());
         assertTrue(Math.abs(mode.real() - CASE5_MODE_GROWTH) / CASE5_MODE_GROWTH < .05,
                 "public Bus-1062 growth rate does not reproduce the Case-5 mode");
@@ -142,6 +166,30 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "public mode must be led by the Bus-1062 REECA voltage PI");
         assertTrue(mode.participation().get(1).state().equals("REGCA_IQ"),
                 "public mode must retain the Case-5 REGCA reactive-current component");
+    }
+
+    @Test
+    void manyLimiterBoundariesReturnDocumentedEnvelopeInsteadOfExploding() throws Exception {
+        int plantCount = 9;
+        DStabilityNetwork network = buildNetwork(
+                plantCount, .05, texas1062Unit2Profile());
+        assertTrue(DStabObjectFactory.createDynamicSimuAlgorithm(network)
+                .getAclfAlgorithm().loadflow(), "multi-boundary load flow");
+        List<String> buses = java.util.stream.IntStream.rangeClosed(1, plantCount)
+                .mapToObj(index -> "Plant" + index).toList();
+
+        var analysis = LocalRenewableQvEigenAnalyzer.analyze(network, buses);
+
+        assertEquals(plantCount, analysis.operatingPointConstraints().size());
+        assertTrue(!analysis.limiterRegionEnumerationComplete());
+        assertEquals(2, analysis.limiterRegionModes().size(),
+                "large boundary sets must return all-clamped/all-active envelopes");
+        assertTrue(analysis.limiterRegionModes().stream().anyMatch(region ->
+                region.assumptions().stream().allMatch(assumption -> assumption.branch()
+                        == LocalRenewableQvEigenAnalyzer.BoundaryBranch.OUTWARD_CLAMPED)));
+        assertTrue(analysis.limiterRegionModes().stream().anyMatch(region ->
+                region.assumptions().stream().allMatch(assumption -> assumption.branch()
+                        == LocalRenewableQvEigenAnalyzer.BoundaryBranch.INWARD_ACTIVE)));
     }
 
     @Test
