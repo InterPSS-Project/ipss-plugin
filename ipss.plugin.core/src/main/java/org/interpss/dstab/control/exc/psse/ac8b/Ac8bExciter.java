@@ -279,6 +279,13 @@ public class Ac8bExciter extends AnnotateExciter implements IntegrationStepAware
     public double getSensedVoltage() { return algebraics(active, getMachine()).sensedVoltage; }
     public double getPidUnlimitedOutput() { return algebraics(active, getMachine()).pidUnlimited; }
     public double getPidOutput() { return algebraics(active, getMachine()).pidOutput; }
+    /** Output of the published {@code s*Kdr/(1+s*Tdr)} derivative block. */
+    public double getDerivativeControllerOutput() {
+        Algebraic a = algebraics(active, getMachine());
+        return tdr > EPS ? kdr * (a.error - active[PID_DERIVATIVE_LAG]) / tdr : 0.0;
+    }
+    /** Output of the published {@code Kir/s} integral block. */
+    public double getIntegralControllerOutput() { return active[PID_INTEGRAL]; }
     public double getRegulatorOutput() { return algebraics(active, getMachine()).regulator; }
     public double getInternalFieldVoltage() { return algebraics(active, getMachine()).field; }
     public double[] getStateSnapshot() { return active.clone(); }
