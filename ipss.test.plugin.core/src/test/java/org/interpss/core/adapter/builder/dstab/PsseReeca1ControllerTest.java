@@ -343,6 +343,44 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void cascadedQAndVoltageIntegratorsUseLinkedNonWindupAndDirectionalRelease() {
+        Reeca1Model controller = new Reeca1Model(linkedIntegratorData(), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(CONTROL_STEP, .8, .1, 1.0, 1.0);
+
+        assertEquals(0.0, controller.getReactiveControlIntegral(), 0.0,
+                "upstream Q integrator must freeze when both derivatives push "
+                        + "the downstream voltage PI farther above Iqmax");
+        assertEquals(.2, controller.getVoltageControlIntegral(), 0.0,
+                "downstream voltage integrator must apply its own upper-limit freeze");
+
+        controller.step(CONTROL_STEP, .8, .3, 1.0, 1.0);
+
+        assertTrue(controller.getReactiveControlIntegral() < 0.0,
+                "the linked Q integrator must release for motion away from the upper limit");
+        assertTrue(controller.getVoltageControlIntegral() < .2,
+                "the downstream voltage integrator must release toward its admissible range");
+
+        Reeca1Model lower = new Reeca1Model(linkedIntegratorData(), null);
+        lower.initialize(.8, -.2, 1.0);
+        lower.step(CONTROL_STEP, .8, -.1, 1.0, 1.0);
+
+        assertEquals(0.0, lower.getReactiveControlIntegral(), 0.0,
+                "upstream Q integrator must freeze when both derivatives push "
+                        + "the downstream voltage PI farther below Iqmin");
+        assertEquals(-.2, lower.getVoltageControlIntegral(), 0.0,
+                "downstream voltage integrator must apply its own lower-limit freeze");
+
+        lower.step(CONTROL_STEP, .8, -.3, 1.0, 1.0);
+
+        assertTrue(lower.getReactiveControlIntegral() > 0.0,
+                "the linked Q integrator must release for motion away from the lower limit");
+        assertTrue(lower.getVoltageControlIntegral() > -.2,
+                "the downstream voltage integrator must release toward its admissible range");
+    }
+
+    @Test
     void activeAndReactivePowerLimitsClampBothDirectionsAndRecover() {
         Reeca1Model active = new Reeca1Model(outerLimitData(0, 0, 0,
                 2.0, -2.0, 2.0, -2.0, .9, .7, 10.0, 0.0), null);
@@ -480,6 +518,15 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 .8, 1.2, 0, 0, 0, 10, .3, -.2, 1, .1, .05, 0,
                 0, 2, -2, 2, -2, 0, 0, 0, 0, 1, 0,
                 99, -99, 2, -2, 10, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0);
+    }
+
+    private static Reeca1Data linkedIntegratorData() {
+        return new Reeca1Data(0, 0, 1, 1, 0, 0,
+                .8, 1.2, 0, 0, 0, 0, 1, -1, 1, 0, 0, 0,
+                0, 2, -2, 1, -1, 1, 1, 1, 1, 0, 0,
+                99, -99, 2, -2, .2, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0);
     }

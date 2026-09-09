@@ -175,15 +175,39 @@ public final class Reeca1Model implements RenewableElectricalController {
             voltageControlOutput = rawQCurrent;
             preliminaryIqLimit = preliminaryReactiveCurrentLimit(rawIp);
         } else {
+            double preliminaryIqMax = preliminaryReactiveCurrentLimit(rawIp);
             double voltageBias;
             if (data.vFlag() == 1) {
                 double qError = qTarget - q;
                 reactiveControlError = qError;
-                qIntegral = Repca1Model.integrateWithAntiWindup(qIntegral, data.kqi(), qError,
-                        dt, data.kqp(), effectiveVmin, effectiveVmax, voltageDip);
+                double oldQIntegral = qIntegral;
+                double candidateQIntegral = Repca1Model.integrateWithAntiWindup(
+                        oldQIntegral, data.kqi(), qError, dt, data.kqp(),
+                        effectiveVmin, effectiveVmax, voltageDip);
+                qIntegral = candidateQIntegral;
                 reactiveControlPreLimitOutput = data.kqp() * qError + qIntegral;
                 voltageBias = Repca1Model.limit(reactiveControlPreLimitOutput,
                         effectiveVmin, effectiveVmax);
+
+                // WECC Figure 3-2 links the cascaded s2/s3 non-windup
+                // integrators. If the downstream voltage PI is saturated and
+                // both derivatives drive farther into the same limit, freeze
+                // the upstream Q integrator as well. Opposite motion remains
+                // enabled so either state can recover from a limit.
+                double voltageError = voltageBias;
+                double downstreamPreLimit = data.kvp() * voltageError + vIntegral;
+                double upstreamDelta = candidateQIntegral - oldQIntegral;
+                double downstreamRate = data.kvi() * voltageError;
+                boolean linkedUpperFreeze = downstreamPreLimit >= preliminaryIqMax - EPS
+                        && downstreamRate > 0.0 && upstreamDelta > 0.0;
+                boolean linkedLowerFreeze = downstreamPreLimit <= -preliminaryIqMax + EPS
+                        && downstreamRate < 0.0 && upstreamDelta < 0.0;
+                if (linkedUpperFreeze || linkedLowerFreeze) {
+                    qIntegral = oldQIntegral;
+                    reactiveControlPreLimitOutput = data.kqp() * qError + qIntegral;
+                    voltageBias = Repca1Model.limit(reactiveControlPreLimitOutput,
+                            effectiveVmin, effectiveVmax);
+                }
             } else {
                 // VMAX/VMIN are downstream of the VFLAG selector in REEC_A,
                 // so they constrain the direct Vref1+Qext branch as well as
@@ -199,7 +223,6 @@ public final class Reeca1Model implements RenewableElectricalController {
             // forms Vref - Vt_filtered before the selector.
             double voltageError = data.vFlag() == 1
                     ? voltageBias : voltageBias - vMeasured;
-            double preliminaryIqMax = preliminaryReactiveCurrentLimit(rawIp);
             voltageControlError = voltageError;
             preliminaryIqLimit = preliminaryIqMax;
             vIntegral = Repca1Model.integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
