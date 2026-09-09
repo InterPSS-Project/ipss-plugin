@@ -119,6 +119,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   reused core GENROU, and all three named PowerWorld controller states.
 - `smib-genrou-esac4a.json`: the IEEE Type AC4A high-initial-response exciter,
   including its UEL high-value gate and asymmetric field-voltage limits.
+- `smib-genrou-esac6a.json`: the IEEE Type AC6A rotating exciter, including
+  both lead-lag stages, field-current feedback, saturation, and rectifier load.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
