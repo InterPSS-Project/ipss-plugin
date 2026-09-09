@@ -233,6 +233,12 @@ public class Esac2aExciter extends AnnotateExciter implements IntegrationStepAwa
     public double getLimiterGateOutput(){return runtimeStaticBlock("limiterGate").getY();}
     public double getGatedRegulatorOutput(){return runtimeStaticBlock("vrLimiter").getY();}
     public double getRateFeedback(){return runtimeBlock("washout").getY();}
+    /** PowerWorld/IEEE diagram state VE, before the loaded-rectifier output. */
+    public double getInternalFieldVoltage(){return runtimeBlock("fieldIntegrator").getY();}
+    /** PowerWorld/IEEE diagram state for the filtered terminal voltage. */
+    public double getSensedVoltage(){return runtimeBlock("transducer").getY();}
+    /** PowerWorld/IEEE diagram VLL signal at the lead-lag output. */
+    public double getLeadLagOutput(){return runtimeBlock("leadLag").getY();}
     private double getLeadLagLowPassState(){
         if(Math.abs(tb)<=EPS)return 0;double dynamicGain=1-tc/tb;
         return Math.abs(dynamicGain)>EPS?runtimeBlock("leadLag").getStateX()/dynamicGain:0;
