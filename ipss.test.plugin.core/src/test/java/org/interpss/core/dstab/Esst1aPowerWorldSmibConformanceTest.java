@@ -23,28 +23,43 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
-/** Full-solver GENROU + ESST1A comparison against the PowerWorld reference. */
+/** Full-solver GENROU + ESST1A/EXST1 comparisons against PowerWorld references. */
 public class Esst1aPowerWorldSmibConformanceTest {
-    private static final double STEP = 0.0005;
+    private static final double POWER_WORLD_STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
     @Test
     void threeCycleFaultMatchesPowerWorldBoundaryMachineAndExciterStates() throws Exception {
+        comparePowerWorld("SMIB_v33_genrou_esst1a.dyr", "smib-genrou-esst1a",
+                "ESST1A", false, POWER_WORLD_STEP);
+    }
+
+    @Test
+    void exst1ThreeCycleFaultMatchesPowerWorldBoundaryMachineAndExciterStates() throws Exception {
+        comparePowerWorld("SMIB_v33_genrou_exst1.dyr", "smib-genrou-exst1",
+                "EXST1", true, POWER_WORLD_STEP / 2.0);
+    }
+
+    private static void comparePowerWorld(String dyrName, String referenceName,
+            String modelName, boolean fourthStateIsRateFeedback, double interpssStep)
+            throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_esst1a.dyr").toString());
+                CASE.resolve(dyrName).toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
-        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + ESST1A SMIB load flow");
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(),
+                "GENROU + " + modelName + " SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(STEP);
+        algorithm.setSimuStepSec(interpssStep);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
-        assertTrue(algorithm.initialization(), "GENROU + ESST1A SMIB initialization");
+        assertTrue(algorithm.initialization(),
+                "GENROU + " + modelName + " SMIB initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
@@ -52,16 +67,16 @@ public class Esst1aPowerWorldSmibConformanceTest {
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, exciter,
-                initialRelativeAngle);
-        while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
+                initialRelativeAngle, fourthStateIsRateFeedback);
+        while (algorithm.getSimuTime() < 1.0 - interpssStep / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true),
-                    "GENROU + ESST1A solve at " + algorithm.getSimuTime());
+                    "GENROU + " + modelName + " solve at " + algorithm.getSimuTime());
             record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, exciter,
-                    initialRelativeAngle);
+                    initialRelativeAngle, fourthStateIsRateFeedback);
         }
 
         PowerWorldCsvReference reference = PowerWorldCsvReference.read(Path.of(
-                "testData", "reference", "powerworld", "smib-genrou-esst1a", "powerworld.csv"));
+                "testData", "reference", "powerworld", referenceName, "powerworld.csv"));
         assertEquals(2003, reference.samples().size(), "PowerWorld raw samples");
         assertEquals(2001, reference.postEventSamples().size(), "PowerWorld post-event samples");
         int[] field = {
@@ -87,8 +102,8 @@ public class Esst1aPowerWorldSmibConformanceTest {
         double[] maximum = new double[field.length];
         double[] maximumTime = new double[field.length];
         for (var expected : reference.postEventSamples()) {
-            if (Math.abs(expected.time() - 0.05) < STEP
-                    || Math.abs(expected.time() - 0.10) < STEP) continue;
+            if (Math.abs(expected.time() - 0.05) < interpssStep
+                    || Math.abs(expected.time() - 0.10) < interpssStep) continue;
             double[] row = interpolate(actual, expected.time());
             double[] powerWorld = new double[field.length];
             for (int index = 0; index < field.length; index++) {
@@ -105,20 +120,24 @@ public class Esst1aPowerWorldSmibConformanceTest {
             }
         }
         System.out.printf(Locale.ROOT,
-                "ESST1A PowerWorld max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
+                modelName + " PowerWorld max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
                 + "angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g "
-                + "edp=%.9g va=%.9g sensedV=%.9g ll=%.9g ll1=%.9g%n",
+                + "edp=%.9g va=%.9g sensedV=%.9g ll=%.9g "
+                + (fourthStateIsRateFeedback ? "feedback" : "ll1") + "=%.9g%n",
                 Arrays.stream(maximum).boxed().toArray());
-        System.out.println("ESST1A PowerWorld max-error times: " + Arrays.toString(maximumTime));
-        double[] tolerances = {
-                4.0e-4, 1.5e-4, 0.10, 0.30, 0.018, 8.0e-6,
-                1.2e-4, 2.0e-4, 2.0e-4, 1.3e-4,
-                6.0e-3, 5.0e-4, 1.5e-4, 5.0e-5
-        };
+        System.out.println(modelName + " PowerWorld max-error times: "
+                + Arrays.toString(maximumTime));
+        double[] tolerances = fourthStateIsRateFeedback
+                ? new double[] {4.0e-4, 1.5e-4, 0.10, 0.30, 0.018, 8.0e-6,
+                        1.3e-4, 2.0e-4, 2.0e-4, 1.3e-4,
+                        5.5e-3, 5.0e-4, 4.5e-4, 1.1e-3}
+                : new double[] {4.0e-4, 1.5e-4, 0.10, 0.30, 0.018, 8.0e-6,
+                        1.2e-4, 2.0e-4, 2.0e-4, 1.3e-4,
+                        6.0e-3, 5.0e-4, 1.5e-4, 5.0e-5};
         String[] labels = {
                 "Bus1 V", "Bus2 V", "P MW", "Q Mvar", "relative angle",
                 "relative speed", "Eqp", "PsiDp", "PsiQpp", "Edp",
-                "VA", "sensed Vt", "LL", "LL1"
+                "VA", "sensed Vt", "LL", fourthStateIsRateFeedback ? "rate feedback" : "LL1"
         };
         for (int index = 0; index < maximum.length; index++) {
             assertTrue(maximum[index] <= tolerances[index], String.format(Locale.ROOT,
@@ -130,7 +149,7 @@ public class Esst1aPowerWorldSmibConformanceTest {
     private static void record(List<double[]> rows, double time,
             com.interpss.dstab.BaseDStabNetwork<?, ?> network,
             RoundRotorMachine machine, Machine referenceMachine, IEEE1981ST1Exciter exciter,
-            double initialRelativeAngle) {
+            double initialRelativeAngle, boolean fourthStateIsRateFeedback) {
         Complex voltage = network.getBus("Bus1").getVoltage();
         Complex terminalCurrent = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
         Complex power = voltage.multiply(terminalCurrent.conjugate());
@@ -142,7 +161,8 @@ public class Esst1aPowerWorldSmibConformanceTest {
                 machine.getSpeed() - referenceMachine.getSpeed(), machine.getEq1(),
                 machine.getPsikd(), machine.getPsikq(), machine.getEd1(),
                 exciter.getRegulatorOutput(), exciter.getSensedVoltage(),
-                exciter.getLeadLagOutput(), exciter.getLeadLag1Output()
+                exciter.getLeadLagOutput(), fourthStateIsRateFeedback
+                        ? exciter.getRateFeedback() : exciter.getLeadLag1Output()
         });
     }
 
