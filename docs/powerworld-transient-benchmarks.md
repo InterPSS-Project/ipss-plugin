@@ -72,6 +72,15 @@ REECA1, and Type-3 drive-train state selectors, while the conventional
 reference identifies GENROU angle/speed/flux states and ESST4B states by their
 PowerWorld column headers.
 
+For synchronous-machine rotor comparisons, request the generic
+`TSRotorAngle` and `TSSpeed` fields for both the studied generator and the
+reference generator. Do not substitute `TSGenMachineState:1/2`: PowerWorld can
+emit metadata for those selectors while returning constant or even absent
+trajectory values. Compare relative angle and relative speed across the two
+generators so the result is independent of PowerWorld's configured angle
+reference. The runner validates every trajectory row width as well as the
+metadata count to catch silently omitted result columns.
+
 Keep automatic correction disabled unless the benchmark intentionally targets
 PowerWorld's documented corrected interpretation. If enabled, declare expected
 log text so an unexpected or missing correction fails the run.
