@@ -64,6 +64,10 @@ public class PsseEsst4bExciterTest extends CorePluginTestSetup {
         assertSame(exciter, machine.getExciter());
         assertTrue(exciter.initStates(builder.getDStabNetwork().getDStabBus("Bus1"), machine));
         assertEquals(machine.getEfd(), exciter.getOutput(machine), 1.0e-8);
+        assertEquals(0.0, exciter.getFieldVoltageRegulatorIntegrator(), TOL,
+                "Kim=0 must initialize the inner PI as a pure proportional path");
+        assertEquals(exciter.getRegulatorDelayOutput(), exciter.getVoltageRegulatorOutput(), TOL,
+                "outer PI output must initialize the regulator delay without a hidden offset");
         for (int i = 0; i < 20; i++) {
             exciter.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0);
             exciter.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1);
