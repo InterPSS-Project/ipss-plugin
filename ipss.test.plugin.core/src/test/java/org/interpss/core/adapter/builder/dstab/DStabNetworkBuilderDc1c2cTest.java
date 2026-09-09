@@ -83,6 +83,26 @@ public class DStabNetworkBuilderDc1c2cTest {
     }
 
     @Test
+    void dc2cMovingVoltageLimitClampsTheRegulatorStateWithoutRebound()
+            throws Exception {
+        Dc1cData data = standardData();
+        data.setVrmax(2.0); data.setVrmin(-2.0);
+        Fixture fixture = fixture(true, data);
+        fixture.exciter.setRefPoint(fixture.exciter.getRefPoint() + 1.0);
+        for (int i = 0; i < 1000; i++) step(fixture, 1.0e-4);
+        assertEquals(fixture.exciter.getDynamicRegulatorUpperLimit(),
+                fixture.exciter.getRegulatorOutput(), 2.0e-6);
+
+        fixture.machine.getDStabBus().setVoltage(new Complex(.75, 0));
+        step(fixture, 1.0e-4);
+        assertEquals(1.5, fixture.exciter.getRegulatorOutput(), 2.0e-6);
+
+        fixture.machine.getDStabBus().setVoltage(new Complex(.95, 0));
+        assertEquals(1.5, fixture.exciter.getRegulatorOutput(), 2.0e-6,
+                "raising the moving ceiling must not reveal a hidden pre-fault state");
+    }
+
+    @Test
     void summationInputsUsePublishedUelOelAndSclSigns() throws Exception {
         Dc1cData data = standardData();
         data.setUelLocation(Dc1cExciter.INPUT_SUMMATION);
