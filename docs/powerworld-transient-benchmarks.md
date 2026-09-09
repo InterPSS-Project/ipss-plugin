@@ -157,6 +157,12 @@ The initial suite deliberately covers both renewable and conventional stacks:
   fields. It exports the filtered speed input, all four lead-lag states,
   integral governor, servo velocity, gate, turbine flow, and filtered electrical
   power, plus GENROU and boundary channels.
+- `smib-genrou-hygov2d.json`: native 19-CON PSS/E HYGOV2D with nonzero
+  integral gain and zero deadband so all six published states move during the
+  fault. The cross-tool profile sets `Kp=0` because PowerWorld 24 initializes
+  both HYGOV2 and HYGOV2D state 1 near `-Kp` when it is nonzero, causing an
+  artificial pre-fault gate ramp. The independent HYGOV2D equation test retains
+  nonzero-`Kp` coverage.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
