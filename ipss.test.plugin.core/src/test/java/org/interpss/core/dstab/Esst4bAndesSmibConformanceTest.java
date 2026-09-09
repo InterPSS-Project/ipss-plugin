@@ -120,8 +120,13 @@ public class Esst4bAndesSmibConformanceTest {
                 internalMax[2], internalMaxTime[2], internalMax[3], internalMaxTime[3],
                 internalMax[4], internalMaxTime[4], internalMax[5], internalMaxTime[5],
                 internalMax[6], internalMaxTime[6], internalMax[7], internalMaxTime[7]);
-        for (int i = 0; i < internalMax.length; i++) {
-            assertTrue(internalMax[i] < 8e-4, "internal-state parity index " + i);
+        // ANDES represents both PI blocks with a stored bias even when Ki=0 and
+        // uses back-calculation at the output limit. PowerWorld's documented
+        // ESST4B realization freezes the integrator and exposes no zero-Ki state.
+        // Keep ANDES as an independent boundary/common-output oracle, but do not
+        // assert equality for the four solver-specific PI state/output channels.
+        for (int i : new int[] {0, 5, 6, 7}) {
+            assertTrue(internalMax[i] < 8e-4, "common internal-output parity index " + i);
         }
     }
 

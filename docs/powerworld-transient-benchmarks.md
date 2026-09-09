@@ -95,6 +95,15 @@ The initial suite deliberately covers both renewable and conventional stacks:
 - `smib-genrou-ieeeg1.json`: GENROU with the steam-turbine governor chain;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 
+This is the required contract for each newly implemented model, not an optional
+one-off check. Add a specification and publish its immutable PowerWorld output
+alongside the model slice; then add a Java trajectory test that maps named
+PowerWorld channels to InterPSS signals and enforces per-channel tolerances. A
+model is only marked cross-tool verified after all three pieces exist: the JSON
+specification, the hashed reference artifact, and the registered InterPSS
+comparison test. ANDES remains a second oracle where it implements an
+equation-equivalent model.
+
 Every published trace contains both boundary channels (bus voltage and
 generator MW/Mvar) and named internal model states. The test suite verifies the
 input and artifact hashes, finite trajectories, duplicate pre/post-event
@@ -108,6 +117,15 @@ uses `0.5 ms`, matching its independent ANDES comparison. A reduced-step check
 is required before attributing a fast controller-state discrepancy to model
 equations. For GENROU, PowerWorld's `PsiQpp` state maps to InterPSS `Psikq`, not
 the derived network-interface flux returned by `getPsiq11()`.
+
+For ESST4B, PowerWorld initializes a zero-`Kim` inner PI as a pure proportional
+path and freezes the integrator while the total PI output is saturated. The
+generic InterPSS PI block's back-calculation state is therefore not an
+equivalent implementation. The ESST4B contract uses a model-specific freeze
+non-windup PI block and directly checks the sensed-voltage, regulator-delay,
+outer-regulator, and machine-flux channels. ANDES uses a different stored-bias
+PI realization, so its ESST4B comparison is retained for boundary and common
+observable outputs rather than solver-specific PI state coordinates.
 
 Run the framework's dependency-free tests with:
 
