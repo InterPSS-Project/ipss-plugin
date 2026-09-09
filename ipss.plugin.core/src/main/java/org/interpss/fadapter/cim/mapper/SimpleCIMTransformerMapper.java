@@ -1,5 +1,5 @@
 /*
- * CIMTransformerMapper.java
+ * SimpleCIMTransformerMapper.java
  *
  * Maps CIM PowerTransformer + PowerTransformerEnd → 2W xfr branch.
  */
@@ -13,8 +13,8 @@ import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.CIMPropertyBag;
-import org.interpss.fadapter.cim.util.CIMUnitConverter;
+import org.interpss.fadapter.cim.SimpleCIMPropertyBag;
+import org.interpss.fadapter.cim.util.SimpleCIMUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,22 +27,22 @@ import com.interpss.core.aclf.AclfBranch;
  * {@code TransformerMeshImpedance} between ends (common for converted models).
  * {@code ratedU} / {@code ratedS} are normalized from SI (V / VA) when needed.
  */
-public class CIMTransformerMapper extends AbstractCIMDataMapper {
-    private static final Logger log = LoggerFactory.getLogger(CIMTransformerMapper.class);
+public class SimpleCIMTransformerMapper extends AbstractSimpleCIMDataMapper {
+    private static final Logger log = LoggerFactory.getLogger(SimpleCIMTransformerMapper.class);
 
     private final double baseMVA;
-    private final Map<String, List<CIMPropertyBag>> endsByTransformer = new HashMap<>();
+    private final Map<String, List<SimpleCIMPropertyBag>> endsByTransformer = new HashMap<>();
     /** Mesh impedance keyed by FromTransformerEnd URI. */
-    private final Map<String, CIMPropertyBag> meshByFromEnd = new HashMap<>();
+    private final Map<String, SimpleCIMPropertyBag> meshByFromEnd = new HashMap<>();
     /** Core admittance keyed by TransformerEnd URI. */
-    private final Map<String, CIMPropertyBag> coreByEnd = new HashMap<>();
+    private final Map<String, SimpleCIMPropertyBag> coreByEnd = new HashMap<>();
 
-    public CIMTransformerMapper(double baseMVA) {
+    public SimpleCIMTransformerMapper(double baseMVA) {
         this.baseMVA = baseMVA;
     }
 
-    public void indexEnds(List<CIMPropertyBag> ends) {
-        for (CIMPropertyBag end : ends) {
+    public void indexEnds(List<SimpleCIMPropertyBag> ends) {
+        for (SimpleCIMPropertyBag end : ends) {
             String xfrId = end.getResourceId("PowerTransformerEnd.PowerTransformer");
             if (xfrId != null) {
                 endsByTransformer.computeIfAbsent(xfrId, k -> new ArrayList<>()).add(end);
@@ -51,9 +51,9 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
         log.debug("Indexed transformer ends: {} transformers", endsByTransformer.size());
     }
 
-    public void indexMeshImpedances(List<CIMPropertyBag> meshes) {
+    public void indexMeshImpedances(List<SimpleCIMPropertyBag> meshes) {
         meshByFromEnd.clear();
-        for (CIMPropertyBag mesh : meshes) {
+        for (SimpleCIMPropertyBag mesh : meshes) {
             String fromEnd = mesh.getResourceId("TransformerMeshImpedance.FromTransformerEnd");
             if (fromEnd != null) {
                 meshByFromEnd.put(fromEnd, mesh);
@@ -62,9 +62,9 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
         log.debug("Indexed {} transformer mesh impedances", meshByFromEnd.size());
     }
 
-    public void indexCoreAdmittances(List<CIMPropertyBag> cores) {
+    public void indexCoreAdmittances(List<SimpleCIMPropertyBag> cores) {
         coreByEnd.clear();
-        for (CIMPropertyBag core : cores) {
+        for (SimpleCIMPropertyBag core : cores) {
             String end = core.getResourceId("TransformerCoreAdmittance.TransformerEnd");
             if (end != null) {
                 coreByEnd.put(end, core);
@@ -73,12 +73,12 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
     }
 
     @Override
-    public void map(CIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void map(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         String xfrId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = xfrId;
 
-        List<CIMPropertyBag> ends = endsByTransformer.get(bag.getId());
+        List<SimpleCIMPropertyBag> ends = endsByTransformer.get(bag.getId());
         if (ends == null || ends.size() < 2) {
             log.warn("Skipping transformer {} - insufficient ends ({})", name,
                 ends == null ? 0 : ends.size());
@@ -93,12 +93,12 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
             return Integer.compare(ea, eb);
         });
 
-        CIMPropertyBag end1 = ends.get(0);
-        CIMPropertyBag end2 = ends.get(1);
+        SimpleCIMPropertyBag end1 = ends.get(0);
+        SimpleCIMPropertyBag end2 = ends.get(1);
 
-        double ratedU1 = CIMUnitConverter.toKV(end1.getDouble("PowerTransformerEnd.ratedU",
+        double ratedU1 = SimpleCIMUnitConverter.toKV(end1.getDouble("PowerTransformerEnd.ratedU",
                             end1.getDouble("TransformerEnd.ratedU", 0.0)));
-        double ratedU2 = CIMUnitConverter.toKV(end2.getDouble("PowerTransformerEnd.ratedU",
+        double ratedU2 = SimpleCIMUnitConverter.toKV(end2.getDouble("PowerTransformerEnd.ratedU",
                             end2.getDouble("TransformerEnd.ratedU", 0.0)));
 
         double r1 = end1.getDouble("PowerTransformerEnd.r", end1.getDouble("TransformerEnd.r", 0.0));
@@ -113,7 +113,7 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
         boolean endXMissing = x1Obj == null && x2Obj == null;
 
         // IEEE118 / CIM Hub: ends often carry tiny winding r with no x; series Z is on mesh
-        CIMPropertyBag mesh = meshByFromEnd.get(end1.getId());
+        SimpleCIMPropertyBag mesh = meshByFromEnd.get(end1.getId());
         if (mesh == null) {
             mesh = meshByFromEnd.get(end2.getId());
         }
@@ -153,12 +153,12 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
         fromTurnRatio = clampTap(fromTurnRatio);
         toTurnRatio = clampTap(toTurnRatio);
 
-        double ratingMva = CIMUnitConverter.apparentPowerToMVA(
+        double ratingMva = SimpleCIMUnitConverter.apparentPowerToMVA(
                 end1.getDouble("PowerTransformerEnd.ratedS",
                     end2.getDouble("PowerTransformerEnd.ratedS", 0.0)));
 
         Complex magY = null;
-        CIMPropertyBag core = coreByEnd.get(end1.getId());
+        SimpleCIMPropertyBag core = coreByEnd.get(end1.getId());
         if (core == null) core = coreByEnd.get(end2.getId());
         if (core != null) {
             double g = core.getDouble("TransformerCoreAdmittance.g", 0.0);
@@ -185,7 +185,7 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
             name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva);
     }
 
-    private String resolveBusIdFromEnd(CIMPropertyBag end) {
+    private String resolveBusIdFromEnd(SimpleCIMPropertyBag end) {
         if (cimModel == null || end == null) return null;
         String termId = end.getResourceId("TransformerEnd.Terminal");
         if (termId == null) return null;
@@ -212,7 +212,7 @@ public class CIMTransformerMapper extends AbstractCIMDataMapper {
         return tap;
     }
 
-    private static boolean endHasX(CIMPropertyBag end) {
+    private static boolean endHasX(SimpleCIMPropertyBag end) {
         return end.getString("PowerTransformerEnd.x") != null
                 || end.getString("TransformerEnd.x") != null;
     }

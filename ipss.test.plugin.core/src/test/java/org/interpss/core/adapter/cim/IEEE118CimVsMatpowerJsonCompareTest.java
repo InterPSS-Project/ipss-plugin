@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.fadapter.cim.CIMDirectParser;
+import org.interpss.fadapter.cim.SimpleCIMDirectParser;
 import org.interpss.util.AclfNetJsonComparator;
 import org.junit.jupiter.api.Test;
 
@@ -50,7 +50,7 @@ public class IEEE118CimVsMatpowerJsonCompareTest extends CorePluginTestSetup {
 
 	@Test
 	public void compareCimVsMatpowerJson() throws Exception {
-		AclfNetwork cimNet = new CIMDirectParser().parse(CIM_FILE);
+		AclfNetwork cimNet = new SimpleCIMDirectParser().parse(CIM_FILE);
 		AclfNetwork matNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.MATPOWER)
 				.load(MATPOWER_FILE)

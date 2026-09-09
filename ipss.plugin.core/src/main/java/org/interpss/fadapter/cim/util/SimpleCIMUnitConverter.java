@@ -1,5 +1,5 @@
 /*
- * CIMUnitConverter.java
+ * SimpleCIMUnitConverter.java
  *
  * Unit conversion utilities for CIM physical units to per-unit.
  */
@@ -9,9 +9,9 @@ package org.interpss.fadapter.cim.util;
 /**
  * Converts CIM physical units (Ohms, Siemens, W/var, kV) to per-unit values.
  */
-public final class CIMUnitConverter {
+public final class SimpleCIMUnitConverter {
 
-    private CIMUnitConverter() {}
+    private SimpleCIMUnitConverter() {}
 
     /**
      * Convert impedance from Ohms to per-unit.

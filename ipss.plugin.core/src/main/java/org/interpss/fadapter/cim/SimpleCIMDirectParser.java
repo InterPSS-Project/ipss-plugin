@@ -1,5 +1,5 @@
 /*
- * CIMDirectParser.java
+ * SimpleCIMDirectParser.java
  *
  * Direct CIM/CGMES → AclfNetwork parser that bypasses the ODM XML layer.
  */
@@ -17,13 +17,13 @@ import java.util.Map;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.mapper.CIMGeneratorMapper;
-import org.interpss.fadapter.cim.mapper.CIMLineMapper;
-import org.interpss.fadapter.cim.mapper.CIMLoadMapper;
-import org.interpss.fadapter.cim.mapper.CIMShuntCompensatorMapper;
-import org.interpss.fadapter.cim.mapper.CIMTransformer3WMapper;
-import org.interpss.fadapter.cim.mapper.CIMTransformerMapper;
-import org.interpss.fadapter.cim.parser.CIMRdfParser;
+import org.interpss.fadapter.cim.mapper.SimpleCIMGeneratorMapper;
+import org.interpss.fadapter.cim.mapper.SimpleCIMLineMapper;
+import org.interpss.fadapter.cim.mapper.SimpleCIMLoadMapper;
+import org.interpss.fadapter.cim.mapper.SimpleCIMShuntCompensatorMapper;
+import org.interpss.fadapter.cim.mapper.SimpleCIMTransformer3WMapper;
+import org.interpss.fadapter.cim.mapper.SimpleCIMTransformerMapper;
+import org.interpss.fadapter.cim.parser.SimpleCIMRdfParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,17 +37,17 @@ import com.interpss.core.net.OriginalDataFormat;
  * Parses CIM RDF/XML (single file or CGMES multi-profile set) into an AclfNetwork
  * via {@link AclfNetworkBuilder}.
  */
-public class CIMDirectParser {
-    private static final Logger log = LoggerFactory.getLogger(CIMDirectParser.class);
+public class SimpleCIMDirectParser {
+    private static final Logger log = LoggerFactory.getLogger(SimpleCIMDirectParser.class);
 
     public static final double DEFAULT_BASE_MVA = 100.0;
 
     private static int lastLoadCount = 0;
 
-    private CIMModel cimModel;
+    private SimpleCIMModel cimModel;
     private final AclfNetworkBuilder builder;
 
-    public CIMDirectParser() {
+    public SimpleCIMDirectParser() {
         this.builder = new AclfNetworkBuilder();
     }
 
@@ -56,16 +56,16 @@ public class CIMDirectParser {
         return lastLoadCount;
     }
 
-    public CIMModel getCimModel() {
+    public SimpleCIMModel getCimModel() {
         return cimModel;
     }
 
     public AclfNetwork parse(String filepath) throws InterpssException {
         try {
             String content = readFile(filepath);
-            CIMRdfParser rdfParser = new CIMRdfParser();
+            SimpleCIMRdfParser rdfParser = new SimpleCIMRdfParser();
             Model jenaModel = rdfParser.parseString(content);
-            this.cimModel = new CIMModel(jenaModel);
+            this.cimModel = new SimpleCIMModel(jenaModel);
             cimModel.buildIndices();
             return buildNetwork(cimModel, filepath);
         } catch (InterpssException e) {
@@ -87,7 +87,7 @@ public class CIMDirectParser {
             return parse(filepaths[0]);
         }
         try {
-            CIMRdfParser rdfParser = new CIMRdfParser();
+            SimpleCIMRdfParser rdfParser = new SimpleCIMRdfParser();
             Model merged = ModelFactory.createDefaultModel();
             for (String path : filepaths) {
                 try {
@@ -99,7 +99,7 @@ public class CIMDirectParser {
                     log.warn("Skipping CIM file {}: {}", path, e.getMessage());
                 }
             }
-            this.cimModel = new CIMModel(merged);
+            this.cimModel = new SimpleCIMModel(merged);
             cimModel.buildIndices();
             return buildNetwork(cimModel, filepaths[0]);
         } catch (InterpssException e) {
@@ -110,7 +110,7 @@ public class CIMDirectParser {
         }
     }
 
-    private AclfNetwork buildNetwork(CIMModel cimModel, String nameHint) throws Exception {
+    private AclfNetwork buildNetwork(SimpleCIMModel cimModel, String nameHint) throws Exception {
         String netName = nameHint != null
                 ? nameHint.substring(Math.max(nameHint.lastIndexOf('/') + 1, nameHint.lastIndexOf('\\') + 1))
                 : "CIM_Import";
@@ -127,10 +127,10 @@ public class CIMDirectParser {
         return net;
     }
 
-    private void convertBuses(CIMModel cimModel) throws Exception {
-        List<CIMPropertyBag> topoNodes = cimModel.topologicalNodes();
-        List<CIMPropertyBag> connNodes = cimModel.connectivityNodes();
-        List<CIMPropertyBag> busbars = cimModel.busbarSections();
+    private void convertBuses(SimpleCIMModel cimModel) throws Exception {
+        List<SimpleCIMPropertyBag> topoNodes = cimModel.topologicalNodes();
+        List<SimpleCIMPropertyBag> connNodes = cimModel.connectivityNodes();
+        List<SimpleCIMPropertyBag> busbars = cimModel.busbarSections();
 
         // Default area/zone when CIM has no ControlArea / Zone (matches MatPower IEEE cases)
         final String defaultAreaId = "1";
@@ -146,7 +146,7 @@ public class CIMDirectParser {
 
         if (!topoNodes.isEmpty()) {
             log.info("Converting {} TopologicalNodes to buses", topoNodes.size());
-            for (CIMPropertyBag tn : topoNodes) {
+            for (SimpleCIMPropertyBag tn : topoNodes) {
                 String tnId = tn.getId();
                 if (cimModel.isBoundaryTopologicalNode(tnId)) {
                     log.debug("Skipping boundary TN: {}", tn.getName());
@@ -164,7 +164,7 @@ public class CIMDirectParser {
             }
         } else if (!busbars.isEmpty()) {
             log.info("Using {} BusbarSections as bus proxies", busbars.size());
-            for (CIMPropertyBag bb : busbars) {
+            for (SimpleCIMPropertyBag bb : busbars) {
                 String name = bb.getName() != null ? bb.getName() : bb.getLocalId();
                 String vlUri = bb.getResourceId("Equipment.EquipmentContainer");
                 Double baseKV = vlUri != null ? cimModel.getVLRatedVoltage(vlUri) : null;
@@ -178,7 +178,7 @@ public class CIMDirectParser {
             }
         } else if (!connNodes.isEmpty()) {
             log.info("Using {} ConnectivityNodes as buses", connNodes.size());
-            for (CIMPropertyBag cn : connNodes) {
+            for (SimpleCIMPropertyBag cn : connNodes) {
                 String cnId = cn.getId();
                 String name = cn.getName() != null ? cn.getName() : cn.getLocalId();
 
@@ -202,7 +202,7 @@ public class CIMDirectParser {
         }
     }
 
-    private Double resolveTopoNodeVoltage(CIMModel cimModel, CIMPropertyBag tn) {
+    private Double resolveTopoNodeVoltage(SimpleCIMModel cimModel, SimpleCIMPropertyBag tn) {
         String bvUri = tn.getResourceId("TopologicalNode.BaseVoltage");
         if (bvUri != null) {
             Double v = cimModel.getBaseVoltageValue(bvUri);
@@ -226,43 +226,43 @@ public class CIMDirectParser {
         return null;
     }
 
-    private void convertBranches(CIMModel cimModel) throws Exception {
-        CIMLineMapper lineMapper = new CIMLineMapper(DEFAULT_BASE_MVA);
+    private void convertBranches(SimpleCIMModel cimModel) throws Exception {
+        SimpleCIMLineMapper lineMapper = new SimpleCIMLineMapper(DEFAULT_BASE_MVA);
         lineMapper.setCimModel(cimModel);
-        List<CIMPropertyBag> lineSegments = cimModel.acLineSegments();
+        List<SimpleCIMPropertyBag> lineSegments = cimModel.acLineSegments();
         log.info("Processing {} ACLineSegments", lineSegments.size());
-        for (CIMPropertyBag line : lineSegments) {
+        for (SimpleCIMPropertyBag line : lineSegments) {
             lineMapper.map(line, builder);
         }
 
-        List<CIMPropertyBag> seriesComps = cimModel.seriesCompensators();
+        List<SimpleCIMPropertyBag> seriesComps = cimModel.seriesCompensators();
         if (!seriesComps.isEmpty()) {
             log.info("Processing {} SeriesCompensators as lines", seriesComps.size());
-            for (CIMPropertyBag sc : seriesComps) {
+            for (SimpleCIMPropertyBag sc : seriesComps) {
                 lineMapper.mapSeriesCompensator(sc, builder);
             }
         }
 
-        CIMTransformerMapper xfr2wMapper = new CIMTransformerMapper(DEFAULT_BASE_MVA);
+        SimpleCIMTransformerMapper xfr2wMapper = new SimpleCIMTransformerMapper(DEFAULT_BASE_MVA);
         xfr2wMapper.setCimModel(cimModel);
         xfr2wMapper.indexEnds(cimModel.transformerEnds());
         xfr2wMapper.indexMeshImpedances(cimModel.transformerMeshImpedances());
         xfr2wMapper.indexCoreAdmittances(cimModel.transformerCoreAdmittances());
 
-        CIMTransformer3WMapper xfr3wMapper = new CIMTransformer3WMapper(DEFAULT_BASE_MVA);
+        SimpleCIMTransformer3WMapper xfr3wMapper = new SimpleCIMTransformer3WMapper(DEFAULT_BASE_MVA);
         xfr3wMapper.setCimModel(cimModel);
 
-        Map<String, List<CIMPropertyBag>> endsByXfr = new HashMap<>();
-        for (CIMPropertyBag end : cimModel.transformerEnds()) {
+        Map<String, List<SimpleCIMPropertyBag>> endsByXfr = new HashMap<>();
+        for (SimpleCIMPropertyBag end : cimModel.transformerEnds()) {
             String xfrId = end.getResourceId("PowerTransformerEnd.PowerTransformer");
             if (xfrId != null) {
                 endsByXfr.computeIfAbsent(xfrId, k -> new ArrayList<>()).add(end);
             }
         }
 
-        for (CIMPropertyBag xfr : cimModel.powerTransformers()) {
+        for (SimpleCIMPropertyBag xfr : cimModel.powerTransformers()) {
             String xfrKey = xfr.getId();
-            List<CIMPropertyBag> ends = endsByXfr.get(xfrKey);
+            List<SimpleCIMPropertyBag> ends = endsByXfr.get(xfrKey);
             if (ends != null && ends.size() >= 3) {
                 ends.sort((a, b) -> {
                     int ea = a.getInt("TransformerEnd.endNumber",
@@ -278,28 +278,28 @@ public class CIMDirectParser {
         }
     }
 
-    private void convertInjections(CIMModel cimModel) throws Exception {
+    private void convertInjections(SimpleCIMModel cimModel) throws Exception {
         int loadCount = 0;
 
-        CIMLoadMapper loadMapper = new CIMLoadMapper(DEFAULT_BASE_MVA);
+        SimpleCIMLoadMapper loadMapper = new SimpleCIMLoadMapper(DEFAULT_BASE_MVA);
         loadMapper.setCimModel(cimModel);
-        for (CIMPropertyBag load : cimModel.energyConsumers()) {
+        for (SimpleCIMPropertyBag load : cimModel.energyConsumers()) {
             int before = loadMapper.getMappedCount();
             loadMapper.map(load, builder);
             if (loadMapper.getMappedCount() > before) loadCount++;
         }
-        for (CIMPropertyBag asm : cimModel.asynchronousMachines()) {
+        for (SimpleCIMPropertyBag asm : cimModel.asynchronousMachines()) {
             int before = loadMapper.getMappedCount();
             loadMapper.map(asm, builder);
             if (loadMapper.getMappedCount() > before) loadCount++;
         }
 
-        CIMGeneratorMapper genMapper = new CIMGeneratorMapper(DEFAULT_BASE_MVA);
+        SimpleCIMGeneratorMapper genMapper = new SimpleCIMGeneratorMapper(DEFAULT_BASE_MVA);
         genMapper.setCimModel(cimModel);
         genMapper.indexGeneratingUnits(cimModel.generatingUnits());
         boolean hasSwing = false;
 
-        for (CIMPropertyBag gen : cimModel.synchronousMachines()) {
+        for (SimpleCIMPropertyBag gen : cimModel.synchronousMachines()) {
             genMapper.map(gen, builder);
             String busId = genMapper.resolveBusId(gen.getId());
             if (busId != null) {
@@ -310,7 +310,7 @@ public class CIMDirectParser {
             }
         }
 
-        for (CIMPropertyBag eni : cimModel.externalNetworkInjections()) {
+        for (SimpleCIMPropertyBag eni : cimModel.externalNetworkInjections()) {
             genMapper.mapExternalNetworkInjection(eni, builder);
             String busId = genMapper.resolveBusId(eni.getId());
             if (busId != null) {
@@ -322,7 +322,7 @@ public class CIMDirectParser {
         }
 
         if (!hasSwing) {
-            for (CIMPropertyBag gen : cimModel.synchronousMachines()) {
+            for (SimpleCIMPropertyBag gen : cimModel.synchronousMachines()) {
                 String busId = genMapper.resolveBusId(gen.getId());
                 if (busId != null && genMapper.promoteToSwing(builder, busId)) {
                     hasSwing = true;
@@ -332,9 +332,9 @@ public class CIMDirectParser {
         }
 
         lastLoadCount = loadCount;
-        CIMShuntCompensatorMapper shuntMapper = new CIMShuntCompensatorMapper(DEFAULT_BASE_MVA);
+        SimpleCIMShuntCompensatorMapper shuntMapper = new SimpleCIMShuntCompensatorMapper(DEFAULT_BASE_MVA);
         shuntMapper.setCimModel(cimModel);
-        for (CIMPropertyBag shunt : cimModel.shuntCompensators()) {
+        for (SimpleCIMPropertyBag shunt : cimModel.shuntCompensators()) {
             shuntMapper.map(shunt, builder);
         }
     }

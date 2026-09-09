@@ -1,5 +1,5 @@
 /*
- * CIMModel.java
+ * SimpleCIMModel.java
  *
  * Wraps a Jena Model and provides typed access to CIM elements.
  * Similar to PowSyBl's CgmesModel.
@@ -27,7 +27,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.interpss.fadapter.cim.util.CIMUnitConverter;
+import org.interpss.fadapter.cim.util.SimpleCIMUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,8 +35,8 @@ import org.slf4j.LoggerFactory;
  * In-memory CIM model backed by a Jena RDF Model.
  * Provides typed element access and topology index.
  */
-public class CIMModel {
-    private static final Logger log = LoggerFactory.getLogger(CIMModel.class);
+public class SimpleCIMModel {
+    private static final Logger log = LoggerFactory.getLogger(SimpleCIMModel.class);
 
     private final Model jenaModel;
     private String cimNamespace;
@@ -58,7 +58,7 @@ public class CIMModel {
     // Indices built?
     private boolean indicesBuilt = false;
 
-    public CIMModel(Model jenaModel) {
+    public SimpleCIMModel(Model jenaModel) {
         this.jenaModel = jenaModel;
         detectNamespace();
     }
@@ -67,10 +67,10 @@ public class CIMModel {
     private void detectNamespace() {
         // Check for CIM16
         ResIterator it = jenaModel.listSubjectsWithProperty(RDF.type,
-                jenaModel.createResource(CIMConstants.CIM16_NS + "Substation"));
+                jenaModel.createResource(SimpleCIMConstants.CIM16_NS + "Substation"));
         if (it.hasNext()) {
-            this.cimNamespace = CIMConstants.CIM16_NS;
-            this.entsoeNamespace = CIMConstants.ENTSOE_NS;
+            this.cimNamespace = SimpleCIMConstants.CIM16_NS;
+            this.entsoeNamespace = SimpleCIMConstants.ENTSOE_NS;
             log.info("Detected CIM16 namespace");
             it.close();
             return;
@@ -79,10 +79,10 @@ public class CIMModel {
         // Check for CIM100 - try multiple common types
         for (String type : new String[]{"Substation", "ACLineSegment", "ConnectivityNode", "EnergyConsumer"}) {
             it = jenaModel.listSubjectsWithProperty(RDF.type,
-                    jenaModel.createResource(CIMConstants.CIM100_NS + type));
+                    jenaModel.createResource(SimpleCIMConstants.CIM100_NS + type));
             if (it.hasNext()) {
-                this.cimNamespace = CIMConstants.CIM100_NS;
-                this.entsoeNamespace = CIMConstants.ENTSOE_NS;
+                this.cimNamespace = SimpleCIMConstants.CIM100_NS;
+                this.entsoeNamespace = SimpleCIMConstants.ENTSOE_NS;
                 log.info("Detected CIM100 namespace via {}", type);
                 it.close();
                 return;
@@ -90,8 +90,8 @@ public class CIMModel {
         }
 
         // Default to CIM16 if nothing found
-        this.cimNamespace = CIMConstants.CIM16_NS;
-        this.entsoeNamespace = CIMConstants.ENTSOE_NS;
+        this.cimNamespace = SimpleCIMConstants.CIM16_NS;
+        this.entsoeNamespace = SimpleCIMConstants.ENTSOE_NS;
         log.warn("Could not detect CIM version, defaulting to CIM16");
     }
 
@@ -110,69 +110,69 @@ public class CIMModel {
     // --- Element accessors ---
 
     /** Return all resources of a given CIM type */
-    private List<CIMPropertyBag> listByType(String typeUri) {
-        List<CIMPropertyBag> result = new ArrayList<>();
+    private List<SimpleCIMPropertyBag> listByType(String typeUri) {
+        List<SimpleCIMPropertyBag> result = new ArrayList<>();
         Resource typeRes = jenaModel.createResource(typeUri);
         ResIterator it = jenaModel.listSubjectsWithProperty(RDF.type, typeRes);
         while (it.hasNext()) {
-            result.add(new CIMPropertyBag(it.next(), cimNamespace, entsoeNamespace));
+            result.add(new SimpleCIMPropertyBag(it.next(), cimNamespace, entsoeNamespace));
         }
         it.close();
         return result;
     }
 
-    public List<CIMPropertyBag> substations() {
+    public List<SimpleCIMPropertyBag> substations() {
         return listByType(cimNamespace + "Substation");
     }
 
-    public List<CIMPropertyBag> voltageLevels() {
+    public List<SimpleCIMPropertyBag> voltageLevels() {
         return listByType(cimNamespace + "VoltageLevel");
     }
 
-    public List<CIMPropertyBag> topologicalNodes() {
+    public List<SimpleCIMPropertyBag> topologicalNodes() {
         return listByType(cimNamespace + "TopologicalNode");
     }
 
-    public List<CIMPropertyBag> connectivityNodes() {
+    public List<SimpleCIMPropertyBag> connectivityNodes() {
         return listByType(cimNamespace + "ConnectivityNode");
     }
 
-    public List<CIMPropertyBag> acLineSegments() {
+    public List<SimpleCIMPropertyBag> acLineSegments() {
         return listByType(cimNamespace + "ACLineSegment");
     }
 
     /** SeriesCompensator — treated as line by PowSyBl */
-    public List<CIMPropertyBag> seriesCompensators() {
+    public List<SimpleCIMPropertyBag> seriesCompensators() {
         return listByType(cimNamespace + "SeriesCompensator");
     }
 
-    public List<CIMPropertyBag> powerTransformers() {
+    public List<SimpleCIMPropertyBag> powerTransformers() {
         return listByType(cimNamespace + "PowerTransformer");
     }
 
-    public List<CIMPropertyBag> transformerEnds() {
+    public List<SimpleCIMPropertyBag> transformerEnds() {
         return listByType(cimNamespace + "PowerTransformerEnd");
     }
 
-    public List<CIMPropertyBag> transformerMeshImpedances() {
+    public List<SimpleCIMPropertyBag> transformerMeshImpedances() {
         return listByType(cimNamespace + "TransformerMeshImpedance");
     }
 
-    public List<CIMPropertyBag> transformerCoreAdmittances() {
+    public List<SimpleCIMPropertyBag> transformerCoreAdmittances() {
         return listByType(cimNamespace + "TransformerCoreAdmittance");
     }
 
-    public List<CIMPropertyBag> energyConsumers() {
+    public List<SimpleCIMPropertyBag> energyConsumers() {
         return listByType(cimNamespace + "EnergyConsumer");
     }
 
-    public List<CIMPropertyBag> synchronousMachines() {
+    public List<SimpleCIMPropertyBag> synchronousMachines() {
         return listByType(cimNamespace + "SynchronousMachine");
     }
 
-    public List<CIMPropertyBag> generatingUnits() {
+    public List<SimpleCIMPropertyBag> generatingUnits() {
         // Concrete GeneratingUnit subclasses are typed separately in RDF
-        List<CIMPropertyBag> result = new ArrayList<>();
+        List<SimpleCIMPropertyBag> result = new ArrayList<>();
         result.addAll(listByType(cimNamespace + "GeneratingUnit"));
         result.addAll(listByType(cimNamespace + "ThermalGeneratingUnit"));
         result.addAll(listByType(cimNamespace + "HydroGeneratingUnit"));
@@ -182,59 +182,59 @@ public class CIMModel {
         return result;
     }
 
-    public List<CIMPropertyBag> shuntCompensators() {
+    public List<SimpleCIMPropertyBag> shuntCompensators() {
         // Includes both Linear and nonlinear
-        List<CIMPropertyBag> result = new ArrayList<>();
+        List<SimpleCIMPropertyBag> result = new ArrayList<>();
         result.addAll(listByType(cimNamespace + "LinearShuntCompensator"));
         result.addAll(listByType(cimNamespace + "NonlinearShuntCompensator"));
         return result;
     }
 
-    public List<CIMPropertyBag> asynchronousMachines() {
+    public List<SimpleCIMPropertyBag> asynchronousMachines() {
         return listByType(cimNamespace + "AsynchronousMachine");
     }
 
-    public List<CIMPropertyBag> externalNetworkInjections() {
+    public List<SimpleCIMPropertyBag> externalNetworkInjections() {
         return listByType(cimNamespace + "ExternalNetworkInjection");
     }
 
-    public List<CIMPropertyBag> terminals() {
+    public List<SimpleCIMPropertyBag> terminals() {
         return listByType(cimNamespace + "Terminal");
     }
 
-    public List<CIMPropertyBag> baseVoltages() {
+    public List<SimpleCIMPropertyBag> baseVoltages() {
         return listByType(cimNamespace + "BaseVoltage");
     }
 
-    public List<CIMPropertyBag> switches() {
-        List<CIMPropertyBag> result = new ArrayList<>();
+    public List<SimpleCIMPropertyBag> switches() {
+        List<SimpleCIMPropertyBag> result = new ArrayList<>();
         result.addAll(listByType(cimNamespace + "Switch"));
         result.addAll(listByType(cimNamespace + "Breaker"));
         result.addAll(listByType(cimNamespace + "Disconnector"));
         return result;
     }
 
-    public List<CIMPropertyBag> busbarSections() {
+    public List<SimpleCIMPropertyBag> busbarSections() {
         return listByType(cimNamespace + "BusbarSection");
     }
 
-    public List<CIMPropertyBag> currentLimits() {
+    public List<SimpleCIMPropertyBag> currentLimits() {
         return listByType(cimNamespace + "CurrentLimit");
     }
 
-    public List<CIMPropertyBag> operationalLimitSets() {
+    public List<SimpleCIMPropertyBag> operationalLimitSets() {
         return listByType(cimNamespace + "OperationalLimitSet");
     }
 
-    public List<CIMPropertyBag> operationalLimitTypes() {
+    public List<SimpleCIMPropertyBag> operationalLimitTypes() {
         return listByType(cimNamespace + "OperationalLimitType");
     }
 
     /** Get a specific resource by URI */
-    public CIMPropertyBag getResource(String uri) {
+    public SimpleCIMPropertyBag getResource(String uri) {
         Resource r = jenaModel.getResource(uri);
         if (r != null) {
-            return new CIMPropertyBag(r, cimNamespace, entsoeNamespace);
+            return new SimpleCIMPropertyBag(r, cimNamespace, entsoeNamespace);
         }
         return null;
     }
@@ -253,7 +253,7 @@ public class CIMModel {
         // Build base voltage index (normalize to kV)
         // CIM spec says BaseVoltage.nominalVoltage is in V, but some datasets (ENTSO-E) use kV.
         // Heuristic: if value > 1000, assume V and convert to kV.
-        for (CIMPropertyBag bv : baseVoltages()) {
+        for (SimpleCIMPropertyBag bv : baseVoltages()) {
             String id = bv.getId();
             double nomV = bv.getDouble("BaseVoltage.nominalVoltage");
             if (nomV > 1000) nomV = nomV / 1000.0; // V → kV
@@ -264,7 +264,7 @@ public class CIMModel {
         log.debug("Indexed {} base voltages", baseVoltageValueById.size());
 
         // Build terminal index: Terminal → ConductingEquipment, TopologicalNode, ConnectivityNode
-        for (CIMPropertyBag term : terminals()) {
+        for (SimpleCIMPropertyBag term : terminals()) {
             String termId = term.getId();
             String equipId = term.getResourceId("Terminal.ConductingEquipment");
             String topoNodeId = term.getResourceId("Terminal.TopologicalNode");
@@ -285,7 +285,7 @@ public class CIMModel {
 
         // Detect boundary TopologicalNodes (boundaryPoint=true on TopologicalNode)
         String entsoeNs = "http://entsoe.eu/CIM/SchemaExtension/3/1#";
-        for (CIMPropertyBag tn : topologicalNodes()) {
+        for (SimpleCIMPropertyBag tn : topologicalNodes()) {
             String bp = tn.getString("TopologicalNode.boundaryPoint");
             if (bp != null) {
                 // Try entsoe namespace prefix
@@ -308,7 +308,7 @@ public class CIMModel {
         }
         // Also detect boundary from ConnectivityNode (boundaryPoint=true on CN)
         // CNs in boundary files map to boundary TNs via ConnectivityNode.TopologicalNode
-        for (CIMPropertyBag cn : connectivityNodes()) {
+        for (SimpleCIMPropertyBag cn : connectivityNodes()) {
             String bp = null;
             org.apache.jena.rdf.model.Resource res = cn.getResource();
             org.apache.jena.rdf.model.Property boundaryProp =
@@ -339,7 +339,7 @@ public class CIMModel {
         log.debug("Detected {} boundary TopologicalNodes", boundaryTopologicalNodes.size());
 
         // Build voltage level → substation mapping
-        for (CIMPropertyBag vl : voltageLevels()) {
+        for (SimpleCIMPropertyBag vl : voltageLevels()) {
             String vlId = vl.getId();
             String substationId = vl.getResourceId("VoltageLevel.MemberOf_Substation");
             if (substationId != null) {
@@ -348,7 +348,7 @@ public class CIMModel {
         }
 
         // Build topological node → voltage level mapping
-        for (CIMPropertyBag tn : topologicalNodes()) {
+        for (SimpleCIMPropertyBag tn : topologicalNodes()) {
             String tnId = tn.getId();
             String vlId = tn.getResourceId("TopologicalNode.ConnectivityNodeContainer");
             if (vlId != null) {
@@ -357,7 +357,7 @@ public class CIMModel {
         }
 
         // Build connectivity node → voltage level mapping
-        for (CIMPropertyBag cn : connectivityNodes()) {
+        for (SimpleCIMPropertyBag cn : connectivityNodes()) {
             String cnId = cn.getId();
             String vlId = cn.getResourceId("ConnectivityNode.ConnectivityNodeContainer");
             if (vlId != null) {
@@ -382,7 +382,7 @@ public class CIMModel {
      */
     private void buildBusbarBusIndex() {
         // Find terminals connected to BusbarSections and map equipment → busbar
-        for (CIMPropertyBag term : terminals()) {
+        for (SimpleCIMPropertyBag term : terminals()) {
             String termId = term.getId();
             String equipId = term.getResourceId("Terminal.ConductingEquipment");
             if (equipId == null) continue;
@@ -448,7 +448,7 @@ public class CIMModel {
         if (baseVoltageUri == null) return null;
         Double val = baseVoltageValueById.get(baseVoltageUri);
         if (val == null) {
-            val = baseVoltageValueById.get(CIMPropertyBag.extractLocal(baseVoltageUri));
+            val = baseVoltageValueById.get(SimpleCIMPropertyBag.extractLocal(baseVoltageUri));
         }
         return val;
     }
@@ -524,7 +524,7 @@ public class CIMModel {
      */
     private Double getBaseVoltageFromTransformerTerminal(String terminalUri) {
         if (terminalUri == null) return null;
-        for (CIMPropertyBag end : transformerEnds()) {
+        for (SimpleCIMPropertyBag end : transformerEnds()) {
             String term = end.getResourceId("TransformerEnd.Terminal");
             if (!terminalUri.equals(term)) continue;
             String bvUri = end.getResourceId("TransformerEnd.BaseVoltage");
@@ -535,7 +535,7 @@ public class CIMModel {
             double ratedU = end.getDouble("PowerTransformerEnd.ratedU",
                     end.getDouble("TransformerEnd.ratedU", 0.0));
             if (ratedU > 0) {
-                return CIMUnitConverter.toKV(ratedU);
+                return SimpleCIMUnitConverter.toKV(ratedU);
             }
         }
         return null;

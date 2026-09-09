@@ -3,7 +3,7 @@ package org.interpss.cim;
 import org.interpss.fadapter.IpssFileAdapter;
 
 import org.interpss.CorePluginFactory;
-import org.interpss.fadapter.cim.CIMDirectParser;
+import org.interpss.fadapter.cim.SimpleCIMDirectParser;
 import org.interpss.util.AclfNetJsonComparator;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -17,7 +17,7 @@ public class IEEE118CimSample {
 	private static final String MATPOWER_FILE = TD + "IEEE118.m";
 
 	public static void main(String args[]) throws Exception {
-		AclfNetwork cimNet = new CIMDirectParser().parse(CIM_FILE);
+		AclfNetwork cimNet = new SimpleCIMDirectParser().parse(CIM_FILE);
 
 		AclfNetwork matNet = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.MATPOWER)

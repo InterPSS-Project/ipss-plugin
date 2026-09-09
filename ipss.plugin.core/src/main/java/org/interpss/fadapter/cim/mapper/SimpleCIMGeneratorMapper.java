@@ -1,5 +1,5 @@
 /*
- * CIMGeneratorMapper.java
+ * SimpleCIMGeneratorMapper.java
  *
  * Maps CIM SynchronousMachine + GeneratingUnit → bus gen data.
  */
@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.CIMPropertyBag;
-import org.interpss.fadapter.cim.util.CIMUnitConverter;
+import org.interpss.fadapter.cim.SimpleCIMPropertyBag;
+import org.interpss.fadapter.cim.util.SimpleCIMUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,24 +24,24 @@ import com.interpss.core.aclf.BaseAclfBus;
  * Creates contribute-gen entries and bus-level PV/PQ/SWING codes to match
  * MatPower-style imports.
  */
-public class CIMGeneratorMapper extends AbstractCIMDataMapper {
-    private static final Logger log = LoggerFactory.getLogger(CIMGeneratorMapper.class);
+public class SimpleCIMGeneratorMapper extends AbstractSimpleCIMDataMapper {
+    private static final Logger log = LoggerFactory.getLogger(SimpleCIMGeneratorMapper.class);
 
     private final double baseMVA;
-    private final Map<String, CIMPropertyBag> genUnitById = new HashMap<>();
+    private final Map<String, SimpleCIMPropertyBag> genUnitById = new HashMap<>();
 
-    public CIMGeneratorMapper(double baseMVA) {
+    public SimpleCIMGeneratorMapper(double baseMVA) {
         this.baseMVA = baseMVA;
     }
 
-    public void indexGeneratingUnits(List<CIMPropertyBag> genUnits) {
-        for (CIMPropertyBag gu : genUnits) {
+    public void indexGeneratingUnits(List<SimpleCIMPropertyBag> genUnits) {
+        for (SimpleCIMPropertyBag gu : genUnits) {
             genUnitById.put(gu.getId(), gu);
         }
     }
 
     @Override
-    public void map(CIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void map(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         String genId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = genId;
@@ -71,7 +71,7 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
         double maxPW = 0.0;
 
         String genUnitRef = bag.getResourceId("RotatingMachine.GeneratingUnit");
-        CIMPropertyBag gu = genUnitRef != null ? genUnitById.get(genUnitRef) : null;
+        SimpleCIMPropertyBag gu = genUnitRef != null ? genUnitById.get(genUnitRef) : null;
         if (gu != null) {
             if (Double.isNaN(pW)) {
                 pW = gu.getDouble("GeneratingUnit.initialP", 0.0);
@@ -88,7 +88,7 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
         String regControl = bag.getResourceId("RegulatingCondEq.RegulatingControl");
         double targetV = 0.0;
         if (regControl != null && cimModel != null) {
-            CIMPropertyBag rc = cimModel.getResource(regControl);
+            SimpleCIMPropertyBag rc = cimModel.getResource(regControl);
             if (rc != null) {
                 targetV = rc.getDouble("RegulatingControl.targetValue", 0.0);
             }
@@ -103,14 +103,14 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
 
         double targetVPU = resolveTargetVPU(bag, targetV);
 
-        double pPU = CIMUnitConverter.pToPU(pW, baseMVA);
-        double qPU = CIMUnitConverter.qToPU(qVar, baseMVA);
-        double qMaxPU = CIMUnitConverter.qToPU(maxQVar, baseMVA);
-        double qMinPU = CIMUnitConverter.qToPU(minQVar, baseMVA);
-        double pMaxPU = CIMUnitConverter.pToPU(maxPW, baseMVA);
-        double pMinPU = CIMUnitConverter.pToPU(minPW, baseMVA);
+        double pPU = SimpleCIMUnitConverter.pToPU(pW, baseMVA);
+        double qPU = SimpleCIMUnitConverter.qToPU(qVar, baseMVA);
+        double qMaxPU = SimpleCIMUnitConverter.qToPU(maxQVar, baseMVA);
+        double qMinPU = SimpleCIMUnitConverter.qToPU(minQVar, baseMVA);
+        double pMaxPU = SimpleCIMUnitConverter.pToPU(maxPW, baseMVA);
+        double pMinPU = SimpleCIMUnitConverter.pToPU(minPW, baseMVA);
         double mvaBase = ratedSVA > 0
-                ? CIMUnitConverter.apparentPowerToMVA(ratedSVA)
+                ? SimpleCIMUnitConverter.apparentPowerToMVA(ratedSVA)
                 : baseMVA;
 
         builder.addContributeGen(busId, genId, true,
@@ -130,13 +130,13 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
 
         log.debug(String.format("Created generator: %s on bus %s, type=%s, P=%.2f MW, Q=%.2f MVAr, targetV=%.4f",
             name, busId, isPV ? AclfGenCode.GEN_PV : AclfGenCode.GEN_PQ,
-            CIMUnitConverter.siPowerToMVA(pW), CIMUnitConverter.siPowerToMVA(qVar), targetVPU));
+            SimpleCIMUnitConverter.siPowerToMVA(pW), SimpleCIMUnitConverter.siPowerToMVA(qVar), targetVPU));
     }
 
     /**
      * Map ExternalNetworkInjection to a SWING generator.
      */
-    public void mapExternalNetworkInjection(CIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void mapExternalNetworkInjection(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         String eniId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = eniId;
@@ -155,7 +155,7 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
         double targetV = 0.0;
         String regControl = bag.getResourceId("RegulatingCondEq.RegulatingControl");
         if (regControl != null && cimModel != null) {
-            CIMPropertyBag rc = cimModel.getResource(regControl);
+            SimpleCIMPropertyBag rc = cimModel.getResource(regControl);
             if (rc != null) {
                 targetV = rc.getDouble("RegulatingControl.targetValue", 0.0);
             }
@@ -187,7 +187,7 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
         return false;
     }
 
-    private double resolveTargetVPU(CIMPropertyBag bag, double targetV) {
+    private double resolveTargetVPU(SimpleCIMPropertyBag bag, double targetV) {
         if (targetV <= 0) return 1.0;
         if (cimModel == null) return targetV;
         java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(bag.getId());
@@ -195,7 +195,7 @@ public class CIMGeneratorMapper extends AbstractCIMDataMapper {
             Double baseKV = cimModel.getNominalVoltageForTopoNode(topoNodes.get(0));
             if (baseKV != null && baseKV > 0) {
                 // targetValue may be kV or V
-                double kv = CIMUnitConverter.toKV(targetV);
+                double kv = SimpleCIMUnitConverter.toKV(targetV);
                 // If still >> base (raw V not caught), divide by 1000 again unlikely;
                 // if target looks like pu already (<= 2), keep it
                 if (targetV <= 2.0) return targetV;

@@ -1,5 +1,5 @@
 /*
- * CIMTransformer3WMapper.java
+ * SimpleCIMTransformer3WMapper.java
  *
  * Maps CIM PowerTransformer with 3 ends → Aclf3WBranch (star-bus model).
  */
@@ -10,8 +10,8 @@ import java.util.List;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.CIMPropertyBag;
-import org.interpss.fadapter.cim.util.CIMUnitConverter;
+import org.interpss.fadapter.cim.SimpleCIMPropertyBag;
+import org.interpss.fadapter.cim.util.SimpleCIMUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,21 +20,21 @@ import com.interpss.core.aclf.Aclf3WBranch;
 /**
  * Maps CIM 3-winding PowerTransformer using the star-bus equivalent impedance model.
  */
-public class CIMTransformer3WMapper extends AbstractCIMDataMapper {
-    private static final Logger log = LoggerFactory.getLogger(CIMTransformer3WMapper.class);
+public class SimpleCIMTransformer3WMapper extends AbstractSimpleCIMDataMapper {
+    private static final Logger log = LoggerFactory.getLogger(SimpleCIMTransformer3WMapper.class);
 
     private final double baseMVA;
 
-    public CIMTransformer3WMapper(double baseMVA) {
+    public SimpleCIMTransformer3WMapper(double baseMVA) {
         this.baseMVA = baseMVA;
     }
 
     @Override
-    public void map(CIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void map(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         throw new UnsupportedOperationException("Use map3W for 3-winding transformers");
     }
 
-    public void map3W(CIMPropertyBag bag, List<CIMPropertyBag> sortedEnds, AclfNetworkBuilder builder) throws Exception {
+    public void map3W(SimpleCIMPropertyBag bag, List<SimpleCIMPropertyBag> sortedEnds, AclfNetworkBuilder builder) throws Exception {
         String xfrId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = xfrId;
@@ -44,9 +44,9 @@ public class CIMTransformer3WMapper extends AbstractCIMDataMapper {
             return;
         }
 
-        CIMPropertyBag end1 = sortedEnds.get(0);
-        CIMPropertyBag end2 = sortedEnds.get(1);
-        CIMPropertyBag end3 = sortedEnds.get(2);
+        SimpleCIMPropertyBag end1 = sortedEnds.get(0);
+        SimpleCIMPropertyBag end2 = sortedEnds.get(1);
+        SimpleCIMPropertyBag end3 = sortedEnds.get(2);
 
         double ratedU1 = getRatedU(end1);
         double ratedU2 = getRatedU(end2);
@@ -126,22 +126,22 @@ public class CIMTransformer3WMapper extends AbstractCIMDataMapper {
         log.warn("Skipping 3W transformer {} - too many parallel circuits", name);
     }
 
-    private double getRatedU(CIMPropertyBag end) {
-        return CIMUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
+    private double getRatedU(SimpleCIMPropertyBag end) {
+        return SimpleCIMUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
                 end.getDouble("TransformerEnd.ratedU", 0.0)));
     }
 
-    private double getR(CIMPropertyBag end) {
+    private double getR(SimpleCIMPropertyBag end) {
         return end.getDouble("PowerTransformerEnd.r",
                 end.getDouble("TransformerEnd.r", 0.0));
     }
 
-    private double getX(CIMPropertyBag end) {
+    private double getX(SimpleCIMPropertyBag end) {
         return end.getDouble("PowerTransformerEnd.x",
                 end.getDouble("TransformerEnd.x", 0.0));
     }
 
-    private String resolveBusIdForEnd(String xfrId, int endNumber, List<CIMPropertyBag> ends) {
+    private String resolveBusIdForEnd(String xfrId, int endNumber, List<SimpleCIMPropertyBag> ends) {
         if (cimModel == null) return null;
         int idx = endNumber - 1;
         if (idx >= ends.size()) return null;
@@ -150,7 +150,7 @@ public class CIMTransformer3WMapper extends AbstractCIMDataMapper {
         if (topoNodes.size() >= endNumber) {
             String busId = cimModel.getBusId(topoNodes.get(idx));
             if (busId != null) return busId;
-            return CIMPropertyBag.extractLocal(topoNodes.get(idx));
+            return SimpleCIMPropertyBag.extractLocal(topoNodes.get(idx));
         }
         return null;
     }
