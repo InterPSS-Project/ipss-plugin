@@ -4,9 +4,11 @@
 a complete PowerWorld AUX run. It uses the documented AUX command interface
 directly and therefore does not require ESA or the SimAuto COM server.
 
-Each specification selects one PSS/E RAW/DYR pair, an ordered transient
-contingency, the integration interval, and arbitrary PowerWorld object/field
-selectors. This makes the same runner usable for machines, exciters,
+Each specification selects either a PSS/E RAW case or a complete PowerWorld
+AUX network, one PSS/E DYR file, an ordered transient contingency, the
+integration interval, and arbitrary PowerWorld object/field selectors. RAW and
+AUX network inputs are mutually exclusive; dynamic `.dyd` data is never mixed
+into this PSS/E DYR workflow. This makes the same runner usable for machines, exciters,
 governors, stabilizers, renewable controllers, and network channels.
 
 ## Run a benchmark
@@ -102,6 +104,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   turbine, load-limiter, acceleration, and temperature-control chain.
 - `smib-genrou-esst1a-pss2a.json`: GENROU and ESST1A with a representative
   Texas2k dual-input PSS2A stabilizer.
+- `regfma1-bus1062.json`: a public all-line three-bus system with the Texas2k
+  REGFMA1 parameter profile and all nine named PowerWorld machine states.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
@@ -163,6 +167,16 @@ signals. Nested child-controller signals must be read from the initialized
 child CML evaluator; querying a nested expression through the parent evaluator
 collapses it to the child controller's final output. ANDES does not implement
 PSS2A, so PowerWorld is the independent model oracle.
+
+For REGFMA1, the benchmark uses a complete AUX network loaded into a new
+PowerWorld case. The same AUX topology is parsed directly into an InterPSS
+`DStabilityNetwork`, so transformer-control or interchange conversion does not
+contaminate the model comparison. At a matched 0.5 ms step, the three-cycle
+terminal-fault contract checks three bus voltages, generator MW/Mvar, and all
+nine named states (`DeltaDroop`, `IntEdroop`, `Pmeas`, `Qmeas`, `Vmeas`, and
+the four P/Q limit integrals). Current maximum differences are `0.00433 pu`
+bus voltage, `0.279 MW`, `0.847 Mvar`, `0.00124 rad` angle, and `1.21e-5 pu`
+internal-voltage integral; the four inactive limit integrals match exactly.
 
 Run the framework's dependency-free tests with:
 
