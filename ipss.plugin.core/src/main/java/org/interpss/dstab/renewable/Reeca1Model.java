@@ -69,16 +69,16 @@ public final class Reeca1Model implements RenewableElectricalController {
         vMeasured = sensedV;
         pMeasured = pFilter = pOrder = p;
         qCurrent = q / nonzero(v);
-        // WECC Figure 3-2 places the VFLAG selector immediately before PIV:
-        // VFLAG=1 selects incremental PIQ directly, while VFLAG=0 selects the
-        // Vref1/Qext path after it has formed Vref - Vt_filt. PIQ therefore
-        // initializes to zero in coordinated Q control.
-        qIntegral = 0.0;
+        // In the PowerWorld/WECC REEC_A diagram PIQ produces an absolute
+        // voltage reference.  The following summing junction subtracts the
+        // filtered terminal voltage before PIV, so coordinated Q/V control
+        // initializes PIQ at the sensed voltage, not at a zero-based bias.
+        qIntegral = data.qFlag() == 1 && data.vFlag() == 1 ? sensedV : 0.0;
         vIntegral = qCurrent;
         reactivePowerTarget = q;
         reactiveControlError = 0.0;
-        reactiveControlPreLimitOutput = 0.0;
-        qControlOutput = 0.0;
+        reactiveControlPreLimitOutput = qIntegral;
+        qControlOutput = qIntegral;
         voltageControlError = 0.0;
         voltageControlPreLimitOutput = qCurrent;
         voltageControlOutput = qCurrent;
@@ -86,12 +86,10 @@ public final class Reeca1Model implements RenewableElectricalController {
         effectivePmin = Math.min(data.pmin(), pOrder);
         effectiveQmax = Math.max(data.qmax(), q);
         effectiveQmin = Math.min(data.qmin(), q);
-        // VMAX/VMIN limit different quantities on the two VFLAG branches:
-        // the incremental PIQ output for coordinated Q/V control, and the
-        // absolute local-voltage reference otherwise. Expand around the actual
-        // initialized signal so initialization never introduces a step.
-        double initialVoltagePath = data.qFlag() == 1 && data.vFlag() == 1
-                ? 0.0 : sensedV;
+        // Both VFLAG branches carry an absolute voltage reference at VMAX/VMIN.
+        // Expand around the initialized reference so initialization cannot
+        // introduce an artificial step when case data has inconsistent limits.
+        double initialVoltagePath = sensedV;
         effectiveVmax = Math.max(data.vmax(), initialVoltagePath);
         effectiveVmin = Math.min(data.vmin(), initialVoltagePath);
         postDipTimer = iqHoldTimer = 0.0;
@@ -194,7 +192,7 @@ public final class Reeca1Model implements RenewableElectricalController {
                 // both derivatives drive farther into the same limit, freeze
                 // the upstream Q integrator as well. Opposite motion remains
                 // enabled so either state can recover from a limit.
-                double voltageError = voltageBias;
+                double voltageError = voltageBias - vMeasured;
                 double downstreamPreLimit = data.kvp() * voltageError + vIntegral;
                 double upstreamDelta = candidateQIntegral - oldQIntegral;
                 double downstreamRate = data.kvi() * voltageError;
@@ -218,11 +216,9 @@ public final class Reeca1Model implements RenewableElectricalController {
                 reactiveControlPreLimitOutput = data.vref1() + selectedQ;
             }
             qControlOutput = voltageBias;
-            // WECC Figure 3-2 and ANDES both route the VFLAG=1 coordinated-Q
-            // PI output directly to PIV. Only the VFLAG=0 local-voltage branch
-            // forms Vref - Vt_filtered before the selector.
-            double voltageError = data.vFlag() == 1
-                    ? voltageBias : voltageBias - vMeasured;
+            // The PowerWorld/WECC summing junction following the VFLAG selector
+            // subtracts State 1 (Vt_filt) from either absolute-reference path.
+            double voltageError = voltageBias - vMeasured;
             voltageControlError = voltageError;
             preliminaryIqLimit = preliminaryIqMax;
             vIntegral = Repca1Model.integrateWithAntiWindup(vIntegral, data.kvi(), voltageError,
