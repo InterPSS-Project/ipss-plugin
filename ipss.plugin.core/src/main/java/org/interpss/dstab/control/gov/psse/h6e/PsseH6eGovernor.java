@@ -144,9 +144,23 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
     public void setAuxiliaryInput(double value) { auxiliaryInput = value; }
     public double getAuxiliaryInput() { return auxiliaryInput; }
     public double getGovernorBaseMva() { return governorBaseMva; }
+    /** PowerWorld H6E state 1, electrical power on the governor base. */
+    public double getMeasuredElectricalPower() { return state.pe; }
+    /** PowerWorld H6E state 2, filtered rotor-speed or bus-frequency input. */
+    public double getMeasuredSpeed() { return state.speed; }
+    /** PowerWorld H6E state 3, PID integral contribution. */
+    public double getIntegratorState() { return state.integrator; }
+    /** PowerWorld H6E state 4, derivative-filter storage coordinate. */
+    public double getDerivativeState() { return state.derivativeLag; }
+    /** PowerWorld H6E state 5, pilot servovalve velocity state. */
+    public double getValveVelocityState() { return state.valve; }
     public double getGateCommand() { return currentGateCommand; }
     public double getGatePosition() { return state.gate; }
     public double getGateOutput() { return currentGate; }
+    /** PowerWorld H6E state 7, deliberate-deadband blade demand. */
+    public double getBladeDemandState() { return state.bladeDemand; }
+    /** PowerWorld H6E state 8, blade servomotor position. */
+    public double getBladeServoState() { return state.bladeServo; }
     public double getBladePosition() { return currentBlade; }
     public double getWaterFlow() { return state.flow; }
     public double getHead() { return currentHead; }
