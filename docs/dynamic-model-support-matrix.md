@@ -7,7 +7,7 @@ does **not** mean that the model has passed equation conformance, a stationary
 flat run, a representative disturbance matrix, or an independent-tool
 trajectory comparison. Those acceptance results are tracked in
 `dynamic-model-coverage-development-plan.md`. In particular, the six Texas2k
-cases are currently loadable, but only Cases 1 and 2 pass the strict one-second
+cases are currently loadable, but none passes the strict one-second
 flat-run gate; the Texas2k verification milestone remains open.
 
 Current Texas2k audit (2026-09-09): `17/17` PSS/E DYR model names are
