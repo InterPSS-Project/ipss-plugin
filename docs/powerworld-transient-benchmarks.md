@@ -152,6 +152,11 @@ The initial suite deliberately covers both renewable and conventional stacks:
   measured electrical power, measured speed, PID integral, derivative storage,
   valve velocity, gate, deliberate-deadband blade demand, blade servo, and
   turbine flow.
+- `smib-genrou-hygovr1.json`: native 26-CON PSS/E HYGOVR1 interchange record,
+  loaded by PowerWorld without adding its richer native-display-only curve
+  fields. It exports the filtered speed input, all four lead-lag states,
+  integral governor, servo velocity, gate, turbine flow, and filtered electrical
+  power, plus GENROU and boundary channels.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output

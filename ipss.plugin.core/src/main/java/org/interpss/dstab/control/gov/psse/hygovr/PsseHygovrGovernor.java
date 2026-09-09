@@ -130,6 +130,19 @@ public class PsseHygovrGovernor extends AbstractGovernor implements IntegrationS
     public double getWaterFlow() { return state.flow; }
     public double getHead() { return currentHead; }
     public double getProcessedSpeedDeviation() { return currentProcessedSpeed; }
+    /** PowerWorld HYGOVR state 1, the filtered speed-deviation input. */
+    public double getInputSpeedState() { return state.speedFilter; }
+    /** PowerWorld HYGOVR states 2-5, the four cascaded lag coordinates. */
+    public double getLeadLag12State() { return state.ll12; }
+    public double getLeadLag34State() { return state.ll34; }
+    public double getLeadLag56State() { return state.ll56; }
+    public double getLeadLag78State() { return state.ll78; }
+    /** PowerWorld HYGOVR state 6, the integral governor state. */
+    public double getGovernorState() { return state.control; }
+    /** PowerWorld HYGOVR state 7, the gate-servo velocity state. */
+    public double getVelocityState() { return state.valve; }
+    /** PowerWorld HYGOVR state 10, filtered electrical power on governor base. */
+    public double getElectricalPowerState() { return state.pe; }
     public double getGovernorBaseMva() { return governorBaseMva; }
     public double getEffectiveTd() { return effective.td; }
     public double getEffectiveTp() { return effective.tp; }
