@@ -125,6 +125,7 @@ import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovAndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1AndesSmibConformanceTest;
+import org.interpss.core.dstab.Ieeet1IndependentSmibConformanceTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -384,6 +385,7 @@ import org.junit.platform.suite.api.Suite;
 	Esst1aIndependentSmibConformanceTest.class,
 	Exst1AndesSmibConformanceTest.class,
 	Ieeet1AndesSmibConformanceTest.class,
+	Ieeet1IndependentSmibConformanceTest.class,
 	Ieeeg1AndesSmibConformanceTest.class,
 	HygovAndesSmibConformanceTest.class,
 	Exdc2AndesSmibConformanceTest.class,
