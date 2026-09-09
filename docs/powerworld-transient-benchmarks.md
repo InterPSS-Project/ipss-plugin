@@ -102,6 +102,13 @@ samples, a material fault response, and voltage recovery. A model-specific
 InterPSS comparison should add semantic state mapping and tolerances rather than
 assuming that state indices or speed/angle normalizations match across tools.
 
+Use a model-appropriate integration step in the specification. The synchronous
+machine-only GENSAL contract uses `1/240 s`; the faster ESST1A regulator contract
+uses `0.5 ms`, matching its independent ANDES comparison. A reduced-step check
+is required before attributing a fast controller-state discrepancy to model
+equations. For GENROU, PowerWorld's `PsiQpp` state maps to InterPSS `Psikq`, not
+the derived network-interface flux returned by `getPsiq11()`.
+
 Run the framework's dependency-free tests with:
 
 ```powershell
