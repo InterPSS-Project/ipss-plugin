@@ -107,7 +107,7 @@ import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
 import org.interpss.core.dstab.Texas2kHygovCoverageTest;
 import org.interpss.core.dstab.Texas2kLegacyControllerProfileTest;
 import org.interpss.core.dstab.Texas2kOneSecondDriftTest;
-import org.interpss.core.dstab.Texas2kPowerWorldRenewableParameterParityTest;
+import org.interpss.core.dstab.Texas2kIndependentRenewableParameterParityTest;
 import org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest;
 import org.interpss.core.dstab.Texas2kSynchronousMachineCoverageTest;
 import org.interpss.core.dstab.Texas2kGenrouFaultBenchmarkTest;
@@ -233,7 +233,9 @@ import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
 import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
 import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.GensalConformanceTest;
+import org.interpss.core.dstab.mach.GensalIndependentSmibConformanceTest;
 import org.interpss.core.dstab.mach.GensalHydroSmibTest;
+import org.interpss.core.dstab.reference.EmbeddedTrajectoryReferenceTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
 import org.interpss.core.dstab.mach.GenrouAndesSmibConformanceTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
@@ -362,6 +364,8 @@ import org.junit.platform.suite.api.Suite;
 	///Eq1MachineCaseTest.class,
 	GensalConformanceTest.class,
 	GensalHydroSmibTest.class,
+	GensalIndependentSmibConformanceTest.class,
+	EmbeddedTrajectoryReferenceTest.class,
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
 	Esst4bAndesSmibConformanceTest.class,
@@ -541,7 +545,7 @@ import org.junit.platform.suite.api.Suite;
 	Texas2kHygovCoverageTest.class,
 	Texas2kLegacyControllerProfileTest.class,
 	Texas2kOneSecondDriftTest.class,
-	Texas2kPowerWorldRenewableParameterParityTest.class,
+	Texas2kIndependentRenewableParameterParityTest.class,
 	Texas2kSixCaseDynamicSmokeTest.class,
 	Texas2kSynchronousMachineCoverageTest.class,
 	Texas2kGenrouFaultBenchmarkTest.class,
