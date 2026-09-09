@@ -21,9 +21,9 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer;
+import org.interpss.dstab.analysis.LocalRenewableQvEigenReportWriter;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Device;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Mode;
-import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.OperatingPointConstraint;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.RegionalMode;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.StateComponent;
 import org.interpss.dstab.renewable.Reeca1Model;
@@ -229,10 +229,7 @@ public class Texas2kOneSecondDriftTest {
         Path reportDirectory = Path.of(System.getProperty("texas2k.gridStrength.reportDir",
                 Path.of("target", "dynamic-model-validation", "texas2k-case5-qv")
                         .toString()));
-        writeQvBenchmark(reportDirectory, CASE5_INTERACTING_BUSES,
-                coupling, devices, qvAnalysis.stateMatrix(), qvMode,
-                qvAnalysis.operatingPointConstraints(),
-                qvAnalysis.limiterRegionModes());
+        LocalRenewableQvEigenReportWriter.write(reportDirectory, qvAnalysis);
         System.out.println("  machine-readable Q/V benchmark: "
                 + reportDirectory.toAbsolutePath());
     }
@@ -255,26 +252,31 @@ public class Texas2kOneSecondDriftTest {
         }
         Mode mode = new Mode(.01, -.25, vector);
 
-        writeQvBenchmark(directory, buses, coupling, List.of(device), state, mode,
-                List.of(), List.of());
+        var analysis = new LocalRenewableQvEigenAnalyzer.Analysis(buses, coupling,
+                List.of(device), state, mode, List.of(), List.of(), true);
+        var report = LocalRenewableQvEigenReportWriter.write(directory, analysis);
+        assertEquals(directory.toAbsolutePath().normalize(), report.directory());
+        assertTrue(report.summary().isAbsolute());
 
-        List<String> couplingRows = Files.readAllLines(directory.resolve("coupling.csv"));
-        List<String> stateRows = Files.readAllLines(directory.resolve("state-matrix.csv"));
-        List<String> vectorRows = Files.readAllLines(directory.resolve("dominant-mode.csv"));
+        List<String> couplingRows = Files.readAllLines(report.coupling());
+        List<String> stateRows = Files.readAllLines(report.stateMatrix());
+        List<String> vectorRows = Files.readAllLines(report.dominantMode());
         assertEquals(2, couplingRows.size());
         assertEquals("response_bus,Bus1", couplingRows.get(0));
         assertEquals(7, stateRows.size());
         assertEquals(7, vectorRows.size());
         assertTrue(vectorRows.get(6).startsWith("Bus1:1,REGCA_IQ,"));
-        assertTrue(Files.readString(directory.resolve("summary.csv"))
+        assertTrue(Files.readString(report.summary())
                 .contains("dominant_eigenvalue_imaginary,-0.25"));
-        assertTrue(Files.readString(directory.resolve("summary.csv"))
+        assertTrue(Files.readString(report.summary())
                 .contains("two_sided_linearization_valid,true"));
-        assertEquals(1, Files.readAllLines(directory.resolve("constraints.csv")).size());
-        assertEquals("region,dominant_real,dominant_imaginary,cone_feasible,"
+        assertTrue(Files.readString(report.summary())
+                .contains("interpretation,two_sided_local_mode"));
+        assertEquals(1, Files.readAllLines(report.constraints()).size());
+        assertEquals("region,dominant_real,dominant_imaginary,frequency_hz,cone_feasible,"
                         + "witness_phase_radians,assumptions",
-                Files.readAllLines(directory.resolve("limiter-regions.csv")).get(0));
-        assertEquals(2, Files.readAllLines(directory.resolve("devices.csv")).size());
+                Files.readAllLines(report.limiterRegions()).get(0));
+        assertEquals(2, Files.readAllLines(report.devices()).size());
     }
 
     private static List<ModeParticipation> rankMode(double[] vector) {
@@ -286,101 +288,6 @@ public class Texas2kOneSecondDriftTest {
                         .reversed())
                 .limit(10)
                 .toList();
-    }
-
-    private static void writeQvBenchmark(Path directory, List<String> buses,
-            double[][] coupling, List<Device> devices, double[][] stateMatrix, Mode mode,
-            List<OperatingPointConstraint> constraints, List<RegionalMode> regions)
-            throws java.io.IOException {
-        Files.createDirectories(directory);
-        writeMatrix(directory.resolve("coupling.csv"), "response_bus", buses, buses,
-                coupling);
-        List<String> stateLabels = mode.components().stream()
-                .map(component -> component.deviceId() + "/" + component.state()).toList();
-        writeMatrix(directory.resolve("state-matrix.csv"), "state", stateLabels,
-                stateLabels, stateMatrix);
-
-        StringBuilder deviceCsv = new StringBuilder("device_id,bus_index,system_scale,v0,iq0,tg,"
-                + "reeca_kqp,reeca_kqi,reeca_kvp,reeca_kvi,repca_tfltr,repca_kp,"
-                + "repca_ki,repca_tft,repca_tfv,reeca_vmin,reeca_vmax,"
-                + "repca_qmin,repca_qmax\n");
-        for (Device device : devices) {
-            deviceCsv.append(device.busId()).append(':').append(device.unitId()).append(',')
-                    .append(device.busIndex()).append(',').append(device.systemScale()).append(',')
-                    .append(device.v0()).append(',').append(device.iq0()).append(',')
-                    .append(device.tg()).append(',').append(device.kqp()).append(',')
-                    .append(device.kqi()).append(',').append(device.kvp()).append(',')
-                    .append(device.kvi()).append(',').append(device.tfltr()).append(',')
-                    .append(device.plantKp()).append(',').append(device.plantKi()).append(',')
-                    .append(device.tft()).append(',').append(device.tfv()).append(',')
-                    .append(device.reecaVmin()).append(',').append(device.reecaVmax()).append(',')
-                    .append(device.plantQmin()).append(',').append(device.plantQmax()).append('\n');
-        }
-        Files.writeString(directory.resolve("devices.csv"), deviceCsv);
-
-        StringBuilder vectorCsv = new StringBuilder(
-                "device_id,state,normalized_real,normalized_imaginary,normalized_magnitude\n");
-        for (StateComponent component : mode.components()) {
-            vectorCsv.append(component.deviceId()).append(',').append(component.state()).append(',')
-                    .append(component.normalizedReal()).append(',')
-                    .append(component.normalizedImaginary()).append(',')
-                    .append(component.magnitude()).append('\n');
-        }
-        Files.writeString(directory.resolve("dominant-mode.csv"), vectorCsv);
-        StringBuilder constraintCsv = new StringBuilder(
-                "device_id,signal,value,lower,upper,explanation\n");
-        for (OperatingPointConstraint constraint : constraints) {
-            constraintCsv.append(constraint.deviceId()).append(',')
-                    .append(constraint.signal()).append(',').append(constraint.value()).append(',')
-                    .append(constraint.lower()).append(',').append(constraint.upper()).append(',')
-                    .append(constraint.explanation()).append('\n');
-        }
-        Files.writeString(directory.resolve("constraints.csv"), constraintCsv);
-        StringBuilder regionCsv = new StringBuilder(
-                "region,dominant_real,dominant_imaginary,cone_feasible,"
-                        + "witness_phase_radians,assumptions\n");
-        for (int index = 0; index < regions.size(); index++) {
-            RegionalMode region = regions.get(index);
-            String assumptions = region.assumptions().stream()
-                    .map(value -> value.deviceId() + "/" + value.signal() + "="
-                            + value.branch())
-                    .collect(Collectors.joining(";"));
-            regionCsv.append(index).append(',')
-                    .append(region.dominantMode().real()).append(',')
-                    .append(region.dominantMode().imaginary()).append(',')
-                    .append(region.tangentCone().feasible()).append(',')
-                    .append(region.tangentCone().witnessPhaseRadians()).append(',')
-                    .append(assumptions).append('\n');
-        }
-        Files.writeString(directory.resolve("limiter-regions.csv"), regionCsv);
-        Files.writeString(directory.resolve("summary.csv"),
-                "metric,value\n"
-                + "bus_count," + buses.size() + "\n"
-                + "device_count," + devices.size() + "\n"
-                + "state_count," + stateMatrix.length + "\n"
-                + "two_sided_linearization_valid," + constraints.isEmpty() + "\n"
-                + "operating_point_constraint_count," + constraints.size() + "\n"
-                + "dominant_eigenvalue_real," + mode.real() + "\n"
-                + "dominant_eigenvalue_imaginary," + mode.imaginary() + "\n");
-    }
-
-    private static void writeMatrix(Path path, String rowHeader, List<String> rowLabels,
-            List<String> columnLabels, double[][] values) throws java.io.IOException {
-        if (values.length != rowLabels.size()) {
-            throw new IllegalArgumentException("Matrix row count does not match labels");
-        }
-        StringBuilder csv = new StringBuilder(rowHeader);
-        columnLabels.forEach(label -> csv.append(',').append(label));
-        csv.append('\n');
-        for (int row = 0; row < values.length; row++) {
-            if (values[row].length != columnLabels.size()) {
-                throw new IllegalArgumentException("Matrix column count does not match labels");
-            }
-            csv.append(rowLabels.get(row));
-            for (double value : values[row]) csv.append(',').append(value);
-            csv.append('\n');
-        }
-        Files.writeString(path, csv);
     }
 
     private static void verify(CaseFile source) throws Exception {
