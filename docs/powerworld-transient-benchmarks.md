@@ -116,6 +116,16 @@ specification, the hashed reference artifact, and the registered InterPSS
 comparison test. ANDES remains a second oracle where it implements an
 equation-equivalent model.
 
+When PowerWorld's PTI loader requires a documented dialect extension that is
+not part of the native PSS/E record, the specification may declare
+`powerworld_dyr` separately from `dyr`. The runner loads only that declared
+PowerWorld DYR, never combines dynamic-data formats, and hashes both inputs in
+the manifest. AC7C uses this mechanism because native PSS/E has 38 parameters
+while PowerWorld 24 requires its SCL field in a 39-parameter record. The runner
+also treats model-load, validation, script-action, and transient-start errors
+in the PowerWorld log as hard failures; completion markers alone are not enough
+to publish a reference artifact.
+
 Every published trace contains both boundary channels (bus voltage and
 generator MW/Mvar) and named internal model states. The test suite verifies the
 input and artifact hashes, finite trajectories, duplicate pre/post-event
