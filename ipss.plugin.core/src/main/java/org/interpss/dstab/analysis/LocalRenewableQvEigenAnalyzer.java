@@ -26,19 +26,22 @@ import com.interpss.dstab.DStabGen;
  * to voltage-magnitude sensitivity with analytic controller derivatives. It
  * reports regional Jacobians for incremental REECA/REPCA PI outputs that are
  * exactly on anti-windup limits. These distinguish an inward-moving active PI
- * branch from an outward-moving clamped branch, but do not prove that a modal
- * eigenvector remains inside either directional cone or predict the switching
- * sequence. Other limit switching, voltage-dip logic, active-power coupling,
- * remote measurements, and non-local plant-control configurations remain
- * excluded. This is a model-localization diagnostic, not a general DStab
- * eigenanalysis. The returned operating-point constraints must be empty before
- * interpreting the original state matrix as a conventional two-sided
+ * branch from an outward-moving clamped branch. Each regional mode also reports
+ * whether a real phase of its right eigenvector lies in the assumed state
+ * tangent cone. This is an instantaneous directional test; it does not prove
+ * vector-field branch consistency, persistence during an oscillation, or the
+ * switching sequence. Other limit switching, voltage-dip logic, active-power
+ * coupling, remote measurements, and non-local plant-control configurations
+ * remain excluded. This is a model-localization diagnostic, not a general
+ * DStab eigenanalysis. The returned operating-point constraints must be empty
+ * before interpreting the original state matrix as a conventional two-sided
  * linearization.</p>
  */
 public final class LocalRenewableQvEigenAnalyzer {
     public static final int STATES_PER_DEVICE = 6;
     private static final int MAX_ENUMERATED_BOUNDARIES = 8;
     private static final double SWING_GROUND_ADMITTANCE = 1.0e10;
+    private static final double CONE_TOLERANCE = 1.0e-9;
 
     private LocalRenewableQvEigenAnalyzer() { }
 
@@ -263,10 +266,118 @@ public final class LocalRenewableQvEigenAnalyzer {
                                 : BoundaryBranch.OUTWARD_CLAMPED));
             }
             double[][] matrix = stateMatrix(coupling, devices, plantActive, reecaActive);
-            modes.add(new RegionalMode(assumptions, matrix,
-                    dominantMode(matrix, devices)));
+            Mode mode = dominantMode(matrix, devices);
+            modes.add(new RegionalMode(assumptions, matrix, mode,
+                    tangentConeAssessment(assumptions, constraints, devices, mode)));
         }
         return new RegionSet(List.copyOf(modes), complete);
+    }
+
+    private static TangentConeAssessment tangentConeAssessment(
+            List<LimiterAssumption> assumptions,
+            List<OperatingPointConstraint> constraints,
+            List<Device> devices, Mode mode) {
+        List<TangentConstraint> tangentConstraints = new ArrayList<>(assumptions.size());
+        List<Double> phaseBoundaries = new ArrayList<>();
+        phaseBoundaries.add(0.0);
+        for (int index = 0; index < assumptions.size(); index++) {
+            LimiterAssumption assumption = assumptions.get(index);
+            OperatingPointConstraint constraint = constraints.get(index);
+            int stateIndex = STATES_PER_DEVICE
+                    * deviceIndex(devices, assumption.deviceId())
+                    + boundaryStateIndex(assumption.signal());
+            StateComponent component = mode.components().get(stateIndex);
+            BoundarySide side = boundarySide(constraint);
+            tangentConstraints.add(new TangentConstraint(assumption.deviceId(),
+                    assumption.signal(), assumption.branch(), side,
+                    component.normalizedReal(), component.normalizedImaginary()));
+            if (Math.hypot(component.normalizedReal(),
+                    component.normalizedImaginary()) > CONE_TOLERANCE) {
+                double root = normalizePhase(Math.PI / 2.0
+                        - Math.atan2(component.normalizedImaginary(),
+                                component.normalizedReal()));
+                phaseBoundaries.add(root);
+                phaseBoundaries.add(normalizePhase(root + Math.PI));
+            }
+        }
+
+        List<Double> candidates = new ArrayList<>();
+        if (Math.abs(mode.imaginary()) <= CONE_TOLERANCE) {
+            candidates.add(0.0);
+            candidates.add(Math.PI);
+        } else {
+            phaseBoundaries.sort(Double::compareTo);
+            for (int index = 0; index < phaseBoundaries.size(); index++) {
+                double start = phaseBoundaries.get(index);
+                double end = index + 1 < phaseBoundaries.size()
+                        ? phaseBoundaries.get(index + 1)
+                        : phaseBoundaries.get(0) + 2.0 * Math.PI;
+                candidates.add(start);
+                candidates.add(normalizePhase(start + (end - start) / 2.0));
+            }
+        }
+        for (double phase : candidates) {
+            if (projectedModeNorm(mode, phase) > CONE_TOLERANCE
+                    && tangentConstraints.stream().allMatch(
+                            constraint -> satisfies(constraint, phase))) {
+                return new TangentConeAssessment(true, phase, tangentConstraints);
+            }
+        }
+        return new TangentConeAssessment(false, Double.NaN, tangentConstraints);
+    }
+
+    private static int boundaryStateIndex(String signal) {
+        return switch (signal) {
+            case "REPCA_Q_PI" -> 1;
+            case "REECA_PIQ" -> 3;
+            default -> throw new IllegalStateException(
+                    "Unknown limiter-boundary signal: " + signal);
+        };
+    }
+
+    private static BoundarySide boundarySide(OperatingPointConstraint constraint) {
+        double tolerance = 1.0e-10 * Math.max(1.0,
+                Math.max(Math.abs(constraint.lower()), Math.abs(constraint.upper())));
+        boolean lower = Math.abs(constraint.value() - constraint.lower())
+                <= tolerance;
+        boolean upper = Math.abs(constraint.value() - constraint.upper())
+                <= tolerance;
+        if (lower && upper) return BoundarySide.BOTH;
+        if (lower) return BoundarySide.LOWER;
+        if (upper) return BoundarySide.UPPER;
+        throw new IllegalStateException("Limiter constraint is not on a boundary: "
+                + constraint);
+    }
+
+    private static boolean satisfies(TangentConstraint constraint, double phase) {
+        double displacement = projected(constraint.normalizedReal(),
+                constraint.normalizedImaginary(), phase);
+        if (constraint.branch() == BoundaryBranch.OUTWARD_CLAMPED
+                || constraint.side() == BoundarySide.BOTH) {
+            return Math.abs(displacement) <= CONE_TOLERANCE;
+        }
+        return constraint.side() == BoundarySide.LOWER
+                ? displacement >= -CONE_TOLERANCE
+                : displacement <= CONE_TOLERANCE;
+    }
+
+    private static double projectedModeNorm(Mode mode, double phase) {
+        double sum = 0.0;
+        for (StateComponent component : mode.components()) {
+            double value = projected(component.normalizedReal(),
+                    component.normalizedImaginary(), phase);
+            sum += value * value;
+        }
+        return Math.sqrt(sum);
+    }
+
+    private static double projected(double real, double imaginary, double phase) {
+        return real * Math.cos(phase) - imaginary * Math.sin(phase);
+    }
+
+    private static double normalizePhase(double phase) {
+        double normalized = phase % (2.0 * Math.PI);
+        return normalized < 0.0 ? normalized + 2.0 * Math.PI : normalized;
     }
 
     private static boolean[] allTrue(int size) {
@@ -359,8 +470,40 @@ public final class LocalRenewableQvEigenAnalyzer {
         OUTWARD_CLAMPED
     }
 
+    public enum BoundarySide {
+        LOWER,
+        UPPER,
+        BOTH
+    }
+
     public record LimiterAssumption(String deviceId, String signal,
             BoundaryBranch branch) { }
+
+    public record TangentConstraint(String deviceId, String signal,
+            BoundaryBranch branch, BoundarySide side,
+            double normalizedReal, double normalizedImaginary) { }
+
+    /**
+     * Whether at least one nonzero real representative of the regional right
+     * eigenvector lies in every assumed limiter state tangent simultaneously.
+     * The witness phase is in radians and is NaN when no such representative
+     * exists. This does not test the unconstrained vector field or subsequent
+     * limiter switching.
+     */
+    public record TangentConeAssessment(boolean feasible,
+            double witnessPhaseRadians, List<TangentConstraint> constraints) {
+        public TangentConeAssessment {
+            constraints = List.copyOf(constraints);
+            if (feasible && !Double.isFinite(witnessPhaseRadians)) {
+                throw new IllegalArgumentException(
+                        "a feasible tangent cone requires a finite witness phase");
+            }
+            if (!feasible && !Double.isNaN(witnessPhaseRadians)) {
+                throw new IllegalArgumentException(
+                        "an infeasible tangent cone must use a NaN witness phase");
+            }
+        }
+    }
 
     public record StateComponent(String deviceId, String state,
             double normalizedReal, double normalizedImaginary, double magnitude) { }
@@ -386,11 +529,13 @@ public final class LocalRenewableQvEigenAnalyzer {
     }
 
     public record RegionalMode(List<LimiterAssumption> assumptions,
-            double[][] stateMatrix, Mode dominantMode) {
+            double[][] stateMatrix, Mode dominantMode,
+            TangentConeAssessment tangentCone) {
         public RegionalMode {
             assumptions = List.copyOf(assumptions);
             stateMatrix = copy(stateMatrix);
             Objects.requireNonNull(dominantMode, "dominantMode");
+            Objects.requireNonNull(tangentCone, "tangentCone");
         }
 
         @Override public double[][] stateMatrix() { return copy(stateMatrix); }
