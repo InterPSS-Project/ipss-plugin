@@ -178,6 +178,18 @@ public class Exac1Exciter extends AnnotateExciter implements IntegrationStepAwar
 
     public double getRegulatorOutput() { return runtimeBlock("regulator").getY(); }
 
+    /** PowerWorld/IEEE diagram state VE, before the loaded-rectifier output. */
+    public double getInternalFieldVoltage() { return runtimeBlock("fieldIntegrator").getY(); }
+
+    /** PowerWorld/IEEE diagram state for the filtered terminal voltage. */
+    public double getSensedVoltage() { return runtimeBlock("transducer").getY(); }
+
+    /** PowerWorld/IEEE diagram VLL signal at the lead-lag output. */
+    public double getLeadLagOutput() { return runtimeBlock("leadLag").getY(); }
+
+    /** PowerWorld/IEEE diagram VF rate-feedback signal. */
+    public double getRateFeedback() { return runtimeBlock("washout").getY(); }
+
     private ICMLControlBlock runtimeBlock(String name) {
         for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
             if (wrapper.getFieldName().equals(name) && wrapper.getField() instanceof ICMLControlBlock block)
