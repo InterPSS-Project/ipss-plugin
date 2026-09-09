@@ -179,6 +179,14 @@ initial state immediately drifts before the contingency; the focused equation
 tests separately exercise the official `KC1*VFE/VE` input, FEX regions,
 `VBMAX`, and saturation curve.
 
+For AC1C, the native 23-value PSS/E record is loaded without a dialect
+translation. The artifact exports PowerWorld's five named states: rotating
+exciter voltage `VE`, sensed terminal voltage, regulator output `VA`,
+lead-lag output `VLL`, and rate-feedback output `VF`. These map directly to
+the semantic InterPSS AC1C accessors; the comparison also reuses the standard
+GENROU electrical-state mapping. A second cold run produces the identical raw
+CSV, while the manifest uses line-ending-independent canonical text hashes.
+
 For ESST4B, PowerWorld initializes a zero-`Kim` inner PI as a pure proportional
 path and freezes the integrator while the total PI output is saturated. The
 generic InterPSS PI block's back-calculation state is therefore not an
