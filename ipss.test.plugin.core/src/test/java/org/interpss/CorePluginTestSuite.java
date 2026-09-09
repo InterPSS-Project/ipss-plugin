@@ -257,6 +257,7 @@ import org.interpss.core.dstab.Exdc2AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ac8bAndesSmibConformanceTest;
 import org.interpss.core.dstab.Ac8bPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Ac7bPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.RexsysPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1SmibIntegrationTest;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
@@ -454,6 +455,7 @@ import org.junit.platform.suite.api.Suite;
 	Ac8bAndesSmibConformanceTest.class,
 	Ac8bPowerWorldSmibConformanceTest.class,
 	Ac7bPowerWorldSmibConformanceTest.class,
+	RexsysPowerWorldSmibConformanceTest.class,
 	Exdc2aOpenSourceEquationConformanceTest.class,
 	Ieeet4OpenSourceEquationConformanceTest.class,
 	Ac8bAndesEquationConformanceTest.class,

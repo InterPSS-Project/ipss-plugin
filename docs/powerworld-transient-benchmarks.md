@@ -134,6 +134,11 @@ The initial suite deliberately covers both renewable and conventional stacks:
   `Kir`, `Kdr`, `VA`, and rate feedback. `Kir` maps to the stored outer-PID
   integral, while `Kdr`, `VA`, and feedback map to complete block outputs rather
   than InterPSS's internal lag/integrator coordinates.
+- `smib-genrou-rexsys.json`: native 31-parameter PSS/E REXSYS with both PI
+  loops, both voltage-path lead-lags, selectable feedback washout/lead-lag,
+  rotating exciter, saturation, and rectifier loading active. It exports all
+  ten named PowerWorld states; the channel labeled `Voltage PI` is the stored
+  voltage-PI integrator, whereas `Current PI` is the complete block output.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
