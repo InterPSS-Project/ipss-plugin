@@ -112,6 +112,7 @@ import org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest;
 import org.interpss.core.dstab.Texas2kSynchronousMachineCoverageTest;
 import org.interpss.core.dstab.Texas2kGenrouFaultBenchmarkTest;
 import org.interpss.core.dstab.Esst4bAndesSmibConformanceTest;
+import org.interpss.core.dstab.Esst4bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Esac5aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Exac1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Exac1aAndesSmibConformanceTest;
@@ -228,6 +229,7 @@ import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterNthOrderBlockTests;
 import org.interpss.core.dstab.cml.block.IntegrationControlBlockTests;
 import org.interpss.core.dstab.cml.block.PIControlBlockTests;
+import org.interpss.core.dstab.cml.block.FreezeNonWindupPIControlBlockTest;
 import org.interpss.core.dstab.cml.block.Pss2aLeadLagBlockTest;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
 import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
@@ -356,6 +358,7 @@ import org.junit.platform.suite.api.Suite;
 	FilterNthOrderBlockTests.class,
 	IntegrationControlBlockTests.class,
 	PIControlBlockTests.class,
+	FreezeNonWindupPIControlBlockTest.class,
 	Pss2aLeadLagBlockTest.class,
 	WashoutControlBlockTests.class,
 	
@@ -370,6 +373,7 @@ import org.junit.platform.suite.api.Suite;
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
 	Esst4bAndesSmibConformanceTest.class,
+	Esst4bIndependentSmibConformanceTest.class,
 	Esac5aAndesSmibConformanceTest.class,
 	Exac1AndesSmibConformanceTest.class,
 	Exac1aAndesSmibConformanceTest.class,

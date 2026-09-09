@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,7 +18,6 @@ import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
 import com.interpss.dstab.controller.cml.field.adapt.CMLStaticBlockAdapter;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
-import com.interpss.dstab.controller.cml.field.block.PIControlBlock;
 import com.interpss.dstab.controller.cml.field.func.LowValueFunction;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
@@ -58,10 +58,10 @@ public class IEEE2005ST4BExciter extends AnnotateExciter implements IntegrationS
 	   @AnControllerField(
 			   type =CMLFieldEnum.ControlBlock,
 			   input="this.refPoint - this.trDelayBlock.y + pss.vs + this.vuel",
-			   parameter={"type.NonWindup", "this.Kpr", "this.Kir","this.vrmax","this.vrmin"},
+			   parameter={"this.Kpr", "this.Kir","this.vrmax","this.vrmin"},
 			   y0="this.taDelayBlock.u0"
 			   )
-	   PIControlBlock vrPIBlock;
+	   FreezeNonWindupPIControlBlock vrPIBlock;
 
 	   //taDelayBlock----Ka/(1+sTa) with limits
 	   public double ka = 1.0, ta = 0.01;
@@ -92,10 +92,10 @@ public class IEEE2005ST4BExciter extends AnnotateExciter implements IntegrationS
 	  @AnControllerField(
 			   type =CMLFieldEnum.ControlBlock,
 			   input="this.taDelayBlock.y - this.kgGainBlock.y",
-			   parameter={"type.NonWindup", "this.Kpm", "this.Kim","this.vmmax","this.vmmin"},
+			   parameter={"this.Kpm", "this.Kim","this.vmmax","this.vmmin"},
 			   y0="this.customBlock.u0"
 			   )
-	   PIControlBlock vmPIBlock;
+	   FreezeNonWindupPIControlBlock vmPIBlock;
 
 	   // IEEE ST4B over-excitation limiter low-value gate.
 	   @AnFunctionField(
