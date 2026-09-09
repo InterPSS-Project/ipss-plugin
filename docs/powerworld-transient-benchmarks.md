@@ -139,6 +139,12 @@ The initial suite deliberately covers both renewable and conventional stacks:
   rotating exciter, saturation, and rectifier loading active. It exports all
   ten named PowerWorld states; the channel labeled `Voltage PI` is the stored
   voltage-PI integrator, whereas `Current PI` is the complete block output.
+- `smib-genrou-hyg3.json` and `smib-genrou-hyg3-pid.json`: native PSS/E HYG3
+  double-derivative (`Cflag=0`) and PID (`Cflag=1`) branches. Each artifact
+  exports all nine PowerWorld governor states plus GENROU and boundary signals.
+  The comparison maps PowerWorld's `K1`, `K2 first`, and `K2 second` channels
+  to their canonical block coordinates while retaining InterPSS's internal
+  lag storage for numerical diagnostics.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output

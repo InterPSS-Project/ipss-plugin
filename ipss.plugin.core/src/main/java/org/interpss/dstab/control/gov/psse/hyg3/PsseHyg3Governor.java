@@ -12,8 +12,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * WECC HYG3 PID/double-derivative hydro turbine-governor.
  *
  * <p>The differential and algebraic paths follow the published PowerWorld
- * HYG3 diagram. The PSS/E HYG3U1 ICON convention is {@code 0=PID} and
- * {@code 1=double derivative}; that is converted internally to the two
+ * HYG3 diagram. The PSS/E DYR convention is {@code 1=PID} and
+ * {@code 0=double derivative}; PowerWorld maps those values to the two
  * branches shown as {@code cflag>0} and {@code cflag<0} in the diagram.</p>
  */
 public class PsseHyg3Governor extends AbstractGovernor implements IntegrationStepAware {
@@ -142,11 +142,36 @@ public class PsseHyg3Governor extends AbstractGovernor implements IntegrationSte
 
     public void setAuxiliaryInput(double value) { auxiliaryInput = value; }
     public double getAuxiliaryInput() { return auxiliaryInput; }
+    public double getInputFilterState() { return state.tdLag; }
+    public double getK1FilterState() { return state.k1Lag; }
+    public double getK1Output() {
+        double tdSignal = algebraic(state, currentGateOutput, committedDeadbandMode).tdSignal;
+        return washoutOutput(tdSignal, state.k1Lag, getData().getK1(), getData().getTf());
+    }
+    public double getIntegralState() { return state.integrator; }
+    public double getValveState() { return state.valve; }
     public double getControlValveCommand() { return currentCv; }
     public double getGatePosition() { return state.gate; }
     public double getGateOutput() { return currentGateOutput; }
     public double getWaterFlow() { return state.flow; }
     public double getMeasuredElectricalPower() { return measuredPower(state); }
+    public double getK2FirstState() { return state.k2First; }
+    public double getK2SecondState() { return state.k2Second; }
+    public double getK2FirstOutput() {
+        double tdSignal = algebraic(state, currentGateOutput, committedDeadbandMode).tdSignal;
+        return getData().getTf() > SMALL
+                ? (tdSignal - state.k2First) / getData().getTf() : 0.0;
+    }
+    /** Canonical first state reported by PowerWorld for the double-derivative block. */
+    public double getK2FirstCanonicalState() {
+        double tf = getData().getTf();
+        return tf > SMALL ? -getData().getK2() * state.k2Second / (tf * tf) : 0.0;
+    }
+    public double getK2SecondOutput() {
+        double tdSignal = algebraic(state, currentGateOutput, committedDeadbandMode).tdSignal;
+        return getData().getControlFlag() == PsseHyg3GovernorData.DOUBLE_DERIVATIVE_CONTROL
+                ? doubleDerivativeOutput(state, tdSignal) : 0.0;
+    }
     public double getEffectivePmax() { return effectivePmax; }
     public double getEffectivePmin() { return effectivePmin; }
     public double getEffectiveTw() { return effectiveTw; }
