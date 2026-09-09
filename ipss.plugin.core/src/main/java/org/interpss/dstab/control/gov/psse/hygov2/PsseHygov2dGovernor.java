@@ -111,11 +111,17 @@ public class PsseHygov2dGovernor extends AbstractGovernor implements Integration
 
     public void setAuxiliaryInput(double value) { auxiliaryInput = value; }
     public double getReference() { return reference; }
+    /** PowerWorld state 1: output of {@code (Ki + s*Kp)/s}. */
     public double getPiOutput() { return piOutput(state); }
+    /** PowerWorld state 2: output of {@code Ka*(1+s*T1)/(s*T3)}. */
     public double getGovernorOutput() { return governorOutput(state); }
+    /** PowerWorld state 3: output of {@code (1+s*T2)/(1+s*T4)}. */
     public double getGovernorSpeed() { return governorSpeed(state); }
+    /** PowerWorld state 4: output of the temporary-droop washout. */
     public double getTemporaryDroopOutput() { return temporaryDroop(state); }
+    /** PowerWorld state 5. */
     public double getGatePosition() { return state.gate; }
+    /** PowerWorld state 6: output of the nonminimum-phase penstock block. */
     public double getPenstockOutput() { return penstockOutput(state); }
     public double getEffectiveT3() { return effectiveT3; }
     public double getEffectiveT4() { return effectiveT4; }
