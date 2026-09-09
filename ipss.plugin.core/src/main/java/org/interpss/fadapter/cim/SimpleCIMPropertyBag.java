@@ -1,5 +1,5 @@
 /*
- * CIMPropertyBag.java
+ * SimpleCIMPropertyBag.java
  *
  * Typed accessor for RDF resource properties, similar to PowSyBl's PropertyBag.
  */
@@ -18,14 +18,14 @@ import org.slf4j.LoggerFactory;
 /**
  * Provides typed access to properties of an RDF resource (CIM element).
  */
-public class CIMPropertyBag {
-    private static final Logger log = LoggerFactory.getLogger(CIMPropertyBag.class);
+public class SimpleCIMPropertyBag {
+    private static final Logger log = LoggerFactory.getLogger(SimpleCIMPropertyBag.class);
 
     private final Resource resource;
     private final String cimNamespace;
     private final String entsoeNamespace;
 
-    public CIMPropertyBag(Resource resource, String cimNamespace, String entsoeNamespace) {
+    public SimpleCIMPropertyBag(Resource resource, String cimNamespace, String entsoeNamespace) {
         this.resource = resource;
         this.cimNamespace = cimNamespace;
         this.entsoeNamespace = entsoeNamespace;
@@ -49,17 +49,17 @@ public class CIMPropertyBag {
 
     /** Get cim:IdentifiedObject.name */
     public String getName() {
-        return getString(CIMConstants.PROP_NAME);
+        return getString(SimpleCIMConstants.PROP_NAME);
     }
 
     /** Get cim:IdentifiedObject.description */
     public String getDescription() {
-        return getString(CIMConstants.PROP_DESCRIPTION);
+        return getString(SimpleCIMConstants.PROP_DESCRIPTION);
     }
 
     /** Get entsoe short name */
     public String getShortName() {
-        String val = getStringFromNS(entsoeNamespace, CIMConstants.PROP_SHORT_NAME);
+        String val = getStringFromNS(entsoeNamespace, SimpleCIMConstants.PROP_SHORT_NAME);
         return val;
     }
 
@@ -155,13 +155,13 @@ public class CIMPropertyBag {
     }
 
     /**
-     * Get a referenced resource as a CIMPropertyBag.
+     * Get a referenced resource as a SimpleCIMPropertyBag.
      */
-    public CIMPropertyBag getResourceBag(String propertyLocalName) {
+    public SimpleCIMPropertyBag getResourceBag(String propertyLocalName) {
         Property prop = resource.getModel().createProperty(cimNamespace + propertyLocalName);
         Statement stmt = resource.getProperty(prop);
         if (stmt != null && stmt.getObject().isResource()) {
-            return new CIMPropertyBag(stmt.getObject().asResource(), cimNamespace, entsoeNamespace);
+            return new SimpleCIMPropertyBag(stmt.getObject().asResource(), cimNamespace, entsoeNamespace);
         }
         return null;
     }
@@ -190,6 +190,6 @@ public class CIMPropertyBag {
 
     @Override
     public String toString() {
-        return "CIMPropertyBag{" + getLocalId() + " name=" + getName() + "}";
+        return "SimpleCIMPropertyBag{" + getLocalId() + " name=" + getName() + "}";
     }
 }

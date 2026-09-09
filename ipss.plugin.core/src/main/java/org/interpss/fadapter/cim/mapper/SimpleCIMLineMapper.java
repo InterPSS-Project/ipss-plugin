@@ -1,5 +1,5 @@
 /*
- * CIMLineMapper.java
+ * SimpleCIMLineMapper.java
  *
  * Maps CIM ACLineSegment → AclfNetwork line branch.
  */
@@ -8,7 +8,7 @@ package org.interpss.fadapter.cim.mapper;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.CIMPropertyBag;
+import org.interpss.fadapter.cim.SimpleCIMPropertyBag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,17 +18,17 @@ import com.interpss.core.aclf.AclfBranch;
  * Maps CIM ACLineSegment to an AclfNetwork line.
  * CIM stores R, X in Ohms and Gch, Bch in Siemens (total line charging).
  */
-public class CIMLineMapper extends AbstractCIMDataMapper {
-    private static final Logger log = LoggerFactory.getLogger(CIMLineMapper.class);
+public class SimpleCIMLineMapper extends AbstractSimpleCIMDataMapper {
+    private static final Logger log = LoggerFactory.getLogger(SimpleCIMLineMapper.class);
 
     private final double baseMVA;
 
-    public CIMLineMapper(double baseMVA) {
+    public SimpleCIMLineMapper(double baseMVA) {
         this.baseMVA = baseMVA;
     }
 
     @Override
-    public void map(CIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void map(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         String lineId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = lineId;
@@ -75,7 +75,7 @@ public class CIMLineMapper extends AbstractCIMDataMapper {
     /**
      * Map SeriesCompensator as a line (PowSyBl behavior).
      */
-    public void mapSeriesCompensator(CIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void mapSeriesCompensator(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         String lineId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = lineId;
@@ -114,7 +114,7 @@ public class CIMLineMapper extends AbstractCIMDataMapper {
             name, fromBusId, toBusId, rPU, xPU);
     }
 
-    private Double resolveBaseKV(CIMPropertyBag bag) {
+    private Double resolveBaseKV(SimpleCIMPropertyBag bag) {
         Double baseKV = null;
         String bvRef = bag.getResourceId("ConductingEquipment.BaseVoltage");
         if (bvRef != null && cimModel != null) {

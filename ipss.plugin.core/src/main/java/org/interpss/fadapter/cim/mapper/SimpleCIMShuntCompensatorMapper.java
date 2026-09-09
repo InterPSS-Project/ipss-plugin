@@ -1,5 +1,5 @@
 /*
- * CIMShuntCompensatorMapper.java
+ * SimpleCIMShuntCompensatorMapper.java
  *
  * Maps CIM LinearShuntCompensator → bus shunt Y.
  */
@@ -8,24 +8,24 @@ package org.interpss.fadapter.cim.mapper;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.CIMPropertyBag;
+import org.interpss.fadapter.cim.SimpleCIMPropertyBag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Maps CIM ShuntCompensator to bus shunt admittance.
  */
-public class CIMShuntCompensatorMapper extends AbstractCIMDataMapper {
-    private static final Logger log = LoggerFactory.getLogger(CIMShuntCompensatorMapper.class);
+public class SimpleCIMShuntCompensatorMapper extends AbstractSimpleCIMDataMapper {
+    private static final Logger log = LoggerFactory.getLogger(SimpleCIMShuntCompensatorMapper.class);
 
     private final double baseMVA;
 
-    public CIMShuntCompensatorMapper(double baseMVA) {
+    public SimpleCIMShuntCompensatorMapper(double baseMVA) {
         this.baseMVA = baseMVA;
     }
 
     @Override
-    public void map(CIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void map(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         String shuntId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = shuntId;
