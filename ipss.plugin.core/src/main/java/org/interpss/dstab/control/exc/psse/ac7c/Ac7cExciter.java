@@ -201,7 +201,10 @@ public final class Ac7cExciter extends AnnotateExciter implements IntegrationSte
     public double getFieldFeedback(){return algebraics(active,getMachine()).vfe;}
     public double getPidError(){return algebraics(active,getMachine()).pidError;}
     public double getPidOutput(){return algebraics(active,getMachine()).pidOutput;}
+    public double getPidIntegralState(){return active[PID_INTEGRAL];}
+    public double getDerivativeOutput(){Algebraic a=algebraics(active,getMachine());return tdr>EPS?kdr*(a.pidError-active[PID_DERIVATIVE_LAG])/tdr:0;}
     public double getPiOutput(){return algebraics(active,getMachine()).piOutput;}
+    public double getRateFeedback(){return algebraics(active,getMachine()).rateFeedback;}
     public double getPotentialSource(){return potentialSource(getMachine());}
     public double getSelectedSupply(){return algebraics(active,getMachine()).supply;}
     public double getExciterInput(){return algebraics(active,getMachine()).efe;}
