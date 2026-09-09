@@ -124,6 +124,7 @@ import org.interpss.core.dstab.Esst1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovAndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1AndesSmibConformanceTest;
+import org.interpss.core.dstab.Ieeeg1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1IndependentSmibConformanceTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
@@ -387,6 +388,7 @@ import org.junit.platform.suite.api.Suite;
 	Ieeet1AndesSmibConformanceTest.class,
 	Ieeet1IndependentSmibConformanceTest.class,
 	Ieeeg1AndesSmibConformanceTest.class,
+	Ieeeg1IndependentSmibConformanceTest.class,
 	HygovAndesSmibConformanceTest.class,
 	Exdc2AndesSmibConformanceTest.class,
 	Ac8bAndesSmibConformanceTest.class,
