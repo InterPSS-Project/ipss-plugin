@@ -133,6 +133,7 @@ import org.interpss.core.dstab.Ac6cPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Ac7cPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Ac8cPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Ac9cPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Ac11cPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Esac1aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Esac1aPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aAndesSmibConformanceTest;
@@ -414,6 +415,7 @@ import org.junit.platform.suite.api.Suite;
 	Ac7cPowerWorldSmibConformanceTest.class,
 	Ac8cPowerWorldSmibConformanceTest.class,
 	Ac9cPowerWorldSmibConformanceTest.class,
+	Ac11cPowerWorldSmibConformanceTest.class,
 	Esac1aAndesSmibConformanceTest.class,
 	Esac1aPowerWorldSmibConformanceTest.class,
 	Esst1aAndesSmibConformanceTest.class,

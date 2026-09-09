@@ -106,6 +106,9 @@ The initial suite deliberately covers both renewable and conventional stacks:
   Texas2k dual-input PSS2A stabilizer.
 - `regfma1-bus1062.json`: a public all-line three-bus system with the Texas2k
   REGFMA1 parameter profile and all nine named PowerWorld machine states.
+- `smib-genrou-ac7c.json` through `smib-genrou-ac11c.json` (excluding the
+  PSLF-only AC10C): native PSS/E AC exciters, the reused core GENROU, and every
+  named PowerWorld exciter-state channel.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
@@ -120,9 +123,9 @@ When PowerWorld's PTI loader requires a documented dialect extension that is
 not part of the native PSS/E record, the specification may declare
 `powerworld_dyr` separately from `dyr`. The runner loads only that declared
 PowerWorld DYR, never combines dynamic-data formats, and hashes both inputs in
-the manifest. AC7C, AC8C, and AC9C use this mechanism: their native PSS/E
-records have 38, 31, and 45 parameters, while PowerWorld 24 requires its SCL
-field in equivalent 39-, 32-, and 46-parameter records. The runner
+the manifest. AC7C, AC8C, AC9C, and AC11C use this mechanism: their native
+PSS/E records have 38, 31, 45, and 40 parameters, while PowerWorld 24 requires
+its SCL field in equivalent 39-, 32-, 46-, and 41-parameter records. The runner
 also treats model-load, validation, script-action, and transient-start errors
 in the PowerWorld log as hard failures; completion markers alone are not enough
 to publish a reference artifact.
@@ -140,6 +143,13 @@ uses `0.5 ms`, matching its independent ANDES comparison. A reduced-step check
 is required before attributing a fast controller-state discrepancy to model
 equations. For GENROU, PowerWorld's `PsiQpp` state maps to InterPSS `Psikq`, not
 the derived network-interface flux returned by `getPsiq11()`.
+
+For AC11C, PowerWorld's ninth exported `PIKpoTio1` state is the OEL PI block
+output, not its stored integral coordinate. The comparison maps that channel
+to InterPSS's semantic OEL-regulator output while the local equation test
+separately retains direct coverage of the OEL integral state. The other eight
+PowerWorld channels map directly to `VE`, sensed voltage, and the main/PSS/UEL
+PI and `Kb/Tb` coordinates.
 
 For ESST4B, PowerWorld initializes a zero-`Kim` inner PI as a pure proportional
 path and freezes the integrator while the total PI output is saturated. The
