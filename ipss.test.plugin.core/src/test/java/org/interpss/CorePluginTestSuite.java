@@ -51,6 +51,7 @@ import org.interpss.core.dstab.Esst3aPowerWorldSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac5aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1Test;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsurryTest;
+import org.interpss.core.dstab.EsurryPowerWorldSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc1cTest;
 import org.interpss.core.dstab.Ac1cPowerWorldSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc2cTest;
@@ -563,6 +564,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderEsac5aTest.class,
 	DStabNetworkBuilderExac1Test.class,
 	DStabNetworkBuilderEsurryTest.class,
+	EsurryPowerWorldSmibConformanceTest.class,
 	DStabNetworkBuilderExac1aTest.class,
 	DStabNetworkBuilderExac2Test.class,
 	DStabNetworkBuilderEsac1aTest.class,

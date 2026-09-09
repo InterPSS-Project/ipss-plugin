@@ -1325,14 +1325,14 @@ public class PSSEDStabDirectParser {
         return builder.addExcExac1(busId,genId,d)!=null;
     }
 
-    // ESURRY/EXAC1M: Tr T1 Ta Tb Tc Td K10 K16 Kf Tf Vrmax Vrmin Te E1 SE1 E2 SE2 Kc Kd Ke
+    // ESURRY/EXAC1M: Tr Ta Tb Tc Td K10 T1 K16 Kf Tf Vrmax Vrmin Te E1 SE1 E2 SE2 Kc Kd Ke
     private boolean procExcEsurry(String busId,String genId,String[] f) {
         if (f.length<23) return false;
         EsurryData d=new EsurryData();
-        d.setTr(getDouble(f,3,0)); d.setT1(getDouble(f,4,0));
-        d.setTa(getDouble(f,5,0)); d.setTb(getDouble(f,6,0));
-        d.setTc(getDouble(f,7,0)); d.setTd(getDouble(f,8,0));
-        d.setK10(getDouble(f,9,0)); d.setK16(getDouble(f,10,0));
+        d.setTr(getDouble(f,3,0)); d.setTa(getDouble(f,4,0));
+        d.setTb(getDouble(f,5,0)); d.setTc(getDouble(f,6,0));
+        d.setTd(getDouble(f,7,0)); d.setK10(getDouble(f,8,0));
+        d.setT1(getDouble(f,9,0)); d.setK16(getDouble(f,10,0));
         d.setKf(getDouble(f,11,0)); d.setTf(getDouble(f,12,0));
         d.setVrmax(getDouble(f,13,0)); d.setVrmin(getDouble(f,14,0));
         d.setTe(getDouble(f,15,0)); d.setE1(getDouble(f,16,0));
