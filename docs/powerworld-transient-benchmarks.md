@@ -98,6 +98,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
 - `smib-genrou-ieeet1.json`: GENROU with the legacy rotating IEEE exciter;
 - `smib-genrou-ieeeg1.json`: GENROU with the steam-turbine governor chain;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
+- `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
+  turbine, load-limiter, acceleration, and temperature-control chain.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
@@ -142,6 +144,14 @@ REECA1 State 5 is excluded because it is the inactive `QFLAG=0`/`Tiq` path in
 this `QFLAG=1` benchmark. ANDES 2.0 uses a zero-based PIQ and omits the
 terminal-voltage subtraction for `VFLAG=1`; its trace remains a bounded
 secondary comparison, not an equation-equivalent REECA1 oracle.
+
+For GGOV1, PowerWorld's numbered result channels represent the named diagram
+signals, which are not always the raw numerical integration coordinates.
+`Governor Differential Control`, `Accel Control`, and `Temp Detection LL` map
+to the corresponding block outputs exposed by InterPSS. The 0.5 ms contract
+checks both bus voltages, generator MW/Mvar, relative rotor angle/speed, all
+four GENROU electrical states, and all ten GGOV1 signals. ANDES does not
+implement GGOV1, so this PowerWorld artifact is the independent model oracle.
 
 Run the framework's dependency-free tests with:
 
