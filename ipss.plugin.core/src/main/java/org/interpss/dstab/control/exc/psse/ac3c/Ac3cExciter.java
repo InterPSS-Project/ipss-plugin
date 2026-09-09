@@ -139,6 +139,8 @@ public final class Ac3cExciter extends AnnotateExciter implements IntegrationSte
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}public double getRegulatorState(){return active[VA];}
     public double getLeadLagState(){return active[LEAD_LAG];}public double getFeedbackLagState(){return active[VN_LAG];}
     public double getPiState(){return active[PI];}public double getDerivativeLagState(){return active[DERIV_LAG];}
+    /** PowerWorld/IEEE diagram PI signal before the derivative contribution. */
+    public double getPiOutput(){Algebraic a=algebraics(active,getMachine());return kpr*a.error+active[PI];}
     public double getPidOutput(){return algebraics(active,getMachine()).pid;}public double getLeadLagOutput(){return algebraics(active,getMachine()).leadLag;}
     public double getAmplifierInput(){return algebraics(active,getMachine()).amplifierInput;}public double getRegulatorOutput(){return algebraics(active,getMachine()).va;}
     public double getExciterFieldVoltage(){return algebraics(active,getMachine()).efe;}public double getInternalFieldVoltage(){return algebraics(active,getMachine()).field;}
