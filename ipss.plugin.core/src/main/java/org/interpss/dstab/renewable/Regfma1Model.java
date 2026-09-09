@@ -146,11 +146,8 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
         double voltageRate = 0.0;
         if (data.vflag() != 0) {
             double error = voltageCommand(state) - state.vMeasured();
-            double output = data.kpv() * error + state.voltageIntegral();
-            if (!((output >= data.emax() && error > 0.0)
-                    || (output <= data.emin() && error < 0.0))) {
-                voltageRate = data.kiv() * error;
-            }
+            voltageRate = limitedIntegralRate(state.voltageIntegral(), data.kiv(), error,
+                    data.kpv(), data.emin(), data.emax());
         }
         double angleRate = 2.0 * Math.PI * getDStabBus().getNetwork().getFrequency()
                 * frequencyDeviation(state);
@@ -301,6 +298,13 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
 
     private static double lowerBoundedRate(double state, double rate) {
         return state <= 0.0 && rate < 0.0 ? 0.0 : rate;
+    }
+
+    static double limitedIntegralRate(double integral, double gain, double error,
+            double proportionalGain, double lower, double upper) {
+        double output = proportionalGain * error + integral;
+        if ((output >= upper && error > 0.0) || (output <= lower && error < 0.0)) return 0.0;
+        return gain * error;
     }
 
     private Complex couplingImpedance() {
