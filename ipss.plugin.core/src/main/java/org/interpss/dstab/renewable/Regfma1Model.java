@@ -40,6 +40,8 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
     private double speed = 1.0;
     private boolean currentLimited;
     private Repca1Model plantController;
+    private ModelState predictorStart;
+    private ModelDerivatives predictorDerivatives;
 
     public Regfma1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
             Regfma1Data data) {
@@ -60,9 +62,10 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
         deviceBaseMva = parentGen.getMvaBase() > EPS ? parentGen.getMvaBase() : systemBaseMva;
         double scale = systemBaseMva / deviceBaseMva;
         Complex voltage = bus.getVoltage();
-        Complex power = parentGen.getGen().multiply(scale);
-        Complex current = power.divide(nonzero(voltage)).conjugate();
-        Complex internal = voltage.add(couplingImpedance().multiply(current));
+        Complex systemPower = parentGen.getGen();
+        Complex power = systemPower.multiply(scale);
+        Complex systemCurrent = systemPower.divide(nonzero(voltage)).conjugate();
+        Complex internal = voltage.add(couplingImpedance().multiply(systemCurrent));
 
         p = pMeasured = pReference = power.getReal();
         q = qMeasured = power.getImaginary();
@@ -81,6 +84,8 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
         pUpperIntegral = pLowerIntegral = qUpperIntegral = qLowerIntegral = 0.0;
         speed = 1.0;
         currentLimited = false;
+        predictorStart = null;
+        predictorDerivatives = null;
         if (plantController != null) plantController.initialize(p, q, vMeasured);
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(eDroop) && finite(angle);
@@ -88,51 +93,165 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
-        // Composed renewable controls in this plugin advance on predictor calls;
-        // the second modified-Euler callback is reserved for network correction.
-        if (flag != 0) return true;
+        if (flag != 0 && flag != 1) return false;
         Complex voltage = getDStabBus().getVoltage();
-        pMeasured = lag(pMeasured, p, data.tpf(), dt);
-        qMeasured = lag(qMeasured, q, data.tqf(), dt);
-        vMeasured = lag(vMeasured, voltage.abs(), data.tvf(), dt);
-        if (plantController != null) {
+        if (plantController != null && flag == 0) {
+            // REPCA1 is still integrated through the established composed-device
+            // contract. Activating its corrector here alone would stage only one
+            // part of the renewable cascade and consume inconsistent endpoints.
             plantController.step(dt, p, q, voltage.abs(), getDStabBus().getFreq());
             prefOffset = plantController.getPref();
             qvOffset = plantController.getQref();
         }
+        Endpoint endpoint = new Endpoint(p, q, voltage.abs());
+        if (dt <= 0.0) {
+            apply(applyBypasses(state(), endpoint));
+            updateAlgebraicOutputs(state());
+            return finiteState();
+        }
+        if (flag == 0) {
+            predictorStart = state();
+            predictorDerivatives = derivatives(predictorStart, endpoint);
+            apply(applyBypasses(add(predictorStart, predictorDerivatives, dt), endpoint));
+        } else {
+            if (predictorStart == null || predictorDerivatives == null) return false;
+            ModelDerivatives corrected = derivatives(state(), endpoint);
+            apply(applyBypasses(correct(predictorStart, predictorDerivatives,
+                    corrected, dt), endpoint));
+            predictorStart = null;
+            predictorDerivatives = null;
+        }
+        updateAlgebraicOutputs(state());
+        return finiteState();
+    }
 
-        double pHighError = data.pmax() - pMeasured;
-        double pLowError = data.pmin() - pMeasured;
-        pUpperIntegral = Math.min(0.0,
-                pUpperIntegral + data.kipmax() * pHighError * dt);
-        pLowerIntegral = Math.max(0.0,
-                pLowerIntegral + data.kipmax() * pLowError * dt);
-        double pLimit = Math.min(0.0, data.kppmax() * pHighError + pUpperIntegral)
-                + Math.max(0.0, data.kppmax() * pLowError + pLowerIntegral);
-        double frequencyDeviation = data.mp() * (pReference + prefOffset - pMeasured) + pLimit;
+    private ModelDerivatives derivatives(ModelState state, Endpoint endpoint) {
+        double pRate = lagRate(state.pMeasured(), endpoint.p(), data.tpf());
+        double qRate = lagRate(state.qMeasured(), endpoint.q(), data.tqf());
+        double vRate = lagRate(state.vMeasured(), endpoint.v(), data.tvf());
+
+        double pHighError = data.pmax() - state.pMeasured();
+        double pLowError = data.pmin() - state.pMeasured();
+        double pUpperRate = upperBoundedRate(state.pUpperIntegral(),
+                data.kipmax() * pHighError);
+        double pLowerRate = lowerBoundedRate(state.pLowerIntegral(),
+                data.kipmax() * pLowError);
+        double qHighError = data.qmax() - state.qMeasured();
+        double qLowError = data.qmin() - state.qMeasured();
+        double qUpperRate = upperBoundedRate(state.qUpperIntegral(),
+                data.kiqmax() * qHighError);
+        double qLowerRate = lowerBoundedRate(state.qLowerIntegral(),
+                data.kiqmax() * qLowError);
+
+        double voltageRate = 0.0;
+        if (data.vflag() != 0) {
+            double error = voltageCommand(state) - state.vMeasured();
+            double output = data.kpv() * error + state.voltageIntegral();
+            if (!((output >= data.emax() && error > 0.0)
+                    || (output <= data.emin() && error < 0.0))) {
+                voltageRate = data.kiv() * error;
+            }
+        }
+        double angleRate = 2.0 * Math.PI * getDStabBus().getNetwork().getFrequency()
+                * frequencyDeviation(state);
+        return new ModelDerivatives(angleRate, pRate, qRate, vRate, voltageRate,
+                pUpperRate, pLowerRate, qUpperRate, qLowerRate);
+    }
+
+    private double frequencyDeviation(ModelState state) {
+        double highError = data.pmax() - state.pMeasured();
+        double lowError = data.pmin() - state.pMeasured();
+        double limitOutput = Math.min(0.0,
+                data.kppmax() * highError + state.pUpperIntegral())
+                + Math.max(0.0, data.kppmax() * lowError + state.pLowerIntegral());
+        return data.mp() * (pReference + prefOffset - state.pMeasured()) + limitOutput;
+    }
+
+    private double voltageCommand(ModelState state) {
+        double highError = data.qmax() - state.qMeasured();
+        double lowError = data.qmin() - state.qMeasured();
+        double limitOutput = Math.min(0.0,
+                data.kpqmax() * highError + state.qUpperIntegral())
+                + Math.max(0.0, data.kpqmax() * lowError + state.qLowerIntegral());
+        return vReference + qvOffset + data.mq() * (qReference - state.qMeasured())
+                + limitOutput;
+    }
+
+    private void updateAlgebraicOutputs(ModelState state) {
+        double frequencyDeviation = frequencyDeviation(state);
         speed = 1.0 + frequencyDeviation;
-        angle += 2.0 * Math.PI * getDStabBus().getNetwork().getFrequency()
-                * frequencyDeviation * dt;
-
-        double qHighError = data.qmax() - qMeasured;
-        double qLowError = data.qmin() - qMeasured;
-        qUpperIntegral = Math.min(0.0,
-                qUpperIntegral + data.kiqmax() * qHighError * dt);
-        qLowerIntegral = Math.max(0.0,
-                qLowerIntegral + data.kiqmax() * qLowError * dt);
-        double qLimit = Math.min(0.0, data.kpqmax() * qHighError + qUpperIntegral)
-                + Math.max(0.0, data.kpqmax() * qLowError + qLowerIntegral);
-        double vCommand = vReference + qvOffset
-                + data.mq() * (qReference - qMeasured) + qLimit;
+        double vCommand = voltageCommand(state);
         if (data.vflag() == 0) {
             eDroop = limit(vCommand, data.emin(), data.emax());
         } else {
-            double error = vCommand - vMeasured;
-            voltageIntegral = integrateWithAntiWindup(voltageIntegral, data.kiv(), error, dt,
-                    data.kpv(), data.emin(), data.emax());
-            eDroop = limit(data.kpv() * error + voltageIntegral, data.emin(), data.emax());
+            double error = vCommand - state.vMeasured();
+            eDroop = limit(data.kpv() * error + state.voltageIntegral(),
+                    data.emin(), data.emax());
         }
-        return finite(eDroop) && finite(angle) && finite(speed);
+    }
+
+    private ModelState state() {
+        return new ModelState(angle, pMeasured, qMeasured, vMeasured, voltageIntegral,
+                pUpperIntegral, pLowerIntegral, qUpperIntegral, qLowerIntegral);
+    }
+
+    private void apply(ModelState state) {
+        angle = state.angle();
+        pMeasured = state.pMeasured();
+        qMeasured = state.qMeasured();
+        vMeasured = state.vMeasured();
+        voltageIntegral = state.voltageIntegral();
+        pUpperIntegral = state.pUpperIntegral();
+        pLowerIntegral = state.pLowerIntegral();
+        qUpperIntegral = state.qUpperIntegral();
+        qLowerIntegral = state.qLowerIntegral();
+    }
+
+    private ModelState add(ModelState state, ModelDerivatives rate, double dt) {
+        return new ModelState(
+                state.angle() + dt * rate.angle(),
+                state.pMeasured() + dt * rate.pMeasured(),
+                state.qMeasured() + dt * rate.qMeasured(),
+                state.vMeasured() + dt * rate.vMeasured(),
+                state.voltageIntegral() + dt * rate.voltageIntegral(),
+                state.pUpperIntegral() + dt * rate.pUpperIntegral(),
+                state.pLowerIntegral() + dt * rate.pLowerIntegral(),
+                state.qUpperIntegral() + dt * rate.qUpperIntegral(),
+                state.qLowerIntegral() + dt * rate.qLowerIntegral());
+    }
+
+    private ModelState correct(ModelState start, ModelDerivatives first,
+            ModelDerivatives second, double dt) {
+        return add(start, new ModelDerivatives(
+                .5 * (first.angle() + second.angle()),
+                .5 * (first.pMeasured() + second.pMeasured()),
+                .5 * (first.qMeasured() + second.qMeasured()),
+                .5 * (first.vMeasured() + second.vMeasured()),
+                .5 * (first.voltageIntegral() + second.voltageIntegral()),
+                .5 * (first.pUpperIntegral() + second.pUpperIntegral()),
+                .5 * (first.pLowerIntegral() + second.pLowerIntegral()),
+                .5 * (first.qUpperIntegral() + second.qUpperIntegral()),
+                .5 * (first.qLowerIntegral() + second.qLowerIntegral())), dt);
+    }
+
+    private ModelState applyBypasses(ModelState state, Endpoint endpoint) {
+        return new ModelState(state.angle(),
+                data.tpf() <= EPS ? endpoint.p() : state.pMeasured(),
+                data.tqf() <= EPS ? endpoint.q() : state.qMeasured(),
+                data.tvf() <= EPS ? endpoint.v() : state.vMeasured(),
+                state.voltageIntegral(),
+                Math.min(0.0, state.pUpperIntegral()),
+                Math.max(0.0, state.pLowerIntegral()),
+                Math.min(0.0, state.qUpperIntegral()),
+                Math.max(0.0, state.qLowerIntegral()));
+    }
+
+    private boolean finiteState() {
+        return finite(eDroop) && finite(angle) && finite(speed)
+                && finite(pMeasured) && finite(qMeasured) && finite(vMeasured)
+                && finite(voltageIntegral) && finite(pUpperIntegral)
+                && finite(pLowerIntegral) && finite(qUpperIntegral)
+                && finite(qLowerIntegral);
     }
 
     @Override
@@ -147,8 +266,9 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
             internal = voltage.add(impedance.multiply(outputCurrent));
         }
         Complex power = voltage.multiply(outputCurrent.conjugate());
-        p = power.getReal();
-        q = power.getImaginary();
+        double controlBaseScale = systemBaseMva / deviceBaseMva;
+        p = power.getReal() * controlBaseScale;
+        q = power.getImaginary() * controlBaseScale;
         // The dynamic Y matrix contains 1/Z, so the device supplies E/Z.
         return internal.divide(impedance);
     }
@@ -175,19 +295,20 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
         this.plantController = plantController;
     }
 
-    static double integrateWithAntiWindup(double integral, double gain, double error, double dt,
-            double proportionalGain, double lower, double upper) {
-        double output = proportionalGain * error + integral;
-        if ((output >= upper && error > 0.0) || (output <= lower && error < 0.0)) return integral;
-        return integral + gain * error * dt;
+    private static double upperBoundedRate(double state, double rate) {
+        return state >= 0.0 && rate > 0.0 ? 0.0 : rate;
+    }
+
+    private static double lowerBoundedRate(double state, double rate) {
+        return state <= 0.0 && rate < 0.0 ? 0.0 : rate;
     }
 
     private Complex couplingImpedance() {
         return parentGen.getPosGenZ().multiply(parentGen.getZMultiFactor());
     }
 
-    private static double lag(double state, double input, double timeConstant, double dt) {
-        return timeConstant <= EPS ? input : state + dt * (input - state) / timeConstant;
+    private static double lagRate(double state, double input, double timeConstant) {
+        return timeConstant <= EPS ? 0.0 : (input - state) / timeConstant;
     }
 
     private static double limit(double value, double lower, double upper) {
@@ -213,8 +334,11 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
     }
 
     public Regfma1Data getData() { return data; }
+    public double getAngle() { return angle; }
     public double getSpeed() { return speed; }
     public double getInternalVoltage() { return eDroop; }
+    public double getActivePower() { return p; }
+    public double getReactivePower() { return q; }
     public double getMeasuredActivePower() { return pMeasured; }
     public double getMeasuredReactivePower() { return qMeasured; }
     public double getMeasuredVoltage() { return vMeasured; }
@@ -224,4 +348,14 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
     public double getReactiveUpperLimitIntegral() { return qUpperIntegral; }
     public double getReactiveLowerLimitIntegral() { return qLowerIntegral; }
     public boolean isCurrentLimited() { return currentLimited; }
+
+    private record Endpoint(double p, double q, double v) {}
+
+    private record ModelState(double angle, double pMeasured, double qMeasured,
+            double vMeasured, double voltageIntegral, double pUpperIntegral,
+            double pLowerIntegral, double qUpperIntegral, double qLowerIntegral) {}
+
+    private record ModelDerivatives(double angle, double pMeasured, double qMeasured,
+            double vMeasured, double voltageIntegral, double pUpperIntegral,
+            double pLowerIntegral, double qUpperIntegral, double qLowerIntegral) {}
 }
