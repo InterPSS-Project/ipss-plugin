@@ -136,6 +136,15 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         assertEquals(mode.real(), activeRegion.dominantMode().real(), 1.0e-12,
                 "the legacy candidate is the inward-active regional Jacobian");
         assertEquals(mode.imaginary(), activeRegion.dominantMode().imaginary(), 1.0e-12);
+        assertTrue(activeRegion.tangentCone().feasible(),
+                "some real phase of the active regional mode must point inward");
+        assertTrue(Double.isFinite(activeRegion.tangentCone().witnessPhaseRadians()));
+        assertEquals(1, activeRegion.tangentCone().constraints().size());
+        assertEquals(LocalRenewableQvEigenAnalyzer.BoundarySide.LOWER,
+                activeRegion.tangentCone().constraints().get(0).side());
+        assertTrue(!clampedRegion.tangentCone().feasible(),
+                "the dominant zero mode displaces the state that is assumed clamped");
+        assertTrue(Double.isNaN(clampedRegion.tangentCone().witnessPhaseRadians()));
         assertTrue(clampedRegion.dominantMode().real() <= 1.0e-10,
                 "the outward-clamped region must not retain the growing tangent");
         double originalEntry = analysis.stateMatrix()[0][0];
@@ -190,6 +199,36 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         assertTrue(analysis.limiterRegionModes().stream().anyMatch(region ->
                 region.assumptions().stream().allMatch(assumption -> assumption.branch()
                         == LocalRenewableQvEigenAnalyzer.BoundaryBranch.INWARD_ACTIVE)));
+        var activeEnvelope = analysis.limiterRegionModes().stream()
+                .filter(region -> region.assumptions().stream().allMatch(assumption ->
+                        assumption.branch()
+                                == LocalRenewableQvEigenAnalyzer.BoundaryBranch.INWARD_ACTIVE))
+                .findFirst().orElseThrow();
+        assertTrue(activeEnvelope.tangentCone().feasible(),
+                "the coherent multi-plant active mode must have an inward phase");
+        assertEquals(plantCount, activeEnvelope.tangentCone().constraints().size());
+    }
+
+    @Test
+    void upperLimiterBoundaryRequiresTheOppositeInwardDirection() throws Exception {
+        DStabilityNetwork network = buildNetwork(1, .05, texas1062UpperPiqProfile());
+        assertTrue(DStabObjectFactory.createDynamicSimuAlgorithm(network)
+                .getAclfAlgorithm().loadflow(), "upper-boundary load flow");
+        var analysis = LocalRenewableQvEigenAnalyzer.analyze(network, List.of("Plant1"));
+        var activeRegion = analysis.limiterRegionModes().stream()
+                .filter(region -> region.assumptions().get(0).branch()
+                        == LocalRenewableQvEigenAnalyzer.BoundaryBranch.INWARD_ACTIVE)
+                .findFirst().orElseThrow();
+        var cone = activeRegion.tangentCone();
+        var constraint = cone.constraints().get(0);
+        assertEquals(LocalRenewableQvEigenAnalyzer.BoundarySide.UPPER,
+                constraint.side());
+        assertTrue(cone.feasible());
+        double phase = cone.witnessPhaseRadians();
+        double displacement = constraint.normalizedReal() * Math.cos(phase)
+                - constraint.normalizedImaginary() * Math.sin(phase);
+        assertTrue(displacement <= 1.0e-9,
+                "an upper-limit active direction must point into decreasing output");
     }
 
     @Test
@@ -489,6 +528,20 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         Reeca1Data reeca = new Reeca1Data(0, 0, 1, 1, 1, 0,
                 .85, 1.15, .02, 0, 0, 5, 1.1, -1.1, 0, 0, 0, .5,
                 .02, .436, -.436, 1.1, .9, 0, .5, 0, 24.8, 0, .02,
+                99, -99, 1, 0, 1.3, .02,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0);
+        Repca1Data repca = new Repca1Data(0, 0, 0, "0", 0, 1, 1,
+                .02, 17, 2.9, 0, 1.42, .7, 0, 0, 0,
+                1, -1, 0, 0, 1, -1, .4, .21, .02,
+                0, 0, 1, -1, 2, 0, .1, 20, 0, 0);
+        return new PlantProfile(.24, .057, .10, reeca, repca);
+    }
+
+    private static PlantProfile texas1062UpperPiqProfile() {
+        Reeca1Data reeca = new Reeca1Data(0, 0, 1, 1, 1, 0,
+                .85, 1.15, .02, 0, 0, 5, 1.1, -1.1, 0, 0, 0, .5,
+                .02, .436, -.436, -.1, -1.1, 0, .5, 0, 24.8, 0, .02,
                 99, -99, 1, 0, 1.3, .02,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0);

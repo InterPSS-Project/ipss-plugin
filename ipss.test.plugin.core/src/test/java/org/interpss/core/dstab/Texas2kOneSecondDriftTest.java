@@ -24,6 +24,7 @@ import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Device;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Mode;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.OperatingPointConstraint;
+import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.RegionalMode;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.StateComponent;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
@@ -211,17 +212,27 @@ public class Texas2kOneSecondDriftTest {
         assertFalse(qvAnalysis.limiterRegionEnumerationComplete(),
                 "34 simultaneous boundaries must use the bounded envelope calculation");
         assertEquals(2, qvAnalysis.limiterRegionModes().size());
+        RegionalMode activeEnvelope = qvAnalysis.limiterRegionModes().stream()
+                .filter(region -> region.assumptions().stream().allMatch(assumption ->
+                        assumption.branch()
+                                == LocalRenewableQvEigenAnalyzer.BoundaryBranch.INWARD_ACTIVE))
+                .findFirst().orElseThrow();
+        assertFalse(activeEnvelope.tangentCone().feasible(),
+                "the Case-5 all-active eigenvector must not be claimed when its 34 "
+                        + "boundary-state directions cannot all point inward");
         System.out.println("  limiter-region envelopes: "
                 + qvAnalysis.limiterRegionModes().stream().map(region ->
                         region.assumptions().get(0).branch() + "="
                                 + region.dominantMode().real() + "+j"
-                                + region.dominantMode().imaginary()).toList());
+                                + region.dominantMode().imaginary() + ", coneFeasible="
+                                + region.tangentCone().feasible()).toList());
         Path reportDirectory = Path.of(System.getProperty("texas2k.gridStrength.reportDir",
                 Path.of("target", "dynamic-model-validation", "texas2k-case5-qv")
                         .toString()));
         writeQvBenchmark(reportDirectory, CASE5_INTERACTING_BUSES,
                 coupling, devices, qvAnalysis.stateMatrix(), qvMode,
-                qvAnalysis.operatingPointConstraints());
+                qvAnalysis.operatingPointConstraints(),
+                qvAnalysis.limiterRegionModes());
         System.out.println("  machine-readable Q/V benchmark: "
                 + reportDirectory.toAbsolutePath());
     }
@@ -244,7 +255,8 @@ public class Texas2kOneSecondDriftTest {
         }
         Mode mode = new Mode(.01, -.25, vector);
 
-        writeQvBenchmark(directory, buses, coupling, List.of(device), state, mode, List.of());
+        writeQvBenchmark(directory, buses, coupling, List.of(device), state, mode,
+                List.of(), List.of());
 
         List<String> couplingRows = Files.readAllLines(directory.resolve("coupling.csv"));
         List<String> stateRows = Files.readAllLines(directory.resolve("state-matrix.csv"));
@@ -259,6 +271,9 @@ public class Texas2kOneSecondDriftTest {
         assertTrue(Files.readString(directory.resolve("summary.csv"))
                 .contains("two_sided_linearization_valid,true"));
         assertEquals(1, Files.readAllLines(directory.resolve("constraints.csv")).size());
+        assertEquals("region,dominant_real,dominant_imaginary,cone_feasible,"
+                        + "witness_phase_radians,assumptions",
+                Files.readAllLines(directory.resolve("limiter-regions.csv")).get(0));
         assertEquals(2, Files.readAllLines(directory.resolve("devices.csv")).size());
     }
 
@@ -275,7 +290,7 @@ public class Texas2kOneSecondDriftTest {
 
     private static void writeQvBenchmark(Path directory, List<String> buses,
             double[][] coupling, List<Device> devices, double[][] stateMatrix, Mode mode,
-            List<OperatingPointConstraint> constraints)
+            List<OperatingPointConstraint> constraints, List<RegionalMode> regions)
             throws java.io.IOException {
         Files.createDirectories(directory);
         writeMatrix(directory.resolve("coupling.csv"), "response_bus", buses, buses,
@@ -321,6 +336,23 @@ public class Texas2kOneSecondDriftTest {
                     .append(constraint.explanation()).append('\n');
         }
         Files.writeString(directory.resolve("constraints.csv"), constraintCsv);
+        StringBuilder regionCsv = new StringBuilder(
+                "region,dominant_real,dominant_imaginary,cone_feasible,"
+                        + "witness_phase_radians,assumptions\n");
+        for (int index = 0; index < regions.size(); index++) {
+            RegionalMode region = regions.get(index);
+            String assumptions = region.assumptions().stream()
+                    .map(value -> value.deviceId() + "/" + value.signal() + "="
+                            + value.branch())
+                    .collect(Collectors.joining(";"));
+            regionCsv.append(index).append(',')
+                    .append(region.dominantMode().real()).append(',')
+                    .append(region.dominantMode().imaginary()).append(',')
+                    .append(region.tangentCone().feasible()).append(',')
+                    .append(region.tangentCone().witnessPhaseRadians()).append(',')
+                    .append(assumptions).append('\n');
+        }
+        Files.writeString(directory.resolve("limiter-regions.csv"), regionCsv);
         Files.writeString(directory.resolve("summary.csv"),
                 "metric,value\n"
                 + "bus_count," + buses.size() + "\n"
