@@ -177,6 +177,7 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
             active = state;
         }
         for (double value : active) if (!Double.isFinite(value)) return false;
+        constrainRegulator(active, machine);
         constrainField(active);
         outputSignal = algebraics(active, machine).field * outputSpeedScale(machine);
         return Double.isFinite(outputSignal);
@@ -276,6 +277,11 @@ public class Esdc2aExciter extends AnnotateExciter implements IntegrationStepAwa
 
     private void constrainField(double[] values) {
         values[FIELD] = clamp(values[FIELD], fieldLowerLimit(), fieldUpperLimit());
+    }
+
+    private void constrainRegulator(double[] values, Machine machine) {
+        values[REGULATOR] = clamp(values[REGULATOR],
+                regulatorLower(machine), regulatorUpper(machine));
     }
 
     private double regulatorUpper(Machine machine) {
