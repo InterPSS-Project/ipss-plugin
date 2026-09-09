@@ -29,6 +29,9 @@ public final class Ac9cExciter extends AnnotateExciter implements IntegrationSte
     private double[] active=state;
     private boolean initialized,hasVuel,hasVoel,hasVsclSum,hasVsclUel,hasVsclOel;
     private double integrationStep,minimumTimeConstantMultiplier=1;
+    // PowerWorld/IEEE retain the canonical VAVR and VR states and use a
+    // constant bias to balance the selected VCT/VFW source at initialization.
+    private double powerStageInitializationOffset;
     private double vuel,voel,vsclSum,vsclUel,vsclOel;
 
     public int oelLocation,uelLocation,sclLocation,sw1,sct;
@@ -62,9 +65,10 @@ public final class Ac9cExciter extends AnnotateExciter implements IntegrationSte
         double vfe0=fieldFeedback(ve0,ifd0),vf0=kf*vfe0,vfw0=kfw*vfe0;
         vfwmax=Math.max(vfwmax,vfw0);vfwmin=Math.min(vfwmin,vfw0);
         double vct0=controlledAvailableVoltage(machine,vfe0);
-        double vavr0=initialCurrentRegulatorOutput(vfe0,vct0,vfw0);
-        if(!Double.isFinite(vavr0))return false;
-        double vr0=ka*vavr0;
+        double vavr0=vfe0/ka,vr0=vfe0;
+        double powerStage0=powerStageBias(vavr0,vct0,vfw0);
+        powerStageInitializationOffset=vfe0-vr0-powerStage0;
+        if(!Double.isFinite(vavr0)||!Double.isFinite(powerStageInitializationOffset))return false;
         vpidmax=Math.max(vpidmax,vf0);vpidmin=Math.min(vpidmin,vf0);
         vamax=Math.max(vamax,vavr0);vamin=Math.min(vamin,vavr0);
         vrmax=Math.max(vrmax,vr0);vrmin=Math.min(vrmin,vr0);
@@ -142,7 +146,7 @@ public final class Ac9cExciter extends AnnotateExciter implements IntegrationSte
         double gatedVavr=lvGate(hvGate(vavr,GATE_2),GATE_2);
         double vr=ta>EPS?clamp(x[VR],vrmin,vrmax):clamp(ka*gatedVavr,vrmin,vrmax);
         double vct=controlledAvailableVoltage(machine,vfe),vfw=clamp(kfw*vfe,vfwmin,vfwmax);
-        double vb=powerStageBias(vavr,vct,vfw),efe=vr+vb;
+        double vb=powerStageBias(vavr,vct,vfw),efe=vr+vb+powerStageInitializationOffset;
         return new Algebraic(sensed,field,vfe,voltageError,ifdRefUnlimited,ifdRef,vf,
                 currentError,vavrUnlimited,vavr,gatedVavr,vr,vct,vfw,vb,efe);
     }
@@ -159,13 +163,6 @@ public final class Ac9cExciter extends AnnotateExciter implements IntegrationSte
     }
     private double fieldResidual(double field,double[] x,Machine machine,double ifd){return algebraicsAtField(x,machine,field,ifd).efe-fieldFeedback(field,ifd);}
 
-    private double initialCurrentRegulatorOutput(double vfe,double vct,double vfw){
-        if(sct!=CHOPPER)return (vfe-vct)/ka;
-        double[] candidates={(vfe-vct)/ka,vfe/ka,(vfe+vfw)/ka};double best=Double.NaN,bestError=Double.POSITIVE_INFINITY;
-        for(double candidate:candidates){double error=Math.abs(ka*candidate+powerStageBias(candidate,vct,vfw)-vfe);
-            if(error<bestError){bestError=error;best=candidate;}}
-        return best;
-    }
     private double summationLimiterInput(){double v=0;if(oelLocation<2&&hasVoel)v+=voel;if(uelLocation<2&&hasVuel)v+=vuel;if(sclLocation<2&&hasVsclSum)v+=vsclSum;return v;}
     private double hvGate(double v,int gate){if(uelLocation==gate&&hasVuel)v=Math.max(v,vuel);if(sclLocation==gate&&hasVsclUel)v=Math.max(v,vsclUel);return v;}
     private double lvGate(double v,int gate){if(oelLocation==gate&&hasVoel)v=Math.min(v,voel);if(sclLocation==gate&&hasVsclOel)v=Math.min(v,vsclOel);return v;}
@@ -216,6 +213,7 @@ public final class Ac9cExciter extends AnnotateExciter implements IntegrationSte
     public double getInternalFieldVoltage(){return algebraics(active,getMachine()).field;}
     public double getFieldFeedback(){return algebraics(active,getMachine()).vfe;}
     public double getVoltageError(){return algebraics(active,getMachine()).voltageError;}
+    public double getDerivativeOutput(){Algebraic a=algebraics(active,getMachine());return tdr>EPS?kdr*(a.voltageError-active[PID_DERIVATIVE_LAG])/tdr:0;}
     public double getPidIntegralState(){return active[PID_INTEGRAL];}
     public double getIfdReference(){return algebraics(active,getMachine()).ifdRef;}
     public double getCurrentError(){return algebraics(active,getMachine()).currentError;}
