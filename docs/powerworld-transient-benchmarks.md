@@ -115,6 +115,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   limits from DC2C's terminal-voltage-scaled limits.
 - `smib-genrou-dc4c.json`: the native PID commutator exciter with compound
   potential source, controlled rectifier, saturation, and rate feedback.
+- `smib-genrou-exac4.json`: the IEEE Type AC4 high-initial-response exciter,
+  reused core GENROU, and all three named PowerWorld controller states.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
