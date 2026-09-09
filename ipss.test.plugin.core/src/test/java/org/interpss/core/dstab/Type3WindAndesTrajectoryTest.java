@@ -113,18 +113,21 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
                 "/reference/andes/type3-wind-bus1062-fault.csv").toURI());
         List<String> lines = Files.readAllLines(reference, StandardCharsets.UTF_8);
         String[] headings = lines.get(0).split(",");
-        // Absolute contracts intentionally expose the residual full-stack
-        // network/controller coupling difference instead of hiding it in a
-        // percent metric around near-zero controller states.
+        // ANDES 2.0 implements VFLAG=1 as PIQ_y -> PIV, with a zero-based PIQ
+        // state. PowerWorld/WECC instead use an absolute PIQ voltage reference
+        // and subtract Vt_filt before PIV. This is therefore a bounded
+        // cross-tool comparison, not a REECA1 conformance oracle. Unaffected
+        // Type-3 mechanical controls retain much tighter regression limits.
         double[] tolerances = {
-                0.0, 1.0e-4, 4.0e-5,
-                3.0e-7, 7.0e-5, 1.0e-5, 1.0e-7,
-                2.0e-3, 4.0e-5, 1.3e-2,
+                0.0, 9.0e-3, 3.5e-3,
+                1.0e-6, 7.0e-5, 5.0e-5, 1.0e-7,
+                2.0e-3, 2.0e-4, 9.0e-3,
                 1.5e-3, 7.0e-7, 2.7e-3, 1.7e-3
         };
         assertTrue(headings.length == tolerances.length,
                 "reference/tolerance column mismatch");
         double[] maximumError = new double[headings.length];
+        double[] maximumErrorTime = new double[headings.length];
         for (String line : lines.subList(1, lines.size())) {
             if (line.isBlank()) continue;
             double[] expected = Arrays.stream(line.split(","))
@@ -132,17 +135,26 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
             double[] interpolated = interpolate(actual, expected[0]);
             for (int column = 1; column < expected.length; column++) {
                 double error = Math.abs(interpolated[column] - expected[column]);
-                maximumError[column] = Math.max(maximumError[column], error);
-                assertTrue(error <= tolerances[column], String.format(Locale.ROOT,
-                        "%s at t=%.9g: InterPSS=%.12g ANDES=%.12g error=%.9g tolerance=%.9g",
-                        headings[column], expected[0], interpolated[column], expected[column],
-                        error, tolerances[column]));
+                if (error > maximumError[column]) {
+                    maximumError[column] = error;
+                    maximumErrorTime[column] = expected[0];
+                }
             }
         }
+        StringBuilder failures = new StringBuilder();
         for (int column = 1; column < headings.length; column++) {
             System.out.printf(Locale.ROOT, "Type-3 ANDES %-20s maxAbsError=%.9g%n",
                     headings[column], maximumError[column]);
+            if (maximumError[column] > tolerances[column]) {
+                failures.append(String.format(Locale.ROOT,
+                        "%s maximum error %.9g at %.9g s exceeds tolerance %.9g%n",
+                        headings[column], maximumError[column], maximumErrorTime[column],
+                        tolerances[column]));
+            }
         }
+        assertTrue(maximumError[1] > 5.0e-3,
+                "ANDES 2.0's documented VFLAG=1 equation difference unexpectedly vanished");
+        assertTrue(failures.isEmpty(), failures.toString());
     }
 
     private static double[] interpolate(List<double[]> rows, double time) {
