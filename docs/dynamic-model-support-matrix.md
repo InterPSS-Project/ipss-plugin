@@ -10,7 +10,7 @@ trajectory comparison. Those acceptance results are tracked in
 cases are currently loadable, but only Cases 1 and 2 pass the strict one-second
 flat-run gate; the Texas2k verification milestone remains open.
 
-Current Texas2k audit (2026-09-08): `17/17` PSS/E DYR model names are
+Current Texas2k audit (2026-09-09): `17/17` PSS/E DYR model names are
 loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
 runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 `_MODREMOVE.idv`. Approved-list rows without a native PSS/E model name are
@@ -18,11 +18,13 @@ excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
 `6/6` prepared cases pass the
-short flat and common Bus-7159 fault execution smokes, `2/6` pass the strict
-one-second flat-run gate, `0/6` have completed the required location-specific
-fault acceptance matrix, and `0/6` have full-stack independent trajectory
-acceptance. See the plan's release checklist before interpreting any `LOADABLE`
-row as completed model validation.
+short flat and common Bus-7159 fault execution smokes, `0/6` pass the current
+strict one-second flat-run gate, and all `15/15` required location-specific
+faults complete as execution/sanity checks. Full-stack independent trajectory
+acceptance remains `0/6`. REGFMA1 now has a registered public PowerWorld
+nine-state trajectory contract, but the Case-6 coupled fleet flat-run gate
+remains open. See the plan's release checklist before interpreting any
+`LOADABLE` row as completed model validation.
 
 | Model | Category | Aliases | Parameters | Support | Runtime class | Reference |
 |---|---|---|---:|---|---|---|

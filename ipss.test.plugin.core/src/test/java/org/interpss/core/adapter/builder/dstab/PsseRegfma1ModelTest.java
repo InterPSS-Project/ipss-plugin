@@ -22,6 +22,7 @@ import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
+import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.core.net.OriginalDataFormat;
@@ -132,6 +133,63 @@ public class PsseRegfma1ModelTest extends CorePluginTestSetup {
         assertTrue(model.getReactiveUpperLimitIntegral() < 0.0);
         assertTrue(model.getSpeed() < 1.0);
         assertTrue(model.getInternalVoltage() < initialVoltage);
+    }
+
+    @Test
+    void measurementFiltersUseBothModifiedEulerStages() throws Exception {
+        Regfma1Model model = model(new Regfma1Data(.1, .1, .1, 0, .15, 0,
+                2, 0, 2, -2, 2, -2, 0, 0, 0, 1,
+                0, 0, 0, 0, 0, 0));
+        double oldP = model.getMeasuredActivePower();
+        double oldQ = model.getMeasuredReactivePower();
+        double oldV = model.getMeasuredVoltage();
+        model.getDStabBus().setVoltage(new Complex(.9, 0));
+        model.getOutputObject();
+        double endpointP0 = model.getActivePower();
+        double endpointQ0 = model.getReactivePower();
+
+        double dt = .05;
+        assertTrue(model.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, 0));
+        double predictedP = oldP + dt * (endpointP0 - oldP) / .1;
+        double predictedQ = oldQ + dt * (endpointQ0 - oldQ) / .1;
+        double predictedV = oldV + dt * (.9 - oldV) / .1;
+        assertEquals(predictedP, model.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(predictedQ, model.getMeasuredReactivePower(), 1.0e-12);
+        assertEquals(predictedV, model.getMeasuredVoltage(), 1.0e-12);
+
+        model.getOutputObject();
+        double endpointP1 = model.getActivePower();
+        double endpointQ1 = model.getReactivePower();
+        assertTrue(model.nextStep(dt, DynamicSimuMethod.MODIFIED_EULER, 1));
+        assertEquals(oldP + .5 * dt * ((endpointP0 - oldP) / .1
+                        + (endpointP1 - predictedP) / .1),
+                model.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(oldQ + .5 * dt * ((endpointQ0 - oldQ) / .1
+                        + (endpointQ1 - predictedQ) / .1),
+                model.getMeasuredReactivePower(), 1.0e-12);
+        assertEquals(oldV + .5 * dt * ((.9 - oldV) / .1
+                        + (.9 - predictedV) / .1),
+                model.getMeasuredVoltage(), 1.0e-12);
+    }
+
+    @Test
+    void networkPowerFeedbackIsConvertedToConverterMvaBase() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
+                .getContributeGen("1");
+        Complex sourcePower = gen.getGen();
+        gen.setMvaBase(50.0);
+        gen.setZMultiFactor(2.0);
+        Regfma1Model model = builder.addRegfma1("Bus1", "1",
+                new Regfma1Data(0, .02, .02, .02, 0, 1.2, 0,
+                        2, -2, 2, -2, 0, 0, 0, 1,
+                        0, 0, 0, 1));
+        assertTrue(model.initStates(model.getDStabBus()));
+
+        model.getOutputObject();
+
+        assertEquals(2.0 * sourcePower.getReal(), model.getActivePower(), 1.0e-10);
+        assertEquals(2.0 * sourcePower.getImaginary(), model.getReactivePower(), 1.0e-10);
     }
 
     @Test
