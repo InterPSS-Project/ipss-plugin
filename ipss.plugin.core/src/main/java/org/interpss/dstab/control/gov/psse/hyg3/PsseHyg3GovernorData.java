@@ -12,8 +12,10 @@ import org.interpss.dstab.control.base.BaseControllerData;
  * different display order used by PowerWorld's HYG3 parameter table.</p>
  */
 public class PsseHyg3GovernorData extends BaseControllerData {
-    public static final int PID_CONTROL = 0;
-    public static final int DOUBLE_DERIVATIVE_CONTROL = 1;
+    /** PSS/E/PowerWorld DYR flag: one selects the upper PID path. */
+    public static final int PID_CONTROL = 1;
+    /** PSS/E/PowerWorld DYR flag: zero selects the lower double-derivative path. */
+    public static final int DOUBLE_DERIVATIVE_CONTROL = 0;
 
     private int controlFlag = PID_CONTROL;
     private double rgate = 0.05;

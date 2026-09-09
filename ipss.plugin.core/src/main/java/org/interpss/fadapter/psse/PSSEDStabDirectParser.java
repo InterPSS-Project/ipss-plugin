@@ -2259,7 +2259,7 @@ public class PSSEDStabDirectParser {
     }
 
     // PSS/E HYG3U1 conversion order: one controller ICON followed by 36 CONs.
-    // ICON 0 selects PID and ICON 1 selects the double-derivative branch.
+    // ICON 1 selects PID and ICON 0 selects the double-derivative branch.
     private boolean procGovHyg3(String busId, String genId, String[] f) {
         if (f.length < 40) return false;
         PsseHyg3GovernorData d = new PsseHyg3GovernorData();

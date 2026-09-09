@@ -22,11 +22,11 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
 
-class PsseHyg3GovernorTest extends CorePluginTestSetup {
+public class PsseHyg3GovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
-    void directParserMapsTheHyg3u1IconAndAllThirtySixConstants(@TempDir Path tempDir)
+    void directParserMapsTheHyg3u1PidIconAndAllThirtySixConstants(@TempDir Path tempDir)
             throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("hyg3u1.dyr");
@@ -41,7 +41,7 @@ class PsseHyg3GovernorTest extends CorePluginTestSetup {
                 .getMachine("Bus1-mach1").getGovernor();
 
         assertNotNull(governor);
-        assertEquals(PsseHyg3GovernorData.DOUBLE_DERIVATIVE_CONTROL,
+        assertEquals(PsseHyg3GovernorData.PID_CONTROL,
                 governor.getData().getControlFlag());
         assertEquals(0.0, governor.getData().getRgate(), TOL);
         assertEquals(.0527, governor.getData().getRelec(), TOL);
