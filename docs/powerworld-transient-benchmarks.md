@@ -23,6 +23,16 @@ Set `POWERWORLD_EXE` to omit the command-line executable argument. Use
 `--generate-only` on hosts without PowerWorld to validate the specification and
 inspect the generated AUX file.
 
+Pass the specifications directory to regenerate the entire checked-in suite in
+stable filename order:
+
+```powershell
+python ipss.test.plugin.core/src/test/python/powerworld_transient_benchmark.py `
+  ipss.test.plugin.core/testData/reference/powerworld/specs `
+  --powerworld-exe "C:\Program Files\PowerWorld\Simulator Education-Evalution 24\pwrworld.exe" `
+  --publish ipss.test.plugin.core/testData/reference/powerworld
+```
+
 The default output is `target/powerworld-benchmarks/<benchmark-name>/`:
 
 - `run.aux` is the exact executable PowerWorld script;
@@ -66,10 +76,22 @@ Keep automatic correction disabled unless the benchmark intentionally targets
 PowerWorld's documented corrected interpretation. If enabled, declare expected
 log text so an unexpected or missing correction fails the run.
 
-Two initial specifications demonstrate reuse:
+The initial suite deliberately covers both renewable and conventional stacks:
 
 - `type3-wind-bus1062.json`: REGCA1/REECA1/REPCA1 plus Type-3 wind controls;
-- `smib-genrou-esst4b.json`: conventional GENROU plus ESST4B excitation.
+- `smib-gensal.json`: the core GENSAL synchronous machine;
+- `smib-genrou-esst1a.json` and `smib-genrou-esst4b.json`: GENROU with two
+  static-exciter families;
+- `smib-genrou-ieeet1.json`: GENROU with the legacy rotating IEEE exciter;
+- `smib-genrou-ieeeg1.json`: GENROU with the steam-turbine governor chain;
+- `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
+
+Every published trace contains both boundary channels (bus voltage and
+generator MW/Mvar) and named internal model states. The test suite verifies the
+input and artifact hashes, finite trajectories, duplicate pre/post-event
+samples, a material fault response, and voltage recovery. A model-specific
+InterPSS comparison should add semantic state mapping and tolerances rather than
+assuming that state indices or speed/angle normalizations match across tools.
 
 Run the framework's dependency-free tests with:
 
