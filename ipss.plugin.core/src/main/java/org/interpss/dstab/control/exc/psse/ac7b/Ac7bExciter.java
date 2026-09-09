@@ -303,6 +303,11 @@ public final class Ac7bExciter extends AnnotateExciter implements IntegrationSte
     }
 
     public double getSensedVoltage() { return algebraics(active, getMachine()).sensedVoltage; }
+    public double getPidIntegralState() { return active[PID_INTEGRAL]; }
+    public double getPidDerivativeOutput() {
+        Algebraic a = algebraics(active, getMachine());
+        return tdr > EPS ? kdr * (a.pidError - active[PID_DERIVATIVE_LAG]) / tdr : 0.0;
+    }
     public double getFieldCurrentSignal() { return algebraics(active, getMachine()).vfe; }
     public double getRateFeedback() { return algebraics(active, getMachine()).rateFeedback; }
     public double getPidOutput() { return algebraics(active, getMachine()).pidOutput; }
