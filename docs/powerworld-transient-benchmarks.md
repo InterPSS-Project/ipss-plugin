@@ -120,8 +120,9 @@ When PowerWorld's PTI loader requires a documented dialect extension that is
 not part of the native PSS/E record, the specification may declare
 `powerworld_dyr` separately from `dyr`. The runner loads only that declared
 PowerWorld DYR, never combines dynamic-data formats, and hashes both inputs in
-the manifest. AC7C uses this mechanism because native PSS/E has 38 parameters
-while PowerWorld 24 requires its SCL field in a 39-parameter record. The runner
+the manifest. AC7C and AC8C use this mechanism: their native PSS/E records have
+38 and 31 parameters, while PowerWorld 24 requires its SCL field in equivalent
+39- and 32-parameter records. The runner
 also treats model-load, validation, script-action, and transient-start errors
 in the PowerWorld log as hard failures; completion markers alone are not enough
 to publish a reference artifact.
