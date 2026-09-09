@@ -109,6 +109,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
 - `smib-genrou-ac7c.json` through `smib-genrou-ac11c.json` (excluding the
   PSLF-only AC10C): native PSS/E AC exciters, the reused core GENROU, and every
   named PowerWorld exciter-state channel.
+- `smib-genrou-dc1c.json`: the native revision-C commutator exciter, reused
+  core GENROU, and all five named PowerWorld DC1C channels.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
@@ -150,6 +152,16 @@ to InterPSS's semantic OEL-regulator output while the local equation test
 separately retains direct coverage of the OEL integral state. The other eight
 PowerWorld channels map directly to `VE`, sensed voltage, and the main/PSS/UEL
 PI and `Kb/Tb` coordinates.
+
+DC1C uses a different PowerWorld PTI dialect boundary: its native 19-parameter
+PSS/E record remains intact, PowerWorld's SCL property stays typed-only, and
+only the final typed `Spdmlt` value is present in the separate 20-parameter
+PowerWorld input. The five exported channels map to field voltage, sensed
+voltage, bounded regulator output, rate-feedback output, and lead-lag output.
+The common cross-tool profile uses `Tr=0`; PowerWorld 24 accepts nonzero `Tr`
+but exports and drives the sensed-voltage path as unfiltered, while InterPSS's
+documented nonzero-transducer behavior remains covered by its independent
+five-state equation oracle.
 
 For ESST4B, PowerWorld initializes a zero-`Kim` inner PI as a pure proportional
 path and freezes the integrator while the total PI output is saturated. The
