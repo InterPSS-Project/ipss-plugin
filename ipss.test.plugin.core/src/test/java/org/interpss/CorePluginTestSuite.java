@@ -255,6 +255,7 @@ import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
 import org.interpss.core.dstab.Exdc2AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ac8bAndesSmibConformanceTest;
+import org.interpss.core.dstab.Ac8bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1SmibIntegrationTest;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
@@ -450,6 +451,7 @@ import org.junit.platform.suite.api.Suite;
 	Pss2aIndependentSmibConformanceTest.class,
 	Exdc2AndesSmibConformanceTest.class,
 	Ac8bAndesSmibConformanceTest.class,
+	Ac8bIndependentSmibConformanceTest.class,
 	Exdc2aOpenSourceEquationConformanceTest.class,
 	Ieeet4OpenSourceEquationConformanceTest.class,
 	Ac8bAndesEquationConformanceTest.class,

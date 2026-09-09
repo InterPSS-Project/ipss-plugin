@@ -124,6 +124,11 @@ The initial suite deliberately covers both renewable and conventional stacks:
 - `smib-genrou-esac8b.json`: the native 15-parameter Basler DECS ESAC8B
   profile with core GENROU and all five official PowerWorld exciter states:
   `EFD`, sensed `Vt`, derivative output, integral output, and `VR`.
+- `smib-genrou-ac8b.json`: native PSS/E-v33 AC8B against PowerWorld's
+  equation-equivalent `ESAC8B_PTI` common profile. The manifest hashes the
+  separate native and PowerWorld DYR presentations; the comparison covers all
+  five states, while AC8B-only PID/field limits and rectifier loading remain in
+  the independent ANDES and equation-level tests.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
