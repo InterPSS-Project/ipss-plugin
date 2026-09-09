@@ -233,7 +233,9 @@ import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
 import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
 import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.GensalConformanceTest;
+import org.interpss.core.dstab.mach.GensalPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.mach.GensalHydroSmibTest;
+import org.interpss.core.dstab.reference.PowerWorldCsvReferenceTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
 import org.interpss.core.dstab.mach.GenrouAndesSmibConformanceTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
@@ -362,6 +364,8 @@ import org.junit.platform.suite.api.Suite;
 	///Eq1MachineCaseTest.class,
 	GensalConformanceTest.class,
 	GensalHydroSmibTest.class,
+	GensalPowerWorldSmibConformanceTest.class,
+	PowerWorldCsvReferenceTest.class,
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
 	Esst4bAndesSmibConformanceTest.class,
