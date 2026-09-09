@@ -175,6 +175,10 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         controller.initialize(.36, -.005, 1.0);
         double initialIntegral = controller.getVoltageControlIntegral();
 
+        assertEquals(1.0, controller.getReactiveControlIntegral(), 0.0,
+                "PIQ stores the absolute voltage reference in WECC REEC_A");
+        assertEquals(1.0, controller.getReactiveControlOutput(), 0.0);
+
         controller.step(1.0 / 240.0, .36, -.005, 1.0, .999);
 
         assertEquals(initialIntegral, controller.getVoltageControlIntegral(), 1.0e-12);
@@ -212,24 +216,25 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void coordinatedQControlRoutesReactivePiDirectlyIntoInnerPi() {
+    void coordinatedQControlFormsAbsoluteVoltageReferenceBeforeInnerPi() {
         Reeca1Model controller = new Reeca1Model(controlData(0, 1, 1, 0, 0, .1), null);
         controller.initialize(.8, .2, 1.0);
-        assertEquals(0.0, controller.getReactiveControlIntegral(), 0.0,
-                "WECC Figure 3-2 VFLAG=1 PIQ is incremental at initialization");
+        assertEquals(1.0, controller.getReactiveControlIntegral(), 0.0,
+                "WECC Figure 3-2 PIQ initializes to the terminal-voltage reference");
 
         controller.step(CONTROL_STEP, .8, .3, 1.0, 1.0);
 
         double qError = -.1;
-        double qIntegral = qError * CONTROL_STEP;
-        double voltageError = 2.0 * qError + qIntegral;
+        double qIntegral = 1.0 + qError * CONTROL_STEP;
+        double voltageReference = 2.0 * qError + qIntegral;
+        double voltageError = voltageReference - 1.0;
         double vIntegral = .2 + 2.0 * voltageError * CONTROL_STEP;
         double expectedIqcmd = -(voltageError + vIntegral);
         assertEquals(.2, controller.getReactivePowerTarget(), 1.0e-12);
         assertEquals(qError, controller.getReactiveControlError(), 1.0e-12);
-        assertEquals(voltageError,
+        assertEquals(voltageReference,
                 controller.getReactiveControlPreLimitOutput(), 1.0e-12);
-        assertEquals(voltageError, controller.getReactiveControlOutput(), 1.0e-12);
+        assertEquals(voltageReference, controller.getReactiveControlOutput(), 1.0e-12);
         assertEquals(voltageError, controller.getVoltageControlError(), 1.0e-12);
         assertEquals(voltageError + vIntegral,
                 controller.getVoltageControlPreLimitOutput(), 1.0e-12);
@@ -349,7 +354,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
 
         controller.step(CONTROL_STEP, .8, .1, 1.0, 1.0);
 
-        assertEquals(0.0, controller.getReactiveControlIntegral(), 0.0,
+        assertEquals(1.0, controller.getReactiveControlIntegral(), 0.0,
                 "upstream Q integrator must freeze when both derivatives push "
                         + "the downstream voltage PI farther above Iqmax");
         assertEquals(.2, controller.getVoltageControlIntegral(), 0.0,
@@ -357,7 +362,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
 
         controller.step(CONTROL_STEP, .8, .3, 1.0, 1.0);
 
-        assertTrue(controller.getReactiveControlIntegral() < 0.0,
+        assertTrue(controller.getReactiveControlIntegral() < 1.0,
                 "the linked Q integrator must release for motion away from the upper limit");
         assertTrue(controller.getVoltageControlIntegral() < .2,
                 "the downstream voltage integrator must release toward its admissible range");
@@ -366,7 +371,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         lower.initialize(.8, -.2, 1.0);
         lower.step(CONTROL_STEP, .8, -.1, 1.0, 1.0);
 
-        assertEquals(0.0, lower.getReactiveControlIntegral(), 0.0,
+        assertEquals(1.0, lower.getReactiveControlIntegral(), 0.0,
                 "upstream Q integrator must freeze when both derivatives push "
                         + "the downstream voltage PI farther below Iqmin");
         assertEquals(-.2, lower.getVoltageControlIntegral(), 0.0,
@@ -374,7 +379,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
 
         lower.step(CONTROL_STEP, .8, -.3, 1.0, 1.0);
 
-        assertTrue(lower.getReactiveControlIntegral() > 0.0,
+        assertTrue(lower.getReactiveControlIntegral() > 1.0,
                 "the linked Q integrator must release for motion away from the lower limit");
         assertTrue(lower.getVoltageControlIntegral() > -.2,
                 "the downstream voltage integrator must release toward its admissible range");
@@ -525,7 +530,7 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     private static Reeca1Data linkedIntegratorData() {
         return new Reeca1Data(0, 0, 1, 1, 0, 0,
                 .8, 1.2, 0, 0, 0, 0, 1, -1, 1, 0, 0, 0,
-                0, 2, -2, 1, -1, 1, 1, 1, 1, 0, 0,
+                0, 2, -2, 2, 0, 1, 1, 1, 1, 0, 0,
                 99, -99, 2, -2, .2, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0);

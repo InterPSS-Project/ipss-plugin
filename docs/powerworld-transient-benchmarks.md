@@ -131,6 +131,18 @@ outer-regulator, and machine-flux channels. ANDES uses a different stored-bias
 PI realization, so its ESST4B comparison is retained for boundary and common
 observable outputs rather than solver-specific PI state coordinates.
 
+For the Type-3 renewable contract, the official PowerWorld/WECC REEC_A signal
+order is normative: with `QFLAG=1,VFLAG=1`, PIQ stores an absolute voltage
+reference and the following summing junction subtracts filtered terminal
+voltage before PIV. The direct 0.5 ms contract checks 15 active boundary and
+internal signals. Its current maximum errors are `6.43e-5 pu` bus voltage,
+`0.079 MW`, `0.051 Mvar`, `7.73e-4 pu` REGCA1 current state, `3.00e-6 pu` PIQ,
+`3.01e-4 pu` PIV, and `3.24e-4 pu` normalized generator speed. PowerWorld
+REECA1 State 5 is excluded because it is the inactive `QFLAG=0`/`Tiq` path in
+this `QFLAG=1` benchmark. ANDES 2.0 uses a zero-based PIQ and omits the
+terminal-voltage subtraction for `VFLAG=1`; its trace remains a bounded
+secondary comparison, not an equation-equivalent REECA1 oracle.
+
 Run the framework's dependency-free tests with:
 
 ```powershell
