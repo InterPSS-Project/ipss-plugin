@@ -129,6 +129,11 @@ The initial suite deliberately covers both renewable and conventional stacks:
   separate native and PowerWorld DYR presentations; the comparison covers all
   five states, while AC8B-only PID/field limits and rectifier loading remain in
   the independent ANDES and equation-level tests.
+- `smib-genrou-ac7b.json`: the native 27-parameter PSS/E AC7B profile with
+  reused core GENROU and all six named PowerWorld states: `VE`, sensed `Vt`,
+  `Kir`, `Kdr`, `VA`, and rate feedback. `Kir` maps to the stored outer-PID
+  integral, while `Kdr`, `VA`, and feedback map to complete block outputs rather
+  than InterPSS's internal lag/integrator coordinates.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
