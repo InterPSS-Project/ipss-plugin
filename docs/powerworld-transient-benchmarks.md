@@ -113,6 +113,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   commutator exciters, reused core GENROU, and all five named PowerWorld
   controller channels. The paired cases isolate DC1C's constant regulator
   limits from DC2C's terminal-voltage-scaled limits.
+- `smib-genrou-dc4c.json`: the native PID commutator exciter with compound
+  potential source, controlled rectifier, saturation, and rate feedback.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
@@ -166,6 +168,16 @@ unfiltered, while InterPSS's documented nonzero-transducer behavior remains
 covered by its independent five-state equation oracle. DC2C deliberately uses
 tight regulator limits so the terminal-voltage-scaled ceiling is active during
 the fault and its stored-state non-windup behavior is part of the contract.
+
+For DC4C, PowerWorld's state named `PI` is the proportional-plus-integral
+output `Kpr*error + integral`, not the raw integral coordinate and not the full
+PID output that also includes the separately exported derivative signal. The
+common trajectory activates the compound potential source, PID, regulator,
+field integrator, and rate feedback. Saturation and `KC1` rectifier loading are
+disabled in this cross-tool fixture because PowerWorld 24's combined nonlinear
+initial state immediately drifts before the contingency; the focused equation
+tests separately exercise the official `KC1*VFE/VE` input, FEX regions,
+`VBMAX`, and saturation curve.
 
 For ESST4B, PowerWorld initializes a zero-`Kim` inner PI as a pure proportional
 path and freezes the integrator while the total PI output is saturated. The
