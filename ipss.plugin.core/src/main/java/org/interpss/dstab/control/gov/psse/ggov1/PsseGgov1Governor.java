@@ -147,6 +147,34 @@ public class PsseGgov1Governor extends AbstractGovernor implements IntegrationSt
     public double getValveStroke() { return clamp(state.valve, effectiveVmin, effectiveVmax); }
     public double getFsr() { return currentFsr; }
     public double getMeasuredElectricalPower() { return state.peMeasured; }
+    public double getDifferentialControlState() { return state.derivativeLag; }
+    /** Output of the {@code s*Kdgov/(1+s*Tdgov)} differential-control block. */
+    public double getDifferentialControlOutput() {
+        return getData().getTdgov() > EPS
+                ? getData().getKdgov() / getData().getTdgov()
+                        * (currentGovernorError() - state.derivativeLag)
+                : 0.0;
+    }
+    public double getGovernorIntegralState() { return state.governorIntegrator; }
+    public double getTurbineLeadLagState() { return state.turbineLag; }
+    public double getLoadLimiterMeasurementState() { return state.temperatureLag; }
+    public double getLoadLimiterIntegralState() { return state.loadIntegrator; }
+    public double getSupervisoryLoadControlState() { return state.mwIntegrator; }
+    public double getAccelerationControlState() { return state.accelerationLag; }
+    /** Stored acceleration-control contribution exposed by PowerWorld state 9. */
+    public double getAccelerationControlOutput() {
+        return -getData().getKa() * state.accelerationLag;
+    }
+    public double getTemperatureDetectionLeadLagState() { return state.temperatureLeadLag; }
+    /** Output of the {@code (1+s*Tsa)/(1+s*Tsb)} temperature detector. */
+    public double getTemperatureDetectionLeadLagOutput() {
+        double speedDeviation = getMachine().getSpeed() - 1.0;
+        double temperatureInput = getFuelFlow() * maximumPowerFactor(speedDeviation);
+        return effectiveTsb > EPS
+                ? state.temperatureLeadLag + getData().getTsa() / effectiveTsb
+                        * (temperatureInput - state.temperatureLeadLag)
+                : temperatureInput;
+    }
     public double getDroopFeedback() {
         return selectedDroop(state.peMeasured, getValveStroke(), currentFsr);
     }
@@ -336,6 +364,16 @@ public class PsseGgov1Governor extends AbstractGovernor implements IntegrationSt
             case -2 -> governorOutput;
             default -> 0.0;
         };
+    }
+
+    private double currentGovernorError() {
+        double speedDeviation = getMachine().getSpeed() - 1.0;
+        double pe = getMachine().getPe() / governorToMachineBase;
+        double peMeasured = effectiveTpelec > EPS ? state.peMeasured : pe;
+        double droop = selectedDroop(peMeasured, getValveStroke(), currentFsr);
+        double frequencySignal = applyFrequencyDeadband(speedDeviation);
+        return clamp(deadband(pref + state.mwIntegrator - frequencySignal
+                - getData().getR() * droop), effectiveMinerr, effectiveMaxerr);
     }
 
     private double damping(double speedDeviation) {
