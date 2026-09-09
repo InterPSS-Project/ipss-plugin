@@ -95,10 +95,12 @@ class RenewableControllerModelTest {
 
     @Test
     void regfma1VoltagePiUsesConditionalIntegrationAtBothLimits() {
-        assertEquals(1.2, Regfma1Model.integrateWithAntiWindup(
-                1.2, 6.0, .1, .01, 0.0, 0.0, 1.2), TOL);
-        assertEquals(1.106, Regfma1Model.integrateWithAntiWindup(
-                1.1, 6.0, .1, .01, 0.0, 0.0, 1.2), TOL);
+        assertEquals(0.0, Regfma1Model.limitedIntegralRate(
+                1.2, 6.0, .1, 0.0, 0.0, 1.2), TOL);
+        assertEquals(0.6, Regfma1Model.limitedIntegralRate(
+                1.1, 6.0, .1, 0.0, 0.0, 1.2), TOL);
+        assertEquals(0.0, Regfma1Model.limitedIntegralRate(
+                0.0, 6.0, -.1, 0.0, 0.0, 1.2), TOL);
     }
 
     private static Reecb1Data reecb1Data(double imax) {
