@@ -33,6 +33,10 @@ python ipss.test.plugin.core/src/test/python/powerworld_transient_benchmark.py `
   --publish ipss.test.plugin.core/testData/reference/powerworld
 ```
 
+`--publish` always names the suite root. This is identical for a single JSON
+specification and a specification directory; the runner creates the model-name
+subdirectory itself.
+
 The default output is `target/powerworld-benchmarks/<benchmark-name>/`:
 
 - `run.aux` is the exact executable PowerWorld script;
