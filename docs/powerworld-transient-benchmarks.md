@@ -100,6 +100,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
+- `smib-genrou-esst1a-pss2a.json`: GENROU and ESST1A with a representative
+  Texas2k dual-input PSS2A stabilizer.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
@@ -152,6 +154,15 @@ to the corresponding block outputs exposed by InterPSS. The 0.5 ms contract
 checks both bus voltages, generator MW/Mvar, relative rotor angle/speed, all
 four GENROU electrical states, and all ten GGOV1 signals. ANDES does not
 implement GGOV1, so this PowerWorld artifact is the independent model oracle.
+
+For PSS2A, the artifact exports every one of PowerWorld's 19 named stabilizer
+state slots. The registered comparison maps both washout/transducer chains,
+both output lead-lags, the final active M-by-N ramp-filter stage, and the
+optional GE lead-lag/output, together with the GENROU and ESST1A boundary
+signals. Nested child-controller signals must be read from the initialized
+child CML evaluator; querying a nested expression through the parent evaluator
+collapses it to the child controller's final output. ANDES does not implement
+PSS2A, so PowerWorld is the independent model oracle.
 
 Run the framework's dependency-free tests with:
 

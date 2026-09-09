@@ -182,6 +182,51 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 		return (Ieee1992PSS2AStabilizerData)_data;
 	}
 
+	/** Named diagram signals corresponding to PowerWorld PSS2A states 1-8. */
+	public double getInput1Washout1Output() {
+		return childSignal(customBlock1, "this.washoutBlock1.y");
+	}
+	public double getInput1Washout2Output() {
+		return childSignal(customBlock1, "this.washoutBlock2.y");
+	}
+	public double getInput1TransducerOutput() {
+		return childSignal(customBlock1, "this.delayBlock.y");
+	}
+	public double getInput2Washout1Output() {
+		return childSignal(customBlock2, "this.washoutBlock1.y");
+	}
+	public double getInput2Washout2Output() {
+		return childSignal(customBlock2, "this.washoutBlock2.y");
+	}
+	public double getInput2TransducerOutput() {
+		return childSignal(customBlock2, "this.delayBlock.y");
+	}
+	public double getLeadLag1Output() { return signal("this.filterBlock1.y"); }
+	public double getLeadLag2Output() { return signal("this.filterBlock2.y"); }
+
+	/** Output of the complete M-by-N ramp-tracking filter cascade. */
+	public double getRampTrackingOutput() { return signal("this.filterNthBlock.y"); }
+
+	/** Output of the optional GE lead-lag including the stabilizer limits. */
+	public double getGeLeadLagOutput() { return signal("this.outputBlock.y"); }
+
+	private double signal(String fieldName) {
+		try {
+			return getFieldVaule(fieldName);
+		} catch (Exception ex) {
+			throw new IllegalStateException("Cannot read PSS2A signal " + fieldName, ex);
+		}
+	}
+
+	private double childSignal(CustomExciter child, String fieldName) {
+		try {
+			return child.getFieldVaule(fieldName);
+		} catch (Exception ex) {
+			throw new IllegalStateException("Cannot read PSS2A child signal "
+					+ fieldName, ex);
+		}
+	}
+
 	public double input1Signal;
 	public double input2Signal;
 	private double input1PreviousVoltage;
