@@ -54,6 +54,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsurryTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc1cTest;
 import org.interpss.core.dstab.Ac1cIndependentSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc2cTest;
+import org.interpss.core.dstab.Ac2cIndependentSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc3cTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc4cTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc5cTest;
@@ -546,6 +547,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderAc1cTest.class,
 	Ac1cIndependentSmibConformanceTest.class,
 	DStabNetworkBuilderAc2cTest.class,
+	Ac2cIndependentSmibConformanceTest.class,
 	DStabNetworkBuilderAc3cTest.class,
 	DStabNetworkBuilderAc4cTest.class,
 	DStabNetworkBuilderAc5cTest.class,

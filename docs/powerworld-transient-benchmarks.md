@@ -187,6 +187,12 @@ the semantic InterPSS AC1C accessors; the comparison also reuses the standard
 GENROU electrical-state mapping. A second cold run produces the identical raw
 CSV, while the manifest uses line-ending-independent canonical text hashes.
 
+AC2C follows the same native-record and state-mapping contract with its
+25-value PSS/E record. Its fixture keeps the high-initial-response
+`KB*(VA-KH*VFE)` path active (`KB=2`, `KH=0.5`) and exports the same five
+PowerWorld state names. The full trajectory comparison therefore tests the
+behavior distinguishing AC2C from AC1C rather than merely checking import.
+
 For ESST4B, PowerWorld initializes a zero-`Kim` inner PI as a pure proportional
 path and freezes the integrator while the total PI output is saturated. The
 generic InterPSS PI block's back-calculation state is therefore not an
