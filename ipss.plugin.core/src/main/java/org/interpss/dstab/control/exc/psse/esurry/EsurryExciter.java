@@ -34,7 +34,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
         refPoint="this.leadLag1.u0+this.transducer.y-pss.vs", display={})
 public class EsurryExciter extends AnnotateExciter {
     private final EsurryData data;
-    public double one=1.0, tr, t1, ta, tb, tc, td, k10, k16, kf, tf;
+    public double one=1.0, tr, t1, ta, tb, tc, td, k10, k16, kf, tf, washoutGain;
     public double vrmax, vrmin, integratorGain, e1, se1, e2, se2, kc, kd, ke;
     public double iref, veMax=1.0e10, veMin=0.0;
 
@@ -91,8 +91,10 @@ public class EsurryExciter extends AnnotateExciter {
             y0="this.vfe.y", feedback=true)
     public DelayControlBlock vfeFilter;
 
+    // PSS/E defines this path as KF*s/(1 + TF*s).  The shared CML washout
+    // block is K*TF*s/(1 + TF*s), so its gain must be KF/TF here.
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="this.vfeFilter.y",
-            parameter={"type.NoLimit", "this.kf", "this.tf"}, feedback=true)
+            parameter={"type.NoLimit", "this.washoutGain", "this.tf"}, feedback=true)
     public WashoutControlBlock washout;
 
     @AnControllerField(type=CMLFieldEnum.StaticBlock,
@@ -126,6 +128,7 @@ public class EsurryExciter extends AnnotateExciter {
         kf=data.getKf(); tf=data.getTf(); e1=data.getE1(); se1=data.getSe1();
         e2=data.getE2(); se2=data.getSe2(); kc=data.getKc(); kd=data.getKd(); ke=data.getKe();
         if (k10<=0.0 || data.getTe()<=0.0 || tf<=0.0) return false;
+        washoutGain=kf/tf;
         integratorGain=1.0/data.getTe();
         double ifd=exciterIfd();
         double ve0=Exac1Exciter.solveInternalVoltage(machine.getEfd(),kc*ifd);
@@ -144,6 +147,27 @@ public class EsurryExciter extends AnnotateExciter {
     public static double feedbackVoltage(double ve,double ifd,double ke,double kd,
             double e1,double se1,double e2,double se2) {
         return ve*(ke+Exac1Exciter.saturation(ve,e1,se1,e2,se2))+kd*ifd;
+    }
+
+    /** Rotating-exciter internal voltage VE. */
+    public double getInternalFieldVoltage() { return diagnosticFieldValue("this.fieldIntegrator.y"); }
+    /** Terminal-voltage transducer output. */
+    public double getSensedVoltage() { return diagnosticFieldValue("this.transducer.y"); }
+    /** T1-filtered VFE signal, exported by PowerWorld as VT1. */
+    public double getFilteredFeedbackVoltage() { return diagnosticFieldValue("this.vfeFilter.y"); }
+    /** Rate-feedback washout output VF. */
+    public double getRateFeedback() { return diagnosticFieldValue("this.washout.y"); }
+    /** Tc/Td lead-lag output, exported by PowerWorld as VLLcd. */
+    public double getSecondLeadLagOutput() { return diagnosticFieldValue("this.leadLag2.y"); }
+    /** Ta/Tb lead-lag output, exported by PowerWorld as VLLab. */
+    public double getFirstLeadLagOutput() { return diagnosticFieldValue("this.leadLag1.y"); }
+
+    private double diagnosticFieldValue(String fieldName) {
+        try {
+            return getFieldVaule(fieldName);
+        } catch (Exception exception) {
+            throw new IllegalStateException("Unable to read ESURRY field " + fieldName, exception);
+        }
     }
 
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
