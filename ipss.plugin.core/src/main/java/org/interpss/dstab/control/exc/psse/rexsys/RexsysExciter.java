@@ -150,7 +150,12 @@ public final class RexsysExciter extends AnnotateExciter implements IntegrationS
     private static double exciterIfd(Machine m){double v=m.calculateIfd(MachineIfdBase.EXCITER);return Double.isFinite(v)?v:0;}
 
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}
+    public double getVoltagePiIntegralState(){return active[VOLTAGE_I];}
     public double getVoltagePiOutput(){return algebraics(active,getMachine()).voltagePi;}
+    public double getFirstVoltageLeadLagOutput(){return algebraics(active,getMachine()).ll1;}
+    public double getSecondVoltageLeadLagOutput(){return algebraics(active,getMachine()).ll2;}
+    public double getFeedbackWashoutOutput(){return algebraics(active,getMachine()).feedbackWashout;}
+    public double getFeedbackLeadLagOutput(){return algebraics(active,getMachine()).feedback;}
     public double getRegulatorOutput(){return algebraics(active,getMachine()).regulator;}
     public double getCurrentPiOutput(){return algebraics(active,getMachine()).currentPi;}
     public double getBridgeOutput(){return algebraics(active,getMachine()).bridge;}
