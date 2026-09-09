@@ -145,6 +145,13 @@ The initial suite deliberately covers both renewable and conventional stacks:
   The comparison maps PowerWorld's `K1`, `K2 first`, and `K2 second` channels
   to their canonical block coordinates while retaining InterPSS's internal
   lag storage for numerical diagnostics.
+- `smib-genrou-h6e.json`: native H6E with load-control droop, PID derivative
+  filtering, pilot valve and gate servos, nonlinear Kaplan blade and power
+  curves, and water-column dynamics. The artifact exports all nine named
+  PowerWorld H6E states. They map directly to semantic InterPSS getters for
+  measured electrical power, measured speed, PID integral, derivative storage,
+  valve velocity, gate, deliberate-deadband blade demand, blade servo, and
+  turbine flow.
 
 This is the required contract for each newly implemented model, not an optional
 one-off check. Add a specification and publish its immutable PowerWorld output
