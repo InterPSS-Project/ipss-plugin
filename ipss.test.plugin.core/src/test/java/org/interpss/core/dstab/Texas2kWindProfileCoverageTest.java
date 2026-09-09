@@ -70,6 +70,9 @@ public class Texas2kWindProfileCoverageTest {
         assertEquals(81, profiles.size());
         assertEquals(Set.of(0, 1), profiles.stream()
                 .map(Wttqa1Data::tFlag).collect(java.util.stream.Collectors.toSet()));
+        assertEquals(Set.of(0.0), profiles.stream()
+                .map(Wttqa1Data::turbineMva).collect(java.util.stream.Collectors.toSet()),
+                "all supplied Texas2k WTTQA1 records select the generator MVA base");
 
         for (Wttqa1Data data : profiles) {
             Wttqa1Model model = new Wttqa1Model(data);
