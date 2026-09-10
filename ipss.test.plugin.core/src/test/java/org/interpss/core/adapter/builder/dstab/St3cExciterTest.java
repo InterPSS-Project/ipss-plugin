@@ -43,7 +43,7 @@ public class St3cExciterTest extends CorePluginTestSetup{
         assertEquals(DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESST3C").orElseThrow().isImplementedExactly());
     }
-    @Test void sixStatesMatchIndependentModifiedEulerOracle()throws Exception{
+    @Test void fiveDynamicStatesAndAlgebraicRegulatorMatchIndependentModifiedEulerOracle()throws Exception{
         Fixture f=fixture(baseData());f.exciter.setRefPoint(f.exciter.getRefPoint()+.1);
         double[] x={1.04,.52,0,.52,1.04,1.2};double dt=.0001,max=0;
         for(int n=0;n<2000;n++){double[] d0=derivatives(x,.1),p=add(x,d0,dt),d1=derivatives(p,.1);
@@ -52,8 +52,17 @@ public class St3cExciterTest extends CorePluginTestSetup{
             double lead=1.0/3*pid+2.0/3*x[3],efd=x[5];
             max=Math.max(max,Math.abs(x[0]-f.exciter.getSensedVoltage()));max=Math.max(max,Math.abs(error-f.exciter.getGatedError()));
             max=Math.max(max,Math.abs(pid-f.exciter.getPidOutput()));max=Math.max(max,Math.abs(lead-f.exciter.getLeadLagOutput()));
-            max=Math.max(max,Math.abs(x[4]-f.exciter.getRegulatorOutput()));max=Math.max(max,Math.abs(efd-f.exciter.getOutput(f.machine)));}
-        assertTrue(max<1e-10,"ST3C six-state max error="+max);
+            double regulator=2*lead;
+            max=Math.max(max,Math.abs(regulator-f.exciter.getRegulatorOutput()));max=Math.max(max,Math.abs(efd-f.exciter.getOutput(f.machine)));}
+        assertTrue(max<1e-10,"ST3C state/algebraic max error="+max);
+    }
+    @Test void regulatorTrajectoryIsInvariantToRetainedTaExchangeParameter()throws Exception{
+        St3cData firstData=baseData(),secondData=baseData();firstData.setTa(.4);secondData.setTa(.8);
+        Fixture first=fixture(firstData),second=fixture(secondData);first.exciter.setRefPoint(first.exciter.getRefPoint()+.1);
+        second.exciter.setRefPoint(second.exciter.getRefPoint()+.1);
+        for(int n=0;n<2000;n++){step(first.exciter,first.machine,.0001);step(second.exciter,second.machine,.0001);}
+        assertEquals(first.exciter.getRegulatorOutput(),second.exciter.getRegulatorOutput(),TOL);
+        assertArrayEquals(first.exciter.getStateSnapshot(),second.exciter.getStateSnapshot(),TOL);
     }
     @Test void appliesInputLimitRoutesLimitersAndNormalizesSelectors()throws Exception{
         St3cData d=baseData();d.setVimax(.05);d.setOel(1);d.setUel(1);d.setScl(99);Fixture direct=fixture(d);
@@ -112,8 +121,8 @@ public class St3cExciterTest extends CorePluginTestSetup{
         d.setTc(.05);d.setTb(.15);d.setKa(2);d.setTa(.4);d.setVrmax(99);d.setVrmin(-99);d.setKm(1.5);d.setTm(.3);
         d.setVmmax(99);d.setVmmin(-99);d.setKg(.2);d.setVgmax(99);d.setKp(0);d.setKi(0);d.setXl(0);d.setThetaP(0);d.setKc(0);d.setVbmax(99);return d;}
     private static double[] derivatives(double[] x,double step){double error=1.04+step-x[0],derivative=.5*(error-x[2])/.2;
-        double pid=3*error+x[1]+derivative,lead=1.0/3*pid+2.0/3*x[3],efd=x[5];
-        return new double[]{(1.04-x[0])/.1,4*error,(error-x[2])/.2,(pid-x[3])/.15,(2*lead-x[4])/.4,(1.5*(x[4]-.2*efd)-x[5])/.3};}
+        double pid=3*error+x[1]+derivative,lead=1.0/3*pid+2.0/3*x[3],regulator=2*lead,efd=x[5];
+        return new double[]{(1.04-x[0])/.1,4*error,(error-x[2])/.2,(pid-x[3])/.15,0,(1.5*(regulator-.2*efd)-x[5])/.3};}
     private static double[] add(double[] x,double[] d,double dt){double[] y=new double[x.length];for(int i=0;i<x.length;i++)y[i]=x[i]+d[i]*dt;return y;}
     private static void step(St3cExciter e,Machine m,double dt){assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));assertTrue(e.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}
     private record Fixture(Machine machine,St3cExciter exciter){}
