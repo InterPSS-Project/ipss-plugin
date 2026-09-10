@@ -30,13 +30,22 @@ public class Tgov1PowerWorldSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesPowerWorldBoundaryMachineAndGovernorStates() throws Exception {
+        verify("TGOV1", "SMIB_v33_genrou_tgov1.dyr", "smib-genrou-tgov1");
+    }
+
+    @Test
+    void nativeTgov1dDeadbandMatchesPowerWorld() throws Exception {
+        verify("TGOV1D", "SMIB_v33_genrou_tgov1d.dyr", "smib-genrou-tgov1d");
+    }
+
+    private static void verify(String model, String dyr, String artifact) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_tgov1.dyr").toString());
+                CASE.resolve(dyr).toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
-        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + TGOV1 SMIB load flow");
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + " + model + " load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
@@ -44,7 +53,7 @@ public class Tgov1PowerWorldSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
-        assertTrue(algorithm.initialization(), "GENROU + TGOV1 SMIB initialization");
+        assertTrue(algorithm.initialization(), "GENROU + " + model + " initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
@@ -56,13 +65,13 @@ public class Tgov1PowerWorldSmibConformanceTest {
                 initialRelativeAngle);
         while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true),
-                    "GENROU + TGOV1 solve at " + algorithm.getSimuTime());
+                    "GENROU + " + model + " solve at " + algorithm.getSimuTime());
             record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
                     initialRelativeAngle);
         }
 
         PowerWorldCsvReference reference = PowerWorldCsvReference.read(Path.of(
-                "testData", "reference", "powerworld", "smib-genrou-tgov1", "powerworld.csv"));
+                "testData", "reference", "powerworld", artifact, "powerworld.csv"));
         assertEquals(2003, reference.samples().size(), "PowerWorld raw samples");
         assertEquals(2001, reference.postEventSamples().size(), "PowerWorld post-event samples");
         int[] field = {
@@ -104,11 +113,11 @@ public class Tgov1PowerWorldSmibConformanceTest {
             }
         }
         System.out.printf(Locale.ROOT,
-                "TGOV1 PowerWorld max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
+                model + " PowerWorld max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
                 + "angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g "
                 + "edp=%.9g turbinePower=%.9g valvePosition=%.9g%n",
                 Arrays.stream(maximum).boxed().toArray());
-        System.out.println("TGOV1 PowerWorld max-error times: " + Arrays.toString(maximumTime));
+        System.out.println(model + " PowerWorld max-error times: " + Arrays.toString(maximumTime));
         double[] tolerance = {
                 3.2e-4, 1.1e-4, 0.075, 0.21, 0.014, 5.8e-6,
                 3.2e-5, 1.4e-4, 1.05e-4, 7.0e-5, 8.0e-6, 3.2e-5
