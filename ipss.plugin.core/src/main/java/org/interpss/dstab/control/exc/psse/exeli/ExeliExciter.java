@@ -2,6 +2,9 @@ package org.interpss.dstab.control.exc.psse.exeli;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.interpss.dstab.control.util.IntegrationStepAware;
 
@@ -280,6 +283,21 @@ public final class ExeliExciter extends AnnotateExciter implements IntegrationSt
     public double getUnlimitedOutput() { return algebraics(active, getMachine()).unlimitedEfd; }
     /** Copy of the eight PSS/E state variables in documented state order. */
     public double[] getStateSnapshot() { return active.clone(); }
+
+    /** Published PSS/E EXELI states in model-library order and semantics. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("First washout stabilizer", active[WASHOUT1]);
+        states.put("Lag stabilizer", active[STABILIZER_LAG]);
+        states.put("Negative washout stabilizer", active[NEGATIVE_WASHOUT]);
+        states.put("Sensed voltage", active[SENSED_VOLTAGE]);
+        states.put("Sensed field current", active[SENSED_CURRENT]);
+        states.put("Controlled voltage", active[CONTROLLED_VOLTAGE]);
+        states.put("Second washout stabilizer", active[WASHOUT2]);
+        states.put("Third washout stabilizer", active[WASHOUT3]);
+        return Collections.unmodifiableMap(states);
+    }
 
     @Override
     public double getOutput(Machine machine) {
