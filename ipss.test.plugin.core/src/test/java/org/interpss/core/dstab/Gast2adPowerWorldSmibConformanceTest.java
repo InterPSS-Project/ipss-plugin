@@ -12,7 +12,7 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.PowerWorldCsvReference;
-import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -23,8 +23,8 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
-/** Full-solver GENROU + native GASTD comparison against PowerWorld. */
-public class GastdPowerWorldSmibConformanceTest {
+/** Full-solver GENROU + native GAST2AD comparison against PowerWorld. */
+public class Gast2adPowerWorldSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
@@ -33,10 +33,10 @@ public class GastdPowerWorldSmibConformanceTest {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_gastd.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_gast2ad.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
-        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + GASTD SMIB load flow");
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + GAST2AD SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
@@ -44,27 +44,27 @@ public class GastdPowerWorldSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
-        assertTrue(algorithm.initialization(), "GENROU + GASTD SMIB initialization");
+        assertTrue(algorithm.initialization(), "GENROU + GAST2AD SMIB initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
-        PsseGASTGasTurGovernor governor = (PsseGASTGasTurGovernor) machine.getGovernor();
-        assertEquals("GASTD", governor.getName());
-        assertEquals(3, governor.getNamedStates().size());
-        assertEquals(governor.getFuelValve(), governor.getNamedState("Fuel Valve"));
+        PsseGast2adGovernor governor = (PsseGast2adGovernor) machine.getGovernor();
+        assertEquals("GAST2AD", governor.getName());
+        assertEquals(7, governor.getNamedStates().size());
+        assertEquals(governor.getTemperatureCommand(), governor.getNamedState("Temp Control"));
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
                 initialRelativeAngle);
         while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true),
-                    "GENROU + GASTD solve at " + algorithm.getSimuTime());
+                    "GENROU + GAST2AD solve at " + algorithm.getSimuTime());
             record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
                     initialRelativeAngle);
         }
 
         PowerWorldCsvReference reference = PowerWorldCsvReference.read(Path.of(
-                "testData", "reference", "powerworld", "smib-genrou-gastd", "powerworld.csv"));
+                "testData", "reference", "powerworld", "smib-genrou-gast2ad", "powerworld.csv"));
         assertEquals(2003, reference.samples().size(), "PowerWorld raw samples");
         assertEquals(2001, reference.postEventSamples().size(), "PowerWorld post-event samples");
         int[] field = {
@@ -80,7 +80,13 @@ public class GastdPowerWorldSmibConformanceTest {
                 reference.fieldIndex("Generator", "1 1", "TSMachineState:6"),
                 reference.fieldIndex("Generator", "1 1", "TSGovernorState:1"),
                 reference.fieldIndex("Generator", "1 1", "TSGovernorState:2"),
-                reference.fieldIndex("Generator", "1 1", "TSGovernorState:3")
+                reference.fieldIndex("Generator", "1 1", "TSGovernorState:3"),
+                reference.fieldIndex("Generator", "1 1", "TSGovernorState:4"),
+                reference.fieldIndex("Generator", "1 1", "TSGovernorState:5"),
+                reference.fieldIndex("Generator", "1 1", "TSGovernorState:6"),
+                reference.fieldIndex("Generator", "1 1", "TSGovernorState:7"),
+                reference.fieldIndex("Generator", "1 1", "TSGovernorState:8"),
+                reference.fieldIndex("Generator", "1 1", "TSGovernorState:9")
         };
         int referenceAngle = reference.fieldIndex("Generator", "2 1", "TSRotorAngle");
         int referenceSpeed = reference.fieldIndex("Generator", "2 1", "TSSpeed");
@@ -93,9 +99,7 @@ public class GastdPowerWorldSmibConformanceTest {
                     || Math.abs(expected.time() - 0.10) < STEP) continue;
             double[] row = interpolate(actual, expected.time());
             double[] powerWorld = new double[field.length];
-            for (int index = 0; index < field.length; index++) {
-                powerWorld[index] = expected.value(field[index]);
-            }
+            for (int index = 0; index < field.length; index++) powerWorld[index] = expected.value(field[index]);
             powerWorld[4] -= expected.value(referenceAngle) + initialPowerWorldAngle;
             powerWorld[5] -= expected.value(referenceSpeed);
             for (int column = 0; column < maximum.length; column++) {
@@ -106,20 +110,18 @@ public class GastdPowerWorldSmibConformanceTest {
                 }
             }
         }
-        System.out.printf(Locale.ROOT,
-                "GASTD PowerWorld max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
-                + "angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g "
-                + "edp=%.9g fuelValve=%.9g fuelFlow=%.9g exhaustTemp=%.9g%n",
-                Arrays.stream(maximum).boxed().toArray());
-        System.out.println("GASTD PowerWorld max-error times: " + Arrays.toString(maximumTime));
+        System.out.println("GAST2AD PowerWorld max errors: " + Arrays.toString(maximum));
+        System.out.println("GAST2AD PowerWorld max-error times: " + Arrays.toString(maximumTime));
         double[] tolerance = {
-                3.2e-4, 1.1e-4, 0.08, 0.215, 0.0145, 6.0e-6,
-                3.2e-5, 1.4e-4, 1.05e-4, 7.0e-5, 3.3e-5, 2.4e-5, 1.2e-6
+                3.2e-4, 1.1e-4, 0.115, 0.215, 0.022, 9.0e-6, 3.2e-5, 1.4e-4,
+                1.6e-4, 1.05e-4, 1.0e-7, 1.4e-4, 1.05e-4, 4.5e-5, 1.6e-5,
+                1.0e-7, 8.0e-5, 1.0e-12, 1.0e-12
         };
         String[] label = {
-                "Bus1 V", "Bus2 V", "P MW", "Q Mvar", "relative angle",
-                "relative speed", "Eqp", "PsiDp", "PsiQpp", "Edp",
-                "fuel valve", "fuel flow", "exhaust temperature"
+                "Bus1 V", "Bus2 V", "P MW", "Q Mvar", "relative angle", "relative speed",
+                "Eqp", "PsiDp", "PsiQpp", "Edp", "speed governor", "valve positioner",
+                "fuel system", "radiation shield", "thermocouple", "temperature control",
+                "turbine dynamics", "inactive state 8", "inactive state 9"
         };
         for (int index = 0; index < maximum.length; index++) {
             assertTrue(maximum[index] < tolerance[index], String.format(Locale.ROOT,
@@ -129,21 +131,20 @@ public class GastdPowerWorldSmibConformanceTest {
     }
 
     private static void record(List<double[]> rows, double time,
-            com.interpss.dstab.BaseDStabNetwork<?, ?> network,
-            RoundRotorMachine machine, Machine referenceMachine,
-            PsseGASTGasTurGovernor governor, double initialRelativeAngle) {
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network, RoundRotorMachine machine,
+            Machine referenceMachine, PsseGast2adGovernor governor, double initialRelativeAngle) {
         Complex voltage = network.getBus("Bus1").getVoltage();
-        Complex terminalCurrent = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
-        Complex power = voltage.multiply(terminalCurrent.conjugate());
+        Complex current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+        Complex power = voltage.multiply(current.conjugate());
         rows.add(new double[] {
-                time,
-                network.getBus("Bus1").getVoltageMag(), network.getBus("Bus2").getVoltageMag(),
+                time, network.getBus("Bus1").getVoltageMag(), network.getBus("Bus2").getVoltageMag(),
                 power.getReal() * 100.0, power.getImaginary() * 100.0,
-                Math.toDegrees(machine.getAngle() - referenceMachine.getAngle()
-                        - initialRelativeAngle),
-                machine.getSpeed() - referenceMachine.getSpeed(), machine.getEq1(),
-                machine.getPsikd(), machine.getPsikq(), machine.getEd1(),
-                governor.getFuelValve(), governor.getFuelFlow(), governor.getExhaustTemperature()
+                Math.toDegrees(machine.getAngle() - referenceMachine.getAngle() - initialRelativeAngle),
+                machine.getSpeed() - referenceMachine.getSpeed(), machine.getEq1(), machine.getPsikd(),
+                machine.getPsikq(), machine.getEd1(), governor.getSpeedCommand(),
+                governor.getValvePosition(), governor.getFuelFlow(), governor.getRadiationShield(),
+                governor.getThermocouple(), governor.getTemperatureCommand(),
+                governor.getTurbineDynamics(), 0.0, 0.0
         });
     }
 
@@ -156,9 +157,8 @@ public class GastdPowerWorldSmibConformanceTest {
                 double fraction = (target - lower[0]) / (upper[0] - lower[0]);
                 double[] result = new double[lower.length];
                 result[0] = target;
-                for (int column = 1; column < result.length; column++) {
+                for (int column = 1; column < result.length; column++)
                     result[column] = lower[column] + fraction * (upper[column] - lower[column]);
-                }
                 return result;
             }
         }

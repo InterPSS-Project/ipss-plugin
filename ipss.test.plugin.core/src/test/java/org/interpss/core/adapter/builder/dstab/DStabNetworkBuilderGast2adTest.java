@@ -48,8 +48,10 @@ public class DStabNetworkBuilderGast2adTest extends CorePluginTestSetup {
         assertEquals(-.004, governor.getData().getDbL(), 1e-12);
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
         double initial = governor.getOutput(machine);
+        assertEquals(governor.getEffectiveMaxLimit(), governor.getTemperatureCommand(), 1e-12);
         advance(governor, machine, 20, .01);
         assertEquals(initial, governor.getOutput(machine), 1e-9);
+        assertEquals(governor.getEffectiveMaxLimit(), governor.getTemperatureCommand(), 1e-12);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
