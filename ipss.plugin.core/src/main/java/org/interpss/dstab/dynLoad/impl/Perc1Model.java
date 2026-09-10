@@ -24,6 +24,7 @@ public final class Perc1Model extends DynLoadModelImpl implements ICMLStateProvi
     private final double[] x = new double[8], old = new double[8], k0 = new double[8];
     private double initialVoltage, pInitialModel, qInitialModel, systemBaseMva, deviceBaseMva;
     private double fracOn = 1.0, elapsed;
+    private double logicVoltage;
     private Mode mode = Mode.MONITOR;
     private Timer timer = Timer.NONE;
     private double timerStart, rampStart;
@@ -63,7 +64,7 @@ public final class Perc1Model extends DynLoadModelImpl implements ICMLStateProvi
         // initialization has populated BaseDStabBus.initLoad.
         setLoadPercent(100.0);
         setEquivY(initial.conjugate().divide(initialVoltage*initialVoltage));
-        fracOn=1;elapsed=0;mode=Mode.MONITOR;timer=Timer.NONE;
+        fracOn=1;elapsed=0;logicVoltage=initialVoltage;mode=Mode.MONITOR;timer=Timer.NONE;
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,getExtendedDeviceId());
         return finiteAll(x);
     }
@@ -127,9 +128,11 @@ public final class Perc1Model extends DynLoadModelImpl implements ICMLStateProvi
     @Override public boolean updateAttributes(boolean netChange){getNortonCurInj();return true;}
 
     @Override public boolean afterStep(double dt){
-        elapsed+=dt;updateCeaseReconnect(Math.max(.01,x[VFILT]));return true;
+        double stepStart=elapsed,previousVoltage=logicVoltage;
+        elapsed+=dt;logicVoltage=Math.max(.01,x[VFILT]);
+        updateCeaseReconnect(logicVoltage,previousVoltage,stepStart,dt);return true;
     }
-    private void updateCeaseReconnect(double v){
+    private void updateCeaseReconnect(double v,double previousVoltage,double stepStart,double dt){
         double cease=clamp(data.fcease(),0,1),target=1-cease+Math.max(0,data.frecon())*cease;
         if(cease<=EPS)return;
         if(mode==Mode.RAMP&&timer!=Timer.DELAY){
@@ -139,20 +142,38 @@ public final class Perc1Model extends DynLoadModelImpl implements ICMLStateProvi
         if(mode!=Mode.CEASED){
             if(timer!=Timer.DELAY){
                 if(v>=data.vcease())timer=Timer.NONE;
-                else if(timer!=Timer.CEASE){timer=Timer.CEASE;timerStart=elapsed;}
+                else if(timer!=Timer.CEASE){
+                    timer=Timer.CEASE;
+                    timerStart=data.tv()>EPS
+                            ?thresholdCrossingTime(previousVoltage,v,data.vcease(),stepStart,dt)
+                            :elapsed;
+                }
             }
             if(timer==Timer.CEASE&&elapsed-timerStart+EPS>=Math.max(0,data.tcease())){timer=Timer.DELAY;timerStart=elapsed;}
             if(timer==Timer.DELAY&&elapsed-timerStart+EPS>=Math.max(0,data.tdelay())){timer=Timer.NONE;mode=Mode.CEASED;fracOn=1-cease;}
         }else{
             double reconnectVoltage=Math.max(data.vcease(),data.vrecon());
             if(v<reconnectVoltage)timer=Timer.NONE;
-            else if(timer!=Timer.RECONNECT){timer=Timer.RECONNECT;timerStart=elapsed;}
+            else if(timer!=Timer.RECONNECT){
+                timer=Timer.RECONNECT;
+                timerStart=data.tv()>EPS
+                        ?thresholdCrossingTime(previousVoltage,v,reconnectVoltage,stepStart,dt)
+                        :elapsed;
+            }
             if(timer==Timer.RECONNECT&&elapsed-timerStart+EPS>=Math.max(0,data.trecon())){
                 timer=Timer.NONE;
                 if(data.tramp()<=EPS){mode=Mode.MONITOR;fracOn=target;}
                 else{mode=Mode.RAMP;rampStart=elapsed;}
             }
         }
+    }
+
+    private static double thresholdCrossingTime(double previous,double current,
+            double threshold,double stepStart,double dt){
+        double span=current-previous;
+        if(Math.abs(span)<=EPS)return stepStart;
+        double fraction=(threshold-previous)/span;
+        return stepStart+dt*clamp(fraction,0,1);
     }
 
     @Override public Map<String,Double> getNamedStates(){
