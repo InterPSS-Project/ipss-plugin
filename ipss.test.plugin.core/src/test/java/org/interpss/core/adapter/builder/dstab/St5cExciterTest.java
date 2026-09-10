@@ -48,28 +48,30 @@ public class St5cExciterTest extends CorePluginTestSetup {
         assertTrue(max<1e-10,"ST5C eight-state max error="+max);
     }
 
-    @Test void routesDirectAndTakeoverLimiterInputsAndNormalizesInvalidFlags()throws Exception{
+    @Test void routesSummationGateOneAndGateTwoLimiterInputsAndNormalizesInvalidFlags()throws Exception{
         St5cData d=baseData();d.setUel(1);Fixture directUnder=fixture(d);directUnder.exciter.setVuel(.2);
         assertEquals(.12,directUnder.exciter.getVoltageError(),TOL);assertEquals(.32,directUnder.exciter.getSummedError(),TOL);
-        assertEquals(.32,directUnder.exciter.getGatedError(),TOL);assertEquals(-1,directUnder.exciter.getSelectedPath());
+        assertEquals(.32,directUnder.exciter.getGatedError(),TOL);assertEquals(0,directUnder.exciter.getSelectedPath());
         d=baseData();d.setOel(1);Fixture directOver=fixture(d);directOver.exciter.setVoel(-.1);
-        assertEquals(.02,directOver.exciter.getSummedError(),TOL);assertEquals(1,directOver.exciter.getSelectedPath());
+        assertEquals(.02,directOver.exciter.getSummedError(),TOL);assertEquals(0,directOver.exciter.getSelectedPath());
         d=baseData();d.setUel(2);Fixture gatedUnder=fixture(d);gatedUnder.exciter.setVuel(.2);
         assertEquals(.12,gatedUnder.exciter.getSummedError(),TOL);assertEquals(.2,gatedUnder.exciter.getHighGateOutput(),TOL);
-        assertEquals(.2,gatedUnder.exciter.getGatedError(),TOL);assertEquals(-1,gatedUnder.exciter.getSelectedPath());
+        assertEquals(.2,gatedUnder.exciter.getGatedError(),TOL);assertEquals(0,gatedUnder.exciter.getSelectedPath());
         d=baseData();d.setOel(2);Fixture gatedOver=fixture(d);gatedOver.exciter.setVoel(-.1);
-        assertEquals(-.1,gatedOver.exciter.getGatedError(),TOL);assertEquals(1,gatedOver.exciter.getSelectedPath());
-        d=baseData();d.setOel(3);d.setUel(-4);Fixture invalid=fixture(d);
-        assertEquals(1,invalid.exciter.getOelInputMode());assertEquals(1,invalid.exciter.getUelInputMode());
+        assertEquals(-.1,gatedOver.exciter.getGatedError(),TOL);assertEquals(0,gatedOver.exciter.getSelectedPath());
+        d=baseData();d.setOel(3);d.setUel(-4);Fixture gateTwo=fixture(d);gateTwo.exciter.setVoel(-.1);
+        for(int i=0;i<500;i++)step(gateTwo.exciter,gateTwo.machine,.0001);
+        assertEquals(3,gateTwo.exciter.getOelInputMode());assertEquals(1,gateTwo.exciter.getUelInputMode());
+        assertEquals(1,gateTwo.exciter.getSelectedPath());
         d=baseData();d.setUel(1);DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();St5cExciter initialized=b.addExcSt5c("Bus1","1",d);
         Machine machine=b.getDStabNetwork().getMachine("Bus1-mach1");machine.setEfd(1.2);initialized.setVuel(.2);assertTrue(initialized.initStates(machine.getDStabBus(),machine));
         for(int i=0;i<1000;i++)step(initialized,machine,.0001);assertEquals(1.2,initialized.getOutput(machine),TOL);
     }
 
     @Test void takeoverBranchesUseTheirPublishedTwoStageLeadLags()throws Exception{
-        St5cData d=baseData();d.setUel(2);Fixture under=fixture(d);under.exciter.setVuel(.3);for(int i=0;i<500;i++)step(under.exciter,under.machine,.0001);
+        St5cData d=baseData();d.setUel(3);Fixture under=fixture(d);under.exciter.setVuel(.3);for(int i=0;i<500;i++)step(under.exciter,under.machine,.0001);
         assertEquals(-1,under.exciter.getSelectedPath());assertNotEquals(under.exciter.getGatedError(),under.exciter.getSelectedPathOutput(),1e-4);
-        d=baseData();d.setOel(2);Fixture over=fixture(d);over.exciter.setVoel(-.2);for(int i=0;i<500;i++)step(over.exciter,over.machine,.0001);
+        d=baseData();d.setOel(3);Fixture over=fixture(d);over.exciter.setVoel(-.2);for(int i=0;i<500;i++)step(over.exciter,over.machine,.0001);
         assertEquals(1,over.exciter.getSelectedPath());assertNotEquals(over.exciter.getGatedError(),over.exciter.getSelectedPathOutput(),1e-4);
     }
 
