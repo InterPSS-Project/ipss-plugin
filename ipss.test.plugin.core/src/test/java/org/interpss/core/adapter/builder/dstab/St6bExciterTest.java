@@ -22,7 +22,7 @@ public class St6bExciterTest extends CorePluginTestSetup {
         Files.writeString(dyr,"1 'ST6B' 1 1\n .051 55 5 0\n 1 4.81 -3.85 1.4\n .2 1.5 17.33 4.164\n 4.5 -7.5 .1 .5 /\n");
         PSSEDStabDirectParser p=new PSSEDStabDirectParser(b).setStrictImport(true);p.parseDynFile(dyr.toString());
         Machine m=b.getDStabNetwork().getMachine("Bus1-mach1");m.setEfd(1.2);St6bExciter e=(St6bExciter)m.getExciter();
-        assertNotNull(e);assertEquals(1,e.getData().getOel());assertEquals(55,e.getData().getKpa(),TOL);
+        assertNotNull(e);assertEquals(1,e.getData().getOel());assertEquals(1,e.getData().getVrmult());assertEquals(55,e.getData().getKpa(),TOL);
         assertEquals(17.33,e.getData().getKlr(),TOL);assertEquals(.5,e.getData().getTg(),TOL);
         assertTrue(p.getLastImportReport().isStrictlyComplete());assertTrue(e.initStates(m.getDStabBus(),m));
         double initial=e.getOutput(m);for(int i=0;i<1000;i++)step(e,m,.0001);assertEquals(initial,e.getOutput(m),1e-8);

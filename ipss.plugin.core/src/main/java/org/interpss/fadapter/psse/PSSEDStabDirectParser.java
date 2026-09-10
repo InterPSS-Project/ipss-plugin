@@ -968,6 +968,9 @@ public class PSSEDStabDirectParser {
             d.setOel(getInt(f,15,0));d.setIlr(getDouble(f,16,0));d.setKcl(getDouble(f,17,0));
             d.setKlr(getDouble(f,18,0));d.setTs(getDouble(f,19,0));
         }else{
+            // IEEE ST6B has no VRMult selector; its published output is always
+            // multiplied by terminal voltage.  VRMult is an ESST6B-only ICON.
+            d.setVrmult(1);
             d.setOel(getInt(f,3,0));d.setTr(getDouble(f,4,0));d.setKpa(getDouble(f,5,0));
             d.setKia(getDouble(f,6,0));d.setKda(getDouble(f,7,0));d.setTda(getDouble(f,8,0));
             d.setVamax(getDouble(f,9,0));d.setVamin(getDouble(f,10,0));d.setKff(getDouble(f,11,0));
