@@ -44,6 +44,8 @@ public class DStabNetworkBuilderIeeeg3dTest extends CorePluginTestSetup {
                 (Ieee1981Type3HydroGovernor) machine.getGovernor();
         assertNotNull(governor);
         assertEquals("IEEEG3D", governor.getName());
+        assertEquals(4, governor.getNamedStates().size());
+        assertEquals(governor.getGatePosition(), governor.getNamedState("Gate Position"), TOL);
         assertEquals(.002, governor.getData().getDbH(), TOL);
         assertEquals(-.003, governor.getData().getDbL(), TOL);
         assertEquals(50.0, governor.getData().getTrate(), TOL);

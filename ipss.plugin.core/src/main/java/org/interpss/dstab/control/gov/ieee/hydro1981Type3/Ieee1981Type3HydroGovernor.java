@@ -1,6 +1,7 @@
 package org.interpss.dstab.control.gov.ieee.hydro1981Type3;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -278,6 +279,20 @@ public FilterControlBlock wFilterBlock;
 		double leadRatio = t1 / tw_2;
 		return ratingScale * a23
 				* (leadRatio * state.gate + (1.0 - leadRatio) * state.turbineLag);
+	}
+
+	/**
+	 * This controller retains annotated fields for compatibility but advances an
+	 * equivalent explicit state realization. Expose the four published IEEEG3
+	 * state coordinates rather than the inactive annotation-block instances.
+	 */
+	@Override
+	public Map<String, Double> getNamedStates() {
+		return Map.of(
+				"Mechanical Power", getMechanicalPower(),
+				"Servomotor Position", getServoPosition(),
+				"Gate Position", getGatePosition(),
+				"Transient Droop", getTemporaryDroopFeedback());
 	}
 
 	private record State(double servo, double gate, double transientLag, double turbineLag) {
