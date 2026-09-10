@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
@@ -43,6 +44,8 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
         Lcfb1PrefController controller = find(builder);
 
         assertNotNull(controller);
+        assertEquals(Set.of("Pelec Sensed", "Integral"),
+                controller.getNamedStates().keySet());
         assertSame(machine.getGovernor(), controller.getGovernor());
         assertEquals(0, controller.getData().frequencyBiasFlag());
         assertEquals(1, controller.getData().powerControlFlag());
@@ -79,6 +82,18 @@ public class Lcfb1PrefControllerTest extends CorePluginTestSetup {
         for (int i = 0; i < 100; i++) step(f.controller, .01);
         assertEquals(.05, f.controller.getReferenceBias(), TOL);
         assertEquals(.45, f.controller.getGovernorReference(), TOL);
+    }
+
+    @Test
+    void integralPathContinuesUntilItsOwnLimitWhileFinalSumIsSaturated() throws Exception {
+        Fixture f = fixture(new Lcfb1Data(0, 1, 0, 0, 0, 1, 1, 1, .05));
+        f.machine.setPe(.3);
+        for (int i = 0; i < 10; i++) step(f.controller, .01);
+
+        // The first modified-Euler predictor still sees the initialized power;
+        // its corrector contributes half a step before nine full increments.
+        assertEquals(.0095, f.controller.getNamedState("Integral"), TOL);
+        assertEquals(.05, f.controller.getReferenceBias(), TOL);
     }
 
     @Test
