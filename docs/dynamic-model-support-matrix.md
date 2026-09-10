@@ -26,9 +26,12 @@ nine-state trajectory contract, HYGOVD has a repeatable direct four-state
 PowerWorld contract that reuses core GENROU and the verified HYGOV runtime,
 and LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
 to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
-the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated inventory is 76 artifacts,
+the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated PowerWorld inventory is 76 artifacts,
 including `50/64` approved exciter rows and `23/24` approved PSS/E governor rows with
-direct trajectory evidence; current-schema IEEEG1D
+direct trajectory evidence. BBSEX1 separately has a hash-repeatable native
+PSS/E 36.7 boundary/EFD/three-state trajectory contract, raising combined
+exact-tool direct exciter evidence to `51/64` without changing the explicitly
+PowerWorld-only inventory. Current-schema IEEEG1D
 is the remaining governor artifact gap and is version-blocked in Simulator 24;
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
 PSS/E Xplore 36.7); the Case-5 coupled fleet flat-run gate remains open. See
