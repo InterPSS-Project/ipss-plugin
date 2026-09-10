@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
@@ -47,6 +48,9 @@ public class DStabNetworkBuilderPidgovdTest extends CorePluginTestSetup {
         assertEquals(-.003, governor.getData().getDbL(), TOL);
         assertEquals(50.0, governor.getData().getTrate(), TOL);
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(Set.of("Mechanical Output", "Measured Delta P", "Integral",
+                "Regulator 1", "Derivative", "Regulator 2", "Gate"),
+                governor.getNamedStates().keySet());
         assertEquals(50.0, governor.getGovernorBaseMva(machine), TOL);
         assertEquals(.5, governor.getGatePosition(), TOL);
         assertEquals(.3, governor.getOutput(machine), TOL);
