@@ -2,6 +2,7 @@ package org.interpss.dstab.control.exc.psse.esst2a;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -10,13 +11,14 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
 
 /** IEEE 421.5-2005 Type ST2A compound-source rectifier excitation system. */
 @AnController(input = "mach.vt", output = "this.outputSignal",
         refPoint = "this.reference", display = {})
-public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAware {
+public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-12;
     private static final int EFD = 0, VSENSE = 1, VR = 2, VF_FILTER = 3, LEAD_LAG = 4;
 
@@ -255,6 +257,10 @@ public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAwa
     public double getLeadLagOutput(){return algebraics(active,getMachine()).leadLagOutput;}
     public double getRegulatorInput(){return algebraics(active,getMachine()).regulatorInput;}
     public double getRegulatorOutput(){return algebraics(active,getMachine()).vr;}
+    @Override public Map<String,Double> getNamedStates(){return Map.of(
+            "EFD",active[EFD],"Sensed Vt",getSensedVoltage(),
+            "VR",getRegulatorOutput(),"VF",getFeedbackVoltage(),
+            "LL",getLeadLagOutput());}
     @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double value){reference=value;}
     @Override public double getRefPoint(){return reference;}
