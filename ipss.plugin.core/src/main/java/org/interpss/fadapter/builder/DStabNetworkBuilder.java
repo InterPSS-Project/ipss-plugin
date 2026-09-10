@@ -321,7 +321,9 @@ public class DStabNetworkBuilder {
         mach.setPoles(2);
         mach.setH(inputData.h());
         mach.setD(toCoreDamping(inputData.d()));
-        mach.setRa(inputData.ra());
+        // Native PSS/E GENQEC/GENQEJ records do not carry Ra; it is the RAW
+        // generator source resistance, converted from system to machine base.
+        mach.setRa(sourceResistanceOnMachineBase(mach));
         mach.setXl(inputData.xl());
         mach.setXd(inputData.xd());
         mach.setXq(inputData.xq());

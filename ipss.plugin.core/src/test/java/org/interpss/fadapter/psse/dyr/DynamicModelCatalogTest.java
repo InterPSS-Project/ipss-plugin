@@ -28,7 +28,7 @@ class DynamicModelCatalogTest {
         assertEquals(5, DynamicModelCatalog.find("WTDTAU1").orElseThrow().parameterCount());
         assertEquals("WTDTA1", DynamicModelCatalog.canonicalName("WTDAT1"));
         assertEquals("GENQEJ", DynamicModelCatalog.canonicalName("genqeju"));
-        assertEquals(20, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
+        assertEquals(18, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
         assertFalse(DynamicModelCatalog.find("unknown-model").isPresent());
     }
 
