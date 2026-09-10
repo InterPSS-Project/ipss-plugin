@@ -7,8 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -336,6 +338,53 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
             assertTrue(maximum[index] <= tolerance[index], String.format(Locale.ROOT,
                     "%s max error %.9g at %.9g exceeds %.9g",
                     labels[index], maximum[index], maximumTime[index], tolerance[index]));
+        }
+
+        Path psseReference = Path.of("testData", "reference", "psse",
+                "renewable-bus1062", "psse.csv");
+        String psseHash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(Files.readAllBytes(psseReference)));
+        assertTrue(Files.readString(psseReference.resolveSibling("manifest.json"))
+                .contains(psseHash), "PSS/E reference CSV hash is absent from its manifest");
+        List<String> psseLines = Files.readAllLines(psseReference);
+        assertEquals(8007, psseLines.size(), "Expected header plus 8,006 PSS/E samples");
+        Map<String, Integer> psseColumn = new LinkedHashMap<>();
+        String[] psseHeadings = psseLines.get(0).split(",");
+        for (int index = 0; index < psseHeadings.length; index++) {
+            psseColumn.put(psseHeadings[index], index);
+        }
+        double[] psseMaximum = new double[5];
+        double[] psseMaximumTime = new double[5];
+        for (String line : psseLines.subList(1, psseLines.size())) {
+            String[] expected = line.split(",");
+            double time = Double.parseDouble(expected[0]);
+            if (time < 0 || time > 4.00001 || Math.abs(time - .05) < .00051
+                    || Math.abs(time - .10) < .00051) continue;
+            double[] row = interpolateWeakGrid(actual, time);
+            double[] expectedValue = {
+                    Double.parseDouble(expected[psseColumn.get("V_BUS1")]),
+                    Double.parseDouble(expected[psseColumn.get("V_BUS2")]),
+                    Double.parseDouble(expected[psseColumn.get("V_BUS3")]),
+                    Double.parseDouble(expected[psseColumn.get("P")]) * 100.0,
+                    Double.parseDouble(expected[psseColumn.get("Q")]) * 100.0
+            };
+            for (int channel = 0; channel < expectedValue.length; channel++) {
+                double error = Math.abs(row[channel + 1] - expectedValue[channel]);
+                if (error > psseMaximum[channel]) {
+                    psseMaximum[channel] = error;
+                    psseMaximumTime[channel] = time;
+                }
+            }
+        }
+        System.out.println("Weak-grid PSS/E max errors: " + Arrays.toString(psseMaximum));
+        System.out.println("Weak-grid PSS/E max-error times: "
+                + Arrays.toString(psseMaximumTime));
+        double[] psseTolerance = {1.4e-3, 1.3e-3, 1.1e-5, 3.1e-2, 1.0e-1};
+        for (int index = 0; index < psseMaximum.length; index++) {
+            assertTrue(psseMaximum[index] <= psseTolerance[index], String.format(Locale.ROOT,
+                    "PSS/E %s max error %.9g at %.9g exceeds %.9g",
+                    labels[index], psseMaximum[index], psseMaximumTime[index],
+                    psseTolerance[index]));
         }
     }
 
