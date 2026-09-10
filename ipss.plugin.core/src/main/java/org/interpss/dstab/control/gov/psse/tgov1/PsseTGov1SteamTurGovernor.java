@@ -9,6 +9,8 @@ import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
+import com.interpss.dstab.controller.cml.field.ICMLControlBlock;
+import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -145,9 +147,29 @@ public FilterControlBlock t2t3FilterBlock;
 	public Field getField(String fieldName) throws Exception {
     	return getClass().getField(fieldName);
     }
-    @Override
+	@Override
 	public Object getFieldObject(Field field) throws Exception {
-    	return field.get(this);
-    }
+		return field.get(this);
+	}
+
+	/** PowerWorld diagram state: output of the T1 valve-position lag. */
+	public double getValvePosition() {
+		return runtimeBlock("t1DelayBlock").getY();
+	}
+
+	/** PowerWorld diagram state: output of the T2/T3 turbine-power block. */
+	public double getTurbinePower() {
+		return runtimeBlock("t2t3FilterBlock").getY();
+	}
+
+	private ICMLControlBlock runtimeBlock(String name) {
+		for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
+			if (wrapper.getFieldName().equals(name)
+					&& wrapper.getField() instanceof ICMLControlBlock block) {
+				return block;
+			}
+		}
+		throw new IllegalStateException("TGOV1 CML block is not initialized: " + name);
+	}
 
 }
