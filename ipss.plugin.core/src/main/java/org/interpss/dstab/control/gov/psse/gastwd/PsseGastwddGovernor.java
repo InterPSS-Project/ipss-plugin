@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
-import org.interpss.dstab.control.util.NamedDynamicStateProvider;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.common.exp.InterpssRuntimeException;
@@ -21,7 +21,7 @@ import com.interpss.dstab.mach.Machine;
  * block diagram, including the three transport delays and temperature
  * controller low-value selection.
  */
-public class PsseGastwddGovernor extends AbstractGovernor implements IntegrationStepAware, NamedDynamicStateProvider {
+public class PsseGastwddGovernor extends AbstractGovernor implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1e-9;
     private State state = State.zero(), oldState = State.zero();
     private Deriv oldDeriv = Deriv.zero();

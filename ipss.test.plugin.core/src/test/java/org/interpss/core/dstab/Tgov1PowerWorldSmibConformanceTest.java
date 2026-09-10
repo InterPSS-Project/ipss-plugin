@@ -59,6 +59,9 @@ public class Tgov1PowerWorldSmibConformanceTest {
         Machine referenceMachine = network.getMachine("Bus2-mach1");
         PsseTGov1SteamTurGovernor governor =
                 (PsseTGov1SteamTurGovernor) machine.getGovernor();
+        assertTrue(governor.getNamedStates().containsKey("t1DelayBlock"));
+        assertEquals(governor.getNamedStates().get("t1DelayBlock"),
+                governor.getNamedState("t1DelayBlock"));
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
