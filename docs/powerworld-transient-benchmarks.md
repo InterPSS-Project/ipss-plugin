@@ -279,6 +279,15 @@ child CML evaluator; querying a nested expression through the parent evaluator
 collapses it to the child controller's final output. ANDES does not implement
 PSS2A, so PowerWorld is the independent model oracle.
 
+For ESDC1A and ESDC2A, separate native DYR inputs and hashed manifests establish
+direct artifact credit for both models. The selected terminal-fault profile
+keeps their regulator limits inactive, so PowerWorld produces the same
+canonical trace and InterPSS residuals for each. This is intentional rather
+than alias evidence: focused equation tests independently force the defining
+constant ESDC1A limits and terminal-voltage-scaled ESDC2A limits. Each cold
+native-model generation reproduces raw SHA-256
+`501be019239a2fc19c7368916c9b79d46274b340253f99a1bb6ed24cb4f8b097`.
+
 For REGFMA1, the benchmark uses a complete AUX network loaded into a new
 PowerWorld case. The same AUX topology is parsed directly into an InterPSS
 `DStabilityNetwork`, so transformer-control or interchange conversion does not

@@ -12,9 +12,10 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.PowerWorldCsvReference;
-import org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter;
+import org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -23,22 +24,26 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
-/** Full-solver native PSS/E ESDC1A comparison against PowerWorld. */
+/** Full-solver native PSS/E ESDC1A/ESDC2A comparisons against PowerWorld. */
 public class Esdc1aPowerWorldSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
-    private static final Path REFERENCE = Path.of(
-            "testData", "reference", "powerworld", "smib-genrou-esdc1a", "powerworld.csv");
 
-    @Test
-    void threeCycleFaultMatchesPowerWorldBoundaryMachineAndExciterSignals() throws Exception {
+    @ParameterizedTest(name = "{0} terminal-fault trajectory")
+    @ValueSource(strings = {"ESDC1A", "ESDC2A"})
+    void threeCycleFaultMatchesPowerWorldBoundaryMachineAndExciterSignals(String model)
+            throws Exception {
+        String modelLower = model.toLowerCase(Locale.ROOT);
+        Path referencePath = Path.of("testData", "reference", "powerworld",
+                "smib-genrou-" + modelLower, "powerworld.csv");
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_esdc1a.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_" + modelLower + ".dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
-        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + ESDC1A SMIB load flow");
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(),
+                "GENROU + " + model + " SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
@@ -46,11 +51,11 @@ public class Esdc1aPowerWorldSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
-        assertTrue(algorithm.initialization(), "GENROU + ESDC1A SMIB initialization");
+        assertTrue(algorithm.initialization(), "GENROU + " + model + " SMIB initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
-        Esdc1aExciter exciter = (Esdc1aExciter) machine.getExciter();
+        Esdc2aExciter exciter = (Esdc2aExciter) machine.getExciter();
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine,
@@ -62,7 +67,7 @@ public class Esdc1aPowerWorldSmibConformanceTest {
                     exciter, initialRelativeAngle);
         }
 
-        PowerWorldCsvReference reference = PowerWorldCsvReference.read(REFERENCE);
+        PowerWorldCsvReference reference = PowerWorldCsvReference.read(referencePath);
         assertEquals(2003, reference.samples().size(), "PowerWorld raw samples");
         assertEquals(2001, reference.postEventSamples().size(), "PowerWorld post-event samples");
         int[] field = {
@@ -108,11 +113,11 @@ public class Esdc1aPowerWorldSmibConformanceTest {
         }
 
         System.out.printf(Locale.ROOT,
-                "ESDC1A PowerWorld max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
+                model + " PowerWorld max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
                 + "angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g edp=%.9g "
                 + "field=%.9g sensedV=%.9g vr=%.9g vf=%.9g leadLag=%.9g%n",
                 Arrays.stream(maximum).boxed().toArray());
-        System.out.println("ESDC1A PowerWorld max-error times: "
+        System.out.println(model + " PowerWorld max-error times: "
                 + Arrays.toString(maximumTime));
 
         String[] labels = {"Bus1 V", "Bus2 V", "P MW", "Q Mvar", "relative angle",
@@ -132,7 +137,7 @@ public class Esdc1aPowerWorldSmibConformanceTest {
 
     private static void record(List<double[]> rows, double time,
             com.interpss.dstab.BaseDStabNetwork<?, ?> network,
-            RoundRotorMachine machine, Machine referenceMachine, Esdc1aExciter exciter,
+            RoundRotorMachine machine, Machine referenceMachine, Esdc2aExciter exciter,
             double initialRelativeAngle) {
         Complex voltage = network.getBus("Bus1").getVoltage();
         Complex current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
