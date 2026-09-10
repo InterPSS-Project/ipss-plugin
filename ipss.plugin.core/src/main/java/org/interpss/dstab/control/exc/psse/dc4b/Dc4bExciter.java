@@ -2,6 +2,7 @@ package org.interpss.dstab.control.exc.psse.dc4b;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -10,11 +11,13 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.mach.Machine;
 
 /** IEEE 421.5 DC4B / PSS/E ESDC4B excitation system. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class Dc4bExciter extends AnnotateExciter implements IntegrationStepAware {
+public final class Dc4bExciter extends AnnotateExciter
+        implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS=1e-12;
     private static final int EFD=0,VSENSE=1,PID_I=2,PID_D_LAG=3,VR=4,FB_LAG=5;
     private final Dc4bData data;
@@ -88,7 +91,8 @@ public final class Dc4bExciter extends AnnotateExciter implements IntegrationSte
         Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);double vt=machine.getDStabBus().getVoltageMag();
         dx[VSENSE]=lagDerivative(vt,x[VSENSE],tr);dx[PID_D_LAG]=lagDerivative(a.error,x[PID_D_LAG],td);
         double integralRate=ki*a.error;
-        if((a.pidOutput>=vrmax/ka-EPS&&integralRate>0)||(a.pidOutput<=vrmin/ka+EPS&&integralRate<0))integralRate=0;
+        if((a.proportionalIntegralOutput>=vrmax/ka-EPS&&integralRate>0)
+                ||(a.proportionalIntegralOutput<=vrmin/ka+EPS&&integralRate<0))integralRate=0;
         dx[PID_I]=integralRate;
         double vrRate=ta>EPS?(ka*vt*a.gatedPid-x[VR])/ta:0,low=vt*vrmin,high=vt*vrmax;
         if((x[VR]>=high&&vrRate>0)||(x[VR]<=low&&vrRate<0))vrRate=0;dx[VR]=vrRate;
@@ -101,12 +105,13 @@ public final class Dc4bExciter extends AnnotateExciter implements IntegrationSte
         double feedback=tf>EPS?kf*(x[EFD]-x[FB_LAG])/tf:0;
         double error=reference-sensed+stabilizerSignal(machine)+directUel()-directOel()-feedback;
         double derivative=td>EPS?kd*(error-x[PID_D_LAG])/td:0;
-        double unlimited=kp*error+x[PID_I]+derivative;
+        double proportionalIntegral=clamp(kp*error+x[PID_I],vrmin/ka,vrmax/ka);
+        double unlimited=proportionalIntegral+derivative;
         double pid=clamp(unlimited,vrmin/ka,vrmax/ka),gated=pid;
         if(uel==2&&hasVuel)gated=Math.max(gated,vuel);
         if(oel==2&&hasVoel)gated=Math.min(gated,voel);
         double regulator=ta>EPS?clamp(x[VR],vt*vrmin,vt*vrmax):clamp(ka*vt*gated,vt*vrmin,vt*vrmax);
-        return new Algebraic(sensed,error,unlimited,pid,gated,regulator,feedback);
+        return new Algebraic(sensed,error,proportionalIntegral,unlimited,pid,gated,regulator,feedback);
     }
     private double field(double[] x,Machine machine){return te>EPS?Math.max(vemin,x[EFD]):solveAlgebraicField(algebraics(x,machine).regulator,x[EFD]);}
     private double solveAlgebraicField(double regulator,double initial){
@@ -127,15 +132,22 @@ public final class Dc4bExciter extends AnnotateExciter implements IntegrationSte
     private static double stabilizerSignal(Machine m){return m.getStabilizer()==null?0:m.getStabilizer().getOutput(m);}
 
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}
+    public double getProportionalIntegralOutput(){return algebraics(active,getMachine()).proportionalIntegralOutput;}
+    public double getDerivativeOutput(){Algebraic a=algebraics(active,getMachine());return td>EPS?kd*(a.error-active[PID_D_LAG])/td:0;}
     public double getPidUnlimitedOutput(){return algebraics(active,getMachine()).pidUnlimited;}
     public double getPidOutput(){return algebraics(active,getMachine()).pidOutput;}
     public double getGatedPidOutput(){return algebraics(active,getMachine()).gatedPid;}
     public double getRegulatorOutput(){return algebraics(active,getMachine()).regulator;}
     public double getFeedbackOutput(){return algebraics(active,getMachine()).feedback;}
     public double getInternalFieldVoltage(){return field(active,getMachine());}
+    @Override public Map<String,Double> getNamedStates(){return Map.of(
+            "EField",getInternalFieldVoltage(),"Sensed Vt",getSensedVoltage(),
+            "PI",getProportionalIntegralOutput(),"Derivative",getDerivativeOutput(),
+            "Vr",getRegulatorOutput(),"Feedback",getFeedbackOutput());}
     @Override public double getOutput(Machine machine){outputSignal=outputFromInternal(field(active,machine),machine);return outputSignal;}
     @Override public void setRefPoint(double value){reference=value;} @Override public double getRefPoint(){return reference;}
-    private record Algebraic(double sensed,double error,double pidUnlimited,double pidOutput,double gatedPid,double regulator,double feedback){}
+    private record Algebraic(double sensed,double error,double proportionalIntegralOutput,
+            double pidUnlimited,double pidOutput,double gatedPid,double regulator,double feedback){}
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
     @Override public Field getField(String name)throws Exception{return getClass().getField(name);}
     @Override public Object getFieldObject(Field field)throws Exception{return field.get(this);}
