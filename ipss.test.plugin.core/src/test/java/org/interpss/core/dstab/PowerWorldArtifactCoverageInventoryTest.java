@@ -18,7 +18,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
     void validatesManifestsAndReportsApprovedModelGaps() throws Exception {
         var report = PowerWorldArtifactCoverageInventory.scan(repositoryRoot());
 
-        assertEquals(46, report.completedArtifactCount());
+        assertEquals(47, report.completedArtifactCount());
         assertEquals(3, report.categories().get("SYNCHRONOUS_MACHINE").approvedPsseRows());
         assertEquals(3, report.categories().get("SYNCHRONOUS_MACHINE").exactLoadableRows());
         assertEquals(1, report.categories().get("SYNCHRONOUS_MACHINE").rowsWithDirectArtifact());
@@ -27,7 +27,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertEquals(37, report.categories().get("EXCITER").rowsWithDirectArtifact());
         assertEquals(24, report.categories().get("GOVERNOR").approvedPsseRows());
         assertEquals(24, report.categories().get("GOVERNOR").exactLoadableRows());
-        assertEquals(7, report.categories().get("GOVERNOR").rowsWithDirectArtifact());
+        assertEquals(8, report.categories().get("GOVERNOR").rowsWithDirectArtifact());
         assertEquals(15, report.categories().get("STABILIZER").approvedPsseRows());
         assertEquals(13, report.categories().get("STABILIZER").exactLoadableRows());
         assertEquals(1, report.categories().get("STABILIZER").rowsWithDirectArtifact());
@@ -36,7 +36,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertFalse(row(report, "GENQEJ").hasDirectArtifact());
         assertTrue(row(report, "PSS2A").hasDirectArtifact());
         assertTrue(row(report, "HYGOV2D").hasDirectArtifact());
-        assertFalse(row(report, "HYGOVD").hasDirectArtifact());
+        assertTrue(row(report, "HYGOVD").hasDirectArtifact());
         assertTrue(row(report, "HYGOVD").isExactLoadable(),
                 "HYGOVD needs an artifact, not another runtime implementation");
 
@@ -47,7 +47,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertEquals(report.toJson(), Files.readString(json));
         assertEquals(report.toMarkdown(), Files.readString(markdown));
         assertTrue(JsonParser.parseString(Files.readString(json)).isJsonObject());
-        assertTrue(Files.readString(markdown).contains("| GOVERNOR | HYGOVD |"));
+        assertFalse(Files.readString(markdown).contains("| GOVERNOR | HYGOVD |"));
     }
 
     private static Row row(PowerWorldArtifactCoverageInventory.Report report, String name) {
