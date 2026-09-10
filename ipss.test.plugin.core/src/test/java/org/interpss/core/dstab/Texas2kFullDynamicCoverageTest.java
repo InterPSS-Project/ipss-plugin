@@ -179,7 +179,13 @@ public class Texas2kFullDynamicCoverageTest {
 
     private static Object runtimeModelFor(BaseDStabNetwork<?, ?> network,
             DynamicModelImportEntry entry, DynamicModelCategory category) {
-        DStabGen generator = (DStabGen) network.getDStabBus("Bus" + entry.busNumber())
+        var bus = network.getDStabBus("Bus" + entry.busNumber());
+        if (category == DynamicModelCategory.LOAD_CHARACTERISTIC) {
+            return bus.getDynLoadModelList().stream()
+                    .filter(model -> model.getId().equals(entry.deviceId()))
+                    .findFirst().orElse(null);
+        }
+        DStabGen generator = (DStabGen) bus
                 .getContributeGen(entry.deviceId());
         assertNotNull(generator, "Missing generator for attached record " + entry);
         var machine = generator.getMach();
@@ -200,6 +206,8 @@ public class Texas2kFullDynamicCoverageTest {
                     : windStack(generator).getPitchController();
             case TORQUE_CONTROLLER -> windStack(generator) == null ? null
                     : windStack(generator).getTorqueController();
+            case LOAD_CHARACTERISTIC -> throw new IllegalStateException(
+                    "load characteristics are resolved before generator models");
         };
     }
 

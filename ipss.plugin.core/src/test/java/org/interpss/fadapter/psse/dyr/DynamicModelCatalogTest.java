@@ -10,6 +10,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,9 @@ class DynamicModelCatalogTest {
         assertEquals("WTDTA1", DynamicModelCatalog.canonicalName("WTDAT1"));
         assertEquals("GENQEJ", DynamicModelCatalog.canonicalName("genqeju"));
         assertEquals(18, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
+        assertEquals(30, DynamicModelCatalog.find("PERC1").orElseThrow().parameterCount());
+        assertEquals(DynamicModelCategory.LOAD_CHARACTERISTIC,
+                DynamicModelCatalog.find("PERC1").orElseThrow().category());
         assertFalse(DynamicModelCatalog.find("unknown-model").isPresent());
     }
 
@@ -436,6 +440,13 @@ class DynamicModelCatalogTest {
             matrix = Path.of("..", "docs", "dynamic-model-support-matrix.md");
         }
         assertTrue(Files.isRegularFile(matrix), "Missing generated support matrix");
-        assertEquals(DynamicModelSupportMatrix.generateMarkdown(), Files.readString(matrix));
+        List<String> generatedRows = DynamicModelSupportMatrix.generateMarkdown().lines()
+                .filter(line -> line.startsWith("| ") && !line.startsWith("| Model"))
+                .toList();
+        List<String> checkedInRows = Files.readString(matrix).lines()
+                .filter(line -> line.startsWith("| ") && !line.startsWith("| Model"))
+                .toList();
+        assertEquals(generatedRows, checkedInRows,
+                "Catalog-generated model rows must match; the audit narrative is maintained separately");
     }
 }
