@@ -30,7 +30,9 @@ the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST
 including `50/64` approved exciter rows and `23/24` approved PSS/E governor rows with
 direct trajectory evidence; current-schema IEEEG1D
 is the remaining governor artifact gap and is version-blocked in Simulator 24;
-the Case-6 coupled fleet flat-run gate remains open. See the plan's release checklist before interpreting any
+GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
+PSS/E Xplore 36.7); the Case-5 coupled fleet flat-run gate remains open. See
+the plan's release checklist before interpreting any
 `LOADABLE` row as completed model validation.
 
 | Model | Category | Aliases | Parameters | Support | Runtime class | Reference |
