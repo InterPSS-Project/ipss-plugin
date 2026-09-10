@@ -18,5 +18,5 @@ public final class St5cExciter extends St5bExciter {
     @Override protected int uelInputMode(){return normalize(data.getUel());}
     public int getOelInputMode(){return oelInputMode();}
     public int getUelInputMode(){return uelInputMode();}
-    private static int normalize(int value){return value==2?2:1;}
+    private static int normalize(int value){return value==2?2:value==3?3:1;}
 }
