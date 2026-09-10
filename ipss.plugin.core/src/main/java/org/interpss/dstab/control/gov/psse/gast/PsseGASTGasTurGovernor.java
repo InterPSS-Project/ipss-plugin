@@ -7,9 +7,11 @@ import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnFunctionField;
 import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
+import com.interpss.dstab.controller.cml.field.ICMLControlBlock;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.controller.cml.field.func.LowValueExpFunction;
+import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
@@ -189,9 +191,34 @@ public DelayControlBlock t3DelayBlock;
 	public Field getField(String fieldName) throws Exception {
     	return getClass().getField(fieldName);
     }
-    @Override
+	@Override
 	public Object getFieldObject(Field field) throws Exception {
-    	return field.get(this);
-    }
+		return field.get(this);
+	}
+
+	/** PowerWorld GAST/GASTD state: output of the T1 fuel-valve lag. */
+	public double getFuelValve() {
+		return runtimeBlock("t1DelayBlock").getY();
+	}
+
+	/** PowerWorld GAST/GASTD state: output of the T2 fuel-flow lag. */
+	public double getFuelFlow() {
+		return runtimeBlock("t2DelayBlock").getY();
+	}
+
+	/** PowerWorld GAST/GASTD state: output of the T3 exhaust-temperature lag. */
+	public double getExhaustTemperature() {
+		return runtimeBlock("t3DelayBlock").getY();
+	}
+
+	private ICMLControlBlock runtimeBlock(String name) {
+		for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
+			if (wrapper.getFieldName().equals(name)
+					&& wrapper.getField() instanceof ICMLControlBlock block) {
+				return block;
+			}
+		}
+		throw new IllegalStateException("GAST CML block is not initialized: " + name);
+	}
 
 }

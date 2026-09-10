@@ -106,6 +106,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   turbine-power chain;
 - `smib-genrou-tgov1d.json`: the corresponding native TGOV1D record with an
   asymmetric speed deadband and explicit turbine rating;
+- `smib-genrou-gastd.json`: GENROU with native GASTD fuel-valve, fuel-flow,
+  and exhaust-temperature dynamics;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
@@ -303,6 +305,13 @@ The separate TGOV1D artifact activates its asymmetric speed deadband and
 produces canonical SHA-256
 `7a59dcab72dd0a90e597d8581a7f9004cf098ce788fb988059d0465fe78fed81`;
 it receives direct coverage independently rather than through TGOV1 aliasing.
+
+For GASTD, the three exported states are `Fuel Valve`, `Fuel Flow`, and
+`Exhaust Temperature`. They map to the live outputs of the InterPSS `T1`,
+`T2`, and feedback `T3` lag blocks. The native record activates its asymmetric
+speed deadband; focused tests separately cover turbine-rating conversion and
+initial load-limit behavior. Two cold PowerWorld runs reproduce canonical CSV
+SHA-256 `dadc49cd48dd439b77234b6dd56c93649f3c0f944d3b4a401b09f6962feabbbd`.
 
 For PSS2A, the artifact exports every one of PowerWorld's 19 named stabilizer
 state slots. The registered comparison maps both washout/transducer chains,
