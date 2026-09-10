@@ -2,6 +2,7 @@ package org.interpss.dstab.control.exc.psse.st3c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -10,6 +11,7 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.mach.Machine;
@@ -17,7 +19,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** Native PSS/E implementation of the IEEE 421.5-2016 ST3C exciter. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class St3cExciter extends AnnotateExciter implements IntegrationStepAware{
+public final class St3cExciter extends AnnotateExciter implements IntegrationStepAware,ICMLStateProvider{
     private static final double EPS=1e-12;
     private static final int SENSED=0,PID_I=1,DERIV_LAG=2,LEAD_LAG=3,VR=4,VM=5;
     private final St3cData data;private final double[] state=new double[6],trial=new double[6],oldDerivative=new double[6];
@@ -70,10 +72,13 @@ public final class St3cExciter extends AnnotateExciter implements IntegrationSte
     private void derivatives(double[] x,double[] dx,Machine machine){Arrays.fill(dx,0);Algebraic a=algebraics(x,machine);
         dx[SENSED]=lagDerivative(sensingVoltage(machine),x[SENSED],tr);dx[DERIV_LAG]=lagDerivative(a.error,x[DERIV_LAG],tdr);
         dx[PID_I]=nonWindup(kir*a.error,a.pidRaw,vpidmin,vpidmax);dx[LEAD_LAG]=lagDerivative(a.pid,x[LEAD_LAG],tb);
-        dx[VR]=nonWindup(lagDerivative(ka*a.leadLag,x[VR],ta),x[VR],vrmin,vrmax);
+        // The published ST3C diagram applies KA as an algebraic limited gain.
+        // Simulator retains TA in the exchange record but its ST3C trajectory is
+        // invariant to TA; VR therefore is not integrated in this model.
+        dx[VR]=0;
         dx[VM]=nonWindup(lagDerivative(km*(a.vr-a.feedback),x[VM],tm),x[VM],vmmin,vmmax);
     }
-    private Algebraic algebraics(double[] x,Machine machine){double vr=ta>EPS?clamp(x[VR],vrmin,vrmax):algebraicVr(x,machine);
+    private Algebraic algebraics(double[] x,Machine machine){double vr=algebraicVr(x,machine);
         double efd=tm>EPS?clamp(x[VM],vmmin,vmmax)*availableBridge(machine):solveAlgebraicField(x,machine,vr);
         return algebraicsForField(x,machine,vr,efd);}
     private Algebraic algebraicsForField(double[] x,Machine machine,double vr,double efd){
@@ -101,7 +106,7 @@ public final class St3cExciter extends AnnotateExciter implements IntegrationSte
     private double availableBridge(Machine machine){if(Math.abs(kp)<=EPS&&Math.abs(ki)<=EPS)return Math.min(1,vbmax);
         double source=sw1==1?compoundSource(machine):kp;if(source<=EPS)return 0;double ifd=exciterIfd(machine);
         return clamp(source*Exac1Exciter.rectifierFactor(kc*ifd/source),0,vbmax);}
-    private void constrain(double[] x){if(ta>EPS)x[VR]=clamp(x[VR],vrmin,vrmax);if(tm>EPS)x[VM]=clamp(x[VM],vmmin,vmmax);
+    private void constrain(double[] x){if(tm>EPS)x[VM]=clamp(x[VM],vmmin,vmmax);
         for(int i=0;i<x.length;i++)if(!Double.isFinite(x[i]))x[i]=0;}
     private double directUel(){return uel==1&&hasVuel?vuel:0;}private double directOel(){return oel==1&&hasVoel?voel:0;}
     private static int normalizedLimiter(int v){return v==2?2:1;}private static double lagDerivative(double in,double x,double t){return t>EPS?(in-x)/t:0;}
@@ -116,7 +121,12 @@ public final class St3cExciter extends AnnotateExciter implements IntegrationSte
     public double getLeadLagOutput(){return algebraics(active,getMachine()).leadLag;}public double getRegulatorOutput(){return algebraics(active,getMachine()).vr;}
     public double getFeedback(){return algebraics(active,getMachine()).feedback;}public double getVmOutput(){return algebraics(active,getMachine()).vm;}
     public double getCompoundSource(){return compoundSource(getMachine());}public double getAvailableBridge(){return availableBridge(getMachine());}
-    public double[] getStateSnapshot(){return active.clone();}@Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
+    public double[] getStateSnapshot(){double[] snapshot=active.clone();snapshot[VR]=getRegulatorOutput();return snapshot;}
+    @Override public Map<String,Double> getNamedStates(){return Map.of(
+            "VM",getVmOutput(),"Sensed Vt",getSensedVoltage(),"VR",getRegulatorOutput(),
+            "LL",getLeadLagOutput(),"IntegratorKIr",active[PID_I],
+            "Derivative",algebraics(active,getMachine()).derivative);}
+    @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double v){reference=v;}@Override public double getRefPoint(){return reference;}
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}@Override public Field getField(String n)throws Exception{return getClass().getField(n);}
     @Override public Object getFieldObject(Field f)throws Exception{return f.get(this);}
