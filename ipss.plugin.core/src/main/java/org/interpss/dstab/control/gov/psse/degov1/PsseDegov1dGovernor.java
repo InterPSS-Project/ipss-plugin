@@ -2,6 +2,7 @@ package org.interpss.dstab.control.gov.psse.degov1;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Map;
 
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -10,6 +11,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
@@ -21,7 +23,7 @@ import com.interpss.dstab.mach.Machine;
  * power transducer, and a time-stamped engine transport delay. Continuous
  * states use the InterPSS modified-Euler predictor/corrector.</p>
  */
-public class PsseDegov1dGovernor extends AbstractGovernor implements IntegrationStepAware {
+public class PsseDegov1dGovernor extends AbstractGovernor implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private State state = State.zero();
@@ -135,12 +137,25 @@ public class PsseDegov1dGovernor extends AbstractGovernor implements Integration
 
     public void setAuxiliaryInput(double value) { auxiliaryInput = value; }
     public double getReference() { return reference; }
+    public double getControlBoxPosition() { return state.controlPosition; }
+    public double getControlBoxRate() { return state.controlRate; }
+    public double getActuatorIntegrator() { return state.integrator; }
+    public double getActuatorLeadLag() { return state.leadLag; }
     public double getActuatorOutput() { return currentActuator; }
     public double getMeasuredElectricalPower() {
         return effectiveTe > EPS ? state.peMeasured : machinePowerOnGovernorBase();
     }
     public double getControlBoxOutput() {
         return controlBoxOutput(state, committedError, Math.max(integrationStep, EPS));
+    }
+    @Override public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "Control Box Position", getControlBoxPosition(),
+                "Control Box Rate", getControlBoxRate(),
+                "Actuator Integrator", getActuatorIntegrator(),
+                "Actuator Lead-Lag", getActuatorLeadLag(),
+                "Actuator Output", getActuatorOutput(),
+                "Droop Input", getMeasuredElectricalPower());
     }
     public double getEffectiveT1() { return effectiveT1; }
     public double getEffectiveT2() { return effectiveT2; }

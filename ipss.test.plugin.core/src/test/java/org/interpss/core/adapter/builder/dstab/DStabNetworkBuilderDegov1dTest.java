@@ -47,6 +47,9 @@ public class DStabNetworkBuilderDegov1dTest extends CorePluginTestSetup {
         assertEquals(.002, governor.getData().getDbH(), TOL);
         assertEquals(-.003, governor.getData().getDbL(), TOL);
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(6, governor.getNamedStates().size());
+        assertEquals(governor.getActuatorOutput(),
+                governor.getNamedState("Actuator Output"), TOL);
         assertEquals(50.0, governor.getGovernorBaseMva(machine), TOL);
         assertEquals(1.2, governor.getActuatorOutput(), TOL);
         assertEquals(.6, governor.getOutput(machine), TOL);

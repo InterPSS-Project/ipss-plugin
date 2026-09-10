@@ -112,6 +112,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   temperature-control, transport-delay, valve, fuel, and turbine chain;
 - `smib-genrou-gastwdd.json`: GENROU with native GASTWDD power transducer,
   PID, temperature-control, valve, fuel, and turbine dynamics;
+- `smib-genrou-degov1d.json`: GENROU with the native DEGOV1D electric-control
+  box, actuator, electric-power droop transducer, and engine delay;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
@@ -341,6 +343,20 @@ explicit `Vmax=3.0` avoids PowerWorld's initialization-time PID-limit expansion;
 validation then reports zero errors/warnings and no limit modification. Two
 cold runs reproduce canonical CSV SHA-256
 `f069d2b60f7f14c212045e2ccbd63593884dfd423699acb91803183400565e9a`.
+
+For DEGOV1D, the registered contract checks both bus voltages, generator
+MW/Mvar, relative rotor angle/speed, all four GENROU electrical states, both
+electric-control-box states, physical actuator output, and electric-power
+droop input. InterPSS stores the second-order control box as position `z` and
+rate `zdot`; PowerWorld exports the observable-canonical coordinates
+`zdot + (T1-T3)/(T1*T2)*z` and `z + T3*zdot`. This is the exact analytical
+similarity transform of the published transfer function, not a fitted mapping.
+The actuator's first two numbered slots are retained in the artifact but not
+compared as raw states because PowerWorld uses different internal realization
+coordinates; the physical third actuator state is compared directly. Two cold
+runs reproduce canonical CSV SHA-256
+`cbf28a42e540660b3073a8ca6d5e61d727ef7d9fa3b03da1ca1c38d2e226aaa1`.
+Validation reports zero errors/warnings and no limit modification.
 
 For PSS2A, the artifact exports every one of PowerWorld's 19 named stabilizer
 state slots. The registered comparison maps both washout/transducer chains,
