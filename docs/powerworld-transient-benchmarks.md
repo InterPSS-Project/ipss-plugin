@@ -316,7 +316,7 @@ For GASTD, the three exported states are `Fuel Valve`, `Fuel Flow`, and
 speed deadband; focused tests separately cover turbine-rating conversion and
 initial load-limit behavior. Two cold PowerWorld runs reproduce canonical CSV
 SHA-256 `dadc49cd48dd439b77234b6dd56c93649f3c0f944d3b4a401b09f6962feabbbd`.
-GAST/GASTD exposes the same labels through `NamedDynamicStateProvider`, so
+GAST/GASTD exposes the same labels through the core `ICMLStateProvider`, so
 callers need not depend on PowerWorld's numeric state-slot ordering.
 
 For GAST2AD, PowerWorld exports nine governor slots: the seven named active
@@ -328,13 +328,15 @@ anti-windups at `Vmax`, as shown by the published diagram, rather than starting
 at the active speed command. Two cold PowerWorld runs reproduce canonical CSV
 SHA-256 `6916cbb7e9683d58305865ab91fd48a30f295e8735778fce9e12bda5a49d9f4a`.
 The seven semantic labels are also available from the InterPSS governor through
-`NamedDynamicStateProvider`; the two unnamed reserved slots are intentionally
+`ICMLStateProvider`; the two unnamed reserved slots are intentionally
 not presented as user-facing states.
 
 For GASTWDD, PowerWorld exports `Power Transducer`, `Valve Positioner`, `Fuel
 System`, `Radiation Shield`, `Thermocouple`, `Temp Control`, `Turbine Dynamics`,
 `PID 1`, and `PID 2`, followed by one inactive reserved slot. The same nine
-labels are available through `NamedDynamicStateProvider`. The source fixture's
+labels are available through `ICMLStateProvider`. Annotated CML controllers
+inherit field-name state snapshots from their common base, while models may
+override those names with domain labels. The source fixture's
 explicit `Vmax=3.0` avoids PowerWorld's initialization-time PID-limit expansion;
 validation then reports zero errors/warnings and no limit modification. Two
 cold runs reproduce canonical CSV SHA-256
