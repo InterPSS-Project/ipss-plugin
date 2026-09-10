@@ -83,9 +83,9 @@ public class St5bExciter extends AnnotateExciter implements IntegrationStepAware
         double[] values={tr,tc1,tb1,tc2,tb2,kr,vrmax,vrmin,t1,kc,tuc1,tub1,tuc2,tub2,toc1,tob1,toc2,tob2};
         for(double value:values)if(!Double.isFinite(value))return false;return true;
     }
-    /** ST5B always uses the published takeover gates; ST5C overrides these source flags. */
-    protected int oelInputMode(){return 2;}
-    protected int uelInputMode(){return 2;}
+    /** ST5B always uses the published regulator-input takeover gates; ST5C adds summation and gate-1 options. */
+    protected int oelInputMode(){return 3;}
+    protected int uelInputMode(){return 3;}
 
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,Machine machine,int flag){
         if(!initialized||dt<0)return false;if(dt==0)return true;
@@ -98,9 +98,9 @@ public class St5bExciter extends AnnotateExciter implements IntegrationStepAware
     private void derivatives(double[] x,double[] d,Machine machine){
         Arrays.fill(d,0);Algebraic a=algebraics(x,machine);
         d[VSENSE]=lagDerivative(sensingVoltage(machine),x[VSENSE],tr);
-        leadLagDerivative(x,d,N1,a.input,tc1,tb1);leadLagDerivative(x,d,N2,a.normal1,tc2,tb2);
-        leadLagDerivative(x,d,U1,a.input,tuc1,tub1);leadLagDerivative(x,d,U2,a.under1,tuc2,tub2);
-        leadLagDerivative(x,d,O1,a.input,toc1,tob1);leadLagDerivative(x,d,O2,a.over1,toc2,tob2);
+        leadLagDerivative(x,d,N1,a.normalInput,tc1,tb1);leadLagDerivative(x,d,N2,a.normal1,tc2,tb2);
+        leadLagDerivative(x,d,U1,a.underInput,tuc1,tub1);leadLagDerivative(x,d,U2,a.under1,tuc2,tub2);
+        leadLagDerivative(x,d,O1,a.overInput,toc1,tob1);leadLagDerivative(x,d,O2,a.over1,toc2,tob2);
         double rate=t1>EPS?(a.finalInput-x[EFD])/t1:0;
         double upper=machine.getDStabBus().getVoltageMag()*vrmax,lower=machine.getDStabBus().getVoltageMag()*vrmin;
         if((x[EFD]>=upper-EPS&&rate>0)||(x[EFD]<=lower+EPS&&rate<0))rate=0;d[EFD]=rate;
@@ -115,20 +115,22 @@ public class St5bExciter extends AnnotateExciter implements IntegrationStepAware
     private Algebraic algebraics(double[] x,Machine machine){
         double vt=machine.getDStabBus().getVoltageMag(),sensed=tr>EPS?x[VSENSE]:sensingVoltage(machine);
         double error=reference-sensed,summed=error;
-        boolean uelDirect=hasVuel&&uelInputMode()==1&&Math.abs(vuel)>EPS;
-        boolean oelDirect=hasVoel&&oelInputMode()==1&&Math.abs(voel)>EPS;
         if(hasVuel&&uelInputMode()==1)summed+=vuel;if(hasVoel&&oelInputMode()==1)summed+=voel;
         boolean uelGate=hasVuel&&uelInputMode()==2&&vuel>summed;double hv=uelGate?vuel:summed;
         boolean oelGate=hasVoel&&oelInputMode()==2&&voel<hv;double gated=oelGate?voel:hv;
-        double input=gated+stabilizerSignal(machine);
-        double normal1=limitedLeadLag(input,x[N1],tc1,tb1),normal2=limitedLeadLag(normal1,x[N2],tc2,tb2);
-        double under1=limitedLeadLag(input,x[U1],tuc1,tub1),under2=limitedLeadLag(under1,x[U2],tuc2,tub2);
-        double over1=limitedLeadLag(input,x[O1],toc1,tob1),over2=limitedLeadLag(over1,x[O2],toc2,tob2);
-        int selector=oelDirect||oelGate?1:uelDirect||uelGate?-1:0;
-        double selected=selector>0?over2:selector<0?under2:normal2;
+        double normalInput=gated+stabilizerSignal(machine);
+        double underInput=hasVuel&&uelInputMode()==3?vuel:normalInput;
+        double overInput=hasVoel&&oelInputMode()==3?voel:normalInput;
+        double normal1=limitedLeadLag(normalInput,x[N1],tc1,tb1),normal2=limitedLeadLag(normal1,x[N2],tc2,tb2);
+        double under1=limitedLeadLag(underInput,x[U1],tuc1,tub1),under2=limitedLeadLag(under1,x[U2],tuc2,tub2);
+        double over1=limitedLeadLag(overInput,x[O1],toc1,tob1),over2=limitedLeadLag(over1,x[O2],toc2,tob2);
+        int selector=0;double selected=normal2;
+        if(hasVuel&&uelInputMode()==3&&under2>selected){selected=under2;selector=-1;}
+        if(hasVoel&&oelInputMode()==3&&over2<selected){selected=over2;selector=1;}
         double vr=clamp(kr*selected,vrmin,vrmax),finalInput=vr-kc*fieldCurrent(machine);
         double efd=t1>EPS?x[EFD]:clamp(finalInput,vt*vrmin,vt*vrmax);
-        return new Algebraic(sensed,error,summed,hv,gated,input,normal1,normal2,under1,under2,over1,over2,selector,vr,finalInput,efd);
+        return new Algebraic(sensed,error,summed,hv,gated,normalInput,underInput,overInput,
+                normal1,normal2,under1,under2,over1,over2,selector,vr,finalInput,efd);
     }
     private double limitedLeadLag(double input,double stateValue,double tc,double tb){
         return clamp(leadLagOutput(input,stateValue,tc,tb),vrmin/kr,vrmax/kr);
@@ -164,8 +166,8 @@ public class St5bExciter extends AnnotateExciter implements IntegrationStepAware
             "LLU1",active[U1],"LLU2",active[U2],"LLO1",active[O1],"LLO2",active[O2]);}
     @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double value){reference=value;}@Override public double getRefPoint(){return reference;}
-    private record Algebraic(double sensed,double error,double summed,double hv,double gated,double input,double normal1,double normal2,
-            double under1,double under2,double over1,double over2,int selector,double vr,double finalInput,double efd){}
+    private record Algebraic(double sensed,double error,double summed,double hv,double gated,double normalInput,double underInput,double overInput,
+            double normal1,double normal2,double under1,double under2,double over1,double over2,int selector,double vr,double finalInput,double efd){}
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
     @Override public Field getField(String name)throws Exception{return getClass().getField(name);}
     @Override public Object getFieldObject(Field field)throws Exception{return field.get(this);}

@@ -77,10 +77,10 @@ public class St5bExciterTest extends CorePluginTestSetup {
         Fixture normal=fixture(baseData());for(int i=0;i<2000;i++)step(normal.exciter,normal.machine,.0001);
         assertEquals(1.2,normal.exciter.getOutput(normal.machine),1e-10);assertEquals(0,normal.exciter.getSelectedPath());
         assertEquals(Set.of("Efd","Sensed Vt","LL1","LL2","LLU1","LLU2","LLO1","LLO2"),normal.exciter.getNamedStates().keySet());
-        Fixture over=fixture(baseData());over.exciter.setVoel(.1);
-        assertEquals(1,over.exciter.getSelectedPath());assertEquals(.1,over.exciter.getGatedError(),TOL);
-        Fixture under=fixture(baseData());under.exciter.setVuel(.2);
-        assertEquals(-1,under.exciter.getSelectedPath());assertEquals(.2,under.exciter.getGatedError(),TOL);
+        Fixture over=fixture(baseData());over.exciter.setVoel(.1);for(int i=0;i<500;i++)step(over.exciter,over.machine,.0001);
+        assertEquals(1,over.exciter.getSelectedPath());assertEquals(.12,over.exciter.getGatedError(),TOL);
+        Fixture under=fixture(baseData());under.exciter.setVuel(.2);for(int i=0;i<500;i++)step(under.exciter,under.machine,.0001);
+        assertEquals(-1,under.exciter.getSelectedPath());assertEquals(.12,under.exciter.getGatedError(),TOL);
     }
 
     @Test void normalPathAndFinalLagMatchPublishedEquations()throws Exception{
