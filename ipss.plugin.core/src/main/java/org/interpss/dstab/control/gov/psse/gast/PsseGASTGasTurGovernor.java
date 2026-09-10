@@ -16,7 +16,7 @@ import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
-import org.interpss.dstab.control.util.NamedDynamicStateProvider;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
@@ -38,7 +38,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 		           + "-this.ratingScale*this.Dturb*mach.speed+this.ratingScale*this.Dturb",
 		   refPoint="this.invRatingScale*mach.pm",
 		   display= {})
-public class PsseGASTGasTurGovernor extends AnnotateGovernor implements NamedDynamicStateProvider {
+public class PsseGASTGasTurGovernor extends AnnotateGovernor implements ICMLStateProvider {
 	public double k=1;
 	public double loadLimit =1.0;
 	public double Dturb = 0.0;
