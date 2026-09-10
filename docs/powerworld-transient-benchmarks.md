@@ -110,6 +110,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   and exhaust-temperature dynamics;
 - `smib-genrou-gast2ad.json`: GENROU with the native GAST2AD speed,
   temperature-control, transport-delay, valve, fuel, and turbine chain;
+- `smib-genrou-gastwdd.json`: GENROU with native GASTWDD power transducer,
+  PID, temperature-control, valve, fuel, and turbine dynamics;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
@@ -328,6 +330,15 @@ SHA-256 `6916cbb7e9683d58305865ab91fd48a30f295e8735778fce9e12bda5a49d9f4a`.
 The seven semantic labels are also available from the InterPSS governor through
 `NamedDynamicStateProvider`; the two unnamed reserved slots are intentionally
 not presented as user-facing states.
+
+For GASTWDD, PowerWorld exports `Power Transducer`, `Valve Positioner`, `Fuel
+System`, `Radiation Shield`, `Thermocouple`, `Temp Control`, `Turbine Dynamics`,
+`PID 1`, and `PID 2`, followed by one inactive reserved slot. The same nine
+labels are available through `NamedDynamicStateProvider`. The source fixture's
+explicit `Vmax=3.0` avoids PowerWorld's initialization-time PID-limit expansion;
+validation then reports zero errors/warnings and no limit modification. Two
+cold runs reproduce canonical CSV SHA-256
+`f069d2b60f7f14c212045e2ccbd63593884dfd423699acb91803183400565e9a`.
 
 For PSS2A, the artifact exports every one of PowerWorld's 19 named stabilizer
 state slots. The registered comparison maps both washout/transducer chains,
