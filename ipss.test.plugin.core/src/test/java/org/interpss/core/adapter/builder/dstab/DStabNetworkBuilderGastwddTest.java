@@ -29,8 +29,11 @@ public class DStabNetworkBuilderGastwddTest extends CorePluginTestSetup {
         PsseGastwddGovernor gov=(PsseGastwddGovernor)machine.getGovernor();
         assertNotNull(gov); assertEquals(.003,gov.getData().getDbH(),1e-12); assertEquals(-.004,gov.getData().getDbL(),1e-12);
         assertTrue(gov.initStates(machine.getDStabBus(),machine));
+        assertEquals(gov.getEffectiveMaxLimit(),gov.getTemperatureCommand(),1e-12);
         double initial=gov.getOutput(machine); advance(gov,machine,20,.01);
-        assertEquals(initial,gov.getOutput(machine),1e-8); assertTrue(parser.getLastImportReport().isStrictlyComplete());
+        assertEquals(initial,gov.getOutput(machine),1e-8);
+        assertEquals(gov.getEffectiveMaxLimit(),gov.getTemperatureCommand(),1e-12);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test void deadbandAndLowValueSelectorFollowPublishedDiagram() throws Exception {
