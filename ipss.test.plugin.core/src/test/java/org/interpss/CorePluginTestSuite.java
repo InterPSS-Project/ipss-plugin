@@ -283,6 +283,7 @@ import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.GensalConformanceTest;
 import org.interpss.core.dstab.mach.GensalIndependentSmibConformanceTest;
 import org.interpss.core.dstab.mach.GensalHydroSmibTest;
+import org.interpss.core.dstab.mach.GenqecIndependentSmibConformanceTest;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReferenceTest;
 import org.interpss.core.dstab.Regfma1IndependentTrajectoryTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
@@ -415,6 +416,7 @@ import org.junit.platform.suite.api.Suite;
 	GensalConformanceTest.class,
 	GensalHydroSmibTest.class,
 	GensalIndependentSmibConformanceTest.class,
+	GenqecIndependentSmibConformanceTest.class,
 	EmbeddedTrajectoryReferenceTest.class,
 	Regfma1IndependentTrajectoryTest.class,
 	GenrouConformanceTest.class,
