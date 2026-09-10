@@ -2,11 +2,13 @@ package org.interpss.dstab.control.exc.psse.st1c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Map;
 
 import org.interpss.dstab.control.util.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
@@ -15,7 +17,8 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** Native PSS/E implementation of the IEEE 421.5-2016 ST1C exciter. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class St1cExciter extends AnnotateExciter implements IntegrationStepAware {
+public final class St1cExciter extends AnnotateExciter
+        implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS=1e-12;
     private static final int SENSED=0,LL1=1,LL2=2,VA=3,FEEDBACK_LAG=4;
     private final St1cData data;
@@ -140,6 +143,10 @@ public final class St1cExciter extends AnnotateExciter implements IntegrationSte
     public double getFieldLowerLimit(){return algebraics(active,getMachine()).lower;}
     public double getFieldUpperLimit(){return algebraics(active,getMachine()).upper;}
     public double[] getStateSnapshot(){return active.clone();}
+    @Override public Map<String,Double> getNamedStates(){return Map.of(
+            "VA",getRegulatorOutput(),"Sensed Vt",getSensedVoltage(),
+            "LL",getFirstLeadLagOutput(),"LL1",getSecondLeadLagOutput(),
+            "Feedback",getRateFeedback());}
     @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double v){reference=v;}@Override public double getRefPoint(){return reference;}
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
