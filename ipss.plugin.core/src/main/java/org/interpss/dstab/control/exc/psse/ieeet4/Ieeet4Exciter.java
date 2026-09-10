@@ -1,6 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ieeet4;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 
@@ -135,6 +136,12 @@ public final class Ieeet4Exciter extends AnnotateExciter {
     }
 
     public double getRheostatOutput() { return active[VRH]; }
+    public double getExciterFieldState() { return active[EFD]; }
+
+    /** Published PSS/E IEEET4 states in model-library order and semantics. */
+    @Override public Map<String, Double> getNamedStates() {
+        return Map.of("VRH", getRheostatOutput(), "EFD", getExciterFieldState());
+    }
     @Override public double getOutput(Machine machine) {
         outputSignal = active[EFD];
         return outputSignal;
