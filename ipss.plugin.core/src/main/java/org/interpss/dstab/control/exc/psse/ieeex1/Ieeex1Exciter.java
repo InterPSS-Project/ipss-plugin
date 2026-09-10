@@ -1,6 +1,7 @@
 package org.interpss.dstab.control.exc.psse.ieeex1;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -60,12 +61,26 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
     public void setVoel(double value) { voel = value; }
     public double getVoel() { return voel; }
     public double getSensedVoltage() { return algebraics(active, getMachine()).sensedVoltage; }
+    public double getLeadLagState() { return active[LEAD_LAG]; }
     public double getRegulatorOutput() { return algebraics(active, getMachine()).regulator; }
+    public double getExciterFieldState() { return algebraics(active, getMachine()).field; }
     public double getRateFeedbackOutput() { return algebraics(active, getMachine()).rateFeedback; }
+    public double getRateFeedbackIntegratorState() { return active[WASHOUT_LAG]; }
     public double getRateFeedbackLagOutput() {
         Algebraic a = algebraics(active, getMachine());
         return feedbackLagTimeConstant() > EPS
                 ? active[FEEDBACK_INPUT_LAG] : feedbackInput(a.field, a.regulator);
+    }
+
+    /** Published PSS/E IEEEX1 states in model-library order and semantics. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "Sensed VT", getSensedVoltage(),
+                "Lead lag", getLeadLagState(),
+                "Regulator output, VR", getRegulatorOutput(),
+                "Exciter output, EFD", getExciterFieldState(),
+                "Rate feedback integrator", getRateFeedbackIntegratorState());
     }
 
     @Override
