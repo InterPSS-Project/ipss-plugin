@@ -108,6 +108,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   asymmetric speed deadband and explicit turbine rating;
 - `smib-genrou-gastd.json`: GENROU with native GASTD fuel-valve, fuel-flow,
   and exhaust-temperature dynamics;
+- `smib-genrou-gast2ad.json`: GENROU with the native GAST2AD speed,
+  temperature-control, transport-delay, valve, fuel, and turbine chain;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
@@ -312,6 +314,20 @@ For GASTD, the three exported states are `Fuel Valve`, `Fuel Flow`, and
 speed deadband; focused tests separately cover turbine-rating conversion and
 initial load-limit behavior. Two cold PowerWorld runs reproduce canonical CSV
 SHA-256 `dadc49cd48dd439b77234b6dd56c93649f3c0f944d3b4a401b09f6962feabbbd`.
+GAST/GASTD exposes the same labels through `NamedDynamicStateProvider`, so
+callers need not depend on PowerWorld's numeric state-slot ordering.
+
+For GAST2AD, PowerWorld exports nine governor slots: the seven named active
+states `Speed Governor`, `Valve Positioner`, `Fuel System`, `Radiation Shield`,
+`Thermocouple`, `Temp Control`, and `Turbine Dynamics`, plus two inactive
+reserved slots that remain exactly zero. The direct trace exposed and corrected
+the temperature-controller initialization: the inactive controller starts and
+anti-windups at `Vmax`, as shown by the published diagram, rather than starting
+at the active speed command. Two cold PowerWorld runs reproduce canonical CSV
+SHA-256 `6916cbb7e9683d58305865ab91fd48a30f295e8735778fce9e12bda5a49d9f4a`.
+The seven semantic labels are also available from the InterPSS governor through
+`NamedDynamicStateProvider`; the two unnamed reserved slots are intentionally
+not presented as user-facing states.
 
 For PSS2A, the artifact exports every one of PowerWorld's 19 named stabilizer
 state slots. The registered comparison maps both washout/transducer chains,
