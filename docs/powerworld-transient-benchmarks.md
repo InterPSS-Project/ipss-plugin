@@ -121,6 +121,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   turbine, load-limiter, acceleration, and temperature-control chain.
 - `smib-genrou-ggov1d.json`: the same ten-state chain through native GGOV1D,
   with a small asymmetric frequency deadband exercising the D-specific path.
+- `smib-genrou-ieeeg3d.json`: GENROU with the native IEEEG3D hydro governor,
+  including asymmetric frequency deadband and turbine-base conversion.
 - `smib-genrou-esst1a-pss2a.json`: GENROU and ESST1A with a representative
   Texas2k dual-input PSS2A stabilizer.
 - `regfma1-bus1062.json`: a public all-line three-bus system with the Texas2k
@@ -379,6 +381,14 @@ the GENROU and network boundary channels. The shared channel tolerances use the
 worse independently measured maximum from the two variants and are tighter than
 the former GGOV1-only bounds. Two cold GGOV1D runs reproduce canonical CSV
 SHA-256 `f84132d66c1e10e924bac31d01f42349a54ed59428dfeaf2c543e45b26964e91`.
+Validation reports zero errors/warnings, no autocorrection, and no limit
+modification.
+
+For IEEEG3D, the artifact exports all four published governor state coordinates:
+mechanical power, servomotor position, gate position, and transient droop. The
+registered comparison uses the same coordinates directly, with no fitted or
+translated state. Two cold runs reproduce canonical CSV SHA-256
+`209528bcbf0829497b7883f474312eae696ac5282264978b5ec8fc42454e3850`.
 Validation reports zero errors/warnings, no autocorrection, and no limit
 modification.
 
