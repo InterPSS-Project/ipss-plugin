@@ -2,10 +2,12 @@ package org.interpss.dstab.control.gov.psse.ggov1;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Map;
 
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
@@ -21,7 +23,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * transport delay uses time-stamped interpolation, so its duration is independent
  * of the integration step size.</p>
  */
-public class PsseGgov1Governor extends AbstractGovernor implements IntegrationStepAware {
+public class PsseGgov1Governor extends AbstractGovernor
+        implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private State state = State.zero();
@@ -174,6 +177,20 @@ public class PsseGgov1Governor extends AbstractGovernor implements IntegrationSt
                 ? state.temperatureLeadLag + getData().getTsa() / effectiveTsb
                         * (temperatureInput - state.temperatureLeadLag)
                 : temperatureInput;
+    }
+
+    @Override public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "Electrical Power", getMeasuredElectricalPower(),
+                "Derivative Control", getDifferentialControlOutput(),
+                "Governor Integral", getGovernorIntegralState(),
+                "Valve Stroke", getValveStroke(),
+                "Turbine Lead-Lag", getTurbineLeadLagState(),
+                "Load Limiter Measurement", getLoadLimiterMeasurementState(),
+                "Load Limiter Integral", getLoadLimiterIntegralState(),
+                "Supervisory Load Control", getSupervisoryLoadControlState(),
+                "Acceleration Control", getAccelerationControlOutput(),
+                "Temperature Detection", getTemperatureDetectionLeadLagOutput());
     }
     public double getDroopFeedback() {
         return selectedDroop(state.peMeasured, getValveStroke(), currentFsr);
