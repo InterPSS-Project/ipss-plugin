@@ -1,6 +1,7 @@
 package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
@@ -73,6 +74,11 @@ public class Tgov1PowerWorldSmibConformanceTest {
         PsseTGov1SteamTurGovernor governor =
                 (PsseTGov1SteamTurGovernor) machine.getGovernor();
         assertTrue(governor.getNamedStates().containsKey("t1DelayBlock"));
+        var t1Wrapper = governor.getFieldWrapperList().stream()
+                .filter(wrapper -> wrapper.getFieldName().equals("t1DelayBlock"))
+                .findFirst().orElseThrow();
+        assertSame(t1Wrapper.getField(),
+                governor.getNamedStateBlocks().get("t1DelayBlock"));
         assertEquals(governor.getNamedStates().get("t1DelayBlock"),
                 governor.getNamedState("t1DelayBlock"));
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
