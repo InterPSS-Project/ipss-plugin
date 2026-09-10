@@ -14,7 +14,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.PowerWorldCsvReference;
 import org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -23,20 +24,23 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
-/** Full-solver GENROU + native IEEEG3D comparison against PowerWorld. */
+/** Full-solver GENROU + native IEEEG3/IEEEG3D comparisons against PowerWorld. */
 public class Ieeeg3dPowerWorldSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
-    @Test
-    void threeCycleFaultMatchesPowerWorldBoundaryMachineAndGovernorStates() throws Exception {
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = { "ieeeg3", "ieeeg3d" })
+    void threeCycleFaultMatchesPowerWorldBoundaryMachineAndGovernorStates(String variant)
+            throws Exception {
+        String model = variant.toUpperCase(Locale.ROOT);
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_ieeeg3d.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_" + variant + ".dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
-        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + IEEEG3D SMIB load flow");
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + " + model + " SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
@@ -44,13 +48,13 @@ public class Ieeeg3dPowerWorldSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
-        assertTrue(algorithm.initialization(), "GENROU + IEEEG3D SMIB initialization");
+        assertTrue(algorithm.initialization(), "GENROU + " + model + " SMIB initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
         Ieee1981Type3HydroGovernor governor =
                 (Ieee1981Type3HydroGovernor) machine.getGovernor();
-        assertEquals("IEEEG3D", governor.getName());
+        assertEquals(model, governor.getName());
         assertEquals(4, governor.getNamedStates().size());
         assertEquals(governor.getGatePosition(), governor.getNamedState("Gate Position"));
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
@@ -59,13 +63,14 @@ public class Ieeeg3dPowerWorldSmibConformanceTest {
                 initialRelativeAngle);
         while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true),
-                    "GENROU + IEEEG3D solve at " + algorithm.getSimuTime());
+                    "GENROU + " + model + " solve at " + algorithm.getSimuTime());
             record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
                     initialRelativeAngle);
         }
 
         PowerWorldCsvReference reference = PowerWorldCsvReference.read(Path.of(
-                "testData", "reference", "powerworld", "smib-genrou-ieeeg3d", "powerworld.csv"));
+                "testData", "reference", "powerworld", "smib-genrou-" + variant,
+                "powerworld.csv"));
         assertEquals(2003, reference.samples().size(), "PowerWorld raw samples");
         assertEquals(2001, reference.postEventSamples().size(), "PowerWorld post-event samples");
         int[] field = {
@@ -107,8 +112,8 @@ public class Ieeeg3dPowerWorldSmibConformanceTest {
                 }
             }
         }
-        System.out.println("IEEEG3D PowerWorld max errors: " + Arrays.toString(maximum));
-        System.out.println("IEEEG3D PowerWorld max-error times: " + Arrays.toString(maximumTime));
+        System.out.println(model + " PowerWorld max errors: " + Arrays.toString(maximum));
+        System.out.println(model + " PowerWorld max-error times: " + Arrays.toString(maximumTime));
         double[] tolerance = {
                 2.7e-4, 9.0e-5, 6.5e-2, 1.8e-1, 1.2e-2, 5.0e-6,
                 2.7e-5, 1.17e-4, 8.8e-5, 5.9e-5,
