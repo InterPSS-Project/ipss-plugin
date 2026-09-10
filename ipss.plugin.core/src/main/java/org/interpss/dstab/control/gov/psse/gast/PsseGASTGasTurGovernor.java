@@ -1,6 +1,7 @@
 package org.interpss.dstab.control.gov.psse.gast;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
@@ -15,6 +16,7 @@ import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.dstab.control.util.NamedDynamicStateProvider;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
@@ -36,7 +38,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 		           + "-this.ratingScale*this.Dturb*mach.speed+this.ratingScale*this.Dturb",
 		   refPoint="this.invRatingScale*mach.pm",
 		   display= {})
-public class PsseGASTGasTurGovernor extends AnnotateGovernor{
+public class PsseGASTGasTurGovernor extends AnnotateGovernor implements NamedDynamicStateProvider {
 	public double k=1;
 	public double loadLimit =1.0;
 	public double Dturb = 0.0;
@@ -209,6 +211,14 @@ public DelayControlBlock t3DelayBlock;
 	/** PowerWorld GAST/GASTD state: output of the T3 exhaust-temperature lag. */
 	public double getExhaustTemperature() {
 		return runtimeBlock("t3DelayBlock").getY();
+	}
+
+	@Override
+	public Map<String, Double> getNamedStates() {
+		return Map.of(
+				"Fuel Valve", getFuelValve(),
+				"Fuel Flow", getFuelFlow(),
+				"Exhaust Temperature", getExhaustTemperature());
 	}
 
 	private ICMLControlBlock runtimeBlock(String name) {
