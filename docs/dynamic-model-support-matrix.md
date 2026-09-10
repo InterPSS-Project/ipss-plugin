@@ -25,9 +25,9 @@ acceptance remains `0/6`. REGFMA1 has a registered public PowerWorld
 nine-state trajectory contract, HYGOVD has a repeatable direct four-state
 PowerWorld contract that reuses core GENROU and the verified HYGOV runtime,
 and LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
-to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, and ST5C have hash-repeatable direct PowerWorld contracts for
-the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, and ESST5C rows. The validated inventory is 75 artifacts,
-including `49/64` approved exciter rows and `23/24` approved PSS/E governor rows with
+to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
+the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated inventory is 76 artifacts,
+including `50/64` approved exciter rows and `23/24` approved PSS/E governor rows with
 direct trajectory evidence; current-schema IEEEG1D
 is the remaining governor artifact gap and is version-blocked in Simulator 24;
 the Case-6 coupled fleet flat-run gate remains open. See the plan's release checklist before interpreting any
