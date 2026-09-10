@@ -18,7 +18,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
     void validatesManifestsAndReportsApprovedModelGaps() throws Exception {
         var report = PowerWorldArtifactCoverageInventory.scan(repositoryRoot());
 
-        assertEquals(52, report.completedArtifactCount());
+        assertEquals(53, report.completedArtifactCount());
         assertEquals(3, report.categories().get("SYNCHRONOUS_MACHINE").approvedPsseRows());
         assertEquals(3, report.categories().get("SYNCHRONOUS_MACHINE").exactLoadableRows());
         assertEquals(2, report.categories().get("SYNCHRONOUS_MACHINE").rowsWithDirectArtifact());
@@ -27,7 +27,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertEquals(40, report.categories().get("EXCITER").rowsWithDirectArtifact());
         assertEquals(24, report.categories().get("GOVERNOR").approvedPsseRows());
         assertEquals(24, report.categories().get("GOVERNOR").exactLoadableRows());
-        assertEquals(8, report.categories().get("GOVERNOR").rowsWithDirectArtifact());
+        assertEquals(9, report.categories().get("GOVERNOR").rowsWithDirectArtifact());
         assertEquals(15, report.categories().get("STABILIZER").approvedPsseRows());
         assertEquals(13, report.categories().get("STABILIZER").exactLoadableRows());
         assertEquals(1, report.categories().get("STABILIZER").rowsWithDirectArtifact());
@@ -40,6 +40,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertTrue(row(report, "PSS2A").hasDirectArtifact());
         assertTrue(row(report, "HYGOV2D").hasDirectArtifact());
         assertTrue(row(report, "HYGOVD").hasDirectArtifact());
+        assertTrue(row(report, "TGOV1").hasDirectArtifact());
         assertTrue(row(report, "HYGOVD").isExactLoadable(),
                 "HYGOVD needs an artifact, not another runtime implementation");
 
