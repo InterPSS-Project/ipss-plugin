@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -83,6 +84,16 @@ public class Dc4bExciterTest extends CorePluginTestSetup {
         Fixture scaled=fixture(scaling);scaled.machine.getDStabBus().setVoltage(new Complex(.5,0));
         scaled.exciter.setRefPoint(scaled.exciter.getRefPoint()+100);
         assertEquals(1,scaled.exciter.getRegulatorOutput(),TOL);
+    }
+
+    @Test void limitsCanonicalProportionalIntegralPathBeforeDerivativeSummation()throws Exception{
+        Dc4bData d=baseData();d.setKp(60);d.setKi(6);d.setKd(16);d.setTd(.017);
+        d.setKa(1);d.setVrmax(4);d.setVrmin(-3.6);
+        Fixture f=fixture(d);f.exciter.setRefPoint(f.exciter.getRefPoint()+1);
+        assertEquals(4,f.exciter.getProportionalIntegralOutput(),TOL);
+        assertEquals(4,f.exciter.getNamedState("PI"),TOL);
+        assertEquals(Set.of("EField","Sensed Vt","PI","Derivative","Vr","Feedback"),
+                f.exciter.getNamedStates().keySet());
     }
 
     @Test void appliesPowerWorldCorrectionsAutomaticParametersAndLimitExpansion()throws Exception{
