@@ -1,13 +1,16 @@
 package org.interpss.dstab.control.exc.psse.scrx;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.field.ICMLControlBlock;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
+import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
@@ -70,6 +73,24 @@ public class ScrxExciter extends AnnotateExciter {
 
     public void setVuel(double value) { vuel = value; }
     public void setVoel(double value) { voel = value; }
+
+    public double getFirstIntegratorState() { return runtimeBlock("leadLag").getStateX(); }
+    public double getSecondIntegratorState() { return runtimeBlock("regulator").getStateX(); }
+
+    /** Published PSS/E SCRX states in model-library order and semantics. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        return Map.of("First integrator", getFirstIntegratorState(),
+                "Second integrator", getSecondIntegratorState());
+    }
+
+    private ICMLControlBlock runtimeBlock(String name) {
+        for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
+            if (wrapper.getFieldName().equals(name)
+                    && wrapper.getField() instanceof ICMLControlBlock block) return block;
+        }
+        throw new IllegalStateException("SCRX CML block is not initialized: " + name);
+    }
 
     private double sourceMultiplier(Machine machine) {
         return data.getCswitch() == 0 ? machine.getDStabBus().getVoltageMag() : 1.0;
