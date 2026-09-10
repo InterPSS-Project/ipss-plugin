@@ -1,6 +1,7 @@
 package org.interpss.dstab.control.exc.psse.exdc2;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 
@@ -53,6 +54,17 @@ public class Exdc2Exciter extends Ieeex1Exciter {
     @Override
     protected double machineOutput(double internalField, Machine machine) {
         return internalField * machine.getSpeed();
+    }
+
+    /** Published PSS/E EXDC2 states in model-library order and semantics. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "Sensed VT", getSensedVoltage(),
+                "Lead lag output", getLeadLagState(),
+                "Regulator output, VR", getRegulatorOutput(),
+                "Exciter output, EFD", getExciterFieldState(),
+                "Rate feedback integrator", getRateFeedbackIntegratorState());
     }
 
     @Override public AnController getAnController() {

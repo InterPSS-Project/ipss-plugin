@@ -29,9 +29,9 @@ to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-r
 the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated PowerWorld inventory is 76 artifacts,
 including `50/64` approved exciter rows and `23/24` approved PSS/E governor rows with
 direct trajectory evidence. BBSEX1 separately has a hash-repeatable native
-PSS/E 36.7 boundary/EFD/three-state trajectory contract. IEEEX1 likewise has
-a native PSS/E boundary/EFD/five-state contract. Together they raise combined
-exact-tool direct exciter evidence to `52/64` without changing the explicitly
+PSS/E 36.7 boundary/EFD/three-state trajectory contract. IEEEX1 and EXDC2
+likewise have native PSS/E boundary/EFD/five-state contracts. Together they raise combined
+exact-tool direct exciter evidence to `53/64` without changing the explicitly
 PowerWorld-only inventory. Current-schema IEEEG1D
 is the remaining governor artifact gap and is version-blocked in Simulator 24;
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
