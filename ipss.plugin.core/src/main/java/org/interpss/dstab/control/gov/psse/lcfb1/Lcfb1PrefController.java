@@ -1,13 +1,16 @@
 package org.interpss.dstab.control.gov.psse.lcfb1;
 
 import java.util.Hashtable;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
 import com.interpss.dstab.mach.Machine;
@@ -22,7 +25,8 @@ import com.interpss.core.net.Network;
  * and frequency errors, and applies a deadband, error clamp, PI control, and
  * symmetric reference-bias limit before driving the existing governor Pref.</p>
  */
-public final class Lcfb1PrefController extends DynLoadModelImpl {
+public final class Lcfb1PrefController extends DynLoadModelImpl
+        implements ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private final Lcfb1Data data;
@@ -88,12 +92,18 @@ public final class Lcfb1PrefController extends DynLoadModelImpl {
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
         if (bus == null || machine.getGovernor() != governor) return false;
+        // Secondary dynamic-load devices can initialize before the full
+        // solver populates the machine Pe/Pm caches. Prefer explicit machine
+        // initialization, then fall back to the solved parent-generator P.
         sensedPower = machine.getPe();
+        if (Math.abs(sensedPower) <= EPS) sensedPower = machine.getPm();
+        if (Math.abs(sensedPower) <= EPS)
+            sensedPower = machine.getParentGen().getGen().getReal();
         powerSetpoint = sensedPower;
-        baseReference = machine.getPm();
+        baseReference = sensedPower;
         integrator = 0.0;
         referenceBias = 0.0;
-        governor.setRefPoint(baseReference);
+        applyGovernorReference(0.0);
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         initialized = true;
         return finite(sensedPower, powerSetpoint, baseReference);
@@ -112,19 +122,19 @@ public final class Lcfb1PrefController extends DynLoadModelImpl {
             oldIntegratorDerivative = integratorDerivative(sensedPower, integrator);
             sensedPower = data.powerTransducerTime() <= EPS
                     ? machine.getPe() : sensedPower + dt * oldPowerDerivative;
-            integrator += dt * oldIntegratorDerivative;
+            integrator = limitPath(integrator + dt * oldIntegratorDerivative);
         } else if (flag == 1) {
             double correctedPowerDerivative = powerDerivative(sensedPower);
             double correctedIntegratorDerivative = integratorDerivative(sensedPower, integrator);
             sensedPower = data.powerTransducerTime() <= EPS ? machine.getPe()
                     : oldSensedPower + 0.5 * dt * (oldPowerDerivative + correctedPowerDerivative);
-            integrator = oldIntegrator
-                    + 0.5 * dt * (oldIntegratorDerivative + correctedIntegratorDerivative);
+            integrator = limitPath(oldIntegrator
+                    + 0.5 * dt * (oldIntegratorDerivative + correctedIntegratorDerivative));
         } else {
             throw new InterpssRuntimeException("LCFB1 invalid integration flag: " + flag);
         }
         referenceBias = limitedBias(sensedPower, integrator);
-        governor.setRefPoint(baseReference + referenceBias);
+        applyGovernorReference(referenceBias);
         return finite(sensedPower, integrator, referenceBias);
     }
 
@@ -136,17 +146,25 @@ public final class Lcfb1PrefController extends DynLoadModelImpl {
     private double integratorDerivative(double measuredPower, double integralState) {
         double error = conditionedError(measuredPower);
         double derivative = data.integralGain() * error;
-        double unlimited = data.proportionalGain() * error + integralState;
         double limit = data.maximumReferenceBias();
-        if ((unlimited >= limit && derivative > 0.0)
-                || (unlimited <= -limit && derivative < 0.0)) return 0.0;
+        // LCFB1 limits the Kp and Ki/s paths independently before their
+        // outputs are summed and limited once more.  Final-output saturation
+        // therefore must not freeze an integrator that is still inside its
+        // own bounds.
+        if ((integralState >= limit && derivative > 0.0)
+                || (integralState <= -limit && derivative < 0.0)) return 0.0;
         return derivative;
     }
 
     private double limitedBias(double measuredPower, double integralState) {
         double error = conditionedError(measuredPower);
-        return clamp(data.proportionalGain() * error + integralState,
+        double proportional = limitPath(data.proportionalGain() * error);
+        return clamp(proportional + limitPath(integralState),
                 -data.maximumReferenceBias(), data.maximumReferenceBias());
+    }
+
+    private double limitPath(double value) {
+        return clamp(value, -data.maximumReferenceBias(), data.maximumReferenceBias());
     }
 
     private double conditionedError(double measuredPower) {
@@ -181,6 +199,18 @@ public final class Lcfb1PrefController extends DynLoadModelImpl {
     public double getPowerSetpoint() { return powerSetpoint; }
     public double getReferenceBias() { return referenceBias; }
     public double getGovernorReference() { return getOutput(); }
+    @Override
+    public Map<String, Double> getNamedStates() {
+        return Map.of("Pelec Sensed", sensedPower, "Integral", integrator);
+    }
+
+    private void applyGovernorReference(double bias) {
+        if (governor instanceof PsseTGov1SteamTurGovernor tgov1) {
+            governor.setRefPoint(baseReference * tgov1.invRatingScale * tgov1.R + bias);
+        } else {
+            governor.setRefPoint(baseReference + bias);
+        }
+    }
 
     private static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));

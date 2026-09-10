@@ -10,7 +10,7 @@ trajectory comparison. Those acceptance results are tracked in
 cases are currently loadable, but none passes the strict one-second
 flat-run gate; the Texas2k verification milestone remains open.
 
-Current Texas2k audit (2026-09-09): `17/17` PSS/E DYR model names are
+Current Texas2k audit (2026-09-10): `17/17` PSS/E DYR model names are
 loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
 runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 `_MODREMOVE.idv`. Approved-list rows without a native PSS/E model name are
@@ -22,8 +22,12 @@ short flat and common Bus-7159 fault execution smokes, `0/6` pass the current
 strict one-second flat-run gate, and all `15/15` required location-specific
 faults complete as execution/sanity checks. Full-stack independent trajectory
 acceptance remains `0/6`. REGFMA1 has a registered public PowerWorld
-nine-state trajectory contract, and HYGOVD has a repeatable direct four-state
-PowerWorld contract that reuses core GENROU and the verified HYGOV runtime;
+nine-state trajectory contract, HYGOVD has a repeatable direct four-state
+PowerWorld contract that reuses core GENROU and the verified HYGOV runtime,
+and LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
+to TGOV1. The validated inventory is 67 artifacts, including `23/24` approved
+PSS/E governor rows with direct trajectory evidence; current-schema IEEEG1D
+is the remaining governor artifact gap and is version-blocked in Simulator 24;
 the Case-6 coupled fleet flat-run gate remains open. See the plan's release checklist before interpreting any
 `LOADABLE` row as completed model validation.
 
