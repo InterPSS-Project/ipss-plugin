@@ -123,6 +123,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   with a small asymmetric frequency deadband exercising the D-specific path.
 - `smib-genrou-ieeeg3d.json`: GENROU with the native IEEEG3D hydro governor,
   including asymmetric frequency deadband and turbine-base conversion.
+- `smib-genrou-ieeeg3.json`: GENROU with native IEEEG3, the PSS/E conversion
+  target for the approved WECC HYGOV4 model.
 - `smib-genrou-esst1a-pss2a.json`: GENROU and ESST1A with a representative
   Texas2k dual-input PSS2A stabilizer.
 - `regfma1-bus1062.json`: a public all-line three-bus system with the Texas2k
@@ -384,11 +386,14 @@ SHA-256 `f84132d66c1e10e924bac31d01f42349a54ed59428dfeaf2c543e45b26964e91`.
 Validation reports zero errors/warnings, no autocorrection, and no limit
 modification.
 
-For IEEEG3D, the artifact exports all four published governor state coordinates:
+For IEEEG3 and IEEEG3D, the artifacts export all four published governor state coordinates:
 mechanical power, servomotor position, gate position, and transient droop. The
-registered comparison uses the same coordinates directly, with no fitted or
-translated state. Two cold runs reproduce canonical CSV SHA-256
-`209528bcbf0829497b7883f474312eae696ac5282264978b5ec8fc42454e3850`.
+registered parameterized comparison uses the same coordinates directly, with
+no fitted or translated state. Two cold runs reproduce canonical CSV SHA-256
+`f10ad6f4e34256a515cd1549995b48ad31849301dcf828198b1cc0d57f8b1208`
+for IEEEG3 and
+`209528bcbf0829497b7883f474312eae696ac5282264978b5ec8fc42454e3850`
+for IEEEG3D.
 Validation reports zero errors/warnings, no autocorrection, and no limit
 modification.
 
