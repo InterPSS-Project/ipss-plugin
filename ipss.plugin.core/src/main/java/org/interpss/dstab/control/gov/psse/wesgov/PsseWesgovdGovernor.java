@@ -1,8 +1,11 @@
 package org.interpss.dstab.control.gov.psse.wesgov;
 
+import java.util.Map;
+
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
@@ -18,7 +21,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * the controller output can change by at most {@code Alim}; two serial lags
  * then produce mechanical power.</p>
  */
-public class PsseWesgovdGovernor extends AbstractGovernor implements IntegrationStepAware {
+public class PsseWesgovdGovernor extends AbstractGovernor
+        implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private State state = State.zero();
@@ -136,6 +140,14 @@ public class PsseWesgovdGovernor extends AbstractGovernor implements Integration
     public double getEffectiveT1() { return effectiveT1; }
     public double getEffectiveT2() { return effectiveT2; }
     public double getEffectiveTpe() { return effectiveTpe; }
+    @Override
+    public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "PE Measured", state.peMeasured,
+                "Control", state.integrator,
+                "Valve", getValveState(),
+                "Mechanical Power", outputOnGovernorBase(state));
+    }
     public double getGovernorBaseMva(Machine mach) {
         return governorToMachineBase * mach.getRating(
                 UnitType.mVA, mach.getDStabBus().getNetwork().getBaseKva());
