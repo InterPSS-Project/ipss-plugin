@@ -2,17 +2,20 @@ package org.interpss.dstab.control.exc.psse.st6b;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineIfdBase;
 
 /** IEEE 421.5-2005 ST6B / PSLF ESST6B static excitation system. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class St6bExciter extends AnnotateExciter implements IntegrationStepAware {
+public final class St6bExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS=1e-12;
     private static final int EFD=0,VSENSE=1,PID_I=2,PID_D_LAG=3,VG=4;
     private final St6bData data;private final String modelName;
@@ -84,6 +87,16 @@ public final class St6bExciter extends AnnotateExciter implements IntegrationSte
     public double getVaOutput(){return algebraics(active,getMachine()).va;}public double getVgOutput(){return algebraics(active,getMachine()).vg;}
     public double getInnerRegulatorOutput(){return algebraics(active,getMachine()).inner;}public double getCurrentLimitOutput(){return algebraics(active,getMachine()).currentLimit;}
     public double getVrOutput(){return algebraics(active,getMachine()).vr;}public double getExciterInput(){return algebraics(active,getMachine()).exciterInput;}
+    public double getPidIntegralOutput(){return active[PID_I];}
+    public double getPidDerivativeLag(){return active[PID_D_LAG];}
+    @Override public Map<String,Double> getNamedStates(){
+        Algebraic a=algebraics(active,getMachine());Map<String,Double> states=new LinkedHashMap<>();
+        states.put("EField",a.efd);states.put("VTerminalSensed",a.sensed);
+        // PowerWorld's published PID coordinates use the integral contribution
+        // divided by Tda for PID1 and the limited PID output for PID2.
+        states.put("PID1",tda>EPS?active[PID_I]/tda:active[PID_I]);states.put("PID2",a.va);states.put("VG",a.vg);
+        return Map.copyOf(states);
+    }
     @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double v){reference=v;}@Override public double getRefPoint(){return reference;}
     private record Algebraic(double sensed,double error,double va,double vg,double inner,double currentLimit,double vr,double exciterInput,double efd){}
