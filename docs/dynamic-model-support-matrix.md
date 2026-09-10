@@ -21,9 +21,10 @@ not discovered, parsed, inventoried, or tested by this workflow.
 short flat and common Bus-7159 fault execution smokes, `0/6` pass the current
 strict one-second flat-run gate, and all `15/15` required location-specific
 faults complete as execution/sanity checks. Full-stack independent trajectory
-acceptance remains `0/6`. REGFMA1 now has a registered public PowerWorld
-nine-state trajectory contract, but the Case-6 coupled fleet flat-run gate
-remains open. See the plan's release checklist before interpreting any
+acceptance remains `0/6`. REGFMA1 has a registered public PowerWorld
+nine-state trajectory contract, and HYGOVD has a repeatable direct four-state
+PowerWorld contract that reuses core GENROU and the verified HYGOV runtime;
+the Case-6 coupled fleet flat-run gate remains open. See the plan's release checklist before interpreting any
 `LOADABLE` row as completed model validation.
 
 | Model | Category | Aliases | Parameters | Support | Runtime class | Reference |
