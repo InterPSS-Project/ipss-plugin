@@ -50,6 +50,13 @@ public class DStabNetworkBuilderTgov3dTest extends CorePluginTestSetup {
         assertEquals(50.0, governor.getGovernorBaseMva(machine), TOL);
         assertEquals(.6, governor.getValvePosition(), TOL);
         assertEquals(.3, governor.getOutput(machine), TOL);
+        assertEquals(6, governor.getNamedStates().size());
+        assertEquals(governor.getLeadLagState(), governor.getNamedState("Lead-Lag"), TOL);
+        assertEquals(governor.getValvePosition(), governor.getNamedState("Valve Position"), TOL);
+        assertEquals(governor.getSteamBowlOutput(), governor.getNamedState("Steam Bowl"), TOL);
+        assertEquals(governor.getReheaterPressure(), governor.getNamedState("Reheater Pressure"), TOL);
+        assertEquals(governor.getCrossoverOutput(), governor.getNamedState("Crossover"), TOL);
+        assertEquals(governor.getInterceptValvePosition(), governor.getNamedState("Intercept Valve"), TOL);
         advance(governor, machine, 50, .01);
         assertEquals(.3, governor.getOutput(machine), TOL);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());

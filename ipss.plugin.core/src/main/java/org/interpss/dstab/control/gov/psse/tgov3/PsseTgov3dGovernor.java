@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.gov.psse.tgov3;
 
+import java.util.Map;
+
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -7,6 +9,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
@@ -18,7 +21,8 @@ import com.interpss.dstab.mach.Machine;
  * externally initiated model action because its trigger is a simulation option,
  * not a TGOV3D record field.</p>
  */
-public class PsseTgov3dGovernor extends AbstractGovernor implements IntegrationStepAware {
+public class PsseTgov3dGovernor extends AbstractGovernor
+        implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
     // PSS/E's fixed TGOV3D intercept-valve characteristic is the exponential
     // curve through (0, 0), (0.3, 0.8), and (1, 1).
@@ -144,6 +148,17 @@ public class PsseTgov3dGovernor extends AbstractGovernor implements IntegrationS
     public double getLeadLagOutput() {
         double input = applySpeedDeadband(getMachine().getSpeed() - 1.0);
         return leadLagOutput(state, input, Math.max(integrationStep, EPS));
+    }
+    public double getLeadLagState() { return state.leadLagState; }
+
+    @Override public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "Lead-Lag", getLeadLagState(),
+                "Valve Position", getValvePosition(),
+                "Steam Bowl", getSteamBowlOutput(),
+                "Reheater Pressure", getReheaterPressure(),
+                "Crossover", getCrossoverOutput(),
+                "Intercept Valve", getInterceptValvePosition());
     }
     public double getEffectiveT3() { return effectiveT3; }
     public double getEffectiveT5() { return effectiveT5; }
