@@ -30,6 +30,9 @@ public final class PsseDyrRecordReader {
         String line;
         while ((line = reader.readLine()) != null) {
             lineNo++;
+            if (lineNo == 1 && !line.isEmpty() && line.charAt(0) == '\uFEFF') {
+                line = line.substring(1);
+            }
             String useful = stripDoubleSlashComment(line);
             if (pending.isEmpty() && isCommentOrBlank(useful)) continue;
             if (startLine < 0) startLine = lineNo;
@@ -43,7 +46,7 @@ public final class PsseDyrRecordReader {
                 if (!raw.isEmpty()) records.add(toRecord(raw, sourceName, startLine, lineNo));
                 String remainder = pending.toString().trim();
                 pending.setLength(0);
-                if (!remainder.isEmpty() && !isCommentOrBlank(remainder)) {
+                if (startsWithBusNumber(remainder)) {
                     pending.append(remainder);
                     startLine = lineNo;
                 } else {
@@ -111,6 +114,20 @@ public final class PsseDyrRecordReader {
     private static boolean isCommentOrBlank(CharSequence line) {
         String value = line.toString().trim();
         return value.isEmpty() || value.startsWith("/");
+    }
+
+    /**
+     * A second record may follow a slash on the same line. Legacy PSS/E files
+     * also commonly put an unmarked comment there, so retain the remainder only
+     * when it starts with a signed decimal bus number.
+     */
+    private static boolean startsWithBusNumber(String value) {
+        if (value.isEmpty() || isCommentOrBlank(value)) return false;
+        int index = value.charAt(0) == '+' || value.charAt(0) == '-' ? 1 : 0;
+        int firstDigit = index;
+        while (index < value.length() && Character.isDigit(value.charAt(index))) index++;
+        return index > firstDigit && (index == value.length()
+                || Character.isWhitespace(value.charAt(index)) || value.charAt(index) == ',');
     }
 
     private static String stripDoubleSlashComment(String line) {
