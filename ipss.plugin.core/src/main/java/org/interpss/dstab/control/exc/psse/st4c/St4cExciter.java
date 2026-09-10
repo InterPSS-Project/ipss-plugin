@@ -2,6 +2,7 @@ package org.interpss.dstab.control.exc.psse.st4c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.function.DoubleUnaryOperator;
 
 import org.apache.commons.math3.complex.Complex;
@@ -11,6 +12,7 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
 import com.interpss.dstab.mach.Machine;
@@ -18,7 +20,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 /** Native PSS/E implementation of the IEEE 421.5-2016 ST4C exciter. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public final class St4cExciter extends AnnotateExciter implements IntegrationStepAware {
+public final class St4cExciter extends AnnotateExciter implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS=1e-12;
     private static final int SENSED=0,VR_I=1,VM_I=2,VG=3,VA=4;
     private final St4cData data;
@@ -161,11 +163,15 @@ public final class St4cExciter extends AnnotateExciter implements IntegrationSte
     public double getVgOutput(){return algebraics(active,getMachine()).feedback;}
     public double getInnerInput(){return algebraics(active,getMachine()).innerInput;}
     public double getVmOutput(){return algebraics(active,getMachine()).vm;}
+    public double getVmIntegratorState(){return active[VM_I];}
     public double getVaInput(){return algebraics(active,getMachine()).vaInput;}
     public double getVaOutput(){return algebraics(active,getMachine()).va;}
     public double getPotentialSource(){return potentialSource(getMachine());}
     public double getAvailableBridge(){return algebraics(active,getMachine()).vb;}
     public double[] getStateSnapshot(){return active.clone();}
+    @Override public Map<String,Double> getNamedStates(){return Map.of(
+            "VM",getVmIntegratorState(),"Sensed Vt",getSensedVoltage(),"VA",getVaOutput(),
+            "VR",getVrOutput(),"VG",getVgOutput());}
     @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double v){reference=v;} @Override public double getRefPoint(){return reference;}
     @Override public AnController getAnController(){return getClass().getAnnotation(AnController.class);}
