@@ -164,6 +164,7 @@ import org.interpss.core.dstab.Hygovr1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ggov1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.GastdIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Gast2adIndependentSmibConformanceTest;
+import org.interpss.core.dstab.GastwddIndependentSmibConformanceTest;
 import org.interpss.core.dstab.H6eIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Hyg3IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1AndesSmibConformanceTest;
@@ -474,6 +475,7 @@ import org.junit.platform.suite.api.Suite;
 	Ggov1IndependentSmibConformanceTest.class,
 	GastdIndependentSmibConformanceTest.class,
 	Gast2adIndependentSmibConformanceTest.class,
+	GastwddIndependentSmibConformanceTest.class,
 	H6eIndependentSmibConformanceTest.class,
 	Hyg3IndependentSmibConformanceTest.class,
 	Pss2aIndependentSmibConformanceTest.class,
