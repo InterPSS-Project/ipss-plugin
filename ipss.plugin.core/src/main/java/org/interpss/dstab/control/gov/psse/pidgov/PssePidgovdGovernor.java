@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.gov.psse.pidgov;
 
+import java.util.Map;
+
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -7,6 +9,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
@@ -17,7 +20,8 @@ import com.interpss.dstab.mach.Machine;
  * block diagram. Continuous states are integrated with the InterPSS modified
  * Euler predictor/corrector.</p>
  */
-public class PssePidgovdGovernor extends AbstractGovernor implements IntegrationStepAware {
+public class PssePidgovdGovernor extends AbstractGovernor
+        implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private State state = State.zero();
@@ -141,6 +145,17 @@ public class PssePidgovdGovernor extends AbstractGovernor implements Integration
     public double getEffectiveGmin() { return effectiveGmin; }
     public double getEffectiveVelmax() { return effectiveVelmax; }
     public double getEffectiveVelmin() { return effectiveVelmin; }
+    @Override
+    public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "Mechanical Output", currentOutput,
+                "Measured Delta P", state.droopFilter,
+                "Integral", state.piIntegrator,
+                "Regulator 1", state.reg1,
+                "Derivative", getDerivativeOutput(),
+                "Regulator 2", state.reg2,
+                "Gate", state.gate);
+    }
     public double getGovernorBaseMva(Machine mach) {
         return governorToMachineBase * mach.getRating(UnitType.mVA,
                 mach.getDStabBus().getNetwork().getBaseKva());
