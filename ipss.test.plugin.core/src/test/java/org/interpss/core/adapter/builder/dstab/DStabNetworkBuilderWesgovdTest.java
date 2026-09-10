@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
@@ -49,6 +50,8 @@ public class DStabNetworkBuilderWesgovdTest extends CorePluginTestSetup {
         assertEquals(-.003, governor.getData().getDbL(), TOL);
         assertEquals(50.0, governor.getData().getTrate(), TOL);
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(Set.of("PE Measured", "Control", "Valve", "Mechanical Power"),
+                governor.getNamedStates().keySet());
         assertEquals(50.0, governor.getGovernorBaseMva(machine), TOL);
         assertEquals(1.2, governor.getHeldControl(), TOL);
         assertEquals(.6, governor.getOutput(machine), TOL);
