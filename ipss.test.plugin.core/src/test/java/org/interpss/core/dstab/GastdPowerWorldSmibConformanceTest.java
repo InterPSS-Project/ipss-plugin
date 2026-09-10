@@ -50,6 +50,8 @@ public class GastdPowerWorldSmibConformanceTest {
         Machine referenceMachine = network.getMachine("Bus2-mach1");
         PsseGASTGasTurGovernor governor = (PsseGASTGasTurGovernor) machine.getGovernor();
         assertEquals("GASTD", governor.getName());
+        assertEquals(3, governor.getNamedStates().size());
+        assertEquals(governor.getFuelValve(), governor.getNamedState("Fuel Valve"));
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
