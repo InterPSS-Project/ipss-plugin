@@ -288,6 +288,13 @@ constant ESDC1A limits and terminal-voltage-scaled ESDC2A limits. Each cold
 native-model generation reproduces raw SHA-256
 `501be019239a2fc19c7368916c9b79d46274b340253f99a1bb6ed24cb4f8b097`.
 
+For DC3A, the 17-selector terminal-fault contract maps the three published
+PowerWorld states directly: `EField`, sensed terminal voltage, and rheostat
+position. The fixture uses the native 12-CON PSS/E `DC3A` record that satisfies
+the approved ESDC3A catalog row; the PSLF-style ESDC3A layout is not used as a
+PSS/E input. Two cold runs reproduce raw SHA-256
+`bd90cac7da662127f3b872af6ff4a782a665b7a034a11d7d2d4cefacb918b939`.
+
 For REGFMA1, the benchmark uses a complete AUX network loaded into a new
 PowerWorld case. The same AUX topology is parsed directly into an InterPSS
 `DStabilityNetwork`, so transformer-control or interchange conversion does not
