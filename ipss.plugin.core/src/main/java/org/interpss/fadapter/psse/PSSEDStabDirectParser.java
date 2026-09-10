@@ -11,6 +11,8 @@ import java.util.Set;
 
 import org.interpss.dstab.dynLoad.LD1PAC;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
+import org.interpss.dstab.dynLoad.Perc1Data;
+import org.interpss.dstab.dynLoad.impl.Perc1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportReport;
@@ -167,12 +169,15 @@ public class PSSEDStabDirectParser {
                 String type = record.canonicalModelName();
                 GeneratorKey key = new GeneratorKey(BUS_ID_PREFIX + record.busNumber(),
                         record.deviceId());
-                if (gnetRemovedGenerators.contains(key)) {
+                boolean generatorTarget = DynamicModelCatalog.find(type)
+                        .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC)
+                        .orElse(true);
+                if (generatorTarget && gnetRemovedGenerators.contains(key)) {
                     report.add(record, DynamicModelImportStatus.SKIPPED_GNET,
                             "generator intentionally removed by GNET preprocessing");
                     continue;
                 }
-                if (modelRemovedGenerators.contains(key)) {
+                if (generatorTarget && modelRemovedGenerators.contains(key)) {
                     report.add(record, DynamicModelImportStatus.SKIPPED_MODEL_REMOVE,
                             "dynamic stack intentionally removed by BAT_PLMOD_REMOVE type 1");
                     continue;
@@ -244,10 +249,15 @@ public class PSSEDStabDirectParser {
 
     @SuppressWarnings("unchecked")
     private String missingCatalogTarget(PsseDyrRecord record) {
-        if (DynamicModelCatalog.find(record.canonicalModelName()).isEmpty()) return null;
+        var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
+        if (descriptor.isEmpty()) return null;
         String busId = BUS_ID_PREFIX + record.busNumber();
         BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
         if (bus == null) return "target bus " + busId + " does not exist";
+        if (descriptor.get().category() == org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC) {
+            return bus.getContributeLoad(record.deviceId()) == null
+                    ? "target load " + busId + "/" + record.deviceId() + " does not exist" : null;
+        }
         DStabGen gen = (DStabGen) bus.getContributeGen(record.deviceId());
         return gen == null ? "target generator " + busId + "/" + record.deviceId()
                 + " does not exist" : null;
@@ -261,6 +271,8 @@ public class PSSEDStabDirectParser {
         String genId = record.deviceId();
 
         switch (type) {
+            case "PERC1":
+                return procPerc1(busId, genId, fields);
             case "GENCLS":
                 return procGencls(busId, genId, fields);
             case "GENROU":
@@ -2556,6 +2568,22 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
                 getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
                 getDouble(f, 15, 0), getDouble(f, 16, 0)) != null;
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean procPerc1(String busId, String loadId, String[] f) {
+        BaseDStabBus<?,?> bus=builder.getBaseDStabNetwork().getDStabBus(busId);
+        if(bus==null)return false;
+        var load=bus.getContributeLoad(loadId);if(load==null)return false;
+        Perc1Data d=new Perc1Data(
+                getDouble(f,3,.8),getDouble(f,4,.66),getDouble(f,5,0),getDouble(f,6,0),getDouble(f,7,0),
+                getDouble(f,8,0),getDouble(f,9,.1),getDouble(f,10,0),getDouble(f,11,.1),
+                getDouble(f,12,0),getDouble(f,13,0),getDouble(f,14,0),getDouble(f,15,0),
+                getDouble(f,16,0),getDouble(f,17,1),getDouble(f,18,1),getDouble(f,19,0),
+                getDouble(f,20,.66),getDouble(f,21,-.66),getDouble(f,22,1),getDouble(f,23,.5),
+                getDouble(f,24,.01),getDouble(f,25,0),getDouble(f,26,.6),getDouble(f,27,.05),
+                getDouble(f,28,1),getDouble(f,29,1),getDouble(f,30,.02),getDouble(f,31,.02),getDouble(f,32,.02));
+        new Perc1Model(bus,load,loadId,d);return true;
     }
 
     // ==================== Utility Methods ====================
