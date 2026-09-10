@@ -48,6 +48,13 @@ class DStabNetworkBuilderIeeeg1dTest extends CorePluginTestSetup {
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
         assertEquals(.5, governor.ratingScale, TOL);
         assertEquals(machine.getPm(), governor.getOutput(machine), TOL);
+        assertEquals(6, governor.getNamedStates().size());
+        assertEquals(governor.getGovernorSignal(), governor.getNamedState("filterBlock"), TOL);
+        assertEquals(governor.getValvePosition(), governor.getNamedState("intBlock"), TOL);
+        assertEquals(governor.getFirstStageOutput(), governor.getNamedState("chDelayBlock"), TOL);
+        assertEquals(governor.getSecondStageOutput(), governor.getNamedState("rh1DelayBlock"), TOL);
+        assertEquals(governor.getThirdStageOutput(), governor.getNamedState("rh2DelayBlock"), TOL);
+        assertEquals(governor.getFourthStageOutput(), governor.getNamedState("coDelayBlock"), TOL);
         governor.speedDeadbandBlock.eulerStep1(-.002, 0.0);
         assertEquals(0.0, governor.speedDeadbandBlock.getY(), TOL);
         governor.speedDeadbandBlock.eulerStep1(-.010, 0.0);
