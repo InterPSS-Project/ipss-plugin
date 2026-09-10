@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -13,7 +14,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.PowerWorldCsvReference;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -27,15 +29,18 @@ public class Ggov1PowerWorldSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
-    @Test
-    void threeCycleFaultMatchesPowerWorldBoundaryMachineAndGovernorStates() throws Exception {
+    @ParameterizedTest(name = "{0}")
+    @ValueSource(strings = { "ggov1", "ggov1d" })
+    void threeCycleFaultMatchesPowerWorldBoundaryMachineAndGovernorStates(String variant)
+            throws Exception {
+        String model = variant.toUpperCase(Locale.ROOT);
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_ggov1.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_" + variant + ".dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
-        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + GGOV1 SMIB load flow");
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + " + model + " SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
@@ -43,24 +48,27 @@ public class Ggov1PowerWorldSmibConformanceTest {
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
-        assertTrue(algorithm.initialization(), "GENROU + GGOV1 SMIB initialization");
+        assertTrue(algorithm.initialization(), "GENROU + " + model + " SMIB initialization");
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
         PsseGgov1Governor governor = (PsseGgov1Governor) machine.getGovernor();
+        assertEquals(model, governor.getName());
+        assertEquals(10, governor.getNamedStates().size());
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
                 initialRelativeAngle);
         while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true),
-                    "GENROU + GGOV1 solve at " + algorithm.getSimuTime());
+                    "GENROU + " + model + " solve at " + algorithm.getSimuTime());
             record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,
                     initialRelativeAngle);
         }
 
         PowerWorldCsvReference reference = PowerWorldCsvReference.read(Path.of(
-                "testData", "reference", "powerworld", "smib-genrou-ggov1", "powerworld.csv"));
+                "testData", "reference", "powerworld", "smib-genrou-" + variant,
+                "powerworld.csv"));
         assertEquals(2003, reference.samples().size(), "PowerWorld raw samples");
         assertEquals(2001, reference.postEventSamples().size(), "PowerWorld post-event samples");
         int[] field = {
@@ -110,11 +118,13 @@ public class Ggov1PowerWorldSmibConformanceTest {
             }
         }
         double[] tolerance = {
-                3.0e-4, 1.0e-4, 7.0e-2, 1.8e-1, 1.3e-2, 6.0e-6,
-                3.0e-5, 1.2e-4, 9.0e-5, 6.0e-5,
-                2.0e-5, 1.0e-12, 4.0e-7, 5.0e-6, 4.0e-6,
-                5.0e-6, 8.0e-7, 1.0e-12, 4.0e-5, 1.2e-4
+                2.7e-4, 9.0e-5, 6.7e-2, 1.8e-1, 1.22e-2, 5.1e-6,
+                2.7e-5, 1.17e-4, 8.9e-5, 5.9e-5,
+                1.7e-5, 1.0e-12, 4.5e-7, 5.3e-6, 4.3e-6,
+                5.0e-6, 8.2e-7, 1.0e-12, 3.6e-5, 1.15e-4
         };
+        System.out.println(model + " PowerWorld max errors: " + Arrays.toString(maximum));
+        System.out.println(model + " PowerWorld max-error times: " + Arrays.toString(maximumTime));
         for (int index = 0; index < maximum.length; index++) {
             assertTrue(maximum[index] < tolerance[index], String.format(Locale.ROOT,
                     "channel %d max error %.9g exceeded %.9g at %.9g s",

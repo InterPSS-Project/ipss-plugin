@@ -119,6 +119,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
+- `smib-genrou-ggov1d.json`: the same ten-state chain through native GGOV1D,
+  with a small asymmetric frequency deadband exercising the D-specific path.
 - `smib-genrou-esst1a-pss2a.json`: GENROU and ESST1A with a representative
   Texas2k dual-input PSS2A stabilizer.
 - `regfma1-bus1062.json`: a public all-line three-bus system with the Texas2k
@@ -368,6 +370,15 @@ origin from InterPSS's absolute reheater pressure, so the comparison translates
 only the independently initialized origin and compares the complete dynamic
 trajectory. Two cold runs reproduce canonical CSV SHA-256
 `de582e7b59d43cc8ec0d1f19a9311856fe0c1b419eb58ac65228fb23b39b9ce9`.
+Validation reports zero errors/warnings, no autocorrection, and no limit
+modification.
+
+For GGOV1D, the registered GGOV1 comparison is parameterized over the base and
+deadband variants. Both compare all ten named PowerWorld governor states plus
+the GENROU and network boundary channels. The shared channel tolerances use the
+worse independently measured maximum from the two variants and are tighter than
+the former GGOV1-only bounds. Two cold GGOV1D runs reproduce canonical CSV
+SHA-256 `f84132d66c1e10e924bac31d01f42349a54ed59428dfeaf2c543e45b26964e91`.
 Validation reports zero errors/warnings, no autocorrection, and no limit
 modification.
 

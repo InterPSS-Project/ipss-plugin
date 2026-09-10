@@ -109,6 +109,10 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         assertEquals(0.002, governor.getData().getDbH(), TOL);
         assertEquals(-0.003, governor.getData().getDbL(), TOL);
         assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"), machine));
+        assertEquals(10, governor.getNamedStates().size());
+        assertEquals(governor.getValveStroke(), governor.getNamedState("Valve Stroke"), TOL);
+        assertEquals(governor.getMeasuredElectricalPower(),
+                governor.getNamedState("Electrical Power"), TOL);
         assertEquals(0.0, governor.applyFrequencyDeadband(-0.002), TOL);
         assertEquals(-0.007, governor.applyFrequencyDeadband(-0.010), TOL);
         assertEquals(0.008, governor.applyFrequencyDeadband(0.010), TOL);
