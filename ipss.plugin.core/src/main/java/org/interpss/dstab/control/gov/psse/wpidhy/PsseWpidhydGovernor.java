@@ -1,5 +1,7 @@
 package org.interpss.dstab.control.gov.psse.wpidhy;
 
+import java.util.Map;
+
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -7,6 +9,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
@@ -18,7 +21,8 @@ import com.interpss.dstab.mach.Machine;
  * filter, the nonlinear gate-to-power curve precedes the nonminimum-phase
  * water column, and the turbine power limiter precedes speed damping.</p>
  */
-public class PsseWpidhydGovernor extends AbstractGovernor implements IntegrationStepAware {
+public class PsseWpidhydGovernor extends AbstractGovernor
+        implements IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private State state = State.zero();
@@ -159,6 +163,17 @@ public class PsseWpidhydGovernor extends AbstractGovernor implements Integration
     public double getEffectiveGmin() { return effectiveGmin; }
     public double getEffectivePmax() { return effectivePmax; }
     public double getEffectivePmin() { return effectivePmin; }
+    @Override
+    public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "Mechanical Output", currentOutput,
+                "Measured Delta P", getMeasuredPowerDeviation(),
+                "PID 1", getFirstLagOutput(),
+                "PID 2", getPidOutput(),
+                "PID 3", getSecondLagOutput(),
+                "Velocity", state.servoRate,
+                "Gate", state.gate);
+    }
     public double getGovernorBaseMva(Machine mach) {
         return governorToMachineBase * mach.getRating(UnitType.mVA,
                 mach.getDStabBus().getNetwork().getBaseKva());
