@@ -283,6 +283,7 @@ import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.GensalConformanceTest;
 import org.interpss.core.dstab.mach.GensalPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.mach.GensalHydroSmibTest;
+import org.interpss.core.dstab.mach.GenqecPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.reference.PowerWorldCsvReferenceTest;
 import org.interpss.core.dstab.Regfma1PowerWorldTrajectoryTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
@@ -415,6 +416,7 @@ import org.junit.platform.suite.api.Suite;
 	GensalConformanceTest.class,
 	GensalHydroSmibTest.class,
 	GensalPowerWorldSmibConformanceTest.class,
+	GenqecPowerWorldSmibConformanceTest.class,
 	PowerWorldCsvReferenceTest.class,
 	Regfma1PowerWorldTrajectoryTest.class,
 	GenrouConformanceTest.class,

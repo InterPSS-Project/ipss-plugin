@@ -215,7 +215,7 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
             Vector_dq terminalVoltage = getVdq();
             double vqag = terminalVoltage.q + getRa() * iq + getXl() * id;
             double vdag = terminalVoltage.d + getRa() * id - getXl() * iq;
-            airGapFlux = Math.hypot(vqag, vdag);
+            airGapFlux = Math.hypot(vqag, vdag) / Math.max(getSpeed(), EPS);
             double sat = 1.0 + effectiveSaturation(airGapFlux);
             double xdppSat = saturatedReactance(getXd11(), airGapFlux);
             double xqppSat = saturatedReactance(getXq11(), airGapFlux);
@@ -329,13 +329,12 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
 
         private void updateCurrent() {
             Vector_dq terminalVoltage = getVdq();
-            // PSS/E positive-sequence GENROU/GENQEC neglects stator flux
-            // transients and speed deviation in the stator algebraic boundary.
-            // ANDES uses the same Flux0 convention. Multiplying the fluxes by
-            // rotor speed here introduces a large artificial negative-damping
-            // mode in the WECC179 system.
-            double dvD = -psiqpp - terminalVoltage.d;
-            double dvQ = psidpp - terminalVoltage.q;
+            // GENQEC's published boundary is Vd = -speed*Psiq'' and
+            // Vq = speed*Psid''. This differs intentionally from the legacy
+            // GENROU Flux0 approximation inherited by the core machine.
+            double speed = getSpeed();
+            double dvD = -psiqpp * speed - terminalVoltage.d;
+            double dvQ = psidpp * speed - terminalVoltage.q;
             // Current and saturation are weakly coupled through air-gap flux.
             // A short fixed-point iteration makes the boundary solution
             // self-consistent without adding states to the network solver.
@@ -348,7 +347,7 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
 
                 double vqag = terminalVoltage.q + getRa() * iq + getXl() * id;
                 double vdag = terminalVoltage.d + getRa() * id - getXl() * iq;
-                airGapFlux = Math.hypot(vqag, vdag);
+                airGapFlux = Math.hypot(vqag, vdag) / Math.max(speed, EPS);
             }
         }
 

@@ -92,19 +92,20 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
 		Path dyr = tempDir.resolve("genqec.dyr");
 		Files.writeString(dyr,
-				"1 'GENQEC' '1' 6.81 0.02 0.85 0.02 3.17 0.0 "
+				"1 'GENQEC' '1' 0.25 6.81 0.02 0.85 0.02 3.17 0.0 "
 				+ "2.37 1.87 0.32 0.52 0.28 0.20 0.19 0.233 0.797 "
-				+ "0.003 0.01 0.02 0.10 1 /\n");
+				+ "0.10 1 /\n");
 
 		new PSSEDStabDirectParser(builder).parseDynFile(dyr.toString());
 		GenqecMachine mach = (GenqecMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
 		assertNotNull(mach);
 		assertEquals(0.28, mach.getXd11(), TOL);
 		assertEquals(0.20, mach.getXq11(), TOL);
-		assertEquals(0.003, mach.getRa(), TOL);
-		assertEquals(0.01, mach.getGenqecData().rcomp(), TOL);
-		assertEquals(0.02, mach.getGenqecData().xcomp(), TOL);
+		assertEquals(0.0, mach.getRa(), TOL);
+		assertEquals(0.0, mach.getGenqecData().rcomp(), TOL);
+		assertEquals(0.0, mach.getGenqecData().xcomp(), TOL);
 		assertEquals(0.10, mach.getGenqecData().kw(), TOL);
+		assertEquals(0.25, mach.getGenqecData().accel(), TOL);
 		assertEquals(1, mach.getGenqecData().satFunc());
 	}
 
@@ -113,9 +114,9 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
 		Path dyr = tempDir.resolve("genqej.dyr");
 		Files.writeString(dyr,
-				"1 'GENQEJU' '1' 6.81 0.02 0.85 0.02 3.17 0.0 "
+				"1 'GENQEJU' '1' 0.30 6.81 0.02 0.85 0.02 3.17 0.0 "
 				+ "2.37 1.87 0.32 0.52 0.28 0.20 0.19 0.233 0.797 "
-				+ "0.003 0.01 0.02 0.15 1 /\n");
+				+ "0.15 1 /\n");
 
 		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
 		parser.parseDynFile(dyr.toString());
@@ -123,6 +124,7 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertNotNull(mach);
 		assertEquals("GENQEJ", mach.getName());
 		assertEquals(0.15, mach.getGenqejData().kis(), TOL);
+		assertEquals(0.30, mach.getGenqejData().accel(), TOL);
 		assertEquals(0.0, mach.getGenqecData().kw(), TOL);
 		assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
 	}
