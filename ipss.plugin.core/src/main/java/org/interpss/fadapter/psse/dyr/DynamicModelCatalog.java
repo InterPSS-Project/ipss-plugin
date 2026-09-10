@@ -6,6 +6,7 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CON
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.DRIVE_TRAIN;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.EXCITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GOVERNOR;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PITCH_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
@@ -378,7 +379,10 @@ public final class DynamicModelCatalog {
                     "Exciter%20SCRX.htm"),
             descriptor("REECB1", Set.of(), ELECTRICAL_CONTROLLER, 30, LOADABLE,
                     "org.interpss.dstab.renewable.Reecb1Model",
-                    "Exciter%20REEC_B.htm")
+                    "Exciter%20REEC_B.htm"),
+            descriptor("PERC1", Set.of(), LOAD_CHARACTERISTIC, 30, LOADABLE,
+                    "org.interpss.dstab.dynLoad.impl.Perc1Model",
+                    "Load%20Characteristic%20PERC1.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream
