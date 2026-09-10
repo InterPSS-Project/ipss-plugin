@@ -47,6 +47,7 @@ import org.interpss.core.adapter.builder.dstab.Esst2aExciterTest;
 import org.interpss.core.adapter.builder.dstab.Exst3ExciterTest;
 import org.interpss.core.dstab.Exst3PowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Bbsex1PsseSmibConformanceTest;
+import org.interpss.core.dstab.Ieeex1PsseSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Esst3aExciterTest;
 import org.interpss.core.dstab.Esst3aPowerWorldSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac5aTest;
@@ -443,6 +444,7 @@ import org.junit.platform.suite.api.Suite;
 	GensalPowerWorldSmibConformanceTest.class,
 	GenqecPowerWorldSmibConformanceTest.class,
 	Bbsex1PsseSmibConformanceTest.class,
+	Ieeex1PsseSmibConformanceTest.class,
 	PowerWorldCsvReferenceTest.class,
 	Regfma1PowerWorldTrajectoryTest.class,
 	GenrouConformanceTest.class,
