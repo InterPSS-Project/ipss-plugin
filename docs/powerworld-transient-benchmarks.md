@@ -114,6 +114,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   PID, temperature-control, valve, fuel, and turbine dynamics;
 - `smib-genrou-degov1d.json`: GENROU with the native DEGOV1D electric-control
   box, actuator, electric-power droop transducer, and engine delay;
+- `smib-genrou-tgov3d.json`: GENROU with the native TGOV3D lead-lag, bounded
+  valve, steam-bowl, reheater, crossover, and intercept-valve chain;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
@@ -357,6 +359,17 @@ coordinates; the physical third actuator state is compared directly. Two cold
 runs reproduce canonical CSV SHA-256
 `cbf28a42e540660b3073a8ca6d5e61d727ef7d9fa3b03da1ca1c38d2e226aaa1`.
 Validation reports zero errors/warnings and no limit modification.
+
+For TGOV3D, the fixture uses zero speed deadband so the terminal fault excites
+the governor rather than merely confirming its initialized state. The registered
+comparison covers all six PowerWorld governor states. PowerWorld's `LL` is the
+lead-lag block output. Its `StateT5` uses a different initialized coordinate
+origin from InterPSS's absolute reheater pressure, so the comparison translates
+only the independently initialized origin and compares the complete dynamic
+trajectory. Two cold runs reproduce canonical CSV SHA-256
+`de582e7b59d43cc8ec0d1f19a9311856fe0c1b419eb58ac65228fb23b39b9ce9`.
+Validation reports zero errors/warnings, no autocorrection, and no limit
+modification.
 
 For PSS2A, the artifact exports every one of PowerWorld's 19 named stabilizer
 state slots. The registered comparison maps both washout/transducer chains,
