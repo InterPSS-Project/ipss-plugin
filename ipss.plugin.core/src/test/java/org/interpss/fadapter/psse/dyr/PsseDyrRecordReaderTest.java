@@ -40,6 +40,19 @@ class PsseDyrRecordReaderTest {
     }
 
     @Test
+    void acceptsUtf8BomAndUnmarkedTrailingComment() throws Exception {
+        String dyr = "\uFEFF\r\n"
+                + "39 'GENCLS' 1 500.0 10.0 / CONSTANT INTERNAL VOLTAGE MODEL\n";
+
+        List<PsseDyrRecord> records = PsseDyrRecordReader.read(
+                new StringReader(dyr), "legacy.dyr");
+
+        assertEquals(1, records.size());
+        assertEquals(39, records.get(0).busNumber());
+        assertEquals("GENCLS", records.get(0).canonicalModelName());
+    }
+
+    @Test
     void exposesUserModelNameInsteadOfWrapper() throws Exception {
         PsseDyrRecord record = PsseDyrRecordReader.read(new StringReader(
                 "2001 'USRMDL' '1' 'REGFMA1' 1 2 3 /"), "user.dyr").get(0);
