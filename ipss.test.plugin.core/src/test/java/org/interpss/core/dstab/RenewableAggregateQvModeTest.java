@@ -8,12 +8,15 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.core.dstab.reference.PowerWorldCsvReference;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
@@ -241,6 +244,135 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                         network, List.of("Plant1", "Plant1")));
         assertThrows(IllegalArgumentException.class,
                 () -> LocalRenewableQvEigenAnalyzer.analyze(network, List.of("MissingBus")));
+    }
+
+    @Test
+    void publicBus1062WeakGridPulseExposesActivePathMode() throws Exception {
+        Path directory = Path.of("testData", "adpter", "psse", "v33", "renewable");
+        var context = new PSSEMultiFileLoader().loadDStab(
+                directory.resolve("regca_reeca_repca_bus1062_weak.raw").toString(),
+                directory.resolve("regca_reeca_repca_bus1062.dyr").toString());
+        var network = context.getDStabilityNet();
+        var algorithm = context.getDynSimuAlgorithm();
+        network.setBypassDataCheck(true);
+        network.setAllowGenWithoutMach(true);
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "public weak-grid load flow");
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(0.0005);
+        algorithm.setTotalSimuTimeSec(4.0);
+        algorithm.setOutPutPerSteps(1);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
+                "Bus2", network, SimpleFaultCode.GROUND_3P,
+                new Complex(0, 1000.0), null, .05, .05), "SmallSignalPulse@Poi");
+        assertTrue(algorithm.initialization(), "public weak-grid initialization");
+        Regca1Model converter = (Regca1Model) ((DStabGen) network.getBus("Bus1")
+                .getContributeGen("1")).getDynamicGenDevice();
+        List<double[]> actual = new ArrayList<>();
+        recordWeakGrid(actual, algorithm.getSimuTime(), network, converter);
+        double initialPlant = network.getBus("Bus1").getVoltageMag();
+        double initialPoi = network.getBus("Bus2").getVoltageMag();
+        while (algorithm.getSimuTime() < 4.0 - 0.00025) {
+            assertTrue(algorithm.solveDEqnStep(true), "public weak-grid pulse step");
+            recordWeakGrid(actual, algorithm.getSimuTime(), network, converter);
+        }
+        double plantDrift = Math.abs(network.getBus("Bus1").getVoltageMag() - initialPlant);
+        double poiDrift = Math.abs(network.getBus("Bus2").getVoltageMag() - initialPoi);
+        System.out.printf(java.util.Locale.ROOT,
+                "Public Bus-1062 weak-grid pulse final drift: plant=%.9g poi=%.9g%n",
+                plantDrift, poiDrift);
+        assertTrue(Double.isFinite(plantDrift) && Double.isFinite(poiDrift));
+
+        PowerWorldCsvReference reference = PowerWorldCsvReference.read(Path.of(
+                "testData", "reference", "powerworld", "reeca-active-path-weak-grid",
+                "powerworld.csv"));
+        assertEquals(8003, reference.samples().size(), "PowerWorld raw samples");
+        assertEquals(8001, reference.postEventSamples().size(), "PowerWorld post-event samples");
+        int[] field = {
+                reference.fieldIndex("Bus", "1", "TSVpu"),
+                reference.fieldIndex("Bus", "2", "TSVpu"),
+                reference.fieldIndex("Bus", "3", "TSVpu"),
+                reference.fieldIndex("Generator", "1 1", "TSMW"),
+                reference.fieldIndex("Generator", "1 1", "TSMvar"),
+                reference.fieldIndex("Generator", "1 1", "TSMachineState:1"),
+                reference.fieldIndex("Generator", "1 1", "TSMachineState:2"),
+                reference.fieldIndex("Generator", "1 1", "TSMachineState:3"),
+                reference.fieldIndex("Generator", "1 1", "TSExciterState:1"),
+                reference.fieldIndex("Generator", "1 1", "TSExciterState:2"),
+                reference.fieldIndex("Generator", "1 1", "TSExciterState:3"),
+                reference.fieldIndex("Generator", "1 1", "TSExciterState:4"),
+                reference.fieldIndex("Generator", "1 1", "TSExciterState:6")
+        };
+        double[] maximum = new double[field.length];
+        double[] maximumTime = new double[field.length];
+        for (var expected : reference.postEventSamples()) {
+            if (Math.abs(expected.time() - .05) < .0005
+                    || Math.abs(expected.time() - .10) < .0005) continue;
+            double[] row = interpolateWeakGrid(actual, expected.time());
+            for (int column = 0; column < field.length; column++) {
+                double error = Math.abs(row[column + 1] - expected.value(field[column]));
+                if (error > maximum[column]) {
+                    maximum[column] = error;
+                    maximumTime[column] = expected.time();
+                }
+            }
+        }
+        System.out.printf(Locale.ROOT,
+                "Weak-grid PowerWorld max errors: v1=%.9g v2=%.9g v3=%.9g pMW=%.9g "
+                + "qMvar=%.9g regIq=%.9g regIp=%.9g regV=%.9g reecV=%.9g "
+                + "pMeas=%.9g piQ=%.9g piV=%.9g pOrd=%.9g%n",
+                Arrays.stream(maximum).boxed().toArray());
+        System.out.println("Weak-grid PowerWorld max-error times: "
+                + Arrays.toString(maximumTime));
+        String[] labels = {"plant voltage", "POI voltage", "grid voltage", "P", "Q",
+                "REGCA Iq", "REGCA Ip", "REGCA Vmeas", "REECA Vmeas", "REECA Pmeas",
+                "REECA PIQ", "REECA PIV", "REECA Pord"};
+        double[] tolerance = {
+                1.0e-3, 1.0e-3, 1.0e-5, 3.0e-2, 2.5e-2,
+                2.0e-4, 6.0e-5, 3.0e-4, 3.0e-4, 8.0e-5,
+                3.0e-5, 2.0e-4, 5.0e-5
+        };
+        for (int index = 0; index < maximum.length; index++) {
+            assertTrue(maximum[index] <= tolerance[index], String.format(Locale.ROOT,
+                    "%s max error %.9g at %.9g exceeds %.9g",
+                    labels[index], maximum[index], maximumTime[index], tolerance[index]));
+        }
+    }
+
+    private static void recordWeakGrid(List<double[]> rows, double time,
+            BaseDStabNetwork<?, ?> network, Regca1Model converter) {
+        var reeca = converter.getReeca1Controller();
+        var state = converter.getStates(null);
+        rows.add(new double[] {
+                time,
+                network.getBus("Bus1").getVoltageMag(), network.getBus("Bus2").getVoltageMag(),
+                network.getBus("Bus3").getVoltageMag(),
+                ((Number) state.get("REGCA1_P")).doubleValue() * 100.0,
+                ((Number) state.get("REGCA1_Q")).doubleValue() * 100.0,
+                converter.getIqRegulatorState(), converter.getIpRegulatorState(),
+                converter.getFilteredVoltage(), reeca.getMeasuredVoltage(),
+                reeca.getMeasuredActivePower(), reeca.getReactiveControlOutput(),
+                reeca.getVoltageControlIntegral(), reeca.getActivePowerOrder()
+        });
+    }
+
+    private static double[] interpolateWeakGrid(List<double[]> rows, double target) {
+        for (int index = 0; index < rows.size(); index++) {
+            double[] lower = rows.get(index);
+            if (Math.abs(lower[0] - target) < 1.0e-9) return lower;
+            if (index + 1 < rows.size() && rows.get(index + 1)[0] > target) {
+                double[] upper = rows.get(index + 1);
+                double fraction = (target - lower[0]) / (upper[0] - lower[0]);
+                double[] result = new double[lower.length];
+                result[0] = target;
+                for (int column = 1; column < result.length; column++) {
+                    result[column] = lower[column]
+                            + fraction * (upper[column] - lower[column]);
+                }
+                return result;
+            }
+        }
+        return rows.get(rows.size() - 1);
     }
 
     @Test

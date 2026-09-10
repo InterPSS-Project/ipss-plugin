@@ -94,6 +94,9 @@ log text so an unexpected or missing correction fails the run.
 The initial suite deliberately covers both renewable and conventional stacks:
 
 - `type3-wind-bus1062.json`: REGCA1/REECA1/REPCA1 plus Type-3 wind controls;
+- `reeca-active-path-weak-grid.json`: the same public Bus-1062 renewable
+  controller profile on a weak grid, exercised by a tiny finite-impedance pulse
+  to discriminate the REECA1 active-power/current path;
 - `smib-gensal.json`: the core GENSAL synchronous machine;
 - `smib-genrou-esst1a.json` and `smib-genrou-esst4b.json`: GENROU with two
   static-exciter families;
@@ -261,6 +264,20 @@ REECA1 State 5 is excluded because it is the inactive `QFLAG=0`/`Tiq` path in
 this `QFLAG=1` benchmark. ANDES 2.0 uses a zero-based PIQ and omits the
 terminal-voltage subtraction for `VFLAG=1`; its trace remains a bounded
 secondary comparison, not an equation-equivalent REECA1 oracle.
+
+The weak-grid active-path discriminator extends that contract to four seconds
+at `0.5 ms` and exports both bus voltages, generator P/Q, all three REGCA1
+states, and REECA1 sensed voltage, measured power, PIQ, PIV, and active-power
+order. PowerWorld validates it with zero errors or warnings and no automatic
+correction; two cold runs produce identical raw CSV SHA-256
+`8ef376610f7a7ed61dc03455d84cc7292d923642893e43e111e689bd5ad169ba`.
+The registered comparison's maximum errors are `8.83e-4 pu` plant voltage,
+`8.16e-4 pu` POI voltage, `0.0257 MW`, `0.0186 Mvar`, `1.74e-4 pu` REGCA1
+Iq, `4.67e-5 pu` REGCA1 Ip, `2.57e-4 pu` measured voltage, `6.52e-5 pu`
+measured power, `2.35e-5 pu` PIQ, `1.74e-4 pu` PIV, and `3.47e-5 pu`
+active-power order. The tight local-state agreement rules out a standalone
+REGCA1/REECA1 active-path equation or limiter defect for this public profile;
+it does not substitute for a matched full-fleet Case-5 trace.
 
 For GGOV1, PowerWorld's numbered result channels represent the named diagram
 signals, which are not always the raw numerical integration coordinates.
