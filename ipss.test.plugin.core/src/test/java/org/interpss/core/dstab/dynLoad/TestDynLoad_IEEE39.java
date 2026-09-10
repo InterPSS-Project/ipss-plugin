@@ -141,8 +141,9 @@ public class TestDynLoad_IEEE39 {
 		}
 		System.out.println("Minimum Bus 507 voltage after fault clearing = "+minPostFaultVolt);
 
-		//Minimum Bus 507 voltage after fault clearing = 0.7326761591881183
-		assertTrue(minPostFaultVolt < 0.733 && minPostFaultVolt > 0.731);
+		// The UTF-8-BOM record at the head of the DYR is now loaded, so Bus 30's
+		// GENROU participates in the benchmark instead of being silently omitted.
+		assertTrue(minPostFaultVolt < 0.723 && minPostFaultVolt > 0.720);
 	}
 
 }
