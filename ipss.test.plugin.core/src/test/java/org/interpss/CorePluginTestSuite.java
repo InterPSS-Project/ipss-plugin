@@ -187,6 +187,7 @@ import org.interpss.core.dstab.Esst2aPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.St2cPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.St3cPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.St4cPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.St5bPowerWorldSmibConformanceTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -508,6 +509,7 @@ import org.junit.platform.suite.api.Suite;
 	St2cPowerWorldSmibConformanceTest.class,
 	St3cPowerWorldSmibConformanceTest.class,
 	St4cPowerWorldSmibConformanceTest.class,
+	St5bPowerWorldSmibConformanceTest.class,
 	Exdc2AndesSmibConformanceTest.class,
 	Ac8bAndesSmibConformanceTest.class,
 	Ac8bPowerWorldSmibConformanceTest.class,
