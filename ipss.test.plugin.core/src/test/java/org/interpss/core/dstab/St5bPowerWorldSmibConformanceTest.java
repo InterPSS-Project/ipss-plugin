@@ -30,8 +30,12 @@ public class St5bPowerWorldSmibConformanceTest {
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
 
     @Test void threeCycleFaultMatchesPowerWorldBoundaryMachineAndExciterStates()throws Exception{
+        assertConformance("SMIB_v33_genrou_st5b.dyr","smib-genrou-st5b","ST5B");
+    }
+
+    static void assertConformance(String dyr,String artifact,String model)throws Exception{
         IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33.raw").toString(),CASE.resolve("SMIB_v33_genrou_st5b.dyr").toString());
+                CASE.resolve("SMIB_v33.raw").toString(),CASE.resolve(dyr).toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(STEP);algorithm.setTotalSimuTimeSec(1);
         algorithm.setSimuOutputHandler(new StateMonitor());network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",network,
@@ -44,7 +48,7 @@ public class St5bPowerWorldSmibConformanceTest {
         while(algorithm.getSimuTime()<1-STEP/2){assertTrue(algorithm.solveDEqnStep(true));
             record(actual,algorithm.getSimuTime(),network,machine,referenceMachine,exciter,initialAngle);}
 
-        var reference=PowerWorldCsvReference.read(Path.of("testData","reference","powerworld","smib-genrou-st5b","powerworld.csv"));
+        var reference=PowerWorldCsvReference.read(Path.of("testData","reference","powerworld",artifact,"powerworld.csv"));
         assertEquals(2003,reference.samples().size());assertEquals(2001,reference.postEventSamples().size());
         int[] field={reference.fieldIndex("Bus","1","TSVpu"),reference.fieldIndex("Bus","2","TSVpu"),
                 reference.fieldIndex("Generator","1 1","TSMW"),reference.fieldIndex("Generator","1 1","TSMvar"),
@@ -62,8 +66,8 @@ public class St5bPowerWorldSmibConformanceTest {
             double[] row=interpolate(actual,expected.time()),pw=new double[field.length];for(int i=0;i<field.length;i++)pw[i]=expected.value(field[i]);
             pw[4]-=expected.value(refAngle)+initialPwAngle;pw[5]-=expected.value(refSpeed);
             for(int i=0;i<field.length;i++){double error=Math.abs(row[i+1]-pw[i]);if(error>maximum[i]){maximum[i]=error;maximumTime[i]=expected.time();}}}
-        System.out.println("ST5B PowerWorld max errors: "+Arrays.toString(maximum));
-        System.out.println("ST5B PowerWorld max-error times: "+Arrays.toString(maximumTime));
+        System.out.println(model+" PowerWorld max errors: "+Arrays.toString(maximum));
+        System.out.println(model+" PowerWorld max-error times: "+Arrays.toString(maximumTime));
         String[] label={"Bus1 V","Bus2 V","P MW","Q Mvar","relative angle","relative speed","Eqp","PsiDp","PsiQpp","Edp",
                 "Efd","Sensed Vt","LL1","LL2","LLU1","LLU2","LLO1","LLO2"};
         double[] tolerance={3.37e-4,1.11e-4,.0773,.224,.0129,5.77e-6,3.66e-5,1.45e-4,1.03e-4,7.13e-5,
