@@ -104,6 +104,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
 - `smib-genrou-ieeeg1.json`: GENROU with the steam-turbine governor chain;
 - `smib-genrou-tgov1.json`: GENROU with the native two-state TGOV1 valve and
   turbine-power chain;
+- `smib-genrou-tgov1d.json`: the corresponding native TGOV1D record with an
+  asymmetric speed deadband and explicit turbine rating;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
@@ -297,6 +299,10 @@ those states together with both bus voltages, generator P/Q, relative
 angle/speed, and all four GENROU electrical states. Two cold runs reproduce the
 same canonical CSV SHA-256
 `c3e9bf0fca67b41ec1e9f256444f30667a718f2ec6e458a95fafe3bce995c7da`.
+The separate TGOV1D artifact activates its asymmetric speed deadband and
+produces canonical SHA-256
+`7a59dcab72dd0a90e597d8581a7f9004cf098ce788fb988059d0465fe78fed81`;
+it receives direct coverage independently rather than through TGOV1 aliasing.
 
 For PSS2A, the artifact exports every one of PowerWorld's 19 named stabilizer
 state slots. The registered comparison maps both washout/transducer chains,
