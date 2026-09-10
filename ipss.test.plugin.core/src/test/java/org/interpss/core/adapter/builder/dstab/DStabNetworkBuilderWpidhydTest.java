@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.gov.psse.wpidhy.PsseWpidhydGovernor;
@@ -45,6 +46,9 @@ public class DStabNetworkBuilderWpidhydTest extends CorePluginTestSetup {
         assertEquals(.002, governor.getData().getDbH(), TOL);
         assertEquals(-.003, governor.getData().getDbL(), TOL);
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(Set.of("Mechanical Output", "Measured Delta P", "PID 1",
+                "PID 2", "PID 3", "Velocity", "Gate"),
+                governor.getNamedStates().keySet());
         assertEquals(50.0, governor.getGovernorBaseMva(machine), TOL);
         assertEquals(.625, governor.getGatePosition(), TOL);
         assertEquals(.3, governor.getOutput(machine), TOL);
