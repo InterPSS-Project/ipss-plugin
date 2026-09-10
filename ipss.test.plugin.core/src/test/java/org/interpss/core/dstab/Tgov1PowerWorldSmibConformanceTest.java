@@ -20,6 +20,11 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
+import com.interpss.dstab.controller.cml.annotate.AbstractChildAnnotateController;
+import com.interpss.dstab.controller.cml.annotate.AnnotateExciter;
+import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
+import com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
@@ -36,6 +41,14 @@ public class Tgov1PowerWorldSmibConformanceTest {
     @Test
     void nativeTgov1dDeadbandMatchesPowerWorld() throws Exception {
         verify("TGOV1D", "SMIB_v33_genrou_tgov1d.dyr", "smib-genrou-tgov1d");
+    }
+
+    @Test
+    void everyAnnotatedCmlModelFamilyInheritsNamedStateDiscovery() {
+        assertTrue(ICMLStateProvider.class.isAssignableFrom(AnnotateExciter.class));
+        assertTrue(ICMLStateProvider.class.isAssignableFrom(AnnotateGovernor.class));
+        assertTrue(ICMLStateProvider.class.isAssignableFrom(AnnotateStabilizer.class));
+        assertTrue(ICMLStateProvider.class.isAssignableFrom(AbstractChildAnnotateController.class));
     }
 
     private static void verify(String model, String dyr, String artifact) throws Exception {
