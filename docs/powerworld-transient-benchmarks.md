@@ -102,6 +102,8 @@ The initial suite deliberately covers both renewable and conventional stacks:
   static-exciter families;
 - `smib-genrou-ieeet1.json`: GENROU with the legacy rotating IEEE exciter;
 - `smib-genrou-ieeeg1.json`: GENROU with the steam-turbine governor chain;
+- `smib-genrou-tgov1.json`: GENROU with the native two-state TGOV1 valve and
+  turbine-power chain;
 - `smib-genrou-hygov.json`: GENROU with the hydro governor/water column.
 - `smib-genrou-ggov1.json`: GENROU with the ten-state GE general governor,
   turbine, load-limiter, acceleration, and temperature-control chain.
@@ -286,6 +288,15 @@ to the corresponding block outputs exposed by InterPSS. The 0.5 ms contract
 checks both bus voltages, generator MW/Mvar, relative rotor angle/speed, all
 four GENROU electrical states, and all ten GGOV1 signals. ANDES does not
 implement GGOV1, so this PowerWorld artifact is the independent model oracle.
+
+For TGOV1, PowerWorld exports two governor states named `Turbine Power` and
+`Valve Position`. They map to the output of InterPSS's `T2/T3` turbine block
+and `T1` non-windup valve lag, respectively; they are not the blocks' internal
+low-pass storage coordinates. The native 0.5 ms terminal-fault contract checks
+those states together with both bus voltages, generator P/Q, relative
+angle/speed, and all four GENROU electrical states. Two cold runs reproduce the
+same canonical CSV SHA-256
+`c3e9bf0fca67b41ec1e9f256444f30667a718f2ec6e458a95fafe3bce995c7da`.
 
 For PSS2A, the artifact exports every one of PowerWorld's 19 named stabilizer
 state slots. The registered comparison maps both washout/transducer chains,
