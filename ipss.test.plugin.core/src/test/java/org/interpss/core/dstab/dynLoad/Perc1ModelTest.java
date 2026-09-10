@@ -116,6 +116,65 @@ public class Perc1ModelTest {
         System.out.println("PERC1 PSS/E maximum channel errors: "+maximumError);
     }
 
+    @Test void matchesIndependentPsse36MultiRampPlaybackTrajectory()throws Exception{
+        Path reference=DATA.resolve("../../../reference/psse/ieee9-perc1-multiramp/psse.csv").normalize();
+        Path manifest=reference.resolveSibling("manifest.json");
+        String referenceHash=HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(reference)));
+        assertTrue(Files.readString(manifest).contains(referenceHash),
+                "PSS/E multi-ramp CSV hash is absent from its manifest");
+        List<String> lines=Files.readAllLines(reference);
+        assertEquals(12003,lines.size(),"Expected header plus 12,002 PSS/E samples");
+        String[] headings=lines.get(0).split(",");Map<String,Integer> column=new LinkedHashMap<>();
+        for(int i=0;i<headings.length;i++)column.put(headings[i],i);
+        String[] initial=lines.get(1).split(",");
+        Perc1Model model=loaded();var bus=model.getDStabBus();
+        bus.setVoltage(new Complex(value(initial,column,"V_BUS5"),0));assertTrue(model.initStates());
+
+        Map<String,Double> maximumError=new LinkedHashMap<>();
+        String[] previous=initial;double previousTime=value(initial,column,"time_s");
+        double minimumVoltage=Double.POSITIVE_INFINITY;
+        double maximumVoltage=Double.NEGATIVE_INFINITY;
+        double minimumFraction=Double.POSITIVE_INFINITY;
+        double finalFraction=Double.NaN;
+        for(String line:lines.subList(2,lines.size())){
+            String[] row=line.split(",");double time=value(row,column,"time_s");
+            if(time<previousTime-1e-7)continue;
+            double dt=time-previousTime;
+            if(dt>1e-7){
+                bus.setVoltage(new Complex(value(previous,column,"V_BUS5"),0));
+                assertTrue(model.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,0));
+                bus.setVoltage(new Complex(value(row,column,"V_BUS5"),0));
+                assertTrue(model.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,1));
+                assertTrue(model.afterStep(dt));
+            }
+            compare(maximumError,"VFILT",model.getNamedState("VFilt"),value(row,column,"VFILT"));
+            compare(maximumError,"PLEADLAG",model.getNamedState("PLeadLag"),value(row,column,"PLEADLAG"));
+            compare(maximumError,"QLEADLAG",model.getNamedState("QLeadLag"),value(row,column,"QLEADLAG"));
+            compare(maximumError,"IP",model.getNamedState("Ip"),value(row,column,"IP"));
+            compare(maximumError,"IQ",model.getNamedState("Iq"),value(row,column,"IQ"));
+            compare(maximumError,"FRACON",model.getFractionOn(),value(row,column,"FRACON"));
+            double voltage=value(row,column,"V_BUS5");
+            double fraction=value(row,column,"FRACON");
+            minimumVoltage=Math.min(minimumVoltage,voltage);
+            maximumVoltage=Math.max(maximumVoltage,voltage);
+            minimumFraction=Math.min(minimumFraction,fraction);
+            finalFraction=fraction;
+            previous=row;previousTime=time;
+        }
+        assertTrue(minimumVoltage<.401 && maximumVoltage>.979,
+                "PLBVF1 multi-ramp voltage range was not exercised");
+        assertEquals(0.0,minimumFraction,1e-9,"PSS/E PERC1 must cease on deep ramps");
+        assertEquals(1.0,finalFraction,1e-9,"PSS/E PERC1 must fully reconnect");
+        assertTrue(maximumError.get("VFILT")<.0010,maximumError::toString);
+        assertTrue(maximumError.get("IP")<.013,maximumError::toString);
+        assertTrue(maximumError.get("IQ")<.0043,maximumError::toString);
+        assertTrue(maximumError.get("FRACON")<.00010,maximumError::toString);
+        assertTrue(maximumError.get("PLEADLAG")<5e-8,maximumError::toString);
+        assertTrue(maximumError.get("QLEADLAG")<8e-9,maximumError::toString);
+        System.out.println("PERC1 multi-ramp PSS/E maximum channel errors: "+maximumError);
+    }
+
     @Test void appliesPublishedLimitCorrectionsWithoutMutatingInputData()throws Exception{
         Perc1Data invalid=new Perc1Data(1.2,.4,0,0,0,0,.1,0,.1,0,0,0,0,0,1,1,0,.66,-.66,
                 1.5,.9,-1,-1,.8,0,0,-.5,.0001,.02,.02);
