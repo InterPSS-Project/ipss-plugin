@@ -1,7 +1,10 @@
 package org.interpss.dstab.control.exc.psse.st7b;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.interpss.dstab.control.util.IntegrationStepAware;
 
@@ -20,7 +23,7 @@ public class St7bExciter extends AnnotateExciter implements IntegrationStepAware
     private final St7bData data;private final String modelName;
     private final double[] state=new double[5],trial=new double[5],oldDerivative=new double[5];
     private double[] active=state;private boolean initialized,vuelConfigured,voelConfigured;
-    private double integrationStep,minimumTimeConstantMultiplier=1,ta;
+    private double integrationStep,minimumTimeConstantMultiplier=1,ta,initialRegulatorLagState;
     public int oel,uel;public double tr,tg,tf,vmax,vmin,kpa,vrmax,vrmin,kh,kl,tc,tb,kia,tia;
     public double reference,outputSignal,vuel,voel,vdroop,vscl;
 
@@ -45,8 +48,8 @@ public class St7bExciter extends AnnotateExciter implements IntegrationStepAware
         vmax=Math.max(vmax,vrefFb0);vmin=Math.min(vmin,vrefFb0);
         double direct=(oel==1&&voelConfigured?voel:0)+(uel==1&&vuelConfigured?vuel:0);
         reference=vrefFb0-vdroop-vscl-direct;
-        state[VSENSE]=sensed0;state[INPUT_LL]=transferState(sensed0,sensed0,tg,tf);
-        state[REG_LL]=transferState(regulator0,regulator0,tc,tb);
+        state[VSENSE]=sensed0;state[INPUT_LL]=sensed0;
+        state[REG_LL]=regulator0;initialRegulatorLagState=regulator0;
         state[FEEDBACK]=feedback0;state[EFIELD]=efd0;
         System.arraycopy(state,0,trial,0,state.length);active=state;outputSignal=efd0;initialized=true;return true;
     }
@@ -83,8 +86,8 @@ public class St7bExciter extends AnnotateExciter implements IntegrationStepAware
     private void derivatives(double[] x,double[] derivative,Machine machine){
         Arrays.fill(derivative,0);Algebraic a=algebraics(x,machine);
         derivative[VSENSE]=tr>EPS?(sensingVoltage(machine)-x[VSENSE])/tr:0;
-        derivative[INPUT_LL]=transferDerivative(a.sensed,x[INPUT_LL],tg,tf);
-        derivative[REG_LL]=transferDerivative(a.regulator,x[REG_LL],tc,tb);
+        derivative[INPUT_LL]=tf>EPS?(a.sensed-x[INPUT_LL])/tf:0;
+        derivative[REG_LL]=tb>EPS?(a.regulator-x[REG_LL])/tb:0;
         derivative[FEEDBACK]=(kia*a.efd-x[FEEDBACK])/tia;
         if(ta>EPS)derivative[EFIELD]=(a.preField-x[EFIELD])/ta;
     }
@@ -114,9 +117,7 @@ public class St7bExciter extends AnnotateExciter implements IntegrationStepAware
         if(ta>EPS){double vt=machine.getDStabBus().getVoltageMag();x[EFIELD]=clamp(x[EFIELD],vt*vrmin,vt*vrmax);}
         for(int i=0;i<x.length;i++)if(!Double.isFinite(x[i]))x[i]=0;
     }
-    private static double transferState(double input,double output,double lead,double lag){return lag>EPS?output-lead/lag*input:0;}
-    private static double transferOutput(double input,double stateValue,double lead,double lag){return lag>EPS?lead/lag*input+stateValue:input;}
-    private static double transferDerivative(double input,double stateValue,double lead,double lag){return lag>EPS?((1-lead/lag)*input-stateValue)/lag:0;}
+    private static double transferOutput(double input,double lagState,double lead,double lag){return lag>EPS?lead/lag*input+(1-lead/lag)*lagState:input;}
     private static void add(double[] x,double[] derivative,double dt,double[] result){for(int i=0;i<x.length;i++)result[i]=x[i]+derivative[i]*dt;}
     private static double clamp(double value,double lower,double upper){return Math.max(lower,Math.min(upper,value));}
     private static double stabilizerSignal(Machine machine){return machine.getStabilizer()==null?0:machine.getStabilizer().getOutput(machine);}
@@ -138,7 +139,21 @@ public class St7bExciter extends AnnotateExciter implements IntegrationStepAware
     public double getFeedbackOutput(){return algebraics(active,getMachine()).feedback;}
     public double getPreFiringField(){return algebraics(active,getMachine()).preField;}
     public double getInternalFieldVoltage(){return output(active,getMachine());}
-    public double getFiringTimeConstant(){return ta;}public double[] getStateSnapshot(){return active.clone();}
+    public double getFiringTimeConstant(){return ta;}public double[] getStateSnapshot(){
+        double[] snapshot=active.clone();
+        snapshot[INPUT_LL]=tf>EPS?(1-tg/tf)*active[INPUT_LL]:0;
+        snapshot[REG_LL]=tb>EPS?(1-tc/tb)*active[REG_LL]:0;
+        return snapshot;
+    }
+    /** Published PSS/E ST7B states in model-library order and semantics. */
+    @Override public Map<String,Double> getNamedStates(){
+        Map<String,Double> states=new LinkedHashMap<>();
+        states.put("Sensed VT",active[VSENSE]);
+        states.put("Lead-lag block 1",active[INPUT_LL]);
+        states.put("Lead-lag block 2",active[REG_LL]-initialRegulatorLagState);
+        states.put("First order feedback block",active[FEEDBACK]);
+        return Collections.unmodifiableMap(states);
+    }
     @Override public double getOutput(Machine machine){outputSignal=output(active,machine);return outputSignal;}
     @Override public void setRefPoint(double value){reference=value;}@Override public double getRefPoint(){return reference;}
     private record Algebraic(double sensed,double inputLeadLag,double referenceFeedback,double error,
