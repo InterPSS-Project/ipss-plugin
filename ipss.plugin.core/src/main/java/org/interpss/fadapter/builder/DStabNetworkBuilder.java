@@ -2565,6 +2565,17 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    /** PSS/E PIDGOV hydro turbine-governor. */
+    public PssePidgovdGovernor addGovPidgov(String busId, String genId,
+            int feedback, double rperm, double treg, double kp, double ki,
+            double kd, double ta, double tb, double dturb, double g0, double g1,
+            double p1, double g2, double p2, double p3, double gmax, double gmin,
+            double atw, double tw, double velmax, double velmin) {
+        return addGovPidgovCommon(busId, genId, "PIDGOV", feedback, rperm, treg,
+                kp, ki, kd, ta, tb, dturb, g0, g1, p1, g2, p2, p3, gmax, gmin,
+                atw, tw, velmax, velmin, 0.0, 0.0, 0.0);
+    }
+
     /** PSS/E PIDGOVD hydro turbine-governor. */
     public PssePidgovdGovernor addGovPidgovd(String busId, String genId,
             int feedback, double rperm, double treg, double kp, double ki,
@@ -2572,13 +2583,24 @@ public class DStabNetworkBuilder {
             double p1, double g2, double p2, double p3, double gmax, double gmin,
             double atw, double tw, double velmax, double velmin, double dbH,
             double dbL, double trate) {
+        return addGovPidgovCommon(busId, genId, "PIDGOVD", feedback, rperm, treg,
+                kp, ki, kd, ta, tb, dturb, g0, g1, p1, g2, p2, p3, gmax, gmin,
+                atw, tw, velmax, velmin, dbH, dbL, trate);
+    }
+
+    private PssePidgovdGovernor addGovPidgovCommon(String busId, String genId,
+            String modelName, int feedback, double rperm, double treg, double kp,
+            double ki, double kd, double ta, double tb, double dturb, double g0,
+            double g1, double p1, double g2, double p2, double p3, double gmax,
+            double gmin, double atw, double tw, double velmax, double velmin,
+            double dbH, double dbL, double trate) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) {
-            log.warn("Machine not found for PIDGOVD governor: bus={}, gen={}", busId, genId);
+            log.warn("Machine not found for {} governor: bus={}, gen={}", modelName, busId, genId);
             return null;
         }
         PssePidgovdGovernor gov = GovernorObjectFactory.createPssePIDGOVDGovernor(
-                mach.getId() + "_Gov", "PIDGOVD", mach);
+                mach.getId() + "_Gov", modelName, mach);
         gov.getData().setFeedback(feedback);
         gov.getData().setRperm(rperm);
         gov.getData().setTreg(treg);
@@ -2604,7 +2626,7 @@ public class DStabNetworkBuilder {
         gov.getData().setDbL(dbL);
         gov.getData().setTrate(trate);
         if (!gov.validateParameters()) {
-            log.warn("Invalid PIDGOVD parameters at {} {}", busId, genId);
+            log.warn("Invalid {} parameters at {} {}", modelName, busId, genId);
             return null;
         }
         return gov;

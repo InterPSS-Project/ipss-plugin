@@ -529,6 +529,8 @@ public class PSSEDStabDirectParser {
             case "DEGOV1D":
             case "DEGOV1DU":
                 return procGovDegov1d(busId, genId, fields);
+            case "PIDGOV":
+                return procGovPidgov(busId, genId, fields);
             case "PIDGOVD":
             case "PIDGOVDU":
                 return procGovPidgovd(busId, genId, fields);
@@ -2271,6 +2273,20 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 10, 0), getDouble(f, 11, 0), getDouble(f, 12, 0),
                 getDouble(f, 13, 0), getDouble(f, 14, 0), getDouble(f, 15, 0),
                 getDouble(f, 16, 0), getDouble(f, 17, 0), getDouble(f, 18, 0)) != null;
+    }
+
+    // PIDGOV: Feedback Rperm Treg Kp Ki Kd Ta Tb Dturb G0 G1 P1 G2 P2 P3
+    //         Gmax Gmin Atw Tw Velmax Velmin
+    private boolean procGovPidgov(String busId, String genId, String[] f) {
+        if (f.length < 24) return false;
+        return builder.addGovPidgov(busId, genId, getInt(f, 3, -1),
+                getDouble(f, 4, 0), getDouble(f, 5, 0), getDouble(f, 6, 0),
+                getDouble(f, 7, 0), getDouble(f, 8, 0), getDouble(f, 9, 0),
+                getDouble(f, 10, 0), getDouble(f, 11, 0), getDouble(f, 12, 0),
+                getDouble(f, 13, 0), getDouble(f, 14, 0), getDouble(f, 15, 0),
+                getDouble(f, 16, 0), getDouble(f, 17, 0), getDouble(f, 18, 0),
+                getDouble(f, 19, 0), getDouble(f, 20, 0), getDouble(f, 21, 0),
+                getDouble(f, 22, 0), getDouble(f, 23, 0)) != null;
     }
 
     // PIDGOVD: Feedback Rperm Treg Kp Ki Kd Ta Tb Dturb G0 G1 P1 G2 P2 P3
