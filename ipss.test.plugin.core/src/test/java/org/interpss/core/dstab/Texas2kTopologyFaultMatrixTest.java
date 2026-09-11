@@ -179,9 +179,22 @@ public class Texas2kTopologyFaultMatrixTest {
         Path directory = ROOT.resolve(source.directory());
         Path raw = directory.resolve(source.raw());
         Path dyr = directory.resolve(source.dyr());
+        return load(source, dyr);
+    }
+
+    private static SimuContext load(CaseFile source, Path dyr) throws Exception {
+        Path directory = ROOT.resolve(source.directory());
+        Path raw = directory.resolve(source.raw());
         assumeTrue(Files.isRegularFile(raw), "Missing Texas2k RAW: " + raw);
         assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
-        SimuContext context = new PSSEMultiFileLoader().loadDStab(raw.toString(), dyr.toString());
+        List<String> files = new ArrayList<>(List.of(raw.toString(), dyr.toString()));
+        Path sourceDyr = directory.resolve(source.dyr());
+        String stem = source.dyr().substring(0, source.dyr().length() - 4);
+        for (String suffix : List.of("_gnet.idv", "_MODREMOVE.idv")) {
+            Path preparation = sourceDyr.resolveSibling(stem + suffix);
+            if (Files.isRegularFile(preparation)) files.add(preparation.toString());
+        }
+        SimuContext context = new PSSEMultiFileLoader().loadDStab(files.toArray(String[]::new));
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
@@ -330,4 +343,5 @@ public class Texas2kTopologyFaultMatrixTest {
             String monitoredBuses, String monitoredMachines, double minimumVoltage,
             double finalVoltage,
             double maximumNearbyVoltageDeviation, double maximumMachineSpeedDeviation) { }
+
 }

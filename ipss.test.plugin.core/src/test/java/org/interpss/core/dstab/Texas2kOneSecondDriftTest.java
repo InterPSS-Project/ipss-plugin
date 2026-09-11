@@ -24,7 +24,6 @@ import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenReportWriter;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Device;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.Mode;
-import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.RegionalMode;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer.StateComponent;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Regca1Model;
@@ -207,22 +206,15 @@ public class Texas2kOneSecondDriftTest {
                 + qvAnalysis.operatingPointConstraints());
         assertTrue(Double.isFinite(qvMode.real()) && Double.isFinite(qvMode.imaginary()),
                 "invalid controller-weighted Q/V eigenvalue: " + qvMode);
-        assertFalse(qvAnalysis.isTwoSidedLinearizationValid(),
-                "Case 5 PIQ limit boundaries must prevent an unconditional mode claim");
-        assertFalse(qvAnalysis.limiterRegionEnumerationComplete(),
-                "34 simultaneous boundaries must use the bounded envelope calculation");
-        assertEquals(2, qvAnalysis.limiterRegionModes().size());
-        RegionalMode activeEnvelope = qvAnalysis.limiterRegionModes().stream()
-                .filter(region -> region.assumptions().stream().allMatch(assumption ->
-                        assumption.branch()
-                                == LocalRenewableQvEigenAnalyzer.BoundaryBranch.INWARD_ACTIVE))
-                .findFirst().orElseThrow();
-        assertFalse(activeEnvelope.tangentCone().feasible(),
-                "the Case-5 all-active eigenvector must not be claimed when its 34 "
-                        + "boundary-state directions cannot all point inward");
+        assertTrue(qvAnalysis.isTwoSidedLinearizationValid(),
+                "Case 5 PIQ perturbations must be interior to VMIN-V0 and VMAX-V0");
+        assertTrue(qvAnalysis.limiterRegionEnumerationComplete());
+        assertEquals(1, qvAnalysis.limiterRegionModes().size());
+        assertTrue(qvAnalysis.operatingPointConstraints().isEmpty());
         System.out.println("  limiter-region envelopes: "
                 + qvAnalysis.limiterRegionModes().stream().map(region ->
-                        region.assumptions().get(0).branch() + "="
+                        (region.assumptions().isEmpty() ? "INTERIOR"
+                                : region.assumptions().get(0).branch()) + "="
                                 + region.dominantMode().real() + "+j"
                                 + region.dominantMode().imaginary() + ", coneFeasible="
                                 + region.tangentCone().feasible()).toList());
