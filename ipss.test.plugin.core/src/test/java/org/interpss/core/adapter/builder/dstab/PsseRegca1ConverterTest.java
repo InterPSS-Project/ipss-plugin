@@ -157,6 +157,22 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
+    void zeroUpperReactiveRecoveryRateFreezesUpwardMotionButAllowsReturn() throws Exception {
+        Fixture fixture = fixture(data(10.0, 0.0, 0.0));
+        double initialState = fixture.model.getIqRegulatorState();
+        fixture.controller.iqcmd = -(initialState + 1.0);
+
+        step(fixture.model, .01);
+        assertEquals(initialState, fixture.model.getIqRegulatorState(), TOL,
+                "Iqrmax=0 is an active zero upward rate for initially positive Q");
+
+        fixture.controller.iqcmd = -(initialState - 1.0);
+        step(fixture.model, .01);
+        assertTrue(fixture.model.getIqRegulatorState() < initialState,
+                "the conditional upward bound must not block downward return motion");
+    }
+
+    @Test
     void negativeReactiveRecoveryUsesTheConditionalLowerRate() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
