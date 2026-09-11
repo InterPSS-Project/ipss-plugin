@@ -1,5 +1,6 @@
 package org.interpss.dstab.control.gov.psse.pidgov;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
@@ -14,7 +15,7 @@ import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 
 /**
- * PSS/E PIDGOVD hydro turbine-governor.
+ * PSS/E PIDGOV/PIDGOVD hydro turbine-governor.
  *
  * <p>This explicit state realization follows the published PowerWorld/PSS/E
  * block diagram. Continuous states are integrated with the InterPSS modified
@@ -55,7 +56,7 @@ public class PssePidgovdGovernor extends AbstractGovernor
         if (!Double.isFinite(timeStepSec) || timeStepSec < 0.0
                 || !Double.isFinite(multiplier) || multiplier < 0.0) {
             throw new IllegalArgumentException(
-                    "PIDGOVD integration settings must be finite and non-negative");
+                    getName() + " integration settings must be finite and non-negative");
         }
         integrationStep = timeStepSec;
         minimumTimeConstantMultiplier = multiplier;
@@ -88,7 +89,7 @@ public class PssePidgovdGovernor extends AbstractGovernor
     @Override public boolean nextStep(double dt, DynamicSimuMethod method,
             Machine mach, int flag) {
         if (method != DynamicSimuMethod.MODIFIED_EULER) {
-            throw new InterpssRuntimeException("PIDGOVD supports MODIFIED_EULER only");
+            throw new InterpssRuntimeException(getName() + " supports MODIFIED_EULER only");
         }
         if (!initialized) return false;
         if (flag == 0) {
@@ -105,7 +106,7 @@ public class PssePidgovdGovernor extends AbstractGovernor
             committedControlError = result.controlError;
             currentOutput = output(state);
         } else {
-            throw new InterpssRuntimeException("PIDGOVD invalid integration flag: " + flag);
+            throw new InterpssRuntimeException(getName() + " invalid integration flag: " + flag);
         }
         return true;
     }
@@ -138,6 +139,12 @@ public class PssePidgovdGovernor extends AbstractGovernor
     }
     public double getWaterColumnOutput() { return waterColumnOutput(state); }
     public double getWaterState() { return state.waterState; }
+    public double getInputSensorState() { return state.droopFilter; }
+    public double getPiControllerState() { return state.piIntegrator; }
+    public double getFirstRegulatorState() { return state.reg1; }
+    public double getDerivativeControllerState() { return getDerivativeOutput(); }
+    public double getSecondRegulatorState() { return state.reg2; }
+    public double getWaterInertiaState() { return 3.0 * state.waterState; }
     public double getEffectiveTa() { return effectiveTa; }
     public double getEffectiveTb() { return effectiveTb; }
     public double getEffectiveTw() { return effectiveTw; }
@@ -147,14 +154,23 @@ public class PssePidgovdGovernor extends AbstractGovernor
     public double getEffectiveVelmin() { return effectiveVelmin; }
     @Override
     public Map<String, Double> getNamedStates() {
-        return Map.of(
-                "Mechanical Output", currentOutput,
-                "Measured Delta P", state.droopFilter,
-                "Integral", state.piIntegrator,
-                "Regulator 1", state.reg1,
-                "Derivative", getDerivativeOutput(),
-                "Regulator 2", state.reg2,
-                "Gate", state.gate);
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("Input Sensor", getInputSensorState());
+        states.put("PI Controller", getPiControllerState());
+        states.put("First Regulator", getFirstRegulatorState());
+        states.put("Derivative Controller", getDerivativeControllerState());
+        states.put("Second Regulator", getSecondRegulatorState());
+        states.put("Gate Position", getGatePosition());
+        states.put("Water Inertia", getWaterInertiaState());
+        // Preserve the PowerWorld-oriented semantic names used by older clients.
+        states.put("Mechanical Output", currentOutput);
+        states.put("Measured Delta P", getInputSensorState());
+        states.put("Integral", getPiControllerState());
+        states.put("Regulator 1", getFirstRegulatorState());
+        states.put("Derivative", getDerivativeControllerState());
+        states.put("Regulator 2", getSecondRegulatorState());
+        states.put("Gate", getGatePosition());
+        return Map.copyOf(states);
     }
     public double getGovernorBaseMva(Machine mach) {
         return governorToMachineBase * mach.getRating(UnitType.mVA,

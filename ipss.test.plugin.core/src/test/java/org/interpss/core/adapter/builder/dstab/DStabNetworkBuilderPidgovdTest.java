@@ -13,7 +13,10 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
+import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
+import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -25,6 +28,41 @@ public class DStabNetworkBuilderPidgovdTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @TempDir Path tempDir;
+
+    @Test
+    void pidgovImportsExactTwentyOneParameterRecord() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("pidgov.dyr");
+        Files.writeString(dyr,
+                "1 'PIDGOV' '1' 1 .045 .12 1.6 .55 .18 .025 .11 .12 "
+                + ".02 .32 .24 .64 .82 1.03 .98 .01 1.08 .55 .22 -.19 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setPm(.45);
+        machine.setPe(.45);
+        machine.setSpeed(1.0);
+        PssePidgovdGovernor governor = (PssePidgovdGovernor) machine.getGovernor();
+        assertNotNull(governor);
+        assertEquals("PIDGOV", governor.getName());
+        assertEquals(1, governor.getData().getFeedback());
+        assertEquals(.045, governor.getData().getRperm(), TOL);
+        assertEquals(-.19, governor.getData().getVelmin(), TOL);
+        assertEquals(0.0, governor.getData().getDbH(), TOL);
+        assertEquals(0.0, governor.getData().getDbL(), TOL);
+        assertEquals(0.0, governor.getData().getTrate(), TOL);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(machine.getRating(UnitType.mVA,
+                        machine.getDStabBus().getNetwork().getBaseKva()),
+                governor.getGovernorBaseMva(machine), TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+
+        var descriptor = DynamicModelCatalog.find("PIDGOV").orElseThrow();
+        assertEquals(21, descriptor.parameterCount());
+        assertEquals(DynamicModelSupportStatus.LOADABLE, descriptor.supportStatus());
+    }
 
     @Test
     void aliasImportsExactRecordAndInitializesOnTurbineBase() throws Exception {
@@ -48,9 +86,11 @@ public class DStabNetworkBuilderPidgovdTest extends CorePluginTestSetup {
         assertEquals(-.003, governor.getData().getDbL(), TOL);
         assertEquals(50.0, governor.getData().getTrate(), TOL);
         assertTrue(governor.initStates(machine.getDStabBus(), machine));
-        assertEquals(Set.of("Mechanical Output", "Measured Delta P", "Integral",
-                "Regulator 1", "Derivative", "Regulator 2", "Gate"),
-                governor.getNamedStates().keySet());
+        assertTrue(governor.getNamedStates().keySet().containsAll(Set.of(
+                "Mechanical Output", "Measured Delta P", "Integral", "Regulator 1",
+                "Derivative", "Regulator 2", "Gate", "Input Sensor", "PI Controller",
+                "First Regulator", "Derivative Controller", "Second Regulator",
+                "Gate Position", "Water Inertia")));
         assertEquals(50.0, governor.getGovernorBaseMva(machine), TOL);
         assertEquals(.5, governor.getGatePosition(), TOL);
         assertEquals(.3, governor.getOutput(machine), TOL);
