@@ -2,6 +2,9 @@ package org.interpss.dstab.control.exc.psse.st6c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -118,9 +121,20 @@ public final class St6cExciter extends AnnotateExciter implements IntegrationSte
     private static double exciterIfd(Machine m){double v=m.calculateIfd(MachineIfdBase.EXCITER);return Double.isFinite(v)?v:0;}
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;} public double getRegulatorInput(){return algebraics(active,getMachine()).vi;}
     public double getVaOutput(){return algebraics(active,getMachine()).va;} public double getVgOutput(){return algebraics(active,getMachine()).vg;}
+    public double getRegulatorDerivativeState(){return tda>EPS?kda*active[PID_D]/tda:0;}
     public double getInnerRegulatorOutput(){return algebraics(active,getMachine()).inner;} public double getCurrentLimitOutput(){return algebraics(active,getMachine()).currentLimit;}
     public double getVmInput(){return algebraics(active,getMachine()).vmInput;} public double getVmOutput(){return algebraics(active,getMachine()).vm;}
     public double getPotentialSource(){return potentialSource(getMachine());} public double getAvailableBridge(){return availableBridge(selectedSupply(getMachine()),exciterIfd(getMachine()));}
+    /** Published PSS/E ST6C states in model-library order and semantics. */
+    @Override public Map<String,Double> getNamedStates(){
+        Map<String,Double> states=new LinkedHashMap<>();
+        states.put("Sensed VT",active[VSENSE]);
+        states.put("Regulator integrator",active[PID_I]);
+        states.put("Regulator derivative",getRegulatorDerivativeState());
+        states.put("VG Feedback loop",active[VG]);
+        states.put("VM",active[VM]);
+        return Collections.unmodifiableMap(states);
+    }
     @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double v){reference=v;} @Override public double getRefPoint(){return reference;}
     private record Algebraic(double sensed,double vi,double va,double vaUpper,double vg,double inner,double currentLimit,double vmInput,double vm,double efd){}
