@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `30/30` native PSS/E reference probes were cold-regenerated with PSS/E
+All `31/31` native PSS/E reference probes were cold-regenerated with PSS/E
 Xplore 36.7.0/Python 3.13 on 2026-09-11. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. The reusable suite driver and all probe inputs use
@@ -61,8 +61,13 @@ but does not promote a Texas2k case to full-system independent acceptance.
 FRQTPAT and VTGTPAT now have native PSS/E 36.7 generator-trip contracts that
 cover their monitored-bus ICON targets, native threshold units, pickup timing,
 breaker timing, and generator-only actions.
-One registered integrity test now scans all 110 checked-in PSS/E and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 453
+LDS3BL and LVS3BL now have strict native PSS/E 36.7 schemas and accepted-step
+five-stage load-shedding runtimes. Their public synthetic contract covers
+frequency/voltage pickup, independent breaker timing, initial-load fraction
+shedding, optional shunt shedding, generator/branch transfer actions, and
+immutable named timers.
+One registered integrity test now scans all 111 checked-in PSS/E and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 458
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -252,5 +257,7 @@ the plan's release checklist before interpreting any
 | WTPTA1 | PITCH_CONTROLLER | WTPTAU1 | 10 | LOADABLE | `org.interpss.dstab.renewable.Wtpta1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pitch%20Controller%20WTGPT_A.htm) |
 | WTTQA1 | TORQUE_CONTROLLER | WTTQAU1 | 16 | LOADABLE | `org.interpss.dstab.renewable.Wttqa1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pref%20Controller%20WTGTRQ_A.htm) |
 | PERC1 | LOAD_CHARACTERISTIC |  | 30 | LOADABLE | `org.interpss.dstab.dynLoad.impl.Perc1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Load%20Characteristic%20PERC1.htm) |
+| LDS3BL | LOAD_PROTECTION |  | 24 | LOADABLE | `org.interpss.dstab.relay.Lds3blRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20LDS3.htm) |
+| LVS3BL | LOAD_PROTECTION |  | 29 | LOADABLE | `org.interpss.dstab.relay.Lvs3blRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20LVS3.htm) |
 | FRQTPAT | GENERATOR_PROTECTION |  | 6 | LOADABLE | `org.interpss.dstab.relay.FrqtpatRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20FRQDCAT%20and%20FRQTPAT.htm) |
 | VTGTPAT | GENERATOR_PROTECTION |  | 6 | LOADABLE | `org.interpss.dstab.relay.VtgtpatRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm) |

@@ -14,6 +14,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.relay.Lds3blRelayModel;
+import org.interpss.dstab.relay.Lvs3blRelayModel;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
@@ -220,6 +221,43 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         assertTrue(relay.isTransferOperated());
         assertFalse(bus.getContributeGen("1").isActive());
         assertTrue(relay.getNamedStates().containsKey("Stage 5 timer"));
+    }
+
+    @Test
+    void lvs3blUsesVoltagePickupWithoutFabricatingTransferBranches() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        new AclfNetworkBuilder(builder.getDStabNetwork()).addContributeLoad("Bus1", "L", true,
+                new Complex(0.8, 0.3), null, null, null, false);
+        Path dyr = tempDir.resolve("lvs3bl.dyr");
+        Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
+                + "1 'LVS3BL' 'L' 0 0 '0' 0 0 '0' 0 "
+                + "0.83 0.017 0.013 0.19 "
+                + "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.021 0.025 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+        Lvs3blRelayModel relay = (Lvs3blRelayModel) bus.getDynamicBusDeviceList().stream()
+                .filter(Lvs3blRelayModel.class::isInstance).findFirst().orElseThrow();
+        builder.getDStabNetwork().formYMatrix4DStab();
+        assertTrue(relay.initStates(bus));
+        bus.setVoltageMag(0.80);
+        for (int i = 0; i < 30; i++) assertTrue(relay.afterStep(0.001));
+        assertEquals(0.19, relay.getShedFraction(), 1.0e-12);
+        assertTrue(relay.isStageOperated(0));
+        assertFalse(relay.isTransferOperated(0));
+        assertFalse(relay.isTransferOperated(1));
+    }
+
+    @Test
+    void loadSheddingRelayDurationsMatchNativePsseTimerChannels() throws Exception {
+        var manifest = JsonParser.parseString(Files.readString(Path.of("testData", "reference",
+                "psse", "ieee9-load-shedding-relays", "manifest.json"))).getAsJsonObject();
+        var simulation = manifest.getAsJsonObject("simulation");
+        var pickups = simulation.getAsJsonObject("observed_pickup_start_times_s");
+        var sheds = simulation.getAsJsonObject("observed_shed_times_s");
+        assertEquals(0.031 + 0.019,
+                sheds.get("LDS3BL").getAsDouble() - pickups.get("LDS3BL").getAsDouble(), 1.0e-7);
+        assertEquals(0.047 + 0.029,
+                sheds.get("LVS3BL").getAsDouble() - pickups.get("LVS3BL").getAsDouble(), 1.0e-7);
     }
 
     @Test
