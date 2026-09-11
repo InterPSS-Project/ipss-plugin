@@ -14,6 +14,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter;
+import org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter;
 import org.interpss.dstab.relay.Lds3blRelayModel;
 import org.interpss.dstab.relay.Lvs3blRelayModel;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -174,6 +175,45 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         assertEquals(0.83, exciter.getData().getTf(), 1.0e-12);
         assertEquals(0.71, exciter.getTf2(), 1.0e-12);
         assertEquals(6, exciter.getNamedStates().size());
+    }
+
+    @Test
+    void uel1AttachesAfterItsExciterAndPreservesAllNativeParameters() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("synthetic-uel1.dyr");
+        Files.writeString(dyr, "1 'GENROU' '1' 6.0 0.033 0.54 0.078 6.4 0.0 "
+                + "0.8958 0.8645 0.1189 0.1969 0.089 0.0521 0.0 0.0 /\n"
+                + "1 'AC8B' '1' 0.02 2.0 3.0 0.4 0.03 99 -99 99 -99 99 -99 "
+                + "0.3 1.5 0.4 0 0 1 0 0 0 0 /\n"
+                + "1 'UEL1' '1' 1.72 1.29 0.03 6.1 6.0 0.10 3.0 0.25 0.0 "
+                + "0.02 0.08 0.015 0.06 0.10 0.0 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        assertEquals(3, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED),
+                parser.getLastImportReport().failures().toString());
+        Uel1UnderExcitationLimiter limiter = builder.getDStabNetwork().getDStabBus("Bus1")
+                .getDynamicBusDeviceList().stream()
+                .filter(Uel1UnderExcitationLimiter.class::isInstance)
+                .map(Uel1UnderExcitationLimiter.class::cast).findFirst().orElseThrow();
+        var data = limiter.getData();
+        assertEquals(1.72, data.kur(), 1.0e-12);
+        assertEquals(1.29, data.kuc(), 1.0e-12);
+        assertEquals(0.03, data.kuf(), 1.0e-12);
+        assertEquals(6.1, data.vurmax(), 1.0e-12);
+        assertEquals(6.0, data.vucmax(), 1.0e-12);
+        assertEquals(0.10, data.kui(), 1.0e-12);
+        assertEquals(3.0, data.kul(), 1.0e-12);
+        assertEquals(0.25, data.vuimax(), 1.0e-12);
+        assertEquals(0.0, data.vuimin(), 1.0e-12);
+        assertEquals(0.02, data.tu1(), 1.0e-12);
+        assertEquals(0.08, data.tu2(), 1.0e-12);
+        assertEquals(0.015, data.tu3(), 1.0e-12);
+        assertEquals(0.06, data.tu4(), 1.0e-12);
+        assertEquals(0.10, data.vulmax(), 1.0e-12);
+        assertEquals(0.0, data.vulmin(), 1.0e-12);
+        assertEquals(3, limiter.getNamedStates().size());
     }
 
     @Test

@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -23,7 +24,8 @@ import com.interpss.dstab.mach.MachineIfdBase;
  */
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
-public class Ac8bExciter extends AnnotateExciter implements IntegrationStepAware {
+public class Ac8bExciter extends AnnotateExciter
+        implements IntegrationStepAware, UnderExcitationLimiterTarget {
     private static final double EPS = 1.0e-12;
     private static final double PID_TRACKING_GAIN = 2.0;
     private static final int VE = 0;

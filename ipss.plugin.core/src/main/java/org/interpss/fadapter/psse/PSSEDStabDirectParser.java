@@ -55,6 +55,7 @@ import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
+import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
@@ -124,6 +125,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
+    private final List<PendingUel1> pendingUel1 = new ArrayList<>();
     private boolean strictImport;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private final Set<GeneratorKey> modelRemovedGenerators = new HashSet<>();
@@ -181,6 +183,7 @@ public class PSSEDStabDirectParser {
         pendingRepca1.clear();
         pendingLcfb1.clear();
         pendingIeeeVc.clear();
+        pendingUel1.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
         for (PsseDyrRecord record : records) {
             try {
@@ -212,7 +215,7 @@ public class PSSEDStabDirectParser {
                 }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("LCFB1")
-                        || type.equals("IEEEVC");
+                        || type.equals("IEEEVC") || type.equals("UEL1");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
@@ -260,6 +263,13 @@ public class PSSEDStabDirectParser {
                     attached ? "" : "IEEEVC requires a compatible loaded machine");
         }
         pendingIeeeVc.clear();
+        for (PendingUel1 pending : pendingUel1) {
+            boolean attached = procUel1(pending.busId(), pending.genId(), pending.fields());
+            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                    : DynamicModelImportStatus.REJECTED,
+                    attached ? "" : "UEL1 requires a compatible loaded exciter");
+        }
+        pendingUel1.clear();
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
@@ -325,6 +335,9 @@ public class PSSEDStabDirectParser {
                 return procPerc1(busId, genId, fields);
             case "IEEEVC":
                 pendingIeeeVc.add(new PendingIeeeVc(busId, genId, fields.clone(), record));
+                return true;
+            case "UEL1":
+                pendingUel1.add(new PendingUel1(busId, genId, fields.clone(), record));
                 return true;
             case "GENCLS":
                 return procGencls(busId, genId, fields);
@@ -1893,6 +1906,24 @@ public class PSSEDStabDirectParser {
             PsseDyrRecord record) {}
 
     private record PendingIeeeVc(String busId, String genId, String[] fields,
+            PsseDyrRecord record) {}
+
+    // UEL1: KUR KUC KUF VURMAX VUCMAX KUI KUL VUIMAX VUIMIN
+    //       TU1 TU2 TU3 TU4 VULMAX VULMIN.
+    private boolean procUel1(String busId, String genId, String[] f) {
+        if (f.length < 18) return false;
+        Uel1Data data = new Uel1Data(
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0),
+                getDouble(f, 8, 0), getDouble(f, 9, 0),
+                getDouble(f, 10, 0), getDouble(f, 11, 0),
+                getDouble(f, 12, 0), getDouble(f, 13, 0),
+                getDouble(f, 14, 0), getDouble(f, 15, 0),
+                getDouble(f, 16, 0), getDouble(f, 17, 0));
+        return builder.addUel1(busId, genId, data) != null;
+    }
+
+    private record PendingUel1(String busId, String genId, String[] fields,
             PsseDyrRecord record) {}
 
     private record LoadTarget(BaseDStabBus<?, ?> bus, AclfLoad load) {}

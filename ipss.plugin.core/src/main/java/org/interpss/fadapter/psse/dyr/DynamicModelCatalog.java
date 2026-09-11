@@ -15,6 +15,7 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLL
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MACHINE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.UNDER_EXCITATION_LIMITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.LOADABLE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.PARTIAL;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.UNSUPPORTED;
@@ -302,6 +303,9 @@ public final class DynamicModelCatalog {
             descriptor("IEEEX2", Set.of(), EXCITER, 16, LOADABLE,
                     "org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter",
                     "Exciter%20IEEEX2.htm"),
+            descriptor("UEL1", Set.of(), UNDER_EXCITATION_LIMITER, 15, LOADABLE,
+                    "org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter",
+                    "Under%20Excitation%20Limiter%20UEL1.htm"),
             descriptor("EXDC2", Set.of(), EXCITER, 16, LOADABLE,
                     "org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter",
                     "Exciter%20EXDC2_PTI.htm"),

@@ -46,6 +46,11 @@ class DynamicModelCatalogTest {
         assertEquals(29, DynamicModelCatalog.find("LVS3BL").orElseThrow().parameterCount());
         assertEquals(DynamicModelCategory.LOAD_PROTECTION,
                 DynamicModelCatalog.find("LDS3BL").orElseThrow().category());
+        assertEquals(15, DynamicModelCatalog.find("UEL1").orElseThrow().parameterCount());
+        assertEquals(DynamicModelCategory.UNDER_EXCITATION_LIMITER,
+                DynamicModelCatalog.find("UEL1").orElseThrow().category());
+        assertEquals(DynamicModelSupportStatus.LOADABLE,
+                DynamicModelCatalog.find("UEL1").orElseThrow().supportStatus());
         assertFalse(DynamicModelCatalog.find("unknown-model").isPresent());
     }
 
