@@ -34,6 +34,10 @@ class DynamicModelCatalogTest {
         assertEquals(30, DynamicModelCatalog.find("PERC1").orElseThrow().parameterCount());
         assertEquals(DynamicModelCategory.LOAD_CHARACTERISTIC,
                 DynamicModelCatalog.find("PERC1").orElseThrow().category());
+        assertEquals(14, DynamicModelCatalog.find("IEELBL").orElseThrow().parameterCount());
+        assertEquals(14, DynamicModelCatalog.find("IEELAR").orElseThrow().parameterCount());
+        assertEquals(DynamicModelCategory.LOAD_CHARACTERISTIC,
+                DynamicModelCatalog.find("IEELAR").orElseThrow().category());
         assertEquals(6, DynamicModelCatalog.find("FRQTPAT").orElseThrow().parameterCount());
         assertEquals(6, DynamicModelCatalog.find("VTGTPAT").orElseThrow().parameterCount());
         assertEquals(DynamicModelCategory.GENERATOR_PROTECTION,
