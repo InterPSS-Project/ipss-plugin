@@ -25,7 +25,8 @@ acceptance remains `0/6`. REGFMA1 has a registered public PowerWorld
 nine-state trajectory contract, HYGOVD has a repeatable direct four-state
 PowerWorld contract that reuses core GENROU and the verified HYGOV runtime,
 PERC1 has both short-pulse and six-second multi-ramp native PSS/E `PLBVF1`
-contracts including cease/reconnect performance,
+contracts including cease/reconnect performance. Its published loading-factor
+rule and dynamic-load-change Norton-current behavior are covered directly,
 and the public Bus-1062 renewable stack has hash-repeatable native PSS/E flat
 and fault artifacts covering seven boundary/command channels plus all 16
 REGCA1/REECA1/REPCA1 states. The published REPCA1 zero-branch fallback now uses
