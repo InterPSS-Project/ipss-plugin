@@ -18,7 +18,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
     void validatesManifestsAndReportsApprovedModelGaps() throws Exception {
         var report = PowerWorldArtifactCoverageInventory.scan(repositoryRoot());
 
-        assertEquals(79, report.completedArtifactCount());
+        assertEquals(80, report.completedArtifactCount());
         assertEquals(3, report.categories().get("SYNCHRONOUS_MACHINE").approvedPsseRows());
         assertEquals(3, report.categories().get("SYNCHRONOUS_MACHINE").exactLoadableRows());
         assertEquals(2, report.categories().get("SYNCHRONOUS_MACHINE").rowsWithDirectArtifact());
@@ -29,8 +29,8 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertEquals(24, report.categories().get("GOVERNOR").exactLoadableRows());
         assertEquals(23, report.categories().get("GOVERNOR").rowsWithDirectArtifact());
         assertEquals(15, report.categories().get("STABILIZER").approvedPsseRows());
-        assertEquals(14, report.categories().get("STABILIZER").exactLoadableRows());
-        assertEquals(4, report.categories().get("STABILIZER").rowsWithDirectArtifact());
+        assertEquals(15, report.categories().get("STABILIZER").exactLoadableRows());
+        assertEquals(5, report.categories().get("STABILIZER").rowsWithDirectArtifact());
         assertTrue(row(report, "GENROU").hasDirectArtifact());
         assertTrue(row(report, "GENQEC").hasDirectArtifact());
         assertFalse(row(report, "GENQEJ").hasDirectArtifact());
@@ -51,6 +51,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertTrue(row(report, "PSS2B").hasDirectArtifact());
         assertTrue(row(report, "PSS4C").hasDirectArtifact());
         assertTrue(row(report, "PSS5C").hasDirectArtifact());
+        assertTrue(row(report, "PSSSB").hasDirectArtifact());
         assertTrue(row(report, "PSLF-PSS2C").isExactLoadable());
         assertFalse(row(report, "PSLF-PSS2C").hasDirectArtifact());
         assertTrue(row(report, "HYGOV2D").hasDirectArtifact());
