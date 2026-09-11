@@ -38,6 +38,9 @@ class DynamicModelCatalogTest {
         assertEquals(6, DynamicModelCatalog.find("VTGTPAT").orElseThrow().parameterCount());
         assertEquals(DynamicModelCategory.GENERATOR_PROTECTION,
                 DynamicModelCatalog.find("FRQTPAT").orElseThrow().category());
+        assertEquals(24, DynamicModelCatalog.find("LDS3BL").orElseThrow().parameterCount());
+        assertEquals(DynamicModelCategory.LOAD_PROTECTION,
+                DynamicModelCatalog.find("LDS3BL").orElseThrow().category());
         assertFalse(DynamicModelCatalog.find("unknown-model").isPresent());
     }
 

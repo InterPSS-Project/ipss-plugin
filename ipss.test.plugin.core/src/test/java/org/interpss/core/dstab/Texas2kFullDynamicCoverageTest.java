@@ -185,6 +185,12 @@ public class Texas2kFullDynamicCoverageTest {
                     .filter(model -> model.getId().equals(entry.deviceId()))
                     .findFirst().orElse(null);
         }
+        if (category == DynamicModelCategory.LOAD_PROTECTION) {
+            return bus.getDynamicBusDeviceList().stream()
+                    .filter(device -> device.getName().equals(entry.canonicalModelName())
+                            && device.getId().endsWith("_" + entry.deviceId()))
+                    .findFirst().orElse(null);
+        }
         if (category == DynamicModelCategory.GENERATOR_PROTECTION) {
             for (var candidateBus : network.getBusList()) {
                 for (var device : candidateBus.getDynamicBusDeviceList()) {
@@ -219,6 +225,8 @@ public class Texas2kFullDynamicCoverageTest {
                     : windStack(generator).getTorqueController();
             case LOAD_CHARACTERISTIC -> throw new IllegalStateException(
                     "load characteristics are resolved before generator models");
+            case LOAD_PROTECTION -> throw new IllegalStateException(
+                    "load protection is resolved before generator models");
             case GENERATOR_PROTECTION -> throw new IllegalStateException(
                     "generator protection is resolved before generator controllers");
         };

@@ -35,6 +35,9 @@ import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
 import org.interpss.dstab.relay.GeneratorTripRelayData;
+import org.interpss.dstab.relay.Lds3blRelayModel;
+import org.interpss.dstab.relay.LoadSheddingStage;
+import org.interpss.dstab.relay.StagedLoadSheddingRelayData;
 import org.interpss.dstab.relay.VtgtpatRelayModel;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
@@ -174,7 +177,8 @@ public class PSSEDStabDirectParser {
                 String type = record.canonicalModelName();
                 GeneratorKey key = targetGeneratorKey(record);
                 boolean generatorTarget = DynamicModelCatalog.find(type)
-                        .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC)
+                        .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC
+                                && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION)
                         .orElse(true);
                 if (generatorTarget && gnetRemovedGenerators.contains(key)) {
                     report.add(record, DynamicModelImportStatus.SKIPPED_GNET,
@@ -270,8 +274,11 @@ public class PSSEDStabDirectParser {
         String busId = BUS_ID_PREFIX + record.busNumber();
         BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
         if (bus == null) return "target bus " + busId + " does not exist";
-        if (descriptor.get().category() == org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC) {
-            return bus.getContributeLoad(record.deviceId()) == null
+        if (descriptor.get().category() == org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC
+                || descriptor.get().category() == org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION) {
+            boolean wildcard = record.deviceId().equals("*") || record.deviceId().equals("#");
+            return (!wildcard && bus.getContributeLoad(record.deviceId()) == null)
+                    || (wildcard && bus.getContributeLoadList().isEmpty())
                     ? "target load " + busId + "/" + record.deviceId() + " does not exist" : null;
         }
         DStabGen gen = (DStabGen) bus.getContributeGen(record.deviceId());
@@ -529,10 +536,10 @@ public class PSSEDStabDirectParser {
             case "CMPLDW":
             case "CIM6BL":
             case "CMLDBLU2":
-            case "LDS3BL":
-            case "LVS3BL":
                 log.debug("Dynamic load/relay model {} at bus {} - skipped in direct parser", type, busId);
                 return false;
+            case "LDS3BL":
+                return procLds3bl(busId, genId, record);
             case "FRQTPAT":
             case "VTGTPAT":
                 return procGeneratorTripRelay(type, record);
@@ -2682,6 +2689,32 @@ public class PSSEDStabDirectParser {
                 getDouble(f,24,.01),getDouble(f,25,0),getDouble(f,26,.6),getDouble(f,27,.05),
                 getDouble(f,28,1),getDouble(f,29,1),getDouble(f,30,.02),getDouble(f,31,.02),getDouble(f,32,.02));
         new Perc1Model(bus,load,loadId,d);return true;
+    }
+
+    private boolean procLds3bl(String busId, String loadId, PsseDyrRecord record) {
+        BaseDStabBus<?, ?> loadBus = builder.getBaseDStabNetwork().getDStabBus(busId);
+        int transferBusNumber = record.intParameter(0);
+        BaseDStabBus<?, ?> transferBus = transferBusNumber == 0 ? null
+                : builder.getBaseDStabNetwork().getDStabBus(BUS_ID_PREFIX + Math.abs(transferBusNumber));
+        if (transferBusNumber != 0 && transferBus == null) return false;
+        double transferTime = record.doubleParameter(23);
+        if (transferTime < 0.0) return false;
+        var data = new StagedLoadSheddingRelayData(loadSheddingStages(record, 3),
+                record.intParameter(2) == 1);
+        new Lds3blRelayModel(loadBus, loadId, data, transferBus,
+                record.parameter(1), transferTime);
+        return true;
+    }
+
+    private List<LoadSheddingStage> loadSheddingStages(PsseDyrRecord record, int offset) {
+        List<LoadSheddingStage> stages = new ArrayList<>(5);
+        for (int stage = 0; stage < 5; stage++) {
+            int base = offset + 4 * stage;
+            stages.add(new LoadSheddingStage(record.doubleParameter(base),
+                    record.doubleParameter(base + 1), record.doubleParameter(base + 2),
+                    record.doubleParameter(base + 3)));
+        }
+        return stages;
     }
 
     @SuppressWarnings("unchecked")
