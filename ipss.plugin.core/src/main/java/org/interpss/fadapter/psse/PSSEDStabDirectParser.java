@@ -12,6 +12,8 @@ import java.util.Set;
 import org.interpss.dstab.dynLoad.LD1PAC;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.dstab.dynLoad.Perc1Data;
+import org.interpss.dstab.dynLoad.IeelLoadData;
+import org.interpss.dstab.dynLoad.impl.IeelLoadModel;
 import org.interpss.dstab.dynLoad.impl.Perc1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
@@ -97,6 +99,7 @@ import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfLoad;
 import com.interpss.dstab.DStabGen;
 
 /**
@@ -261,6 +264,12 @@ public class PSSEDStabDirectParser {
     private String missingCatalogTarget(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isEmpty()) return null;
+        if (record.canonicalModelName().equals("IEELAR")) {
+            return ieelTargets(record).isEmpty()
+                    ? "no active load matches IEELAR area " + record.busNumber()
+                            + " and load id " + record.deviceId()
+                    : null;
+        }
         if (descriptor.get().category()
                 == org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION) {
             String monitoredBusId = BUS_ID_PREFIX + Math.abs(Integer.parseInt(record.deviceId()));
@@ -296,6 +305,9 @@ public class PSSEDStabDirectParser {
         String genId = record.deviceId();
 
         switch (type) {
+            case "IEELBL":
+            case "IEELAR":
+                return procIeel(type, record);
             case "PERC1":
                 return procPerc1(busId, genId, fields);
             case "GENCLS":
@@ -1842,6 +1854,8 @@ public class PSSEDStabDirectParser {
     private record PendingLcfb1(String busId, String genId, String[] fields,
             PsseDyrRecord record) {}
 
+    private record LoadTarget(BaseDStabBus<?, ?> bus, AclfLoad load) {}
+
     // LCFB1: fbf pbf Fb Tpelec db emax Kp Ki Lrmax
     private boolean procLcfb1(String busId, String genId, String[] f) {
         if (f.length < 12) return false;
@@ -2693,6 +2707,50 @@ public class PSSEDStabDirectParser {
                 getDouble(f,24,.01),getDouble(f,25,0),getDouble(f,26,.6),getDouble(f,27,.05),
                 getDouble(f,28,1),getDouble(f,29,1),getDouble(f,30,.02),getDouble(f,31,.02),getDouble(f,32,.02));
         new Perc1Model(bus,load,loadId,d);return true;
+    }
+
+    private boolean procIeel(String type, PsseDyrRecord record) {
+        IeelLoadData data = new IeelLoadData(
+                record.doubleParameter(0), record.doubleParameter(1), record.doubleParameter(2),
+                record.doubleParameter(3), record.doubleParameter(4), record.doubleParameter(5),
+                record.doubleParameter(6), record.doubleParameter(7),
+                record.doubleParameter(8), record.doubleParameter(9), record.doubleParameter(10),
+                record.doubleParameter(11), record.doubleParameter(12), record.doubleParameter(13));
+        List<LoadTarget> targets = ieelTargets(record);
+        for (LoadTarget target : targets) {
+            new IeelLoadModel(type, target.bus(), target.load(), data);
+        }
+        return !targets.isEmpty();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<LoadTarget> ieelTargets(PsseDyrRecord record) {
+        List<LoadTarget> targets = new ArrayList<>();
+        boolean wildcard = record.deviceId().equals("*") || record.deviceId().equals("#");
+        if (record.canonicalModelName().equals("IEELBL")) {
+            BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork()
+                    .getDStabBus(BUS_ID_PREFIX + record.busNumber());
+            addMatchingLoads(targets, bus, record.deviceId(), wildcard);
+            return targets;
+        }
+        for (Object object : builder.getBaseDStabNetwork().getBusList()) {
+            BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) object;
+            if (!bus.isActive() || bus.getArea() == null
+                    || bus.getArea().getNumber() != record.busNumber()) continue;
+            addMatchingLoads(targets, bus, record.deviceId(), wildcard);
+        }
+        return targets;
+    }
+
+    private void addMatchingLoads(List<LoadTarget> targets, BaseDStabBus<?, ?> bus,
+            String loadId, boolean wildcard) {
+        if (bus == null) return;
+        for (Object object : bus.getContributeLoadList()) {
+            AclfLoad load = (AclfLoad) object;
+            if (load.isActive() && (wildcard || load.getId().equals(loadId))) {
+                targets.add(new LoadTarget(bus, load));
+            }
+        }
     }
 
     private boolean procLds3bl(String busId, String loadId, PsseDyrRecord record) {
