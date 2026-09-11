@@ -52,6 +52,10 @@ artifact manifest uses only relative paths and hashes the RAW, DYR, generator
 script, PSS/E model library, and normalized CSV. This closes independent
 multi-device equation/fault parity within the installed five-machine license
 but does not promote a Texas2k case to full-system independent acceptance.
+One registered integrity test now scans all 108 checked-in PSS/E and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 445
+declared artifact/input hashes. It applies canonical-LF hashing only to the
+PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
 sub-`1e-8 pu` solver-partition residuals; a focused `2e-8 pu` change remains
 observable. A fresh Case-5 local Q/V analysis still identifies Bus 1062 unit 2
