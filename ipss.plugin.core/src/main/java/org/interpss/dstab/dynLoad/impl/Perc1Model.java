@@ -180,7 +180,8 @@ public final class Perc1Model extends DynLoadModelImpl implements ICMLStateProvi
     @Override public Map<String,Double> getNamedStates(){
         Map<String,Double> m=new LinkedHashMap<>();m.put("PLeadLag",x[PCTRL]);
         m.put("QLeadLag",x[QCTRL]);m.put("PWashout",x[DP]);m.put("QWashout",x[DQ]);
-        m.put("wFilt",x[WFILT]);m.put("VFilt",x[VFILT]);m.put("Ip",x[IP]);m.put("Iq",x[IQ]);return Map.copyOf(m);
+        m.put("wFilt",x[WFILT]);m.put("VFilt",x[VFILT]);m.put("Ip",x[IP]);m.put("Iq",x[IQ]);
+        m.put("FracOn",fracOn);return Map.copyOf(m);
     }
     @Override public Hashtable<String,Object> getStates(Object ref){states.putAll(getNamedStates());states.put("PERC1_FracOn",fracOn);return states;}
     @Override public boolean changeLoad(double factor){if(factor< -1)return false;accumulatedLoadChangeFactor=Math.max(-1,accumulatedLoadChangeFactor+factor);return true;}
