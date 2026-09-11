@@ -182,6 +182,8 @@ import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.GenqejMachine;
 import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.mach.Gentpj1Machine;
+import org.interpss.dstab.mach.Cimtr4Data;
+import org.interpss.dstab.mach.Cimtr4Machine;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -225,6 +227,34 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Machine Models ====================
+
+    /** PSS/E CIMTR4 induction motor represented by a negative generator. */
+    public Cimtr4Machine addCimtr4(String busId, String genId,
+            double ratingMva, double ratedKv, Cimtr4Data inputData) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for CIMTR4: {}", busId);
+            return null;
+        }
+        Cimtr4Machine mach = new Cimtr4Machine(inputData);
+        mach.setId(busId + "-mach" + genId);
+        mach.setName("CIMTR4");
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(inputData.h());
+        mach.setD(inputData.d());
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+        mach.setXl(inputData.xl());
+        mach.setXd(inputData.x());
+        mach.setXq(inputData.x());
+        return mach;
+    }
 
     /**
      * GENROU round-rotor generator (EQ11_ED11_ROUND_ROTOR).
