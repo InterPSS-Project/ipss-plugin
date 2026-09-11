@@ -104,6 +104,53 @@ public class Ieee2016PSS2CStabilizer extends AnnotateStabilizer
         return (Ieee2016PSS2CStabilizerData) _data;
     }
 
+    /** Semantic diagram signals; these are outputs, not the blocks' integration coordinates. */
+    public double getInput1Washout1Output() {
+        return childSignal(inputPath1, "this.firstWashout.y");
+    }
+
+    public double getInput1Washout2Output() {
+        return childSignal(inputPath1, "this.secondWashout.y");
+    }
+
+    public double getInput1TransducerOutput() {
+        return childSignal(inputPath1, "this.delayBlock.y");
+    }
+
+    public double getInput2Washout1Output() {
+        return childSignal(inputPath2, "this.firstWashout.y");
+    }
+
+    public double getInput2Washout2Output() {
+        return childSignal(inputPath2, "this.secondWashout.y");
+    }
+
+    public double getInput2TransducerOutput() {
+        return childSignal(inputPath2, "this.delayBlock.y");
+    }
+
+    public double getRampFilterOutput() { return signal("this.rampFilter.y"); }
+    public double getLeadLag1Output() { return signal("this.leadLag1.y"); }
+    public double getLeadLag2Output() { return signal("this.leadLag2.y"); }
+    public double getLeadLag3Output() { return signal("this.leadLag3.y"); }
+
+    private double signal(String fieldName) {
+        try {
+            return getFieldVaule(fieldName);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Cannot read PSS2C signal " + fieldName, ex);
+        }
+    }
+
+    private double childSignal(InputPath child, String fieldName) {
+        try {
+            return child.getFieldVaule(fieldName);
+        } catch (Exception ex) {
+            throw new IllegalStateException(
+                    "Cannot read PSS2C child signal " + fieldName, ex);
+        }
+    }
+
     public void setInputSignalBuses(BaseDStabBus<?, ?> first, BaseDStabBus<?, ?> second) {
         input1Bus = first;
         input2Bus = second;

@@ -53,7 +53,7 @@ limits cannot change this operating-point Jacobian.
 GGOV1 has an additional native PSS/E machine-trip lifecycle contract, and
 LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
 to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
-the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated PowerWorld inventory is 76 artifacts,
+the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated PowerWorld inventory is 77 artifacts,
 including `50/64` approved exciter rows and `23/24` approved PSS/E governor rows with
 direct trajectory evidence. BBSEX1 separately has a hash-repeatable native
 PSS/E 36.7 boundary/EFD/three-state trajectory contract. IEEEX1 and EXDC2
@@ -66,7 +66,10 @@ boundary/EFD/five-, four-, five-, five-, four-, and ten-state contracts. Togethe
 combined exact-tool direct exciter evidence to `63/64` without changing the explicitly
 PowerWorld-only inventory. PSS2B adds a direct PowerWorld boundary, machine,
 exciter, and 11-signal stabilizer trajectory contract, raising direct
-stabilizer evidence to `2/15`. Current-schema IEEEG1D adds a native PSS/E boundary
+PowerWorld stabilizer evidence to `2/15`. PSS2C adds a native PSS/E 36.7
+boundary, machine, three-coordinate, and physical-output contract plus an
+independent recorded-signal play-in, raising combined exact-tool stabilizer
+evidence to `3/15`. Current-schema IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
