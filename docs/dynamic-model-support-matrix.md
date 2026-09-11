@@ -32,6 +32,10 @@ REGCA1/REECA1/REPCA1 states. The published REPCA1 zero-branch fallback now uses
 generator power. Twelve of 13 active-state trajectory comparisons are within
 `0.00113 pu`; REECA1's voltage-PI state remains open at `0.04363 pu`, so this
 evidence does not promote any Texas2k case to full-stack trajectory acceptance.
+An exact-initial-condition PSS/E signal play-in separately reduces the REECA1
+voltage-PI residual to `0.001321 pu` and keeps the other compared REECA1/REPCA1
+states within `1.05e-4 pu`, localizing the larger end-to-end residual to the
+weak-mode operating-point sensitivity rather than a fitted controller change.
 GGOV1 has an additional native PSS/E machine-trip lifecycle contract, and
 LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
 to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
