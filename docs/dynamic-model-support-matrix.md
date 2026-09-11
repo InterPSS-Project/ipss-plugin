@@ -82,7 +82,9 @@ and 19-state contract, raising combined exact-tool stabilizer evidence to
 `9/15`. PSS5C adds a direct PowerWorld 25-channel contract, raising direct
 PowerWorld stabilizer evidence to `3/15` and combined exact-tool stabilizer
 evidence to `10/15`. ST2CUT adds a native PSS/E full-loop six-state contract,
-raising combined exact-tool stabilizer evidence to `11/15`. Current-schema
+raising combined exact-tool stabilizer evidence to `11/15`. PSS4B adds native
+PSS/E full-loop and recorded-input contracts that cover all 32 allocated states,
+raising combined exact-tool stabilizer evidence to `12/15`. Current-schema
 IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
