@@ -125,6 +125,7 @@ import org.interpss.core.adapter.builder.dstab.PsseReecb1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseCsvgn5ModelTest;
+import org.interpss.core.adapter.builder.dstab.PsseSvsmo1t2ModelTest;
 import org.interpss.dstab.renewable.RenewableControlIntegrationTest;
 import org.interpss.core.dstab.RenewableAggregateQvModeTest;
 import org.interpss.core.dstab.PsseDyrRepresentativeSelectorTest;
@@ -190,6 +191,7 @@ import org.interpss.core.dstab.WesgovdIndependentSmibConformanceTest;
 import org.interpss.core.dstab.PidgovdIndependentSmibConformanceTest;
 import org.interpss.core.dstab.PidgovPsseSmibConformanceTest;
 import org.interpss.core.dstab.Csvgn5PsseSmibConformanceTest;
+import org.interpss.core.dstab.Svsmo1t2PsseConformanceTest;
 import org.interpss.core.dstab.WpidhydIndependentSmibConformanceTest;
 import org.interpss.core.dstab.GastdIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Gast2adIndependentSmibConformanceTest;
@@ -552,6 +554,7 @@ import org.junit.platform.suite.api.Suite;
 	PidgovdIndependentSmibConformanceTest.class,
 	PidgovPsseSmibConformanceTest.class,
 	Csvgn5PsseSmibConformanceTest.class,
+	Svsmo1t2PsseConformanceTest.class,
 	WpidhydIndependentSmibConformanceTest.class,
 	GastdIndependentSmibConformanceTest.class,
 	Gast2adIndependentSmibConformanceTest.class,
@@ -734,6 +737,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,
 	PsseCsvgn5ModelTest.class,
+	PsseSvsmo1t2ModelTest.class,
 	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,
 	Type3WindAndesTrajectoryTest.class,

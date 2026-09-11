@@ -202,6 +202,13 @@ public class Texas2kFullDynamicCoverageTest {
             }
             return null;
         }
+        if (category == DynamicModelCategory.SWITCHED_SHUNT) {
+            return bus.getDynamicBusDeviceList().stream()
+                    .filter(device -> device.getName().equals(entry.canonicalModelName())
+                            && (entry.sourceModelName().equals("SVSMO1T2")
+                                    || device.getId().equals(entry.deviceId())))
+                    .findFirst().orElse(null);
+        }
         DStabGen generator = (DStabGen) bus
                 .getContributeGen(entry.deviceId());
         assertNotNull(generator, "Missing generator for attached record " + entry);
@@ -235,6 +242,8 @@ public class Texas2kFullDynamicCoverageTest {
                     "load protection is resolved before generator models");
             case GENERATOR_PROTECTION -> throw new IllegalStateException(
                     "generator protection is resolved before generator controllers");
+            case SWITCHED_SHUNT -> throw new IllegalStateException(
+                    "switched shunts are resolved before generator models");
         };
     }
 

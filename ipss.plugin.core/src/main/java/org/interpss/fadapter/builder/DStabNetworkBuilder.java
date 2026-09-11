@@ -85,6 +85,8 @@ import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
 import org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter;
 import org.interpss.dstab.svc.Csvgn5Data;
 import org.interpss.dstab.svc.Csvgn5Model;
+import org.interpss.dstab.svc.Svsmo1t2Data;
+import org.interpss.dstab.svc.Svsmo1t2Model;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -2993,6 +2995,31 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Csvgn5Model(gen, bus, remoteBus, genId, data);
+    }
+
+    /** Attach an SVSMO1T2 controller to a continuously controlled switched shunt. */
+    public Svsmo1t2Model addSvsmo1t2(String busId, String shuntId,
+            Svsmo1t2Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        String remoteBusId = "Bus" + Math.abs(data.remoteBusNumber());
+        BaseDStabBus<?, ?> remoteBus = network.getDStabBus(remoteBusId);
+        com.interpss.core.aclf.adj.SwitchedShunt shunt = null;
+        if (bus != null) {
+            for (Object candidate : bus.getSwitchedShuntList()) {
+                com.interpss.core.aclf.adj.SwitchedShunt switched =
+                        (com.interpss.core.aclf.adj.SwitchedShunt) candidate;
+                if (shuntId == null || shuntId.equals(switched.getId())) {
+                    shunt = switched;
+                    break;
+                }
+            }
+        }
+        if (bus == null || remoteBus == null || shunt == null) {
+            log.warn("Switched shunt or remote bus not found for SVSMO1T2: bus={}, shunt={}, remote={}",
+                    busId, shuntId == null ? "<first>" : shuntId, remoteBusId);
+            return null;
+        }
+        return new Svsmo1t2Model(bus, remoteBus, shunt, shunt.getId(), data);
     }
 
     public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {

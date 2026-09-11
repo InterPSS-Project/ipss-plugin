@@ -33,6 +33,8 @@ import org.interpss.dstab.renewable.Wtdta1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.svc.Csvgn5Data;
+import org.interpss.dstab.svc.Svsmo1t2Data;
+import org.interpss.dstab.svc.Svsmo1t2Data.MssDevice;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.GenqejData;
@@ -192,7 +194,8 @@ public class PSSEDStabDirectParser {
                 GeneratorKey key = targetGeneratorKey(record);
                 boolean generatorTarget = DynamicModelCatalog.find(type)
                         .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC
-                                && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION)
+                                && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION
+                                && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.SWITCHED_SHUNT)
                         .orElse(true);
                 if (generatorTarget && gnetRemovedGenerators.contains(key)) {
                     report.add(record, DynamicModelImportStatus.SKIPPED_GNET,
@@ -315,6 +318,17 @@ public class PSSEDStabDirectParser {
             return (!wildcard && bus.getContributeLoad(record.deviceId()) == null)
                     || (wildcard && bus.getContributeLoadList().isEmpty())
                     ? "target load " + busId + "/" + record.deviceId() + " does not exist" : null;
+        }
+        if (descriptor.get().category()
+                == org.interpss.fadapter.psse.dyr.DynamicModelCategory.SWITCHED_SHUNT) {
+            if (record.sourceModelName().equals("SVSMO1T2")) {
+                return bus.getFirstSwitchedShunt(true) == null
+                        ? "target bus " + busId + " has no active switched shunt" : null;
+            }
+            boolean found = bus.getSwitchedShuntList().stream()
+                    .anyMatch(shunt -> record.deviceId().equals(shunt.getId()));
+            return found ? null : "target switched shunt " + busId + "/"
+                    + record.deviceId() + " does not exist";
         }
         DStabGen gen = (DStabGen) bus.getContributeGen(record.deviceId());
         return gen == null ? "target generator " + busId + "/" + record.deviceId()
@@ -608,6 +622,10 @@ public class PSSEDStabDirectParser {
                 return procRegfma1(busId, genId, fields);
             case "CSVGN5":
                 return procCsvgn5(busId, genId, fields);
+            case "SVSMO1T2":
+                boolean explicitSvsmoId = record.sourceModelName().equals("SVSMO1T3");
+                return procSvsmo1t2(busId, explicitSvsmoId ? genId : null,
+                        fields, explicitSvsmoId);
             case "REECB1":
             case "REECBU1":
                 return procReecb1(busId, genId, fields);
@@ -2702,6 +2720,47 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 14, 0.0), getDouble(f, 15, 0.0),
                 getDouble(f, 16, 0.0), getDouble(f, 17, 0.0));
         return builder.addCsvgn5(busId, genId, data) != null;
+    }
+
+    // SVSMO1T2 has no target ID and applies to the first switched shunt; T3
+    // adds that ID. Both then carry 19 ICONs and the same 47 CONs.
+    private boolean procSvsmo1t2(String busId, String shuntId, String[] f,
+            boolean explicitShuntId) {
+        int shift = explicitShuntId ? 1 : 0;
+        if (f.length != 68 + shift) return false;
+        List<MssDevice> devices = new ArrayList<>(8);
+        for (int index = 0; index < 8; index++) {
+            devices.add(new MssDevice(getInt(f, 5 + shift + 2 * index, 0),
+                    f[6 + shift + 2 * index]));
+        }
+        Svsmo1t2Data data = new Svsmo1t2Data(
+                getInt(f, 2 + shift, 0), devices,
+                getInt(f, 3 + shift, 0), getInt(f, 4 + shift, 0),
+                getDouble(f, 21 + shift, 0), getDouble(f, 22 + shift, 0),
+                getDouble(f, 23 + shift, 0), getDouble(f, 24 + shift, 0),
+                getDouble(f, 25 + shift, 0), getDouble(f, 26 + shift, 0),
+                getDouble(f, 27 + shift, 0), getDouble(f, 28 + shift, 0),
+                getDouble(f, 29 + shift, 0), getDouble(f, 30 + shift, 0),
+                getDouble(f, 31 + shift, 0), getDouble(f, 32 + shift, 0),
+                getDouble(f, 33 + shift, 0), getDouble(f, 34 + shift, 0),
+                getDouble(f, 35 + shift, 0), getDouble(f, 36 + shift, 0),
+                getDouble(f, 37 + shift, 0), getDouble(f, 38 + shift, 0),
+                getDouble(f, 39 + shift, 0), getDouble(f, 40 + shift, 0),
+                getDouble(f, 41 + shift, 0), getDouble(f, 42 + shift, 0),
+                getDouble(f, 43 + shift, 0), getDouble(f, 44 + shift, 0),
+                getDouble(f, 45 + shift, 0), getDouble(f, 46 + shift, 0),
+                getDouble(f, 47 + shift, 0), getDouble(f, 48 + shift, 0),
+                getDouble(f, 49 + shift, 0), getDouble(f, 50 + shift, 0),
+                getDouble(f, 51 + shift, 0), getDouble(f, 52 + shift, 0),
+                getDouble(f, 53 + shift, 0), getDouble(f, 54 + shift, 0),
+                getDouble(f, 55 + shift, 0), getDouble(f, 56 + shift, 0),
+                getDouble(f, 57 + shift, 0), getDouble(f, 58 + shift, 0),
+                getDouble(f, 59 + shift, 0), getDouble(f, 60 + shift, 0),
+                getDouble(f, 61 + shift, 0), getDouble(f, 62 + shift, 0),
+                getDouble(f, 63 + shift, 0), getDouble(f, 64 + shift, 0),
+                getDouble(f, 65 + shift, 0), getDouble(f, 66 + shift, 0),
+                getDouble(f, 67 + shift, 0));
+        return builder.addSvsmo1t2(busId, shuntId, data) != null;
     }
 
     // REECB1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PQFLAG followed by
