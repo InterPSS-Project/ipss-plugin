@@ -1,17 +1,17 @@
 package org.interpss.dstab.control.pss.ieee.y2016.pss6c;
 
-/** PSS6C record: four selectors plus 30 or 31 constants. */
+/** PSS6C record: four ICONs plus 30 native CONs or one PowerWorld extension. */
 public record Ieee2016PSS6CStabilizerData(
         int ics1, int remoteBus1, int ics2, int remoteBus2,
-        double ks1, double t1, double t3,
-        double ks2, double macc, double t2, double t4, double td,
+        double t1, double ks2, double t2, double ks1,
+        double t3, double macc, double t4, double td,
         double k0, double k1, double k2, double k3, double k4,
-        double ki3, double ki4, double ks,
-        double ti1, double ti2, double ti3, double ti4,
+        double ti1, double ti2, double ki3, double ti3,
+        double ki4, double ti4, double ks,
         double vsi1max, double vsi1min, double vsi2max, double vsi2min,
         double vstmax, double vstmin,
-        double pssActivation, double pssDeactivation, double tpgfilt,
-        double xcomp, double tcomp) {
+        double pssActivation, double pssDeactivation,
+        double xcomp, double tcomp, double tpgfilt) {
 
     public static final int PARAMETER_COUNT = 35;
     public static final int LEGACY_PARAMETER_COUNT = 34;
@@ -29,8 +29,8 @@ public record Ieee2016PSS6CStabilizerData(
                 p[12], p[13], p[14], p[15], p[16], p[17], p[18], p[19],
                 p[20], p[21], p[22], p[23], p[24], p[25], p[26], p[27],
                 p[28], p[29], p[30], p[31],
-                includesPgenFilter ? p[32] : 0.0,
-                p[includesPgenFilter ? 33 : 32], p[includesPgenFilter ? 34 : 33]);
+                p[includesPgenFilter ? 33 : 32], p[includesPgenFilter ? 34 : 33],
+                includesPgenFilter ? p[32] : 0.0);
     }
 
     private static int exactInt(double value, String name) {

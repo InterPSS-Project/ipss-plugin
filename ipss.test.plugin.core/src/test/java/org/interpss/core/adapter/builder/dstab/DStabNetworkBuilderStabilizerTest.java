@@ -1135,7 +1135,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss6c_mapsNative35ParameterRecord() throws Exception {
+    void parsePss6c_mapsPowerWorld35ParameterRecord() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss6c.dyr");
         StringBuilder record = new StringBuilder("1 'PSS6C' '1'");
@@ -1154,7 +1154,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertNotNull(pss);
         assertEquals(1, pss.getData().ics1());
         assertEquals(0, pss.getData().remoteBus1());
-        assertEquals(5.0, pss.getData().ks1(), TOL);
+        assertEquals(8.0, pss.getData().ks1(), TOL);
         assertEquals(35.0, pss.getData().tcomp(), TOL);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
@@ -1165,11 +1165,11 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         machine.setSpeed(1.0);
         double[] p = pss6cParameters();
-        p[4] = 0.0; p[5] = 0.2; p[6] = 0.3;
+        p[4] = 0.2; p[5] = 0.0; p[6] = 0.3;
         p[7] = 0.0; p[8] = 0.0; p[9] = 0.1; p[10] = 0.2;
         p[11] = 1.0;
         p[12] = 1.0; p[13] = 0.4;
-        p[19] = 3.0; p[20] = 0.5;
+        p[17] = 0.5; p[23] = 3.0;
         Ieee2016PSS6CStabilizer pss = builder.addPss6c("Bus1", "1", p);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
 
@@ -1206,7 +1206,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         machine.setSpeed(1.0);
         double[] p = pss6cParameters();
-        p[12] = 0.0; p[19] = -1.0;
+        p[12] = 0.0; p[23] = -1.0;
         p[24] = -0.2; p[25] = 0.1;
         p[26] = -0.3; p[27] = 0.2;
         p[28] = -0.4; p[29] = 0.3;
@@ -1225,22 +1225,22 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void pss6c_computesCompensatedFrequencyInput() throws Exception {
+    void pss6c_initializesPublishedCompensatedFrequencyCoordinate() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         double[] p = pss6cParameters();
         p[0] = 7;
-        p[33] = 0.0;
-        p[34] = 0.0;
+        p[33] = 0.2;
+        p[34] = 0.02;
         Ieee2016PSS6CStabilizer pss = builder.addPss6c("Bus1", "1", p);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
 
         machine.getDStabBus().setVoltage(new Complex(Math.cos(0.01), Math.sin(0.01)));
         assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
 
-        double expected = 0.01 / (2.0 * Math.PI
-                * machine.getDStabBus().getNetwork().getFrequency() * 0.01);
-        assertEquals(expected, pss.getInput1Signal(), 1.0e-8);
+        assertEquals(-1.0, pss.getInput1Signal(), 1.0e-8);
+        assertTrue(Double.isFinite(
+                pss.getNamedStates().get("compensatedFrequencyWashout")));
     }
 
     @Test

@@ -1,6 +1,8 @@
 package org.interpss.dstab.control.pss.ieee.y2016.pss6c;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -17,7 +19,7 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         implements IntegrationStepAware {
     private static final double EPS = 1.0e-12;
     private static final int X1 = 0, X1K = 1, X2K = 2, X2W = 3, UW = 4;
-    private static final int C1 = 5, C2 = 6, C3 = 7, C4 = 8, PGEN = 9, COMP = 10;
+    private static final int C1 = 5, C2 = 6, C3 = 7, C4 = 8, COMP = 9, PGEN = 10;
 
     private final Ieee2016PSS6CStabilizerData sourceData;
     private Ieee2016PSS6CStabilizerData effectiveData;
@@ -31,7 +33,6 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
     private double[] active = state;
     private double previousVoltage1;
     private double previousVoltage2;
-    private double previousCompensatedAngle;
     private boolean pssActive;
     private double input1Signal;
     private double input2Signal;
@@ -78,10 +79,13 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         double pgen = machine.getPe();
         previousVoltage1 = input1Bus.getVoltageMag();
         previousVoltage2 = input2Bus.getVoltageMag();
-        previousCompensatedAngle = effectiveData.ics1() == 7
-                ? compensatedVoltageAngle(machine, effectiveData.xcomp()) : 0.0;
+        state[COMP] = effectiveData.ics1() == 7 && effectiveData.tcomp() > EPS
+                ? compensatedVoltageAngle(machine, effectiveData.xcomp())
+                        / effectiveData.tcomp()
+                : 0.0;
+        double initialComp = effectiveData.ics1() == 7 ? -1.0 : 0.0;
         input1Signal = limitedInput(effectiveData.ics1(), input1Bus, machine,
-                effectiveData.vsi1max(), effectiveData.vsi1min(), 0.0, pgen);
+                effectiveData.vsi1max(), effectiveData.vsi1min(), initialComp, pgen);
         input2Signal = limitedInput(effectiveData.ics2(), input2Bus, machine,
                 effectiveData.vsi2max(), effectiveData.vsi2min(), 0.0, pgen);
         state[X1] = input1Signal;
@@ -91,10 +95,10 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         state[UW] = state[X1] - state[X1K];
         state[C1] = state[C2] = state[C3] = state[C4] = 0.0;
         state[PGEN] = pgen;
-        state[COMP] = 0.0;
         System.arraycopy(state, 0, trial, 0, state.length);
         active = state;
-        pssActive = pgen >= effectiveData.pssActivation();
+        pssActive = !outputLogicEnabled()
+                || pgen >= effectiveData.pssActivation();
         outputSignal = 0.0;
         return true;
     }
@@ -105,7 +109,7 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         int stage = method == DynamicSimuMethod.MODIFIED_EULER ? flag : 2;
         double pgen = machine.getPe();
         double rawComp = effectiveData.ics1() == 7
-                ? rawCompensatedFrequency(machine, dt) : 0.0;
+                ? compensatedWashoutInput(machine) : 0.0;
 
         if (stage == 0) {
             updateInputSignals(machine, dt, pgen, compensatedOutput(state, rawComp));
@@ -124,10 +128,7 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
             updateInputSignals(machine, dt, pgen, compensatedOutput(state, rawComp));
             previousVoltage1 = input1Bus.getVoltageMag();
             previousVoltage2 = input2Bus.getVoltageMag();
-            if (effectiveData.ics1() == 7) {
-                previousCompensatedAngle = compensatedVoltageAngle(machine, effectiveData.xcomp());
-            }
-            updateActivation(state[PGEN]);
+            updateActivation(filteredOrDirectPower(pgen, state));
         } else {
             updateInputSignals(machine, dt, pgen, compensatedOutput(state, rawComp));
             double[] derivative = new double[state.length];
@@ -137,7 +138,7 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
             updateInputSignals(machine, dt, pgen, compensatedOutput(state, rawComp));
             previousVoltage1 = input1Bus.getVoltageMag();
             previousVoltage2 = input2Bus.getVoltageMag();
-            updateActivation(state[PGEN]);
+            updateActivation(filteredOrDirectPower(pgen, state));
         }
         outputSignal = calculateOutput(active, input1Signal, input2Signal);
         return true;
@@ -165,10 +166,13 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         double u = washoutOutput(combined, x[UW], d.td(), d.td());
         double error = u - x[C1] - x[C2] - x[C3] - x[C4];
         dx[C1] = integratorDerivative(error, d.ti1());
-        dx[C2] = integratorDerivative(x[C1], d.ti2());
-        dx[C3] = integratorDerivative(d.ki3() * x[C2], d.ti3());
-        dx[C4] = integratorDerivative(d.ki4() * x[C3], d.ti4());
-        dx[PGEN] = lagDerivative(pgen, x[PGEN], d.tpgfilt());
+        dx[C2] = integratorDerivative(error + x[C1], d.ti2());
+        dx[C3] = integratorDerivative(
+                d.ki3() * (error + x[C1] + x[C2]), d.ti3());
+        dx[C4] = integratorDerivative(
+                d.ki4() * (error + x[C1] + x[C2] + x[C3]), d.ti4());
+        dx[PGEN] = d.tpgfilt() > EPS
+                ? lagDerivative(pgen, x[PGEN], d.tpgfilt()) : 0.0;
         dx[COMP] = d.tcomp() > EPS ? (rawComp - x[COMP]) / d.tcomp() : 0.0;
     }
 
@@ -185,14 +189,17 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         return clamp(d.ks() * y, d.vstmax(), d.vstmin());
     }
 
-    private double rawCompensatedFrequency(Machine machine, double dt) {
-        double angle = compensatedVoltageAngle(machine, effectiveData.xcomp());
-        return wrapAngle(angle - previousCompensatedAngle)
-                / (2.0 * Math.PI * machine.getDStabBus().getNetwork().getFrequency() * dt);
+    private double compensatedWashoutInput(Machine machine) {
+        return effectiveData.tcomp() > EPS
+                ? compensatedVoltageAngle(machine, effectiveData.xcomp()) / effectiveData.tcomp()
+                : 0.0;
     }
 
     private double compensatedOutput(double[] x, double raw) {
-        return effectiveData.tcomp() > EPS ? x[COMP] : raw;
+        if (effectiveData.tcomp() <= EPS) return -1.0;
+        double omegaBase = 2.0 * Math.PI
+                * getMachine().getDStabBus().getNetwork().getFrequency();
+        return (raw - x[COMP]) / omegaBase - 1.0;
     }
 
     private void updateInputSignals(Machine machine, double dt, double pgen, double comp) {
@@ -209,11 +216,23 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
     }
 
     private void updateActivation(double pgen) {
+        if (!outputLogicEnabled()) {
+            pssActive = true;
+            return;
+        }
         if (pssActive) {
             if (pgen <= effectiveData.pssDeactivation()) pssActive = false;
         } else if (pgen >= effectiveData.pssActivation()) {
             pssActive = true;
         }
+    }
+
+    private boolean outputLogicEnabled() {
+        return effectiveData.pssActivation() > 0.0;
+    }
+
+    private double filteredOrDirectPower(double pgen, double[] x) {
+        return effectiveData.tpgfilt() > EPS ? x[PGEN] : pgen;
     }
 
     private Ieee2016PSS6CStabilizerData correctedData(Ieee2016PSS6CStabilizerData d) {
@@ -222,12 +241,12 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         double[] l2 = signedLimits(d.vsi2max(), d.vsi2min());
         double[] lo = signedLimits(d.vstmax(), d.vstmin());
         return new Ieee2016PSS6CStabilizerData(d.ics1(), d.remoteBus1(), d.ics2(), d.remoteBus2(),
-                d.ks1(), d.t1(), d.t3(), d.ks2(), d.macc(), d.t2(), d.t4(), d.td(),
+                d.t1(), d.ks2(), d.t2(), d.ks1(), d.t3(), d.macc(), d.t4(), d.td(),
                 positiveOrMinimum(d.k0(), minimum), d.k1(), d.k2(), d.k3(), d.k4(),
-                d.ki3(), d.ki4(), positiveOrMinimum(d.ks(), minimum),
-                d.ti1(), d.ti2(), d.ti3(), d.ti4(),
+                d.ti1(), d.ti2(), d.ki3(), d.ti3(), d.ki4(), d.ti4(),
+                positiveOrMinimum(d.ks(), minimum),
                 l1[0], l1[1], l2[0], l2[1], lo[0], lo[1],
-                d.pssActivation(), d.pssDeactivation(), d.tpgfilt(), d.xcomp(), d.tcomp());
+                d.pssActivation(), d.pssDeactivation(), d.xcomp(), d.tcomp(), d.tpgfilt());
     }
 
     private static double limitedInput(int code, BaseDStabBus<?, ?> bus, Machine machine,
@@ -246,9 +265,15 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
     }
 
     private static Complex compensatedVoltage(Machine machine, double xcomp) {
-        Complex terminalCurrentMachineBase = machine.getIxy().divide(machine.getIMultiFactor());
-        return machine.getDStabBus().getVoltage()
-                .add(terminalCurrentMachineBase.multiply(new Complex(0.0, xcomp)));
+        Complex terminalVoltage = machine.getDStabBus().getVoltage();
+        Complex terminalCurrent = machine.getIgen()
+                .subtract(terminalVoltage.multiply(machine.getYgen()));
+        Complex power = terminalVoltage.multiply(terminalCurrent.conjugate())
+                .divide(machine.getIMultiFactor());
+        double magnitude = terminalVoltage.abs();
+        if (magnitude == 0.0) return Complex.ZERO;
+        return new Complex(magnitude + power.getImaginary() * xcomp / magnitude,
+                power.getReal() * xcomp / magnitude);
     }
 
     private static double compensatedVoltageAngle(Machine machine, double xcomp) {
@@ -285,8 +310,22 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         return Math.max(min, Math.min(max, value));
     }
 
-    private static double wrapAngle(double angle) {
-        return Math.atan2(Math.sin(angle), Math.cos(angle));
+    /** Native PSS/E STATE order; the optional PowerWorld Pgen filter is excluded. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("input1Transducer1", active[X1]);
+        states.put("input1Transducer2", active[X1K]);
+        states.put("input2Transducer", active[X2K]);
+        states.put("input2Washout", effectiveData.t4() > EPS
+                ? effectiveData.macc() * active[X2W] / effectiveData.t4() : 0.0);
+        states.put("mainWashout", active[UW]);
+        states.put("canonicalIntegrator1", active[C1]);
+        states.put("canonicalIntegrator2", active[C2]);
+        states.put("canonicalIntegrator3", active[C3]);
+        states.put("canonicalIntegrator4", active[C4]);
+        states.put("compensatedFrequencyWashout", active[COMP]);
+        return Map.copyOf(states);
     }
 
     @Override public AnController getAnController() { return getClass().getAnnotation(AnController.class); }
