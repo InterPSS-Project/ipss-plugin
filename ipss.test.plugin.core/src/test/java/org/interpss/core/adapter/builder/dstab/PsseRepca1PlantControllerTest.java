@@ -108,16 +108,22 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void zeroBranchFallbackUsesSelectedBusVoltageAndZeroPower() throws Exception {
+    void zeroBranchFallbackUsesGeneratorPowerAndSelectedBusVoltage() throws Exception {
         MeasurementFixture fixture = measurementFixture();
         Repca1Model plant = new Repca1Model(
                 plantData(2, 0, 0, 0, 1, 0, 0, 0, 0), fixture.converter());
 
         plant.initialize(.8, .2, 1.0);
 
-        assertEquals(0.0, plant.getMeasuredActivePower(), 1.0e-12);
+        assertEquals(.8, plant.getMeasuredActivePower(), 1.0e-12);
         assertEquals(.96, plant.getMeasuredReactiveOrVoltage(), 1.0e-12);
         assertEquals(true, plant.isUsingZeroBranchFallback());
+
+        Repca1Model compensated = new Repca1Model(
+                plantData(2, 0, 0, 0, 1, 0, 0, .5, 0), fixture.converter());
+        compensated.initialize(.8, .2, 1.0);
+        assertEquals(.96 + .5 * .2, compensated.getMeasuredReactiveOrVoltage(), 1.0e-12,
+                "Kc compensation must use generator reactive power");
     }
 
     @Test
