@@ -192,6 +192,22 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     }
 
     @Test
+    void loadSheddingRelaysAreNotMisclassifiedAsGeneratorTripRelays() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("load-shedding-relay.dyr");
+        Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
+                + "1 'LDS3BL' '1' 0.83 0.11 0.07 0.19 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals("LDS3BL", parser.getLastImportReport().failures().get(0).canonicalModelName());
+        assertTrue(builder.getDStabNetwork().getDStabBus("Bus1").getDynamicBusDeviceList().stream()
+                .noneMatch(AbstractGeneratorTripRelayModel.class::isInstance));
+    }
+
+    @Test
     void generatorTripRelayDelaysMatchTheNativePsseContract() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         builder.getDStabNetwork().setFrequency(50.0);
