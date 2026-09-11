@@ -8,6 +8,8 @@ import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.GenqejMachine;
+import org.interpss.dstab.mach.Gentpj1Data;
+import org.interpss.dstab.mach.Gentpj1Machine;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
@@ -185,6 +187,39 @@ class GenqecMachineTest extends TestSetupBase {
             assertTrue(qej.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, 1));
         }
         assertEquals(angle0, qej.getAngle(), 2.0e-6);
+    }
+
+    @Test
+    void gentpj1UsesQuadraticCurrentDependentSaturationAndHoldsEquilibrium() throws Exception {
+        BaseDStabNetwork<?, ?> network = SampleDStabCase.createDStabTestNet();
+        Gentpj1Data data = new Gentpj1Data(
+                7.25, 0.035, 0.72, 0.045, 4.15, 0.0,
+                2.05, 1.91, 0.36, 0.59, 0.27, 0.23, 0.16,
+                0.075, 0.31, 0.22);
+        Gentpj1Machine machine = new DStabNetworkBuilder(network).addGentpj1(
+                "Gen", "G1", 100.0, 1.0, data);
+        BaseDStabBus<?, ?> bus = network.getDStabBus("Gen");
+        bus.initStates();
+        assertTrue(machine.initStates(bus));
+
+        assertEquals(2, machine.getGenqecData().satFunc());
+        var idq = machine.getIdq();
+        var vdq = machine.getVdq();
+        double airGapFlux = Math.hypot(
+                vdq.q + machine.getRa() * idq.q + machine.getXl() * idq.d,
+                vdq.d + machine.getRa() * idq.d - machine.getXl() * idq.q);
+        assertEquals(machine.getSatruationFactor(
+                        airGapFlux + data.kis() * Math.hypot(idq.d, idq.q)),
+                machine.getEffectiveSaturationFactor(), TOL);
+
+        double angle0 = machine.getAngle();
+        for (int i = 0; i < 5; i++) {
+            machine.getIgen();
+            assertTrue(machine.nextStep(0.0025, DynamicSimuMethod.MODIFIED_EULER, 0));
+            machine.getIgen();
+            assertTrue(machine.nextStep(0.0025, DynamicSimuMethod.MODIFIED_EULER, 1));
+        }
+        assertEquals(angle0, machine.getAngle(), 2.0e-6);
     }
 
     @Test
