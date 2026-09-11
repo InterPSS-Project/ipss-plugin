@@ -398,7 +398,10 @@ public final class DynamicModelCatalog {
                     "Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm"),
             descriptor("LDS3BL", Set.of(), LOAD_PROTECTION, 24, LOADABLE,
                     "org.interpss.dstab.relay.Lds3blRelayModel",
-                    "Relay%20Model%20LDS3.htm")
+                    "Relay%20Model%20LDS3.htm"),
+            descriptor("LVS3BL", Set.of(), LOAD_PROTECTION, 29, LOADABLE,
+                    "org.interpss.dstab.relay.Lvs3blRelayModel",
+                    "Relay%20Model%20LVS3.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream
