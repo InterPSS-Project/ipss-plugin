@@ -46,6 +46,7 @@ import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
+import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer;
 import org.interpss.dstab.control.pss.simple.SimpleStabilizer;
 
 import com.interpss.dstab.mach.Machine;
@@ -97,6 +98,14 @@ public class StabilizerObjectFactory {
 			String id, String name, Machine machine) {
 		Ieee1992PSS2AStabilizer pss = new Ieee1992PSS2AStabilizer(id, name, "InterPSS");
 		pss.setMachine(machine); 
+		return pss;
+	}
+
+	/** Create a WECC PSSSB stabilizer and attach it to its machine. */
+	public static PsssbStabilizer createPsssbStabilizer(
+			String id, String name, Machine machine) {
+		PsssbStabilizer pss = new PsssbStabilizer(id, name, "WECC");
+		pss.setMachine(machine);
 		return pss;
 	}
 
