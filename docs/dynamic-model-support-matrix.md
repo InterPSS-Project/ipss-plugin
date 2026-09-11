@@ -7,7 +7,8 @@ does **not** mean that the model has passed equation conformance, a stationary
 flat run, a representative disturbance matrix, or an independent-tool
 trajectory comparison. Those acceptance results are tracked in
 `dynamic-model-coverage-development-plan.md`. In particular, the six Texas2k
-cases are loadable and all pass the strict one-second flat-run gate; the
+cases are loadable, but a fresh isolated run passes the strict one-second
+flat-run gate in `5/6` cases; the
 full-system independent fault-parity milestone remains open.
 
 Current Texas2k audit (2026-09-11): `17/17` PSS/E DYR model names are
@@ -17,13 +18,13 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `29/29` native PSS/E reference probes were cold-regenerated with PSS/E
+All `30/30` native PSS/E reference probes were cold-regenerated with PSS/E
 Xplore 36.7.0/Python 3.13 on 2026-09-11. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. The reusable suite driver and all probe inputs use
 repository-relative paths.
 `6/6` prepared cases pass the
-short flat and common Bus-7159 fault execution smokes, `6/6` pass the production
+short flat and common Bus-7159 fault execution smokes, `5/6` pass the production
 1/240 s strict one-second flat-run gate, and all `15/15` required
 location-specific faults complete as execution/sanity checks. Full-stack independent trajectory
 acceptance remains `0/6`. REGFMA1 has a registered public PowerWorld
@@ -57,8 +58,11 @@ artifact manifest uses only relative paths and hashes the RAW, DYR, generator
 script, PSS/E model library, and normalized CSV. This closes independent
 multi-device equation/fault parity within the installed five-machine license
 but does not promote a Texas2k case to full-system independent acceptance.
-One registered integrity test now scans all 108 checked-in PSS/E and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 445
+FRQTPAT and VTGTPAT now have native PSS/E 36.7 generator-trip contracts that
+cover their monitored-bus ICON targets, native threshold units, pickup timing,
+breaker timing, and generator-only actions.
+One registered integrity test now scans all 110 checked-in PSS/E and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 453
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -70,6 +74,11 @@ the local analyzer uses perturbation coordinates, so its limits are
 `VMIN-V0` and `VMAX-V0`; all 34 initial perturbations are interior and the
 candidate is a valid two-sided local mode. Moving those inactive anti-windup
 limits cannot change this operating-point Jacobian.
+The isolated strict rerun fails only Case 5, at `0.901534066 pu` maximum voltage
+drift (Bus 3051) and `0.0492699119 pu` maximum speed drift (Bus 4097 unit 1).
+The newly added generator-trip relays are absent from that case, so this is the
+existing renewable/network-coupling blocker rather than a protection-model
+regression.
 GGOV1 has an additional native PSS/E machine-trip lifecycle contract, and
 LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
 to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
@@ -243,3 +252,5 @@ the plan's release checklist before interpreting any
 | WTPTA1 | PITCH_CONTROLLER | WTPTAU1 | 10 | LOADABLE | `org.interpss.dstab.renewable.Wtpta1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pitch%20Controller%20WTGPT_A.htm) |
 | WTTQA1 | TORQUE_CONTROLLER | WTTQAU1 | 16 | LOADABLE | `org.interpss.dstab.renewable.Wttqa1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pref%20Controller%20WTGTRQ_A.htm) |
 | PERC1 | LOAD_CHARACTERISTIC |  | 30 | LOADABLE | `org.interpss.dstab.dynLoad.impl.Perc1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Load%20Characteristic%20PERC1.htm) |
+| FRQTPAT | GENERATOR_PROTECTION |  | 6 | LOADABLE | `org.interpss.dstab.relay.FrqtpatRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20FRQDCAT%20and%20FRQTPAT.htm) |
+| VTGTPAT | GENERATOR_PROTECTION |  | 6 | LOADABLE | `org.interpss.dstab.relay.VtgtpatRelayModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm) |

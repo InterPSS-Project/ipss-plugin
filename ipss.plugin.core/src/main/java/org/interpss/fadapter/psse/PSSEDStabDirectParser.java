@@ -33,6 +33,9 @@ import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.Gentpj1Data;
+import org.interpss.dstab.relay.FrqtpatRelayModel;
+import org.interpss.dstab.relay.GeneratorTripRelayData;
+import org.interpss.dstab.relay.VtgtpatRelayModel;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
@@ -169,8 +172,7 @@ public class PSSEDStabDirectParser {
         for (PsseDyrRecord record : records) {
             try {
                 String type = record.canonicalModelName();
-                GeneratorKey key = new GeneratorKey(BUS_ID_PREFIX + record.busNumber(),
-                        record.deviceId());
+                GeneratorKey key = targetGeneratorKey(record);
                 boolean generatorTarget = DynamicModelCatalog.find(type)
                         .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC)
                         .orElse(true);
@@ -253,6 +255,18 @@ public class PSSEDStabDirectParser {
     private String missingCatalogTarget(PsseDyrRecord record) {
         var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
         if (descriptor.isEmpty()) return null;
+        if (descriptor.get().category()
+                == org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION) {
+            String monitoredBusId = BUS_ID_PREFIX + Math.abs(Integer.parseInt(record.deviceId()));
+            BaseDStabBus<?, ?> monitoredBus = builder.getBaseDStabNetwork().getDStabBus(monitoredBusId);
+            if (monitoredBus == null) return "monitoring bus " + monitoredBusId + " does not exist";
+            String targetBusId = BUS_ID_PREFIX + Math.abs(record.intParameter(0));
+            BaseDStabBus<?, ?> targetBus = builder.getBaseDStabNetwork().getDStabBus(targetBusId);
+            if (targetBus == null) return "target bus " + targetBusId + " does not exist";
+            String targetId = record.parameter(1);
+            return targetBus.getContributeGen(targetId) == null
+                    ? "target generator " + targetBusId + "/" + targetId + " does not exist" : null;
+        }
         String busId = BUS_ID_PREFIX + record.busNumber();
         BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
         if (bus == null) return "target bus " + busId + " does not exist";
@@ -519,8 +533,7 @@ public class PSSEDStabDirectParser {
             case "LVS3BL":
             case "FRQTPAT":
             case "VTGTPAT":
-                log.debug("Dynamic load/relay model {} at bus {} - skipped in direct parser", type, busId);
-                return false;
+                return procGeneratorTripRelay(type, record);
 
             case "ACMTBLU1":
                 return procAcmtblu1(busId, genId, fields);
@@ -2669,7 +2682,40 @@ public class PSSEDStabDirectParser {
         new Perc1Model(bus,load,loadId,d);return true;
     }
 
+    @SuppressWarnings("unchecked")
+    private boolean procGeneratorTripRelay(String type, PsseDyrRecord record) {
+        BaseDStabNetwork<?, ?> network = builder.getBaseDStabNetwork();
+        String monitoredBusId = BUS_ID_PREFIX + Math.abs(Integer.parseInt(record.deviceId()));
+        String targetBusId = BUS_ID_PREFIX + Math.abs(record.intParameter(0));
+        BaseDStabBus<?, ?> monitoredBus = network.getDStabBus(monitoredBusId);
+        BaseDStabBus<?, ?> targetBus = network.getDStabBus(targetBusId);
+        if (monitoredBus == null || targetBus == null) return false;
+        DStabGen targetGenerator = (DStabGen) targetBus.getContributeGen(record.parameter(1));
+        if (targetGenerator == null) return false;
+        GeneratorTripRelayData data = new GeneratorTripRelayData(
+                record.doubleParameter(2), record.doubleParameter(3),
+                record.doubleParameter(4), record.doubleParameter(5));
+        if (type.equals("FRQTPAT")) {
+            new FrqtpatRelayModel(record.busNumber(), monitoredBus, targetBus, targetGenerator, data);
+        } else {
+            new VtgtpatRelayModel(record.busNumber(), monitoredBus, targetBus, targetGenerator, data);
+        }
+        return true;
+    }
+
     // ==================== Utility Methods ====================
+
+    private GeneratorKey targetGeneratorKey(PsseDyrRecord record) {
+        var descriptor = DynamicModelCatalog.find(record.canonicalModelName());
+        if (descriptor.isPresent()
+                && descriptor.get().category()
+                        == org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION
+                && hasExpectedParameterCount(record)) {
+            return new GeneratorKey(BUS_ID_PREFIX + Math.abs(record.intParameter(0)),
+                    record.parameter(1));
+        }
+        return new GeneratorKey(BUS_ID_PREFIX + record.busNumber(), record.deviceId());
+    }
 
     @SuppressWarnings("unchecked")
     private double[] getGenRating(String busId, String genId) {

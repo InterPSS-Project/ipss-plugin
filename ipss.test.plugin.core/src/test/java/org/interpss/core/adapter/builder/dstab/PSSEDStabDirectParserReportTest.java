@@ -1,6 +1,8 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -13,10 +15,14 @@ import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
+import org.interpss.dstab.relay.AbstractGeneratorTripRelayModel;
+import org.interpss.dstab.relay.FrqtpatRelayModel;
+import org.interpss.dstab.relay.VtgtpatRelayModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.common.exp.InterpssException;
+import com.google.gson.JsonParser;
 
 public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     @TempDir
@@ -157,5 +163,104 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         assertEquals(2, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
         assertTrue(builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter()
                 instanceof Ieeex1Exciter);
+    }
+
+    @Test
+    void nativeGeneratorTripRelaysUseTheirIconTargetsAndAttachInStrictMode() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        builder.getDStabNetwork().setFrequency(60.0);
+        Path dyr = tempDir.resolve("generator-trip-relays.dyr");
+        Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
+                + "901 'FRQTPAT' 1 1 '1' 59.71 60.29 0.031 0.017 /\n"
+                + "902 'VTGTPAT' 1 1 '1' 0.817 1.183 0.029 0.023 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        assertEquals(3, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        var devices = builder.getDStabNetwork().getDStabBus("Bus1").getDynamicBusDeviceList();
+        FrqtpatRelayModel frequency = assertInstanceOf(FrqtpatRelayModel.class,
+                devices.stream().filter(FrqtpatRelayModel.class::isInstance).findFirst().orElseThrow());
+        VtgtpatRelayModel voltage = assertInstanceOf(VtgtpatRelayModel.class,
+                devices.stream().filter(VtgtpatRelayModel.class::isInstance).findFirst().orElseThrow());
+        assertEquals(59.71, frequency.getData().lowerThreshold(), 1.0e-12);
+        assertEquals(1.183, voltage.getData().upperThreshold(), 1.0e-12);
+        assertEquals("1", frequency.getTargetGenerator().getId());
+        assertEquals("Bus1", frequency.getTargetBus().getId());
+        assertEquals("Bus1", frequency.getMonitoredBus().getId());
+        assertEquals(60.0, frequency.getMonitoredBus().getNetwork().getFrequency(), 1.0e-12);
+    }
+
+    @Test
+    void generatorTripRelayDelaysMatchTheNativePsseContract() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        builder.getDStabNetwork().setFrequency(50.0);
+        Path dyr = tempDir.resolve("generator-trip-relay-timing.dyr");
+        Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
+                + "711 'FRQTPAT' 1 1 '1' 49.71 50.29 0.031 0.017 /\n"
+                + "712 'VTGTPAT' 1 1 '1' 0.817 1.183 0.029 0.023 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+        FrqtpatRelayModel frequency = (FrqtpatRelayModel) bus.getDynamicBusDeviceList().stream()
+                .filter(FrqtpatRelayModel.class::isInstance).findFirst().orElseThrow();
+        VtgtpatRelayModel voltage = (VtgtpatRelayModel) bus.getDynamicBusDeviceList().stream()
+                .filter(VtgtpatRelayModel.class::isInstance).findFirst().orElseThrow();
+        assertTrue(frequency.initStates(bus));
+        assertTrue(voltage.initStates(bus));
+        bus.setFreq(0.98);
+        bus.setVoltageMag(0.70);
+        for (int step = 0; step < 52; step++) {
+            assertTrue(frequency.afterStep(0.001));
+            assertTrue(voltage.afterStep(0.001));
+        }
+
+        var manifest = JsonParser.parseString(Files.readString(Path.of("testData", "reference",
+                "psse", "ieee9-generator-trip-relays", "manifest.json"))).getAsJsonObject();
+        var simulation = manifest.getAsJsonObject("simulation");
+        double nativeStart = simulation.get("psse_relay_initialization_start_s").getAsDouble();
+        var nativeTrips = simulation.getAsJsonObject("observed_trip_times_s");
+        assertEquals(nativeTrips.get("FRQTPAT_bus2_s").getAsDouble() - nativeStart,
+                frequency.getActionTime(), 5.0e-8);
+        assertEquals(nativeTrips.get("VTGTPAT_bus3_s").getAsDouble() - nativeStart,
+                voltage.getActionTime(), 5.0e-8);
+        assertEquals(0.048, frequency.getActionTime(), 1.0e-12);
+        assertEquals(0.052, voltage.getActionTime(), 1.0e-12);
+    }
+
+    @Test
+    void voltageTripRelayResetsBeforePickupThenLatchesThroughBreakerDelay() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("vtgtpat-lifecycle.dyr");
+        Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
+                + "903 'VTGTPAT' 1 1 '1' 0.82 1.18 0.03 0.02 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        parser.parseDynFile(dyr.toString());
+        var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+        VtgtpatRelayModel relay = (VtgtpatRelayModel) bus.getDynamicBusDeviceList().stream()
+                .filter(VtgtpatRelayModel.class::isInstance).findFirst().orElseThrow();
+        assertTrue(relay.initStates(bus));
+        assertEquals(AbstractGeneratorTripRelayModel.STATE_TIMER_MEMORY,
+                relay.getNamedStates().keySet().iterator().next());
+
+        bus.setVoltageMag(0.70);
+        assertTrue(relay.afterStep(0.01));
+        assertEquals(0.01, relay.getTimerMemory(), 1.0e-12);
+        bus.setVoltageMag(1.00);
+        assertTrue(relay.afterStep(0.01));
+        assertEquals(0.0, relay.getTimerMemory(), 1.0e-12);
+
+        bus.setVoltageMag(0.70);
+        assertTrue(relay.afterStep(0.01));
+        assertTrue(relay.afterStep(0.01));
+        assertTrue(relay.afterStep(0.01));
+        assertTrue(relay.isPickedUp());
+        bus.setVoltageMag(1.00);
+        assertTrue(relay.afterStep(0.01));
+        assertTrue(relay.afterStep(0.01));
+
+        assertTrue(relay.isTripped());
+        assertEquals(0.07, relay.getActionTime(), 1.0e-12);
+        assertFalse(relay.getTargetGenerator().isActive());
+        assertFalse(relay.getTargetGenerator().getDynamicGenDevice().isActive());
     }
 }
