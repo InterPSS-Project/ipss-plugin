@@ -31,12 +31,16 @@ and the public Bus-1062 renewable stack has hash-repeatable native PSS/E flat
 and fault artifacts covering seven boundary/command channels plus all 16
 REGCA1/REECA1/REPCA1 states. The published REPCA1 zero-branch fallback now uses
 generator power. Twelve of 13 active-state trajectory comparisons are within
-`0.00113 pu`; REECA1's voltage-PI state remains open at `0.04363 pu`, so this
-evidence does not promote any Texas2k case to full-stack trajectory acceptance.
-An exact-initial-condition PSS/E signal play-in separately reduces the REECA1
-voltage-PI residual to `0.001321 pu` and keeps the other compared REECA1/REPCA1
-states within `1.05e-4 pu`, localizing the larger end-to-end residual to the
-weak-mode operating-point sensitivity rather than a fitted controller change.
+`0.00113 pu`; the remaining end-to-end REECA1 voltage-PI difference reaches
+`0.04363 pu`, so this evidence does not promote any Texas2k case to full-stack
+trajectory acceptance. Direct integration of the native PSS/E
+`Kvi*(PIQ-Vt_filt)` derivative reproduces its reported K+3 state change within
+`1.42e-6 pu`, resolving the state definition and equation without gain or
+limiter fitting. An exact-initial-condition PSS/E signal play-in separately
+reduces the cross-tool voltage-PI residual to `0.001321 pu` and keeps the other
+compared REECA1/REPCA1 states within `1.05e-4 pu`, localizing the larger
+end-to-end residual to the weak-mode operating-point sensitivity and exported
+network/controller boundary rather than the PI equation.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
 sub-`1e-8 pu` solver-partition residuals; a focused `2e-8 pu` change remains
 observable. A fresh Case-5 local Q/V analysis still identifies Bus 1062 unit 2
