@@ -330,6 +330,7 @@ import org.interpss.core.dstab.mach.GensalConformanceTest;
 import org.interpss.core.dstab.mach.GensalPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.mach.GensalHydroSmibTest;
 import org.interpss.core.dstab.mach.GenqecPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.mach.GentraPsseSmibConformanceTest;
 import org.interpss.core.dstab.reference.PowerWorldCsvReferenceTest;
 import org.interpss.core.dstab.Regfma1PowerWorldTrajectoryTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
@@ -463,6 +464,7 @@ import org.junit.platform.suite.api.Suite;
 	GensalHydroSmibTest.class,
 	GensalPowerWorldSmibConformanceTest.class,
 	GenqecPowerWorldSmibConformanceTest.class,
+	GentraPsseSmibConformanceTest.class,
 	Cimtr4PsseSmibConformanceTest.class,
 	Bbsex1PsseSmibConformanceTest.class,
 	Ieeex1PsseSmibConformanceTest.class,
