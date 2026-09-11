@@ -1,10 +1,15 @@
 package org.interpss.dstab.control.pss.ieee.y2016.pss4c;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer.Band;
+import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData.BandData;
+import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData.InputTransducerData;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 
 import com.interpss.dstab.BaseDStabBus;
@@ -31,8 +36,32 @@ public final class Ieee2016PSS4CStabilizer extends AnnotateStabilizer
         super(id, "PSS4C", "IEEE-2016");
         sourceData = data;
         threeBandModel = Ieee2005PSS4BStabilizer.createDetachedEngine(
-                id + "-three-band", data.threeBandData(), machine);
+                id + "-three-band", runtimeThreeBandData(data.threeBandData()), machine);
         setMachine(machine);
+    }
+
+    /**
+     * PowerWorld's published PSS4C diagram replaces the ill-conditioned
+     * TH=AH=BH=1 high-frequency transducer by the equivalent implementation
+     * 1/(s+1) * 80s^2/(s^2+81s+80).  In the normalized reusable PSS4B block,
+     * the second factor is represented by AH=1/80 and BH=81/80.
+     */
+    private static Ieee2005PSS4BStabilizerData runtimeThreeBandData(
+            Ieee2005PSS4BStabilizerData data) {
+        InputTransducerData input = data.input();
+        if (Math.abs(input.th() - 1.0) > 1.0e-12
+                || Math.abs(input.ah() - 1.0) > 1.0e-12
+                || Math.abs(input.bh() - 1.0) > 1.0e-12) {
+            return data;
+        }
+        InputTransducerData rewritten = new InputTransducerData(
+                input.cli(), input.dli(), input.ali(), input.bli(),
+                input.bwli1(), input.wli1(), input.bwli2(), input.wli2(),
+                input.th(), 1.0 / 80.0, 81.0 / 80.0, input.h(),
+                input.bwh1(), input.wh1(), input.bwh2(), input.wh2());
+        return new Ieee2005PSS4BStabilizerData(
+                rewritten, data.lowBand(), data.intermediateBand(), data.highBand(),
+                data.vstmax(), data.vstmin());
     }
 
     public Ieee2016PSS4CStabilizerData getData() { return sourceData; }
@@ -43,6 +72,15 @@ public final class Ieee2016PSS4CStabilizer extends AnnotateStabilizer
     public double getHighOutput() { return threeBandModel.getHighOutput(); }
     public double getEffectiveInertiaCoefficient() {
         return threeBandModel.getEffectiveData().input().h();
+    }
+
+    /** Stable semantic names for all 38 PSS4C dynamic memories. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        if (veryLowBand == null) return Map.of();
+        Map<String, Double> states = new LinkedHashMap<>(threeBandModel.getNamedStates());
+        states.putAll(veryLowBand.getNamedStates("Very low band"));
+        return Collections.unmodifiableMap(states);
     }
 
     @Override
