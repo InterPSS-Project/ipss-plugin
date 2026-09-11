@@ -190,6 +190,7 @@ import org.interpss.core.dstab.H6ePowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Hyg3PowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1PowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Ieeeg1dPsseSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1PowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Pss2aPowerWorldSmibConformanceTest;
@@ -510,6 +511,7 @@ import org.junit.platform.suite.api.Suite;
 	Ieeet1PowerWorldSmibConformanceTest.class,
 	Ieeeg1AndesSmibConformanceTest.class,
 	Ieeeg1PowerWorldSmibConformanceTest.class,
+	Ieeeg1dPsseSmibConformanceTest.class,
 	HygovAndesSmibConformanceTest.class,
 	HygovPowerWorldSmibConformanceTest.class,
 	Hygov2dPowerWorldSmibConformanceTest.class,

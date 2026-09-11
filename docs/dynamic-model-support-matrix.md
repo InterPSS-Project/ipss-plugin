@@ -40,8 +40,9 @@ boundary/EFD/two-state contract, and EXST2 adds a native PSS/E
 boundary/EFD/four-state contract. ST6C, ST7B, ST7C, ST8C, ST9C, and ST10C add native PSS/E
 boundary/EFD/five-, four-, five-, five-, four-, and ten-state contracts. Together they raise
 combined exact-tool direct exciter evidence to `63/64` without changing the explicitly
-PowerWorld-only inventory. Current-schema IEEEG1D
-is the remaining governor artifact gap and is version-blocked in Simulator 24;
+PowerWorld-only inventory. Current-schema IEEEG1D adds a native PSS/E boundary
+and six-state contract, raising combined exact-tool direct governor evidence to
+`24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
 PSS/E Xplore 36.7); the Case-5 coupled fleet flat-run gate remains open. See
 the plan's release checklist before interpreting any
