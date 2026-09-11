@@ -207,7 +207,7 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
         return code == 3 || code == 4 || code == 5 ? gain * reference : 0.0;
     }
 
-    private ICMLControlBlock runtimeBlock(String name) {
+    protected ICMLControlBlock runtimeBlock(String name) {
         for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
             if (wrapper.getFieldName().equals(name)
                     && wrapper.getField() instanceof ICMLControlBlock block) {

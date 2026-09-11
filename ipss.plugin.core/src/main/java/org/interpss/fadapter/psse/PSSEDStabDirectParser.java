@@ -1891,13 +1891,14 @@ public class PSSEDStabDirectParser {
         return builder.addPss4b(busId, genId, parameters) != null;
     }
 
-    // PSS3C: IBUS 'PSS3C' ID followed by the 24 IEEE/PSS/E parameters.
+    // PSS3C: IBUS 'PSS3C' ID followed by four ICONs and 22 CONs.
     private boolean procPss3c(String busId, String genId, String[] f) {
-        if (f.length < 27) return false;
-        double[] parameters = new double[24];
-        parameters[0] = getInt(f, 3, 0);
-        parameters[1] = getInt(f, 4, 0);
-        for (int i = 2; i < parameters.length; i++) {
+        if (f.length < 29) return false;
+        double[] parameters = new double[26];
+        for (int i = 0; i < 4; i++) {
+            parameters[i] = getInt(f, i + 3, 0);
+        }
+        for (int i = 4; i < parameters.length; i++) {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
         return builder.addPss3c(busId, genId, parameters) != null;
