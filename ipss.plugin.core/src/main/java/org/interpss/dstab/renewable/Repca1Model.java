@@ -304,9 +304,14 @@ public final class Repca1Model {
             return new Measurement(localP, localQ, voltage, Complex.ZERO, f);
         }
         if (zeroBranchFallback) {
-            // Compatibility with ANDES for BUS1=BUS2=0: retain the local/remote
-            // voltage and frequency signals but define branch P/Q/I as zero.
-            return new Measurement(0.0, 0.0, regulatedBus.getVoltage(), Complex.ZERO,
+            // PSS/E REPCA1 defines all-zero monitored-branch identifiers as
+            // generator-power feedback. Keep voltage/frequency on the selected
+            // regulated bus, but use the converter's local model-base P/Q and
+            // the corresponding current for Kc/line-drop calculations.
+            Complex voltage = regulatedBus.getVoltage();
+            Complex localPower = new Complex(localP, localQ);
+            Complex current = localPower.divide(nonzero(voltage)).conjugate();
+            return new Measurement(localP, localQ, voltage, current,
                     regulatedBus.getFreq());
         }
         Complex sSystem = branchStoredInRequestedDirection
