@@ -125,6 +125,8 @@ import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
 import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
+import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
+import org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
@@ -2918,6 +2920,22 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Lcfb1PrefController(bus, machine, genId, data);
+    }
+
+    /** Attach a UEL1 auxiliary controller without replacing the exciter. */
+    public Uel1UnderExcitationLimiter addUel1(String busId, String genId, Uel1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (bus == null || machine == null || !machine.hasExciter()) {
+            log.warn("Machine/exciter not found for UEL1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        try {
+            return new Uel1UnderExcitationLimiter(bus, machine, genId, data);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Incompatible UEL1 target at {} {}: {}", busId, genId, ex.getMessage());
+            return null;
+        }
     }
 
     public Regca1Model addRegca1(String busId, String genId, Regca1Data data) {
