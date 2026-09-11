@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -43,6 +44,12 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
         Reeca1Model electrical = converter.getReeca1Controller();
         Repca1Model plant = electrical.getPlantController();
         assertNotNull(plant);
+        assertEquals(Set.of("Measured Active Power", "Measured Reactive Or Voltage",
+                "Active Control Integral", "Reactive Control Integral",
+                "Reactive Control Output", "Lead Lag", "Active Power Lag",
+                "Active Power Command", "Reactive Command"),
+                plant.getNamedStates().keySet());
+        assertEquals(plant.getPref(), plant.getNamedState("Active Power Command"), 0.0);
         assertSame(plant, converter.getActiveElectricalController().getPlantController());
         assertEquals(expectedData(), plant.getData());
     }

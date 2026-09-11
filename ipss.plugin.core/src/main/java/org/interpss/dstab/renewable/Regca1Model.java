@@ -1,6 +1,9 @@
 package org.interpss.dstab.renewable;
 
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -9,6 +12,7 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.device.DynamicGenDevice;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
@@ -17,7 +21,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * composed as controllers while this device owns the network current source.
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, IntegrationStepAware {
+        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private final Regca1Data data;
@@ -262,6 +266,17 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     public double getIq() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
         return highVoltageReactiveOutput(iqState, v, data.volim(), data.khv(), data.iolim());
+    }
+
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> named = new LinkedHashMap<>();
+        named.put("Filtered Voltage", vFiltered);
+        named.put("Active Current Regulator", ipState);
+        named.put("Reactive Current Regulator", iqState);
+        named.put("Active Power", p);
+        named.put("Reactive Power", q);
+        return Collections.unmodifiableMap(named);
     }
 
     private RenewableElectricalController activeController() {
