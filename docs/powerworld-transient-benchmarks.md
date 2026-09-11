@@ -207,6 +207,15 @@ also treats model-load, validation, script-action, and transient-start errors
 in the PowerWorld log as hard failures; completion markers alone are not enough
 to publish a reference artifact.
 
+For full-system PSS/E datasets, use the explicit `gnet` and `mod_remove`
+specification fields for the third and fifth optional `TSLoadPTI` arguments.
+The runner stages them as `inputs/gnet.idv` and `inputs/mod_remove.idv`, emits
+only relative paths in `run.aux`, and records semantic input names plus SHA-256
+hashes in the manifest. Other optional PTI companion files remain available
+through the five-position `pti_companion_files` array (MCRE, MTRLD, GNET,
+BASEGEN, MODREMOVE). External source locations are recorded as
+`external/<filename>` so generated artifacts do not disclose local usernames.
+
 Every published trace contains both boundary channels (bus voltage and
 generator MW/Mvar) and named internal model states. The test suite verifies the
 input and artifact hashes, finite trajectories, duplicate pre/post-event
