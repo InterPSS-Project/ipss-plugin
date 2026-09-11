@@ -1,6 +1,7 @@
 package org.interpss.core.dstab.dynLoad;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -175,11 +176,12 @@ public class Perc1ModelTest {
         System.out.println("PERC1 multi-ramp PSS/E maximum channel errors: "+maximumError);
     }
 
-    @Test void appliesPublishedLimitCorrectionsWithoutMutatingInputData()throws Exception{
+    @Test void appliesPublishedParameterCorrectionsWithoutMutatingInputData()throws Exception{
         Perc1Data invalid=new Perc1Data(1.2,.4,0,0,0,0,.1,0,.1,0,0,0,0,0,1,1,0,.66,-.66,
                 1.5,.9,-1,-1,.8,0,0,-.5,.0001,.02,.02);
         Perc1Model model=loaded(invalid);var bus=model.getDStabBus();
-        assertEquals(156.25,model.getMvaBase(),1e-8);
+        assertEquals(125.0/1.2,model.getMvaBase(),1e-8,
+                "Lfm above 1 is allowed and must not be replaced by the default");
         bus.setVoltage(new Complex(.8,0));for(int i=0;i<30;i++)advance(model,.001);
         assertEquals("CEASED",model.getOperatingMode());assertEquals(0,model.getFractionOn(),1e-12);
         bus.setVoltage(new Complex(.85,0));advance(model,.001);
@@ -187,6 +189,23 @@ public class Perc1ModelTest {
         bus.setVoltage(new Complex(.95,0));for(int i=0;i<50;i++)advance(model,.001);
         assertEquals("MONITOR",model.getOperatingMode());assertEquals(0,model.getFractionOn(),1e-12);
         assertEquals(1.2,invalid.lfm(),0);assertEquals(.8,invalid.vrecon(),0);
+    }
+
+    @Test void loadChangeScalesNetworkCurrentAndReportedPower()throws Exception{
+        Perc1Model model=loaded();
+        model.getNortonCurInj();
+        Complex baseline=model.getLoadPQ();
+
+        assertTrue(model.changeLoad(-.25));
+        model.getNortonCurInj();
+        assertEquals(.75*baseline.getReal(),model.getLoadPQ().getReal(),1e-12);
+        assertEquals(.75*baseline.getImaginary(),model.getLoadPQ().getImaginary(),1e-12);
+
+        assertTrue(model.changeLoad(-.75));
+        model.getNortonCurInj();
+        assertEquals(0.0,model.getLoadPQ().abs(),1e-12,
+                "a cumulative -1.0 load change must fully shed the PERC1 current");
+        assertFalse(model.changeLoad(-1.01));
     }
 
     private static Perc1Model loaded()throws Exception{return loaded(Perc1Data.defaults());}

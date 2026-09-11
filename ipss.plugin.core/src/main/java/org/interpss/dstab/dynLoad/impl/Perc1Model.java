@@ -48,7 +48,7 @@ public final class Perc1Model extends DynLoadModelImpl implements ICMLStateProvi
         Complex initial=parentLoad.getLoad(initialVoltage);
         if(initial==null||initial.getReal()<=EPS)return false;
         systemBaseMva=bus.getNetwork().getBaseMva();
-        double lfm=data.lfm()<.001||data.lfm()>1?.8:data.lfm();
+        double lfm=data.lfm()<.001?.8:data.lfm();
         deviceBaseMva=initial.getReal()*systemBaseMva/lfm;
         setMvaBase(deviceBaseMva);
         double scale=systemBaseMva/deviceBaseMva;
@@ -118,7 +118,8 @@ public final class Perc1Model extends DynLoadModelImpl implements ICMLStateProvi
 
     @Override public Complex getPosSeqEquivY(){return getEquivY();}
     @Override public Complex getNortonCurInj(){
-        Complex v=getDStabBus().getVoltage();double theta=v.getArgument(),scale=deviceBaseMva/systemBaseMva;
+        Complex v=getDStabBus().getVoltage();double theta=v.getArgument();
+        double scale=deviceBaseMva/systemBaseMva*(1.0+accumulatedLoadChangeFactor);
         Complex iload=new Complex(scale*(x[IP]*Math.cos(theta)+x[IQ]*Math.sin(theta)),
                 scale*(x[IP]*Math.sin(theta)-x[IQ]*Math.cos(theta)));
         Complex power=v.multiply(iload.conjugate());setLoadPQ(power);
