@@ -26,7 +26,8 @@ nine-state trajectory contract, HYGOVD has a repeatable direct four-state
 PowerWorld contract that reuses core GENROU and the verified HYGOV runtime,
 PERC1 has both short-pulse and six-second multi-ramp native PSS/E `PLBVF1`
 contracts including cease/reconnect performance,
-and LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
+GGOV1 has an additional native PSS/E machine-trip lifecycle contract, and
+LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
 to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
 the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated PowerWorld inventory is 76 artifacts,
 including `50/64` approved exciter rows and `23/24` approved PSS/E governor rows with
