@@ -132,8 +132,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     private double reactiveCurrentDerivative(double command, double state) {
         double derivative = derivative(-command, state, data.tg());
-        if (initialQ > EPS && data.iqrmax() > 0.0) derivative = Math.min(data.iqrmax(), derivative);
-        if (initialQ < -EPS && data.iqrmin() < 0.0) derivative = Math.max(data.iqrmin(), derivative);
+        // REGCA1 applies the upward recovery-rate limit when the initialized
+        // machine Q is positive and the downward limit when it is negative.
+        // Zero is a valid (and commonly used) freeze rate, not a disabled flag.
+        if (initialQ > EPS) derivative = Math.min(data.iqrmax(), derivative);
+        if (initialQ < -EPS) derivative = Math.max(data.iqrmin(), derivative);
         return derivative;
     }
 
