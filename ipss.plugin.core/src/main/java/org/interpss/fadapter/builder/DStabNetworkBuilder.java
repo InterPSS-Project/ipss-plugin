@@ -83,6 +83,8 @@ import org.interpss.dstab.control.exc.psse.st5b.St5bData;
 import org.interpss.dstab.control.exc.psse.st5b.St5bExciter;
 import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
 import org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter;
+import org.interpss.dstab.svc.Csvgn5Data;
+import org.interpss.dstab.svc.Csvgn5Model;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
@@ -2978,6 +2980,19 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Regfma1Model(gen, bus, genId, data);
+    }
+
+    public Csvgn5Model addCsvgn5(String busId, String genId, Csvgn5Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        String remoteBusId = "Bus" + Math.abs(data.remoteBusNumber());
+        BaseDStabBus<?, ?> remoteBus = network.getDStabBus(remoteBusId);
+        if (gen == null || remoteBus == null) {
+            log.warn("Generator or remote bus not found for CSVGN5: bus={}, gen={}, remote={}",
+                    busId, genId, remoteBusId);
+            return null;
+        }
+        return new Csvgn5Model(gen, bus, remoteBus, genId, data);
     }
 
     public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {
