@@ -10,7 +10,7 @@ trajectory comparison. Those acceptance results are tracked in
 cases are loadable and all pass the strict one-second flat-run gate; the
 full-system independent fault-parity milestone remains open.
 
-Current Texas2k audit (2026-09-10): `17/17` PSS/E DYR model names are
+Current Texas2k audit (2026-09-11): `17/17` PSS/E DYR model names are
 loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
 runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 `_MODREMOVE.idv`. Approved-list rows without a native PSS/E model name are
@@ -30,17 +30,26 @@ rule and dynamic-load-change Norton-current behavior are covered directly,
 and the public Bus-1062 renewable stack has hash-repeatable native PSS/E flat
 and fault artifacts covering seven boundary/command channels plus all 16
 REGCA1/REECA1/REPCA1 states. The published REPCA1 zero-branch fallback now uses
-generator power. Twelve of 13 active-state trajectory comparisons are within
-`0.00113 pu`; the remaining end-to-end REECA1 voltage-PI difference reaches
-`0.04363 pu`, so this evidence does not promote any Texas2k case to full-stack
-trajectory acceptance. Direct integration of the native PSS/E
+generator power. Direct integration of the native PSS/E
 `Kvi*(PIQ-Vt_filt)` derivative reproduces its reported K+3 state change within
 `1.42e-6 pu`, resolving the state definition and equation without gain or
-limiter fitting. An exact-initial-condition PSS/E signal play-in separately
-reduces the cross-tool voltage-PI residual to `0.001321 pu` and keeps the other
-compared REECA1/REPCA1 states within `1.05e-4 pu`, localizing the larger
-end-to-end residual to the weak-mode operating-point sensitivity and exported
-network/controller boundary rather than the PI equation.
+limiter fitting. An exact-initial-condition PSS/E signal play-in keeps the
+compared REECA1/REPCA1 controller states within `0.001321 pu` and all but PIV
+within `1.05e-4 pu`.
+A seven-bus, five-plant native PSS/E 36.7 fault artifact now supplies a coupled
+multi-device acceptance case at the PSS/E Xplore renewable-machine limit. Its
+41 channels cover POI and plant voltage, plant P/Q, REGCA1 Ip/Iq, REECA1
+PIQ/PIV, and REPCA1 lead-lag state for every plant. The comparison identified
+that published REGCA1 `Iqrmax=0` is an active zero upward recovery rate for a
+positive-Q initialization, not a disabled limit. Correcting that semantic
+without fitted gains or curves brings every channel inside an individual
+limit: maximum voltage error is `8.914e-4 pu`, P/Ip error is `3.916e-3 pu`, Q
+error is `4.850e-5 pu`, REGCA1 Iq error is `3.124e-7 pu`, REECA1 PIQ/PIV errors
+are `6.993e-4/7.740e-3 pu`, and REPCA1 lead-lag error is `3.876e-3 pu`. The
+artifact manifest uses only relative paths and hashes the RAW, DYR, generator
+script, PSS/E model library, and normalized CSV. This closes independent
+multi-device equation/fault parity within the installed five-machine license
+but does not promote a Texas2k case to full-system independent acceptance.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
 sub-`1e-8 pu` solver-partition residuals; a focused `2e-8 pu` change remains
 observable. A fresh Case-5 local Q/V analysis still identifies Bus 1062 unit 2
