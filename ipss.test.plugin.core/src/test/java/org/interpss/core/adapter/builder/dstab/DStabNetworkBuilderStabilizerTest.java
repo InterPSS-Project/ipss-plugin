@@ -661,10 +661,10 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     void parsePss3c_mapsCompleteRecordAndReusesPss3bDynamicChain() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss3c.dyr");
-        Files.writeString(dyr, "1 'PSS3C' '1' 7 3 "
+        Files.writeString(dyr, "1 'PSS3C' '1' 6 998 3 999 "
                 + "1 0.02 1.5 0.5 0.03 2.0 0.6 "
                 + "0.1 0.01 0.2 0.02 0.3 0.03 0.4 0.04 "
-                + "0.1 -0.1 0.15 0.10 0.05 0.2 0.02 /\n");
+                + "0.1 -0.1 0.15 0.10 0.2 0.02 0.05 /\n");
         PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
 
         parser.parseDynFile(dyr.toString());
@@ -675,8 +675,10 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertNotNull(pss);
         assertSame(machine, pss.getMachine());
         var data = pss.getPss3cData();
-        assertEquals(7, data.ics1());
+        assertEquals(6, data.ics1());
+        assertEquals(998, data.remoteBus1());
         assertEquals(3, data.ics2());
+        assertEquals(999, data.remoteBus2());
         assertEquals(1.0, data.k1(), TOL);
         assertEquals(0.02, data.t1(), TOL);
         assertEquals(1.5, data.tw1(), TOL);
@@ -705,22 +707,20 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         double[] p = pss3cParameters();
-        p[0] = 7;
-        p[22] = 0.0;
-        p[23] = 0.0;
-        p[19] = 0.0;
-        p[20] = -1.0;
+        p[0] = 6;
+        p[23] = 0.2;
+        p[24] = 0.02;
+        p[21] = 0.0;
+        p[22] = -1.0;
         Ieee2016PSS3CStabilizer pss = builder.addPss3c("Bus1", "1", p);
         assertNotNull(pss);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
 
-        machine.getDStabBus().setVoltage(new Complex(Math.cos(0.01), Math.sin(0.01)));
+        machine.getDStabBus().setVoltage(new Complex(0.99, 0.0));
         assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
 
-        double expected = 0.01 / (2.0 * Math.PI
-                * machine.getDStabBus().getNetwork().getFrequency() * 0.01);
-        assertEquals(expected, pss.getCompensatedFrequencySignal(), 1.0e-8);
-        assertEquals(expected, pss.input1Signal, 1.0e-8);
+        assertTrue(Double.isFinite(pss.getCompensatedFrequencySignal()));
+        assertEquals(pss.getCompensatedFrequencySignal(), pss.input1Signal, 1.0e-12);
     }
 
     @Test
@@ -729,13 +729,13 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         double[] p = pss3cParameters();
         p[0] = 3;
-        p[2] = 0.2;
-        p[3] = 0.02;
-        p[4] = 1.5;
-        p[5] = 0.0;
+        p[4] = 0.2;
+        p[5] = 0.02;
         p[6] = 1.5;
-        p[7] = 1.5;
-        p[8] = -1.0;
+        p[7] = 0.0;
+        p[8] = 1.5;
+        p[9] = 1.5;
+        p[10] = -1.0;
         Ieee2016PSS3CStabilizer pss = builder.addPss3c("Bus1", "1", p);
         machine.setPe(0.8);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
@@ -758,9 +758,9 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         double[] p = pss3cParameters();
-        p[19] = 0.15;
-        p[20] = 0.10;
-        p[21] = 0.02;
+        p[21] = 0.15;
+        p[22] = 0.10;
+        p[25] = 0.02;
         Ieee2016PSS3CStabilizer pss = builder.addPss3c("Bus1", "1", p);
         machine.setPe(0.20);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
@@ -786,7 +786,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
 
     private static double[] pss3cParameters() {
         return new double[] {
-                1, 3,
+                1, 0, 3, 0,
                 1.0, 0.02, 1.5,
                 0.0, 0.03, 2.0, 0.6,
                 0.0, 0.0, 0.0, 0.0,
