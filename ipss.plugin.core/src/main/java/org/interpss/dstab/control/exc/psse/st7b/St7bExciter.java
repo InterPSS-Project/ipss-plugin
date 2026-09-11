@@ -139,6 +139,7 @@ public class St7bExciter extends AnnotateExciter implements IntegrationStepAware
     public double getFeedbackOutput(){return algebraics(active,getMachine()).feedback;}
     public double getPreFiringField(){return algebraics(active,getMachine()).preField;}
     public double getInternalFieldVoltage(){return output(active,getMachine());}
+    protected double getFiringControllerState(){return active[EFIELD];}
     public double getFiringTimeConstant(){return ta;}public double[] getStateSnapshot(){
         double[] snapshot=active.clone();
         snapshot[INPUT_LL]=tf>EPS?(1-tg/tf)*active[INPUT_LL]:0;

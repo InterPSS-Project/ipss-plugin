@@ -54,6 +54,7 @@ import org.interpss.core.dstab.ExeliPsseSmibConformanceTest;
 import org.interpss.core.dstab.ScrxPsseSmibConformanceTest;
 import org.interpss.core.dstab.Exst2PsseSmibConformanceTest;
 import org.interpss.core.dstab.St7bPsseSmibConformanceTest;
+import org.interpss.core.dstab.St7cPsseSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Esst3aExciterTest;
 import org.interpss.core.dstab.Esst3aIndependentSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac5aTest;
@@ -457,6 +458,7 @@ import org.junit.platform.suite.api.Suite;
 	ScrxPsseSmibConformanceTest.class,
 	Exst2PsseSmibConformanceTest.class,
 	St7bPsseSmibConformanceTest.class,
+	St7cPsseSmibConformanceTest.class,
 	EmbeddedTrajectoryReferenceTest.class,
 	Regfma1IndependentTrajectoryTest.class,
 	GenrouConformanceTest.class,

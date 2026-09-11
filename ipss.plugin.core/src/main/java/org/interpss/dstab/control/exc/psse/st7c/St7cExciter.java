@@ -1,5 +1,9 @@
 package org.interpss.dstab.control.exc.psse.st7c;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
 
 import com.interpss.dstab.controller.cml.annotate.AnController;
@@ -13,4 +17,10 @@ public final class St7cExciter extends St7bExciter {
     @Override public St7cData getData(){return data;}
     @Override protected boolean hasFiringController(){return true;}
     @Override protected double rawFiringTimeConstant(){return data.getTa();}
+    /** Published PSS/E ST7C states in model-library order and semantics. */
+    @Override public Map<String,Double> getNamedStates(){
+        Map<String,Double> states=new LinkedHashMap<>(super.getNamedStates());
+        states.put("Thyristor bridge time constant",getFiringControllerState());
+        return Collections.unmodifiableMap(states);
+    }
 }
