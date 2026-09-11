@@ -208,6 +208,8 @@ public class Texas2kFullDynamicCoverageTest {
         var machine = generator.getMach();
         return switch (category) {
             case SYNCHRONOUS_MACHINE -> machine;
+            case COMPENSATOR -> machine instanceof org.interpss.dstab.mach.IeeeVoltageCompensatedMachine
+                    compensated && compensated.getIeeeVcData() != null ? compensated : null;
             case EXCITER -> machine == null ? null : machine.getExciter();
             case GOVERNOR -> machine == null ? null : machine.getGovernor();
             case STABILIZER -> machine == null ? null : machine.getStabilizer();

@@ -37,6 +37,7 @@ import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.mach.GentraData;
+import org.interpss.dstab.mach.IeeeVcData;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
 import org.interpss.dstab.relay.GeneratorTripRelayData;
 import org.interpss.dstab.relay.Lds3blRelayModel;
@@ -122,6 +123,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
+    private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private boolean strictImport;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private final Set<GeneratorKey> modelRemovedGenerators = new HashSet<>();
@@ -178,6 +180,7 @@ public class PSSEDStabDirectParser {
         pendingIeeest.clear();
         pendingRepca1.clear();
         pendingLcfb1.clear();
+        pendingIeeeVc.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
         for (PsseDyrRecord record : records) {
             try {
@@ -208,7 +211,8 @@ public class PSSEDStabDirectParser {
                     continue;
                 }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
-                        || type.equals("REPCA1") || type.equals("LCFB1");
+                        || type.equals("REPCA1") || type.equals("LCFB1")
+                        || type.equals("IEEEVC");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
@@ -249,6 +253,13 @@ public class PSSEDStabDirectParser {
                     attached ? "" : "LCFB1 requires a loaded machine and turbine governor");
         }
         pendingLcfb1.clear();
+        for (PendingIeeeVc pending : pendingIeeeVc) {
+            boolean attached = procIeeeVc(pending.busId(), pending.genId(), pending.fields());
+            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                    : DynamicModelImportStatus.REJECTED,
+                    attached ? "" : "IEEEVC requires a compatible loaded machine");
+        }
+        pendingIeeeVc.clear();
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
@@ -312,6 +323,9 @@ public class PSSEDStabDirectParser {
                 return procIeel(type, record);
             case "PERC1":
                 return procPerc1(busId, genId, fields);
+            case "IEEEVC":
+                pendingIeeeVc.add(new PendingIeeeVc(busId, genId, fields.clone(), record));
+                return true;
             case "GENCLS":
                 return procGencls(busId, genId, fields);
             case "GENROU":
@@ -1860,6 +1874,9 @@ public class PSSEDStabDirectParser {
     private record PendingLcfb1(String busId, String genId, String[] fields,
             PsseDyrRecord record) {}
 
+    private record PendingIeeeVc(String busId, String genId, String[] fields,
+            PsseDyrRecord record) {}
+
     private record LoadTarget(BaseDStabBus<?, ?> bus, AclfLoad load) {}
 
     // LCFB1: fbf pbf Fb Tpelec db emax Kp Ki Lrmax
@@ -2561,6 +2578,17 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 9, 0.0), getDouble(f, 10, 0.0), getDouble(f, 11, 0.0));
         double[] rating = getGenRating(busId, genId);
         return builder.addGentra(busId, genId, rating[0], rating[1], data) != null;
+    }
+
+    // PSS/E 36.7: IBUS 'IEEEVC' ID RC XC
+    private boolean procIeeeVc(String busId, String genId, String[] f) {
+        if (f.length != 5) {
+            log.warn("Invalid IEEEVC record at bus {}: expected 5 fields, found {}",
+                    busId, f.length);
+            return false;
+        }
+        return builder.addIeeeVc(busId, genId,
+                new IeeeVcData(getDouble(f, 3, 0.0), getDouble(f, 4, 0.0))) != null;
     }
 
     // REGCA1: IBUS MODEL ID LVPLSW Tg Rrpwr Brkpt Zerox Lvpl1 Volim
