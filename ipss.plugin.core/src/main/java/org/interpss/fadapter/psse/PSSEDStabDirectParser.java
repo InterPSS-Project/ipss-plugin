@@ -1916,13 +1916,19 @@ public class PSSEDStabDirectParser {
     }
 
     // PowerWorld DYR extension: PSS4C has no native PSS/E entry in the WECC
-    // cross-software table. Its published parameter order contains 94 values.
+    // cross-software table. The serialized form interleaves remote-bus object
+    // references after CLI and DLI; the model itself has 94 numeric parameters.
     private boolean procPss4c(String busId, String genId, String[] f) {
         if (f.length < 97) return false;
         double[] parameters = new double[94];
-        for (int i = 0; i < parameters.length; i++) {
-            parameters[i] = getDouble(f, i + 3, 0.0);
+        parameters[0] = getDouble(f, 3, 0.0);
+        parameters[1] = getDouble(f, 5, 0.0);
+        for (int i = 2; i < 92; i++) {
+            parameters[i] = getDouble(f, i + 5, 0.0);
         }
+        // Simulator 24's 94-slot DYR form omits these two model fields.
+        parameters[92] = 0.01;
+        parameters[93] = -0.01;
         return builder.addPss4c(busId, genId, parameters) != null;
     }
 

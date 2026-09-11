@@ -317,6 +317,13 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
             states.put(prefix + " lower lead-lag 2", lower2.state());
             states.put(prefix + " lower lead-lag 3", lower3.state());
         }
+
+        /** Stable semantic names for this band's six dynamic memories. */
+        public Map<String, Double> getNamedStates(String prefix) {
+            Map<String, Double> states = new LinkedHashMap<>();
+            putNamedStates(states, prefix);
+            return Collections.unmodifiableMap(states);
+        }
     }
 
     private interface TransferBlock {

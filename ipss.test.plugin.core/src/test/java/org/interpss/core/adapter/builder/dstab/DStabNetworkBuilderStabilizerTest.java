@@ -951,7 +951,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss4c_mapsPowerWorld94ParameterExtension() throws Exception {
+    void parsePss4c_mapsPowerWorld94SlotDyrExtension() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss4c.dyr");
         StringBuilder record = new StringBuilder("1 'PSS4C' '1'");
@@ -969,10 +969,17 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertNotNull(pss);
         assertSame(machine, pss.getMachine());
         assertEquals(1.0, pss.getData().threeBandData().input().cli(), TOL);
-        assertEquals(74.0, pss.getData().threeBandData().vstmax(), TOL);
-        assertEquals(75.0, pss.getData().threeBandData().vstmin(), TOL);
-        assertEquals(76.0, pss.getData().veryLowBand().k1(), TOL);
-        assertEquals(94.0, pss.getData().veryLowBand().min(), TOL);
+        assertEquals(3.0, pss.getData().threeBandData().input().dli(), TOL);
+        assertEquals(5.0, pss.getData().threeBandData().input().ali(), TOL);
+        assertEquals(76.0, pss.getData().threeBandData().vstmax(), TOL);
+        assertEquals(77.0, pss.getData().threeBandData().vstmin(), TOL);
+        assertEquals(78.0, pss.getData().veryLowBand().k1(), TOL);
+        assertEquals(0.01, pss.getData().veryLowBand().max(), TOL);
+        assertEquals(-0.01, pss.getData().veryLowBand().min(), TOL);
+        assertEquals(19.0, pss.getData().threeBandData().lowBand().k1(), TOL);
+        assertEquals(36.0, pss.getData().threeBandData().lowBand().max(), TOL);
+        assertEquals(38.0, pss.getData().threeBandData().intermediateBand().k1(), TOL);
+        assertEquals(57.0, pss.getData().threeBandData().highBand().k1(), TOL);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
@@ -993,6 +1000,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertNotNull(pss);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
         assertEquals(2.0 * machine.getH(), pss.getEffectiveInertiaCoefficient(), TOL);
+        assertEquals(38, pss.getNamedStates().size());
 
         machine.setSpeed(machine.getSpeed() + 0.01);
         double dt = 0.0005;

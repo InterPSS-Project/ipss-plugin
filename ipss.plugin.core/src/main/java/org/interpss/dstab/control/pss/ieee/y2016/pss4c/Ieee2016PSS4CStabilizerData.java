@@ -19,8 +19,10 @@ public record Ieee2016PSS4CStabilizerData(
     }
 
     /**
-     * Parse the order published by PowerWorld: the 75 PSS4B-compatible values
-     * (including VSTMAX/VSTMIN), followed by the 19 very-low-band values.
+     * Parse the 94 model parameters published by PowerWorld: the 75
+     * PSS4B-compatible parameters followed by the 19 very-low-band parameters.
+     * PowerWorld's DYR serialization additionally interleaves two remote-bus
+     * object references; those are removed by the DYR parser before this method.
      */
     public static Ieee2016PSS4CStabilizerData fromPowerWorldParameters(double[] p) {
         if (p == null || p.length != PARAMETER_COUNT) {
