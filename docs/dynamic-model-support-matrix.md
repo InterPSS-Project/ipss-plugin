@@ -35,8 +35,9 @@ PSS/E 36.7 boundary/EFD/three-state trajectory contract. IEEEX1 and EXDC2
 likewise have native PSS/E boundary/EFD/five-state contracts, IEEET4 has a
 native PSS/E boundary/EFD/two-state contract, and EXELI has a native PSS/E
 boundary/EFD/eight-state/stabilizer contract. SCRX adds a native PSS/E
-boundary/EFD/two-state contract. Together they raise combined exact-tool
-direct exciter evidence to `56/64` without changing the explicitly
+boundary/EFD/two-state contract, and EXST2 adds a native PSS/E
+boundary/EFD/four-state contract. Together they raise combined exact-tool
+direct exciter evidence to `57/64` without changing the explicitly
 PowerWorld-only inventory. Current-schema IEEEG1D
 is the remaining governor artifact gap and is version-blocked in Simulator 24;
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
