@@ -313,6 +313,7 @@ import org.interpss.core.dstab.Ac8bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ac7bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.RexsysIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1AndesSmibConformanceTest;
+import org.interpss.core.dstab.IeeeVcPsseSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1SmibIntegrationTest;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
@@ -466,6 +467,7 @@ import org.junit.platform.suite.api.Suite;
 	GenqecIndependentSmibConformanceTest.class,
 	GentraPsseSmibConformanceTest.class,
 	Cimtr4PsseSmibConformanceTest.class,
+	IeeeVcPsseSmibConformanceTest.class,
 	Bbsex1PsseSmibConformanceTest.class,
 	Ieeex1PsseSmibConformanceTest.class,
 	Exdc2PsseSmibConformanceTest.class,

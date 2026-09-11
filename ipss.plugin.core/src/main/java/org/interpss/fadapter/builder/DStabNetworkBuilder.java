@@ -184,6 +184,11 @@ import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.mach.Gentpj1Machine;
 import org.interpss.dstab.mach.GentraData;
 import org.interpss.dstab.mach.GentraMachine;
+import org.interpss.dstab.mach.IeeeVcData;
+import org.interpss.dstab.mach.IeeeVcEConstMachine;
+import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
+import org.interpss.dstab.mach.IeeeVcSalientPoleMachine;
+import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
 import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.Cimtr4Machine;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -229,6 +234,18 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Machine Models ====================
+
+    /** Attach the algebraic PSS/E IEEEVC sensing boundary to a loaded machine. */
+    public IeeeVoltageCompensatedMachine addIeeeVc(
+            String busId, String genId, IeeeVcData data) {
+        Machine machine = findMachine(busId, genId);
+        if (!(machine instanceof IeeeVoltageCompensatedMachine compensated)) {
+            log.warn("Machine does not expose an IEEEVC sensing boundary: {} {}", busId, genId);
+            return null;
+        }
+        compensated.setIeeeVcData(data);
+        return compensated;
+    }
 
     /** PSS/E GENTRA transient-level salient-pole generator. */
     public GentraMachine addGentra(String busId, String genId,
@@ -311,10 +328,9 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENROU: {}", busId);
             return null;
         }
-        String machId = busId + "-mach" + genId;
-        RoundRotorMachine mach = (RoundRotorMachine) DStabObjectFactory.createMachine(
-                machId, "GENROU", MachineModelType.EQ11_ED11_ROUND_ROTOR,
-                network, busId, genId);
+        IeeeVcRoundRotorMachine mach = new IeeeVcRoundRotorMachine();
+        configureMachineIdentity(mach, "GENROU", MachineModelType.EQ11_ED11_ROUND_ROTOR,
+                busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
         mach.setRatedVoltage(ratedKv, UnitType.kV);
@@ -445,10 +461,9 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENSAL: {}", busId);
             return null;
         }
-        String machId = busId + "-mach" + genId;
-        SalientPoleMachine mach = (SalientPoleMachine) DStabObjectFactory.createMachine(
-                machId, "GENSAL", MachineModelType.EQ11_SALIENT_POLE,
-                (BaseDStabNetwork<?, ?>) network, busId, genId);
+        IeeeVcSalientPoleMachine mach = new IeeeVcSalientPoleMachine();
+        configureMachineIdentity(mach, "GENSAL", MachineModelType.EQ11_SALIENT_POLE,
+                busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
         mach.setRatedVoltage(ratedKv, UnitType.kV);
@@ -566,10 +581,8 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENCLS: {}", busId);
             return null;
         }
-        String machId = busId + "-mach" + genId;
-        EConstMachine mach = (EConstMachine) DStabObjectFactory.createMachine(
-                machId, "GENCLS", MachineModelType.ECONSTANT,
-                (BaseDStabNetwork<?, ?>) network, busId, genId);
+        IeeeVcEConstMachine mach = new IeeeVcEConstMachine();
+        configureMachineIdentity(mach, "GENCLS", MachineModelType.ECONSTANT, busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
         mach.setRatedVoltage(ratedKv, UnitType.kV);
@@ -580,6 +593,16 @@ public class DStabNetworkBuilder {
         mach.setRa(ra);
         mach.setXd1(xd1);
         return mach;
+    }
+
+    private void configureMachineIdentity(Machine machine, String modelName,
+            MachineModelType type, String busId, String genId) throws InterpssException {
+        machine.setId(busId + "-mach" + genId);
+        machine.setName(modelName);
+        machine.setMachType(type);
+        machine.setMachData(DStabObjectFactory.createMachineData());
+        machine.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(machine, busId, genId);
     }
 
     /**

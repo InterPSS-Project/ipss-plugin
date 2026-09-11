@@ -8,8 +8,10 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.mach.impl.Eq1MachineImpl;
 
 /** PSS/E GENTRA transient-level salient-pole generator. */
-public final class GentraMachine extends Eq1MachineImpl implements ICMLStateProvider {
+public final class GentraMachine extends Eq1MachineImpl
+        implements ICMLStateProvider, IeeeVoltageCompensatedMachine {
     private final GentraData data;
+    private IeeeVcData ieeeVcData;
 
     public GentraMachine(GentraData data) {
         super();
@@ -18,6 +20,16 @@ public final class GentraMachine extends Eq1MachineImpl implements ICMLStateProv
 
     public GentraData getGentraData() {
         return data;
+    }
+
+    @Override
+    public IeeeVcData getIeeeVcData() {
+        return ieeeVcData;
+    }
+
+    @Override
+    public void setIeeeVcData(IeeeVcData data) {
+        ieeeVcData = data;
     }
 
     /** Algebraic q-axis transient voltage reported as GENTRA VAR L. */
