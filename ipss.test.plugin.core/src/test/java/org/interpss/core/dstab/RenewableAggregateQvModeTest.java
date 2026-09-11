@@ -386,11 +386,95 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                     labels[index], psseMaximum[index], psseMaximumTime[index],
                     psseTolerance[index]));
         }
+
+        String[] stateLabels = {
+                "REGCA_IP", "REGCA_IQ", "REGCA_VFILT", "REECA_VFILT",
+                "REECA_PIQ", "REECA_PIV", "REECA_PORD", "REPCA_VFILT",
+                "REPCA_PIQ_DELTA", "REPCA_LEAD_LAG_DELTA", "REPCA_PFILT",
+                "REPCA_PIP_DELTA", "REPCA_P_LAG_DELTA"
+        };
+        String[] expectedState = {
+                "REGCA_IP", "REGCA_IQ", "REGCA_VFILT", "REECA_VFILT",
+                "REECA_PIQ", "REECA_PIV", "REECA_PORD", "REPCA_VFILT",
+                "REPCA_PIQ", "REPCA_LEAD_LAG", "REPCA_PFILT",
+                "REPCA_PIP", "REPCA_P_LAG"
+        };
+        int[] actualState = {7, 6, 8, 9, 14, 12, 13, 16, 17, 18, 19, 20, 21};
+        boolean[] compareDelta = {
+                false, false, false, false, false, false, false, false,
+                true, true, false, true, true
+        };
+        String[] psseInitial = psseLines.get(1).split(",");
+        double[] actualInitial = actual.get(0);
+        double[] stateMaximum = new double[stateLabels.length];
+        double[] stateMaximumTime = new double[stateLabels.length];
+        for (String line : psseLines.subList(1, psseLines.size())) {
+            String[] expected = line.split(",");
+            double time = Double.parseDouble(expected[0]);
+            if (time < 0 || time > 4.00001 || Math.abs(time - .05) < .00051
+                    || Math.abs(time - .10) < .00051) continue;
+            double[] row = interpolateWeakGrid(actual, time);
+            for (int channel = 0; channel < stateLabels.length; channel++) {
+                double expectedValue = Double.parseDouble(
+                        expected[psseColumn.get(expectedState[channel])]);
+                double actualValue = row[actualState[channel]];
+                if (compareDelta[channel]) {
+                    expectedValue -= Double.parseDouble(
+                            psseInitial[psseColumn.get(expectedState[channel])]);
+                    actualValue -= actualInitial[actualState[channel]];
+                }
+                double error = Math.abs(actualValue - expectedValue);
+                if (error > stateMaximum[channel]) {
+                    stateMaximum[channel] = error;
+                    stateMaximumTime[channel] = time;
+                }
+            }
+        }
+        System.out.println("Weak-grid PSS/E state max errors: "
+                + Arrays.toString(stateMaximum));
+        System.out.println("Weak-grid PSS/E state max-error times: "
+                + Arrays.toString(stateMaximumTime));
+        double[] stateTolerance = {
+                2.5e-4, 1.0e-3, 1.3e-3, 1.3e-3, 7.0e-4, 4.5e-2, 5.0e-5,
+                1.3e-3, 3.0e-4, 1.1e-3, 2.0e-4, 5.0e-6, 4.0e-5
+        };
+        for (int channel = 0; channel < stateLabels.length; channel++) {
+            assertTrue(stateMaximum[channel] <= stateTolerance[channel],
+                    String.format(Locale.ROOT,
+                            "PSS/E %s max error %.9g at %.9g exceeds %.9g",
+                            stateLabels[channel], stateMaximum[channel],
+                            stateMaximumTime[channel], stateTolerance[channel]));
+        }
+    }
+
+    @Test
+    void psseBus1062FlatArtifactKeepsEveryRenewableStateStationary() throws Exception {
+        Path reference = Path.of("testData", "reference", "psse",
+                "renewable-bus1062-flat", "psse.csv");
+        String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(Files.readAllBytes(reference)));
+        String manifest = Files.readString(reference.resolveSibling("manifest.json"));
+        assertTrue(manifest.contains(hash), "PSS/E flat CSV hash is absent from its manifest");
+
+        List<String> lines = Files.readAllLines(reference);
+        assertEquals(8005, lines.size(), "Expected header plus 8,004 PSS/E samples");
+        String[] headings = lines.get(0).split(",");
+        assertEquals(24, headings.length, "time plus 23 renewable/network channels");
+        String[] initial = lines.get(1).split(",");
+        for (String line : lines.subList(2, lines.size())) {
+            String[] sample = line.split(",");
+            for (int column = 1; column < headings.length; column++) {
+                assertEquals(Double.parseDouble(initial[column]),
+                        Double.parseDouble(sample[column]), 0.0,
+                        headings[column] + " moved during the native PSS/E flat run");
+            }
+        }
     }
 
     private static void recordWeakGrid(List<double[]> rows, double time,
             BaseDStabNetwork<?, ?> network, Regca1Model converter) {
         var reeca = converter.getReeca1Controller();
+        var repca = reeca.getPlantController();
         var state = converter.getStates(null);
         rows.add(new double[] {
                 time,
@@ -401,7 +485,11 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 converter.getIqRegulatorState(), converter.getIpRegulatorState(),
                 converter.getFilteredVoltage(), reeca.getMeasuredVoltage(),
                 reeca.getMeasuredActivePower(), reeca.getReactiveControlOutput(),
-                reeca.getVoltageControlIntegral(), reeca.getActivePowerOrder()
+                reeca.getVoltageControlIntegral(), reeca.getActivePowerOrder(),
+                reeca.getReactiveControlIntegral(), reeca.getReactiveCurrentState(),
+                repca.getMeasuredReactiveOrVoltage(), repca.getReactiveControlIntegral(),
+                repca.getLeadLagState(), repca.getMeasuredActivePower(),
+                repca.getActiveControlIntegral(), repca.getActiveLagState()
         });
     }
 
