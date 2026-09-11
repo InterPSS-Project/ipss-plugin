@@ -2,6 +2,9 @@ package org.interpss.dstab.control.exc.psse.st8c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -153,6 +156,16 @@ public final class St8cExciter extends AnnotateExciter implements IntegrationSte
     public double getBridgeControl(){return algebraics(active,getMachine()).vr;}public double getCompoundSource(){return compoundSource(getMachine());}
     public double getCurrentSource2(){return currentSource2(getMachine());}public double getBridge1(){return algebraics(active,getMachine()).vb1;}
     public double getBridge2(){return algebraics(active,getMachine()).vb2;}public double[] getStateSnapshot(){return active.clone();}
+    /** Published PSS/E ST8C states in model-library order and semantics. */
+    @Override public Map<String,Double> getNamedStates(){
+        Map<String,Double> states=new LinkedHashMap<>();
+        states.put("Sensed VT",active[SENSED]);
+        states.put("Regulator integrator",active[OUTER_I]-exciterIfd(getMachine()));
+        states.put("Field Current Regulator",active[INNER_I]);
+        states.put("Controlled Rectifier Bridge",active[BRIDGE]);
+        states.put("Feedback Gain KF",active[IFD_FEEDBACK]);
+        return Collections.unmodifiableMap(states);
+    }
     @Override public double getOutput(Machine machine){outputSignal=algebraics(active,machine).efd;return outputSignal;}
     @Override public void setRefPoint(double value){reference=value;}@Override public double getRefPoint(){return reference;}
     private record Algebraic(double sensed,double outerInput,double ifdReferenceRaw,double ifdReference,double ifd,
