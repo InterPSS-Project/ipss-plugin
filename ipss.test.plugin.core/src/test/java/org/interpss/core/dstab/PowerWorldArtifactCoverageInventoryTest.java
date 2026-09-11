@@ -29,7 +29,7 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertEquals(24, report.categories().get("GOVERNOR").exactLoadableRows());
         assertEquals(23, report.categories().get("GOVERNOR").rowsWithDirectArtifact());
         assertEquals(15, report.categories().get("STABILIZER").approvedPsseRows());
-        assertEquals(13, report.categories().get("STABILIZER").exactLoadableRows());
+        assertEquals(14, report.categories().get("STABILIZER").exactLoadableRows());
         assertEquals(4, report.categories().get("STABILIZER").rowsWithDirectArtifact());
         assertTrue(row(report, "GENROU").hasDirectArtifact());
         assertTrue(row(report, "GENQEC").hasDirectArtifact());
@@ -51,6 +51,8 @@ public class PowerWorldArtifactCoverageInventoryTest {
         assertTrue(row(report, "PSS2B").hasDirectArtifact());
         assertTrue(row(report, "PSS4C").hasDirectArtifact());
         assertTrue(row(report, "PSS5C").hasDirectArtifact());
+        assertTrue(row(report, "PSLF-PSS2C").isExactLoadable());
+        assertFalse(row(report, "PSLF-PSS2C").hasDirectArtifact());
         assertTrue(row(report, "HYGOV2D").hasDirectArtifact());
         assertTrue(row(report, "HYGOVD").hasDirectArtifact());
         assertTrue(row(report, "TGOV1").hasDirectArtifact());

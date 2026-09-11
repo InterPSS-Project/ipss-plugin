@@ -89,7 +89,10 @@ direct PowerWorld boundary, machine, exciter, stabilizer-output, and 18 shared
 canonical band-state contract. Its full 38-state named-state API remains
 tool-neutral; proprietary PowerWorld transducer slots are not relabeled as
 canonical states. This raises direct PowerWorld stabilizer evidence to `4/15`
-and combined exact-tool stabilizer evidence to `13/15`. Current-schema
+and combined exact-tool stabilizer evidence to `13/15`. The duplicate WECC
+`PSLF-PSS2C` cross-software row maps exactly to the already verified native
+PSS/E `PSS2C`, raising combined exact-tool stabilizer evidence to `14/15`
+without claiming an additional PowerWorld artifact. Current-schema
 IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
