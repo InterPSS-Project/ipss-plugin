@@ -6,6 +6,7 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CON
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.DRIVE_TRAIN;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.EXCITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GOVERNOR;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PITCH_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLLER;
@@ -387,7 +388,13 @@ public final class DynamicModelCatalog {
                     "Exciter%20REEC_B.htm"),
             descriptor("PERC1", Set.of(), LOAD_CHARACTERISTIC, 30, LOADABLE,
                     "org.interpss.dstab.dynLoad.impl.Perc1Model",
-                    "Load%20Characteristic%20PERC1.htm")
+                    "Load%20Characteristic%20PERC1.htm"),
+            descriptor("FRQTPAT", Set.of(), GENERATOR_PROTECTION, 6, LOADABLE,
+                    "org.interpss.dstab.relay.FrqtpatRelayModel",
+                    "Relay%20Model%20FRQDCAT%20and%20FRQTPAT.htm"),
+            descriptor("VTGTPAT", Set.of(), GENERATOR_PROTECTION, 6, LOADABLE,
+                    "org.interpss.dstab.relay.VtgtpatRelayModel",
+                    "Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream
