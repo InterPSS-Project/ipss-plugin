@@ -42,7 +42,7 @@ public final class DynamicModelSupportMatrix {
                 .append("cessation and reconnection. LDS3BL and LVS3BL have native PSS/E staged-load-\n")
                 .append("shedding contracts covering pickup, breaker, fraction, and transfer actions.\n")
                 .append("IEELBL and IEELAR share the exact algebraic IEEE voltage/frequency load engine.\n")
-                .append("All 32 native PSS/E references cold-regenerate\n")
+                .append("All 33 native PSS/E references cold-regenerate\n")
                 .append("with matching published manifest content. See the plan's release checklist\n")
                 .append("before interpreting any\n")
                 .append("`LOADABLE` row as completed model validation.\n\n")
