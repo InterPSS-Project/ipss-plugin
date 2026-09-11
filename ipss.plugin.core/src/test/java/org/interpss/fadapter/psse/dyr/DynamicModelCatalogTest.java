@@ -30,6 +30,7 @@ class DynamicModelCatalogTest {
         assertEquals("WTDTA1", DynamicModelCatalog.canonicalName("WTDAT1"));
         assertEquals("GENQEJ", DynamicModelCatalog.canonicalName("genqeju"));
         assertEquals(18, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
+        assertEquals(16, DynamicModelCatalog.find("GENTPJ1").orElseThrow().parameterCount());
         assertEquals(30, DynamicModelCatalog.find("PERC1").orElseThrow().parameterCount());
         assertEquals(DynamicModelCategory.LOAD_CHARACTERISTIC,
                 DynamicModelCatalog.find("PERC1").orElseThrow().category());

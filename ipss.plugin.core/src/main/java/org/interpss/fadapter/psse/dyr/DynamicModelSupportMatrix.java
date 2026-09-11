@@ -38,7 +38,7 @@ public final class DynamicModelSupportMatrix {
                 .append("nine-state trajectory contract, and HYGOVD has a repeatable direct four-state\n")
                 .append("PowerWorld contract that reuses core GENROU and the verified HYGOV runtime;\n")
                 .append("PERC1 has native PSS/E PLBVF1 short-pulse and multi-ramp contracts covering\n")
-                .append("cessation and reconnection. All 28 native PSS/E references cold-regenerate\n")
+                .append("cessation and reconnection. All 29 native PSS/E references cold-regenerate\n")
                 .append("with matching published manifest content. See the plan's release checklist\n")
                 .append("before interpreting any\n")
                 .append("`LOADABLE` row as completed model validation.\n\n")

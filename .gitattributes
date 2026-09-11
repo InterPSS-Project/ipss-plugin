@@ -1,3 +1,6 @@
 # Hash-traceable PSS/E benchmark inputs and outputs must retain exact bytes.
 /ipss.test.plugin.core/src/test/python/psse_renewable_aggregate_probe.py -text
 /ipss.test.plugin.core/testData/reference/psse/renewable-aggregate-5/* -text whitespace=cr-at-eol
+/ipss.test.plugin.core/src/test/python/psse_gentpj1_probe.py -text whitespace=cr-at-eol
+/ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_gentpj1_psse36.dyr -text whitespace=cr-at-eol
+/ipss.test.plugin.core/testData/reference/psse/smib-gentpj1/* -text whitespace=cr-at-eol
