@@ -4,6 +4,7 @@ package org.interpss.fadapter.psse.dyr;
 public enum DynamicModelCategory {
     SYNCHRONOUS_MACHINE,
     CONVERTER_MACHINE,
+    COMPENSATOR,
     EXCITER,
     GOVERNOR,
     STABILIZER,

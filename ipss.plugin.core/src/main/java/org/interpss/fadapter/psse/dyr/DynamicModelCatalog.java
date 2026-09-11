@@ -2,6 +2,7 @@ package org.interpss.fadapter.psse.dyr;
 
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.AERODYNAMIC_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.CONVERTER_MACHINE;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.COMPENSATOR;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.DRIVE_TRAIN;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.EXCITER;
@@ -152,6 +153,9 @@ public final class DynamicModelCatalog {
                     "org.interpss.dstab.mach.Gentpj1Machine", "Machine%20Model%20GENTPJ.htm"),
             descriptor("GENTRA", Set.of(), SYNCHRONOUS_MACHINE, 9, LOADABLE,
                     "org.interpss.dstab.mach.GentraMachine", "Machine%20Model%20GENTRA.htm"),
+            descriptor("IEEEVC", Set.of(), COMPENSATOR, 2, LOADABLE,
+                    "org.interpss.dstab.mach.IeeeVoltageCompensatedMachine",
+                    "Voltage%20Compensator%20IEEEVC.htm"),
             descriptor("CIMTR4", Set.of(), SYNCHRONOUS_MACHINE, 13, LOADABLE,
                     "org.interpss.dstab.mach.Cimtr4Machine", "Machine%20Model%20CIMTR4.htm"),
             descriptor("GENCLS", Set.of(), SYNCHRONOUS_MACHINE, 2, LOADABLE,

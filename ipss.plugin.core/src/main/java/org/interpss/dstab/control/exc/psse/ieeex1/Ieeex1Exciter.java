@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -106,7 +107,7 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
         double leadLag0 = Math.abs(ka) > EPS ? vr0 / ka : 0.0;
         double pss0 = stabilizerSignal(machine);
 
-        state[VSENSE] = machine.getDStabBus().getVoltageMag();
+        state[VSENSE] = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         state[LEAD_LAG] = leadLag0;
         state[REGULATOR] = vr0;
         state[FIELD] = efd0;
@@ -193,7 +194,7 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
 
     private void derivatives(double[] x, double[] dx, Machine machine) {
         Algebraic a = algebraics(x, machine);
-        double vt = machine.getDStabBus().getVoltageMag();
+        double vt = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         dx[VSENSE] = lagDerivative(vt, x[VSENSE], tr);
         dx[LEAD_LAG] = lagDerivative(a.error, x[LEAD_LAG], tb);
 
@@ -216,7 +217,7 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
     }
 
     private Algebraic algebraics(double[] x, Machine machine) {
-        double vt = machine.getDStabBus().getVoltageMag();
+        double vt = IeeeVoltageCompensatedMachine.sensedVoltage(machine);
         double sensed = tr > EPS ? x[VSENSE] : vt;
         if (te > EPS) return algebraicsForField(x, machine, sensed, x[FIELD]);
         double field = solveAlgebraicField(x, machine, sensed);
