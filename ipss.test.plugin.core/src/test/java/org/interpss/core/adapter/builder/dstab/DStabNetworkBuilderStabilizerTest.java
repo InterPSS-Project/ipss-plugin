@@ -1289,7 +1289,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss7c.dyr");
         double[] values = pss7cParameters();
-        values[4] = 2; values[5] = 3; values[6] = 4.5;
+        values[4] = 2; values[5] = 3; values[16] = 4.5;
         values[38] = 0.125;
         StringBuilder record = new StringBuilder("1 'PSS7C' '1'");
         for (double value : values) record.append(' ').append(value);
@@ -1314,12 +1314,13 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         machine.setSpeed(1.0);
         double[] p = pss7cParameters();
-        p[4] = 1; p[5] = 2; p[15] = 0.05; p[16] = 0.10;
-        p[6] = 3.0; p[7] = 0.0; p[8] = 0.0;
-        p[9] = 0.2; p[11] = 1.0; p[12] = 0.5;
+        p[4] = 1; p[5] = 2; p[14] = 0.05; p[15] = 0.10;
+        p[6] = 1.0; p[7] = 0.5; p[8] = 0.2;
+        p[12] = 0.0; p[13] = 1.0; p[16] = 3.0;
         p[17] = 1.0; p[18] = 0.4; p[19] = 0.2;
-        p[22] = 0.0; p[23] = 0.0;
-        p[24] = 0.5; p[25] = 0.4; p[26] = 0.3; p[27] = 0.2;
+        p[20] = 0.0; p[21] = 0.0;
+        p[22] = 0.5; p[23] = 0.4; p[24] = 0.0; p[25] = 0.3;
+        p[26] = 0.0; p[27] = 0.2;
         Ieee2016PSS7CStabilizer pss = builder.addPss7c("Bus1", "1", p);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
         assertEquals(0.5, pss.getEffectiveData().tw2(), TOL);
@@ -1361,7 +1362,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         double[] p = pss7cParameters();
-        p[6] = -1.0; p[11] = 0.0; p[17] = 0.0; p[24] = -1.0;
+        p[16] = -1.0; p[6] = 0.0; p[17] = 0.0; p[22] = 0.0;
         p[28] = -0.2; p[29] = 0.1;
         p[32] = -0.4; p[33] = 0.3;
         Ieee2016PSS7CStabilizer pss = builder.addPss7c("Bus1", "1", p);
@@ -1381,22 +1382,22 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void pss7c_computesCompensatedFrequencyInput() throws Exception {
+    void pss7c_initializesPublishedCompensatedFrequencyCoordinate() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         double[] p = pss7cParameters();
         p[0] = 7;
-        p[37] = 0.0;
-        p[38] = 0.0;
+        p[37] = 0.2;
+        p[38] = 0.02;
         Ieee2016PSS7CStabilizer pss = builder.addPss7c("Bus1", "1", p);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
 
         machine.getDStabBus().setVoltage(new Complex(Math.cos(0.01), Math.sin(0.01)));
         assertTrue(pss.nextStep(0.01, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
 
-        double expected = 0.01 / (2.0 * Math.PI
-                * machine.getDStabBus().getNetwork().getFrequency() * 0.01);
-        assertEquals(expected, pss.getInput1Signal(), 1.0e-8);
+        assertEquals(-1.0, pss.getInput1Signal(), 1.0e-8);
+        assertTrue(Double.isFinite(
+                pss.getNamedStates().get("compensatedFrequencyWashout")));
     }
 
     @Test
@@ -1430,9 +1431,12 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     private static double[] pss7cParameters() {
         double[] p = new double[Ieee2016PSS7CStabilizerData.PARAMETER_COUNT];
         p[0] = 1; p[1] = 0; p[2] = 1; p[3] = 0;
-        p[4] = 0; p[5] = 0; p[6] = 1.0;
-        p[11] = 1.0; p[12] = 1.0; p[13] = 1.0; p[14] = 1.0;
-        p[17] = 1.0; p[24] = 1.0; p[25] = 1.0; p[26] = 1.0; p[27] = 1.0;
+        p[4] = 0; p[5] = 0;
+        p[6] = 1.0; p[7] = 1.0; p[8] = 1.0;
+        p[9] = 1.0; p[10] = 1.0; p[11] = 1.0;
+        p[13] = 1.0; p[16] = 1.0; p[17] = 1.0;
+        p[22] = 1.0; p[23] = 1.0; p[24] = 1.0;
+        p[25] = 1.0; p[26] = 1.0; p[27] = 1.0;
         p[28] = 100.0; p[29] = -100.0;
         p[30] = 100.0; p[31] = -100.0;
         p[32] = 100.0; p[33] = -100.0;
