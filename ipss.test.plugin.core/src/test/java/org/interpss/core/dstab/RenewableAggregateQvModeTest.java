@@ -506,6 +506,52 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     @Test
+    void psseBus1062ReportedVoltagePiStateFollowsPublishedDerivative() throws Exception {
+        Path reference = Path.of("testData", "reference", "psse",
+                "renewable-bus1062", "psse.csv");
+        List<String> lines = Files.readAllLines(reference);
+        String[] headings = lines.get(0).split(",");
+        Map<String, Integer> column = new LinkedHashMap<>();
+        for (int index = 0; index < headings.length; index++) {
+            column.put(headings[index], index);
+        }
+
+        double previousTime = Double.NaN;
+        double previousRate = Double.NaN;
+        double initialState = Double.NaN;
+        double finalState = Double.NaN;
+        double integratedDerivative = 0.0;
+        for (String line : lines.subList(1, lines.size())) {
+            String[] sample = line.split(",");
+            double time = Double.parseDouble(sample[column.get("time_s")]);
+            if (time < 0.0 || time > 4.00001) continue;
+            double piq = Double.parseDouble(sample[column.get("REECA_PIQ")]);
+            double filteredVoltage = Double.parseDouble(
+                    sample[column.get("REECA_VFILT")]);
+            double state = Double.parseDouble(sample[column.get("REECA_PIV")]);
+            double rate = 24.8 * (piq - filteredVoltage);
+            if (Double.isNaN(previousTime)) {
+                initialState = state;
+            } else {
+                integratedDerivative += 0.5 * (previousRate + rate) * (time - previousTime);
+            }
+            previousTime = time;
+            previousRate = rate;
+            finalState = state;
+        }
+
+        double stateChange = finalState - initialState;
+        double residual = Math.abs(integratedDerivative - stateChange);
+        System.out.printf(Locale.ROOT,
+                "PSS/E REECA1 PIV equation audit: integrated=%.12g stateDelta=%.12g "
+                        + "residual=%.12g%n",
+                integratedDerivative, stateChange, residual);
+        assertTrue(residual < 2.0e-6,
+                "PSS/E K+3 must be the stored voltage-PI integral driven by "
+                        + "Kvi*(PIQ-Vt_filt), residual=" + residual);
+    }
+
+    @Test
     void psseBus1062FlatArtifactKeepsEveryRenewableStateStationary() throws Exception {
         Path reference = Path.of("testData", "reference", "psse",
                 "renewable-bus1062-flat", "psse.csv");
