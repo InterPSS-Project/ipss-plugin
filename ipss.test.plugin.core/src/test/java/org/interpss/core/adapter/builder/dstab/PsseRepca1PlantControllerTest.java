@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -166,6 +167,25 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
         assertEquals(integral, plant.getReactiveControlIntegral(), 1.0e-12);
         assertEquals(leadLagState, plant.getLeadLagState(), 1.0e-12);
         assertEquals(leadLagOutput, plant.getQref(), 1.0e-12);
+    }
+
+    @Test
+    void numericalPartitionResidualDoesNotMoveInitializedPlantStates() {
+        Repca1Model plant = new Repca1Model(dynamicData(0, 1, .1, 2, 1, .05, .1,
+                .7, 1, -1, 2, 1, .1, 10, 20));
+        plant.initialize(.8, .2, 1.0);
+
+        plant.step(.01, .8 + 4.0e-9, .2 - 3.0e-9, 1.0 - 5.0e-9,
+                1.0 + 2.0e-9);
+
+        assertEquals(.8, plant.getMeasuredActivePower(), 0.0);
+        assertEquals(.2, plant.getMeasuredReactiveOrVoltage(), 0.0);
+        assertEquals(0.0, plant.getPref(), 0.0);
+        assertEquals(0.0, plant.getQref(), 0.0);
+
+        plant.step(.01, .8, .2 - 2.0e-8, 1.0, 1.0);
+        assertTrue(plant.getMeasuredReactiveOrVoltage() < .2,
+                "finite disturbances above numerical resolution must remain observable");
     }
 
     @Test
