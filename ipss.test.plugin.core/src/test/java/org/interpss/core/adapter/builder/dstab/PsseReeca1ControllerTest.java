@@ -65,6 +65,23 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void numericalPartitionResidualDoesNotExciteInitializedEquilibrium() {
+        Reeca1Model controller = new Reeca1Model(texasData(1, 1, 1), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(CONTROL_STEP, .8 + 4.0e-9, .2 - 3.0e-9,
+                1.0 - 5.0e-9, 1.0 + 2.0e-9);
+
+        assertEquals(.8, controller.getIpcmd(), 0.0);
+        assertEquals(-.2, controller.getIqcmd(), 0.0);
+        assertEquals(1.0, controller.getMeasuredVoltage(), 0.0);
+
+        controller.step(CONTROL_STEP, .8, .2, 1.0 - 2.0e-8, 1.0);
+        assertTrue(controller.getMeasuredVoltage() < 1.0,
+                "finite disturbances above numerical resolution must remain observable");
+    }
+
+    @Test
     void voltageDipInjectionHonorsQPriorityCircularCurrentLimit() {
         Reeca1Model controller = new Reeca1Model(texasData(1, 1, 1), null);
         controller.initialize(1.0, 0.0, 1.0);
