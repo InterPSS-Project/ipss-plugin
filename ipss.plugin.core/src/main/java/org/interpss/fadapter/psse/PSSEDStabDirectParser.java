@@ -37,6 +37,7 @@ import org.interpss.dstab.relay.FrqtpatRelayModel;
 import org.interpss.dstab.relay.GeneratorTripRelayData;
 import org.interpss.dstab.relay.Lds3blRelayModel;
 import org.interpss.dstab.relay.LoadSheddingStage;
+import org.interpss.dstab.relay.Lvs3blRelayModel;
 import org.interpss.dstab.relay.StagedLoadSheddingRelayData;
 import org.interpss.dstab.relay.VtgtpatRelayModel;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
@@ -95,6 +96,7 @@ import org.slf4j.LoggerFactory;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.dstab.DStabGen;
 
 /**
@@ -540,6 +542,8 @@ public class PSSEDStabDirectParser {
                 return false;
             case "LDS3BL":
                 return procLds3bl(busId, genId, record);
+            case "LVS3BL":
+                return procLvs3bl(busId, genId, record);
             case "FRQTPAT":
             case "VTGTPAT":
                 return procGeneratorTripRelay(type, record);
@@ -2706,6 +2710,24 @@ public class PSSEDStabDirectParser {
         return true;
     }
 
+    private boolean procLvs3bl(String busId, String loadId, PsseDyrRecord record) {
+        BaseDStabNetwork<?, ?> network = builder.getBaseDStabNetwork();
+        BaseDStabBus<?, ?> loadBus = network.getDStabBus(busId);
+        AclfBranch first = relayBranch(network, record.intParameter(0),
+                record.intParameter(1), record.parameter(2));
+        AclfBranch second = relayBranch(network, record.intParameter(3),
+                record.intParameter(4), record.parameter(5));
+        if ((record.intParameter(0) != 0 || record.intParameter(1) != 0) && first == null) return false;
+        if ((record.intParameter(3) != 0 || record.intParameter(4) != 0) && second == null) return false;
+        double firstTime = record.doubleParameter(27);
+        double secondTime = record.doubleParameter(28);
+        if (firstTime < 0.0 || secondTime < 0.0) return false;
+        var data = new StagedLoadSheddingRelayData(loadSheddingStages(record, 7),
+                record.intParameter(6) == 1);
+        new Lvs3blRelayModel(loadBus, loadId, data, first, firstTime, second, secondTime);
+        return true;
+    }
+
     private List<LoadSheddingStage> loadSheddingStages(PsseDyrRecord record, int offset) {
         List<LoadSheddingStage> stages = new ArrayList<>(5);
         for (int stage = 0; stage < 5; stage++) {
@@ -2715,6 +2737,14 @@ public class PSSEDStabDirectParser {
                     record.doubleParameter(base + 3)));
         }
         return stages;
+    }
+
+    private AclfBranch relayBranch(BaseDStabNetwork<?, ?> network, int from, int to, String id) {
+        if (from == 0 && to == 0) return null;
+        String fromId = BUS_ID_PREFIX + Math.abs(from);
+        String toId = BUS_ID_PREFIX + Math.abs(to);
+        AclfBranch branch = (AclfBranch) network.getBranch(fromId, toId, id);
+        return branch != null ? branch : (AclfBranch) network.getBranch(toId, fromId, id);
     }
 
     @SuppressWarnings("unchecked")
