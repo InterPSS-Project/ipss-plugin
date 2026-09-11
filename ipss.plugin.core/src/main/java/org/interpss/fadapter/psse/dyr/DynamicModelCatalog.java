@@ -14,6 +14,7 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PITCH_CONTROLL
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MACHINE;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SWITCHED_SHUNT;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.UNDER_EXCITATION_LIMITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.LOADABLE;
@@ -110,6 +111,10 @@ public final class DynamicModelCatalog {
     );
 
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
+            descriptorWithVariants("SVSMO1T2", Set.of("SVSMO1T3"), SWITCHED_SHUNT,
+                    65, new int[]{66}, LOADABLE,
+                    "org.interpss.dstab.svc.Svsmo1t2Model",
+                    "Switched%20Shunt%20SVSMO1.htm"),
             descriptor("CSVGN5", Set.of(), CONVERTER_MACHINE, 15, LOADABLE,
                     "org.interpss.dstab.svc.Csvgn5Model",
                     "Machine%20Model%20CSVGN5.htm"),
