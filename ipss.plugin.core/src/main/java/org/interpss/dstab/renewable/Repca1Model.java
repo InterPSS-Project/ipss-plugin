@@ -13,6 +13,8 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  */
 public final class Repca1Model {
     private static final double EPS = 1.0e-9;
+    /** Suppress only solver partitioning roundoff at the initialized equilibrium. */
+    private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
 
     private final Repca1Data data;
     private final Regca1Model converter;
@@ -41,6 +43,7 @@ public final class Repca1Model {
     private double effectiveQmin;
     private PlantState predictorStart;
     private PlantDerivatives predictorDerivatives;
+    private boolean initialized;
 
     public Repca1Model(Repca1Data data) {
         this(data, null, null);
@@ -74,11 +77,12 @@ public final class Repca1Model {
         effectivePmin = Math.min(data.pmin(), 0.0);
         effectiveQmax = Math.max(data.qmax(), 0.0);
         effectiveQmin = Math.min(data.qmin(), 0.0);
+        initialized = true;
     }
 
     public void step(double dt, double p, double q, double v, double frequency) {
         Measurement measurement = measure(p, q, v, frequency);
-        pMeasured = lag(pMeasured, measurement.p(), data.tp(), dt);
+        pMeasured = lag(pMeasured, activeMeasurement(measurement), data.tp(), dt);
         qOrVMeasured = lag(qOrVMeasured, reactiveMeasurement(measurement), data.tfltr(), dt);
 
         double qError = qvReference - qOrVMeasured;
@@ -93,7 +97,8 @@ public final class Repca1Model {
         qext = leadLag(qPi, dt);
 
         if (data.fFlag() == 1) {
-            double fError = deadband(1.0 - measurement.frequency(), data.fdbd1(), data.fdbd2());
+            double fError = deadband(1.0 - measuredFrequency(measurement),
+                    data.fdbd1(), data.fdbd2());
             double droop = fError >= 0.0 ? data.dup() * fError : data.ddn() * fError;
             double pError = limit(pReference - pMeasured + droop, data.femin(), data.femax());
             pIntegral = integrateWithAntiWindup(pIntegral, data.kig(), pError, dt,
@@ -142,7 +147,7 @@ public final class Repca1Model {
     }
 
     private PlantDerivatives derivatives(PlantState state, Measurement measurement) {
-        double pRate = lagRate(state.pMeasured(), measurement.p(), data.tp());
+        double pRate = lagRate(state.pMeasured(), activeMeasurement(measurement), data.tp());
         double qRate = lagRate(state.qOrVMeasured(), reactiveMeasurement(measurement),
                 data.tfltr());
 
@@ -197,7 +202,7 @@ public final class Repca1Model {
     }
 
     private PlantState applyBypasses(PlantState state, Measurement measurement) {
-        double measuredP = data.tp() <= EPS ? measurement.p() : state.pMeasured();
+        double measuredP = data.tp() <= EPS ? activeMeasurement(measurement) : state.pMeasured();
         double measuredQv = data.tfltr() <= EPS
                 ? reactiveMeasurement(measurement) : state.qOrVMeasured();
         double qError = reactiveError(measuredQv);
@@ -236,7 +241,9 @@ public final class Repca1Model {
     }
 
     private double activeError(double measuredP, double frequency) {
-        double fError = deadband(1.0 - frequency, data.fdbd1(), data.fdbd2());
+        double effectiveFrequency = Math.abs(frequency - 1.0) <= EQUILIBRIUM_RESIDUAL
+                ? 1.0 : frequency;
+        double fError = deadband(1.0 - effectiveFrequency, data.fdbd1(), data.fdbd2());
         double droop = fError >= 0.0 ? data.dup() * fError : data.ddn() * fError;
         return limit(pReference - measuredP + droop, data.femin(), data.femax());
     }
@@ -333,17 +340,32 @@ public final class Repca1Model {
     }
 
     private double reactiveMeasurement(Measurement measurement) {
-        if (data.refFlag() == 0) return measurement.q();
-        if (data.vcFlag() == 1) {
+        double measured;
+        if (data.refFlag() == 0) {
+            measured = measurement.q();
+        } else if (data.vcFlag() == 1) {
             // A zero Rc/Xc selects the actual monitored-line impedance, matching
             // the WECC/ANDES parameter-selection rule.
             Complex lineZ = monitoredBranch == null ? Complex.ZERO : monitoredBranch.getZ();
             double rc = Math.abs(data.rc()) > EPS ? data.rc() : lineZ.getReal();
             double xc = Math.abs(data.xc()) > EPS ? data.xc() : lineZ.getImaginary();
             Complex drop = new Complex(rc, xc).multiply(measurement.current());
-            return measurement.voltage().subtract(drop).abs();
+            measured = measurement.voltage().subtract(drop).abs();
+        } else {
+            measured = measurement.vMag() + data.kc() * measurement.q();
         }
-        return measurement.vMag() + data.kc() * measurement.q();
+        return initialized && Math.abs(measured - qvReference) <= EQUILIBRIUM_RESIDUAL
+                ? qvReference : measured;
+    }
+
+    private double activeMeasurement(Measurement measurement) {
+        return initialized && Math.abs(measurement.p() - pReference) <= EQUILIBRIUM_RESIDUAL
+                ? pReference : measurement.p();
+    }
+
+    private double measuredFrequency(Measurement measurement) {
+        return Math.abs(measurement.frequency() - 1.0) <= EQUILIBRIUM_RESIDUAL
+                ? 1.0 : measurement.frequency();
     }
 
     private double leadLag(double input, double dt) {
