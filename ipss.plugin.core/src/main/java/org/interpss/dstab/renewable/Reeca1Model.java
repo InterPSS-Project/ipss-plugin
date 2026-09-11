@@ -6,6 +6,8 @@ import com.interpss.dstab.BaseDStabNetwork;
 /** WECC REEC_A electrical controller producing REGC_A current commands. */
 public final class Reeca1Model implements RenewableElectricalController {
     private static final double EPS = 1.0e-9;
+    /** Suppress only solver partitioning roundoff at the initialized equilibrium. */
+    private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
     /** Maximum internal step for the stiff cascaded Q/voltage PI controls. */
     private static final double MAX_CONTROL_STEP = 1.0 / 960.0;
 
@@ -15,6 +17,9 @@ public final class Reeca1Model implements RenewableElectricalController {
     private WindControlStack windControlStack;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
+    private double q0;
+    private double localVoltage0;
+    private double sensedVoltage0;
     private double qReference;
     private double powerFactorRatio;
     private double dipReference;
@@ -59,6 +64,9 @@ public final class Reeca1Model implements RenewableElectricalController {
         resolveSensedBus();
         double sensedV = sensedVoltage(v);
         p0 = p;
+        q0 = q;
+        localVoltage0 = v;
+        sensedVoltage0 = sensedV;
         // Qext is a Q reference except in QFLAG=1/VFLAG=0 local-voltage
         // control, where the PowerWorld/WECC diagram routes it as a voltage
         // bias before the Q limits.  Initialize either path at equilibrium.
@@ -106,7 +114,16 @@ public final class Reeca1Model implements RenewableElectricalController {
 
     @Override
     public void step(double dt, double p, double q, double v, double frequency) {
-        double sensedV = sensedVoltage(v);
+        // The network/controller partition can return residuals at machine
+        // precision even when no event or reference change has occurred. PSS/E
+        // preserves that initialized equilibrium. Apply the same numerical-zero
+        // convention before forming constant-power current commands; otherwise a
+        // weak fleet can amplify a 1e-12 input residual into a false trajectory.
+        p = snapToInitial(p, p0);
+        q = snapToInitial(q, q0);
+        v = snapToInitial(v, localVoltage0);
+        frequency = snapToInitial(frequency, 1.0);
+        double sensedV = snapToInitial(sensedVoltage(v), sensedVoltage0);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         double plantPref = plantController == null ? 0.0 : plantController.getPref();
@@ -343,6 +360,10 @@ public final class Reeca1Model implements RenewableElectricalController {
 
     private static double nonzero(double value) {
         return Math.max(0.01, Math.abs(value));
+    }
+
+    private static double snapToInitial(double value, double initial) {
+        return Math.abs(value - initial) <= EQUILIBRIUM_RESIDUAL ? initial : value;
     }
 
     public Reeca1Data getData() { return data; }

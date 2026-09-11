@@ -7,8 +7,8 @@ does **not** mean that the model has passed equation conformance, a stationary
 flat run, a representative disturbance matrix, or an independent-tool
 trajectory comparison. Those acceptance results are tracked in
 `dynamic-model-coverage-development-plan.md`. In particular, the six Texas2k
-cases are currently loadable, but none passes the strict one-second
-flat-run gate; the Texas2k verification milestone remains open.
+cases are loadable and all pass the strict one-second flat-run gate; the
+full-system independent fault-parity milestone remains open.
 
 Current Texas2k audit (2026-09-10): `17/17` PSS/E DYR model names are
 loadable, and the standard PSS/E `WTDTA1` drive train now has a parser and
@@ -18,9 +18,9 @@ excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
 `6/6` prepared cases pass the
-short flat and common Bus-7159 fault execution smokes, `0/6` pass the current
-strict one-second flat-run gate, and all `15/15` required location-specific
-faults complete as execution/sanity checks. Full-stack independent trajectory
+short flat and common Bus-7159 fault execution smokes, `6/6` pass the production
+1/240 s strict one-second flat-run gate, and all `15/15` required
+location-specific faults complete as execution/sanity checks. Full-stack independent trajectory
 acceptance remains `0/6`. REGFMA1 has a registered public PowerWorld
 nine-state trajectory contract, HYGOVD has a repeatable direct four-state
 PowerWorld contract that reuses core GENROU and the verified HYGOV runtime,
@@ -36,6 +36,13 @@ An exact-initial-condition PSS/E signal play-in separately reduces the REECA1
 voltage-PI residual to `0.001321 pu` and keeps the other compared REECA1/REPCA1
 states within `1.05e-4 pu`, localizing the larger end-to-end residual to the
 weak-mode operating-point sensitivity rather than a fitted controller change.
+REECA1/REPCA1 now preserve their initialized measurement boundary against only
+sub-`1e-8 pu` solver-partition residuals; a focused `2e-8 pu` change remains
+observable. A fresh Case-5 local Q/V analysis still identifies Bus 1062 unit 2
+`REECA_V_PI`, `REGCA_IQ`, and `REPCA_LEAD_LAG` as the leading candidate-mode
+components, but the 34-boundary all-active eigenvector is not tangent-cone
+feasible and the all-clamped envelope is numerical zero. Thus the result ranks
+weak points without claiming an unconditional linear instability.
 GGOV1 has an additional native PSS/E machine-trip lifecycle contract, and
 LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
 to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
@@ -54,7 +61,7 @@ PowerWorld-only inventory. Current-schema IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
-PSS/E Xplore 36.7); the Case-5 coupled fleet flat-run gate remains open. See
+PSS/E Xplore 36.7); the Case-5 production flat-run gate now passes. See
 the plan's release checklist before interpreting any
 `LOADABLE` row as completed model validation.
 
