@@ -846,6 +846,10 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         Ieee2005PSS4BStabilizer pss = builder.addPss4b("Bus1", "1", p);
         assertNotNull(pss);
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertEquals(32, pss.getNamedStates().size(),
+                "bypassed blocks retain stable canonical state names");
+        assertEquals(pss.getNamedStates().keySet(), pss.getPsseStateCoordinates().keySet(),
+                "every canonical state has a PSS/E coordinate mapping");
 
         machine.setSpeed(machine.getSpeed() + 0.01);
         double dt = 0.0005;
