@@ -1584,8 +1584,12 @@ public class PSSEDStabDirectParser {
         if (f.length < 23) return false;
         int mode1 = getInt(f, 3, 0);
         int mode2 = getInt(f, 5, 0);
+        int remoteBus1 = getInt(f, 4, 0);
+        int remoteBus2 = getInt(f, 6, 0);
+        BaseDStabBus<?, ?> firstBus = resolveSt2cutBus(busId, remoteBus1);
+        BaseDStabBus<?, ?> secondBus = resolveSt2cutBus(busId, remoteBus2);
         if (!isSupportedSt2cutMode(mode1) || !isSupportedSt2cutMode(mode2)
-                || getInt(f, 4, 0) != 0 || getInt(f, 6, 0) != 0) {
+                || firstBus == null || secondBus == null) {
             log.warn("ST2CUT remote or unsupported signal mode at bus {}", busId);
             return false;
         }
@@ -1595,7 +1599,7 @@ public class PSSEDStabDirectParser {
             return false;
         }
         St2cutData data = new St2cutData(
-                mode1, getInt(f, 4, 0), mode2, getInt(f, 6, 0),
+                mode1, remoteBus1, mode2, remoteBus2,
                 getDouble(f, 7, 0), getDouble(f, 8, 0),
                 getDouble(f, 9, 0), getDouble(f, 10, 0),
                 getDouble(f, 11, 0), getDouble(f, 12, 0),
@@ -1604,7 +1608,9 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 17, 0), getDouble(f, 18, 0),
                 getDouble(f, 19, 0), getDouble(f, 20, 0),
                 getDouble(f, 21, 0), getDouble(f, 22, 0));
-        new St2cutStabilizer(busId + "-st2cut" + genId, data, machine);
+        St2cutStabilizer stabilizer =
+                new St2cutStabilizer(busId + "-st2cut" + genId, data, machine);
+        stabilizer.setInputSignalBuses(firstBus, secondBus);
         return true;
     }
 
@@ -1755,7 +1761,12 @@ public class PSSEDStabDirectParser {
     }
 
     private static boolean isSupportedSt2cutMode(int mode) {
-        return mode == 0 || mode == 1 || mode == 3 || mode == 4;
+        return mode >= 0 && mode <= 6;
+    }
+
+    private BaseDStabBus<?, ?> resolveSt2cutBus(String localBusId, int remoteBus) {
+        String signalBusId = remoteBus == 0 ? localBusId : BUS_ID_PREFIX + remoteBus;
+        return builder.getBaseDStabNetwork().getDStabBus(signalBusId);
     }
 
     private record PendingSt2cut(String busId, String genId, String[] fields,
