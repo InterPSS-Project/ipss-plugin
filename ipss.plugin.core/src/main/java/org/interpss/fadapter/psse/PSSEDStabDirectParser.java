@@ -32,6 +32,7 @@ import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.GenqejData;
+import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
@@ -283,6 +284,8 @@ public class PSSEDStabDirectParser {
                 return procGenqec(busId, genId, fields);
             case "GENQEJ":
                 return procGenqej(busId, genId, fields);
+            case "GENTPJ1":
+                return procGentpj1(busId, genId, fields);
             case "GENSAL":
             case "GENSAE":
                 return procGensal(busId, genId, fields);
@@ -2457,6 +2460,28 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 3, 0.0), getDouble(f, 19, 0.0), (int) getDouble(f, 20, 0.0));
         double[] rating = getGenRating(busId, genId);
         builder.addGenqej(busId, genId, rating[0], rating[1], data);
+        return true;
+    }
+
+    // PSS/E 36.7 Model Library: IBUS 'GENTPJ1' ID T'do T''do T'qo T''qo
+    // H D Xd Xq X'd X'q X''d X''q Xl S(1.0) S(1.2) Kis
+    private boolean procGentpj1(String busId, String genId, String[] f) throws InterpssException {
+        if (f.length < 19) {
+            log.warn("Incomplete GENTPJ1 record at bus {}: expected 19 fields, found {}",
+                    busId, f.length);
+            return false;
+        }
+        Gentpj1Data data = new Gentpj1Data(
+                getDouble(f, 3, 0.0), getDouble(f, 4, 0.0),
+                getDouble(f, 5, 0.0), getDouble(f, 6, 0.0),
+                getDouble(f, 7, 0.0), getDouble(f, 8, 0.0),
+                getDouble(f, 9, 0.0), getDouble(f, 10, 0.0),
+                getDouble(f, 11, 0.0), getDouble(f, 12, 0.0),
+                getDouble(f, 13, 0.0), getDouble(f, 14, 0.0),
+                getDouble(f, 15, 0.0), getDouble(f, 16, 0.0),
+                getDouble(f, 17, 0.0), getDouble(f, 18, 0.0));
+        double[] rating = getGenRating(busId, genId);
+        builder.addGentpj1(busId, genId, rating[0], rating[1], data);
         return true;
     }
 

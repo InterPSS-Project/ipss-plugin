@@ -180,6 +180,8 @@ import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.GenqejMachine;
+import org.interpss.dstab.mach.Gentpj1Data;
+import org.interpss.dstab.mach.Gentpj1Machine;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -303,6 +305,21 @@ public class DStabNetworkBuilder {
 
         GenqejMachine mach = new GenqejMachine(inputData);
         configureGenqeMachine(mach, "GENQEJ", busId, genId, ratingMva, ratedKv,
+                mach.getGenqecData());
+        return mach;
+    }
+
+    /** PSS/E GENTPJ1 machine with its native 16-constant schema. */
+    public Gentpj1Machine addGentpj1(String busId, String genId,
+            double ratingMva, double ratedKv, Gentpj1Data inputData) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for GENTPJ1: {}", busId);
+            return null;
+        }
+
+        Gentpj1Machine mach = new Gentpj1Machine(inputData);
+        configureGenqeMachine(mach, "GENTPJ1", busId, genId, ratingMva, ratedKv,
                 mach.getGenqecData());
         return mach;
     }

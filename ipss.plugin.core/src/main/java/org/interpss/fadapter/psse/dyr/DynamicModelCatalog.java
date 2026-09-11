@@ -146,6 +146,8 @@ public final class DynamicModelCatalog {
                     "org.interpss.dstab.mach.GenqecMachine", "Machine%20Model%20GENQEC.htm"),
             descriptor("GENQEJ", Set.of("GENQEJU"), SYNCHRONOUS_MACHINE, 18, LOADABLE,
                     "org.interpss.dstab.mach.GenqejMachine", "Machine%20Model%20GENQEJ.htm"),
+            descriptor("GENTPJ1", Set.of(), SYNCHRONOUS_MACHINE, 16, LOADABLE,
+                    "org.interpss.dstab.mach.Gentpj1Machine", "Machine%20Model%20GENTPJ.htm"),
             descriptor("GENCLS", Set.of(), SYNCHRONOUS_MACHINE, 2, LOADABLE,
                     "com.interpss.dstab.mach.EConstMachine", "Machine%20Model%20GENCLS.htm"),
             descriptor("ST2CUT", Set.of("WSCCST"), STABILIZER, 20, LOADABLE,
