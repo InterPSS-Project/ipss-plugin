@@ -26,11 +26,13 @@ import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
  * boundary equations and adds a compensation current around InterPSS's fixed
  * network admittance.</p>
  */
-public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineVoltageProvider {
+public class GenqecMachine extends RoundRotorMachineImpl
+        implements ICMLMachineVoltageProvider, IeeeVoltageCompensatedMachine {
     private static final double EPS = 1.0e-9;
 
     private final GenqecData data;
     private final GenqecEqnSolver genqecSolver;
+    private IeeeVcData ieeeVcData;
 
     public GenqecMachine(GenqecData data) {
         super();
@@ -41,6 +43,16 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
 
     public GenqecData getGenqecData() {
         return data;
+    }
+
+    @Override
+    public IeeeVcData getIeeeVcData() {
+        return ieeeVcData;
+    }
+
+    @Override
+    public void setIeeeVcData(IeeeVcData data) {
+        ieeeVcData = data;
     }
 
     /** GENQEC permits Xd'' != Xq'' and zero q-axis time constants. */
@@ -173,7 +185,7 @@ public class GenqecMachine extends RoundRotorMachineImpl implements ICMLMachineV
     /** Supplies the GENQEC compensated voltage to every CML exciter using {@code mach.vt}. */
     @Override
     public double getCmlMachineVoltage() {
-        return getCompensatedVoltage();
+        return ieeeVcData == null ? getCompensatedVoltage() : getIeeeVcVoltage();
     }
 
     @Override

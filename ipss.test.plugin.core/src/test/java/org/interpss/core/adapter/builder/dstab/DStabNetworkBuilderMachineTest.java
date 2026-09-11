@@ -17,6 +17,7 @@ import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.dstab.mach.GenqejMachine;
 import org.interpss.dstab.mach.Gentpj1Machine;
 import org.interpss.dstab.mach.GentraMachine;
+import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -59,8 +60,7 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 				0.1, 0.2);
 
 		assertNotNull(mach);
-		assertEquals("com.interpss.dstab.mach.impl.RoundRotorMachineImpl",
-				mach.getClass().getName());
+		assertTrue(mach instanceof IeeeVoltageCompensatedMachine);
 		assertEquals("Bus1-mach1", mach.getId());
 		assertEquals(MachineModelType.EQ11_ED11_ROUND_ROTOR, mach.getMachType());
 		assertEquals(5.0, mach.getH(), TOL);
@@ -204,6 +204,32 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertEquals(0.18, mach.getGentraData().accelerationFactor(), TOL);
 		assertEquals(3, mach.getNamedStates().size());
 		assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+		assertTrue(parser.getLastImportReport().isStrictlyComplete());
+	}
+
+	@Test
+	public void parseIeeeVc_defersUntilMachineAndMapsMachineBaseConstants() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+		DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
+				.getContributeGen("1");
+		gen.setMvaBase(120.0);
+		Path dyr = tempDir.resolve("ieeevc-synthetic.dyr");
+		// IEEEVC intentionally precedes its machine to prove order-independent attachment.
+		Files.writeString(dyr,
+				"1 'IEEEVC' '1' 0.013 -0.087 /\n"
+				+ "1 'GENROU' '1' 5.45 0.04 0.51 0.07 4.2 0.7 "
+				+ "1.71 1.66 0.30 0.56 0.22 0.13 0.08 0.31 /\n");
+
+		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+		parser.parseDynFile(dyr.toString());
+
+		IeeeVoltageCompensatedMachine machine = (IeeeVoltageCompensatedMachine)
+				builder.getDStabNetwork().getMachine("Bus1-mach1");
+		assertNotNull(machine);
+		assertEquals(0.013, machine.getIeeeVcData().rc(), TOL);
+		assertEquals(-0.087, machine.getIeeeVcData().xc(), TOL);
+		assertEquals(100.0 / 120.0, machine.getZMultiFactor(), TOL);
+		assertEquals(2, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
 		assertTrue(parser.getLastImportReport().isStrictlyComplete());
 	}
 
