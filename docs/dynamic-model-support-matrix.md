@@ -69,7 +69,10 @@ exciter, and 11-signal stabilizer trajectory contract, raising direct
 PowerWorld stabilizer evidence to `2/15`. PSS2C adds a native PSS/E 36.7
 boundary, machine, three-coordinate, and physical-output contract plus an
 independent recorded-signal play-in, raising combined exact-tool stabilizer
-evidence to `3/15`. Current-schema IEEEG1D adds a native PSS/E boundary
+evidence to `3/15`. IEEEST adds a native PSS/E full-loop and recorded-speed
+play-in contract. The same artifact also verifies PSS1A through PSS/E 36.7's
+published exact IEEEST parameter correspondence, raising combined exact-tool
+stabilizer evidence to `5/15`. Current-schema IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and

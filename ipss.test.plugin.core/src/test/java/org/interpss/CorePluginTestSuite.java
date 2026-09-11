@@ -53,6 +53,7 @@ import org.interpss.core.dstab.Ieeet4PsseSmibConformanceTest;
 import org.interpss.core.dstab.ExeliPsseSmibConformanceTest;
 import org.interpss.core.dstab.ScrxPsseSmibConformanceTest;
 import org.interpss.core.dstab.Exst2PsseSmibConformanceTest;
+import org.interpss.core.dstab.IeeestPsseSmibConformanceTest;
 import org.interpss.core.dstab.St7bPsseSmibConformanceTest;
 import org.interpss.core.dstab.St7cPsseSmibConformanceTest;
 import org.interpss.core.dstab.St6cPsseSmibConformanceTest;
@@ -462,6 +463,7 @@ import org.junit.platform.suite.api.Suite;
 	ExeliPsseSmibConformanceTest.class,
 	ScrxPsseSmibConformanceTest.class,
 	Exst2PsseSmibConformanceTest.class,
+	IeeestPsseSmibConformanceTest.class,
 	St7bPsseSmibConformanceTest.class,
 	St7cPsseSmibConformanceTest.class,
 	St6cPsseSmibConformanceTest.class,
