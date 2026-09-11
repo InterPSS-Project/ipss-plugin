@@ -40,9 +40,11 @@ REECA1/REPCA1 now preserve their initialized measurement boundary against only
 sub-`1e-8 pu` solver-partition residuals; a focused `2e-8 pu` change remains
 observable. A fresh Case-5 local Q/V analysis still identifies Bus 1062 unit 2
 `REECA_V_PI`, `REGCA_IQ`, and `REPCA_LEAD_LAG` as the leading candidate-mode
-components, but the 34-boundary all-active eigenvector is not tangent-cone
-feasible and the all-clamped envelope is numerical zero. Thus the result ranks
-weak points without claiming an unconditional linear instability.
+components. The REECA voltage-PI state is an absolute-voltage coordinate while
+the local analyzer uses perturbation coordinates, so its limits are
+`VMIN-V0` and `VMAX-V0`; all 34 initial perturbations are interior and the
+candidate is a valid two-sided local mode. Moving those inactive anti-windup
+limits cannot change this operating-point Jacobian.
 GGOV1 has an additional native PSS/E machine-trip lifecycle contract, and
 LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
 to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
