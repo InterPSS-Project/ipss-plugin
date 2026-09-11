@@ -161,13 +161,13 @@ public final class LocalRenewableQvEigenAnalyzer {
             List<Device> devices) {
         List<OperatingPointConstraint> constraints = new ArrayList<>();
         for (Device device : devices) {
-            // Both controllers produce incremental signals at initialization.
-            // PowerWorld expands a limit only far enough to contain that initial
-            // value. If zero becomes an endpoint, the anti-windup limiter has a
-            // directional derivative and a conventional two-sided Jacobian does
-            // not exist at the operating point.
+            // The linearized states are perturbations from their initialized
+            // values. REECA PIQ initializes at the absolute sensed voltage, so
+            // its absolute VMIN/VMAX limits must be translated by V0 before
+            // testing whether the zero perturbation is on a boundary.
             addBoundaryConstraint(constraints, device.deviceId(), "REECA_PIQ", 0.0,
-                    Math.min(device.reecaVmin(), 0.0), Math.max(device.reecaVmax(), 0.0));
+                    Math.min(device.reecaVmin(), device.v0()) - device.v0(),
+                    Math.max(device.reecaVmax(), device.v0()) - device.v0());
             addBoundaryConstraint(constraints, device.deviceId(), "REPCA_Q_PI", 0.0,
                     Math.min(device.plantQmin(), 0.0), Math.max(device.plantQmax(), 0.0));
         }
