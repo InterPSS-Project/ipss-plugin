@@ -1,6 +1,9 @@
 package org.interpss.dstab.renewable;
 
+import java.util.Collections;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 
@@ -8,11 +11,13 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.device.DynamicGenDevice;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /** WECC REGFM_A1 droop-controlled grid-forming inverter. */
-public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicGenDevice {
+public final class Regfma1Model extends DynamicBusDeviceImpl
+        implements DynamicGenDevice, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private final Regfma1Data data;
@@ -352,6 +357,25 @@ public final class Regfma1Model extends DynamicBusDeviceImpl implements DynamicG
     public double getReactiveUpperLimitIntegral() { return qUpperIntegral; }
     public double getReactiveLowerLimitIntegral() { return qLowerIntegral; }
     public boolean isCurrentLimited() { return currentLimited; }
+
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> named = new LinkedHashMap<>();
+        named.put("Angle", angle);
+        named.put("Speed", speed);
+        named.put("Internal Voltage", eDroop);
+        named.put("Active Power", p);
+        named.put("Reactive Power", q);
+        named.put("Measured Active Power", pMeasured);
+        named.put("Measured Reactive Power", qMeasured);
+        named.put("Measured Voltage", vMeasured);
+        named.put("Voltage Integral", voltageIntegral);
+        named.put("Active Upper Limit Integral", pUpperIntegral);
+        named.put("Active Lower Limit Integral", pLowerIntegral);
+        named.put("Reactive Upper Limit Integral", qUpperIntegral);
+        named.put("Reactive Lower Limit Integral", qLowerIntegral);
+        return Collections.unmodifiableMap(named);
+    }
 
     private record Endpoint(double p, double q, double v) {}
 

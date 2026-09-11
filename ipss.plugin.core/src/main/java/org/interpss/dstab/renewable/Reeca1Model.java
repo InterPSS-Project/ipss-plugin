@@ -1,10 +1,15 @@
 package org.interpss.dstab.renewable;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** WECC REEC_A electrical controller producing REGC_A current commands. */
-public final class Reeca1Model implements RenewableElectricalController {
+public final class Reeca1Model implements RenewableElectricalController, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
     /** Suppress only solver partitioning roundoff at the initialized equilibrium. */
     private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
@@ -392,4 +397,21 @@ public final class Reeca1Model implements RenewableElectricalController {
     public boolean isVoltageDip() { return previousDip; }
     @Override public double getIpcmd() { return ipcmd; }
     @Override public double getIqcmd() { return iqcmd; }
+
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> named = new LinkedHashMap<>();
+        named.put("Measured Voltage", vMeasured);
+        named.put("Measured Active Power", pMeasured);
+        named.put("Active Power Filter", pFilter);
+        named.put("Active Power Order", pOrder);
+        named.put("Reactive Current", qCurrent);
+        named.put("Reactive Control Integral", qIntegral);
+        named.put("Voltage Control Integral", vIntegral);
+        named.put("Reactive Control Output", qControlOutput);
+        named.put("Voltage Control Output", voltageControlOutput);
+        named.put("Active Current Command", ipcmd);
+        named.put("Reactive Current Command", iqcmd);
+        return Collections.unmodifiableMap(named);
+    }
 }

@@ -6,9 +6,11 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Hashtable;
+import java.util.HexFormat;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +31,10 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.simu.SimuContext;
+import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regfma1Model;
 
 /**
  * Opt-in topology-selected three-cycle fault matrix for the private Texas2k
@@ -110,6 +115,7 @@ public class Texas2kTopologyFaultMatrixTest {
 
         List<String> monitoredBuses = nearbyBuses(network, site.busId());
         List<String> monitoredMachines = monitoredMachines(network, site.busId());
+        List<RenewableDevice> monitoredRenewables = monitoredRenewables(network, monitoredBuses);
         StateMonitor monitor = new StateMonitor();
         monitor.addBusStdMonitor(monitoredBuses.toArray(String[]::new));
         monitor.addGeneratorStdMonitor(monitoredMachines.toArray(String[]::new));
@@ -124,9 +130,18 @@ public class Texas2kTopologyFaultMatrixTest {
 
         assertTrue(algorithm.initialization(), source.directory() + " " + site.category()
                 + " initialization");
-        assertTrue(algorithm.performSimulation(), source.directory() + " " + site.category()
-                + " simulation");
-        writeTrajectory(source, site, monitor, monitoredBuses, monitoredMachines);
+        List<StateChannel> stateChannels = stateChannels(network, monitoredMachines,
+                monitoredRenewables);
+        List<double[]> stateTrace = new ArrayList<>();
+        recordStates(stateTrace, algorithm.getSimuTime(), stateChannels);
+        while (algorithm.getSimuTime() < .50 - STEP / 2.0) {
+            assertTrue(algorithm.solveDEqnStep(true), source.directory() + " "
+                    + site.category() + " simulation at t=" + algorithm.getSimuTime());
+            recordStates(stateTrace, algorithm.getSimuTime(), stateChannels);
+        }
+        TrajectoryArtifact artifact = writeTrajectory(source, site, monitor,
+                monitoredBuses, monitoredMachines,
+                monitoredRenewables, stateChannels, stateTrace);
 
         double faultMinimum = minimum(monitor, site.busId());
         double faultFinal = last(monitor, site.busId());
@@ -165,7 +180,8 @@ public class Texas2kTopologyFaultMatrixTest {
         MatrixResult result = new MatrixResult(source.number(), site.category(), site.busId(),
                 String.join("|", monitoredBuses), String.join("|", monitoredMachines),
                 faultMinimum, faultFinal,
-                maximumNearbyDeviation, maximumSpeedDeviation);
+                maximumNearbyDeviation, maximumSpeedDeviation, inputHashes(source),
+                artifact.relativePath(), artifact.sha256(), artifact.channelCount());
         System.out.printf(Locale.ROOT,
                 "Texas2k fault case=%d category=%s bus=%s min=%.9g final=%.9g "
                         + "nearbyDv=%.9g speedDw=%.9g%n",
@@ -242,6 +258,68 @@ public class Texas2kTopologyFaultMatrixTest {
         return List.copyOf(ids);
     }
 
+    private static List<RenewableDevice> monitoredRenewables(BaseDStabNetwork<?, ?> network,
+            List<String> monitoredBuses) {
+        List<RenewableDevice> devices = new ArrayList<>();
+        for (String busId : monitoredBuses) {
+            network.getBus(busId).getContributeGenList().stream()
+                    .filter(DStabGen.class::isInstance).map(DStabGen.class::cast)
+                    .filter(DStabGen::isActive).forEach(gen -> {
+                        Object device = gen.getDynamicGenDevice();
+                        if (device instanceof Regca1Model || device instanceof Regfma1Model) {
+                            devices.add(new RenewableDevice(busId + "-gen" + gen.getId(), device));
+                        }
+                    });
+        }
+        return devices.stream().sorted(Comparator.comparing(RenewableDevice::id))
+                .limit(3).toList();
+    }
+
+    private static List<StateChannel> stateChannels(BaseDStabNetwork<?, ?> network,
+            List<String> machines, List<RenewableDevice> renewables) {
+        List<StateChannel> channels = new ArrayList<>();
+        for (String machineId : machines) {
+            var machine = network.getMachine(machineId);
+            addStateChannels(channels, machineId + "_EXCITER", machine.getExciter());
+            addStateChannels(channels, machineId + "_GOVERNOR", machine.getGovernor());
+        }
+        for (RenewableDevice renewable : renewables) {
+            addStateChannels(channels, renewable.id(), renewable.device());
+            if (renewable.device() instanceof Regca1Model converter) {
+                addStateChannels(channels, renewable.id() + "_REECA1",
+                        converter.getReeca1Controller());
+                if (converter.getActiveElectricalController() != null) {
+                    addStateChannels(channels, renewable.id() + "_REPCA1",
+                            converter.getActiveElectricalController().getPlantController());
+                }
+            } else if (renewable.device() instanceof Regfma1Model converter) {
+                addStateChannels(channels, renewable.id() + "_REPCA1",
+                        converter.getPlantController());
+            }
+        }
+        return List.copyOf(channels);
+    }
+
+    private static void addStateChannels(List<StateChannel> channels, String prefix,
+            Object candidate) {
+        if (!(candidate instanceof ICMLStateProvider provider)) return;
+        provider.getNamedStates().keySet().stream().sorted().forEach(name -> channels.add(
+                new StateChannel(csvName(prefix + "_" + name), provider, name)));
+    }
+
+    private static void recordStates(List<double[]> trace, double time,
+            List<StateChannel> channels) {
+        double[] row = new double[channels.size() + 1];
+        row[0] = time;
+        for (int index = 0; index < channels.size(); index++) {
+            row[index + 1] = channels.get(index).provider()
+                    .getNamedState(channels.get(index).stateName());
+            assertTrue(Double.isFinite(row[index + 1]),
+                    "Non-finite controller state " + channels.get(index).label());
+        }
+        trace.add(row);
+    }
+
     private static List<FaultSite> faultSites() throws Exception {
         assertTrue(Files.isRegularFile(SITE_MANIFEST),
                 "Missing reviewed fault-site manifest: " + SITE_MANIFEST);
@@ -259,8 +337,10 @@ public class Texas2kTopologyFaultMatrixTest {
         return sites;
     }
 
-    private static void writeTrajectory(CaseFile source, FaultSite site, StateMonitor monitor,
-            List<String> buses, List<String> machines) throws Exception {
+    private static TrajectoryArtifact writeTrajectory(CaseFile source, FaultSite site,
+            StateMonitor monitor,
+            List<String> buses, List<String> machines, List<RenewableDevice> renewables,
+            List<StateChannel> stateChannels, List<double[]> stateTrace) throws Exception {
         Path directory = Path.of("target", "texas2k-topology-fault-matrix");
         Files.createDirectories(directory);
         Path path = directory.resolve("case" + source.number() + "-" + site.category()
@@ -271,12 +351,20 @@ public class Texas2kTopologyFaultMatrixTest {
         for (String machine : machines) csv.append(',').append(machine).append("_SPEED")
                 .append(',').append(machine).append("_ANGLE")
                 .append(',').append(machine).append("_PE")
+                .append(',').append(machine).append("_Q")
                 .append(',').append(machine).append("_PM")
                 .append(',').append(machine).append("_EFD");
+        for (RenewableDevice renewable : renewables) {
+            csv.append(',').append(renewable.id()).append("_P")
+                    .append(',').append(renewable.id()).append("_Q");
+        }
+        for (StateChannel channel : stateChannels) csv.append(',').append(channel.label());
         csv.append('\n');
         int samples = monitor.getBusVoltTable().get(site.busId()).size();
         for (int index = 0; index < samples; index++) {
-            csv.append(format(monitor.getBusVoltTable().get(site.busId()).get(index).t));
+            double time = monitor.getBusVoltTable().get(site.busId()).get(index).t;
+            double[] stateRow = stateRowAtTime(stateTrace, time);
+            csv.append(format(time));
             for (String bus : buses) {
                 csv.append(',').append(format(value(monitor.getBusVoltTable(), bus, index)))
                         .append(',').append(format(value(monitor.getBusAngleTable(), bus, index)));
@@ -285,12 +373,60 @@ public class Texas2kTopologyFaultMatrixTest {
                 csv.append(',').append(format(value(monitor.getMachSpeedTable(), machine, index)))
                         .append(',').append(format(value(monitor.getMachAngleTable(), machine, index)))
                         .append(',').append(format(value(monitor.getMachPeTable(), machine, index)))
+                        .append(',').append(format(value(monitor.getMachQgenTable(), machine, index)))
                         .append(',').append(format(value(monitor.getMachPmTable(), machine, index)))
                         .append(',').append(format(value(monitor.getMachEfdTable(), machine, index)));
+            }
+            for (RenewableDevice renewable : renewables) {
+                csv.append(',').append(format(stateValue(stateRow, stateChannels,
+                        csvName(renewable.id() + "_Active Power"))))
+                        .append(',').append(format(stateValue(stateRow, stateChannels,
+                                csvName(renewable.id() + "_Reactive Power"))));
+            }
+            for (int state = 1; state < stateRow.length; state++) {
+                csv.append(',').append(format(stateRow[state]));
             }
             csv.append('\n');
         }
         Files.writeString(path, csv, StandardCharsets.UTF_8);
+        return new TrajectoryArtifact(path.toString().replace('\\', '/'), sha256(path),
+                csv.substring(0, csv.indexOf("\n")).split(",", -1).length);
+    }
+
+    private static String csvName(String value) {
+        return value.replaceAll("[^A-Za-z0-9_.-]+", "_");
+    }
+
+    private static double stateValue(double[] row, List<StateChannel> channels, String label) {
+        for (int index = 0; index < channels.size(); index++) {
+            if (channels.get(index).label().equals(label)) return row[index + 1];
+        }
+        throw new IllegalStateException("Missing controller state channel " + label);
+    }
+
+    private static double[] stateRowAtTime(List<double[]> trace, double time) {
+        return trace.stream().filter(row -> Math.abs(row[0] - time) < 1.0e-9)
+                .findFirst().orElseThrow(() -> new IllegalStateException(
+                        "Missing controller-state sample at t=" + time));
+    }
+
+    private static String inputHashes(CaseFile source) throws Exception {
+        Path directory = ROOT.resolve(source.directory());
+        Path sourceDyr = directory.resolve(source.dyr());
+        String stem = source.dyr().substring(0, source.dyr().length() - 4);
+        List<Path> inputs = new ArrayList<>(List.of(directory.resolve(source.raw()), sourceDyr));
+        for (String suffix : List.of("_gnet.idv", "_MODREMOVE.idv")) {
+            Path preparation = sourceDyr.resolveSibling(stem + suffix);
+            if (Files.isRegularFile(preparation)) inputs.add(preparation);
+        }
+        List<String> hashes = new ArrayList<>();
+        for (Path input : inputs) hashes.add(input.getFileName() + "=" + sha256(input));
+        return String.join("|", hashes);
+    }
+
+    private static String sha256(Path path) throws Exception {
+        return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
+                .digest(Files.readAllBytes(path)));
     }
 
     private static double value(Hashtable<String, Hashtable<Integer, MonitorRecord>> table,
@@ -319,7 +455,8 @@ public class Texas2kTopologyFaultMatrixTest {
         StringBuilder csv = new StringBuilder("case,category,fault_bus,monitored_buses,"
                 + "monitored_machines,"
                 + "minimum_voltage,final_voltage,max_nearby_voltage_deviation,"
-                + "max_machine_speed_deviation\n");
+                + "max_machine_speed_deviation,input_hashes,trajectory_path,"
+                + "trajectory_sha256,channel_count\n");
         for (MatrixResult result : results) {
             csv.append(result.caseNumber()).append(',').append(result.category()).append(',')
                     .append(result.faultBus()).append(',').append(result.monitoredBuses()).append(',')
@@ -329,7 +466,11 @@ public class Texas2kTopologyFaultMatrixTest {
                     .append(String.format(Locale.ROOT, "%.12g",
                             result.maximumNearbyVoltageDeviation())).append(',')
                     .append(String.format(Locale.ROOT, "%.12g",
-                            result.maximumMachineSpeedDeviation())).append('\n');
+                            result.maximumMachineSpeedDeviation())).append(',')
+                    .append(result.inputHashes()).append(',')
+                    .append(result.trajectoryPath()).append(',')
+                    .append(result.trajectorySha256()).append(',')
+                    .append(result.channelCount()).append('\n');
         }
         return csv.toString();
     }
@@ -342,6 +483,14 @@ public class Texas2kTopologyFaultMatrixTest {
     private record MatrixResult(int caseNumber, String category, String faultBus,
             String monitoredBuses, String monitoredMachines, double minimumVoltage,
             double finalVoltage,
-            double maximumNearbyVoltageDeviation, double maximumMachineSpeedDeviation) { }
+            double maximumNearbyVoltageDeviation, double maximumMachineSpeedDeviation,
+            String inputHashes, String trajectoryPath, String trajectorySha256,
+            int channelCount) { }
+
+    private record RenewableDevice(String id, Object device) { }
+
+    private record StateChannel(String label, ICMLStateProvider provider, String stateName) { }
+
+    private record TrajectoryArtifact(String relativePath, String sha256, int channelCount) { }
 
 }

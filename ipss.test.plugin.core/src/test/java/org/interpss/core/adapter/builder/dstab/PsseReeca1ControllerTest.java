@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import com.interpss.dstab.DStabGen;
 
@@ -48,6 +49,17 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertNotNull(controller);
         assertSame(controller, converter.getActiveElectricalController());
         assertEquals(expectedData(), controller.getData());
+        assertEquals(Set.of("Filtered Voltage", "Active Current Regulator",
+                "Reactive Current Regulator", "Active Power", "Reactive Power"),
+                converter.getNamedStates().keySet());
+        assertEquals(Set.of("Measured Voltage", "Measured Active Power",
+                "Active Power Filter", "Active Power Order", "Reactive Current",
+                "Reactive Control Integral", "Voltage Control Integral",
+                "Reactive Control Output", "Voltage Control Output",
+                "Active Current Command", "Reactive Current Command"),
+                controller.getNamedStates().keySet());
+        assertEquals(controller.getMeasuredVoltage(),
+                controller.getNamedState("Measured Voltage"), 0.0);
     }
 
     @Test
