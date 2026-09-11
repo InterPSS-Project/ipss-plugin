@@ -8,6 +8,7 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.EXCITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GOVERNOR;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PITCH_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
@@ -394,7 +395,10 @@ public final class DynamicModelCatalog {
                     "Relay%20Model%20FRQDCAT%20and%20FRQTPAT.htm"),
             descriptor("VTGTPAT", Set.of(), GENERATOR_PROTECTION, 6, LOADABLE,
                     "org.interpss.dstab.relay.VtgtpatRelayModel",
-                    "Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm")
+                    "Relay%20Model%20VTGDCAT%20and%20VTGTPAT.htm"),
+            descriptor("LDS3BL", Set.of(), LOAD_PROTECTION, 24, LOADABLE,
+                    "org.interpss.dstab.relay.Lds3blRelayModel",
+                    "Relay%20Model%20LDS3.htm")
     );
 
     private static final List<DynamicModelDescriptor> ALL = java.util.stream.Stream

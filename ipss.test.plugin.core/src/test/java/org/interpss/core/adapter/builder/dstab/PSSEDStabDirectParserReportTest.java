@@ -10,8 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
+import org.interpss.dstab.relay.Lds3blRelayModel;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
@@ -192,19 +195,31 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     }
 
     @Test
-    void loadSheddingRelaysAreNotMisclassifiedAsGeneratorTripRelays() throws Exception {
+    void lds3blUsesFiveNativeStagesAndStartsTransferTripAtPickup() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
-        Path dyr = tempDir.resolve("load-shedding-relay.dyr");
+        new AclfNetworkBuilder(builder.getDStabNetwork()).addContributeLoad("Bus1", "L", true,
+                new Complex(0.8, 0.3), null, null, null, false);
+        builder.getDStabNetwork().setFrequency(60.0);
+        Path dyr = tempDir.resolve("lds3bl.dyr");
         Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
-                + "1 'LDS3BL' '1' 0.83 0.11 0.07 0.19 /\n");
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
-
-        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
-        assertEquals("LDS3BL", parser.getLastImportReport().failures().get(0).canonicalModelName());
-        assertTrue(builder.getDStabNetwork().getDStabBus("Bus1").getDynamicBusDeviceList().stream()
-                .noneMatch(AbstractGeneratorTripRelayModel.class::isInstance));
+                + "1 'LDS3BL' 'L' 1 '1' 0 "
+                + "59.47 0.031 0.019 0.23 "
+                + "0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.023 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+        Lds3blRelayModel relay = (Lds3blRelayModel) bus.getDynamicBusDeviceList().stream()
+                .filter(Lds3blRelayModel.class::isInstance).findFirst().orElseThrow();
+        builder.getDStabNetwork().formYMatrix4DStab();
+        assertTrue(relay.initStates(bus));
+        bus.setFreq(0.98);
+        for (int i = 0; i < 50; i++) assertTrue(relay.afterStep(0.001));
+        assertEquals(0.23, relay.getShedFraction(), 1.0e-12);
+        assertTrue(relay.isStageOperated(0));
+        assertFalse(relay.isTransferOperated());
+        for (int i = 0; i < 4; i++) assertTrue(relay.afterStep(0.001));
+        assertTrue(relay.isTransferOperated());
+        assertFalse(bus.getContributeGen("1").isActive());
+        assertTrue(relay.getNamedStates().containsKey("Stage 5 timer"));
     }
 
     @Test
