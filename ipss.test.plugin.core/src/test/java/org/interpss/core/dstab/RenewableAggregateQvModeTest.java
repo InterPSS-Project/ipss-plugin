@@ -112,7 +112,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     @Test
-    void texas1062Unit2PublicLinearizationReportsCandidateModeAndLimiterBoundary()
+    void texas1062Unit2PublicLinearizationReportsInteriorTwoSidedMode()
             throws Exception {
         PlantProfile profile = texas1062Unit2Profile();
         DStabilityNetwork network = buildNetwork(1, .05, profile);
@@ -123,53 +123,37 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         assertEquals(1, analysis.devices().size());
         assertEquals(LocalRenewableQvEigenAnalyzer.STATES_PER_DEVICE,
                 analysis.stateMatrix().length);
-        assertTrue(!analysis.isTwoSidedLinearizationValid(),
-                "the zero-initialized PIQ output is on its expanded lower limit");
-        assertEquals(1, analysis.operatingPointConstraints().size());
-        assertEquals("REECA_PIQ", analysis.operatingPointConstraints().get(0).signal());
+        assertTrue(analysis.isTwoSidedLinearizationValid(),
+                "PIQ perturbation zero must be interior to VMIN-V0 and VMAX-V0");
+        assertTrue(analysis.operatingPointConstraints().isEmpty());
         assertTrue(analysis.limiterRegionEnumerationComplete(),
-                "one boundary must produce a complete regional enumeration");
-        assertEquals(2, analysis.limiterRegionModes().size());
-        var clampedRegion = analysis.limiterRegionModes().stream()
-                .filter(region -> region.assumptions().get(0).branch()
-                        == LocalRenewableQvEigenAnalyzer.BoundaryBranch.OUTWARD_CLAMPED)
-                .findFirst().orElseThrow();
-        var activeRegion = analysis.limiterRegionModes().stream()
-                .filter(region -> region.assumptions().get(0).branch()
-                        == LocalRenewableQvEigenAnalyzer.BoundaryBranch.INWARD_ACTIVE)
-                .findFirst().orElseThrow();
+                "an interior operating point must have one complete region");
+        assertEquals(1, analysis.limiterRegionModes().size());
+        var activeRegion = analysis.limiterRegionModes().get(0);
+        assertTrue(activeRegion.assumptions().isEmpty());
         assertEquals(mode.real(), activeRegion.dominantMode().real(), 1.0e-12,
-                "the legacy candidate is the inward-active regional Jacobian");
+                "the regional Jacobian must equal the two-sided Jacobian");
         assertEquals(mode.imaginary(), activeRegion.dominantMode().imaginary(), 1.0e-12);
         assertTrue(activeRegion.tangentCone().feasible(),
-                "some real phase of the active regional mode must point inward");
+                "an unconstrained interior mode has no tangent-cone conflict");
         assertTrue(Double.isFinite(activeRegion.tangentCone().witnessPhaseRadians()));
-        assertEquals(1, activeRegion.tangentCone().constraints().size());
-        assertEquals(LocalRenewableQvEigenAnalyzer.BoundarySide.LOWER,
-                activeRegion.tangentCone().constraints().get(0).side());
-        assertTrue(!clampedRegion.tangentCone().feasible(),
-                "the dominant zero mode displaces the state that is assumed clamped");
-        assertTrue(Double.isNaN(clampedRegion.tangentCone().witnessPhaseRadians()));
-        assertTrue(clampedRegion.dominantMode().real() <= 1.0e-10,
-                "the outward-clamped region must not retain the growing tangent");
+        assertTrue(activeRegion.tangentCone().constraints().isEmpty());
         double originalEntry = analysis.stateMatrix()[0][0];
         double[][] callerCopy = analysis.stateMatrix();
         callerCopy[0][0] = Double.NaN;
         assertEquals(originalEntry, analysis.stateMatrix()[0][0], 0.0,
                 "analysis matrices must be defensive copies");
-        double regionalEntry = clampedRegion.stateMatrix()[0][0];
-        double[][] regionalCopy = clampedRegion.stateMatrix();
+        double regionalEntry = activeRegion.stateMatrix()[0][0];
+        double[][] regionalCopy = activeRegion.stateMatrix();
         regionalCopy[0][0] = Double.NaN;
-        assertEquals(regionalEntry, clampedRegion.stateMatrix()[0][0], 0.0,
+        assertEquals(regionalEntry, activeRegion.stateMatrix()[0][0], 0.0,
                 "regional matrices must be defensive copies");
 
         System.out.printf(java.util.Locale.ROOT,
                 "Bus-1062-unit-2 public Q/V candidate linearization: sensitivity=%.9g "
-                        + "active=%.9g%+.9gj clamped=%.9g%+.9gj 1/s "
+                        + "eigen=%.9g%+.9gj 1/s "
                         + "constraints=%s states=%s%n",
                 analysis.couplingMatrix()[0][0], mode.real(), mode.imaginary(),
-                clampedRegion.dominantMode().real(),
-                clampedRegion.dominantMode().imaginary(),
                 analysis.operatingPointConstraints(), mode.participation());
         assertTrue(Math.abs(mode.real() - CASE5_MODE_GROWTH) / CASE5_MODE_GROWTH < .05,
                 "public Bus-1062 growth rate does not reproduce the Case-5 mode");
@@ -186,7 +170,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     void manyLimiterBoundariesReturnDocumentedEnvelopeInsteadOfExploding() throws Exception {
         int plantCount = 9;
         DStabilityNetwork network = buildNetwork(
-                plantCount, .05, texas1062Unit2Profile());
+                plantCount, .05, texas1062LowerPiqProfile());
         assertTrue(DStabObjectFactory.createDynamicSimuAlgorithm(network)
                 .getAclfAlgorithm().loadflow(), "multi-boundary load flow");
         List<String> buses = java.util.stream.IntStream.rangeClosed(1, plantCount)
@@ -895,9 +879,28 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         return new PlantProfile(.24, .057, .10, reeca, repca);
     }
 
+    private static PlantProfile texas1062LowerPiqProfile() {
+        Reeca1Data source = texas1062Unit2Profile().reeca();
+        Reeca1Data reeca = new Reeca1Data(source.remoteBus(), source.pfFlag(),
+                source.vFlag(), source.qFlag(), source.pFlag(), source.pqFlag(),
+                source.vdip(), source.vup(), source.trv(), source.dbd1(), source.dbd2(),
+                source.kqv(), source.iqh1(), source.iql1(), source.vref0(), source.iqfrz(),
+                source.thld(), source.thld2(), source.tp(), source.qmax(), source.qmin(),
+                1.1, 1.1, source.kqp(), source.kqi(), source.kvp(), source.kvi(),
+                source.vref1(), source.tiq(), source.dpmax(), source.dpmin(), source.pmax(),
+                source.pmin(), source.imax(), source.tpord(), source.vq1(), source.iq1(),
+                source.vq2(), source.iq2(), source.vq3(), source.iq3(), source.vq4(),
+                source.iq4(), source.vp1(), source.ip1(), source.vp2(), source.ip2(),
+                source.vp3(), source.ip3(), source.vp4(), source.ip4());
+        PlantProfile profile = texas1062Unit2Profile();
+        return new PlantProfile(profile.p(), profile.q(), profile.collectorX(),
+                reeca, profile.repca());
+    }
+
     private record RunResult(double maximumVoltageDrift, double minimumPoiVoltage,
             double finalPoiVoltage, double commonModeQvSensitivity) { }
 
     private record PlantProfile(double p, double q, double collectorX,
             Reeca1Data reeca, Repca1Data repca) { }
+
 }

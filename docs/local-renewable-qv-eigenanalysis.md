@@ -56,6 +56,11 @@ when its `cone_feasible` value is true. Even then, this is an instantaneous
 directional qualification, not proof that the nonlinear trajectory remains in
 that region.
 
+The state matrix is expressed in perturbation coordinates. In particular,
+REECA's absolute-voltage PIQ limits are translated to `VMIN-V0` and `VMAX-V0`
+before testing the zero perturbation. A limit that is inactive at the operating
+point does not change the local Jacobian when it is widened or moved.
+
 The current analyzer deliberately supports only active, local-voltage
 `REPCA1/REECA1/REGCA1` Q/V loops with positive dynamic time constants. It does
 not yet include voltage-dip switching, active-power coupling, remote-bus or
