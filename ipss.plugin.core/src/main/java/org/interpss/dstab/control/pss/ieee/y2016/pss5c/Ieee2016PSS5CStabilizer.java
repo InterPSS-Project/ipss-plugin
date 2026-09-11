@@ -1,6 +1,8 @@
 package org.interpss.dstab.control.pss.ieee.y2016.pss5c;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData.BandData;
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -103,6 +105,33 @@ public final class Ieee2016PSS5CStabilizer extends AnnotateStabilizer
 
     @Override public double getOutput(Machine machine) { return outputSignal; }
 
+    /** Canonical memories plus published transducer and PowerWorld-native band coordinates. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        if (lowIntermediateTransducer == null || highTransducer == null) return Map.of();
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("lowIntermediatePosition", lowIntermediateTransducer.state(0));
+        states.put("lowIntermediateRate", lowIntermediateTransducer.state(1));
+        states.put("highPosition", highTransducer.state(0));
+        states.put("highRate", highTransducer.state(1));
+        states.put("highAcceleration", highTransducer.state(2));
+        states.put("lowIntermediateOutput", lowIntermediateInput);
+        states.put("highFrequencyOutput", highInput);
+        veryLowBand.addNamedStates(states, "veryLow");
+        lowBand.addNamedStates(states, "low");
+        intermediateBand.addNamedStates(states, "intermediate");
+        highBand.addNamedStates(states, "high");
+        double frequencyBase = getMachine().getDStabBus().getNetwork().getFrequency();
+        veryLowBand.addNativeStates(states, "k3FVL", "k2FVL",
+                lowIntermediateInput, frequencyBase);
+        lowBand.addNativeStates(states, "k3FL", "k2FL",
+                lowIntermediateInput, frequencyBase);
+        intermediateBand.addNativeStates(states, "k3FI", "k2FI",
+                lowIntermediateInput, frequencyBase);
+        highBand.addNativeStates(states, "k3FH", "k2FH", highInput, frequencyBase);
+        return Map.copyOf(states);
+    }
+
     private Ieee2016PSS5CStabilizerData correctedData(Ieee2016PSS5CStabilizerData data) {
         double minimum = minimumTimeConstantMultiplier * integrationStep;
         return new Ieee2016PSS5CStabilizerData(
@@ -173,6 +202,17 @@ public final class Ieee2016PSS5CStabilizer extends AnnotateStabilizer
             return clamp(data.gain() * (upperOutput - lowerOutput), data.max(), data.min());
         }
 
+        private void addNamedStates(Map<String, Double> states, String prefix) {
+            states.put(prefix + "UpperLag", upper.state(0));
+            states.put(prefix + "LowerLag", lower.state(0));
+        }
+
+        private void addNativeStates(Map<String, Double> states, String upperName,
+                String lowerName, double input, double frequencyBase) {
+            states.put(upperName, frequencyBase * upper.output(input));
+            states.put(lowerName, frequencyBase * lower.output(input));
+        }
+
         private double inverse(double value) {
             return value > EPS ? 1.0 / value : 0.0;
         }
@@ -199,6 +239,10 @@ public final class Ieee2016PSS5CStabilizer extends AnnotateStabilizer
         }
 
         protected abstract void derivatives(double input, double[] x, double[] dx);
+
+        protected double state(int index) {
+            return active[index];
+        }
 
         @Override public void predict(double input, double dt) {
             derivatives(input, state, oldDerivative);
