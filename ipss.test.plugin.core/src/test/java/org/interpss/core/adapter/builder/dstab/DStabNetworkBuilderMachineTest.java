@@ -16,6 +16,7 @@ import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.dstab.mach.GenqejMachine;
 import org.interpss.dstab.mach.Gentpj1Machine;
+import org.interpss.dstab.mach.GentraMachine;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -165,6 +166,43 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertEquals(0.22, mach.getGentpj1Data().kis(), TOL);
 		assertEquals(2, mach.getGenqecData().satFunc());
 		assertEquals(0.0078125, mach.getRa(), TOL);
+		assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+		assertTrue(parser.getLastImportReport().isStrictlyComplete());
+	}
+
+	@Test
+	public void parseGentra_mapsExactNativeSchemaAndTransientBoundary() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+		DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
+				.getContributeGen("1");
+		gen.setMvaBase(120.0);
+		gen.setSourceZ(new org.apache.commons.math3.complex.Complex(0.0048, 0.34));
+		Path dyr = tempDir.resolve("gentra-synthetic.dyr");
+		// Deliberately synthetic constants; no supplied case record is copied.
+		Files.writeString(dyr,
+				"1 'GENTRA' '1' 5.45 4.10 0.90 1.69 1.56 0.34 0.07 0.29 0.18 /\n");
+
+		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+		parser.parseDynFile(dyr.toString());
+
+		GentraMachine mach = (GentraMachine) builder.getDStabNetwork()
+				.getMachine("Bus1-mach1");
+		assertNotNull(mach);
+		assertEquals("GENTRA", mach.getName());
+		assertEquals(MachineModelType.EQ1_MODEL, mach.getMachType());
+		assertEquals(5.45, mach.getTd01(), TOL);
+		assertEquals(4.10, mach.getH(), TOL);
+		assertEquals(0.90 * 100.0 / builder.getDStabNetwork().getFrequency(),
+				mach.getD(), TOL);
+		assertEquals(1.69, mach.getMachData().getXd(), TOL);
+		assertEquals(1.56, mach.getXq(), TOL);
+		assertEquals(0.34, mach.getXd1(), TOL);
+		assertEquals(0.34, mach.getXl(), TOL);
+		assertEquals(0.00576, mach.getRa(), TOL);
+		assertEquals(0.07, mach.getSe100(), TOL);
+		assertEquals(0.29, mach.getSe120(), TOL);
+		assertEquals(0.18, mach.getGentraData().accelerationFactor(), TOL);
+		assertEquals(3, mach.getNamedStates().size());
 		assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
 		assertTrue(parser.getLastImportReport().isStrictlyComplete());
 	}

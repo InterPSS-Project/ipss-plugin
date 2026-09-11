@@ -182,6 +182,8 @@ import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.GenqejMachine;
 import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.mach.Gentpj1Machine;
+import org.interpss.dstab.mach.GentraData;
+import org.interpss.dstab.mach.GentraMachine;
 import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.Cimtr4Machine;
 import org.interpss.numeric.datatype.Unit.UnitType;
@@ -227,6 +229,42 @@ public class DStabNetworkBuilder {
     }
 
     // ==================== Machine Models ====================
+
+    /** PSS/E GENTRA transient-level salient-pole generator. */
+    public GentraMachine addGentra(String busId, String genId,
+            double ratingMva, double ratedKv, GentraData data) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for GENTRA: {}", busId);
+            return null;
+        }
+        GentraMachine mach = new GentraMachine(data);
+        mach.setId(busId + "-mach" + genId);
+        mach.setName("GENTRA");
+        mach.setMachType(MachineModelType.EQ1_MODEL);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(data.h());
+        mach.setD(toCoreDamping(data.d()));
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+        // GENTRA is a transient-level model and has no independent leakage
+        // reactance.  Use X'd as the core saturation boundary so saturation is
+        // applied to the published (Xd - X'd) path without adding a parameter.
+        mach.setXl(data.xdp());
+        mach.setXd(data.xd());
+        mach.setXq(data.xq());
+        mach.setXd1(data.xdp());
+        mach.setTd01(data.tdop());
+        mach.setSliner(0.85);
+        mach.setSe100(data.s1());
+        mach.setSe120(data.s12());
+        return mach;
+    }
 
     /** PSS/E CIMTR4 induction motor represented by a negative generator. */
     public Cimtr4Machine addCimtr4(String busId, String genId,
