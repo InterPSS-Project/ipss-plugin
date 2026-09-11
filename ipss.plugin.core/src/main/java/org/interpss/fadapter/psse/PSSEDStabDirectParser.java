@@ -33,6 +33,7 @@ import org.interpss.dstab.renewable.Wtdta1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.mach.GenqecData;
+import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.GenqejData;
 import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
@@ -321,6 +322,8 @@ public class PSSEDStabDirectParser {
                 return procGenqej(busId, genId, fields);
             case "GENTPJ1":
                 return procGentpj1(busId, genId, fields);
+            case "CIMTR4":
+                return procCimtr4(busId, genId, fields);
             case "GENSAL":
             case "GENSAE":
                 return procGensal(busId, genId, fields);
@@ -2523,6 +2526,23 @@ public class PSSEDStabDirectParser {
         double[] rating = getGenRating(busId, genId);
         builder.addGentpj1(busId, genId, rating[0], rating[1], data);
         return true;
+    }
+
+    // PSS/E 36.7: IBUS 'CIMTR4' ID T' T'' H X X' X'' Xl E1 S(E1) E2 S(E2) D SYN-TOR
+    private boolean procCimtr4(String busId, String genId, String[] f) throws InterpssException {
+        if (f.length < 16) {
+            log.warn("Incomplete CIMTR4 record at bus {}: expected 16 fields, found {}",
+                    busId, f.length);
+            return false;
+        }
+        Cimtr4Data data = new Cimtr4Data(
+                getDouble(f, 3, 0.0), getDouble(f, 4, 0.0), getDouble(f, 5, 0.0),
+                getDouble(f, 6, 0.0), getDouble(f, 7, 0.0), getDouble(f, 8, 0.0),
+                getDouble(f, 9, 0.0), getDouble(f, 10, 0.0), getDouble(f, 11, 0.0),
+                getDouble(f, 12, 0.0), getDouble(f, 13, 0.0), getDouble(f, 14, 0.0),
+                getDouble(f, 15, 0.0));
+        double[] rating = getGenRating(busId, genId);
+        return builder.addCimtr4(busId, genId, rating[0], rating[1], data) != null;
     }
 
     // REGCA1: IBUS MODEL ID LVPLSW Tg Rrpwr Brkpt Zerox Lvpl1 Volim

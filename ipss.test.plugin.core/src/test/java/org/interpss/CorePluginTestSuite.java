@@ -324,6 +324,7 @@ import org.interpss.core.dstab.cml.block.Pss2aLeadLagBlockTest;
 import org.interpss.core.dstab.cml.block.WashoutControlBlockTests;
 import org.interpss.core.dstab.cml.controller.AnnotateParserTests;
 import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
+import org.interpss.core.dstab.mach.Cimtr4PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.GensalConformanceTest;
 import org.interpss.core.dstab.mach.GensalIndependentSmibConformanceTest;
@@ -462,6 +463,7 @@ import org.junit.platform.suite.api.Suite;
 	GensalHydroSmibTest.class,
 	GensalIndependentSmibConformanceTest.class,
 	GenqecIndependentSmibConformanceTest.class,
+	Cimtr4PsseSmibConformanceTest.class,
 	Bbsex1PsseSmibConformanceTest.class,
 	Ieeex1PsseSmibConformanceTest.class,
 	Exdc2PsseSmibConformanceTest.class,
