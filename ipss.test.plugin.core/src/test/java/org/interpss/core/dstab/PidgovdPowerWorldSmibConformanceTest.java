@@ -51,9 +51,11 @@ public class PidgovdPowerWorldSmibConformanceTest {
         Machine referenceMachine = network.getMachine("Bus2-mach1");
         PssePidgovdGovernor governor = (PssePidgovdGovernor) machine.getGovernor();
         assertEquals("PIDGOVD", governor.getName());
-        assertEquals(Set.of("Mechanical Output", "Measured Delta P", "Integral",
-                "Regulator 1", "Derivative", "Regulator 2", "Gate"),
-                governor.getNamedStates().keySet());
+        assertTrue(governor.getNamedStates().keySet().containsAll(Set.of(
+                "Mechanical Output", "Measured Delta P", "Integral", "Regulator 1",
+                "Derivative", "Regulator 2", "Gate", "Input Sensor", "PI Controller",
+                "First Regulator", "Derivative Controller", "Second Regulator",
+                "Gate Position", "Water Inertia")));
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, governor,

@@ -2,7 +2,7 @@ package org.interpss.dstab.control.gov.psse.pidgov;
 
 import org.interpss.dstab.control.base.BaseControllerData;
 
-/** Parameter data for the PSS/E PIDGOVD hydro turbine-governor. */
+/** Parameter data shared by the PSS/E PIDGOV and PIDGOVD hydro governors. */
 public class PssePidgovdGovernorData extends BaseControllerData {
     private int feedback;
     private double rperm, treg, kp, ki, kd, ta, tb, dturb;
