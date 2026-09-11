@@ -2,6 +2,9 @@ package org.interpss.dstab.control.exc.psse.st9c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -321,6 +324,17 @@ public final class St9cExciter extends AnnotateExciter implements IntegrationSte
     public double getCompoundSource() { return compoundSource(getMachine()); }
     public double getAvailableExciterVoltage() { return algebraics(active, getMachine()).available; }
     public double[] getStateSnapshot() { return active.clone(); }
+
+    /** Published PSS/E ST9C states in model-library order and semantics. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("Sensed VT", active[SENSED]);
+        states.put("AVR Differential Washout", active[DIFFERENTIAL]);
+        states.put("Power Converter Filter", active[CONVERTER]);
+        states.put("Integrator", active[INTEGRAL]);
+        return Collections.unmodifiableMap(states);
+    }
 
     @Override
     public double getOutput(Machine machine) {
