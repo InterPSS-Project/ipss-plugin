@@ -76,7 +76,8 @@ stabilizer evidence to `5/15`. PSS3B adds a native PSS/E full-loop,
 nine-state, and recorded-power/speed contract, raising combined exact-tool
 stabilizer evidence to `6/15`. PSS3C adds a native PSS/E full-loop and
 11-state contract, raising combined exact-tool stabilizer evidence to `7/15`.
-Current-schema IEEEG1D adds a native PSS/E boundary
+PSS6C adds a native PSS/E full-loop and ten-state contract, raising combined
+exact-tool stabilizer evidence to `8/15`. Current-schema IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
