@@ -957,6 +957,7 @@ public class DStabNetworkBuilder {
         }
         if (data.ics1() < 1 || data.ics1() > 7 || data.ics2() < 1 || data.ics2() > 6
                 || data.m() < 0 || data.n() < 0 || (data.n() > 0 && data.m() == 0)
+                || data.m() * data.n() > 8
                 || data.t6() < 0.0 || data.t7() < 0.0 || data.t8() < 0.0
                 || data.t9() < 0.0 || data.tpgfilt() < 0.0 || data.tcomp() < 0.0
                 || data.pssActivation() < data.pssDeactivation()) {

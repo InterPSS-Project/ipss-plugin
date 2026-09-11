@@ -1936,7 +1936,7 @@ public class PSSEDStabDirectParser {
         return builder.addPss6c(busId, genId, parameters) != null;
     }
 
-    // PSS7C: four selectors and 34 constants; PowerWorld adds Tpgfilt before Xcomp.
+    // PSS7C: six ICONs and 32 constants; PowerWorld adds Tpgfilt before Xcomp.
     private boolean procPss7c(String busId, String genId, String[] f) {
         if (f.length < 41) return false;
         int count = f.length >= 42 ? 39 : 38;
