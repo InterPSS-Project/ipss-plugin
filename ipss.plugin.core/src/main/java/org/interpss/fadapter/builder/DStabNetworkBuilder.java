@@ -137,6 +137,8 @@ import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernorData;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 import org.interpss.dstab.control.pss.StabilizerObjectFactory;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer;
+import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
@@ -634,6 +636,54 @@ public class DStabNetworkBuilder {
 		data.setTa(ta);
 		data.setTb(tb);
 		data.setKs4(ks4);
+        return pss;
+    }
+
+    /** Build the WECC PSSSB model: PSS2A plus its switched voltage-boost path. */
+    public PsssbStabilizer addPsssb(String busId, String genId,
+            PsssbStabilizerData data) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSSSB: {} {}", busId, genId);
+            return null;
+        }
+        if (data.getIcs1() < 1 || data.getIcs1() > 6
+                || data.getIcs2() < 1 || data.getIcs2() > 6) {
+            log.warn("PSSSB selector combination is not implemented at {} {}: "
+                    + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+                    busId, genId, data.getIcs1(), data.getRemoteBus1(),
+                    data.getIcs2(), data.getRemoteBus2());
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = resolvePss2aSignalBus(
+                localBus, data.getIcs1(), data.getRemoteBus1());
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(
+                localBus, data.getIcs2(), data.getRemoteBus2());
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSSSB remote bus could not be resolved at {} {}", busId, genId);
+            return null;
+        }
+        if (data.getSw1() != 0 && data.getSw1() != 1) {
+            log.warn("PSSSB manual switch is invalid at {} {}: Sw1={}",
+                    busId, genId, data.getSw1());
+            return null;
+        }
+        if (data.getTd1() < 0.0 || data.getTd2() < 0.0) {
+            log.warn("PSSSB boost time constants are invalid at {} {}: Td1={}, Td2={}",
+                    busId, genId, data.getTd1(), data.getTd2());
+            return null;
+        }
+        if (data.getT8() < 0.0 || data.getT9() < 0.0
+                || (data.getN() > 0 && Math.abs(data.getT9()) < 1.0e-12
+                        && Math.abs(data.getT8()) >= 1.0e-12)) {
+            log.warn("PSSSB ramp-tracking filter is invalid at {} {}", busId, genId);
+            return null;
+        }
+        PsssbStabilizer pss = StabilizerObjectFactory.createPsssbStabilizer(
+                busId + "-psssb" + genId, "PSSSB", machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        pss.setData(data);
         return pss;
     }
 
