@@ -17,6 +17,11 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
+All `28/28` native PSS/E reference probes were cold-regenerated with PSS/E
+Xplore 36.7.0/Python 3.13 on 2026-09-11. Every probe exited zero and every
+generated manifest matched its published content and exact artifact-hash
+declarations. The reusable suite driver and all probe inputs use
+repository-relative paths.
 `6/6` prepared cases pass the
 short flat and common Bus-7159 fault execution smokes, `6/6` pass the production
 1/240 s strict one-second flat-run gate, and all `15/15` required
