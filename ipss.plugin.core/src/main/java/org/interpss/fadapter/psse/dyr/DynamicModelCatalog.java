@@ -110,6 +110,9 @@ public final class DynamicModelCatalog {
     );
 
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
+            descriptor("CSVGN5", Set.of(), CONVERTER_MACHINE, 15, LOADABLE,
+                    "org.interpss.dstab.svc.Csvgn5Model",
+                    "Machine%20Model%20CSVGN5.htm"),
             descriptor("WTDTA1", Set.of("WTDTAU1", "WTDAT1"), DRIVE_TRAIN, 5, LOADABLE,
                     "org.interpss.dstab.renewable.Wtdta1Model",
                     "Governor%20WTDTA1.htm"),
