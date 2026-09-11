@@ -107,7 +107,10 @@ public class Type3WindPowerWorldTrajectoryTest extends CorePluginTestSetup {
         double[] tolerance = {
                 7.0e-5, 3.0e-5, 6.0e-6, 0.09, 0.06,
                 6.0e-4, 9.0e-4, 6.0e-5, 3.0e-5, 8.0e-4,
-                5.0e-6, 4.0e-4, 1.1e-3, 2.0e-5, 4.0e-4
+                // WT moved by 2.16e-5 after adopting PSS/E's documented
+                // generator-power fallback; this older trace is retained as
+                // a bounded regression, while native PSS/E is the oracle.
+                5.0e-6, 4.0e-4, 1.1e-3, 2.2e-5, 4.0e-4
         };
         for (int index = 0; index < maximum.length; index++) {
             assertTrue(maximum[index] <= tolerance[index], String.format(Locale.ROOT,
