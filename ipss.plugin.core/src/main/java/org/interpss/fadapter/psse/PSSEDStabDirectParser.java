@@ -32,6 +32,7 @@ import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtdta1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
+import org.interpss.dstab.svc.Csvgn5Data;
 import org.interpss.dstab.mach.GenqecData;
 import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.GenqejData;
@@ -605,6 +606,8 @@ public class PSSEDStabDirectParser {
                 return procRegca1(busId, genId, fields);
             case "REGFMA1":
                 return procRegfma1(busId, genId, fields);
+            case "CSVGN5":
+                return procCsvgn5(busId, genId, fields);
             case "REECB1":
             case "REECBU1":
                 return procReecb1(busId, genId, fields);
@@ -2684,6 +2687,21 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 18, 3.0), getDouble(f, 19, 20.0),
                 getDouble(f, 20, 0.0), getDouble(f, 21, 6.0));
         return builder.addRegfma1(busId, genId, data) != null;
+    }
+
+    // PSS/E 36.7 CSVGN5: IBUS MODEL ID IB TS1 VEMAX TS2 TS3 TS4 TS5
+    // KSVS KSD BMAX B'MAX B'MIN BMIN TS6 DV
+    private boolean procCsvgn5(String busId, String genId, String[] f) {
+        if (f.length != 18) return false;
+        Csvgn5Data data = new Csvgn5Data(
+                getInt(f, 3, 0), getDouble(f, 4, 0.0), getDouble(f, 5, 0.0),
+                getDouble(f, 6, 0.0), getDouble(f, 7, 0.0),
+                getDouble(f, 8, 0.0), getDouble(f, 9, 0.0),
+                getDouble(f, 10, 0.0), getDouble(f, 11, 0.0),
+                getDouble(f, 12, 0.0), getDouble(f, 13, 0.0),
+                getDouble(f, 14, 0.0), getDouble(f, 15, 0.0),
+                getDouble(f, 16, 0.0), getDouble(f, 17, 0.0));
+        return builder.addCsvgn5(busId, genId, data) != null;
     }
 
     // REECB1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PQFLAG followed by
