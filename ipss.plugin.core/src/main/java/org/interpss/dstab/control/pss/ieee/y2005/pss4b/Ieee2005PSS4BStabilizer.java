@@ -1,6 +1,9 @@
 package org.interpss.dstab.control.pss.ieee.y2005.pss4b;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData.BandData;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData.InputTransducerData;
@@ -38,6 +41,8 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
     private double lowIntermediateInput;
+    private double highLagOutput;
+    private double highFilterOutput;
     private double highInput;
     private double lowOutput;
     private double intermediateOutput;
@@ -125,15 +130,15 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
         int stage = modifiedEuler ? flag : 2;
 
         double speedDeviation = machine.getSpeed() - initialSpeed;
-        double powerDeviation = -(machine.getPe() - initialElectricalPower);
+        double powerDeviation = machine.getPe() - initialElectricalPower;
 
         lowIntermediateInput = advance(lowInputFilter, speedDeviation, dt, stage);
         lowIntermediateInput = advance(lowNotch1, lowIntermediateInput, dt, stage);
         lowIntermediateInput = advance(lowNotch2, lowIntermediateInput, dt, stage);
 
-        highInput = advance(highInputLag, powerDeviation, dt, stage);
-        highInput = advance(highInputFilter, highInput, dt, stage);
-        highInput = advance(highRampLag, highInput, dt, stage);
+        highLagOutput = advance(highInputLag, powerDeviation, dt, stage);
+        highFilterOutput = advance(highInputFilter, highLagOutput, dt, stage);
+        highInput = advance(highRampLag, highFilterOutput, dt, stage);
         highInput = advance(highNotch1, highInput, dt, stage);
         highInput = advance(highNotch2, highInput, dt, stage);
 
@@ -155,6 +160,58 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
     public double getLowOutput() { return lowOutput; }
     public double getIntermediateOutput() { return intermediateOutput; }
     public double getHighOutput() { return highOutput; }
+
+    /** Stable semantic names for the 32 published PSS4B dynamic memories. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        if (lowInputFilter == null) return Map.of();
+        Map<String, Double> states = new LinkedHashMap<>();
+        putSecondOrder(states, "First signal transducer", lowInputFilter);
+        putSecondOrder(states, "First signal notch 1", lowNotch1);
+        putSecondOrder(states, "First signal notch 2", lowNotch2);
+        states.put("Second signal transducer lag", highInputLag.state());
+        putSecondOrder(states, "Second signal transducer", highInputFilter);
+        states.put("Second signal time lag", highRampLag.state());
+        putSecondOrder(states, "Second signal notch 1", highNotch1);
+        putSecondOrder(states, "Second signal notch 2", highNotch2);
+        lowBand.putNamedStates(states, "Low band");
+        intermediateBand.putNamedStates(states, "Intermediate band");
+        highBand.putNamedStates(states, "High band");
+        return Collections.unmodifiableMap(states);
+    }
+
+    /** PSS/E STATE-array coordinates, separate from canonical CML memories. */
+    public Map<String, Double> getPsseStateCoordinates() {
+        if (lowInputFilter == null) return Map.of();
+        Map<String, Double> states = new LinkedHashMap<>();
+        putSecondOrder(states, "First signal transducer", lowInputFilter);
+        putScaledSecondOrder(states, "First signal notch 1", lowNotch1);
+        putScaledSecondOrder(states, "First signal notch 2", lowNotch2);
+        double th = effectiveData.input().th();
+        states.put("Second signal transducer lag",
+                th > EPS ? (initialElectricalPower + highInputLag.state()) / th : 0.0);
+        states.put("Second signal transducer position", highInputFilter.velocity());
+        states.put("Second signal transducer velocity", highFilterOutput);
+        states.put("Second signal time lag", highRampLag.state());
+        putScaledSecondOrder(states, "Second signal notch 1", highNotch1);
+        putScaledSecondOrder(states, "Second signal notch 2", highNotch2);
+        lowBand.putNamedStates(states, "Low band");
+        intermediateBand.putNamedStates(states, "Intermediate band");
+        highBand.putNamedStates(states, "High band");
+        return Collections.unmodifiableMap(states);
+    }
+
+    private static void putSecondOrder(Map<String, Double> states, String prefix,
+            SecondOrderBlock block) {
+        states.put(prefix + " position", block.position());
+        states.put(prefix + " velocity", block.velocity());
+    }
+
+    private static void putScaledSecondOrder(Map<String, Double> states, String prefix,
+            SecondOrderBlock block) {
+        states.put(prefix + " position", block.denominatorS2() * block.position());
+        states.put(prefix + " velocity", block.denominatorS2() * block.velocity());
+    }
 
     private Ieee2005PSS4BStabilizerData correctedData(
             Ieee2005PSS4BStabilizerData data, Machine machine) {
@@ -198,11 +255,12 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
         return -Math.abs(Math.min(first, second));
     }
 
-    private static SecondOrderBlock notch(double bandwidth, double omega) {
+    private static SecondOrderBlock notch(double bandwidthTimesOmega, double omega) {
         if (omega <= EPS) return SecondOrderBlock.bypass();
         double omegaSquaredInverse = 1.0 / (omega * omega);
         return new SecondOrderBlock(1.0, 0.0, omegaSquaredInverse,
-                bandwidth / omega, omegaSquaredInverse, false);
+                bandwidthTimesOmega * omegaSquaredInverse,
+                omegaSquaredInverse, false);
     }
 
     private static double advance(TransferBlock block, double input, double dt, int stage) {
@@ -248,7 +306,16 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
                     lower1, data.k2() * input, dt, stage);
             lower = Ieee2005PSS4BStabilizer.advance(lower2, lower, dt, stage);
             lower = Ieee2005PSS4BStabilizer.advance(lower3, lower, dt, stage);
-            return clamp(data.gain() * (upper + lower), data.max(), data.min());
+            return clamp(data.gain() * (upper - lower), data.max(), data.min());
+        }
+
+        private void putNamedStates(Map<String, Double> states, String prefix) {
+            states.put(prefix + " upper lead-lag 1", upper1.state());
+            states.put(prefix + " upper lead-lag 2", upper2.state());
+            states.put(prefix + " upper lead-lag 3", upper3.state());
+            states.put(prefix + " lower lead-lag 1", lower1.state());
+            states.put(prefix + " lower lead-lag 2", lower2.state());
+            states.put(prefix + " lower lead-lag 3", lower3.state());
         }
     }
 
@@ -298,6 +365,10 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
         @Override public double output(double input) {
             if (a1 <= EPS) return b0 * input;
             return b0 * activeState + b1 * (input - activeState) / a1;
+        }
+
+        private double state() {
+            return activeState;
         }
     }
 
@@ -369,6 +440,18 @@ public final class Ieee2005PSS4BStabilizer extends AnnotateStabilizer
 
         private double acceleration(double input, double x, double dx) {
             return (input - x - a1 * dx) / a2;
+        }
+
+        private double position() {
+            return activePosition;
+        }
+
+        private double velocity() {
+            return activeVelocity;
+        }
+
+        private double denominatorS2() {
+            return a2;
         }
     }
 }
