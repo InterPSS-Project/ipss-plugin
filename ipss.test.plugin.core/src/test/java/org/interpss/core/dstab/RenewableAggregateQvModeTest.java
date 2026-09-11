@@ -448,6 +448,80 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     @Test
+    void psseBus1062RecordedSignalsIsolateRenewableControllerEquations() throws Exception {
+        Path directory = Path.of("testData", "adpter", "psse", "v33", "renewable");
+        var context = new PSSEMultiFileLoader().loadDStab(
+                directory.resolve("regca_reeca_repca_bus1062_weak.raw").toString(),
+                directory.resolve("regca_reeca_repca_bus1062.dyr").toString());
+        var network = context.getDStabilityNet();
+        var algorithm = context.getDynSimuAlgorithm();
+        network.setBypassDataCheck(true);
+        network.setAllowGenWithoutMach(true);
+        assertTrue(algorithm.getAclfAlgorithm().loadflow(), "play-in load flow");
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(0.0005);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algorithm.initialization(), "play-in initialization");
+
+        Regca1Model converter = (Regca1Model) ((DStabGen) network.getBus("Bus1")
+                .getContributeGen("1")).getDynamicGenDevice();
+        Reeca1Model reeca = converter.getReeca1Controller();
+        Repca1Model repca = reeca.getPlantController();
+        Path reference = Path.of("testData", "reference", "psse",
+                "renewable-bus1062", "psse.csv");
+        List<String> lines = Files.readAllLines(reference);
+        String[] headings = lines.get(0).split(",");
+        Map<String, Integer> column = new LinkedHashMap<>();
+        for (int index = 0; index < headings.length; index++) column.put(headings[index], index);
+        String[] initial = lines.get(1).split(",");
+        double initialVoltage = Double.parseDouble(initial[column.get("V_BUS1")]);
+        network.getBus("Bus1").setVoltage(new Complex(initialVoltage, 0.0));
+        reeca.initialize(Double.parseDouble(initial[column.get("P")]),
+                Double.parseDouble(initial[column.get("Q")]), initialVoltage);
+        double[] maximum = new double[6];
+        double previousTime = 0.0;
+        for (String line : lines.subList(1, lines.size())) {
+            String[] sample = line.split(",");
+            double time = Double.parseDouble(sample[0]);
+            if (time < 0.0 || time > 4.00001) continue;
+            double dt = time - previousTime;
+            previousTime = time;
+            double voltage = Double.parseDouble(sample[column.get("V_BUS1")]);
+            var bus = network.getBus("Bus1");
+            bus.setVoltage(new Complex(voltage, 0.0));
+            reeca.step(dt,
+                    Double.parseDouble(sample[column.get("P")]),
+                    Double.parseDouble(sample[column.get("Q")]), voltage, 1.0);
+            double[] actual = {
+                    reeca.getReactiveControlIntegral(), reeca.getVoltageControlIntegral(),
+                    repca.getMeasuredReactiveOrVoltage(), repca.getReactiveControlIntegral(),
+                    repca.getLeadLagState(), repca.getMeasuredActivePower()
+            };
+            String[] expectedName = {
+                    "REECA_PIQ", "REECA_PIV", "REPCA_VFILT", "REPCA_PIQ",
+                    "REPCA_LEAD_LAG", "REPCA_PFILT"
+            };
+            for (int channel = 0; channel < maximum.length; channel++) {
+                double expected = Double.parseDouble(sample[column.get(expectedName[channel])]);
+                if (channel == 3 || channel == 4) {
+                    expected -= Double.parseDouble(initial[column.get(expectedName[channel])]);
+                }
+                maximum[channel] = Math.max(maximum[channel], Math.abs(actual[channel] - expected));
+            }
+        }
+        System.out.println("Weak-grid PSS/E signal-play-in state max errors: "
+                + Arrays.toString(maximum));
+        double[] tolerance = {1.2e-4, 1.5e-3, 1.0e-5, 3.0e-5, 5.0e-5, 3.0e-6};
+        String[] labels = {"REECA_PIQ", "REECA_PIV", "REPCA_VFILT",
+                "REPCA_PIQ_DELTA", "REPCA_LEAD_LAG_DELTA", "REPCA_PFILT"};
+        for (int channel = 0; channel < maximum.length; channel++) {
+            assertTrue(maximum[channel] <= tolerance[channel], String.format(Locale.ROOT,
+                    "PSS/E play-in %s error %.9g exceeds %.9g",
+                    labels[channel], maximum[channel], tolerance[channel]));
+        }
+    }
+
+    @Test
     void psseBus1062FlatArtifactKeepsEveryRenewableStateStationary() throws Exception {
         Path reference = Path.of("testData", "reference", "psse",
                 "renewable-bus1062-flat", "psse.csv");
