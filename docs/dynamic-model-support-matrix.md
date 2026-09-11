@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `36/36` native PSS/E reference probes were cold-regenerated with PSS/E
+All `37/37` native PSS/E reference probes were cold-regenerated with PSS/E
 Xplore 36.7.0/Python 3.13 on 2026-09-11. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. The reusable suite driver and all probe inputs use
@@ -69,8 +69,14 @@ immutable named timers.
 IEELBL and IEELAR now share an exact algebraic IEEE load engine. The native
 area-scoped contract covers the published voltage polynomial, frequency factor,
 and replacement of the selected loads' CP/CI/CZ components.
-One registered integrity test now scans all 116 checked-in PSS/E and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 479
+UEL1 now has exact 15-CON parsing, circular VUC/VUR measurement, PI
+anti-windup, two published lead-lag sections, output limiting, and three
+immutable named states. A clean native PSS/E 36.7 ST1C-coupled fault artifact
+and a separate recorded-error play-in distinguish full-loop boundary agreement
+from the limiter equations themselves; every compared channel has an explicit
+limit and no supplied-fleet constants are checked in.
+One registered integrity test now scans all 117 checked-in PSS/E and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 483
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -256,6 +262,7 @@ the plan's release checklist before interpreting any
 | PSS7C | STABILIZER |  | 38 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS7C.htm) |
 | PSSSB | STABILIZER |  | 30 | LOADABLE | `org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSSSB.htm) |
 | ST2CUT | STABILIZER | WSCCST | 20 | LOADABLE | `org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20ST2CUT.htm) |
+| UEL1 | UNDER_EXCITATION_LIMITER |  | 15 | LOADABLE | `org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Under%20Excitation%20Limiter%20UEL1.htm) |
 | REECA1 | ELECTRICAL_CONTROLLER | REECAU1 | 51 | LOADABLE | `org.interpss.dstab.renewable.Reeca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_A.htm) |
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |
 | REPCA1 | PLANT_CONTROLLER | REPCAU1, REPCTA1, REPCTAU1 | 34 | LOADABLE | `org.interpss.dstab.renewable.Repca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Plant%20Controller%20REPC_A.htm) |

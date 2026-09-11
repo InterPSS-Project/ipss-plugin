@@ -213,6 +213,10 @@ public class Texas2kFullDynamicCoverageTest {
             case EXCITER -> machine == null ? null : machine.getExciter();
             case GOVERNOR -> machine == null ? null : machine.getGovernor();
             case STABILIZER -> machine == null ? null : machine.getStabilizer();
+            case UNDER_EXCITATION_LIMITER -> bus.getDynamicBusDeviceList().stream()
+                    .filter(device -> device.getName().equals(entry.canonicalModelName())
+                            && device.getId().equals(entry.deviceId()))
+                    .findFirst().orElse(null);
             case CONVERTER_MACHINE -> generator.getDynamicGenDevice();
             case ELECTRICAL_CONTROLLER -> regca(generator) == null ? null
                     : regca(generator).getActiveElectricalController();

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -18,7 +19,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 /** Native PSS/E implementation of the IEEE 421.5-2016 ST1C exciter. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
 public final class St1cExciter extends AnnotateExciter
-        implements IntegrationStepAware, ICMLStateProvider {
+        implements IntegrationStepAware, ICMLStateProvider, UnderExcitationLimiterTarget {
     private static final double EPS=1e-12;
     private static final int SENSED=0,LL1=1,LL2=2,VA=3,FEEDBACK_LAG=4;
     private final St1cData data;

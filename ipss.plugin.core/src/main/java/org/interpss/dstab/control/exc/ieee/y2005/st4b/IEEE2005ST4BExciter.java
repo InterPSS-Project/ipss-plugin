@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
 import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,7 +30,8 @@ import com.interpss.dstab.mach.MachineIfdBase;
 		   output="this.customBlock.y",
 		   refPoint="this.vrPIBlock.u0 - pss.vs + this.trDelayBlock.y - this.vuel",
 		   display= {})
-public class IEEE2005ST4BExciter extends AnnotateExciter implements IntegrationStepAware {
+public class IEEE2005ST4BExciter extends AnnotateExciter
+        implements IntegrationStepAware, UnderExcitationLimiterTarget {
     private static final Logger log = LoggerFactory.getLogger(IEEE2005ST4BExciter.class);
 	public double k1 = 1.0;/*constant*/
 	/** External UEL contribution; zero is the nonbinding/absent value. */
