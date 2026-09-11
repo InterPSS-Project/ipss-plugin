@@ -1,17 +1,17 @@
 package org.interpss.dstab.control.pss.ieee.y2016.pss7c;
 
-/** PSS7C record: four selectors plus 34 or 35 constants. */
+/** PSS7C record: six ICONs plus 32 native CONs; PowerWorld adds Tpgfilt. */
 public record Ieee2016PSS7CStabilizerData(
         int ics1, int remoteBus1, int ics2, int remoteBus2,
-        int m, int n, double ks1, double ks2, double ks3,
-        double t6, double t7, double tw1, double tw2, double tw3, double tw4,
-        double t8, double t9,
+        int m, int n,
+        double tw1, double tw2, double t6, double tw3, double tw4, double t7,
+        double ks2, double ks3, double t8, double t9, double ks1,
         double k0, double k1, double k2, double k3, double k4,
-        double ki3, double ki4, double ti1, double ti2, double ti3, double ti4,
+        double ti1, double ti2, double ki3, double ti3, double ki4, double ti4,
         double vsi1max, double vsi1min, double vsi2max, double vsi2min,
         double vstmax, double vstmin,
-        double pssActivation, double pssDeactivation, double tpgfilt,
-        double xcomp, double tcomp) {
+        double pssActivation, double pssDeactivation,
+        double xcomp, double tcomp, double tpgfilt) {
 
     public static final int PARAMETER_COUNT = 39;
     public static final int LEGACY_PARAMETER_COUNT = 38;
@@ -30,8 +30,8 @@ public record Ieee2016PSS7CStabilizerData(
                 p[15], p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23],
                 p[24], p[25], p[26], p[27], p[28], p[29], p[30], p[31],
                 p[32], p[33], p[34], p[35],
-                includesPgenFilter ? p[36] : 0.0,
-                p[includesPgenFilter ? 37 : 36], p[includesPgenFilter ? 38 : 37]);
+                p[includesPgenFilter ? 37 : 36], p[includesPgenFilter ? 38 : 37],
+                includesPgenFilter ? p[36] : 0.0);
     }
 
     private static int exactInt(double value, String name) {
