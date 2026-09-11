@@ -64,7 +64,9 @@ boundary/EFD/two-state contract, and EXST2 adds a native PSS/E
 boundary/EFD/four-state contract. ST6C, ST7B, ST7C, ST8C, ST9C, and ST10C add native PSS/E
 boundary/EFD/five-, four-, five-, five-, four-, and ten-state contracts. Together they raise
 combined exact-tool direct exciter evidence to `63/64` without changing the explicitly
-PowerWorld-only inventory. Current-schema IEEEG1D adds a native PSS/E boundary
+PowerWorld-only inventory. PSS2B adds a direct PowerWorld boundary, machine,
+exciter, and 11-signal stabilizer trajectory contract, raising direct
+stabilizer evidence to `2/15`. Current-schema IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
