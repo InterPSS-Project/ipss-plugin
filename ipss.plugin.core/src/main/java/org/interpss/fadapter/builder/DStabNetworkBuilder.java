@@ -4,6 +4,7 @@ import org.interpss.dstab.control.exc.ExciterObjectFactory;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
+import org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
 import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
 import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Data;
@@ -1307,6 +1308,38 @@ public class DStabNetworkBuilder {
         exc.getData().setTe(te);
         exc.getData().setKf(kf);
         exc.getData().setTf(tf);
+        exc.getData().setE1(e1);
+        exc.getData().setSe_e1(se1);
+        exc.getData().setE2(e2);
+        exc.getData().setSe_e2(se2);
+        return exc;
+    }
+
+    /** Native PSS/E IEEEX2 with two cascaded rate-feedback time constants. */
+    public Ieeex2Exciter addExcIeeex2(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf1, double tf2,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for IEEEX2 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Ieeex2Exciter exc = ExciterObjectFactory.createIeeex2Exciter(
+                mach.getId() + "_Exc", mach);
+        exc.setTransducerTimeConstant(tr);
+        exc.setTf2(tf2);
+        exc.getData().setKa(ka);
+        exc.getData().setTa(ta);
+        exc.getData().setTb(tb);
+        exc.getData().setTc(tc);
+        exc.getData().setVrmax(vrmax);
+        exc.getData().setVrmin(vrmin);
+        exc.getData().setKe(ke);
+        exc.getData().setTe(te);
+        exc.getData().setKf(kf);
+        exc.getData().setTf(tf1);
         exc.getData().setE1(e1);
         exc.getData().setSe_e1(se1);
         exc.getData().setE2(e2);
