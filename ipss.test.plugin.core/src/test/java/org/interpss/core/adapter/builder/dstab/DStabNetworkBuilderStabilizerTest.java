@@ -476,7 +476,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     void parsePss3b_mapsAllParametersAndRunsTwoNotchFilters() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss3b.dyr");
-        Files.writeString(dyr, "1 'PSS3B' '1' 3 1 "
+        Files.writeString(dyr, "1 'PSS3B' '1' 3 998 1 999 "
                 + "0.2 0.02 1.5 4 0.03 2 0.4 "
                 + "0.1 0.01 0.2 0.02 0.3 0.03 0.4 0.04 0.1 -0.1 /\n");
         PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
@@ -490,7 +490,9 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertSame(machine, pss.getMachine());
         var data = pss.getData();
         assertEquals(3, data.ics1());
+        assertEquals(998, data.remoteBus1());
         assertEquals(1, data.ics2());
+        assertEquals(999, data.remoteBus2());
         assertEquals(0.2, data.ks1(), TOL);
         assertEquals(0.02, data.t1(), TOL);
         assertEquals(1.5, data.tw1(), TOL);
@@ -527,7 +529,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     void pss3b_appliesDocumentedCorrectionsWithoutChangingSourceData() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss3b-corrections.dyr");
-        Files.writeString(dyr, "1 'PSS3B' '1' 3 1 "
+        Files.writeString(dyr, "1 'PSS3B' '1' 3 0 1 0 "
                 + "0.2 0.004 0.005 4 0.015 0.005 0.015 "
                 + "0 0 0 0 0 0 0 0 -0.1 0.2 /\n");
         new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
@@ -556,7 +558,7 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     void pss3b_matchesDynawoReferenceBranchStepResponse() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss3b-dynawo.dyr");
-        Files.writeString(dyr, "1 'PSS3B' '1' 3 1 "
+        Files.writeString(dyr, "1 'PSS3B' '1' 3 0 1 0 "
                 + "0.2 0.02 1.5 0 1.5 1.5 -1 "
                 + "0 0 0 0 0 0 0 0 0.1 -0.1 /\n");
         new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
@@ -605,6 +607,54 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(maximumOutput > 1.0e-7,
                 "Selected PSS3B input path produced no response");
         assertTrue(maximumOutput <= 1.0 + TOL);
+    }
+
+    @ParameterizedTest(name = "PSS3B remote bus selector {0}")
+    @CsvSource({"2", "5", "6"})
+    void pss3bResolvesRemoteBusForBusBasedSignals(int selector) throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        AclfNetworkBuilder topology = new AclfNetworkBuilder(builder.getDStabNetwork());
+        topology.setNetworkInfo("ut", "ut", 100000.0, OriginalDataFormat.PSSE);
+        topology.addBus("Bus2", "Remote", 2L, 16500.0, 0.97, 0.0,
+                null, null, null);
+        var remote = builder.getDStabNetwork().getDStabBus("Bus2");
+        remote.setFreq(0.985);
+
+        Ieee2005PSS3BStabilizer pss = builder.addPss3b(
+                "Bus1", "1", selector, 2, 3, 999,
+                1.0, 0.02, 0.20,
+                0.0, 0.02, 0.20, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.0,
+                1.0, -1.0);
+        assertNotNull(pss, "REMBUS is ignored for the local generator-power second input");
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+
+        if (selector == 2) {
+            remote.setFreq(0.98);
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertEquals(-0.005, pss.input1Signal, TOL);
+        } else {
+            remote.setVoltage(new Complex(0.96, 0.0));
+            assertTrue(pss.nextStep(0.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertEquals(selector == 5 ? -0.01 : -2.0, pss.input1Signal, TOL);
+        }
+    }
+
+    @Test
+    void pss3bRejectsMissingRemoteBusOnlyForBusBasedSignals() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        assertNull(builder.addPss3b(
+                "Bus1", "1", 5, 999, 3, 0,
+                1.0, 0.02, 0.20, 0.0, 0.02, 0.20, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                1.0, -1.0));
+        assertNotNull(builder.addPss3b(
+                "Bus1", "1", 3, 999, 1, 999,
+                1.0, 0.02, 0.20, 0.0, 0.02, 0.20, 0.0,
+                0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                1.0, -1.0));
     }
 
     @Test

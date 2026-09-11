@@ -1,6 +1,8 @@
 package org.interpss.dstab.control.pss.ieee.y2005.pss3b;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aWashoutBlock;
 import org.interpss.dstab.control.pss.psse.ieeest.SecondOrderLeadLagBlock;
@@ -11,7 +13,9 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnControllerField;
 import com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer;
+import com.interpss.dstab.controller.cml.field.ICMLControlBlock;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
+import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 
@@ -24,7 +28,7 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
     public double ks1, t1;
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="this.input1Signal",
             parameter={"type.NoLimit", "this.ks1", "this.t1"},
-            y0="this.input1Washout.u0", initOrderNumber=1)
+            y0="this.ks1*this.input1Signal", initOrderNumber=1)
     public DelayControlBlock input1Transducer;
 
     public double one = 1.0, tw1;
@@ -35,7 +39,7 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
     public double ks2, t2;
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="this.input2Signal",
             parameter={"type.NoLimit", "this.ks2", "this.t2"},
-            y0="this.input2Washout.u0", initOrderNumber=3)
+            y0="this.ks2*this.input2Signal", initOrderNumber=3)
     public DelayControlBlock input2Transducer;
 
     public double tw2;
@@ -67,7 +71,10 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
 
     private double input1Reference;
     private double input2Reference;
-    private double previousVoltage;
+    private BaseDStabBus<?, ?> input1Bus;
+    private BaseDStabBus<?, ?> input2Bus;
+    private double input1PreviousVoltage;
+    private double input2PreviousVoltage;
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
 
@@ -87,6 +94,11 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
         return data;
     }
 
+    public void setInputSignalBuses(BaseDStabBus<?, ?> first, BaseDStabBus<?, ?> second) {
+        input1Bus = first;
+        input2Bus = second;
+    }
+
     @Override
     public void configureIntegrationStep(double timeStepSec) {
         configureIntegrationStep(timeStepSec, 1.0);
@@ -104,6 +116,8 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
+        if (input1Bus == null) input1Bus = bus;
+        if (input2Bus == null) input2Bus = bus;
         ks1 = data.ks1(); t1 = data.t1(); tw1 = data.tw1();
         ks2 = data.ks2(); t2 = data.t2(); tw2 = data.tw2(); tw3 = data.tw3();
         a1 = data.a1(); a2 = data.a2(); a3 = data.a3(); a4 = data.a4();
@@ -111,9 +125,10 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
         vstmax = data.vstmax(); vstmin = data.vstmin();
         applyPowerWorldCorrections();
 
-        input1Reference = selectedInput(data.ics1(), bus, machine);
-        input2Reference = selectedInput(data.ics2(), bus, machine);
-        previousVoltage = bus.getVoltageMag();
+        input1PreviousVoltage = input1Bus.getVoltageMag();
+        input2PreviousVoltage = input2Bus.getVoltageMag();
+        input1Reference = selectedInput(data.ics1(), input1Bus, machine);
+        input2Reference = selectedInput(data.ics2(), input2Bus, machine);
         input1Signal = 0.0;
         input2Signal = 0.0;
         return super.initStates(bus, machine);
@@ -121,11 +136,15 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, Machine machine, int flag) {
-        BaseDStabBus<?, ?> bus = machine.getDStabBus();
-        input1Signal = deviationInput(data.ics1(), input1Reference, bus, machine, dt);
-        input2Signal = deviationInput(data.ics2(), input2Reference, bus, machine, dt);
+        input1Signal = deviationInput(data.ics1(), input1Reference,
+                input1Bus, input1PreviousVoltage, machine, dt);
+        input2Signal = deviationInput(data.ics2(), input2Reference,
+                input2Bus, input2PreviousVoltage, machine, dt);
         boolean result = super.nextStep(dt, method, machine, flag);
-        if (flag != 0) previousVoltage = bus.getVoltageMag();
+        if (flag != 0) {
+            input1PreviousVoltage = input1Bus.getVoltageMag();
+            input2PreviousVoltage = input2Bus.getVoltageMag();
+        }
         return result;
     }
 
@@ -135,7 +154,8 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
     }
 
     protected double deviationInput(int code, double reference,
-            BaseDStabBus<?, ?> bus, Machine machine, double dt) {
+            BaseDStabBus<?, ?> bus, double previousVoltage,
+            Machine machine, double dt) {
         if (code == 6) {
             return dt > 0.0 ? (bus.getVoltageMag() - previousVoltage) / dt : 0.0;
         }
@@ -152,6 +172,49 @@ public class Ieee2005PSS3BStabilizer extends AnnotateStabilizer
             case 6 -> 0.0;
             default -> throw new IllegalArgumentException("Unsupported PSS3B input code: " + code);
         };
+    }
+
+    /** PSS/E Model Library STATE order and storage coordinates. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        double input1Offset = nativeInputStateOffset(data.ics1(), ks1, input1Reference);
+        double input2Offset = nativeInputStateOffset(data.ics2(), ks2, input2Reference);
+        ICMLControlBlock transducer1 = runtimeBlock("input1Transducer");
+        ICMLControlBlock transducer2 = runtimeBlock("input2Transducer");
+        ICMLControlBlock washout1 = runtimeBlock("input1Washout");
+        ICMLControlBlock washout2 = runtimeBlock("input2Washout");
+        ICMLControlBlock main = runtimeBlock("mainWashout");
+        SecondOrderLeadLagBlock firstNotch =
+                (SecondOrderLeadLagBlock) runtimeBlock("notch1");
+        SecondOrderLeadLagBlock secondNotch =
+                (SecondOrderLeadLagBlock) runtimeBlock("notch2");
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("input1Transducer", transducer1.getStateX() + input1Offset);
+        states.put("input2Transducer", transducer2.getStateX() + input2Offset);
+        states.put("input1Washout", washout1.getStateX() + input1Offset);
+        states.put("input2Washout", washout2.getStateX() + input2Offset);
+        states.put("mainWashout", main.getStateX());
+        // PSS/E lists the integrated output coordinate before its derivative
+        // coordinate for each second-order section.
+        states.put("notch1State1", firstNotch.getSecondState());
+        states.put("notch1State2", firstNotch.getFirstState());
+        states.put("notch2State1", secondNotch.getSecondState());
+        states.put("notch2State2", secondNotch.getFirstState());
+        return Map.copyOf(states);
+    }
+
+    private static double nativeInputStateOffset(int code, double gain, double reference) {
+        return code == 3 || code == 4 || code == 5 ? gain * reference : 0.0;
+    }
+
+    private ICMLControlBlock runtimeBlock(String name) {
+        for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
+            if (wrapper.getFieldName().equals(name)
+                    && wrapper.getField() instanceof ICMLControlBlock block) {
+                return block;
+            }
+        }
+        throw new IllegalStateException("PSS3B CML block is not initialized: " + name);
     }
 
     private void applyPowerWorldCorrections() {
