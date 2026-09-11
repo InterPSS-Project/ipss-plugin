@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `39/39` native PSS/E reference probes were cold-regenerated with PSS/E
+All `41/41` native PSS/E reference probes were cold-regenerated with PSS/E
 Xplore 36.7.0/Python 3.13 on 2026-09-11. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. The reusable suite driver and all probe inputs use
@@ -82,14 +82,14 @@ machine/system-base susceptance conversion follow the PSS/E 36.7 diagram. All
 four native coordinates plus output Y use the common named-state API.
 Its 1,605-sample native artifact is reproducible at SHA-256
 `0e37c444d18b09be0c9312874fe1b6c5f7783a4a35d9b820c34054b14535c14a`,
-and all 39 registered PSS/E probes cold-regenerate without manifest drift.
+and all 41 registered PSS/E probes cold-regenerate without manifest drift.
 PIDGOV now has its exact one-ICON/20-CON PSS/E schema and reuses the published
 PIDGOV/PIDGOVD equation runtime with the D-only deadband and turbine-rating
 inputs fixed to their neutral values. Its seven native PSS/E state coordinates
 are available by canonical names while the established PowerWorld semantic
 names remain backward-compatible aliases.
-One registered integrity test now scans all 119 checked-in PSS/E and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 491
+One registered integrity test now scans all 121 checked-in PSS/E and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 499
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -171,6 +171,7 @@ the plan's release checklist before interpreting any
 | GENSAL | SYNCHRONOUS_MACHINE | GENSAE | 12 | LOADABLE | `com.interpss.dstab.mach.SalientPoleMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENSAL.htm) |
 | GENTPJ1 | SYNCHRONOUS_MACHINE |  | 16 | LOADABLE | `org.interpss.dstab.mach.Gentpj1Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENTPJ.htm) |
 | GENTRA | SYNCHRONOUS_MACHINE |  | 9 | LOADABLE | `org.interpss.dstab.mach.GentraMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENTRA.htm) |
+| WT1G1 | SYNCHRONOUS_MACHINE |  | 10 | LOADABLE | `org.interpss.dstab.mach.Wt1g1Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20WT1G.htm) |
 | CSVGN5 | CONVERTER_MACHINE |  | 15 | LOADABLE | `org.interpss.dstab.svc.Csvgn5Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20CSVGN5.htm) |
 | REGCA1 | CONVERTER_MACHINE | REGCAU1 | 15 | LOADABLE | `org.interpss.dstab.renewable.Regca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm) |
 | REGFMA1 | CONVERTER_MACHINE |  | 19 | LOADABLE | `org.interpss.dstab.renewable.Regfma1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_A1.htm) |
