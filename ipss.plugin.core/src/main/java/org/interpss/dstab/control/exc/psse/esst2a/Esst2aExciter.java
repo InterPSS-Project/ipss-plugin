@@ -257,6 +257,7 @@ public class Esst2aExciter extends AnnotateExciter implements IntegrationStepAwa
     public double getLeadLagOutput(){return algebraics(active,getMachine()).leadLagOutput;}
     public double getRegulatorInput(){return algebraics(active,getMachine()).regulatorInput;}
     public double getRegulatorOutput(){return algebraics(active,getMachine()).vr;}
+    protected double getRateFeedbackLagState(){return active[VF_FILTER];}
     @Override public Map<String,Double> getNamedStates(){return Map.of(
             "EFD",active[EFD],"Sensed Vt",getSensedVoltage(),
             "VR",getRegulatorOutput(),"VF",getFeedbackVoltage(),
