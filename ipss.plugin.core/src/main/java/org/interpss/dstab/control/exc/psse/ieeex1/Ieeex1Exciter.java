@@ -209,11 +209,17 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
                 ? (a.regulator - fieldFeedback(x[FIELD])) / te : 0.0;
         double feedbackInput = feedbackInput(a.field, a.regulator);
         double feedbackLagTime = feedbackLagTimeConstant();
-        dx[FEEDBACK_INPUT_LAG] = feedbackLagTime > EPS
-                ? lagDerivative(feedbackInput, x[FEEDBACK_INPUT_LAG], feedbackLagTime) : 0.0;
-        double rateFeedbackInput = feedbackLagTime > EPS
-                ? x[FEEDBACK_INPUT_LAG] : feedbackInput;
-        dx[WASHOUT_LAG] = lagDerivative(rateFeedbackInput, x[WASHOUT_LAG], tf);
+        if (feedbackLagAfterWashout() && feedbackLagTime > EPS) {
+            dx[WASHOUT_LAG] = lagDerivative(feedbackInput, x[WASHOUT_LAG], tf);
+            dx[FEEDBACK_INPUT_LAG] = lagDerivative(
+                    x[WASHOUT_LAG], x[FEEDBACK_INPUT_LAG], feedbackLagTime);
+        } else {
+            dx[FEEDBACK_INPUT_LAG] = feedbackLagTime > EPS
+                    ? lagDerivative(feedbackInput, x[FEEDBACK_INPUT_LAG], feedbackLagTime) : 0.0;
+            double rateFeedbackInput = feedbackLagTime > EPS
+                    ? x[FEEDBACK_INPUT_LAG] : feedbackInput;
+            dx[WASHOUT_LAG] = lagDerivative(rateFeedbackInput, x[WASHOUT_LAG], tf);
+        }
     }
 
     private Algebraic algebraics(double[] x, Machine machine) {
@@ -229,10 +235,13 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
         double upper = regulatorUpper(machine);
         double lower = regulatorLower(machine);
         double regulator = clamp(x[REGULATOR], upper, lower);
-        double rateFeedbackInput = feedbackLagTimeConstant() > EPS
+        double feedbackLagTime = feedbackLagTimeConstant();
+        double rateFeedbackInput = feedbackLagTime > EPS
                 ? x[FEEDBACK_INPUT_LAG] : feedbackInput(field, regulator);
-        double washout = tf > EPS
-                ? kf * (rateFeedbackInput - x[WASHOUT_LAG]) / tf : 0.0;
+        double washout = feedbackLagAfterWashout() && feedbackLagTime > EPS
+                ? kf * (x[WASHOUT_LAG] - x[FEEDBACK_INPUT_LAG])
+                        / (tf * feedbackLagTime)
+                : tf > EPS ? kf * (rateFeedbackInput - x[WASHOUT_LAG]) / tf : 0.0;
         double error = reference - sensed + vuel + voel
                 + stabilizerSignal(machine) - washout;
         double leadLag = tb > EPS
@@ -330,6 +339,7 @@ public class Ieeex1Exciter extends IEEE1981DC1Exciter {
         return internalField;
     }
     protected double feedbackLagTimeConstant() { return 0.0; }
+    protected boolean feedbackLagAfterWashout() { return false; }
 
     @Override public void setRefPoint(double value) { reference = value; }
     @Override public double getRefPoint() { return reference; }

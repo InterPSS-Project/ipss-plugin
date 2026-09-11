@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
+import org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter;
 import org.interpss.dstab.relay.Lds3blRelayModel;
 import org.interpss.dstab.relay.Lvs3blRelayModel;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -150,6 +151,29 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
         assertEquals(0.02, exciter.tr, 1.0e-12);
         assertEquals(7.0, exciter.getSwitchValue(), 1.0e-12);
         assertEquals("IEEEX1", exciter.getName());
+    }
+
+    @Test
+    void exactIeeex2PathLoadsInStrictModeAndPreservesTf2() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Path dyr = tempDir.resolve("synthetic-ieeex2.dyr");
+        Files.writeString(dyr, "1 'GENCLS' '1' 3.0 0.0 /\n"
+                + "1 'IEEEX2' '1' 0.017 43.0 0.023 0.41 0.09 7.2 -6.4 "
+                + "0.91 0.57 0.028 0.83 0.71 2.9 0.08 3.8 0.29 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder)
+                .setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        assertEquals(2, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        Ieeex2Exciter exciter = (Ieeex2Exciter) builder.getDStabNetwork()
+                .getMachine("Bus1-mach1").getExciter();
+        assertEquals("IEEEX2", exciter.getName());
+        assertEquals(0.017, exciter.tr, 1.0e-12);
+        assertEquals(43.0, exciter.getData().getKa(), 1.0e-12);
+        assertEquals(0.83, exciter.getData().getTf(), 1.0e-12);
+        assertEquals(0.71, exciter.getTf2(), 1.0e-12);
+        assertEquals(6, exciter.getNamedStates().size());
     }
 
     @Test
