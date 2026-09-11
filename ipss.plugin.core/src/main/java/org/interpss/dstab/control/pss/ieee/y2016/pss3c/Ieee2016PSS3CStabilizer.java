@@ -1,5 +1,8 @@
 package org.interpss.dstab.control.pss.ieee.y2016.pss3c;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 
@@ -13,11 +16,10 @@ import com.interpss.dstab.mach.Machine;
 public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
     private final Ieee2016PSS3CStabilizerData pss3cData;
 
-    private double previousCompensatedAngle;
-    private double compensatedFrequencyState;
+    private double compensatedWashoutState;
     private double compensatedFrequencySignal;
-    private double compensatedFrequencyDerivative;
-    private double compensatedFrequencyTrial;
+    private double compensatedWashoutDerivative;
+    private double compensatedWashoutTrial;
     private double filteredPgen;
     private double pgenFilterDerivative;
     private double pgenFilterTrial;
@@ -36,22 +38,23 @@ public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
         double initialPgen = machine.getPe();
-        previousCompensatedAngle = pss3cData.ics1() == 7
-                ? compensatedVoltageAngle(machine, pss3cData.xcomp()) : 0.0;
-        compensatedFrequencyState = 0.0;
+        compensatedWashoutState = pss3cData.ics1() == 6 && pss3cData.tcomp() > 0.0
+                ? compensatedVoltageAngle(machine, pss3cData.xcomp()) / pss3cData.tcomp()
+                : 0.0;
         compensatedFrequencySignal = 0.0;
-        compensatedFrequencyDerivative = 0.0;
-        compensatedFrequencyTrial = 0.0;
+        compensatedWashoutDerivative = 0.0;
+        compensatedWashoutTrial = compensatedWashoutState;
         filteredPgen = initialPgen;
         pgenFilterDerivative = 0.0;
         pgenFilterTrial = initialPgen;
-        pssActive = initialPgen >= pss3cData.pssActivation();
+        pssActive = outputLogicDisabled()
+                || initialPgen >= pss3cData.pssActivation();
         return super.initStates(bus, machine);
     }
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, Machine machine, int flag) {
-        if (pss3cData.ics1() == 7) {
+        if (pss3cData.ics1() == 6) {
             compensatedFrequencySignal = updateCompensatedFrequency(machine, dt, flag);
         }
         double measuredPgen = updateFilteredPgen(machine.getPe(), dt, flag);
@@ -67,7 +70,34 @@ public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
 
     @Override
     protected double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
-        return code == 7 ? compensatedFrequencySignal : super.selectedInput(code, bus, machine);
+        if (code == 0) return 0.0;
+        return code == 6 ? compensatedFrequencySignal : super.selectedInput(code, bus, machine);
+    }
+
+    @Override
+    protected double deviationInput(int code, double reference,
+            BaseDStabBus<?, ?> bus, double previousVoltage,
+            Machine machine, double dt) {
+        return code == 6 ? compensatedFrequencySignal
+                : super.deviationInput(code, reference, bus, previousVoltage, machine, dt);
+    }
+
+    /** PSS/E Model Library STATE order, extending the inherited nine PSS3B states. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> states = new LinkedHashMap<>(super.getNamedStates());
+        if (pss3cData.ics1() == 6) {
+            // PSS/E's compensated-frequency signal includes the published
+            // -1 pu offset. The internal deviation coordinate removes that
+            // constant, so restore it only at the native state boundary.
+            states.put("input1Transducer",
+                    states.get("input1Transducer") - pss3cData.k1());
+            states.put("input1Washout",
+                    states.get("input1Washout") - pss3cData.k1());
+        }
+        states.put("compensatedFrequencyWashout", compensatedWashoutState);
+        states.put("generatorPowerFilter", filteredPgen);
+        return Map.copyOf(states);
     }
 
     public boolean isPssActive() { return pssActive; }
@@ -91,6 +121,10 @@ public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
     }
 
     private void updateActivation(double pgen) {
+        if (outputLogicDisabled()) {
+            pssActive = true;
+            return;
+        }
         if (pssActive) {
             if (pgen <= pss3cData.pssDeactivation()) pssActive = false;
         } else if (pgen >= pss3cData.pssActivation()) {
@@ -98,43 +132,54 @@ public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
         }
     }
 
+    private boolean outputLogicDisabled() {
+        return pss3cData.pssActivation() < 0.0
+                || pss3cData.pssActivation() == pss3cData.pssDeactivation();
+    }
+
     private double updateCompensatedFrequency(Machine machine, double dt, int flag) {
-        if (dt <= 0.0) return compensatedFrequencyState;
+        if (dt <= 0.0) return 0.0;
         double angle = compensatedVoltageAngle(machine, pss3cData.xcomp());
-        double raw = wrapAngle(angle - previousCompensatedAngle)
-                / (2.0 * Math.PI * machine.getDStabBus().getNetwork().getFrequency() * dt);
         double timeConstant = pss3cData.tcomp();
         if (timeConstant <= 0.0) {
-            compensatedFrequencyState = raw;
-        } else if (flag == 0) {
-            compensatedFrequencyDerivative =
-                    (raw - compensatedFrequencyState) / timeConstant;
-            compensatedFrequencyTrial = compensatedFrequencyState
-                    + compensatedFrequencyDerivative * dt;
-            return compensatedFrequencyTrial;
-        } else {
-            double correctedDerivative =
-                    (raw - compensatedFrequencyTrial) / timeConstant;
-            compensatedFrequencyState += 0.5
-                    * (compensatedFrequencyDerivative + correctedDerivative) * dt;
+            compensatedWashoutState = 0.0;
+            compensatedWashoutTrial = 0.0;
+            return 0.0;
         }
-        if (flag != 0) previousCompensatedAngle = angle;
-        return compensatedFrequencyState;
+        double target = angle / timeConstant;
+        double omegaBase = 2.0 * Math.PI
+                * machine.getDStabBus().getNetwork().getFrequency();
+        if (flag == 0) {
+            compensatedWashoutDerivative =
+                    (target - compensatedWashoutState) / timeConstant;
+            compensatedWashoutTrial = compensatedWashoutState
+                    + compensatedWashoutDerivative * dt;
+            return (target - compensatedWashoutState) / omegaBase;
+        }
+        double correctedDerivative =
+                (target - compensatedWashoutTrial) / timeConstant;
+        compensatedWashoutState += 0.5
+                * (compensatedWashoutDerivative + correctedDerivative) * dt;
+        return (target - compensatedWashoutState) / omegaBase;
     }
 
     private static Complex compensatedVoltage(Machine machine, double xcomp) {
-        Complex currentMachineBase = machine.getIxy().divide(machine.getIMultiFactor());
-        return machine.getDStabBus().getVoltage()
-                .add(currentMachineBase.multiply(new Complex(0.0, xcomp)));
+        Complex terminalVoltage = machine.getDStabBus().getVoltage();
+        Complex terminalCurrent = machine.getIgen()
+                .subtract(terminalVoltage.multiply(machine.getYgen()));
+        Complex power = terminalVoltage.multiply(terminalCurrent.conjugate())
+                .divide(machine.getIMultiFactor());
+        double voltageMagnitude = terminalVoltage.abs();
+        if (voltageMagnitude == 0.0) return Complex.ZERO;
+        // Published Vt-aligned form:
+        // (|Vt| + Q Xcomp / |Vt|) + j(P Xcomp / |Vt|).
+        return new Complex(
+                voltageMagnitude + power.getImaginary() * xcomp / voltageMagnitude,
+                power.getReal() * xcomp / voltageMagnitude);
     }
 
     private static double compensatedVoltageAngle(Machine machine, double xcomp) {
         return compensatedVoltage(machine, xcomp).getArgument();
     }
 
-    private static double wrapAngle(double angle) {
-        if (angle > Math.PI) return angle - 2.0 * Math.PI;
-        if (angle < -Math.PI) return angle + 2.0 * Math.PI;
-        return angle;
-    }
 }

@@ -816,7 +816,7 @@ public class DStabNetworkBuilder {
                 busId + "-pss4b" + genId, data, machine);
     }
 
-    /** Build the complete IEEE 421.5-2016 PSS3C model from its 24 parameters. */
+    /** Build the complete IEEE 421.5-2016 PSS3C model from its 26 parameters. */
     public Ieee2016PSS3CStabilizer addPss3c(String busId, String genId,
             double[] parameters) {
         Machine machine = findMachine(busId, genId);
@@ -831,13 +831,35 @@ public class DStabNetworkBuilder {
             log.warn("Invalid PSS3C record at {} {}: {}", busId, genId, e.getMessage());
             return null;
         }
-        if (data.ics1() < 1 || data.ics1() > 7 || data.ics2() < 1 || data.ics2() > 6) {
+        if (data.ics1() < 1 || data.ics1() > 6 || data.ics2() < 0 || data.ics2() > 5) {
             log.warn("Invalid PSS3C input selectors at {} {}: ICS1={}, ICS2={}",
                     busId, genId, data.ics1(), data.ics2());
             return null;
         }
-        return StabilizerObjectFactory.createIeee2016PSS3CStabilizer(
-                busId + "-pss3c" + genId, data, machine);
+        boolean outputLogicEnabled = data.pssActivation() >= 0.0
+                && data.pssActivation() != data.pssDeactivation();
+        if (data.tpgfilt() < 0.0 || data.tcomp() < 0.0
+                || (data.ics1() == 6
+                        && (data.xcomp() <= 0.0 || data.tcomp() <= 0.0))
+                || (outputLogicEnabled
+                        && data.pssActivation() < data.pssDeactivation())) {
+            log.warn("Invalid PSS3C compensation/filter constants or thresholds at {} {}",
+                    busId, genId);
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = resolvePss2aSignalBus(
+                localBus, data.ics1(), data.remoteBus1());
+        BaseDStabBus<?, ?> input2Bus = data.ics2() == 0 ? localBus
+                : resolvePss2aSignalBus(localBus, data.ics2(), data.remoteBus2());
+        // PSS/E falls back to the generator terminal when a requested remote
+        // bus is absent (Model Library PSS3C note 9).
+        if (input1Bus == null) input1Bus = localBus;
+        if (input2Bus == null) input2Bus = localBus;
+        Ieee2016PSS3CStabilizer pss = StabilizerObjectFactory
+                .createIeee2016PSS3CStabilizer(busId + "-pss3c" + genId, data, machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        return pss;
     }
 
     /** Build PSS4C from the 94-value PowerWorld/IEEE parameter order. */
