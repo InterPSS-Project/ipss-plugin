@@ -28,15 +28,16 @@ public class Perc1ModelTest {
     private static final Path DATA=Path.of("testData","adpter","psse","v33");
     @BeforeAll static void setup(){IpssCorePlugin.init();}
 
-    @Test void importsThirtyParametersAndInitializesEightNamedStates()throws Exception{
+    @Test void importsThirtyParametersAndInitializesNineNamedStates()throws Exception{
         var context=new PSSEMultiFileLoader().loadDStab(DATA.resolve("ieee9_v33.raw").toString(),
                 DATA.resolve("ieee9_perc1.dyr").toString());
         assertTrue(context.getDynSimuAlgorithm().getAclfAlgorithm().loadflow());
         var bus=context.getDStabilityNet().getDStabBus("Bus5");
         Perc1Model model=assertInstanceOf(Perc1Model.class,bus.getDynLoadModelList().get(0));
         assertEquals(.8,model.getData().lfm(),1e-12);assertTrue(model.initStates());
-        assertEquals(Set.of("PLeadLag","QLeadLag","PWashout","QWashout","wFilt","VFilt","Ip","Iq"),
+        assertEquals(Set.of("PLeadLag","QLeadLag","PWashout","QWashout","wFilt","VFilt","Ip","Iq","FracOn"),
                 model.getNamedStates().keySet());
+        assertEquals(1.0,model.getNamedState("FracOn"),0.0);
         assertEquals(1.5625,model.getMvaBase()/100,1e-8);
         assertEquals(1.25,model.getInitLoadPQ().getReal(),1e-8);
         assertEquals(.5,model.getInitLoadPQ().getImaginary(),1e-8);
@@ -61,6 +62,9 @@ public class Perc1ModelTest {
         bus.setVoltage(new Complex(.8,0));
         for(int i=0;i<4;i++)advance(model,dt);
         assertEquals("CEASED",model.getOperatingMode());assertEquals(.4,model.getFractionOn(),1e-12);
+        assertEquals(.4,model.getNamedState("FracOn"),1e-12);
+        assertEquals(.4,((Number)model.getStates(null).get("PERC1_FracOn")).doubleValue(),1e-12,
+                "legacy monitor key remains compatible with the named state");
         bus.setVoltage(new Complex(1,0));
         for(int i=0;i<3;i++)advance(model,dt);
         assertEquals("RAMP",model.getOperatingMode());
