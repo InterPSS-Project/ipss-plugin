@@ -531,6 +531,8 @@ public class PSSEDStabDirectParser {
             case "CMLDBLU2":
             case "LDS3BL":
             case "LVS3BL":
+                log.debug("Dynamic load/relay model {} at bus {} - skipped in direct parser", type, busId);
+                return false;
             case "FRQTPAT":
             case "VTGTPAT":
                 return procGeneratorTripRelay(type, record);
