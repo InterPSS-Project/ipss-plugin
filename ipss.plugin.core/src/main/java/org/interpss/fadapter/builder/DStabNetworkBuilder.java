@@ -747,6 +747,19 @@ public class DStabNetworkBuilder {
             double a1, double a2, double a3, double a4,
             double a5, double a6, double a7, double a8,
             double vstmax, double vstmin) {
+        return addPss3b(busId, genId, ics1, 0, ics2, 0,
+                ks1, t1, tw1, ks2, t2, tw2, tw3,
+                a1, a2, a3, a4, a5, a6, a7, a8, vstmax, vstmin);
+    }
+
+    /** Build native PSS/E PSS3B, including both remote measurement buses. */
+    public Ieee2005PSS3BStabilizer addPss3b(String busId, String genId,
+            int ics1, int remoteBus1, int ics2, int remoteBus2,
+            double ks1, double t1, double tw1,
+            double ks2, double t2, double tw2, double tw3,
+            double a1, double a2, double a3, double a4,
+            double a5, double a6, double a7, double a8,
+            double vstmax, double vstmin) {
         Machine machine = findMachine(busId, genId);
         if (machine == null) {
             log.warn("Machine not found for PSS3B: {} {}", busId, genId);
@@ -757,6 +770,15 @@ public class DStabNetworkBuilder {
                     busId, genId, ics1, ics2);
             return null;
         }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = resolvePss2aSignalBus(localBus, ics1, remoteBus1);
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(localBus, ics2, remoteBus2);
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSS3B remote bus could not be resolved at {} {}: "
+                    + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+                    busId, genId, ics1, remoteBus1, ics2, remoteBus2);
+            return null;
+        }
         // Nonpositive washout constants are a model-defined bypass (Dynawo's
         // validated IEEE PSS3B case uses Tw3=-1). The notch blocks likewise
         // apply their specified highest-denominator-coefficient bypass rule,
@@ -765,11 +787,14 @@ public class DStabNetworkBuilder {
             log.warn("Invalid PSS3B transducer time constants at {} {}", busId, genId);
             return null;
         }
-        var data = new Ieee2005PSS3BStabilizerData(ics1, ics2,
+        var data = new Ieee2005PSS3BStabilizerData(
+                ics1, remoteBus1, ics2, remoteBus2,
                 ks1, t1, tw1, ks2, t2, tw2, tw3,
                 a1, a2, a3, a4, a5, a6, a7, a8, vstmax, vstmin);
-        return StabilizerObjectFactory.createIeee2005PSS3BStabilizer(
+        Ieee2005PSS3BStabilizer pss = StabilizerObjectFactory.createIeee2005PSS3BStabilizer(
                 busId + "-pss3b" + genId, data, machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        return pss;
     }
 
     /** Build the complete IEEE 421.5-2005 PSS4B model from its 75 parameters. */
