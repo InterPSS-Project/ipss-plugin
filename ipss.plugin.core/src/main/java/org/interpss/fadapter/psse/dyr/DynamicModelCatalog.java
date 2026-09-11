@@ -122,7 +122,7 @@ public final class DynamicModelCatalog {
             descriptor("PSS4B", Set.of(), STABILIZER, 75, LOADABLE,
                     "org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer",
                     "Stabilizer%20PSS4B.htm"),
-            descriptor("PSS3C", Set.of(), STABILIZER, 24, LOADABLE,
+            descriptor("PSS3C", Set.of(), STABILIZER, 26, LOADABLE,
                     "org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer",
                     "Stabilizer%20PSS3C.htm"),
             descriptor("PSS4C", Set.of(), STABILIZER, 94, LOADABLE,

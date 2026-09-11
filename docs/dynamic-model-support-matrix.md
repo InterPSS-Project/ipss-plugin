@@ -74,7 +74,9 @@ play-in contract. The same artifact also verifies PSS1A through PSS/E 36.7's
 published exact IEEEST parameter correspondence, raising combined exact-tool
 stabilizer evidence to `5/15`. PSS3B adds a native PSS/E full-loop,
 nine-state, and recorded-power/speed contract, raising combined exact-tool
-stabilizer evidence to `6/15`. Current-schema IEEEG1D adds a native PSS/E boundary
+stabilizer evidence to `6/15`. PSS3C adds a native PSS/E full-loop and
+11-state contract, raising combined exact-tool stabilizer evidence to `7/15`.
+Current-schema IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
 GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
@@ -183,7 +185,7 @@ the plan's release checklist before interpreting any
 | PSS2B | STABILIZER |  | 27 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2B.htm) |
 | PSS2C | STABILIZER |  | 35 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2C.htm) |
 | PSS3B | STABILIZER |  | 21 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS3B.htm) |
-| PSS3C | STABILIZER |  | 24 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS3C.htm) |
+| PSS3C | STABILIZER |  | 26 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS3C.htm) |
 | PSS4B | STABILIZER |  | 75 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS4B.htm) |
 | PSS4C | STABILIZER |  | 94 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS4C.htm) |
 | PSS5C | STABILIZER |  | 21 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS5C.htm) |
