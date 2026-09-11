@@ -1,6 +1,8 @@
 package org.interpss.dstab.control.pss.ieee.y2016.pss7c;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.IntegrationStepAware;
@@ -9,7 +11,6 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer;
-import com.interpss.dstab.controller.cml.field.block.FilterNthOrderBlock;
 import com.interpss.dstab.mach.Machine;
 
 /** IEEE Std 421.5-2016 dual-input ramp-tracking canonical-form PSS7C. */
@@ -18,7 +19,8 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         implements IntegrationStepAware {
     private static final double EPS = 1.0e-12;
     private static final int W11 = 0, W12 = 1, L1 = 2, W21 = 3, W22 = 4, L2 = 5;
-    private static final int C1 = 6, C2 = 7, C3 = 8, C4 = 9, PGEN = 10, COMP = 11;
+    private static final int RAMP = 6, RAMP_STATE_COUNT = 8;
+    private static final int C1 = 14, C2 = 15, C3 = 16, C4 = 17, COMP = 18, PGEN = 19;
 
     private final Ieee2016PSS7CStabilizerData sourceData;
     private Ieee2016PSS7CStabilizerData effectiveData;
@@ -26,14 +28,12 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
     private BaseDStabBus<?, ?> input2Bus;
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
-    private final double[] state = new double[12];
-    private final double[] trial = new double[12];
-    private final double[] oldDerivative = new double[12];
+    private final double[] state = new double[20];
+    private final double[] trial = new double[20];
+    private final double[] oldDerivative = new double[20];
     private double[] active = state;
-    private FilterNthOrderBlock rampFilter;
     private double previousVoltage1;
     private double previousVoltage2;
-    private double previousCompensatedAngle;
     private boolean pssActive;
     private double input1Signal;
     private double input2Signal;
@@ -80,10 +80,13 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         double pgen = machine.getPe();
         previousVoltage1 = input1Bus.getVoltageMag();
         previousVoltage2 = input2Bus.getVoltageMag();
-        previousCompensatedAngle = effectiveData.ics1() == 7
-                ? compensatedVoltageAngle(machine, effectiveData.xcomp()) : 0.0;
+        state[COMP] = effectiveData.ics1() == 7 && effectiveData.tcomp() > EPS
+                ? compensatedVoltageAngle(machine, effectiveData.xcomp())
+                        / effectiveData.tcomp()
+                : 0.0;
+        double initialComp = effectiveData.ics1() == 7 ? -1.0 : 0.0;
         input1Signal = limitedInput(effectiveData.ics1(), input1Bus, machine,
-                effectiveData.vsi1max(), effectiveData.vsi1min(), 0.0, pgen);
+                effectiveData.vsi1max(), effectiveData.vsi1min(), initialComp, pgen);
         input2Signal = limitedInput(effectiveData.ics2(), input2Bus, machine,
                 effectiveData.vsi2max(), effectiveData.vsi2min(), 0.0, pgen);
         state[W11] = input1Signal;
@@ -92,15 +95,12 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         state[W21] = input2Signal;
         state[W22] = 0.0;
         state[L2] = 0.0;
+        for (int i = 0; i < RAMP_STATE_COUNT; i++) state[RAMP + i] = 0.0;
         state[C1] = state[C2] = state[C3] = state[C4] = 0.0;
         state[PGEN] = pgen;
-        state[COMP] = 0.0;
         System.arraycopy(state, 0, trial, 0, state.length);
-        rampFilter = new FilterNthOrderBlock(effectiveData.t8(), effectiveData.t9(),
-                effectiveData.m(), effectiveData.n());
-        if (!rampFilter.initStateY0(0.0)) return false;
         active = state;
-        pssActive = pgen >= effectiveData.pssActivation();
+        pssActive = !outputLogicEnabled() || pgen >= effectiveData.pssActivation();
         outputSignal = 0.0;
         return true;
     }
@@ -110,25 +110,18 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         if (dt <= 0.0) return true;
         int stage = method == DynamicSimuMethod.MODIFIED_EULER ? flag : 2;
         double pgen = machine.getPe();
-        if (effectiveData.tpgfilt() <= EPS) {
-            state[PGEN] = trial[PGEN] = pgen;
-        }
         double rawComp = effectiveData.ics1() == 7
-                ? rawCompensatedFrequency(machine, dt) : 0.0;
+                ? compensatedWashoutInput(machine) : 0.0;
         if (stage == 0) {
             updateInputSignals(machine, dt, pgen, compensatedOutput(state, rawComp));
-            double rampInput = derivatives(state, oldDerivative,
-                    input1Signal, input2Signal, pgen, rawComp);
-            rampFilter.eulerStep1(rampInput, dt);
+            derivatives(state, oldDerivative, input1Signal, input2Signal, pgen, rawComp);
             for (int i = 0; i < state.length; i++) trial[i] = state[i] + oldDerivative[i] * dt;
             active = trial;
             updateInputSignals(machine, dt, pgen, compensatedOutput(trial, rawComp));
         } else if (stage == 1) {
             updateInputSignals(machine, dt, pgen, compensatedOutput(trial, rawComp));
             double[] corrected = new double[state.length];
-            double rampInput = derivatives(trial, corrected,
-                    input1Signal, input2Signal, pgen, rawComp);
-            rampFilter.eulerStep2(rampInput, dt);
+            derivatives(trial, corrected, input1Signal, input2Signal, pgen, rawComp);
             for (int i = 0; i < state.length; i++) {
                 state[i] += 0.5 * (oldDerivative[i] + corrected[i]) * dt;
             }
@@ -137,10 +130,7 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         } else {
             updateInputSignals(machine, dt, pgen, compensatedOutput(state, rawComp));
             double[] derivative = new double[state.length];
-            double rampInput = derivatives(state, derivative,
-                    input1Signal, input2Signal, pgen, rawComp);
-            rampFilter.eulerStep1(rampInput, dt);
-            rampFilter.eulerStep2(rampInput, dt);
+            derivatives(state, derivative, input1Signal, input2Signal, pgen, rawComp);
             for (int i = 0; i < state.length; i++) state[i] += derivative[i] * dt;
             active = state;
             finishStep(machine, dt, rawComp);
@@ -157,14 +147,10 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         updateInputSignals(machine, dt, machine.getPe(), compensatedOutput(state, rawComp));
         previousVoltage1 = input1Bus.getVoltageMag();
         previousVoltage2 = input2Bus.getVoltageMag();
-        if (effectiveData.ics1() == 7) {
-            previousCompensatedAngle = compensatedVoltageAngle(machine, effectiveData.xcomp());
-        }
-        updateActivation(state[PGEN]);
+        updateActivation(filteredOrDirectPower(machine.getPe(), state));
     }
 
-    /** Returns the input to the published ramp-tracking block. */
-    private double derivatives(double[] x, double[] dx,
+    private void derivatives(double[] x, double[] dx,
             double vsi1, double vsi2, double pgen, double rawComp) {
         Ieee2016PSS7CStabilizerData d = effectiveData;
         dx[W11] = lagDerivative(vsi1, x[W11], d.tw1());
@@ -178,44 +164,87 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         double w21 = washoutOutput(vsi2, x[W21], d.tw3());
         dx[W22] = lagDerivative(w21, x[W22], d.tw4());
         double w22 = washoutOutput(w21, x[W22], d.tw4());
-        dx[L2] = lagDerivative(d.ks2() * w22, x[L2], d.t7());
-        double path2 = lagOutput(d.ks2() * w22, x[L2], d.t7());
+        dx[L2] = lagDerivative(w22, x[L2], d.t7());
+        double path2 = d.ks2() * lagOutput(w22, x[L2], d.t7());
 
-        double canonicalInput = d.ks1() * (rampFilter.getY() - path2);
+        double rampInput = d.ks3() * (path1 + path2);
+        double rampOutput = rampDerivatives(x, dx, rampInput);
+        double canonicalInput = d.ks1() * (rampOutput - path2);
         double error = canonicalInput - x[C1] - x[C2] - x[C3] - x[C4];
         dx[C1] = integratorDerivative(error, d.ti1());
         dx[C2] = integratorDerivative(x[C1], d.ti2());
         dx[C3] = integratorDerivative(d.ki3() * x[C2], d.ti3());
         dx[C4] = integratorDerivative(d.ki4() * x[C3], d.ti4());
-        dx[PGEN] = lagDerivative(pgen, x[PGEN], d.tpgfilt());
+        dx[PGEN] = d.tpgfilt() > EPS
+                ? lagDerivative(pgen, x[PGEN], d.tpgfilt()) : 0.0;
         dx[COMP] = d.tcomp() > EPS ? (rawComp - x[COMP]) / d.tcomp() : 0.0;
-        return path1 + d.ks3() * path2;
     }
 
     private double calculateOutput(double[] x) {
         Ieee2016PSS7CStabilizerData d = effectiveData;
         double path2 = path2Output(x);
-        double input = d.ks1() * (rampFilter.getY() - path2);
+        double path1 = path1Output(x);
+        double input = d.ks1() * (rampOutput(x, d.ks3() * (path1 + path2)) - path2);
         double error = input - x[C1] - x[C2] - x[C3] - x[C4];
         double y = d.k0() * error + d.k1() * x[C1] + d.k2() * x[C2]
                 + d.k3() * x[C3] + d.k4() * x[C4];
         return clamp(y, d.vstmax(), d.vstmin());
     }
 
+    private double path1Output(double[] x) {
+        double w11 = washoutOutput(input1Signal, x[W11], effectiveData.tw1());
+        double w12 = washoutOutput(w11, x[W12], effectiveData.tw2());
+        return lagOutput(w12, x[L1], effectiveData.t6());
+    }
+
     private double path2Output(double[] x) {
         double w21 = washoutOutput(input2Signal, x[W21], effectiveData.tw3());
         double w22 = washoutOutput(w21, x[W22], effectiveData.tw4());
-        return lagOutput(effectiveData.ks2() * w22, x[L2], effectiveData.t7());
+        return effectiveData.ks2() * lagOutput(w22, x[L2], effectiveData.t7());
     }
 
-    private double rawCompensatedFrequency(Machine machine, double dt) {
-        double angle = compensatedVoltageAngle(machine, effectiveData.xcomp());
-        return wrapAngle(angle - previousCompensatedAngle)
-                / (2.0 * Math.PI * machine.getDStabBus().getNetwork().getFrequency() * dt);
+    private double rampDerivatives(double[] x, double[] dx, double input) {
+        int count = effectiveData.m() * effectiveData.n();
+        if (count == 0 || effectiveData.t9() <= EPS) return input;
+        double value = input;
+        double ratio = effectiveData.t8() / effectiveData.t9();
+        for (int i = 0; i < effectiveData.n(); i++) {
+            double stateValue = x[RAMP + i];
+            dx[RAMP + i] = (1.0 - ratio) * value
+                    - stateValue / effectiveData.t9();
+            value = stateValue / effectiveData.t9() + ratio * value;
+        }
+        for (int i = effectiveData.n(); i < count; i++) {
+            double stateValue = x[RAMP + i];
+            dx[RAMP + i] = value - stateValue / effectiveData.t9();
+            value = stateValue / effectiveData.t9();
+        }
+        return value;
+    }
+
+    private double rampOutput(double[] x, double input) {
+        int count = effectiveData.m() * effectiveData.n();
+        if (count == 0 || effectiveData.t9() <= EPS) return input;
+        double value = input;
+        double ratio = effectiveData.t8() / effectiveData.t9();
+        for (int i = 0; i < effectiveData.n(); i++)
+            value = x[RAMP + i] / effectiveData.t9() + ratio * value;
+        for (int i = effectiveData.n(); i < count; i++)
+            value = x[RAMP + i] / effectiveData.t9();
+        return value;
+    }
+
+    private double compensatedWashoutInput(Machine machine) {
+        return effectiveData.tcomp() > EPS
+                ? compensatedVoltageAngle(machine, effectiveData.xcomp()) / effectiveData.tcomp()
+                : 0.0;
     }
 
     private double compensatedOutput(double[] x, double raw) {
-        return effectiveData.tcomp() > EPS ? x[COMP] : raw;
+        if (effectiveData.tcomp() <= EPS) return -1.0;
+        double omegaBase = 2.0 * Math.PI
+                * getMachine().getDStabBus().getNetwork().getFrequency();
+        return (raw - x[COMP]) / omegaBase - 1.0;
     }
 
     private void updateInputSignals(Machine machine, double dt, double pgen, double comp) {
@@ -232,6 +261,10 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
     }
 
     private void updateActivation(double pgen) {
+        if (!outputLogicEnabled()) {
+            pssActive = true;
+            return;
+        }
         if (pssActive) {
             if (pgen <= effectiveData.pssDeactivation()) pssActive = false;
         } else if (pgen >= effectiveData.pssActivation()) {
@@ -239,22 +272,32 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         }
     }
 
+    private boolean outputLogicEnabled() {
+        return effectiveData.pssActivation() > 0.0;
+    }
+
+    private double filteredOrDirectPower(double pgen, double[] x) {
+        return effectiveData.tpgfilt() > EPS ? x[PGEN] : pgen;
+    }
+
     private Ieee2016PSS7CStabilizerData correctedData(Ieee2016PSS7CStabilizerData d) {
         double minimum = minimumTimeConstantMultiplier * integrationStep;
-        double[] l1 = orderedLimits(d.vsi1max(), d.vsi1min());
-        double[] l2 = orderedLimits(d.vsi2max(), d.vsi2min());
+        double[] l1 = signedLimits(d.vsi1max(), d.vsi1min());
+        double[] l2 = signedLimits(d.vsi2max(), d.vsi2min());
         double[] lo = signedLimits(d.vstmax(), d.vstmin());
         return new Ieee2016PSS7CStabilizerData(d.ics1(), d.remoteBus1(), d.ics2(), d.remoteBus2(),
-                d.m(), d.n(), positiveOrMinimum(d.ks1(), minimum), d.ks2(), d.ks3(),
-                d.t6(), d.t7(), minimumIfNonpositive(d.tw1(), minimum),
-                minimumIfNonpositive(d.tw2(), minimum), minimumIfNonpositive(d.tw3(), minimum),
-                minimumIfNonpositive(d.tw4(), minimum), d.t8(), halfStepBypass(d.t9(), minimum),
+                d.m(), d.n(), minimumIfNonpositive(d.tw1(), minimum),
+                minimumIfNonpositive(d.tw2(), minimum), d.t6(),
+                minimumIfNonpositive(d.tw3(), minimum), minimumIfNonpositive(d.tw4(), minimum),
+                d.t7(), d.ks2(), d.ks3(), d.t8(), halfStepBypass(d.t9(), minimum),
+                positiveOrMinimum(d.ks1(), minimum),
                 positiveOrMinimum(d.k0(), minimum), d.k1(), d.k2(), d.k3(), d.k4(),
-                d.ki3(), d.ki4(), minimumIfNonpositive(d.ti1(), minimum),
-                minimumIfNonpositive(d.ti2(), minimum), minimumIfNonpositive(d.ti3(), minimum),
+                minimumIfNonpositive(d.ti1(), minimum),
+                minimumIfNonpositive(d.ti2(), minimum), d.ki3(),
+                minimumIfNonpositive(d.ti3(), minimum), d.ki4(),
                 minimumIfNonpositive(d.ti4(), minimum), l1[0], l1[1], l2[0], l2[1],
-                lo[0], lo[1], d.pssActivation(), d.pssDeactivation(), d.tpgfilt(),
-                d.xcomp(), d.tcomp());
+                lo[0], lo[1], d.pssActivation(), d.pssDeactivation(),
+                d.xcomp(), d.tcomp(), d.tpgfilt());
     }
 
     private static double limitedInput(int code, BaseDStabBus<?, ?> bus, Machine machine,
@@ -272,10 +315,20 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         return clamp(value, max, min);
     }
 
+    private static Complex compensatedVoltage(Machine machine, double xcomp) {
+        Complex terminalVoltage = machine.getDStabBus().getVoltage();
+        Complex terminalCurrent = machine.getIgen()
+                .subtract(terminalVoltage.multiply(machine.getYgen()));
+        Complex power = terminalVoltage.multiply(terminalCurrent.conjugate())
+                .divide(machine.getIMultiFactor());
+        double magnitude = terminalVoltage.abs();
+        if (magnitude == 0.0) return Complex.ZERO;
+        return new Complex(magnitude + power.getImaginary() * xcomp / magnitude,
+                power.getReal() * xcomp / magnitude);
+    }
+
     private static double compensatedVoltageAngle(Machine machine, double xcomp) {
-        Complex current = machine.getIxy().divide(machine.getIMultiFactor());
-        return machine.getDStabBus().getVoltage()
-                .add(current.multiply(new Complex(0.0, xcomp))).getArgument();
+        return compensatedVoltage(machine, xcomp).getArgument();
     }
 
     private static double lagDerivative(double input, double stateValue, double t) {
@@ -311,8 +364,26 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
     private static double clamp(double value, double max, double min) {
         return Math.max(min, Math.min(max, value));
     }
-    private static double wrapAngle(double angle) {
-        return Math.atan2(Math.sin(angle), Math.cos(angle));
+
+    /** Native PSS/E STATE order; the optional PowerWorld Pgen filter is excluded. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("input1Washout1", active[W11]);
+        states.put("input1Washout2", active[W12]);
+        states.put("input1Transducer", active[L1]);
+        states.put("input2Washout1", active[W21]);
+        states.put("input2Washout2", active[W22]);
+        states.put("input2Transducer", active[L2]);
+        for (int i = 0; i < RAMP_STATE_COUNT; i++) {
+            states.put("rampTracking" + (i + 1), active[RAMP + i]);
+        }
+        states.put("canonicalIntegrator1", active[C1]);
+        states.put("canonicalIntegrator2", active[C2]);
+        states.put("canonicalIntegrator3", active[C3]);
+        states.put("canonicalIntegrator4", active[C4]);
+        states.put("compensatedFrequencyWashout", active[COMP]);
+        return Map.copyOf(states);
     }
 
     @Override public AnController getAnController() { return getClass().getAnnotation(AnController.class); }
