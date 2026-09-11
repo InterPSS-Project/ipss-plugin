@@ -36,6 +36,7 @@ import org.interpss.dstab.control.pss.psse.st2cut.St2cutData;
 import org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestData;
 import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
+import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizerData;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
 import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
@@ -485,6 +486,8 @@ public class PSSEDStabDirectParser {
                 return true;
             case "PSS2A":
                 return procPss2a(busId, genId, fields);
+            case "PSSSB":
+                return procPsssb(busId, genId, fields);
             case "PSS2B":
                 return procPss2b(busId, genId, fields);
             case "PSS2C":
@@ -1836,6 +1839,42 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 20, 0), getDouble(f, 21, 0),
                 getDouble(f, 22, 0), getDouble(f, 23, 0),
                 getDouble(f, 24, 0), getDouble(f, 25, 0)) != null;
+    }
+
+    // PSSSB: PSS2A fields with Ks4, followed by Sw1 Td1 Td2 Vtl Vk Vcutoff.
+    private boolean procPsssb(String busId, String genId, String[] f) {
+        PsssbStabilizerData data = new PsssbStabilizerData();
+        data.setIcs1(getInt(f, 3, 0));
+        data.setRemoteBus1(getInt(f, 4, 0));
+        data.setIcs2(getInt(f, 5, 0));
+        data.setRemoteBus2(getInt(f, 6, 0));
+        data.setM(getInt(f, 7, 0));
+        data.setN(getInt(f, 8, 0));
+        data.setTw1(getDouble(f, 9, 0));
+        data.setTw2(getDouble(f, 10, 0));
+        data.setTw3(getDouble(f, 11, 0));
+        data.setTw4(getDouble(f, 12, 0));
+        data.setT6(getDouble(f, 13, 0));
+        data.setT7(getDouble(f, 14, 0));
+        data.setKs2(getDouble(f, 15, 0));
+        data.setKs3(getDouble(f, 16, 0));
+        data.setKs4(getDouble(f, 17, 1));
+        data.setT8(getDouble(f, 18, 0));
+        data.setT9(getDouble(f, 19, 0));
+        data.setKs1(getDouble(f, 20, 0));
+        data.setT1(getDouble(f, 21, 0));
+        data.setT2(getDouble(f, 22, 0));
+        data.setT3(getDouble(f, 23, 0));
+        data.setT4(getDouble(f, 24, 0));
+        data.setVstmax(getDouble(f, 25, 0));
+        data.setVstmin(getDouble(f, 26, 0));
+        data.setSw1(getInt(f, 27, 0));
+        data.setTd1(getDouble(f, 28, 0));
+        data.setTd2(getDouble(f, 29, 0));
+        data.setVtl(getDouble(f, 30, 0));
+        data.setVk(getDouble(f, 31, 0));
+        data.setVcutoff(getDouble(f, 32, 0));
+        return builder.addPsssb(busId, genId, data) != null;
     }
 
     // PSS2B: IBUS 'PSS2B' ID ICS1 ICS2 M N Tw1 Tw2 T6 Tw3 Tw4 T7 Ks2 Ks3

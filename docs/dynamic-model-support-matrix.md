@@ -53,7 +53,7 @@ limits cannot change this operating-point Jacobian.
 GGOV1 has an additional native PSS/E machine-trip lifecycle contract, and
 LCFB1 has a hash-repeatable direct two-state PowerWorld contract coupled
 to TGOV1. DC4B, ST1C, ESST2A, ST2C, ST3C, ST4C, ST5B, ST5C, and ST6B have hash-repeatable direct PowerWorld contracts for
-the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated PowerWorld inventory is 79 artifacts,
+the approved ESDC4B, ESST1C, ESST2A/EXST2A, ESST2C, ESST3C, ESST4C, ESST5B, ESST5C, and ESST6B rows. The validated PowerWorld inventory is 80 artifacts,
 including `50/64` approved exciter rows and `23/24` approved PSS/E governor rows with
 direct trajectory evidence. BBSEX1 separately has a hash-repeatable native
 PSS/E 36.7 boundary/EFD/three-state trajectory contract. IEEEX1 and EXDC2
@@ -92,7 +92,11 @@ canonical states. This raises direct PowerWorld stabilizer evidence to `4/15`
 and combined exact-tool stabilizer evidence to `13/15`. The duplicate WECC
 `PSLF-PSS2C` cross-software row maps exactly to the already verified native
 PSS/E `PSS2C`, raising combined exact-tool stabilizer evidence to `14/15`
-without claiming an additional PowerWorld artifact. Current-schema
+without claiming an additional PowerWorld artifact. PSSSB adds a direct
+PowerWorld contract for its PSS2A base, switched transient-boost lag and
+washout, `Vtl` boost limiter, and voltage-deviation cutout. This raises direct
+PowerWorld stabilizer evidence to `5/15` and combined exact-tool coverage to
+`15/15`. Current-schema
 IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
@@ -208,6 +212,7 @@ the plan's release checklist before interpreting any
 | PSS5C | STABILIZER |  | 21 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS5C.htm) |
 | PSS6C | STABILIZER |  | 34 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS6C.htm) |
 | PSS7C | STABILIZER |  | 38 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS7C.htm) |
+| PSSSB | STABILIZER |  | 30 | LOADABLE | `org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSSSB.htm) |
 | ST2CUT | STABILIZER | WSCCST | 20 | LOADABLE | `org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20ST2CUT.htm) |
 | REECA1 | ELECTRICAL_CONTROLLER | REECAU1 | 51 | LOADABLE | `org.interpss.dstab.renewable.Reeca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_A.htm) |
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |

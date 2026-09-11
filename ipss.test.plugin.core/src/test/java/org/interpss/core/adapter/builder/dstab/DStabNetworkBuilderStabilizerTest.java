@@ -27,6 +27,7 @@ import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
 import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
+import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
@@ -87,6 +88,81 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertTrue(pss.initStates(machine.getDStabBus(), machine));
         assertEquals(0.0, pss.getOutput(machine), TOL);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void parsePsssb_mapsPublishedPowerWorldRecordAndRunsBoostStates() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("psssb.dyr");
+        Files.writeString(dyr, "1 'PSSSB' '1' 1 0 3 0 5 1 "
+                + "10 9 8 7 0.6 0.5 1.47 1.1 0.9 0.4 0.1 2.4 "
+                + "0.16 0.02 0.12 0.03 0.1 -0.1 0 0.05 0.2 0.9 0.05 -0.02 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+
+        parser.parseDynFile(dyr.toString());
+
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        PsssbStabilizer pss = (PsssbStabilizer) machine.getStabilizer();
+        assertNotNull(pss);
+        assertSame(machine, pss.getMachine());
+        var data = pss.getData();
+        assertEquals(1, data.getIcs1());
+        assertEquals(3, data.getIcs2());
+        assertEquals(5, data.getM());
+        assertEquals(1, data.getN());
+        assertEquals(10.0, data.getTw1(), TOL);
+        assertEquals(9.0, data.getTw2(), TOL);
+        assertEquals(8.0, data.getTw3(), TOL);
+        assertEquals(7.0, data.getTw4(), TOL);
+        assertEquals(0.6, data.getT6(), TOL);
+        assertEquals(0.5, data.getT7(), TOL);
+        assertEquals(0.9, data.getKs4(), TOL);
+        assertEquals(0.4, data.getT8(), TOL);
+        assertEquals(0.1, data.getT9(), TOL);
+        assertEquals(0, data.getSw1());
+        assertEquals(0.05, data.getTd1(), TOL);
+        assertEquals(0.2, data.getTd2(), TOL);
+        assertEquals(0.9, data.getVtl(), TOL);
+        assertEquals(0.05, data.getVk(), TOL);
+        assertEquals(-0.02, data.getVcutoff(), TOL);
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertEquals(0.0, pss.getOutput(machine), TOL);
+
+        assertEquals(0.0, pss.getTransientBoostLagState(), TOL);
+        assertEquals(0.0, pss.getTransientBoostWashoutLagState(), TOL);
+        pss.setBoostSwitch(1);
+        for (int i = 0; i < 10; i++) {
+            assertTrue(pss.nextStep(0.001, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+            assertTrue(pss.nextStep(0.001, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        }
+        assertTrue(pss.getTransientBoostLagState() > 0.0);
+        assertTrue(pss.getTransientBoostWashoutLagState() > 0.0);
+        assertTrue(pss.getTransientBoostLagState()
+                > pss.getTransientBoostWashoutLagState());
+        assertTrue(pss.getTransientBoostOutput() > 0.0);
+        assertTrue(pss.getNamedStates().containsKey("Transient boost lag"));
+        assertTrue(pss.getNamedStates().containsKey("Transient boost washout memory"));
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void psssb_voltageCutoutSuppressesOutputUntilTerminalDeviationExceedsThreshold()
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("psssb-cutout.dyr");
+        Files.writeString(dyr, "1 'PSSSB' '1' 1 0 3 0 0 0 "
+                + "1 0 1 0 0 0 1 1 1 0 0 1 0 0 0 0 1 -1 "
+                + "0 0.05 0.2 1 0.05 0.02 /\n");
+        new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        PsssbStabilizer pss = (PsssbStabilizer) machine.getStabilizer();
+        assertTrue(pss.initStates(machine.getDStabBus(), machine));
+        assertTrue(!pss.isVoltageCutoutActive(machine));
+        assertEquals(0.0, pss.getOutput(machine), TOL);
+
+        machine.getDStabBus().setVoltage(new Complex(0.95, 0.0));
+        assertTrue(pss.isVoltageCutoutActive(machine));
+        assertEquals(0.0, pss.getOutput(machine), TOL);
     }
 
 	@Test
