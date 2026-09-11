@@ -167,6 +167,8 @@ public final class DynamicModelCatalog {
                     "Voltage%20Compensator%20IEEEVC.htm"),
             descriptor("CIMTR4", Set.of(), SYNCHRONOUS_MACHINE, 13, LOADABLE,
                     "org.interpss.dstab.mach.Cimtr4Machine", "Machine%20Model%20CIMTR4.htm"),
+            descriptor("WT1G1", Set.of(), SYNCHRONOUS_MACHINE, 10, LOADABLE,
+                    "org.interpss.dstab.mach.Wt1g1Machine", "Machine%20Model%20WT1G.htm"),
             descriptor("GENCLS", Set.of(), SYNCHRONOUS_MACHINE, 2, LOADABLE,
                     "com.interpss.dstab.mach.EConstMachine", "Machine%20Model%20GENCLS.htm"),
             descriptor("ST2CUT", Set.of("WSCCST"), STABILIZER, 20, LOADABLE,
