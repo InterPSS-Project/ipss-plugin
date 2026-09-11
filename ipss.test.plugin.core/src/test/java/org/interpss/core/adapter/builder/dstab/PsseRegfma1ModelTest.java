@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -50,6 +51,12 @@ public class PsseRegfma1ModelTest extends CorePluginTestSetup {
         assertEquals(0, model.getData().vflag());
         assertEquals(0, model.getData().qvflag());
         assertEquals(.15, gen.getPosGenZ().getImaginary(), 1.0e-12);
+        assertEquals(Set.of("Angle", "Speed", "Internal Voltage", "Active Power",
+                "Reactive Power", "Measured Active Power", "Measured Reactive Power",
+                "Measured Voltage", "Voltage Integral", "Active Upper Limit Integral",
+                "Active Lower Limit Integral", "Reactive Upper Limit Integral",
+                "Reactive Lower Limit Integral"), model.getNamedStates().keySet());
+        assertEquals(model.getAngle(), model.getNamedState("Angle"), 0.0);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 

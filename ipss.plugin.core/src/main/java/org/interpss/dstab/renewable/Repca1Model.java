@@ -1,17 +1,22 @@
 package org.interpss.dstab.renewable;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.apache.commons.math3.complex.Complex;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
  * WECC REPC_A plant controller. Its outputs are incremental Pref/Qext commands
  * consumed by a REEC_A or REEC_B controller; all internal powers are on converter MVA base.
  */
-public final class Repca1Model {
+public final class Repca1Model implements ICMLStateProvider {
     private static final double EPS = 1.0e-9;
     /** Suppress only solver partitioning roundoff at the initialized equilibrium. */
     private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
@@ -413,6 +418,21 @@ public final class Repca1Model {
     public double getActiveLagState() { return pLagState; }
     public boolean isUsingZeroBranchFallback() { return zeroBranchFallback; }
     public double getDeviceBaseMva() { return deviceBaseMva; }
+
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> named = new LinkedHashMap<>();
+        named.put("Measured Active Power", pMeasured);
+        named.put("Measured Reactive Or Voltage", qOrVMeasured);
+        named.put("Active Control Integral", pIntegral);
+        named.put("Reactive Control Integral", qIntegral);
+        named.put("Reactive Control Output", qPiOutput);
+        named.put("Lead Lag", leadLagState);
+        named.put("Active Power Lag", pLagState);
+        named.put("Active Power Command", pext);
+        named.put("Reactive Command", qext);
+        return Collections.unmodifiableMap(named);
+    }
 
     static double lag(double state, double input, double timeConstant, double dt) {
         if (timeConstant <= EPS) return input;
