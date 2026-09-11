@@ -2,6 +2,9 @@ package org.interpss.dstab.control.exc.psse.st10c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -340,6 +343,23 @@ public final class St10cExciter extends AnnotateExciter implements IntegrationSt
     public double getCompoundSource() { return compoundSource(getMachine()); }
     public double getAvailableExciterVoltage() { return algebraics(active, getMachine()).available; }
     public double[] getStateSnapshot() { return active.clone(); }
+
+    /** Published PSS/E ST10C states in model-library order and semantics. */
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("Sensed VT", active[SENSED]);
+        states.put("s1", active[NORMAL2]);
+        states.put("s2", active[NORMAL1]);
+        states.put("s3", active[UEL2]);
+        states.put("s4", active[UEL1]);
+        states.put("s5", active[OEL2]);
+        states.put("s6", active[OEL1]);
+        states.put("s7", active[PSS2]);
+        states.put("s8", active[PSS1]);
+        states.put("Power Source Selector Lag Block", active[VAS]);
+        return Collections.unmodifiableMap(states);
+    }
 
     @Override public double getOutput(Machine machine) { outputSignal = algebraics(active, machine).efd; return outputSignal; }
     @Override public void setRefPoint(double value) { reference = value; }
