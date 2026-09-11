@@ -1867,17 +1867,18 @@ public class PSSEDStabDirectParser {
                 0.0, getDouble(f, 36, 0), getDouble(f, 37, 0)) != null;
     }
 
-    // PSS3B: IBUS 'PSS3B' ID ICS1 ICS2 Ks1 T1 Tw1 Ks2 T2 Tw2 Tw3
+    // PSS3B: IBUS 'PSS3B' ID ICS1 REMBUS1 ICS2 REMBUS2 Ks1 T1 Tw1 Ks2 T2 Tw2 Tw3
     //         A1 A2 A3 A4 A5 A6 A7 A8 VSTMAX VSTMIN
     private boolean procPss3b(String busId, String genId, String[] f) {
         return builder.addPss3b(busId, genId,
                 getInt(f, 3, 0), getInt(f, 4, 0),
-                getDouble(f, 5, 0), getDouble(f, 6, 0), getDouble(f, 7, 0),
-                getDouble(f, 8, 0), getDouble(f, 9, 0), getDouble(f, 10, 0),
-                getDouble(f, 11, 0), getDouble(f, 12, 0), getDouble(f, 13, 0),
-                getDouble(f, 14, 0), getDouble(f, 15, 0), getDouble(f, 16, 0),
-                getDouble(f, 17, 0), getDouble(f, 18, 0), getDouble(f, 19, 0),
-                getDouble(f, 20, 0), getDouble(f, 21, 0)) != null;
+                getInt(f, 5, 0), getInt(f, 6, 0),
+                getDouble(f, 7, 0), getDouble(f, 8, 0), getDouble(f, 9, 0),
+                getDouble(f, 10, 0), getDouble(f, 11, 0), getDouble(f, 12, 0),
+                getDouble(f, 13, 0), getDouble(f, 14, 0), getDouble(f, 15, 0),
+                getDouble(f, 16, 0), getDouble(f, 17, 0), getDouble(f, 18, 0),
+                getDouble(f, 19, 0), getDouble(f, 20, 0), getDouble(f, 21, 0),
+                getDouble(f, 22, 0), getDouble(f, 23, 0)) != null;
     }
 
     // PSS4B: IBUS 'PSS4B' ID followed by the 75 IEEE/PSS/E parameters.

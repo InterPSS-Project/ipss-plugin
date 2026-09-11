@@ -40,6 +40,9 @@ public final class SecondOrderLeadLagBlock extends CMLControlBlockAdapter {
     @Override public double getU0() { return u; }
     @Override public double getU0(double y0) { return y0; }
 
+    public double getFirstState() { return stateX; }
+    public double getSecondState() { return x2; }
+
     @Override
     public void eulerStep1(double input, double dt) {
         u = input;
