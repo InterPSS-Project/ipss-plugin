@@ -91,6 +91,54 @@ public class Ieee1992PSS2BStabilizer extends AnnotateStabilizer
         return (Ieee1992PSS2BStabilizerData) _data;
     }
 
+    /** Diagram signals corresponding to PowerWorld PSS2B states 1-8 and 19-20. */
+    public double getInput1Washout1Output() {
+        return childSignal(inputPath1, "this.firstWashout.y");
+    }
+
+    public double getInput1Washout2Output() {
+        return childSignal(inputPath1, "this.secondWashout.y");
+    }
+
+    public double getInput1TransducerOutput() {
+        return childSignal(inputPath1, "this.delayBlock.y");
+    }
+
+    public double getInput2Washout1Output() {
+        return childSignal(inputPath2, "this.firstWashout.y");
+    }
+
+    public double getInput2Washout2Output() {
+        return childSignal(inputPath2, "this.secondWashout.y");
+    }
+
+    public double getInput2TransducerOutput() {
+        return childSignal(inputPath2, "this.delayBlock.y");
+    }
+
+    public double getLeadLag1Output() { return signal("this.leadLag1.y"); }
+    public double getLeadLag2Output() { return signal("this.leadLag2.y"); }
+    public double getRampTrackingOutput() { return signal("this.rampFilter.y"); }
+    public double getGeLeadLagOutput() { return signal("this.outputBlock.y"); }
+    public double getLeadLag3Output() { return signal("this.leadLag3.y"); }
+
+    private double signal(String fieldName) {
+        try {
+            return getFieldVaule(fieldName);
+        } catch (Exception ex) {
+            throw new IllegalStateException("Cannot read PSS2B signal " + fieldName, ex);
+        }
+    }
+
+    private double childSignal(InputPath child, String fieldName) {
+        try {
+            return child.getFieldVaule(fieldName);
+        } catch (Exception ex) {
+            throw new IllegalStateException(
+                    "Cannot read PSS2B child signal " + fieldName, ex);
+        }
+    }
+
     @Override
     public void configureIntegrationStep(double timeStepSec) {
         configureIntegrationStep(timeStepSec, 1.0);
