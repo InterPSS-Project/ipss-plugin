@@ -1195,19 +1195,30 @@ public class PSSEDStabDirectParser {
         return builder.addExcSt6b(busId,genId,sourceName,d)!=null;
     }
 
+    // ST6C flat interchange form, or the ST6CU1 USRMDL wrapper with four ICONs,
+    // 25 CONs, five STATEs, and three VARs.
     // ST6C: OEL UEL SCL SW1, then the 25 CONs in PSS/E 36 Model Library 6.83.
     private boolean procExcSt6c(String busId,String genId,String[] f){
-        if(f.length<32)return false;St6cData d=new St6cData();
-        d.setOel(getInt(f,3,0));d.setUel(getInt(f,4,0));d.setScl(getInt(f,5,0));d.setSw1(getInt(f,6,0));
-        d.setTr(getDouble(f,7,0));d.setKpa(getDouble(f,8,0));d.setKia(getDouble(f,9,0));
-        d.setKda(getDouble(f,10,0));d.setTda(getDouble(f,11,0));d.setVamax(getDouble(f,12,0));
-        d.setVamin(getDouble(f,13,0));d.setKff(getDouble(f,14,0));d.setKm(getDouble(f,15,0));
-        d.setKci(getDouble(f,16,0));d.setKlr(getDouble(f,17,0));d.setIlr(getDouble(f,18,0));
-        d.setVrmax(getDouble(f,19,0));d.setVrmin(getDouble(f,20,0));d.setKg(getDouble(f,21,0));
-        d.setTg(getDouble(f,22,0));d.setVmmax(getDouble(f,23,0));d.setVmmin(getDouble(f,24,0));
-        d.setTa(getDouble(f,25,0));d.setKp(getDouble(f,26,0));d.setKi(getDouble(f,27,0));
-        d.setXl(getDouble(f,28,0));d.setThetaP(getDouble(f,29,0));d.setKc(getDouble(f,30,0));
-        d.setVbmax(getDouble(f,31,0));return builder.addExcSt6c(busId,genId,d)!=null;
+        int offset=3;
+        if("USRMDL".equalsIgnoreCase(f[1])){
+            if(f.length!=39||getInt(f,4,-1)!=4||getInt(f,5,-1)!=0
+                    ||getInt(f,6,-1)!=4||getInt(f,7,-1)!=25
+                    ||getInt(f,8,-1)!=5||getInt(f,9,-1)!=3){
+                log.warn("Invalid native ST6CU1 allocation at bus {}",busId);return false;
+            }
+            offset=10;
+        } else if(f.length<32)return false;
+        St6cData d=new St6cData();
+        d.setOel(getInt(f,offset,0));d.setUel(getInt(f,offset+1,0));d.setScl(getInt(f,offset+2,0));d.setSw1(getInt(f,offset+3,0));
+        d.setTr(getDouble(f,offset+4,0));d.setKpa(getDouble(f,offset+5,0));d.setKia(getDouble(f,offset+6,0));
+        d.setKda(getDouble(f,offset+7,0));d.setTda(getDouble(f,offset+8,0));d.setVamax(getDouble(f,offset+9,0));
+        d.setVamin(getDouble(f,offset+10,0));d.setKff(getDouble(f,offset+11,0));d.setKm(getDouble(f,offset+12,0));
+        d.setKci(getDouble(f,offset+13,0));d.setKlr(getDouble(f,offset+14,0));d.setIlr(getDouble(f,offset+15,0));
+        d.setVrmax(getDouble(f,offset+16,0));d.setVrmin(getDouble(f,offset+17,0));d.setKg(getDouble(f,offset+18,0));
+        d.setTg(getDouble(f,offset+19,0));d.setVmmax(getDouble(f,offset+20,0));d.setVmmin(getDouble(f,offset+21,0));
+        d.setTa(getDouble(f,offset+22,0));d.setKp(getDouble(f,offset+23,0));d.setKi(getDouble(f,offset+24,0));
+        d.setXl(getDouble(f,offset+25,0));d.setThetaP(getDouble(f,offset+26,0));d.setKc(getDouble(f,offset+27,0));
+        d.setVbmax(getDouble(f,offset+28,0));return builder.addExcSt6c(busId,genId,d)!=null;
     }
 
     // EXELI: Tfv Tfi Tnu Vpu Vpi Vpnf Dpnf Efdmin Efdmax Xe Tw Ks1 Ks2 Ts1 Ts2 Smax

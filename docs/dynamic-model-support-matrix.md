@@ -110,8 +110,12 @@ available through the common named-state API. The installed model library accept
 and allocates the wrapper but does not supply its optional compiled routine, so
 independent trajectory verification uses built-in ST4C with identical synthetic
 public constants and hashes both DYR forms.
+ST6CU1 now loads through its exact 39-token user-model wrapper with the published
+four-ICON, 25-CON, five-STATE, three-VAR ST6C allocation. The existing flat ST6C
+dialect remains backward compatible, and both forms pass the same independent
+boundary and five-state trajectory contract using public checked-in constants.
 One registered integrity test now scans all 137 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 566
+manifests, rejects absolute or repository-escaping paths, and verifies all 567
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -261,7 +265,7 @@ the plan's release checklist before interpreting any
 | ST5B | EXCITER | ESST5B | 18 | LOADABLE | `org.interpss.dstab.control.exc.psse.st5b.St5bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST5B%20and%20ST5B.htm) |
 | ST5C | EXCITER |  | 20 | LOADABLE | `org.interpss.dstab.control.exc.psse.st5c.St5cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST5C.htm) |
 | ST6B | EXCITER | ESST6B | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.st6b.St6bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST6B%20and%20ST6B.htm) |
-| ST6C | EXCITER |  | 29 | LOADABLE | `org.interpss.dstab.control.exc.psse.st6c.St6cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST6C.htm) |
+| ST6C | EXCITER | ST6CU1 | 29 | LOADABLE | `org.interpss.dstab.control.exc.psse.st6c.St6cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST6C.htm) |
 | ST7B | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.st7b.St7bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST7B%20and%20ST7B.htm) |
 | ST7C | EXCITER |  | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.st7c.St7cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST7C.htm) |
 | ST8C | EXCITER |  | 28 | LOADABLE | `org.interpss.dstab.control.exc.psse.st8c.St8cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST8C.htm) |
