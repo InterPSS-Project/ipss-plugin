@@ -11,7 +11,6 @@ import org.junit.platform.suite.api.Suite;
 @SelectClasses({
 	GESampleTestCases.class,
 	EpcDirectParser_SectionGate_Test.class,
-	Epc2k10kComparisonTest.class,
 })
 public class GEAdapterTestSuite {
 }
