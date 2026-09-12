@@ -49,7 +49,10 @@ import com.interpss.core.net.Branch;
 import com.interpss.core.net.NameTag;
 
 /**
- * Local Texas2k and TAMU ACTIVSg10k EPC model comparison against the RAW parser.
+ * Texas2k and TAMU ACTIVSg10k EPC model comparison against the RAW parser.
+ * Supply repository-relative public case directories with
+ * {@code -Dipss.epc.texas2k.dir=...} and {@code -Dipss.epc.activs10k.dir=...}
+ * when running this optional suite.
  */
 public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 	private static final double FIELD_TOL = 5.0e-2;
@@ -58,15 +61,10 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 	private static final double IMPORTED_BUS_MISMATCH_TOL = 6.0e-2;
 	private static final double SOURCE_PRECISION_RESIDUAL_TOL = 2.0e-2;
 
-	private static final Path ACTIVS10K_DIR = Path.of(
-			System.getProperty("ipss.epc.activs10k.dir",
-					Path.of("C:", "Users", "carol", "OneDrive", "Documents", "qiuhua",
-							"private_cases", "TamuTestCases", "ACTIVSg10k").toString()));
-	private static final Path TEXAS2K_DIR = Path.of(
-			System.getProperty("ipss.epc.texas2k.dir",
-					Path.of("C:", "Users", "carol", "OneDrive", "Documents", "qiuhua",
-							"private_cases", "Texas2k_series24_cases_with_dynamics",
-							"Texas2k_series24_cases_with_dynamics").toString()));
+	private static final Path ACTIVS10K_DIR = configuredCaseDirectory(
+			"ipss.epc.activs10k.dir", Path.of("testData", "public", "ACTIVSg10k"));
+	private static final Path TEXAS2K_DIR = configuredCaseDirectory(
+			"ipss.epc.texas2k.dir", Path.of("testData", "public", "Texas2k"));
 	private static final List<String> TEXAS2K_CASES = List.of(
 			"Texas2k_series24_case1_2016summerpeak/Texas2k_series24_case1_2016summerPeak",
 			"Texas2k_series24_case2_2016lowload/Texas2k_series24_case2_2016lowload",
@@ -74,6 +72,17 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 			"Texas2k_series24_case4_2024lowload/Texas2k_series24_case4_2024lowload",
 			"Texas2k_series24_case5_2024highrenewables/Texas2k_series24_case5_2024highrenewables",
 			"Texas2k_series24_case6_2024lowloadwithgfm/Texas2k_series24_case6_2024lowloadwithgfm");
+
+	private static Path configuredCaseDirectory(String propertyName, Path defaultPath) {
+		String configured = System.getProperty(propertyName);
+		Path path = (configured == null || configured.isBlank()
+				? defaultPath : Path.of(configured)).normalize();
+		if (path.isAbsolute() || path.startsWith("..")) {
+			throw new IllegalArgumentException(
+					propertyName + " must be repository-relative: " + path);
+		}
+		return path;
+	}
 
 	@Test
 	public void activs10k_epc_matchesRawBusCounts() throws Exception {
