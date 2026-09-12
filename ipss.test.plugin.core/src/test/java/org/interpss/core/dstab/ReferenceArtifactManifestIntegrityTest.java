@@ -48,8 +48,8 @@ public class ReferenceArtifactManifestIntegrityTest {
             }
         }
 
-        assertEquals(124, manifestCount, "reference manifest inventory changed");
-        assertEquals(511, checked[0], "declared artifact/input hash inventory changed");
+        assertEquals(125, manifestCount, "reference manifest inventory changed");
+        assertEquals(515, checked[0], "declared artifact/input hash inventory changed");
         assertTrue(errors.isEmpty(), () -> "Reference artifact manifest integrity failures:\n"
                 + String.join("\n", errors));
     }

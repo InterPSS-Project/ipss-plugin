@@ -177,6 +177,8 @@ public final class DynamicModelCatalog {
                     "org.interpss.dstab.mach.Wt1g1Machine", "Machine%20Model%20WT1G.htm"),
             descriptor("WT2G1", Set.of(), SYNCHRONOUS_MACHINE, 19, LOADABLE,
                     "org.interpss.dstab.mach.Wt2g1Machine", "Generator%20WT2G1.htm"),
+            descriptor("WT2E1", Set.of(), ELECTRICAL_CONTROLLER, 6, LOADABLE,
+                    "org.interpss.dstab.mach.Wt2e1Model", "Electrical%20Control%20WT2E1.htm"),
             descriptor("GENCLS", Set.of(), SYNCHRONOUS_MACHINE, 2, LOADABLE,
                     "com.interpss.dstab.mach.EConstMachine", "Machine%20Model%20GENCLS.htm"),
             descriptor("ST2CUT", Set.of("WSCCST"), STABILIZER, 20, LOADABLE,
