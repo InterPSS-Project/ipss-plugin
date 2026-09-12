@@ -1239,8 +1239,30 @@ public class PSSEDStabDirectParser {
         return builder.addExcSt1c(busId,genId,d) != null;
     }
 
+    // ST4C flat interchange form, or the ST4CU1 USRMDL wrapper with five ICONs,
+    // 21 CONs, five STATEs, and no VARs.
     // ST4C: VOS OEL UEL SCL SW1, then the 21 CONs in PSS/E 36 Model Library 6.79.
     private boolean procExcSt4c(String busId, String genId, String[] f) {
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            if (f.length != 36 || getInt(f,4,-1) != 4 || getInt(f,5,-1) != 0
+                    || getInt(f,6,-1) != 5 || getInt(f,7,-1) != 21
+                    || getInt(f,8,-1) != 5 || getInt(f,9,-1) != 0) {
+                log.warn("Invalid native ST4CU1 allocation at bus {}", busId);
+                return false;
+            }
+            St4cData d = new St4cData();
+            d.setVos(getInt(f,10,1)); d.setOel(getInt(f,11,1)); d.setUel(getInt(f,12,1));
+            d.setScl(getInt(f,13,1)); d.setSw1(getInt(f,14,1)); d.setTr(getDouble(f,15,0));
+            d.setKpr(getDouble(f,16,0)); d.setKir(getDouble(f,17,0));
+            d.setVrmax(getDouble(f,18,0)); d.setVrmin(getDouble(f,19,0));
+            d.setKpm(getDouble(f,20,0)); d.setKim(getDouble(f,21,0));
+            d.setVmmax(getDouble(f,22,0)); d.setVmmin(getDouble(f,23,0));
+            d.setTa(getDouble(f,24,0)); d.setVamax(getDouble(f,25,0)); d.setVamin(getDouble(f,26,0));
+            d.setKg(getDouble(f,27,0)); d.setTg(getDouble(f,28,0)); d.setVgmax(getDouble(f,29,0));
+            d.setKp(getDouble(f,30,0)); d.setKi(getDouble(f,31,0)); d.setXl(getDouble(f,32,0));
+            d.setThetaP(getDouble(f,33,0)); d.setKc(getDouble(f,34,0)); d.setVbmax(getDouble(f,35,0));
+            return builder.addExcSt4c(busId,genId,d)!=null;
+        }
         if (f.length < 29) return false;
         St4cData d = new St4cData();
         d.setVos(getInt(f,3,1)); d.setOel(getInt(f,4,1)); d.setUel(getInt(f,5,1));
