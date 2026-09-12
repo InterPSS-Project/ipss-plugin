@@ -1096,9 +1096,29 @@ public class PSSEDStabDirectParser {
         return builder.addExcDc4b(busId,genId,sourceName,d)!=null;
     }
 
+    // DC4C flat interchange form, or the DC4CU1 USRMDL wrapper with four ICONs,
+    // 24 CONs, six STATEs, and six VARs.
     // DC4C: OEL UEL SCL SW1 Tr Kpr Kir Kdr Tdr Vrmax Vrmin Ka Ta Ke Te Kf Tf
     //        Vemin E1 SE1 E2 SE2 Kp Ki XL ThetaP KC1 Vbmax.
     private boolean procExcDc4c(String busId,String genId,String[] f) {
+        if("USRMDL".equalsIgnoreCase(f[1])){
+            if(f.length!=38||getInt(f,4,-1)!=2||getInt(f,5,-1)!=0
+                    ||getInt(f,6,-1)!=4||getInt(f,7,-1)!=24
+                    ||getInt(f,8,-1)!=6||getInt(f,9,-1)!=6){
+                log.warn("Invalid native DC4CU1 allocation at bus {}",busId);return false;
+            }
+            Dc4cData d=new Dc4cData();
+            d.setOel(getInt(f,10,0));d.setUel(getInt(f,11,0));d.setScl(getInt(f,12,0));
+            d.setSw1(getInt(f,13,1));d.setTr(getDouble(f,14,0));d.setKpr(getDouble(f,15,0));
+            d.setKir(getDouble(f,16,0));d.setKdr(getDouble(f,17,0));d.setTdr(getDouble(f,18,0));
+            d.setVrmax(getDouble(f,19,0));d.setVrmin(getDouble(f,20,0));d.setKa(getDouble(f,21,0));
+            d.setTa(getDouble(f,22,0));d.setKe(getDouble(f,23,0));d.setTe(getDouble(f,24,0));
+            d.setKf(getDouble(f,25,0));d.setTf(getDouble(f,26,0));d.setVemin(getDouble(f,27,0));
+            d.setE1(getDouble(f,28,0));d.setSe1(getDouble(f,29,0));d.setE2(getDouble(f,30,0));
+            d.setSe2(getDouble(f,31,0));d.setKp(getDouble(f,32,0));d.setKi(getDouble(f,33,0));
+            d.setXl(getDouble(f,34,0));d.setThetaP(getDouble(f,35,0));d.setKc1(getDouble(f,36,0));
+            d.setVbmax(getDouble(f,37,0));return builder.addExcDc4c(busId,genId,d)!=null;
+        }
         if(f.length<31)return false;Dc4cData d=new Dc4cData();
         d.setOel(getInt(f,3,0));d.setUel(getInt(f,4,0));d.setScl(getInt(f,5,0));
         d.setSw1(getInt(f,6,1));d.setTr(getDouble(f,7,0));d.setKpr(getDouble(f,8,0));
