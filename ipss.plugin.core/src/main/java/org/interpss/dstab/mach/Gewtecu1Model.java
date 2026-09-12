@@ -338,6 +338,14 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         this.qDroopInput = qDroopInput;
     }
 
+    /** Updates only the shaft-speed input while preserving the other staged inputs. */
+    public void setRotorSpeed(double value) {
+        if (!Double.isFinite(value) || value <= 0.0) {
+            throw new IllegalArgumentException("GEWTECU1 rotor speed must be positive and finite");
+        }
+        rotorSpeed = value;
+    }
+
     /** Override measured terminal power for deterministic staged-input replay. */
     public void setMeasuredPower(double machineBaseP, double machineBaseQ) {
         if (!Double.isFinite(machineBaseP) || !Double.isFinite(machineBaseQ)) {
