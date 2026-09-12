@@ -234,6 +234,8 @@ import org.interpss.dstab.mach.Gewtgdu1Data;
 import org.interpss.dstab.mach.Gewtgdu1Model;
 import org.interpss.dstab.mach.Gewtptu1Data;
 import org.interpss.dstab.mach.Gewtptu1Model;
+import org.interpss.dstab.mach.Reaxbu1Data;
+import org.interpss.dstab.mach.Reaxbu1Model;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt4g1Data;
@@ -523,6 +525,19 @@ public class DStabNetworkBuilder {
         }
         Gewtptu1Model model = new Gewtptu1Model(data);
         host.setPitchController(model);
+        return model;
+    }
+
+    /** Attach a Type-3 REAXB auxiliary controller to its converter host. */
+    public Reaxbu1Model addReax3bu1(String busId, String genId, Reaxbu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for REAX3BU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reaxbu1Model model = new Reaxbu1Model("REAX3BU1", data);
+        host.setAuxiliaryController(model);
         return model;
     }
 

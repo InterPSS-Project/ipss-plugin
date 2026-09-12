@@ -418,6 +418,14 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         return state.torqueFilter;
     }
 
+    public void setPlantAuxiliarySignals(double reactiveSignal, double activeSignal) {
+        if (!Double.isFinite(reactiveSignal) || !Double.isFinite(activeSignal)) {
+            throw new IllegalArgumentException("plant auxiliary signals must be finite");
+        }
+        auxiliarySignal = reactiveSignal;
+        externalActiveSignal = activeSignal;
+    }
+
     private static double algebraicOrState(double input, double stored, double time) {
         return time <= EPS ? input : stored;
     }
