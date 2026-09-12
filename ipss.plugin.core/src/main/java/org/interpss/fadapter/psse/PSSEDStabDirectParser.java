@@ -46,6 +46,7 @@ import org.interpss.dstab.mach.Wt2g1Data;
 import org.interpss.dstab.mach.Wt2e1Data;
 import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Wt3g2Data;
+import org.interpss.dstab.mach.Wt4g1Data;
 import org.interpss.dstab.mach.Wt3e1Data;
 import org.interpss.dstab.mach.Wt3t1Data;
 import org.interpss.dstab.mach.Wt3p1Data;
@@ -389,6 +390,8 @@ public class PSSEDStabDirectParser {
                 return procWt3g1(busId, genId, fields);
             case "WT3G2":
                 return procWt3g2(busId, genId, fields);
+            case "WT4G1":
+                return procWt4g1(busId, genId, fields);
             case "WT3E1":
                 return procWt3e1(busId, genId, fields);
             case "WT3T1":
@@ -2761,6 +2764,21 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 9, 0.0), getDouble(f, 10, 0.0), getDouble(f, 11, 0.0),
                 getDouble(f, 12, 0.0), getDouble(f, 13, 0.0), getDouble(f, 14, 0.0),
                 getDouble(f, 15, 0.0), getDouble(f, 16, 0.0))) != null;
+    }
+
+    // Published schema: IBUS 'WT4G1' ID, then nine CONs.
+    private boolean procWt4g1(String busId, String genId, String[] f) {
+        if (f.length != 12) {
+            log.warn("Invalid WT4G1 record at bus {}: expected 12 fields, found {}",
+                    busId, f.length);
+            return false;
+        }
+        return builder.addWt4g1(busId, genId, new Wt4g1Data(
+                getDouble(f, 3, 0.0), getDouble(f, 4, 0.0),
+                getDouble(f, 5, 0.0), getDouble(f, 6, 0.0),
+                getDouble(f, 7, 0.0), getDouble(f, 8, 0.0),
+                getDouble(f, 9, 0.0), getDouble(f, 10, 0.0),
+                getDouble(f, 11, 0.0))) != null;
     }
 
     // Native record: IBUS 'WT3E1' ID, six ICONs, then 31 CONs.
