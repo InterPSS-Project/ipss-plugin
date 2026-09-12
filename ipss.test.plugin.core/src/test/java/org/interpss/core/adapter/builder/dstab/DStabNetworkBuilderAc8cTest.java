@@ -2,6 +2,7 @@ package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -51,6 +52,29 @@ public class DStabNetworkBuilderAc8cTest extends CorePluginTestSetup {
         assertEquals(31,descriptor.parameterCount());assertEquals(DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
         assertTrue(DynamicModelCatalog.find("ESAC8C").isEmpty());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESAC8C").orElseThrow().isImplementedExactly());
+    }
+
+    @Test
+    void parsesExactAc8cu1AllocationAndAllFiveNamedStates(@TempDir Path dir)throws Exception{
+        DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();Path dyr=dir.resolve("ac8cu1.dyr");
+        Files.writeString(dyr,"1 'USRMDL' '1' 'AC8CU1' 2 0 5 27 5 3 2 3 1 2 1 .01 7 8 9 .1 10 -10 11 .2 12 -12 .3 .4 .5 .6 14 -.2 5.6 .86 4.2 .5 1.4 .9 1.1 30 .12 20 /\n");
+        PSSEDStabDirectParser p=new PSSEDStabDirectParser(b).setStrictImport(true);p.parseDynFile(dyr.toString());
+        Ac8cExciter e=(Ac8cExciter)b.getDStabNetwork().getMachine("Bus1-mach1").getExciter();assertNotNull(e);
+        Ac8cData d=e.getData();assertEquals(2,d.getOelLocation());assertEquals(3,d.getUelLocation());
+        assertEquals(1,d.getSclLocation());assertEquals(2,d.getVosLocation());assertEquals(1,d.getSw1());
+        assertEquals(.01,d.getTr(),TOL);assertEquals(20,d.getVbmax(),TOL);
+        assertEquals(5,e.getNamedStates().size());assertTrue(e.getNamedStates().keySet().containsAll(
+                java.util.Set.of("Sensed Vt","PID Integrator","PID Derivator","VR","VE")));
+        var descriptor=DynamicModelCatalog.find("AC8CU1").orElseThrow();
+        assertEquals(java.util.Set.of(31,38),descriptor.recordSchema().acceptedParameterCounts());
+        assertTrue(p.getLastImportReport().isStrictlyComplete());
+    }
+
+    @Test
+    void rejectsAc8cu1WithIncorrectStateAllocation(@TempDir Path dir)throws Exception{
+        DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();Path dyr=dir.resolve("bad-ac8cu1.dyr");
+        Files.writeString(dyr,"1 'USRMDL' '1' 'AC8CU1' 2 0 5 27 4 3 0 0 0 1 1 .1 2 3 .4 .2 10 -10 4 .05 10 -10 .1 .2 .5 .2 10 0 1 .1 2 .3 1 .1 .2 10 .05 10 /\n");
+        assertThrows(Exception.class,()->new PSSEDStabDirectParser(b).setStrictImport(true).parseDynFile(dyr.toString()));
     }
 
     @Test

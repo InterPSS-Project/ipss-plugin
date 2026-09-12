@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `54/54` native reference probes were cold-regenerated with the installed
+All `55/55` native reference probes were cold-regenerated with the installed
 Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. The reusable suite driver and all probe inputs use
@@ -88,8 +88,15 @@ PIDGOV/PIDGOVD equation runtime with the D-only deadband and turbine-rating
 inputs fixed to their neutral values. Its seven native PSS/E state coordinates
 are available by canonical names while the established PowerWorld semantic
 names remain backward-compatible aliases.
-One registered integrity test now scans all 134 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 551
+AC8CU1 now loads through its exact 42-token user-model wrapper with the published
+five-ICON, 27-CON, five-STATE, three-VAR AC8C allocation. The existing flat
+AC8C dialect remains backward compatible, and all five controller coordinates
+are exposed through the common named-state API. Because the installed model
+library does not contain the optional compiled wrapper routine, independent
+trajectory verification uses the built-in AC8C equation with the same synthetic
+public constants and hashes both DYR forms.
+One registered integrity test now scans all 135 checked-in native and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 556
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -193,7 +200,7 @@ the plan's release checklist before interpreting any
 | AC7B | EXCITER | ESAC7B | 27 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC7B%20and%20ESAC7B.htm) |
 | AC7C | EXCITER |  | 38 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac7c.Ac7cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC7C.htm) |
 | AC8B | EXCITER |  | 21 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC8B.htm) |
-| AC8C | EXCITER |  | 31 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC8C.htm) |
+| AC8C | EXCITER | AC8CU1 | 31 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC8C.htm) |
 | AC9C | EXCITER |  | 45 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac9c.Ac9cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC9C.htm) |
 | BBSEX1 | EXCITER |  | 11 | LOADABLE | `org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20BBSEX1.htm) |
 | DC1C | EXCITER |  | 19 | LOADABLE | `org.interpss.dstab.control.exc.psse.dc1c.Dc1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20DC1C.htm) |
