@@ -100,14 +100,17 @@ public final class PsseDyrRecordReader {
             throw new IllegalArgumentException("Invalid DYR bus number at " + source + ":" + startLine, e);
         }
         String wrapper = fields.get(1).toUpperCase(java.util.Locale.ROOT);
-        boolean userDeviceModel = wrapper.equals("USRLOD") || wrapper.equals("USRMDL");
+        boolean idlessUserModel = wrapper.equals("USRMDL") && fields.size() > 2
+                && DynamicModelCatalog.canonicalName(fields.get(2)).equals("WT12A1B");
+        boolean userDeviceModel = (wrapper.equals("USRLOD") || wrapper.equals("USRMDL"))
+                && !idlessUserModel;
         boolean userBusModel = wrapper.equals("USRBUS");
-        int modelIndex = userDeviceModel ? 3 : userBusModel ? 2 : 1;
+        int modelIndex = userDeviceModel ? 3 : userBusModel || idlessUserModel ? 2 : 1;
         if (fields.size() <= modelIndex) {
             throw new IllegalArgumentException("Missing user-model name at " + source + ":" + startLine);
         }
         String sourceModel = fields.get(modelIndex);
-        String deviceId = userBusModel ? "*" : fields.get(2);
+        String deviceId = userBusModel || idlessUserModel ? "*" : fields.get(2);
         int parameterOffset = userDeviceModel ? 4 : 3;
         return new PsseDyrRecord(source, startLine, endLine, raw, bus, sourceModel,
                 DynamicModelCatalog.canonicalName(sourceModel), deviceId, fields,
