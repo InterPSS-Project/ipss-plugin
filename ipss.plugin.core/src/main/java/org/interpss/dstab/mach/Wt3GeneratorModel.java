@@ -12,4 +12,6 @@ public interface Wt3GeneratorModel {
     void setCommands(double activeCurrentCommand, double internalVoltageCommand);
     Wt3e1Model getElectricalController();
     void setElectricalController(Wt3e1Model controller);
+    Wt3t1Model getDriveTrain();
+    void setDriveTrain(Wt3t1Model driveTrain);
 }

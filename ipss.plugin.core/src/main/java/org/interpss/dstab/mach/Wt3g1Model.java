@@ -40,6 +40,7 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
     private Derivatives predictorDerivative = new Derivatives(0.0, 0.0, 0.0, 0.0);
     private boolean initialized;
     private Wt3e1Model electricalController;
+    private Wt3t1Model driveTrain;
 
     public Wt3g1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
             Wt3g1Data data) {
@@ -71,6 +72,10 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
         eqCommand = eqState;
         initialized = true;
         if (electricalController != null) electricalController.initialize();
+        if (driveTrain != null) driveTrain.initialize(p,
+                1.0 + (electricalController == null ? 0.0
+                        : electricalController.getSpeedDeviation()),
+                bus.getNetwork().getFrequency());
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(eqState) && finite(angle);
     }
@@ -79,6 +84,12 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0) {
             return false;
+        }
+        if (driveTrain != null) {
+            driveTrain.step(dt, p, flag);
+            if (electricalController != null) {
+                electricalController.setSpeedDeviation(driveTrain.getGeneratorSpeed() - 1.0);
+            }
         }
         if (electricalController != null) electricalController.step(dt, flag);
         Derivatives current = derivatives(ipState, eqState, pllIntegral, angle);
@@ -188,6 +199,7 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
         named.put("Converter lag for Eqcmd", eqState);
         named.put("PLL first integrator", pllIntegral);
         named.put("PLL second integrator", angle);
+        if (driveTrain != null) named.putAll(driveTrain.getNamedStates());
         return Map.copyOf(named);
     }
 
@@ -217,6 +229,8 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
     public double getQ() { return q; }
     public Wt3e1Model getElectricalController() { return electricalController; }
     public void setElectricalController(Wt3e1Model value) { electricalController = value; }
+    @Override public Wt3t1Model getDriveTrain() { return driveTrain; }
+    @Override public void setDriveTrain(Wt3t1Model value) { driveTrain = value; }
 
     private static double boundedAdvance(double initial, double increment,
             double minimum, double maximum) {
