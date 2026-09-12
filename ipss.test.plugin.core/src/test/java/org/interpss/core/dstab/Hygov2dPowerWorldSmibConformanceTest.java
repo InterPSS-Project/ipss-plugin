@@ -32,6 +32,7 @@ import com.interpss.dstab.mach.RoundRotorMachine;
  * deadband makes all six published states dynamic; the independent equation
  * test retains nonzero-{@code Kp} coverage.</p>
  */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Hygov2dPowerWorldSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final double REFERENCE_STEP = 0.0005;

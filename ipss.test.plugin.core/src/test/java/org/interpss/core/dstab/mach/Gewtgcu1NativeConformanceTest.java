@@ -22,6 +22,7 @@ import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 
 /** Prescribed-voltage comparison against the independent vendor implementation. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Gewtgcu1NativeConformanceTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
     private static final Path REFERENCE = Path.of("testData", "reference", "psse",

@@ -18,6 +18,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Trajectory comparison against ANDES 2.0.0 for GENROU plus EXDC2. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Exdc2AndesSmibConformanceTest {
     private static final Path CASE = Path.of(
             "testData", "adpter", "psse", "v33", "SMIB");

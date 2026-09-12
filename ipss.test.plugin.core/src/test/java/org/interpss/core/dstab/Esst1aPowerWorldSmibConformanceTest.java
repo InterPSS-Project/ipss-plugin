@@ -24,6 +24,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver GENROU + ESST1A/EXST1 comparisons against PowerWorld references. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Esst1aPowerWorldSmibConformanceTest {
     private static final double POWER_WORLD_STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

@@ -25,6 +25,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Native PSS/E ST6B common-profile comparison against PowerWorld ST6B. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class St6bPowerWorldSmibConformanceTest {
     private static final double STEP=.0005;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");

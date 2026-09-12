@@ -24,6 +24,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 
 /** Full-solver GENQEC comparison against the immutable PowerWorld reference. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class GenqecPowerWorldSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final double POWERWORLD_STEP = 0.0005;

@@ -28,6 +28,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver contract for AC8CU1 against the equivalent published AC8C equation. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Ac8cu1PsseSmibConformanceTest {
     private static final double STEP=0.00025;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");

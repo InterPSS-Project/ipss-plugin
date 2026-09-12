@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import com.google.gson.JsonParser;
 
+@org.junit.jupiter.api.Tag("private-reference")
 public class PowerWorldArtifactCoverageInventoryTest {
     @Test
     void validatesManifestsAndReportsApprovedModelGaps() throws Exception {

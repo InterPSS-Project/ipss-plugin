@@ -32,6 +32,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Equation, scope, schema, and lifecycle tests for native PSS/E IEEL loads. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class IeelLoadModelTest extends CorePluginTestSetup {
     private static final String SYNTHETIC_PARAMETERS =
             "0.23 0.31 0.46 0.37 0.22 0.41 1.37 -0.63 "

@@ -25,6 +25,7 @@ import com.interpss.dstab.devent.DynamicSimuEventType;
  * ANDES has no EXAC1A; with KF=0 the source distinction is inactive, while the
  * focused nonzero-KF oracle verifies the EXAC1A-specific EFD feedback path.
  */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Exac1aAndesSmibConformanceTest {
     private static final double STEP=.0001;
     private static final int OUTPUT_EVERY_STEPS=20;

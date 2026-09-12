@@ -27,6 +27,7 @@ import com.interpss.dstab.mach.RoundRotorMachine;
  * Full-solver native AC8B comparison against PowerWorld's equation-equivalent
  * ESAC8B_PTI common profile. AC8B-only nonlinear paths remain covered locally.
  */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Ac8bPowerWorldSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

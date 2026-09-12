@@ -24,6 +24,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver native PSS/E AC2C comparison against PowerWorld. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Ac2cPowerWorldSmibConformanceTest {
     private static final double STEP=.0005;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");

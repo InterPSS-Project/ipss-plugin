@@ -24,6 +24,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver GENROU + native DEGOV1D comparison against PowerWorld. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Degov1dPowerWorldSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

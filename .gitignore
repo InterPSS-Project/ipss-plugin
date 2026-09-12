@@ -33,3 +33,13 @@ ipss.plugin.3phase/src/test/python/__pycache__/
 .factorypath
 ipss.plugin.core/testData/private/*.*
 ipss.test.plugin.core/testData/private/*.*
+ipss.plugin.core/testData/private/**
+ipss.test.plugin.core/testData/private/**
+
+# Simulator-driving test programs and generated trajectory references are
+# maintained only in the local private verification archive.
+**/src/test/python/**
+**/testData/**/*.py
+ipss.plugin.py/tests/**/*.py
+ipss.test.plugin.core/testData/reference/**
+ipss.test.plugin.core/src/test/resources/reference/**
