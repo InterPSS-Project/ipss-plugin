@@ -26,7 +26,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Direct REGFM_A1 nine-state comparison against a reproducible PowerWorld run. */
-@org.junit.jupiter.api.Tag("private-reference")
 public class Regfma1PowerWorldTrajectoryTest extends CorePluginTestSetup {
     private static final double STEP = 0.0005;
 
