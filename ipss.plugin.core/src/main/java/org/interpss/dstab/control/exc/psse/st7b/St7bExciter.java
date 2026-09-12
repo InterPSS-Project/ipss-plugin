@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -17,7 +18,7 @@ import com.interpss.dstab.mach.Machine;
 
 /** IEEE 421.5-2005 ST7B excitation system and shared ST7 equation engine. */
 @AnController(input="mach.vt",output="this.outputSignal",refPoint="this.reference",display={})
-public class St7bExciter extends AnnotateExciter implements IntegrationStepAware {
+public class St7bExciter extends AnnotateExciter implements IntegrationStepAware, UnderExcitationLimiterTarget {
     private static final double EPS=1e-12;
     private static final int VSENSE=0,INPUT_LL=1,REG_LL=2,FEEDBACK=3,EFIELD=4;
     private final St7bData data;private final String modelName;
@@ -132,6 +133,7 @@ public class St7bExciter extends AnnotateExciter implements IntegrationStepAware
     public double getSensedVoltage(){return algebraics(active,getMachine()).sensed;}
     public double getInputLeadLag(){return algebraics(active,getMachine()).inputLeadLag;}
     public double getReferenceFeedback(){return algebraics(active,getMachine()).referenceFeedback;}
+    @Override public double getUelReferenceFeedbackSignal(){return getReferenceFeedback();}
     public double getVoltageError(){return algebraics(active,getMachine()).error;}
     public double getAmplifierOutput(){return algebraics(active,getMachine()).amplifier;}
     public double getRegulatorOutput(){return algebraics(active,getMachine()).regulator;}
