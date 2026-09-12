@@ -206,6 +206,8 @@ import org.interpss.dstab.mach.Wt2e1Data;
 import org.interpss.dstab.mach.Wt2e1Model;
 import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Wt3g1Model;
+import org.interpss.dstab.mach.Wt3e1Data;
+import org.interpss.dstab.mach.Wt3e1Model;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12t1Model;
 import org.interpss.dstab.mach.Wt12a1Data;
@@ -407,6 +409,19 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Wt3g1Model(gen, bus, genId, data);
+    }
+
+    /** Attach WT3E1 to its WT3G1 converter host. */
+    public Wt3e1Model addWt3e1(String busId, String genId, Wt3e1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt3g1Model wt3g1)) {
+            log.warn("WT3G1 not found for WT3E1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt3e1Model model = new Wt3e1Model(data, wt3g1);
+        wt3g1.setElectricalController(model);
+        return model;
     }
 
     /** Attach the PSS/E WT12T1 mechanical model to a WT1G1 generator. */
