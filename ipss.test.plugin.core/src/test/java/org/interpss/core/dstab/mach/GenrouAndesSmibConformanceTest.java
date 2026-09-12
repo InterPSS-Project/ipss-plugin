@@ -2,13 +2,13 @@ package org.interpss.core.dstab.mach;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.interpss.IpssCorePlugin;
+import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 
@@ -18,7 +18,6 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Trajectory comparison against ANDES 2.0.0 for a public GENROU SMIB case. */
-@org.junit.jupiter.api.Tag("private-reference")
 public class GenrouAndesSmibConformanceTest {
     private static final Path CASE = Path.of(
             "testData", "adpter", "psse", "v33", "SMIB");
@@ -109,7 +108,7 @@ public class GenrouAndesSmibConformanceTest {
 
     private static List<double[]> readReference() throws Exception {
         List<double[]> result = new ArrayList<>();
-        for (String line : Files.readAllLines(REFERENCE)) {
+        for (String line : EmbeddedCsvTrajectoryValues.lines("genrou-smib-line-trip.csv")) {
             if (line.isBlank() || line.startsWith("#") || line.startsWith("time_s")) {
                 continue;
             }
