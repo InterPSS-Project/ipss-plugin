@@ -148,6 +148,7 @@ loadability inventory.
 | WT2E1 | ELECTRICAL_CONTROLLER |  | 6 | LOADABLE | `org.interpss.dstab.mach.Wt2e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT2E1.htm) |
 | WT3E1 | ELECTRICAL_CONTROLLER |  | 37 | LOADABLE | `org.interpss.dstab.mach.Wt3e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT3E1.htm) |
 | WT4E1 | ELECTRICAL_CONTROLLER |  | 27 | LOADABLE | `org.interpss.dstab.mach.Wt4e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT4E1.htm) |
+| PLNTBU1 | PLANT_CONTROLLER |  | 41 | LOADABLE | `org.interpss.dstab.mach.Plntbu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | REPCA1 | PLANT_CONTROLLER | REPCAU1, REPCTA1, REPCTAU1 | 34 | LOADABLE | `org.interpss.dstab.renewable.Repca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Plant%20Controller%20REPC_A.htm) |
 | GEWT2MU1 | DRIVE_TRAIN |  | 12 | LOADABLE | `org.interpss.dstab.mach.Gewt2mu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | WT12T1 | DRIVE_TRAIN |  | 5 | LOADABLE | `org.interpss.dstab.mach.Wt12t1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WT12T1.htm) |

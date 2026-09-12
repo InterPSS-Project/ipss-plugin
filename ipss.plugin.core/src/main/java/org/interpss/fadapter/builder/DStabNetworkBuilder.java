@@ -1,5 +1,8 @@
 package org.interpss.fadapter.builder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.interpss.dstab.control.exc.ExciterObjectFactory;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
@@ -236,6 +239,8 @@ import org.interpss.dstab.mach.Gewtptu1Data;
 import org.interpss.dstab.mach.Gewtptu1Model;
 import org.interpss.dstab.mach.Reaxbu1Data;
 import org.interpss.dstab.mach.Reaxbu1Model;
+import org.interpss.dstab.mach.Plntbu1Data;
+import org.interpss.dstab.mach.Plntbu1Model;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt4g1Data;
@@ -270,12 +275,14 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.mach.RoundRotorMachine;
 import com.interpss.dstab.mach.SalientPoleMachine;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.acsc.AcscFactory;
 
 public class DStabNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(DStabNetworkBuilder.class);
 
     private final BaseDStabNetwork<?, ?> network;
+    private final Map<Integer, Plntbu1Model> plntbu1Controllers = new HashMap<>();
 
     public DStabNetworkBuilder(BaseDStabNetwork<?, ?> network) {
         this.network = network;
@@ -537,6 +544,7 @@ public class DStabNetworkBuilder {
             return null;
         }
         Reaxbu1Model model = new Reaxbu1Model("REAX3BU1", data);
+        model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
         host.setAuxiliaryController(model);
         return model;
     }
@@ -550,8 +558,59 @@ public class DStabNetworkBuilder {
             return null;
         }
         Reaxbu1Model model = new Reaxbu1Model("REAX4BU1", data);
+        model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
         host.setAuxiliaryController(model);
         return model;
+    }
+
+    /** Attach one PLNTBU1 plant controller to every REAXB assigned to its plant bus. */
+    @SuppressWarnings("unchecked")
+    public Plntbu1Model addPlntbu1(String busId, Plntbu1Data data) {
+        BaseDStabBus<?, ?> attachmentBus = network.getDStabBus(busId);
+        int controlNumber = data.voltageControlBus() == 0
+                ? Integer.parseInt(busId.substring(3)) : Math.abs(data.voltageControlBus());
+        BaseDStabBus<?, ?> regulatedBus = network.getDStabBus("Bus" + controlNumber);
+        if (attachmentBus == null || regulatedBus == null) {
+            log.warn("PLNTBU1 attachment or regulated bus not found: bus={}, regulated={}",
+                    busId, controlNumber);
+            return null;
+        }
+        AclfBranch monitored = null;
+        boolean forward = true;
+        if (data.branchFromBus() != 0 || data.branchToBus() != 0) {
+            String from = "Bus" + Math.abs(data.branchFromBus());
+            String to = "Bus" + Math.abs(data.branchToBus());
+            monitored = (AclfBranch) network.getBranch(from, to, data.branchId());
+            if (monitored == null) {
+                monitored = (AclfBranch) network.getBranch(to, from, data.branchId());
+                forward = false;
+            }
+            if (monitored == null) {
+                log.warn("PLNTBU1 monitored branch not found: {}-{}-{}", from, to,
+                        data.branchId());
+                return null;
+            }
+        }
+        int plantBus = Integer.parseInt(busId.substring(3));
+        if (plntbu1Controllers.containsKey(plantBus)) {
+            log.warn("Duplicate PLNTBU1 controller at {}", busId);
+            return null;
+        }
+        Plntbu1Model controller = new Plntbu1Model(data, attachmentBus, regulatedBus,
+                monitored, forward);
+        plntbu1Controllers.put(plantBus, controller);
+        for (Object busObject : network.getBusList()) {
+            BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) busObject;
+            for (Object genObject : bus.getContributeGenList()) {
+                DStabGen gen = (DStabGen) genObject;
+                if (gen.getDynamicGenDevice() instanceof Gewtgcu1Model host
+                        && host.getAuxiliaryController() != null
+                        && Math.abs(host.getAuxiliaryController().getData().plantBus()) == plantBus) {
+                    host.getAuxiliaryController().setPlantController(controller);
+                }
+            }
+        }
+        return controller;
     }
 
     /** Attach the native WT3G2 converter generator to an existing generator record. */

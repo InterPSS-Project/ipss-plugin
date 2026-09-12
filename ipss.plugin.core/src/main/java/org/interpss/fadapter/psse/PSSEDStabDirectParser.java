@@ -60,6 +60,7 @@ import org.interpss.dstab.mach.Gewtaru1Data;
 import org.interpss.dstab.mach.Gewtgdu1Data;
 import org.interpss.dstab.mach.Gewtptu1Data;
 import org.interpss.dstab.mach.Reaxbu1Data;
+import org.interpss.dstab.mach.Plntbu1Data;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt4g1Data;
 import org.interpss.dstab.mach.Wt4e1Data;
@@ -351,6 +352,11 @@ public class PSSEDStabDirectParser {
                             + " and load id " + record.deviceId()
                     : null;
         }
+        if (record.canonicalModelName().equals("PLNTBU1")) {
+            String busId = BUS_ID_PREFIX + record.busNumber();
+            return builder.getBaseDStabNetwork().getDStabBus(busId) == null
+                    ? "target bus " + busId + " does not exist" : null;
+        }
         if (descriptor.get().category()
                 == org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION) {
             String monitoredBusId = BUS_ID_PREFIX + Math.abs(Integer.parseInt(record.deviceId()));
@@ -455,6 +461,8 @@ public class PSSEDStabDirectParser {
                 return procReax3bu1(busId, genId, fields);
             case "REAX4BU1":
                 return procReax4bu1(busId, genId, fields);
+            case "PLNTBU1":
+                return procPlntbu1(busId, fields);
             case "WT3G2":
                 return procWt3g2(busId, genId, fields);
             case "WT4G1":
@@ -3545,6 +3553,30 @@ public class PSSEDStabDirectParser {
                 getDouble(f,11,0),getDouble(f,12,0),getDouble(f,13,0),
                 getDouble(f,14,0),getDouble(f,15,0),getDouble(f,16,0),
                 getDouble(f,17,0)))!=null;
+    }
+
+    // Native bus wrapper: 504 0 7 28 7 15, seven ICONs, then 28 CONs.
+    private boolean procPlntbu1(String busId, String[] f) {
+        if (f.length != 44 || !"USRBUS".equalsIgnoreCase(f[1])
+                || getInt(f,3,-1)!=504 || getInt(f,4,-1)!=0
+                || getInt(f,5,-1)!=7 || getInt(f,6,-1)!=28
+                || getInt(f,7,-1)!=7 || getInt(f,8,-1)!=15) {
+            log.warn("Invalid PLNTBU1 allocation at bus {}", busId);
+            return false;
+        }
+        return builder.addPlntbu1(busId, new Plntbu1Data(
+                getInt(f,9,0), getInt(f,10,0), getInt(f,11,0), trimQuote(f[12]),
+                getInt(f,13,0), getInt(f,14,0), getInt(f,15,0),
+                getDouble(f,16,0), getDouble(f,17,0), getDouble(f,18,0),
+                getDouble(f,19,0), getDouble(f,20,0), getDouble(f,21,0),
+                getDouble(f,22,0), getDouble(f,23,0), getDouble(f,24,0),
+                getDouble(f,25,0), getDouble(f,26,0), getDouble(f,27,0),
+                getDouble(f,28,0), getDouble(f,29,0), getDouble(f,30,0),
+                getDouble(f,31,0), getDouble(f,32,0), getDouble(f,33,0),
+                getDouble(f,34,0), getDouble(f,35,0), getDouble(f,36,0),
+                getDouble(f,37,0), getDouble(f,38,0), getDouble(f,39,0),
+                getDouble(f,40,0), getDouble(f,41,0), getDouble(f,42,0),
+                getDouble(f,43,0))) != null;
     }
 
     // REECD1 flat form, or the native REECDU1 wrapper with six ICONs,

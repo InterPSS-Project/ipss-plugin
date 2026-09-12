@@ -100,15 +100,18 @@ public final class PsseDyrRecordReader {
             throw new IllegalArgumentException("Invalid DYR bus number at " + source + ":" + startLine, e);
         }
         String wrapper = fields.get(1).toUpperCase(java.util.Locale.ROOT);
-        boolean userModel = wrapper.equals("USRLOD") || wrapper.equals("USRMDL");
-        int modelIndex = userModel ? 3 : 1;
+        boolean userDeviceModel = wrapper.equals("USRLOD") || wrapper.equals("USRMDL");
+        boolean userBusModel = wrapper.equals("USRBUS");
+        int modelIndex = userDeviceModel ? 3 : userBusModel ? 2 : 1;
         if (fields.size() <= modelIndex) {
             throw new IllegalArgumentException("Missing user-model name at " + source + ":" + startLine);
         }
         String sourceModel = fields.get(modelIndex);
+        String deviceId = userBusModel ? "*" : fields.get(2);
+        int parameterOffset = userDeviceModel ? 4 : 3;
         return new PsseDyrRecord(source, startLine, endLine, raw, bus, sourceModel,
-                DynamicModelCatalog.canonicalName(sourceModel), fields.get(2), fields,
-                userModel ? 4 : 3);
+                DynamicModelCatalog.canonicalName(sourceModel), deviceId, fields,
+                parameterOffset);
     }
 
     private static boolean isCommentOrBlank(CharSequence line) {
