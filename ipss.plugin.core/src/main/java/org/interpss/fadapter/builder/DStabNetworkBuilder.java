@@ -202,6 +202,8 @@ import org.interpss.dstab.mach.Wt1g1Data;
 import org.interpss.dstab.mach.Wt1g1Machine;
 import org.interpss.dstab.mach.Wt2g1Data;
 import org.interpss.dstab.mach.Wt2g1Machine;
+import org.interpss.dstab.mach.Wt2e1Data;
+import org.interpss.dstab.mach.Wt2e1Model;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12t1Model;
 import org.interpss.dstab.mach.Wt12a1Data;
@@ -380,6 +382,18 @@ public class DStabNetworkBuilder {
         mach.setXd(data.xa() + data.xm());
         mach.setXq(data.xa() + data.xm());
         return mach;
+    }
+
+    /** Attach the WT2E1 rotor-resistance controller to a WT2G1 generator. */
+    public Wt2e1Model addWt2e1(String busId, String genId, Wt2e1Data data) {
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (!(machine instanceof Wt2g1Machine wt2g1)) {
+            log.warn("WT2G1 not found for WT2E1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt2e1Model model = new Wt2e1Model(data, wt2g1.getWt2g1Data());
+        wt2g1.setRotorResistanceController(model);
+        return model;
     }
 
     /** Attach the PSS/E WT12T1 mechanical model to a WT1G1 generator. */
