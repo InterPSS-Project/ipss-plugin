@@ -541,6 +541,19 @@ public class DStabNetworkBuilder {
         return model;
     }
 
+    /** Attach a Type-4 REAXB auxiliary controller to its converter host. */
+    public Reaxbu1Model addReax4bu1(String busId, String genId, Reaxbu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for REAX4BU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reaxbu1Model model = new Reaxbu1Model("REAX4BU1", data);
+        host.setAuxiliaryController(model);
+        return model;
+    }
+
     /** Attach the native WT3G2 converter generator to an existing generator record. */
     public Wt3g2Model addWt3g2(String busId, String genId, Wt3g2Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
