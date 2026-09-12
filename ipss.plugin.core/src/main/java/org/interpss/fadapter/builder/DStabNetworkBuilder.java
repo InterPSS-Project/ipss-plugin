@@ -213,6 +213,8 @@ import org.interpss.dstab.mach.Wt3e1Data;
 import org.interpss.dstab.mach.Wt3e1Model;
 import org.interpss.dstab.mach.Wt3t1Data;
 import org.interpss.dstab.mach.Wt3t1Model;
+import org.interpss.dstab.mach.Wt3p1Data;
+import org.interpss.dstab.mach.Wt3p1Model;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12t1Model;
 import org.interpss.dstab.mach.Wt12a1Data;
@@ -450,6 +452,20 @@ public class DStabNetworkBuilder {
         }
         Wt3t1Model model = new Wt3t1Model(data);
         host.setDriveTrain(model);
+        return model;
+    }
+
+    /** Attach WT3P1 to the Type-3 mechanical and electrical controls. */
+    public Wt3p1Model addWt3p1(String busId, String genId, Wt3p1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt3GeneratorModel host)
+                || host.getDriveTrain() == null) {
+            log.warn("WT3T1 not found for WT3P1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt3p1Model model = new Wt3p1Model(data);
+        host.getDriveTrain().setPitchController(model, host.getElectricalController());
         return model;
     }
 
