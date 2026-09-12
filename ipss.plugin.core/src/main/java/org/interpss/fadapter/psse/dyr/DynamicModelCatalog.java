@@ -17,6 +17,7 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MA
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SWITCHED_SHUNT;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.UNDER_EXCITATION_LIMITER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.OVER_EXCITATION_LIMITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.LOADABLE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.PARTIAL;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.UNSUPPORTED;
@@ -348,6 +349,10 @@ public final class DynamicModelCatalog {
             descriptor("UEL1", Set.of(), UNDER_EXCITATION_LIMITER, 15, LOADABLE,
                     "org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter",
                     "Under%20Excitation%20Limiter%20UEL1.htm"),
+            descriptorWithVariants("OEL2C", Set.of("OEL2CU1"), OVER_EXCITATION_LIMITER,
+                    43, new int[]{49}, LOADABLE,
+                    "org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter",
+                    "Over%20Excitation%20Limiter%20OEL2C.htm"),
             descriptor("EXDC2", Set.of(), EXCITER, 16, LOADABLE,
                     "org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter",
                     "Exciter%20EXDC2_PTI.htm"),
