@@ -14,3 +14,6 @@
 /ipss.test.plugin.core/src/test/python/psse_wt3g1_probe.py text eol=lf
 /ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_wt3g1_psse36.dyr text eol=lf
 /ipss.test.plugin.core/testData/reference/psse/smib-wt3g1/* text eol=lf
+/ipss.test.plugin.core/src/test/python/psse_wt3e1_probe.py text eol=lf
+/ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_wt3e1_psse36.dyr text eol=lf
+/ipss.test.plugin.core/testData/reference/psse/smib-wt3e1/* text eol=lf
