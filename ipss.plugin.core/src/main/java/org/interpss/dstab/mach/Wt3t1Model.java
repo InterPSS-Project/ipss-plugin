@@ -21,6 +21,8 @@ public final class Wt3t1Model implements ICMLStateProvider {
     private State oldState;
     private Derivative predictor;
     private boolean initialized;
+    private Wt3p1Model pitchController;
+    private Wt3e1Model electricalController;
 
     public Wt3t1Model(Wt3t1Data data) { this.data = data; }
 
@@ -50,12 +52,24 @@ public final class Wt3t1Model implements ICMLStateProvider {
         aerodynamicPower = initialAerodynamicPower;
         state = new State(shaftAngle, generatorSpeed, generatorSpeed, 0.0);
         initialized = true;
+        if (pitchController != null) {
+            pitchController.initialize(initialPitch, generatorSpeed - 1.0,
+                    electricalController == null ? electricalPower
+                            : electricalController.getPowerOrder());
+        }
     }
 
     public void step(double dt, double electricalPower, int flag) {
         if (!initialized || dt <= 0.0 || !finite(dt, electricalPower)
                 || (flag != 0 && flag != 1)) return;
         updateAerodynamicPower();
+        if (pitchController != null) {
+            pitchController.step(dt, state.generatorSpeed - 1.0,
+                    electricalController == null ? state.generatorSpeed - 1.0
+                            : electricalController.getSpeedReferenceState(),
+                    electricalController == null ? electricalPower
+                            : electricalController.getPowerOrder(), flag);
+        }
         if (flag == 0) {
             oldState = state;
             predictor = derivatives(state, electricalPower);
@@ -66,6 +80,7 @@ public final class Wt3t1Model implements ICMLStateProvider {
             oldState = null;
             predictor = null;
         }
+        if (pitchController != null) pitch = pitchController.getPitch();
         if (!finite(state.shaftAngle, state.turbineSpeed,
                 state.generatorSpeed, state.generatorAngle)) {
             throw new IllegalStateException("WT3T1 produced a non-finite state");
@@ -118,6 +133,9 @@ public final class Wt3t1Model implements ICMLStateProvider {
         values.put("Turbine rotor speed deviation", state.turbineSpeed - 1.0);
         values.put("Generator speed deviation", state.generatorSpeed - 1.0);
         values.put("Generator rotor angle deviation", state.generatorAngle);
+        if (pitchController != null) {
+            values.putAll(pitchController.getNamedStates());
+        }
         return Map.copyOf(values);
     }
 
@@ -128,6 +146,11 @@ public final class Wt3t1Model implements ICMLStateProvider {
     public double getGeneratorAngleDeviation() { return state.generatorAngle; }
     public double getAerodynamicPower() { return aerodynamicPower; }
     public double getInitialPitch() { return initialPitch; }
+    public Wt3p1Model getPitchController() { return pitchController; }
+    public void setPitchController(Wt3p1Model value, Wt3e1Model electrical) {
+        pitchController = value;
+        electricalController = electrical;
+    }
     public void setPitch(double value) {
         if (!Double.isFinite(value)) throw new IllegalArgumentException("pitch must be finite");
         pitch = value;
