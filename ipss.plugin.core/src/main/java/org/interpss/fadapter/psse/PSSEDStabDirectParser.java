@@ -59,6 +59,7 @@ import org.interpss.dstab.mach.Gewt2mu1Data;
 import org.interpss.dstab.mach.Gewtaru1Data;
 import org.interpss.dstab.mach.Gewtgdu1Data;
 import org.interpss.dstab.mach.Gewtptu1Data;
+import org.interpss.dstab.mach.Reaxbu1Data;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt4g1Data;
 import org.interpss.dstab.mach.Wt4e1Data;
@@ -450,6 +451,8 @@ public class PSSEDStabDirectParser {
                 return procGewtgdu1(busId, genId, fields);
             case "GEWTPTU1":
                 return procGewtptu1(busId, genId, fields);
+            case "REAX3BU1":
+                return procReax3bu1(busId, genId, fields);
             case "WT3G2":
                 return procWt3g2(busId, genId, fields);
             case "WT4G1":
@@ -3513,6 +3516,20 @@ public class PSSEDStabDirectParser {
                 getDouble(f,15,0), getDouble(f,16,0), getDouble(f,17,0),
                 getDouble(f,18,0), getDouble(f,19,0), getDouble(f,20,0),
                 getDouble(f,21,0))) != null;
+    }
+
+    // Native wrapper: 107 0 1 7 2 4, one plant-bus ICON, then seven CONs.
+    private boolean procReax3bu1(String busId, String genId, String[] f) {
+        if (f.length != 18 || !"USRMDL".equalsIgnoreCase(f[1])
+                || getInt(f,4,-1)!=107 || getInt(f,5,-1)!=0
+                || getInt(f,6,-1)!=1 || getInt(f,7,-1)!=7
+                || getInt(f,8,-1)!=2 || getInt(f,9,-1)!=4) {
+            log.warn("Invalid REAX3BU1 allocation at bus {}", busId); return false;
+        }
+        return builder.addReax3bu1(busId,genId,new Reaxbu1Data(getInt(f,10,0),
+                getDouble(f,11,0),getDouble(f,12,0),getDouble(f,13,0),
+                getDouble(f,14,0),getDouble(f,15,0),getDouble(f,16,0),
+                getDouble(f,17,0)))!=null;
     }
 
     // REECD1 flat form, or the native REECDU1 wrapper with six ICONs,
