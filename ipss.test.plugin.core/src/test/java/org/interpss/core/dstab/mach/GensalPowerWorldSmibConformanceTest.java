@@ -22,7 +22,6 @@ import com.interpss.dstab.mach.SalientPoleMachine;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 
 /** Full-solver GENSAL comparison against the checked-in PowerWorld reference. */
-@org.junit.jupiter.api.Tag("private-reference")
 public class GensalPowerWorldSmibConformanceTest {
     private static final double STEP = 1.0 / 240.0;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
