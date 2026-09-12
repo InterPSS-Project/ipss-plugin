@@ -73,4 +73,14 @@ public class PsseDyrRecordReaderTest {
         assertEquals(13, record.parameterCount());
         assertEquals(504, record.intParameter(0));
     }
+
+    @Test
+    void recognizesIdlessWt12a1bWrapper() throws Exception {
+        PsseDyrRecord record = PsseDyrRecordReader.read(new StringReader(
+                "3 'USRMDL' 'WT12A1U_B' 105 0 1 14 3 2 0 .02 3 -2 .3 .2 .6 .2 .2 .5 .1 .8 .05 .95 .03 /"),
+                "synthetic.dyr").get(0);
+        assertEquals("WT12A1B", record.canonicalModelName());
+        assertEquals("*", record.deviceId());
+        assertEquals(21, record.parameterCount());
+    }
 }

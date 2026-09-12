@@ -21,7 +21,7 @@ public final class Wt12t1Model implements ICMLStateProvider {
     private State oldState;
     private Derivative oldDerivative;
     private boolean initialized;
-    private Wt12a1Model aerodynamicController;
+    private Wt12AerodynamicController aerodynamicController;
 
     public Wt12t1Model(Wt12t1Data data) { this.data = data; }
 
@@ -67,21 +67,30 @@ public final class Wt12t1Model implements ICMLStateProvider {
         requireFinite();
     }
 
-    public Wt12a1Model getAerodynamicController() { return aerodynamicController; }
-    public void setAerodynamicController(Wt12a1Model model) { aerodynamicController = model; }
+    public Wt12AerodynamicController getAerodynamicController() { return aerodynamicController; }
+    public void setAerodynamicController(Wt12AerodynamicController model) { aerodynamicController = model; }
 
     public void stepCoupled(double dt, double electricalPower, int flag) {
+        stepCoupled(dt, electricalPower, 1.0, flag);
+    }
+
+    public void stepCoupled(double dt, double electricalPower, double terminalVoltage, int flag) {
         if (aerodynamicController != null) {
-            aerodynamicController.step(dt, electricalPower, turbineSpeed - 1.0, flag);
+            aerodynamicController.step(dt, electricalPower, turbineSpeed - 1.0,
+                    terminalVoltage, flag);
             setAerodynamicPower(aerodynamicController.getOutput());
         }
         step(dt, electricalPower, flag);
     }
 
     public void initializeAerodynamicController(double electricalPower) {
+        initializeAerodynamicController(electricalPower, 1.0);
+    }
+
+    public void initializeAerodynamicController(double electricalPower, double terminalVoltage) {
         if (aerodynamicController != null) {
             aerodynamicController.initialize(electricalPower, turbineSpeed - 1.0,
-                    aerodynamicPower);
+                    aerodynamicPower, terminalVoltage);
         }
     }
 

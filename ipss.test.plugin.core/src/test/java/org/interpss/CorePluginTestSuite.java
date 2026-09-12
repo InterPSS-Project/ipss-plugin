@@ -139,6 +139,7 @@ import org.interpss.core.adapter.builder.dstab.PsseWt3e1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Gewtecu1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12t1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12a1ModelTest;
+import org.interpss.core.adapter.builder.dstab.PsseWt12a1bModelTest;
 import org.interpss.dstab.renewable.RenewableControlIntegrationTest;
 import org.interpss.core.dstab.RenewableAggregateQvModeTest;
 import org.interpss.core.dstab.Reecc1NativeConformanceTest;
@@ -803,6 +804,7 @@ import org.junit.platform.suite.api.Suite;
 	Gewtecu1ModelTest.class,
 	PsseWt12t1ModelTest.class,
 	PsseWt12a1ModelTest.class,
+	PsseWt12a1bModelTest.class,
 	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,
 	Reecc1NativeConformanceTest.class,

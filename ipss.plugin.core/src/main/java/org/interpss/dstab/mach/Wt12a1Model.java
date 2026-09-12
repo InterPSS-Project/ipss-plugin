@@ -3,10 +3,8 @@ package org.interpss.dstab.mach;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import com.interpss.dstab.controller.cml.ICMLStateProvider;
-
 /** PSS/E WT12A1 pseudo-governor for Type-1/2 wind generators. */
-public final class Wt12a1Model implements ICMLStateProvider {
+public final class Wt12a1Model implements Wt12AerodynamicController {
     private final Wt12a1Data data;
     private double speedReference;
     private double powerReference;
@@ -28,6 +26,12 @@ public final class Wt12a1Model implements ICMLStateProvider {
         initialized = true;
     }
 
+    @Override
+    public void initialize(double electricalPower, double turbineSpeedDeviation,
+            double aerodynamicPower, double terminalVoltage) {
+        initialize(electricalPower, turbineSpeedDeviation, aerodynamicPower);
+    }
+
     public void step(double dt, double electricalPower, double turbineSpeedDeviation, int flag) {
         if (!initialized) throw new IllegalStateException("WT12A1 is not initialized");
         if (flag != 0 && flag != 1) throw new IllegalArgumentException("flag must be 0 or 1");
@@ -42,6 +46,12 @@ public final class Wt12a1Model implements ICMLStateProvider {
             oldState = null;
             oldDerivative = null;
         }
+    }
+
+    @Override
+    public void step(double dt, double electricalPower, double turbineSpeedDeviation,
+            double terminalVoltage, int flag) {
+        step(dt, electricalPower, turbineSpeedDeviation, flag);
     }
 
     private Derivative derivatives(State state, double electricalPower,
