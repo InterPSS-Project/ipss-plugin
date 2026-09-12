@@ -48,6 +48,7 @@ import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt3e1Data;
 import org.interpss.dstab.mach.Wt3t1Data;
+import org.interpss.dstab.mach.Wt3p1Data;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12a1Data;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
@@ -392,6 +393,8 @@ public class PSSEDStabDirectParser {
                 return procWt3e1(busId, genId, fields);
             case "WT3T1":
                 return procWt3t1(busId, genId, fields);
+            case "WT3P1":
+                return procWt3p1(busId, genId, fields);
             case "WT12T1":
                 return procWt12t1(busId, genId, fields);
             case "WT12A1":
@@ -2789,6 +2792,21 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 5, 0.0), getDouble(f, 6, 0.0),
                 getDouble(f, 7, 0.0), getDouble(f, 8, 0.0),
                 getDouble(f, 9, 0.0), getDouble(f, 10, 0.0))) != null;
+    }
+
+    // Published schema: IBUS 'WT3P1' ID, then nine CONs.
+    private boolean procWt3p1(String busId, String genId, String[] f) {
+        if (f.length != 12) {
+            log.warn("Invalid WT3P1 record at bus {}: expected 12 fields, found {}",
+                    busId, f.length);
+            return false;
+        }
+        return builder.addWt3p1(busId, genId, new Wt3p1Data(
+                getDouble(f, 3, 0.0), getDouble(f, 4, 0.0),
+                getDouble(f, 5, 0.0), getDouble(f, 6, 0.0),
+                getDouble(f, 7, 0.0), getDouble(f, 8, 0.0),
+                getDouble(f, 9, 0.0), getDouble(f, 10, 0.0),
+                getDouble(f, 11, 0.0))) != null;
     }
 
     // PSS/E 36.7: IBUS 'WT12T1' ID H DAMP Htfrac Freq1 Dshaft
