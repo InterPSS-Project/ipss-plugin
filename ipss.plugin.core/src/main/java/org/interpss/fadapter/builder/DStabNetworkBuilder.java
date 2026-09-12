@@ -141,6 +141,8 @@ import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
 import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
 import org.interpss.dstab.control.gov.psse.wpidhy.PsseWpidhydGovernor;
+import org.interpss.dstab.control.gov.wecc.wshygp.WshygpGovernor;
+import org.interpss.dstab.control.gov.wecc.wshygp.WshygpGovernorData;
 import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernor;
 import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernorData;
 import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernor;
@@ -3058,6 +3060,24 @@ public class DStabNetworkBuilder {
         gov.getData().setTrate(trate);
         if (!gov.validateParameters()) {
             log.warn("Invalid WPIDHYD parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** Attach the WSHYGP compatibility hydro governor. */
+    public WshygpGovernor addGovWshygp(String busId, String genId, double[] constants) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null || constants == null || constants.length != 30) {
+            log.warn("Machine or WSHYGP constants unavailable: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        WshygpGovernor gov = new WshygpGovernor(mach.getId() + "_Gov", "WSHYGP", "WECC");
+        gov.setMachine(mach);
+        WshygpGovernorData data = gov.getData();
+        for (int index = 0; index < constants.length; index++) data.set(index, constants[index]);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid WSHYGP parameters at {} {}", busId, genId);
             return null;
         }
         return gov;
