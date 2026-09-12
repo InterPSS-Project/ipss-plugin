@@ -55,6 +55,7 @@ import org.interpss.dstab.mach.Wt2e1Data;
 import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Gewtgcu1Data;
 import org.interpss.dstab.mach.Gewtecu1Data;
+import org.interpss.dstab.mach.Gewt2mu1Data;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt4g1Data;
 import org.interpss.dstab.mach.Wt4e1Data;
@@ -438,6 +439,8 @@ public class PSSEDStabDirectParser {
                 return procGewtgcu1(busId, genId, fields);
             case "GEWTECU1":
                 return procGewtecu1(busId, genId, fields);
+            case "GEWT2MU1":
+                return procGewt2mu1(busId, genId, fields);
             case "WT3G2":
                 return procWt3g2(busId, genId, fields);
             case "WT4G1":
@@ -3415,6 +3418,22 @@ public class PSSEDStabDirectParser {
                 getDouble(f, offset + 47, 0), getDouble(f, offset + 48, 0),
                 getDouble(f, offset + 49, 0));
         return builder.addReecc1(busId, genId, data) != null;
+    }
+
+    // Native wrapper: 103 0 1 5 4 3, one ICON, then five CONs.
+    private boolean procGewt2mu1(String busId, String genId, String[] f) {
+        if (f.length != 16 || !"USRMDL".equalsIgnoreCase(f[1])
+                || getInt(f, 4, -1) != 103 || getInt(f, 5, -1) != 0
+                || getInt(f, 6, -1) != 1 || getInt(f, 7, -1) != 5
+                || getInt(f, 8, -1) != 4 || getInt(f, 9, -1) != 3
+                || getInt(f, 10, -1) != 0) {
+            log.warn("Invalid GEWT2MU1 allocation at bus {}", busId);
+            return false;
+        }
+        return builder.addGewt2mu1(busId, genId, new Gewt2mu1Data(
+                getDouble(f, 11, 0.0), getDouble(f, 12, 0.0),
+                getDouble(f, 13, 0.0), getDouble(f, 14, 0.0),
+                getDouble(f, 15, 0.0))) != null;
     }
 
     // REECD1 flat form, or the native REECDU1 wrapper with six ICONs,
