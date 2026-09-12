@@ -35,6 +35,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     private double deltaQ;
     private State oldState;
     private Derivative predictor;
+    private Gewtecu1Model electricalController;
     private boolean initialized;
 
     public Gewtgcu1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
@@ -64,6 +65,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         reactiveCommand = reactiveState;
         filteredVoltage = compensatedVoltage(voltage, reactiveState);
         initialized = true;
+        if (electricalController != null && !electricalController.initialize()) return false;
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(reactiveState) && finite(filteredVoltage);
     }
@@ -72,6 +74,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0
                 || (flag != 0 && flag != 1)) return false;
+        if (electricalController != null && !electricalController.step(dt, flag)) return false;
         State current = state();
         Derivative derivative = derivatives(current);
         if (flag == 0) {
@@ -253,6 +256,10 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     public double getReactiveState() { return reactiveState; }
     public double getFilteredVoltageState() { return filteredVoltage; }
     public double getDeltaQ() { return deltaQ; }
+    public double getDeviceBaseMva() { return deviceBaseMva; }
+    public double getAggregateRatedMw() { return data.aggregateRatedMw(); }
+    public Gewtecu1Model getElectricalController() { return electricalController; }
+    public void setElectricalController(Gewtecu1Model value) { electricalController = value; }
 
     private record State(double ip, double reactive, double filteredVoltage) { }
     private record Derivative(double ip, double reactive, double filteredVoltage) {
