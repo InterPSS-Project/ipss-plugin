@@ -453,6 +453,8 @@ public class PSSEDStabDirectParser {
                 return procGewtptu1(busId, genId, fields);
             case "REAX3BU1":
                 return procReax3bu1(busId, genId, fields);
+            case "REAX4BU1":
+                return procReax4bu1(busId, genId, fields);
             case "WT3G2":
                 return procWt3g2(busId, genId, fields);
             case "WT4G1":
@@ -3527,6 +3529,19 @@ public class PSSEDStabDirectParser {
             log.warn("Invalid REAX3BU1 allocation at bus {}", busId); return false;
         }
         return builder.addReax3bu1(busId,genId,new Reaxbu1Data(getInt(f,10,0),
+                getDouble(f,11,0),getDouble(f,12,0),getDouble(f,13,0),
+                getDouble(f,14,0),getDouble(f,15,0),getDouble(f,16,0),
+                getDouble(f,17,0)))!=null;
+    }
+
+    private boolean procReax4bu1(String busId, String genId, String[] f) {
+        if (f.length != 18 || !"USRMDL".equalsIgnoreCase(f[1])
+                || getInt(f,4,-1)!=107 || getInt(f,5,-1)!=0
+                || getInt(f,6,-1)!=1 || getInt(f,7,-1)!=7
+                || getInt(f,8,-1)!=2 || getInt(f,9,-1)!=4) {
+            log.warn("Invalid REAX4BU1 allocation at bus {}", busId); return false;
+        }
+        return builder.addReax4bu1(busId,genId,new Reaxbu1Data(getInt(f,10,0),
                 getDouble(f,11,0),getDouble(f,12,0),getDouble(f,13,0),
                 getDouble(f,14,0),getDouble(f,15,0),getDouble(f,16,0),
                 getDouble(f,17,0)))!=null;
