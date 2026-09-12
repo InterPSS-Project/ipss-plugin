@@ -2,13 +2,13 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.interpss.IpssCorePlugin;
+import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
 import org.interpss.dstab.control.exc.psse.exac1a.Exac1aExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
@@ -25,7 +25,6 @@ import com.interpss.dstab.devent.DynamicSimuEventType;
  * ANDES has no EXAC1A; with KF=0 the source distinction is inactive, while the
  * focused nonzero-KF oracle verifies the EXAC1A-specific EFD feedback path.
  */
-@org.junit.jupiter.api.Tag("private-reference")
 public class Exac1aAndesSmibConformanceTest {
     private static final double STEP=.0001;
     private static final int OUTPUT_EVERY_STEPS=20;
@@ -93,7 +92,7 @@ public class Exac1aAndesSmibConformanceTest {
         return new Series(time,value);
     }
     private static List<double[]> readReference() throws Exception {
-        List<double[]> rows=new ArrayList<>();for(String line:Files.readAllLines(REFERENCE)){
+        List<double[]> rows=new ArrayList<>();for(String line:EmbeddedCsvTrajectoryValues.lines("exac1a-smib-line-trip.csv")){
             if(line.isBlank()||line.startsWith("#")||line.startsWith("time_s"))continue;
             String[] values=line.split(",");double[] row=new double[values.length];
             for(int i=0;i<values.length;i++)row[i]=Double.parseDouble(values[i]);rows.add(row);
