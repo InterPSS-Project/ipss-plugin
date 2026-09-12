@@ -222,6 +222,8 @@ import org.interpss.dstab.mach.Gewtgcu1Data;
 import org.interpss.dstab.mach.Gewtgcu1Model;
 import org.interpss.dstab.mach.Gewtecu1Data;
 import org.interpss.dstab.mach.Gewtecu1Model;
+import org.interpss.dstab.mach.Gewt2mu1Data;
+import org.interpss.dstab.mach.Gewt2mu1Model;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt4g1Data;
@@ -459,6 +461,19 @@ public class DStabNetworkBuilder {
         }
         Gewtecu1Model model = new Gewtecu1Model(data, host);
         host.setElectricalController(model);
+        return model;
+    }
+
+    /** Attach the GE two-mass shaft to its converter host. */
+    public Gewt2mu1Model addGewt2mu1(String busId, String genId, Gewt2mu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for GEWT2MU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Gewt2mu1Model model = new Gewt2mu1Model(data);
+        host.setDriveTrain(model);
         return model;
     }
 
