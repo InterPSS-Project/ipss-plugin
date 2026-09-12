@@ -36,6 +36,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     private State oldState;
     private Derivative predictor;
     private Gewtecu1Model electricalController;
+    private Gewt2mu1Model driveTrain;
     private boolean initialized;
 
     public Gewtgcu1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
@@ -65,7 +66,13 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         reactiveCommand = reactiveState;
         filteredVoltage = compensatedVoltage(voltage, reactiveState);
         initialized = true;
+        if (driveTrain != null) {
+            driveTrain.initialize(p, 1.0, bus.getNetwork().getFrequency());
+        }
         if (electricalController != null && !electricalController.initialize()) return false;
+        if (electricalController != null && driveTrain != null) {
+            electricalController.setRotorSpeed(driveTrain.getGeneratorSpeed());
+        }
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(reactiveState) && finite(filteredVoltage);
     }
@@ -74,7 +81,11 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0
                 || (flag != 0 && flag != 1)) return false;
-        if (electricalController != null && !electricalController.step(dt, flag)) return false;
+        if (electricalController != null) {
+            if (driveTrain != null) electricalController.setRotorSpeed(
+                    driveTrain.getGeneratorSpeed());
+            if (!electricalController.step(dt, flag)) return false;
+        }
         State current = state();
         Derivative derivative = derivatives(current);
         if (flag == 0) {
@@ -92,6 +103,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         }
         ipState = Math.min(ipState, activeCurrentLimit(filteredVoltage,
                 getDStabBus().getVoltageMag()));
+        if (driveTrain != null) driveTrain.step(dt, p, flag);
         return finite(ipState) && finite(reactiveState) && finite(filteredVoltage);
     }
 
@@ -224,6 +236,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         named.put(data.fullConverter() ? "Converter lag for Iqcmd" : "Converter lag for Eqcmd",
                 reactiveState);
         named.put("Voltage sensor for LVPL", filteredVoltage);
+        if (driveTrain != null) named.putAll(driveTrain.getNamedStates());
         return Map.copyOf(named);
     }
 
@@ -260,6 +273,8 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     public double getAggregateRatedMw() { return data.aggregateRatedMw(); }
     public Gewtecu1Model getElectricalController() { return electricalController; }
     public void setElectricalController(Gewtecu1Model value) { electricalController = value; }
+    public Gewt2mu1Model getDriveTrain() { return driveTrain; }
+    public void setDriveTrain(Gewt2mu1Model value) { driveTrain = value; }
 
     private record State(double ip, double reactive, double filteredVoltage) { }
     private record Derivative(double ip, double reactive, double filteredVoltage) {
