@@ -114,8 +114,11 @@ ST6CU1 now loads through its exact 39-token user-model wrapper with the publishe
 four-ICON, 25-CON, five-STATE, three-VAR ST6C allocation. The existing flat ST6C
 dialect remains backward compatible, and both forms pass the same independent
 boundary and five-state trajectory contract using public checked-in constants.
+PSS2CU1 now loads through its exact user-model allocation of six ICONs, 29 CONs,
+19 STATEs, and 14 VARs. It preserves the flat PSS2C form and uses the same
+published stabilizer equations, named states, and independent trajectory contract.
 One registered integrity test now scans all 137 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 567
+manifests, rejects absolute or repository-escaping paths, and verifies all 568
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -301,7 +304,7 @@ the plan's release checklist before interpreting any
 | PSS1A | STABILIZER |  | 14 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS1A.htm) |
 | PSS2A | STABILIZER |  | 23 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2A.htm) |
 | PSS2B | STABILIZER |  | 27 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2B.htm) |
-| PSS2C | STABILIZER |  | 35 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2C.htm) |
+| PSS2C | STABILIZER | PSS2CU1 | 35 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS2C.htm) |
 | PSS3B | STABILIZER |  | 21 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS3B.htm) |
 | PSS3C | STABILIZER |  | 26 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS3C.htm) |
 | PSS4B | STABILIZER |  | 75 | LOADABLE | `org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSS4B.htm) |
