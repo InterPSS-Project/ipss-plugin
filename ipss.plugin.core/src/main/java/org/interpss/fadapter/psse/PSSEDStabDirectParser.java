@@ -940,11 +940,39 @@ public class PSSEDStabDirectParser {
         return builder.addExcEsac8b(busId,genId,d)!=null;
     }
 
-    // IEEE 421.5-2016/PSS/E AC8C (31 values; SCL and Spdmlt are typed inputs).
+    // IEEE 421.5-2016/PSS/E AC8C flat interchange dialect (31 values; SCL and
+    // Spdmlt are typed inputs), or the native AC8CU1 USRMDL wrapper with five
+    // ICONs, 27 CONs, five STATEs, and three VARs.
     // IBUS 'AC8C' ID OEL UEL VOS SW1 TR KPR KIR KDR TDR VPIDMAX VPIDMIN
     // KA TA VRMAX VRMIN KC KD KE TE VFEMAX VEMIN E1 SE1 E2 SE2
     // KP KI XL THETAP KC1 VBMAX
     private boolean procExcAc8c(String busId,String genId,String[] f){
+        if("USRMDL".equalsIgnoreCase(f[1])){
+            if(f.length!=42||getInt(f,4,-1)!=2||getInt(f,5,-1)!=0
+                    ||getInt(f,6,-1)!=5||getInt(f,7,-1)!=27
+                    ||getInt(f,8,-1)!=5||getInt(f,9,-1)!=3){
+                log.warn("Invalid native AC8CU1 allocation at bus {}",busId);return false;
+            }
+            org.interpss.dstab.control.exc.psse.ac8c.Ac8cData d=
+                    new org.interpss.dstab.control.exc.psse.ac8c.Ac8cData();
+            d.setOelLocation(getInt(f,10,0));d.setUelLocation(getInt(f,11,0));
+            d.setSclLocation(getInt(f,12,0));d.setVosLocation(getInt(f,13,1));
+            d.setSw1(getInt(f,14,1));int c=15;
+            d.setTr(getDouble(f,c,0));d.setKpr(getDouble(f,c+1,0));d.setKir(getDouble(f,c+2,0));
+            d.setKdr(getDouble(f,c+3,0));d.setTdr(getDouble(f,c+4,0));
+            d.setVpidmax(getDouble(f,c+5,0));d.setVpidmin(getDouble(f,c+6,0));
+            d.setKa(getDouble(f,c+7,0));d.setTa(getDouble(f,c+8,0));
+            d.setVrmax(getDouble(f,c+9,0));d.setVrmin(getDouble(f,c+10,0));
+            d.setKc(getDouble(f,c+11,0));d.setKd(getDouble(f,c+12,0));
+            d.setKe(getDouble(f,c+13,0));d.setTe(getDouble(f,c+14,0));
+            d.setVfemax(getDouble(f,c+15,0));d.setVemin(getDouble(f,c+16,0));
+            d.setE1(getDouble(f,c+17,0));d.setSe1(getDouble(f,c+18,0));
+            d.setE2(getDouble(f,c+19,0));d.setSe2(getDouble(f,c+20,0));
+            d.setKp(getDouble(f,c+21,0));d.setKi(getDouble(f,c+22,0));
+            d.setXl(getDouble(f,c+23,0));d.setThetaP(getDouble(f,c+24,0));
+            d.setKc1(getDouble(f,c+25,0));d.setVbmax(getDouble(f,c+26,0));
+            return builder.addExcAc8c(busId,genId,d)!=null;
+        }
         if(f.length<34)return false;
         org.interpss.dstab.control.exc.psse.ac8c.Ac8cData d=
                 new org.interpss.dstab.control.exc.psse.ac8c.Ac8cData();

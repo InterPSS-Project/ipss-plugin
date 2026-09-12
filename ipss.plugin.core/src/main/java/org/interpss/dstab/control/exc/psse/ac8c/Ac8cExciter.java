@@ -2,6 +2,8 @@ package org.interpss.dstab.control.exc.psse.ac8c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -176,6 +178,15 @@ public final class Ac8cExciter extends AnnotateExciter implements IntegrationSte
     public double getSelectedSupply(){return algebraics(active,getMachine()).supply;}
     public double getExciterInput(){return algebraics(active,getMachine()).efe;}
     public double getDynamicFieldUpperLimit(){return fieldUpperLimit(active[VE],exciterIfd(getMachine()));}
+    @Override public Map<String,Double> getNamedStates(){
+        Map<String,Double> named=new LinkedHashMap<>();
+        named.put("Sensed Vt",active[VSENSE]);
+        named.put("PID Integrator",active[PID_INTEGRAL]);
+        named.put("PID Derivator",active[PID_DERIVATIVE_LAG]);
+        named.put("VR",active[VR]);
+        named.put("VE",active[VE]);
+        return Map.copyOf(named);
+    }
     @Override public double getOutput(Machine machine){outputSignal=speedAdjusted(rawOutput(active,machine),machine);return outputSignal;}
     @Override public void setRefPoint(double value){reference=value;} @Override public double getRefPoint(){return reference;}
     private record Algebraic(double sensed,double field,double vfe,double pidError,double pidUnlimited,
