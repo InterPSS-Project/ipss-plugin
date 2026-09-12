@@ -216,6 +216,8 @@ import org.interpss.dstab.mach.Wt2e1Data;
 import org.interpss.dstab.mach.Wt2e1Model;
 import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Wt3g1Model;
+import org.interpss.dstab.mach.Gewtgcu1Data;
+import org.interpss.dstab.mach.Gewtgcu1Model;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt4g1Data;
@@ -430,6 +432,17 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Wt3g1Model(gen, bus, genId, data);
+    }
+
+    /** Attach the published GE three-state wind generator/converter. */
+    public Gewtgcu1Model addGewtgcu1(String busId, String genId, Gewtgcu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for GEWTGCU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Gewtgcu1Model(gen, bus, genId, data);
     }
 
     /** Attach the native WT3G2 converter generator to an existing generator record. */
