@@ -24,6 +24,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Diagnostic REGCA1/REECA1/Type-3 trajectory comparison against PowerWorld. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Type3WindPowerWorldTrajectoryTest extends CorePluginTestSetup {
     private static final double STEP = 0.0005;
 

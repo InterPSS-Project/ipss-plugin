@@ -9,6 +9,7 @@ import java.nio.file.Path;
 
 import org.junit.jupiter.api.Test;
 
+@org.junit.jupiter.api.Tag("private-reference")
 public class PowerWorldCsvReferenceTest {
     private static final Path REFERENCE = Path.of(
             "testData", "reference", "powerworld", "smib-gensal", "powerworld.csv");

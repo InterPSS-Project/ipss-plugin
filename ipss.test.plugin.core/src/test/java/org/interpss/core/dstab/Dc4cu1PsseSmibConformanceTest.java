@@ -28,6 +28,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver contract for DC4CU1 against the equivalent published DC4C equation. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Dc4cu1PsseSmibConformanceTest {
     private static final double STEP=0.00025;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");

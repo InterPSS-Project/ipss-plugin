@@ -20,6 +20,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 /** Guards the portable paths and content hashes of every checked-in simulator artifact. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class ReferenceArtifactManifestIntegrityTest {
     private static final Set<String> CANONICAL_TEXT_SUFFIXES = Set.of(
             ".aux", ".csv", ".dyr", ".idv", ".json", ".log", ".raw", ".txt");

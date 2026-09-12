@@ -24,6 +24,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver GENROU + native PSS/E HYGOVR1 comparison against PowerWorld. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Hygovr1PowerWorldSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final double REFERENCE_STEP = 0.0005;

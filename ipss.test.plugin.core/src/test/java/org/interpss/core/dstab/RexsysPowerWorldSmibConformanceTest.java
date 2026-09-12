@@ -24,6 +24,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Direct full-solver native REXSYS comparison against PowerWorld 24. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class RexsysPowerWorldSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final double POWERWORLD_STEP = 0.0005;

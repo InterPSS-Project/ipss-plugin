@@ -14,7 +14,7 @@
     <artifactId>ipss.test.plugin.core</artifactId>
 
     <properties>
-        <test.excludedGroups>extended</test.excludedGroups>
+        <test.excludedGroups>extended,private-reference</test.excludedGroups>
     </properties>
 
     <dependencies>
@@ -98,6 +98,12 @@
     <profiles>
         <profile>
             <id>extended-tests</id>
+            <properties>
+                <test.excludedGroups>private-reference</test.excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>private-reference-tests</id>
             <properties>
                 <test.excludedGroups></test.excludedGroups>
             </properties>

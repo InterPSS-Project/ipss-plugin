@@ -26,6 +26,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Native PSS/E 36.7 full-solver trajectory contract for SVSMO1T2. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Svsmo1t2PsseConformanceTest {
     private static final double STEP = .0005;
     private static final Path RAW = Path.of("testData", "psse", "v35",

@@ -24,6 +24,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver GENROU + H6E comparison against the PowerWorld reference. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class H6ePowerWorldSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final double REFERENCE_STEP = 0.0005;

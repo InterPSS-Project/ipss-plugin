@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
 
+@org.junit.jupiter.api.Tag("private-reference")
 public class Perc1ModelTest {
     private static final Path DATA=Path.of("testData","adpter","psse","v33");
     @BeforeAll static void setup(){IpssCorePlugin.init();}

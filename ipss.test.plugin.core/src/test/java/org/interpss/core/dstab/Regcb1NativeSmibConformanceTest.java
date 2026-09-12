@@ -24,6 +24,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Full-solver trajectory contract against an independent native REGCB1 run. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Regcb1NativeSmibConformanceTest {
     private static final double STEP = .0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

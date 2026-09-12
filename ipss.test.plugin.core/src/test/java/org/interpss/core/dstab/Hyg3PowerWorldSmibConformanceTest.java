@@ -23,6 +23,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Full-solver GENROU + HYG3 comparison against the PowerWorld reference. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Hyg3PowerWorldSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final double REFERENCE_STEP = 0.0005;

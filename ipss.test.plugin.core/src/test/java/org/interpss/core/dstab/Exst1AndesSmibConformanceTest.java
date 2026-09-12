@@ -21,6 +21,7 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Trajectory comparison against the common non-limiter subset of ANDES 2.0.0 EXST1. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Exst1AndesSmibConformanceTest {
     private static final double STEP = .0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

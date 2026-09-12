@@ -26,6 +26,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Full-solver trajectory contract against the independent native WT3E1 run. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Wt3e1PsseSmibConformanceTest {
     private static final double STEP=.0005;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
