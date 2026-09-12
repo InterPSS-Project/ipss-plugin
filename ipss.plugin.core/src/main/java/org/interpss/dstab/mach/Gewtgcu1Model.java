@@ -39,6 +39,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     private Gewt2mu1Model driveTrain;
     private Gewtaru1Model aerodynamicModel;
     private Gewtgdu1Model windModel;
+    private Gewtptu1Model pitchController;
     private boolean initialized;
 
     public Gewtgcu1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
@@ -82,6 +83,14 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         if (electricalController != null && driveTrain != null) {
             electricalController.setRotorSpeed(driveTrain.getGeneratorSpeed());
         }
+        if (pitchController != null) {
+            double speed = driveTrain == null ? 1.0 : driveTrain.getGeneratorSpeed();
+            double initialPitch = aerodynamicModel == null ? 0.0
+                    : aerodynamicModel.getInitialPitch();
+            pitchController.initialize(initialPitch, speed);
+            if (aerodynamicModel != null) aerodynamicModel.setPitch(
+                    pitchController.getPitch());
+        }
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(reactiveState) && finite(filteredVoltage);
     }
@@ -114,6 +123,13 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
                 getDStabBus().getVoltageMag()));
         if (driveTrain != null) {
             if (aerodynamicModel != null) {
+                if (pitchController != null) {
+                    double powerOrder = electricalController == null ? p
+                            : electricalController.getPowerOrder();
+                    pitchController.step(dt, driveTrain.getGeneratorSpeed(),
+                            powerOrder, flag);
+                    aerodynamicModel.setPitch(pitchController.getPitch());
+                }
                 double speed = driveTrain.getTurbineSpeed();
                 if (windModel != null) {
                     windModel.step(dt, flag);
@@ -259,6 +275,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         if (driveTrain != null) named.putAll(driveTrain.getNamedStates());
         if (aerodynamicModel != null) named.putAll(aerodynamicModel.getNamedStates());
         if (windModel != null) named.putAll(windModel.getNamedStates());
+        if (pitchController != null) named.putAll(pitchController.getNamedStates());
         return Map.copyOf(named);
     }
 
@@ -301,6 +318,8 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     public void setAerodynamicModel(Gewtaru1Model value) { aerodynamicModel = value; }
     public Gewtgdu1Model getWindModel() { return windModel; }
     public void setWindModel(Gewtgdu1Model value) { windModel = value; }
+    public Gewtptu1Model getPitchController() { return pitchController; }
+    public void setPitchController(Gewtptu1Model value) { pitchController = value; }
 
     private record State(double ip, double reactive, double filteredVoltage) { }
     private record Derivative(double ip, double reactive, double filteredVoltage) {
