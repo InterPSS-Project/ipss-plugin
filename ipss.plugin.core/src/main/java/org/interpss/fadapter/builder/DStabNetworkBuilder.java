@@ -206,6 +206,9 @@ import org.interpss.dstab.mach.Wt2e1Data;
 import org.interpss.dstab.mach.Wt2e1Model;
 import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Wt3g1Model;
+import org.interpss.dstab.mach.Wt3g2Data;
+import org.interpss.dstab.mach.Wt3g2Model;
+import org.interpss.dstab.mach.Wt3GeneratorModel;
 import org.interpss.dstab.mach.Wt3e1Data;
 import org.interpss.dstab.mach.Wt3e1Model;
 import org.interpss.dstab.mach.Wt12t1Data;
@@ -411,16 +414,27 @@ public class DStabNetworkBuilder {
         return new Wt3g1Model(gen, bus, genId, data);
     }
 
+    /** Attach the native WT3G2 converter generator to an existing generator record. */
+    public Wt3g2Model addWt3g2(String busId, String genId, Wt3g2Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for WT3G2: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Wt3g2Model(gen, bus, genId, data);
+    }
+
     /** Attach WT3E1 to its WT3G1 converter host. */
     public Wt3e1Model addWt3e1(String busId, String genId, Wt3e1Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
-        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt3g1Model wt3g1)) {
-            log.warn("WT3G1 not found for WT3E1: bus={}, gen={}", busId, genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt3GeneratorModel wt3Generator)) {
+            log.warn("WT3 generator not found for WT3E1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Wt3e1Model model = new Wt3e1Model(data, wt3g1);
-        wt3g1.setElectricalController(model);
+        Wt3e1Model model = new Wt3e1Model(data, wt3Generator);
+        wt3Generator.setElectricalController(model);
         return model;
     }
 
