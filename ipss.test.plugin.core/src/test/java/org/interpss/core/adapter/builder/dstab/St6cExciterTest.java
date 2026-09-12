@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
+import com.interpss.common.exp.InterpssException;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.st6c.St6cData;
 import org.interpss.dstab.control.exc.psse.st6c.St6cExciter;
@@ -60,6 +61,23 @@ public class St6cExciterTest extends CorePluginTestSetup {
         while(matcher.find()){String record=matcher.group();assertEquals(32,
                 PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size());count++;}
         assertEquals(30,count);
+    }
+
+    @Test void parsesExactSt6cu1WrapperAndRejectsWrongAllocation(@TempDir Path dir)throws Exception{
+        String body=" 4 0 4 25 5 3 4 2 0 1 0 100 70 1 .05 999 -999 0 1.2 1.882 25 1.45 5.25 -3.5 .1 .1 5.25 -3.5 .02 1 0 0 0 0 99 /\n";
+        Path valid=dir.resolve("valid.dyr");Files.writeString(valid,"1 'USRMDL' '1' 'ST6CU1'"+body);
+        DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
+        PSSEDStabDirectParser parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+        parser.parseDynFile(valid.toString());
+        St6cExciter exciter=(St6cExciter)builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter();
+        assertNotNull(exciter);assertEquals(4,exciter.getData().getOel());assertEquals(99,exciter.getData().getVbmax(),TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+
+        Path invalid=dir.resolve("invalid.dyr");Files.writeString(invalid,"1 'USRMDL' '1' 'ST6CU1' 4 0 4 25 4 3"+body.substring(" 4 0 4 25 5 3".length()));
+        DStabNetworkBuilder rejected=DStabBuilderTestFixture.createWithMachine();
+        PSSEDStabDirectParser bad=new PSSEDStabDirectParser(rejected).setStrictImport(true);
+        assertThrows(InterpssException.class,()->bad.parseDynFile(invalid.toString()));
+        assertNull(rejected.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
     }
 
     @Test void fiveStatesMatchIndependentModifiedEulerOracle()throws Exception{

@@ -19,7 +19,8 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.control.exc.psse.st6c.St6cExciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -32,8 +33,9 @@ public class St6cPsseSmibConformanceTest {
     private static final Path REFERENCE = Path.of(
             "testData", "reference", "psse", "smib-genrou-st6c", "psse.csv");
 
-    @Test
-    void voltageReferencePulseMatchesPsseBoundaryAndFiveExciterStates() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings={"SMIB_v33_genrou_st6c_psse36.dyr","SMIB_v33_genrou_st6cu1.dyr"})
+    void voltageReferencePulseMatchesPsseBoundaryAndFiveExciterStates(String dyr) throws Exception {
         IpssCorePlugin.init();
         Path manifest = REFERENCE.resolveSibling("manifest.json");
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -43,7 +45,7 @@ public class St6cPsseSmibConformanceTest {
 
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_st6c_psse36.dyr").toString());
+                CASE.resolve(dyr).toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "ST6C SMIB load flow");
