@@ -3,7 +3,6 @@ package org.interpss.core.dstab;
 import org.junit.jupiter.api.Test;
 
 /** Native PSS/E ST5C common-profile comparison against PowerWorld ST5C. */
-@org.junit.jupiter.api.Tag("private-reference")
 public class St5cPowerWorldSmibConformanceTest {
     @Test void threeCycleFaultMatchesPowerWorldBoundaryMachineAndExciterStates()throws Exception{
         St5bPowerWorldSmibConformanceTest.assertConformance(
