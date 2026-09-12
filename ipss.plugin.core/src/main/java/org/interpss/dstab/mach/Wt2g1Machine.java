@@ -21,6 +21,7 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
 
     private final Wt2g1Data data;
     private final Wt2g1Solver solver = new Wt2g1Solver();
+    private Wt2e1Model rotorResistanceController;
     private Complex compensationY = Complex.ZERO;
 
     public Wt2g1Machine(Wt2g1Data data) {
@@ -31,8 +32,13 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
     public Wt2g1Data getWt2g1Data() { return data; }
     public double getSlip() { return 1.0 - getSpeed(); }
     public double getRotorResistance() { return solver.rotorResistance; }
+    public double getRotorControlVoltage() { return solver.rotorControlVoltage; }
     public double getElectricalTorque() { return solver.electricalTorque; }
     public double getCompensationSusceptance() { return compensationY.getImaginary(); }
+    public Wt2e1Model getRotorResistanceController() { return rotorResistanceController; }
+    public void setRotorResistanceController(Wt2e1Model model) {
+        rotorResistanceController = model;
+    }
 
     @Override
     public boolean checkData(DataCheckConfiguration config) {
@@ -71,6 +77,11 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
     public boolean nextStepMechanical(double dt, DynamicSimuMethod method,
             Network network, int flag) {
         solver.updateOutputs();
+        if (rotorResistanceController != null) {
+            rotorResistanceController.step(dt, getSpeed() - 1.0,
+                    solver.electricalTorque, flag);
+            solver.setRotorControlVoltage(rotorResistanceController.getOutput());
+        }
         return true;
     }
 
@@ -94,6 +105,7 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
         private Complex oldRotorFlux = Complex.ZERO;
         private Complex derivative = Complex.ZERO;
         private double rotorResistance;
+        private double rotorControlVoltage;
         private double electricalTorque;
         private double machineQ;
         private double internalState;
@@ -113,6 +125,8 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
 
             SteadyCircuit steady = steadyCircuit(getSlip(), voltage, rotorResistance);
             rotorFlux = steady.airGapFlux.subtract(steady.rotorCurrent.multiply(data.x1()));
+            rotorControlVoltage = (rotorResistance - data.rotorResistance())
+                    / Math.max(EPS, data.maximumRotorResistance() - data.rotorResistance());
             Complex actualGeneratorCurrent = getParentGen().getGen().divide(bus.getVoltage())
                     .conjugate().divide(getIMultiFactor());
             Complex rawCompensation = steady.machineCurrent.negate()
@@ -122,6 +136,10 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             setPm(requestedP);
             setEfd(0.0);
             updateOutputs();
+            if (rotorResistanceController != null) {
+                rotorResistanceController.initialize(getSpeed() - 1.0,
+                        electricalTorque, rotorControlVoltage);
+            }
             return true;
         }
 
@@ -148,6 +166,14 @@ public final class Wt2g1Machine extends DynamicMachineImpl implements ICMLStateP
             double omega0 = 2.0 * Math.PI * frequency;
             return point.rotorCurrent.multiply(rotorResistance)
                     .subtract(flux.multiply(Complex.I.multiply(getSlip()))).multiply(omega0);
+        }
+
+        private void setRotorControlVoltage(double value) {
+            rotorControlVoltage = value;
+            double resistance = data.rotorResistance() + Math.max(0.0, value)
+                    * (data.maximumRotorResistance() - data.rotorResistance());
+            rotorResistance = Math.max(data.rotorResistance(),
+                    Math.min(data.maximumRotorResistance(), resistance));
         }
 
         private CircuitPoint circuit(Complex voltage, Complex flux) {
