@@ -2155,21 +2155,28 @@ public class PSSEDStabDirectParser {
     //         VSI1MAX VSI1MIN VSI2MAX VSI2MIN VSTMAX VSTMIN T12 T13
     //         PSSActivation PSSDeactivation Xcomp Tcomp
     private boolean procPss2c(String busId, String genId, String[] f) {
+        int offset=3;
+        if("USRMDL".equalsIgnoreCase(f[1])){
+            if(f.length!=45||getInt(f,4,-1)!=3||getInt(f,5,-1)!=0
+                    ||getInt(f,6,-1)!=6||getInt(f,7,-1)!=29
+                    ||getInt(f,8,-1)!=19||getInt(f,9,-1)!=14){
+                log.warn("Invalid native PSS2CU1 allocation at bus {}",busId);return false;
+            }
+            offset=10;
+        } else if(f.length<38)return false;
         return builder.addPss2c(busId, genId,
-                getInt(f, 3, 0), getInt(f, 4, 0),
-                getInt(f, 5, 0), getInt(f, 6, 0),
-                getInt(f, 7, 0), getInt(f, 8, 0),
-                getDouble(f, 9, 0), getDouble(f, 10, 0), getDouble(f, 11, 0),
-                getDouble(f, 12, 0), getDouble(f, 13, 0), getDouble(f, 14, 0),
-                getDouble(f, 15, 0), getDouble(f, 16, 0),
-                getDouble(f, 17, 0), getDouble(f, 18, 0), getDouble(f, 19, 0),
-                getDouble(f, 20, 0), getDouble(f, 21, 0), getDouble(f, 22, 0),
-                getDouble(f, 23, 0), getDouble(f, 24, 0), getDouble(f, 25, 0),
-                getDouble(f, 26, 0), getDouble(f, 27, 0), getDouble(f, 28, 0),
-                getDouble(f, 29, 0), getDouble(f, 30, 0), getDouble(f, 31, 0),
-                getDouble(f, 32, 0), getDouble(f, 33, 0),
-                getDouble(f, 34, 0), getDouble(f, 35, 0),
-                0.0, getDouble(f, 36, 0), getDouble(f, 37, 0)) != null;
+                getInt(f,offset,0),getInt(f,offset+1,0),getInt(f,offset+2,0),getInt(f,offset+3,0),
+                getInt(f,offset+4,0),getInt(f,offset+5,0),
+                getDouble(f,offset+6,0),getDouble(f,offset+7,0),getDouble(f,offset+8,0),
+                getDouble(f,offset+9,0),getDouble(f,offset+10,0),getDouble(f,offset+11,0),
+                getDouble(f,offset+12,0),getDouble(f,offset+13,0),getDouble(f,offset+14,0),
+                getDouble(f,offset+15,0),getDouble(f,offset+16,0),getDouble(f,offset+17,0),
+                getDouble(f,offset+18,0),getDouble(f,offset+19,0),getDouble(f,offset+20,0),
+                getDouble(f,offset+21,0),getDouble(f,offset+22,0),getDouble(f,offset+23,0),
+                getDouble(f,offset+24,0),getDouble(f,offset+25,0),getDouble(f,offset+26,0),
+                getDouble(f,offset+27,0),getDouble(f,offset+28,0),getDouble(f,offset+29,0),
+                getDouble(f,offset+30,0),getDouble(f,offset+31,0),getDouble(f,offset+32,0),
+                0.0,getDouble(f,offset+33,0),getDouble(f,offset+34,0)) != null;
     }
 
     // PSS3B: IBUS 'PSS3B' ID ICS1 REMBUS1 ICS2 REMBUS2 Ks1 T1 Tw1 Ks2 T2 Tw2 Tw3
