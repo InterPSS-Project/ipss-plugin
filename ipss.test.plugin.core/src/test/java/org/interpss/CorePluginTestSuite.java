@@ -128,6 +128,7 @@ import org.interpss.core.adapter.builder.dstab.PsseCsvgn5ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseSvsmo1t2ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt1g1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12t1ModelTest;
+import org.interpss.core.adapter.builder.dstab.PsseWt12a1ModelTest;
 import org.interpss.dstab.renewable.RenewableControlIntegrationTest;
 import org.interpss.core.dstab.RenewableAggregateQvModeTest;
 import org.interpss.core.dstab.PsseDyrRepresentativeSelectorTest;
@@ -744,6 +745,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseSvsmo1t2ModelTest.class,
 	PsseWt1g1ModelTest.class,
 	PsseWt12t1ModelTest.class,
+	PsseWt12a1ModelTest.class,
 	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,
 	Type3WindAndesTrajectoryTest.class,

@@ -43,6 +43,7 @@ import org.interpss.dstab.mach.GentraData;
 import org.interpss.dstab.mach.IeeeVcData;
 import org.interpss.dstab.mach.Wt1g1Data;
 import org.interpss.dstab.mach.Wt12t1Data;
+import org.interpss.dstab.mach.Wt12a1Data;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
 import org.interpss.dstab.relay.GeneratorTripRelayData;
 import org.interpss.dstab.relay.Lds3blRelayModel;
@@ -375,6 +376,8 @@ public class PSSEDStabDirectParser {
                 return procWt1g1(busId, genId, fields);
             case "WT12T1":
                 return procWt12t1(busId, genId, fields);
+            case "WT12A1":
+                return procWt12a1(busId, genId, fields);
             case "GENSAL":
             case "GENSAE":
                 return procGensal(busId, genId, fields);
@@ -2686,6 +2689,15 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 5, 0.0), getDouble(f, 6, 0.0),
                 getDouble(f, 7, 0.0));
         return builder.addWt12t1(busId, genId, data) != null;
+    }
+
+    // PSS/E 36.7: IBUS 'WT12A1' ID Droop Kp Ti T1 T2 Tp Limmax Limmin
+    private boolean procWt12a1(String busId, String genId, String[] f) {
+        if (f.length != 11) return false;
+        return builder.addWt12a1(busId, genId, new Wt12a1Data(
+                getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
+                getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
+                getDouble(f, 9, 0), getDouble(f, 10, 0))) != null;
     }
 
     // PSS/E 36.7: IBUS 'GENTRA' ID T'do H D Xd Xq X'd S(1.0) S(1.2) AF
