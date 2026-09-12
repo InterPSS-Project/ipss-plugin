@@ -20,6 +20,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
@@ -35,8 +37,9 @@ public class Pss2cPsseSmibConformanceTest {
     private static final Path REFERENCE = Path.of(
             "testData", "reference", "psse", "smib-genrou-esst1a-pss2c", "psse.csv");
 
-    @Test
-    void threeCycleFaultMatchesPsseBoundaryMachineAndPssStates() throws Exception {
+    @ParameterizedTest
+    @ValueSource(strings={"SMIB_v33_genrou_esst1a_pss2c.dyr","SMIB_v33_genrou_esst1a_pss2cu1.dyr"})
+    void threeCycleFaultMatchesPsseBoundaryMachineAndPssStates(String dyr) throws Exception {
         IpssCorePlugin.init();
         Path manifest = REFERENCE.resolveSibling("manifest.json");
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
@@ -46,7 +49,7 @@ public class Pss2cPsseSmibConformanceTest {
 
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_esst1a_pss2c.dyr").toString());
+                CASE.resolve(dyr).toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "PSS2C SMIB load flow");
