@@ -169,6 +169,8 @@ import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerDa
 import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
+import org.interpss.dstab.renewable.Reecc1Data;
+import org.interpss.dstab.renewable.Reecc1Model;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Dera1Data;
@@ -3289,6 +3291,17 @@ public class DStabNetworkBuilder {
         }
         Reecb1Model controller = new Reecb1Model(data, converter);
         converter.setElectricalController(controller);
+        return controller;
+    }
+
+    public Reecc1Model addReecc1(String busId, String genId, Reecc1Data data) {
+        Regca1Model converter = findRegca1(busId, genId);
+        if (converter == null) {
+            log.warn("REGCA1 not found for REECC1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reecc1Model controller = new Reecc1Model(data, converter);
+        converter.setActiveElectricalController(controller);
         return controller;
     }
 
