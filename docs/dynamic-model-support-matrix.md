@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `61/61` native reference probes were cold-regenerated with the installed
+All `62/62` native reference probes were cold-regenerated with the installed
 Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. WT3G1's nonphysical sub-`1e-20 pu` speed residue is normalized
@@ -140,8 +140,14 @@ five-STATE, and eight-VAR allocation. The behind-impedance converter exposes all
 five published coordinates and applies the published output-current circle during
 inner-voltage recovery. Its synthetic public fixture and independently generated
 fault artifact use repository-relative paths and do not copy supplied fleet parameters.
-One registered integrity test now scans all 141 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 584
+REECC1 and its REECCU1 wrapper now load through the exact five-ICON, 45-CON,
+seven-STATE, and six-VAR allocation. The battery electrical controller exposes
+all seven published coordinates, including energy output, and implements
+bidirectional current, SOC charge/discharge blocking, voltage-dependent current
+limits, current priority, and auxiliary active-power input. Its public constants
+are synthetic and its native artifact uses only repository-relative paths.
+One registered integrity test now scans all 142 checked-in native and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 588
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -344,6 +350,7 @@ the plan's release checklist before interpreting any
 | OEL2C | OVER_EXCITATION_LIMITER | OEL2CU1 | 43 | LOADABLE | `org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Over%20Excitation%20Limiter%20OEL2C.htm) |
 | REECA1 | ELECTRICAL_CONTROLLER | REECAU1 | 51 | LOADABLE | `org.interpss.dstab.renewable.Reeca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_A.htm) |
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |
+| REECC1 | ELECTRICAL_CONTROLLER | REECCU1 | 50 | LOADABLE | `org.interpss.dstab.renewable.Reecc1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_C.htm) |
 | WT2E1 | ELECTRICAL_CONTROLLER |  | 6 | LOADABLE | `org.interpss.dstab.mach.Wt2e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT2E1.htm) |
 | WT3E1 | ELECTRICAL_CONTROLLER |  | 37 | LOADABLE | `org.interpss.dstab.mach.Wt3e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT3E1.htm) |
 | WT4E1 | ELECTRICAL_CONTROLLER |  | 27 | LOADABLE | `org.interpss.dstab.mach.Wt4e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT4E1.htm) |
