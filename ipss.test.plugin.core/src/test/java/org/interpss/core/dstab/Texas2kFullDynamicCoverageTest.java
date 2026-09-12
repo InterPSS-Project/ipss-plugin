@@ -224,6 +224,10 @@ public class Texas2kFullDynamicCoverageTest {
                     .filter(device -> device.getName().equals(entry.canonicalModelName())
                             && device.getId().equals(entry.deviceId()))
                     .findFirst().orElse(null);
+            case OVER_EXCITATION_LIMITER -> bus.getDynamicBusDeviceList().stream()
+                    .filter(device -> device.getName().equals(entry.canonicalModelName())
+                            && device.getId().equals(entry.deviceId()))
+                    .findFirst().orElse(null);
             case CONVERTER_MACHINE -> generator.getDynamicGenDevice();
             case ELECTRICAL_CONTROLLER -> regca(generator) == null ? null
                     : regca(generator).getActiveElectricalController();
