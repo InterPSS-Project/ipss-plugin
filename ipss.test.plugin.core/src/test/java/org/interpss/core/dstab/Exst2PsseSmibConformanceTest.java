@@ -26,6 +26,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 
 /** Native PSS/E 36.7 full-solver trajectory contract for EXST2. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Exst2PsseSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

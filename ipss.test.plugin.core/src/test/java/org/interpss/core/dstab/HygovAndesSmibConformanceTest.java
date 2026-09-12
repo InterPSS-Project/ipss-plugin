@@ -21,6 +21,7 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** HYGOV common-equation-subset trajectory comparison against ANDES 2.0.0. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class HygovAndesSmibConformanceTest {
     private static final double STEP = .0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

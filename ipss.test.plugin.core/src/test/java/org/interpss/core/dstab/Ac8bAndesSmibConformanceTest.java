@@ -18,6 +18,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Trajectory comparison against ANDES 2.0.0 for GENROU plus AC8B. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Ac8bAndesSmibConformanceTest {
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
     private static final Path REFERENCE=Path.of("src","test","resources","reference","andes",

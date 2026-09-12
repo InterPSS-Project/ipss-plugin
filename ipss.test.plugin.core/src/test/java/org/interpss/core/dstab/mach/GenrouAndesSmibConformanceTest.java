@@ -18,6 +18,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Trajectory comparison against ANDES 2.0.0 for a public GENROU SMIB case. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class GenrouAndesSmibConformanceTest {
     private static final Path CASE = Path.of(
             "testData", "adpter", "psse", "v33", "SMIB");

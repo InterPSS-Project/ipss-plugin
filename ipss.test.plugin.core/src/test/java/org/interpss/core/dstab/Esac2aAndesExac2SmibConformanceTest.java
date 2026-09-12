@@ -21,6 +21,7 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Equation-equivalent trajectory comparison against native ANDES EXAC2. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Esac2aAndesExac2SmibConformanceTest {
     private static final double STEP=.0001;
     private static final int OUTPUT_EVERY_STEPS=20;

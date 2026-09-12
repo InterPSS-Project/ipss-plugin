@@ -30,6 +30,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.common.exp.InterpssException;
 import com.google.gson.JsonParser;
 
+@org.junit.jupiter.api.Tag("private-reference")
 public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     @TempDir
     Path tempDir;

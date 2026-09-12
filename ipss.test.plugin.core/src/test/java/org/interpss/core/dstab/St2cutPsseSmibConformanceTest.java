@@ -31,6 +31,7 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
 /** Native PSS/E 36.7 full-solver trajectory contract for ST2CUT. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class St2cutPsseSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
