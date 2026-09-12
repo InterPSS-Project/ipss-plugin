@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `41/41` native PSS/E reference probes were cold-regenerated with PSS/E
+All `42/42` native PSS/E reference probes were cold-regenerated with PSS/E
 Xplore 36.7.0/Python 3.13 on 2026-09-11. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. The reusable suite driver and all probe inputs use
@@ -82,14 +82,14 @@ machine/system-base susceptance conversion follow the PSS/E 36.7 diagram. All
 four native coordinates plus output Y use the common named-state API.
 Its 1,605-sample native artifact is reproducible at SHA-256
 `0e37c444d18b09be0c9312874fe1b6c5f7783a4a35d9b820c34054b14535c14a`,
-and all 41 registered PSS/E probes cold-regenerate without manifest drift.
+and all 42 registered PSS/E probes cold-regenerate without manifest drift.
 PIDGOV now has its exact one-ICON/20-CON PSS/E schema and reuses the published
 PIDGOV/PIDGOVD equation runtime with the D-only deadband and turbine-rating
 inputs fixed to their neutral values. Its seven native PSS/E state coordinates
 are available by canonical names while the established PowerWorld semantic
 names remain backward-compatible aliases.
-One registered integrity test now scans all 121 checked-in PSS/E and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 499
+One registered integrity test now scans all 122 checked-in PSS/E and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 503
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -283,6 +283,7 @@ the plan's release checklist before interpreting any
 | REECA1 | ELECTRICAL_CONTROLLER | REECAU1 | 51 | LOADABLE | `org.interpss.dstab.renewable.Reeca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_A.htm) |
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |
 | REPCA1 | PLANT_CONTROLLER | REPCAU1, REPCTA1, REPCTAU1 | 34 | LOADABLE | `org.interpss.dstab.renewable.Repca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Plant%20Controller%20REPC_A.htm) |
+| WT12T1 | DRIVE_TRAIN |  | 5 | LOADABLE | `org.interpss.dstab.mach.Wt12t1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WT12T1.htm) |
 | WTDTA1 | DRIVE_TRAIN | WTDAT1, WTDTAU1 | 5 | LOADABLE | `org.interpss.dstab.renewable.Wtdta1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WTDTA1.htm) |
 | WTARA1 | AERODYNAMIC_CONTROLLER | WTARAU1 | 2 | LOADABLE | `org.interpss.dstab.renewable.Wtara1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Aerodynamic%20Model%20WTGA_A.htm) |
 | WTPTA1 | PITCH_CONTROLLER | WTPTAU1 | 10 | LOADABLE | `org.interpss.dstab.renewable.Wtpta1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pitch%20Controller%20WTGPT_A.htm) |

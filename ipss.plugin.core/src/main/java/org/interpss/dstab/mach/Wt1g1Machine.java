@@ -21,6 +21,7 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
 
     private final Wt1g1Data data;
     private final Wt1g1Solver solver;
+    private Wt12t1Model driveTrain;
     private Complex compensationY = Complex.ZERO;
 
     public Wt1g1Machine(Wt1g1Data data) {
@@ -33,6 +34,8 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
     public double getSlip() { return 1.0 - getSpeed(); }
     public double getElectricalTorque() { return solver.electricalTorque; }
     public double getCompensationSusceptance() { return compensationY.getImaginary(); }
+    public Wt12t1Model getDriveTrain() { return driveTrain; }
+    public void setDriveTrain(Wt12t1Model driveTrain) { this.driveTrain = driveTrain; }
 
     @Override
     public boolean checkData(DataCheckConfiguration config) {
@@ -70,6 +73,10 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
     @Override
     public boolean nextStepMechanical(double dt, DynamicSimuMethod method,
             Network network, int flag) {
+        if (driveTrain != null) {
+            driveTrain.step(dt, getPe(), flag);
+            setDriveTrainSpeed(driveTrain.getGeneratorSpeed());
+        }
         solver.updateOutputs();
         return true;
     }
@@ -151,6 +158,9 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
             setPm(requestedP);
             setEfd(0.0);
             updateOutputs();
+            if (driveTrain != null) {
+                driveTrain.initialize(electricalTorque, getSpeed(), bus.getNetwork().getFrequency());
+            }
             return true;
         }
 

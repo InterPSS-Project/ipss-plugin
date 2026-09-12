@@ -29,6 +29,56 @@ public class Wt1g1PsseSmibConformanceTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
     private static final Path REFERENCE = Path.of("testData", "reference", "psse",
             "smib-wt1g1", "psse.csv");
+    private static final Path WT12_REFERENCE = Path.of("testData", "reference", "psse",
+            "smib-wt12t1", "psse.csv");
+
+    @Test
+    void twoMassDriveTrainMatchesNativePsseFaultTrajectory() throws Exception {
+        IpssCorePlugin.init();
+        var context = new PSSEMultiFileLoader().loadDStab(
+                CASE.resolve("SMIB_v33_wt1g1_psse36.raw").toString(),
+                CASE.resolve("SMIB_v33_wt12t1_psse36.dyr").toString());
+        var network = context.getDStabilityNet();
+        var algorithm = context.getDynSimuAlgorithm();
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(STEP);
+        algorithm.setTotalSimuTimeSec(1.0);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
+                "Bus1", network, SimpleFaultCode.GROUND_3P,
+                new Complex(0.0, 0.1), null, 0.05, 0.05), "WindFault");
+        assertTrue(algorithm.initialization());
+        Wt1g1Machine machine = (Wt1g1Machine) network.getMachine("Bus1-mach1");
+        List<double[]> actual = new ArrayList<>();
+        recordWt12(actual, algorithm.getSimuTime(), network, machine);
+        while (algorithm.getSimuTime() < 1.0 - STEP / 2.0) {
+            assertTrue(algorithm.solveDEqnStep(true));
+            recordWt12(actual, algorithm.getSimuTime(), network, machine);
+        }
+        Csv reference = read(WT12_REFERENCE);
+        String[] names = {"SHAFT_ANGLE", "TURBINE_SPEED_DEV", "GENERATOR_SPEED_DEV",
+                "GENERATOR_ANGLE_DEV", "PAERO", "TELEC", "V_BUS1", "V_BUS2",
+                "P_PU", "Q_PU", "SPEED_DEV"};
+        double[] maximum = new double[names.length];
+        for (double[] expected : reference.rows()) {
+            double time = expected[0];
+            if (time < -1.0e-9 || Math.abs(time - .05) < STEP
+                    || Math.abs(time - .10) < STEP) continue;
+            double[] row = interpolate(actual, time);
+            for (int i = 0; i < names.length; i++) {
+                maximum[i] = Math.max(maximum[i],
+                        Math.abs(row[i + 1] - value(expected, reference, names[i])));
+            }
+        }
+        System.out.println("WT12T1 PSS/E max errors: " + Arrays.toString(maximum));
+        double[] tolerance = {0.0051, 1.2e-4, 3.6e-4, 0.0052, 0.0011, 0.027,
+                0.0040, 0.0083, 0.027, 0.0031, 3.6e-4};
+        for (int i = 0; i < maximum.length; i++) {
+            assertTrue(maximum[i] <= tolerance[i], names[i] + " max error "
+                    + maximum[i] + " exceeds " + tolerance[i]);
+        }
+    }
 
     @Test
     void twoCageGeneratorMatchesNativePsseFaultTrajectory() throws Exception {
@@ -121,6 +171,19 @@ public class Wt1g1PsseSmibConformanceTest {
                 state.get("E''d"), state.get("E''q"),
                 ((Number) diagnostic.get("WT1G1 Q Compensation")).doubleValue(),
                 ((Number) diagnostic.get("WT1G1 Telec")).doubleValue()});
+    }
+
+    private static void recordWt12(List<double[]> rows, double time,
+            com.interpss.dstab.BaseDStabNetwork<?, ?> network, Wt1g1Machine machine) {
+        Complex voltage = network.getBus("Bus1").getVoltage();
+        Complex current = machine.getIgen().subtract(voltage.multiply(machine.getYgen()));
+        Complex power = voltage.multiply(current.conjugate());
+        var drive = machine.getDriveTrain();
+        rows.add(new double[] {time, drive.getShaftAngle(), drive.getTurbineSpeed() - 1.0,
+                drive.getGeneratorSpeed() - 1.0, drive.getGeneratorAngleDeviation(),
+                drive.getAerodynamicPower(), machine.getElectricalTorque(),
+                network.getBus("Bus1").getVoltageMag(), network.getBus("Bus2").getVoltageMag(),
+                power.getReal(), power.getImaginary(), machine.getSpeed() - 1.0});
     }
 
     private static Csv read(Path path) throws Exception {
