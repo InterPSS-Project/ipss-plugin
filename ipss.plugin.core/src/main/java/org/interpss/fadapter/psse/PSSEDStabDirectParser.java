@@ -657,6 +657,8 @@ public class PSSEDStabDirectParser {
                 return procGovWpidhyd(busId, genId, fields);
             case "WSHYGP":
                 return procGovWshygp(busId, genId, fields);
+            case "WSHYDD":
+                return procGovWshydd(busId, genId, fields);
             case "GASTWDD":
             case "GASTWDDU":
                 return procGovGastwdd(busId, genId, fields);
@@ -2637,6 +2639,15 @@ public class PSSEDStabDirectParser {
             constants[index] = getDouble(f, index + 3, 0.0);
         }
         return builder.addGovWshygp(busId, genId, constants) != null;
+    }
+
+    private boolean procGovWshydd(String busId, String genId, String[] f) {
+        if (f.length != 33) return false;
+        double[] constants = new double[30];
+        for (int index = 0; index < constants.length; index++) {
+            constants[index] = getDouble(f, index + 3, 0.0);
+        }
+        return builder.addGovWshydd(busId, genId, constants) != null;
     }
 
     // GASTWDD: Kdroop Kp Ki Kd Etd Tcd Trate T Max Min Ecr K3 A B C
