@@ -197,6 +197,8 @@ public final class DynamicModelCatalog {
                     "org.interpss.dstab.mach.Wt2e1Model", "Electrical%20Control%20WT2E1.htm"),
             descriptor("WT3G1", Set.of(), CONVERTER_MACHINE, 6, LOADABLE,
                     "org.interpss.dstab.mach.Wt3g1Model", "Generator%20WT3G1.htm"),
+            descriptor("GEWTGCU1", Set.of(), CONVERTER_MACHINE, 26, LOADABLE,
+                    "org.interpss.dstab.mach.Gewtgcu1Model", "Vendor_Specific_Models.pdf"),
             descriptor("WT3G2", Set.of(), CONVERTER_MACHINE, 14, LOADABLE,
                     "org.interpss.dstab.mach.Wt3g2Model", "Generator%20WT3G2.htm"),
             descriptor("WT4G1", Set.of(), CONVERTER_MACHINE, 9, LOADABLE,
