@@ -21,6 +21,7 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Trajectory and internal-state comparison against ANDES 2.0.0 IEEEG1. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Ieeeg1AndesSmibConformanceTest {
     private static final double STEP = .0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

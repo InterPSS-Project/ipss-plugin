@@ -398,9 +398,11 @@ import org.interpss.plugin.result.AclfResultDFrameAdapterTest;
 import org.interpss.core.adapter.psse.raw.aclf.PSSE_MTHVDC_Test;
 
 import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.ExcludeTags;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
+@ExcludeTags("private-reference")
 @SelectClasses({
 	// aclf
 	IEEE14_3WXfrTest.class,

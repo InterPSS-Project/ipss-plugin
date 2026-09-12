@@ -27,6 +27,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 
 /** Full-solver contract against an independent native GENQEJU trajectory. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class GenqejPsseSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

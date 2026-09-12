@@ -21,6 +21,7 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Full-stack trajectory comparison against native ANDES 2.0.0 ESAC5A. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Esac5aAndesSmibConformanceTest {
     private static final double STEP=.0005;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");

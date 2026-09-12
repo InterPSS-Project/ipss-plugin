@@ -29,6 +29,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 
 /** Native PSS/E 36.7 full-solver trajectory contract for IEEEVC. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class IeeeVcPsseSmibConformanceTest {
     private static final double STEP = 0.00025;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");

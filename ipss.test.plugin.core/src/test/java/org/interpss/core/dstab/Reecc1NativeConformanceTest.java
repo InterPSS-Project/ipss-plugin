@@ -25,6 +25,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Full-solver comparison against the independent native REECC1 trajectory. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Reecc1NativeConformanceTest {
     private static final double STEP = .0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33",

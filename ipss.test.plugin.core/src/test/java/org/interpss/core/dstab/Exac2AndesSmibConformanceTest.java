@@ -21,6 +21,7 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Full-stack trajectory comparison against native ANDES 2.0.0 EXAC2. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Exac2AndesSmibConformanceTest {
     private static final double STEP=.0001;
     private static final int OUTPUT_EVERY_STEPS=20;

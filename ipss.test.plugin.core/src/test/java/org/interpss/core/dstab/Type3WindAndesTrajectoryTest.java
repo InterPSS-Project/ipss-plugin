@@ -25,6 +25,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Public full-stack Type-3 trajectory comparison fixture shared with ANDES. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
     private static final double STEP = 1.0 / 240.0;
 

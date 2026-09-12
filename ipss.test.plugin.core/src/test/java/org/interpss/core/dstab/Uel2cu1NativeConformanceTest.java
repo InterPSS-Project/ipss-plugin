@@ -20,6 +20,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 
 /** Full-solver contract against an independently generated UEL2CU1 trajectory. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class Uel2cu1NativeConformanceTest {
     private static final double STEP=.00025;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");

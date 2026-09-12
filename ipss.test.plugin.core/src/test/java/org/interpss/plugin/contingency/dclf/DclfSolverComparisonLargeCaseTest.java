@@ -42,6 +42,7 @@ import com.interpss.monitor.definition.MonitoredBranchRecord;
 
 import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
+@org.junit.jupiter.api.Tag("private-reference")
 public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
     private static final double RESULT_TOLERANCE_MW = 1.0e-2;
 

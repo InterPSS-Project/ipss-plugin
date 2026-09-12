@@ -43,6 +43,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 
 /** Public reduced-network reproducer for an aggregate REGCA1/REECA1/REPCA1 Q/V mode. */
+@org.junit.jupiter.api.Tag("private-reference")
 public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     private static final double STEP = 1.0 / 240.0;
     private static final double CASE5_MODE_GROWTH = .8512333985675469;
