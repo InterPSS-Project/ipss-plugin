@@ -1,6 +1,8 @@
 package org.interpss.dstab.mach;
 
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.ComplexFunc;
@@ -13,6 +15,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.algo.impl.DynamicSimuAdapterImpl;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.controller.cml.ICMLMachineVoltageProvider;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.funcImpl.DStabFunction;
 import com.interpss.dstab.mach.MachineIfdBase;
 import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
@@ -27,7 +30,7 @@ import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
  * network admittance.</p>
  */
 public class GenqecMachine extends RoundRotorMachineImpl
-        implements ICMLMachineVoltageProvider, IeeeVoltageCompensatedMachine {
+        implements ICMLMachineVoltageProvider, IeeeVoltageCompensatedMachine, ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
     private final GenqecData data;
@@ -180,6 +183,18 @@ public class GenqecMachine extends RoundRotorMachineImpl
         Complex terminalCurrent = getIgen().subtract(getDStabBus().getVoltage().multiply(getYgen()));
         Complex zcomp = new Complex(data.rcomp(), data.xcomp()).multiply(getZMultiFactor());
         return getDStabBus().getVoltage().subtract(zcomp.multiply(terminalCurrent)).abs() / getVMultiFactor();
+    }
+
+    @Override
+    public Map<String, Double> getNamedStates() {
+        Map<String, Double> states = new LinkedHashMap<>();
+        states.put("E'q", getEq1());
+        states.put("E'd", getEd1());
+        states.put("Psi'd", getPsikd());
+        states.put("Psi'q", getPsikq());
+        states.put("Speed deviation", getSpeed() - 1.0);
+        states.put("Angle", getAngle());
+        return Map.copyOf(states);
     }
 
     /** Supplies the GENQEC compensated voltage to every CML exciter using {@code mach.vt}. */
