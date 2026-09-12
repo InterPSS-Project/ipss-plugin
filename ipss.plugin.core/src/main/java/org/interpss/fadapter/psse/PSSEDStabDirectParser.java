@@ -24,6 +24,7 @@ import org.interpss.fadapter.psse.dyr.PsseDyrRecord;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
 import org.interpss.dstab.renewable.Reecb1Data;
+import org.interpss.dstab.renewable.Reecc1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Dera1Data;
 import org.interpss.dstab.renewable.Regca1Data;
@@ -699,6 +700,9 @@ public class PSSEDStabDirectParser {
             case "REECB1":
             case "REECBU1":
                 return procReecb1(busId, genId, fields);
+            case "REECC1":
+            case "REECCU1":
+                return procReecc1(busId, genId, fields);
             case "REECA1":
             case "REECAU1":
                 return procReeca1(busId, genId, fields);
@@ -3279,6 +3283,51 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 29, 1), getDouble(f, 30, 0), getDouble(f, 31, 1.1),
                 getDouble(f, 32, 0.02));
         return builder.addReecb1(busId, genId, data) != null;
+    }
+
+    // REECC1 flat form, or REECCU1 wrapper with five ICONs, 45 CONs,
+    // seven STATEs, and six VARs.
+    private boolean procReecc1(String busId, String genId, String[] f) {
+        int offset = 3;
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            if (f.length != 60 || getInt(f, 4, -1) != 102 || getInt(f, 5, -1) != 0
+                    || getInt(f, 6, -1) != 5 || getInt(f, 7, -1) != 45
+                    || getInt(f, 8, -1) != 7 || getInt(f, 9, -1) != 6) {
+                log.warn("Invalid native REECCU1 allocation at bus {}", busId);
+                return false;
+            }
+            offset = 10;
+        } else if (f.length != 53) {
+            return false;
+        }
+        Reecc1Data data = new Reecc1Data(
+                getInt(f, offset, 0), getInt(f, offset + 1, 0),
+                getInt(f, offset + 2, 0), getInt(f, offset + 3, 0),
+                getInt(f, offset + 4, 0),
+                getDouble(f, offset + 5, 0), getDouble(f, offset + 6, 0),
+                getDouble(f, offset + 7, 0), getDouble(f, offset + 8, 0),
+                getDouble(f, offset + 9, 0), getDouble(f, offset + 10, 0),
+                getDouble(f, offset + 11, 0), getDouble(f, offset + 12, 0),
+                getDouble(f, offset + 13, 0), getDouble(f, offset + 14, 0),
+                getDouble(f, offset + 15, 0), getDouble(f, offset + 16, 0),
+                getDouble(f, offset + 17, 0), getDouble(f, offset + 18, 0),
+                getDouble(f, offset + 19, 0), getDouble(f, offset + 20, 0),
+                getDouble(f, offset + 21, 0), getDouble(f, offset + 22, 0),
+                getDouble(f, offset + 23, 0), getDouble(f, offset + 24, 0),
+                getDouble(f, offset + 25, 0), getDouble(f, offset + 26, 0),
+                getDouble(f, offset + 27, 0), getDouble(f, offset + 28, 0),
+                getDouble(f, offset + 29, 0), getDouble(f, offset + 30, 0),
+                getDouble(f, offset + 31, 0), getDouble(f, offset + 32, 0),
+                getDouble(f, offset + 33, 0), getDouble(f, offset + 34, 0),
+                getDouble(f, offset + 35, 0), getDouble(f, offset + 36, 0),
+                getDouble(f, offset + 37, 0), getDouble(f, offset + 38, 0),
+                getDouble(f, offset + 39, 0), getDouble(f, offset + 40, 0),
+                getDouble(f, offset + 41, 0), getDouble(f, offset + 42, 0),
+                getDouble(f, offset + 43, 0), getDouble(f, offset + 44, 0),
+                getDouble(f, offset + 45, 0), getDouble(f, offset + 46, 0),
+                getDouble(f, offset + 47, 0), getDouble(f, offset + 48, 0),
+                getDouble(f, offset + 49, 0));
+        return builder.addReecc1(busId, genId, data) != null;
     }
 
     // REECA1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PFLAG PQFLAG followed by

@@ -124,6 +124,7 @@ import org.interpss.core.adapter.builder.dstab.PsseRegca1ConverterTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecb1ControllerTest;
+import org.interpss.core.adapter.builder.dstab.PsseReecc1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseCsvgn5ModelTest;
@@ -137,6 +138,7 @@ import org.interpss.core.adapter.builder.dstab.PsseWt12t1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12a1ModelTest;
 import org.interpss.dstab.renewable.RenewableControlIntegrationTest;
 import org.interpss.core.dstab.RenewableAggregateQvModeTest;
+import org.interpss.core.dstab.Reecc1NativeConformanceTest;
 import org.interpss.core.dstab.PsseDyrRepresentativeSelectorTest;
 import org.interpss.core.dstab.PowerWorldArtifactCoverageInventoryTest;
 import org.interpss.core.dstab.dynLoad.Perc1ModelTest;
@@ -783,6 +785,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseRegfma1ModelTest.class,
 	PsseReeca1ControllerTest.class,
 	PsseReecb1ControllerTest.class,
+	PsseReecc1ControllerTest.class,
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,
 	PsseCsvgn5ModelTest.class,
@@ -796,6 +799,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseWt12a1ModelTest.class,
 	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,
+	Reecc1NativeConformanceTest.class,
 	Type3WindAndesTrajectoryTest.class,
 	Type3WindPowerWorldTrajectoryTest.class,
 	PsseHygovGovernorTest.class,
