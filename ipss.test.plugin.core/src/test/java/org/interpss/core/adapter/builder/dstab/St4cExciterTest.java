@@ -62,6 +62,27 @@ public class St4cExciterTest extends CorePluginTestSetup {
         assertEquals(19,count);
     }
 
+    @Test void parsesExactSt4cu1WrapperAllocationAndPublishedFieldOrder(@TempDir Path dir)throws Exception{
+        Path dyr=dir.resolve("st4cu1.dyr");
+        Files.writeString(dyr,"1 'USRMDL' '1' 'ST4CU1' 4 0 5 21 5 0 1 1 1 1 2"
+                +" .1 3 4 99 -99 2 5 99 -99 .2 99 -99 .2 .3 99 1 0 0 0 0 99 /\n");
+        DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();
+        PSSEDStabDirectParser p=new PSSEDStabDirectParser(b).setStrictImport(true);p.parseDynFile(dyr.toString());
+        Machine m=b.getDStabNetwork().getMachine("Bus1-mach1");St4cExciter e=(St4cExciter)m.getExciter();assertNotNull(e);
+        assertTrue(p.getLastImportReport().isStrictlyComplete());assertEquals(4,e.getData().getKir(),TOL);
+        assertEquals(2,e.getData().getKpm(),TOL);assertEquals(99,e.getData().getVbmax(),TOL);
+        m.setEfd(1.2);assertTrue(e.initStates(m.getDStabBus(),m));assertEquals(5,e.getNamedStates().size());
+    }
+
+    @Test void rejectsSt4cu1WithIncorrectStateAllocation(@TempDir Path dir)throws Exception{
+        Path dyr=dir.resolve("st4cu1-invalid.dyr");
+        Files.writeString(dyr,"1 'USRMDL' '1' 'ST4CU1' 4 0 5 21 4 0 1 1 1 1 2"
+                +" .1 3 4 99 -99 2 5 99 -99 .2 99 -99 .2 .3 99 1 0 0 0 0 99 /\n");
+        DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();
+        PSSEDStabDirectParser p=new PSSEDStabDirectParser(b);p.parseDynFile(dyr.toString());
+        assertFalse(p.getLastImportReport().failures().isEmpty());
+    }
+
     @Test void fiveStatesMatchIndependentModifiedEulerOracle()throws Exception{
         Fixture f=fixture(baseData(),0);f.exciter.setRefPoint(f.exciter.getRefPoint()+.1);
         double[] x={1.04,.24,1.2,.24,1.2};double dt=.0001,max=0;
