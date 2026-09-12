@@ -62,4 +62,15 @@ public class PsseDyrRecordReaderTest {
                         new StringReader("1 'GENCLS' '1' 4.0 0.0"), "unterminated.dyr"));
         assertTrue(unterminated.getMessage().contains("unterminated.dyr:1"));
     }
+
+    @Test
+    void recognizesUserBusWrapperWithoutInventingADeviceId() throws Exception {
+        PsseDyrRecord record = PsseDyrRecordReader.read(new StringReader(
+                "17 'USRBUS' 'PLNTBU1' 504 0 7 28 7 15 17 17 18 'A' 0 1 1 /"),
+                "synthetic.dyr").get(0);
+        assertEquals("PLNTBU1", record.canonicalModelName());
+        assertEquals("*", record.deviceId());
+        assertEquals(13, record.parameterCount());
+        assertEquals(504, record.intParameter(0));
+    }
 }
