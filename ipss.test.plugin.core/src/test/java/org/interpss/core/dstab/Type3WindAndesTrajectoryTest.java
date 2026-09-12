@@ -13,6 +13,7 @@ import java.util.Locale;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
+import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.WindControlStack;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
@@ -25,7 +26,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Public full-stack Type-3 trajectory comparison fixture shared with ANDES. */
-@org.junit.jupiter.api.Tag("private-reference")
 public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
     private static final double STEP = 1.0 / 240.0;
 
@@ -110,9 +110,8 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
     }
 
     private static void compareWithAndesReference(List<double[]> actual) throws Exception {
-        Path reference = Path.of(Type3WindAndesTrajectoryTest.class.getResource(
-                "/reference/andes/type3-wind-bus1062-fault.csv").toURI());
-        List<String> lines = Files.readAllLines(reference, StandardCharsets.UTF_8);
+        List<String> lines = EmbeddedCsvTrajectoryValues.lines(
+                "type3-wind-bus1062-fault.csv");
         String[] headings = lines.get(0).split(",");
         // ANDES 2.0 implements VFLAG=1 as PIQ_y -> PIV, with a zero-based PIQ
         // state. PowerWorld/WECC instead use an absolute PIQ voltage reference
