@@ -45,9 +45,7 @@ public class Texas2kFullDynamicCoverageTest {
     private static final Set<String> REVIEWED_DEPENDENCY_MODELS = Set.of(
             "REECA1", "REPCA1", "WTARA1", "WTPTA1", "WTTQA1");
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
