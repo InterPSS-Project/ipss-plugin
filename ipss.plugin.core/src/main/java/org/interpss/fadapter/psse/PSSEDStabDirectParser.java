@@ -9,12 +9,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.apache.commons.math3.complex.Complex;
+
 import org.interpss.dstab.dynLoad.LD1PAC;
 import org.interpss.dstab.dynLoad.impl.LD1PACImpl;
 import org.interpss.dstab.dynLoad.Perc1Data;
+import org.interpss.dstab.dynLoad.Cmldznu2Data;
 import org.interpss.dstab.dynLoad.IeelLoadData;
 import org.interpss.dstab.dynLoad.impl.IeelLoadModel;
 import org.interpss.dstab.dynLoad.impl.Perc1Model;
+import org.interpss.dstab.dynLoad.impl.Cmldznu2Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportReport;
@@ -336,6 +340,12 @@ public class PSSEDStabDirectParser {
                             + " and load id " + record.deviceId()
                     : null;
         }
+        if (record.canonicalModelName().equals("CMLDZNU2")) {
+            return cmldznu2Targets(record).isEmpty()
+                    ? "no active load matches CMLDZNU2 zone " + record.busNumber()
+                            + " and load id " + record.deviceId()
+                    : null;
+        }
         if (descriptor.get().category()
                 == org.interpss.fadapter.psse.dyr.DynamicModelCategory.GENERATOR_PROTECTION) {
             String monitoredBusId = BUS_ID_PREFIX + Math.abs(Integer.parseInt(record.deviceId()));
@@ -387,6 +397,8 @@ public class PSSEDStabDirectParser {
                 return procIeel(type, record);
             case "PERC1":
                 return procPerc1(busId, genId, fields);
+            case "CMLDZNU2":
+                return procCmldznu2(record);
             case "IEEEVC":
                 pendingIeeeVc.add(new PendingIeeeVc(busId, genId, fields.clone(), record));
                 return true;
@@ -2177,6 +2189,9 @@ public class PSSEDStabDirectParser {
 
     private record LoadTarget(BaseDStabBus<?, ?> bus, AclfLoad load) {}
 
+    private record CompositeLoadTarget(BaseDStabBus<?, ?> bus, Set<String> loadIds,
+            Complex power) {}
+
     // LCFB1: fbf pbf Fb Tpelec db emax Kp Ki Lrmax
     private boolean procLcfb1(String busId, String genId, String[] f) {
         if (f.length < 12) return false;
@@ -3604,6 +3619,50 @@ public class PSSEDStabDirectParser {
             new IeelLoadModel(type, target.bus(), target.load(), data);
         }
         return !targets.isEmpty();
+    }
+
+    private boolean procCmldznu2(PsseDyrRecord record) {
+        int[] allocation = {12, 3, 2, 133, 27, 146, 48, 0, 0};
+        for (int i = 0; i < allocation.length; i++) {
+            if (record.intParameter(i) != allocation[i]) {
+                log.warn("Invalid CMLDZNU2 allocation field {} at {}:{}", i + 1,
+                        record.source(), record.startLine());
+                return false;
+            }
+        }
+        double[] constants = new double[Cmldznu2Data.PARAMETER_COUNT];
+        for (int i = 0; i < constants.length; i++) constants[i] = record.doubleParameter(i + 9);
+        Cmldznu2Data data = new Cmldznu2Data(constants);
+        List<CompositeLoadTarget> targets = cmldznu2Targets(record);
+        int sequence = 0;
+        for (CompositeLoadTarget target : targets) {
+            String id = "CMLDZNU2_" + record.busNumber() + "_" + (++sequence);
+            new Cmldznu2Model(id, target.bus(), target.loadIds(), target.power(), data);
+        }
+        return !targets.isEmpty();
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<CompositeLoadTarget> cmldznu2Targets(PsseDyrRecord record) {
+        List<CompositeLoadTarget> targets = new ArrayList<>();
+        boolean wildcard = record.deviceId().equals("*") || record.deviceId().equals("#");
+        for (Object object : builder.getBaseDStabNetwork().getBusList()) {
+            BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) object;
+            if (!bus.isActive() || bus.getZone() == null
+                    || bus.getZone().getNumber() != record.busNumber()) continue;
+            Set<String> ids = new java.util.LinkedHashSet<>();
+            Complex power = Complex.ZERO;
+            for (Object loadObject : bus.getContributeLoadList()) {
+                AclfLoad load = (AclfLoad) loadObject;
+                if (!load.isActive() || (!wildcard && !record.deviceId().equals(load.getId()))) continue;
+                Complex loadPower = load.getLoad(bus.getVoltageMag());
+                if (loadPower == null) continue;
+                ids.add(load.getId());
+                power = power.add(loadPower);
+            }
+            if (!ids.isEmpty()) targets.add(new CompositeLoadTarget(bus, Set.copyOf(ids), power));
+        }
+        return targets;
     }
 
     @SuppressWarnings("unchecked")

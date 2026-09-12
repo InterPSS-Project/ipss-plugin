@@ -4,11 +4,12 @@
 package org.interpss.dstab.dynLoad;
 
 import com.interpss.dstab.dynLoad.DynLoadModel;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /**
  * A representation of the model object '<em><b>LD1PAC</b></em>'.
  */
-public interface LD1PAC extends DynLoadModel {
+public interface LD1PAC extends DynLoadModel, ICMLStateProvider {
 	/**
 	 * Returns the value of the '<em><b>Stage</b></em>' attribute.
 	 */
@@ -444,5 +445,17 @@ public interface LD1PAC extends DynLoadModel {
 	 * Sets the value of the '{@link com.interpss.dstab.dynLoad.LD1PAC#getTv <em>Tv</em>}' attribute.
 	 */
 	void setTv(double value);
+
+	/** Frequency sensing time constant in seconds. */
+	double getTf();
+
+	/** Frequency sensing time constant in seconds. */
+	void setTf(double value);
+
+	/** Filtered terminal voltage used by the protection logic. */
+	double getMeasuredVoltage();
+
+	/** Filtered bus frequency used by the running-load characteristic. */
+	double getMeasuredFrequency();
 
 } // LD1PAC
