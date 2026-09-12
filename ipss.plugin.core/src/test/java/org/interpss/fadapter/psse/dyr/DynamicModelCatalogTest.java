@@ -96,8 +96,9 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS2C"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(35), DynamicModelCatalog.find("PSS2C").orElseThrow()
+        assertEquals(Set.of(35,41), DynamicModelCatalog.find("PSS2C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
+        assertEquals("PSS2C",DynamicModelCatalog.find("PSS2CU1").orElseThrow().canonicalName());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS3B"))
                 .findFirst().orElseThrow().isImplementedExactly());

@@ -448,6 +448,23 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void parsePss2cu1_requiresExactAllocation() throws Exception {
+        String body=" 3 0 6 29 19 14 1 0 3 0 5 1 2 2 0 2 0 2 .28885 1 1 .2 4 .13 .03 .13 .03 .14 .03 2 -2 2 -2 .05 -.05 1 1 .15 .10 0 0 /\n";
+        Path valid=tempDir.resolve("pss2cu1.dyr");Files.writeString(valid,"1 'USRMDL' '1' 'PSS2CU1'"+body);
+        DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
+        PSSEDStabDirectParser parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+        parser.parseDynFile(valid.toString());
+        assertNotNull(builder.getDStabNetwork().getMachine("Bus1-mach1").getStabilizer());
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+        Path invalid=tempDir.resolve("bad-pss2cu1.dyr");
+        Files.writeString(invalid,"1 'USRMDL' '1' 'PSS2CU1' 3 0 6 29 18 14"+body.substring(" 3 0 6 29 19 14".length()));
+        DStabNetworkBuilder rejected=DStabBuilderTestFixture.createWithMachine();
+        PSSEDStabDirectParser bad=new PSSEDStabDirectParser(rejected).setStrictImport(true);
+        assertThrows(InterpssException.class,()->bad.parseDynFile(invalid.toString()));
+        assertNull(rejected.getDStabNetwork().getMachine("Bus1-mach1").getStabilizer());
+    }
+
+    @Test
     void pss2c_appliesDocumentedCorrectionsWithoutChangingImportedData() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("pss2c-corrections.dyr");
