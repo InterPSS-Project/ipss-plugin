@@ -38,6 +38,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     private Gewtecu1Model electricalController;
     private Gewt2mu1Model driveTrain;
     private Gewtaru1Model aerodynamicModel;
+    private Gewtgdu1Model windModel;
     private boolean initialized;
 
     public Gewtgcu1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
@@ -75,6 +76,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
             aerodynamicModel.initialize(p, speed, data.turbineRatedMw());
             if (driveTrain != null) driveTrain.setAerodynamicPower(
                     aerodynamicModel.getMechanicalPower(speed));
+            if (windModel != null) windModel.initialize(aerodynamicModel.getWindVelocity());
         }
         if (electricalController != null && !electricalController.initialize()) return false;
         if (electricalController != null && driveTrain != null) {
@@ -113,6 +115,10 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         if (driveTrain != null) {
             if (aerodynamicModel != null) {
                 double speed = driveTrain.getTurbineSpeed();
+                if (windModel != null) {
+                    windModel.step(dt, flag);
+                    aerodynamicModel.setWindVelocity(windModel.getWindSpeed());
+                }
                 aerodynamicModel.step(dt, speed, flag);
                 driveTrain.setAerodynamicPower(aerodynamicModel.getMechanicalPower(speed));
             }
@@ -252,6 +258,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         named.put("Voltage sensor for LVPL", filteredVoltage);
         if (driveTrain != null) named.putAll(driveTrain.getNamedStates());
         if (aerodynamicModel != null) named.putAll(aerodynamicModel.getNamedStates());
+        if (windModel != null) named.putAll(windModel.getNamedStates());
         return Map.copyOf(named);
     }
 
@@ -292,6 +299,8 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     public void setDriveTrain(Gewt2mu1Model value) { driveTrain = value; }
     public Gewtaru1Model getAerodynamicModel() { return aerodynamicModel; }
     public void setAerodynamicModel(Gewtaru1Model value) { aerodynamicModel = value; }
+    public Gewtgdu1Model getWindModel() { return windModel; }
+    public void setWindModel(Gewtgdu1Model value) { windModel = value; }
 
     private record State(double ip, double reactive, double filteredVoltage) { }
     private record Derivative(double ip, double reactive, double filteredVoltage) {
