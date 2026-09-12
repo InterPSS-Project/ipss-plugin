@@ -37,6 +37,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     private Derivative predictor;
     private Gewtecu1Model electricalController;
     private Gewt2mu1Model driveTrain;
+    private Gewtaru1Model aerodynamicModel;
     private boolean initialized;
 
     public Gewtgcu1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
@@ -68,6 +69,12 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         initialized = true;
         if (driveTrain != null) {
             driveTrain.initialize(p, 1.0, bus.getNetwork().getFrequency());
+        }
+        if (aerodynamicModel != null) {
+            double speed = driveTrain == null ? 1.0 : driveTrain.getTurbineSpeed();
+            aerodynamicModel.initialize(p, speed, data.turbineRatedMw());
+            if (driveTrain != null) driveTrain.setAerodynamicPower(
+                    aerodynamicModel.getMechanicalPower(speed));
         }
         if (electricalController != null && !electricalController.initialize()) return false;
         if (electricalController != null && driveTrain != null) {
@@ -103,7 +110,14 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
         }
         ipState = Math.min(ipState, activeCurrentLimit(filteredVoltage,
                 getDStabBus().getVoltageMag()));
-        if (driveTrain != null) driveTrain.step(dt, p, flag);
+        if (driveTrain != null) {
+            if (aerodynamicModel != null) {
+                double speed = driveTrain.getTurbineSpeed();
+                aerodynamicModel.step(dt, speed, flag);
+                driveTrain.setAerodynamicPower(aerodynamicModel.getMechanicalPower(speed));
+            }
+            driveTrain.step(dt, p, flag);
+        }
         return finite(ipState) && finite(reactiveState) && finite(filteredVoltage);
     }
 
@@ -237,6 +251,7 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
                 reactiveState);
         named.put("Voltage sensor for LVPL", filteredVoltage);
         if (driveTrain != null) named.putAll(driveTrain.getNamedStates());
+        if (aerodynamicModel != null) named.putAll(aerodynamicModel.getNamedStates());
         return Map.copyOf(named);
     }
 
@@ -275,6 +290,8 @@ public final class Gewtgcu1Model extends DynamicBusDeviceImpl
     public void setElectricalController(Gewtecu1Model value) { electricalController = value; }
     public Gewt2mu1Model getDriveTrain() { return driveTrain; }
     public void setDriveTrain(Gewt2mu1Model value) { driveTrain = value; }
+    public Gewtaru1Model getAerodynamicModel() { return aerodynamicModel; }
+    public void setAerodynamicModel(Gewtaru1Model value) { aerodynamicModel = value; }
 
     private record State(double ip, double reactive, double filteredVoltage) { }
     private record Derivative(double ip, double reactive, double filteredVoltage) {

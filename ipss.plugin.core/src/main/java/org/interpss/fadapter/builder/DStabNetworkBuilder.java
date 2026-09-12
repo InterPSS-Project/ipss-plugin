@@ -224,6 +224,8 @@ import org.interpss.dstab.mach.Gewtecu1Data;
 import org.interpss.dstab.mach.Gewtecu1Model;
 import org.interpss.dstab.mach.Gewt2mu1Data;
 import org.interpss.dstab.mach.Gewt2mu1Model;
+import org.interpss.dstab.mach.Gewtaru1Data;
+import org.interpss.dstab.mach.Gewtaru1Model;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt4g1Data;
@@ -474,6 +476,19 @@ public class DStabNetworkBuilder {
         }
         Gewt2mu1Model model = new Gewt2mu1Model(data);
         host.setDriveTrain(model);
+        return model;
+    }
+
+    /** Attach the GE aerodynamic conversion to its converter host. */
+    public Gewtaru1Model addGewtaru1(String busId, String genId, Gewtaru1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for GEWTARU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Gewtaru1Model model = new Gewtaru1Model(data);
+        host.setAerodynamicModel(model);
         return model;
     }
 
