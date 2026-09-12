@@ -154,6 +154,7 @@ loadability inventory.
 | WT12A1 | AERODYNAMIC_CONTROLLER |  | 8 | LOADABLE | `org.interpss.dstab.mach.Wt12a1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Aerodynamic%20Model%20WT12A1.htm) |
 | WT3P1 | AERODYNAMIC_CONTROLLER |  | 9 | LOADABLE | `org.interpss.dstab.mach.Wt3p1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20WT3P%20and%20WT3P1.htm) |
 | WTARA1 | AERODYNAMIC_CONTROLLER | WTARAU1 | 2 | LOADABLE | `org.interpss.dstab.renewable.Wtara1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Aerodynamic%20Model%20WTGA_A.htm) |
+| GEWTPTU1 | PITCH_CONTROLLER |  | 18 | LOADABLE | `org.interpss.dstab.mach.Gewtptu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | WTPTA1 | PITCH_CONTROLLER | WTPTAU1 | 10 | LOADABLE | `org.interpss.dstab.renewable.Wtpta1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pitch%20Controller%20WTGPT_A.htm) |
 | WTTQA1 | TORQUE_CONTROLLER | WTTQAU1 | 16 | LOADABLE | `org.interpss.dstab.renewable.Wttqa1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pref%20Controller%20WTGTRQ_A.htm) |
 | CMLDZNU2 | LOAD_CHARACTERISTIC |  | 142 | LOADABLE | `org.interpss.dstab.dynLoad.impl.Cmldznu2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Load%20Characteristic%20CMPLDW.htm) |

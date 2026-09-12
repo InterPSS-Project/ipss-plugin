@@ -412,6 +412,12 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         return Map.copyOf(values);
     }
 
+    /** Active-power order supplied to the associated pitch compensator. */
+    public double getPowerOrder() {
+        if (!initialized) throw new IllegalStateException("GEWTECU1 is not initialized");
+        return state.torqueFilter;
+    }
+
     private static double algebraicOrState(double input, double stored, double time) {
         return time <= EPS ? input : stored;
     }
