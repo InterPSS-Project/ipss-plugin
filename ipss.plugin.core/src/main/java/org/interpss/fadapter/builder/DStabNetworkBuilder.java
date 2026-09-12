@@ -175,6 +175,8 @@ import org.interpss.dstab.renewable.Dera1Data;
 import org.interpss.dstab.renewable.Dera1Model;
 import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regcb1Data;
+import org.interpss.dstab.renewable.Regcb1Model;
 import org.interpss.dstab.renewable.Regfma1Data;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.renewable.Repca1Data;
@@ -3207,6 +3209,17 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Regca1Model(gen, bus, genId, data);
+    }
+
+    /** Attach the published behind-impedance renewable converter model. */
+    public Regcb1Model addRegcb1(String busId, String genId, Regcb1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for REGCB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Regcb1Model(gen, bus, genId, data);
     }
 
     /** Attach the combined DERA1 converter and controls to a renewable generator. */
