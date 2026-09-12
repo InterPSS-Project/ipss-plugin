@@ -218,6 +218,8 @@ import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Wt3g1Model;
 import org.interpss.dstab.mach.Gewtgcu1Data;
 import org.interpss.dstab.mach.Gewtgcu1Model;
+import org.interpss.dstab.mach.Gewtecu1Data;
+import org.interpss.dstab.mach.Gewtecu1Model;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt4g1Data;
@@ -443,6 +445,19 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Gewtgcu1Model(gen, bus, genId, data);
+    }
+
+    /** Attach GEWTECU1 to its GEWTGCU1 converter host. */
+    public Gewtecu1Model addGewtecu1(String busId, String genId, Gewtecu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for GEWTECU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Gewtecu1Model model = new Gewtecu1Model(data, host);
+        host.setElectricalController(model);
+        return model;
     }
 
     /** Attach the native WT3G2 converter generator to an existing generator record. */
