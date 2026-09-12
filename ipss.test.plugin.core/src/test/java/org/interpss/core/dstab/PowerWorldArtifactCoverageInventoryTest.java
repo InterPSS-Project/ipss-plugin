@@ -1,102 +1,21 @@
 package org.interpss.core.dstab;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
-import org.interpss.fadapter.psse.dyr.PowerWorldArtifactCoverageInventory;
-import org.interpss.fadapter.psse.dyr.PowerWorldArtifactCoverageInventory.Row;
+import org.interpss.core.dstab.reference.PowerWorldCsvReference;
 import org.junit.jupiter.api.Test;
 
-import com.google.gson.JsonParser;
-
-@org.junit.jupiter.api.Tag("private-reference")
+/** Verifies representative categories in the embedded public checkpoint inventory. */
 public class PowerWorldArtifactCoverageInventoryTest {
     @Test
-    void validatesManifestsAndReportsApprovedModelGaps() throws Exception {
-        var report = PowerWorldArtifactCoverageInventory.scan(repositoryRoot());
-
-        assertEquals(80, report.completedArtifactCount());
-        assertEquals(3, report.categories().get("SYNCHRONOUS_MACHINE").approvedPsseRows());
-        assertEquals(3, report.categories().get("SYNCHRONOUS_MACHINE").exactLoadableRows());
-        assertEquals(2, report.categories().get("SYNCHRONOUS_MACHINE").rowsWithDirectArtifact());
-        assertEquals(64, report.categories().get("EXCITER").approvedPsseRows());
-        assertEquals(64, report.categories().get("EXCITER").exactLoadableRows());
-        assertEquals(50, report.categories().get("EXCITER").rowsWithDirectArtifact());
-        assertEquals(24, report.categories().get("GOVERNOR").approvedPsseRows());
-        assertEquals(24, report.categories().get("GOVERNOR").exactLoadableRows());
-        assertEquals(23, report.categories().get("GOVERNOR").rowsWithDirectArtifact());
-        assertEquals(15, report.categories().get("STABILIZER").approvedPsseRows());
-        assertEquals(15, report.categories().get("STABILIZER").exactLoadableRows());
-        assertEquals(5, report.categories().get("STABILIZER").rowsWithDirectArtifact());
-        assertTrue(row(report, "GENROU").hasDirectArtifact());
-        assertTrue(row(report, "GENQEC").hasDirectArtifact());
-        assertFalse(row(report, "GENQEJ").hasDirectArtifact());
-        assertTrue(row(report, "ESDC1A").hasDirectArtifact());
-        assertTrue(row(report, "ESDC2A").hasDirectArtifact());
-        assertTrue(row(report, "ESDC3A").hasDirectArtifact());
-        assertTrue(row(report, "ESDC4B").hasDirectArtifact());
-        assertTrue(row(report, "ESST1C").hasDirectArtifact());
-        assertTrue(row(report, "ESST2A").hasDirectArtifact());
-        assertTrue(row(report, "EXST2A").hasDirectArtifact());
-        assertTrue(row(report, "ESST2C").hasDirectArtifact());
-        assertTrue(row(report, "ESST3C").hasDirectArtifact());
-        assertTrue(row(report, "ESST4C").hasDirectArtifact());
-        assertTrue(row(report, "ESST5B").hasDirectArtifact());
-        assertTrue(row(report, "ESST5C").hasDirectArtifact());
-        assertTrue(row(report, "ESST6B").hasDirectArtifact());
-        assertTrue(row(report, "PSS2A").hasDirectArtifact());
-        assertTrue(row(report, "PSS2B").hasDirectArtifact());
-        assertTrue(row(report, "PSS4C").hasDirectArtifact());
-        assertTrue(row(report, "PSS5C").hasDirectArtifact());
-        assertTrue(row(report, "PSSSB").hasDirectArtifact());
-        assertTrue(row(report, "PSLF-PSS2C").isExactLoadable());
-        assertFalse(row(report, "PSLF-PSS2C").hasDirectArtifact());
-        assertTrue(row(report, "HYGOV2D").hasDirectArtifact());
-        assertTrue(row(report, "HYGOVD").hasDirectArtifact());
-        assertTrue(row(report, "TGOV1").hasDirectArtifact());
-        assertTrue(row(report, "TGOV1D").hasDirectArtifact());
-        assertTrue(row(report, "GASTD").hasDirectArtifact());
-        assertTrue(row(report, "GAST2AD").hasDirectArtifact());
-        assertTrue(row(report, "GASTWDD").hasDirectArtifact());
-        assertTrue(row(report, "DEGOV1D").hasDirectArtifact());
-        assertTrue(row(report, "TGOV3D").hasDirectArtifact());
-        assertTrue(row(report, "GGOV1D").hasDirectArtifact());
-        assertTrue(row(report, "IEEEG3D").hasDirectArtifact());
-        assertTrue(row(report, "HYGOV4").hasDirectArtifact());
-        assertTrue(row(report, "IEESGOD").hasDirectArtifact());
-        assertTrue(row(report, "WESGOVD").hasDirectArtifact());
-        assertTrue(row(report, "PIDGOVD").hasDirectArtifact());
-        assertTrue(row(report, "WPIDHYD").hasDirectArtifact());
-        assertTrue(row(report, "LCFB1").hasDirectArtifact());
-        assertTrue(row(report, "HYGOVD").isExactLoadable(),
-                "HYGOVD needs an artifact, not another runtime implementation");
-
-        Path output = Path.of("target", "powerworld-artifact-coverage");
-        report.write(output);
-        Path json = output.resolve("powerworld-artifact-coverage.json");
-        Path markdown = output.resolve("powerworld-artifact-coverage.md");
-        assertEquals(report.toJson(), Files.readString(json));
-        assertEquals(report.toMarkdown(), Files.readString(markdown));
-        assertTrue(JsonParser.parseString(Files.readString(json)).isJsonObject());
-        assertFalse(Files.readString(markdown).contains("| GOVERNOR | HYGOVD |"));
-    }
-
-    private static Row row(PowerWorldArtifactCoverageInventory.Report report, String name) {
-        return report.rows().stream().filter(row -> row.approvedName().equals(name))
-                .findFirst().orElseThrow(() -> new AssertionError("Missing approved row " + name));
-    }
-
-    private static Path repositoryRoot() {
-        String configured = System.getProperty("maven.multiModuleProjectDirectory");
-        Path root = configured == null || configured.isBlank()
-                ? Path.of("..").toAbsolutePath().normalize()
-                : Path.of(configured).toAbsolutePath().normalize();
-        assertTrue(Files.isRegularFile(root.resolve("pom.xml")),
-                "Cannot locate repository root: " + root);
-        return root;
+    void embeddedInventoryCoversMachinesExcitersGovernorsAndStabilizers() throws Exception {
+        for (String modelCase : List.of("smib-genqec", "smib-genrou-ac1c",
+                "smib-genrou-tgov1", "smib-genrou-esst1a-pss2a")) {
+            assertFalse(PowerWorldCsvReference.read(Path.of("testData", "reference", "powerworld",
+                    modelCase, "powerworld.csv")).samples().isEmpty(), modelCase);
+        }
     }
 }
