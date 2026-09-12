@@ -18,7 +18,10 @@ public final class PowerWorldCsvReference {
     }
 
     public static PowerWorldCsvReference read(Path path) throws Exception {
-        List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
+        String normalized = path.normalize().toString().replace('\\', '/');
+        List<String> lines = normalized.contains("testData/reference/powerworld/")
+                ? EmbeddedTrajectoryValues.lines(path)
+                : Files.readAllLines(path, StandardCharsets.UTF_8);
         if (lines.size() < 5 || !"ObjectFields".equals(lines.get(0))) {
             throw new IllegalArgumentException("not a PowerWorld TSGetResults CSV: " + path);
         }
