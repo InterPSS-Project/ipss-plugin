@@ -1565,10 +1565,7 @@ public class PSSEDirectParser {
 
     // ==================== Induction Machine ====================
 
-    /**
-     * Register induction machines as NameTags for NB type-I terminals.
-     * Full IM ACLF model is not built here (avoids colliding with load id "1" on the same bus).
-     */
+    /** Import an induction machine as a distinct steady-state ACLF contribution. */
     private void parseInductionMachineLine(PSSEDataRec rec) {
         int busNum = rec.getInt(0);
         String id = rec.getString(1, "1").trim();
@@ -1577,6 +1574,43 @@ public class PSSEDirectParser {
         }
         String name = rec.getString(8, "").trim();
         String busId = BUS_ID_PREFIX + busNum;
+
+        BaseAclfBus bus = builder.getBaseNetwork().getBus(busId);
+        if (bus != null) {
+            PsseInductionMachinePowerFlow.Data data =
+                    new PsseInductionMachinePowerFlow.Data(
+                            rec.getInt(9, 1), rec.getInt(4, 2),
+                            rec.getDouble(11, baseMva), rec.getDouble(12, bus.getBaseVoltage() / 1000.0),
+                            rec.getInt(13, 1), rec.getDouble(14, 0.0),
+                            rec.getDouble(16, 1.0), rec.getDouble(17, 1.0),
+                            rec.getDouble(18, 1.0), rec.getDouble(19, 1.0),
+                            rec.getDouble(20, 0.0), rec.getDouble(21, 0.0),
+                            rec.getDouble(22, 0.0), rec.getDouble(23, 0.0),
+                            rec.getDouble(24, 0.0), rec.getDouble(25, 0.0),
+                            rec.getDouble(26, 0.0), rec.getDouble(27, 0.0));
+            try {
+                PsseInductionMachinePowerFlow.Result result =
+                        PsseInductionMachinePowerFlow.initialize(data,
+                                bus.getVoltageMag(), bus.getBaseVoltage() / 1000.0, baseMva);
+                boolean inService = rec.getInt(2, 1) == 1 && !result.tripped();
+                var load = builder.addContributeLoad(busId, "IM-" + id,
+                        inService, result.loadPu(), null, null, null, false);
+                if (load != null) {
+                    load.setName(name.isEmpty()
+                            ? "InductionMachine:" + id + "(" + busNum + ")" : name);
+                }
+                if (result.stalled()) {
+                    log.warn("PSS/E induction machine {}:{} has no running-slip solution; "
+                            + "using its locked-rotor power-flow equivalent", busNum, id);
+                } else if (result.tripped()) {
+                    log.warn("PSS/E induction generator {}:{} has no running-slip solution; "
+                            + "taking its power-flow equivalent out of service", busNum, id);
+                }
+            } catch (IllegalArgumentException ex) {
+                log.warn("Skipping PSS/E induction machine {}:{}: {}", busNum, id,
+                        ex.getMessage());
+            }
+        }
 
         NameTag tag = NetFactory.eINSTANCE.createNameTag();
         tag.setId(id);
