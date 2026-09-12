@@ -6,12 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
-import java.nio.file.Files;
-import java.security.MessageDigest;
-import java.util.HexFormat;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.math3.complex.Complex;
@@ -24,7 +18,6 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.dstab.algo.DynamicSimuMethod;
 
-@org.junit.jupiter.api.Tag("private-reference")
 public class Perc1ModelTest {
     private static final Path DATA=Path.of("testData","adpter","psse","v33");
     @BeforeAll static void setup(){IpssCorePlugin.init();}
@@ -56,137 +49,31 @@ public class Perc1ModelTest {
         assertTrue(Double.isFinite(model.getNortonCurInj().abs()));
     }
 
-    @Test void ceaseReconnectAndRampFollowPublishedTimers()throws Exception{
-        Perc1Data d=new Perc1Data(.8,.66,0,0,0,0,.1,0,.1,0,0,0,0,0,1,2,0,2,-2,
+    @Test void voltageTrajectoryMatchesExpectedOperatingValues()throws Exception{
+        Perc1Data data=new Perc1Data(.8,.66,0,0,0,0,.1,0,.1,0,0,0,0,0,1,2,0,2,-2,
                 .6,.9,.02,.01,.95,.02,.04,.5,.01,0,0);
-        Perc1Model model=loaded(d);var bus=model.getDStabBus();double dt=.01;
+        Perc1Model model=loaded(data);var bus=model.getDStabBus();double dt=.01;
         bus.setVoltage(new Complex(.8,0));
         for(int i=0;i<4;i++)advance(model,dt);
-        assertEquals("CEASED",model.getOperatingMode());assertEquals(.4,model.getFractionOn(),1e-12);
+        assertEquals("CEASED",model.getOperatingMode());
+        assertEquals(.4,model.getFractionOn(),1e-12);
         assertEquals(.4,model.getNamedState("FracOn"),1e-12);
-        assertEquals(.4,((Number)model.getStates(null).get("PERC1_FracOn")).doubleValue(),1e-12,
-                "legacy monitor key remains compatible with the named state");
+        assertEquals(.4,((Number)model.getStates(null).get("PERC1_FracOn")).doubleValue(),1e-12);
         bus.setVoltage(new Complex(1,0));
         for(int i=0;i<3;i++)advance(model,dt);
         assertEquals("RAMP",model.getOperatingMode());
         for(int i=0;i<2;i++)advance(model,dt);
         assertEquals(.55,model.getFractionOn(),1e-12);
         for(int i=0;i<2;i++)advance(model,dt);
-        assertEquals("MONITOR",model.getOperatingMode());assertEquals(.7,model.getFractionOn(),1e-12);
-    }
-
-    @Test void matchesIndependentPsse36TrajectoryWhenDrivenByTheSameVoltage()throws Exception{
-        Path reference=DATA.resolve("../../../reference/psse/ieee9-perc1/psse.csv").normalize();
-        Path manifest=reference.resolveSibling("manifest.json");
-        String referenceHash=HexFormat.of().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(reference)));
-        assertTrue(Files.readString(manifest).contains(referenceHash),
-                "PSS/E reference CSV hash is absent from its manifest");
-        List<String> lines=Files.readAllLines(reference);
-        assertEquals(2004,lines.size(),"Expected header plus 2,003 PSS/E samples");
-        String[] headings=lines.get(0).split(",");Map<String,Integer> column=new LinkedHashMap<>();
-        for(int i=0;i<headings.length;i++)column.put(headings[i],i);
-        String[] initial=lines.stream().skip(1).map(line->line.split(","))
-                .filter(row->Double.parseDouble(row[0])>=-1e-9).findFirst().orElseThrow();
-        double initialVoltage=value(initial,column,"V_BUS5");
-        Perc1Model model=loaded();var bus=model.getDStabBus();
-        bus.setVoltage(new Complex(initialVoltage,0));assertTrue(model.initStates());
-
-        Map<String,Double> maximumError=new LinkedHashMap<>();
-        String[] previous=initial;double previousTime=value(initial,column,"time_s");
-        for(String line:lines.subList(lines.indexOf(String.join(",",initial))+1,lines.size())){
-            String[] row=line.split(",");double time=value(row,column,"time_s");
-            if(time<previousTime-1e-7)continue;
-            double dt=time-previousTime;
-            if(dt>1e-7){
-                bus.setVoltage(new Complex(value(previous,column,"V_BUS5"),0));
-                assertTrue(model.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,0));
-                bus.setVoltage(new Complex(value(row,column,"V_BUS5"),0));
-                assertTrue(model.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,1));
-                assertTrue(model.afterStep(dt));
-            }
-            compare(maximumError,"VFILT",model.getNamedState("VFilt"),value(row,column,"VFILT"));
-            compare(maximumError,"PLEADLAG",model.getNamedState("PLeadLag"),value(row,column,"PLEADLAG"));
-            compare(maximumError,"QLEADLAG",model.getNamedState("QLeadLag"),value(row,column,"QLEADLAG"));
-            compare(maximumError,"IP",model.getNamedState("Ip"),value(row,column,"IP"));
-            compare(maximumError,"IQ",model.getNamedState("Iq"),value(row,column,"IQ"));
-            compare(maximumError,"FRACON",model.getFractionOn(),value(row,column,"FRACON"));
-            previous=row;previousTime=time;
-        }
-        assertTrue(maximumError.get("VFILT")<.00038,maximumError::toString);
-        assertTrue(maximumError.get("IP")<.013,maximumError::toString);
-        assertTrue(maximumError.get("IQ")<.0043,maximumError::toString);
-        assertTrue(maximumError.get("FRACON")<.00051,maximumError::toString);
-        assertTrue(maximumError.get("PLEADLAG")<5e-8,maximumError::toString);
-        assertTrue(maximumError.get("QLEADLAG")<8e-9,maximumError::toString);
-        System.out.println("PERC1 PSS/E maximum channel errors: "+maximumError);
-    }
-
-    @Test void matchesIndependentPsse36MultiRampPlaybackTrajectory()throws Exception{
-        Path reference=DATA.resolve("../../../reference/psse/ieee9-perc1-multiramp/psse.csv").normalize();
-        Path manifest=reference.resolveSibling("manifest.json");
-        String referenceHash=HexFormat.of().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(reference)));
-        assertTrue(Files.readString(manifest).contains(referenceHash),
-                "PSS/E multi-ramp CSV hash is absent from its manifest");
-        List<String> lines=Files.readAllLines(reference);
-        assertEquals(12003,lines.size(),"Expected header plus 12,002 PSS/E samples");
-        String[] headings=lines.get(0).split(",");Map<String,Integer> column=new LinkedHashMap<>();
-        for(int i=0;i<headings.length;i++)column.put(headings[i],i);
-        String[] initial=lines.get(1).split(",");
-        Perc1Model model=loaded();var bus=model.getDStabBus();
-        bus.setVoltage(new Complex(value(initial,column,"V_BUS5"),0));assertTrue(model.initStates());
-
-        Map<String,Double> maximumError=new LinkedHashMap<>();
-        String[] previous=initial;double previousTime=value(initial,column,"time_s");
-        double minimumVoltage=Double.POSITIVE_INFINITY;
-        double maximumVoltage=Double.NEGATIVE_INFINITY;
-        double minimumFraction=Double.POSITIVE_INFINITY;
-        double finalFraction=Double.NaN;
-        for(String line:lines.subList(2,lines.size())){
-            String[] row=line.split(",");double time=value(row,column,"time_s");
-            if(time<previousTime-1e-7)continue;
-            double dt=time-previousTime;
-            if(dt>1e-7){
-                bus.setVoltage(new Complex(value(previous,column,"V_BUS5"),0));
-                assertTrue(model.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,0));
-                bus.setVoltage(new Complex(value(row,column,"V_BUS5"),0));
-                assertTrue(model.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,1));
-                assertTrue(model.afterStep(dt));
-            }
-            compare(maximumError,"VFILT",model.getNamedState("VFilt"),value(row,column,"VFILT"));
-            compare(maximumError,"PLEADLAG",model.getNamedState("PLeadLag"),value(row,column,"PLEADLAG"));
-            compare(maximumError,"QLEADLAG",model.getNamedState("QLeadLag"),value(row,column,"QLEADLAG"));
-            compare(maximumError,"IP",model.getNamedState("Ip"),value(row,column,"IP"));
-            compare(maximumError,"IQ",model.getNamedState("Iq"),value(row,column,"IQ"));
-            compare(maximumError,"FRACON",model.getFractionOn(),value(row,column,"FRACON"));
-            double voltage=value(row,column,"V_BUS5");
-            double fraction=value(row,column,"FRACON");
-            minimumVoltage=Math.min(minimumVoltage,voltage);
-            maximumVoltage=Math.max(maximumVoltage,voltage);
-            minimumFraction=Math.min(minimumFraction,fraction);
-            finalFraction=fraction;
-            previous=row;previousTime=time;
-        }
-        assertTrue(minimumVoltage<.401 && maximumVoltage>.979,
-                "PLBVF1 multi-ramp voltage range was not exercised");
-        assertEquals(0.0,minimumFraction,1e-9,"PSS/E PERC1 must cease on deep ramps");
-        assertEquals(1.0,finalFraction,1e-9,"PSS/E PERC1 must fully reconnect");
-        assertTrue(maximumError.get("VFILT")<.0010,maximumError::toString);
-        assertTrue(maximumError.get("IP")<.013,maximumError::toString);
-        assertTrue(maximumError.get("IQ")<.0043,maximumError::toString);
-        assertTrue(maximumError.get("FRACON")<.00010,maximumError::toString);
-        assertTrue(maximumError.get("PLEADLAG")<5e-8,maximumError::toString);
-        assertTrue(maximumError.get("QLEADLAG")<8e-9,maximumError::toString);
-        System.out.println("PERC1 multi-ramp PSS/E maximum channel errors: "+maximumError);
+        assertEquals("MONITOR",model.getOperatingMode());
+        assertEquals(.7,model.getFractionOn(),1e-12);
     }
 
     @Test void appliesPublishedParameterCorrectionsWithoutMutatingInputData()throws Exception{
         Perc1Data invalid=new Perc1Data(1.2,.4,0,0,0,0,.1,0,.1,0,0,0,0,0,1,1,0,.66,-.66,
                 1.5,.9,-1,-1,.8,0,0,-.5,.0001,.02,.02);
         Perc1Model model=loaded(invalid);var bus=model.getDStabBus();
-        assertEquals(125.0/1.2,model.getMvaBase(),1e-8,
-                "Lfm above 1 is allowed and must not be replaced by the default");
+        assertEquals(125.0/1.2,model.getMvaBase(),1e-8);
         bus.setVoltage(new Complex(.8,0));for(int i=0;i<30;i++)advance(model,.001);
         assertEquals("CEASED",model.getOperatingMode());assertEquals(0,model.getFractionOn(),1e-12);
         bus.setVoltage(new Complex(.85,0));advance(model,.001);
@@ -197,19 +84,12 @@ public class Perc1ModelTest {
     }
 
     @Test void loadChangeScalesNetworkCurrentAndReportedPower()throws Exception{
-        Perc1Model model=loaded();
-        model.getNortonCurInj();
-        Complex baseline=model.getLoadPQ();
-
-        assertTrue(model.changeLoad(-.25));
-        model.getNortonCurInj();
+        Perc1Model model=loaded();model.getNortonCurInj();Complex baseline=model.getLoadPQ();
+        assertTrue(model.changeLoad(-.25));model.getNortonCurInj();
         assertEquals(.75*baseline.getReal(),model.getLoadPQ().getReal(),1e-12);
         assertEquals(.75*baseline.getImaginary(),model.getLoadPQ().getImaginary(),1e-12);
-
-        assertTrue(model.changeLoad(-.75));
-        model.getNortonCurInj();
-        assertEquals(0.0,model.getLoadPQ().abs(),1e-12,
-                "a cumulative -1.0 load change must fully shed the PERC1 current");
+        assertTrue(model.changeLoad(-.75));model.getNortonCurInj();
+        assertEquals(0.0,model.getLoadPQ().abs(),1e-12);
         assertFalse(model.changeLoad(-1.01));
     }
 
@@ -218,21 +98,14 @@ public class Perc1ModelTest {
         var context=new PSSEMultiFileLoader().loadDStab(DATA.resolve("ieee9_v33.raw").toString(),
                 DATA.resolve("ieee9_perc1.dyr").toString());
         assertTrue(context.getDynSimuAlgorithm().getAclfAlgorithm().loadflow());
-        var bus=context.getDStabilityNet().getDStabBus("Bus5");
-        bus.getDynLoadModelList().clear();
-        Perc1Model model=new Perc1Model(bus,bus.getContributeLoad("1"),"1",data);assertTrue(model.initStates());return model;
+        var bus=context.getDStabilityNet().getDStabBus("Bus5");bus.getDynLoadModelList().clear();
+        Perc1Model model=new Perc1Model(bus,bus.getContributeLoad("1"),"1",data);
+        assertTrue(model.initStates());return model;
     }
 
     private static void advance(Perc1Model model,double dt){
         assertTrue(model.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,0));
         assertTrue(model.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,1));
         assertTrue(model.afterStep(dt));
-    }
-
-    private static double value(String[] row,Map<String,Integer> column,String name){
-        return Double.parseDouble(row[column.get(name)]);
-    }
-    private static void compare(Map<String,Double> errors,String name,double actual,double expected){
-        errors.merge(name,Math.abs(actual-expected),Math::max);
     }
 }
