@@ -125,6 +125,7 @@ import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecb1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecc1ControllerTest;
+import org.interpss.core.adapter.builder.dstab.PsseReecd1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseCsvgn5ModelTest;
@@ -787,6 +788,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseReeca1ControllerTest.class,
 	PsseReecb1ControllerTest.class,
 	PsseReecc1ControllerTest.class,
+	PsseReecd1ControllerTest.class,
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,
 	PsseCsvgn5ModelTest.class,
