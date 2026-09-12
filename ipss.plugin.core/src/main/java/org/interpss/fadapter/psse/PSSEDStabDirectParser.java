@@ -2607,6 +2607,27 @@ public class PSSEDStabDirectParser {
     // Ra comes from the RAW generator source impedance. Rcomp and Xcomp are
     // PowerWorld typed properties and are not fields in the PSS/E DYR record.
     private boolean procGenqec(String busId, String genId, String[] f) throws InterpssException {
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            if (f.length != 27
+                    || getInt(f, 4, -1) != 1 || getInt(f, 5, -1) != 1
+                    || getInt(f, 6, -1) != 1 || getInt(f, 7, -1) != 16
+                    || getInt(f, 8, -1) != 6 || getInt(f, 9, -1) != 1) {
+                log.warn("Invalid native GENQECU allocation at bus {}", busId);
+                return false;
+            }
+            GenqecData data = new GenqecData(
+                    getDouble(f, 15, 0.0), getDouble(f, 16, 0.0), 0.0,
+                    getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
+                    getDouble(f, 19, 0.0), getDouble(f, 20, 0.0),
+                    getDouble(f, 21, 0.0), getDouble(f, 22, 0.0), getDouble(f, 23, 0.0),
+                    getDouble(f, 11, 0.0), getDouble(f, 13, 0.0),
+                    getDouble(f, 12, 0.0), getDouble(f, 14, 0.0),
+                    getDouble(f, 24, 0.0), getDouble(f, 25, 0.0),
+                    0.0, 0.0, 0.0, getDouble(f, 26, 0.0), getInt(f, 10, 0));
+            double[] rating = getGenRating(busId, genId);
+            builder.addGenqec(busId, genId, rating[0], rating[1], data);
+            return true;
+        }
         if (f.length < 21) {
             log.warn("Incomplete GENQEC record at bus {}: expected 21 fields, found {}", busId, f.length);
             return false;

@@ -114,6 +114,43 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void parseGenqecu_mapsNativeWrapperWithoutPrivateFixtureData() throws Exception {
+		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+		Path dyr = tempDir.resolve("genqecu.dyr");
+		Files.writeString(dyr,
+				"1 'USRMDL' '1' 'GENQECU' 1 1 1 16 6 1 1 "
+				+ "6.40 0.032 0.68 0.043 4.40 0.07 2.05 1.74 0.34 0.49 "
+				+ "0.089 0.12 0.05 0.05 0.24 0.035 /\n");
+
+		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+		parser.parseDynFile(dyr.toString());
+		GenqecMachine mach = (GenqecMachine) builder.getDStabNetwork().getMachine("Bus1-mach1");
+		assertNotNull(mach);
+		assertEquals("GENQEC", mach.getName());
+		assertEquals(0.035, mach.getGenqecData().kw(), TOL);
+		assertEquals(0.0, mach.getGenqecData().accel(), TOL);
+		assertEquals(1, mach.getGenqecData().satFunc());
+		assertEquals(6, mach.getNamedStates().size());
+		assertEquals(23, DynamicModelCatalog.find("GENQECU").orElseThrow()
+				.recordSchema().acceptedParameterCounts().stream().mapToInt(Integer::intValue)
+				.max().orElseThrow());
+		assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+	}
+
+	@Test
+	public void parseGenqecu_rejectsIncorrectNativeAllocationHeader() throws Exception {
+		Path dyr = tempDir.resolve("genqecu-invalid-allocation.dyr");
+		Files.writeString(dyr,
+				"1 'USRMDL' '1' 'GENQECU' 1 1 1 16 5 1 1 "
+				+ "6.40 0.032 0.68 0.043 4.40 0.07 2.05 1.74 0.34 0.49 "
+				+ "0.089 0.12 0.05 0.05 0.24 0.035 /\n");
+		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(
+				DStabBuilderTestFixture.createBuilder()).setStrictImport(true);
+		assertThrows(com.interpss.common.exp.InterpssException.class,
+				() -> parser.parseDynFile(dyr.toString()));
+	}
+
+	@Test
 	public void parseGenqej_reusesGenqecDynamicsAndMapsKis() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
 		Path dyr = tempDir.resolve("genqej.dyr");

@@ -209,6 +209,7 @@ import org.interpss.core.dstab.mach.Wt3p1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt4g1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt4e1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.GenqejPsseSmibConformanceTest;
+import org.interpss.core.dstab.mach.GenqecuPsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt3e1PsseSmibConformanceTest;
 import org.interpss.core.dstab.WpidhydPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.GastdPowerWorldSmibConformanceTest;
@@ -583,6 +584,7 @@ import org.junit.platform.suite.api.Suite;
 	Wt4g1PsseSmibConformanceTest.class,
 	Wt4e1PsseSmibConformanceTest.class,
 	GenqejPsseSmibConformanceTest.class,
+	GenqecuPsseSmibConformanceTest.class,
 	Wt3e1PsseSmibConformanceTest.class,
 	WpidhydPowerWorldSmibConformanceTest.class,
 	GastdPowerWorldSmibConformanceTest.class,
