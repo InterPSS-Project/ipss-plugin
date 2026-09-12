@@ -39,6 +39,7 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
     private double oldAngle;
     private Derivatives predictorDerivative = new Derivatives(0.0, 0.0, 0.0, 0.0);
     private boolean initialized;
+    private Wt3e1Model electricalController;
 
     public Wt3g1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
             Wt3g1Data data) {
@@ -69,6 +70,7 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
         ipCommand = ipState;
         eqCommand = eqState;
         initialized = true;
+        if (electricalController != null) electricalController.initialize();
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(eqState) && finite(angle);
     }
@@ -78,6 +80,7 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
         if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0) {
             return false;
         }
+        if (electricalController != null) electricalController.step(dt, flag);
         Derivatives current = derivatives(ipState, eqState, pllIntegral, angle);
         if (flag == 0) {
             oldIpState = ipState;
@@ -211,6 +214,8 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
     public double getPllAngleState() { return angle; }
     public double getP() { return p; }
     public double getQ() { return q; }
+    public Wt3e1Model getElectricalController() { return electricalController; }
+    public void setElectricalController(Wt3e1Model value) { electricalController = value; }
 
     private static double boundedAdvance(double initial, double increment,
             double minimum, double maximum) {
