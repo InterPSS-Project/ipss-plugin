@@ -210,6 +210,8 @@ import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt4g1Data;
 import org.interpss.dstab.mach.Wt4g1Model;
+import org.interpss.dstab.mach.Wt4e1Data;
+import org.interpss.dstab.mach.Wt4e1Model;
 import org.interpss.dstab.mach.Wt3GeneratorModel;
 import org.interpss.dstab.mach.Wt3e1Data;
 import org.interpss.dstab.mach.Wt3e1Model;
@@ -440,6 +442,19 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Wt4g1Model(gen, bus, genId, data);
+    }
+
+    /** Attach WT4E1 to its WT4G1 converter host. */
+    public Wt4e1Model addWt4e1(String busId, String genId, Wt4e1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt4g1Model host)) {
+            log.warn("WT4G1 not found for WT4E1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt4e1Model model = new Wt4e1Model(data, host);
+        host.setElectricalController(model);
+        return model;
     }
 
     /** Attach WT3E1 to its WT3G1 converter host. */
