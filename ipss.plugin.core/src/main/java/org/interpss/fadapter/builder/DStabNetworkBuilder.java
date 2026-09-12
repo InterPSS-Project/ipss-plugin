@@ -200,6 +200,8 @@ import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.Cimtr4Machine;
 import org.interpss.dstab.mach.Wt1g1Data;
 import org.interpss.dstab.mach.Wt1g1Machine;
+import org.interpss.dstab.mach.Wt12t1Data;
+import org.interpss.dstab.mach.Wt12t1Model;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -346,6 +348,18 @@ public class DStabNetworkBuilder {
         mach.setXd(data.x());
         mach.setXq(data.x());
         return mach;
+    }
+
+    /** Attach the PSS/E WT12T1 mechanical model to a WT1G1 generator. */
+    public Wt12t1Model addWt12t1(String busId, String genId, Wt12t1Data data) {
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (!(machine instanceof Wt1g1Machine wt1g1)) {
+            log.warn("WT1G1 not found for WT12T1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt12t1Model model = new Wt12t1Model(data);
+        wt1g1.setDriveTrain(model);
+        return model;
     }
 
     /**
