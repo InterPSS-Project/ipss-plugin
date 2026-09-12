@@ -171,6 +171,8 @@ import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
+import org.interpss.dstab.renewable.Dera1Data;
+import org.interpss.dstab.renewable.Dera1Model;
 import org.interpss.dstab.renewable.Regca1Data;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Regfma1Data;
@@ -3205,6 +3207,17 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Regca1Model(gen, bus, genId, data);
+    }
+
+    /** Attach the combined DERA1 converter and controls to a renewable generator. */
+    public Dera1Model addDera1(String busId, String genId, Dera1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for DERA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Dera1Model(gen, bus, genId, data);
     }
 
     public Regfma1Model addRegfma1(String busId, String genId, Regfma1Data data) {

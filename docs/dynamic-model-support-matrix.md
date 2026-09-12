@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `59/59` native reference probes were cold-regenerated with the installed
+All `60/60` native reference probes were cold-regenerated with the installed
 Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. WT3G1's nonphysical sub-`1e-20 pu` speed residue is normalized
@@ -130,8 +130,13 @@ input/reference filters, inverse-time and fixed-ramp modes, timer and activation
 logic, bounded PID/derivative path, two lead-lags, and all eight named states.
 Its synthetic public fixture and reference manifest contain only repository-relative
 paths; a boolean-only audit found zero exact matches among 54 supplied records.
-One registered integrity test now scans all 139 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 576
+DERA1 and its DERAU1 wrapper now load through the exact six-ICON, 41-CON,
+ten-STATE, and 23-VAR allocation. The combined converter/controller runtime exposes
+all ten published coordinates. Its synthetic public fixture and independently
+generated fault artifact use repository-relative paths and do not copy supplied
+fleet parameters.
+One registered integrity test now scans all 140 checked-in native and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 580
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -218,6 +223,7 @@ the plan's release checklist before interpreting any
 | WT1G1 | SYNCHRONOUS_MACHINE |  | 10 | LOADABLE | `org.interpss.dstab.mach.Wt1g1Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20WT1G.htm) |
 | WT2G1 | SYNCHRONOUS_MACHINE |  | 19 | LOADABLE | `org.interpss.dstab.mach.Wt2g1Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT2G1.htm) |
 | CSVGN5 | CONVERTER_MACHINE |  | 15 | LOADABLE | `org.interpss.dstab.svc.Csvgn5Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20CSVGN5.htm) |
+| DERA1 | CONVERTER_MACHINE | DERAU1 | 47 | LOADABLE | `org.interpss.dstab.renewable.Dera1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20DER_A.htm) |
 | REGCA1 | CONVERTER_MACHINE | REGCAU1 | 15 | LOADABLE | `org.interpss.dstab.renewable.Regca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm) |
 | REGFMA1 | CONVERTER_MACHINE |  | 19 | LOADABLE | `org.interpss.dstab.renewable.Regfma1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_A1.htm) |
 | WT3G1 | CONVERTER_MACHINE |  | 6 | LOADABLE | `org.interpss.dstab.mach.Wt3g1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT3G1.htm) |

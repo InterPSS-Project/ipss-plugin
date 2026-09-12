@@ -21,6 +21,7 @@ import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderBranchTest;
 import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderCoreTest;
 import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExciterTest;
+import org.interpss.core.adapter.builder.dstab.Dera1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Exdc2aOpenSourceEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ieeex1AndesEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ieeet4OpenSourceEquationConformanceTest;
@@ -200,6 +201,7 @@ import org.interpss.core.dstab.WesgovdPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.PidgovdPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.PidgovPsseSmibConformanceTest;
 import org.interpss.core.dstab.Csvgn5PsseSmibConformanceTest;
+import org.interpss.core.dstab.Dera1NativeSmibConformanceTest;
 import org.interpss.core.dstab.Svsmo1t2PsseConformanceTest;
 import org.interpss.core.dstab.mach.Wt1g1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt2g1PsseSmibConformanceTest;
@@ -582,6 +584,8 @@ import org.junit.platform.suite.api.Suite;
 	PidgovdPowerWorldSmibConformanceTest.class,
 	PidgovPsseSmibConformanceTest.class,
 	Csvgn5PsseSmibConformanceTest.class,
+	Dera1NativeSmibConformanceTest.class,
+	Dera1ModelTest.class,
 	Svsmo1t2PsseConformanceTest.class,
 	Wt1g1PsseSmibConformanceTest.class,
 	Wt2g1PsseSmibConformanceTest.class,
