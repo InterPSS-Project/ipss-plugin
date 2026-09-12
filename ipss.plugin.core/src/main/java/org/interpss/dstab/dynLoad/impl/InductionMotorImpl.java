@@ -5,7 +5,9 @@ package org.interpss.dstab.dynLoad.impl;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.InductionMotor;
@@ -987,6 +989,9 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 * @ordered
 	 */
 	protected double loadFactor = LOAD_FACTOR_EDEFAULT;
+
+	/** NaN preserves the legacy quadratic A+B*w+C*w^2 torque characteristic. */
+	protected double torqueExponent = Double.NaN;
 	
 	/**
 	 * @generated NOT
@@ -1894,7 +1899,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    w = 1- slip;
 	    //Tm = (a+bw+cw^2)T0
 	    if(b == 0.0 && c == 0.0) a = 1.0;
-	    tm0 = tm/(a+b*w+c*w*w);
+	    tm0 = tm/mechanicalTorqueFactor(w);
 	    
 	    // extended Id;
 	    extendedDeviceId = "IndMotor_"+this.getId()+"@"+this.getDStabBus().getId();
@@ -1915,7 +1920,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 			
 			w =1-slip;
-		    this.tm = (a + b*w + c*w*w)*tm0;
+		    this.tm = mechanicalTorqueFactor(w)*tm0;
 		    
 		    double dSLIP_dt = 0;
 			if(method==DynamicSimuMethod.MODIFIED_EULER) {
@@ -2048,7 +2053,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    //Tm = (a + bw + cw^2)Tm0, w is speed
 	    
 	    w =1-slip;
-	    tm = (a + b*w + c*w*w)*tm0;
+	    tm = mechanicalTorqueFactor(w)*tm0;
 	    
 	    //dSLIP/dt = (Tm-Te)/2H
 	    double dSLIP_dt = (tm-te)/(2*this.h);
@@ -2062,6 +2067,25 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		double dEppr = -w0*slip*(Epm-Eppm)+dEpr+(Epr-Eppr-(xp-xpp)*Im)/tpp0;
 	    double dEppm = w0*slip*(Epr-Eppr)+dEpm+(Epm-Eppm+(xp-xpp)*Ir)/tpp0;
 	    return new Complex(dEppr,dEppm);
+	}
+
+	private double mechanicalTorqueFactor(double speed) {
+		return Double.isNaN(torqueExponent)
+				? a + b * speed + c * speed * speed
+				: Math.pow(Math.max(0.0, speed), torqueExponent);
+	}
+
+	@Override
+	public double getTorqueExponent() {
+		return torqueExponent;
+	}
+
+	@Override
+	public void setTorqueExponent(double exponent) {
+		if (!Double.isFinite(exponent)) {
+			throw new IllegalArgumentException("Motor torque exponent must be finite");
+		}
+		this.torqueExponent = exponent;
 	}
 	
     private Complex calc_Epp_corrective_step(double w0, double Epr, double Epm, double Eppr, double Eppm, double dEpr, double dEpm, double Im, double Ir){
@@ -2282,6 +2306,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	@Override
 	public Hashtable<String, Object> getStates(Object ref) {
+		this.states.putAll(getNamedStates());
 		
 		double factor = 1;
 		if (isOutputPowerSysMVABase) 
@@ -2297,6 +2322,24 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		this.states.put(this.OUT_SYMBOL_FUV,this.Fuv);
 		
 		return this.states;
+	}
+
+	@Override
+	public Map<String, Double> getNamedStates() {
+		Map<String, Double> named = new LinkedHashMap<>();
+		named.put("EpReal", getEp() == null ? 0.0 : getEp().getReal());
+		named.put("EpImag", getEp() == null ? 0.0 : getEp().getImaginary());
+		named.put("EppReal", getEpp() == null ? 0.0 : getEpp().getReal());
+		named.put("EppImag", getEpp() == null ? 0.0 : getEpp().getImaginary());
+		named.put("Slip", getSlip());
+		named.put("Speed", getW());
+		named.put("TripTimer1", lvProtectionTimer1);
+		named.put("TripTimer2", lvProtectionTimer2);
+		named.put("ReconnectTimer1", lvReconnectTimer1);
+		named.put("ReconnectTimer2", lvReconnectTimer2);
+		named.put("UvFraction", getFuv());
+		named.put("OnlineFraction", getFonline());
+		return Map.copyOf(named);
 	}
 	
 	
