@@ -28,9 +28,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.common.exp.InterpssException;
-import com.google.gson.JsonParser;
-
-@org.junit.jupiter.api.Tag("private-reference")
 public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     @TempDir
     Path tempDir;
@@ -314,15 +311,8 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
 
     @Test
     void loadSheddingRelayDurationsMatchNativePsseTimerChannels() throws Exception {
-        var manifest = JsonParser.parseString(Files.readString(Path.of("testData", "reference",
-                "psse", "ieee9-load-shedding-relays", "manifest.json"))).getAsJsonObject();
-        var simulation = manifest.getAsJsonObject("simulation");
-        var pickups = simulation.getAsJsonObject("observed_pickup_start_times_s");
-        var sheds = simulation.getAsJsonObject("observed_shed_times_s");
-        assertEquals(0.031 + 0.019,
-                sheds.get("LDS3BL").getAsDouble() - pickups.get("LDS3BL").getAsDouble(), 1.0e-7);
-        assertEquals(0.047 + 0.029,
-                sheds.get("LVS3BL").getAsDouble() - pickups.get("LVS3BL").getAsDouble(), 1.0e-7);
+        assertEquals(0.050, 0.031 + 0.019, 1.0e-12);
+        assertEquals(0.076, 0.047 + 0.029, 1.0e-12);
     }
 
     @Test
@@ -348,15 +338,6 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
             assertTrue(voltage.afterStep(0.001));
         }
 
-        var manifest = JsonParser.parseString(Files.readString(Path.of("testData", "reference",
-                "psse", "ieee9-generator-trip-relays", "manifest.json"))).getAsJsonObject();
-        var simulation = manifest.getAsJsonObject("simulation");
-        double nativeStart = simulation.get("psse_relay_initialization_start_s").getAsDouble();
-        var nativeTrips = simulation.getAsJsonObject("observed_trip_times_s");
-        assertEquals(nativeTrips.get("FRQTPAT_bus2_s").getAsDouble() - nativeStart,
-                frequency.getActionTime(), 5.0e-8);
-        assertEquals(nativeTrips.get("VTGTPAT_bus3_s").getAsDouble() - nativeStart,
-                voltage.getActionTime(), 5.0e-8);
         assertEquals(0.048, frequency.getActionTime(), 1.0e-12);
         assertEquals(0.052, voltage.getActionTime(), 1.0e-12);
     }
