@@ -2,13 +2,13 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.interpss.IpssCorePlugin;
+import org.interpss.core.dstab.reference.EmbeddedCsvTrajectoryValues;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,6 @@ import com.interpss.dstab.datatype.DStabSimuEvent;
 import com.interpss.dstab.devent.DynamicSimuEventType;
 
 /** Full-stack trajectory comparison against native ANDES 2.0.0 EXAC1. */
-@org.junit.jupiter.api.Tag("private-reference")
 public class Exac1AndesSmibConformanceTest {
     private static final double STEP=.0005;
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
@@ -87,7 +86,7 @@ public class Exac1AndesSmibConformanceTest {
         return new Series(time,value);
     }
     private static List<double[]> readReference() throws Exception {
-        List<double[]> rows=new ArrayList<>();for(String line:Files.readAllLines(REFERENCE)){
+        List<double[]> rows=new ArrayList<>();for(String line:EmbeddedCsvTrajectoryValues.lines("exac1-smib-line-trip.csv")){
             if(line.isBlank()||line.startsWith("#")||line.startsWith("time_s"))continue;
             String[] values=line.split(",");double[] row=new double[values.length];
             for(int i=0;i<values.length;i++)row[i]=Double.parseDouble(values[i]);rows.add(row);
