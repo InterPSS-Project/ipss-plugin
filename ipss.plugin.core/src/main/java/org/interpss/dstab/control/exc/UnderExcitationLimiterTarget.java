@@ -12,4 +12,9 @@ public interface UnderExcitationLimiterTarget {
     default double getUelStabilizingSignal() {
         return 0.0;
     }
+
+    /** ST7C reference-feedback signal used only by UEL2C's KFB path. */
+    default double getUelReferenceFeedbackSignal() {
+        return 0.0;
+    }
 }

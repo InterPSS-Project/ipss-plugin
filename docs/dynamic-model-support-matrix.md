@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `58/58` native reference probes were cold-regenerated with the installed
+All `59/59` native reference probes were cold-regenerated with the installed
 Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. WT3G1's nonphysical sub-`1e-20 pu` speed residue is normalized
@@ -76,6 +76,13 @@ immutable named states. A clean native PSS/E 36.7 ST1C-coupled fault artifact
 and a separate recorded-error play-in distinguish full-loop boundary agreement
 from the limiter equations themselves; every compared channel has an explicit
 limit and no supplied-fleet constants are checked in.
+UEL2CU1 now loads through its exact user-model allocation of four ICONs,
+47 CONs, nine STATEs, and two VARs; the flat UEL2C interchange form remains
+available. The runtime implements voltage/P/Q filtering, voltage normalization,
+the multi-segment P-Q lookup table, both third-quadrant rules, fixed and
+adjustable gain reduction, the bounded PI path, dedicated ST7C reference
+feedback, two lead-lags, final limits, and all nine named states. Its public
+fixture uses deliberately synthetic constants and repository-relative paths.
 CSVGN5 now has its exact one-ICON/14-CON generator-model schema and a dedicated
 four-state static-var-compensator runtime. Its remote voltage filter, limited
 two-stage regulator, fast voltage-error override, thyristor lag, and
@@ -123,8 +130,8 @@ input/reference filters, inverse-time and fixed-ramp modes, timer and activation
 logic, bounded PID/derivative path, two lead-lags, and all eight named states.
 Its synthetic public fixture and reference manifest contain only repository-relative
 paths; a boolean-only audit found zero exact matches among 54 supplied records.
-One registered integrity test now scans all 138 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 572
+One registered integrity test now scans all 139 checked-in native and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 576
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -321,6 +328,7 @@ the plan's release checklist before interpreting any
 | PSSSB | STABILIZER |  | 30 | LOADABLE | `org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSSSB.htm) |
 | ST2CUT | STABILIZER | WSCCST | 20 | LOADABLE | `org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20ST2CUT.htm) |
 | UEL1 | UNDER_EXCITATION_LIMITER |  | 15 | LOADABLE | `org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Under%20Excitation%20Limiter%20UEL1.htm) |
+| UEL2C | UNDER_EXCITATION_LIMITER | UEL2CU1 | 51 | LOADABLE | `org.interpss.dstab.control.uel.psse.uel2c.Uel2cUnderExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Under%20Excitation%20Limiter%20UEL2C.htm) |
 | OEL2C | OVER_EXCITATION_LIMITER | OEL2CU1 | 43 | LOADABLE | `org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Over%20Excitation%20Limiter%20OEL2C.htm) |
 | REECA1 | ELECTRICAL_CONTROLLER | REECAU1 | 51 | LOADABLE | `org.interpss.dstab.renewable.Reeca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_A.htm) |
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |

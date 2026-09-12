@@ -131,6 +131,8 @@ import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
 import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
 import org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter;
+import org.interpss.dstab.control.uel.psse.uel2c.Uel2cData;
+import org.interpss.dstab.control.uel.psse.uel2c.Uel2cUnderExcitationLimiter;
 import org.interpss.dstab.control.oel.psse.oel2c.Oel2cData;
 import org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
@@ -3166,6 +3168,17 @@ public class DStabNetworkBuilder {
             log.warn("Incompatible UEL1 target at {} {}: {}", busId, genId, ex.getMessage());
             return null;
         }
+    }
+
+    /** Attach a UEL2C auxiliary controller without replacing the exciter. */
+    public Uel2cUnderExcitationLimiter addUel2c(String busId,String genId,Uel2cData data){
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);
+        Machine machine=network.getMachine(busId+"-mach"+genId);
+        if(bus==null||machine==null||!machine.hasExciter()){
+            log.warn("Machine/exciter not found for UEL2C: bus={}, gen={}",busId,genId);return null;
+        }
+        try{return new Uel2cUnderExcitationLimiter(bus,machine,genId,data);}
+        catch(IllegalArgumentException ex){log.warn("Incompatible UEL2C target at {} {}: {}",busId,genId,ex.getMessage());return null;}
     }
 
     /** Attach an OEL2C auxiliary controller without replacing the exciter. */
