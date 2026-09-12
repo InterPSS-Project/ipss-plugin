@@ -518,6 +518,37 @@ public class PSSEDirectParser_VersionGate_Test extends CorePluginTestSetup {
 	}
 
 	@Test
+	public void testV36InductionMachinesBecomeDistinctPowerFlowLoads() throws Exception {
+		AclfNetwork raw = new PSSEDirectParser().parse("testData/psse/v36/sample_v36.raw");
+		AclfNetwork rawx = new PSSEJsonDirectParser().parse(
+				"testData/adpter/psse/json/sample.rawx");
+
+		for (AclfNetwork net : Set.of(raw, rawx)) {
+			assertNotNull(net.getBus("Bus3010").getContributeLoad("1"),
+					"ordinary RAW load ID 1 must not be replaced");
+			var motor1 = net.getBus("Bus3010").getContributeLoad("IM-1");
+			var generator1 = net.getBus("Bus9154").getContributeLoad("IM-1");
+			var motor2 = net.getBus("Bus9204").getContributeLoad("IM-1");
+			var generator2 = net.getBus("Bus93002").getContributeLoad("IM-1");
+			assertNotNull(motor1);
+			assertNotNull(generator1);
+			assertNotNull(motor2);
+			assertNotNull(generator2);
+			assertTrue(motor1.getLoadCP().getReal() > 0.0);
+			assertTrue(motor2.getLoadCP().getReal() > 0.0);
+			assertTrue(generator1.getLoadCP().getReal() < 0.0);
+			assertTrue(generator2.getLoadCP().getReal() < 0.0);
+			assertTrue(motor1.getLoadCP().getImaginary() > 0.0);
+			assertTrue(generator1.getLoadCP().getImaginary() > 0.0,
+					"an induction generator still draws magnetizing vars");
+			assertEquals(0.1070050784, motor2.getLoadCP().getReal(), 1.0E-8);
+			assertEquals(0.0531387791, motor2.getLoadCP().getImaginary(), 1.0E-8);
+			assertEquals(-0.0497754098, generator2.getLoadCP().getReal(), 1.0E-8);
+			assertEquals(0.0279132984, generator2.getLoadCP().getImaginary(), 1.0E-8);
+		}
+	}
+
+	@Test
 	public void testWrongVersionForce_v36AsV30_noBus0() throws Exception {
 		// Forcing v30 section layout on a v36 file misaligns sections; Bus0 guard must still hold.
 		AclfNetwork net = new PSSEDirectParser(30).parse("testData/psse/v36/sample_v36.raw");
