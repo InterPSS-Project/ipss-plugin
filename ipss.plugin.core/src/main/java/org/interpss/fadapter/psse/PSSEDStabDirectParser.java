@@ -42,6 +42,7 @@ import org.interpss.dstab.mach.Gentpj1Data;
 import org.interpss.dstab.mach.GentraData;
 import org.interpss.dstab.mach.IeeeVcData;
 import org.interpss.dstab.mach.Wt1g1Data;
+import org.interpss.dstab.mach.Wt2g1Data;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12a1Data;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
@@ -374,6 +375,8 @@ public class PSSEDStabDirectParser {
                 return procCimtr4(busId, genId, fields);
             case "WT1G1":
                 return procWt1g1(busId, genId, fields);
+            case "WT2G1":
+                return procWt2g1(busId, genId, fields);
             case "WT12T1":
                 return procWt12t1(busId, genId, fields);
             case "WT12A1":
@@ -2675,6 +2678,30 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 11, 0.0), getDouble(f, 12, 0.0));
         double[] rating = getGenRating(busId, genId);
         return builder.addWt1g1(busId, genId, rating[0], rating[1], data) != null;
+    }
+
+    // PSS/E 36.7: IBUS 'WT2G1' ID XA XM X1 R_ROT_MACH R_ROT_MAX E1 SE1 E2 SE2
+    //              POWER_REF_1..5 SLIP_1..5
+    private boolean procWt2g1(String busId, String genId, String[] f) throws InterpssException {
+        if (f.length != 22) {
+            log.warn("Invalid WT2G1 record at bus {}: expected 22 fields, found {}",
+                    busId, f.length);
+            return false;
+        }
+        double[] power = new double[5];
+        double[] slip = new double[5];
+        for (int i = 0; i < 5; i++) {
+            power[i] = getDouble(f, 12 + i, 0.0);
+            slip[i] = getDouble(f, 17 + i, 0.0);
+        }
+        Wt2g1Data data = new Wt2g1Data(
+                getDouble(f, 3, 0.0), getDouble(f, 4, 0.0),
+                getDouble(f, 5, 0.0), getDouble(f, 6, 0.0),
+                getDouble(f, 7, 0.0), getDouble(f, 8, 0.0),
+                getDouble(f, 9, 0.0), getDouble(f, 10, 0.0),
+                getDouble(f, 11, 0.0), power, slip);
+        double[] rating = getGenRating(busId, genId);
+        return builder.addWt2g1(busId, genId, rating[0], rating[1], data) != null;
     }
 
     // PSS/E 36.7: IBUS 'WT12T1' ID H DAMP Htfrac Freq1 Dshaft
