@@ -19,9 +19,7 @@ import org.junit.jupiter.api.Test;
 /** Fleet-wide schema/profile gate for existing Texas2k legacy controllers. */
 public class Texas2kLegacyControllerProfileTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final Set<String> MODELS = Set.of("EXST1", "IEEET1", "IEEEG1");
     private static final Map<String, Integer> EXPECTED_RECORDS = Map.of(
             "EXST1", 756, "IEEET1", 96, "IEEEG1", 258);

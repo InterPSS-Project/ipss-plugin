@@ -25,9 +25,7 @@ import com.interpss.dstab.DStabGen;
 /** Private-data integration gate for every Case 1 synchronous machine and GGOV1. */
 class Texas2kGgov1CoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final Path CASE = ROOT.resolve("Texas2k_series24_case1_2016summerpeak");
     private static final Path RAW = CASE.resolve("Texas2k_series24_case1_2016summerPeak_v36.RAW");
     private static final Path DYR = CASE.resolve("dynamic_models_case1.dyr");

@@ -28,9 +28,7 @@ import com.interpss.dstab.DStabGen;
 /** Strict private-data gate for the Texas2k Type-3 wind stacks without WTDTA1. */
 class Texas2kType3WindCoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final Set<String> STACK_MODELS = Set.of(
             "REGCA1", "REECA1", "WTPTA1", "WTTQA1", "WTARA1", "REPCA1");
 

@@ -21,9 +21,7 @@ import org.junit.jupiter.api.Test;
 /** Generated behavioral coverage over every distinct Texas2k wind-control profile. */
 public class Texas2kWindProfileCoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.dynamic.case.dir",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final List<String> CASES = List.of(
             "Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",
             "Texas2k_series24_case2_2016lowload/dynamic_models_case2.dyr",
