@@ -18,7 +18,7 @@ import org.junit.jupiter.api.Test;
 class DynamicModelCatalogTest {
     @Test
     void catalogsEveryTexas2kModelAndResolvesAliases() {
-        assertEquals(23, DynamicModelCatalog.texas2kModels().size());
+        assertEquals(24, DynamicModelCatalog.texas2kModels().size());
         assertEquals("GENROU", DynamicModelCatalog.canonicalName("genroe"));
         assertEquals("REGCA1", DynamicModelCatalog.canonicalName("regcau1"));
         assertEquals("REPCA1", DynamicModelCatalog.canonicalName("repcta1"));
