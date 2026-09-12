@@ -65,6 +65,30 @@ public record Wt2g1Data(
         return slip[last];
     }
 
+    /** Requested power corresponding to a generator speed deviation. */
+    public double powerAtSpeedDeviation(double speedDeviation) {
+        int nearest = 0;
+        double nearestDistance = Math.abs(speedDeviation - slip[0]);
+        for (int i = 1; i < slip.length; i++) {
+            double lower = slip[i - 1];
+            double upper = slip[i];
+            if (speedDeviation >= Math.min(lower, upper)
+                    && speedDeviation <= Math.max(lower, upper)) {
+                double width = upper - lower;
+                if (Math.abs(width) <= EPS) return powerReference[i];
+                double fraction = (speedDeviation - lower) / width;
+                return powerReference[i - 1]
+                        + fraction * (powerReference[i] - powerReference[i - 1]);
+            }
+            double distance = Math.abs(speedDeviation - slip[i]);
+            if (distance < nearestDistance) {
+                nearest = i;
+                nearestDistance = distance;
+            }
+        }
+        return powerReference[nearest];
+    }
+
     private static double[] validateCurve(double[] values, String name) {
         if (values == null || values.length != 5) {
             throw new IllegalArgumentException("WT2G1 " + name + " curve must contain five values");

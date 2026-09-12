@@ -4,3 +4,10 @@
 /ipss.test.plugin.core/src/test/python/psse_gentpj1_probe.py -text whitespace=cr-at-eol
 /ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_gentpj1_psse36.dyr -text whitespace=cr-at-eol
 /ipss.test.plugin.core/testData/reference/psse/smib-gentpj1/* -text whitespace=cr-at-eol
+/ipss.test.plugin.core/src/test/python/psse_wt2g1_probe.py text eol=lf
+/ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_wt2g1_psse36.raw text eol=lf
+/ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_wt2g1_psse36.dyr text eol=lf
+/ipss.test.plugin.core/testData/reference/psse/smib-wt2g1/* text eol=lf
+/ipss.test.plugin.core/src/test/python/psse_wt2e1_probe.py text eol=lf
+/ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_wt2e1_psse36.dyr text eol=lf
+/ipss.test.plugin.core/testData/reference/psse/smib-wt2e1/* text eol=lf
