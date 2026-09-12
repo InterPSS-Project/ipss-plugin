@@ -171,6 +171,8 @@ import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
 import org.interpss.dstab.renewable.Reecc1Data;
 import org.interpss.dstab.renewable.Reecc1Model;
+import org.interpss.dstab.renewable.Reecd1Data;
+import org.interpss.dstab.renewable.Reecd1Model;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Dera1Data;
@@ -3333,6 +3335,26 @@ public class DStabNetworkBuilder {
         return controller;
     }
 
+    public Reecd1Model addReecd1(String busId, String genId, Reecd1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Renewable converter not found for REECD1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reecd1Model controller = new Reecd1Model(data);
+        if (gen.getDynamicGenDevice() instanceof Regca1Model converter) {
+            converter.setActiveElectricalController(controller);
+            return controller;
+        }
+        if (gen.getDynamicGenDevice() instanceof Regcb1Model converter) {
+            converter.setActiveElectricalController(controller);
+            return controller;
+        }
+        log.warn("REGCA1/REGCB1 not found for REECD1: bus={}, gen={}", busId, genId);
+        return null;
+    }
+
     public Reeca1Model addReeca1(String busId, String genId, Reeca1Data data) {
         Regca1Model converter = findRegca1(busId, genId);
         if (converter == null) {
@@ -3351,13 +3373,20 @@ public class DStabNetworkBuilder {
             converter.getActiveElectricalController().setPlantController(controller);
             return controller;
         }
+        Regcb1Model behindImpedance = findRegcb1(busId, genId);
+        if (behindImpedance != null
+                && behindImpedance.getActiveElectricalController() != null) {
+            Repca1Model controller = new Repca1Model(data, behindImpedance);
+            behindImpedance.getActiveElectricalController().setPlantController(controller);
+            return controller;
+        }
         Regfma1Model gridForming = findRegfma1(busId, genId);
         if (gridForming != null) {
             Repca1Model controller = new Repca1Model(data, gridForming);
             gridForming.setPlantController(controller);
             return controller;
         }
-        log.warn("REGCA1/REEC or REGFMA1 chain not found for REPCA1: bus={}, gen={}",
+        log.warn("REGCA1/REGCB1/REEC or REGFMA1 chain not found for REPCA1: bus={}, gen={}",
                 busId, genId);
         return null;
     }
@@ -3431,6 +3460,12 @@ public class DStabNetworkBuilder {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
         return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
+    }
+
+    private Regcb1Model findRegcb1(String busId, String genId) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        return gen != null && gen.getDynamicGenDevice() instanceof Regcb1Model model ? model : null;
     }
 
     private Regfma1Model findRegfma1(String busId, String genId) {
