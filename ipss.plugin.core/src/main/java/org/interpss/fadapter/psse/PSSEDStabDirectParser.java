@@ -71,6 +71,7 @@ import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
+import org.interpss.dstab.control.uel.psse.uel2c.Uel2cData;
 import org.interpss.dstab.control.oel.psse.oel2c.Oel2cData;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
@@ -142,6 +143,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
+    private final List<PendingUel2c> pendingUel2c = new ArrayList<>();
     private final List<PendingOel2c> pendingOel2c = new ArrayList<>();
     private boolean strictImport;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
@@ -201,6 +203,8 @@ public class PSSEDStabDirectParser {
         pendingLcfb1.clear();
         pendingIeeeVc.clear();
         pendingUel1.clear();
+        pendingUel2c.clear();
+        pendingOel2c.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
         for (PsseDyrRecord record : records) {
             try {
@@ -234,7 +238,7 @@ public class PSSEDStabDirectParser {
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
-                        || type.equals("OEL2C");
+                        || type.equals("OEL2C") || type.equals("UEL2C");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
@@ -289,6 +293,13 @@ public class PSSEDStabDirectParser {
                     attached ? "" : "UEL1 requires a compatible loaded exciter");
         }
         pendingUel1.clear();
+        for (PendingUel2c pending : pendingUel2c) {
+            boolean attached = procUel2c(pending.busId(), pending.genId(), pending.fields());
+            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                    : DynamicModelImportStatus.REJECTED,
+                    attached ? "" : "UEL2C requires a compatible loaded exciter");
+        }
+        pendingUel2c.clear();
         for (PendingOel2c pending : pendingOel2c) {
             boolean attached = procOel2c(pending.busId(), pending.genId(), pending.fields());
             report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
@@ -375,6 +386,9 @@ public class PSSEDStabDirectParser {
                 return true;
             case "UEL1":
                 pendingUel1.add(new PendingUel1(busId, genId, fields.clone(), record));
+                return true;
+            case "UEL2C":
+                pendingUel2c.add(new PendingUel2c(busId, genId, fields.clone(), record));
                 return true;
             case "OEL2C":
                 pendingOel2c.add(new PendingOel2c(busId, genId, fields.clone(), record));
@@ -2078,6 +2092,36 @@ public class PSSEDStabDirectParser {
 
     private record PendingUel1(String busId, String genId, String[] fields,
             PsseDyrRecord record) {}
+
+    // UEL2C flat form, or UEL2CU1 wrapper with four ICONs, 47 CONs,
+    // nine STATEs, and two VARs.
+    private boolean procUel2c(String busId,String genId,String[] f){
+        int offset=3;
+        if("USRMDL".equalsIgnoreCase(f[1])){
+            if(f.length!=61||getInt(f,4,-1)!=9||getInt(f,5,-1)!=0
+                    ||getInt(f,6,-1)!=4||getInt(f,7,-1)!=47
+                    ||getInt(f,8,-1)!=9||getInt(f,9,-1)!=2){
+                log.warn("Invalid native UEL2CU1 allocation at bus {}",busId);return false;
+            }
+            offset=10;
+        }else if(f.length!=54)return false;
+        Uel2cData d=new Uel2cData(getInt(f,offset,0),getInt(f,offset+1,0),getInt(f,offset+2,0),getInt(f,offset+3,1),
+                getDouble(f,offset+4,0),getDouble(f,offset+5,0),getDouble(f,offset+6,0),getDouble(f,offset+7,0),
+                getDouble(f,offset+8,0),getDouble(f,offset+9,0),getDouble(f,offset+10,0),getDouble(f,offset+11,0),
+                getDouble(f,offset+12,0),getDouble(f,offset+13,0),getDouble(f,offset+14,0),getDouble(f,offset+15,0),
+                getDouble(f,offset+16,0),getDouble(f,offset+17,0),getDouble(f,offset+18,0),getDouble(f,offset+19,0),
+                getDouble(f,offset+20,0),getDouble(f,offset+21,0),getDouble(f,offset+22,0),getDouble(f,offset+23,0),
+                getDouble(f,offset+24,0),getDouble(f,offset+25,0),getDouble(f,offset+26,0),getDouble(f,offset+27,0),
+                getDouble(f,offset+28,0),getDouble(f,offset+29,0),getDouble(f,offset+30,0),getDouble(f,offset+31,0),
+                getDouble(f,offset+32,0),getDouble(f,offset+33,0),getDouble(f,offset+34,0),getDouble(f,offset+35,0),
+                getDouble(f,offset+36,0),getDouble(f,offset+37,0),getDouble(f,offset+38,0),getDouble(f,offset+39,0),
+                getDouble(f,offset+40,0),getDouble(f,offset+41,0),getDouble(f,offset+42,0),getDouble(f,offset+43,0),
+                getDouble(f,offset+44,0),getDouble(f,offset+45,0),getDouble(f,offset+46,0),getDouble(f,offset+47,0),
+                getDouble(f,offset+48,0),getDouble(f,offset+49,0),getDouble(f,offset+50,1));
+        return builder.addUel2c(busId,genId,d)!=null;
+    }
+
+    private record PendingUel2c(String busId,String genId,String[] fields,PsseDyrRecord record){}
 
     // OEL2C flat form, or OEL2CU1 wrapper with two ICONs, 41 CONs,
     // eight STATEs, and eight VARs.
