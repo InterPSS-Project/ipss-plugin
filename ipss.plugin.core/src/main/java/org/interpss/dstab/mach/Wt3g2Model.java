@@ -39,6 +39,7 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
     private Derivative predictor;
     private boolean initialized;
     private Wt3e1Model electricalController;
+    private Wt3t1Model driveTrain;
 
     public Wt3g2Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
             Wt3g2Data data) {
@@ -73,6 +74,10 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
         deltaQ = 0.0;
         initialized = true;
         if (electricalController != null) electricalController.initialize();
+        if (driveTrain != null) driveTrain.initialize(p,
+                1.0 + (electricalController == null ? 0.0
+                        : electricalController.getSpeedDeviation()),
+                bus.getNetwork().getFrequency());
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(eqState) && finite(angle);
     }
@@ -81,6 +86,12 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0
                 || (flag != 0 && flag != 1)) return false;
+        if (driveTrain != null) {
+            driveTrain.step(dt, p, flag);
+            if (electricalController != null) {
+                electricalController.setSpeedDeviation(driveTrain.getGeneratorSpeed() - 1.0);
+            }
+        }
         if (electricalController != null) electricalController.step(dt, flag);
         State current = state();
         Derivative derivative = derivatives(current);
@@ -216,6 +227,7 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
         named.put("PLL first integrator", pllIntegral);
         named.put("PLL second integrator", angle);
         named.put("Voltage sensor for LVPL", filteredVoltage);
+        if (driveTrain != null) named.putAll(driveTrain.getNamedStates());
         return Map.copyOf(named);
     }
 
@@ -261,6 +273,8 @@ public final class Wt3g2Model extends DynamicBusDeviceImpl
     public double getDeltaQ() { return deltaQ; }
     @Override public Wt3e1Model getElectricalController() { return electricalController; }
     @Override public void setElectricalController(Wt3e1Model value) { electricalController = value; }
+    @Override public Wt3t1Model getDriveTrain() { return driveTrain; }
+    @Override public void setDriveTrain(Wt3t1Model value) { driveTrain = value; }
 
     private record State(double ip, double eq, double pllIntegral, double angle,
             double filteredVoltage) { }
