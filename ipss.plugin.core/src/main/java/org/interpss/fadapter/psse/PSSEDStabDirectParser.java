@@ -49,6 +49,7 @@ import org.interpss.dstab.mach.Wt2g1Data;
 import org.interpss.dstab.mach.Wt2e1Data;
 import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Gewtgcu1Data;
+import org.interpss.dstab.mach.Gewtecu1Data;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt4g1Data;
 import org.interpss.dstab.mach.Wt4e1Data;
@@ -422,6 +423,8 @@ public class PSSEDStabDirectParser {
                 return procWt3g1(busId, genId, fields);
             case "GEWTGCU1":
                 return procGewtgcu1(busId, genId, fields);
+            case "GEWTECU1":
+                return procGewtecu1(busId, genId, fields);
             case "WT3G2":
                 return procWt3g2(busId, genId, fields);
             case "WT4G1":
@@ -3006,6 +3009,44 @@ public class PSSEDStabDirectParser {
                 getDouble(f, o + 14, 0.0), getDouble(f, o + 15, 0.0),
                 getDouble(f, o + 16, 0.0), getDouble(f, o + 17, 0.0),
                 getDouble(f, o + 18, 0.0), getDouble(f, o + 19, 0.0))) != null;
+    }
+
+    // Native wrapper: 102 0 9 67 18 16, nine ICONs, then sixty-seven CONs.
+    private boolean procGewtecu1(String busId, String genId, String[] f) {
+        if (f.length != 86 || !"USRMDL".equalsIgnoreCase(f[1])
+                || getInt(f, 4, -1) != 102 || getInt(f, 5, -1) != 0
+                || getInt(f, 6, -1) != 9 || getInt(f, 7, -1) != 67
+                || getInt(f, 8, -1) != 18 || getInt(f, 9, -1) != 16) {
+            log.warn("Invalid GEWTECU1 allocation at bus {}", busId);
+            return false;
+        }
+        int o = 10;
+        return builder.addGewtecu1(busId, genId, new Gewtecu1Data(
+                getInt(f,o,0),getInt(f,o+1,0),getInt(f,o+2,0),getInt(f,o+3,0),
+                getInt(f,o+4,0),getInt(f,o+5,0),getInt(f,o+6,0),f[o+7],getInt(f,o+8,0),
+                getDouble(f,o+9,0),getDouble(f,o+10,0),getDouble(f,o+11,0),
+                getDouble(f,o+12,0),getDouble(f,o+13,0),getDouble(f,o+14,0),
+                getDouble(f,o+15,0),getDouble(f,o+16,0),getDouble(f,o+17,0),
+                getDouble(f,o+18,0),getDouble(f,o+19,0),getDouble(f,o+20,0),
+                getDouble(f,o+21,0),getDouble(f,o+22,0),getDouble(f,o+23,0),
+                getDouble(f,o+24,0),getDouble(f,o+25,0),getDouble(f,o+26,0),
+                getDouble(f,o+27,0),getDouble(f,o+28,0),getDouble(f,o+29,0),
+                getDouble(f,o+30,0),getDouble(f,o+31,0),getDouble(f,o+32,0),
+                getDouble(f,o+33,0),getDouble(f,o+34,0),getDouble(f,o+35,0),
+                getDouble(f,o+36,0),getDouble(f,o+37,0),getDouble(f,o+38,0),
+                getDouble(f,o+39,0),getDouble(f,o+40,0),getDouble(f,o+41,0),
+                getDouble(f,o+42,0),getDouble(f,o+43,0),getDouble(f,o+44,0),
+                getDouble(f,o+45,0),getDouble(f,o+46,0),getDouble(f,o+47,0),
+                getDouble(f,o+48,0),getDouble(f,o+49,0),getDouble(f,o+50,0),
+                getDouble(f,o+51,0),getDouble(f,o+52,0),getDouble(f,o+53,0),
+                getDouble(f,o+54,0),getDouble(f,o+55,0),getDouble(f,o+56,0),
+                getDouble(f,o+57,0),getDouble(f,o+58,0),getDouble(f,o+59,0),
+                getDouble(f,o+60,0),getDouble(f,o+61,0),getDouble(f,o+62,0),
+                getDouble(f,o+63,0),getDouble(f,o+64,0),getDouble(f,o+65,0),
+                getDouble(f,o+66,0),getDouble(f,o+67,0),getDouble(f,o+68,0),
+                getDouble(f,o+69,0),getDouble(f,o+70,0),getDouble(f,o+71,0),
+                getDouble(f,o+72,0),getDouble(f,o+73,0),getDouble(f,o+74,0),
+                getDouble(f,o+75,0))) != null;
     }
 
     // Published schema: IBUS 'WT3G2' ID, one ICON, then 13 CONs.
