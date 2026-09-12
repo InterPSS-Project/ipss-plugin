@@ -27,9 +27,7 @@ import com.interpss.dstab.DStabGen;
 /** Private-data integration gate for all HYGOV records in Texas2k Case 2. */
 public class Texas2kHygovCoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final Path CASE = ROOT.resolve("Texas2k_series24_case2_2016lowload");
     private static final Path RAW = CASE.resolve("Texas2k_series24_case2_2016lowload.RAW");
     private static final Path DYR = CASE.resolve("dynamic_models_case2.dyr");

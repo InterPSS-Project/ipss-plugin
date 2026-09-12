@@ -45,9 +45,7 @@ public class Texas2kTopologyFaultMatrixTest {
     private static final Path SITE_MANIFEST = Path.of("testData", "expected",
             "texas2k_topology_fault_sites.csv");
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final List<CaseFile> CASES = List.of(
             new CaseFile(1, "Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr"),
