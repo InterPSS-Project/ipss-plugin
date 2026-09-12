@@ -18,7 +18,7 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `57/57` native reference probes were cold-regenerated with the installed
+All `58/58` native reference probes were cold-regenerated with the installed
 Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. WT3G1's nonphysical sub-`1e-20 pu` speed residue is normalized
@@ -117,8 +117,14 @@ boundary and five-state trajectory contract using public checked-in constants.
 PSS2CU1 now loads through its exact user-model allocation of six ICONs, 29 CONs,
 19 STATEs, and 14 VARs. It preserves the flat PSS2C form and uses the same
 published stabilizer equations, named states, and independent trajectory contract.
-One registered integrity test now scans all 137 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 568
+OEL2CU1 now loads through its exact 53-token user-model allocation of two ICONs,
+41 CONs, eight STATEs, and eight VARs. The OEL2C runtime implements the published
+input/reference filters, inverse-time and fixed-ramp modes, timer and activation
+logic, bounded PID/derivative path, two lead-lags, and all eight named states.
+Its synthetic public fixture and reference manifest contain only repository-relative
+paths; a boolean-only audit found zero exact matches among 54 supplied records.
+One registered integrity test now scans all 138 checked-in native and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 572
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -315,6 +321,7 @@ the plan's release checklist before interpreting any
 | PSSSB | STABILIZER |  | 30 | LOADABLE | `org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20PSSSB.htm) |
 | ST2CUT | STABILIZER | WSCCST | 20 | LOADABLE | `org.interpss.dstab.control.pss.psse.st2cut.St2cutStabilizer` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20ST2CUT.htm) |
 | UEL1 | UNDER_EXCITATION_LIMITER |  | 15 | LOADABLE | `org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Under%20Excitation%20Limiter%20UEL1.htm) |
+| OEL2C | OVER_EXCITATION_LIMITER | OEL2CU1 | 43 | LOADABLE | `org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Over%20Excitation%20Limiter%20OEL2C.htm) |
 | REECA1 | ELECTRICAL_CONTROLLER | REECAU1 | 51 | LOADABLE | `org.interpss.dstab.renewable.Reeca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_A.htm) |
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |
 | WT2E1 | ELECTRICAL_CONTROLLER |  | 6 | LOADABLE | `org.interpss.dstab.mach.Wt2e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT2E1.htm) |

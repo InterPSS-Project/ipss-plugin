@@ -71,6 +71,7 @@ import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
 import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
 import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
+import org.interpss.dstab.control.oel.psse.oel2c.Oel2cData;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
@@ -141,6 +142,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
+    private final List<PendingOel2c> pendingOel2c = new ArrayList<>();
     private boolean strictImport;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private final Set<GeneratorKey> modelRemovedGenerators = new HashSet<>();
@@ -231,7 +233,8 @@ public class PSSEDStabDirectParser {
                 }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("LCFB1")
-                        || type.equals("IEEEVC") || type.equals("UEL1");
+                        || type.equals("IEEEVC") || type.equals("UEL1")
+                        || type.equals("OEL2C");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
@@ -286,6 +289,13 @@ public class PSSEDStabDirectParser {
                     attached ? "" : "UEL1 requires a compatible loaded exciter");
         }
         pendingUel1.clear();
+        for (PendingOel2c pending : pendingOel2c) {
+            boolean attached = procOel2c(pending.busId(), pending.genId(), pending.fields());
+            report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
+                    : DynamicModelImportStatus.REJECTED,
+                    attached ? "" : "OEL2C requires a compatible loaded exciter");
+        }
+        pendingOel2c.clear();
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
@@ -365,6 +375,9 @@ public class PSSEDStabDirectParser {
                 return true;
             case "UEL1":
                 pendingUel1.add(new PendingUel1(busId, genId, fields.clone(), record));
+                return true;
+            case "OEL2C":
+                pendingOel2c.add(new PendingOel2c(busId, genId, fields.clone(), record));
                 return true;
             case "GENCLS":
                 return procGencls(busId, genId, fields);
@@ -2064,6 +2077,36 @@ public class PSSEDStabDirectParser {
     }
 
     private record PendingUel1(String busId, String genId, String[] fields,
+            PsseDyrRecord record) {}
+
+    // OEL2C flat form, or OEL2CU1 wrapper with two ICONs, 41 CONs,
+    // eight STATEs, and eight VARs.
+    private boolean procOel2c(String busId, String genId, String[] f) {
+        int offset=3;
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            if (f.length!=53 || getInt(f,4,-1)!=10 || getInt(f,5,-1)!=0
+                    || getInt(f,6,-1)!=2 || getInt(f,7,-1)!=41
+                    || getInt(f,8,-1)!=8 || getInt(f,9,-1)!=8) {
+                log.warn("Invalid native OEL2CU1 allocation at bus {}",busId);return false;
+            }
+            offset=10;
+        } else if (f.length!=46) return false;
+        Oel2cData d=new Oel2cData(getInt(f,offset,1),getInt(f,offset+1,1),
+                getDouble(f,offset+2,0),getDouble(f,offset+3,0),getDouble(f,offset+4,0),getDouble(f,offset+5,0),
+                getDouble(f,offset+6,0),getDouble(f,offset+7,0),getDouble(f,offset+8,0),getDouble(f,offset+9,0),
+                getDouble(f,offset+10,0),getDouble(f,offset+11,0),getDouble(f,offset+12,0),getDouble(f,offset+13,0),
+                getDouble(f,offset+14,0),getDouble(f,offset+15,0),getDouble(f,offset+16,0),getDouble(f,offset+17,0),
+                getDouble(f,offset+18,0),getDouble(f,offset+19,0),getDouble(f,offset+20,0),getDouble(f,offset+21,0),
+                getDouble(f,offset+22,0),getDouble(f,offset+23,0),getDouble(f,offset+24,0),getDouble(f,offset+25,0),
+                getDouble(f,offset+26,0),getDouble(f,offset+27,0),getDouble(f,offset+28,0),getDouble(f,offset+29,0),
+                getDouble(f,offset+30,0),getDouble(f,offset+31,0),getDouble(f,offset+32,0),getDouble(f,offset+33,0),
+                getDouble(f,offset+34,0),getDouble(f,offset+35,0),getDouble(f,offset+36,0),getDouble(f,offset+37,0),
+                getDouble(f,offset+38,0),getDouble(f,offset+39,0),getDouble(f,offset+40,0),getDouble(f,offset+41,0),
+                getDouble(f,offset+42,1));
+        return builder.addOel2c(busId,genId,d)!=null;
+    }
+
+    private record PendingOel2c(String busId,String genId,String[] fields,
             PsseDyrRecord record) {}
 
     private record LoadTarget(BaseDStabBus<?, ?> bus, AclfLoad load) {}
