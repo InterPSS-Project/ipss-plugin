@@ -204,6 +204,8 @@ import org.interpss.dstab.mach.Wt2g1Data;
 import org.interpss.dstab.mach.Wt2g1Machine;
 import org.interpss.dstab.mach.Wt2e1Data;
 import org.interpss.dstab.mach.Wt2e1Model;
+import org.interpss.dstab.mach.Wt3g1Data;
+import org.interpss.dstab.mach.Wt3g1Model;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12t1Model;
 import org.interpss.dstab.mach.Wt12a1Data;
@@ -394,6 +396,17 @@ public class DStabNetworkBuilder {
         Wt2e1Model model = new Wt2e1Model(data, wt2g1.getWt2g1Data());
         wt2g1.setRotorResistanceController(model);
         return model;
+    }
+
+    /** Attach the native WT3G1 converter generator to an existing generator record. */
+    public Wt3g1Model addWt3g1(String busId, String genId, Wt3g1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for WT3G1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Wt3g1Model(gen, bus, genId, data);
     }
 
     /** Attach the PSS/E WT12T1 mechanical model to a WT1G1 generator. */

@@ -176,6 +176,7 @@ the plan's release checklist before interpreting any
 | CSVGN5 | CONVERTER_MACHINE |  | 15 | LOADABLE | `org.interpss.dstab.svc.Csvgn5Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20CSVGN5.htm) |
 | REGCA1 | CONVERTER_MACHINE | REGCAU1 | 15 | LOADABLE | `org.interpss.dstab.renewable.Regca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm) |
 | REGFMA1 | CONVERTER_MACHINE |  | 19 | LOADABLE | `org.interpss.dstab.renewable.Regfma1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_A1.htm) |
+| WT3G1 | CONVERTER_MACHINE |  | 6 | LOADABLE | `org.interpss.dstab.mach.Wt3g1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT3G1.htm) |
 | IEEEVC | COMPENSATOR |  | 2 | LOADABLE | `org.interpss.dstab.mach.IeeeVoltageCompensatedMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Voltage%20Compensator%20IEEEVC.htm) |
 | SVSMO1T2 | SWITCHED_SHUNT | SVSMO1T3 | 65 | LOADABLE | `org.interpss.dstab.svc.Svsmo1t2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Switched%20Shunt%20SVSMO1.htm) |
 | AC11C | EXCITER |  | 40 | LOADABLE | `org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20AC11C.htm) |

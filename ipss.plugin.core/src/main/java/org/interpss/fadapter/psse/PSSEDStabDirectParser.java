@@ -44,6 +44,7 @@ import org.interpss.dstab.mach.IeeeVcData;
 import org.interpss.dstab.mach.Wt1g1Data;
 import org.interpss.dstab.mach.Wt2g1Data;
 import org.interpss.dstab.mach.Wt2e1Data;
+import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12a1Data;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
@@ -380,6 +381,8 @@ public class PSSEDStabDirectParser {
                 return procWt2g1(busId, genId, fields);
             case "WT2E1":
                 return procWt2e1(busId, genId, fields);
+            case "WT3G1":
+                return procWt3g1(busId, genId, fields);
             case "WT12T1":
                 return procWt12t1(busId, genId, fields);
             case "WT12A1":
@@ -2716,6 +2719,19 @@ public class PSSEDStabDirectParser {
         }
         return builder.addWt2e1(busId, genId, new Wt2e1Data(
                 getDouble(f, 3, 0.0), getDouble(f, 4, 0.0),
+                getDouble(f, 5, 0.0), getDouble(f, 6, 0.0),
+                getDouble(f, 7, 0.0), getDouble(f, 8, 0.0))) != null;
+    }
+
+    // PSS/E 36.7: IBUS 'WT3G1' ID ICON(M) Xeq Kpll KIpll Pllmax Prated
+    private boolean procWt3g1(String busId, String genId, String[] f) {
+        if (f.length != 9) {
+            log.warn("Invalid WT3G1 record at bus {}: expected 9 fields, found {}",
+                    busId, f.length);
+            return false;
+        }
+        return builder.addWt3g1(busId, genId, new Wt3g1Data(
+                getInt(f, 3, 0), getDouble(f, 4, 0.0),
                 getDouble(f, 5, 0.0), getDouble(f, 6, 0.0),
                 getDouble(f, 7, 0.0), getDouble(f, 8, 0.0))) != null;
     }
