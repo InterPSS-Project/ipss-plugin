@@ -32,9 +32,7 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 /** Strict private-data gate for the five Case-6 REGFMA1 resources. */
 public class Texas2kRegfma1CoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
 
     @BeforeAll
     static void initializePlugin() {

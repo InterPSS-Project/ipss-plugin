@@ -30,9 +30,7 @@ import com.interpss.dstab.DStabGen;
 /** End-to-end attachment and initialization gate for Texas2k REECA1 chains. */
 class Texas2kReeca1CoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
 
     @BeforeAll
     static void initializePlugin() {

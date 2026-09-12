@@ -26,9 +26,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 /** End-to-end attachment gate for the conventional generator stacks. */
 class Texas2kConventionalStackCoverageTest {
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final Set<String> CONVENTIONAL_CONTROLLERS = Set.of(
             "EXST1", "IEEET1", "ESST1A", "ESST4B",
             "IEEEG1", "GGOV1", "HYGOV", "PSS2A");
