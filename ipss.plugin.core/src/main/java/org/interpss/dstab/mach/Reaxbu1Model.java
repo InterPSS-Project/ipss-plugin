@@ -1,5 +1,6 @@
 package org.interpss.dstab.mach;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
@@ -10,6 +11,7 @@ public final class Reaxbu1Model implements ICMLStateProvider {
     private final String modelName;
     private double reactiveState, activeState, reactiveReference, activeReference;
     private double reactiveExternal, activeExternal;
+    private Plntbu1Model plantController;
     private State oldState;
     private Derivative predictor;
     private boolean initialized;
@@ -19,6 +21,13 @@ public final class Reaxbu1Model implements ICMLStateProvider {
         this.data = data;
     }
     public void initialize(double reactiveExternal, double activeExternal) {
+        if (plantController != null) {
+            if (!plantController.initialize()) {
+                throw new IllegalStateException("PLNTBU1 could not initialize");
+            }
+            reactiveExternal = plantController.getReactiveOutput();
+            activeExternal = plantController.getActiveOutput();
+        }
         setExternalSignals(reactiveExternal, activeExternal);
         reactiveReference = -reactiveExternal;
         activeReference = -activeExternal;
@@ -28,6 +37,13 @@ public final class Reaxbu1Model implements ICMLStateProvider {
     public void step(double dt, int flag) {
         if (!initialized || !Double.isFinite(dt) || dt <= 0.0 || (flag != 0 && flag != 1))
             throw new IllegalArgumentException("invalid REAXB step boundary");
+        if (plantController != null) {
+            if (!plantController.step(dt, flag)) {
+                throw new IllegalStateException("PLNTBU1 step failed");
+            }
+            setExternalSignals(plantController.getReactiveOutput(),
+                    plantController.getActiveOutput());
+        }
         if (flag == 0) {
             oldState = state(); predictor = derivatives(oldState);
             apply(advance(oldState, predictor, dt));
@@ -67,9 +83,16 @@ public final class Reaxbu1Model implements ICMLStateProvider {
     public String getModelName(){return modelName;}
     public double getReactiveOutput(){return reactiveState;}
     public double getActiveOutput(){return activeState;}
-    @Override public Map<String,Double> getNamedStates(){return initialized?Map.of(
-            "Measurement lag (reactive part)",reactiveState,
-            "Measurement lag (real part)",activeState):Map.of();}
+    public Plntbu1Model getPlantController(){return plantController;}
+    public void setPlantController(Plntbu1Model value){plantController=value;}
+    @Override public Map<String,Double> getNamedStates(){
+        if (!initialized) return Map.of();
+        Map<String,Double> states=new LinkedHashMap<>();
+        states.put("Measurement lag (reactive part)",reactiveState);
+        states.put("Measurement lag (real part)",activeState);
+        if(plantController!=null) states.putAll(plantController.getNamedStates());
+        return Map.copyOf(states);
+    }
     private State state(){return new State(reactiveState,activeState);}
     private static State advance(State s,Derivative d,double dt){return new State(s.reactive+dt*d.reactive,s.active+dt*d.active);}
     private static double clamp(double v,double lo,double hi){return Math.max(lo,Math.min(hi,v));}
