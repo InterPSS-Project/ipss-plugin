@@ -1,5 +1,7 @@
 package org.interpss.core.dstab.mach;
 
+import org.interpss.core.dstab.reference.EmbeddedNativeTrajectoryValues;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -22,7 +24,6 @@ import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 
 /** Prescribed-voltage comparison against the independent vendor implementation. */
-@org.junit.jupiter.api.Tag("private-reference")
 public class Gewtgcu1NativeConformanceTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
     private static final Path REFERENCE = Path.of("testData", "reference", "psse",
@@ -31,9 +32,9 @@ public class Gewtgcu1NativeConformanceTest {
     @Test
     void prescribedVoltageMatchesAllThreePublishedStates() throws Exception {
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
-                .digest(Files.readAllBytes(REFERENCE)));
-        assertTrue(Files.readString(REFERENCE.resolveSibling("manifest.json")).contains(hash));
-        List<String> lines = Files.readAllLines(REFERENCE);
+                .digest(EmbeddedNativeTrajectoryValues.bytes(REFERENCE)));
+        assertTrue(EmbeddedNativeTrajectoryValues.manifest(REFERENCE.resolveSibling("manifest.json")).contains(hash));
+        List<String> lines = EmbeddedNativeTrajectoryValues.lines(REFERENCE);
         assertEquals(804, lines.size());
         String[] headings = lines.get(0).split(",");
         Map<String, Integer> columns = new LinkedHashMap<>();
