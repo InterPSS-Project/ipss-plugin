@@ -200,6 +200,8 @@ import org.interpss.dstab.mach.Cimtr4Data;
 import org.interpss.dstab.mach.Cimtr4Machine;
 import org.interpss.dstab.mach.Wt1g1Data;
 import org.interpss.dstab.mach.Wt1g1Machine;
+import org.interpss.dstab.mach.Wt2g1Data;
+import org.interpss.dstab.mach.Wt2g1Machine;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12t1Model;
 import org.interpss.dstab.mach.Wt12a1Data;
@@ -349,6 +351,34 @@ public class DStabNetworkBuilder {
         mach.setXl(data.xl());
         mach.setXd(data.x());
         mach.setXq(data.x());
+        return mach;
+    }
+
+    /** PSS/E WT2G1 Type-2 induction generator with controlled rotor resistance. */
+    public Wt2g1Machine addWt2g1(String busId, String genId,
+            double ratingMva, double ratedKv, Wt2g1Data data) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for WT2G1: {}", busId);
+            return null;
+        }
+        Wt2g1Machine mach = new Wt2g1Machine(data);
+        mach.setId(busId + "-mach" + genId);
+        mach.setName("WT2G1");
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(0.0);
+        mach.setD(0.0);
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+        mach.setXl(data.xa());
+        mach.setXd(data.xa() + data.xm());
+        mach.setXq(data.xa() + data.xm());
         return mach;
     }
 
