@@ -139,6 +139,7 @@ loadability inventory.
 | UEL2C | UNDER_EXCITATION_LIMITER | UEL2CU1 | 51 | LOADABLE | `org.interpss.dstab.control.uel.psse.uel2c.Uel2cUnderExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Under%20Excitation%20Limiter%20UEL2C.htm) |
 | OEL2C | OVER_EXCITATION_LIMITER | OEL2CU1 | 43 | LOADABLE | `org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Over%20Excitation%20Limiter%20OEL2C.htm) |
 | GEWTECU1 | ELECTRICAL_CONTROLLER |  | 82 | LOADABLE | `org.interpss.dstab.mach.Gewtecu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
+| REAX3BU1 | ELECTRICAL_CONTROLLER |  | 14 | LOADABLE | `org.interpss.dstab.mach.Reaxbu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | REECA1 | ELECTRICAL_CONTROLLER | REECAU1 | 51 | LOADABLE | `org.interpss.dstab.renewable.Reeca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_A.htm) |
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |
 | REECC1 | ELECTRICAL_CONTROLLER | REECCU1 | 50 | LOADABLE | `org.interpss.dstab.renewable.Reecc1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_C.htm) |
