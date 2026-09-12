@@ -25,6 +25,7 @@ import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecc1Data;
+import org.interpss.dstab.renewable.Reecd1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Dera1Data;
 import org.interpss.dstab.renewable.Regca1Data;
@@ -709,6 +710,10 @@ public class PSSEDStabDirectParser {
             case "REECC1":
             case "REECCU1":
                 return procReecc1(busId, genId, fields);
+            case "REECD":
+            case "REECD1":
+            case "REECDU1":
+                return procReecd1(busId, genId, fields);
             case "REECA1":
             case "REECAU1":
                 return procReeca1(busId, genId, fields);
@@ -3395,6 +3400,60 @@ public class PSSEDStabDirectParser {
                 getDouble(f, offset + 47, 0), getDouble(f, offset + 48, 0),
                 getDouble(f, offset + 49, 0));
         return builder.addReecc1(busId, genId, data) != null;
+    }
+
+    // REECD1 flat form, or the native REECDU1 wrapper with six ICONs,
+    // 77 CONs, seven STATEs, and 20 VARs.
+    private boolean procReecd1(String busId, String genId, String[] f) {
+        int offset = 3;
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            if (f.length != 93 || getInt(f, 4, -1) != 102 || getInt(f, 5, -1) != 0
+                    || getInt(f, 6, -1) != 6 || getInt(f, 7, -1) != 77
+                    || getInt(f, 8, -1) != 7 || getInt(f, 9, -1) != 20) {
+                log.warn("Invalid native REECDU1 allocation at bus {}", busId);
+                return false;
+            }
+            offset = 10;
+        } else if (f.length != 86) {
+            return false;
+        }
+
+        int con = offset + 6;
+        double[] reactiveVoltage = new double[10];
+        double[] reactiveCurrent = new double[10];
+        double[] activeVoltage = new double[10];
+        double[] activeCurrent = new double[10];
+        for (int point = 0; point < 10; point++) {
+            reactiveVoltage[point] = getDouble(f, con + 29 + 2 * point, 0.0);
+            reactiveCurrent[point] = getDouble(f, con + 30 + 2 * point, 0.0);
+            activeVoltage[point] = getDouble(f, con + 49 + 2 * point, 0.0);
+            activeCurrent[point] = getDouble(f, con + 50 + 2 * point, 0.0);
+        }
+        Reecd1Data data = new Reecd1Data(
+                getInt(f, offset, 0), getInt(f, offset + 1, 0),
+                getInt(f, offset + 2, 0), getInt(f, offset + 3, 0),
+                getInt(f, offset + 4, 0), getInt(f, offset + 5, 0),
+                getDouble(f, con, .8), getDouble(f, con + 1, 1.2),
+                getDouble(f, con + 2, .02), getDouble(f, con + 3, -.02),
+                getDouble(f, con + 4, .02), getDouble(f, con + 5, 0.0),
+                getDouble(f, con + 6, 999.0), getDouble(f, con + 7, -999.0),
+                getDouble(f, con + 8, 0.0), getDouble(f, con + 9, 0.0),
+                getDouble(f, con + 10, 0.0), getDouble(f, con + 11, 0.0),
+                getDouble(f, con + 12, .02), getDouble(f, con + 13, 999.0),
+                getDouble(f, con + 14, -999.0), getDouble(f, con + 15, 999.0),
+                getDouble(f, con + 16, -999.0), getDouble(f, con + 17, 0.0),
+                getDouble(f, con + 18, 0.0), getDouble(f, con + 19, 0.0),
+                getDouble(f, con + 20, 0.0), getDouble(f, con + 21, 0.0),
+                getDouble(f, con + 22, .02), getDouble(f, con + 23, 999.0),
+                getDouble(f, con + 24, -999.0), getDouble(f, con + 25, 1.0),
+                getDouble(f, con + 26, 0.0), getDouble(f, con + 27, 1.1),
+                getDouble(f, con + 28, .02), getDouble(f, con + 69, 0.0),
+                getDouble(f, con + 70, 0.0), getDouble(f, con + 71, 0.0),
+                getDouble(f, con + 72, 0.0), getDouble(f, con + 73, 0.0),
+                getDouble(f, con + 74, 0.0), getDouble(f, con + 75, 2.0),
+                getDouble(f, con + 76, 0.0), reactiveVoltage, reactiveCurrent,
+                activeVoltage, activeCurrent);
+        return builder.addReecd1(busId, genId, data) != null;
     }
 
     // REECA1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PFLAG PQFLAG followed by
