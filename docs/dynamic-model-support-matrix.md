@@ -18,12 +18,12 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `56/56` native reference probes were cold-regenerated with the installed
-Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero. The new
-DC4CU1 artifact reproduced byte-for-byte; 55 published manifests matched
-exactly, while WT3G1 differed only by `1.43e-29 pu` numerical residue in its
-speed channel, with all other numerical samples equal. The reusable suite
-driver and all probe inputs use repository-relative paths.
+All `57/57` native reference probes were cold-regenerated with the installed
+Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero and every
+generated manifest matched its published content and exact artifact-hash
+declarations. WT3G1's nonphysical sub-`1e-20 pu` speed residue is normalized
+to zero before serialization. The reusable suite driver and all probe inputs
+use repository-relative paths.
 `6/6` prepared cases pass the
 short flat and common Bus-7159 fault execution smokes, `5/6` pass the production
 1/240 s strict one-second flat-run gate, and all `15/15` required
@@ -103,8 +103,15 @@ exposed through the common named-state API. Because the installed model library
 does not contain the optional compiled wrapper routine, independent trajectory
 verification uses the built-in DC4C equation with the same synthetic public
 constants and hashes both DYR forms.
-One registered integrity test now scans all 136 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 561
+ST4CU1 now loads through its exact 36-token user-model wrapper with the published
+five-ICON, 21-CON, five-STATE, zero-VAR ST4C allocation. The existing flat ST4C
+dialect remains backward compatible, and its five controller coordinates remain
+available through the common named-state API. The installed model library accepts
+and allocates the wrapper but does not supply its optional compiled routine, so
+independent trajectory verification uses built-in ST4C with identical synthetic
+public constants and hashes both DYR forms.
+One registered integrity test now scans all 137 checked-in native and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 566
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -250,7 +257,7 @@ the plan's release checklist before interpreting any
 | ST1C | EXCITER |  | 21 | LOADABLE | `org.interpss.dstab.control.exc.psse.st1c.St1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST1C.htm) |
 | ST2C | EXCITER |  | 25 | LOADABLE | `org.interpss.dstab.control.exc.psse.st2c.St2cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST2C.htm) |
 | ST3C | EXCITER |  | 31 | LOADABLE | `org.interpss.dstab.control.exc.psse.st3c.St3cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST3C.htm) |
-| ST4C | EXCITER |  | 26 | LOADABLE | `org.interpss.dstab.control.exc.psse.st4c.St4cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST4C.htm) |
+| ST4C | EXCITER | ST4CU1 | 26 | LOADABLE | `org.interpss.dstab.control.exc.psse.st4c.St4cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST4C.htm) |
 | ST5B | EXCITER | ESST5B | 18 | LOADABLE | `org.interpss.dstab.control.exc.psse.st5b.St5bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST5B%20and%20ST5B.htm) |
 | ST5C | EXCITER |  | 20 | LOADABLE | `org.interpss.dstab.control.exc.psse.st5c.St5cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST5C.htm) |
 | ST6B | EXCITER | ESST6B | 17 | LOADABLE | `org.interpss.dstab.control.exc.psse.st6b.St6bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST6B%20and%20ST6B.htm) |
