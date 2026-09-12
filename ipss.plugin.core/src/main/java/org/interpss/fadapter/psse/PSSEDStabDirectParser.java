@@ -27,6 +27,7 @@ import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Dera1Data;
 import org.interpss.dstab.renewable.Regca1Data;
+import org.interpss.dstab.renewable.Regcb1Data;
 import org.interpss.dstab.renewable.Regfma1Data;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Wtara1Data;
@@ -682,6 +683,9 @@ public class PSSEDStabDirectParser {
             case "REGCA1":
             case "REGCAU1":
                 return procRegca1(busId, genId, fields);
+            case "REGCB1":
+            case "REGCBU1":
+                return procRegcb1(busId, genId, fields);
             case "DERA1":
                 return procDera1(busId, genId, fields);
             case "REGFMA1":
@@ -3128,6 +3132,30 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 12, -1.3), getDouble(f, 13, 0.02), getDouble(f, 14, 0.0),
                 getDouble(f, 15, 100.0), getDouble(f, 16, -100.0), getDouble(f, 17, 0.7));
         return builder.addRegca1(busId, genId, data) != null;
+    }
+
+    // REGCB1 flat form, or REGCBU1 wrapper with two ICONs, seven CONs,
+    // five STATEs, and eight VARs.
+    private boolean procRegcb1(String busId, String genId, String[] f) {
+        int offset = 3;
+        if ("USRMDL".equalsIgnoreCase(f[1])) {
+            if (f.length != 19 || getInt(f, 4, -1) != 101 || getInt(f, 5, -1) != 1
+                    || getInt(f, 6, -1) != 2 || getInt(f, 7, -1) != 7
+                    || getInt(f, 8, -1) != 5 || getInt(f, 9, -1) != 8) {
+                log.warn("Invalid native REGCBU1 allocation at bus {}", busId);
+                return false;
+            }
+            offset = 10;
+        } else if (f.length != 12) {
+            return false;
+        }
+        Regcb1Data data = new Regcb1Data(
+                getInt(f, offset, 0), getInt(f, offset + 1, 0),
+                getDouble(f, offset + 2, 0.0), getDouble(f, offset + 3, 0.0),
+                getDouble(f, offset + 4, 0.0), getDouble(f, offset + 5, 0.0),
+                getDouble(f, offset + 6, 0.0), getDouble(f, offset + 7, 0.0),
+                getDouble(f, offset + 8, 0.0));
+        return builder.addRegcb1(busId, genId, data) != null;
     }
 
     // DERA1 flat form, or DERAU1 wrapper with six ICONs, 41 CONs,
