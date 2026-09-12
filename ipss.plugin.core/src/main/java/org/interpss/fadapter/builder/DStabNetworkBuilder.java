@@ -211,6 +211,8 @@ import org.interpss.dstab.mach.Wt3g2Model;
 import org.interpss.dstab.mach.Wt3GeneratorModel;
 import org.interpss.dstab.mach.Wt3e1Data;
 import org.interpss.dstab.mach.Wt3e1Model;
+import org.interpss.dstab.mach.Wt3t1Data;
+import org.interpss.dstab.mach.Wt3t1Model;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12t1Model;
 import org.interpss.dstab.mach.Wt12a1Data;
@@ -435,6 +437,19 @@ public class DStabNetworkBuilder {
         }
         Wt3e1Model model = new Wt3e1Model(data, wt3Generator);
         wt3Generator.setElectricalController(model);
+        return model;
+    }
+
+    /** Attach WT3T1 to either published Type-3 converter host. */
+    public Wt3t1Model addWt3t1(String busId, String genId, Wt3t1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt3GeneratorModel host)) {
+            log.warn("WT3 generator not found for WT3T1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt3t1Model model = new Wt3t1Model(data);
+        host.setDriveTrain(model);
         return model;
     }
 

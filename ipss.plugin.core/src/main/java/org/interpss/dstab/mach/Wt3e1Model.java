@@ -172,6 +172,7 @@ public final class Wt3e1Model implements ICMLStateProvider {
     }
 
     public Wt3e1Data getData() { return data; }
+    public double getSpeedDeviation() { return speedDeviation; }
     public void setSpeedDeviation(double value) { if (!Double.isFinite(value)) throw new IllegalArgumentException("WT3E1 speed must be finite"); speedDeviation = value; }
 
     private record State(double vregFilter, double vregIntegral, double torqueFilter,
