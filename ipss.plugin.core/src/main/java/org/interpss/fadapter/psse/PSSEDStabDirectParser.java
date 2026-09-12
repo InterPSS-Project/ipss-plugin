@@ -58,6 +58,7 @@ import org.interpss.dstab.mach.Gewtecu1Data;
 import org.interpss.dstab.mach.Gewt2mu1Data;
 import org.interpss.dstab.mach.Gewtaru1Data;
 import org.interpss.dstab.mach.Gewtgdu1Data;
+import org.interpss.dstab.mach.Gewtptu1Data;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt4g1Data;
 import org.interpss.dstab.mach.Wt4e1Data;
@@ -447,6 +448,8 @@ public class PSSEDStabDirectParser {
                 return procGewtaru1(busId, genId, fields);
             case "GEWTGDU1":
                 return procGewtgdu1(busId, genId, fields);
+            case "GEWTPTU1":
+                return procGewtptu1(busId, genId, fields);
             case "WT3G2":
                 return procWt3g2(busId, genId, fields);
             case "WT4G1":
@@ -3471,6 +3474,23 @@ public class PSSEDStabDirectParser {
         return builder.addGewtgdu1(busId, genId, new Gewtgdu1Data(
                 getDouble(f,11,0), getDouble(f,12,0), getDouble(f,13,0),
                 getDouble(f,14,0), getDouble(f,15,0), getDouble(f,16,0))) != null;
+    }
+
+    // Native wrapper: 104 0 2 10 3 3, two ICONs, then ten CONs.
+    private boolean procGewtptu1(String busId, String genId, String[] f) {
+        if (f.length != 22 || !"USRMDL".equalsIgnoreCase(f[1])
+                || getInt(f, 4, -1) != 104 || getInt(f, 5, -1) != 0
+                || getInt(f, 6, -1) != 2 || getInt(f, 7, -1) != 10
+                || getInt(f, 8, -1) != 3 || getInt(f, 9, -1) != 3
+                || getInt(f, 10, -1) != 0 || getInt(f, 11, -1) != 0) {
+            log.warn("Invalid GEWTPTU1 allocation at bus {}", busId);
+            return false;
+        }
+        return builder.addGewtptu1(busId, genId, new Gewtptu1Data(
+                getDouble(f,12,0), getDouble(f,13,0), getDouble(f,14,0),
+                getDouble(f,15,0), getDouble(f,16,0), getDouble(f,17,0),
+                getDouble(f,18,0), getDouble(f,19,0), getDouble(f,20,0),
+                getDouble(f,21,0))) != null;
     }
 
     // REECD1 flat form, or the native REECDU1 wrapper with six ICONs,
