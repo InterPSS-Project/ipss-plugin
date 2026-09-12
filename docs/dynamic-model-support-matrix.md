@@ -18,8 +18,8 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `52/52` native PSS/E reference probes were cold-regenerated with PSS/E
-Xplore 36.7.0/Python 3.13 on 2026-09-11. Every probe exited zero and every
+All `54/54` native reference probes were cold-regenerated with the installed
+Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero and every
 generated manifest matched its published content and exact artifact-hash
 declarations. The reusable suite driver and all probe inputs use
 repository-relative paths.
@@ -88,8 +88,8 @@ PIDGOV/PIDGOVD equation runtime with the D-only deadband and turbine-rating
 inputs fixed to their neutral values. Its seven native PSS/E state coordinates
 are available by canonical names while the established PowerWorld semantic
 names remain backward-compatible aliases.
-One registered integrity test now scans all 125 checked-in PSS/E and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 515
+One registered integrity test now scans all 134 checked-in native and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 551
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -156,8 +156,10 @@ PowerWorld stabilizer evidence to `5/15` and combined exact-tool coverage to
 IEEEG1D adds a native PSS/E boundary
 and six-state contract, raising combined exact-tool direct governor evidence to
 `24/24`; it remains version-blocked only in the explicitly PowerWorld-only inventory.
-GENQEJ is likewise unavailable in both installed exact tools (Simulator 24 and
-PSS/E Xplore 36.7); the Case-5 production flat-run gate now passes. See
+GENQEJ now has an accepted native `GENQEJU` wrapper contract, and GENQEC has an
+accepted native `GENQECU` wrapper contract. Both use synthetic public fixtures;
+the older PowerWorld build's GENQEJ limitation is no longer a model-level
+blocker. See
 the plan's release checklist before interpreting any
 `LOADABLE` row as completed model validation.
 
@@ -165,7 +167,7 @@ the plan's release checklist before interpreting any
 |---|---|---|---:|---|---|---|
 | CIMTR4 | SYNCHRONOUS_MACHINE |  | 13 | LOADABLE | `org.interpss.dstab.mach.Cimtr4Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20CIMTR4.htm) |
 | GENCLS | SYNCHRONOUS_MACHINE |  | 2 | LOADABLE | `com.interpss.dstab.mach.EConstMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENCLS.htm) |
-| GENQEC | SYNCHRONOUS_MACHINE |  | 18 | LOADABLE | `org.interpss.dstab.mach.GenqecMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENQEC.htm) |
+| GENQEC | SYNCHRONOUS_MACHINE | GENQECU | 18 | LOADABLE | `org.interpss.dstab.mach.GenqecMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENQEC.htm) |
 | GENQEJ | SYNCHRONOUS_MACHINE | GENQEJU | 18 | LOADABLE | `org.interpss.dstab.mach.GenqejMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENQEJ.htm) |
 | GENROU | SYNCHRONOUS_MACHINE | GENROE | 14 | LOADABLE | `com.interpss.dstab.mach.RoundRotorMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENROU.htm) |
 | GENSAL | SYNCHRONOUS_MACHINE | GENSAE | 12 | LOADABLE | `com.interpss.dstab.mach.SalientPoleMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENSAL.htm) |
