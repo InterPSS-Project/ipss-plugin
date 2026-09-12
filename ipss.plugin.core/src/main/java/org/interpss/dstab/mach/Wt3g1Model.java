@@ -16,7 +16,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /** Published WT3G1 Type-3 converter generator and PLL realization. */
 public final class Wt3g1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, ICMLStateProvider {
+        implements DynamicGenDevice, ICMLStateProvider, Wt3GeneratorModel {
     private static final double EPS = 1.0e-10;
     private static final double CONVERTER_LAG = 0.020;
 
@@ -208,6 +208,7 @@ public final class Wt3g1Model extends DynamicBusDeviceImpl
     }
 
     public Wt3g1Data getData() { return data; }
+    @Override public double getAggregateRatedMw() { return data.aggregateRatedMw(); }
     public double getActiveCurrentState() { return ipState; }
     public double getInternalVoltageState() { return eqState; }
     public double getPllIntegralState() { return pllIntegral; }

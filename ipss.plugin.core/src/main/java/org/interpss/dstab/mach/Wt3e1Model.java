@@ -9,7 +9,7 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 public final class Wt3e1Model implements ICMLStateProvider {
     private static final double EPS = 1.0e-10;
     private final Wt3e1Data data;
-    private final Wt3g1Model generator;
+    private final Wt3GeneratorModel generator;
     private State state;
     private State oldState;
     private Derivative predictor;
@@ -21,7 +21,7 @@ public final class Wt3e1Model implements ICMLStateProvider {
     private double systemBaseMva;
     private boolean initialized;
 
-    public Wt3e1Model(Wt3e1Data data, Wt3g1Model generator) {
+    public Wt3e1Model(Wt3e1Data data, Wt3GeneratorModel generator) {
         this.data = data;
         this.generator = generator;
     }
@@ -29,7 +29,7 @@ public final class Wt3e1Model implements ICMLStateProvider {
     public void initialize() {
         double voltage = terminalVoltage();
         systemBaseMva = generator.getDStabBus().getNetwork().getBaseMva();
-        controlBaseMva = generator.getData().aggregateRatedMw() * data.onlineFraction();
+        controlBaseMva = generator.getAggregateRatedMw() * data.onlineFraction();
         double pControl = generator.getP() * systemBaseMva / controlBaseMva;
         double qControl = generator.getQ() * systemBaseMva / controlBaseMva;
         double compensated = compensatedVoltage(voltage, pControl, qControl);
