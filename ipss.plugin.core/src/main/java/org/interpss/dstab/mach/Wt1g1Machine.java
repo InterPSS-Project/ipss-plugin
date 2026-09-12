@@ -74,7 +74,7 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
     public boolean nextStepMechanical(double dt, DynamicSimuMethod method,
             Network network, int flag) {
         if (driveTrain != null) {
-            driveTrain.stepCoupled(dt, getPe(), flag);
+            driveTrain.stepCoupled(dt, getPe(), getDStabBus().getVoltageMag(), flag);
             setDriveTrainSpeed(driveTrain.getGeneratorSpeed());
         }
         solver.updateOutputs();
@@ -160,7 +160,8 @@ public final class Wt1g1Machine extends DynamicMachineImpl implements ICMLStateP
             updateOutputs();
             if (driveTrain != null) {
                 driveTrain.initialize(electricalTorque, getSpeed(), bus.getNetwork().getFrequency());
-                driveTrain.initializeAerodynamicController(electricalTorque);
+                driveTrain.initializeAerodynamicController(electricalTorque,
+                        bus.getVoltageMag());
             }
             return true;
         }

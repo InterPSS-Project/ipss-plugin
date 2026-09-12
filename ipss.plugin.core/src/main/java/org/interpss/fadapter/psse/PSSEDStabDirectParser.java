@@ -69,6 +69,7 @@ import org.interpss.dstab.mach.Wt3t1Data;
 import org.interpss.dstab.mach.Wt3p1Data;
 import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12a1Data;
+import org.interpss.dstab.mach.Wt12a1bData;
 import org.interpss.dstab.relay.FrqtpatRelayModel;
 import org.interpss.dstab.relay.GeneratorTripRelayData;
 import org.interpss.dstab.relay.Lds3blRelayModel;
@@ -372,6 +373,10 @@ public class PSSEDStabDirectParser {
         String busId = BUS_ID_PREFIX + record.busNumber();
         BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
         if (bus == null) return "target bus " + busId + " does not exist";
+        if (record.canonicalModelName().equals("WT12A1B") && record.deviceId().equals("*")) {
+            return bus.getContributeGenList().size() == 1 ? null
+                    : "WT12A1B requires exactly one generator at " + busId;
+        }
         if (descriptor.get().category() == org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC
                 || descriptor.get().category() == org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION) {
             boolean wildcard = record.deviceId().equals("*") || record.deviceId().equals("#");
@@ -401,6 +406,11 @@ public class PSSEDStabDirectParser {
 
         String busId = BUS_ID_PREFIX + record.busNumber();
         String genId = record.deviceId();
+        if (type.equals("WT12A1B") && genId.equals("*")) {
+            BaseDStabBus<?, ?> bus = builder.getBaseDStabNetwork().getDStabBus(busId);
+            if (bus == null || bus.getContributeGenList().size() != 1) return false;
+            genId = ((DStabGen) bus.getContributeGenList().get(0)).getId();
+        }
 
         switch (type) {
             case "IEELBL":
@@ -479,6 +489,8 @@ public class PSSEDStabDirectParser {
                 return procWt12t1(busId, genId, fields);
             case "WT12A1":
                 return procWt12a1(busId, genId, fields);
+            case "WT12A1B":
+                return procWt12a1b(busId, genId, fields);
             case "GENSAL":
             case "GENSAE":
                 return procGensal(busId, genId, fields);
@@ -3231,6 +3243,35 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 3, 0), getDouble(f, 4, 0), getDouble(f, 5, 0),
                 getDouble(f, 6, 0), getDouble(f, 7, 0), getDouble(f, 8, 0),
                 getDouble(f, 9, 0), getDouble(f, 10, 0))) != null;
+    }
+
+    // Built-in 14-CON form or WT12A1U_B wrapper: 105 0 1 14 3 2.
+    private boolean procWt12a1b(String busId, String genId, String[] f) {
+        boolean wrapped = "USRMDL".equalsIgnoreCase(f[1]);
+        int offset;
+        int icon;
+        if (wrapped) {
+            if (f.length != 24 || getInt(f,3,-1)!=105 || getInt(f,4,-1)!=0
+                    || getInt(f,5,-1)!=1 || getInt(f,6,-1)!=14
+                    || getInt(f,7,-1)!=3 || getInt(f,8,-1)!=2) {
+                log.warn("Invalid WT12A1U_B allocation at bus {}", busId);
+                return false;
+            }
+            icon = getInt(f,9,0);
+            offset = 10;
+        } else {
+            if (f.length != 17) return false;
+            icon = 0;
+            offset = 3;
+        }
+        return builder.addWt12a1b(busId, genId, new Wt12a1bData(icon,
+                getDouble(f,offset,0), getDouble(f,offset+1,0),
+                getDouble(f,offset+2,0), getDouble(f,offset+3,0),
+                getDouble(f,offset+4,0), getDouble(f,offset+5,0),
+                getDouble(f,offset+6,0), getDouble(f,offset+7,0),
+                getDouble(f,offset+8,0), getDouble(f,offset+9,0),
+                getDouble(f,offset+10,0), getDouble(f,offset+11,0),
+                getDouble(f,offset+12,0), getDouble(f,offset+13,0))) != null;
     }
 
     // PSS/E 36.7: IBUS 'GENTRA' ID T'do H D Xd Xq X'd S(1.0) S(1.2) AF

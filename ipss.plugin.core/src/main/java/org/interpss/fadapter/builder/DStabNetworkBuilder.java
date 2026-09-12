@@ -258,6 +258,8 @@ import org.interpss.dstab.mach.Wt12t1Data;
 import org.interpss.dstab.mach.Wt12t1Model;
 import org.interpss.dstab.mach.Wt12a1Data;
 import org.interpss.dstab.mach.Wt12a1Model;
+import org.interpss.dstab.mach.Wt12a1bData;
+import org.interpss.dstab.mach.Wt12a1bModel;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -707,6 +709,17 @@ public class DStabNetworkBuilder {
             return null;
         }
         Wt12a1Model model = new Wt12a1Model(data);
+        wt1g1.getDriveTrain().setAerodynamicController(model);
+        return model;
+    }
+
+    public Wt12a1bModel addWt12a1b(String busId, String genId, Wt12a1bData data) {
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (!(machine instanceof Wt1g1Machine wt1g1) || wt1g1.getDriveTrain() == null) {
+            log.warn("WT12T1 not found for WT12A1B: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt12a1bModel model = new Wt12a1bModel(data);
         wt1g1.getDriveTrain().setAerodynamicController(model);
         return model;
     }
