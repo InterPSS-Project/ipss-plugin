@@ -157,6 +157,7 @@ loadability inventory.
 | GEWTARU1 | AERODYNAMIC_CONTROLLER |  | 16 | LOADABLE | `org.interpss.dstab.mach.Gewtaru1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | GEWTGDU1 | AERODYNAMIC_CONTROLLER |  | 13 | LOADABLE | `org.interpss.dstab.mach.Gewtgdu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | WT12A1 | AERODYNAMIC_CONTROLLER |  | 8 | LOADABLE | `org.interpss.dstab.mach.Wt12a1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Aerodynamic%20Model%20WT12A1.htm) |
+| WT12A1B | AERODYNAMIC_CONTROLLER | WT12A1U_B | 14 | LOADABLE | `org.interpss.dstab.mach.Wt12a1bModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Aerodynamic%20Model%20WT12A1B.htm) |
 | WT3P1 | AERODYNAMIC_CONTROLLER |  | 9 | LOADABLE | `org.interpss.dstab.mach.Wt3p1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Stabilizer%20WT3P%20and%20WT3P1.htm) |
 | WTARA1 | AERODYNAMIC_CONTROLLER | WTARAU1 | 2 | LOADABLE | `org.interpss.dstab.renewable.Wtara1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Aerodynamic%20Model%20WTGA_A.htm) |
 | GEWTPTU1 | PITCH_CONTROLLER |  | 18 | LOADABLE | `org.interpss.dstab.mach.Gewtptu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
