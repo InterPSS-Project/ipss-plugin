@@ -1087,7 +1087,7 @@ public class PSSEJsonDirectParser {
         }
     }
 
-    // ==================== Induction machine (NB tags) ====================
+    // ==================== Induction machine ====================
 
     private void parseIndMachRow(Map<String, JsonElement> row) {
         int busNum = getInt(row, "ibus", 0);
@@ -1100,6 +1100,45 @@ public class PSSEJsonDirectParser {
         }
         String name = getString(row, "name", "").trim();
         String busId = BUS_ID_PREFIX + busNum;
+        BaseAclfBus bus = builder.getBaseNetwork().getBus(busId);
+        if (bus != null) {
+            PsseInductionMachinePowerFlow.Data data =
+                    new PsseInductionMachinePowerFlow.Data(
+                            getInt(row, "tc", getInt(row, "tcode", 1)),
+                            getInt(row, "dc", getInt(row, "dcode", 2)),
+                            getDouble(row, "mbase", baseMva),
+                            getDouble(row, "ratekv", bus.getBaseVoltage() / 1000.0),
+                            getInt(row, "pcode", 1), getDouble(row, "pset", 0.0),
+                            getDouble(row, "aconst", 1.0), getDouble(row, "bconst", 1.0),
+                            getDouble(row, "dconst", 1.0), getDouble(row, "econst", 1.0),
+                            getDouble(row, "ra", 0.0), getDouble(row, "xa", 0.0),
+                            getDouble(row, "xm", 0.0), getDouble(row, "r1", 0.0),
+                            getDouble(row, "x1", 0.0), getDouble(row, "r2", 0.0),
+                            getDouble(row, "x2", 0.0), getDouble(row, "x3", 0.0));
+            try {
+                PsseInductionMachinePowerFlow.Result result =
+                        PsseInductionMachinePowerFlow.initialize(data,
+                                bus.getVoltageMag(), bus.getBaseVoltage() / 1000.0, baseMva);
+                boolean inService = getInt(row, "stat", 1) == 1 && !result.tripped();
+                var load = builder.addContributeLoad(busId, "IM-" + id,
+                        inService,
+                        result.loadPu(), null, null, null, false);
+                if (load != null) {
+                    load.setName(name.isEmpty()
+                            ? "InductionMachine:" + id + "(" + busNum + ")" : name);
+                }
+                if (result.stalled()) {
+                    log.warn("PSS/E RAWX induction machine {}:{} has no running-slip solution; "
+                            + "using its locked-rotor power-flow equivalent", busNum, id);
+                } else if (result.tripped()) {
+                    log.warn("PSS/E RAWX induction generator {}:{} has no running-slip solution; "
+                            + "taking its power-flow equivalent out of service", busNum, id);
+                }
+            } catch (IllegalArgumentException ex) {
+                log.warn("Skipping PSS/E RAWX induction machine {}:{}: {}", busNum, id,
+                        ex.getMessage());
+            }
+        }
         NameTag tag = NetFactory.eINSTANCE.createNameTag();
         tag.setId(id);
         tag.setName(name.isEmpty() ? id : name);
