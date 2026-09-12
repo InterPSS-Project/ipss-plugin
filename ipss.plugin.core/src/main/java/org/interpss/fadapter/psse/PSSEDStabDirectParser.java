@@ -47,6 +47,7 @@ import org.interpss.dstab.mach.Wt2e1Data;
 import org.interpss.dstab.mach.Wt3g1Data;
 import org.interpss.dstab.mach.Wt3g2Data;
 import org.interpss.dstab.mach.Wt4g1Data;
+import org.interpss.dstab.mach.Wt4e1Data;
 import org.interpss.dstab.mach.Wt3e1Data;
 import org.interpss.dstab.mach.Wt3t1Data;
 import org.interpss.dstab.mach.Wt3p1Data;
@@ -392,6 +393,8 @@ public class PSSEDStabDirectParser {
                 return procWt3g2(busId, genId, fields);
             case "WT4G1":
                 return procWt4g1(busId, genId, fields);
+            case "WT4E1":
+                return procWt4e1(busId, genId, fields);
             case "WT3E1":
                 return procWt3e1(busId, genId, fields);
             case "WT3T1":
@@ -2779,6 +2782,24 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 7, 0.0), getDouble(f, 8, 0.0),
                 getDouble(f, 9, 0.0), getDouble(f, 10, 0.0),
                 getDouble(f, 11, 0.0))) != null;
+    }
+
+    // Published schema: IBUS 'WT4E1' ID, four ICONs, then 23 CONs.
+    private boolean procWt4e1(String busId, String genId, String[] f) {
+        if (f.length != 30) {
+            log.warn("Invalid WT4E1 record at bus {}: expected 30 fields, found {}", busId, f.length);
+            return false;
+        }
+        return builder.addWt4e1(busId, genId, new Wt4e1Data(
+                getInt(f, 3, 0), getInt(f, 4, 0), getInt(f, 5, 0), getInt(f, 6, 0),
+                getDouble(f, 7, 0), getDouble(f, 8, 0), getDouble(f, 9, 0),
+                getDouble(f, 10, 0), getDouble(f, 11, 0), getDouble(f, 12, 0),
+                getDouble(f, 13, 0), getDouble(f, 14, 0), getDouble(f, 15, 0),
+                getDouble(f, 16, 0), getDouble(f, 17, 0), getDouble(f, 18, 0),
+                getDouble(f, 19, 0), getDouble(f, 20, 0), getDouble(f, 21, 0),
+                getDouble(f, 22, 0), getDouble(f, 23, 0), getDouble(f, 24, 0),
+                getDouble(f, 25, 0), getDouble(f, 26, 0), getDouble(f, 27, 0),
+                getDouble(f, 28, 0), getDouble(f, 29, 0))) != null;
     }
 
     // Native record: IBUS 'WT3E1' ID, six ICONs, then 31 CONs.
