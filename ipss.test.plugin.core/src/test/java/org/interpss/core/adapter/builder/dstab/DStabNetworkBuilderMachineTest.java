@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +14,7 @@ import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
+import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.dstab.mach.GenqecMachine;
 import org.interpss.dstab.mach.GenqejMachine;
 import org.interpss.dstab.mach.Gentpj1Machine;
@@ -116,9 +118,9 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
 		Path dyr = tempDir.resolve("genqej.dyr");
 		Files.writeString(dyr,
-				"1 'GENQEJU' '1' 0.30 6.81 0.02 0.85 0.02 3.17 0.0 "
-				+ "2.37 1.87 0.32 0.52 0.28 0.20 0.19 0.233 0.797 "
-				+ "0.15 1 /\n");
+				"1 'USRMDL' '1' 'GENQEJU' 1 1 1 16 6 1 1 "
+				+ "6.81 0.02 0.85 0.02 3.17 0.0 2.37 1.87 0.32 0.52 "
+				+ "0.28 0.20 0.19 0.233 0.797 0.15 /\n");
 
 		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
 		parser.parseDynFile(dyr.toString());
@@ -126,9 +128,26 @@ public class DStabNetworkBuilderMachineTest extends CorePluginTestSetup {
 		assertNotNull(mach);
 		assertEquals("GENQEJ", mach.getName());
 		assertEquals(0.15, mach.getGenqejData().kis(), TOL);
-		assertEquals(0.30, mach.getGenqejData().accel(), TOL);
+		assertEquals(0.0, mach.getGenqejData().accel(), TOL);
 		assertEquals(0.0, mach.getGenqecData().kw(), TOL);
+		assertEquals(6, mach.getNamedStates().size());
+		assertEquals(23, DynamicModelCatalog.find("GENQEJU").orElseThrow()
+				.recordSchema().acceptedParameterCounts().stream().mapToInt(Integer::intValue)
+				.max().orElseThrow());
 		assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+	}
+
+	@Test
+	public void parseGenqej_rejectsIncorrectNativeAllocationHeader() throws Exception {
+		Path dyr = tempDir.resolve("genqej-invalid-allocation.dyr");
+		Files.writeString(dyr,
+				"1 'USRMDL' '1' 'GENQEJU' 1 1 1 15 6 1 1 "
+				+ "6.81 0.02 0.85 0.02 3.17 0.0 2.37 1.87 0.32 0.52 "
+				+ "0.28 0.20 0.19 0.233 0.797 0.15 /\n");
+		PSSEDStabDirectParser parser = new PSSEDStabDirectParser(
+				DStabBuilderTestFixture.createBuilder()).setStrictImport(true);
+		assertThrows(com.interpss.common.exp.InterpssException.class,
+				() -> parser.parseDynFile(dyr.toString()));
 	}
 
 	@Test
