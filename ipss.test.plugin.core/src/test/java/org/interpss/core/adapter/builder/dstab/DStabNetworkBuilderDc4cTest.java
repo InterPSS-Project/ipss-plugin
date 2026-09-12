@@ -61,6 +61,27 @@ public class DStabNetworkBuilderDc4cTest extends CorePluginTestSetup {
         assertEquals(15,count);
     }
 
+    @Test void parsesExactDc4cu1WrapperAllocationAndPublishedFieldOrder(@TempDir Path dir)throws Exception{
+        DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();Path dyr=dir.resolve("dc4cu1.dyr");
+        Files.writeString(dyr,"1 'USRMDL' '1' 'DC4CU1' 2 0 4 24 6 6 0 0 0 1"
+                +" .1 3 4 .5 .1 10 -10 2 .2 1 .4 .2 .3 0 0 0 0 0 .9 .1 .05 10 0 10 /\n");
+        PSSEDStabDirectParser parser=new PSSEDStabDirectParser(builder).setStrictImport(true);
+        parser.parseDynFile(dyr.toString());Machine machine=builder.getDStabNetwork().getMachine("Bus1-mach1");
+        Dc4cExciter exciter=(Dc4cExciter)machine.getExciter();assertNotNull(exciter);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());assertEquals(4,exciter.getData().getKir(),TOL);
+        assertEquals(.9,exciter.getData().getKp(),TOL);assertEquals(10,exciter.getData().getVbmax(),TOL);
+        machine.setSpeed(1);machine.setEfd(1.2);assertTrue(exciter.initStates(machine.getDStabBus(),machine));
+        assertEquals(6,exciter.getNamedStates().size());assertTrue(exciter.getNamedStates().containsKey("Rate Feedback"));
+    }
+
+    @Test void rejectsDc4cu1WithIncorrectStateAllocation(@TempDir Path dir)throws Exception{
+        DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();Path dyr=dir.resolve("dc4cu1-invalid.dyr");
+        Files.writeString(dyr,"1 'USRMDL' '1' 'DC4CU1' 2 0 4 24 5 6 0 0 0 1"
+                +" .1 3 4 .5 .1 10 -10 2 .2 1 .4 .2 .3 0 0 0 0 0 .9 .1 .05 10 0 10 /\n");
+        PSSEDStabDirectParser parser=new PSSEDStabDirectParser(builder);parser.parseDynFile(dyr.toString());
+        assertTrue(!parser.getLastImportReport().failures().isEmpty());
+    }
+
     @Test void sixStateTrajectoryMatchesIndependentPublishedEquations()throws Exception{
         Fixture f=fixture(baseData());f.exciter.setRefPoint(f.exciter.getRefPoint()+.1);
         double[] x={1.2,1.04,.6,0,1.2,1.2};double dt=.0001,max=0;

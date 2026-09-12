@@ -243,8 +243,9 @@ class DynamicModelCatalogTest {
                 .recordSchema().acceptedParameterCounts());
         assertEquals(Set.of(19), DynamicModelCatalog.find("DC2C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
-        assertEquals(Set.of(28), DynamicModelCatalog.find("DC4C").orElseThrow()
+        assertEquals(Set.of(28,34), DynamicModelCatalog.find("DC4C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
+        assertEquals("DC4C",DynamicModelCatalog.find("DC4CU1").orElseThrow().canonicalName());
         assertEquals(DynamicModelSupportStatus.LOADABLE,
                 DynamicModelCatalog.find("ESAC5A").orElseThrow().supportStatus());
         assertEquals(DynamicModelSupportStatus.LOADABLE,

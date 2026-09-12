@@ -18,11 +18,12 @@ runtime path. Acceptance uses PSS/E RAW/DYR plus `_gnet.idv` and
 excluded
 from coverage counts and the unsupported-model TODO. GE PSLF `.dyd` files are
 not discovered, parsed, inventoried, or tested by this workflow.
-All `55/55` native reference probes were cold-regenerated with the installed
-Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero and every
-generated manifest matched its published content and exact artifact-hash
-declarations. The reusable suite driver and all probe inputs use
-repository-relative paths.
+All `56/56` native reference probes were cold-regenerated with the installed
+Xplore 36.7.0/Python 3.13 on 2026-09-12. Every probe exited zero. The new
+DC4CU1 artifact reproduced byte-for-byte; 55 published manifests matched
+exactly, while WT3G1 differed only by `1.43e-29 pu` numerical residue in its
+speed channel, with all other numerical samples equal. The reusable suite
+driver and all probe inputs use repository-relative paths.
 `6/6` prepared cases pass the
 short flat and common Bus-7159 fault execution smokes, `5/6` pass the production
 1/240 s strict one-second flat-run gate, and all `15/15` required
@@ -95,8 +96,15 @@ are exposed through the common named-state API. Because the installed model
 library does not contain the optional compiled wrapper routine, independent
 trajectory verification uses the built-in AC8C equation with the same synthetic
 public constants and hashes both DYR forms.
-One registered integrity test now scans all 135 checked-in native and PowerWorld
-manifests, rejects absolute or repository-escaping paths, and verifies all 556
+DC4CU1 now loads through its exact 38-token user-model wrapper with the published
+four-ICON, 24-CON, six-STATE, six-VAR DC4C allocation. The existing flat DC4C
+dialect remains backward compatible, and all six controller coordinates are
+exposed through the common named-state API. Because the installed model library
+does not contain the optional compiled wrapper routine, independent trajectory
+verification uses the built-in DC4C equation with the same synthetic public
+constants and hashes both DYR forms.
+One registered integrity test now scans all 136 checked-in native and PowerWorld
+manifests, rejects absolute or repository-escaping paths, and verifies all 561
 declared artifact/input hashes. It applies canonical-LF hashing only to the
 PowerWorld schema and exact-byte hashing to PSS/E evidence.
 REECA1/REPCA1 now preserve their initialized measurement boundary against only
@@ -207,7 +215,7 @@ the plan's release checklist before interpreting any
 | DC2C | EXCITER |  | 19 | LOADABLE | `org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20DC2C.htm) |
 | DC3A | EXCITER | ESDC3A | 12 | LOADABLE | `org.interpss.dstab.control.exc.psse.dc3a.Dc3aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20DC3A%20and%20ESDC3A.htm) |
 | DC4B | EXCITER | ESDC4B | 20 | LOADABLE | `org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20DC4B%20and%20ESDC4B.htm) |
-| DC4C | EXCITER |  | 28 | LOADABLE | `org.interpss.dstab.control.exc.psse.dc4c.Dc4cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20DC4C.htm) |
+| DC4C | EXCITER | DC4CU1 | 28 | LOADABLE | `org.interpss.dstab.control.exc.psse.dc4c.Dc4cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20DC4C.htm) |
 | ESAC1A | EXCITER |  | 19 | LOADABLE | `org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESAC1A.htm) |
 | ESAC2A | EXCITER |  | 22 | LOADABLE | `org.interpss.dstab.control.exc.psse.esac2a.Esac2aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESAC2A.htm) |
 | ESAC3A | EXCITER |  | 22 | LOADABLE | `org.interpss.dstab.control.exc.psse.esac3a.Esac3aExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESAC3A.htm) |

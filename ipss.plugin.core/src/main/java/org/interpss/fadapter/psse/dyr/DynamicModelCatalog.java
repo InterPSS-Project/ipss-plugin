@@ -335,7 +335,7 @@ public final class DynamicModelCatalog {
             descriptor("DC2C", Set.of(), EXCITER, 19, LOADABLE,
                     "org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter",
                     "Exciter%20DC2C.htm"),
-            descriptor("DC4C", Set.of(), EXCITER, 28, LOADABLE,
+            descriptorWithVariants("DC4C", Set.of("DC4CU1"), EXCITER, 28, new int[]{34}, LOADABLE,
                     "org.interpss.dstab.control.exc.psse.dc4c.Dc4cExciter",
                     "Exciter%20DC4C.htm"),
             descriptor("IEEEX1", Set.of(), EXCITER, 16, LOADABLE,

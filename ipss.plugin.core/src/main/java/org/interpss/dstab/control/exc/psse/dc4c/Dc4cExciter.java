@@ -2,6 +2,8 @@ package org.interpss.dstab.control.exc.psse.dc4c;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
@@ -168,6 +170,16 @@ public final class Dc4cExciter extends AnnotateExciter implements IntegrationSte
     public double getAvailableSupply(){return algebraics(active,getMachine()).supply;}
     public double getExciterInput(){return algebraics(active,getMachine()).efe;}
     public double getFeedbackOutput(){return algebraics(active,getMachine()).feedback;}
+    @Override public Map<String,Double> getNamedStates(){
+        Map<String,Double> named=new LinkedHashMap<>();
+        named.put("Sensed Vt",active[VSENSE]);
+        named.put("Regulator Integrator",active[PI_I]);
+        named.put("Regulator Derivator",active[DERIV_LAG]);
+        named.put("VR",active[VR]);
+        named.put("EFD",active[EFD]);
+        named.put("Rate Feedback",active[FB_LAG]);
+        return Map.copyOf(named);
+    }
     @Override public double getOutput(Machine machine){outputSignal=outputFromInternal(field(active,machine),machine);return outputSignal;}
     private double field(double[] x,Machine machine){return algebraics(x,machine).field;}
     @Override public void setRefPoint(double value){reference=value;} @Override public double getRefPoint(){return reference;}
