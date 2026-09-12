@@ -129,6 +129,7 @@ import org.interpss.core.adapter.builder.dstab.PsseSvsmo1t2ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt1g1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt2g1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt2e1ModelTest;
+import org.interpss.core.adapter.builder.dstab.PsseWt3g1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12t1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12a1ModelTest;
 import org.interpss.dstab.renewable.RenewableControlIntegrationTest;
@@ -200,6 +201,7 @@ import org.interpss.core.dstab.Svsmo1t2PsseConformanceTest;
 import org.interpss.core.dstab.mach.Wt1g1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt2g1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Wt2e1PsseSmibConformanceTest;
+import org.interpss.core.dstab.mach.Wt3g1PsseSmibConformanceTest;
 import org.interpss.core.dstab.WpidhydIndependentSmibConformanceTest;
 import org.interpss.core.dstab.GastdIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Gast2adIndependentSmibConformanceTest;
@@ -566,6 +568,7 @@ import org.junit.platform.suite.api.Suite;
 	Wt1g1PsseSmibConformanceTest.class,
 	Wt2g1PsseSmibConformanceTest.class,
 	Wt2e1PsseSmibConformanceTest.class,
+	Wt3g1PsseSmibConformanceTest.class,
 	WpidhydIndependentSmibConformanceTest.class,
 	GastdIndependentSmibConformanceTest.class,
 	Gast2adIndependentSmibConformanceTest.class,
@@ -752,6 +755,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseWt1g1ModelTest.class,
 	PsseWt2g1ModelTest.class,
 	PsseWt2e1ModelTest.class,
+	PsseWt3g1ModelTest.class,
 	PsseWt12t1ModelTest.class,
 	PsseWt12a1ModelTest.class,
 	RenewableControlIntegrationTest.class,
