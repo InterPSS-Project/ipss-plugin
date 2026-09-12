@@ -34,6 +34,7 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
     private double deltaQ;
     private State oldState;
     private Derivative predictor;
+    private Wt4e1Model electricalController;
     private boolean initialized;
 
     public Wt4g1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
@@ -63,6 +64,7 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
         deltaQ = highVoltageCorrection(voltage, data.highVoltageThreshold(),
                 data.highVoltageReactiveCurrentGain());
         initialized = true;
+        if (electricalController != null) electricalController.initialize();
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         return finite(ipState) && finite(iqState) && finite(filteredVoltage);
     }
@@ -71,6 +73,7 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (!initialized || method != DynamicSimuMethod.MODIFIED_EULER || dt <= 0.0
                 || (flag != 0 && flag != 1)) return false;
+        if (electricalController != null) electricalController.step(dt, flag);
         State current = state();
         Derivative derivative = derivatives(current);
         if (flag == 0) {
@@ -228,6 +231,8 @@ public final class Wt4g1Model extends DynamicBusDeviceImpl
     public double getReactiveCurrentState() { return iqState; }
     public double getFilteredVoltageState() { return filteredVoltage; }
     public double getDeltaQ() { return deltaQ; }
+    public Wt4e1Model getElectricalController() { return electricalController; }
+    public void setElectricalController(Wt4e1Model value) { electricalController = value; }
 
     private record State(double ip, double iq, double filteredVoltage) { }
     private record Derivative(double ip, double iq, double filteredVoltage) {
