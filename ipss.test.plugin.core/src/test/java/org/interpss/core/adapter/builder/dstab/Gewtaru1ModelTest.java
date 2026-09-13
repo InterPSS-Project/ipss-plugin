@@ -24,7 +24,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Synthetic schema, equation, state, and coupled-flat-run checks. */
-class Gewtaru1ModelTest {
+public class Gewtaru1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
     private static final String SYNTHETIC_DYR = """
             1 'USRMDL' '1' 'GEWTGCU1' 101 1 2 18 3 3
