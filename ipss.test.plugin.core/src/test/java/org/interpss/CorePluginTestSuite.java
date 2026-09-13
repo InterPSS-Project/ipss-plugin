@@ -140,6 +140,7 @@ import org.interpss.core.adapter.builder.dstab.PsseWt3e1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Gewtecu1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Gewt2mu1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Gewtaru1ModelTest;
+import org.interpss.core.adapter.builder.dstab.Gewtgcu1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12t1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12a1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt12a1bModelTest;
@@ -227,6 +228,7 @@ import org.interpss.core.dstab.mach.Wt4e1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.GenqejPsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.GenqecuPsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Gentpj1PsseSmibConformanceTest;
+import org.interpss.core.dstab.mach.Gewtgcu1NativeConformanceTest;
 import org.interpss.core.dstab.mach.Wt3e1PsseSmibConformanceTest;
 import org.interpss.core.dstab.WpidhydIndependentSmibConformanceTest;
 import org.interpss.core.dstab.GastdIndependentSmibConformanceTest;
@@ -614,6 +616,7 @@ import org.junit.platform.suite.api.Suite;
 	GenqejPsseSmibConformanceTest.class,
 	GenqecuPsseSmibConformanceTest.class,
 	Gentpj1PsseSmibConformanceTest.class,
+	Gewtgcu1NativeConformanceTest.class,
 	Wt3e1PsseSmibConformanceTest.class,
 	WpidhydIndependentSmibConformanceTest.class,
 	GastdIndependentSmibConformanceTest.class,
@@ -810,6 +813,7 @@ import org.junit.platform.suite.api.Suite;
 	Gewtecu1ModelTest.class,
 	Gewt2mu1ModelTest.class,
 	Gewtaru1ModelTest.class,
+	Gewtgcu1ModelTest.class,
 	PsseWt12t1ModelTest.class,
 	PsseWt12a1ModelTest.class,
 	PsseWt12a1bModelTest.class,
