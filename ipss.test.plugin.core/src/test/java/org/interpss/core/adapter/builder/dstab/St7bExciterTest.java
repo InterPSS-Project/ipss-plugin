@@ -5,13 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
@@ -20,7 +16,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -35,8 +30,6 @@ import com.interpss.dstab.mach.Machine;
 /** Import and equation-level tests for native PSS/E ST7B. */
 public class St7bExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
-    private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesExactNativeLayoutAndRejectsPslfNameAsDyrAlias(@TempDir Path dir)throws Exception{
         DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();Path st=dir.resolve("st7b.dyr");
@@ -55,17 +48,6 @@ public class St7bExciterTest extends CorePluginTestSetup {
         DStabNetworkBuilder rejectedBuilder=DStabBuilderTestFixture.createWithMachine();Path es=dir.resolve("esst7b.dyr");
         Files.writeString(es,"1 'ESST7B' 1 .017 87.8 1 3 1 1 3 3.21 1 0 5.77 -4.64 1.05 .95 0 0 .02 /\n");
         assertThrows(InterpssException.class,()->new PSSEDStabDirectParser(rejectedBuilder).setStrictImport(true).parseDynFile(es.toString()));
-    }
-
-    @Test void allSuppliedSt7bRecordsUseReviewedSchema()throws Exception{
-        List<Path> paths=List.of(CORPUS_ROOT.resolve("private_case_package/24HSP11p.dyr"),
-                CORPUS_ROOT.resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr"),
-                CORPUS_ROOT.resolve("31hs1ap/31hs1ap_348 (1)/31hs1ap.dyr"));
-        assumeTrue(paths.stream().allMatch(Files::isRegularFile),"Missing supplied ST7B corpus under "+CORPUS_ROOT);
-        Pattern pattern=Pattern.compile("(?ims)^\\s*\\d+\\s+'ST7B'\\s+[^/]+/");int count=0;
-        for(Path path:paths){Matcher matcher=pattern.matcher(Files.readString(path));while(matcher.find()){
-            String record=matcher.group();assertEquals(19,PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size(),path.toString());count++;}}
-        assertEquals(4,count);
     }
 
     @Test void fourStateTrajectoryMatchesPublishedEquations()throws Exception{

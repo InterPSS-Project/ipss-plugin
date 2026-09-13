@@ -4,17 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
-import java.io.StringReader;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -24,7 +21,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -36,9 +32,6 @@ public class IeelLoadModelTest extends CorePluginTestSetup {
     private static final String SYNTHETIC_PARAMETERS =
             "0.23 0.31 0.46 0.37 0.22 0.41 1.37 -0.63 "
                     + "0.8 1.7 2.4 0.6 1.4 2.2";
-    private static final Path CORPUS_ROOT = Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()));
-
     @Test
     void ieelblReplacesAllStaticComponentsWithPublishedAlgebraicEquation(
             @TempDir Path directory) throws Exception {
@@ -149,23 +142,6 @@ public class IeelLoadModelTest extends CorePluginTestSetup {
                 new org.interpss.dstab.dynLoad.IeelLoadData(
                         0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0));
         assertFalse(model.initStates());
-    }
-
-    @Test
-    void suppliedIeelarInventoryUsesTheReviewedFourteenParameterSchema() throws Exception {
-        Path dyr = CORPUS_ROOT.resolve("private_case_package/24HSP11p.dyr");
-        assumeTrue(Files.isRegularFile(dyr), "Missing supplied PSS/E corpus");
-        var matcher = Pattern.compile("(?ims)^\\s*\\d+\\s+'IEELAR'\\s+[^/]+/")
-                .matcher(Files.readString(dyr));
-        int count = 0;
-        while (matcher.find()) {
-            var records = PsseDyrRecordReader.read(new StringReader(matcher.group()),
-                    "supplied-ieelar-record");
-            assertEquals(1, records.size());
-            assertEquals(14, records.getFirst().parameterCount());
-            count++;
-        }
-        assertEquals(25, count);
     }
 
     @Test

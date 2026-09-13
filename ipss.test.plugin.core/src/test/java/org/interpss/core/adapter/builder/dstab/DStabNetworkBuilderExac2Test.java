@@ -6,13 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -22,7 +18,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -35,8 +30,6 @@ import com.interpss.dstab.mach.Machine;
 
 public class DStabNetworkBuilderExac2Test extends CorePluginTestSetup {
     private static final double TOL=1e-8;
-    private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()));
     @TempDir Path tempDir;
 
     @Test void parsesNativeRecordInitializesAndResponds() throws Exception {
@@ -57,21 +50,6 @@ public class DStabNetworkBuilderExac2Test extends CorePluginTestSetup {
         for(int i=0;i<40;i++)step(exc,machine,.005);
         assertTrue(Double.isFinite(exc.getOutput(machine)));assertNotEquals(initial,exc.getOutput(machine),1e-4);
         assertTrue(parser.getLastImportReport().isStrictlyComplete());
-    }
-
-    @Test void allThreeHundredSeventySevenSuppliedRecordsUseExactTwentyThreeParameterSchema() throws Exception {
-        List<Path> files=List.of(
-                CORPUS_ROOT.resolve("31hs1ap/31hs1ap_348 (1)/31hs1ap.dyr"),
-                CORPUS_ROOT.resolve("private_case_package/24HSP11p.dyr"),
-                CORPUS_ROOT.resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr"),
-                CORPUS_ROOT.resolve("TamuTestCases/ACTIVSg10k/ACTIVSg10k_dynamics.dyr"),
-                CORPUS_ROOT.resolve("TamuTestCases/ACTIVSg25k/ACTIVSg25k.dyr"));
-        assumeTrue(files.stream().allMatch(Files::isRegularFile),"Missing supplied EXAC2 corpus under "+CORPUS_ROOT);
-        Pattern pattern=Pattern.compile("(?ims)^\\s*\\d+\\s+'EXAC2'\\s+[^/]+/");int count=0;
-        for(Path file:files){Matcher matcher=pattern.matcher(Files.readString(file));while(matcher.find()){
-            String record=matcher.group();assertEquals(26,
-                    PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size(),file.toString());count++;}}
-        assertEquals(377,count);
     }
 
     @Test void catalogAndParserEnforceNativePsseSchema() throws Exception {

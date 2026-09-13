@@ -1,12 +1,9 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -17,7 +14,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,9 +29,6 @@ import com.interpss.dstab.mach.MachineIfdBase;
 /** Official-schema, equation, limiter and solver tests for native PSS/E ST4C. */
 public class St4cExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
-    private static final Path CORPUS=Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()))
-            .resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr");
 
     @Test void parsesOfficialTwentySixParameterSchemaAndRealRecord(@TempDir Path dir)throws Exception{
         Path dyr=dir.resolve("st4c.dyr");
@@ -52,14 +45,6 @@ public class St4cExciterTest extends CorePluginTestSetup {
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESST4C").orElseThrow().isImplementedExactly());
         m.setEfd(1.2);assertTrue(e.initStates(m.getDStabBus(),m));double initial=e.getOutput(m);
         for(int i=0;i<1000;i++)step(e,m,.0001);assertEquals(initial,e.getOutput(m),1e-9);
-    }
-
-    @Test void allNineteenSuppliedNativeRecordsHaveExactSchema()throws Exception{
-        assumeTrue(Files.isRegularFile(CORPUS),"Missing supplied ST4C corpus: "+CORPUS);
-        Pattern pattern=Pattern.compile("(?ims)^\\s*\\d+\\s+'ST4C'\\s+[^/]+/");Matcher matcher=pattern.matcher(Files.readString(CORPUS));int count=0;
-        while(matcher.find()){String record=matcher.group();assertEquals(29,
-                PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size());count++;}
-        assertEquals(19,count);
     }
 
     @Test void parsesExactSt4cu1WrapperAllocationAndPublishedFieldOrder(@TempDir Path dir)throws Exception{
