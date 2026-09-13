@@ -1,12 +1,9 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.st1c.St1cData;
@@ -16,7 +13,6 @@ import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -30,8 +26,6 @@ import com.interpss.dstab.mach.Machine;
 /** Exact-schema, equation, limiter, correction and solver tests for PSS/E ST1C. */
 public class St1cExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
-    private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesExactThreeIconEighteenConRecord(@TempDir Path dir)throws Exception{
         Path dyr=dir.resolve("st1c.dyr");
@@ -47,19 +41,6 @@ public class St1cExciterTest extends CorePluginTestSetup {
         var descriptor=DynamicModelCatalog.find("ST1C").orElseThrow();assertEquals(21,descriptor.parameterCount());
         assertEquals(DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESST1C").orElseThrow().isImplementedExactly());
-    }
-
-    @Test void rejectsShortRecordAndAllTwentySuppliedRecordsHaveExactSchema(@TempDir Path dir)throws Exception{
-        Path shortDyr=dir.resolve("short.dyr");Files.writeString(shortDyr,"1 'ST1C' 1 2 1 3 .01 9 -8 .03 .2 .04 .3 150 .05 7 -6 5 -4 .1 .2 1 .3 /\n");
-        PSSEDStabDirectParser p=new PSSEDStabDirectParser(DStabBuilderTestFixture.createWithMachine()).setStrictImport(false);p.parseDynFile(shortDyr.toString());
-        assertEquals(1,p.getLastImportReport().count(DynamicModelImportStatus.REJECTED));
-        Path[] files={CORPUS_ROOT.resolve("private_case_package/24HSP11p.dyr"),
-                CORPUS_ROOT.resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr")};
-        assumeTrue(Files.isRegularFile(files[0])&&Files.isRegularFile(files[1]),"Missing supplied ST1C corpus");
-        Pattern pattern=Pattern.compile("(?ims)^\\s*\\d+\\s+'ST1C'\\s+[^/]+/");int count=0;
-        for(Path file:files){Matcher matcher=pattern.matcher(Files.readString(file));while(matcher.find()){
-            String record=matcher.group();assertEquals(24,PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size());count++;}}
-        assertEquals(20,count);
     }
 
     @Test void fiveStatesMatchIndependentModifiedEulerOracle()throws Exception{

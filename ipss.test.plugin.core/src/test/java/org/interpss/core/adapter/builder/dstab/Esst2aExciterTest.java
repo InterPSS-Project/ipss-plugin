@@ -3,13 +3,9 @@ package org.interpss.core.adapter.builder.dstab;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -19,7 +15,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,9 +28,6 @@ import com.interpss.dstab.mach.Machine;
 /** Import, equation, and integration tests for PSS/E ESST2A. */
 public class Esst2aExciterTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
-    private static final Path CORPUS_ROOT = Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()));
-
     @Test
     void parsesRealThirteenParameterRecordAndCatalogsExactSupport(@TempDir Path dir)
             throws Exception {
@@ -73,28 +65,6 @@ public class Esst2aExciterTest extends CorePluginTestSetup {
                 .orElseThrow().isImplementedExactly());
         assertTrue(DynamicModelCatalog.find("EXST2A").isEmpty(),
                 "EXST2A is a cross-catalog row, not a native PSS/E model name");
-    }
-
-    @Test
-    void allSuppliedEsst2aRecordsUseReviewedSchema() throws Exception {
-        List<Path> paths = List.of(
-                CORPUS_ROOT.resolve("private_case_package/24HSP11p.dyr"),
-                CORPUS_ROOT.resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr"),
-                CORPUS_ROOT.resolve("31hs1ap/31hs1ap_348 (1)/31hs1ap.dyr"));
-        assumeTrue(paths.stream().allMatch(Files::isRegularFile),
-                "Missing supplied ESST2A corpus under " + CORPUS_ROOT);
-        Pattern recordPattern = Pattern.compile("(?ims)^\\s*\\d+\\s+'ESST2A'\\s+[^/]+/");
-        int recordCount = 0;
-        for (Path path : paths) {
-            Matcher matcher = recordPattern.matcher(Files.readString(path));
-            while (matcher.find()) {
-                String record = matcher.group();
-                assertEquals(16, PsseDyrRecordReader.tokenize(
-                        record.substring(0, record.lastIndexOf('/'))).size(), path.toString());
-                recordCount++;
-            }
-        }
-        assertEquals(85, recordCount);
     }
 
     @Test

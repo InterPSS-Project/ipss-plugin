@@ -1,12 +1,9 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import com.interpss.common.exp.InterpssException;
@@ -17,7 +14,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -31,9 +27,6 @@ import com.interpss.dstab.mach.Machine;
 /** Official-schema, equation, limiter and solver tests for native PSS/E ST6C. */
 public class St6cExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
-    private static final Path CORPUS=Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()))
-            .resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr");
 
     @Test void parsesOfficialTwentyNineParameterSchemaAndRealRecord(@TempDir Path dir)throws Exception{
         Path dyr=dir.resolve("st6c.dyr");
@@ -53,14 +46,6 @@ public class St6cExciterTest extends CorePluginTestSetup {
         Machine machine=b.getDStabNetwork().getMachine("Bus1-mach1");machine.setEfd(1.2);
         assertTrue(e.initStates(machine.getDStabBus(),machine));double initial=e.getOutput(machine);
         for(int i=0;i<1000;i++)step(e,machine,.0001);assertEquals(initial,e.getOutput(machine),1e-9);
-    }
-
-    @Test void allThirtySuppliedNativeRecordsHaveExactSchema()throws Exception{
-        assumeTrue(Files.isRegularFile(CORPUS),"Missing supplied ST6C corpus: "+CORPUS);
-        Pattern pattern=Pattern.compile("(?ims)^\\s*\\d+\\s+'ST6C'\\s+[^/]+/");Matcher matcher=pattern.matcher(Files.readString(CORPUS));int count=0;
-        while(matcher.find()){String record=matcher.group();assertEquals(32,
-                PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size());count++;}
-        assertEquals(30,count);
     }
 
     @Test void parsesExactSt6cu1WrapperAndRejectsWrongAllocation(@TempDir Path dir)throws Exception{

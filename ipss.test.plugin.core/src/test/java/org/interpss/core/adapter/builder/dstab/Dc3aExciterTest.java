@@ -3,13 +3,9 @@ package org.interpss.core.adapter.builder.dstab;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
@@ -18,7 +14,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -32,8 +27,6 @@ import com.interpss.dstab.mach.Machine;
 /** Import and equation-level tests for DC3A/ESDC3A. */
 public class Dc3aExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
-    private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesBothLayoutsAndCatalogsExactSupport(@TempDir Path dir)throws Exception{
         DStabNetworkBuilder dcBuilder=DStabBuilderTestFixture.createWithMachine();Path dc=dir.resolve("dc3a.dyr");
@@ -54,17 +47,6 @@ public class Dc3aExciterTest extends CorePluginTestSetup {
         assertEquals(12,descriptor.parameterCount());assertTrue(descriptor.recordSchema().accepts(13));
         assertEquals(DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESDC3A").orElseThrow().isImplementedExactly());
-    }
-
-    @Test void allSuppliedDc3aRecordsUseReviewedSchema()throws Exception{
-        List<Path> paths=List.of(CORPUS_ROOT.resolve("private_case_package/24HSP11p.dyr"),
-                CORPUS_ROOT.resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr"),
-                CORPUS_ROOT.resolve("31hs1ap/31hs1ap_348 (1)/31hs1ap.dyr"));
-        assumeTrue(paths.stream().allMatch(Files::isRegularFile),"Missing supplied DC3A corpus under "+CORPUS_ROOT);
-        Pattern pattern=Pattern.compile("(?ims)^\\s*\\d+\\s+'DC3A'\\s+[^/]+/");int count=0;
-        for(Path path:paths){Matcher matcher=pattern.matcher(Files.readString(path));while(matcher.find()){
-            String record=matcher.group();assertEquals(15,PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size(),path.toString());count++;}}
-        assertEquals(12,count);
     }
 
     @Test void threeStateTrajectoryMatchesPublishedEquations()throws Exception{

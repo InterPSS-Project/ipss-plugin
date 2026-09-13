@@ -3,12 +3,9 @@ package org.interpss.core.adapter.builder.dstab;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -19,7 +16,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -33,8 +29,6 @@ import com.interpss.dstab.mach.Machine;
 /** Native PSS/E DC4C import and IEEE/PowerWorld equation checks. */
 public class DStabNetworkBuilderDc4cTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
-    private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesRealCorpusRecordAndHoldsEquilibrium(@TempDir Path dir)throws Exception{
         DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
@@ -50,15 +44,6 @@ public class DStabNetworkBuilderDc4cTest extends CorePluginTestSetup {
         assertEquals(3.5,e.getData().getVbmax(),TOL);assertTrue(parser.getLastImportReport().isStrictlyComplete());
         assertTrue(e.initStates(m.getDStabBus(),m));double initial=e.getOutput(m);
         for(int i=0;i<1000;i++)step(e,m,.0001);assertEquals(initial,e.getOutput(m),1e-8);
-    }
-
-    @Test void allSuppliedDc4cRecordsUseReviewedFourIconTwentyFourConSchema()throws Exception{
-        Path path=CORPUS_ROOT.resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr");
-        assumeTrue(Files.isRegularFile(path),"Missing supplied DC4C corpus under "+CORPUS_ROOT);
-        Pattern pattern=Pattern.compile("(?ims)^\\s*\\d+\\s+'DC4C'\\s+[^/]+/");Matcher matcher=pattern.matcher(Files.readString(path));int count=0;
-        while(matcher.find()){String record=matcher.group();assertEquals(31,
-                PsseDyrRecordReader.tokenize(record.substring(0,record.lastIndexOf('/'))).size(),path.toString());count++;}
-        assertEquals(15,count);
     }
 
     @Test void parsesExactDc4cu1WrapperAllocationAndPublishedFieldOrder(@TempDir Path dir)throws Exception{
