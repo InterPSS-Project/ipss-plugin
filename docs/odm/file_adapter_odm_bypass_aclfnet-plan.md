@@ -30,7 +30,7 @@ todos:
     content: "Phase 4f: Create BPA direct adapter"
     status: completed
   - id: phase4-cim
-    content: "Phase 4g: Create CIM/CGMES direct adapter (SimpleCIMDirectParser + Jena RDF stack + builder-backed mappers)"
+    content: "Phase 4g: Create CIM/CGMES direct adapter (CGMESDirectParser + Jena RDF stack + builder-backed mappers)"
     status: completed
   - id: phase5-integration
     content: "Phase 5: Update IpssFileAdapterBase, IpssFileAdapter, CorePluginFactory, IpssAdapter DSL; remove ODM import dependency from pom.xml; migrate tests"
@@ -54,7 +54,7 @@ isProject: false
 | GE PSLF | `GEFormat` | `org.interpss.fadapter.ge.GEPslfDirectParser` |
 | PowerWorld (PWD) | `PWDFormat` | `org.interpss.fadapter.pwd.PWDDirectParser` |
 | BPA | `BPAFormat` | `org.interpss.fadapter.bpa.BPADirectParser` |
-| CIM/CGMES | `CIMFormat` | `org.interpss.fadapter.cim.SimpleCIMDirectParser` |
+| CIM/CGMES | `CIMFormat` | `org.interpss.fadapter.cim.CGMESDirectParser` |
 
 ## Former Architecture (replaced)
 
@@ -209,9 +209,9 @@ Port `org.ieee.odm.adapter.cim` into ipss-plugin as a direct CIM → `AclfNetwor
 
 ```mermaid
 flowchart LR
-  CimFiles["CIM RDF/XML\nEQ/TP/SSH/SV/BD"] --> Rdf["SimpleCIMRdfParser\nApache Jena"]
-  Rdf --> Model["SimpleCIMModel + indices"]
-  Model --> Direct["SimpleCIMDirectParser\n+ equipment mappers"]
+  CimFiles["CIM RDF/XML\nEQ/TP/SSH/SV/BD"] --> Rdf["CGMESRdfParser\nApache Jena"]
+  Rdf --> Model["CGMESModel + indices"]
+  Model --> Direct["CGMESDirectParser\n+ equipment mappers"]
   Direct --> Builder["AclfNetworkBuilder"]
   Builder --> Net["AclfNetwork"]
 ```
@@ -221,10 +221,10 @@ flowchart LR
 | Class | Role |
 |---|---|
 | [CIMFormat](ipss.plugin.core/src/main/java/org/interpss/fadapter/CIMFormat.java) | Facade → `SimuContext` / `AclfNetwork`; single- and multi-file `load()` |
-| [SimpleCIMDirectParser](ipss.plugin.core/src/main/java/org/interpss/fadapter/cim/SimpleCIMDirectParser.java) | Orchestrate parse → convert buses/branches/injections → `finalizeNetwork()` |
-| `SimpleCIMModel`, `SimpleCIMConstants`, `SimpleCIMPropertyBag` | Jena model wrap, namespaces, typed property access |
-| `parser/SimpleCIMRdfParser` | RDF/XML sanitize + Jena `Model.read` (base-URI merge fix) |
-| `util/SimpleCIMUnitConverter` | Ohm/Siemens/MW → PU helpers |
+| [CGMESDirectParser](ipss.plugin.core/src/main/java/org/interpss/fadapter/cim/CGMESDirectParser.java) | Orchestrate parse → convert buses/branches/injections → `finalizeNetwork()` |
+| `CGMESModel`, `CGMESConstants`, `CGMESPropertyBag` | Jena model wrap, namespaces, typed property access |
+| `parser/CGMESRdfParser` | RDF/XML sanitize + Jena `Model.read` (base-URI merge fix) |
+| `util/CGMESUnitConverter` | Ohm/Siemens/MW → PU helpers |
 | `mapper/*` | Builder-backed equipment mappers (no ODM schema types) |
 
 **ODM mapper → builder mapping** (field extraction / PU formulas preserved from ipss-odm):
@@ -232,19 +232,19 @@ flowchart LR
 | ODM source | Direct sink |
 |---|---|
 | `CIMAdapter.convertBuses` (TN → Busbar → ConnNode) | `builder.addBus(...)` + `cimModel.mapBusId`; skip boundary TNs |
-| `SimpleCIMLineMapper` / series compensator | `builder.addLine(...)` with half shunt Y; cirId 1–10 |
-| `SimpleCIMTransformerMapper` | `builder.addXformer2W(...)`; taps from bus base kV, clamped to (0, 2] |
-| `SimpleCIMTransformer3WMapper` | `builder.addXformer3W(...)` star-bus model (adds star bus) |
-| `SimpleCIMLoadMapper` | `builder.addContributeLoad(...)` |
-| `SimpleCIMGeneratorMapper` / ExtNetInjection | `setPVBus` / `setPQBus` / `setSwingBus`; promote first PV if no swing |
-| `SimpleCIMShuntCompensatorMapper` | `builder.addToBusShuntY(...)` |
+| `CGMESLineMapper` / series compensator | `builder.addLine(...)` with half shunt Y; cirId 1–10 |
+| `CGMESTransformerMapper` | `builder.addXformer2W(...)`; taps from bus base kV, clamped to (0, 2] |
+| `CGMESTransformer3WMapper` | `builder.addXformer3W(...)` star-bus model (adds star bus) |
+| `CGMESLoadMapper` | `builder.addContributeLoad(...)` |
+| `CGMESGeneratorMapper` / ExtNetInjection | `setPVBus` / `setPQBus` / `setSwingBus`; promote first PV if no swing |
+| `CGMESShuntCompensatorMapper` | `builder.addToBusShuntY(...)` |
 
-Placeholder container mappers (`CIMSubstationMapper`, `CIMVoltageLevelMapper`) were not ported — VL voltages are read from `SimpleCIMModel` during bus conversion.
+Placeholder container mappers (`CIMSubstationMapper`, `CIMVoltageLevelMapper`) were not ported — VL voltages are read from `CGMESModel` during bus conversion.
 
 **Wiring:**
 - `IpssFileAdapter.FileFormat.CIM` and `IpssAdapter.FileFormat.CIM`
 - [CorePluginFactory](ipss.plugin.core/src/main/java/org/interpss/CorePluginFactory.java) returns `new CIMFormat()`
-- `IpssAdapter.FileImportDSL` routes single- and multi-file CIM loads to `SimpleCIMDirectParser`
+- `IpssAdapter.FileImportDSL` routes single- and multi-file CIM loads to `CGMESDirectParser`
 - Jena `jena-core` / `jena-arq` **4.10.0** added to [ipss.plugin.core/pom.xml](ipss.plugin.core/pom.xml) (no `org.ieee.odm` dependency)
 
 **Tests:** [CIMDirectParserTest](ipss.test.plugin.core/src/test/java/org/interpss/core/adapter/cim/CIMDirectParserTest.java) against fixtures in `testData/adpter/cim/` (MicroGrid EQ+TP[+SSH/SV], MiniGrid 3W, IEEE118 CIMHub vs MATPOWER counts, boundary handling, factory multi-file).

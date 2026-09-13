@@ -1,5 +1,5 @@
 /*
- * SimpleCIMConstants.java
+ * CGMESConstants.java
  *
  * Copyright (C) 2025 www.interpss.org
  *
@@ -11,9 +11,9 @@ package org.interpss.fadapter.cim;
 /**
  * CIM namespace URIs and RDF constants used in CGMES RDF/XML files.
  */
-public final class SimpleCIMConstants {
+public final class CGMESConstants {
 
-    private SimpleCIMConstants() {}
+    private CGMESConstants() {}
 
     // RDF namespace
     public static final String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";

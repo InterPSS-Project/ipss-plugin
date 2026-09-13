@@ -1,5 +1,5 @@
 /*
- * SimpleCIMRdfParser.java
+ * CGMESRdfParser.java
  *
  * Parses RDF/XML CIM files into Apache Jena Model.
  * Sanitizes non-standard UUIDs in ENTSO-E test files before parsing.
@@ -22,8 +22,8 @@ import org.slf4j.LoggerFactory;
  * Parses CIM RDF/XML file(s) into a Jena Model.
  * Pre-processes input to fix non-standard URIs in ENTSO-E test files.
  */
-public class SimpleCIMRdfParser {
-    private static final Logger log = LoggerFactory.getLogger(SimpleCIMRdfParser.class);
+public class CGMESRdfParser {
+    private static final Logger log = LoggerFactory.getLogger(CGMESRdfParser.class);
 
     /** Pattern matching invalid UUID suffixes like urn:uuid:..._EU */
     private static final Pattern BAD_UUID = Pattern.compile(

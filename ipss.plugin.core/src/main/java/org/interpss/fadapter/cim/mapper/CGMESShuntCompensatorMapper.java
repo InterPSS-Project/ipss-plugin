@@ -1,31 +1,31 @@
 /*
- * SimpleCIMShuntCompensatorMapper.java
+ * CGMESShuntCompensatorMapper.java
  *
- * Maps CIM LinearShuntCompensator → bus shunt Y.
+ * Maps CIM LinearShuntCompensator → bus-owned ShuntCompensator (B) + G-only shuntY.
  */
 
 package org.interpss.fadapter.cim.mapper;
 
-import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.SimpleCIMPropertyBag;
+import org.interpss.fadapter.cim.CGMESPropertyBag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Maps CIM ShuntCompensator to bus shunt admittance.
+ * Maps CIM ShuntCompensator to a bus-owned InterPSS {@code ShuntCompensator}
+ * (PSS/E fixed-shunt policy: B on compensator, G on bus.shuntY).
  */
-public class SimpleCIMShuntCompensatorMapper extends AbstractSimpleCIMDataMapper {
-    private static final Logger log = LoggerFactory.getLogger(SimpleCIMShuntCompensatorMapper.class);
+public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
+    private static final Logger log = LoggerFactory.getLogger(CGMESShuntCompensatorMapper.class);
 
     private final double baseMVA;
 
-    public SimpleCIMShuntCompensatorMapper(double baseMVA) {
+    public CGMESShuntCompensatorMapper(double baseMVA) {
         this.baseMVA = baseMVA;
     }
 
     @Override
-    public void map(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void map(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         String shuntId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = shuntId;
@@ -120,7 +120,7 @@ public class SimpleCIMShuntCompensatorMapper extends AbstractSimpleCIMDataMapper
         double bPU = totalB / baseY;
         double gPU = totalG / baseY;
 
-        builder.addToBusShuntY(busId, new Complex(gPU, bPU));
+        builder.addFixedShunt(busId, shuntId, true, gPU, bPU, name);
 
         log.debug(String.format("Created shunt: %s on bus %s, B=%.6f S (%.4f PU)",
             name, busId, totalB, bPU));
