@@ -2,6 +2,7 @@ package org.interpss.core.adapter.ge;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -77,11 +78,42 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 		String configured = System.getProperty(propertyName);
 		Path path = (configured == null || configured.isBlank()
 				? defaultPath : Path.of(configured)).normalize();
-		if (path.isAbsolute() || path.startsWith("..")) {
+		if (path.isAbsolute() || path.getRoot() != null || path.startsWith("..")) {
 			throw new IllegalArgumentException(
 					propertyName + " must be repository-relative: " + path);
 		}
 		return path;
+	}
+
+	@Test
+	public void publicCaseConfigurationRequiresRepositoryRelativePaths() {
+		String propertyName = "ipss.epc.relative.path.contract";
+		String previous = System.getProperty(propertyName);
+		try {
+			System.setProperty(propertyName, "testData/public/portable-case");
+			assertEquals(Path.of("testData", "public", "portable-case"),
+					configuredCaseDirectory(propertyName, Path.of("unused")));
+
+			System.setProperty(propertyName, Path.of("testData").toAbsolutePath().toString());
+			assertThrows(IllegalArgumentException.class,
+					() -> configuredCaseDirectory(propertyName, Path.of("unused")));
+
+			System.setProperty(propertyName, "C:portable-case");
+			assertThrows(IllegalArgumentException.class,
+					() -> configuredCaseDirectory(propertyName, Path.of("unused")));
+
+			System.setProperty(propertyName, "testData/../../portable-case");
+			assertThrows(IllegalArgumentException.class,
+					() -> configuredCaseDirectory(propertyName, Path.of("unused")));
+		}
+		finally {
+			if (previous == null) {
+				System.clearProperty(propertyName);
+			}
+			else {
+				System.setProperty(propertyName, previous);
+			}
+		}
 	}
 
 	@Test
