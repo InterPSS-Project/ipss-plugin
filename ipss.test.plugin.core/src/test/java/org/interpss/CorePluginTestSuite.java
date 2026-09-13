@@ -26,6 +26,7 @@ import org.interpss.core.adapter.builder.dstab.Regcb1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Exdc2aOpenSourceEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ieeex1AndesEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ieeet4OpenSourceEquationConformanceTest;
+import org.interpss.core.adapter.builder.dstab.IeelLoadModelTest;
 import org.interpss.core.adapter.builder.dstab.Ac8bAndesEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ac7bDynawoEquationConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Ac7bImportTest;
@@ -819,6 +820,7 @@ import org.junit.platform.suite.api.Suite;
 	PowerWorldArtifactCoverageInventoryTest.class,
 	Perc1ModelTest.class,
 	Cmldznu2ModelTest.class,
+	IeelLoadModelTest.class,
 	Texas2kWindProfileCoverageTest.class,
 	Texas2kRegfma1CoverageTest.class,
 	Texas2kFullDynamicCoverageTest.class,
