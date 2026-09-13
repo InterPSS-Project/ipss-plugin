@@ -3,6 +3,8 @@ package org.interpss.fadapter.psse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Hashtable;
+
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -13,6 +15,17 @@ import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.dstab.DStabObjectFactory;
 
 class PsseDStabSolverTest {
+    @Test
+    void retainsSubThresholdInitialConditionCompensation() {
+        Hashtable<String, Complex> compensation = new Hashtable<>();
+        PsseDStabSolver.retainNonzeroCompensation(compensation, "Bus1",
+                new Complex(5.0e-11, -4.0e-11));
+        PsseDStabSolver.retainNonzeroCompensation(compensation, "Bus2", Complex.ZERO);
+
+        assertEquals(new Complex(5.0e-11, -4.0e-11), compensation.get("Bus1"));
+        assertTrue(!compensation.containsKey("Bus2"));
+    }
+
     @Test
     void suppliesIntegrationStepBeforeGgov1Initialization() throws Exception {
         var network = DStabObjectFactory.createDStabilityNetwork();
