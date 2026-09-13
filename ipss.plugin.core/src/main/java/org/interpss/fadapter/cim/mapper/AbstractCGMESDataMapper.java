@@ -1,5 +1,5 @@
 /*
- * AbstractSimpleCIMDataMapper.java
+ * AbstractCGMESDataMapper.java
  *
  * Base mapper for converting CIM elements via AclfNetworkBuilder.
  */
@@ -7,27 +7,27 @@
 package org.interpss.fadapter.cim.mapper;
 
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.SimpleCIMModel;
-import org.interpss.fadapter.cim.SimpleCIMPropertyBag;
+import org.interpss.fadapter.cim.CGMESModel;
+import org.interpss.fadapter.cim.CGMESPropertyBag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Abstract base class for CIM → AclfNetwork data mappers.
  */
-public abstract class AbstractSimpleCIMDataMapper {
-    protected static final Logger log = LoggerFactory.getLogger(AbstractSimpleCIMDataMapper.class);
+public abstract class AbstractCGMESDataMapper {
+    protected static final Logger log = LoggerFactory.getLogger(AbstractCGMESDataMapper.class);
 
-    protected SimpleCIMModel cimModel;
+    protected CGMESModel cimModel;
 
-    public void setCimModel(SimpleCIMModel model) {
+    public void setCimModel(CGMESModel model) {
         this.cimModel = model;
     }
 
     /**
      * Map a CIM property bag into the network via the builder.
      */
-    public abstract void map(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception;
+    public abstract void map(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception;
 
     /**
      * Resolve the bus ID for a conducting equipment by finding its

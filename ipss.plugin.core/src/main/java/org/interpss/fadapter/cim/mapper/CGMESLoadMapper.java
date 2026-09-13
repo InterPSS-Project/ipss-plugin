@@ -1,5 +1,5 @@
 /*
- * SimpleCIMLoadMapper.java
+ * CGMESLoadMapper.java
  *
  * Maps CIM EnergyConsumer → contribute load on bus.
  */
@@ -8,8 +8,8 @@ package org.interpss.fadapter.cim.mapper;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
-import org.interpss.fadapter.cim.SimpleCIMPropertyBag;
-import org.interpss.fadapter.cim.util.SimpleCIMUnitConverter;
+import org.interpss.fadapter.cim.CGMESPropertyBag;
+import org.interpss.fadapter.cim.util.CGMESUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,20 +17,20 @@ import org.slf4j.LoggerFactory;
  * Maps CIM EnergyConsumer (and AsynchronousMachine) to contribute load data.
  * CIM/CGMES ActivePower and ReactivePower are SI (W / var).
  */
-public class SimpleCIMLoadMapper extends AbstractSimpleCIMDataMapper {
-    private static final Logger log = LoggerFactory.getLogger(SimpleCIMLoadMapper.class);
+public class CGMESLoadMapper extends AbstractCGMESDataMapper {
+    private static final Logger log = LoggerFactory.getLogger(CGMESLoadMapper.class);
 
     private final double baseMVA;
     private int mappedCount = 0;
 
-    public SimpleCIMLoadMapper(double baseMVA) {
+    public CGMESLoadMapper(double baseMVA) {
         this.baseMVA = baseMVA;
     }
 
     public int getMappedCount() { return mappedCount; }
 
     @Override
-    public void map(SimpleCIMPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+    public void map(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         String loadId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = loadId;
@@ -58,10 +58,10 @@ public class SimpleCIMLoadMapper extends AbstractSimpleCIMDataMapper {
             return;
         }
 
-        double pMW = SimpleCIMUnitConverter.siPowerToMVA(pW);
-        double qMVAr = SimpleCIMUnitConverter.siPowerToMVA(qVar);
-        double pPU = SimpleCIMUnitConverter.pToPU(pW, baseMVA);
-        double qPU = SimpleCIMUnitConverter.qToPU(qVar, baseMVA);
+        double pMW = CGMESUnitConverter.siPowerToMVA(pW);
+        double qMVAr = CGMESUnitConverter.siPowerToMVA(qVar);
+        double pPU = CGMESUnitConverter.pToPU(pW, baseMVA);
+        double qPU = CGMESUnitConverter.qToPU(qVar, baseMVA);
 
         builder.addContributeLoad(busId, loadId, true,
                 new Complex(pPU, qPU), null, null, null, false);

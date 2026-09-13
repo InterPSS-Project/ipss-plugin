@@ -8,7 +8,7 @@ package org.interpss.fadapter;
 
 import java.io.File;
 
-import org.interpss.fadapter.cim.SimpleCIMDirectParser;
+import org.interpss.fadapter.cim.CGMESDirectParser;
 import org.interpss.fadapter.impl.IpssFileAdapterBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +28,7 @@ public class CIMFormat extends IpssFileAdapterBase {
     @Override
     public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile)
             throws InterpssException {
-        SimpleCIMDirectParser parser = new SimpleCIMDirectParser();
+        CGMESDirectParser parser = new CGMESDirectParser();
         AclfNetwork aclfNet = parser.parse(filepath);
         simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
         simuCtx.setAclfNet(aclfNet);
@@ -47,7 +47,7 @@ public class CIMFormat extends IpssFileAdapterBase {
             load(simuCtx, filepathAry[0], debug, outfile);
             return;
         }
-        SimpleCIMDirectParser parser = new SimpleCIMDirectParser();
+        CGMESDirectParser parser = new CGMESDirectParser();
         AclfNetwork aclfNet = parser.parse(filepathAry);
         simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
         simuCtx.setAclfNet(aclfNet);
@@ -59,6 +59,6 @@ public class CIMFormat extends IpssFileAdapterBase {
 
     @Override
     public AclfNetwork loadAclfNet(String filepath) throws InterpssException {
-        return new SimpleCIMDirectParser().parse(filepath);
+        return new CGMESDirectParser().parse(filepath);
     }
 }
