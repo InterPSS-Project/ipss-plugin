@@ -20,7 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.DStabGen;
 
 /** Synthetic equation, limit, and exact-wrapper checks for REAX3BU1. */
-class Reax3bu1ModelTest {
+public class Reax3bu1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
 
     @Test
