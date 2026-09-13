@@ -56,7 +56,7 @@ final class PsseDStabSolver extends DStabSolverImpl {
                         network.getStaticLoadSwitchVolt(),
                         network.getStaticLoadSwitchDeadZone());
                 Complex residual = networkCurrent[bus.getSortNumber()].subtract(deviceCurrent);
-                if (residual.abs() > 1.0e-10) compensation.put(bus.getId(), residual);
+                retainNonzeroCompensation(compensation, bus.getId(), residual);
             } catch (Exception e) {
                 return false;
             }
@@ -64,6 +64,16 @@ final class PsseDStabSolver extends DStabSolverImpl {
         network.setCustomBusCurrInjHashtable(compensation);
         network.getExtraInfo().put(COMPENSATION_KEY, compensation);
         return true;
+    }
+
+    static void retainNonzeroCompensation(Hashtable<String, Complex> compensation,
+            String busId, Complex residual) {
+        // Every representable residual belongs to the solved operating point.
+        // Dropping a small value here can excite a weak but unstable mode even
+        // though the load-flow and every dynamic state were initialized exactly.
+        if (residual != null && !residual.isNaN() && residual.abs() > 0.0) {
+            compensation.put(busId, residual);
+        }
     }
 
     static void configureIntegrationStepAwareModels(BaseDStabNetwork<?, ?> network,
