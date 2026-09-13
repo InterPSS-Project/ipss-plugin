@@ -37,8 +37,7 @@ public class IeelLoadModelTest extends CorePluginTestSetup {
             "0.23 0.31 0.46 0.37 0.22 0.41 1.37 -0.63 "
                     + "0.8 1.7 2.4 0.6 1.4 2.2";
     private static final Path CORPUS_ROOT = Path.of(System.getProperty("psse.testcases.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases").toString()));
+            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test
     void ieelblReplacesAllStaticComponentsWithPublishedAlgebraicEquation(

@@ -34,7 +34,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 public class Esac4aExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-10;
     private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of(System.getProperty("user.home"),"OneDrive","Documents","qiuhua","private_cases").toString()));
+            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesExactRecordAndCatalogsRuntimeSupport(@TempDir Path dir)throws Exception{
         DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine();Path dyr=dir.resolve("esac4a.dyr");

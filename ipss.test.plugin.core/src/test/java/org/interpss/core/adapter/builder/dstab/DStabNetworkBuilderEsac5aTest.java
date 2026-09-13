@@ -34,7 +34,7 @@ import com.interpss.dstab.mach.Machine;
 public class DStabNetworkBuilderEsac5aTest extends CorePluginTestSetup {
     private static final double TOL=1e-10;
     private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of(System.getProperty("user.home"),"OneDrive","Documents","qiuhua","private_cases").toString()));
+            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesExactRealPsseSchemaAndHoldsEquilibrium(@TempDir Path dir)throws Exception{
         DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();Path dyr=dir.resolve("esac5a.dyr");

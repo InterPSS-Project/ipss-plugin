@@ -39,7 +39,7 @@ import com.interpss.dstab.mach.Machine;
 public class DStabNetworkBuilderExac1aTest extends CorePluginTestSetup {
     private static final double TOL=1e-8;
     private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of(System.getProperty("user.home"),"OneDrive","Documents","qiuhua","private_cases").toString()));
+            Path.of("testData", "private", "model-corpus").toString()));
     @TempDir Path tempDir;
 
     @Test

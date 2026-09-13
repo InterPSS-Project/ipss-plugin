@@ -31,7 +31,7 @@ import com.interpss.dstab.mach.Machine;
 public class St1cExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
     private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of(System.getProperty("user.home"),"OneDrive","Documents","qiuhua","private_cases").toString()));
+            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesExactThreeIconEighteenConRecord(@TempDir Path dir)throws Exception{
         Path dyr=dir.resolve("st1c.dyr");

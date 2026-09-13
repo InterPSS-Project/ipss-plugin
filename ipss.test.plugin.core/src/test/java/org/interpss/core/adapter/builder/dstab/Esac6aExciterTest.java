@@ -40,7 +40,7 @@ import com.interpss.dstab.util.sample.SampleDStabCase;
 public class Esac6aExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
     private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of(System.getProperty("user.home"),"OneDrive","Documents","qiuhua","private_cases").toString()));
+            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesRealCorpusRecordAndHoldsEquilibrium(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder=DStabBuilderTestFixture.createWithMachine();
