@@ -166,6 +166,7 @@ public class PSSEDirectParser {
     private void parseFromReaderInternal(BufferedReader reader) throws InterpssException {
         try {
             rawType3BusVoltages.clear();
+            PsseLoadScopeMetadata.clear(builder.getBaseNetwork());
             parseHeader(reader);
             parseSection(reader, this::parseBusLine);
             parseSection(reader, this::parseLoadLine);
@@ -414,6 +415,17 @@ public class PSSEDirectParser {
         String loadId = rec.getString(1, "1").trim();
         int status = rec.getInt(2, 1);
 
+        BaseAclfBus bus = builder.getBaseNetwork().getBus(busId);
+        int busArea = bus != null && bus.getArea() != null
+                ? Math.toIntExact(bus.getArea().getNumber()) : 0;
+        int busZone = bus != null && bus.getZone() != null
+                ? Math.toIntExact(bus.getZone().getNumber()) : 0;
+        int busOwner = bus != null && bus.getOwner() != null
+                ? Math.toIntExact(bus.getOwner().getNumber()) : 0;
+        int loadArea = positiveOrDefault(rec.getInt(3, 0), busArea);
+        int loadZone = positiveOrDefault(rec.getInt(4, 0), busZone);
+        int loadOwner = positiveOrDefault(rec.getInt(11, 0), busOwner);
+
         double pl = rec.getDouble(5, 0.0);
         double ql = rec.getDouble(6, 0.0);
         double ip = rec.getDouble(7, 0.0);
@@ -439,8 +451,17 @@ public class PSSEDirectParser {
             }
         }
 
-        applyNameTagMetadata(rec, builder.addContributeLoad(busId, loadId, status == 1,
-                constP, constI, constZ, dgenPower, dgenStatus));
+        var load = builder.addContributeLoad(busId, loadId, status == 1,
+                constP, constI, constZ, dgenPower, dgenStatus);
+        applyNameTagMetadata(rec, load);
+        if (load != null) {
+            PsseLoadScopeMetadata.put(builder.getBaseNetwork(), busId, loadId,
+                    loadArea, loadZone, loadOwner);
+        }
+    }
+
+    private static int positiveOrDefault(int value, int defaultValue) {
+        return value > 0 ? value : defaultValue;
     }
 
     // ==================== Generator ====================
