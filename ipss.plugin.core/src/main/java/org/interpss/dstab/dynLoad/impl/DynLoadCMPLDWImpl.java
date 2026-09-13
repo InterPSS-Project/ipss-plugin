@@ -269,7 +269,13 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	     
   	     // Tap = sqrt((Vlf_mag*V2_mag)^2/((Qlf_pu*Xxfr_pu-Vlf_mag^2)^2+(Xxfr_pu*Plf_pu)^2))
   	     
-  	     tap = Math.sqrt(Math.pow(Vmag_trans*Vmag_lowBus,2)/(Math.pow((Qld*Xxfr_pu-Vmag_trans*Vmag_trans),2)+Math.pow((Xxfr_pu*Pld),2)));
+	     // The solved low-side voltage also contains the fixed high/low tap
+	     // ratio (Tfixls/Tfixhs).  The original estimate omitted that ratio,
+	     // so non-unity fixed taps initialized below the requested LTC band.
+	     tap = Tfixhs / Tfixls
+	             * Math.sqrt(Math.pow(Vmag_trans * Vmag_lowBus, 2)
+	                     / (Math.pow(Qld * Xxfr_pu - Vmag_trans * Vmag_trans, 2)
+	                             + Math.pow(Xxfr_pu * Pld, 2)));
   	    	
   	     //check the validity of the tap
   	     
