@@ -100,6 +100,9 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
     }
 
     private void configureMotorD(LD1PAC motor) {
+		if (motor instanceof LD1PACImpl implementation) {
+			implementation.setFrequencySourceBus(getDStabBus());
+		}
         motor.setTstall(data.value(97)); motor.setTrst(data.value(98));
         motor.setTv(data.value(99)); motor.setTf(data.value(100));
         motor.setLoadFactor(data.value(101));
@@ -204,6 +207,7 @@ public final class Cmldznu2Model extends DynLoadCMPLDWImpl implements ICMLStateP
         states.put(prefix + ".EppImag", motor.getEpp() == null ? 0.0 : motor.getEpp().getImaginary());
         states.put(prefix + ".SpeedDeviation", motor.getW() - 1.0);
         states.put(prefix + ".OnlineFraction", motor.getFonline());
+        motor.getNamedStates().forEach((name, value) -> states.put(prefix + "." + name, value));
     }
 
     public Cmldznu2Data getData() { return data; }

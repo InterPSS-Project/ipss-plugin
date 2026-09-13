@@ -3851,13 +3851,13 @@ public class PSSEDStabDirectParser {
         boolean wildcard = record.deviceId().equals("*") || record.deviceId().equals("#");
         for (Object object : builder.getBaseDStabNetwork().getBusList()) {
             BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) object;
-            if (!bus.isActive() || bus.getZone() == null
-                    || bus.getZone().getNumber() != record.busNumber()) continue;
+            if (!bus.isActive()) continue;
             Set<String> ids = new java.util.LinkedHashSet<>();
             Complex power = Complex.ZERO;
             for (Object loadObject : bus.getContributeLoadList()) {
                 AclfLoad load = (AclfLoad) loadObject;
                 if (!load.isActive() || (!wildcard && !record.deviceId().equals(load.getId()))) continue;
+                if (loadZoneNumber(bus, load) != record.busNumber()) continue;
                 Complex loadPower = load.getLoad(bus.getVoltageMag());
                 if (loadPower == null) continue;
                 ids.add(load.getId());
@@ -3880,22 +3880,42 @@ public class PSSEDStabDirectParser {
         }
         for (Object object : builder.getBaseDStabNetwork().getBusList()) {
             BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) object;
-            if (!bus.isActive() || bus.getArea() == null
-                    || bus.getArea().getNumber() != record.busNumber()) continue;
-            addMatchingLoads(targets, bus, record.deviceId(), wildcard);
+            if (!bus.isActive()) continue;
+            addMatchingLoads(targets, bus, record.deviceId(), wildcard,
+                    record.busNumber());
         }
         return targets;
     }
 
     private void addMatchingLoads(List<LoadTarget> targets, BaseDStabBus<?, ?> bus,
             String loadId, boolean wildcard) {
+        addMatchingLoads(targets, bus, loadId, wildcard, null);
+    }
+
+    private void addMatchingLoads(List<LoadTarget> targets, BaseDStabBus<?, ?> bus,
+            String loadId, boolean wildcard, Integer areaNumber) {
         if (bus == null) return;
         for (Object object : bus.getContributeLoadList()) {
             AclfLoad load = (AclfLoad) object;
-            if (load.isActive() && (wildcard || load.getId().equals(loadId))) {
+            if (load.isActive() && (wildcard || load.getId().equals(loadId))
+                    && (areaNumber == null || loadAreaNumber(bus, load) == areaNumber)) {
                 targets.add(new LoadTarget(bus, load));
             }
         }
+    }
+
+    private int loadAreaNumber(BaseDStabBus<?, ?> bus, AclfLoad load) {
+        PsseLoadScopeMetadata.Scope scope = PsseLoadScopeMetadata.find(
+                builder.getBaseDStabNetwork(), bus.getId(), load.getId());
+        return scope != null ? scope.areaNumber()
+                : bus.getArea() != null ? Math.toIntExact(bus.getArea().getNumber()) : 0;
+    }
+
+    private int loadZoneNumber(BaseDStabBus<?, ?> bus, AclfLoad load) {
+        PsseLoadScopeMetadata.Scope scope = PsseLoadScopeMetadata.find(
+                builder.getBaseDStabNetwork(), bus.getId(), load.getId());
+        return scope != null ? scope.zoneNumber()
+                : bus.getZone() != null ? Math.toIntExact(bus.getZone().getNumber()) : 0;
     }
 
     private boolean procLds3bl(String busId, String loadId, PsseDyrRecord record) {
