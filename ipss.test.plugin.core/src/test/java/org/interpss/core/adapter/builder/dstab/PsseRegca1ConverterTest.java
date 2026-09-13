@@ -29,9 +29,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-10;
     private static final Path TEXAS_ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of(System.getProperty("user.home"), "OneDrive", "Documents", "qiuhua",
-                    "private_cases", "Texas2k_series24_cases_with_dynamics",
-                    "Texas2k_series24_cases_with_dynamics").toString()));
+            Path.of("testData", "private", "texas2k").toString()));
     private static final List<String> TEXAS_DYR = List.of(
             "Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",
             "Texas2k_series24_case2_2016lowload/dynamic_models_case2.dyr",
