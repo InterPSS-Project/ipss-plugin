@@ -33,7 +33,7 @@ import com.interpss.dstab.mach.Machine;
 public class Dc3aExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
     private static final Path CORPUS_ROOT=Path.of(System.getProperty("psse.testcases.root",
-            Path.of(System.getProperty("user.home"),"OneDrive","Documents","qiuhua","private_cases").toString()));
+            Path.of("testData", "private", "model-corpus").toString()));
 
     @Test void parsesBothLayoutsAndCatalogsExactSupport(@TempDir Path dir)throws Exception{
         DStabNetworkBuilder dcBuilder=DStabBuilderTestFixture.createWithMachine();Path dc=dir.resolve("dc3a.dyr");

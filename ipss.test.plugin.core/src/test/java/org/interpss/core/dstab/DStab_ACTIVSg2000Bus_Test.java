@@ -223,7 +223,7 @@ public class DStab_ACTIVSg2000Bus_Test  extends DStabTestSetupBase{
 			 
 			//System.out.println(formatter.format(today));
 			
-			FileUtil.writeText2File(String.format("C:\\Users\\huan289\\Qiuhua\\FY2019_HADREC\\Test data\\IEEE300\\BusVolts_Fault@%s_%s.csv", faultBusId,formatter.format(today)),sm.toCSVString(sm.getBusVoltTable()));
+			FileUtil.writeText2File(String.format("target/dstab-results/activsg2000/BusVolts_Fault@%s_%s.csv", faultBusId,formatter.format(today)),sm.toCSVString(sm.getBusVoltTable()));
 			
 			assertTrue(sm.getMachSpeedTable().get("Bus10003-mach1").get(0).getValue()-sm.getMachSpeedTable().get("Bus10003-mach1").get(10).getValue()<1.0E-4);
 			assertTrue(sm.getMotorPTable().get("IndMotor_1_A@Bus1_loadBus").get(0).getValue()-sm.getMotorPTable().get("IndMotor_1_A@Bus1_loadBus").get(10).getValue()<1.0E-4);

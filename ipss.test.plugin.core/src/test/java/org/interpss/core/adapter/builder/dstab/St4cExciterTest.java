@@ -34,7 +34,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 public class St4cExciterTest extends CorePluginTestSetup {
     private static final double TOL=1e-9;
     private static final Path CORPUS=Path.of(System.getProperty("psse.testcases.root",
-            Path.of(System.getProperty("user.home"),"OneDrive","Documents","qiuhua","private_cases").toString()))
+            Path.of("testData", "private", "model-corpus").toString()))
             .resolve("24LW1a1p_package (1)/24LW1a1p_package/24LW11p.dyr");
 
     @Test void parsesOfficialTwentySixParameterSchemaAndRealRecord(@TempDir Path dir)throws Exception{
