@@ -21,7 +21,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
 
 /** Synthetic schema and state checks for the double-derivative governor. */
-class WshyddGovernorTest extends CorePluginTestSetup {
+public class WshyddGovernorTest extends CorePluginTestSetup {
     private static final double[] DATA = {.002, .0003, .08, 1.7, .06, .15,
             4.2, .045, .12, .9, .15, .20, .18, 1.10, 0.0, .001,
             0.0, .02, .23, .20, .47, .48, .76, .78, 1.05, 1.08,
