@@ -44,8 +44,7 @@ public class Texas2kTopologyFaultMatrixTest {
     private static final double STEP = 1.0 / 240.0;
     private static final Path SITE_MANIFEST = Path.of("testData", "expected",
             "texas2k_topology_fault_sites.csv");
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of("testData", "private", "texas2k").toString()));
+    private static final Path ROOT = relativeCaseRoot();
     private static final List<CaseFile> CASES = List.of(
             new CaseFile(1, "Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr"),
@@ -63,6 +62,15 @@ public class Texas2kTopologyFaultMatrixTest {
     @BeforeAll
     static void initializePlugin() {
         IpssCorePlugin.init();
+    }
+
+    private static Path relativeCaseRoot() {
+        Path path = Path.of(System.getProperty("texas2k.case.root",
+                Path.of("testData", "private", "texas2k").toString()));
+        if (path.isAbsolute() || path.getRoot() != null) {
+            throw new IllegalArgumentException("texas2k.case.root must be a relative path");
+        }
+        return path.normalize();
     }
 
     @Test
@@ -101,7 +109,7 @@ public class Texas2kTopologyFaultMatrixTest {
         Path report = Path.of("target", "texas2k-topology-fault-matrix.csv");
         Files.createDirectories(report.getParent());
         Files.writeString(report, toCsv(results), StandardCharsets.UTF_8);
-        System.out.println("Texas2k topology fault matrix: " + report.toAbsolutePath());
+        System.out.println("Texas2k topology fault matrix: " + report);
     }
 
     private static MatrixResult run(CaseFile source, FaultSite site) throws Exception {
