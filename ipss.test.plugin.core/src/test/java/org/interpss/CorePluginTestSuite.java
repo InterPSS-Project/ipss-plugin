@@ -139,6 +139,7 @@ import org.interpss.core.adapter.builder.dstab.PsseWt2e1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt3g1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt3g2ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt3p1ModelTest;
+import org.interpss.core.adapter.builder.dstab.PsseWt3t1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWt3e1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Gewtecu1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Gewt2mu1ModelTest;
@@ -825,6 +826,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseWt3g1ModelTest.class,
 	PsseWt3g2ModelTest.class,
 	PsseWt3p1ModelTest.class,
+	PsseWt3t1ModelTest.class,
 	PsseWt3e1ModelTest.class,
 	Gewtecu1ModelTest.class,
 	Gewt2mu1ModelTest.class,
