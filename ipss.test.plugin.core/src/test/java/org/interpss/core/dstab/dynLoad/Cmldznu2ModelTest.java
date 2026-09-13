@@ -30,7 +30,7 @@ import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.IDStabSimuOutputHandler;
 
-class Cmldznu2ModelTest {
+public class Cmldznu2ModelTest {
     private static final Path DATA = Path.of("testData", "adpter", "psse", "v33");
     private static final double[][] NATIVE_CHECKPOINTS = {
         {0.025, 0.995770215988, 0.867777840499407, 0.911911925565266,
