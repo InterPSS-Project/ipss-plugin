@@ -17,7 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.dstab.DStabGen;
 
 /** Exact synthetic-wrapper check for the Type-4 REAXB attachment. */
-class Reax4bu1ModelTest {
+public class Reax4bu1ModelTest {
     private static final Path CASE=Path.of("testData","adpter","psse","v33","SMIB");
     @Test void exactUserWrapperUsesSharedTwoStateKernel(@TempDir Path tempDir)throws Exception{
         IpssCorePlugin.init();Path dyr=tempDir.resolve("synthetic-type4-auxiliary.dyr");
