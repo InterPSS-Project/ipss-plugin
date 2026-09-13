@@ -13,6 +13,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.config.ControlInitializationMode;
 import com.interpss.core.algo.config.RemoteQControlMode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.LoadflowAlgorithm.VscCapabilityPriority;
 
 class AclfRunConfigRecTest {
 	@Test
@@ -101,6 +102,36 @@ class AclfRunConfigRecTest {
 		assertEquals(40, config.maxSwitchedShuntAdjustmentIterations);
 		assertEquals(ZeroZBranchProcessingMode.CONSOLIDATE,
 				config.zeroZBranchProcessingMode);
+	}
+
+	@Test
+	void coordinatedControlExperimentsParseAndApplyFromSharedJson() {
+		AclfRunConfigRec config = AclfRunConfigRec.fromJson("""
+				{
+				  "schemaVersion": 1,
+				  "coordinatedControlEnableInnerTaps": true,
+				  "coordinatedControlMaximumInnerTapChange": 0.0125,
+				  "coordinatedPqControlEnabled": true,
+				  "coupledLccPqControlEnabled": true,
+				  "coupledVscPqControlEnabled": true,
+				  "vscCapabilityPriority": "VOLTAGE_TARGET"
+				}
+				""");
+		LoadflowAlgorithm algorithm = LoadflowAlgoObjectFactory
+				.createLoadflowAlgorithm(CoreObjectFactory.createAclfNetwork());
+
+		config.configAclfRun(algorithm, true, false, false);
+
+		assertTrue(config.explicitlyConfigures(
+				"coupledVscPqControlEnabled"));
+		assertTrue(algorithm.isFullNewtonTapControlEnabled());
+		assertEquals(0.0125, algorithm.getMaximumFullNewtonTapChange(),
+				1.0e-12);
+		assertTrue(algorithm.isCoordinatedPqControlEnabled());
+		assertTrue(algorithm.isCoupledLccPqControlEnabled());
+		assertTrue(algorithm.isCoupledVscPqControlEnabled());
+		assertEquals(VscCapabilityPriority.VOLTAGE_TARGET,
+				algorithm.getVscCapabilityPriority());
 	}
 
 	@Test
