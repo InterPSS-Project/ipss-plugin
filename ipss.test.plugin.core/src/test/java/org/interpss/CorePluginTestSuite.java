@@ -368,6 +368,8 @@ import org.interpss.core.dstab.Ieeex2PsseSmibConformanceTest;
 import org.interpss.core.dstab.Uel1PsseSmibConformanceTest;
 import org.interpss.core.dstab.Uel2cu1NativeConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Uel2cLimiterTest;
+import org.interpss.core.dstab.Oel2cu1NativeConformanceTest;
+import org.interpss.core.adapter.builder.dstab.Oel2cLimiterTest;
 import org.interpss.core.dstab.Ieeex1SmibIntegrationTest;
 import org.interpss.core.dstab.cml.block.DelayControlBlockTests;
 import org.interpss.core.dstab.cml.block.FilterControlBlockTests;
@@ -526,6 +528,8 @@ import org.junit.platform.suite.api.Suite;
 	Uel1PsseSmibConformanceTest.class,
 	Uel2cLimiterTest.class,
 	Uel2cu1NativeConformanceTest.class,
+	Oel2cLimiterTest.class,
+	Oel2cu1NativeConformanceTest.class,
 	Bbsex1PsseSmibConformanceTest.class,
 	Ieeex1PsseSmibConformanceTest.class,
 	Exdc2PsseSmibConformanceTest.class,
