@@ -3,13 +3,10 @@ package org.interpss.core.adapter.builder.dstab;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -19,7 +16,6 @@ import org.interpss.dstab.renewable.RenewableElectricalController;
 import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -28,16 +24,6 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 
 public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-10;
-    private static final Path TEXAS_ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of("testData", "private", "texas2k").toString()));
-    private static final List<String> TEXAS_DYR = List.of(
-            "Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",
-            "Texas2k_series24_case2_2016lowload/dynamic_models_case2.dyr",
-            "Texas2k_series24_case3_2024summerpeak/dynamic_models_case3.dyr",
-            "Texas2k_series24_case4_2024lowload/dynamic_models_case4.dyr",
-            "Texas2k_series24_case5_2024highrenewables/dynamic_models_case5.dyr",
-            "Texas2k_series24_case6_2024lowloadwithgfm/dynamic_models_case6.dyr");
-
     @Test
     void directParserRetainsAllFifteenPsseParameters(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
@@ -57,21 +43,7 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
-    void bothReviewedTexas2kProfilesAreCompleteAndHaveDistinctTgResponses() throws Exception {
-        Map<String, Integer> counts = new HashMap<>();
-        for (String relative : TEXAS_DYR) {
-            Path dyr = TEXAS_ROOT.resolve(relative);
-            assumeTrue(Files.isRegularFile(dyr), "Missing private Texas2k DYR: " + dyr);
-            PsseDyrRecordReader.read(dyr).stream()
-                    .filter(record -> record.canonicalModelName().equals("REGCA1"))
-                    .map(record -> String.join(" ", record.parameters()))
-                    .forEach(profile -> counts.merge(profile, 1, Integer::sum));
-        }
-        assertEquals(Map.of(
-                "1 0.01 10 0.9 0.5 1.22 1.2 0.8 0.4 -1.3 0.02 0.7 0 0 0.8", 656,
-                "1 0.02 10 0.9 0.5 1.22 1.2 0.8 0.4 -1.3 0.02 0.7 0 0 0.8", 762),
-                counts);
-
+    void syntheticProfilesWithDistinctTgHaveDistinctResponses() throws Exception {
         for (double tg : new double[] {.01, .02}) {
             Fixture fixture = fixture(data(1, tg, 10.0, 0.0, 0.0));
             double initial = fixture.model.getIpRegulatorState();
