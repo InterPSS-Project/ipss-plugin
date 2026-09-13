@@ -31,8 +31,7 @@ import com.interpss.simu.SimuContext;
 
 /** Full-stack initialization and no-event smoke gate for all Texas2k Series 24 cases. */
 public class Texas2kSixCaseDynamicSmokeTest {
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of("testData", "private", "texas2k").toString()));
+    private static final Path ROOT = relativeCaseRoot();
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
@@ -62,6 +61,15 @@ public class Texas2kSixCaseDynamicSmokeTest {
     @BeforeAll
     static void initializePlugin() {
         IpssCorePlugin.init();
+    }
+
+    private static Path relativeCaseRoot() {
+        Path path = Path.of(System.getProperty("texas2k.case.root",
+                Path.of("testData", "private", "texas2k").toString()));
+        if (path.isAbsolute() || path.getRoot() != null) {
+            throw new IllegalArgumentException("texas2k.case.root must be a relative path");
+        }
+        return path.normalize();
     }
 
     @Test

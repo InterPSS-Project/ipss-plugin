@@ -239,12 +239,10 @@ public class Texas2kOneSecondDriftTest {
                                 + region.dominantMode().real() + "+j"
                                 + region.dominantMode().imaginary() + ", coneFeasible="
                                 + region.tangentCone().feasible()).toList());
-        Path reportDirectory = Path.of(System.getProperty("texas2k.gridStrength.reportDir",
-                Path.of("target", "dynamic-model-validation", "texas2k-case5-qv")
-                        .toString()));
+        Path reportDirectory = relativePathProperty("texas2k.gridStrength.reportDir",
+                Path.of("target", "dynamic-model-validation", "texas2k-case5-qv"));
         LocalRenewableQvEigenReportWriter.write(reportDirectory, qvAnalysis);
-        System.out.println("  machine-readable Q/V benchmark: "
-                + reportDirectory.toAbsolutePath());
+        System.out.println("  machine-readable Q/V benchmark: " + reportDirectory);
     }
 
     @Test
@@ -537,10 +535,9 @@ public class Texas2kOneSecondDriftTest {
                     if (movement.delta() > controllerMovementLimit) {
                         System.out.printf(java.util.Locale.ROOT,
                                 "%s first controller movement at t=%.9g: %s %s %s "
-                                        + "delta=%.9g initial=%.9g current=%.9g%n",
+                                        + "delta=%.9g%n",
                                 source.directory(), algorithm.getSimuTime(), movement.model(),
-                                movement.id(), movement.state(), movement.delta(),
-                                movement.initial(), movement.current());
+                                movement.id(), movement.state(), movement.delta());
                         reportPflagAggregate(algorithm.getSimuTime(), network,
                                 initialConverterPower);
                         controllerMovementReported = true;
@@ -591,27 +588,14 @@ public class Texas2kOneSecondDriftTest {
         }).max(java.util.Comparator.comparingDouble(Difference::value))
                 .orElse(new Difference("none", 0.0));
         if (!wind.id().equals("none")) {
-            String[] key = wind.id().split(":", 2);
-            DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
-            Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
-            var torque = converter.getReeca1Controller().getWindControlStack()
-                    .getTorqueController();
             System.out.printf(java.util.Locale.ROOT,
-                    "%s WTTQA1 %s initial=%s final[pref=%.9g torque=%.9g pe=%.9g filt=%.9g wref=%.9g]%n",
-                    source.directory(), wind.id(), initialWind.get(wind.id()), torque.getPref(),
-                    torque.getTorque(), ((Number) converter.getStates(null).get("REGCA1_P")).doubleValue(),
-                    torque.getFilteredPower(), torque.getSpeedReference());
+                    "%s WTTQA1 %s maximum state delta=%.9g%n",
+                    source.directory(), wind.id(), wind.value());
         }
         if (!reeca.id().equals("none")) {
-            String[] key = reeca.id().split(":", 2);
-            DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
-            Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
-            Reeca1Model controller = converter.getReeca1Controller();
             System.out.printf(java.util.Locale.ROOT,
-                    "%s REECA1 %s data=%s%n  initial=%s%n  final=%s Q=%.9g%n",
-                    source.directory(), reeca.id(), controller.getData(),
-                    initialReeca.get(reeca.id()), reecaSnapshot(converter, controller),
-                    ((Number) converter.getStates(null).get("REGCA1_Q")).doubleValue());
+                    "%s REECA1 %s maximum state delta=%.9g%n",
+                    source.directory(), reeca.id(), reeca.value());
         }
         System.out.printf(java.util.Locale.ROOT,
                 "%s one-second drift: voltage=%.9g@%s speed=%.9g@%s windPref=%.9g@%s reeca=%.9g@%s%n",
@@ -700,9 +684,8 @@ public class Texas2kOneSecondDriftTest {
         System.out.println(source.directory() + " final top-" + limit + " drift ranking:");
         java.util.stream.Stream.of(voltage, speed, controllers).flatMap(List::stream)
                 .forEach(row -> System.out.printf(java.util.Locale.ROOT,
-                        "  %s %s %s %s delta=%.9g initial=%.9g final=%.9g%n",
-                        row.category(), row.model(), row.id(), row.state(), row.delta(),
-                        row.initial(), row.current()));
+                        "  %s %s %s %s delta=%.9g%n",
+                        row.category(), row.model(), row.id(), row.state(), row.delta()));
         writeRankingCsv(source, java.util.stream.Stream.of(voltage, speed, controllers)
                 .flatMap(List::stream).toList());
     }
@@ -723,12 +706,11 @@ public class Texas2kOneSecondDriftTest {
                 Path.of("target", "dynamic-model-validation", "texas2k-flat-ranking"));
         Files.createDirectories(reportDirectory);
         StringBuilder csv = new StringBuilder(
-                "category,model,id,state,absolute_delta,initial,final\n");
+                "category,model,id,state,absolute_delta\n");
         for (RankingRow row : rows) {
             csv.append(row.category()).append(',').append(row.model()).append(',')
                     .append(row.id()).append(',').append(row.state()).append(',')
-                    .append(String.format(java.util.Locale.ROOT, "%.17g,%.17g,%.17g%n",
-                            row.delta(), row.initial(), row.current()));
+                    .append(String.format(java.util.Locale.ROOT, "%.17g%n", row.delta()));
         }
         Path output = reportDirectory.resolve(source.directory() + ".csv");
         Files.writeString(output, csv);
@@ -761,8 +743,7 @@ public class Texas2kOneSecondDriftTest {
             Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
             ReecaSnapshot current = reecaSnapshot(converter, converter.getReeca1Controller());
             return new ControllerDifference("REECA1", entry.getKey(),
-                    current.maxDifference(entry.getValue()), entry.getValue().toString(),
-                    current.toString());
+                    current.maxDifference(entry.getValue()));
         }).sorted(java.util.Comparator.comparingDouble(ControllerDifference::value).reversed())
                 .limit(10).forEach(Texas2kOneSecondDriftTest::printControllerDifference);
         initialRepca.entrySet().stream().map(entry -> {
@@ -772,8 +753,7 @@ public class Texas2kOneSecondDriftTest {
             RepcaSnapshot current = repcaSnapshot(
                     converter.getReeca1Controller().getPlantController());
             return new ControllerDifference("REPCA1", entry.getKey(),
-                    current.maxDifference(entry.getValue()), entry.getValue().toString(),
-                    current.toString());
+                    current.maxDifference(entry.getValue()));
         }).sorted(java.util.Comparator.comparingDouble(ControllerDifference::value).reversed())
                 .limit(10).forEach(Texas2kOneSecondDriftTest::printControllerDifference);
     }
@@ -833,10 +813,8 @@ public class Texas2kOneSecondDriftTest {
                 count++;
             }
             System.out.printf(java.util.Locale.ROOT,
-                    "  t=%.9g PFLAG=%d devices=%d aggregate dP=%.9g dQ=%.9g "
-                            + "initial[P=%.9g,Q=%.9g] current[P=%.9g,Q=%.9g]%n",
-                    time, pFlag, count, currentP - initialP, currentQ - initialQ,
-                    initialP, initialQ, currentP, currentQ);
+                    "  t=%.9g PFLAG=%d devices=%d aggregate dP=%.9g dQ=%.9g%n",
+                    time, pFlag, count, currentP - initialP, currentQ - initialQ);
         }
     }
 
@@ -848,13 +826,11 @@ public class Texas2kOneSecondDriftTest {
 
     private static void printControllerDifference(ControllerDifference difference) {
         System.out.printf(java.util.Locale.ROOT,
-                "  %s %s maxDelta=%.9g%n    initial=%s%n    current=%s%n",
-                difference.model(), difference.id(), difference.value(),
-                difference.initial(), difference.current());
+                "  %s %s maxDelta=%.9g%n",
+                difference.model(), difference.id(), difference.value());
     }
 
-    private record ControllerDifference(String model, String id, double value,
-            String initial, String current) { }
+    private record ControllerDifference(String model, String id, double value) { }
 
     private static ControlStatus controlStatus(Reeca1Model controller) {
         double tolerance = 1.0e-8;
@@ -880,17 +856,7 @@ public class Texas2kOneSecondDriftTest {
         if (transitions.isEmpty()) return false;
         System.out.printf(java.util.Locale.ROOT, "%s first %s transition at t=%.9g:%n",
                 source.directory(), dipTransition ? "voltage-dip" : "current-limit", time);
-        transitions.forEach(id -> {
-            String[] key = id.split(":", 2);
-            DStabGen gen = (DStabGen) network.getBus(key[0]).getContributeGen(key[1]);
-            Regca1Model converter = (Regca1Model) gen.getDynamicGenDevice();
-            Reeca1Model controller = converter.getReeca1Controller();
-            System.out.printf(java.util.Locale.ROOT,
-                    "  %s V=%.9g status=%s Ipcmd=%.9g/%.9g Iqcmd=%.9g/%.9g%n",
-                    id, network.getBus(key[0]).getVoltageMag(), controlStatus(controller),
-                    controller.getIpcmd(), controller.getActiveCurrentLimit(),
-                    controller.getIqcmd(), controller.getReactiveCurrentLimit());
-        });
+        transitions.forEach(id -> System.out.println("  " + id));
         return true;
     }
 
