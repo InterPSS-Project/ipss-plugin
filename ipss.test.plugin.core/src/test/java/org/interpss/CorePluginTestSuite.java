@@ -60,6 +60,7 @@ import org.interpss.core.dstab.IeeestPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss3bPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss2cPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss4bPsseSmibConformanceTest;
+import org.interpss.core.dstab.PsssbPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Pss2bPowerWorldSmibConformanceTest;
 import org.interpss.core.dstab.Pss3cPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss5cPowerWorldSmibConformanceTest;
@@ -549,6 +550,7 @@ import org.junit.platform.suite.api.Suite;
 	Pss3bPsseSmibConformanceTest.class,
 	Pss2cPsseSmibConformanceTest.class,
 	Pss4bPsseSmibConformanceTest.class,
+	PsssbPowerWorldSmibConformanceTest.class,
 	Pss2bPowerWorldSmibConformanceTest.class,
 	Pss3cPsseSmibConformanceTest.class,
     Pss4cPowerWorldSmibConformanceTest.class,
