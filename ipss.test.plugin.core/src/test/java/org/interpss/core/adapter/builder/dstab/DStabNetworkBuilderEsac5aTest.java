@@ -4,13 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
@@ -19,7 +15,6 @@ import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -46,7 +41,6 @@ public class DStabNetworkBuilderEsac5aTest extends CorePluginTestSetup {
         assertTrue(exciter.initStates(machine.getDStabBus(),machine));double initial=exciter.getOutput(machine);
         for(int i=0;i<1000;i++)step(exciter,machine,.0001);assertEquals(initial,exciter.getOutput(machine),1e-8);
     }
-
 
     @Test void fiveStateTrajectoryMatchesUpstreamAndesEquations()throws Exception{
         Fixture f=fixture(baseData());f.exciter.setRefPoint(f.exciter.getRefPoint()+.1);
