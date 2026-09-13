@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -57,8 +58,8 @@ public class Texas2kOneSecondDriftTest {
             "Bus1037", "Bus1039", "Bus1040", "Bus1042", "Bus1043", "Bus1044",
             "Bus1046", "Bus1055", "Bus1057", "Bus1061", "Bus1062", "Bus1063",
             "Bus1083");
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of("testData", "private", "texas2k").toString()));
+    private static final Path ROOT = relativePathProperty("texas2k.case.root",
+            Path.of("testData", "private", "texas2k"));
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
@@ -108,6 +109,28 @@ public class Texas2kOneSecondDriftTest {
 
         assertEquals(List.of("Bus1", "Bus2"), ranked.stream()
                 .map(RankingRow::id).toList());
+    }
+
+    @Test
+    void diagnosticPathConfigurationRejectsAbsolutePaths() {
+        String propertyName = "texas2k.relative.path.contract";
+        String previous = System.getProperty(propertyName);
+        try {
+            System.setProperty(propertyName, "../../../portable/cases");
+            assertEquals(Path.of("../../../portable/cases").normalize(),
+                    relativePathProperty(propertyName, Path.of("unused")));
+
+            System.setProperty(propertyName, Path.of("cases").toAbsolutePath().toString());
+            assertThrows(IllegalArgumentException.class,
+                    () -> relativePathProperty(propertyName, Path.of("unused")));
+
+            System.setProperty(propertyName, "C:portable-cases");
+            assertThrows(IllegalArgumentException.class,
+                    () -> relativePathProperty(propertyName, Path.of("unused")));
+        } finally {
+            if (previous == null) System.clearProperty(propertyName);
+            else System.setProperty(propertyName, previous);
+        }
     }
 
     @Test
@@ -342,7 +365,7 @@ public class Texas2kOneSecondDriftTest {
                     .collect(Collectors.joining(System.lineSeparator()));
             Files.writeString(effectiveDyr, filtered);
             copyPreparationSibling(dyr, effectiveDyr, "_MODREMOVE.idv");
-            System.out.println("Filtered DYR: " + effectiveDyr);
+            System.out.println("Filtered DYR staged as: " + effectiveDyr.getFileName());
         }
         PSSEMultiFileLoader loader = new PSSEMultiFileLoader();
         var context = loader.loadDStab(raw.toString(), effectiveDyr.toString(),
@@ -696,9 +719,8 @@ public class Texas2kOneSecondDriftTest {
 
     private static void writeRankingCsv(CaseFile source, List<RankingRow> rows)
             throws java.io.IOException {
-        Path reportDirectory = Path.of(System.getProperty("texas2k.drift.reportDir",
-                Path.of("target", "dynamic-model-validation",
-                        "texas2k-flat-ranking").toString()));
+        Path reportDirectory = relativePathProperty("texas2k.drift.reportDir",
+                Path.of("target", "dynamic-model-validation", "texas2k-flat-ranking"));
         Files.createDirectories(reportDirectory);
         StringBuilder csv = new StringBuilder(
                 "category,model,id,state,absolute_delta,initial,final\n");
@@ -710,7 +732,17 @@ public class Texas2kOneSecondDriftTest {
         }
         Path output = reportDirectory.resolve(source.directory() + ".csv");
         Files.writeString(output, csv);
-        System.out.println("  ranking CSV: " + output.toAbsolutePath());
+        System.out.println("  ranking CSV: " + output.normalize());
+    }
+
+    private static Path relativePathProperty(String propertyName, Path defaultPath) {
+        String configured = System.getProperty(propertyName);
+        Path path = (configured == null || configured.isBlank()
+                ? defaultPath : Path.of(configured)).normalize();
+        if (path.isAbsolute() || path.getRoot() != null) {
+            throw new IllegalArgumentException(propertyName + " must be a relative path");
+        }
+        return path;
     }
 
     private static void reportFirstDivergence(CaseFile source, double time,
