@@ -165,6 +165,7 @@ import org.interpss.core.dstab.RenewableAggregateQvModeTest;
 import org.interpss.core.dstab.Reecc1NativeConformanceTest;
 import org.interpss.core.dstab.PsseDyrRepresentativeSelectorTest;
 import org.interpss.core.dstab.PowerWorldArtifactCoverageInventoryTest;
+import org.interpss.core.dstab.ReferenceArtifactManifestIntegrityTest;
 import org.interpss.core.dstab.dynLoad.Perc1ModelTest;
 import org.interpss.core.dstab.dynLoad.Cmldznu2ModelTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
@@ -864,6 +865,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseDyrRecordReaderTest.class,
 	PsseDyrRepresentativeSelectorTest.class,
 	PowerWorldArtifactCoverageInventoryTest.class,
+	ReferenceArtifactManifestIntegrityTest.class,
 	Perc1ModelTest.class,
 	Cmldznu2ModelTest.class,
 	IeelLoadModelTest.class,
