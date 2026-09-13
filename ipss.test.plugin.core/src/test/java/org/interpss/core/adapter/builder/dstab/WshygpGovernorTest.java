@@ -22,7 +22,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.mach.Machine;
 
 /** Independent synthetic checks for the WSHYGP compatibility model. */
-class WshygpGovernorTest extends CorePluginTestSetup {
+public class WshygpGovernorTest extends CorePluginTestSetup {
     private static final double[] DATA = {.002, .0003, .08, 5.5, .06, .12,
             8.5, .045, .12, .9, .15, .20, .18, 1.10, 0.0, .001,
             0.0, .02, .23, .20, .47, .48, .76, .78, 1.05, 1.08,
