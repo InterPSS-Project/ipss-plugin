@@ -112,6 +112,27 @@ public class IeelLoadModelTest extends CorePluginTestSetup {
     }
 
     @Test
+    void ieelarUsesTheLoadRecordAreaWhenItDiffersFromTheBus(
+            @TempDir Path directory) throws Exception {
+        Path sourceRaw = Path.of("testData", "adpter", "psse", "v33", "ieee9_v33.raw");
+        String rawText = Files.readString(sourceRaw);
+        String originalLoadPrefix = "5,'1 ',1,   1,   1,";
+        assertTrue(rawText.contains(originalLoadPrefix));
+        Path raw = directory.resolve("public-ieee9-load-area.raw");
+        Files.writeString(raw, rawText.replace(originalLoadPrefix,
+                "5,'1 ',1,   7,   9,"));
+        Path dyr = directory.resolve("synthetic-area-load.dyr");
+        Files.writeString(dyr, "7 'IEELAR' '*' " + SYNTHETIC_PARAMETERS + " /\n");
+
+        var context = new PSSEMultiFileLoader().loadDStab(raw.toString(), dyr.toString());
+        var network = context.getDStabilityNet();
+        assertEquals(1, network.getDStabBus("Bus5").getArea().getNumber());
+        assertEquals(1, network.getDStabBus("Bus5").getDynLoadModelList().size());
+        assertTrue(network.getDStabBus("Bus6").getDynLoadModelList().isEmpty());
+        assertTrue(network.getDStabBus("Bus8").getDynLoadModelList().isEmpty());
+    }
+
+    @Test
     void rejectsWrongSchemaAndInvalidInitialization(@TempDir Path directory) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         new AclfNetworkBuilder(builder.getDStabNetwork()).addContributeLoad("Bus1", "L", true,
