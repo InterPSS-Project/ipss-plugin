@@ -24,7 +24,7 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Exact wrapper, equations, initialization, and named-state checks. */
-class Gewt2mu1ModelTest {
+public class Gewt2mu1ModelTest {
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
     private static final String SYNTHETIC_DYR = """
             1 'USRMDL' '1' 'GEWTGCU1' 101 1 2 18 3 3
