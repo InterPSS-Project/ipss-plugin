@@ -3,13 +3,9 @@ package org.interpss.core.adapter.builder.dstab;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
@@ -18,7 +14,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -47,7 +42,6 @@ public class Esac4aExciterTest extends CorePluginTestSetup {
         assertEquals(DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESAC4A").orElseThrow().isImplementedExactly());
     }
-
 
     @Test void threeStateTrajectoryMatchesAndesExac4CommonProfile()throws Exception{
         Esac4aData data=baseData();data.setKc(0);Fixture f=fixture(data);f.exciter.setRefPoint(f.exciter.getRefPoint()+.1);

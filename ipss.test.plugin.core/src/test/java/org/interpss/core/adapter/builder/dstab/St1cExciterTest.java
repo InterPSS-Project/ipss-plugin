@@ -1,12 +1,9 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.st1c.St1cData;
@@ -16,7 +13,6 @@ import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelImportStatus;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -46,7 +42,6 @@ public class St1cExciterTest extends CorePluginTestSetup {
         assertEquals(DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("ESST1C").orElseThrow().isImplementedExactly());
     }
-
 
     @Test void fiveStatesMatchIndependentModifiedEulerOracle()throws Exception{
         Fixture f=fixture(baseData());f.exciter.setRefPoint(f.exciter.getRefPoint()+.1);double[] x=f.exciter.getStateSnapshot();

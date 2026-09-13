@@ -5,13 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.exc.psse.st7b.St7bData;
@@ -20,7 +16,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -54,7 +49,6 @@ public class St7bExciterTest extends CorePluginTestSetup {
         Files.writeString(es,"1 'ESST7B' 1 .017 87.8 1 3 1 1 3 3.21 1 0 5.77 -4.64 1.05 .95 0 0 .02 /\n");
         assertThrows(InterpssException.class,()->new PSSEDStabDirectParser(rejectedBuilder).setStrictImport(true).parseDynFile(es.toString()));
     }
-
 
     @Test void fourStateTrajectoryMatchesPublishedEquations()throws Exception{
         St7bData d=baseData();Fixture f=fixture(d);double ref=f.exciter.getRefPoint()+.1;f.exciter.setRefPoint(ref);

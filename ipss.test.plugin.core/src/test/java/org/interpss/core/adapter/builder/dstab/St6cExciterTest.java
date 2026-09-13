@@ -1,12 +1,9 @@
 package org.interpss.core.adapter.builder.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import com.interpss.common.exp.InterpssException;
@@ -17,7 +14,6 @@ import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
-import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -51,7 +47,6 @@ public class St6cExciterTest extends CorePluginTestSetup {
         assertTrue(e.initStates(machine.getDStabBus(),machine));double initial=e.getOutput(machine);
         for(int i=0;i<1000;i++)step(e,machine,.0001);assertEquals(initial,e.getOutput(machine),1e-9);
     }
-
 
     @Test void parsesExactSt6cu1WrapperAndRejectsWrongAllocation(@TempDir Path dir)throws Exception{
         String body=" 4 0 4 25 5 3 4 2 0 1 0 100 70 1 .05 999 -999 0 1.2 1.882 25 1.45 5.25 -3.5 .1 .1 5.25 -3.5 .02 1 0 0 0 0 99 /\n";
