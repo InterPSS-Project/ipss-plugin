@@ -19,8 +19,6 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROL
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.UNDER_EXCITATION_LIMITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.OVER_EXCITATION_LIMITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.LOADABLE;
-import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.PARTIAL;
-import static org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.UNSUPPORTED;
 
 import java.net.URI;
 import java.util.Collection;

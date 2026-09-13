@@ -428,11 +428,11 @@ class DynamicModelCatalogTest {
                     "Missing parameter schema length for " + model.canonicalName());
             assertTrue(model.recordSchema().accepts(model.parameterCount()),
                     "Primary layout is not accepted for " + model.canonicalName());
-            if (model.supportStatus() == DynamicModelSupportStatus.LOADABLE) {
-                assertEquals(model.runtimeClassName(),
-                        Class.forName(model.runtimeClassName()).getName(),
-                        "Runtime class is not loadable for " + model.canonicalName());
-            }
+            assertEquals(DynamicModelSupportStatus.LOADABLE, model.supportStatus(),
+                    "Catalog must not hide an incomplete model: " + model.canonicalName());
+            assertEquals(model.runtimeClassName(),
+                    Class.forName(model.runtimeClassName()).getName(),
+                    "Runtime class is not loadable for " + model.canonicalName());
             for (String name : model.allNames()) {
                 assertTrue(names.add(name) || name.equals(model.canonicalName()),
                         "Duplicate model name or alias " + name);
