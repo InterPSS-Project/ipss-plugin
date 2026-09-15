@@ -96,6 +96,8 @@ import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
+import org.interpss.dstab.control.exc.psse.sexs.SexsData;
+import org.interpss.dstab.control.exc.psse.sexs.SexsExciter;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
 import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
@@ -2506,6 +2508,24 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new ScrxExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Attach the six-parameter SEXS simplified excitation system. */
+    public SexsExciter addExcSexs(String busId, String genId, SexsData data) {
+        if (data == null || !Double.isFinite(data.getTaOverTb())
+                || !Double.isFinite(data.getTb()) || data.getTb() <= 0.0
+                || !Double.isFinite(data.getK()) || !Double.isFinite(data.getTe())
+                || data.getTe() < 0.0 || !Double.isFinite(data.getEmin())
+                || !Double.isFinite(data.getEmax()) || data.getEmax() < data.getEmin()) {
+            log.warn("Invalid SEXS parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for SEXS exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new SexsExciter(mach.getId() + "_Exc", data, mach);
     }
 
     /** PSS/E ESST3A mapped to the existing IEEE 2005 ST3A implementation. */
