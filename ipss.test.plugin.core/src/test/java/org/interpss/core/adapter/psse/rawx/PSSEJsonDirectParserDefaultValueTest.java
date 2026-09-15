@@ -1,6 +1,8 @@
 package org.interpss.core.adapter.psse.rawx;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
@@ -8,6 +10,8 @@ import java.nio.file.Path;
 
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.psse.PSSEJsonDirectParser;
+import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings;
+import org.interpss.fadapter.psse.PsseLoadflowSolutionSettings.ApplicationPolicy;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,6 +20,7 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.LoadflowAlgorithmInitializer;
 
 /** Regression coverage for PSS/E defaults allowed by sparse RAWX tables. */
 public class PSSEJsonDirectParserDefaultValueTest extends CorePluginTestSetup {
@@ -99,6 +104,66 @@ public class PSSEJsonDirectParserDefaultValueTest extends CorePluginTestSetup {
 		assertTrue(pvBus.isGenPV());
 		assertEquals(1.01, pvBus.getDesiredVoltMag(), 1.0E-12);
 		assertConverged(net);
+	}
+
+	@Test
+	public void standardRawxSolutionSettingsAreAvailableForReplay()
+			throws Exception {
+		AclfNetwork net = parse("solution-settings.rawx", """
+				{
+				  "general": {"version": "36.0"},
+				  "network": {
+				    "caseid": {
+				      "fields": ["sbase", "rev"],
+				      "data": [100.0, 36]
+				    },
+				    "general": {
+				      "fields": ["thrshz", "pqbrak"],
+				      "data": [0.0002, 0.65]
+				    },
+				    "newton": {
+				      "fields": ["itmxn", "toln", "dvlim"],
+				      "data": [25, 0.1, 0.2]
+				    },
+				    "solver": {
+				      "fields": ["method", "actaps", "areain", "phshft", "dctaps", "swshnt", "nondiv"],
+				      "data": ["FDNS", 0, 0, 0, 0, 0, 1]
+				    },
+				    "bus": {
+				      "fields": ["ibus", "baskv", "ide", "vm", "va"],
+				      "data": [[1, 230.0, 3, 1.0, 0.0]]
+				    },
+				    "generator": {
+				      "fields": ["ibus", "machid"],
+				      "data": [[1, "1"]]
+				    }
+				  }
+				}
+				""");
+
+		Object initializer = net.getExtraInfo().get(
+				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY);
+		assertNotNull(initializer);
+		assertTrue(initializer instanceof PsseLoadflowSolutionSettings);
+		PsseLoadflowSolutionSettings settings =
+				(PsseLoadflowSolutionSettings) initializer;
+		assertEquals(36, settings.sourceVersion());
+		assertEquals(25, settings.newton().itmxn());
+		assertEquals(0, settings.solver().actaps());
+
+		LoadflowAlgorithm algorithm = LoadflowAlgoObjectFactory
+				.createLoadflowAlgorithm(net);
+		assertEquals(25, algorithm.getMaxIterations());
+		assertEquals(0.001, algorithm.getTolerance(), 1.0E-12);
+		settings.applyTo(algorithm, net,
+				ApplicationPolicy.SAVED_SOLUTION_REPLAY);
+		assertFalse(algorithm.getLfAdjAlgo().getVoltAdjConfig()
+				.isXfrTapControl());
+		assertFalse(algorithm.getLfAdjAlgo().getPowerAdjConfig()
+				.isPsXfrPControl());
+		assertFalse(algorithm.getLfAdjAlgo().getVoltAdjConfig()
+				.isSwitchedShuntAdjust());
+		assertTrue(algorithm.getNrMethodConfig().isNonDivergent());
 	}
 
 	private AclfNetwork parse(String fileName, String rawx) throws Exception {
