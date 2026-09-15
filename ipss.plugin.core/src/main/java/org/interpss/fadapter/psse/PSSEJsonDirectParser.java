@@ -289,6 +289,13 @@ public class PSSEJsonDirectParser {
         String busId = BUS_ID_PREFIX + busNum;
         String name = getString(row, "name", "");
         double baseKv = getDouble(row, "baskv", 0.0);
+        // PSS/E permits BASKV to be zero (and RAWX permits it to be omitted)
+        // because nominal kV is informational for a per-unit power-flow case.
+        // InterPSS requires a positive bus base voltage for voltage adapters and
+        // data validation, so use the same neutral placeholder as the RAW parser.
+        if (baseKv == 0.0) {
+            baseKv = 1.0;
+        }
         int ide = getInt(row, "ide", 1);
         int areaNum = getInt(row, "area", 0);
         int zoneNum = getInt(row, "zone", 0);
