@@ -461,9 +461,9 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 result.maximumVoltageDrift());
         assertTrue(result.minimumPoiVoltage() < .2, "fault must depress POI voltage");
         assertTrue(result.finalPoiVoltage() > .9, "five-plant system must recover");
-        assertEquals(3.49278487411e-5, result.minimumPoiVoltage(), 1.0e-10);
-        assertEquals(1.00359740361, result.finalPoiVoltage(), 1.0e-9);
-        assertEquals(.00346783520675, result.maximumVoltageDrift(), 1.0e-9);
+        assertEquals(3.58489350096e-5, result.minimumPoiVoltage(), 1.0e-10);
+        assertEquals(1.00366570722, result.finalPoiVoltage(), 1.0e-9);
+        assertEquals(.00354296889975, result.maximumVoltageDrift(), 1.0e-9);
     }
 
     private static double[] controllerCheckpoint(Reeca1Model reeca, Repca1Model repca) {

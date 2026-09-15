@@ -143,6 +143,44 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         }
     }
 
+    /**
+     * Samples both modified-Euler network endpoints. Dynamic REEC_A states are
+     * advanced once at flag 0 by their bounded trapezoidal blocks; flag 1 then
+     * refreshes algebraic current commands from the corrected network endpoint.
+     * The composed plant and wind controls receive both stages through their
+     * native predictor/corrector contracts.
+     */
+    @Override
+    public void step(double dt, double p, double q, double v, double frequency, int flag) {
+        if (flag != 0 && flag != 1) {
+            throw new IllegalArgumentException("REECA1 integration flag must be 0 or 1");
+        }
+        p = snapToInitial(p, p0);
+        q = snapToInitial(q, q0);
+        v = snapToInitial(v, localVoltage0);
+        frequency = snapToInitial(frequency, 1.0);
+        double sensedV = snapToInitial(sensedVoltage(v), sensedVoltage0);
+        boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
+        if (plantController != null) {
+            plantController.step(dt, p, q, sensedV, frequency, flag);
+        }
+        double plantPref = plantController == null ? 0.0 : plantController.getPref();
+        if (windControlStack != null) {
+            windControlStack.step(dt, p, pOrder, p0 + plantPref, voltageDip, flag);
+        }
+        if (flag == 0) {
+            int substeps = Math.max(1, (int) Math.ceil(dt / MAX_CONTROL_STEP));
+            double controlStep = dt / substeps;
+            for (int i = 0; i < substeps; i++) {
+                stepElectricalControls(controlStep, p, q, v, sensedV);
+            }
+        } else {
+            // Re-evaluate bypasses, limits, and commands without integrating a
+            // second time. REGCA1's flag-1 derivative now sees this endpoint.
+            stepElectricalControls(0.0, p, q, v, sensedV);
+        }
+    }
+
     private void stepElectricalControls(double dt, double p, double q, double v,
             double sensedV) {
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
