@@ -20,6 +20,8 @@
 .project
 /.cursorignore
 /logs/
+/target/
+/tmp/
 /ipss.plugin.3phase/logs/*.log
 **/.flattened-pom.xml
 .vscode/settings.json
