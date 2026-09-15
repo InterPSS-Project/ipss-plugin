@@ -95,7 +95,7 @@ public final class WeccApprovedDynamicModelCatalog {
             exciter("PFQRG", "pfqrg", "Not used", "PFQRG", NEVER_APPROVED, "", ""),
             exciter("REXS", "rexs", "REXSYS", "REXS", APPROVED, "2006-08-11", "REXSYS"),
             exciter("SCRX", "scrx", "SCRX", "SCRX", APPROVED, "2006-08-11", "SCRX"),
-            exciter("SEXS", "sexs", "SEXS_GE and SEXS_PTI", "SEXS", NEVER_APPROVED, "", ""),
+            exciter("SEXS", "sexs", "SEXS_GE and SEXS_PTI", "SEXS", NEVER_APPROVED, "", "SEXS"),
             exciter("TEXS", "texs", "Not converted", "TEXS", NEVER_APPROVED, "", ""));
 
     private static final List<WeccModelApproval> GENERATORS = List.of(
