@@ -44,37 +44,87 @@ public class Texas2kFullDynamicCoverageTest {
             "5394:1", "5395:1", "7095:1");
     private static final Set<String> REVIEWED_DEPENDENCY_MODELS = Set.of(
             "REECA1", "REPCA1", "WTARA1", "WTPTA1", "WTTQA1");
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
-            Path.of("testData", "private", "texas2k").toString()));
+    private static final Path ROOT = relativeCaseRoot();
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
                     "Texas2k_series24_case1_2016summerPeak_v36.RAW", "dynamic_models_case1.dyr",
                     "dynamic_models_case1_gnet.idv", "dynamic_models_case1_MODREMOVE.idv",
-                    2223, 0, 0),
+                    2223, 0, 0, 0, 31, 31),
             new CaseFile("Texas2k_series24_case2_2016lowload",
                     "Texas2k_series24_case2_2016lowload.RAW", "dynamic_models_case2.dyr",
                     "dynamic_models_case2_gnet.idv", "dynamic_models_case2_MODREMOVE.idv",
-                    2223, 0, 0),
+                    2223, 0, 0, 0, 31, 31),
             new CaseFile("Texas2k_series24_case3_2024summerpeak",
                     "Texas2k_series24_case3_2024summerpeak_v30.RAW", "dynamic_models_case3.dyr",
                     "dynamic_models_case3_gnet.idv", "dynamic_models_case3_MODREMOVE.idv",
-                    2965, 10, 15),
+                    2965, 10, 15, 2, 80, 80),
             new CaseFile("Texas2k_series24_case4_2024lowload",
                     "Texas2k_series24_case4_2024lowload.RAW", "dynamic_models_case4.dyr",
                     "dynamic_models_case4_gnet.idv", "dynamic_models_case4_MODREMOVE.idv",
-                    2965, 10, 15),
+                    2965, 10, 15, 2, 80, 80),
             new CaseFile("Texas2k_series24_case5_2024highrenewables",
                     "Texas2k_series24_case5_2024highrenewables.RAW", "dynamic_models_case5.dyr",
                     "dynamic_models_case5_gnet.idv", "dynamic_models_case5_MODREMOVE.idv",
-                    2965, 10, 15),
+                    2965, 10, 15, 2, 80, 80),
             new CaseFile("Texas2k_series24_case6_2024lowloadwithgfm",
                     "Texas2k_series24_case6_2024lowloadwithgfm.RAW", "dynamic_models_case6.dyr",
                     "dynamic_models_case6_gnet.idv", "dynamic_models_case6_MODREMOVE.idv",
-                    2970, 10, 15));
+                    2970, 10, 15, 2, 80, 80));
 
     @BeforeAll
     static void initializePlugin() {
         IpssCorePlugin.init();
+    }
+
+    @Test
+    void loaderAutoDiscoversAndAppliesEverySiblingPreparationFile(@TempDir Path tempDir)
+            throws Exception {
+        assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
+        Path emptyDyr = tempDir.resolve("empty.dyr");
+        Files.writeString(emptyDyr, "");
+
+        for (CaseFile source : CASES) {
+            Path directory = ROOT.resolve(source.directory());
+            Path raw = directory.resolve(source.raw());
+            Path dyr = directory.resolve(source.dyr());
+            Path gnet = directory.resolve(source.gnet());
+            Path modelRemove = directory.resolve(source.modelRemove());
+            assumeTrue(Files.isRegularFile(raw), "Missing Texas2k RAW: " + raw);
+            assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
+            assumeTrue(Files.isRegularFile(gnet), "Missing Texas2k GNET: " + gnet);
+            assumeTrue(Files.isRegularFile(modelRemove),
+                    "Missing Texas2k model-removal IDV: " + modelRemove);
+
+            BaseDStabNetwork<?, ?> baseline = new PSSEMultiFileLoader()
+                    .loadDStab(raw.toString(), emptyDyr.toString()).getDStabilityNet();
+            var expectedGnet = PsseGnetIdvProcessor.apply(baseline, gnet.toString());
+            var expectedRemove = PsseModelRemoveIdvProcessor.apply(baseline,
+                    modelRemove.toString());
+            Map<Integer, Long> directiveCounts = expectedRemove.directives().stream()
+                    .collect(Collectors.groupingBy(
+                            PsseModelRemoveIdvProcessor.Directive::modelType,
+                            Collectors.counting()));
+            assertEquals(expectedDirectiveCounts(source),
+                    directiveCounts, source.directory() + " model-removal directives");
+
+            BaseDStabNetwork<?, ?> actual = new PSSEMultiFileLoader()
+                    .loadDStab(raw.toString(), dyr.toString()).getDStabilityNet();
+            assertGnetRemovedDetailedModels(actual, expectedGnet, source.directory());
+            assertEquals(source.machineRemovalDirectives(),
+                    expectedRemove.removedGeneratorKeys().size(),
+                    source.directory() + " machine-removal directives");
+            for (PsseGnetIdvProcessor.GeneratorKey key
+                    : expectedRemove.removedGeneratorKeys()) {
+                DStabGen generator = (DStabGen) actual.getDStabBus(key.busId())
+                        .getContributeGen(key.generatorId());
+                assertTrue(generator.isActive(),
+                        source.directory() + " deactivated model-removed generator " + key);
+                assertNull(generator.getMach(),
+                        source.directory() + " retained removed machine " + key);
+                assertNull(generator.getDynamicGenDevice(),
+                        source.directory() + " retained removed converter " + key);
+            }
+        }
     }
 
     @Test
@@ -310,7 +360,32 @@ public class Texas2kFullDynamicCoverageTest {
                 .collect(Collectors.joining(", "));
     }
 
+    private static Path relativeCaseRoot() {
+        Path configured = Path.of(System.getProperty("texas2k.case.root",
+                Path.of("testData", "private", "texas2k").toString()));
+        if (configured.isAbsolute() || configured.getRoot() != null) {
+            throw new IllegalArgumentException(
+                    "texas2k.case.root must be a relative path: " + configured);
+        }
+        return configured.normalize();
+    }
+
+    private static Map<Integer, Long> expectedDirectiveCounts(CaseFile source) {
+        Map<Integer, Long> counts = new java.util.LinkedHashMap<>();
+        if (source.machineRemovalDirectives() > 0) {
+            counts.put(1, (long) source.machineRemovalDirectives());
+        }
+        if (source.stabilizerRemovalDirectives() > 0) {
+            counts.put(3, (long) source.stabilizerRemovalDirectives());
+        }
+        if (source.turbineLoadRemovalDirectives() > 0) {
+            counts.put(8, (long) source.turbineLoadRemovalDirectives());
+        }
+        return Map.copyOf(counts);
+    }
+
     private record CaseFile(String directory, String raw, String dyr, String gnet,
             String modelRemove, int records, int modelRemovedRecords,
-            int gnetSkippedRecords) { }
+            int gnetSkippedRecords, int machineRemovalDirectives,
+            int stabilizerRemovalDirectives, int turbineLoadRemovalDirectives) { }
 }
