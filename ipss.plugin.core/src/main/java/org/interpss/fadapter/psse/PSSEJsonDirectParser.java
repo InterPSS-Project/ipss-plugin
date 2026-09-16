@@ -251,6 +251,7 @@ public class PSSEJsonDirectParser {
     // ==================== Case Data ====================
 
     private void parseCaseData(JsonObject network) throws InterpssException {
+        double baseFrequency = builder.getBaseNetwork().getFrequency();
         if (network.has("caseid")) {
             JsonObject caseid = network.getAsJsonObject("caseid");
             if (caseid.has("fields") && caseid.has("data")) {
@@ -268,12 +269,16 @@ public class PSSEJsonDirectParser {
                         rowMap.put(fields.get(i).getAsString().toLowerCase(), row.get(i));
                     }
                     baseMva = getDouble(rowMap, "sbase", 100.0);
+                    baseFrequency = getDouble(rowMap, "basfrq", baseFrequency);
                 }
             }
         }
 
         builder.setNetworkInfo("Base_Case_from_PSS_E_format", "PSS/E JSON Case",
                 baseMva * 1000.0, OriginalDataFormat.PSSE);
+        if (Double.isFinite(baseFrequency) && baseFrequency > 0.0) {
+            builder.getBaseNetwork().setFrequency(baseFrequency);
+        }
     }
 
     // ==================== Bus ====================

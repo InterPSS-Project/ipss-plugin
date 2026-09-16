@@ -83,6 +83,31 @@ public class PSSEJsonExporterRoundTripTest extends CorePluginTestSetup {
 	}
 
 	@ParameterizedTest
+	@CsvSource({"50.0", "60.0"})
+	public void rawxPreservesBaseFrequency(double baseFrequency) throws Exception {
+		AclfNetworkBuilder builder = new AclfNetworkBuilder();
+		builder.setNetworkInfo("frequency", "frequency", 100000.0,
+				OriginalDataFormat.PSSE);
+		builder.getBaseNetwork().setFrequency(baseFrequency);
+		builder.addBus("Bus1", "BUS-1", 1L, 230000.0, 1.0, 0.0,
+				null, null, null);
+		builder.finalizeNetwork();
+
+		Path exported = tempDir.resolve("frequency-" + baseFrequency + ".rawx");
+		new PSSEJsonExporter(builder.getNetwork()).export(exported);
+
+		JsonObject root = com.google.gson.JsonParser.parseString(
+				Files.readString(exported)).getAsJsonObject();
+		JsonObject caseId = root.getAsJsonObject("network")
+				.getAsJsonObject("caseid");
+		assertEquals(baseFrequency, rawxNumber(caseId, 0, "basfrq"), TOL);
+
+		AclfNetwork roundTrip = new PSSEJsonDirectParser()
+				.parse(exported.toString());
+		assertEquals(baseFrequency, roundTrip.getFrequency(), TOL);
+	}
+
+	@ParameterizedTest
 	@CsvSource({
 			"30,../ipss.plugin.core/testData/psse/v30/IEEE39bus_v30.raw",
 			"31,testData/psse/v31/sample_v31.raw",
