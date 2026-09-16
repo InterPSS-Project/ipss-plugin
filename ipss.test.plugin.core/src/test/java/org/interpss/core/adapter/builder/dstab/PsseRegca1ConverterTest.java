@@ -161,6 +161,31 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
+    void exactZeroReactivePowerUsesTheLowerRateAndBlocksDownwardReturn()
+            throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
+                .getContributeGen("1");
+        gen.setGen(new Complex(gen.getGen().getReal(), 0.0));
+        Regca1Model model = builder.addRegca1("Bus1", "1", data(10.0, 0.0, 0.0));
+        CommandController controller = new CommandController();
+        model.setActiveElectricalController(controller);
+        assertTrue(model.initStates(model.getDStabBus()));
+        double initialState = model.getIqRegulatorState();
+
+        controller.iqcmd = -(initialState + 1.0);
+        step(model, .01);
+        double raisedState = model.getIqRegulatorState();
+        assertTrue(raisedState > initialState,
+                "exact-zero Q uses Iqrmin=0, which permits positive motion");
+
+        controller.iqcmd = -(initialState - 1.0);
+        step(model, .01);
+        assertEquals(raisedState, model.getIqRegulatorState(), TOL,
+                "Iqrmin=0 blocks downward recovery after the state rises");
+    }
+
+    @Test
     void nortonInjectionAndPowerReconstructionHonorGeneratorMvaBase() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
