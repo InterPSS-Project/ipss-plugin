@@ -63,7 +63,13 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public double vConstPMin = 0.7;
 	public double vConstIMin = 0.5;
 	
-	public boolean includeAdjustments = false;
+	/**
+	 * Compatibility master gate for adjustment processing. Individual control
+	 * family flags below remain authoritative. Keep enabled by default while
+	 * older callers still depend on this gate; remove it once all callers use
+	 * only the family-specific settings.
+	 */
+	public boolean includeAdjustments = true;
 	public boolean activateAllAdjCtrl = false;
 	
 	public boolean applyLimitControl = true;
@@ -240,11 +246,11 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends BaseJSONBean> T fromString(String json) {
-		return (T) parseJson(json, false, false);
+		return (T) parseJson(json, false);
 	}
 
 	public static AclfRunConfigRec fromJson(String json) {
-		return parseJson(json, true, true);
+		return parseJson(json, true);
 	}
 
 	/**
@@ -269,7 +275,6 @@ public class AclfRunConfigRec extends BaseJSONBean {
 			}
 		}
 		merged.explicitJsonFields = new LinkedHashSet<>(overlay.explicitJsonFields);
-		merged.includeAdjustments = true;
 		return merged;
 	}
 
@@ -307,17 +312,13 @@ public class AclfRunConfigRec extends BaseJSONBean {
 
 	private static AclfRunConfigRec parseJson(
 			String json,
-			boolean trackExplicitFields,
-			boolean forceIncludeAdjustments) {
+			boolean trackExplicitFields) {
 		JsonObject root = JsonParser.parseString(json).getAsJsonObject();
 		validateAclfJsonRoot(root);
 		AclfRunConfigRec config = gson().fromJson(json, AclfRunConfigRec.class);
 		config.validateSchemaVersion();
 		if (trackExplicitFields) {
 			config.explicitJsonFields = new LinkedHashSet<>(root.keySet());
-		}
-		if (forceIncludeAdjustments) {
-			config.includeAdjustments = true;
 		}
 		return config;
 	}
@@ -397,7 +398,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 			algo.setFullNewtonTapControlEnabled(
 					this.coordinatedControlEnableInnerTaps);
 		if (this.tapChangeLimit != null)
-			applyTapChangeLimit(algo, this.tapChangeLimit);
+			algo.setTapChangeLimit(this.tapChangeLimit);
         
         NrMethodConfig nrConfig = algo.getNrMethodConfig();
         // the default AclfNet coordinate is polar coordinate
@@ -509,22 +510,5 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		}
 		if (this.lfMethod == AclfMethodType.NR)
 			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
-	}
-
-	/**
-	 * Apply the shared inner/outer limit when running with the patched Core API.
-	 * Released compatible Core builds still receive the full-Newton inner limit.
-	 */
-	private static void applyTapChangeLimit(LoadflowAlgorithm algo, double limit) {
-		try {
-			algo.getClass().getMethod("setTapChangeLimit", double.class)
-					.invoke(algo, limit);
-		}
-		catch (NoSuchMethodException ex) {
-			algo.setMaximumFullNewtonTapChange(limit);
-		}
-		catch (ReflectiveOperationException ex) {
-			throw new IllegalStateException("Unable to apply ACLF tap change limit", ex);
-		}
 	}
 }
