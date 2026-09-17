@@ -22,6 +22,7 @@ import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.AdjustApplyType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.LoadflowAlgorithm.VscCapabilityPriority;
 import com.interpss.core.algo.NrMethodConfig;
 import com.interpss.core.algo.NrOptimizeAlgoType;
 import com.interpss.core.algo.config.ControlInitializationMode;
@@ -128,6 +129,16 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public Boolean coordinatedControlEnableRemoteQ;
 	public Boolean coordinatedControlReplaySavedState;
 	public Boolean coordinatedControlUseVoltageTolerance;
+	// Default-off coordinated-control experiments. Keeping these options in the
+	// shared plugin record lets desktop, CLI, MCP, and large-case runners consume
+	// one JSON contract without case-specific parsers.
+	public Boolean coordinatedControlEnableInnerTaps;
+	/** Shared inner/outer transformer tap-ratio step ceiling in pu. */
+	public Double tapChangeLimit;
+	public Boolean coordinatedPqControlEnabled;
+	public Boolean coupledLccPqControlEnabled;
+	public Boolean coupledVscPqControlEnabled;
+	public VscCapabilityPriority vscCapabilityPriority;
 
 	public Double hvdcLfSwitchFactor;
 	public Double hvdcOuterAdjustmentFactor;
@@ -373,7 +384,20 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	public void configAclfRun(LoadflowAlgorithm algo, boolean polarCooridnate, boolean appluAdjust, boolean psseConfig) {
 		double baseMVA = algo.getAclfNet().getBaseMva();
 		
-        algo.setLfMethod(this.lfMethod);
+		algo.setLfMethod(this.lfMethod);
+		if (this.coordinatedPqControlEnabled != null)
+			algo.setCoordinatedPqControlEnabled(this.coordinatedPqControlEnabled);
+		if (this.coupledLccPqControlEnabled != null)
+			algo.setCoupledLccPqControlEnabled(this.coupledLccPqControlEnabled);
+		if (this.coupledVscPqControlEnabled != null)
+			algo.setCoupledVscPqControlEnabled(this.coupledVscPqControlEnabled);
+		if (this.vscCapabilityPriority != null)
+			algo.setVscCapabilityPriority(this.vscCapabilityPriority);
+		if (this.coordinatedControlEnableInnerTaps != null)
+			algo.setFullNewtonTapControlEnabled(
+					this.coordinatedControlEnableInnerTaps);
+		if (this.tapChangeLimit != null)
+			algo.setTapChangeLimit(this.tapChangeLimit);
         
         NrMethodConfig nrConfig = algo.getNrMethodConfig();
         // the default AclfNet coordinate is polar coordinate
