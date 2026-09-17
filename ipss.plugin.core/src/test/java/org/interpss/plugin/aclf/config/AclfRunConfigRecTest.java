@@ -110,7 +110,7 @@ class AclfRunConfigRecTest {
 				{
 				  "schemaVersion": 1,
 				  "coordinatedControlEnableInnerTaps": true,
-				  "coordinatedControlMaximumInnerTapChange": 0.0125,
+				  "tapChangeLimit": 0.0125,
 				  "coordinatedPqControlEnabled": true,
 				  "coupledLccPqControlEnabled": true,
 				  "coupledVscPqControlEnabled": true,
@@ -127,6 +127,7 @@ class AclfRunConfigRecTest {
 		assertTrue(algorithm.isFullNewtonTapControlEnabled());
 		assertEquals(0.0125, algorithm.getMaximumFullNewtonTapChange(),
 				1.0e-12);
+		assertEquals(0.0125, algorithm.getTapChangeLimit(), 1.0e-12);
 		assertTrue(algorithm.isCoordinatedPqControlEnabled());
 		assertTrue(algorithm.isCoupledLccPqControlEnabled());
 		assertTrue(algorithm.isCoupledVscPqControlEnabled());
