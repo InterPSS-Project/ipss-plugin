@@ -133,7 +133,8 @@ public class AclfRunConfigRec extends BaseJSONBean {
 	// shared plugin record lets desktop, CLI, MCP, and large-case runners consume
 	// one JSON contract without case-specific parsers.
 	public Boolean coordinatedControlEnableInnerTaps;
-	public Double coordinatedControlMaximumInnerTapChange;
+	/** Shared inner/outer transformer tap-ratio step ceiling in pu. */
+	public Double tapChangeLimit;
 	public Boolean coordinatedPqControlEnabled;
 	public Boolean coupledLccPqControlEnabled;
 	public Boolean coupledVscPqControlEnabled;
@@ -395,9 +396,8 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		if (this.coordinatedControlEnableInnerTaps != null)
 			algo.setFullNewtonTapControlEnabled(
 					this.coordinatedControlEnableInnerTaps);
-		if (this.coordinatedControlMaximumInnerTapChange != null)
-			algo.setMaximumFullNewtonTapChange(
-					this.coordinatedControlMaximumInnerTapChange);
+		if (this.tapChangeLimit != null)
+			algo.setTapChangeLimit(this.tapChangeLimit);
         
         NrMethodConfig nrConfig = algo.getNrMethodConfig();
         // the default AclfNet coordinate is polar coordinate
