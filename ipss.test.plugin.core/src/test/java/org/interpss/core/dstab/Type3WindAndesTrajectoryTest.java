@@ -118,13 +118,14 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
         // and subtract Vt_filt before PIV. This is therefore a bounded
         // cross-tool comparison, not a REECA1 conformance oracle. Unaffected
         // Type-3 mechanical controls retain much tighter regression limits.
-        // The two revised bounds account for the corrected native-PSS/E
-        // REPCA1 generator-power fallback, which this older ANDES trace did
-        // not use; native PSS/E state trajectories are enforced separately.
+        // The revised bounds account for the corrected native-PSS/E REPCA1
+        // generator-power fallback and same-endpoint staged coupling, which
+        // this older single-stage ANDES trace did not use; native PSS/E state
+        // trajectories are enforced separately.
         double[] tolerances = {
                 0.0, 9.0e-3, 3.5e-3,
                 5.0e-6, 7.0e-5, 5.0e-5, 1.0e-7,
-                2.0e-3, 3.0e-4, 9.0e-3,
+                2.3e-3, 3.0e-4, 9.0e-3,
                 1.5e-3, 7.0e-7, 2.7e-3, 1.7e-3
         };
         assertTrue(headings.length == tolerances.length,

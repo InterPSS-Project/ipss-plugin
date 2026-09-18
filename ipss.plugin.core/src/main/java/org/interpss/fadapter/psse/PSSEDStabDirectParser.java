@@ -92,6 +92,7 @@ import org.interpss.dstab.control.uel.psse.uel2c.Uel2cData;
 import org.interpss.dstab.control.oel.psse.oel2c.Oel2cData;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
+import org.interpss.dstab.control.exc.psse.sexs.SexsData;
 import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
 import org.interpss.dstab.control.exc.psse.ac1c.Ac1cData;
 import org.interpss.dstab.control.exc.psse.ac2c.Ac2cData;
@@ -618,6 +619,8 @@ public class PSSEDStabDirectParser {
                 return procExcEsst4b(busId, genId, fields);
             case "SCRX":
                 return procExcScrx(busId, genId, fields);
+            case "SEXS":
+                return procExcSexs(busId, genId, fields);
 
             case "IEEEG1":
                 return procGovIeeeg1(busId, genId, fields);
@@ -2095,6 +2098,19 @@ public class PSSEDStabDirectParser {
         data.setCswitch(getInt(f, 9, 0));
         data.setRcOverRfd(getDouble(f, 10, 0));
         return builder.addExcScrx(busId, genId, data) != null;
+    }
+
+    // SEXS: IBUS 'SEXS' ID Ta/Tb Tb K Te Emin Emax
+    private boolean procExcSexs(String busId, String genId, String[] f) {
+        if (f.length < 9) return false;
+        SexsData data = new SexsData();
+        data.setTaOverTb(getDouble(f, 3, 0));
+        data.setTb(getDouble(f, 4, 0));
+        data.setK(getDouble(f, 5, 0));
+        data.setTe(getDouble(f, 6, 0));
+        data.setEmin(getDouble(f, 7, 0));
+        data.setEmax(getDouble(f, 8, 0));
+        return builder.addExcSexs(busId, genId, data) != null;
     }
 
     private static boolean isSupportedSt2cutMode(int mode) {

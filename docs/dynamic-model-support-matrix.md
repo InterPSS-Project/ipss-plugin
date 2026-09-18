@@ -79,6 +79,7 @@ loadability inventory.
 | IEEEX2 | EXCITER |  | 16 | LOADABLE | `org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20IEEEX2.htm) |
 | REXSYS | EXCITER |  | 31 | LOADABLE | `org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REXSY1.htm) |
 | SCRX | EXCITER |  | 8 | LOADABLE | `org.interpss.dstab.control.exc.psse.scrx.ScrxExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20SCRX.htm) |
+| SEXS | EXCITER |  | 6 | LOADABLE | `org.interpss.dstab.control.exc.psse.sexs.SexsExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20SEXS.htm) |
 | ST10C | EXCITER |  | 30 | LOADABLE | `org.interpss.dstab.control.exc.psse.st10c.St10cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST10C.htm) |
 | ST1C | EXCITER |  | 21 | LOADABLE | `org.interpss.dstab.control.exc.psse.st1c.St1cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST1C.htm) |
 | ST2C | EXCITER |  | 25 | LOADABLE | `org.interpss.dstab.control.exc.psse.st2c.St2cExciter` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ST2C.htm) |

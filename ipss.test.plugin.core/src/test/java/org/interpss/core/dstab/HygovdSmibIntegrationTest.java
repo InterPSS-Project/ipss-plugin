@@ -27,7 +27,7 @@ public class HygovdSmibIntegrationTest {
         var loader = new PSSEMultiFileLoader();
         var context = loader.loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_hygovd_powerworld.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_hygovd_independent.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + HYGOVD load flow");

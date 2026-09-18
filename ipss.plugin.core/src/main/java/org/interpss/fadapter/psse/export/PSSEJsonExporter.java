@@ -173,8 +173,9 @@ public class PSSEJsonExporter {
 
 		JsonObject network = new JsonObject();
 		root.add("network", network);
-		network.add("caseid", section(List.of("ic", "sbase", "rev"),
-				List.of(row(0, baseMva, 35))));
+		network.add("caseid", section(
+				List.of("ic", "sbase", "rev", "xfrrat", "nxfrat", "basfrq"),
+				List.of(row(0, baseMva, 35, 0, 1, aclfNet.getFrequency()))));
 		network.add("bus", busSection());
 		network.add("load", loadSection());
 		network.add("fixshunt", fixedShuntSection());

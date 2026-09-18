@@ -84,6 +84,41 @@ public class Texas2kSixCaseDynamicSmokeTest {
         for (CaseFile source : CASES) verifyFault(source);
     }
 
+    @Test
+    void allSixCasesRideThroughGeneratorTrip() throws Exception {
+        assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
+        for (CaseFile source : CASES) verifyGeneratorTrip(source);
+    }
+
+    private static void verifyGeneratorTrip(CaseFile source) throws Exception {
+        SimuContext context = loadCase(source);
+        BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
+        DynamicSimuAlgorithm algorithm = context.getDynSimuAlgorithm();
+        configureSimulation(algorithm, .25);
+
+        StateMonitor monitor = new StateMonitor();
+        monitor.addBusStdMonitor(new String[] {"Bus1051", "Bus2056"});
+        monitor.addGeneratorStdMonitor(new String[] {"Bus2056-mach1"});
+        algorithm.setSimuOutputHandler(monitor);
+        network.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent(
+                "Bus1051", "1", network, .05), "GeneratorTrip@Bus1051:1");
+
+        assertTrue(algorithm.initialization(), source.directory() + " trip initialization");
+        assertTrue(algorithm.performSimulation(), source.directory() + " trip simulation");
+        assertTrue(!network.getBus("Bus1051").getContributeGen("1").isActive(),
+                source.directory() + " generator remained active after trip");
+        for (String busId : List.of("Bus1051", "Bus2056")) {
+            var voltage = monitor.getBusVoltTable().get(busId);
+            assertTrue(voltage.values().stream().allMatch(value -> Double.isFinite(value.value)),
+                    source.directory() + " non-finite voltage after trip at " + busId);
+            assertTrue(voltage.get(voltage.size() - 1).value > .7,
+                    source.directory() + " voltage did not recover after trip at " + busId);
+        }
+        var speed = monitor.getMachSpeedTable().get("Bus2056-mach1");
+        assertTrue(speed.values().stream().allMatch(value -> Double.isFinite(value.value)),
+                source.directory() + " non-finite surviving-machine speed after trip");
+    }
+
     private static void verifyFault(CaseFile source) throws Exception {
         SimuContext context = loadCase(source);
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
