@@ -33,7 +33,7 @@ import com.interpss.state.aclf.AclfNetworkState;
  */
 public class IEEE118CimVsMatpowerJsonCompareTest extends CorePluginTestSetup {
 
-	private static final String TD = "testData/adpter/cim/";
+	private static final String TD = "testData/adpter/cim/cgmes3.0/";
 	private static final String CIM_FILE = TD + "IEEE118_CIM.xml";
 	private static final String MATPOWER_FILE = TD + "IEEE118.m";
 

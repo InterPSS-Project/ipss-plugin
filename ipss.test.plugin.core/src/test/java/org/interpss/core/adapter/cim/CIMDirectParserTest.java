@@ -20,20 +20,22 @@ import com.interpss.simu.SimuContext;
 
 /**
  * Regression tests for CIM direct import (ODM-bypass path).
- * Fixtures under testData/adpter/cim/ — expectations ported from ipss-odm CIM tests.
+ * Fixtures under testData/adpter/cim/cgmes2.4/ and cgmes3.0/ —
+ * expectations ported from ipss-odm CIM tests.
  */
 public class CIMDirectParserTest extends CorePluginTestSetup {
 
-    private static final String TD = "testData/adpter/cim/";
+    private static final String TD24 = "testData/adpter/cim/cgmes2.4/";
+    private static final String TD30 = "testData/adpter/cim/cgmes3.0/";
 
-    private static final String MG_BE_EQ = TD + "MicroGrid_T4_BE_EQ_V2.xml";
-    private static final String MG_BE_TP = TD + "MicroGrid_T4_BE_TP_V2.xml";
-    private static final String MG_BE_SSH = TD + "MicroGrid_T4_BE_SSH_V2.xml";
-    private static final String MG_BE_SV = TD + "MicroGrid_T4_BE_SV_V2.xml";
+    private static final String MG_BE_EQ = TD24 + "MicroGrid_T4_BE_EQ_V2.xml";
+    private static final String MG_BE_TP = TD24 + "MicroGrid_T4_BE_TP_V2.xml";
+    private static final String MG_BE_SSH = TD24 + "MicroGrid_T4_BE_SSH_V2.xml";
+    private static final String MG_BE_SV = TD24 + "MicroGrid_T4_BE_SV_V2.xml";
 
-    private static final String MN_EQ = TD + "MiniGrid_NB_EQ_V3.xml";
-    private static final String MN_TP = TD + "MiniGrid_NB_TP_V3.xml";
-    private static final String MN_SSH = TD + "MiniGrid_NB_SSH_V3.xml";
+    private static final String MN_EQ = TD24 + "MiniGrid_NB_EQ_V3.xml";
+    private static final String MN_TP = TD24 + "MiniGrid_NB_TP_V3.xml";
+    private static final String MN_SSH = TD24 + "MiniGrid_NB_SSH_V3.xml";
 
     @Test
     public void testMicroGrid_EQ_TP_BusBranchCounts() throws Exception {
@@ -119,7 +121,7 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
 
     @Test
     public void testIEEE118_CIMHub() throws Exception {
-        AclfNetwork net = new CGMESDirectParser().parse(TD + "IEEE118_CIM.xml");
+        AclfNetwork net = new CGMESDirectParser().parse(TD30 + "IEEE118_CIM.xml");
 
         assertEquals(193, net.getNoBus(), "Buses should match MATPOWER");
 
@@ -219,7 +221,7 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
     public void testBoundaryNodesSkipped() throws Exception {
         // With BD file, boundary TNs should not become buses
         AclfNetwork withBd = new CGMESDirectParser().parse(new String[]{
-                MG_BE_EQ, MG_BE_TP, TD + "MicroGrid_T4_BE_EQ_BD_V2.xml", TD + "MicroGrid_T4_BE_TP_BD_V2.xml"
+                MG_BE_EQ, MG_BE_TP, TD24 + "MicroGrid_T4_BE_EQ_BD_V2.xml", TD24 + "MicroGrid_T4_BE_TP_BD_V2.xml"
         });
         AclfNetwork withoutBd = new CGMESDirectParser().parse(new String[]{MG_BE_EQ, MG_BE_TP});
         // Boundary merge may keep same bus count (boundary TNs skipped either way once marked)
