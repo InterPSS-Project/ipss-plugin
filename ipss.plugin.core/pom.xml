@@ -37,9 +37,10 @@
             <version>2.13.1</version>
         </dependency>
 
+        <!-- SLF4J 2.x provider (dflib pulls slf4j-api 2.x; log4j-slf4j-impl is 1.7-only) -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
             <version>2.25.5</version>
         </dependency>
 
