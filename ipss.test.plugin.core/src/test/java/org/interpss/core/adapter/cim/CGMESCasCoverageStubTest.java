@@ -736,4 +736,162 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() > 0);
 		assertTrue(net.getNoBranch() > 0);
 	}
+
+	// -------------------------------------------------------------------------
+	// P2c — NL MAS, BaseCase, dedicated Merged packs
+	// -------------------------------------------------------------------------
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 MicroGrid Type1 NL-MAS EQ+SSH+TP (+EQBD)")
+	public void testCasV30_MicroGridType1_NL_Import() throws Exception {
+		Path dir = casDir("MicroGrid-Type1-NL-MAS",
+				"MicroGrid/MicroGrid-Type1/MicroGrid-Type1-NL-MAS");
+		Path bdDir = casDir("MicroGrid-BD-MAS", "MicroGrid/MicroGrid-Type1/MicroGrid-BD-MAS");
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path bd = pickProfile(bdDir, "EQ_BD");
+		requireFiles(eq, ssh, tp, bd);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, bd));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 MicroGrid Type2 NL-MAS EQ+SSH+TP (+EQBD)")
+	public void testCasV30_MicroGridType2_NL_Import() throws Exception {
+		Path dir = casDir("MicroGrid-Type2-NL-MAS",
+				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-NL-MAS");
+		Path bdDir = casDir("MicroGrid-Type2-BD-MAS",
+				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-BD-MAS");
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path bd = pickProfile(bdDir, "EQ_BD");
+		requireFiles(eq, ssh, tp, bd);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, bd));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 MicroGrid BaseCase-Merged EQ/SSH + Assembled TP/SV (+EQBD)")
+	public void testCasV30_MicroGridBaseCase_Merged_Import() throws Exception {
+		Path merged = casDir("MicroGrid-BaseCase-Merged",
+				"MicroGrid/MicroGid-BaseCase/MicroGrid-BaseCase-Merged");
+		assumeTrue(Files.isDirectory(merged), () -> "BaseCase-Merged missing: " + merged);
+		Path eqBd = pickProfile(merged, "EQ_BD");
+		Path beEq = pickProfileContaining(merged, "EQ", "_BE_");
+		Path nlEq = pickProfileContaining(merged, "EQ", "_NL_");
+		Path beSsh = pickProfileContaining(merged, "SSH", "_BE_");
+		Path nlSsh = pickProfileContaining(merged, "SSH", "_NL_");
+		Path tp = pickProfileContaining(merged, "TP", "ASSEMBLED");
+		Path sv = pickProfileContaining(merged, "SV", "ASSEMBLED");
+		requireFiles(eqBd, beEq, nlEq, beSsh, nlSsh, tp, sv);
+		AclfNetwork net = new CGMESDirectParser().parse(
+				abs(eqBd, beEq, nlEq, beSsh, nlSsh, tp, sv));
+		assertTrue(net.getNoBus() > 0, "BaseCase Merged should create buses");
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 SmallGrid-Merged EQ+SSH+TP+SV+EQBD")
+	public void testCasV30_SmallGridMerged_Import() throws Exception {
+		Path dir = casDir("SmallGrid-Merged", "SmallGrid/SmallGrid-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "SmallGrid-Merged missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path sv = pickProfile(dir, "SV");
+		Path eqbd = pickProfile(dir, "EQBD");
+		requireFiles(eq, ssh, tp, sv, eqbd);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv, eqbd));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 FullGrid-Merged EQ+SSH+TP+SV+EQBD (scale)")
+	public void testCasV30_FullGridMerged_Import() throws Exception {
+		Path dir = casDir("FullGrid-Merged", "FullGrid/FullGrid-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "FullGrid-Merged missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path sv = pickProfile(dir, "SV");
+		Path eqbd = pickProfile(dir, "EQBD");
+		requireFiles(eq, ssh, tp, sv, eqbd);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv, eqbd));
+		assertTrue(net.getNoBus() > 0, "FullGrid should create buses");
+		assertTrue(net.getNoBranch() > 0);
+		// Scale probe — tighten counts after green run; OP/SC diffs are out of scope
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 RealGrid-Merged EQ+SSH+TP+SV (scale)")
+	public void testCasV30_RealGridMerged_Import() throws Exception {
+		Path dir = casDir("RealGrid-Merged", "RealGrid/RealGrid-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "RealGrid-Merged missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path sv = pickProfile(dir, "SV");
+		requireFiles(eq, ssh, tp, sv);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv));
+		assertTrue(net.getNoBus() > 0, "RealGrid should create buses");
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P3: ReliCapGrid Espheim IGM smoke")
+	public void testReliCap_Espheim_Igm_Import() throws Exception {
+		Path dir = relicapDir("ReliCap-Espheim-cimxml", "Instance/Espheim/Grid/cimxml");
+		assumeTrue(Files.isDirectory(dir), () -> "Espheim missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		requireFiles(eq, ssh, tp);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P3: ReliCapGrid Nordheim IGM smoke")
+	public void testReliCap_Nordheim_Igm_Import() throws Exception {
+		Path dir = relicapDir("ReliCap-Nordheim-cimxml", "Instance/Nordheim/Grid/cimxml");
+		assumeTrue(Files.isDirectory(dir), () -> "Nordheim missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		requireFiles(eq, ssh, tp);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P3: ReliCapGrid Galia IGM smoke (optional)")
+	public void testReliCap_Galia_Igm_Import_Optional() throws Exception {
+		Path dir = relicapDir("ReliCap-Galia-cimxml", "Instance/Galia/Grid/cimxml");
+		assumeTrue(Files.isDirectory(dir), () -> "Galia missing — optional: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		requireFiles(eq, ssh, tp);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+
 }
