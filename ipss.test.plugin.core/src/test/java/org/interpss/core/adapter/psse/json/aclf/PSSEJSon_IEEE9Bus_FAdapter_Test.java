@@ -38,6 +38,9 @@ public class PSSEJSon_IEEE9Bus_FAdapter_Test extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
+	  	// RAWX ieee9.rawx maps NEWTON.TOLN=0.1 -> 0.001 pu. Restore the InterPSS
+	  	// factory default so this classic swing-bus / mismatch check stays golden.
+	  	algo.setTolerance(1.0e-4);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	
