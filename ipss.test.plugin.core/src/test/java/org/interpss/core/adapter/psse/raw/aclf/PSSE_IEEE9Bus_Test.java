@@ -287,6 +287,9 @@ public class PSSE_IEEE9Bus_Test extends CorePluginTestSetup {
 	private void testVAclf(AclfNetwork net) throws Exception {
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.PQ);
+	  	// RAWX cases may map NEWTON.TOLN=0.1 -> 0.001 pu; restore the InterPSS
+	  	// factory default so RAW and RAWX share the same swing-bus check.
+	  	algo.setTolerance(1.0e-4);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 
