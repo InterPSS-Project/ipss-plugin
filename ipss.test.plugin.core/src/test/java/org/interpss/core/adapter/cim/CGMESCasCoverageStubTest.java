@@ -19,11 +19,13 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.OriginalDataFormat;
 
 /**
- * P0/P1 expansion stubs for ENTSO-E CGMES coverage.
+ * P0–P3 expansion stubs for ENTSO-E CGMES coverage.
  *
  * <p>P0 wires orphaned in-repo CGMES 2.4 fixtures and the first official
  * CGMES 3.0 (CIM100) CAS MiniGrid pack from the local download tree.
  * P1 covers MicroGrid Type1 multi-MAS / merged CGM import.
+ * P2 adds PST, MicroGrid Type2, SmallGrid SSH+SV, optional RealGrid smoke.
+ * P3 adds ReliCapGrid (Svedala / optional Belgovia) when the local clone exists.
  *
  * <p>CAS fixtures resolve from (1) {@code -Dipss.cgmes.cas.root}, (2) in-repo
  * symlinks under {@code testData/adpter/cim/cgmes3.0/cas/}, then (3) the Temp
@@ -79,6 +81,102 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		}
 		return out;
 	}
+
+
+	/**
+	 * Resolve under CAS 2.4.15 Temp tree (or in-repo symlink under {@link #TD30_CAS}).
+	 */
+	private static Path cas24Dir(String localCasDirName, String relativeUnderCas24Root) {
+		Path local = Path.of(TD30_CAS + localCasDirName);
+		if (Files.isDirectory(local)) {
+			return local;
+		}
+		String override = System.getProperty("ipss.cgmes.cas24.root");
+		if (override != null && !override.isBlank()) {
+			return Path.of(override).resolve(relativeUnderCas24Root);
+		}
+		String home = System.getProperty("user.home");
+		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "cas-2.4.15")
+				.resolve(relativeUnderCas24Root);
+	}
+
+	/**
+	 * Resolve under ReliCapGrid clone (or in-repo symlink under {@link #TD30_CAS}).
+	 */
+	private static Path relicapDir(String localCasDirName, String relativeUnderClone) {
+		Path local = Path.of(TD30_CAS + localCasDirName);
+		if (Files.isDirectory(local)) {
+			return local;
+		}
+		String override = System.getProperty("ipss.cgmes.relicap.root");
+		if (override != null && !override.isBlank()) {
+			return Path.of(override).resolve(relativeUnderClone);
+		}
+		String home = System.getProperty("user.home");
+		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "relicapgrid")
+				.resolve(relativeUnderClone);
+	}
+
+	/**
+	 * First regular {@code *.xml} under {@code dir} whose name matches the profile
+	 * token. {@code EQ} does not match {@code EQ_BD}/{@code EQBD}.
+	 */
+	private static Path pickProfile(Path dir, String profile) throws Exception {
+		assumeTrue(Files.isDirectory(dir), () -> "Missing dir: " + dir);
+		String p = profile.toUpperCase();
+		java.util.List<Path> xmls = new java.util.ArrayList<>();
+		try (java.util.stream.Stream<Path> s = Files.list(dir)) {
+			s.filter(Files::isRegularFile)
+					.filter(x -> x.getFileName().toString().toLowerCase().endsWith(".xml"))
+					.sorted()
+					.forEach(xmls::add);
+		}
+		for (Path x : xmls) {
+			String n = x.getFileName().toString().toUpperCase();
+			if ("EQ_BD".equals(p) || "EQBD".equals(p)) {
+				if (n.contains("EQ_BD") || n.contains("EQBD")) {
+					return x;
+				}
+			} else if ("EQ".equals(p)) {
+				if ((n.contains("_EQ_") || n.endsWith("_EQ.XML") || n.contains("_EQ."))
+						&& !n.contains("EQ_BD") && !n.contains("EQBD")) {
+					return x;
+				}
+			} else if (n.contains("_" + p + "_") || n.endsWith("_" + p + ".XML")
+					|| n.contains("_" + p + ".")) {
+				return x;
+			}
+		}
+		assumeTrue(false, () -> "No *" + profile + "*.xml under " + dir + " files=" + xmls);
+		return dir; // unreachable
+	}
+
+	private static Path firstExistingSubdir(Path parent, String... names) throws Exception {
+		if (!Files.isDirectory(parent)) {
+			return parent.resolve(names[0]);
+		}
+		for (String n : names) {
+			Path p = parent.resolve(n);
+			if (Files.isDirectory(p)) {
+				return p;
+			}
+		}
+		try (java.util.stream.Stream<Path> s = Files.list(parent)) {
+			return s.filter(Files::isDirectory)
+					.filter(p -> {
+						String bn = p.getFileName().toString();
+						for (String n : names) {
+							if (bn.equalsIgnoreCase(n) || bn.contains(n)) {
+								return true;
+							}
+						}
+						return false;
+					})
+					.findFirst()
+					.orElse(parent.resolve(names[0]));
+		}
+	}
+
 
 	// -------------------------------------------------------------------------
 	// P0 — orphaned in-repo CGMES 2.4 SmallGrid fixtures
@@ -213,5 +311,222 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		assertTrue(net.getNoBranch() > 0, "Merged Type1 CGM should create branches");
 		// Target after green run (gridoxide / CAS docs often cite ~17 buses for this fixture):
 		// assertEquals(17, net.getNoBus());
+	}
+
+	// -------------------------------------------------------------------------
+	// P2 — PST / MicroGrid Type2 / SmallGrid SSH+SV / optional RealGrid
+	// -------------------------------------------------------------------------
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 PST PhaseTapChangerLinear Type1 EQ+SSH+TP+SV")
+	public void testCasV30_PST_PhaseTapChangerLinear_Type1() throws Exception {
+		// Official tree (cimgo): PST/PST_PhaseTapChangerLinear_Type1
+		Path primary = casDir("PST-PhaseTapChangerLinear-Type1",
+				"PST/PST_PhaseTapChangerLinear_Type1");
+		Path dir = Files.isDirectory(primary)
+				? primary
+				: firstExistingSubdir(casDir("PST", "PST"),
+						"PST_PhaseTapChangerLinear_Type1",
+						"PST_PhaseTapChangerLinear_Type1",
+						"PhaseTapChangerLinear_Type1");
+		assumeTrue(Files.isDirectory(dir),
+				() -> "PST Type1 dir missing (expected under CAS v3.0 PST/): " + dir);
+
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path sv = pickProfile(dir, "SV");
+		requireFiles(eq, ssh, tp, sv);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv));
+		assertEquals(OriginalDataFormat.CIM, net.getOriginalDataFormat());
+		assertTrue(net.getNoBus() > 0, "PST Type1 should create buses");
+		assertTrue(net.getNoBranch() > 0, "PST Type1 should create branches");
+		int xfr = 0;
+		for (AclfBranch b : net.getBranchList()) {
+			if (b.getBranchCode() == AclfBranchCode.XFORMER
+					|| b.getBranchCode() == AclfBranchCode.W3_XFORMER) {
+				xfr++;
+			}
+		}
+		assertTrue(xfr >= 1, "PST case should include at least one transformer");
+		// P4 TODO: assert phase-shift / tap mapping; Aclf vs SV angles
+		// assertEquals(N_BUS, net.getNoBus());
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 MicroGrid Type2 BE-MAS EQ+SSH+TP (+EQBD)")
+	public void testCasV30_MicroGridType2_BE_Import() throws Exception {
+		Path dir = casDir("MicroGrid-Type2-BE-MAS",
+				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-BE-MAS");
+		Path bdDir = casDir("MicroGrid-Type2-BD-MAS",
+				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-BD-MAS");
+		if (!Files.isDirectory(bdDir)) {
+			bdDir = casDir("MicroGrid-BD-MAS", "MicroGrid/MicroGrid-Type1/MicroGrid-BD-MAS");
+		}
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path bd = pickProfile(bdDir, "EQ_BD");
+		requireFiles(eq, ssh, tp, bd);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, bd));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
+		// assertEquals(N_BUS, net.getNoBus());
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 MicroGrid Type2 Merged EQ/SSH + Assembled TP/SV (+EQBD) [SSH+SV]")
+	public void testCasV30_MicroGridType2_Merged_SshSv() throws Exception {
+		Path merged = casDir("MicroGrid-Type2-Merged",
+				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-Merged");
+		assumeTrue(Files.isDirectory(merged), () -> "Type2-Merged missing: " + merged);
+
+		java.util.List<Path> files = new java.util.ArrayList<>();
+		try (java.util.stream.Stream<Path> s = Files.list(merged)) {
+			s.filter(Files::isRegularFile)
+					.filter(p -> p.getFileName().toString().toLowerCase().endsWith(".xml"))
+					.sorted()
+					.forEach(files::add);
+		}
+		assumeTrue(files.size() >= 4, () -> "Type2-Merged needs several profiles; found " + files);
+
+		boolean hasSsh = files.stream().anyMatch(p -> p.getFileName().toString().toUpperCase().contains("_SSH"));
+		boolean hasSv = files.stream().anyMatch(p -> p.getFileName().toString().toUpperCase().contains("_SV"));
+		assumeTrue(hasSsh, "Type2-Merged should include SSH");
+		assumeTrue(hasSv, "Type2-Merged should include SV (PF-related smoke)");
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(files.toArray(new Path[0])));
+		assertTrue(net.getNoBus() > 0, "Type2 Merged should create buses");
+		assertTrue(net.getNoBranch() > 0, "Type2 Merged should create branches");
+		// P4 TODO: AclfNetwork load-flow vs Assembled SV voltages/flows
+		// assertEquals(N_BUS, net.getNoBus());
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 SmallGrid EQ+SSH+TP(+SV) import smoke")
+	public void testCasV30_SmallGrid_SshSv_Import() throws Exception {
+		Path primary = casDir("SmallGrid", "SmallGrid");
+		Path dir = Files.isDirectory(primary)
+				? primary
+				: firstExistingSubdir(casDir("SmallGrid-root", "SmallGrid"),
+						"SmallGrid", "BaseCase", "SmallGrid-BaseCase");
+		assumeTrue(Files.isDirectory(dir), () -> "CAS SmallGrid missing: " + dir);
+
+		Path eqDir = dir;
+		try {
+			pickProfile(eqDir, "EQ");
+		} catch (org.opentest4j.TestAbortedException ex) {
+			eqDir = firstExistingSubdir(dir, "BaseCase", "BE", "BB", "NB");
+		}
+
+		Path eq = pickProfile(eqDir, "EQ");
+		Path ssh = pickProfile(eqDir, "SSH");
+		Path tp = pickProfile(eqDir, "TP");
+		java.util.List<Path> args = new java.util.ArrayList<>();
+		args.add(eq);
+		args.add(ssh);
+		args.add(tp);
+		try {
+			args.add(pickProfile(eqDir, "SV"));
+		} catch (org.opentest4j.TestAbortedException ignore) {
+			// SSH+TP still a useful structural smoke
+		}
+		requireFiles(args.toArray(new Path[0]));
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(args.toArray(new Path[0])));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
+		// P4 TODO: compare Aclf vs SV when SV present
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 RealGrid/FullGrid smoke (optional; skip if absent)")
+	public void testCasV30_RealGrid_ImportSmoke_Optional() throws Exception {
+		Path primary = casDir("RealGrid", "RealGrid");
+		Path dir = Files.isDirectory(primary) ? primary : casDir("FullGrid", "FullGrid");
+		assumeTrue(Files.isDirectory(dir),
+				() -> "RealGrid/FullGrid not in local CAS — optional P2 skip");
+
+		Path eqDir = dir;
+		try {
+			pickProfile(eqDir, "EQ");
+		} catch (org.opentest4j.TestAbortedException ex) {
+			eqDir = firstExistingSubdir(dir, "BaseCase", "BE", "Merged");
+		}
+		Path eq = pickProfile(eqDir, "EQ");
+		Path ssh = pickProfile(eqDir, "SSH");
+		Path tp = pickProfile(eqDir, "TP");
+		requireFiles(eq, ssh, tp);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp));
+		assertTrue(net.getNoBus() > 0, "RealGrid/FullGrid should create buses");
+		assertTrue(net.getNoBranch() > 0, "RealGrid/FullGrid should create branches");
+		// Large model — leave exact counts / Aclf-vs-SV for P4
+	}
+
+	// -------------------------------------------------------------------------
+	// P3 — ReliCapGrid / Network Code sample packs
+	// -------------------------------------------------------------------------
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P3: ReliCapGrid Svedala IGM EQ+SSH+TP(+SV) import smoke")
+	public void testReliCap_Svedala_Igm_Import() throws Exception {
+		Path dir = relicapDir("ReliCap-Svedala-cimxml",
+				"Instance/Svedala/Grid/cimxml");
+		assumeTrue(Files.isDirectory(dir),
+				() -> "ReliCap Svedala cimxml missing (clone under ~/Documents/Temp/cgmes-test-data/relicapgrid or symlink): "
+						+ dir);
+
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		java.util.List<Path> args = new java.util.ArrayList<>();
+		args.add(eq);
+		args.add(ssh);
+		args.add(tp);
+		try {
+			args.add(pickProfile(dir, "SV"));
+		} catch (org.opentest4j.TestAbortedException ignore) {
+			// EQ+SSH+TP enough for import smoke
+		}
+		requireFiles(args.toArray(new Path[0]));
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(args.toArray(new Path[0])));
+		assertTrue(net.getNoBus() > 0, "Svedala IGM should create buses");
+		assertTrue(net.getNoBranch() > 0, "Svedala IGM should create branches");
+		// Upstream names (GitHub cgmes-3.0_ncp-2.5_tc-2.0):
+		//   20220615T2230Z__Svedala_EQ_1.xml
+		//   20220615T2230Z_2D_Svedala_SSH_1.xml
+		//   20220615T2230Z_2D_Svedala_TP_1.xml
+		//   20220615T2230Z_2D_Svedala_SV_1.xml
+		// NetworkCode profiles (AE/CO/RA/…) are out of scope for Aclf import — P4+
+		// assertEquals(N_BUS, net.getNoBus());
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P3: ReliCapGrid Belgovia IGM smoke (optional)")
+	public void testReliCap_Belgovia_Igm_Import_Optional() throws Exception {
+		Path dir = relicapDir("ReliCap-Belgovia-cimxml",
+				"Instance/Belgovia/Grid/cimxml");
+		assumeTrue(Files.isDirectory(dir),
+				() -> "Belgovia cimxml not present — optional P3 skip: " + dir);
+
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		requireFiles(eq, ssh, tp);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp));
+		assertTrue(net.getNoBus() > 0);
+		assertTrue(net.getNoBranch() > 0);
 	}
 }
