@@ -125,7 +125,7 @@ class AclfRunConfigRecTest {
 		assertTrue(config.explicitlyConfigures(
 				"coupledVscPqControlEnabled"));
 		assertTrue(algorithm.isFullNewtonTapControlEnabled());
-		assertEquals(0.0125, algorithm.getTapChangeLimit(),
+		assertEquals(0.0125, algorithm.getMaximumFullNewtonTapChange(),
 				1.0e-12);
 		assertTrue(algorithm.isCoordinatedPqControlEnabled());
 		assertTrue(algorithm.isCoupledLccPqControlEnabled());
