@@ -24,7 +24,7 @@ import com.interpss.core.net.OriginalDataFormat;
  * <p>P0 wires orphaned in-repo CGMES 2.4 fixtures and the first official
  * CGMES 3.0 (CIM100) CAS MiniGrid pack from the local download tree.
  * P1 covers MicroGrid Type1 multi-MAS / merged CGM import.
- * P2 adds PST, MicroGrid Type2, SmallGrid SSH+SV, optional RealGrid smoke.
+ * P2 adds PST, MicroGrid Type2/HVDC/Type3, SmallGrid SSH+SV, PowerFlow, optional RealGrid smoke.
  * P3 adds ReliCapGrid (Svedala / optional Belgovia) when the local clone exists.
  *
  * <p>CAS fixtures resolve from (1) {@code -Dipss.cgmes.cas.root}, (2) in-repo
@@ -149,6 +149,47 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		}
 		assumeTrue(false, () -> "No *" + profile + "*.xml under " + dir + " files=" + xmls);
 		return dir; // unreachable
+	}
+
+
+	/**
+	 * First {@code *.xml} under {@code dir} whose name contains {@code mustContain}
+	 * (case-insensitive) and matches the profile token via {@link #pickProfile} rules.
+	 */
+	private static Path pickProfileContaining(Path dir, String profile, String mustContain)
+			throws Exception {
+		assumeTrue(Files.isDirectory(dir), () -> "Missing dir: " + dir);
+		String needle = mustContain.toUpperCase();
+		String p = profile.toUpperCase();
+		java.util.List<Path> xmls = new java.util.ArrayList<>();
+		try (java.util.stream.Stream<Path> s = Files.list(dir)) {
+			s.filter(Files::isRegularFile)
+					.filter(x -> x.getFileName().toString().toLowerCase().endsWith(".xml"))
+					.filter(x -> x.getFileName().toString().toUpperCase().contains(needle))
+					.sorted()
+					.forEach(xmls::add);
+		}
+		assumeTrue(!xmls.isEmpty(),
+				() -> "No *" + mustContain + "*.xml under " + dir);
+		for (Path x : xmls) {
+			String n = x.getFileName().toString().toUpperCase();
+			if ("EQ_BD".equals(p) || "EQBD".equals(p)) {
+				if (n.contains("EQ_BD") || n.contains("EQBD")) {
+					return x;
+				}
+			} else if ("EQ".equals(p)) {
+				if ((n.contains("_EQ_") || n.endsWith("_EQ.XML") || n.contains("_EQ."))
+						&& !n.contains("EQ_BD") && !n.contains("EQBD")) {
+					return x;
+				}
+			} else if (n.contains("_" + p + "_") || n.endsWith("_" + p + ".XML")
+					|| n.contains("_" + p + ".")) {
+				return x;
+			}
+		}
+		assumeTrue(false, () -> "No *" + profile + "* matching " + mustContain + " under " + dir
+				+ " candidates=" + xmls);
+		return dir;
 	}
 
 	private static Path firstExistingSubdir(Path parent, String... names) throws Exception {
@@ -469,6 +510,172 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() > 0, "RealGrid/FullGrid should create buses");
 		assertTrue(net.getNoBranch() > 0, "RealGrid/FullGrid should create branches");
 		// Large model — leave exact counts / Aclf-vs-SV for P4
+	}
+
+
+	// -------------------------------------------------------------------------
+	// P2b — PST Type2/Table Type3, Type2-HVDC, Type3 time-series, PowerFlow, CAS Svedala
+	// -------------------------------------------------------------------------
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 PST PhaseTapChangerLinear Type2 EQ+SSH+TP+SV")
+	public void testCasV30_PST_PhaseTapChangerLinear_Type2() throws Exception {
+		Path dir = casDir("PST-PhaseTapChangerLinear-Type2",
+				"PST/PST_PhaseTapChangerLinear_Type2");
+		assumeTrue(Files.isDirectory(dir), () -> "PST Type2 missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path sv = pickProfile(dir, "SV");
+		requireFiles(eq, ssh, tp, sv);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv));
+		assertTrue(net.getNoBus() > 0, "PST Type2 should create buses");
+		assertTrue(net.getNoBranch() > 0, "PST Type2 should create branches");
+		// P4 TODO: linear tap / phase-shift semantics
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 PST PhaseTapChangerTable Type3 EQ+SSH+TP+SV")
+	public void testCasV30_PST_PhaseTapChangerTable_Type3() throws Exception {
+		Path dir = casDir("PST-PhaseTapChangerTable-Type3",
+				"PST/PST_PhaseTapChangerTable_Type3");
+		assumeTrue(Files.isDirectory(dir), () -> "PST Table Type3 missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path sv = pickProfile(dir, "SV");
+		requireFiles(eq, ssh, tp, sv);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv));
+		assertTrue(net.getNoBus() > 0, "PST Table Type3 should create buses");
+		assertTrue(net.getNoBranch() > 0, "PST Table Type3 should create branches");
+		// P4 TODO: tabular phase-tap mapping
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 MicroGrid Type2 HVDC-MAS EQ+SSH+TP(+SV) smoke")
+	public void testCasV30_MicroGridType2_HVDC_ImportSmoke() throws Exception {
+		Path dir = casDir("MicroGrid-Type2-HVDC-MAS",
+				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-HVDC-MAS");
+		Path bdDir = casDir("MicroGrid-Type2-BD-MAS",
+				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-BD-MAS");
+		assumeTrue(Files.isDirectory(dir), () -> "Type2 HVDC-MAS missing: " + dir);
+
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		java.util.List<Path> args = new java.util.ArrayList<>();
+		args.add(eq);
+		args.add(ssh);
+		args.add(tp);
+		try {
+			args.add(pickProfile(dir, "SV"));
+		} catch (org.opentest4j.TestAbortedException ignore) {
+			// optional
+		}
+		if (Files.isDirectory(bdDir)) {
+			try {
+				args.add(pickProfile(bdDir, "EQ_BD"));
+			} catch (org.opentest4j.TestAbortedException ignore) {
+				// optional boundary
+			}
+		}
+		requireFiles(args.toArray(new Path[0]));
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(args.toArray(new Path[0])));
+		assertTrue(net.getNoBus() > 0, "Type2 HVDC should at least build AC topology");
+		assertTrue(net.getNoBranch() > 0);
+		// May expose HVDC converter gaps — keep as coverage probe
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 MicroGrid Type3 IGM first-hour BE EQ+SSH+TP(+BD)")
+	public void testCasV30_MicroGridType3_Igm_BE_FirstHour() throws Exception {
+		Path igms = casDir("MicroGrid-Type3-IGMs", "MicroGrid/MicroGrid-Type3/IGMs");
+		assumeTrue(Files.isDirectory(igms), () -> "Type3 IGMs missing: " + igms);
+		// Flat time-series folder; pin first published hour (20210422T2230Z)
+		final String hour = "20210422T2230Z";
+		Path eq = pickProfileContaining(igms, "EQ", hour + "_1D_BE");
+		Path ssh = pickProfileContaining(igms, "SSH", hour + "_1D_BE");
+		Path tp = pickProfileContaining(igms, "TP", hour + "_1D_BE");
+		Path bd = pickProfile(igms, "EQ_BD");
+		requireFiles(eq, ssh, tp, bd);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, bd));
+		assertTrue(net.getNoBus() > 0, "Type3 BE IGM should create buses");
+		assertTrue(net.getNoBranch() > 0);
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 MicroGrid Type3 CGM first-hour BE+NL EQ/SSH + Assembled TP/SV")
+	public void testCasV30_MicroGridType3_Cgm_FirstHour() throws Exception {
+		Path igms = casDir("MicroGrid-Type3-IGMs", "MicroGrid/MicroGrid-Type3/IGMs");
+		Path cgms = casDir("MicroGrid-Type3-CGMs", "MicroGrid/MicroGrid-Type3/CGMs");
+		assumeTrue(Files.isDirectory(igms), () -> "Type3 IGMs missing: " + igms);
+		assumeTrue(Files.isDirectory(cgms), () -> "Type3 CGMs missing: " + cgms);
+		final String hour = "20210422T2230Z";
+
+		Path beEq = pickProfileContaining(igms, "EQ", hour + "_1D_BE");
+		Path nlEq = pickProfileContaining(igms, "EQ", hour + "_1D_NL");
+		Path beSsh = pickProfileContaining(igms, "SSH", hour + "_1D_BE");
+		Path nlSsh = pickProfileContaining(igms, "SSH", hour + "_1D_NL");
+		Path bd = pickProfile(igms, "EQ_BD");
+		Path tp = pickProfileContaining(cgms, "TP", hour + "_1D_ASSEMBLED");
+		Path sv = pickProfileContaining(cgms, "SV", hour + "_1D_ASSEMBLED");
+		requireFiles(beEq, nlEq, beSsh, nlSsh, bd, tp, sv);
+
+		AclfNetwork net = new CGMESDirectParser().parse(
+				abs(bd, beEq, nlEq, beSsh, nlSsh, tp, sv));
+		assertTrue(net.getNoBus() > 0, "Type3 CGM should create buses");
+		assertTrue(net.getNoBranch() > 0);
+		// Remaining Type3 hours left for a parameterized suite later
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 PowerFlow explicit LF case EQ+SSH+TP+SV")
+	public void testCasV30_PowerFlow_ExplicitLoadFlow() throws Exception {
+		Path primary = casDir("PowerFlow-Instance", "PowerFlow/PowerFlow");
+		Path dir = Files.isDirectory(primary)
+				? primary
+				: casDir("PowerFlow", "PowerFlow").resolve("PowerFlow");
+		assumeTrue(Files.isDirectory(dir), () -> "PowerFlow instance missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path sv = pickProfile(dir, "SV");
+		requireFiles(eq, ssh, tp, sv);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv));
+		assertEquals(OriginalDataFormat.CIM, net.getOriginalDataFormat());
+		assertTrue(net.getNoBus() > 0, "PowerFlow case should create buses");
+		assertTrue(net.getNoBranch() > 0);
+		// P4 TODO: run Aclf and compare to SV voltages/flows (explicit LF docs in pack)
+	}
+
+	@Test
+	@Tag("requires-cas-download")
+	@DisplayName("P2: CAS v3.0 Svedala-Merged EQ+SSH+TP+SV+EQBD")
+	public void testCasV30_SvedalaMerged_Import() throws Exception {
+		Path dir = casDir("CAS-Svedala-Merged", "Svedala/Svedala-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "CAS Svedala-Merged missing: " + dir);
+		Path eq = pickProfile(dir, "EQ");
+		Path ssh = pickProfile(dir, "SSH");
+		Path tp = pickProfile(dir, "TP");
+		Path sv = pickProfile(dir, "SV");
+		Path eqbd = pickProfile(dir, "EQBD");
+		requireFiles(eq, ssh, tp, sv, eqbd);
+
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv, eqbd));
+		assertTrue(net.getNoBus() > 0, "CAS Svedala-Merged should create buses");
+		assertTrue(net.getNoBranch() > 0);
+		// Distinct from ReliCap Svedala IGM (P3)
 	}
 
 	// -------------------------------------------------------------------------
