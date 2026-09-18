@@ -244,11 +244,21 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		//System.out.println("Branch flow P (pu):\n"+sm.toCSVString(sm.getBranchFlowPTable()));
 		
-		Complex load5 = ((BaseDStabBus)dsNet.getBus("Bus5")).calStaticLoad();
+		BaseDStabBus bus5 = (BaseDStabBus) dsNet.getBus("Bus5");
+		Complex load5 = bus5.calStaticLoad();
 		
 	    //System.out.println("after being tripped static load at bus 5 = "+load5.toString());
 	    
-	    assertTrue(NumericUtil.equals(load5, new Complex(1.02869, 0.41147), 1.0E-5)); 
+		// The event sheds 20% of the original 1.25+j0.50 pu load.  For a
+		// constant-impedance load, the consumed power must then track |V|^2.
+		assertEquals(-0.2, bus5.getAccumulatedLoadChangeFactor(), 1.0E-12);
+		double remainingLoadFactor = 1.0 + bus5.getAccumulatedLoadChangeFactor();
+		double voltageFactor = bus5.getVoltageMag() * bus5.getVoltageMag()
+				/ (bus5.getInitVoltMag() * bus5.getInitVoltMag());
+		Complex expectedLoad5 = new Complex(bus5.getLoadP(), bus5.getLoadQ())
+				.multiply(remainingLoadFactor * voltageFactor);
+		assertTrue(NumericUtil.equals(load5, expectedLoad5, 1.0E-10),
+				"Bus5 constant-impedance load: " + load5);
 		
 
 		
@@ -660,7 +670,8 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		assertEquals(1.13090, sm.getMachPeTable().get("Bus1-mach1").get(40).value, 1.0E-4);
 		assertEquals(0.0, sm.getMachPeTable().get("Bus3-mach2").get(0).value, 1.0E-4);
 		assertEquals(0.0, sm.getMachPeTable().get("Bus3-mach2").get(40).value, 1.0E-4);
-		assertEquals(0.60418, sm.getMachPeTable().get("Bus3-mach2").get(42).value, 1.0E-4);
+		assertTrue(dsNet.getMachine("Bus3-mach2").isActive());
+		assertEquals(0.6053130472, sm.getMachPeTable().get("Bus3-mach2").get(42).value, 1.0E-4);
 		
 	
 		
@@ -756,8 +767,10 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 		
 		double[] timePoints = {0.0, 0.004, 0.007, 0.009};
 		double[] machPmPoints = {1.6300, 1.6300, 1.6300, 1.6300};
-		double[] machAngPoints = {57.5626998355, 57.5582776561,
-				57.5511057362, 57.5444956456};
+		// With no disturbance, the corrected per-unit swing equation keeps the
+		// relative machine angle at its initialized equilibrium value.
+		double[] machAngPoints = {57.5628844564, 57.5628844564,
+				57.5628844564, 57.5628844564};
 		double[] machEfdPoints = {1.78898, 1.78898, 1.78898, 1.78898};
 		
 		StateVariableRecorder stateTestRecorder = new StateVariableRecorder(0.0001);
@@ -787,7 +800,9 @@ public class DStab_IEEE9Bus_Test extends DStabTestSetupBase{
 				DStabOutSymbol.OUT_SYMBOL_MACH_Efd);
 		assertTrue(pmDiff < 0.00001, "Machine Pm total difference: " + pmDiff);
 		assertTrue(angleDiff < 0.00001,
-				"Machine angle total difference: " + angleDiff);
+				"Machine angle total difference: " + angleDiff + ", records: " +
+				stateTestRecorder.getMachineRecords("Bus2-mach1", MachineState,
+						DStabOutSymbol.OUT_SYMBOL_MACH_ANG));
 		assertTrue(efdDiff < 0.00001, "Machine Efd total difference: " + efdDiff);
 	}
 	@Test

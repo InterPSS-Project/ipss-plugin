@@ -63,7 +63,9 @@ public class PSSE_Sample_NB_Rawx_Aclf_Test extends CorePluginTestSetup {
 		}
 		assertTrue(largeMismatch.contains("Bus3021"), largeMismatch.toString());
 		assertFalse(largeMismatch.contains("Bus3022"), largeMismatch.toString());
-		assertTrue(largeMismatch.contains("Bus9204"), largeMismatch.toString());
+		// The induction-machine section now supplies Bus9204's steady-state P/Q,
+		// so its saved-voltage mismatch is represented instead of being omitted.
+		assertFalse(largeMismatch.contains("Bus9204"), largeMismatch.toString());
 	}
 
 	@Test
@@ -80,7 +82,7 @@ public class PSSE_Sample_NB_Rawx_Aclf_Test extends CorePluginTestSetup {
 		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 11.3036, 1.2182);
+		assertSwingPower(net, "Bus3011", 11.3835, 1.2849);
 	}
 
 	@Test
@@ -96,7 +98,7 @@ public class PSSE_Sample_NB_Rawx_Aclf_Test extends CorePluginTestSetup {
 		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 11.3036, 1.2183);
+		assertSwingPower(net, "Bus3011", 11.3835, 1.2849);
 	}
 
 	@Test
@@ -115,7 +117,7 @@ public class PSSE_Sample_NB_Rawx_Aclf_Test extends CorePluginTestSetup {
 		assertSwingPower(net, "Bus301", 29.9231, 9.1823);
 		assertSwingPower(net, "Bus401", 3.21, 1.4748);
 		assertSwingPower(net, "Bus402", 3.21, 1.4748);
-		assertSwingPower(net, "Bus3011", 11.3036, 1.2182);
+		assertSwingPower(net, "Bus3011", 11.3835, 1.2849);
 	}
 
 	private static AclfNetwork parseAndConfigure() throws Exception {

@@ -8,11 +8,12 @@ import java.util.List;
 import org.apache.commons.math3.complex.Complex;
 
 import com.interpss.dstab.dynLoad.DynLoadModel;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /**
  * A representation of the model object '<em><b>Induction Motor</b></em>'.
  */
-public interface InductionMotor extends DynLoadModel {
+public interface InductionMotor extends DynLoadModel, ICMLStateProvider {
 
 	/**
 	 * Returns the value of the '<em><b>Ra</b></em>' attribute.
@@ -500,6 +501,12 @@ public interface InductionMotor extends DynLoadModel {
 	 * @generated NOT
 	 */
 	double getLoadFactor();
+
+	/** Optional exact exponent for a mechanical torque law Tm=T0*w^exponent. */
+	double getTorqueExponent();
+
+	/** Select the exact mechanical torque exponent used by composite-load motors. */
+	void setTorqueExponent(double exponent);
 	
 	
 	public double getVtr1() ;

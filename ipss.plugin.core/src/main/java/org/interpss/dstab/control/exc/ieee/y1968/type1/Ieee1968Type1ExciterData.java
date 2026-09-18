@@ -51,6 +51,7 @@ public class Ieee1968Type1ExciterData extends BaseControllerData {
 	private double kf = 0.1;
 	private double tf = 1.0;
 	private double tr =0.3;
+	private double spdmlt;
 	
 	// define data field range for GUI data editing 
 	private static String[][] controllerParameters= { 
@@ -67,7 +68,8 @@ public class Ieee1968Type1ExciterData extends BaseControllerData {
 		{"seE2", 	"-1000.0", 	"1000.0"}, 
 		{"kf", 		"-1000.0", 	"1000.0"}, 
 		{"tf", 		"-1000.0", 	"1000.0"} ,
-		{"tr", 		"-1000.0", 	"1000.0"} 
+		{"tr", 		"-1000.0", 	"1000.0"},
+		{"spdmlt", 	"-1000.0", 	"1000.0"}
 	};
 
 	/**
@@ -98,6 +100,7 @@ public class Ieee1968Type1ExciterData extends BaseControllerData {
 		else if (name.equals("kf"))		this.kf = value;
 		else if (name.equals("tf"))		this.tf = value;
 		else if (name.equals("tr"))		this.tr = value;
+		else if (name.equals("spdmlt"))	this.spdmlt = value;
 	}
 	
 	// define data field getter
@@ -114,6 +117,7 @@ public class Ieee1968Type1ExciterData extends BaseControllerData {
 	public double getTe() {		return te;	}
 	public double getTf() {		return tf;	}
 	public double getTr() {		return tr;	}
+	public double getSpdmlt() { return spdmlt; }
 
 	// define data field setter
 	public void setKa(final double ka) {		this.ka = ka;	}
@@ -129,5 +133,6 @@ public class Ieee1968Type1ExciterData extends BaseControllerData {
 	public void setTe(double te) {				this.te = te;	}
 	public void setTf(double tf) {				this.tf = tf;	}
 	public void setTr(double tr) {				this.tr = tr;	}
+	public void setSpdmlt(double spdmlt) { this.spdmlt = spdmlt; }
 }
 

@@ -7,6 +7,8 @@ import java.util.Hashtable;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.LD1PAC;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,12 +16,14 @@ import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.dynLoad.impl.DynLoadModelImpl;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /**
  * An implementation of the model object '<em><b>LD1PAC</b></em>'.
  */
-public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
+public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC, ICMLStateProvider {
     private static final Logger logger = LoggerFactory.getLogger(LD1PACImpl.class);
+	private BaseDStabBus<?, ?> frequencySourceBus;
 	/**
 	 * The default value of the '{@link #getStage() <em>Stage</em>}' attribute.
 	 * <!-- begin-user-doc -->
@@ -840,6 +844,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	 * @ordered
 	 */
 	protected double tv = TV_EDEFAULT;
+	protected double tf = 0.05;
 
 	protected double fcon  = 1.0;  // fraction not tripped by the contractor
 	
@@ -873,12 +878,16 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	// internal variables for integration
 	private double vt_measured = 0.0;
 	private double vt_measured_old = 0.0;
+	private double freq_measured = 1.0;
+	private double freq_measured_old = 1.0;
 	
 	private double tempA_old = 0.0;
 	private double tempB_old = 0.0;
 	
-	private double dv_dt0 = 0.0; 
+	private double dv_dt0 = 0.0;
 	private double dv_dt1 = 0.0;
+	private double df_dt0 = 0.0;
+	private double df_dt1 = 0.0;
 
 	private double dThA_dt0 = 0.0;
 	private double dThB_dt0 = 0.0;
@@ -961,6 +970,8 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		this.vt_measured = vt;
 		
 		this.vt_measured_old = vt;
+		this.freq_measured = frequencyInput();
+		this.freq_measured_old = this.freq_measured;
 		
 		if(this.qac >busTotalLoad.getImaginary()){
 			
@@ -969,7 +980,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		}
 		
 		
-		Complex Sac = new Complex (pac, qac);
+		// Thermal and polynomial states are on the motor MVA base. Using the
+		// system-base load current here understates I^2*R by the square of the
+		// motor-to-system base ratio.
+		double pac_mbase = this.pac*this.getDStabBus().getNetwork().getBaseMva()
+				/this.getMvaBase();
+		double qac_mbase = this.qac*this.getDStabBus().getNetwork().getBaseMva()
+				/this.getMvaBase();
+		Complex Sac = new Complex(pac_mbase, qac_mbase);
 		double i_motor = Sac.abs()/vt;
 		
 		this.tempA = i_motor*i_motor*this.rstall;
@@ -981,10 +999,6 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		// update the Vstall and Vbrk if necessary
 		this.vstall= this.vstall*(1+this.lFadj*(this.loadFactor-1));
 		this.vbrk = this.vbrk*(1+this.lFadj*(this.loadFactor-1));
-		
-		// motor P and Q on motor mvabase
-		double pac_mbase = this.pac*this.getDStabBus().getNetwork().getBaseMva()/this.getMvaBase();
-		double qac_mbase = this.qac*this.getDStabBus().getNetwork().getBaseMva()/this.getMvaBase();
 		
 		// initialize the parts A and B of the motor
 		this.pac_a = pac_mbase; 
@@ -1003,7 +1017,10 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		double pst = 0.0, pac_calc = 0.0;
 		for (double v = 0.4; v<vbrk; v+=0.0001){
 			pst = this.Gstall*v*v;
-			pac_calc = this.p0 + kp1*Math.pow((v-vbrk),np1);
+			// Below Vbrk the running-motor characteristic is the Kp2/Np2
+			// branch. Using Kp1 with a negative base makes non-integer Np1
+			// produce NaN and leaves the impedance-transition voltage at zero.
+			pac_calc = this.p0 + kp2*Math.pow((vbrk-v),np2);
 			
 			if(pac_calc<pst){
 				this.vstallbrk = v;
@@ -1093,9 +1110,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 			if(flag == 0) {
 		       // voltage measurements
 			
-				dv_dt0 = (vmag-this.vt_measured_old)/this.tv;
-				
-				this.vt_measured = this.vt_measured_old+ dv_dt0*dt;
+				if (this.tv > 1.0e-12) {
+					dv_dt0 = (vmag-this.vt_measured_old)/this.tv;
+					this.vt_measured = this.vt_measured_old+ dv_dt0*dt;
+				} else this.vt_measured = vmag;
+				if (this.tf > 1.0e-12) {
+					df_dt0 = (frequencyInput()-this.freq_measured_old)/this.tf;
+					this.freq_measured = this.freq_measured_old + df_dt0*dt;
+				} else this.freq_measured = frequencyInput();
 				
 				// temperature
 				
@@ -1108,9 +1130,14 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 			}
 			else if (flag ==1) {
 				
-			   dv_dt1 = (vmag-vt_measured)/this.tv;
-			   
-			   this.vt_measured = this.vt_measured_old + (dv_dt0 + dv_dt1)*0.5*dt;
+			   if (this.tv > 1.0e-12) {
+				   dv_dt1 = (vmag-vt_measured)/this.tv;
+				   this.vt_measured = this.vt_measured_old + (dv_dt0 + dv_dt1)*0.5*dt;
+			   } else this.vt_measured = vmag;
+			   if (this.tf > 1.0e-12) {
+				   df_dt1 = (frequencyInput()-this.freq_measured)/this.tf;
+				   this.freq_measured = this.freq_measured_old + (df_dt0 + df_dt1)*0.5*dt;
+			   } else this.freq_measured = frequencyInput();
 			   
 			   dThA_dt1 = (Math.pow(ImotorA_pu.abs(),2)*this.rstall - this.tempA)/this.tth;
 				
@@ -1120,6 +1147,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 			   this.tempB = this.tempB_old + (dThB_dt0+dThB_dt1)*0.5*dt;
 			   
 			   this.vt_measured_old = this.vt_measured;
+			   this.freq_measured_old = this.freq_measured;
 			   
 			   this.tempA_old = this.tempA;
 			   this.tempB_old = this.tempB;
@@ -1287,7 +1315,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	private Complex calculateMotorPower(){
 		
 		// Calculate the AC motor power
-		double freq = this.getDStabBus().getFreq();
+		double freq = this.freq_measured;
 		double vmag = this.getDStabBus().getVoltageMag();
 		if(this.statusA == 1){
 			if(vmag >= this.vbrk){
@@ -1599,7 +1627,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 		
 		// consider the frequency dependence
 		if(pfactor !=0.0 ||qfactor!=0){
-			double dFreq = getDStabBus().getFreq()-1.0;
+			double dFreq = freq_measured-1.0;
 			pfactor = pfactor*(1+cmpKpf*dFreq);
 			qfactor = qfactor*(1+cmpKqf*dFreq/Math.sqrt(1-powerFactor*powerFactor));
 		}
@@ -1612,6 +1640,7 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 	
 	@Override
 	public Hashtable<String, Object> getStates(Object ref) {
+		states.putAll(getNamedStates());
 		states.put(OUT_SYMBOL_P, this.getPac());
 		states.put(OUT_SYMBOL_Q, this.getQac());
 		states.put(OUT_SYMBOL_VT, this.getDStabBus().getVoltage().abs());
@@ -2053,6 +2082,41 @@ public class LD1PACImpl extends DynLoadModelImpl implements LD1PAC {
 
 	public void setTv(double newTv) {
 		tv = newTv;
+	}
+
+	@Override public double getTf() { return tf; }
+	@Override public void setTf(double value) {
+		if (!Double.isFinite(value) || value < 0.0) throw new IllegalArgumentException("Tf must be non-negative");
+		tf = value;
+	}
+	@Override public double getMeasuredVoltage() { return vt_measured; }
+	@Override public double getMeasuredFrequency() { return freq_measured; }
+
+	/**
+	 * Uses a transmission-side frequency for a motor embedded behind algebraic
+	 * distribution branches. Standalone motors continue to use their own bus.
+	 */
+	public void setFrequencySourceBus(BaseDStabBus<?, ?> bus) {
+		this.frequencySourceBus = bus;
+	}
+
+	private double frequencyInput() {
+		return frequencySourceBus == null
+				? this.getDStabBus().getFreq() : frequencySourceBus.getFreq();
+	}
+
+	@Override
+	public Map<String, Double> getNamedStates() {
+		Map<String, Double> named = new LinkedHashMap<>();
+		named.put("Vmeas", vt_measured);
+		named.put("Fmeas", freq_measured);
+		named.put("TemperatureA", tempA);
+		named.put("TemperatureB", tempB);
+		named.put("UvTimer1", uVRelayTimer1);
+		named.put("UvTimer2", uVRelayTimer2);
+		named.put("StallTimer", acStallTimer);
+		named.put("RestartTimer", acRestartTimer);
+		return Map.copyOf(named);
 	}
 
 } //LD1PACImpl

@@ -28,6 +28,10 @@ package org.interpss.dstab.control.pss.ieee.y1992.pss2a;
 import org.interpss.dstab.control.base.BaseControllerData;
 
 public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
+	private int ics1 = 1;
+	private int remoteBus1;
+	private int ics2 = 3;
+	private int remoteBus2;
 	private double ks1 = 10.0;
 	private double t1 = 0.05;
 	private double t2 = 0.5;
@@ -47,6 +51,10 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 	private double tw2 = 0.05;
 	private double tw3 = 0.1;
 	private double tw4 = 0.05;
+	private double a = 1.0;
+	private double ta;
+	private double tb;
+	private double ks4 = 1.0;
 	
 	private static String[][] controllerParameters= { 
 		//          min         max
@@ -67,13 +75,26 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 		{"ks3",		"-1000.0", 	"1000.0"}, 
 		{"tw1",		"-1000.0", 	"1000.0"}, 
 		{"tw2",		"-1000.0", 	"1000.0"}, 
-		{"tw3",		"-1000.0", 	"1000.0"}, 
-		{"tw4",		"-1000.0", 	"1000.0"} 
+		{"tw3",		"-1000.0", 	"1000.0"},
+		{"tw4",		"-1000.0", 	"1000.0"},
+		{"a",		"-1000.0", 	"1000.0"},
+		{"ta",		"0.0", 	"1000.0"},
+		{"tb",		"0.0", 	"1000.0"},
+		{"ks4",		"-1000.0", 	"1000.0"}
 	};
 
 	public Ieee1992PSS2AStabilizerData() {
 		setRangeParameters(controllerParameters);
 	}
+
+	public int getIcs1() { return ics1; }
+	public void setIcs1(int ics1) { this.ics1 = ics1; }
+	public int getRemoteBus1() { return remoteBus1; }
+	public void setRemoteBus1(int remoteBus1) { this.remoteBus1 = remoteBus1; }
+	public int getIcs2() { return ics2; }
+	public void setIcs2(int ics2) { this.ics2 = ics2; }
+	public int getRemoteBus2() { return remoteBus2; }
+	public void setRemoteBus2(int remoteBus2) { this.remoteBus2 = remoteBus2; }
 
 	@Override
 	public void setValue(String name, int value) {
@@ -119,6 +140,14 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 			this.tw3 = value;
 		else if (name.equals("tw4"))
 			this.tw4 = value;
+		else if (name.equals("a"))
+			this.a = value;
+		else if (name.equals("ta"))
+			this.ta = value;
+		else if (name.equals("tb"))
+			this.tb = value;
+		else if (name.equals("ks4"))
+			this.ks4 = value;
 	}
 	
 	public double getKs1() {
@@ -273,4 +302,13 @@ public class Ieee1992PSS2AStabilizerData extends BaseControllerData {
 	public void setVstmin(double vstmin) {
 		this.vstmin = vstmin;
 	}
-} 
+
+	public double getA() { return a; }
+	public void setA(double a) { this.a = a; }
+	public double getTa() { return ta; }
+	public void setTa(double ta) { this.ta = ta; }
+	public double getTb() { return tb; }
+	public void setTb(double tb) { this.tb = tb; }
+	public double getKs4() { return ks4; }
+	public void setKs4(double ks4) { this.ks4 = ks4; }
+}

@@ -1,0 +1,516 @@
+package org.interpss.dstab.control.gov.psse.ggov1;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.Map;
+
+import com.interpss.common.exp.InterpssRuntimeException;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
+import com.interpss.dstab.controller.deqn.AbstractGovernor;
+import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.numeric.datatype.Unit.UnitType;
+
+/**
+ * PSS/E GGOV1 general-purpose governor/turbine model.
+ *
+ * <p>The equations follow the PowerWorld GGOV1 block diagram and the OpenIPSL
+ * decomposition.  The PI paths include the diagram's FSR tracking feedback so
+ * controllers which lose the low-value select do not wind up. The diesel-engine
+ * transport delay uses time-stamped interpolation, so its duration is independent
+ * of the integration step size.</p>
+ */
+public class PsseGgov1Governor extends AbstractGovernor
+        implements IntegrationStepAware, ICMLStateProvider {
+    private static final double EPS = 1.0e-9;
+
+    private State state = State.zero();
+    private State oldState = State.zero();
+    private Derivatives oldDerivatives = Derivatives.zero();
+    private double pref;
+    private double pmwset;
+    private double effectiveVmax;
+    private double effectiveVmin;
+    private double effectiveMaxerr;
+    private double effectiveMinerr;
+    private double effectiveRopen;
+    private double effectiveRclose;
+    private double effectiveRup;
+    private double effectiveRdown;
+    private double effectiveTpelec;
+    private double effectiveTb;
+    private double effectiveTa;
+    private double effectiveTsb;
+    private double effectiveTfload;
+    private double effectiveKturb;
+    private double effectiveKpgov;
+    private double integrationStep;
+    private double minimumTimeConstantMultiplier = 1.0;
+    private double governorToMachineBase = 1.0;
+    private double committedFsr;
+    private double currentFsr;
+    private double currentOutput;
+    private boolean initialized;
+    private final Deque<DelaySample> engineHistory = new ArrayDeque<>();
+    private double simulationTime;
+
+    public PsseGgov1Governor(String id, String name, String category) {
+        super(id, name, category);
+        _data = new PsseGgov1GovernorData();
+    }
+
+    public PsseGgov1GovernorData getData() {
+        return (PsseGgov1GovernorData) _data;
+    }
+
+    @Override
+    public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
+        if (!validateParameters()) return false;
+        prepareEffectiveParameters();
+
+        double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+        governorToMachineBase = getData().getTrate() > EPS && machineMva > EPS
+                ? getData().getTrate() / machineMva : 1.0;
+        double pm0 = mach.getPm() / governorToMachineBase;
+        double pe0 = mach.getPe() / governorToMachineBase;
+        double speed = mach.getSpeed();
+        double speedDeviation = speed - 1.0;
+        double damping0 = damping(speedDeviation);
+        double valve0 = getData().getWfnl() + (pm0 + damping0) / effectiveKturb;
+
+        // Expand the corrected position limits to contain the initialized valve.
+        double[] valveLimits = normalizedValveLimits(getData().getVmax(), getData().getVmin());
+        // PowerWorld expands governor position limits to contain the initialized valve.
+        effectiveVmax = Math.max(valveLimits[0], valve0);
+        effectiveVmin = Math.min(valveLimits[1], valve0);
+        double droop0 = selectedDroop(pe0, valve0, valve0);
+        pref = speedDeviation + getData().getR() * droop0;
+        pmwset = pe0;
+
+        double tempInput0 = valve0 * maximumPowerFactor(speedDeviation);
+        double loadIntegrator0 = valve0;
+        state = new State(pe0, 0.0, valve0, valve0, pm0 + damping0,
+                loadIntegrator0, 0.0, speedDeviation, tempInput0, tempInput0);
+        oldState = state;
+        committedFsr = valve0;
+        currentFsr = valve0;
+        currentOutput = pm0;
+        simulationTime = 0.0;
+        engineHistory.clear();
+        engineHistory.addLast(new DelaySample(0.0, pm0 + damping0));
+        initialized = true;
+        return true;
+    }
+
+    @Override
+    public boolean nextStep(double dt, DynamicSimuMethod method, Machine mach, int flag) {
+        if (method != DynamicSimuMethod.MODIFIED_EULER) {
+            throw new InterpssRuntimeException("GGOV1 supports MODIFIED_EULER only");
+        }
+        if (!initialized) return false;
+
+        if (flag == 0) {
+            oldState = state;
+            Algebraic a = algebraic(oldState, dt, 0.0, committedFsr);
+            oldDerivatives = derivatives(oldState, a);
+            state = oldState.plus(oldDerivatives, dt);
+            Algebraic predicted = algebraic(state, dt, dt, committedFsr);
+            currentFsr = predicted.fsr;
+            currentOutput = predicted.pmech;
+        } else if (flag == 1) {
+            Algebraic predicted = algebraic(state, dt, dt, currentFsr);
+            Derivatives correctedDerivatives = derivatives(state, predicted);
+            state = oldState.plusAverage(oldDerivatives, correctedDerivatives, dt);
+            Algebraic corrected = algebraic(state, dt, dt, committedFsr);
+            currentFsr = corrected.fsr;
+            committedFsr = currentFsr;
+            currentOutput = corrected.pmech;
+            simulationTime += dt;
+            engineHistory.addLast(new DelaySample(simulationTime, corrected.rawTurbineInput));
+            trimEngineHistory(dt);
+        } else {
+            throw new InterpssRuntimeException("GGOV1 invalid integration flag: " + flag);
+        }
+        return true;
+    }
+
+    @Override
+    public double getOutput(Machine mach) {
+        return currentOutput * governorToMachineBase;
+    }
+
+    @Override
+    public void setRefPoint(double value) {
+        pref = value / governorToMachineBase;
+    }
+
+    public double getValveStroke() { return clamp(state.valve, effectiveVmin, effectiveVmax); }
+    public double getFsr() { return currentFsr; }
+    public double getMeasuredElectricalPower() { return state.peMeasured; }
+    public double getDifferentialControlState() { return state.derivativeLag; }
+    /** Output of the {@code s*Kdgov/(1+s*Tdgov)} differential-control block. */
+    public double getDifferentialControlOutput() {
+        return getData().getTdgov() > EPS
+                ? getData().getKdgov() / getData().getTdgov()
+                        * (currentGovernorError() - state.derivativeLag)
+                : 0.0;
+    }
+    public double getGovernorIntegralState() { return state.governorIntegrator; }
+    public double getTurbineLeadLagState() { return state.turbineLag; }
+    public double getLoadLimiterMeasurementState() { return state.temperatureLag; }
+    public double getLoadLimiterIntegralState() { return state.loadIntegrator; }
+    public double getSupervisoryLoadControlState() { return state.mwIntegrator; }
+    public double getAccelerationControlState() { return state.accelerationLag; }
+    /** Stored acceleration-control contribution exposed by PowerWorld state 9. */
+    public double getAccelerationControlOutput() {
+        return -getData().getKa() * state.accelerationLag;
+    }
+    public double getTemperatureDetectionLeadLagState() { return state.temperatureLeadLag; }
+    /** Output of the {@code (1+s*Tsa)/(1+s*Tsb)} temperature detector. */
+    public double getTemperatureDetectionLeadLagOutput() {
+        double speedDeviation = getMachine().getSpeed() - 1.0;
+        double temperatureInput = getFuelFlow() * maximumPowerFactor(speedDeviation);
+        return effectiveTsb > EPS
+                ? state.temperatureLeadLag + getData().getTsa() / effectiveTsb
+                        * (temperatureInput - state.temperatureLeadLag)
+                : temperatureInput;
+    }
+
+    @Override public Map<String, Double> getNamedStates() {
+        return Map.of(
+                "Electrical Power", getMeasuredElectricalPower(),
+                "Derivative Control", getDifferentialControlOutput(),
+                "Governor Integral", getGovernorIntegralState(),
+                "Valve Stroke", getValveStroke(),
+                "Turbine Lead-Lag", getTurbineLeadLagState(),
+                "Load Limiter Measurement", getLoadLimiterMeasurementState(),
+                "Load Limiter Integral", getLoadLimiterIntegralState(),
+                "Supervisory Load Control", getSupervisoryLoadControlState(),
+                "Acceleration Control", getAccelerationControlOutput(),
+                "Temperature Detection", getTemperatureDetectionLeadLagOutput());
+    }
+    public double getDroopFeedback() {
+        return selectedDroop(state.peMeasured, getValveStroke(), currentFsr);
+    }
+    public double getFuelFlow() {
+        double speedDeviation = getMachine().getSpeed() - 1.0;
+        return (getData().getFlag() == 1 ? 1.0 + speedDeviation : 1.0)
+                * getValveStroke();
+    }
+    public double getEffectiveMaxerr() { return effectiveMaxerr; }
+    public double getEffectiveMinerr() { return effectiveMinerr; }
+    public double getEffectiveVmax() { return effectiveVmax; }
+    public double getEffectiveVmin() { return effectiveVmin; }
+    public double getEffectiveRopen() { return effectiveRopen; }
+    public double getEffectiveRclose() { return effectiveRclose; }
+    public double getEffectiveRup() { return effectiveRup; }
+    public double getEffectiveRdown() { return effectiveRdown; }
+    public double getEffectiveTpelec() { return effectiveTpelec; }
+    public double getEffectiveTb() { return effectiveTb; }
+    public double getEffectiveTa() { return effectiveTa; }
+    public double getEffectiveTsb() { return effectiveTsb; }
+    public double getEffectiveTfload() { return effectiveTfload; }
+    public double getEffectiveKturb() { return effectiveKturb; }
+    public double getEffectiveKpgov() { return effectiveKpgov; }
+    public double getGovernorBaseMva(Machine mach) {
+        return governorToMachineBase * mach.getRating(UnitType.mVA,
+                mach.getDStabBus().getNetwork().getBaseKva());
+    }
+
+    /**
+     * Supplies the integration step used by the PowerWorld/PSS/E validation
+     * autocorrections. The default minimum-time-constant multiplier is one.
+     */
+    @Override
+    public void configureIntegrationStep(double timeStepSec) {
+        configureIntegrationStep(timeStepSec, 1.0);
+    }
+
+    public void configureIntegrationStep(double timeStepSec,
+            double minimumTimeConstantMultiplier) {
+        if (!Double.isFinite(timeStepSec) || timeStepSec < 0.0) {
+            throw new IllegalArgumentException("timeStepSec must be finite and non-negative");
+        }
+        if (!Double.isFinite(minimumTimeConstantMultiplier)
+                || minimumTimeConstantMultiplier < 0.0) {
+            throw new IllegalArgumentException(
+                    "minimumTimeConstantMultiplier must be finite and non-negative");
+        }
+        this.integrationStep = timeStepSec;
+        this.minimumTimeConstantMultiplier = minimumTimeConstantMultiplier;
+    }
+
+    /** Apply the GGOV1D deadband to the input speed deviation. */
+    public double applyFrequencyDeadband(double speedDeviation) {
+        return AsymmetricDeadbandBlock.apply(
+                speedDeviation, getData().getDbH(), getData().getDbL());
+    }
+
+    /** True when the parameter set is represented without a silent approximation. */
+    public boolean validateParameters() {
+        PsseGgov1GovernorData d = getData();
+        boolean validSelector = d.getRselect() == 1 || d.getRselect() == 0
+                || d.getRselect() == -1 || d.getRselect() == -2;
+        return validSelector && (d.getFlag() == 0 || d.getFlag() == 1)
+                && (d.getRselect() == 0 ? d.getR() >= 0.0 : d.getR() > 0.0)
+                && d.getTpelec() >= 0.0 && d.getTdgov() >= 0.0
+                && d.getTact() > EPS && d.getTb() >= 0.0 && d.getTc() >= 0.0
+                && (d.getTb() > EPS || d.getTc() <= EPS)
+                && d.getTeng() >= 0.0 && d.getTfload() >= 0.0
+                && d.getTa() >= 0.0 && d.getTsa() >= 0.0 && d.getTsb() >= 0.0
+                && d.getRopen() > 0.0 && d.getRclose() < 0.0
+                && d.getKturb() > EPS && d.getTrate() >= 0.0
+                && d.getDbH() >= 0.0 && d.getDbL() <= 0.0
+                && d.getDbL() <= d.getDbH();
+    }
+
+    private Algebraic algebraic(State s, double stepSize, double evaluationOffset,
+            double trackingFsr) {
+        PsseGgov1GovernorData d = getData();
+        double speedDeviation = getMachine().getSpeed() - 1.0;
+        double pe = getMachine().getPe() / governorToMachineBase;
+        double peMeasured = effectiveTpelec > EPS ? s.peMeasured : pe;
+        double valve = clamp(s.valve, effectiveVmin, effectiveVmax);
+        double droop = selectedDroop(peMeasured, valve, trackingFsr);
+        double frequencySignal = applyFrequencyDeadband(speedDeviation);
+        double error = clamp(deadband(pref + s.mwIntegrator - frequencySignal - d.getR() * droop),
+                effectiveMinerr, effectiveMaxerr);
+        double derivative = d.getTdgov() > EPS ? d.getKdgov() / d.getTdgov() * (error - s.derivativeLag) : 0.0;
+        double fsrn = effectiveKpgov * error + derivative + s.governorIntegrator;
+
+        double speedFactor = maximumPowerFactor(speedDeviation);
+        double fuelFlow = (d.getFlag() == 1 ? 1.0 + speedDeviation : 1.0) * valve;
+        double rawTurbineInput = effectiveKturb * (fuelFlow - d.getWfnl());
+        double turbineInput = delayedEngineInput(rawTurbineInput, evaluationOffset);
+        double turbinePower = effectiveTb > EPS
+                ? s.turbineLag + d.getTc() / effectiveTb * (turbineInput - s.turbineLag)
+                : turbineInput;
+        double pmech = turbinePower - damping(speedDeviation);
+
+        double temperatureInput = fuelFlow * speedFactor;
+        double temperatureLeadLag = effectiveTsb > EPS
+                ? s.temperatureLeadLag + d.getTsa() / effectiveTsb
+                        * (temperatureInput - s.temperatureLeadLag)
+                : temperatureInput;
+        double temperatureMeasured = effectiveTfload > EPS
+                ? s.temperatureLag : temperatureLeadLag;
+        double loadError = loadSetpoint() - temperatureMeasured;
+        double fsrt = d.getKpload() * loadError + s.loadIntegrator;
+
+        double acceleration = effectiveTa > EPS
+                ? (speedDeviation - s.accelerationLag) / effectiveTa : 0.0;
+        double fsra = trackingFsr + d.getKa() * stepSize * (d.getAset() - acceleration);
+        double fsr = clamp(Math.min(1.0, Math.min(fsrn, Math.min(fsrt, fsra))),
+                effectiveVmin, effectiveVmax);
+        return new Algebraic(pe, error, fsrn, fsrt, fsr, valve, rawTurbineInput, turbineInput,
+                temperatureInput, temperatureLeadLag, loadError, pmech);
+    }
+
+    private double delayedEngineInput(double currentInput, double evaluationOffset) {
+        double delay = getData().getTeng();
+        if (delay <= EPS) return currentInput;
+        double target = simulationTime + evaluationOffset - delay;
+        DelaySample first = engineHistory.getFirst();
+        if (target <= first.time) return first.value;
+        DelaySample previous = first;
+        for (DelaySample sample : engineHistory) {
+            if (sample.time >= target) return interpolate(previous, sample, target);
+            previous = sample;
+        }
+        DelaySample future = new DelaySample(simulationTime + evaluationOffset, currentInput);
+        return interpolate(previous, future, target);
+    }
+
+    private void trimEngineHistory(double dt) {
+        double retainAfter = simulationTime - getData().getTeng() - Math.max(dt, EPS);
+        while (engineHistory.size() > 2) {
+            DelaySample first = engineHistory.removeFirst();
+            if (engineHistory.getFirst().time >= retainAfter) {
+                engineHistory.addFirst(first);
+                break;
+            }
+        }
+    }
+
+    private static double interpolate(DelaySample lower, DelaySample upper, double time) {
+        if (upper.time <= lower.time + EPS) return upper.value;
+        double fraction = clamp((time - lower.time) / (upper.time - lower.time), 0.0, 1.0);
+        return lower.value + fraction * (upper.value - lower.value);
+    }
+
+    private Derivatives derivatives(State s, Algebraic a) {
+        PsseGgov1GovernorData d = getData();
+        double peDot = effectiveTpelec > EPS
+                ? (a.pe - s.peMeasured) / effectiveTpelec : 0.0;
+        double derivativeDot = d.getTdgov() > EPS ? (a.error - s.derivativeLag) / d.getTdgov() : 0.0;
+        double governorIntegralDot = d.getKigov() * a.error;
+        if (Math.abs(effectiveKpgov) > EPS) {
+            governorIntegralDot += d.getKigov() / effectiveKpgov * (a.fsr - a.fsrn);
+        }
+        double valveDot = clamp((a.fsr - a.valve) / d.getTact(),
+                effectiveRclose, effectiveRopen);
+        double turbineDot = effectiveTb > EPS
+                ? (a.turbineInput - s.turbineLag) / effectiveTb : 0.0;
+        double loadIntegralDot = d.getKiload() * a.loadError;
+        if (Math.abs(d.getKpload()) > EPS) {
+            loadIntegralDot += d.getKiload() / d.getKpload() * (a.fsr - a.fsrt);
+        }
+        double mwDot = d.getKimw() * (pmwset - a.pe);
+        double mwLimit = 1.1 * Math.abs(d.getR());
+        if ((s.mwIntegrator >= mwLimit && mwDot > 0.0)
+                || (s.mwIntegrator <= -mwLimit && mwDot < 0.0)) mwDot = 0.0;
+        double speedDeviation = getMachine().getSpeed() - 1.0;
+        double accelerationDot = effectiveTa > EPS
+                ? (speedDeviation - s.accelerationLag) / effectiveTa : 0.0;
+        double temperatureLeadDot = effectiveTsb > EPS
+                ? (a.temperatureInput - s.temperatureLeadLag) / effectiveTsb : 0.0;
+        double temperatureLagDot = effectiveTfload > EPS
+                ? (a.temperatureLeadLag - s.temperatureLag) / effectiveTfload : 0.0;
+        return new Derivatives(peDot, derivativeDot, governorIntegralDot, valveDot,
+                turbineDot, loadIntegralDot, mwDot, accelerationDot,
+                temperatureLeadDot, temperatureLagDot);
+    }
+
+    private double selectedDroop(double peMeasured, double valve, double governorOutput) {
+        return switch (getData().getRselect()) {
+            case 1 -> peMeasured;
+            case -1 -> valve;
+            case -2 -> governorOutput;
+            default -> 0.0;
+        };
+    }
+
+    private double currentGovernorError() {
+        double speedDeviation = getMachine().getSpeed() - 1.0;
+        double pe = getMachine().getPe() / governorToMachineBase;
+        double peMeasured = effectiveTpelec > EPS ? state.peMeasured : pe;
+        double droop = selectedDroop(peMeasured, getValveStroke(), currentFsr);
+        double frequencySignal = applyFrequencyDeadband(speedDeviation);
+        return clamp(deadband(pref + state.mwIntegrator - frequencySignal
+                - getData().getR() * droop), effectiveMinerr, effectiveMaxerr);
+    }
+
+    private double damping(double speedDeviation) {
+        double dm = getData().getDm();
+        double absoluteSpeed = Math.max(EPS, 1.0 + speedDeviation);
+        return dm >= 0.0 ? dm * absoluteSpeed : dm * Math.pow(absoluteSpeed, dm);
+    }
+
+    private double maximumPowerFactor(double speedDeviation) {
+        double dm = getData().getDm();
+        double absoluteSpeed = Math.max(EPS, 1.0 + speedDeviation);
+        return dm >= 0.0 ? absoluteSpeed : Math.pow(absoluteSpeed, dm);
+    }
+
+    private double loadSetpoint() {
+        return getData().getLdref() / effectiveKturb + getData().getWfnl();
+    }
+
+    private void prepareEffectiveParameters() {
+        PsseGgov1GovernorData d = getData();
+        double minimum = minimumTimeConstantMultiplier * integrationStep;
+        effectiveTpelec = correctedTimeConstant(d.getTpelec(), minimum);
+        effectiveTb = correctedTimeConstant(d.getTb(), minimum);
+        effectiveTa = correctedTimeConstant(d.getTa(), minimum);
+        effectiveTsb = correctedTimeConstant(d.getTsb(), minimum);
+        effectiveTfload = correctedTimeConstant(d.getTfload(), minimum);
+        effectiveKturb = d.getKturb() > 0.0 && d.getKturb() < minimum
+                ? minimum : d.getKturb();
+        effectiveKpgov = Math.abs(d.getKigov()) > EPS
+                        && d.getKpgov() / d.getKigov() < minimum
+                ? 0.0 : d.getKpgov();
+        double[] errorLimits = normalizedSignedLimits(d.getMaxerr(), d.getMinerr());
+        effectiveMaxerr = errorLimits[0];
+        effectiveMinerr = errorLimits[1];
+        effectiveRopen = Math.min(d.getRopen(), 0.1);
+        effectiveRclose = d.getRclose() > -0.1 ? -0.1 : d.getRclose();
+        effectiveRup = Math.min(d.getRup(), 99.0);
+        effectiveRdown = d.getRdown() > -99.0 ? -99.0 : d.getRdown();
+    }
+
+    private static double correctedTimeConstant(double value, double minimum) {
+        if (value > 0.0 && value < 0.5 * minimum) return 0.0;
+        if (value > 0.5 * minimum && value < minimum) return minimum;
+        return value;
+    }
+
+    private double deadband(double value) {
+        double db = getData().getDb();
+        if (db <= EPS) return value;
+        if (value > db) return value - db;
+        if (value < -db) return value + db;
+        return 0.0;
+    }
+
+    private static double clamp(double value, double min, double max) {
+        return Math.max(min, Math.min(max, value));
+    }
+
+    private static double[] normalizedSignedLimits(double max, double min) {
+        if (max < min) {
+            double swap = max;
+            max = min;
+            min = swap;
+        }
+        if (max < 0.0) max = -max;
+        if (min > 0.0) min = -min;
+        return new double[] {max, min};
+    }
+
+    private static double[] normalizedValveLimits(double max, double min) {
+        if (max < min) {
+            double swap = max;
+            max = min;
+            min = swap;
+        }
+        return new double[] {Math.min(max, 1.0), Math.max(min, 0.0)};
+    }
+
+    private record Algebraic(double pe, double error, double fsrn, double fsrt,
+            double fsr, double valve, double rawTurbineInput, double turbineInput, double temperatureInput,
+            double temperatureLeadLag, double loadError, double pmech) { }
+
+    private record DelaySample(double time, double value) { }
+
+    private record Derivatives(double peMeasured, double derivativeLag,
+            double governorIntegrator, double valve, double turbineLag,
+            double loadIntegrator, double mwIntegrator, double accelerationLag,
+            double temperatureLeadLag, double temperatureLag) {
+        static Derivatives zero() { return new Derivatives(0, 0, 0, 0, 0, 0, 0, 0, 0, 0); }
+    }
+
+    private record State(double peMeasured, double derivativeLag,
+            double governorIntegrator, double valve, double turbineLag,
+            double loadIntegrator, double mwIntegrator, double accelerationLag,
+            double temperatureLeadLag, double temperatureLag) {
+        static State zero() { return new State(0, 0, 0, 0, 0, 0, 0, 0, 0, 0); }
+
+        State plus(Derivatives d, double dt) {
+            return new State(peMeasured + d.peMeasured * dt,
+                    derivativeLag + d.derivativeLag * dt,
+                    governorIntegrator + d.governorIntegrator * dt,
+                    valve + d.valve * dt, turbineLag + d.turbineLag * dt,
+                    loadIntegrator + d.loadIntegrator * dt,
+                    mwIntegrator + d.mwIntegrator * dt,
+                    accelerationLag + d.accelerationLag * dt,
+                    temperatureLeadLag + d.temperatureLeadLag * dt,
+                    temperatureLag + d.temperatureLag * dt);
+        }
+
+        State plusAverage(Derivatives a, Derivatives b, double dt) {
+            return plus(new Derivatives((a.peMeasured + b.peMeasured) / 2.0,
+                    (a.derivativeLag + b.derivativeLag) / 2.0,
+                    (a.governorIntegrator + b.governorIntegrator) / 2.0,
+                    (a.valve + b.valve) / 2.0,
+                    (a.turbineLag + b.turbineLag) / 2.0,
+                    (a.loadIntegrator + b.loadIntegrator) / 2.0,
+                    (a.mwIntegrator + b.mwIntegrator) / 2.0,
+                    (a.accelerationLag + b.accelerationLag) / 2.0,
+                    (a.temperatureLeadLag + b.temperatureLeadLag) / 2.0,
+                    (a.temperatureLag + b.temperatureLag) / 2.0), dt);
+        }
+    }
+}

@@ -1,0 +1,23 @@
+package org.interpss.fadapter.psse.dyr;
+
+/** Functional category of a PSS/E dynamic model record. */
+public enum DynamicModelCategory {
+    SYNCHRONOUS_MACHINE,
+    CONVERTER_MACHINE,
+    COMPENSATOR,
+    SWITCHED_SHUNT,
+    EXCITER,
+    GOVERNOR,
+    STABILIZER,
+    UNDER_EXCITATION_LIMITER,
+    OVER_EXCITATION_LIMITER,
+    ELECTRICAL_CONTROLLER,
+    PLANT_CONTROLLER,
+    DRIVE_TRAIN,
+    AERODYNAMIC_CONTROLLER,
+    PITCH_CONTROLLER,
+    TORQUE_CONTROLLER,
+    LOAD_CHARACTERISTIC,
+    LOAD_PROTECTION,
+    GENERATOR_PROTECTION
+}
