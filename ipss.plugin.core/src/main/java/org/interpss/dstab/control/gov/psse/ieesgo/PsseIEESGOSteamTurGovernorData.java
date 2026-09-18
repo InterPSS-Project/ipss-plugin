@@ -18,6 +18,9 @@ public class PsseIEESGOSteamTurGovernorData extends BaseControllerData {
 	    
 	    private double k2       = 0.5;
 	    private double k3       = 0.5;
+	    private double dbH;
+	    private double dbL;
+	    private double trate;
 		
 		public double getT1() {
 			return t1;
@@ -85,6 +88,12 @@ public class PsseIEESGOSteamTurGovernorData extends BaseControllerData {
 		public void setK3(double k3) {
 			this.k3 = k3;
 		}
+		public double getDbH() { return dbH; }
+		public void setDbH(double value) { dbH = value; }
+		public double getDbL() { return dbL; }
+		public void setDbL(double value) { dbL = value; }
+		public double getTrate() { return trate; }
+		public void setTrate(double value) { trate = value; }
 		@Override
 		public void setValue(String name, int value) {
 		

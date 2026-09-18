@@ -1,0 +1,39 @@
+DATA (BUS, [BusNum, BusName, BusNomVolt, BusPUVolt, BusAngle, AreaNum,
+    ZoneNum, BusSlack, BusStatus])
+{
+    1 "GRID"    230.0 1.000000  0.000000 1 1 "YES" "Connected"
+    2 "MIDPOINT" 230.0 1.000000  0.000000 1 1 "NO " "Connected"
+    3 "REGFMA1"  230.0 1.000000  0.000000 1 1 "NO " "Connected"
+}
+
+DATA (LOAD, [BusNum, LoadID, LoadStatus, LoadSMW, LoadSMVR, LoadIMW,
+    LoadIMVR, LoadZMW, LoadZMVR, AreaNum, ZoneNum, GenAGCAble, OwnerNum])
+{
+    1 "1" "Closed" 50.0 0.0 0.0 0.0 0.0 0.0 1 1 "NO " 1
+}
+
+DATA (GEN, [BusNum, GenID, GenStatus, GenMW, GenMVR, GenAGCAble,
+    GenEnforceMWLimits, GenMWMin, GenMWMax, GenAVRAble, GenVoltSet,
+    GenRegNum, GenMVRMin, GenMVRMax, GenRMPCT, GenMVABase, GenZR, GenZX])
+{
+    1 "1" "Closed"  0.0 0.0 "NO " "NO " -9999.0 9999.0 "YES" 1.000000 1 -9999.0 9999.0 100.0 100.0 0.0 0.0100
+    3 "1" "Closed" 50.0 0.0 "NO " "NO "    -1.0  100.0 "YES" 1.000000 3  -100.0  100.0 100.0 100.0 0.0 0.1500
+}
+
+DATA (BRANCH, [BusNum, BusNum:1, LineCircuit, LineStatus, LineR, LineX,
+    LineC, LineG, LineAMVA, LineAMVA:1, LineAMVA:2, LineTap, LinePhase,
+    BranchDeviceType])
+{
+    1 2 "1" "Closed" 0.005 0.100 0.0 0.0 9999.0 9999.0 9999.0 1.0 0.0 "Line"
+    2 3 "1" "Closed" 0.005 0.100 0.0 0.0 9999.0 9999.0 9999.0 1.0 0.0 "Line"
+}
+
+DATA (AREA, [AreaNum, AreaName])
+{
+    1 "Benchmark"
+}
+
+DATA (ZONE, [ZoneNum, ZoneName])
+{
+    1 "Benchmark"
+}

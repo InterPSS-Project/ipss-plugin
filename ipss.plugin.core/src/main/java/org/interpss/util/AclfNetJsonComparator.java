@@ -37,6 +37,8 @@ public class AclfNetJsonComparator {
 	
 	// case description
 	private String desc = "";
+
+	private double numericTolerance = 1.0e-12;
 	
 	/**
 	 * Default constructor.
@@ -45,6 +47,11 @@ public class AclfNetJsonComparator {
 	 */
 	public AclfNetJsonComparator(String desc) {
 		this.desc = desc;
+	}
+
+	public AclfNetJsonComparator(String desc, double numericTolerance) {
+		this.desc = desc;
+		this.numericTolerance = numericTolerance;
 	}
 	
 	/**
@@ -57,6 +64,12 @@ public class AclfNetJsonComparator {
 		this.desc = desc;
 		this.outFilter = outFilter;
 	}
+
+	public AclfNetJsonComparator(String desc, Predicate<String> outFilter, double numericTolerance) {
+		this.desc = desc;
+		this.outFilter = outFilter;
+		this.numericTolerance = numericTolerance;
+	}
 	
 	/**
 	 * Compares two AclfNetwork objects by converting them to JSON strings
@@ -67,6 +80,7 @@ public class AclfNetJsonComparator {
 	 * @return true if the JSON representations are equal, false otherwise
 	 */
     public boolean compareJson(AclfNetwork aclfNet1, AclfNetwork aclfNet2) {
+    	this.isDifferent = false;
         JsonElement obj1 = JsonParser.parseString(new AclfNetworkState(aclfNet1).toString());
         JsonElement obj2 = JsonParser.parseString(new AclfNetworkState(aclfNet2).toString());
         
@@ -84,6 +98,7 @@ public class AclfNetJsonComparator {
 	 * @return true if the JSON representations are equal, false otherwise
 	 */
     public boolean compareJson(String str1, String str2) {
+    	this.isDifferent = false;
         JsonElement obj1 = JsonParser.parseString(str1);
         JsonElement obj2 = JsonParser.parseString(str2);
         
@@ -104,6 +119,7 @@ public class AclfNetJsonComparator {
      * @throws FileNotFoundException
      */
     public boolean compareJson(AclfNetwork aclfNet, File file2) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+    	 this.isDifferent = false;
     	 JsonElement obj1 = JsonParser.parseString(new AclfNetworkState(aclfNet).toString());
     	 JsonElement obj2 = JsonParser.parseReader(new FileReader(file2));
 		 
@@ -125,6 +141,7 @@ public class AclfNetJsonComparator {
      * @throws FileNotFoundException
      */
     public boolean compareJson(File file1, File file2) throws JsonIOException, JsonSyntaxException, FileNotFoundException {
+    	 this.isDifferent = false;
     	 JsonElement obj1 = JsonParser.parseReader(new FileReader(file1));
     	 JsonElement obj2 = JsonParser.parseReader(new FileReader(file2));
 		 
@@ -136,6 +153,9 @@ public class AclfNetJsonComparator {
     }
       
     private void comparePrettyPrint(String path, JsonElement obj1, JsonElement obj2) {
+    	if (!outFilter.test(path)) {
+    		return;
+    	}
         if (obj1.isJsonObject() && obj2.isJsonObject()) {
             compareJsonObjects(path, obj1.getAsJsonObject(), obj2.getAsJsonObject());
         }
@@ -144,7 +164,7 @@ public class AclfNetJsonComparator {
         }
         else if (obj1.isJsonPrimitive() && obj2.isJsonPrimitive()
                 && obj1.getAsJsonPrimitive().isNumber() && obj2.getAsJsonPrimitive().isNumber()
-                && Math.abs(obj1.getAsDouble() - obj2.getAsDouble()) <= 1.0e-12) {
+                && Math.abs(obj1.getAsDouble() - obj2.getAsDouble()) <= this.numericTolerance) {
             return;
         }
         else if (!obj1.equals(obj2)) {
@@ -164,7 +184,9 @@ public class AclfNetJsonComparator {
         for (String key : obj1.keySet()) {
             String currentPath = path.endsWith("/") ? path + key : path + "/" + key;
             if (obj2.has(key)) {
-                comparePrettyPrint(currentPath, obj1.get(key), obj2.get(key));
+                if (!isInactiveSwitchedShuntSavedBInit(path, key, obj1, obj2)) {
+                    comparePrettyPrint(currentPath, obj1.get(key), obj2.get(key));
+                }
             } else {
             	if (outFilter.test(currentPath)) {
 	            	isDifferent = true;
@@ -184,6 +206,21 @@ public class AclfNetJsonComparator {
         }
     }
 
+    private boolean isInactiveSwitchedShuntSavedBInit(String path, String key,
+            JsonObject obj1, JsonObject obj2) {
+        if (!path.contains("/switchedShuntAry[") || !"bInit".equals(key)) {
+            return false;
+        }
+        return hasFalseStatus(obj1) && hasFalseStatus(obj2);
+    }
+
+    private boolean hasFalseStatus(JsonObject obj) {
+        JsonElement status = obj.get("status");
+        return status != null && status.isJsonPrimitive()
+                && status.getAsJsonPrimitive().isBoolean()
+                && !status.getAsBoolean();
+    }
+
     private void compareJsonArrays(String path, JsonArray array1, JsonArray array2) {
         int size1 = array1.size();
         int size2 = array2.size();
@@ -194,43 +231,50 @@ public class AclfNetJsonComparator {
                              size1 + " != " + size2);
         }
 
-        // Check if arrays contain objects with IDs
+        // Check if arrays contain objects with stable keys
         if (array1.size() > 0 && array2.size() > 0 && 
             array1.get(0).isJsonObject() && array2.get(0).isJsonObject() &&
             array1.get(0).getAsJsonObject().has("id") && 
             array2.get(0).getAsJsonObject().has("id")) {
             
-            compareArraysByIdMapping(path, array1, array2);
+            compareArraysByKeyMapping(path, array1, array2, "id");
+        } else if (array1.size() > 0 && array2.size() > 0 && 
+            array1.get(0).isJsonObject() && array2.get(0).isJsonObject() &&
+            array1.get(0).getAsJsonObject().has("number") && 
+            array2.get(0).getAsJsonObject().has("number")) {
+            
+            compareArraysByKeyMapping(path, array1, array2, "number");
         } else {
             compareUnsortedArrays(path, array1, array2);
         }
     }
 
-    private void compareArraysByIdMapping(String path, JsonArray array1, JsonArray array2) {
-        // Create maps for ID-based lookup
+    private void compareArraysByKeyMapping(String path, JsonArray array1, JsonArray array2,
+    		String keyName) {
+        // Create maps for stable-key lookup
         Map<String, JsonElement> map1 = new HashMap<>();
         Map<String, JsonElement> map2 = new HashMap<>();
         
         // Populate maps with debugging
         for (int i = 0; i < array1.size(); i++) {
             JsonElement elem = array1.get(i);
-            if (elem.isJsonObject() && elem.getAsJsonObject().has("id")) {
-                String id = elem.getAsJsonObject().get("id").getAsString();
-                if (map1.containsKey(id)) {
-                    log.warn("WARNING: Duplicate ID in first array at " + path + ": " + id);
+            if (elem.isJsonObject() && elem.getAsJsonObject().has(keyName)) {
+                String key = elem.getAsJsonObject().get(keyName).getAsString();
+                if (map1.containsKey(key)) {
+                    log.warn("WARNING: Duplicate " + keyName + " in first array at " + path + ": " + key);
                 }
-                map1.put(id, elem);
+                map1.put(key, elem);
             }
         }
         
         for (int i = 0; i < array2.size(); i++) {
             JsonElement elem = array2.get(i);
-            if (elem.isJsonObject() && elem.getAsJsonObject().has("id")) {
-                String id = elem.getAsJsonObject().get("id").getAsString();
-                if (map2.containsKey(id)) {
-                    log.warn("WARNING: Duplicate ID in second array at " + path + ": " + id);
+            if (elem.isJsonObject() && elem.getAsJsonObject().has(keyName)) {
+                String key = elem.getAsJsonObject().get(keyName).getAsString();
+                if (map2.containsKey(key)) {
+                    log.warn("WARNING: Duplicate " + keyName + " in second array at " + path + ": " + key);
                 }
-                map2.put(id, elem);
+                map2.put(key, elem);
             }
         }
         
@@ -289,19 +333,27 @@ public class AclfNetJsonComparator {
         int minSize = Math.min(size1, size2);
         for (int i = 0; i < minSize; i++) {
         	if (array1.get(i).isJsonObject() && array2.get(i).isJsonObject()) {
-    			// Assuming the objects in the arrays are model objects with an id field
-            	String id1 = array1.get(i).getAsJsonObject().get("id").getAsString();
-            	String id2 = array2.get(i).getAsJsonObject().get("id").getAsString();
-            	if (id1.equals(id2)) {
-	                String currentPath = path + "[" + id1 + "]";
+        		JsonObject item1 = array1.get(i).getAsJsonObject();
+        		JsonObject item2 = array2.get(i).getAsJsonObject();
+        		if (item1.has("id") && item2.has("id")) {
+        			// Assuming the objects in the arrays are model objects with an id field
+	            	String id1 = item1.get("id").getAsString();
+	            	String id2 = item2.get("id").getAsString();
+	            	if (id1.equals(id2)) {
+		                String currentPath = path + "[" + id1 + "]";
+		                comparePrettyPrint(currentPath, array1.get(i), array2.get(i));
+	            	}
+	            	else {
+						// If the id mis-matches, we can compare the objects directly
+						System.out.println("ID mismatch at " + path + "[" + i + "]: " +
+								"\nFirst:  " + id1 +
+								"\nSecond: " + id2);
+					}
+        		}
+        		else {
+	                String currentPath = path + "[" + i + "]";
 	                comparePrettyPrint(currentPath, array1.get(i), array2.get(i));
-            	}
-            	else {
-					// If the id mis-matches, we can compare the objects directly
-					System.out.println("ID mismatch at " + path + "[" + i + "]: " +
-							"\nFirst:  " + id1 +
-							"\nSecond: " + id2);
-				}
+        		}
 			}
         	else {
         		/* for handling the case where the array elements are not model objects,
@@ -310,14 +362,7 @@ public class AclfNetJsonComparator {
         		 * "refBusIdSet": ["xxx.500.254"],
         		 */
         		String currentPath = path + "[" + i + "]";
-				if (!array1.get(i).equals(array2.get(i))) {
-					if (outFilter.test(currentPath)) {
-						isDifferent = true;
-						System.out.println("Value mismatch at " + currentPath + ": " +
-								"\nFirst:  " + array1.get(i) + 
-								"\nSecond: " + array2.get(i));
-					}
-				}
+                comparePrettyPrint(currentPath, array1.get(i), array2.get(i));
         	}
         }
     }

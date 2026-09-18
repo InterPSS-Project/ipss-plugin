@@ -50,6 +50,9 @@ import com.interpss.core.aclf.hvdc.HvdcLineMT;
 import com.interpss.core.aclf.hvdc.HvdcOperationMode;
 import com.interpss.core.aclf.hvdc.VSCAcControlMode;
 import com.interpss.core.aclf.hvdc.VSCConverter;
+import com.interpss.core.algo.config.BusLowVoltAdjConfig;
+import com.interpss.core.algo.config.LfAdjAlgoConfigFactory;
+import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.core.net.BranchBusSide;
 import com.interpss.core.net.NameTag;
 import com.interpss.core.net.NetFactory;
@@ -65,6 +68,17 @@ import com.interpss.core.net.OriginalDataFormat;
  *
  * The section-by-section parsing order mirrors PSSELFRawAdapter in ipss-odm.
  * Field extraction logic is ported from the individual PSSExxxDataRawParser classes.
+ *
+ * <p>For v34+ files, system-wide load-flow records are retained as
+ * {@link PsseLoadflowSolutionSettings} on network extra info. Parsing does not
+ * unconditionally impose their solver activity flags: the run layer first
+ * chooses whether saved-solution replay is intended, then explicit JSON
+ * configuration may override the imported setting.</p>
+ *
+ * <p>Version-specific switched-shunt fields preserve remote participation and
+ * FACTS supervision. Phase-shifter limits are normalized before builder calls
+ * because source records do not guarantee the two range fields arrive in
+ * numerical max/min order.</p>
  */
 public class PSSEDirectParser {
     private static final Logger log = LoggerFactory.getLogger(PSSEDirectParser.class);
@@ -152,6 +166,7 @@ public class PSSEDirectParser {
     private void parseFromReaderInternal(BufferedReader reader) throws InterpssException {
         try {
             rawType3BusVoltages.clear();
+            PsseLoadScopeMetadata.clear(builder.getBaseNetwork());
             parseHeader(reader);
             parseSection(reader, this::parseBusLine);
             parseSection(reader, this::parseLoadLine);
@@ -220,6 +235,14 @@ public class PSSEDirectParser {
                 (line2 != null ? line2.trim() : "PSS/E Case"),
                 baseMva * 1000.0, // convert MVA to kVA
                 OriginalDataFormat.PSSE);
+        // BASFRQ is part of the PSS/E case header and drives rotor-angle,
+        // damping, and frequency-measurement equations in DStab.  Leaving the
+        // core network at its 50-Hz default makes a 60-Hz PSS/E trajectory run
+        // at exactly 5/6 of the correct electrical angular speed.
+        double baseFrequency = rec.getDouble(5, 60.0);
+        if (baseFrequency > 0.0) {
+            builder.getBaseNetwork().setFrequency(baseFrequency);
+        }
 
         // For v34+, skip system-wide data section
         if (version >= 34) {
@@ -240,19 +263,28 @@ public class PSSEDirectParser {
                 settingsBuilder.addLine(line);
             }
             solutionSettings = settingsBuilder.build();
-            builder.getNetwork().getExtraInfo().put(
+            builder.getBaseNetwork().getExtraInfo().put(
                     com.interpss.core.algo.LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY,
                     solutionSettings);
+            if (builder.getBaseNetwork().getBusLoadLowVoltConfig() == null) {
+                BusLowVoltAdjConfig config = LfAdjAlgoConfigFactory.eINSTANCE.createBusLowVoltAdjConfig();
+                // ipss-core 1.3.22's voltage-adjust preprocessing casts to the
+                // concrete AclfNetwork type, so it cannot run on DStabilityNetwork.
+                config.setApplyVoltAdjust(!(builder.getBaseNetwork() instanceof BaseDStabNetwork));
+                config.setVConstPMin(0.7);
+                config.setVConstIMin(0.5);
+                builder.getBaseNetwork().setBusLoadLowVoltConfig(config);
+            }
             if (solutionSettings.general().thrshz() != null
                     && Double.isFinite(solutionSettings.general().thrshz())
                     && solutionSettings.general().thrshz() >= 0.0) {
-                builder.getNetwork().setZeroZBranchThreshold(
+                builder.getBaseNetwork().setZeroZBranchThreshold(
                         solutionSettings.general().thrshz());
             }
             if (solutionSettings.general().pqbrak() != null
                     && Double.isFinite(solutionSettings.general().pqbrak())
                     && solutionSettings.general().pqbrak() >= 0.0) {
-                builder.getNetwork().getBusLoadLowVoltConfig().setVConstPMin(
+                builder.getBaseNetwork().getBusLoadLowVoltConfig().setVConstPMin(
                         solutionSettings.general().pqbrak());
             }
         } else {
@@ -383,6 +415,17 @@ public class PSSEDirectParser {
         String loadId = rec.getString(1, "1").trim();
         int status = rec.getInt(2, 1);
 
+        BaseAclfBus bus = builder.getBaseNetwork().getBus(busId);
+        int busArea = bus != null && bus.getArea() != null
+                ? Math.toIntExact(bus.getArea().getNumber()) : 0;
+        int busZone = bus != null && bus.getZone() != null
+                ? Math.toIntExact(bus.getZone().getNumber()) : 0;
+        int busOwner = bus != null && bus.getOwner() != null
+                ? Math.toIntExact(bus.getOwner().getNumber()) : 0;
+        int loadArea = positiveOrDefault(rec.getInt(3, 0), busArea);
+        int loadZone = positiveOrDefault(rec.getInt(4, 0), busZone);
+        int loadOwner = positiveOrDefault(rec.getInt(11, 0), busOwner);
+
         double pl = rec.getDouble(5, 0.0);
         double ql = rec.getDouble(6, 0.0);
         double ip = rec.getDouble(7, 0.0);
@@ -408,8 +451,17 @@ public class PSSEDirectParser {
             }
         }
 
-        applyNameTagMetadata(rec, builder.addContributeLoad(busId, loadId, status == 1,
-                constP, constI, constZ, dgenPower, dgenStatus));
+        var load = builder.addContributeLoad(busId, loadId, status == 1,
+                constP, constI, constZ, dgenPower, dgenStatus);
+        applyNameTagMetadata(rec, load);
+        if (load != null) {
+            PsseLoadScopeMetadata.put(builder.getBaseNetwork(), busId, loadId,
+                    loadArea, loadZone, loadOwner);
+        }
+    }
+
+    private static int positiveOrDefault(int value, int defaultValue) {
+        return value > 0 ? value : defaultValue;
     }
 
     // ==================== Generator ====================
@@ -487,8 +539,7 @@ public class PSSEDirectParser {
         }
 
         boolean genStatus = (stat == 1);
-        boolean busOffline = (bus.getGenCode() == AclfGenCode.NON_GEN);
-        if (busOffline) genStatus = false;
+        if (!bus.isActive()) genStatus = false;
 
         String remoteBusId = null;
         if (ireg > 0 && ireg != busNum) {
@@ -822,8 +873,10 @@ public class PSSEDirectParser {
                         vma1, vmi1, tapMax, tapMin,
                         true, true, tapStepSize, ntp1 > 0 ? ntp1 : null);
             } else if (Math.abs(cod1) == 3) {
+                double pRangeMax = Math.max(vma1, vmi1) / baseMva;
+                double pRangeMin = Math.min(vma1, vmi1) / baseMva;
                 builder.addPsXfrAngleRangeControl(branchId, cod1 > 0,
-                        vma1 / baseMva, vmi1 / baseMva,
+                        pRangeMax, pRangeMin,
                         (vma1 + vmi1) / 2.0, UnitType.mW,
                         rma1, rmi1,
                         true, true, nonMeteredEnd == 1);
@@ -1004,7 +1057,7 @@ public class PSSEDirectParser {
         String busId = BUS_ID_PREFIX + busNum;
 
         int modsw, stat;
-        double vswhi, vswlo, binit;
+        double vswhi, vswlo, rmpct, binit;
         int swreg;
         String shuntId = "1";
         String remoteDeviceId;
@@ -1018,15 +1071,17 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(5, 1.0);
             vswlo = rec.getDouble(6, 1.0);
             swreg = rec.getInt(7, 0);
+            rmpct = rec.getDouble(9, 100.0);
             remoteDeviceId = rec.getString(10, "").trim();
             binit = rec.getDouble(11, 0.0);
-        } else if (version >= 33) {
-            // v33-34: I, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, RMPCT, RMIDNT, BINIT, N1, B1, ...
+        } else if (version >= 32) {
+            // v32-34: I, MODSW, ADJM, ST, VSWHI, VSWLO, SWREG, RMPCT, RMIDNT, BINIT, N1, B1, ...
             modsw = rec.getInt(1, 1);
             stat = rec.getInt(3, 1);
             vswhi = rec.getDouble(4, 1.0);
             vswlo = rec.getDouble(5, 1.0);
             swreg = rec.getInt(6, 0);
+            rmpct = rec.getDouble(7, 100.0);
             remoteDeviceId = rec.getString(8, "").trim();
             binit = rec.getDouble(9, 0.0);
         } else {
@@ -1036,6 +1091,7 @@ public class PSSEDirectParser {
             vswhi = rec.getDouble(2, 1.0);
             vswlo = rec.getDouble(3, 1.0);
             swreg = rec.getInt(4, 0);
+            rmpct = rec.getDouble(5, 100.0);
             remoteDeviceId = rec.getString(6, "").trim();
             binit = rec.getDouble(7, 0.0);
         }
@@ -1060,7 +1116,7 @@ public class PSSEDirectParser {
             }
         } else {
             // v30-34: N, B pairs
-            int blockStartIdx = version >= 33 ? 10 : 8;
+            int blockStartIdx = version >= 32 ? 10 : 8;
             for (int i = 0; i < 8; i++) {
                 int n = rec.getInt(blockStartIdx + i * 2, 0);
                 double bVal = rec.getDouble(blockStartIdx + i * 2 + 1, 0.0);
@@ -1074,7 +1130,7 @@ public class PSSEDirectParser {
 
         SwitchedShunt switchedShunt = builder.addSwitchedShunt(busId, shuntId, stat == 1,
                 mode, AclfAdjustControlType.RANGE_CONTROL,
-                bInitPU, vswhi, vswlo, remoteBusId, blocks);
+                bInitPU, vswhi, vswlo, remoteBusId, rmpct, blocks);
         if (modsw == 6 && switchedShunt != null) {
             // PSS/E MODSW=6 regulates the reactive output of the named FACTS
             // shunt element. Preserve that association for the coordinated
@@ -1530,10 +1586,7 @@ public class PSSEDirectParser {
 
     // ==================== Induction Machine ====================
 
-    /**
-     * Register induction machines as NameTags for NB type-I terminals.
-     * Full IM ACLF model is not built here (avoids colliding with load id "1" on the same bus).
-     */
+    /** Import an induction machine as a distinct steady-state ACLF contribution. */
     private void parseInductionMachineLine(PSSEDataRec rec) {
         int busNum = rec.getInt(0);
         String id = rec.getString(1, "1").trim();
@@ -1542,6 +1595,43 @@ public class PSSEDirectParser {
         }
         String name = rec.getString(8, "").trim();
         String busId = BUS_ID_PREFIX + busNum;
+
+        BaseAclfBus bus = builder.getBaseNetwork().getBus(busId);
+        if (bus != null) {
+            PsseInductionMachinePowerFlow.Data data =
+                    new PsseInductionMachinePowerFlow.Data(
+                            rec.getInt(9, 1), rec.getInt(4, 2),
+                            rec.getDouble(11, baseMva), rec.getDouble(12, bus.getBaseVoltage() / 1000.0),
+                            rec.getInt(13, 1), rec.getDouble(14, 0.0),
+                            rec.getDouble(16, 1.0), rec.getDouble(17, 1.0),
+                            rec.getDouble(18, 1.0), rec.getDouble(19, 1.0),
+                            rec.getDouble(20, 0.0), rec.getDouble(21, 0.0),
+                            rec.getDouble(22, 0.0), rec.getDouble(23, 0.0),
+                            rec.getDouble(24, 0.0), rec.getDouble(25, 0.0),
+                            rec.getDouble(26, 0.0), rec.getDouble(27, 0.0));
+            try {
+                PsseInductionMachinePowerFlow.Result result =
+                        PsseInductionMachinePowerFlow.initialize(data,
+                                bus.getVoltageMag(), bus.getBaseVoltage() / 1000.0, baseMva);
+                boolean inService = rec.getInt(2, 1) == 1 && !result.tripped();
+                var load = builder.addContributeLoad(busId, "IM-" + id,
+                        inService, result.loadPu(), null, null, null, false);
+                if (load != null) {
+                    load.setName(name.isEmpty()
+                            ? "InductionMachine:" + id + "(" + busNum + ")" : name);
+                }
+                if (result.stalled()) {
+                    log.warn("PSS/E induction machine {}:{} has no running-slip solution; "
+                            + "using its locked-rotor power-flow equivalent", busNum, id);
+                } else if (result.tripped()) {
+                    log.warn("PSS/E induction generator {}:{} has no running-slip solution; "
+                            + "taking its power-flow equivalent out of service", busNum, id);
+                }
+            } catch (IllegalArgumentException ex) {
+                log.warn("Skipping PSS/E induction machine {}:{}: {}", busNum, id,
+                        ex.getMessage());
+            }
+        }
 
         NameTag tag = NetFactory.eINSTANCE.createNameTag();
         tag.setId(id);

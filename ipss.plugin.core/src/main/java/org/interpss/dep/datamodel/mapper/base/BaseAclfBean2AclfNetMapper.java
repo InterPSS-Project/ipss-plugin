@@ -24,6 +24,8 @@
 
 package org.interpss.dep.datamodel.mapper.base;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.math3.complex.Complex;
@@ -239,23 +241,42 @@ public abstract class BaseAclfBean2AclfNetMapper<
 		}		
 		// switch shunt
 		
-		if (busBean.switchShunt != null){
-			SwitchShuntBean<TBusExt> ssb = busBean.switchShunt;
-			
-			SwitchedShunt ss = AclfAdjustObjectFactory.createSwitchedShunt(bus);
-			ss.setVSpecified(ssb.vSpecified);
-			ss.setBInit(ssb.bInit);
-			AclfAdjustControlMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous?AclfAdjustControlMode.CONTINUOUS:
-					ssb.controlMode == VarCompensatorControlModeBean.Discrete?AclfAdjustControlMode.DISCRETE:
-						AclfAdjustControlMode.FIXED;
-			ss.setControlMode(mode);
-			ss.setDesiredControlRange(new LimitType(ssb.vmax, ssb.vmin));
-			ss.setBLimit(new LimitType(ssb.qmax, ssb.qmin));
+		for (SwitchShuntBean<TBusExt> ssb : getSwitchShuntBeans(busBean)) {
+			mapSwitchShuntBean(ssb, bus, aclfNet);
+		}
+	}
+
+	private List<SwitchShuntBean<TBusExt>> getSwitchShuntBeans(AclfBusBean<TBusExt> busBean) {
+		if (busBean.switchShuntList != null && !busBean.switchShuntList.isEmpty()) {
+			return busBean.switchShuntList;
+		}
+		List<SwitchShuntBean<TBusExt>> shunts = new ArrayList<>();
+		if (busBean.switchShunt != null) {
+			shunts.add(busBean.switchShunt);
+		}
+		return shunts;
+	}
+
+	private void mapSwitchShuntBean(SwitchShuntBean<TBusExt> ssb, AclfBus bus, AclfNetwork aclfNet) {
+		SwitchedShunt ss = AclfAdjustObjectFactory.createSwitchedShunt(bus);
+		ss.setId(ssb.id);
+		ss.setStatus(ssb.status == 1);
+		ss.setVSpecified(ssb.vSpecified);
+		ss.setBInit(ssb.bInit);
+		AclfAdjustControlMode mode = ssb.controlMode == VarCompensatorControlModeBean.Continuous ? AclfAdjustControlMode.CONTINUOUS :
+				ssb.controlMode == VarCompensatorControlModeBean.Discrete ? AclfAdjustControlMode.DISCRETE :
+					AclfAdjustControlMode.FIXED;
+		ss.setControlMode(mode);
+		ss.setDesiredControlRange(new LimitType(ssb.vmax, ssb.vmin));
+		ss.setBLimit(new LimitType(ssb.qmax, ssb.qmin));
+		if (ssb.varBankList != null) {
 			for(QBankBean<TBusExt> qbb: ssb.varBankList){
 				ShuntCompensator qb = CoreObjectFactory.createShuntCompensator(ss, ShuntCompensatorType.CAPACITOR);
 				qb.setSteps(qbb.step);
 				qb.setUnitQMvar(qbb.UnitQMvar);
-			}				
+			}
+		}
+		if (ssb.remoteBusId != null) {
 			ss.setRemoteBus(aclfNet.getBus(ssb.remoteBusId));
 		}
 	}

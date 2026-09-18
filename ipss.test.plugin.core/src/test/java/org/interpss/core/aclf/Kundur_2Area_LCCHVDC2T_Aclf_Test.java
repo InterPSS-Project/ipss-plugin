@@ -16,6 +16,8 @@ import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.hvdc.HvdcLine2TLCC;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.impl.solver.CoordinatedControlZbrNrSolver;
+import com.interpss.core.algo.impl.solver.LccCoupledInjectionModel;
 
 public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 	
@@ -91,6 +93,33 @@ public class Kundur_2Area_LCCHVDC2T_Aclf_Test extends CorePluginTestSetup {
 
   
 
+	}
+
+	@Test
+	public void test_LCCHVDC_ReducedJacobian_PsetOnInv_Parity() throws Exception {
+		AclfNetwork net = createTestCase();
+		@SuppressWarnings("unchecked")
+		HvdcLine2TLCC<AclfBus> lccHVDC =
+				(HvdcLine2TLCC<AclfBus>) net.getSpecialBranchList().get(0);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+		algo.setMaxIterations(30);
+		CoordinatedControlZbrNrSolver solver = new CoordinatedControlZbrNrSolver(
+				net, algo.getNrMethodConfig(), algo.getTolerance())
+					.setReducedLccCouplingEnabled(true);
+		algo.getLfCalculator().setNrSolver(solver);
+
+		assertTrue(algo.loadflow());
+		assertTrue(net.isLfConverged());
+		assertEquals(LccCoupledInjectionModel.Status.ELIGIBLE,
+				solver.getLccCoupledModels().get(0).getStatus(),
+				solver.getLccCoupledModels().get(0).getDiagnostic());
+		assertEquals(0.95830, net.getBus("Bus7").getVoltageMag(), 0.0002);
+		assertEquals(0.96461, net.getBus("Bus9").getVoltageMag(), 0.0002);
+		assertTrue(NumericUtil.equals(lccHVDC.getRectifier().powerIntoConverter(),
+				new Complex(5.0500, 3.00162), 0.0003));
+		assertTrue(NumericUtil.equals(lccHVDC.getInverter().powerIntoConverter(),
+				new Complex(-5.0000, 2.87694), 0.0003));
 	}
 
 	//@Test

@@ -23,7 +23,7 @@ import com.interpss.core.CoreObjectFactory;
 import com.interpss.core.NBModelObjectFactory;
 import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.net.Branch;
@@ -188,8 +188,8 @@ public class PSSESubstationImporter {
 		sub.setLatitude(lati);
 		sub.setLongitude(longi);
 		sub.setGroundingResistance(srg);
-		builder.getNetwork().addSubstation(sub);
-		builder.getNetwork().setNodeBreakerModel(true);
+		builder.getBaseNetwork().addSubstation(sub);
+		builder.getBaseNetwork().setNodeBreakerModel(true);
 		return sub;
 	}
 
@@ -557,7 +557,7 @@ public class PSSESubstationImporter {
 		if (fromBus == null || toBus == null) {
 			return null;
 		}
-		AclfNetwork net = builder.getNetwork();
+		BaseAclfNetwork<?, ?> net = builder.getBaseNetwork();
 		AclfBranch bra = net.getBranch(fromBus.getId(), toBus.getId(), ckt);
 		if (bra == null) {
 			bra = net.getBranch(toBus.getId(), fromBus.getId(), ckt);
@@ -569,7 +569,7 @@ public class PSSESubstationImporter {
 	 * Star buses of 3W transformers with {@code fromBus} as primary inherit that bus's substation.
 	 */
 	private void assign3WStarBusesToSubstation(BaseAclfBus fromBus, Substation sub) {
-		AclfNetwork net = builder.getNetwork();
+		BaseAclfNetwork<?, ?> net = builder.getBaseNetwork();
 		for (Branch bra : net.getSpecialBranchList()) {
 			if (!(bra instanceof Aclf3WBranch xfr)) {
 				continue;
@@ -585,7 +585,7 @@ public class PSSESubstationImporter {
 		if (fromBus == null || toBus == null || tertBus == null) {
 			return null;
 		}
-		AclfNetwork net = builder.getNetwork();
+		BaseAclfNetwork<?, ?> net = builder.getBaseNetwork();
 		String a = fromBus.getId();
 		String b = toBus.getId();
 		String c = tertBus.getId();
@@ -609,7 +609,7 @@ public class PSSESubstationImporter {
 			return null;
 		}
 		String n = name.trim();
-		AclfNetwork net = builder.getNetwork();
+		BaseAclfNetwork<?, ?> net = builder.getBaseNetwork();
 		if (typeCode == 'A') {
 			NameTag svc = findSvcByName(hintBus, n);
 			if (svc != null) {

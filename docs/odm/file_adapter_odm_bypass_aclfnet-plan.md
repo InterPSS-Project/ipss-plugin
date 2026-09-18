@@ -30,7 +30,7 @@ todos:
     content: "Phase 4f: Create BPA direct adapter"
     status: completed
   - id: phase4-cim
-    content: "Phase 4g: Create CIM/CGMES direct adapter (CGMESDirectParser + Jena RDF stack + builder-backed mappers)"
+    content: "Phase 4g: Create CIM/CGMES direct adapter (CIMDirectParser + Jena RDF stack + builder-backed mappers)"
     status: completed
   - id: phase5-integration
     content: "Phase 5: Update IpssFileAdapterBase, IpssFileAdapter, CorePluginFactory, IpssAdapter DSL; remove ODM import dependency from pom.xml; migrate tests"
@@ -51,10 +51,10 @@ isProject: false
 | IEEE CDF | `IeeeCDFFormat` | `org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser` |
 | MATPOWER | `MatpowerFormat` | `org.interpss.fadapter.matpower.MatpowerDirectParser` |
 | UCTE-DEF | `UCTEFormat` | `org.interpss.fadapter.ucte.UCTEDirectParser` |
-| GE PSLF | `GEFormat` | `org.interpss.fadapter.ge.GEPslfDirectParser` |
+| EPC | `GEFormat` | `org.interpss.fadapter.epc.EpcDirectParser` |
 | PowerWorld (PWD) | `PWDFormat` | `org.interpss.fadapter.pwd.PWDDirectParser` |
 | BPA | `BPAFormat` | `org.interpss.fadapter.bpa.BPADirectParser` |
-| CIM/CGMES | `CIMFormat` | `org.interpss.fadapter.cim.CGMESDirectParser` |
+| CIM/CGMES | `CIMFormat` | `org.interpss.fadapter.cim.CIMDirectParser` |
 
 ## Former Architecture (replaced)
 
@@ -199,7 +199,7 @@ Each adapter follows the same pattern: parse format-specific file, call `AclfNet
 - **IEEE CDF**: Port from `IeeeCDFAdapter` (ipss-odm). Simple fixed-column format with bus + branch sections. Relatively straightforward.
 - **MATPOWER**: Port from `MatPowerAdapter`. MATLAB .m file format, struct-based.
 - **UCTE-DEF**: Port from `UCTE_DEFAdapter`. European grid exchange format.
-- **GE PSLF**: Port from `GePslfAdapter`. GE Positive Sequence Load Flow format.
+- **EPC**: Port from `GePslfAdapter`. Sectioned EPC load-flow format.
 - **PowerWorld (PWD)**: Port from `PowerWorldAdapter`. Includes PWD-specific extension data.
 - **BPA**: Port from `BPAAdapter`. Multi-file format (load flow + dynamics). Special handling via `load(ctx, filepathAry, ...)`.
 
@@ -209,9 +209,9 @@ Port `org.ieee.odm.adapter.cim` into ipss-plugin as a direct CIM → `AclfNetwor
 
 ```mermaid
 flowchart LR
-  CimFiles["CIM RDF/XML\nEQ/TP/SSH/SV/BD"] --> Rdf["CGMESRdfParser\nApache Jena"]
-  Rdf --> Model["CGMESModel + indices"]
-  Model --> Direct["CGMESDirectParser\n+ equipment mappers"]
+  CimFiles["CIM RDF/XML\nEQ/TP/SSH/SV/BD"] --> Rdf["CIMRdfParser\nApache Jena"]
+  Rdf --> Model["CIMModel + indices"]
+  Model --> Direct["CIMDirectParser\n+ equipment mappers"]
   Direct --> Builder["AclfNetworkBuilder"]
   Builder --> Net["AclfNetwork"]
 ```
@@ -221,10 +221,10 @@ flowchart LR
 | Class | Role |
 |---|---|
 | [CIMFormat](ipss.plugin.core/src/main/java/org/interpss/fadapter/CIMFormat.java) | Facade → `SimuContext` / `AclfNetwork`; single- and multi-file `load()` |
-| [CGMESDirectParser](ipss.plugin.core/src/main/java/org/interpss/fadapter/cim/CGMESDirectParser.java) | Orchestrate parse → convert buses/branches/injections → `finalizeNetwork()` |
-| `CGMESModel`, `CGMESConstants`, `CGMESPropertyBag` | Jena model wrap, namespaces, typed property access |
-| `parser/CGMESRdfParser` | RDF/XML sanitize + Jena `Model.read` (base-URI merge fix) |
-| `util/CGMESUnitConverter` | Ohm/Siemens/MW → PU helpers |
+| [CIMDirectParser](ipss.plugin.core/src/main/java/org/interpss/fadapter/cim/CIMDirectParser.java) | Orchestrate parse → convert buses/branches/injections → `finalizeNetwork()` |
+| `CIMModel`, `CIMConstants`, `CIMPropertyBag` | Jena model wrap, namespaces, typed property access |
+| `parser/CIMRdfParser` | RDF/XML sanitize + Jena `Model.read` (base-URI merge fix) |
+| `util/CIMUnitConverter` | Ohm/Siemens/MW → PU helpers |
 | `mapper/*` | Builder-backed equipment mappers (no ODM schema types) |
 
 **ODM mapper → builder mapping** (field extraction / PU formulas preserved from ipss-odm):
@@ -232,19 +232,19 @@ flowchart LR
 | ODM source | Direct sink |
 |---|---|
 | `CIMAdapter.convertBuses` (TN → Busbar → ConnNode) | `builder.addBus(...)` + `cimModel.mapBusId`; skip boundary TNs |
-| `CGMESLineMapper` / series compensator | `builder.addLine(...)` with half shunt Y; cirId 1–10 |
-| `CGMESTransformerMapper` | `builder.addXformer2W(...)`; taps from bus base kV, clamped to (0, 2] |
-| `CGMESTransformer3WMapper` | `builder.addXformer3W(...)` star-bus model (adds star bus) |
-| `CGMESLoadMapper` | `builder.addContributeLoad(...)` |
-| `CGMESGeneratorMapper` / ExtNetInjection | `setPVBus` / `setPQBus` / `setSwingBus`; promote first PV if no swing |
-| `CGMESShuntCompensatorMapper` | `builder.addToBusShuntY(...)` |
+| `CIMLineMapper` / series compensator | `builder.addLine(...)` with half shunt Y; cirId 1–10 |
+| `CIMTransformerMapper` | `builder.addXformer2W(...)`; taps from bus base kV, clamped to (0, 2] |
+| `CIMTransformer3WMapper` | `builder.addXformer3W(...)` star-bus model (adds star bus) |
+| `CIMLoadMapper` | `builder.addContributeLoad(...)` |
+| `CIMGeneratorMapper` / ExtNetInjection | `setPVBus` / `setPQBus` / `setSwingBus`; promote first PV if no swing |
+| `CIMShuntCompensatorMapper` | `builder.addToBusShuntY(...)` |
 
-Placeholder container mappers (`CIMSubstationMapper`, `CIMVoltageLevelMapper`) were not ported — VL voltages are read from `CGMESModel` during bus conversion.
+Placeholder container mappers (`CIMSubstationMapper`, `CIMVoltageLevelMapper`) were not ported — VL voltages are read from `CIMModel` during bus conversion.
 
 **Wiring:**
 - `IpssFileAdapter.FileFormat.CIM` and `IpssAdapter.FileFormat.CIM`
 - [CorePluginFactory](ipss.plugin.core/src/main/java/org/interpss/CorePluginFactory.java) returns `new CIMFormat()`
-- `IpssAdapter.FileImportDSL` routes single- and multi-file CIM loads to `CGMESDirectParser`
+- `IpssAdapter.FileImportDSL` routes single- and multi-file CIM loads to `CIMDirectParser`
 - Jena `jena-core` / `jena-arq` **4.10.0** added to [ipss.plugin.core/pom.xml](ipss.plugin.core/pom.xml) (no `org.ieee.odm` dependency)
 
 **Tests:** [CIMDirectParserTest](ipss.test.plugin.core/src/test/java/org/interpss/core/adapter/cim/CIMDirectParserTest.java) against fixtures in `testData/adpter/cim/` (MicroGrid EQ+TP[+SSH/SV], MiniGrid 3W, IEEE118 CIMHub vs MATPOWER counts, boundary handling, factory multi-file).

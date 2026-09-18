@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.fadapter.ge.GEPslfDirectParser;
+import org.interpss.fadapter.epc.EpcDirectParser;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
@@ -18,7 +18,7 @@ import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 /**
- * Hardened Sample18Bus coverage for GE PSLF EPC via {@code GEFormat} and {@link GEPslfDirectParser}.
+ * Hardened Sample18Bus coverage for EPC via {@code GEFormat} and {@link EpcDirectParser}.
  */
 public class GESampleTestCases extends CorePluginTestSetup {
 
@@ -46,7 +46,7 @@ public class GESampleTestCases extends CorePluginTestSetup {
 
 	@Test
 	public void sample18_directParser() throws Exception {
-		AclfNetwork net = new GEPslfDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
+		AclfNetwork net = new EpcDirectParser().parse("testData/adpter/ge/Sample18Bus.epc");
 		assertSample18Topology(net);
 	}
 

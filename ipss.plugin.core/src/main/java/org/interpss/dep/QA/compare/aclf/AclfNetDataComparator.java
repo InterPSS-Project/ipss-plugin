@@ -18,10 +18,19 @@ import com.interpss.core.aclf.JacobianMatrixType;
  */
 public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork<?,?>, BaseAclfNetwork<?,?>> {
 	boolean compareB1Matrix = false;
+	private final double tolerance;
+
+	public AclfNetDataComparator() {
+		this(0.0);
+	}
+
+	public AclfNetDataComparator(double tolerance) {
+		this.tolerance = tolerance;
+	}
 	
 	@Override public boolean compare(BaseAclfNetwork<?,?> baseNet, BaseAclfNetwork<?,?> net) {
 		boolean ok = true;
-		if (!NumericUtil.equals(baseNet.getBaseKva(), net.getBaseKva())) {
+		if (!equals(baseNet.getBaseKva(), net.getBaseKva())) {
 			this.msg += "\nnet.baseKva not equal, " + baseNet.getBaseKva() + "(base), " + net.getBaseKva(); ok = false; }
 
 		if (baseNet.isBusNumberArranged() != net.isBusNumberArranged()) {
@@ -74,7 +83,7 @@ public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork
 		int cnt = 0;
 		for (int i = 0; i < baseB1.getDimension(); i++) {
 			for (int j = 0; j < baseB1.getDimension(); j++) {
-				if (!NumericUtil.equals(baseB1.getAij(i, j), b1.getAij(i, j))) {
+				if (!equals(baseB1.getAij(i, j), b1.getAij(i, j))) {
 					this.msg += "\nb1.aij not equal, <" + i + ", " + j + "> " + baseB1.getAij(i, j) + "(base), " + 
 							b1.getAij(i, j);
 					ok = false;
@@ -84,5 +93,11 @@ public class AclfNetDataComparator extends DataComparatorAdapter<BaseAclfNetwork
 			}
 		}
 		return ok;
+	}
+
+	private boolean equals(double baseValue, double value) {
+		return this.tolerance > 0.0
+				? NumericUtil.equals(baseValue, value, this.tolerance)
+				: NumericUtil.equals(baseValue, value);
 	}
 }

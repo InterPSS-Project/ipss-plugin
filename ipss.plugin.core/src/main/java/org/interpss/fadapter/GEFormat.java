@@ -26,7 +26,7 @@ package org.interpss.fadapter;
 
 import java.io.File;
 
-import org.interpss.fadapter.ge.GEPslfDirectParser;
+import org.interpss.fadapter.epc.EpcDirectParser;
 import org.interpss.fadapter.impl.IpssFileAdapterBase;
 
 import com.interpss.common.exp.InterpssException;
@@ -38,7 +38,7 @@ public class GEFormat extends IpssFileAdapterBase {
 
 	@Override
 	public void load(final SimuContext simuCtx, final String filepath, boolean debug, String outfile) throws InterpssException {
-		GEPslfDirectParser parser = new GEPslfDirectParser();
+		EpcDirectParser parser = new EpcDirectParser();
 		AclfNetwork aclfNet = parser.parse(filepath);
 		simuCtx.setNetType(SimuCtxType.ACLF_NETWORK);
 		simuCtx.setAclfNet(aclfNet);
@@ -48,7 +48,7 @@ public class GEFormat extends IpssFileAdapterBase {
 
 	@Override
 	public AclfNetwork loadAclfNet(String filepath) throws InterpssException {
-		GEPslfDirectParser parser = new GEPslfDirectParser();
+		EpcDirectParser parser = new EpcDirectParser();
 		return parser.parse(filepath);
 	}
 }

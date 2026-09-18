@@ -611,15 +611,44 @@ public class AclfNetworkBuilder {
                                           double vHiPU, double vLoPU,
                                           String remoteBusId,
                                           List<ShuntBlock> blocks) {
+        return addSwitchedShunt(busId, shuntId, status, mode, controlType, bInitPU,
+                vHiPU, vLoPU, remoteBusId, 100.0, blocks);
+    }
+
+    /**
+     * Add a switched shunt with its share of coordinated remote voltage control.
+     *
+     * @param remoteControlPercent participation percentage from the source data
+     */
+    public SwitchedShunt addSwitchedShunt(String busId, String shuntId, boolean status,
+                                          AclfAdjustControlMode mode, AclfAdjustControlType controlType,
+                                          double bInitPU,
+                                          double vHiPU, double vLoPU,
+                                          String remoteBusId, double remoteControlPercent,
+                                          List<ShuntBlock> blocks) {
         BaseAclfBus bus = getBus(busId);
         if (bus == null) return null;
+
+        double savedBInitPU = bInitPU;
+        if (!status && savedBInitPU == 0.0 && blocks != null) {
+            double baseMva = network.getBaseKva() / 1000.0;
+            if (baseMva > 0.0) {
+                savedBInitPU = blocks.stream()
+                        .filter(ShuntBlock::active)
+                        .mapToDouble(block -> block.steps() * block.qMvar())
+                        .sum() / baseMva;
+            }
+        }
 
         SwitchedShunt swchShunt = AclfAdjustObjectFactory.createSwitchedShunt(bus);
         swchShunt.setId(shuntId != null && !shuntId.isEmpty() ? shuntId : "1");
         swchShunt.setStatus(status);
-        swchShunt.setBInit(bInitPU);
+        swchShunt.setBInit(savedBInitPU);
+        swchShunt.setBActual(status ? savedBInitPU : 0.0);
         swchShunt.setControlMode(mode);
         swchShunt.setAdjControlType(controlType);
+        swchShunt.setRemoteControlPercentage(
+                remoteControlPercent > 0.0 ? remoteControlPercent : 100.0);
 
         if (vHiPU != 0.0 || vLoPU != 0.0) {
             swchShunt.setDesiredControlRange(new LimitType(vHiPU, vLoPU));

@@ -1,5 +1,13 @@
 package org.interpss.fadapter.psse;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 import org.interpss.fadapter.builder.AcscNetworkBuilder;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.builder.AclfNetworkObjectFactory;
@@ -15,7 +23,13 @@ import com.interpss.simu.SimuCtxType;
 import com.interpss.simu.SimuObjectFactory;
 
 /**
- * Convenience loader for multi-file PSS/E data (LF + sequence + dynamic).
+ * Convenience loader for multi-file PSS/E data (RAW + sequence + DYR, with
+ * optional IDV case-preparation files).
+ *
+ * <p>GE PSLF DYD is a different source format and is deliberately rejected by
+ * this loader. A PSLF adapter must be invoked as a separate import workflow;
+ * DYD and DYR are never combined as inputs to this reader.</p>
+ *
  * Replaces the old ODM-based pipeline:
  *   PSSERawAdapter -> ODMAcsc/DStabParserMapper -> SimuContext
  * with direct parsers:
@@ -72,7 +86,9 @@ public class PSSEMultiFileLoader {
      * Load LF (+ optional sequence + dynamic) files as DStabilityNetwork
      * wrapped in a SimuContext for dynamic simulation.
      *
-     * @param files array of file paths: [0]=LF, [1]=seq or dyn, [2]=dyn (optional)
+     * @param files file paths: [0]=LF, followed by optional sequence, dynamic,
+     *              and case-preparation IDV files. GNET and model-removal
+     *              directives are always applied before DYR parsing.
      * @return SimuContext with DStabilityNetwork and DynamicSimuAlgorithm configured
      */
     public SimuContext loadDStab(String... files) throws InterpssException {
@@ -107,19 +123,76 @@ public class PSSEMultiFileLoader {
         SimuContext simuCtx = SimuObjectFactory.createSimuNetwork(SimuCtxType.DSTABILITY_NET);
         simuCtx.setDStabilityNet(dsNet);
 
-        if (files.length == 2) {
-            if (files[1].endsWith(".dyr")) {
-                new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(files[1]);
-            } else {
-                new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(files[1]);
+        List<String> modelFiles = new ArrayList<>();
+        Set<Path> preparationFiles = new LinkedHashSet<>();
+        for (int i = 1; i < files.length; i++) {
+            String lowerCaseFile = files[i].toLowerCase(Locale.ROOT);
+            if (lowerCaseFile.endsWith(".dyd")) {
+                throw new InterpssException("GE PSLF .dyd is not a PSS/E input: "
+                        + files[i]);
             }
-        } else if (files.length >= 3) {
-            new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(files[1]);
-            new PSSEDStabDirectParser(new DStabNetworkBuilder(dsNet)).parseDynFile(files[2]);
+            if (lowerCaseFile.endsWith(".idv")) {
+                preparationFiles.add(Path.of(files[i]).toAbsolutePath().normalize());
+            } else {
+                modelFiles.add(files[i]);
+            }
+        }
+        for (String modelFile : modelFiles) {
+            discoverSiblingIdv(modelFile, "_gnet.idv").ifPresent(preparationFiles::add);
+            discoverSiblingIdv(modelFile, "_MODREMOVE.idv").ifPresent(preparationFiles::add);
+        }
+        Set<PsseGnetIdvProcessor.GeneratorKey> gnetRemovedGenerators = new LinkedHashSet<>();
+        Set<PsseGnetIdvProcessor.GeneratorKey> modelRemovedGenerators = new LinkedHashSet<>();
+        for (Path preparationFile : preparationFiles) {
+            gnetRemovedGenerators.addAll(PsseGnetIdvProcessor.apply(dsNet,
+                    preparationFile.toString())
+                    .convertedGeneratorKeys());
+            modelRemovedGenerators.addAll(PsseModelRemoveIdvProcessor.apply(dsNet,
+                    preparationFile.toString()).removedGeneratorKeys());
+        }
+
+        if (modelFiles.size() == 1) {
+            String modelFile = modelFiles.get(0);
+            if (modelFile.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
+                parseDynamicModels(dsNet, modelFile, gnetRemovedGenerators,
+                        modelRemovedGenerators);
+            } else {
+                new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFile);
+            }
+        } else if (modelFiles.size() >= 2) {
+            new PSSEAcscDirectParser(new AcscNetworkBuilder(dsNet)).parseSequenceFile(modelFiles.get(0));
+            parseDynamicModels(dsNet, modelFiles.get(1), gnetRemovedGenerators,
+                    modelRemovedGenerators);
         }
 
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
+        dynAlgo.setSolver(new PsseDStabSolver(dynAlgo));
         simuCtx.setDynSimuAlgorithm(dynAlgo);
         return simuCtx;
     }
+
+    private void parseDynamicModels(BaseDStabNetwork<?, ?> dsNet, String modelFile,
+            Set<PsseGnetIdvProcessor.GeneratorKey> gnetRemovedGenerators,
+            Set<PsseGnetIdvProcessor.GeneratorKey> modelRemovedGenerators)
+            throws InterpssException {
+        DStabNetworkBuilder builder = new DStabNetworkBuilder(dsNet);
+        new PSSEDStabDirectParser(builder)
+                .setGnetRemovedGenerators(gnetRemovedGenerators)
+                .setModelRemovedGenerators(modelRemovedGenerators)
+                .parseDynFile(modelFile);
+    }
+
+    private static java.util.Optional<Path> discoverSiblingIdv(String modelFile, String suffix) {
+        Path path = Path.of(modelFile).toAbsolutePath().normalize();
+        String name = path.getFileName().toString();
+        if (!name.toLowerCase(Locale.ROOT).endsWith(".dyr")) {
+            return java.util.Optional.empty();
+        }
+        String stem = name.substring(0, name.length() - 4);
+        Path sibling = path.resolveSibling(stem + suffix);
+        return Files.isRegularFile(sibling)
+                ? java.util.Optional.of(sibling)
+                : java.util.Optional.empty();
+    }
+
 }

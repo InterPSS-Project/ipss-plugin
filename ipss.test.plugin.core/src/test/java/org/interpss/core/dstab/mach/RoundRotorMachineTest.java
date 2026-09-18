@@ -98,7 +98,9 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		mach.getIgen();
 		
 		
-		// again, the following values to compare to are by long-hand calculation
+		// A mechanical-power step changes rotor angle/speed first. Under the
+		// GENROU Flux0 stator convention, it does not directly multiply the
+		// subtransient flux states by rotor speed.
 		System.out.println("Angle, Eq1, Ed1, Psid11, Psiq11, Efd, Pe: " + mach.getAngle()*R2D + ", " + 
                 mach.getEq1() + ", " + mach.getEd1() + ", " + mach.getPsikd() +  ", " + 
                 mach.getPsikq() + ", " + mach.getEfd()+ ", " + mach.getPe());
@@ -106,10 +108,10 @@ public class RoundRotorMachineTest extends TestSetupBase {
 		assertTrue(Math.abs(Math.toDegrees(mach.getAngle())-27.60114) < 0.00001);
 		assertTrue(Math.abs(mach.getEq1()-1.09514) < 0.00001);
 		assertTrue(Math.abs(mach.getEd1()-0.36656) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikd()-1.013919423217928) < 0.00001);
-		assertTrue(Math.abs(mach.getPsikq()-0.40536591916909676) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikd()-1.0139441866327137) < 0.00001);
+		assertTrue(Math.abs(mach.getPsikq()-0.4053716645175447) < 0.00001);
 		assertTrue(Math.abs(mach.getEfd()-1.8800889) < 0.00001);
-		assertTrue(Math.abs(mach.getPe()-0.805909) < 0.00001);
+		assertTrue(Math.abs(mach.getPe()-0.8057748927079466) < 0.00001);
 		assertTrue(Math.abs(mach.getPm()-1.0) < 0.00001);
 	}
 }

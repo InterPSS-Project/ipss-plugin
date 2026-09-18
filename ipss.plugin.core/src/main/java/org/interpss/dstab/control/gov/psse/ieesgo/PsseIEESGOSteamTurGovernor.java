@@ -11,6 +11,8 @@ import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
+import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
  * This model is corresponding to the PSSE GAST type gas-turbine governor
@@ -27,21 +29,24 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(
 		   input="mach.speed-1.0",
-		   output="this.k20*this.t4DelayBlock.y + this.k30*this.t5DelayBlock.y + this.t6DelayBlock.y ",
+		   output="this.ratingScale*this.k20*this.t4DelayBlock.y + this.ratingScale*this.k30*this.t5DelayBlock.y + this.ratingScale*this.t6DelayBlock.y ",
 		   refPoint="this.plimitBlock.u0 + this.t3DelayBlock.y",
 		   display= {})
 public class PsseIEESGOSteamTurGovernor extends AnnotateGovernor{
 	public double k=1;
+	public double ratingScale=1.0, invRatingScale=1.0;
+	@AnControllerField(type=CMLFieldEnum.StaticBlock, input="mach.speed-1.0", y0="0.0")
+	public AsymmetricDeadbandBlock speedDeadbandBlock = new AsymmetricDeadbandBlock();
 	
 	
 	//1.1 T1, T2 led-lag block
 	public double t1 =0, t2 =0;
 	@AnControllerField(
 	        type= CMLFieldEnum.ControlBlock,
-	        input="mach.speed - 1.0",
+	        input="this.speedDeadbandBlock.y",
 	        parameter={"type.NoLimit", "this.k","this.t2","this.t1"},
 	        y0="this.t3DelayBlock.u0"	)
-	FilterControlBlock filterBlock;
+	public FilterControlBlock filterBlock;
 	
 	
 	//1.2 T3 governor delay block, including the K1, gov droop
@@ -51,7 +56,7 @@ public class PsseIEESGOSteamTurGovernor extends AnnotateGovernor{
 		    input="this.filterBlock.y",
 		    parameter={"type.NoLimit", "this.k1", "this.t3"},
 		    y0="this.refPoint - this.plimitBlock.u0"	)
-  DelayControlBlock t3DelayBlock;
+  public DelayControlBlock t3DelayBlock;
 	
 	
 	//1.3 plimit GainBlock	
@@ -61,7 +66,7 @@ public class PsseIEESGOSteamTurGovernor extends AnnotateGovernor{
         input="this.refPoint - this.t3DelayBlock.y ",
         parameter={"type.Limit", "this.k","this.pmax", "this.pmin"},
         y0="this.t4DelayBlock.u0"	)
-GainBlock plimitBlock;
+public GainBlock plimitBlock;
 
 	
 	//1.4 t4 Delay
@@ -70,8 +75,8 @@ GainBlock plimitBlock;
         type= CMLFieldEnum.ControlBlock,
         input="this.plimitBlock.y",
         parameter={"type.NoLimit", "this.k", "this.t4"},
-        y0="mach.pm"	)
-DelayControlBlock t4DelayBlock;
+        y0="this.invRatingScale*mach.pm"	)
+public DelayControlBlock t4DelayBlock;
 
 
 	//1.5 t5 delay
@@ -80,8 +85,8 @@ DelayControlBlock t4DelayBlock;
         type= CMLFieldEnum.ControlBlock,
         input="this.t4DelayBlock.y",
         parameter={"type.NoLimit", "this.k2", "this.t5"},
-        y0="this.k2*mach.pm")
-DelayControlBlock t5DelayBlock;
+        y0="this.k2*this.invRatingScale*mach.pm")
+public DelayControlBlock t5DelayBlock;
 
 	
 	//1.6 t6 delay
@@ -90,8 +95,8 @@ DelayControlBlock t5DelayBlock;
         type= CMLFieldEnum.ControlBlock,
         input="this.t5DelayBlock.y",
         parameter={"type.NoLimit", "this.k3", "this.t6"},
-        y0="this.k2*this.k3*mach.pm")
-DelayControlBlock t6DelayBlock;
+        y0="this.k2*this.k3*this.invRatingScale*mach.pm")
+public DelayControlBlock t6DelayBlock;
 	
 	//TODO should this be treated as a feedback
 	//1.7  1-k2 gain
@@ -146,13 +151,19 @@ DelayControlBlock t6DelayBlock;
 	     */
 	    @Override
 		public boolean initStates(BaseDStabBus<?,?> bus, Machine mach) {
+	        double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+	        this.ratingScale = getData().getTrate() > 1.0e-9 && machineMva > 1.0e-9
+	                ? getData().getTrate() / machineMva : 1.0;
+	        this.invRatingScale = 1.0 / ratingScale;
+	        this.speedDeadbandBlock.setThresholds(getData().getDbH(), getData().getDbL());
 	        this.t1 = getData().getT1();
 	        this.t2 = getData().getT2();
 	        this.t3 = getData().getT3();
             this.k1 = getData().getK1();
            
-            this.pmax = getData().getPmax();
-            this.pmin = getData().getPmin();
+            double initialPower = mach.getPm() * invRatingScale;
+            this.pmax = Math.max(Math.max(getData().getPmax(), getData().getPmin()), initialPower);
+            this.pmin = Math.min(Math.min(getData().getPmax(), getData().getPmin()), initialPower);
             
             this.t4 = getData().getT4();
             this.t5 = getData().getT5();

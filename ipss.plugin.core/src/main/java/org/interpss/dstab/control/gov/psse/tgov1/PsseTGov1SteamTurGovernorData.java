@@ -10,6 +10,9 @@ public class PsseTGov1SteamTurGovernorData extends BaseControllerData {
 	    private double t3       = 5.0;
 		private double R        = 0.05;
 		private double Dt       =0.0;
+		private double dbH      =0.0;
+		private double dbL      =0.0;
+		private double trate    =0.0;
 		private double vMax     =1.0;
 		public double getvMax() {
 			return vMax;
@@ -89,6 +92,12 @@ public class PsseTGov1SteamTurGovernorData extends BaseControllerData {
 		public void setDt(double dt) {
 			Dt = dt;
 		}
+		public double getDbH() { return dbH; }
+		public void setDbH(double dbH) { this.dbH = dbH; }
+		public double getDbL() { return dbL; }
+		public void setDbL(double dbL) { this.dbL = dbL; }
+		public double getTrate() { return trate; }
+		public void setTrate(double trate) { this.trate = trate; }
 	   
 	    
 	    

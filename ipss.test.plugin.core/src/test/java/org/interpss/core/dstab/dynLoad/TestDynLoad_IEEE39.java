@@ -141,8 +141,14 @@ public class TestDynLoad_IEEE39 {
 		}
 		System.out.println("Minimum Bus 507 voltage after fault clearing = "+minPostFaultVolt);
 
-		//Minimum Bus 507 voltage after fault clearing = 0.7326761591881183
-		assertTrue(minPostFaultVolt < 0.733 && minPostFaultVolt > 0.731);
+		// With all ten machine records participating, the three-cycle fault stalls
+		// the monitored compressor motor and Bus507 remains depressed at 1.245 s.
+		// Keep this as a tight trajectory checkpoint rather than a broad envelope.
+		assertEquals(0.58953655, minPostFaultVolt, 1.0E-6);
+		Hashtable<Integer, MonitorRecord> motorState =
+				sm.getAcMotorStateTable().get("ACMotor_2@Bus504");
+		assertTrue(motorState != null);
+		assertEquals(1.0, motorState.get(50).value, 0.0);
 	}
 
 }

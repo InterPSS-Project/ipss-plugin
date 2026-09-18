@@ -5,7 +5,9 @@ package org.interpss.dstab.dynLoad.impl;
 
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.dynLoad.InductionMotor;
@@ -987,6 +989,9 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 * @ordered
 	 */
 	protected double loadFactor = LOAD_FACTOR_EDEFAULT;
+
+	/** NaN preserves the legacy quadratic A+B*w+C*w^2 torque characteristic. */
+	protected double torqueExponent = Double.NaN;
 	
 	/**
 	 * @generated NOT
@@ -1055,15 +1060,15 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	protected boolean isOutputPowerSysMVABase = false;
 	
-	private double timestep = 0.0;
-	
-
 	//integration step 
 	private Complex dEp_dt1 = null; 
 	private Complex dEp_dt2 = null; 
+	private Complex dEk_dt1 = null;
 	
 	private Complex ep_old = null;
-	private Complex epp_old = null;
+	private Complex ek = null;
+	private Complex ek_old = null;
+	private double slipDerivative1 = 0.0;
 
 	private double sysMVABase =100;
 
@@ -1808,22 +1813,30 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    
 	    ep = this.getDStabBus().getVoltage().subtract(zpMotorBase.multiply(iMotor));
 	    
-	    this.ep_old = ep;
-	    
 	    // calculate the the Norton equivalent
 	    if(twoAxisModel){
-	    	
 	      	zppMotorBase = new Complex(ra,xpp);
-	        epp = this.getDStabBus().getVoltage().subtract(zppMotorBase.multiply(iMotor));
-	        
-	        this.epp_old = epp;
-	    	
+	        Complex sourceVoltage = this.getDStabBus().getVoltage().subtract(zppMotorBase.multiply(iMotor));
+	        Complex[] initializedStates = solveTwoCageSteadyState(
+	                iMotor.getReal(), iMotor.getImaginary(), w0);
+	        ep = initializedStates[0];
+	        ek = initializedStates[1];
+	        epp = calculateTwoCageSourceVoltage(ep, ek);
+	        if (epp.subtract(sourceVoltage).abs() > 1.0e-5) {
+	            logger.error("Initialization error, the two-cage source voltage mismatch is {}",
+	                    epp.subtract(sourceVoltage).abs());
+	            return initSucceed = false;
+	        }
+	        this.ep_old = ep;
+	        this.ek_old = ek;
+
 	    	Complex ZppSysBase = new Complex(ra,xpp).multiply(this.zMultiFactor);
 	    	this.equivYSysBase = new Complex(1.0,0).divide(ZppSysBase);
 	    	
 	    	this.nortonCurInj = epp.multiply(equivYSysBase);
 	    }
 	    else{
+	        this.ep_old = ep;
 	    	Complex ZpSysBase = zpMotorBase.multiply(this.zMultiFactor);
 	    	this.equivYSysBase = new Complex(1.0,0).divide(ZpSysBase);
 	    	
@@ -1846,45 +1859,23 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    double Epr = ep.getReal();
 	    double Epm = ep.getImaginary();
 	    
-	    double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
-	    double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
-	    
-	    
-	    if(dEpr>1.0E-4 || dEpm >1.0E-4){
-	    	logger.error("Initialization error, the dEp is not zero. dEp (re,im)= {},{}", dEpr, dEpm);
-	    	return  initSucceed = false;
-	    }
-	    
-	    // electrical torque : Te = Re{E'Imotor*}
-	    te = Epr*Ir+Epm*Im;
-	    
 	    if(twoAxisModel){
-
-		    double Eppr = epp.getReal();
-		    double Eppm = epp.getImaginary();
-		    
-		    double dEppr1 = -w0*slip*(Epm-Eppm)+dEpr+(Epr-Eppr-(xp-xpp)*Im)/tpp0;
-//		    double dEppm = w0*slip*(Epr-Eppr)+dEpm+(Epm-Eppm+(xp-xpp)*Ir)/tpp0;
-//		    
-		    double dEppr2 = -w0*slip*(Epm-Eppm)+dEpr+(Epr-Eppm-(xp-xpp)*Im)/tpp0;
-//		    double dEppm = w0*slip*(Epr-Eppr)+dEpm+(Epm-Eppr+(xp-xpp)*Ir)/tpp0;
-		    
-		    double dEppr3 = -w0*slip*(Epm-Eppm)+dEpr-(Epr-Eppm-(xp-xpp)*Im)/tpp0;
-//		    double dEppm = w0*slip*(Epr-Eppr)+dEpm-(Epm-Eppr+(xp-xpp)*Ir)/tpp0;
-               
-		    double dEppr = -w0*slip*(Epm-Eppm)+dEpr-(Epr-Eppr-(xp-xpp)*Im)/tpp0;
-		    System.out.println("dEppr ="+dEppr); 
-		    System.out.println("w0*slip*(Epm-Eppm) ="+w0*slip*(Epm-Eppm));
-		    
-		    double dEppm = w0*slip*(Epr-Eppr)+dEpm-(Epm-Eppm+(xp-xpp)*Ir)/tpp0;		    
-		    System.out.println("w0*slip*(Epr-Eppr) ="+w0*slip*(Epr-Eppr));
-		    
-		    te = Eppr*Ir+Eppm*Im;
-		    
-		    if(dEppr>1.0E-4 || dEppm >1.0E-4){
-		    	logger.error("Initialization error, the dEpp is not zero. dEpp (re,im)= {},{}", dEppr, dEppm);
-		    	return initSucceed = false;
-		    }
+	        Complex[] derivatives = calculateTwoCageDerivatives(ep, ek, Ir, Im, w0, slip);
+	        if (derivatives[0].abs() > 1.0e-5 || derivatives[1].abs() > 1.0e-5) {
+	            logger.error("Initialization error, the two-cage electrical derivatives are {},{}",
+	                    derivatives[0], derivatives[1]);
+	            return initSucceed = false;
+	        }
+	        te = epp.getReal()*Ir + epp.getImaginary()*Im;
+	    }
+	    else {
+	        double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
+	        double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
+	        if(Math.abs(dEpr)>1.0E-4 || Math.abs(dEpm)>1.0E-4){
+	            logger.error("Initialization error, the dEp is not zero. dEp (re,im)= {},{}", dEpr, dEpm);
+	            return initSucceed = false;
+	        }
+	        te = Epr*Ir+Epm*Im;
 	    }
 	    
 	    
@@ -1894,7 +1885,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	    w = 1- slip;
 	    //Tm = (a+bw+cw^2)T0
 	    if(b == 0.0 && c == 0.0) a = 1.0;
-	    tm0 = tm/(a+b*w+c*w*w);
+	    tm0 = tm/mechanicalTorqueFactor(w);
 	    
 	    // extended Id;
 	    extendedDeviceId = "IndMotor_"+this.getId()+"@"+this.getDStabBus().getId();
@@ -1915,19 +1906,18 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		
 			
 			w =1-slip;
-		    this.tm = (a + b*w + c*w*w)*tm0;
+		    this.tm = mechanicalTorqueFactor(w)*tm0;
 		    
-		    double dSLIP_dt = 0;
 			if(method==DynamicSimuMethod.MODIFIED_EULER) {
 				if(flag == 0) {
 				    this.slip_old = slip;
-					dSLIP_dt = (tm-te)/(2*this.h);
-				    slip += dSLIP_dt*dt;
+					slipDerivative1 = (tm-te)/(2*this.h);
+				    slip += slipDerivative1*dt;
 			    
 				}
 				else if(flag == 1) {
 					double dSLIP_dt_1 = (tm-te)/(2*this.h);
-					slip = this.slip_old + 0.5*(dSLIP_dt_1+dSLIP_dt)*dt;
+					slip = this.slip_old + 0.5*(dSLIP_dt_1+slipDerivative1)*dt;
 				}
 		    
 		    }
@@ -1939,52 +1929,12 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		}
 		
 		// if it is in-service
-		boolean enableSubStepIntegration = false;
-		this.timestep = dt;
-		double tstep =dt;
-		
-		if(twoAxisModel){
-			if(this.tpp0<dt*4 || w <0.8) {
-				enableSubStepIntegration = true;
-				tstep = dt/subStepN;
-			}
-			
-		}
-		else{
-			if(this.tp0<dt*4 || w <0.8) {
-				enableSubStepIntegration = true;
-				tstep = dt/subStepN;
-			}
-
-		}
-		
-		// rotor electric part dynamic 
-	
-	     double w0 = 2*Math.PI*this.getDStabBus().getNetwork().getFrequency();
-	    
-	     Complex vt = this.getDStabBus().getVoltage();
-	    
-	     if(twoAxisModel){
-		     iMotor = vt.subtract(epp).divide(zppMotorBase);
-	     }
-	     else
-	    	 iMotor = vt.subtract(ep).divide(zpMotorBase);
-	     
-    	 double Ir = iMotor.getReal();
- 	     double Im = iMotor.getImaginary();
- 	     
- 	    
- 	    if(!enableSubStepIntegration){
- 	       integrationSubStep(dt, w0, Ir, Im, flag);
- 	    }
- 	    else{
- 	    	for(int i=0; i<subStepN;i++){
- 	    		//TODO to implement sub step integration with predictor-corrector style
- 	    		 integrationSubStep(tstep, w0, Ir, Im, flag);
- 	    	}
- 	    }
-
- 	
+		double w0 = 2*Math.PI*this.getDStabBus().getNetwork().getFrequency();
+		Complex vt = this.getDStabBus().getVoltage();
+		iMotor = twoAxisModel
+		        ? vt.subtract(epp).divide(zppMotorBase)
+		        : vt.subtract(ep).divide(zpMotorBase);
+		integrationSubStep(dt, w0, iMotor.getReal(), iMotor.getImaginary(), flag);
 		return true;
 	}
 	
@@ -1995,79 +1945,148 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	 
 	    
 	    if (flag ==0) {
-	    	
-	    	dEp_dt1 =calc_Ep_predict_step( w0, Epr, Epm, Im, Ir);
-	    	
-	    	ep = ep_old.add(dEp_dt1.multiply(dt));
+	        ep_old = ep;
+	        slip_old = slip;
+	        if (twoAxisModel) {
+	            ek_old = ek;
+	            Complex[] derivatives = calculateTwoCageDerivatives(ep, ek, Ir, Im, w0, slip);
+	            dEp_dt1 = derivatives[0];
+	            dEk_dt1 = derivatives[1];
+	            ep = ep_old.add(dEp_dt1.multiply(dt));
+	            ek = ek_old.add(dEk_dt1.multiply(dt));
+	            epp = calculateTwoCageSourceVoltage(ep, ek);
+	        }
+	        else {
+	            dEp_dt1 =calc_Ep_predict_step( w0, Epr, Epm, Im, Ir);
+	            ep = ep_old.add(dEp_dt1.multiply(dt));
+	        }
 	    }
 	    else if (flag ==1) {
-	
-		   
-	        dEp_dt2 = calc_Ep_corrective_step( w0, Epr, Epm, Im, Ir);
-	        
-		    //need to recover to the old value first, before adding dEp
-		    ep = ep_old.add(dEp_dt1.add(dEp_dt2).multiply(dt/2.0));
-		    
-		    ep_old = ep;
-	    
+	        if (twoAxisModel) {
+	            Complex[] derivatives = calculateTwoCageDerivatives(ep, ek, Ir, Im, w0, slip);
+	            dEp_dt2 = derivatives[0];
+	            Complex dEk_dt2 = derivatives[1];
+	            ep = ep_old.add(dEp_dt1.add(dEp_dt2).multiply(dt/2.0));
+	            ek = ek_old.add(dEk_dt1.add(dEk_dt2).multiply(dt/2.0));
+	            epp = calculateTwoCageSourceVoltage(ep, ek);
+	        }
+	        else {
+	            dEp_dt2 = calc_Ep_corrective_step( w0, Epr, Epm, Im, Ir);
+	            ep = ep_old.add(dEp_dt1.add(dEp_dt2).multiply(dt/2.0));
+	        }
 	    }
-	    
-	    if(twoAxisModel){
-	    
-	 	     throw new UnsupportedOperationException("induction motor twoAxisModel is not supported yet");
-//	 	    double Eppr = epp.getReal();
-//		    double Eppm = epp.getImaginary();
-//		    
-//		    double dEpr = w0*slip*Epm-(Epr+(xs-xp)*Im)/tp0;
-//	 	    double dEpm = -w0*slip*Epr-(Epm-(xs-xp)*Ir)/tp0;
-//	    	
-//	 	    Complex dEpp_dt1 = calc_Epp_predict_step(w0, Epr, Epm, Eppr, Eppm, dEpr, dEpm, Im, Ir);
-//	 	    Complex dEpp1 = dEpp_dt1.multiply(dt);
-//	 	   
-//	 	    double dEppr1 = dEpp1.getReal();
-//		    double dEppm1 = dEpp1.getImaginary();
-//		    
-//		    Complex dEpp_dt2 = calc_Epp_corrective_step(w0, Epr+dEpr1, Epm+dEpm1, Eppr+dEppr1, Eppm+dEppm1, dEpr1, dEpm1, Im, Ir);
-//		    
-//		    Complex dEpp =dEpp_dt1.add(dEpp_dt2).multiply(dt/2.0);
-//		    
-//		    epp = epp.add(dEpp);
-//		    // Re{E''I*}
-//		    te = epp.multiply(new Complex(Ir,-Im)).getReal();
-		    
-	    }
-	    else{
-	  	  
-	    	te = ep.multiply(new Complex(Ir,-Im)).getReal();
 
-	    }
-	 
-	    
+	    te = twoAxisModel
+	            ? epp.multiply(new Complex(Ir,-Im)).getReal()
+	            : ep.multiply(new Complex(Ir,-Im)).getReal();
+
 	    //Rotor mechanical part dynamic -- slip 
-	    
-	    //Tm = (a + bw + cw^2)Tm0, w is speed
-	    
 	    w =1-slip;
-	    tm = (a + b*w + c*w*w)*tm0;
-	    
-	    //dSLIP/dt = (Tm-Te)/2H
+	    tm = mechanicalTorqueFactor(w)*tm0;
 	    double dSLIP_dt = (tm-te)/(2*this.h);
-	    slip += dSLIP_dt*dt;
-	    
-	    //System.out.println(this.extended_device_Id+" slip ="+slip);
+	    if (flag == 0) {
+	        slipDerivative1 = dSLIP_dt;
+	        slip = slip_old + dSLIP_dt*dt;
+	    }
+	    else if (flag == 1) {
+	        slip = slip_old + (slipDerivative1+dSLIP_dt)*dt/2.0;
+	    }
+	    slip = Math.max(0.0, Math.min(1.0, slip));
+	    w = 1.0-slip;
 	}
-	
-	
-	private Complex calc_Epp_predict_step(double w0, double Epr, double Epm, double Eppr, double Eppm, double dEpr, double dEpm, double Im, double Ir){
-		double dEppr = -w0*slip*(Epm-Eppm)+dEpr+(Epr-Eppr-(xp-xpp)*Im)/tpp0;
-	    double dEppm = w0*slip*(Epr-Eppr)+dEpm+(Epm-Eppm+(xp-xpp)*Ir)/tpp0;
-	    return new Complex(dEppr,dEppm);
+
+	/**
+	 * Native double-cage state equations.  E' and Ek are the four differential
+	 * electrical states; E'' is the algebraic Norton-source voltage.
+	 */
+	private Complex[] calculateTwoCageDerivatives(Complex epState, Complex ekState,
+	        double ir, double ii, double w0, double currentSlip) {
+	    double lpMinusLl = xp-xl;
+	    double coupling = (xp-xpp)/(lpMinusLl*lpMinusLl);
+	    double slipSpeed = w0*currentSlip;
+
+	    double eq5 = epState.getReal()-ekState.getReal()-ii*lpMinusLl;
+	    double adjustedIi = eq5*coupling+ii;
+	    double dEpr = (epState.getImaginary()*tp0*slipSpeed-epState.getReal()
+	            -(xs-xp)*adjustedIi)/tp0;
+	    double dEkr = (tpp0*slipSpeed*ekState.getImaginary()+eq5)/tpp0;
+
+	    double eq18 = ir*lpMinusLl+epState.getImaginary()-ekState.getImaginary();
+	    double adjustedIr = ir-eq18*coupling;
+	    double dEpi = ((xs-xp)*adjustedIr-epState.getReal()*tp0*slipSpeed
+	            -epState.getImaginary())/tp0;
+	    double dEki = (eq18-ekState.getReal()*tpp0*slipSpeed)/tpp0;
+	    return new Complex[] {new Complex(dEpr, dEpi), new Complex(dEkr, dEki)};
 	}
-	
-    private Complex calc_Epp_corrective_step(double w0, double Epr, double Epm, double Eppr, double Eppm, double dEpr, double dEpm, double Im, double Ir){
-    	double dEppr = -w0*slip*(Epm-Eppm)+dEpr+(Epr-Eppr-(xp-xpp)*Im)/tpp0;
-	    double dEppm = w0*slip*(Epr-Eppr)+dEpm+(Epm-Eppm+(xp-xpp)*Ir)/tpp0;
-	    return new Complex(dEppr,dEppm);
+
+	private Complex calculateTwoCageSourceVoltage(Complex epState, Complex ekState) {
+	    double denominator = xp-xl;
+	    double epWeight = (xpp-xl)/denominator;
+	    double ekWeight = (xp-xpp)/denominator;
+	    return epState.multiply(epWeight).add(ekState.multiply(ekWeight));
+	}
+
+	private Complex[] solveTwoCageSteadyState(double ir, double ii, double w0) {
+	    double lpMinusLl = xp-xl;
+	    double coupling = (xp-xpp)/(lpMinusLl*lpMinusLl);
+	    double transientSlip = tp0*w0*slip;
+	    double subtransientSlip = tpp0*w0*slip;
+	    double currentGain = 1.0-coupling*lpMinusLl;
+	    double stateGain = (xs-xp)*coupling;
+	    double[][] augmented = {
+	        {-1.0-stateGain, transientSlip, stateGain, 0.0,
+	                (xs-xp)*ii*currentGain},
+	        {-transientSlip, -1.0-stateGain, 0.0, stateGain,
+	                -(xs-xp)*ir*currentGain},
+	        {1.0, 0.0, -1.0, subtransientSlip, ii*lpMinusLl},
+	        {0.0, 1.0, -subtransientSlip, -1.0, -ir*lpMinusLl}
+	    };
+	    for (int column = 0; column < 4; column++) {
+	        int pivot = column;
+	        for (int row = column+1; row < 4; row++) {
+	            if (Math.abs(augmented[row][column]) > Math.abs(augmented[pivot][column])) {
+	                pivot = row;
+	            }
+	        }
+	        if (Math.abs(augmented[pivot][column]) < 1.0e-12) {
+	            throw new IllegalStateException("Singular two-cage motor initialization");
+	        }
+	        double[] swap = augmented[column];
+	        augmented[column] = augmented[pivot];
+	        augmented[pivot] = swap;
+	        double divisor = augmented[column][column];
+	        for (int j = column; j < 5; j++) augmented[column][j] /= divisor;
+	        for (int row = 0; row < 4; row++) {
+	            if (row == column) continue;
+	            double factor = augmented[row][column];
+	            for (int j = column; j < 5; j++) {
+	                augmented[row][j] -= factor*augmented[column][j];
+	            }
+	        }
+	    }
+	    return new Complex[] {
+	        new Complex(augmented[0][4], augmented[1][4]),
+	        new Complex(augmented[2][4], augmented[3][4])
+	    };
+	}
+
+	private double mechanicalTorqueFactor(double speed) {
+		return Double.isNaN(torqueExponent)
+				? a + b * speed + c * speed * speed
+				: Math.pow(Math.max(0.0, speed), torqueExponent);
+	}
+
+	@Override
+	public double getTorqueExponent() {
+		return torqueExponent;
+	}
+
+	@Override
+	public void setTorqueExponent(double exponent) {
+		if (!Double.isFinite(exponent)) {
+			throw new IllegalArgumentException("Motor torque exponent must be finite");
+		}
+		this.torqueExponent = exponent;
 	}
 	
     private Complex calc_Ep_predict_step(double w0, double Epr, double Epm, double Im, double Ir){
@@ -2241,8 +2260,9 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 			
 		}
 		
-		//update the total on-line fraction
-		this.Fonline = this.Fonline*this.Fuv;
+		// Recompute from the independent load-change and relay fractions. Multiplying
+		// the prior value every step causes an unintended exponential decay.
+		this.Fonline = (1.0+this.accumulatedLoadChangeFactor)*this.Fuv;
 
 		
 		return flag;
@@ -2282,6 +2302,7 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 	
 	@Override
 	public Hashtable<String, Object> getStates(Object ref) {
+		this.states.putAll(getNamedStates());
 		
 		double factor = 1;
 		if (isOutputPowerSysMVABase) 
@@ -2297,6 +2318,30 @@ public class InductionMotorImpl extends DynLoadModelImpl implements InductionMot
 		this.states.put(this.OUT_SYMBOL_FUV,this.Fuv);
 		
 		return this.states;
+	}
+
+	@Override
+	public Map<String, Double> getNamedStates() {
+		Map<String, Double> named = new LinkedHashMap<>();
+		named.put("EpReal", getEp() == null ? 0.0 : getEp().getReal());
+		named.put("EpImag", getEp() == null ? 0.0 : getEp().getImaginary());
+		named.put("EppReal", getEpp() == null ? 0.0 : getEpp().getReal());
+		named.put("EppImag", getEpp() == null ? 0.0 : getEpp().getImaginary());
+		named.put("EPrimeQ", getEp() == null ? 0.0 : getEp().getReal());
+		named.put("EPrimeD", getEp() == null ? 0.0 : getEp().getImaginary());
+		named.put("EDoublePrimeQ", ek == null ? named.get("EppReal") : ek.getReal());
+		named.put("EDoublePrimeD", ek == null ? named.get("EppImag") : ek.getImaginary());
+		named.put("EkReal", ek == null ? named.get("EppReal") : ek.getReal());
+		named.put("EkImag", ek == null ? named.get("EppImag") : ek.getImaginary());
+		named.put("Slip", getSlip());
+		named.put("Speed", getW());
+		named.put("TripTimer1", lvProtectionTimer1);
+		named.put("TripTimer2", lvProtectionTimer2);
+		named.put("ReconnectTimer1", lvReconnectTimer1);
+		named.put("ReconnectTimer2", lvReconnectTimer2);
+		named.put("UvFraction", getFuv());
+		named.put("OnlineFraction", getFonline());
+		return Map.copyOf(named);
 	}
 	
 	

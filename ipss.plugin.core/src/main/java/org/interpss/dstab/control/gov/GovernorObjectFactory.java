@@ -35,8 +35,21 @@ import org.interpss.dstab.control.gov.ieee.steamNR.IeeeSteamNRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCSR.IeeeSteamTCSRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernor;
+import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernor;
+import org.interpss.dstab.control.gov.psse.degov1.PsseDegov1dGovernor;
+import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
+import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor;
+import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
+import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
+import org.interpss.dstab.control.gov.psse.hygov2.PsseHygov2dGovernor;
+import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
+import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
+import org.interpss.dstab.control.gov.psse.wpidhy.PsseWpidhydGovernor;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
 
 import com.interpss.dstab.mach.Machine;
@@ -58,9 +71,9 @@ public class GovernorObjectFactory {
 	 */	
 	public static SimpleGovernor createSimpleGovernor(String id, String name, Machine machine) {
 		SimpleGovernor gov = new SimpleGovernor(id, name, "InterPSS");
-		gov.setMachine(machine); 
+		gov.setMachine(machine);
 		return gov;
-  	}
+	}
 
 	/**
 	 * factory method to create an Ieee Hydro Turbine Governor
@@ -168,10 +181,10 @@ public class GovernorObjectFactory {
 	  * @return
 	  */
 	 public static Ieee1981Type3HydroGovernor createIeee1981Type3HydroGovernor(String id, String name, Machine machine) {
-		 Ieee1981Type3HydroGovernor gov = new Ieee1981Type3HydroGovernor(id, name, "InterPSS");
-			gov.setMachine(machine); 
-			return gov;
-	  }
+		 Ieee1981Type3HydroGovernor gov = new Ieee1981Type3HydroGovernor(id, name, "PSS/E");
+		 gov.setMachine(machine);
+		 return gov;
+	 }
 	 
     //////////////////////////////////////////////////////////////
 	///      PSS/E Tur-Gov model
@@ -192,9 +205,93 @@ public class GovernorObjectFactory {
 	
 	public static PsseTGov1SteamTurGovernor createPsseTGOV1SteamTurGovernor(String id, String name, Machine machine) {
 		PsseTGov1SteamTurGovernor gov = new PsseTGov1SteamTurGovernor(id, name, "PSS/E");
-		gov.setMachine(machine); 
+		gov.setMachine(machine);
 		return gov;
-  	}
+	}
+
+	public static PsseGastwddGovernor createPsseGASTWDDGovernor(String id, String name, Machine machine) {
+		PsseGastwddGovernor gov = new PsseGastwddGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseGast2adGovernor createPsseGAST2ADGovernor(String id, String name, Machine machine) {
+		PsseGast2adGovernor gov = new PsseGast2adGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseGgov1Governor createPsseGGOV1Governor(String id, String name, Machine machine) {
+		PsseGgov1Governor gov = new PsseGgov1Governor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseH6eGovernor createPsseH6EGovernor(String id, String name, Machine machine) {
+		PsseH6eGovernor gov = new PsseH6eGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseHygovGovernor createPsseHYGOVGovernor(String id, String name, Machine machine) {
+		PsseHygovGovernor gov = new PsseHygovGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseHygovrGovernor createPsseHYGOVR1Governor(String id, String name, Machine machine) {
+		PsseHygovrGovernor gov = new PsseHygovrGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseHyg3Governor createPsseHYG3Governor(String id, String name, Machine machine) {
+		PsseHyg3Governor gov = new PsseHyg3Governor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseWesgovdGovernor createPsseWESGOVDGovernor(
+			String id, String name, Machine machine) {
+		PsseWesgovdGovernor gov = new PsseWesgovdGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseDegov1dGovernor createPsseDEGOV1DGovernor(
+			String id, String name, Machine machine) {
+		PsseDegov1dGovernor gov = new PsseDegov1dGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PssePidgovdGovernor createPssePIDGOVDGovernor(
+			String id, String name, Machine machine) {
+		PssePidgovdGovernor gov = new PssePidgovdGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseTgov3dGovernor createPsseTGOV3DGovernor(
+			String id, String name, Machine machine) {
+		PsseTgov3dGovernor gov = new PsseTgov3dGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseHygov2dGovernor createPsseHYGOV2DGovernor(
+			String id, String name, Machine machine) {
+		PsseHygov2dGovernor gov = new PsseHygov2dGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
+
+	public static PsseWpidhydGovernor createPsseWPIDHYDGovernor(
+			String id, String name, Machine machine) {
+		PsseWpidhydGovernor gov = new PsseWpidhydGovernor(id, name, "PSS/E");
+		gov.setMachine(machine);
+		return gov;
+	}
 	
 	public static PsseIEESGOSteamTurGovernor createPsseIEESGOSteamTurGovernor(String id, String name, Machine machine) {
 		PsseIEESGOSteamTurGovernor gov = new PsseIEESGOSteamTurGovernor(id, name, "PSS/E");

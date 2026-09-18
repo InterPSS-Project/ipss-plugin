@@ -113,7 +113,7 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 		this.indMotorA = new  InductionMotorImpl();
 		this.indMotorB = new  InductionMotorImpl();
 		this.indMotorC = new  InductionMotorImpl();
-		this.ac1PMotor = new  LD1PACImpl(bus,"1");
+		this.ac1PMotor = new  LD1PACImpl();
 		//this.staticLoad= new  DynLoadVFreqDependentModelImpl();
 		
 		this.setDStabBus(bus);
@@ -128,15 +128,9 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     public boolean initStates(){
     	boolean initflag = true;
     	
-		this.totalLoad = new Complex(this.getDStabBus().getLoadP(), this.getDStabBus().getLoadQ()); // or getInitLoad()
+		this.totalLoad = resolveCompositeLoad();
 		
-		// set parentBus to nonLoad, and remove all the loads
-		this.getDStabBus().setLoadCode(AclfLoadCode.NON_LOAD);
-		this.getDStabBus().setLoadP(0.0);
-		this.getDStabBus().setLoadQ(0.0);
-		if(this.getDStabBus().getContributeLoadList().size()>0){
-			this.getDStabBus().getContributeLoadList().clear();
-		}
+		detachCompositeLoadFromParentBus();
     	
     	// note: convert MVA base
     	this.mvaBase = this.getMvaBase();
@@ -275,7 +269,13 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
   	     
   	     // Tap = sqrt((Vlf_mag*V2_mag)^2/((Qlf_pu*Xxfr_pu-Vlf_mag^2)^2+(Xxfr_pu*Plf_pu)^2))
   	     
-  	     tap = Math.sqrt(Math.pow(Vmag_trans*Vmag_lowBus,2)/(Math.pow((Qld*Xxfr_pu-Vmag_trans*Vmag_trans),2)+Math.pow((Xxfr_pu*Pld),2)));
+	     // The solved low-side voltage also contains the fixed high/low tap
+	     // ratio (Tfixls/Tfixhs).  The original estimate omitted that ratio,
+	     // so non-unity fixed taps initialized below the requested LTC band.
+	     tap = Tfixhs / Tfixls
+	             * Math.sqrt(Math.pow(Vmag_trans * Vmag_lowBus, 2)
+	                     / (Math.pow(Qld * Xxfr_pu - Vmag_trans * Vmag_trans, 2)
+	                             + Math.pow(Xxfr_pu * Pld, 2)));
   	    	
   	     //check the validity of the tap
   	     
@@ -493,9 +493,6 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			loadBus.addDynamicLoadModel(indMotorA);
     			this.indMotorA.setLoadPercent(fMotorA*100.0);
     			//this.indMotorA.setLoadFactor(loadingFactor); should be set during the data input stage
-    		    //TODO only a temporal solution
-    			this.indMotorA.setTpp0(0.0);
-    			
     			this.indMotorA.initStates();
     		}
     		else{
@@ -512,9 +509,6 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			this.indMotorB.setId(this.getId()+"_B");
     			loadBus.addDynamicLoadModel(indMotorB);
     			this.indMotorB.setLoadPercent(fMotorB*100.0);
-    			
-    			 //TODO only a temporal solution
-    			this.indMotorB.setTpp0(0.0);
     			
     			this.indMotorB.initStates();
     		}
@@ -533,9 +527,6 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
     			this.indMotorC.setId(this.getId()+"_C");
     			loadBus.addDynamicLoadModel(indMotorC);
     			this.indMotorC.setLoadPercent(fMotorC*100.0);
-    			
-    			 //TODO only a temporal solution
-    			this.indMotorC.setTpp0(0.0);
     			
     			this.indMotorC.initStates();
     		}
@@ -600,6 +591,24 @@ public class DynLoadCMPLDWImpl extends DynLoadModelImpl implements DynLoadCMPLDW
 		return initflag ;
     	
     }
+
+	/** Load represented by this composite container before its parent-bus loads are detached. */
+	protected Complex resolveCompositeLoad() {
+		return new Complex(this.getDStabBus().getLoadP(), this.getDStabBus().getLoadQ());
+	}
+
+	/**
+	 * Remove the represented load from the parent bus. Subclasses may retain loads that are
+	 * outside their application scope.
+	 */
+	protected void detachCompositeLoadFromParentBus() {
+		this.getDStabBus().setLoadCode(AclfLoadCode.NON_LOAD);
+		this.getDStabBus().setLoadP(0.0);
+		this.getDStabBus().setLoadQ(0.0);
+		if (!this.getDStabBus().getContributeLoadList().isEmpty()) {
+			this.getDStabBus().getContributeLoadList().clear();
+		}
+	}
 
 	private Complex reduceZfdrToIncreaseVloadBus(Complex VlowBus, Complex ItoloadBus, Complex VloadBus) {
 		if(VlowBus.abs()>= VloadBusMin){

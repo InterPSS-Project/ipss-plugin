@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.BaseAclfNetwork;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.net.OriginalDataFormat;
@@ -52,16 +53,37 @@ public class PWDDirectParser {
         this.builder = new AclfNetworkBuilder();
     }
 
+    /**
+     * Parse into a caller-supplied network builder. This allows the same AUX
+     * topology used by an external benchmark to populate a DStabilityNetwork
+     * instead of first translating it through a second interchange format.
+     */
+    public PWDDirectParser(AclfNetworkBuilder builder) {
+        if (builder == null) throw new IllegalArgumentException("builder must not be null");
+        this.builder = builder;
+    }
+
     public AclfNetwork parse(String filepath) throws InterpssException {
+        return (AclfNetwork) parseInto(filepath);
+    }
+
+    /** Parse into the network owned by the injected builder. */
+    public BaseAclfNetwork<?, ?> parseInto(String filepath) throws InterpssException {
         try (BufferedReader reader = new BufferedReader(new FileReader(filepath))) {
-            parseFromReader(reader);
+            parseInto(reader);
         } catch (IOException e) {
             throw new InterpssException("Error reading PowerWorld file: " + filepath + ": " + e.getMessage());
         }
-        return builder.getNetwork();
+        return builder.getBaseNetwork();
     }
 
     public AclfNetwork parseFromReader(BufferedReader reader) throws IOException, InterpssException {
+        return (AclfNetwork) parseInto(reader);
+    }
+
+    /** Parse AUX data from a reader into the injected builder's base network. */
+    public BaseAclfNetwork<?, ?> parseInto(BufferedReader reader)
+            throws IOException, InterpssException {
         builder.setNetworkInfo("PWD_Case", "PowerWorld Case", baseMva * 1000.0, OriginalDataFormat.PWD);
 
         // Preserve newlines so DATA rows remain one-record-per-line.
@@ -78,7 +100,7 @@ public class PWDDirectParser {
         parseDataSections(buffer.toString());
 
         builder.finalizeNetwork();
-        return builder.getNetwork();
+        return builder.getBaseNetwork();
     }
 
     private void parseDataSections(String content) throws InterpssException {
@@ -246,6 +268,9 @@ public class PWDDirectParser {
             String status = getString(row, fields, "Open", "genstatus");
             double pmax = getDouble(row, fields, 0.0, "genmwmax");
             double pmin = getDouble(row, fields, 0.0, "genmwmin");
+            double zr = getDouble(row, fields, 0.0, "genzr");
+            double zx = getDouble(row, fields, 0.0, "genzx");
+            Complex sourceZ = zr != 0.0 || zx != 0.0 ? new Complex(zr, zx) : null;
 
             if (mbase == 0.0) mbase = baseMva;
             String busId = BUS_ID_PREFIX + busNum;
@@ -254,10 +279,10 @@ public class PWDDirectParser {
             builder.addContributeGen(busId, genId, genStatus,
                     pg / baseMva, qg / baseMva, mbase, vs,
                     qmax / baseMva, qmin / baseMva, pmax / baseMva, pmin / baseMva,
-                    null, null, 1.0, null, 1.0, 1.0);
+                    sourceZ, null, 1.0, null, 1.0, 1.0);
 
             // Contribute gens do not set bus genCode; AVR-able gens → PV (unless already swing)
-            BaseAclfBus bus = builder.getNetwork().getBus(busId);
+            BaseAclfBus bus = builder.getBaseNetwork().getBus(busId);
             if (bus != null && bus.getGenCode() != AclfGenCode.SWING && genStatus) {
                 String avr = getString(row, fields, "YES", "genavrable");
                 if ("YES".equalsIgnoreCase(avr.trim()) || vs > 0.0) {

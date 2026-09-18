@@ -99,10 +99,12 @@ public class SMIB_Gen_Test extends TestSetupBase{
 //		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		MonitorRecord maxAngleRec = sm.getMachAngleTable().get("Bus1-mach1").values().stream().max(Comparator.comparing(MonitorRecord:: getValue)).get();
-		assertEquals(25.338, maxAngleRec.getValue(), 1.0e-1);
+		// Flux0 GENROU reference; the complete trajectory is checked against ANDES
+		// by GenrouAndesSmibConformanceTest.
+		assertEquals(25.71499885, maxAngleRec.getValue(), 1.0e-1);
 //		assertTrue(NumericUtil.equals(maxAngleRec.getTime(),1.315, 1.0e-3));
 		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
-		assertEquals(23.328, sm.getMachAngleTable().get("Bus1-mach1").get(1000).value, 1.0E-3);
+		assertEquals(23.34052721, sm.getMachAngleTable().get("Bus1-mach1").get(1000).value, 1.0E-3);
 		
 		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
 		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(200).value, 1.0E-4);
@@ -192,7 +194,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 //		System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		MonitorRecord maxAngleRec = sm.getMachAngleTable().get("Bus1-mach1").values().stream().max(Comparator.comparing(MonitorRecord:: getValue)).get();
-		assertEquals(23.44368, maxAngleRec.getValue(), 1.0e-2);
+		assertEquals(23.82307896, maxAngleRec.getValue(), 1.0e-2);
 //		assertTrue(NumericUtil.equals(maxAngleRec.getTime(),1.315, 1.0e-3));
 		assertEquals(21.01872, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
 		//assertTrue(NumericUtil.equals(sm.getMachAngleTable().get("Bus1-mach1").get(1000).value, 23.328,1.0E-3));
@@ -285,7 +287,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 
 		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-2);
-		assertEquals(23.09754, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-2);
+		assertEquals(23.10771535, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-2);
 		assertEquals(0.50001, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-3);
 		assertEquals(0.50004, sm.getMachPeTable().get("Bus1-mach1").get(2000).value, 1.0E-3);
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEEG1_pm.csv",sm.toCSVString(sm.getMachPmTable()));
@@ -375,7 +377,7 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		assertEquals(1.105872869, sm.getMachEfdTable().get("Bus1-mach1").get(0).value, 1.0E-4);
 		assertEquals(0.41, sm.getMachEfdTable().get("Bus1-mach1").get(83).t, 1.0E-4, ""+sm.getMachEfdTable().get("Bus1-mach1").get(83).t);
 		assertEquals(1.10587, sm.getMachEfdTable().get("Bus1-mach1").get(83).value, 1.0E-4, ""+sm.getMachEfdTable().get("Bus1-mach1").get(83).value);
-		assertEquals(2.7344, sm.getMachEfdTable().get("Bus1-mach1").get(2000).value, 1.0E-4, ""+sm.getMachEfdTable().get("Bus1-mach1").get(2000).value);
+		assertEquals(2.81194221, sm.getMachEfdTable().get("Bus1-mach1").get(2000).value, 1.0E-4, ""+sm.getMachEfdTable().get("Bus1-mach1").get(2000).value);
 		assertEquals(0.50001, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-5);
 
 		FileUtil.writeText2File("output/SMIB/GENROU_IEEET1_Efd.csv",sm.toCSVString(sm.getMachEfdTable()));
@@ -465,10 +467,10 @@ public class SMIB_Gen_Test extends TestSetupBase{
 		//System.out.println("Bus freq (pu):\n"+sm.toCSVString(sm.getBusFreqTable()));
 		
 		MonitorRecord maxAngleRec = sm.getMachAngleTable().get("Bus1-mach1").values().stream().max(Comparator.comparing(MonitorRecord:: getValue)).get();
-		assertEquals(25.94, maxAngleRec.getValue(), 1.0e-1);
+		assertEquals(26.07659456, maxAngleRec.getValue(), 1.0e-1);
 //		assertTrue(NumericUtil.equals(maxAngleRec.getTime(),1.315, 1.0e-3));
 		assertEquals(22.98926, sm.getMachAngleTable().get("Bus1-mach1").get(0).value, 1.0E-4);
-		assertEquals(23.09, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-2);
+		assertEquals(23.10602938, sm.getMachAngleTable().get("Bus1-mach1").get(2000).value, 1.0E-2);
 		
 		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(0).value, 1.0E-4);
 		assertEquals(0.5, sm.getMachPeTable().get("Bus1-mach1").get(200).value, 1.0E-4);

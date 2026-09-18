@@ -1,16 +1,265 @@
 package org.interpss.fadapter.builder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.interpss.dstab.control.exc.ExciterObjectFactory;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
 import org.interpss.dstab.control.exc.ieee.y1981.dc1.IEEE1981DC1Exciter;
+import org.interpss.dstab.control.exc.psse.ieeex1.Ieeex1Exciter;
+import org.interpss.dstab.control.exc.psse.ieeex2.Ieeex2Exciter;
+import org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter;
+import org.interpss.dstab.control.exc.psse.exdc2a.Exdc2aExciter;
+import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Data;
+import org.interpss.dstab.control.exc.psse.ieeet4.Ieeet4Exciter;
+import org.interpss.dstab.control.exc.psse.ac7b.Ac7bData;
+import org.interpss.dstab.control.exc.psse.ac7b.Ac7bExciter;
+import org.interpss.dstab.control.exc.psse.ac1c.Ac1cData;
+import org.interpss.dstab.control.exc.psse.ac1c.Ac1cExciter;
+import org.interpss.dstab.control.exc.psse.ac2c.Ac2cData;
+import org.interpss.dstab.control.exc.psse.ac2c.Ac2cExciter;
+import org.interpss.dstab.control.exc.psse.ac3c.Ac3cData;
+import org.interpss.dstab.control.exc.psse.ac3c.Ac3cExciter;
+import org.interpss.dstab.control.exc.psse.ac4c.Ac4cData;
+import org.interpss.dstab.control.exc.psse.ac4c.Ac4cExciter;
+import org.interpss.dstab.control.exc.psse.ac5c.Ac5cData;
+import org.interpss.dstab.control.exc.psse.ac5c.Ac5cExciter;
+import org.interpss.dstab.control.exc.psse.ac6c.Ac6cData;
+import org.interpss.dstab.control.exc.psse.ac6c.Ac6cExciter;
+import org.interpss.dstab.control.exc.psse.ac7c.Ac7cData;
+import org.interpss.dstab.control.exc.psse.ac7c.Ac7cExciter;
+import org.interpss.dstab.control.exc.psse.ac8b.Ac8bData;
+import org.interpss.dstab.control.exc.psse.ac8b.Ac8bExciter;
+import org.interpss.dstab.control.exc.psse.esac8b.Esac8bData;
+import org.interpss.dstab.control.exc.psse.esac8b.Esac8bExciter;
+import org.interpss.dstab.control.exc.psse.ac8c.Ac8cData;
+import org.interpss.dstab.control.exc.psse.ac8c.Ac8cExciter;
+import org.interpss.dstab.control.exc.psse.ac9c.Ac9cData;
+import org.interpss.dstab.control.exc.psse.ac9c.Ac9cExciter;
+import org.interpss.dstab.control.exc.psse.ac11c.Ac11cData;
+import org.interpss.dstab.control.exc.psse.ac11c.Ac11cExciter;
+import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Data;
+import org.interpss.dstab.control.exc.psse.bbsex1.Bbsex1Exciter;
+import org.interpss.dstab.control.exc.psse.esac4a.Esac4aData;
+import org.interpss.dstab.control.exc.psse.esac4a.Esac4aExciter;
+import org.interpss.dstab.control.exc.psse.exac4.Exac4Data;
+import org.interpss.dstab.control.exc.psse.exac4.Exac4Exciter;
+import org.interpss.dstab.control.exc.psse.dc4b.Dc4bData;
+import org.interpss.dstab.control.exc.psse.dc4b.Dc4bExciter;
+import org.interpss.dstab.control.exc.psse.dc4c.Dc4cData;
+import org.interpss.dstab.control.exc.psse.dc4c.Dc4cExciter;
+import org.interpss.dstab.control.exc.psse.dc3a.Dc3aData;
+import org.interpss.dstab.control.exc.psse.dc3a.Dc3aExciter;
+import org.interpss.dstab.control.exc.psse.st6b.St6bData;
+import org.interpss.dstab.control.exc.psse.st6b.St6bExciter;
+import org.interpss.dstab.control.exc.psse.st6c.St6cData;
+import org.interpss.dstab.control.exc.psse.st6c.St6cExciter;
+import org.interpss.dstab.control.exc.psse.exeli.ExeliData;
+import org.interpss.dstab.control.exc.psse.exeli.ExeliExciter;
+import org.interpss.dstab.control.exc.psse.st1c.St1cData;
+import org.interpss.dstab.control.exc.psse.st1c.St1cExciter;
+import org.interpss.dstab.control.exc.psse.st2c.St2cData;
+import org.interpss.dstab.control.exc.psse.st2c.St2cExciter;
+import org.interpss.dstab.control.exc.psse.st3c.St3cData;
+import org.interpss.dstab.control.exc.psse.st3c.St3cExciter;
+import org.interpss.dstab.control.exc.psse.st4c.St4cData;
+import org.interpss.dstab.control.exc.psse.st4c.St4cExciter;
+import org.interpss.dstab.control.exc.psse.st5c.St5cData;
+import org.interpss.dstab.control.exc.psse.st5c.St5cExciter;
+import org.interpss.dstab.control.exc.psse.st7b.St7bData;
+import org.interpss.dstab.control.exc.psse.st7b.St7bExciter;
+import org.interpss.dstab.control.exc.psse.st7c.St7cData;
+import org.interpss.dstab.control.exc.psse.st7c.St7cExciter;
+import org.interpss.dstab.control.exc.psse.st8c.St8cData;
+import org.interpss.dstab.control.exc.psse.st8c.St8cExciter;
+import org.interpss.dstab.control.exc.psse.st9c.St9cData;
+import org.interpss.dstab.control.exc.psse.st9c.St9cExciter;
+import org.interpss.dstab.control.exc.psse.st10c.St10cData;
+import org.interpss.dstab.control.exc.psse.st10c.St10cExciter;
+import org.interpss.dstab.control.exc.psse.esst2a.Esst2aData;
+import org.interpss.dstab.control.exc.psse.esst2a.Esst2aExciter;
+import org.interpss.dstab.control.exc.psse.exst2.Exst2Data;
+import org.interpss.dstab.control.exc.psse.exst2.Exst2Exciter;
+import org.interpss.dstab.control.exc.psse.exst3.Exst3Data;
+import org.interpss.dstab.control.exc.psse.exst3.Exst3Exciter;
+import org.interpss.dstab.control.exc.psse.st5b.St5bData;
+import org.interpss.dstab.control.exc.psse.st5b.St5bExciter;
+import org.interpss.dstab.control.exc.psse.rexsys.RexsysData;
+import org.interpss.dstab.control.exc.psse.rexsys.RexsysExciter;
+import org.interpss.dstab.svc.Csvgn5Data;
+import org.interpss.dstab.svc.Csvgn5Model;
+import org.interpss.dstab.svc.Svsmo1t2Data;
+import org.interpss.dstab.svc.Svsmo1t2Model;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciterData;
 import org.interpss.dstab.control.exc.simple.SimpleExciter;
+import org.interpss.dstab.control.exc.psse.scrx.ScrxData;
+import org.interpss.dstab.control.exc.psse.scrx.ScrxExciter;
+import org.interpss.dstab.control.exc.psse.esac5a.Esac5aData;
+import org.interpss.dstab.control.exc.psse.esac5a.Esac5aExciter;
+import org.interpss.dstab.control.exc.psse.exac1.Exac1Data;
+import org.interpss.dstab.control.exc.psse.exac1.Exac1Exciter;
+import org.interpss.dstab.control.exc.psse.esurry.EsurryData;
+import org.interpss.dstab.control.exc.psse.esurry.EsurryExciter;
+import org.interpss.dstab.control.exc.psse.exac1a.Exac1aData;
+import org.interpss.dstab.control.exc.psse.exac1a.Exac1aExciter;
+import org.interpss.dstab.control.exc.psse.exac2.Exac2Data;
+import org.interpss.dstab.control.exc.psse.exac2.Exac2Exciter;
+import org.interpss.dstab.control.exc.psse.esac1a.Esac1aData;
+import org.interpss.dstab.control.exc.psse.esac1a.Esac1aExciter;
+import org.interpss.dstab.control.exc.psse.esac2a.Esac2aData;
+import org.interpss.dstab.control.exc.psse.esac2a.Esac2aExciter;
+import org.interpss.dstab.control.exc.psse.esac3a.Esac3aData;
+import org.interpss.dstab.control.exc.psse.esac3a.Esac3aExciter;
+import org.interpss.dstab.control.exc.psse.esac6a.Esac6aData;
+import org.interpss.dstab.control.exc.psse.esac6a.Esac6aExciter;
 import org.interpss.dstab.control.gov.GovernorObjectFactory;
+import org.interpss.dstab.control.gov.ieee.hydro1981Type3.Ieee1981Type3HydroGovernor;
 import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 import org.interpss.dstab.control.gov.psse.gast.PsseGASTGasTurGovernor;
+import org.interpss.dstab.control.gov.psse.degov1.PsseDegov1dGovernor;
+import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
+import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData;
+import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernor;
+import org.interpss.dstab.control.gov.psse.h6e.PsseH6eGovernorData;
+import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3Governor;
+import org.interpss.dstab.control.gov.psse.hyg3.PsseHyg3GovernorData;
+import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
+import org.interpss.dstab.control.gov.psse.hygov2.PsseHygov2dGovernor;
+import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
+import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernor;
+import org.interpss.dstab.control.gov.psse.hygovr.PsseHygovrGovernorData;
+import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1Data;
+import org.interpss.dstab.control.gov.psse.lcfb1.Lcfb1PrefController;
+import org.interpss.dstab.control.uel.psse.uel1.Uel1Data;
+import org.interpss.dstab.control.uel.psse.uel1.Uel1UnderExcitationLimiter;
+import org.interpss.dstab.control.uel.psse.uel2c.Uel2cData;
+import org.interpss.dstab.control.uel.psse.uel2c.Uel2cUnderExcitationLimiter;
+import org.interpss.dstab.control.oel.psse.oel2c.Oel2cData;
+import org.interpss.dstab.control.oel.psse.oel2c.Oel2cOverExcitationLimiter;
 import org.interpss.dstab.control.gov.psse.ieesgo.PsseIEESGOSteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.pidgov.PssePidgovdGovernor;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
+import org.interpss.dstab.control.gov.psse.tgov3.PsseTgov3dGovernor;
+import org.interpss.dstab.control.gov.psse.wesgov.PsseWesgovdGovernor;
+import org.interpss.dstab.control.gov.psse.wpidhy.PsseWpidhydGovernor;
+import org.interpss.dstab.control.gov.wecc.wshygp.WshygpGovernor;
+import org.interpss.dstab.control.gov.wecc.wshygp.WshygpGovernorData;
+import org.interpss.dstab.control.gov.wecc.wshydd.WshyddGovernor;
+import org.interpss.dstab.control.gov.wecc.wshydd.WshyddGovernorData;
+import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernor;
+import org.interpss.dstab.control.gov.psse.gastwd.PsseGastwddGovernorData;
+import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernor;
+import org.interpss.dstab.control.gov.psse.gast2a.PsseGast2adGovernorData;
 import org.interpss.dstab.control.gov.simple.SimpleGovernor;
+import org.interpss.dstab.control.pss.StabilizerObjectFactory;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
+import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer;
+import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss2c.Ieee2016PSS2CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss3c.Ieee2016PSS3CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss4c.Ieee2016PSS4CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss5c.Ieee2016PSS5CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss6c.Ieee2016PSS6CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2016.pss7c.Ieee2016PSS7CStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2005.pss3b.Ieee2005PSS3BStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizer;
+import org.interpss.dstab.control.pss.ieee.y2005.pss4b.Ieee2005PSS4BStabilizerData;
+import org.interpss.dstab.control.pss.ieee.y1992.pss1a.Ieee1992PSS1AStabilizer;
+import org.interpss.dstab.renewable.Reecb1Data;
+import org.interpss.dstab.renewable.Reecb1Model;
+import org.interpss.dstab.renewable.Reecc1Data;
+import org.interpss.dstab.renewable.Reecc1Model;
+import org.interpss.dstab.renewable.Reecd1Data;
+import org.interpss.dstab.renewable.Reecd1Model;
+import org.interpss.dstab.renewable.Reeca1Data;
+import org.interpss.dstab.renewable.Reeca1Model;
+import org.interpss.dstab.renewable.Dera1Data;
+import org.interpss.dstab.renewable.Dera1Model;
+import org.interpss.dstab.renewable.Regca1Data;
+import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regcb1Data;
+import org.interpss.dstab.renewable.Regcb1Model;
+import org.interpss.dstab.renewable.Regfma1Data;
+import org.interpss.dstab.renewable.Regfma1Model;
+import org.interpss.dstab.renewable.Repca1Data;
+import org.interpss.dstab.renewable.Repca1Model;
+import org.interpss.dstab.renewable.WindControlStack;
+import org.interpss.dstab.renewable.Wtara1Data;
+import org.interpss.dstab.renewable.Wtara1Model;
+import org.interpss.dstab.renewable.Wtdta1Data;
+import org.interpss.dstab.renewable.Wtdta1Model;
+import org.interpss.dstab.renewable.WtgtAData;
+import org.interpss.dstab.renewable.Wtpta1Data;
+import org.interpss.dstab.renewable.Wtpta1Model;
+import org.interpss.dstab.renewable.Wttqa1Data;
+import org.interpss.dstab.renewable.Wttqa1Model;
+import org.interpss.dstab.mach.GenqecData;
+import org.interpss.dstab.mach.GenqecMachine;
+import org.interpss.dstab.mach.GenqejData;
+import org.interpss.dstab.mach.GenqejMachine;
+import org.interpss.dstab.mach.Gentpj1Data;
+import org.interpss.dstab.mach.Gentpj1Machine;
+import org.interpss.dstab.mach.GentraData;
+import org.interpss.dstab.mach.GentraMachine;
+import org.interpss.dstab.mach.IeeeVcData;
+import org.interpss.dstab.mach.IeeeVcEConstMachine;
+import org.interpss.dstab.mach.IeeeVcRoundRotorMachine;
+import org.interpss.dstab.mach.IeeeVcSalientPoleMachine;
+import org.interpss.dstab.mach.IeeeVoltageCompensatedMachine;
+import org.interpss.dstab.mach.Cimtr4Data;
+import org.interpss.dstab.mach.Cimtr4Machine;
+import org.interpss.dstab.mach.Wt1g1Data;
+import org.interpss.dstab.mach.Wt1g1Machine;
+import org.interpss.dstab.mach.Wt2g1Data;
+import org.interpss.dstab.mach.Wt2g1Machine;
+import org.interpss.dstab.mach.Wt2e1Data;
+import org.interpss.dstab.mach.Wt2e1Model;
+import org.interpss.dstab.mach.Wt3g1Data;
+import org.interpss.dstab.mach.Wt3g1Model;
+import org.interpss.dstab.mach.Gewtgcu1Data;
+import org.interpss.dstab.mach.Gewtgcu1Model;
+import org.interpss.dstab.mach.Gewtecu1Data;
+import org.interpss.dstab.mach.Gewtecu1Model;
+import org.interpss.dstab.mach.Gewt2mu1Data;
+import org.interpss.dstab.mach.Gewt2mu1Model;
+import org.interpss.dstab.mach.Gewtaru1Data;
+import org.interpss.dstab.mach.Gewtaru1Model;
+import org.interpss.dstab.mach.Gewtgdu1Data;
+import org.interpss.dstab.mach.Gewtgdu1Model;
+import org.interpss.dstab.mach.Gewtptu1Data;
+import org.interpss.dstab.mach.Gewtptu1Model;
+import org.interpss.dstab.mach.Reaxbu1Data;
+import org.interpss.dstab.mach.Reaxbu1Model;
+import org.interpss.dstab.mach.Plntbu1Data;
+import org.interpss.dstab.mach.Plntbu1Model;
+import org.interpss.dstab.mach.Wt3g2Data;
+import org.interpss.dstab.mach.Wt3g2Model;
+import org.interpss.dstab.mach.Wt4g1Data;
+import org.interpss.dstab.mach.Wt4g1Model;
+import org.interpss.dstab.mach.Wt4e1Data;
+import org.interpss.dstab.mach.Wt4e1Model;
+import org.interpss.dstab.mach.Wt3GeneratorModel;
+import org.interpss.dstab.mach.Wt3e1Data;
+import org.interpss.dstab.mach.Wt3e1Model;
+import org.interpss.dstab.mach.Wt3t1Data;
+import org.interpss.dstab.mach.Wt3t1Model;
+import org.interpss.dstab.mach.Wt3p1Data;
+import org.interpss.dstab.mach.Wt3p1Model;
+import org.interpss.dstab.mach.Wt12t1Data;
+import org.interpss.dstab.mach.Wt12t1Model;
+import org.interpss.dstab.mach.Wt12a1Data;
+import org.interpss.dstab.mach.Wt12a1Model;
+import org.interpss.dstab.mach.Wt12a1bData;
+import org.interpss.dstab.mach.Wt12a1bModel;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,11 +277,14 @@ import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.MachineModelType;
 import com.interpss.dstab.mach.RoundRotorMachine;
 import com.interpss.dstab.mach.SalientPoleMachine;
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.acsc.AcscFactory;
 
 public class DStabNetworkBuilder {
     private static final Logger log = LoggerFactory.getLogger(DStabNetworkBuilder.class);
 
     private final BaseDStabNetwork<?, ?> network;
+    private final Map<Integer, Plntbu1Model> plntbu1Controllers = new HashMap<>();
 
     public DStabNetworkBuilder(BaseDStabNetwork<?, ?> network) {
         this.network = network;
@@ -54,6 +306,424 @@ public class DStabNetworkBuilder {
 
     // ==================== Machine Models ====================
 
+    /** Attach the algebraic PSS/E IEEEVC sensing boundary to a loaded machine. */
+    public IeeeVoltageCompensatedMachine addIeeeVc(
+            String busId, String genId, IeeeVcData data) {
+        Machine machine = findMachine(busId, genId);
+        if (!(machine instanceof IeeeVoltageCompensatedMachine compensated)) {
+            log.warn("Machine does not expose an IEEEVC sensing boundary: {} {}", busId, genId);
+            return null;
+        }
+        compensated.setIeeeVcData(data);
+        return compensated;
+    }
+
+    /** PSS/E GENTRA transient-level salient-pole generator. */
+    public GentraMachine addGentra(String busId, String genId,
+            double ratingMva, double ratedKv, GentraData data) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for GENTRA: {}", busId);
+            return null;
+        }
+        GentraMachine mach = new GentraMachine(data);
+        mach.setId(busId + "-mach" + genId);
+        mach.setName("GENTRA");
+        mach.setMachType(MachineModelType.EQ1_MODEL);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(data.h());
+        mach.setD(toCoreDamping(data.d()));
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+        // GENTRA is a transient-level model and has no independent leakage
+        // reactance.  Use X'd as the core saturation boundary so saturation is
+        // applied to the published (Xd - X'd) path without adding a parameter.
+        mach.setXl(data.xdp());
+        mach.setXd(data.xd());
+        mach.setXq(data.xq());
+        mach.setXd1(data.xdp());
+        mach.setTd01(data.tdop());
+        mach.setSliner(0.85);
+        mach.setSe100(data.s1());
+        mach.setSe120(data.s12());
+        return mach;
+    }
+
+    /** PSS/E CIMTR4 induction motor represented by a negative generator. */
+    public Cimtr4Machine addCimtr4(String busId, String genId,
+            double ratingMva, double ratedKv, Cimtr4Data inputData) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for CIMTR4: {}", busId);
+            return null;
+        }
+        Cimtr4Machine mach = new Cimtr4Machine(inputData);
+        mach.setId(busId + "-mach" + genId);
+        mach.setName("CIMTR4");
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(inputData.h());
+        mach.setD(inputData.d());
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+        mach.setXl(inputData.xl());
+        mach.setXd(inputData.x());
+        mach.setXq(inputData.x());
+        return mach;
+    }
+
+    /** PSS/E WT1G1 direct-connected Type-1 induction generator. */
+    public Wt1g1Machine addWt1g1(String busId, String genId,
+            double ratingMva, double ratedKv, Wt1g1Data data) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for WT1G1: {}", busId);
+            return null;
+        }
+        Wt1g1Machine mach = new Wt1g1Machine(data);
+        mach.setId(busId + "-mach" + genId);
+        mach.setName("WT1G1");
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(0.0);
+        mach.setD(0.0);
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+        mach.setXl(data.xl());
+        mach.setXd(data.x());
+        mach.setXq(data.x());
+        return mach;
+    }
+
+    /** PSS/E WT2G1 Type-2 induction generator with controlled rotor resistance. */
+    public Wt2g1Machine addWt2g1(String busId, String genId,
+            double ratingMva, double ratedKv, Wt2g1Data data) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for WT2G1: {}", busId);
+            return null;
+        }
+        Wt2g1Machine mach = new Wt2g1Machine(data);
+        mach.setId(busId + "-mach" + genId);
+        mach.setName("WT2G1");
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(0.0);
+        mach.setD(0.0);
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+        mach.setXl(data.xa());
+        mach.setXd(data.xa() + data.xm());
+        mach.setXq(data.xa() + data.xm());
+        return mach;
+    }
+
+    /** Attach the WT2E1 rotor-resistance controller to a WT2G1 generator. */
+    public Wt2e1Model addWt2e1(String busId, String genId, Wt2e1Data data) {
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (!(machine instanceof Wt2g1Machine wt2g1)) {
+            log.warn("WT2G1 not found for WT2E1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt2e1Model model = new Wt2e1Model(data, wt2g1.getWt2g1Data());
+        wt2g1.setRotorResistanceController(model);
+        return model;
+    }
+
+    /** Attach the native WT3G1 converter generator to an existing generator record. */
+    public Wt3g1Model addWt3g1(String busId, String genId, Wt3g1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for WT3G1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Wt3g1Model(gen, bus, genId, data);
+    }
+
+    /** Attach the published GE three-state wind generator/converter. */
+    public Gewtgcu1Model addGewtgcu1(String busId, String genId, Gewtgcu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for GEWTGCU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Gewtgcu1Model(gen, bus, genId, data);
+    }
+
+    /** Attach GEWTECU1 to its GEWTGCU1 converter host. */
+    public Gewtecu1Model addGewtecu1(String busId, String genId, Gewtecu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for GEWTECU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Gewtecu1Model model = new Gewtecu1Model(data, host);
+        host.setElectricalController(model);
+        return model;
+    }
+
+    /** Attach the GE two-mass shaft to its converter host. */
+    public Gewt2mu1Model addGewt2mu1(String busId, String genId, Gewt2mu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for GEWT2MU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Gewt2mu1Model model = new Gewt2mu1Model(data);
+        host.setDriveTrain(model);
+        return model;
+    }
+
+    /** Attach the GE aerodynamic conversion to its converter host. */
+    public Gewtaru1Model addGewtaru1(String busId, String genId, Gewtaru1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for GEWTARU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Gewtaru1Model model = new Gewtaru1Model(data);
+        host.setAerodynamicModel(model);
+        return model;
+    }
+
+    /** Attach the GE wind gust/ramp source to its converter host. */
+    public Gewtgdu1Model addGewtgdu1(String busId, String genId, Gewtgdu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for GEWTGDU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Gewtgdu1Model model = new Gewtgdu1Model(data);
+        host.setWindModel(model);
+        return model;
+    }
+
+    /** Attach the GE pitch controller to its converter host. */
+    public Gewtptu1Model addGewtptu1(String busId, String genId, Gewtptu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for GEWTPTU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Gewtptu1Model model = new Gewtptu1Model(data);
+        host.setPitchController(model);
+        return model;
+    }
+
+    /** Attach a Type-3 REAXB auxiliary controller to its converter host. */
+    public Reaxbu1Model addReax3bu1(String busId, String genId, Reaxbu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for REAX3BU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reaxbu1Model model = new Reaxbu1Model("REAX3BU1", data);
+        model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
+        host.setAuxiliaryController(model);
+        return model;
+    }
+
+    /** Attach a Type-4 REAXB auxiliary controller to its converter host. */
+    public Reaxbu1Model addReax4bu1(String busId, String genId, Reaxbu1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Gewtgcu1Model host)) {
+            log.warn("GEWTGCU1 not found for REAX4BU1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reaxbu1Model model = new Reaxbu1Model("REAX4BU1", data);
+        model.setPlantController(plntbu1Controllers.get(Math.abs(data.plantBus())));
+        host.setAuxiliaryController(model);
+        return model;
+    }
+
+    /** Attach one PLNTBU1 plant controller to every REAXB assigned to its plant bus. */
+    @SuppressWarnings("unchecked")
+    public Plntbu1Model addPlntbu1(String busId, Plntbu1Data data) {
+        BaseDStabBus<?, ?> attachmentBus = network.getDStabBus(busId);
+        int controlNumber = data.voltageControlBus() == 0
+                ? Integer.parseInt(busId.substring(3)) : Math.abs(data.voltageControlBus());
+        BaseDStabBus<?, ?> regulatedBus = network.getDStabBus("Bus" + controlNumber);
+        if (attachmentBus == null || regulatedBus == null) {
+            log.warn("PLNTBU1 attachment or regulated bus not found: bus={}, regulated={}",
+                    busId, controlNumber);
+            return null;
+        }
+        AclfBranch monitored = null;
+        boolean forward = true;
+        if (data.branchFromBus() != 0 || data.branchToBus() != 0) {
+            String from = "Bus" + Math.abs(data.branchFromBus());
+            String to = "Bus" + Math.abs(data.branchToBus());
+            monitored = (AclfBranch) network.getBranch(from, to, data.branchId());
+            if (monitored == null) {
+                monitored = (AclfBranch) network.getBranch(to, from, data.branchId());
+                forward = false;
+            }
+            if (monitored == null) {
+                log.warn("PLNTBU1 monitored branch not found: {}-{}-{}", from, to,
+                        data.branchId());
+                return null;
+            }
+        }
+        int plantBus = Integer.parseInt(busId.substring(3));
+        if (plntbu1Controllers.containsKey(plantBus)) {
+            log.warn("Duplicate PLNTBU1 controller at {}", busId);
+            return null;
+        }
+        Plntbu1Model controller = new Plntbu1Model(data, attachmentBus, regulatedBus,
+                monitored, forward);
+        plntbu1Controllers.put(plantBus, controller);
+        for (Object busObject : network.getBusList()) {
+            BaseDStabBus<?, ?> bus = (BaseDStabBus<?, ?>) busObject;
+            for (Object genObject : bus.getContributeGenList()) {
+                DStabGen gen = (DStabGen) genObject;
+                if (gen.getDynamicGenDevice() instanceof Gewtgcu1Model host
+                        && host.getAuxiliaryController() != null
+                        && Math.abs(host.getAuxiliaryController().getData().plantBus()) == plantBus) {
+                    host.getAuxiliaryController().setPlantController(controller);
+                }
+            }
+        }
+        return controller;
+    }
+
+    /** Attach the native WT3G2 converter generator to an existing generator record. */
+    public Wt3g2Model addWt3g2(String busId, String genId, Wt3g2Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for WT3G2: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Wt3g2Model(gen, bus, genId, data);
+    }
+
+    /** Attach the published WT4G1 current-source generator. */
+    public Wt4g1Model addWt4g1(String busId, String genId, Wt4g1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for WT4G1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Wt4g1Model(gen, bus, genId, data);
+    }
+
+    /** Attach WT4E1 to its WT4G1 converter host. */
+    public Wt4e1Model addWt4e1(String busId, String genId, Wt4e1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt4g1Model host)) {
+            log.warn("WT4G1 not found for WT4E1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt4e1Model model = new Wt4e1Model(data, host);
+        host.setElectricalController(model);
+        return model;
+    }
+
+    /** Attach WT3E1 to its WT3G1 converter host. */
+    public Wt3e1Model addWt3e1(String busId, String genId, Wt3e1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt3GeneratorModel wt3Generator)) {
+            log.warn("WT3 generator not found for WT3E1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt3e1Model model = new Wt3e1Model(data, wt3Generator);
+        wt3Generator.setElectricalController(model);
+        return model;
+    }
+
+    /** Attach WT3T1 to either published Type-3 converter host. */
+    public Wt3t1Model addWt3t1(String busId, String genId, Wt3t1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt3GeneratorModel host)) {
+            log.warn("WT3 generator not found for WT3T1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt3t1Model model = new Wt3t1Model(data);
+        host.setDriveTrain(model);
+        return model;
+    }
+
+    /** Attach WT3P1 to the Type-3 mechanical and electrical controls. */
+    public Wt3p1Model addWt3p1(String busId, String genId, Wt3p1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null || !(gen.getDynamicGenDevice() instanceof Wt3GeneratorModel host)
+                || host.getDriveTrain() == null) {
+            log.warn("WT3T1 not found for WT3P1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt3p1Model model = new Wt3p1Model(data);
+        host.getDriveTrain().setPitchController(model, host.getElectricalController());
+        return model;
+    }
+
+    /** Attach the PSS/E WT12T1 mechanical model to a WT1G1 generator. */
+    public Wt12t1Model addWt12t1(String busId, String genId, Wt12t1Data data) {
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (!(machine instanceof Wt1g1Machine wt1g1)) {
+            log.warn("WT1G1 not found for WT12T1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt12t1Model model = new Wt12t1Model(data);
+        wt1g1.setDriveTrain(model);
+        return model;
+    }
+
+    public Wt12a1Model addWt12a1(String busId, String genId, Wt12a1Data data) {
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (!(machine instanceof Wt1g1Machine wt1g1) || wt1g1.getDriveTrain() == null) {
+            log.warn("WT12T1 not found for WT12A1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt12a1Model model = new Wt12a1Model(data);
+        wt1g1.getDriveTrain().setAerodynamicController(model);
+        return model;
+    }
+
+    public Wt12a1bModel addWt12a1b(String busId, String genId, Wt12a1bData data) {
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (!(machine instanceof Wt1g1Machine wt1g1) || wt1g1.getDriveTrain() == null) {
+            log.warn("WT12T1 not found for WT12A1B: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wt12a1bModel model = new Wt12a1bModel(data);
+        wt1g1.getDriveTrain().setAerodynamicController(model);
+        return model;
+    }
+
     /**
      * GENROU round-rotor generator (EQ11_ED11_ROUND_ROTOR).
      * Parameters follow PSS/E GENROU record order.
@@ -71,18 +741,17 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENROU: {}", busId);
             return null;
         }
-        String machId = busId + "-mach" + genId;
-        RoundRotorMachine mach = (RoundRotorMachine) DStabObjectFactory.createMachine(
-                machId, "GENROU", MachineModelType.EQ11_ED11_ROUND_ROTOR,
-                (BaseDStabNetwork<?, ?>) network, busId, genId);
+        IeeeVcRoundRotorMachine mach = new IeeeVcRoundRotorMachine();
+        configureMachineIdentity(mach, "GENROU", MachineModelType.EQ11_ED11_ROUND_ROTOR,
+                busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
         mach.setRatedVoltage(ratedKv, UnitType.kV);
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
-        mach.setRa(0.0);
+        mach.setD(toCoreDamping(d));
+        mach.setRa(sourceResistanceOnMachineBase(mach));
         mach.setXl(xl);
         mach.setXd(xd);
         mach.setXq(xq);
@@ -98,6 +767,94 @@ public class DStabNetworkBuilder {
         mach.setSe100(se100);
         mach.setSe120(se120);
         return mach;
+    }
+
+    /**
+     * WECC GENQEC model with saturation applied to all mutual inductances.
+     * Parameters are corrected according to the published PowerWorld rules.
+     *
+     * @return the created machine, or null if the bus was not found
+     */
+    public GenqecMachine addGenqec(String busId, String genId,
+            double ratingMva, double ratedKv, GenqecData inputData) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for GENQEC: {}", busId);
+            return null;
+        }
+
+        GenqecMachine mach = new GenqecMachine(inputData);
+        configureGenqeMachine(mach, "GENQEC", busId, genId, ratingMva, ratedKv, inputData);
+        return mach;
+    }
+
+    /**
+     * WECC GENQEJ model. Its dynamic equations reuse GENQEC and the core
+     * round-rotor machine; only the published KIS saturation input differs.
+     */
+    public GenqejMachine addGenqej(String busId, String genId,
+            double ratingMva, double ratedKv, GenqejData inputData) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for GENQEJ: {}", busId);
+            return null;
+        }
+
+        GenqejMachine mach = new GenqejMachine(inputData);
+        configureGenqeMachine(mach, "GENQEJ", busId, genId, ratingMva, ratedKv,
+                mach.getGenqecData());
+        return mach;
+    }
+
+    /** PSS/E GENTPJ1 machine with its native 16-constant schema. */
+    public Gentpj1Machine addGentpj1(String busId, String genId,
+            double ratingMva, double ratedKv, Gentpj1Data inputData) throws InterpssException {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        if (bus == null) {
+            log.warn("Bus not found for GENTPJ1: {}", busId);
+            return null;
+        }
+
+        Gentpj1Machine mach = new Gentpj1Machine(inputData);
+        configureGenqeMachine(mach, "GENTPJ1", busId, genId, ratingMva, ratedKv,
+                mach.getGenqecData());
+        return mach;
+    }
+
+    private void configureGenqeMachine(GenqecMachine mach, String modelName,
+            String busId, String genId, double ratingMva, double ratedKv,
+            GenqecData inputData) throws InterpssException {
+        mach.setId(busId + "-mach" + genId);
+        mach.setName(modelName);
+        mach.setMachType(MachineModelType.EQ11_ED11_ROUND_ROTOR);
+        mach.setMachData(DStabObjectFactory.createMachineData());
+        mach.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(mach, busId, genId);
+
+        mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
+        mach.setRatedVoltage(ratedKv, UnitType.kV);
+        mach.calMultiFactors();
+        mach.setPoles(2);
+        mach.setH(inputData.h());
+        mach.setD(toCoreDamping(inputData.d()));
+        // Native PSS/E GENQEC/GENQEJ records do not carry Ra; it is the RAW
+        // generator source resistance, converted from system to machine base.
+        mach.setRa(sourceResistanceOnMachineBase(mach));
+        mach.setXl(inputData.xl());
+        mach.setXd(inputData.xd());
+        mach.setXq(inputData.xq());
+        mach.setXd1(inputData.xdp());
+        mach.setXq1(inputData.xqp());
+        mach.setXd11(inputData.xdpp());
+        mach.setXq11(inputData.xqpp());
+        mach.setTd01(inputData.tdop());
+        mach.setTq01(inputData.tqop());
+        mach.setTd011(inputData.tdopp());
+        mach.setTq011(inputData.tqopp());
+        // GENQEC owns its saturation function. Keep the inherited percentage
+        // fields zero so core initialization uses this model's adjusted Xq path.
+        mach.setSe100(0.0);
+        mach.setSe120(0.0);
     }
 
     /**
@@ -117,18 +874,17 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENSAL: {}", busId);
             return null;
         }
-        String machId = busId + "-mach" + genId;
-        SalientPoleMachine mach = (SalientPoleMachine) DStabObjectFactory.createMachine(
-                machId, "GENSAL", MachineModelType.EQ11_SALIENT_POLE,
-                (BaseDStabNetwork<?, ?>) network, busId, genId);
+        IeeeVcSalientPoleMachine mach = new IeeeVcSalientPoleMachine();
+        configureMachineIdentity(mach, "GENSAL", MachineModelType.EQ11_SALIENT_POLE,
+                busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
         mach.setRatedVoltage(ratedKv, UnitType.kV);
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
-        mach.setRa(0.0);
+        mach.setD(toCoreDamping(d));
+        mach.setRa(sourceResistanceOnMachineBase(mach));
         mach.setXl(xl);
         mach.setXd(xd);
         mach.setXq(xq);
@@ -171,7 +927,7 @@ public class DStabNetworkBuilder {
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
+        mach.setD(toCoreDamping(d));
         mach.setRa(0.0);
         mach.setXl(xl);
         mach.setXd(xd);
@@ -212,7 +968,7 @@ public class DStabNetworkBuilder {
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
+        mach.setD(toCoreDamping(d));
         mach.setRa(0.0);
         mach.setXl(xl);
         mach.setXd(xd);
@@ -238,20 +994,28 @@ public class DStabNetworkBuilder {
             log.warn("Bus not found for GENCLS: {}", busId);
             return null;
         }
-        String machId = busId + "-mach" + genId;
-        EConstMachine mach = (EConstMachine) DStabObjectFactory.createMachine(
-                machId, "GENCLS", MachineModelType.ECONSTANT,
-                (BaseDStabNetwork<?, ?>) network, busId, genId);
+        IeeeVcEConstMachine mach = new IeeeVcEConstMachine();
+        configureMachineIdentity(mach, "GENCLS", MachineModelType.ECONSTANT, busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());
         mach.setRatedVoltage(ratedKv, UnitType.kV);
         mach.calMultiFactors();
         mach.setPoles(2);
         mach.setH(h);
-        mach.setD(d);
+        mach.setD(toCoreDamping(d));
         mach.setRa(ra);
         mach.setXd1(xd1);
         return mach;
+    }
+
+    private void configureMachineIdentity(Machine machine, String modelName,
+            MachineModelType type, String busId, String genId) throws InterpssException {
+        machine.setId(busId + "-mach" + genId);
+        machine.setName(modelName);
+        machine.setMachType(type);
+        machine.setMachData(DStabObjectFactory.createMachineData());
+        machine.getMachData().setGrounding(AcscFactory.eINSTANCE.createBusScGrounding());
+        network.addMachine(machine, busId, genId);
     }
 
     /**
@@ -271,6 +1035,532 @@ public class DStabNetworkBuilder {
                 (BaseDStabNetwork<?, ?>) network, busId, genId);
     }
 
+    // ==================== Stabilizer Models ====================
+
+    /** PSS1A single-input stabilizer supporting all six documented local input codes. */
+    public Ieee1992PSS1AStabilizer addPss1a(String busId, String genId,
+            int ics, double a1, double a2,
+            double t1, double t2, double t3, double t4, double t5, double t6,
+            double ks, double lsmax, double lsmin, double vcu, double vcl) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS1A: {} {}", busId, genId);
+            return null;
+        }
+        if (ics < 1 || ics > 6) {
+            log.warn("PSS1A input code is not implemented at {} {}: ICS={}", busId, genId, ics);
+            return null;
+        }
+        if (ics == 6 && t6 <= 0.0) {
+            log.warn("PSS1A voltage-derivative input requires T6 > 0 at {} {}", busId, genId);
+            return null;
+        }
+        Ieee1992PSS1AStabilizer pss = StabilizerObjectFactory
+                .createIeee1992PSS1AStabilizer(busId + "-pss1a" + genId, "PSS1A", machine);
+        var data = pss.getData();
+        data.setIcs(ics);
+        data.setA1(a1);
+        data.setA2(a2);
+        data.setT1(t1);
+        data.setT2(t2);
+        data.setT3(t3);
+        data.setT4(t4);
+        data.setT5(t5);
+        data.setT6(t6);
+        data.setKs(ks);
+        data.setVstmax(lsmax);
+        data.setVstmin(lsmin);
+        data.setVcu(vcu);
+        data.setVcl(vcl);
+        return pss;
+    }
+
+    /**
+     * PSS2A IEEE dual-input stabilizer with all six documented signal
+     * selectors and validated remote-bus measurements for bus-based signals.
+     */
+    public Ieee1992PSS2AStabilizer addPss2a(String busId, String genId,
+            int ics1, int remoteBus1, int ics2, int remoteBus2, int m, int n,
+            double tw1, double tw2, double t6, double tw3, double tw4, double t7,
+            double ks2, double ks3, double t8, double t9, double ks1,
+            double t1, double t2, double t3, double t4, double vstmax, double vstmin) {
+		return addPss2a(busId, genId, ics1, remoteBus1, ics2, remoteBus2, m, n,
+				tw1, tw2, t6, tw3, tw4, t7, ks2, ks3, t8, t9, ks1,
+				t1, t2, t3, t4, vstmax, vstmin, 1.0, 0.0, 0.0, 1.0);
+	}
+
+    public Ieee1992PSS2AStabilizer addPss2a(String busId, String genId,
+            int ics1, int remoteBus1, int ics2, int remoteBus2, int m, int n,
+            double tw1, double tw2, double t6, double tw3, double tw4, double t7,
+            double ks2, double ks3, double t8, double t9, double ks1,
+            double t1, double t2, double t3, double t4, double vstmax, double vstmin,
+            double a, double ta, double tb, double ks4) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS2A: {} {}", busId, genId);
+            return null;
+        }
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6) {
+            log.warn("PSS2A selector combination is not implemented at {} {}: "
+                    + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+                    busId, genId, ics1, remoteBus1, ics2, remoteBus2);
+            return null;
+        }
+		BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+		BaseDStabBus<?, ?> input1Bus = resolvePss2aSignalBus(localBus, ics1, remoteBus1);
+		BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(localBus, ics2, remoteBus2);
+		if (input1Bus == null || input2Bus == null) {
+			log.warn("PSS2A remote bus could not be resolved at {} {}: "
+					+ "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+					busId, genId, ics1, remoteBus1, ics2, remoteBus2);
+			return null;
+		}
+		if (tb < 0.0 || (Math.abs(tb) < 1.0e-12 && Math.abs(ta) >= 1.0e-12)) {
+			log.warn("PSS2A optional lead-lag is invalid at {} {}: Ta={}, Tb={}",
+					busId, genId, ta, tb);
+			return null;
+		}
+		if (t8 < 0.0 || t9 < 0.0
+				|| (n > 0 && Math.abs(t9) < 1.0e-12 && Math.abs(t8) >= 1.0e-12)) {
+			log.warn("PSS2A ramp-tracking filter is invalid at {} {}: "
+					+ "M={}, N={}, T8={}, T9={}", busId, genId, m, n, t8, t9);
+			return null;
+		}
+        Ieee1992PSS2AStabilizer pss = StabilizerObjectFactory
+                .createIeee1992PSS2AStabilizer(busId + "-pss2a" + genId, "PSS2A", machine);
+		pss.setInputSignalBuses(input1Bus, input2Bus);
+        var data = pss.getData();
+        data.setIcs1(ics1);
+        data.setRemoteBus1(remoteBus1);
+        data.setIcs2(ics2);
+        data.setRemoteBus2(remoteBus2);
+        data.setM(m);
+        data.setN(n);
+        data.setTw1(tw1);
+        data.setTw2(tw2);
+        data.setT6(t6);
+        data.setTw3(tw3);
+        data.setTw4(tw4);
+        data.setT7(t7);
+        data.setKs2(ks2);
+        data.setKs3(ks3);
+        data.setT8(t8);
+        data.setT9(t9);
+        data.setKs1(ks1);
+        data.setT1(t1);
+        data.setT2(t2);
+        data.setT3(t3);
+        data.setT4(t4);
+        data.setVstmax(vstmax);
+        data.setVstmin(vstmin);
+		data.setA(a);
+		data.setTa(ta);
+		data.setTb(tb);
+		data.setKs4(ks4);
+        return pss;
+    }
+
+    /** Build the WECC PSSSB model: PSS2A plus its switched voltage-boost path. */
+    public PsssbStabilizer addPsssb(String busId, String genId,
+            PsssbStabilizerData data) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSSSB: {} {}", busId, genId);
+            return null;
+        }
+        if (data.getIcs1() < 1 || data.getIcs1() > 6
+                || data.getIcs2() < 1 || data.getIcs2() > 6) {
+            log.warn("PSSSB selector combination is not implemented at {} {}: "
+                    + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+                    busId, genId, data.getIcs1(), data.getRemoteBus1(),
+                    data.getIcs2(), data.getRemoteBus2());
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = resolvePss2aSignalBus(
+                localBus, data.getIcs1(), data.getRemoteBus1());
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(
+                localBus, data.getIcs2(), data.getRemoteBus2());
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSSSB remote bus could not be resolved at {} {}", busId, genId);
+            return null;
+        }
+        if (data.getSw1() != 0 && data.getSw1() != 1) {
+            log.warn("PSSSB manual switch is invalid at {} {}: Sw1={}",
+                    busId, genId, data.getSw1());
+            return null;
+        }
+        if (data.getTd1() < 0.0 || data.getTd2() < 0.0) {
+            log.warn("PSSSB boost time constants are invalid at {} {}: Td1={}, Td2={}",
+                    busId, genId, data.getTd1(), data.getTd2());
+            return null;
+        }
+        if (data.getT8() < 0.0 || data.getT9() < 0.0
+                || (data.getN() > 0 && Math.abs(data.getT9()) < 1.0e-12
+                        && Math.abs(data.getT8()) >= 1.0e-12)) {
+            log.warn("PSSSB ramp-tracking filter is invalid at {} {}", busId, genId);
+            return null;
+        }
+        PsssbStabilizer pss = StabilizerObjectFactory.createPsssbStabilizer(
+                busId + "-psssb" + genId, "PSSSB", machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        pss.setData(data);
+        return pss;
+    }
+
+    /** Build the complete PSS/E/PowerWorld PSS2B model. */
+    public Ieee1992PSS2BStabilizer addPss2b(String busId, String genId,
+            int ics1, int ics2, int m, int n,
+            double tw1, double tw2, double t6, double tw3, double tw4, double t7,
+            double ks2, double ks3, double t8, double t9, double ks1,
+            double t1, double t2, double t3, double t4, double t10, double t11,
+            double vsi1max, double vsi1min, double vsi2max, double vsi2min,
+            double vstmax, double vstmin, double a, double ta, double tb, double ks4) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS2B: {} {}", busId, genId);
+            return null;
+        }
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0) {
+            log.warn("Invalid PSS2B selectors/filter orders at {} {}: ICS1={}, ICS2={}, M={}, N={}",
+                    busId, genId, ics1, ics2, m, n);
+            return null;
+        }
+        if (tw1 < 0.0 || tw2 < 0.0 || t6 < 0.0 || tw3 < 0.0 || tw4 < 0.0
+                || t7 < 0.0 || t8 < 0.0 || t9 < 0.0 || t2 < 0.0 || t4 < 0.0
+                || t11 < 0.0 || tb < 0.0
+                || (n > 0 && t9 == 0.0 && t8 != 0.0)
+                || (tb == 0.0 && ta != 0.0)) {
+            log.warn("Invalid PSS2B time constants at {} {}", busId, genId);
+            return null;
+        }
+        Ieee1992PSS2BStabilizer pss = StabilizerObjectFactory
+                .createIeee1992PSS2BStabilizer(busId + "-pss2b" + genId, "PSS2B", machine);
+        var data = pss.getData();
+        data.setIcs1(ics1); data.setIcs2(ics2); data.setM(m); data.setN(n);
+        data.setTw1(tw1); data.setTw2(tw2); data.setT6(t6);
+        data.setTw3(tw3); data.setTw4(tw4); data.setT7(t7);
+        data.setKs2(ks2); data.setKs3(ks3); data.setT8(t8); data.setT9(t9);
+        data.setKs1(ks1); data.setT1(t1); data.setT2(t2);
+        data.setT3(t3); data.setT4(t4); data.setT10(t10); data.setT11(t11);
+        data.setVsi1max(vsi1max); data.setVsi1min(vsi1min);
+        data.setVsi2max(vsi2max); data.setVsi2min(vsi2min);
+        data.setVstmax(vstmax); data.setVstmin(vstmin);
+        data.setA(a); data.setTa(ta); data.setTb(tb); data.setKs4(ks4);
+        return pss;
+    }
+
+    /** Build the complete IEEE 421.5-2016 PSS2C model. */
+    public Ieee2016PSS2CStabilizer addPss2c(String busId, String genId,
+            int ics1, int remoteBus1, int ics2, int remoteBus2, int m, int n,
+            double tw1, double tw2, double t6, double tw3, double tw4, double t7,
+            double ks2, double ks3, double t8, double t9, double ks1,
+            double t1, double t2, double t3, double t4, double t10, double t11,
+            double vsi1max, double vsi1min, double vsi2max, double vsi2min,
+            double vstmax, double vstmin, double t12, double t13,
+            double pssActivation, double pssDeactivation,
+            double tpgfilt, double xcomp, double tcomp) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS2C: {} {}", busId, genId);
+            return null;
+        }
+        if (ics1 < 1 || ics1 > 7 || ics2 < 1 || ics2 > 6 || m < 0 || n < 0) {
+            log.warn("Invalid PSS2C selectors/filter orders at {} {}: "
+                    + "ICS1={}, ICS2={}, M={}, N={}", busId, genId, ics1, ics2, m, n);
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = ics1 == 7 ? localBus
+                : resolvePss2aSignalBus(localBus, ics1, remoteBus1);
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(localBus, ics2, remoteBus2);
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSS2C remote bus could not be resolved at {} {}: "
+                    + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+                    busId, genId, ics1, remoteBus1, ics2, remoteBus2);
+            return null;
+        }
+        if (tw1 < 0.0 || tw2 < 0.0 || t6 < 0.0 || tw3 < 0.0 || tw4 < 0.0
+                || t7 < 0.0 || t8 < 0.0 || t9 < 0.0 || t2 < 0.0 || t4 < 0.0
+                || t11 < 0.0 || t13 < 0.0 || tpgfilt < 0.0 || tcomp < 0.0
+                || (n > 0 && t9 == 0.0 && t8 != 0.0)
+                || pssActivation < pssDeactivation) {
+            log.warn("Invalid PSS2C time constants or activation thresholds at {} {}",
+                    busId, genId);
+            return null;
+        }
+        Ieee2016PSS2CStabilizer pss = StabilizerObjectFactory
+                .createIeee2016PSS2CStabilizer(busId + "-pss2c" + genId, "PSS2C", machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        var data = pss.getData();
+        data.setIcs1(ics1); data.setRemoteBus1(remoteBus1);
+        data.setIcs2(ics2); data.setRemoteBus2(remoteBus2);
+        data.setM(m); data.setN(n);
+        data.setTw1(tw1); data.setTw2(tw2); data.setT6(t6);
+        data.setTw3(tw3); data.setTw4(tw4); data.setT7(t7);
+        data.setKs2(ks2); data.setKs3(ks3); data.setT8(t8); data.setT9(t9);
+        data.setKs1(ks1); data.setT1(t1); data.setT2(t2);
+        data.setT3(t3); data.setT4(t4); data.setT10(t10); data.setT11(t11);
+        data.setVsi1max(vsi1max); data.setVsi1min(vsi1min);
+        data.setVsi2max(vsi2max); data.setVsi2min(vsi2min);
+        data.setVstmax(vstmax); data.setVstmin(vstmin);
+        data.setT12(t12); data.setT13(t13);
+        data.setPssActivation(pssActivation); data.setPssDeactivation(pssDeactivation);
+        data.setTpgfilt(tpgfilt); data.setXcomp(xcomp); data.setTcomp(tcomp);
+        return pss;
+    }
+
+    /** Build the complete IEEE 421.5-2005 PSS3B model. */
+    public Ieee2005PSS3BStabilizer addPss3b(String busId, String genId,
+            int ics1, int ics2,
+            double ks1, double t1, double tw1,
+            double ks2, double t2, double tw2, double tw3,
+            double a1, double a2, double a3, double a4,
+            double a5, double a6, double a7, double a8,
+            double vstmax, double vstmin) {
+        return addPss3b(busId, genId, ics1, 0, ics2, 0,
+                ks1, t1, tw1, ks2, t2, tw2, tw3,
+                a1, a2, a3, a4, a5, a6, a7, a8, vstmax, vstmin);
+    }
+
+    /** Build native PSS/E PSS3B, including both remote measurement buses. */
+    public Ieee2005PSS3BStabilizer addPss3b(String busId, String genId,
+            int ics1, int remoteBus1, int ics2, int remoteBus2,
+            double ks1, double t1, double tw1,
+            double ks2, double t2, double tw2, double tw3,
+            double a1, double a2, double a3, double a4,
+            double a5, double a6, double a7, double a8,
+            double vstmax, double vstmin) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS3B: {} {}", busId, genId);
+            return null;
+        }
+        if (ics1 < 1 || ics1 > 6 || ics2 < 1 || ics2 > 6) {
+            log.warn("Invalid PSS3B input selectors at {} {}: ICS1={}, ICS2={}",
+                    busId, genId, ics1, ics2);
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = resolvePss2aSignalBus(localBus, ics1, remoteBus1);
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(localBus, ics2, remoteBus2);
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSS3B remote bus could not be resolved at {} {}: "
+                    + "ICS1={}, REMBUS1={}, ICS2={}, REMBUS2={}",
+                    busId, genId, ics1, remoteBus1, ics2, remoteBus2);
+            return null;
+        }
+        // Nonpositive washout constants are a model-defined bypass (Dynawo's
+        // validated IEEE PSS3B case uses Tw3=-1). The notch blocks likewise
+        // apply their specified highest-denominator-coefficient bypass rule,
+        // so only negative transducer time constants are rejected here.
+        if (t1 < 0.0 || t2 < 0.0) {
+            log.warn("Invalid PSS3B transducer time constants at {} {}", busId, genId);
+            return null;
+        }
+        var data = new Ieee2005PSS3BStabilizerData(
+                ics1, remoteBus1, ics2, remoteBus2,
+                ks1, t1, tw1, ks2, t2, tw2, tw3,
+                a1, a2, a3, a4, a5, a6, a7, a8, vstmax, vstmin);
+        Ieee2005PSS3BStabilizer pss = StabilizerObjectFactory.createIeee2005PSS3BStabilizer(
+                busId + "-pss3b" + genId, data, machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        return pss;
+    }
+
+    /** Build the complete IEEE 421.5-2005 PSS4B model from its 75 parameters. */
+    public Ieee2005PSS4BStabilizer addPss4b(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS4B: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2005PSS4BStabilizerData data;
+        try {
+            data = Ieee2005PSS4BStabilizerData.fromParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS4B record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        return StabilizerObjectFactory.createIeee2005PSS4BStabilizer(
+                busId + "-pss4b" + genId, data, machine);
+    }
+
+    /** Build the complete IEEE 421.5-2016 PSS3C model from its 26 parameters. */
+    public Ieee2016PSS3CStabilizer addPss3c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS3C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS3CStabilizerData data;
+        try {
+            data = Ieee2016PSS3CStabilizerData.fromParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS3C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        if (data.ics1() < 1 || data.ics1() > 6 || data.ics2() < 0 || data.ics2() > 5) {
+            log.warn("Invalid PSS3C input selectors at {} {}: ICS1={}, ICS2={}",
+                    busId, genId, data.ics1(), data.ics2());
+            return null;
+        }
+        boolean outputLogicEnabled = data.pssActivation() >= 0.0
+                && data.pssActivation() != data.pssDeactivation();
+        if (data.tpgfilt() < 0.0 || data.tcomp() < 0.0
+                || (data.ics1() == 6
+                        && (data.xcomp() <= 0.0 || data.tcomp() <= 0.0))
+                || (outputLogicEnabled
+                        && data.pssActivation() < data.pssDeactivation())) {
+            log.warn("Invalid PSS3C compensation/filter constants or thresholds at {} {}",
+                    busId, genId);
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = resolvePss2aSignalBus(
+                localBus, data.ics1(), data.remoteBus1());
+        BaseDStabBus<?, ?> input2Bus = data.ics2() == 0 ? localBus
+                : resolvePss2aSignalBus(localBus, data.ics2(), data.remoteBus2());
+        // PSS/E falls back to the generator terminal when a requested remote
+        // bus is absent (Model Library PSS3C note 9).
+        if (input1Bus == null) input1Bus = localBus;
+        if (input2Bus == null) input2Bus = localBus;
+        Ieee2016PSS3CStabilizer pss = StabilizerObjectFactory
+                .createIeee2016PSS3CStabilizer(busId + "-pss3c" + genId, data, machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        return pss;
+    }
+
+    /** Build PSS4C from the 94-value PowerWorld/IEEE parameter order. */
+    public Ieee2016PSS4CStabilizer addPss4c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS4C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS4CStabilizerData data;
+        try {
+            data = Ieee2016PSS4CStabilizerData.fromPowerWorldParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS4C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        return StabilizerObjectFactory.createIeee2016PSS4CStabilizer(
+                busId + "-pss4c" + genId, data, machine);
+    }
+
+    /** Build PSS5C from the 21-value PowerWorld/IEEE parameter order. */
+    public Ieee2016PSS5CStabilizer addPss5c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS5C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS5CStabilizerData data;
+        try {
+            data = Ieee2016PSS5CStabilizerData.fromPowerWorldParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS5C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        return StabilizerObjectFactory.createIeee2016PSS5CStabilizer(
+                busId + "-pss5c" + genId, data, machine);
+    }
+
+    /** Build PSS6C from its 34/35-value PSS/E/PowerWorld parameter order. */
+    public Ieee2016PSS6CStabilizer addPss6c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS6C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS6CStabilizerData data;
+        try {
+            data = Ieee2016PSS6CStabilizerData.fromPsseParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS6C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        if (data.ics1() < 1 || data.ics1() > 7 || data.ics2() < 1 || data.ics2() > 6
+                || data.t1() < 0.0 || data.t2() < 0.0 || data.t3() < 0.0
+                || data.t4() < 0.0 || data.td() < 0.0 || data.ti1() < 0.0
+                || data.ti2() < 0.0 || data.ti3() < 0.0 || data.ti4() < 0.0
+                || data.tpgfilt() < 0.0 || data.tcomp() < 0.0
+                || data.pssActivation() < data.pssDeactivation()) {
+            log.warn("Invalid PSS6C selectors, time constants, or thresholds at {} {}",
+                    busId, genId);
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = data.ics1() == 7 ? localBus
+                : resolvePss2aSignalBus(localBus, data.ics1(), data.remoteBus1());
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(
+                localBus, data.ics2(), data.remoteBus2());
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSS6C remote bus could not be resolved at {} {}", busId, genId);
+            return null;
+        }
+        Ieee2016PSS6CStabilizer pss = StabilizerObjectFactory
+                .createIeee2016PSS6CStabilizer(busId + "-pss6c" + genId, data, machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        return pss;
+    }
+
+    /** Build PSS7C from its 38/39-value PSS/E/PowerWorld parameter order. */
+    public Ieee2016PSS7CStabilizer addPss7c(String busId, String genId,
+            double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) {
+            log.warn("Machine not found for PSS7C: {} {}", busId, genId);
+            return null;
+        }
+        final Ieee2016PSS7CStabilizerData data;
+        try {
+            data = Ieee2016PSS7CStabilizerData.fromPsseParameters(parameters);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid PSS7C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        if (data.ics1() < 1 || data.ics1() > 7 || data.ics2() < 1 || data.ics2() > 6
+                || data.m() < 0 || data.n() < 0 || (data.n() > 0 && data.m() == 0)
+                || data.m() * data.n() > 8
+                || data.t6() < 0.0 || data.t7() < 0.0 || data.t8() < 0.0
+                || data.t9() < 0.0 || data.tpgfilt() < 0.0 || data.tcomp() < 0.0
+                || data.pssActivation() < data.pssDeactivation()) {
+            log.warn("Invalid PSS7C selectors, orders, time constants, or thresholds at {} {}",
+                    busId, genId);
+            return null;
+        }
+        BaseDStabBus<?, ?> localBus = machine.getDStabBus();
+        BaseDStabBus<?, ?> input1Bus = data.ics1() == 7 ? localBus
+                : resolvePss2aSignalBus(localBus, data.ics1(), data.remoteBus1());
+        BaseDStabBus<?, ?> input2Bus = resolvePss2aSignalBus(
+                localBus, data.ics2(), data.remoteBus2());
+        if (input1Bus == null || input2Bus == null) {
+            log.warn("PSS7C remote bus could not be resolved at {} {}", busId, genId);
+            return null;
+        }
+        Ieee2016PSS7CStabilizer pss = StabilizerObjectFactory
+                .createIeee2016PSS7CStabilizer(busId + "-pss7c" + genId, data, machine);
+        pss.setInputSignalBuses(input1Bus, input2Bus);
+        return pss;
+    }
+
+	private BaseDStabBus<?, ?> resolvePss2aSignalBus(BaseDStabBus<?, ?> localBus,
+			int inputCode, int remoteBusNumber) {
+		// Rotor speed, generator electrical power, and accelerating power are
+		// unit signals. PSS/E ignores REMBUS for these selector codes.
+		if (inputCode == 1 || inputCode == 3 || inputCode == 4 || remoteBusNumber == 0) {
+			return localBus;
+		}
+		return network.getDStabBus("Bus" + remoteBusNumber);
+	}
+
     // ==================== Exciter Models ====================
 
     /**
@@ -283,6 +1573,15 @@ public class DStabNetworkBuilder {
             double tr, double ka, double ta, double vrmax, double vrmin,
             double ke, double te, double kf, double tf,
             double e1, double se1, double e2, double se2) {
+        return addExcIeeet1(busId, genId, tr, ka, ta, vrmax, vrmin,
+                ke, te, kf, tf, e1, se1, e2, se2, 0.0);
+    }
+
+    /** PSS/E IEEET1 including the optional speed-multiplier field. */
+    public Ieee1968Type1Exciter addExcIeeet1(String busId, String genId,
+            double tr, double ka, double ta, double vrmax, double vrmin,
+            double ke, double te, double kf, double tf,
+            double e1, double se1, double e2, double se2, double spdmlt) {
         Machine mach = findMachine(busId, genId);
         if (mach == null) {
             log.warn("Machine not found for IEEET1 exciter: bus={}, gen={}", busId, genId);
@@ -303,6 +1602,7 @@ public class DStabNetworkBuilder {
         exc.getData().setSeE1(se1);
         exc.getData().setE2(e2);
         exc.getData().setSeE2(se2);
+        exc.getData().setSpdmlt(spdmlt);
         return exc;
     }
 
@@ -343,12 +1643,25 @@ public class DStabNetworkBuilder {
 
     /**
      * IEEE 1981 ST1 exciter (PSS/E ESST1A).
-     * Parameters: KA, TA, TC, TB, VRMAX, VRMIN, KF, TF, KC, VIMAX, VIMIN
+     * Parameters: TR, KA, TA, TC, TB, VRMAX, VRMIN, KF, TF, KC, VIMAX, VIMIN
      *
      * @return the created exciter, or null if the machine was not found
      */
     public IEEE1981ST1Exciter addExcIeee1981St1(String busId, String genId,
             double ka, double ta, double tc, double tb,
+            double vrmax, double vrmin,
+            double kf, double tf, double kc,
+            double vimax, double vimin) {
+        return addExcIeee1981St1(busId, genId, 0.02, ka, ta, tc, tb,
+                vrmax, vrmin, kf, tf, kc, vimax, vimin);
+    }
+
+    /**
+     * IEEE 1981 ST1 exciter with an explicit terminal-voltage transducer time
+     * constant. This overload is used by the PSS/E EXST1 exchange model.
+     */
+    public IEEE1981ST1Exciter addExcIeee1981St1(String busId, String genId,
+            double tr, double ka, double ta, double tc, double tb,
             double vrmax, double vrmin,
             double kf, double tf, double kc,
             double vimax, double vimin) {
@@ -359,6 +1672,7 @@ public class DStabNetworkBuilder {
         }
         IEEE1981ST1Exciter exc = ExciterObjectFactory.createIeee1981ST1Exciter(
                 mach.getId() + "_Exc", "ESST1A", mach);
+        exc.getData().setTr(tr);
         exc.getData().setKa(ka);
         exc.getData().setTa(ta);
         exc.getData().setTc(tc);
@@ -370,6 +1684,868 @@ public class DStabNetworkBuilder {
         exc.getData().setKc(kc);
         exc.getData().setVimax(vimax);
         exc.getData().setVimin(vimin);
+        return exc;
+    }
+
+    /** PSS/E IEEEX1 / WECC EXDC1 excitation system. */
+    public IEEE1981DC1Exciter addExcIeeex1(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double e1, double se1, double e2, double se2) {
+        return addExcIeeex1(busId, genId, tr, ka, ta, tb, tc, vrmax, vrmin,
+                ke, te, kf, tf, 0.0, e1, se1, e2, se2);
+    }
+
+    public Ieeex1Exciter addExcIeeex1(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double switchValue,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for IEEEX1 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Ieeex1Exciter exc = ExciterObjectFactory.createIeeex1Exciter(
+                mach.getId() + "_Exc", mach);
+        exc.setTransducerTimeConstant(tr);
+        exc.setSwitchValue(switchValue);
+        exc.getData().setKa(ka);
+        exc.getData().setTa(ta);
+        exc.getData().setTb(tb);
+        exc.getData().setTc(tc);
+        exc.getData().setVrmax(vrmax);
+        exc.getData().setVrmin(vrmin);
+        exc.getData().setKe(ke);
+        exc.getData().setTe(te);
+        exc.getData().setKf(kf);
+        exc.getData().setTf(tf);
+        exc.getData().setE1(e1);
+        exc.getData().setSe_e1(se1);
+        exc.getData().setE2(e2);
+        exc.getData().setSe_e2(se2);
+        return exc;
+    }
+
+    /** Native PSS/E IEEEX2 with two cascaded rate-feedback time constants. */
+    public Ieeex2Exciter addExcIeeex2(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf1, double tf2,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for IEEEX2 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Ieeex2Exciter exc = ExciterObjectFactory.createIeeex2Exciter(
+                mach.getId() + "_Exc", mach);
+        exc.setTransducerTimeConstant(tr);
+        exc.setTf2(tf2);
+        exc.getData().setKa(ka);
+        exc.getData().setTa(ta);
+        exc.getData().setTb(tb);
+        exc.getData().setTc(tc);
+        exc.getData().setVrmax(vrmax);
+        exc.getData().setVrmin(vrmin);
+        exc.getData().setKe(ke);
+        exc.getData().setTe(te);
+        exc.getData().setKf(kf);
+        exc.getData().setTf(tf1);
+        exc.getData().setE1(e1);
+        exc.getData().setSe_e1(se1);
+        exc.getData().setE2(e2);
+        exc.getData().setSe_e2(se2);
+        return exc;
+    }
+
+    /** PSS/E EXDC2 / PowerWorld EXDC2_PTI excitation system. */
+    public Exdc2Exciter addExcExdc2(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double switchValue,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXDC2 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Exdc2Exciter exc = ExciterObjectFactory.createExdc2Exciter(
+                mach.getId() + "_Exc", mach);
+        exc.setTransducerTimeConstant(tr);
+        exc.setSwitchValue(switchValue);
+        exc.getData().setKa(ka);
+        exc.getData().setTa(ta);
+        exc.getData().setTb(tb);
+        exc.getData().setTc(tc);
+        exc.getData().setVrmax(vrmax);
+        exc.getData().setVrmin(vrmin);
+        exc.getData().setKe(ke);
+        exc.getData().setTe(te);
+        exc.getData().setKf(kf);
+        exc.getData().setTf(tf);
+        exc.getData().setE1(e1);
+        exc.getData().setSe_e1(se1);
+        exc.getData().setE2(e2);
+        exc.getData().setSe_e2(se2);
+        return exc;
+    }
+
+    /** PSLF/PowerWorld EXDC2A with a second rate-feedback time constant. */
+    public Exdc2aExciter addExcExdc2a(String busId, String genId,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf1, double tf2,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXDC2A exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Exdc2aExciter exc = ExciterObjectFactory.createExdc2aExciter(
+                mach.getId() + "_Exc", mach);
+        exc.setTransducerTimeConstant(tr);
+        exc.setTf2(tf2);
+        exc.getData().setKa(ka);
+        exc.getData().setTa(ta);
+        exc.getData().setTb(tb);
+        exc.getData().setTc(tc);
+        exc.getData().setVrmax(vrmax);
+        exc.getData().setVrmin(vrmin);
+        exc.getData().setKe(ke);
+        exc.getData().setTe(te);
+        exc.getData().setKf(kf);
+        exc.getData().setTf(tf1);
+        exc.getData().setE1(e1);
+        exc.getData().setSe_e1(se1);
+        exc.getData().setE2(e2);
+        exc.getData().setSe_e2(se2);
+        return exc;
+    }
+
+    /** IEEE 421.5-2005 / PSS/E AC8B rotating excitation system. */
+    public Ac8bExciter addExcAc8b(String busId, String genId, Ac8bData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for AC8B exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createAc8bExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E ESAC8B (Basler DECS), sharing the verified AC8B PID engine. */
+    public Esac8bExciter addExcEsac8b(String busId, String genId, Esac8bData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ESAC8B exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createEsac8bExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** PSS/E ESAC4A / IEEE Type AC4A excitation system. */
+    public Esac4aExciter addExcEsac4a(String busId, String genId, Esac4aData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ESAC4A exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createEsac4aExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** PSS/E EXAC4 / IEEE Type AC4 excitation system. */
+    public Exac4Exciter addExcExac4(String busId, String genId, Exac4Data data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXAC4 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createExac4Exciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** IEEE 421.5 DC4B / PSS/E ESDC4B excitation system. */
+    public Dc4bExciter addExcDc4b(String busId,String genId,String modelName,Dc4bData data) {
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for {} exciter: bus={}, gen={}",modelName,busId,genId);return null;}
+        return ExciterObjectFactory.createDc4bExciter(mach.getId()+"_Exc",modelName,data,mach);
+    }
+
+    /** IEEE 421.5-2016 / native PSS/E DC4C excitation system. */
+    public Dc4cExciter addExcDc4c(String busId,String genId,Dc4cData data) {
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for DC4C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createDc4cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** IEEE 421.5-2005 DC3A / PSLF ESDC3A rheostatic excitation system. */
+    public Dc3aExciter addExcDc3a(String busId, String genId, String modelName,
+            Dc3aData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} exciter: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createDc3aExciter(
+                mach.getId() + "_Exc", modelName, data, mach);
+    }
+
+    /** IEEE ST6B / PSLF ESST6B static excitation system. */
+    public St6bExciter addExcSt6b(String busId,String genId,String modelName,St6bData data){
+        Machine mach=findMachine(busId,genId);if(mach==null){log.warn("Machine not found for {} exciter: bus={}, gen={}",modelName,busId,genId);return null;}
+        return ExciterObjectFactory.createSt6bExciter(mach.getId()+"_Exc",modelName,data,mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST6C static excitation system. */
+    public St6cExciter addExcSt6c(String busId,String genId,St6cData data){
+        Machine mach=findMachine(busId,genId);if(mach==null){log.warn("Machine not found for ST6C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt6cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Native PSS/E EXELI all-static, transformer-fed excitation system. */
+    public ExeliExciter addExcExeli(String busId, String genId, ExeliData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXELI exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createExeliExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST1C static excitation system. */
+    public St1cExciter addExcSt1c(String busId, String genId, St1cData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ST1C exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createSt1cExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST2C static excitation system. */
+    public St2cExciter addExcSt2c(String busId, String genId, St2cData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ST2C exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createSt2cExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST3C static excitation system. */
+    public St3cExciter addExcSt3c(String busId,String genId,St3cData data){
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for ST3C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt3cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST4C static excitation system. */
+    public St4cExciter addExcSt4c(String busId, String genId, St4cData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ST4C exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createSt4cExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2005 ST7B excitation system. */
+    public St7bExciter addExcSt7b(String busId,String genId,St7bData data){
+        Machine mach=findMachine(busId,genId);if(mach==null){log.warn("Machine not found for ST7B exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt7bExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST7C static excitation system. */
+    public St7cExciter addExcSt7c(String busId,String genId,St7cData data){
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for ST7C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt7cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST8C static excitation system. */
+    public St8cExciter addExcSt8c(String busId,String genId,St8cData data){
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for ST8C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt8cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST9C static excitation system. */
+    public St9cExciter addExcSt9c(String busId, String genId, St9cData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ST9C exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createSt9cExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST10C static excitation system. */
+    public St10cExciter addExcSt10c(String busId, String genId, St10cData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ST10C exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createSt10cExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** IEEE 421.5-2005 / PSS/E ESST2A compound-source excitation system. */
+    public Esst2aExciter addExcEsst2a(String busId, String genId, Esst2aData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ESST2A exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createEsst2aExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** PSS/E EXST2 additive compound-source excitation system. */
+    public Exst2Exciter addExcExst2(String busId, String genId, Exst2Data data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXST2 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createExst2Exciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native PSS/E IEEE Type ST3 excitation system. */
+    public Exst3Exciter addExcExst3(String busId, String genId, Exst3Data data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for EXST3 exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createExst3Exciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** IEEE 421.5-2005 ST5B / PSLF ESST5B static excitation system. */
+    public St5bExciter addExcSt5b(String busId, String genId, String modelName,
+            St5bData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} exciter: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createSt5bExciter(
+                mach.getId() + "_Exc", modelName, data, mach);
+    }
+
+    /** Native PSS/E IEEE 421.5-2016 ST5C static excitation system. */
+    public St5cExciter addExcSt5c(String busId,String genId,St5cData data){
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for ST5C exciter: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createSt5cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** IEEE 421.5-2005 AC7B / PSS/E ESAC7B rotating excitation system. */
+    public Ac7bExciter addExcAc7b(String busId, String genId, String modelName,
+            Ac7bData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} exciter: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createAc7bExciter(
+                mach.getId() + "_Exc", modelName, data, mach);
+    }
+
+    /** PSS/E REXSYS general-purpose rotating excitation system. */
+    public RexsysExciter addExcRexsys(String busId, String genId, RexsysData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for REXSYS exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createRexsysExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** PSS/E IEEET4 / WECC EXDC4 IEEE Type 4 excitation system. */
+    public Ieeet4Exciter addExcIeeet4(String busId, String genId, String modelName,
+            double kr, double trh, double kv, double vrmax, double vrmin,
+            double te, double ke, double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} exciter: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        Ieeet4Data data = new Ieeet4Data();
+        data.setKr(kr); data.setTrh(trh); data.setKv(kv);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setTe(te); data.setKe(ke);
+        data.setE1(e1); data.setSe1(se1); data.setE2(e2); data.setSe2(se2);
+        return ExciterObjectFactory.createIeeet4Exciter(
+                mach.getId() + "_Exc", modelName, data, mach);
+    }
+
+    /**
+     * PSS/E ESST1A exciter with the complete 20-parameter record schema.
+     */
+    public IEEE1981ST1Exciter addExcEsst1a(String busId, String genId,
+            int uel, int vos, double tr, double vimax, double vimin,
+            double tc, double tb, double tc1, double tb1,
+            double ka, double ta, double vamax, double vamin,
+            double vrmax, double vrmin, double kc, double kf, double tf,
+            double klr, double ilr) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ESST1A exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        IEEE1981ST1Exciter exc = ExciterObjectFactory.createIeee1981ST1Exciter(
+                mach.getId() + "_Exc", "ESST1A", mach);
+        var data = exc.getData();
+        data.setUel(uel); data.setVos(vos); data.setTr(tr);
+        data.setVimax(vimax); data.setVimin(vimin);
+        data.setTc(tc); data.setTb(tb); data.setTc1(tc1); data.setTb1(tb1);
+        data.setKa(ka); data.setTa(ta); data.setVamax(vamax); data.setVamin(vamin);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKc(kc);
+        data.setKf(kf); data.setTf(tf); data.setKlr(klr); data.setIlr(ilr);
+        return exc;
+    }
+
+    /** PSS/E ESDC2A exciter. */
+    public org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter addExcEsdc2a(
+            String busId, String genId,
+            double tr, double ka, double ta, double tc, double tb,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double e1, double se1, double e2, double se2) {
+        return addExcEsdc2a(busId, genId, tr, ka, ta, tc, tb, vrmax, vrmin,
+                ke, te, kf, tf, 0.0, e1, se1, e2, se2);
+    }
+
+    /** PSS/E ESDC2A exciter including the documented-but-unused Switch field. */
+    public org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter addExcEsdc2a(
+            String busId, String genId,
+            double tr, double ka, double ta, double tc, double tb,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double switchValue,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var data = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aData();
+        data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTc(tc); data.setTb(tb);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
+        data.setKf(kf); data.setTf(tf); data.setSwitchValue(switchValue);
+        data.setE1(e1); data.setSe1(se1);
+        data.setE2(e2); data.setSe2(se2);
+        var exc = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aExciter(
+                mach.getId() + "_Exc", data, mach);
+        return exc;
+    }
+
+    /** PSS/E ESDC1A reuses the DC model chain with constant regulator limits. */
+    public org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter addExcEsdc1a(
+            String busId, String genId,
+            double tr, double ka, double ta, double tc, double tb,
+            double vrmax, double vrmin, double ke, double te,
+            double kf, double tf, double switchValue,
+            double e1, double se1, double e2, double se2) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var data = new org.interpss.dstab.control.exc.psse.esdc2a.Esdc2aData();
+        data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTc(tc); data.setTb(tb);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
+        data.setKf(kf); data.setTf(tf); data.setSwitchValue(switchValue);
+        data.setE1(e1); data.setSe1(se1); data.setE2(e2); data.setSe2(se2);
+        return new org.interpss.dstab.control.exc.psse.esdc1a.Esdc1aExciter(
+                mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native 19-parameter PSS/E DC1C exciter. */
+    public org.interpss.dstab.control.exc.psse.dc1c.Dc1cExciter addExcDc1c(
+            String busId, String genId, int oel, int uel,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te, double kf, double tf,
+            double e1, double se1, double e2, double se2,
+            double vemax, double vemin) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var data = dc1cData(oel, uel, tr, ka, ta, tb, tc, vrmax, vrmin,
+                ke, te, kf, tf, e1, se1, e2, se2, vemax, vemin);
+        return new org.interpss.dstab.control.exc.psse.dc1c.Dc1cExciter(
+                mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Native 19-parameter PSS/E DC2C exciter. */
+    public org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter addExcDc2c(
+            String busId, String genId, int oel, int uel,
+            double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te, double kf, double tf,
+            double e1, double se1, double e2, double se2,
+            double vemax, double vemin) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var data = dc1cData(oel, uel, tr, ka, ta, tb, tc, vrmax, vrmin,
+                ke, te, kf, tf, e1, se1, e2, se2, vemax, vemin);
+        return new org.interpss.dstab.control.exc.psse.dc2c.Dc2cExciter(
+                mach.getId() + "_Exc", data, mach);
+    }
+
+    private static org.interpss.dstab.control.exc.psse.dc1c.Dc1cData dc1cData(
+            int oel, int uel, double tr, double ka, double ta, double tb, double tc,
+            double vrmax, double vrmin, double ke, double te, double kf, double tf,
+            double e1, double se1, double e2, double se2,
+            double vemax, double vemin) {
+        var data = new org.interpss.dstab.control.exc.psse.dc1c.Dc1cData();
+        data.setOelLocation(oel); data.setUelLocation(uel);
+        data.setTr(tr); data.setKa(ka); data.setTa(ta); data.setTb(tb); data.setTc(tc);
+        data.setVrmax(vrmax); data.setVrmin(vrmin); data.setKe(ke); data.setTe(te);
+        data.setKf(kf); data.setTf(tf); data.setE1(e1); data.setSe1(se1);
+        data.setE2(e2); data.setSe2(se2); data.setVemax(vemax); data.setVemin(vemin);
+        return data;
+    }
+
+    /** Attach the PSS/E/IEEE ESAC5A simplified rotating AC exciter. */
+    public Esac5aExciter addExcEsac5a(String busId, String genId, Esac5aData data) {
+        if (data == null || data.getKa() <= 0.0 || data.getTe() <= 0.0
+                || data.getTr() < 0.0 || data.getTa() < 0.0
+                || data.getTf1() < 0.0 || data.getTf2() < 0.0 || data.getTf3() < 0.0) {
+            log.warn("Invalid ESAC5A parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for ESAC5A exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Esac5aExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Attach the PSS/E EXAC1 rotating AC exciter. */
+    public Exac1Exciter addExcExac1(String busId, String genId, Exac1Data data) {
+        if (data == null || data.getKa() <= 0.0 || data.getTe() <= 0.0 || data.getTf() <= 0.0
+                || data.getTr() < 0.0 || data.getTb() < 0.0 || data.getTa() < 0.0
+                || data.getKc() < 0.0) {
+            log.warn("Invalid EXAC1 parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) { log.warn("Machine not found for EXAC1: bus={}, gen={}",busId,genId); return null; }
+        return new Exac1Exciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the PSS/E ESURRY (WECC EXAC1M) excitation system. */
+    public EsurryExciter addExcEsurry(String busId,String genId,EsurryData data) {
+        if (data==null || data.getK10()<=0.0 || data.getTe()<=0.0 || data.getTf()<=0.0
+                || data.getTr()<0.0 || data.getT1()<0.0 || data.getTb()<0.0
+                || data.getTd()<0.0 || data.getKc()<0.0) {
+            log.warn("Invalid ESURRY parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) {
+            log.warn("Machine not found for ESURRY: bus={}, gen={}",busId,genId);
+            return null;
+        }
+        return new EsurryExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the PSS/E EXAC1A modified rotating AC exciter. */
+    public Exac1aExciter addExcExac1a(String busId,String genId,Exac1aData data) {
+        if (data==null || data.getKa()<=0.0 || data.getTe()<=0.0 || data.getTf()<=0.0
+                || data.getTr()<0.0 || data.getTb()<0.0 || data.getTa()<0.0
+                || data.getKc()<0.0) {
+            log.warn("Invalid EXAC1A parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) { log.warn("Machine not found for EXAC1A: bus={}, gen={}",busId,genId); return null; }
+        return new Exac1aExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the PSS/E EXAC2 rotating AC exciter. */
+    public Exac2Exciter addExcExac2(String busId,String genId,Exac2Data data) {
+        if(data==null || data.getKa()<0 || data.getKb()<=0 || data.getKl()<=0
+                || data.getTe()<=0 || data.getTf()<=0 || data.getTr()<0
+                || data.getTb()<0 || data.getTc()<0 || data.getTa()<0 || data.getKc()<0) {
+            log.warn("Invalid EXAC2 parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for EXAC2: bus={}, gen={}",busId,genId);return null;}
+        return new Exac2Exciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5/PSS/E ESAC1A rotating AC exciter. */
+    public Esac1aExciter addExcEsac1a(String busId,String genId,Esac1aData data) {
+        if (data==null || data.getKa()<0.0 || data.getTe()<=0.0 || data.getTf()<=0.0
+                || data.getTr()<0.0 || data.getTb()<0.0 || data.getTa()<0.0
+                || data.getKc()<0.0) {
+            log.warn("Invalid ESAC1A parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) { log.warn("Machine not found for ESAC1A: bus={}, gen={}",busId,genId); return null; }
+        return new Esac1aExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC1C rotating AC exciter. */
+    public Ac1cExciter addExcAc1c(String busId,String genId,Ac1cData data) {
+        if (data==null || data.getTr()<0.0 || data.getTb()<0.0 || data.getTa()<0.0
+                || data.getTe()<0.0 || data.getTf()<0.0 || data.getKc()<0.0
+                || data.getKd()<0.0 || data.getOelLocation()<0 || data.getOelLocation()>2
+                || data.getUelLocation()<0 || data.getUelLocation()>2
+                || data.getSclLocation()<0 || data.getSclLocation()>2) {
+            log.warn("Invalid AC1C parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) { log.warn("Machine not found for AC1C: bus={}, gen={}",busId,genId); return null; }
+        return new Ac1cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC2C high-initial-response AC exciter. */
+    public Ac2cExciter addExcAc2c(String busId,String genId,Ac2cData data) {
+        if (data==null || data.getTr()<0.0 || data.getTb()<0.0 || data.getTa()<0.0
+                || data.getTe()<0.0 || data.getTf()<0.0 || data.getKc()<0.0
+                || data.getKd()<0.0 || data.getOelLocation()<0 || data.getOelLocation()>2
+                || data.getUelLocation()<0 || data.getUelLocation()>2
+                || data.getSclLocation()<0 || data.getSclLocation()>2) {
+            log.warn("Invalid AC2C parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) { log.warn("Machine not found for AC2C: bus={}, gen={}",busId,genId); return null; }
+        return new Ac2cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC3C alternator-rectifier exciter. */
+    public Ac3cExciter addExcAc3c(String busId,String genId,Ac3cData data) {
+        if (data==null || data.getTr()<0.0 || data.getTb()<0.0 || data.getTa()<0.0
+                || data.getTe()<0.0 || data.getTf()<0.0 || data.getTdr()<0.0
+                || data.getKc()<0.0 || data.getKd()<0.0
+                || data.getOelLocation()<0 || data.getOelLocation()>2
+                || data.getUelLocation()<0 || data.getUelLocation()>2
+                || data.getSclLocation()<0 || data.getSclLocation()>2) {
+            log.warn("Invalid AC3C parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null) { log.warn("Machine not found for AC3C: bus={}, gen={}",busId,genId); return null; }
+        return new Ac3cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC4C controlled-rectifier exciter. */
+    public Ac4cExciter addExcAc4c(String busId,String genId,Ac4cData data) {
+        if(data==null || data.getTr()<0 || data.getTb()<0 || data.getTa()<0
+                || data.getKa()<=0 || data.getKc()<0
+                || data.getOelLocation()<0 || data.getOelLocation()>2
+                || data.getUelLocation()<0 || data.getUelLocation()>2
+                || data.getSclLocation()<0 || data.getSclLocation()>2) {
+            log.warn("Invalid AC4C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC4C: bus={}, gen={}",busId,genId);return null;}
+        return new Ac4cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC5C simplified rotating exciter. */
+    public Ac5cExciter addExcAc5c(String busId,String genId,Ac5cData data){
+        if(data==null||data.getTr()<0||data.getTa()<0||data.getTe()<=0||data.getTf1()<=0
+                ||data.getTf2()<0||data.getKc()<0||data.getKd()<0||data.getKa()==0
+                ||data.getOelLocation()<0||data.getOelLocation()>2
+                ||data.getUelLocation()<0||data.getUelLocation()>2
+                ||data.getSclLocation()<0||data.getSclLocation()>2){
+            log.warn("Invalid AC5C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC5C: bus={}, gen={}",busId,genId);return null;}
+        return new Ac5cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC6C alternator-rectifier exciter. */
+    public Ac6cExciter addExcAc6c(String busId,String genId,Ac6cData data){
+        if(data==null||data.getTr()<0||data.getTa()<0||data.getTk()<0||data.getTb()<0
+                ||data.getTc()<0||data.getTe()<=0||data.getTh()<0||data.getTj()<0
+                ||data.getKc()<0||data.getKd()<0||data.getVhmax()<0||data.getKa()==0
+                ||data.getOelLocation()<0||data.getOelLocation()>2
+                ||data.getUelLocation()<0||data.getUelLocation()>2
+                ||data.getSclLocation()<0||data.getSclLocation()>2){
+            log.warn("Invalid AC6C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC6C: bus={}, gen={}",busId,genId);return null;}
+        return new Ac6cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC7C alternator-rectifier exciter. */
+    public Ac7cExciter addExcAc7c(String busId,String genId,Ac7cData data){
+        if(data==null||data.getTr()<0||data.getTdr()<0||data.getTf()<0||data.getTe()<0
+                ||data.getKc()<0||data.getKd()<0||data.getKc1()<0||data.getVbmax()<0
+                ||data.getOelLocation()<0||data.getOelLocation()>4
+                ||data.getUelLocation()<0||data.getUelLocation()>3
+                ||data.getSclLocation()<0||data.getSclLocation()>3
+                ||data.getVosLocation()<1||data.getVosLocation()>2
+                ||data.getSw1()<1||data.getSw1()>2||data.getSw2()<1||data.getSw2()>2){
+            log.warn("Invalid AC7C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC7C: bus={}, gen={}",busId,genId);return null;}
+        return new Ac7cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC8C controlled-rectifier exciter. */
+    public Ac8cExciter addExcAc8c(String busId,String genId,Ac8cData data){
+        if(data==null||data.getTr()<0||data.getTdr()<0||data.getTa()<0||data.getTe()<0
+                ||data.getKc()<0||data.getKd()<0||data.getKc1()<0||data.getVbmax()<0
+                ||data.getOelLocation()<0||data.getOelLocation()>3
+                ||data.getUelLocation()<0||data.getUelLocation()>3
+                ||data.getSclLocation()<0||data.getSclLocation()>3
+                ||data.getVosLocation()<1||data.getVosLocation()>2
+                ||data.getSw1()<1||data.getSw1()>2){
+            log.warn("Invalid AC8C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC8C: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createAc8cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC9C cascaded regulator exciter. */
+    public Ac9cExciter addExcAc9c(String busId,String genId,Ac9cData data){
+        if(data==null||data.getTr()<0||data.getTdr()<0||data.getTa()<0
+                ||data.getTf()<0||data.getTe()<0||data.getKc()<0||data.getKd()<0
+                ||data.getKc1()<0||data.getKc2()<0||data.getVbmax1()<0||data.getVbmax2()<0
+                ||data.getOelLocation()<0||data.getOelLocation()>3
+                ||data.getUelLocation()<0||data.getUelLocation()>3
+                ||data.getSclLocation()<0||data.getSclLocation()>3
+                ||data.getSw1()<1||data.getSw1()>2||data.getVlim1()<data.getVlim2()){
+            log.warn("Invalid AC9C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC9C: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createAc9cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5-2016 / PSS/E AC11C brushless exciter. */
+    public Ac11cExciter addExcAc11c(String busId,String genId,Ac11cData data){
+        if(data==null||data.getTr()<0||data.getTia()<0||data.getTiu()<0
+                ||data.getTb()<0||data.getTio()<0||data.getTe()<0
+                ||data.getKc()<0||data.getKd()<0||data.getKc1()<0||data.getKc2()<0
+                ||data.getVbmax1()<0||data.getVbmax2()<0
+                ||data.getOelLocation()<0||data.getOelLocation()>3
+                ||data.getUelLocation()<0||data.getUelLocation()>3
+                ||data.getSclLocation()<0||data.getSclLocation()>3
+                ||data.getVosLocation()<1||data.getVosLocation()>3
+                ||data.getSw1()<1||data.getSw1()>2){
+            log.warn("Invalid AC11C parameters at bus={}, gen={}",busId,genId);return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if(mach==null){log.warn("Machine not found for AC11C: bus={}, gen={}",busId,genId);return null;}
+        return ExciterObjectFactory.createAc11cExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the native PSS/E BBSEX1 transformer-fed static exciter. */
+    public Bbsex1Exciter addExcBbsex1(String busId, String genId, Bbsex1Data data) {
+        if (data == null || data.getTf() < 0.0 || data.getK() <= 0.0
+                || data.getT1() <= 0.0 || data.getT2() <= 0.0
+                || data.getT3() < 0.0 || data.getT4() <= 0.0
+                || (data.getSwitchLocation() != Bbsex1Exciter.SUPPLEMENT_AT_ERROR
+                        && data.getSwitchLocation() != Bbsex1Exciter.SUPPLEMENT_AT_OUTPUT)) {
+            log.warn("Invalid BBSEX1 parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for BBSEX1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return ExciterObjectFactory.createBbsex1Exciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** Attach the IEEE 421.5/PSS/E ESAC2A rotating AC exciter. */
+    public Esac2aExciter addExcEsac2a(String busId,String genId,Esac2aData data) {
+        if (data==null || data.getKa()<0.0 || data.getKb()<0.0 || data.getTe()<=0.0
+                || data.getTf()<=0.0 || data.getTr()<0.0 || data.getTb()<0.0
+                || data.getTa()<0.0 || data.getKc()<0.0 || data.getVfemax()<0.0) {
+            log.warn("Invalid ESAC2A parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null){log.warn("Machine not found for ESAC2A: bus={}, gen={}",busId,genId);return null;}
+        return new Esac2aExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5/native PSS/E ESAC3A rotating AC exciter. */
+    public Esac3aExciter addExcEsac3a(String busId,String genId,Esac3aData data) {
+        if (data==null || data.getKa()<0.0 || data.getKr()<0.0 || data.getTe()<=0.0
+                || data.getTf()<0.0 || data.getTr()<0.0 || data.getTb()<0.0
+                || data.getTa()<0.0 || data.getKc()<0.0 || data.getKd()<0.0) {
+            log.warn("Invalid ESAC3A parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null){log.warn("Machine not found for ESAC3A: bus={}, gen={}",busId,genId);return null;}
+        return new Esac3aExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the IEEE 421.5/PSS/E ESAC6A rotating AC exciter. */
+    public Esac6aExciter addExcEsac6a(String busId,String genId,Esac6aData data) {
+        if (data==null || data.getKa()<=0.0 || data.getTe()<=0.0
+                || data.getTr()<0.0 || data.getTa()<0.0 || data.getTk()<0.0
+                || data.getTb()<0.0 || data.getTc()<0.0 || data.getTh()<0.0
+                || data.getTj()<0.0 || data.getKc()<0.0 || data.getKd()<0.0
+                || data.getVhmax()<0.0) {
+            log.warn("Invalid ESAC6A parameters at bus={}, gen={}",busId,genId);
+            return null;
+        }
+        Machine mach=findMachine(busId,genId);
+        if (mach==null){log.warn("Machine not found for ESAC6A: bus={}, gen={}",busId,genId);return null;}
+        return new Esac6aExciter(mach.getId()+"_Exc",data,mach);
+    }
+
+    /** Attach the eight-parameter PSS/E SCRX excitation system. */
+    public ScrxExciter addExcScrx(String busId, String genId, ScrxData data) {
+        if (data == null || data.getTb() < 0.0 || data.getTe() < 0.0
+                || data.getK() <= 0.0 || data.getRcOverRfd() < 0.0
+                || (data.getCswitch() != 0 && data.getCswitch() != 1)) {
+            log.warn("Invalid SCRX parameters at bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for SCRX exciter: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new ScrxExciter(mach.getId() + "_Exc", data, mach);
+    }
+
+    /** PSS/E ESST3A mapped to the existing IEEE 2005 ST3A implementation. */
+    public org.interpss.dstab.control.exc.ieee.y2005.st3a.IEEE2005ST3AExciter addExcEsst3a(
+            String busId, String genId, double tr, double vimax, double vimin,
+            double km, double tc, double tb, double ka, double ta,
+            double vrmax, double vrmin, double kg, double kp, double ki,
+            double vbmax, double kc, double xl, double vgmax, double thetaP,
+            double tm, double vmmax, double vmmin) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        var exc = ExciterObjectFactory.createIeee2005ST3AExciter(
+                mach.getId() + "_Exc", "ESST3A", mach);
+        var data = exc.getData();
+        data.setTr(tr); data.setVimax(vimax); data.setVimin(vimin);
+        data.setKm(km); data.setTc(tc); data.setTb(tb);
+        data.setKa(ka); data.setTa(ta); data.setVrmax(vrmax); data.setVrmin(vrmin);
+        data.setKg(kg); data.setKp(kp); data.setKi(ki); data.setVbmax(vbmax);
+        data.setKc(kc); data.setXl(xl); data.setVgmax(vgmax);
+        data.setAngKp(thetaP); data.setTm(tm); data.setVmmax(vmmax); data.setVmmin(vmmin);
+        return exc;
+    }
+
+    /** Attach the 17-parameter PSS/E ESST4B exciter. */
+    public IEEE2005ST4BExciter addExcEsst4b(String busId, String genId,
+            IEEE2005ST4BExciterData source) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) return null;
+        IEEE2005ST4BExciter exc = ExciterObjectFactory.createIeee2005ST4BExciter(
+                mach.getId() + "_Exc", "ESST4B", mach);
+        IEEE2005ST4BExciterData target = exc.getData();
+        target.setTr(source.getTr()); target.setKpr(source.getKpr());
+        target.setKir(source.getKir()); target.setVrmax(source.getVrmax());
+        target.setVrmin(source.getVrmin()); target.setTa(source.getTa());
+        target.setKpm(source.getKpm()); target.setKim(source.getKim());
+        target.setVmmax(source.getVmmax()); target.setVmmin(source.getVmmin());
+        target.setKg(source.getKg()); target.setKp(source.getKp());
+        target.setKi(source.getKi()); target.setVbmax(source.getVbmax());
+        target.setKc(source.getKc()); target.setXl(source.getXl());
+        target.setAngKp(source.getAngKp()); target.setVgmax(source.getVgmax());
         return exc;
     }
 
@@ -396,6 +2572,194 @@ public class DStabNetworkBuilder {
 
     // ==================== Governor Models ====================
 
+    /** Attach a WECC H6E/PSS/E H6EU1 Kaplan hydro governor. */
+    public PsseH6eGovernor addGovH6e(String busId, String genId, PsseH6eGovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for H6E governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseH6eGovernor gov = new PsseH6eGovernor(mach.getId() + "_Gov", "H6E", "PSS/E");
+        copyH6eData(data, gov.getData());
+        if (!gov.validateParameters()) {
+            log.warn("Invalid H6E parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        gov.setMachine(mach);
+        return gov;
+    }
+
+    private static void copyH6eData(PsseH6eGovernorData s, PsseH6eGovernorData t) {
+        t.setFd(s.getFd()); t.setRe(s.getRe()); t.setRg(s.getRg());
+        t.setTpe(s.getTpe()); t.setTsp(s.getTsp()); t.setKp(s.getKp());
+        t.setKi(s.getKi()); t.setKd(s.getKd()); t.setTd(s.getTd());
+        t.setVelm(s.getVelm()); t.setGmax(s.getGmax()); t.setGmin(s.getGmin());
+        t.setBuf(s.getBuf()); t.setBuv(s.getBuv()); t.setKg(s.getKg());
+        t.setTg(s.getTg()); t.setBlg(s.getBlg()); t.setDbbd(s.getDbbd());
+        t.setTbd(s.getTbd()); t.setBlb(s.getBlb()); t.setDbbs(s.getDbbs());
+        t.setTbs(s.getTbs()); t.setBgvmin(s.getBgvmin()); t.setBlv(s.getBlv());
+        t.setDturb(s.getDturb()); t.setPgc(s.getPgc()); t.setDeff(s.getDeff());
+        t.setHdam(s.getHdam()); t.setTw(s.getTw()); t.setGv(s.getGv());
+        t.setPgv(s.getPgv()); t.setBgv(s.getBgv()); t.setSprate(s.getSprate());
+        t.setDb1(s.getDb1()); t.setEps(s.getEps()); t.setTrate(s.getTrate());
+    }
+
+    /** Attach a WECC HYG3/PSS/E HYG3U1 hydro governor. */
+    public PsseHyg3Governor addGovHyg3(String busId, String genId,
+            PsseHyg3GovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for HYG3 governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseHyg3Governor gov = new PsseHyg3Governor(
+                mach.getId() + "_Gov", "HYG3", "PSS/E");
+        copyHyg3Data(data, gov.getData());
+        if (!gov.validateParameters()) {
+            log.warn("Invalid HYG3 parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        gov.setMachine(mach);
+        return gov;
+    }
+
+    private static void copyHyg3Data(PsseHyg3GovernorData source,
+            PsseHyg3GovernorData target) {
+        target.setControlFlag(source.getControlFlag());
+        target.setRgate(source.getRgate()); target.setRelec(source.getRelec());
+        target.setTt(source.getTt()); target.setTd(source.getTd());
+        target.setK2(source.getK2()); target.setKi(source.getKi());
+        target.setK1(source.getK1()); target.setTf(source.getTf());
+        target.setKg(source.getKg()); target.setTp(source.getTp());
+        target.setVelopen(source.getVelopen()); target.setVelclose(source.getVelclose());
+        target.setPmax(source.getPmax()); target.setPmin(source.getPmin());
+        target.setDb2(source.getDb2()); target.setGv(source.getGv());
+        target.setPgv(source.getPgv()); target.setH0(source.getH0());
+        target.setQnl(source.getQnl()); target.setTw(source.getTw());
+        target.setAt(source.getAt()); target.setDturb(source.getDturb());
+        target.setTrate(source.getTrate()); target.setDbH(source.getDbH());
+        target.setEps(source.getEps()); target.setDbL(source.getDbL());
+    }
+
+    /** Attach a PSS/E HYGOVR1 fourth-order lead-lag hydro governor. */
+    public PsseHygovrGovernor addGovHygovr1(String busId, String genId,
+            PsseHygovrGovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for HYGOVR1 governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseHygovrGovernor gov = GovernorObjectFactory.createPsseHYGOVR1Governor(
+                mach.getId() + "_Gov", "HYGOVR1", mach);
+        PsseHygovrGovernorData t = gov.getData();
+        t.setDb1(data.getDb1()); t.setErr(data.getErr()); t.setTd(data.getTd());
+        t.setT1(data.getT1()); t.setT2(data.getT2()); t.setT3(data.getT3());
+        t.setT4(data.getT4()); t.setT5(data.getT5()); t.setT6(data.getT6());
+        t.setT7(data.getT7()); t.setT8(data.getT8()); t.setKp(data.getKp());
+        t.setR(data.getR()); t.setTt(data.getTt()); t.setKg(data.getKg());
+        t.setTp(data.getTp()); t.setVelopen(data.getVelopen());
+        t.setVelclose(data.getVelclose()); t.setPmax(data.getPmax());
+        t.setPmin(data.getPmin()); t.setDb2(data.getDb2()); t.setTw(data.getTw());
+        t.setAt(data.getAt()); t.setDturb(data.getDturb()); t.setQnl(data.getQnl());
+        t.setTrate(data.getTrate());
+        if (!gov.validateParameters()) {
+            log.warn("Invalid HYGOVR1 parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** Attach a PSS/E HYGOV hydro governor. */
+    public PsseHygovGovernor addGovHygov(String busId, String genId,
+            PsseHygovGovernorData data) {
+        return addGovHygov(busId, genId, data, "HYGOV");
+    }
+
+    public PsseHygovGovernor addGovHygovd(String busId, String genId,
+            PsseHygovGovernorData data) {
+        return addGovHygov(busId, genId, data, "HYGOVD");
+    }
+
+    private PsseHygovGovernor addGovHygov(String busId, String genId,
+            PsseHygovGovernorData data, String modelName) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} governor: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        PsseHygovGovernor gov = new PsseHygovGovernor(
+                mach.getId() + "_Gov", modelName, "PSS/E");
+        copyHygovData(data, gov.getData());
+        if (!gov.validateParameters()) {
+            log.warn("Invalid HYGOV parameters: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        gov.setMachine(mach);
+        return gov;
+    }
+
+    private static void copyHygovData(PsseHygovGovernorData source,
+            PsseHygovGovernorData target) {
+        target.setR(source.getR()); target.setRtemp(source.getRtemp());
+        target.setTr(source.getTr()); target.setTf(source.getTf());
+        target.setTg(source.getTg()); target.setVelm(source.getVelm());
+        target.setGmax(source.getGmax()); target.setGmin(source.getGmin());
+        target.setTw(source.getTw()); target.setAt(source.getAt());
+        target.setDturb(source.getDturb()); target.setQnl(source.getQnl());
+        target.setDbH(source.getDbH()); target.setDbL(source.getDbL());
+        target.setTrate(source.getTrate());
+    }
+
+    /** Attach a PSS/E GGOV1 governor after its record has been mapped exactly. */
+    public PsseGgov1Governor addGovGgov1(String busId, String genId,
+            PsseGgov1GovernorData data) {
+        return addGovGgov1(busId, genId, data, "GGOV1");
+    }
+
+    /** Attach a PSS/E GGOV1D/GGOV1DU governor with input-frequency deadband. */
+    public PsseGgov1Governor addGovGgov1d(String busId, String genId,
+            PsseGgov1GovernorData data) {
+        return addGovGgov1(busId, genId, data, "GGOV1D");
+    }
+
+    private PsseGgov1Governor addGovGgov1(String busId, String genId,
+            PsseGgov1GovernorData data, String modelName) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} governor: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        PsseGgov1Governor gov = new PsseGgov1Governor(
+                mach.getId() + "_Gov", modelName, "PSS/E");
+        copyGgov1Data(data, gov.getData());
+        if (!gov.validateParameters()) {
+            log.warn("Unsupported or invalid {} parameters: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        gov.setMachine(mach);
+        return gov;
+    }
+
+    private static void copyGgov1Data(PsseGgov1GovernorData source, PsseGgov1GovernorData target) {
+        target.setRselect(source.getRselect()); target.setFlag(source.getFlag());
+        target.setR(source.getR()); target.setTpelec(source.getTpelec());
+        target.setMaxerr(source.getMaxerr()); target.setMinerr(source.getMinerr());
+        target.setKpgov(source.getKpgov()); target.setKigov(source.getKigov());
+        target.setKdgov(source.getKdgov()); target.setTdgov(source.getTdgov());
+        target.setVmax(source.getVmax()); target.setVmin(source.getVmin());
+        target.setTact(source.getTact()); target.setKturb(source.getKturb());
+        target.setWfnl(source.getWfnl()); target.setTb(source.getTb()); target.setTc(source.getTc());
+        target.setTeng(source.getTeng()); target.setTfload(source.getTfload());
+        target.setKpload(source.getKpload()); target.setKiload(source.getKiload());
+        target.setLdref(source.getLdref()); target.setDm(source.getDm());
+        target.setRopen(source.getRopen()); target.setRclose(source.getRclose());
+        target.setKimw(source.getKimw()); target.setAset(source.getAset());
+        target.setKa(source.getKa()); target.setTa(source.getTa()); target.setTrate(source.getTrate());
+        target.setDb(source.getDb()); target.setTsa(source.getTsa()); target.setTsb(source.getTsb());
+        target.setRup(source.getRup()); target.setRdown(source.getRdown());
+        target.setDbH(source.getDbH()); target.setDbL(source.getDbL());
+    }
+
     /**
      * PSS/E TGOV1 steam turbine governor.
      * Parameters: R, T1, VMAX, VMIN, T2, T3, Dt
@@ -405,6 +2769,10 @@ public class DStabNetworkBuilder {
     public PsseTGov1SteamTurGovernor addGovTgov1(String busId, String genId,
             double r, double t1, double vmax, double vmin,
             double t2, double t3, double dt) {
+        if (r <= 0.0) {
+            log.warn("Invalid TGOV1 droop at {} {}: R={}", busId, genId, r);
+            return null;
+        }
         Machine mach = findMachine(busId, genId);
         if (mach == null) {
             log.warn("Machine not found for TGOV1 governor: bus={}, gen={}", busId, genId);
@@ -539,7 +2907,812 @@ public class DStabNetworkBuilder {
         return gov;
     }
 
+    /** PSS/E WESGOVD Westinghouse sampled-data gas-turbine governor. */
+    public PsseWesgovdGovernor addGovWesgovd(String busId, String genId,
+            double deltaTc, double deltaTp, double droop, double kp, double ti,
+            double t1, double t2, double alim, double tpe,
+            double dbH, double dbL, double trate) {
+        if (deltaTc < 0.0 || deltaTp < 0.0 || droop < 0.0 || ti <= 0.0
+                || t1 < 0.0 || t2 < 0.0 || alim < 0.0 || tpe < 0.0
+                || dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid WESGOVD parameters at {} {}", busId, genId);
+            return null;
+        }
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for WESGOVD governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseWesgovdGovernor gov = GovernorObjectFactory.createPsseWESGOVDGovernor(
+                mach.getId() + "_Gov", "WESGOVD", mach);
+        gov.getData().setDeltaTc(deltaTc);
+        gov.getData().setDeltaTp(deltaTp);
+        gov.getData().setDroop(droop);
+        gov.getData().setKp(kp);
+        gov.getData().setTi(ti);
+        gov.getData().setT1(t1);
+        gov.getData().setT2(t2);
+        gov.getData().setAlim(alim);
+        gov.getData().setTpe(tpe);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
+    /** PSS/E DEGOV1D Woodward diesel governor. */
+    public PsseDegov1dGovernor addGovDegov1d(String busId, String genId,
+            int droopControl, double t1, double t2, double t3, double k,
+            double t4, double t5, double t6, double td, double tmax, double tmin,
+            double droop, double te, double dbH, double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for DEGOV1D governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseDegov1dGovernor gov = GovernorObjectFactory.createPsseDEGOV1DGovernor(
+                mach.getId() + "_Gov", "DEGOV1D", mach);
+        gov.getData().setDroopControl(droopControl);
+        gov.getData().setT1(t1);
+        gov.getData().setT2(t2);
+        gov.getData().setT3(t3);
+        gov.getData().setK(k);
+        gov.getData().setT4(t4);
+        gov.getData().setT5(t5);
+        gov.getData().setT6(t6);
+        gov.getData().setTd(td);
+        gov.getData().setTmax(tmax);
+        gov.getData().setTmin(tmin);
+        gov.getData().setDroop(droop);
+        gov.getData().setTe(te);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid DEGOV1D parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E PIDGOV hydro turbine-governor. */
+    public PssePidgovdGovernor addGovPidgov(String busId, String genId,
+            int feedback, double rperm, double treg, double kp, double ki,
+            double kd, double ta, double tb, double dturb, double g0, double g1,
+            double p1, double g2, double p2, double p3, double gmax, double gmin,
+            double atw, double tw, double velmax, double velmin) {
+        return addGovPidgovCommon(busId, genId, "PIDGOV", feedback, rperm, treg,
+                kp, ki, kd, ta, tb, dturb, g0, g1, p1, g2, p2, p3, gmax, gmin,
+                atw, tw, velmax, velmin, 0.0, 0.0, 0.0);
+    }
+
+    /** PSS/E PIDGOVD hydro turbine-governor. */
+    public PssePidgovdGovernor addGovPidgovd(String busId, String genId,
+            int feedback, double rperm, double treg, double kp, double ki,
+            double kd, double ta, double tb, double dturb, double g0, double g1,
+            double p1, double g2, double p2, double p3, double gmax, double gmin,
+            double atw, double tw, double velmax, double velmin, double dbH,
+            double dbL, double trate) {
+        return addGovPidgovCommon(busId, genId, "PIDGOVD", feedback, rperm, treg,
+                kp, ki, kd, ta, tb, dturb, g0, g1, p1, g2, p2, p3, gmax, gmin,
+                atw, tw, velmax, velmin, dbH, dbL, trate);
+    }
+
+    private PssePidgovdGovernor addGovPidgovCommon(String busId, String genId,
+            String modelName, int feedback, double rperm, double treg, double kp,
+            double ki, double kd, double ta, double tb, double dturb, double g0,
+            double g1, double p1, double g2, double p2, double p3, double gmax,
+            double gmin, double atw, double tw, double velmax, double velmin,
+            double dbH, double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for {} governor: bus={}, gen={}", modelName, busId, genId);
+            return null;
+        }
+        PssePidgovdGovernor gov = GovernorObjectFactory.createPssePIDGOVDGovernor(
+                mach.getId() + "_Gov", modelName, mach);
+        gov.getData().setFeedback(feedback);
+        gov.getData().setRperm(rperm);
+        gov.getData().setTreg(treg);
+        gov.getData().setKp(kp);
+        gov.getData().setKi(ki);
+        gov.getData().setKd(kd);
+        gov.getData().setTa(ta);
+        gov.getData().setTb(tb);
+        gov.getData().setDturb(dturb);
+        gov.getData().setG0(g0);
+        gov.getData().setG1(g1);
+        gov.getData().setP1(p1);
+        gov.getData().setG2(g2);
+        gov.getData().setP2(p2);
+        gov.getData().setP3(p3);
+        gov.getData().setGmax(gmax);
+        gov.getData().setGmin(gmin);
+        gov.getData().setAtw(atw);
+        gov.getData().setTw(tw);
+        gov.getData().setVelmax(velmax);
+        gov.getData().setVelmin(velmin);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid {} parameters at {} {}", modelName, busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E TGOV3D modified IEEE Type-1 steam governor. */
+    public PsseTgov3dGovernor addGovTgov3d(String busId, String genId,
+            double k, double t1, double t2, double t3, double uo, double uc,
+            double pmax, double pmin, double t4, double k1, double t5,
+            double k2, double t6, double k3, double ta, double tb, double tc,
+            double prmax, double dbH, double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for TGOV3D governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseTgov3dGovernor gov = GovernorObjectFactory.createPsseTGOV3DGovernor(
+                mach.getId() + "_Gov", "TGOV3D", mach);
+        gov.getData().setK(k);
+        gov.getData().setT1(t1);
+        gov.getData().setT2(t2);
+        gov.getData().setT3(t3);
+        gov.getData().setUo(uo);
+        gov.getData().setUc(uc);
+        gov.getData().setPmax(pmax);
+        gov.getData().setPmin(pmin);
+        gov.getData().setT4(t4);
+        gov.getData().setK1(k1);
+        gov.getData().setT5(t5);
+        gov.getData().setK2(k2);
+        gov.getData().setT6(t6);
+        gov.getData().setK3(k3);
+        gov.getData().setTa(ta);
+        gov.getData().setTb(tb);
+        gov.getData().setTc(tc);
+        gov.getData().setPrmax(prmax);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid TGOV3D parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E HYGOV2D hydro turbine-governor with speed deadband. */
+    public PsseHygov2dGovernor addGovHygov2d(String busId, String genId,
+            double kp, double ki, double ka, double t1, double t2, double t3,
+            double t4, double t5, double t6, double tr, double rtemp, double r,
+            double vgmax, double gmax, double gmin, double pmax, double dbH,
+            double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for HYGOV2D governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseHygov2dGovernor gov = GovernorObjectFactory.createPsseHYGOV2DGovernor(
+                mach.getId() + "_Gov", "HYGOV2D", mach);
+        gov.getData().setKp(kp);
+        gov.getData().setKi(ki);
+        gov.getData().setKa(ka);
+        gov.getData().setT1(t1);
+        gov.getData().setT2(t2);
+        gov.getData().setT3(t3);
+        gov.getData().setT4(t4);
+        gov.getData().setT5(t5);
+        gov.getData().setT6(t6);
+        gov.getData().setTr(tr);
+        gov.getData().setRtemp(rtemp);
+        gov.getData().setR(r);
+        gov.getData().setVgmax(vgmax);
+        gov.getData().setGmax(gmax);
+        gov.getData().setGmin(gmin);
+        gov.getData().setPmax(pmax);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid HYGOV2D parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E WPIDHYD Woodward PID hydro turbine-governor. */
+    public PsseWpidhydGovernor addGovWpidhyd(String busId, String genId,
+            double treg, double reg, double kp, double ki, double kd,
+            double ta, double tb, double velmax, double velmin, double gmax,
+            double gmin, double tw, double pmax, double pmin, double damping,
+            double g0, double g1, double p1, double g2, double p2, double p3,
+            double dbH, double dbL, double trate) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for WPIDHYD governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseWpidhydGovernor gov = GovernorObjectFactory.createPsseWPIDHYDGovernor(
+                mach.getId() + "_Gov", "WPIDHYD", mach);
+        gov.getData().setTreg(treg);
+        gov.getData().setReg(reg);
+        gov.getData().setKp(kp);
+        gov.getData().setKi(ki);
+        gov.getData().setKd(kd);
+        gov.getData().setTa(ta);
+        gov.getData().setTb(tb);
+        gov.getData().setVelmax(velmax);
+        gov.getData().setVelmin(velmin);
+        gov.getData().setGmax(gmax);
+        gov.getData().setGmin(gmin);
+        gov.getData().setTw(tw);
+        gov.getData().setPmax(pmax);
+        gov.getData().setPmin(pmin);
+        gov.getData().setD(damping);
+        gov.getData().setG0(g0);
+        gov.getData().setG1(g1);
+        gov.getData().setP1(p1);
+        gov.getData().setG2(g2);
+        gov.getData().setP2(p2);
+        gov.getData().setP3(p3);
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid WPIDHYD parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** Attach the WSHYGP compatibility hydro governor. */
+    public WshygpGovernor addGovWshygp(String busId, String genId, double[] constants) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null || constants == null || constants.length != 30) {
+            log.warn("Machine or WSHYGP constants unavailable: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        WshygpGovernor gov = new WshygpGovernor(mach.getId() + "_Gov", "WSHYGP", "WECC");
+        gov.setMachine(mach);
+        WshygpGovernorData data = gov.getData();
+        for (int index = 0; index < constants.length; index++) data.set(index, constants[index]);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid WSHYGP parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** Attach the WSHYDD compatibility hydro governor. */
+    public WshyddGovernor addGovWshydd(String busId, String genId, double[] constants) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null || constants == null || constants.length != 30) {
+            log.warn("Machine or WSHYDD constants unavailable: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        WshyddGovernor gov = new WshyddGovernor(mach.getId() + "_Gov", "WSHYDD", "WECC");
+        gov.setMachine(mach);
+        WshyddGovernorData data = gov.getData();
+        for (int index = 0; index < constants.length; index++) data.set(index, constants[index]);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid WSHYDD parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E GASTWDD Woodward gas-turbine governor. */
+    public PsseGastwddGovernor addGovGastwdd(String busId, String genId,
+            PsseGastwddGovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for GASTWDD governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseGastwddGovernor gov = GovernorObjectFactory.createPsseGASTWDDGovernor(
+                mach.getId() + "_Gov", "GASTWDD", mach);
+        gov.setData(data);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid GASTWDD parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /** PSS/E GAST2AD gas-turbine governor. */
+    public PsseGast2adGovernor addGovGast2ad(String busId, String genId,
+            PsseGast2adGovernorData data) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for GAST2AD governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        PsseGast2adGovernor gov = GovernorObjectFactory.createPsseGAST2ADGovernor(
+                mach.getId() + "_Gov", "GAST2AD", mach);
+        gov.setData(data);
+        if (!gov.validateParameters()) {
+            log.warn("Invalid GAST2AD parameters at {} {}", busId, genId);
+            return null;
+        }
+        return gov;
+    }
+
+    /**
+     * PSS/E IEEEG3 hydro governor, implemented by the matching IEEE 1981
+     * Type-3 core controller.
+     * Parameters: Tg, Tp, Uo, Uc, Pmax, Pmin, Rperm, Rtemp, Tr, Tw,
+     *             A11, A13, A21, A23.
+     */
+    public Ieee1981Type3HydroGovernor addGovIeeeg3(String busId, String genId,
+            double tg, double tp, double uo, double uc,
+            double pmax, double pmin, double rperm, double rtemp,
+            double tr, double tw, double a11, double a13, double a21, double a23) {
+        Machine mach = findMachine(busId, genId);
+        if (mach == null) {
+            log.warn("Machine not found for IEEEG3 governor: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Ieee1981Type3HydroGovernor gov = GovernorObjectFactory.createIeee1981Type3HydroGovernor(
+                mach.getId() + "_Gov", "IEEEG3", mach);
+        gov.getData().setTg(tg);
+        gov.getData().setTp(tp);
+        gov.getData().setVelOpen(uo);
+        gov.getData().setVelClose(uc);
+        gov.getData().setPmax(pmax);
+        gov.getData().setPmin(pmin);
+        gov.getData().setSigma(rperm);
+        gov.getData().setDelta(rtemp);
+        gov.getData().setTr(tr);
+        gov.getData().setTw(tw);
+        gov.getData().setA11(a11);
+        gov.getData().setA13(a13);
+        gov.getData().setA21(a21);
+        gov.getData().setA23(a23);
+        return gov;
+    }
+
+    /**
+     * PSS/E IEEEG3D/IEEEG3DU extension of IEEEG3.
+     * Parameters append dbH, dbL, and Trate to the shared IEEEG3 record.
+     */
+    public Ieee1981Type3HydroGovernor addGovIeeeg3d(String busId, String genId,
+            double tg, double tp, double uo, double uc,
+            double pmax, double pmin, double rperm, double rtemp,
+            double tr, double tw, double a11, double a13, double a21, double a23,
+            double dbH, double dbL, double trate) {
+        if (dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid IEEEG3D deadband/rating at {} {}: dbH={}, dbL={}, Trate={}",
+                    busId, genId, dbH, dbL, trate);
+            return null;
+        }
+        Ieee1981Type3HydroGovernor gov = addGovIeeeg3(busId, genId,
+                tg, tp, uo, uc, pmax, pmin, rperm, rtemp,
+                tr, tw, a11, a13, a21, a23);
+        if (gov == null) return null;
+        gov.setName("IEEEG3D");
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
+    /**
+     * PowerWorld/WECC GASTD extension of GAST.
+     * Parameters append dbH, dbL, and Trate to the base GAST record.
+     */
+    public PsseGASTGasTurGovernor addGovGastd(String busId, String genId,
+            double r, double t1, double t2, double t3,
+            double at, double kt, double vmax, double vmin, double dturb,
+            double dbH, double dbL, double trate) {
+        if (r <= 0.0 || dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid GASTD parameters at {} {}: R={}, dbH={}, dbL={}, Trate={}",
+                    busId, genId, r, dbH, dbL, trate);
+            return null;
+        }
+        PsseGASTGasTurGovernor gov = addGovGast(busId, genId,
+                r, t1, t2, t3, at, kt, vmax, vmin, dturb);
+        if (gov == null) return null;
+        gov.setName("GASTD");
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
+    public PsseIEESGOSteamTurGovernor addGovIeesgod(String busId, String genId,
+            double t1, double t2, double t3, double t4, double t5, double t6,
+            double k1, double k2, double k3, double pmax, double pmin,
+            double dbH, double dbL, double trate) {
+        if (dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) return null;
+        PsseIEESGOSteamTurGovernor gov = addGovIeesgo(busId, genId,
+                t1, t2, t3, t4, t5, t6, k1, k2, k3, pmax, pmin);
+        if (gov == null) return null;
+        gov.setName("IEESGOD");
+        gov.getData().setDbH(dbH); gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
+    /** PSS/E IEEEG1D/IEEEG1SDU with a single combined mechanical-power output. */
+    public IeeeSteamTCDRGovernor addGovIeeeg1d(String busId, String genId,
+            double k, double t1, double t2, double t3, double uo, double uc,
+            double pmax, double pmin, double t4, double k1, double k2,
+            double t5, double k3, double k4, double t6, double k5, double k6,
+            double t7, double k7, double k8, double dbH, double dbL, double trate) {
+        double fractionSum = k1 + k2 + k3 + k4 + k5 + k6 + k7 + k8;
+        if (k <= 0.0 || t3 <= 0.0 || fractionSum <= 0.0
+                || dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid IEEEG1D parameters at {} {}", busId, genId);
+            return null;
+        }
+        IeeeSteamTCDRGovernor gov = addGovIeeeg1(busId, genId, k, t1, t2, t3,
+                k1 + k2, k3 + k4, t4, k5 + k6, t5, k7 + k8, t6, t7,
+                uc, uo, pmax, pmin);
+        if (gov == null) return null;
+        gov.setName("IEEEG1D");
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
+    /** PSS/E TGOV1D with asymmetric speed deadband and turbine MW rating. */
+    public PsseTGov1SteamTurGovernor addGovTgov1d(String busId, String genId,
+            double r, double t1, double vmax, double vmin,
+            double t2, double t3, double dt, double dbH, double dbL, double trate) {
+        if (dbH < 0.0 || dbL > 0.0 || dbL > dbH || trate < 0.0) {
+            log.warn("Invalid TGOV1D deadband/rating at {} {}: dbH={}, dbL={}, Trate={}",
+                    busId, genId, dbH, dbL, trate);
+            return null;
+        }
+        PsseTGov1SteamTurGovernor gov = addGovTgov1(
+                busId, genId, r, t1, vmax, vmin, t2, t3, dt);
+        if (gov == null) return null;
+        gov.setName("TGOV1D");
+        gov.getData().setDbH(dbH);
+        gov.getData().setDbL(dbL);
+        gov.getData().setTrate(trate);
+        return gov;
+    }
+
+    // ==================== Renewable Models ====================
+
+    /** Attach an LCFB1 secondary Pref controller without replacing the governor. */
+    public Lcfb1PrefController addLcfb1(String busId, String genId, Lcfb1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (bus == null || machine == null || !machine.hasGovernor()) {
+            log.warn("Machine/governor not found for LCFB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Lcfb1PrefController(bus, machine, genId, data);
+    }
+
+    /** Attach a UEL1 auxiliary controller without replacing the exciter. */
+    public Uel1UnderExcitationLimiter addUel1(String busId, String genId, Uel1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (bus == null || machine == null || !machine.hasExciter()) {
+            log.warn("Machine/exciter not found for UEL1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        try {
+            return new Uel1UnderExcitationLimiter(bus, machine, genId, data);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Incompatible UEL1 target at {} {}: {}", busId, genId, ex.getMessage());
+            return null;
+        }
+    }
+
+    /** Attach a UEL2C auxiliary controller without replacing the exciter. */
+    public Uel2cUnderExcitationLimiter addUel2c(String busId,String genId,Uel2cData data){
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);
+        Machine machine=network.getMachine(busId+"-mach"+genId);
+        if(bus==null||machine==null||!machine.hasExciter()){
+            log.warn("Machine/exciter not found for UEL2C: bus={}, gen={}",busId,genId);return null;
+        }
+        try{return new Uel2cUnderExcitationLimiter(bus,machine,genId,data);}
+        catch(IllegalArgumentException ex){log.warn("Incompatible UEL2C target at {} {}: {}",busId,genId,ex.getMessage());return null;}
+    }
+
+    /** Attach an OEL2C auxiliary controller without replacing the exciter. */
+    public Oel2cOverExcitationLimiter addOel2c(String busId, String genId, Oel2cData data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        Machine machine = network.getMachine(busId + "-mach" + genId);
+        if (bus == null || machine == null || !machine.hasExciter()) {
+            log.warn("Machine/exciter not found for OEL2C: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        try {
+            return new Oel2cOverExcitationLimiter(bus, machine, genId, data);
+        } catch (IllegalArgumentException ex) {
+            log.warn("Incompatible OEL2C target at {} {}: {}", busId, genId, ex.getMessage());
+            return null;
+        }
+    }
+
+    public Regca1Model addRegca1(String busId, String genId, Regca1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for REGCA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Regca1Model(gen, bus, genId, data);
+    }
+
+    /** Attach the published behind-impedance renewable converter model. */
+    public Regcb1Model addRegcb1(String busId, String genId, Regcb1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for REGCB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Regcb1Model(gen, bus, genId, data);
+    }
+
+    /** Attach the combined DERA1 converter and controls to a renewable generator. */
+    public Dera1Model addDera1(String busId, String genId, Dera1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for DERA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Dera1Model(gen, bus, genId, data);
+    }
+
+    public Regfma1Model addRegfma1(String busId, String genId, Regfma1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Generator not found for REGFMA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        return new Regfma1Model(gen, bus, genId, data);
+    }
+
+    public Csvgn5Model addCsvgn5(String busId, String genId, Csvgn5Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        String remoteBusId = "Bus" + Math.abs(data.remoteBusNumber());
+        BaseDStabBus<?, ?> remoteBus = network.getDStabBus(remoteBusId);
+        if (gen == null || remoteBus == null) {
+            log.warn("Generator or remote bus not found for CSVGN5: bus={}, gen={}, remote={}",
+                    busId, genId, remoteBusId);
+            return null;
+        }
+        return new Csvgn5Model(gen, bus, remoteBus, genId, data);
+    }
+
+    /** Attach an SVSMO1T2 controller to a continuously controlled switched shunt. */
+    public Svsmo1t2Model addSvsmo1t2(String busId, String shuntId,
+            Svsmo1t2Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        String remoteBusId = "Bus" + Math.abs(data.remoteBusNumber());
+        BaseDStabBus<?, ?> remoteBus = network.getDStabBus(remoteBusId);
+        com.interpss.core.aclf.adj.SwitchedShunt shunt = null;
+        if (bus != null) {
+            for (Object candidate : bus.getSwitchedShuntList()) {
+                com.interpss.core.aclf.adj.SwitchedShunt switched =
+                        (com.interpss.core.aclf.adj.SwitchedShunt) candidate;
+                if (shuntId == null || shuntId.equals(switched.getId())) {
+                    shunt = switched;
+                    break;
+                }
+            }
+        }
+        if (bus == null || remoteBus == null || shunt == null) {
+            log.warn("Switched shunt or remote bus not found for SVSMO1T2: bus={}, shunt={}, remote={}",
+                    busId, shuntId == null ? "<first>" : shuntId, remoteBusId);
+            return null;
+        }
+        return new Svsmo1t2Model(bus, remoteBus, shunt, shunt.getId(), data);
+    }
+
+    public Reecb1Model addReecb1(String busId, String genId, Reecb1Data data) {
+        Regca1Model converter = findRegca1(busId, genId);
+        if (converter == null) {
+            log.warn("REGCA1 not found for REECB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reecb1Model controller = new Reecb1Model(data, converter);
+        converter.setElectricalController(controller);
+        return controller;
+    }
+
+    public Reecc1Model addReecc1(String busId, String genId, Reecc1Data data) {
+        Regca1Model converter = findRegca1(busId, genId);
+        if (converter == null) {
+            log.warn("REGCA1 not found for REECC1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reecc1Model controller = new Reecc1Model(data, converter);
+        converter.setActiveElectricalController(controller);
+        return controller;
+    }
+
+    public Reecd1Model addReecd1(String busId, String genId, Reecd1Data data) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        if (gen == null) {
+            log.warn("Renewable converter not found for REECD1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reecd1Model controller = new Reecd1Model(data);
+        if (gen.getDynamicGenDevice() instanceof Regca1Model converter) {
+            converter.setActiveElectricalController(controller);
+            return controller;
+        }
+        if (gen.getDynamicGenDevice() instanceof Regcb1Model converter) {
+            converter.setActiveElectricalController(controller);
+            return controller;
+        }
+        log.warn("REGCA1/REGCB1 not found for REECD1: bus={}, gen={}", busId, genId);
+        return null;
+    }
+
+    public Reeca1Model addReeca1(String busId, String genId, Reeca1Data data) {
+        Regca1Model converter = findRegca1(busId, genId);
+        if (converter == null) {
+            log.warn("REGCA1 not found for REECA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Reeca1Model controller = new Reeca1Model(data, converter);
+        converter.setReeca1Controller(controller);
+        return controller;
+    }
+
+    public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
+        Regca1Model converter = findRegca1(busId, genId);
+        if (converter != null && converter.getActiveElectricalController() != null) {
+            Repca1Model controller = new Repca1Model(data, converter);
+            converter.getActiveElectricalController().setPlantController(controller);
+            return controller;
+        }
+        Regcb1Model behindImpedance = findRegcb1(busId, genId);
+        if (behindImpedance != null
+                && behindImpedance.getActiveElectricalController() != null) {
+            Repca1Model controller = new Repca1Model(data, behindImpedance);
+            behindImpedance.getActiveElectricalController().setPlantController(controller);
+            return controller;
+        }
+        Regfma1Model gridForming = findRegfma1(busId, genId);
+        if (gridForming != null) {
+            Repca1Model controller = new Repca1Model(data, gridForming);
+            gridForming.setPlantController(controller);
+            return controller;
+        }
+        log.warn("REGCA1/REGCB1/REEC or REGFMA1 chain not found for REPCA1: bus={}, gen={}",
+                busId, genId);
+        return null;
+    }
+
+    public Wtara1Model addWtara1(String busId, String genId, Wtara1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTARA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtara1Model model = new Wtara1Model(data);
+        windStack(controller).setAerodynamics(model);
+        return model;
+    }
+
+    public Wtdta1Model addWtdta1(String busId, String genId, Wtdta1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTDTA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtdta1Model model = new Wtdta1Model(data);
+        windStack(controller).setDriveTrain(model);
+        return model;
+    }
+
+    /** Attach a PowerWorld WTGT_A record without replacing an existing drive train. */
+    public Wtdta1Model addWtgtA(String busId, String genId, WtgtAData data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTGT_A: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        WindControlStack stack = windStack(controller);
+        if (stack.getDriveTrain() != null) {
+            log.warn("Drive train already exists for WTGT_A: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = (DStabGen) bus.getContributeGen(genId);
+        double machineBaseMva = gen.getMvaBase() > 1.0e-9
+                ? gen.getMvaBase() : network.getBaseMva();
+        Wtdta1Model model = new Wtdta1Model(data, machineBaseMva);
+        stack.setDriveTrain(model);
+        return model;
+    }
+
+    public Wtpta1Model addWtpta1(String busId, String genId, Wtpta1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTPTA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtpta1Model model = new Wtpta1Model(data);
+        windStack(controller).setPitchController(model);
+        return model;
+    }
+
+    public Wttqa1Model addWttqa1(String busId, String genId, Wttqa1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTTQA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wttqa1Model model = new Wttqa1Model(data);
+        windStack(controller).setTorqueController(model);
+        return model;
+    }
+
+    private Regca1Model findRegca1(String busId, String genId) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        return gen != null && gen.getDynamicGenDevice() instanceof Regca1Model model ? model : null;
+    }
+
+    private Regcb1Model findRegcb1(String busId, String genId) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        return gen != null && gen.getDynamicGenDevice() instanceof Regcb1Model model ? model : null;
+    }
+
+    private Regfma1Model findRegfma1(String busId, String genId) {
+        BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
+        DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
+        return gen != null && gen.getDynamicGenDevice() instanceof Regfma1Model model ? model : null;
+    }
+
+    private Reeca1Model findReeca1(String busId, String genId) {
+        Regca1Model converter = findRegca1(busId, genId);
+        return converter == null ? null : converter.getReeca1Controller();
+    }
+
+    private static WindControlStack windStack(Reeca1Model controller) {
+        WindControlStack stack = controller.getWindControlStack();
+        if (stack == null) {
+            stack = new WindControlStack();
+            controller.setWindControlStack(stack);
+        }
+        return stack;
+    }
+
     // ==================== Helpers ====================
+
+    /**
+     * Convert the PSS/E machine damping coefficient (pu torque / pu speed)
+     * to the core machine convention, percent MW/Hz.  The core swing equation
+     * converts the stored value back with {@code D * 0.01 * frequency}; passing
+     * the PSS/E value through unchanged therefore introduces an erroneous
+     * {@code frequency / 100} multiplier (0.6 at 60 Hz).
+     */
+    private double toCoreDamping(double psseDamping) {
+        double frequency = network.getFrequency();
+        return frequency > 0.0 ? psseDamping * 100.0 / frequency : psseDamping;
+    }
+
+    /**
+     * PSS/E stores armature resistance with the static generator source
+     * impedance. InterPSS machines store resistance on machine base.
+     */
+    private double sourceResistanceOnMachineBase(Machine machine) {
+        if (machine.getParentGen().getSourceZ() == null
+                || machine.getZMultiFactor() == 0.0) {
+            return 0.0;
+        }
+        return machine.getParentGen().getSourceZ().getReal() / machine.getZMultiFactor();
+    }
 
     @SuppressWarnings("unchecked")
     private Machine findMachine(String busId, String genId) {

@@ -9,8 +9,12 @@ import com.interpss.dstab.controller.cml.annotate.AnnotateGovernor;
 import com.interpss.dstab.controller.cml.field.block.DelayControlBlock;
 import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
+import com.interpss.dstab.controller.cml.field.ICMLControlBlock;
+import com.interpss.dstab.controller.cml.wrapper.BaseFieldAnWrapper;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import org.interpss.numeric.datatype.Unit.UnitType;
+import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 
 /**
  * This model is corresponding to the PSSE TGOV1 type steam-turbine governor
@@ -21,22 +25,31 @@ import com.interpss.dstab.mach.Machine;
  */
 @AnController(
 		   input="mach.speed-1.0",
-		   output="this.t2t3FilterBlock.y - this.dt*mach.speed + this.dt",
+		   output="this.ratingScale*this.t2t3FilterBlock.y"
+		           + "-this.ratingScale*this.dt*mach.speed+this.ratingScale*this.dt",
 		   refPoint="this.rGainBlock.u0",
 		   display= {})
 public class PsseTGov1SteamTurGovernor extends AnnotateGovernor{
 	public double k=1,
 		loadLimit =1.0;
 	public double dt =0.0;
+	public double dbH = 0.0, dbL = 0.0;
+	public double ratingScale = 1.0, invRatingScale = 1.0;
+
+	@AnControllerField(
+	        type=CMLFieldEnum.StaticBlock,
+	        input="mach.speed-1.0",
+	        y0="0.0", initOrderNumber=1)
+	public AsymmetricDeadbandBlock speedDeadbandBlock = new AsymmetricDeadbandBlock();
 	
 	//1.1 rGainBlock	
 	public double R=0.05,k1=1/R; 
 	@AnControllerField(
         type= CMLFieldEnum.StaticBlock,
-        input="this.refPoint-mach.speed + 1.0",
-        parameter={"type.NoLimit", "this.k1"},
-        y0="this.t1DelayBlock.u0"	)
-GainBlock rGainBlock;
+	        input="this.refPoint-this.speedDeadbandBlock.y",
+	        parameter={"type.NoLimit", "this.k1"},
+	        y0="this.t1DelayBlock.u0", initOrderNumber=2	)
+public GainBlock rGainBlock;
 
 			
 	
@@ -46,8 +59,8 @@ GainBlock rGainBlock;
         type= CMLFieldEnum.ControlBlock,
         input="this.rGainBlock.y",
         parameter={"type.NonWindup", "this.k", "this.t1","this.vmax","this.vmin"},
-        y0="this.t2t3FilterBlock.u0"	)
-DelayControlBlock t1DelayBlock;
+	        y0="this.t2t3FilterBlock.u0", initOrderNumber=3	)
+public DelayControlBlock t1DelayBlock;
 
 
 	//1.3 t2 t3 filter block
@@ -56,8 +69,8 @@ DelayControlBlock t1DelayBlock;
         type= CMLFieldEnum.ControlBlock,
         input="this.t1DelayBlock.y",
         parameter={"type.NoLimit", "this.k", "this.t2","this.t3"},
-        y0="mach.pm")
-FilterControlBlock t2t3FilterBlock;
+	        y0="this.invRatingScale*mach.pm", initOrderNumber=4)
+public FilterControlBlock t2t3FilterBlock;
 
 
 	    
@@ -99,6 +112,23 @@ FilterControlBlock t2t3FilterBlock;
 	        this.t3 = getData().getT3();
             this.R= getData().getR();
             this.dt =getData().getDt();
+			this.dbH = getData().getDbH();
+			this.dbL = getData().getDbL();
+			this.speedDeadbandBlock.setThresholds(dbH, dbL);
+			double machineMva = mach.getRating(UnitType.mVA, bus.getNetwork().getBaseKva());
+			this.ratingScale = getData().getTrate() > 1.0e-9 && machineMva > 1.0e-9
+					? getData().getTrate() / machineMva : 1.0;
+			this.invRatingScale = 1.0 / ratingScale;
+			double rawMax = getData().getvMax();
+			double rawMin = getData().getvMin();
+			if (rawMax < rawMin) {
+				double swap = rawMax;
+				rawMax = rawMin;
+				rawMin = swap;
+			}
+			double initialValve = mach.getPm() * invRatingScale;
+			this.vmax = Math.max(rawMax, initialValve);
+			this.vmin = Math.min(rawMin, initialValve);
 	        k1=1/R;
 	   
 	        
@@ -117,9 +147,29 @@ FilterControlBlock t2t3FilterBlock;
 	public Field getField(String fieldName) throws Exception {
     	return getClass().getField(fieldName);
     }
-    @Override
+	@Override
 	public Object getFieldObject(Field field) throws Exception {
-    	return field.get(this);
-    }
+		return field.get(this);
+	}
+
+	/** PowerWorld diagram state: output of the T1 valve-position lag. */
+	public double getValvePosition() {
+		return runtimeBlock("t1DelayBlock").getY();
+	}
+
+	/** PowerWorld diagram state: output of the T2/T3 turbine-power block. */
+	public double getTurbinePower() {
+		return runtimeBlock("t2t3FilterBlock").getY();
+	}
+
+	private ICMLControlBlock runtimeBlock(String name) {
+		for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
+			if (wrapper.getFieldName().equals(name)
+					&& wrapper.getField() instanceof ICMLControlBlock block) {
+				return block;
+			}
+		}
+		throw new IllegalStateException("TGOV1 CML block is not initialized: " + name);
+	}
 
 }
