@@ -13,6 +13,7 @@ import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.algo.config.ControlInitializationMode;
 import com.interpss.core.algo.config.RemoteQControlMode;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.algo.LoadflowAlgorithm.VscCapabilityPriority;
 
 class AclfRunConfigRecTest {
 	@Test
@@ -104,6 +105,36 @@ class AclfRunConfigRecTest {
 	}
 
 	@Test
+	void coordinatedControlExperimentsParseAndApplyFromSharedJson() {
+		AclfRunConfigRec config = AclfRunConfigRec.fromJson("""
+				{
+				  "schemaVersion": 1,
+				  "coordinatedControlEnableInnerTaps": true,
+				  "tapChangeLimit": 0.0125,
+				  "coordinatedPqControlEnabled": true,
+				  "coupledLccPqControlEnabled": true,
+				  "coupledVscPqControlEnabled": true,
+				  "vscCapabilityPriority": "VOLTAGE_TARGET"
+				}
+				""");
+		LoadflowAlgorithm algorithm = LoadflowAlgoObjectFactory
+				.createLoadflowAlgorithm(CoreObjectFactory.createAclfNetwork());
+
+		config.configAclfRun(algorithm, true, false, false);
+
+		assertTrue(config.explicitlyConfigures(
+				"coupledVscPqControlEnabled"));
+		assertTrue(algorithm.isFullNewtonTapControlEnabled());
+		assertEquals(0.0125, algorithm.getTapChangeLimit(),
+				1.0e-12);
+		assertTrue(algorithm.isCoordinatedPqControlEnabled());
+		assertTrue(algorithm.isCoupledLccPqControlEnabled());
+		assertTrue(algorithm.isCoupledVscPqControlEnabled());
+		assertEquals(VscCapabilityPriority.VOLTAGE_TARGET,
+				algorithm.getVscCapabilityPriority());
+	}
+
+	@Test
 	void aclfJsonOverlayKeepsCaseDefaultsForMissingFields() {
 		AclfRunConfigRec caseDefaults = new AclfRunConfigRec();
 		caseDefaults.tolerance = 0.17;
@@ -122,6 +153,15 @@ class AclfRunConfigRecTest {
 		assertFalse(merged.xfrTapControl);
 		assertEquals(0.17, merged.tolerance, 1.0e-12);
 		assertTrue(merged.includeAdjustments);
+	}
+
+	@Test
+	void aclfJsonPreservesAdjustmentMasterSetting() {
+		assertTrue(AclfRunConfigRec.fromJson("{}").includeAdjustments);
+		assertFalse(AclfRunConfigRec.fromJson(
+				"{\"includeAdjustments\":false}").includeAdjustments);
+		assertTrue(AclfRunConfigRec.fromJson(
+				"{\"includeAdjustments\":true}").includeAdjustments);
 	}
 
 	@Test

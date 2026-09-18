@@ -25,12 +25,12 @@ import org.junit.jupiter.api.Test;
 import com.interpss.dstab.DStabGen;
 
 /**
- * Independent parameter-oracle gate against PowerWorld's AUX export of the
- * same six Texas2k PSS/E cases. PowerWorld reorders several fields in its AUX
+ * Independent parameter-oracle gate against Independent's AUX export of the
+ * same six Texas2k PSS/E cases. Independent reorders several fields in its AUX
  * tables, so these comparisons are semantic rather than positional copies of
  * the source DYR records.
  */
-public class Texas2kPowerWorldRenewableParameterParityTest {
+public class Texas2kIndependentRenewableParameterParityTest {
     private static final double TOLERANCE = 1.0e-9;
     private static final Pattern AUX_TOKEN = Pattern.compile("\"[^\"]*\"|\\S+");
     private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
@@ -61,7 +61,7 @@ public class Texas2kPowerWorldRenewableParameterParityTest {
     }
 
     @Test
-    void allAttachedRegcaReecaRepcaParametersMatchPowerWorldAux() throws Exception {
+    void allAttachedRegcaReecaRepcaParametersMatchIndependentAux() throws Exception {
         assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
         for (CaseFile source : CASES) verify(source);
     }
@@ -73,7 +73,7 @@ public class Texas2kPowerWorldRenewableParameterParityTest {
         Path aux = directory.resolve(source.aux());
         assumeTrue(Files.isRegularFile(raw), "Missing Texas2k RAW: " + raw);
         assumeTrue(Files.isRegularFile(dyr), "Missing Texas2k DYR: " + dyr);
-        assumeTrue(Files.isRegularFile(aux), "Missing PowerWorld AUX: " + aux);
+        assumeTrue(Files.isRegularFile(aux), "Missing Independent AUX: " + aux);
 
         var network = new PSSEMultiFileLoader().loadDStab(raw.toString(), dyr.toString())
                 .getDStabilityNet();
@@ -102,7 +102,7 @@ public class Texas2kPowerWorldRenewableParameterParityTest {
             }
         }
         assertEquals(source.expectedChains(), compared,
-                source.directory() + " PowerWorld renewable-chain comparisons");
+                source.directory() + " Independent renewable-chain comparisons");
     }
 
     private static void assertRegca(String caseName, String key, Regca1Data data,
@@ -167,7 +167,7 @@ public class Texas2kPowerWorldRenewableParameterParityTest {
     }
 
     private static void requireActiveModelRow(String label, List<String> row) {
-        assertNotNull(row, label + " missing from PowerWorld AUX");
+        assertNotNull(row, label + " missing from Independent AUX");
         assertEquals("Active", row.get(2), label + " model status");
     }
 
@@ -209,8 +209,8 @@ public class Texas2kPowerWorldRenewableParameterParityTest {
             List<String> tokens = tokenize(line);
             rows.put(tokens.get(0) + ":" + tokens.get(1), tokens);
         }
-        assertEquals(true, tableFound, "Missing PowerWorld AUX table " + table);
-        assertEquals(false, rows.isEmpty(), "Empty PowerWorld AUX table " + table);
+        assertEquals(true, tableFound, "Missing Independent AUX table " + table);
+        assertEquals(false, rows.isEmpty(), "Empty Independent AUX table " + table);
         return rows;
     }
 

@@ -45,10 +45,11 @@ import org.interpss.core.adapter.builder.dstab.St8cExciterTest;
 import org.interpss.core.adapter.builder.dstab.St9cExciterTest;
 import org.interpss.core.adapter.builder.dstab.St10cExciterTest;
 import org.interpss.core.adapter.builder.dstab.St1cExciterTest;
+import org.interpss.core.adapter.builder.dstab.SexsExciterTest;
 import org.interpss.core.adapter.builder.dstab.ExeliExciterTest;
 import org.interpss.core.adapter.builder.dstab.Esst2aExciterTest;
 import org.interpss.core.adapter.builder.dstab.Exst3ExciterTest;
-import org.interpss.core.dstab.Exst3PowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Exst3IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Bbsex1PsseSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1PsseSmibConformanceTest;
 import org.interpss.core.dstab.Exdc2PsseSmibConformanceTest;
@@ -60,12 +61,12 @@ import org.interpss.core.dstab.IeeestPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss3bPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss2cPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss4bPsseSmibConformanceTest;
-import org.interpss.core.dstab.PsssbPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.PsssbIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St2cutPsseSmibConformanceTest;
-import org.interpss.core.dstab.Pss2bPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Pss2bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Pss3cPsseSmibConformanceTest;
-import org.interpss.core.dstab.Pss5cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Pss4cPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Pss5cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Pss4cIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Pss6cPsseSmibConformanceTest;
 import org.interpss.core.dstab.Pss7cPsseSmibConformanceTest;
 import org.interpss.core.dstab.St7bPsseSmibConformanceTest;
@@ -75,15 +76,15 @@ import org.interpss.core.dstab.St8cPsseSmibConformanceTest;
 import org.interpss.core.dstab.St9cPsseSmibConformanceTest;
 import org.interpss.core.dstab.St10cPsseSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.Esst3aExciterTest;
-import org.interpss.core.dstab.Esst3aPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Esst3aIndependentSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsac5aTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExac1Test;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderEsurryTest;
-import org.interpss.core.dstab.EsurryPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.EsurryIndependentSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc1cTest;
-import org.interpss.core.dstab.Ac1cPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Ac1cIndependentSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc2cTest;
-import org.interpss.core.dstab.Ac2cPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Ac2cIndependentSmibConformanceTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc3cTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc4cTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderAc5cTest;
@@ -164,70 +165,70 @@ import org.interpss.dstab.renewable.RenewableControlIntegrationTest;
 import org.interpss.core.dstab.RenewableAggregateQvModeTest;
 import org.interpss.core.dstab.Reecc1NativeConformanceTest;
 import org.interpss.core.dstab.PsseDyrRepresentativeSelectorTest;
-import org.interpss.core.dstab.PowerWorldArtifactCoverageInventoryTest;
+import org.interpss.core.dstab.EmbeddedTrajectoryCoverageInventoryTest;
 import org.interpss.core.dstab.ReferenceArtifactManifestIntegrityTest;
 import org.interpss.core.dstab.dynLoad.Perc1ModelTest;
 import org.interpss.core.dstab.dynLoad.Cmldznu2ModelTest;
 import org.interpss.core.dstab.Type3WindAndesTrajectoryTest;
-import org.interpss.core.dstab.Type3WindPowerWorldTrajectoryTest;
+import org.interpss.core.dstab.Type3WindIndependentTrajectoryTest;
 import org.interpss.core.dstab.Texas2kWindProfileCoverageTest;
 import org.interpss.core.dstab.Texas2kRegfma1CoverageTest;
 import org.interpss.core.dstab.Texas2kFullDynamicCoverageTest;
 import org.interpss.core.dstab.Texas2kHygovCoverageTest;
 import org.interpss.core.dstab.Texas2kLegacyControllerProfileTest;
 import org.interpss.core.dstab.Texas2kOneSecondDriftTest;
-import org.interpss.core.dstab.Texas2kPowerWorldRenewableParameterParityTest;
+import org.interpss.core.dstab.Texas2kIndependentRenewableParameterParityTest;
 import org.interpss.core.dstab.Texas2kSixCaseDynamicSmokeTest;
 import org.interpss.core.dstab.Texas2kSynchronousMachineCoverageTest;
 import org.interpss.core.dstab.Texas2kGenrouFaultBenchmarkTest;
 import org.interpss.core.dstab.Esst4bAndesSmibConformanceTest;
-import org.interpss.core.dstab.Esst4bPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Esst4bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Esac5aAndesSmibConformanceTest;
-import org.interpss.core.dstab.Esac5aPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Esac6aPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Esac8bPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Esac5aIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Esac6aIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Esac8bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Exac1AndesSmibConformanceTest;
-import org.interpss.core.dstab.Exac1PowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Exac1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Exac1aAndesSmibConformanceTest;
-import org.interpss.core.dstab.Exac1aPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Exac1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Exac2AndesSmibConformanceTest;
-import org.interpss.core.dstab.Exac2PowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Exac4PowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Exac2IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Exac4IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Esac2aAndesExac2SmibConformanceTest;
-import org.interpss.core.dstab.Esac2aPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Esac3aPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Esac4aPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ac3cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ac4cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ac5cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ac6cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ac7cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ac8cPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Esac2aIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Esac3aIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Esac4aIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ac3cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ac4cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ac5cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ac6cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ac7cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ac8cIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ac8cu1PsseSmibConformanceTest;
-import org.interpss.core.dstab.Ac9cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ac11cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Dc1cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Dc2cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Dc4cPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Ac9cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ac11cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Dc1cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Dc2cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Dc4cIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4cu1PsseSmibConformanceTest;
-import org.interpss.core.dstab.Esdc1aPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Dc3aPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Esdc1aIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Dc3aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Esac1aAndesSmibConformanceTest;
-import org.interpss.core.dstab.Esac1aPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Esac1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aAndesSmibConformanceTest;
-import org.interpss.core.dstab.Esst1aPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Esst1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovAndesSmibConformanceTest;
-import org.interpss.core.dstab.HygovPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Hygov2dPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.HygovdPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.HygovIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Hygov2dIndependentSmibConformanceTest;
+import org.interpss.core.dstab.HygovdIndependentSmibConformanceTest;
 import org.interpss.core.dstab.HygovdSmibIntegrationTest;
-import org.interpss.core.dstab.Hygovr1PowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ggov1PowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ieeeg3dPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.IeesgodPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.WesgovdPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.PidgovdPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Hygovr1IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ggov1IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ieeeg3dIndependentSmibConformanceTest;
+import org.interpss.core.dstab.IeesgodIndependentSmibConformanceTest;
+import org.interpss.core.dstab.WesgovdIndependentSmibConformanceTest;
+import org.interpss.core.dstab.PidgovdIndependentSmibConformanceTest;
 import org.interpss.core.dstab.PidgovPsseSmibConformanceTest;
 import org.interpss.core.dstab.Csvgn5PsseSmibConformanceTest;
 import org.interpss.core.dstab.Dera1NativeSmibConformanceTest;
@@ -247,32 +248,32 @@ import org.interpss.core.dstab.mach.GenqecuPsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Gentpj1PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.Gewtgcu1NativeConformanceTest;
 import org.interpss.core.dstab.mach.Wt3e1PsseSmibConformanceTest;
-import org.interpss.core.dstab.WpidhydPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.GastdPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Gast2adPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.GastwddPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Degov1dPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Tgov3dPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.H6ePowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Hyg3PowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.WpidhydIndependentSmibConformanceTest;
+import org.interpss.core.dstab.GastdIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Gast2adIndependentSmibConformanceTest;
+import org.interpss.core.dstab.GastwddIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Degov1dIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Tgov3dIndependentSmibConformanceTest;
+import org.interpss.core.dstab.H6eIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Hyg3IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1AndesSmibConformanceTest;
-import org.interpss.core.dstab.Ieeeg1PowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Ieeeg1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeeg1dPsseSmibConformanceTest;
 import org.interpss.core.dstab.Ieeet1AndesSmibConformanceTest;
-import org.interpss.core.dstab.Ieeet1PowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Pss2aPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Tgov1PowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Lcfb1PowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Dc4bPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.St1cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Esst2aPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.St2cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.St3cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.St4cPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Ieeet1IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Pss2aIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Tgov1IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
+import org.interpss.core.dstab.St1cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Esst2aIndependentSmibConformanceTest;
+import org.interpss.core.dstab.St2cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.St3cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.St4cIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St4cu1PsseSmibConformanceTest;
-import org.interpss.core.dstab.St5bPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.St5cPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.St6bPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.St5bIndependentSmibConformanceTest;
+import org.interpss.core.dstab.St5cIndependentSmibConformanceTest;
+import org.interpss.core.dstab.St6bIndependentSmibConformanceTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -370,9 +371,9 @@ import org.interpss.core.dclf.edclf.IEEE39_EDclf_Test;
 import org.interpss.core.dstab.DStab_IEEE9Bus_Test;
 import org.interpss.core.dstab.Exdc2AndesSmibConformanceTest;
 import org.interpss.core.dstab.Ac8bAndesSmibConformanceTest;
-import org.interpss.core.dstab.Ac8bPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.Ac7bPowerWorldSmibConformanceTest;
-import org.interpss.core.dstab.RexsysPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.Ac8bIndependentSmibConformanceTest;
+import org.interpss.core.dstab.Ac7bIndependentSmibConformanceTest;
+import org.interpss.core.dstab.RexsysIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex1AndesSmibConformanceTest;
 import org.interpss.core.dstab.IeeeVcPsseSmibConformanceTest;
 import org.interpss.core.dstab.Ieeex2PsseSmibConformanceTest;
@@ -395,12 +396,12 @@ import org.interpss.core.dstab.cml.controller.AnnotationExciterTests;
 import org.interpss.core.dstab.mach.Cimtr4PsseSmibConformanceTest;
 import org.interpss.core.dstab.mach.EConstMachineTest;
 import org.interpss.core.dstab.mach.GensalConformanceTest;
-import org.interpss.core.dstab.mach.GensalPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.mach.GensalIndependentSmibConformanceTest;
 import org.interpss.core.dstab.mach.GensalHydroSmibTest;
-import org.interpss.core.dstab.mach.GenqecPowerWorldSmibConformanceTest;
+import org.interpss.core.dstab.mach.GenqecIndependentSmibConformanceTest;
 import org.interpss.core.dstab.mach.GentraPsseSmibConformanceTest;
-import org.interpss.core.dstab.reference.PowerWorldCsvReferenceTest;
-import org.interpss.core.dstab.Regfma1PowerWorldTrajectoryTest;
+import org.interpss.core.dstab.reference.EmbeddedTrajectoryReferenceTest;
+import org.interpss.core.dstab.Regfma1IndependentTrajectoryTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
 import org.interpss.core.dstab.mach.GenrouAndesSmibConformanceTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
@@ -530,8 +531,8 @@ import org.junit.platform.suite.api.Suite;
 	///Eq1MachineCaseTest.class,
 	GensalConformanceTest.class,
 	GensalHydroSmibTest.class,
-	GensalPowerWorldSmibConformanceTest.class,
-	GenqecPowerWorldSmibConformanceTest.class,
+	GensalIndependentSmibConformanceTest.class,
+	GenqecIndependentSmibConformanceTest.class,
 	GentraPsseSmibConformanceTest.class,
 	Cimtr4PsseSmibConformanceTest.class,
 	IeeeVcPsseSmibConformanceTest.class,
@@ -547,17 +548,18 @@ import org.junit.platform.suite.api.Suite;
 	Ieeet4PsseSmibConformanceTest.class,
 	ExeliPsseSmibConformanceTest.class,
 	ScrxPsseSmibConformanceTest.class,
+	SexsExciterTest.class,
 	Exst2PsseSmibConformanceTest.class,
 	IeeestPsseSmibConformanceTest.class,
 	Pss3bPsseSmibConformanceTest.class,
 	Pss2cPsseSmibConformanceTest.class,
 	Pss4bPsseSmibConformanceTest.class,
-	PsssbPowerWorldSmibConformanceTest.class,
+	PsssbIndependentSmibConformanceTest.class,
 	St2cutPsseSmibConformanceTest.class,
-	Pss2bPowerWorldSmibConformanceTest.class,
+	Pss2bIndependentSmibConformanceTest.class,
 	Pss3cPsseSmibConformanceTest.class,
-    Pss4cPowerWorldSmibConformanceTest.class,
-    Pss5cPowerWorldSmibConformanceTest.class,
+    Pss4cIndependentSmibConformanceTest.class,
+    Pss5cIndependentSmibConformanceTest.class,
     Pss6cPsseSmibConformanceTest.class,
     Pss7cPsseSmibConformanceTest.class,
 	St7bPsseSmibConformanceTest.class,
@@ -566,63 +568,63 @@ import org.junit.platform.suite.api.Suite;
 	St8cPsseSmibConformanceTest.class,
 	St9cPsseSmibConformanceTest.class,
 	St10cPsseSmibConformanceTest.class,
-	PowerWorldCsvReferenceTest.class,
-	Regfma1PowerWorldTrajectoryTest.class,
+	EmbeddedTrajectoryReferenceTest.class,
+	Regfma1IndependentTrajectoryTest.class,
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
 	Esst4bAndesSmibConformanceTest.class,
-	Esst4bPowerWorldSmibConformanceTest.class,
+	Esst4bIndependentSmibConformanceTest.class,
 	Esac5aAndesSmibConformanceTest.class,
-	Esac5aPowerWorldSmibConformanceTest.class,
-	Esac6aPowerWorldSmibConformanceTest.class,
-	Esac8bPowerWorldSmibConformanceTest.class,
+	Esac5aIndependentSmibConformanceTest.class,
+	Esac6aIndependentSmibConformanceTest.class,
+	Esac8bIndependentSmibConformanceTest.class,
 	Exac1AndesSmibConformanceTest.class,
-	Exac1PowerWorldSmibConformanceTest.class,
+	Exac1IndependentSmibConformanceTest.class,
 	Exac1aAndesSmibConformanceTest.class,
-	Exac1aPowerWorldSmibConformanceTest.class,
+	Exac1aIndependentSmibConformanceTest.class,
 	Exac2AndesSmibConformanceTest.class,
-	Exac2PowerWorldSmibConformanceTest.class,
-	Exac4PowerWorldSmibConformanceTest.class,
+	Exac2IndependentSmibConformanceTest.class,
+	Exac4IndependentSmibConformanceTest.class,
 	Esac2aAndesExac2SmibConformanceTest.class,
-	Esac2aPowerWorldSmibConformanceTest.class,
-	Esac3aPowerWorldSmibConformanceTest.class,
-	Esac4aPowerWorldSmibConformanceTest.class,
-	Ac3cPowerWorldSmibConformanceTest.class,
-	Ac4cPowerWorldSmibConformanceTest.class,
-	Ac5cPowerWorldSmibConformanceTest.class,
-	Ac6cPowerWorldSmibConformanceTest.class,
-	Ac7cPowerWorldSmibConformanceTest.class,
-	Ac8cPowerWorldSmibConformanceTest.class,
+	Esac2aIndependentSmibConformanceTest.class,
+	Esac3aIndependentSmibConformanceTest.class,
+	Esac4aIndependentSmibConformanceTest.class,
+	Ac3cIndependentSmibConformanceTest.class,
+	Ac4cIndependentSmibConformanceTest.class,
+	Ac5cIndependentSmibConformanceTest.class,
+	Ac6cIndependentSmibConformanceTest.class,
+	Ac7cIndependentSmibConformanceTest.class,
+	Ac8cIndependentSmibConformanceTest.class,
 	Ac8cu1PsseSmibConformanceTest.class,
-	Ac9cPowerWorldSmibConformanceTest.class,
-	Ac11cPowerWorldSmibConformanceTest.class,
-	Dc1cPowerWorldSmibConformanceTest.class,
-	Dc2cPowerWorldSmibConformanceTest.class,
-	Dc4cPowerWorldSmibConformanceTest.class,
+	Ac9cIndependentSmibConformanceTest.class,
+	Ac11cIndependentSmibConformanceTest.class,
+	Dc1cIndependentSmibConformanceTest.class,
+	Dc2cIndependentSmibConformanceTest.class,
+	Dc4cIndependentSmibConformanceTest.class,
 	Dc4cu1PsseSmibConformanceTest.class,
-	Esdc1aPowerWorldSmibConformanceTest.class,
-	Dc3aPowerWorldSmibConformanceTest.class,
+	Esdc1aIndependentSmibConformanceTest.class,
+	Dc3aIndependentSmibConformanceTest.class,
 	Esac1aAndesSmibConformanceTest.class,
-	Esac1aPowerWorldSmibConformanceTest.class,
+	Esac1aIndependentSmibConformanceTest.class,
 	Esst1aAndesSmibConformanceTest.class,
-	Esst1aPowerWorldSmibConformanceTest.class,
+	Esst1aIndependentSmibConformanceTest.class,
 	Exst1AndesSmibConformanceTest.class,
 	Ieeet1AndesSmibConformanceTest.class,
-	Ieeet1PowerWorldSmibConformanceTest.class,
+	Ieeet1IndependentSmibConformanceTest.class,
 	Ieeeg1AndesSmibConformanceTest.class,
-	Ieeeg1PowerWorldSmibConformanceTest.class,
+	Ieeeg1IndependentSmibConformanceTest.class,
 	Ieeeg1dPsseSmibConformanceTest.class,
 	HygovAndesSmibConformanceTest.class,
-	HygovPowerWorldSmibConformanceTest.class,
-	Hygov2dPowerWorldSmibConformanceTest.class,
-	HygovdPowerWorldSmibConformanceTest.class,
+	HygovIndependentSmibConformanceTest.class,
+	Hygov2dIndependentSmibConformanceTest.class,
+	HygovdIndependentSmibConformanceTest.class,
 	HygovdSmibIntegrationTest.class,
-	Hygovr1PowerWorldSmibConformanceTest.class,
-	Ggov1PowerWorldSmibConformanceTest.class,
-	Ieeeg3dPowerWorldSmibConformanceTest.class,
-	IeesgodPowerWorldSmibConformanceTest.class,
-	WesgovdPowerWorldSmibConformanceTest.class,
-	PidgovdPowerWorldSmibConformanceTest.class,
+	Hygovr1IndependentSmibConformanceTest.class,
+	Ggov1IndependentSmibConformanceTest.class,
+	Ieeeg3dIndependentSmibConformanceTest.class,
+	IeesgodIndependentSmibConformanceTest.class,
+	WesgovdIndependentSmibConformanceTest.class,
+	PidgovdIndependentSmibConformanceTest.class,
 	PidgovPsseSmibConformanceTest.class,
 	Csvgn5PsseSmibConformanceTest.class,
 	Dera1NativeSmibConformanceTest.class,
@@ -644,32 +646,32 @@ import org.junit.platform.suite.api.Suite;
 	Gentpj1PsseSmibConformanceTest.class,
 	Gewtgcu1NativeConformanceTest.class,
 	Wt3e1PsseSmibConformanceTest.class,
-	WpidhydPowerWorldSmibConformanceTest.class,
-	GastdPowerWorldSmibConformanceTest.class,
-	Gast2adPowerWorldSmibConformanceTest.class,
-	GastwddPowerWorldSmibConformanceTest.class,
-	Degov1dPowerWorldSmibConformanceTest.class,
-	Tgov3dPowerWorldSmibConformanceTest.class,
-	H6ePowerWorldSmibConformanceTest.class,
-	Hyg3PowerWorldSmibConformanceTest.class,
-	Pss2aPowerWorldSmibConformanceTest.class,
-	Tgov1PowerWorldSmibConformanceTest.class,
-	Lcfb1PowerWorldSmibConformanceTest.class,
-	Dc4bPowerWorldSmibConformanceTest.class,
-	St1cPowerWorldSmibConformanceTest.class,
-	Esst2aPowerWorldSmibConformanceTest.class,
-	St2cPowerWorldSmibConformanceTest.class,
-	St3cPowerWorldSmibConformanceTest.class,
-	St4cPowerWorldSmibConformanceTest.class,
+	WpidhydIndependentSmibConformanceTest.class,
+	GastdIndependentSmibConformanceTest.class,
+	Gast2adIndependentSmibConformanceTest.class,
+	GastwddIndependentSmibConformanceTest.class,
+	Degov1dIndependentSmibConformanceTest.class,
+	Tgov3dIndependentSmibConformanceTest.class,
+	H6eIndependentSmibConformanceTest.class,
+	Hyg3IndependentSmibConformanceTest.class,
+	Pss2aIndependentSmibConformanceTest.class,
+	Tgov1IndependentSmibConformanceTest.class,
+	Lcfb1IndependentSmibConformanceTest.class,
+	Dc4bIndependentSmibConformanceTest.class,
+	St1cIndependentSmibConformanceTest.class,
+	Esst2aIndependentSmibConformanceTest.class,
+	St2cIndependentSmibConformanceTest.class,
+	St3cIndependentSmibConformanceTest.class,
+	St4cIndependentSmibConformanceTest.class,
 	St4cu1PsseSmibConformanceTest.class,
-	St5bPowerWorldSmibConformanceTest.class,
-	St5cPowerWorldSmibConformanceTest.class,
-	St6bPowerWorldSmibConformanceTest.class,
+	St5bIndependentSmibConformanceTest.class,
+	St5cIndependentSmibConformanceTest.class,
+	St6bIndependentSmibConformanceTest.class,
 	Exdc2AndesSmibConformanceTest.class,
 	Ac8bAndesSmibConformanceTest.class,
-	Ac8bPowerWorldSmibConformanceTest.class,
-	Ac7bPowerWorldSmibConformanceTest.class,
-	RexsysPowerWorldSmibConformanceTest.class,
+	Ac8bIndependentSmibConformanceTest.class,
+	Ac7bIndependentSmibConformanceTest.class,
+	RexsysIndependentSmibConformanceTest.class,
 	Exdc2aOpenSourceEquationConformanceTest.class,
 	Ieeet4OpenSourceEquationConformanceTest.class,
 	Ac8bAndesEquationConformanceTest.class,
@@ -694,9 +696,9 @@ import org.junit.platform.suite.api.Suite;
 	ExeliExciterTest.class,
 	Esst2aExciterTest.class,
 	Exst3ExciterTest.class,
-	Exst3PowerWorldSmibConformanceTest.class,
+	Exst3IndependentSmibConformanceTest.class,
 	Esst3aExciterTest.class,
-	Esst3aPowerWorldSmibConformanceTest.class,
+	Esst3aIndependentSmibConformanceTest.class,
 	Ieeex1AndesSmibConformanceTest.class,
 	Ieeex1SmibIntegrationTest.class,
 	MachineSaturationTest.class,
@@ -776,9 +778,9 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderMachineTest.class,
 	DStabNetworkBuilderExciterTest.class,
 	DStabNetworkBuilderAc1cTest.class,
-	Ac1cPowerWorldSmibConformanceTest.class,
+	Ac1cIndependentSmibConformanceTest.class,
 	DStabNetworkBuilderAc2cTest.class,
-	Ac2cPowerWorldSmibConformanceTest.class,
+	Ac2cIndependentSmibConformanceTest.class,
 	DStabNetworkBuilderAc3cTest.class,
 	DStabNetworkBuilderAc4cTest.class,
 	DStabNetworkBuilderAc5cTest.class,
@@ -794,7 +796,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderEsac5aTest.class,
 	DStabNetworkBuilderExac1Test.class,
 	DStabNetworkBuilderEsurryTest.class,
-	EsurryPowerWorldSmibConformanceTest.class,
+	EsurryIndependentSmibConformanceTest.class,
 	DStabNetworkBuilderExac1aTest.class,
 	DStabNetworkBuilderExac2Test.class,
 	DStabNetworkBuilderEsac1aTest.class,
@@ -858,13 +860,13 @@ import org.junit.platform.suite.api.Suite;
 	RenewableAggregateQvModeTest.class,
 	Reecc1NativeConformanceTest.class,
 	Type3WindAndesTrajectoryTest.class,
-	Type3WindPowerWorldTrajectoryTest.class,
+	Type3WindIndependentTrajectoryTest.class,
 	PsseHygovGovernorTest.class,
 	PsseLegacyControllerMappingTest.class,
 	PSSEDStabDirectParserReportTest.class,
 	PsseDyrRecordReaderTest.class,
 	PsseDyrRepresentativeSelectorTest.class,
-	PowerWorldArtifactCoverageInventoryTest.class,
+	EmbeddedTrajectoryCoverageInventoryTest.class,
 	ReferenceArtifactManifestIntegrityTest.class,
 	Perc1ModelTest.class,
 	Cmldznu2ModelTest.class,
@@ -875,7 +877,7 @@ import org.junit.platform.suite.api.Suite;
 	Texas2kHygovCoverageTest.class,
 	Texas2kLegacyControllerProfileTest.class,
 	Texas2kOneSecondDriftTest.class,
-	Texas2kPowerWorldRenewableParameterParityTest.class,
+	Texas2kIndependentRenewableParameterParityTest.class,
 	Texas2kSixCaseDynamicSmokeTest.class,
 	Texas2kSynchronousMachineCoverageTest.class,
 	Texas2kGenrouFaultBenchmarkTest.class,

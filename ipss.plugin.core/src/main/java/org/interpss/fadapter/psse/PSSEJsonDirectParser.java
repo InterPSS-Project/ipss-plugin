@@ -160,28 +160,34 @@ public class PSSEJsonDirectParser {
     }
 
 	private void parseSolutionSettings(JsonObject root) {
-		if (!root.has("general") || !root.get("general").isJsonObject()) {
-			return;
-		}
-		JsonObject general = root.getAsJsonObject("general");
-		if (!general.has("ipss_loadflow_solution_settings")
-				|| !general.get("ipss_loadflow_solution_settings").isJsonObject()) {
-			return;
-		}
-		JsonObject extension = general.getAsJsonObject(
-				"ipss_loadflow_solution_settings");
-		int sourceVersion = extension.has("source_version")
-				? extension.get("source_version").getAsInt() : 35;
+		JsonObject general = root.has("general")
+				&& root.get("general").isJsonObject()
+						? root.getAsJsonObject("general") : null;
+		JsonObject extension = general != null
+				&& general.has("ipss_loadflow_solution_settings")
+				&& general.get("ipss_loadflow_solution_settings").isJsonObject()
+						? general.getAsJsonObject("ipss_loadflow_solution_settings")
+						: null;
+		int sourceVersion = extension != null && extension.has("source_version")
+				? extension.get("source_version").getAsInt()
+				: rawxSourceVersion(root);
 		PsseLoadflowSolutionSettings.Builder settingsBuilder =
 				PsseLoadflowSolutionSettings.builder(sourceVersion);
-		if (extension.has("raw_lines") && extension.get("raw_lines").isJsonArray()) {
+		if (extension != null && extension.has("raw_lines")
+				&& extension.get("raw_lines").isJsonArray()) {
 			for (JsonElement line : extension.getAsJsonArray("raw_lines")) {
 				if (line != null && !line.isJsonNull()) {
 					settingsBuilder.addLine(line.getAsString());
 				}
 			}
 		}
+		else {
+			addStandardRawxSolutionSettings(root, settingsBuilder);
+		}
 		PsseLoadflowSolutionSettings settings = settingsBuilder.build();
+		if (settings.rawLines().isEmpty()) {
+			return;
+		}
 		builder.getNetwork().getExtraInfo().put(
 				LoadflowAlgorithmInitializer.NETWORK_EXTRA_INFO_KEY, settings);
 		if (settings.general().thrshz() != null
@@ -196,6 +202,86 @@ public class PSSEJsonDirectParser {
 			builder.getNetwork().getBusLoadLowVoltConfig().setVConstPMin(
 					settings.general().pqbrak());
 		}
+	}
+
+	private int rawxSourceVersion(JsonObject root) {
+		if (root.has("general") && root.get("general").isJsonObject()) {
+			JsonObject general = root.getAsJsonObject("general");
+			if (general.has("version") && !general.get("version").isJsonNull()) {
+				try {
+					return (int) Double.parseDouble(
+							general.get("version").getAsString());
+				}
+				catch (NumberFormatException ignored) {
+					// Fall through to the case-record/default version.
+				}
+			}
+		}
+		JsonObject network = root.has("network")
+				? root.getAsJsonObject("network") : root;
+		if (network.has("caseid") && network.get("caseid").isJsonObject()) {
+			JsonObject caseId = network.getAsJsonObject("caseid");
+			JsonArray fields = caseId.getAsJsonArray("fields");
+			JsonArray row = firstRawxDataRow(caseId);
+			if (fields != null && row != null) {
+				for (int i = 0; i < Math.min(fields.size(), row.size()); i++) {
+					if ("rev".equalsIgnoreCase(fields.get(i).getAsString())
+							&& !row.get(i).isJsonNull()) {
+						return row.get(i).getAsInt();
+					}
+				}
+			}
+		}
+		return 35;
+	}
+
+	private void addStandardRawxSolutionSettings(JsonObject root,
+			PsseLoadflowSolutionSettings.Builder settingsBuilder) {
+		JsonObject network = root.has("network")
+				? root.getAsJsonObject("network") : root;
+		for (String sectionName : List.of(
+				"general", "gauss", "newton", "adjust", "tysl", "solver")) {
+			if (!network.has(sectionName)
+					|| !network.get(sectionName).isJsonObject()) {
+				continue;
+			}
+			JsonObject section = network.getAsJsonObject(sectionName);
+			JsonArray fields = section.getAsJsonArray("fields");
+			JsonArray row = firstRawxDataRow(section);
+			if (fields == null || row == null) {
+				continue;
+			}
+			StringBuilder rawLine = new StringBuilder(
+					sectionName.toUpperCase());
+			for (int i = 0; i < Math.min(fields.size(), row.size()); i++) {
+				JsonElement value = row.get(i);
+				if (value == null || value.isJsonNull()) {
+					continue;
+				}
+				String field = fields.get(i).getAsString();
+				if ("solver".equals(sectionName)
+						&& "method".equalsIgnoreCase(field)) {
+					rawLine.append(", ").append(value.getAsString());
+				}
+				else {
+					rawLine.append(", ").append(field.toUpperCase())
+							.append('=').append(value.getAsString());
+				}
+			}
+			settingsBuilder.addLine(rawLine.toString());
+		}
+	}
+
+	private static JsonArray firstRawxDataRow(JsonObject section) {
+		if (!section.has("data") || !section.get("data").isJsonArray()) {
+			return null;
+		}
+		JsonArray data = section.getAsJsonArray("data");
+		if (data.isEmpty()) {
+			return null;
+		}
+		return data.get(0).isJsonArray()
+				? data.get(0).getAsJsonArray() : data;
 	}
 
     // ==================== Parsing Framework ====================
@@ -251,6 +337,7 @@ public class PSSEJsonDirectParser {
     // ==================== Case Data ====================
 
     private void parseCaseData(JsonObject network) throws InterpssException {
+        double baseFrequency = builder.getBaseNetwork().getFrequency();
         if (network.has("caseid")) {
             JsonObject caseid = network.getAsJsonObject("caseid");
             if (caseid.has("fields") && caseid.has("data")) {
@@ -268,12 +355,16 @@ public class PSSEJsonDirectParser {
                         rowMap.put(fields.get(i).getAsString().toLowerCase(), row.get(i));
                     }
                     baseMva = getDouble(rowMap, "sbase", 100.0);
+                    baseFrequency = getDouble(rowMap, "basfrq", baseFrequency);
                 }
             }
         }
 
         builder.setNetworkInfo("Base_Case_from_PSS_E_format", "PSS/E JSON Case",
                 baseMva * 1000.0, OriginalDataFormat.PSSE);
+        if (Double.isFinite(baseFrequency) && baseFrequency > 0.0) {
+            builder.getBaseNetwork().setFrequency(baseFrequency);
+        }
     }
 
     // ==================== Bus ====================
@@ -284,6 +375,13 @@ public class PSSEJsonDirectParser {
         String busId = BUS_ID_PREFIX + busNum;
         String name = getString(row, "name", "");
         double baseKv = getDouble(row, "baskv", 0.0);
+        // PSS/E permits BASKV to be zero (and RAWX permits it to be omitted)
+        // because nominal kV is informational for a per-unit power-flow case.
+        // InterPSS requires a positive bus base voltage for voltage adapters and
+        // data validation, so use the same neutral placeholder as the RAW parser.
+        if (baseKv == 0.0) {
+            baseKv = 1.0;
+        }
         int ide = getInt(row, "ide", 1);
         int areaNum = getInt(row, "area", 0);
         int zoneNum = getInt(row, "zone", 0);

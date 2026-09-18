@@ -275,6 +275,22 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertEquals(expectedIqcmd, controller.getIqcmd(), 1.0e-12);
     }
 
+    @Test
+    void correctorStageRefreshesCommandsWithoutAdvancingStatesTwice() {
+        Reeca1Model controller = new Reeca1Model(controlData(0, 1, 1, 0, 0, .1), null);
+        controller.initialize(.8, .2, 1.0);
+
+        controller.step(CONTROL_STEP, .8, .3, 1.0, 1.0, 0);
+        double predictorIntegral = controller.getReactiveControlIntegral();
+        double predictorOutput = controller.getReactiveControlOutput();
+        controller.step(CONTROL_STEP, .8, .25, 1.0, 1.0, 1);
+
+        assertEquals(predictorIntegral, controller.getReactiveControlIntegral(), 0.0,
+                "flag 1 must not integrate REECA1 states a second time");
+        assertTrue(controller.getReactiveControlOutput() > predictorOutput,
+                "flag 1 must evaluate the corrected reactive-power endpoint");
+    }
+
     private static double modifiedEulerLag(double state, double input,
             double timeConstant, double dt) {
         double initialDerivative = (input - state) / timeConstant;

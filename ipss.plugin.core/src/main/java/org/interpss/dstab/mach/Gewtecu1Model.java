@@ -163,8 +163,8 @@ public final class Gewtecu1Model implements ICMLStateProvider {
         double lvplFactor = Math.min(1.0, Math.max(0.0,
                 s.lvplLimit / Math.max(EPS, data.lvplBreakpoint())));
         double commandedPower = targetPower * lvplFactor;
-        double brakingEnergyRate = Math.max(0.0, commandedPower - p)
-                - brakingPower(s.brakingIntegrator, targetPower, p, terminalVoltage);
+        double brakingEnergyRate = brakingPower(s.brakingIntegrator,
+                commandedPower, p);
         double highWindTripRate = windVelocity > data.highWindTripThreshold() ? 1.0 : 0.0;
 
         return new Derivative(voltageFilterRate, voltageIntegralRate,
@@ -277,11 +277,9 @@ public final class Gewtecu1Model implements ICMLStateProvider {
                 data.windInertiaPowerMaximum());
     }
 
-    private double brakingPower(double energy, double powerCommand,
-            double p, double voltage) {
-        if (!generator.getData().fullConverter()) return 0.0;
+    private double brakingPower(double energy, double powerCommand, double p) {
         double excess = powerCommand - p;
-        double requested = excess + data.brakingControllerGain()
+        double requested = excess - data.brakingControllerGain()
                 * Math.max(0.0, energy - data.brakingEnergyThreshold());
         return clamp(requested, 0.0, data.brakingPowerMaximum());
     }

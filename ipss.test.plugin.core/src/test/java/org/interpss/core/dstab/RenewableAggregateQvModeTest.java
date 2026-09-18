@@ -454,16 +454,16 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
 
     @Test
     void fivePlantAggregateHasStableCoupledFaultRecovery() throws Exception {
-        RunResult result = run(5, true, .20, .0005);
+        RunResult result = run(5, true, .20, .0005, regcaData(100.0, -100.0));
         System.out.printf(Locale.ROOT,
                 "Five-plant synthetic fault: min=%.12g final=%.12g drift=%.12g%n",
                 result.minimumPoiVoltage(), result.finalPoiVoltage(),
                 result.maximumVoltageDrift());
         assertTrue(result.minimumPoiVoltage() < .2, "fault must depress POI voltage");
         assertTrue(result.finalPoiVoltage() > .9, "five-plant system must recover");
-        assertEquals(3.49278487411e-5, result.minimumPoiVoltage(), 1.0e-10);
-        assertEquals(1.00359740361, result.finalPoiVoltage(), 1.0e-9);
-        assertEquals(.00346783520675, result.maximumVoltageDrift(), 1.0e-9);
+        assertEquals(3.58489350096e-5, result.minimumPoiVoltage(), 1.0e-10);
+        assertEquals(1.00366570722, result.finalPoiVoltage(), 1.0e-9);
+        assertEquals(.00354296889975, result.maximumVoltageDrift(), 1.0e-9);
     }
 
     private static double[] controllerCheckpoint(Reeca1Model reeca, Repca1Model repca) {
@@ -678,14 +678,27 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
 
     private static RunResult run(int plantCount, boolean withFault, double gridReactance,
             double simulationStep) throws Exception {
+        return run(plantCount, withFault, gridReactance, simulationStep, regcaData());
+    }
+
+    private static RunResult run(int plantCount, boolean withFault, double gridReactance,
+            double simulationStep, Regca1Data converterData) throws Exception {
         return run(plantCount, withFault, gridReactance, simulationStep,
                 new PlantProfile(.01, 0.0, .10, reecaData(), repcaData()),
-                withFault ? .5 : 1.0);
+                withFault ? .5 : 1.0, converterData);
     }
 
     private static RunResult run(int plantCount, boolean withFault, double gridReactance,
             double simulationStep, PlantProfile profile, double endTime) throws Exception {
-        DStabilityNetwork network = buildNetwork(plantCount, gridReactance, profile);
+        return run(plantCount, withFault, gridReactance, simulationStep, profile,
+                endTime, regcaData());
+    }
+
+    private static RunResult run(int plantCount, boolean withFault, double gridReactance,
+            double simulationStep, PlantProfile profile, double endTime,
+            Regca1Data converterData) throws Exception {
+        DStabilityNetwork network = buildNetwork(plantCount, gridReactance, profile,
+                converterData);
         DynamicSimuAlgorithm algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(simulationStep);
@@ -721,6 +734,11 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
 
     private static DStabilityNetwork buildNetwork(int plantCount, double gridReactance,
             PlantProfile profile) throws Exception {
+        return buildNetwork(plantCount, gridReactance, profile, regcaData());
+    }
+
+    private static DStabilityNetwork buildNetwork(int plantCount, double gridReactance,
+            PlantProfile profile, Regca1Data converterData) throws Exception {
         DStabilityNetwork network = DStabObjectFactory.createDStabilityNetwork();
         network.setBaseKva(100000.0);
         AclfNetworkBuilder topology = new AclfNetworkBuilder(network);
@@ -753,7 +771,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         dynamics.addInfiniteMachine("Grid", "1");
         for (int i = 1; i <= plantCount; i++) {
             String bus = "Plant" + i;
-            dynamics.addRegca1(bus, "1", regcaData());
+            dynamics.addRegca1(bus, "1", converterData);
             dynamics.addReeca1(bus, "1", profile.reeca());
             dynamics.addRepca1(bus, "1", profile.repca());
         }
@@ -785,8 +803,12 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     private static Regca1Data regcaData() {
+        return regcaData(0.0, 0.0);
+    }
+
+    private static Regca1Data regcaData(double iqrmax, double iqrmin) {
         return new Regca1Data(1, .02, 10, .9, .5, 1.22, 1.2, .8,
-                .4, -1.3, .02, .7, 0, 0, .8);
+                .4, -1.3, .02, .7, iqrmax, iqrmin, .8);
     }
 
     private static Reeca1Data reecaData() {
