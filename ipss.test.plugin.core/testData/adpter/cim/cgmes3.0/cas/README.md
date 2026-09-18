@@ -6,8 +6,9 @@ Symlinks into `~/Documents/Temp/cgmes-test-data/` — **not** committed.
 
 | Class | Focus |
 |-------|--------|
-| `CGMESCasCoverageStubTest` | P0–P3 import smokes (SmallGrid→FullGrid, PST, ReliCap) |
-| `CGMESCasType3HourCoverageStubTest` | Parameterized Type3 CGM hours (subset; `-Dipss.cgmes.type3.allHours=true` for all 24) |
-| `CGMESCasP4AclfSmokeStubTest` | P4 NR load-flow converge smokes (`cgmes-p4-aclf`) |
+| `CGMESCasCoverageStubTest` | P0–P3 CAS + core ReliCap IGMs |
+| `CGMESCasType3HourCoverageStubTest` | Parameterized Type3 CGM hours |
+| `CGMESCasP4AclfSmokeStubTest` | P4 NR load-flow converge smokes |
+| `CGMESReliCapDcCoverageStubTest` | Britheim/Portheim, HVDC corridors, multi-MAS CGM, NCP presence |
 
-Override CAS root: `-Dipss.cgmes.cas.root=` (parent of `v3.0/`).
+Override: `-Dipss.cgmes.cas.root=` / `-Dipss.cgmes.relicap.root=`.
