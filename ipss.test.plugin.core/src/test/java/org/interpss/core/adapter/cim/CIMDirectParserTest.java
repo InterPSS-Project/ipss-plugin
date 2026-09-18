@@ -137,9 +137,9 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
             if (bus.getGenCode() != null && bus.getGenCode() != AclfGenCode.NON_GEN) {
                 genCount++;
             }
-            if (bus.getShuntY() != null && bus.getShuntY().abs() > 0) {
-                shuntCount++;
-            }
+            // CGMES maps LinearShuntCompensator as bus-owned ShuntCompensator (B),
+            // not bus.shuntY (G-only when present).
+            shuntCount += bus.getCompensatorList().size();
         }
         assertTrue(genCount >= 49, "Should have generators");
         assertEquals(14, shuntCount, "Shunts should match MATPOWER");
