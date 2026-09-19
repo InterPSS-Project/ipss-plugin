@@ -114,6 +114,8 @@ public abstract class AbstractCGMESDataMapper {
 
     /**
      * InterPSS tap for a winding end from RatioTapChanger × optional PTC rho, else 1.0.
+     * Neutral tap is 1.0 when no RTC; do not fold ratedU/BaseVoltage into the InterPSS
+     * tap (that fights bus-base pu and MiniGrid P4).
      */
     protected double ratioTapForEnd(CGMESPropertyBag end) {
         double ratio = 1.0;
