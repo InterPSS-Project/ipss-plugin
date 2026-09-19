@@ -515,6 +515,14 @@ public class CGMESModel {
         return boundaryTopologicalNodes.contains(tnId);
     }
 
+    /**
+     * True if this TN URI is referenced by a terminal but has no bus mapping
+     * (dangling boundary ref when TP_BD is not loaded, or skipped boundary TN).
+     */
+    public boolean isUnmappedTopoNode(String tnUri) {
+        return tnUri != null && getBusId(tnUri) == null;
+    }
+
     /** Get voltage level URI for a topological node */
     public String getVoltageLevelByTopoNode(String topoNodeUri) {
         return voltageLevelByTopoNode.get(topoNodeUri);
