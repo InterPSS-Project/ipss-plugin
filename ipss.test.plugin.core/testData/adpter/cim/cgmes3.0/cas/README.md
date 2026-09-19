@@ -1,6 +1,14 @@
 # CGMES 3.0 CAS / ReliCap fixtures
 
-Local copies of the CAS v3.0.3 and ReliCap test configurations used by the coverage stubs. Directory names match the previous symlink layout.
+**Real file copies** of the CAS v3.0.3 and ReliCap configurations used by the coverage stubs.
+Do **not** use symlinks into `~/Documents/Temp/...` — copy the needed profile XMLs (and any
+supporting files the tests read) into this tree under the same directory names.
+
+Resolution order in the stubs (`casDir` / friends):
+
+1. `-Dipss.cgmes.cas.root=` (parent of `v3.0/`), then `v3.0/` + relative path
+2. This in-repo directory (`testData/adpter/cim/cgmes3.0/cas/<name>/`)
+3. Fallback Temp download tree under `~/Documents/Temp/cgmes-test-data/` (dev convenience only)
 
 ## Coverage stubs
 
@@ -19,4 +27,13 @@ Local copies of the CAS v3.0.3 and ReliCap test configurations used by the cover
 - Defaults: `vTolPu=0.02` (MiniGrid uses 0.05), `angTolDeg=1.0`, `minMatch=0.85` (MiniGrid 0.50), `minAngMatch=0.5`.
 - Overrides: `-Dipss.cgmes.p4.vTolPu` / `angTolDeg` / `minMatch` / `minAngMatch`.
 
-Override CAS root: `-Dipss.cgmes.cas.root=` (parent of `v3.0/`).
+## Adding a new pack
+
+```bash
+# Example: copy a CAS v3.0 pack into the repo (no symlink)
+CAS_ROOT=~/Documents/Temp/cgmes-test-data/cas-v3.0.3/CGMES_ConformityAssessmentScheme_TestConfigurations_v3-0-3/v3.0
+DEST=ipss.test.plugin.core/testData/adpter/cim/cgmes3.0/cas/MyPack-Name
+mkdir -p "$DEST"
+cp -R "$CAS_ROOT/path/to/pack/"*.xml "$DEST/"
+# Prefer XML profiles the tests need (EQ/SSH/TP/SV/EQBD). Skip large SHACL/xlsx unless required.
+```
