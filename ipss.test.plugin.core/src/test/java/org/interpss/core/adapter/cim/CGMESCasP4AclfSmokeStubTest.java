@@ -107,7 +107,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		});
 		assertTrue(net.getNoBus() > 0);
 		runNrSeeded(net, sv);
-		// MiniGrid currently warns on 3W tap ratios outside (0,2]; keep looser V floor until mapper fixed.
+		// MiniGrid still needs a looser |V| floor than PowerFlow/PST (3W + RTC not fully mapped).
 		// Override: -Dipss.cgmes.p4.minMatch / vTolPu still apply if set.
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.05"));
 		double minR = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.50"));

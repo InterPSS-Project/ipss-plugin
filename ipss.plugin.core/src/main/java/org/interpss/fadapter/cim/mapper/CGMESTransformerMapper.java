@@ -137,21 +137,17 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        Double baseKV_from = busBaseKV(builder, fromBusId);
-        Double baseKV_to = busBaseKV(builder, toBusId);
-        if (baseKV_from == null || baseKV_from == 0.0) baseKV_from = ratedU1 > 0 ? ratedU1 : 100.0;
-        if (baseKV_to == null || baseKV_to == 0.0) baseKV_to = ratedU2 > 0 ? ratedU2 : 100.0;
-
         // Mesh / winding Z is in ohms on the from-end (end1) voltage base
-        double zBaseKV = ratedU1 > 0 ? ratedU1 : baseKV_from;
+        double zBaseKV = ratedU1 > 0 ? ratedU1 : 100.0;
+        Double busFrom = busBaseKV(builder, fromBusId);
+        if (ratedU1 <= 0 && busFrom != null && busFrom > 0) zBaseKV = busFrom;
         double baseZ = zBaseKV * zBaseKV / baseMVA;
         double rPU = r / baseZ;
         double xPU = x / baseZ;
 
-        double fromTurnRatio = ratedU1 > 0 ? ratedU1 / baseKV_from : 1.0;
-        double toTurnRatio = ratedU2 > 0 ? ratedU2 / baseKV_to : 1.0;
-        fromTurnRatio = clampTap(fromTurnRatio);
-        toTurnRatio = clampTap(toTurnRatio);
+        // Voltage levels from bus bases + Z on ratedU; InterPSS tap from RatioTapChanger only.
+        double fromTurnRatio = ratioTapForEnd(end1);
+        double toTurnRatio = ratioTapForEnd(end2);
 
         double ratingMva = CGMESUnitConverter.apparentPowerToMVA(
                 end1.getDouble("PowerTransformerEnd.ratedS",
@@ -185,6 +181,7 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
             name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva);
     }
 
+
     private String resolveBusIdFromEnd(CGMESPropertyBag end) {
         if (cimModel == null || end == null) return null;
         String termId = end.getResourceId("TransformerEnd.Terminal");
@@ -203,14 +200,6 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         return bus.getBaseVoltage() / 1000.0;
     }
 
-    /** InterPSS rejects taps outside (0, 2]; fall back to 1.0 when data is inconsistent. */
-    private static double clampTap(double tap) {
-        if (tap <= 0.0 || tap > 2.0) {
-            log.warn("Transformer tap {} outside (0,2] — using 1.0", tap);
-            return 1.0;
-        }
-        return tap;
-    }
 
     private static boolean endHasX(CGMESPropertyBag end) {
         return end.getString("PowerTransformerEnd.x") != null

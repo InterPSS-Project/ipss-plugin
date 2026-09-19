@@ -163,6 +163,11 @@ public class CGMESModel {
         return listByType(cimNamespace + "TransformerCoreAdmittance");
     }
 
+    /** RatioTapChanger (EQ + SSH step merged on the same resource id). */
+    public List<CGMESPropertyBag> ratioTapChangers() {
+        return listByType(cimNamespace + "RatioTapChanger");
+    }
+
     /**
      * EnergyConsumer plus concrete subclasses. RDF stores the leaf type only;
      * Jena does not infer {@code rdf:type EnergyConsumer} from ConformLoad.
