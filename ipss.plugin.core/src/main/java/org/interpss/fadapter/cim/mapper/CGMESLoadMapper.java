@@ -36,11 +36,15 @@ public class CGMESLoadMapper extends AbstractCGMESDataMapper {
         if (name == null) name = loadId;
 
         double pW = bag.getDouble("EnergyConsumer.p",
-                    bag.getDouble("RotatingMachine.p", 0.0));
+                    bag.getDouble("EquivalentInjection.p",
+                    bag.getDouble("RotatingMachine.p", 0.0)));
         double qVar = bag.getDouble("EnergyConsumer.q",
-                    bag.getDouble("RotatingMachine.q", 0.0));
+                    bag.getDouble("EquivalentInjection.q",
+                    bag.getDouble("RotatingMachine.q", 0.0)));
 
-        boolean isAsyncMachine = bag.getString("EnergyConsumer.p") == null;
+        boolean equivalent = bag.getString("EquivalentInjection.p") != null
+                || bag.getString("EquivalentInjection.q") != null;
+        boolean isAsyncMachine = bag.getString("EnergyConsumer.p") == null && !equivalent;
 
         if (pW == 0.0 && qVar == 0.0 && !isAsyncMachine) {
             log.debug("Skipping zero load: {}", name);

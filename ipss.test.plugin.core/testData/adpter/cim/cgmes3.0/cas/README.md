@@ -22,10 +22,11 @@ Resolution order in the stubs (`casDir` / friends):
 
 ## P4 compare notes
 
-- Seed LF from SvVoltage, then NR (`setInitBusVoltage(false)`).
-- Compare \|V\| (pu) primarily; angles use differential reference (swing/first bus).
-- Defaults: `vTolPu=0.02` (MiniGrid uses 0.05), `angTolDeg=1.0`, `minMatch=0.85` (MiniGrid 0.50), `minAngMatch=0.5`.
-- Overrides: `-Dipss.cgmes.p4.vTolPu` / `angTolDeg` / `minMatch` / `minAngMatch`.
+- Seed LF from SvVoltage, then NR (`setInitBusVoltage(false)`). SV is not written back as a solved result.
+- One floor for every P4 case, including MiniGrid and the promoted packs. Dead buses (`|V| < 0.2` pu) are excluded. A flow match needs both P and Q inside tolerance on the sequence-correct terminal.
+- `|V|`: `vTolPu=0.005`, `minMatch=0.98`. Angle: `angTolDeg=0.5`, `minAngMatch=0.95` (differential, swing or first live bus).
+- Branch P/Q: `pTolMw=1`, `qTolMvar=1`, `minFlowMatch=0.95`. `missingBus=0` and `missingBranch=0` for every in-topology `ACLineSegment` and `PowerTransformer` terminal.
+- Overrides: `-Dipss.cgmes.p4.vTolPu` / `angTolDeg` / `minMatch` / `minAngMatch` / `pTolMw` / `qTolMvar` / `minFlowMatch`.
 
 ## Adding a new pack
 

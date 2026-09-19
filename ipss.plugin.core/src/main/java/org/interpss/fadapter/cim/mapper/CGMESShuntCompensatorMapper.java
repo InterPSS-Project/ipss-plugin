@@ -37,15 +37,13 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
         double gPerSection = bag.getDouble("LinearShuntCompensator.gPerSection", 0.0);
 
         if (bPerSection != 0.0 || gPerSection != 0.0) {
-            int sections = bag.getInt("ShuntCompensator.normalSections",
-                         bag.getInt("ShuntCompensator.maximumSections", 1));
+            int sections = inServiceSections(bag);
             totalB = bPerSection * sections;
             totalG = gPerSection * sections;
         } else {
             totalB = 0.0;
             totalG = 0.0;
-            int normalSections = bag.getInt("ShuntCompensator.normalSections",
-                            bag.getInt("ShuntCompensator.maximumSections", 1));
+            int sections = inServiceSections(bag);
             if (cimModel != null) {
                 java.util.List<org.apache.jena.query.QuerySolution> points = cimModel.sparqlSelect(
                     "PREFIX cim: <" + cimModel.getCimNamespace() + "> " +
@@ -54,26 +52,27 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
                     "  ?point cim:NonlinearShuntCompensatorPoint.sectionNumber ?section . " +
                     "  ?point cim:NonlinearShuntCompensatorPoint.b ?b . " +
                     "  ?point cim:NonlinearShuntCompensatorPoint.g ?g . " +
-                    "  FILTER(?section = " + normalSections + ") " +
+                    "  FILTER(?section = " + sections + ") " +
                     "}");
                 if (!points.isEmpty()) {
                     totalB = points.get(0).getLiteral("b").getDouble();
                     totalG = points.get(0).getLiteral("g").getDouble();
                 } else {
-                    java.util.List<org.apache.jena.query.QuerySolution> allPoints = cimModel.sparqlSelect(
+                    // Points are cumulative totals, not increments. Take the single
+                    // in-service step, never the sum of every point at or below it.
+                    java.util.List<org.apache.jena.query.QuerySolution> atOrBelow = cimModel.sparqlSelect(
                         "PREFIX cim: <" + cimModel.getCimNamespace() + "> " +
                         "SELECT ?b ?g ?section WHERE { " +
                         "  ?point cim:NonlinearShuntCompensatorPoint.NonlinearShuntCompensator <" + bag.getResource().getURI() + "> . " +
                         "  ?point cim:NonlinearShuntCompensatorPoint.sectionNumber ?section . " +
                         "  ?point cim:NonlinearShuntCompensatorPoint.b ?b . " +
                         "  ?point cim:NonlinearShuntCompensatorPoint.g ?g . " +
-                        "  FILTER(?section <= " + normalSections + ") " +
-                        "}");
-                    for (var pt : allPoints) {
-                        totalB += pt.getLiteral("b").getDouble();
-                        totalG += pt.getLiteral("g").getDouble();
-                    }
-                    if (totalB == 0.0 && totalG == 0.0) {
+                        "  FILTER(?section <= " + sections + ") " +
+                        "} ORDER BY DESC(?section) LIMIT 1");
+                    if (!atOrBelow.isEmpty()) {
+                        totalB = atOrBelow.get(0).getLiteral("b").getDouble();
+                        totalG = atOrBelow.get(0).getLiteral("g").getDouble();
+                    } else {
                         java.util.List<org.apache.jena.query.QuerySolution> minPoint = cimModel.sparqlSelect(
                             "PREFIX cim: <" + cimModel.getCimNamespace() + "> " +
                             "SELECT ?b ?g WHERE { " +
@@ -128,5 +127,22 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
 
         log.debug(String.format("Created shunt: %s on bus %s, B=%.6f S (%.4f PU)",
             name, busId, totalB, bPU));
+    }
+
+    /**
+     * SSH {@code ShuntCompensator.sections} is the in-service count. EQ
+     * {@code normalSections} is only the fallback when SSH did not merge a step.
+     */
+    private static int inServiceSections(CGMESPropertyBag bag) {
+        String ssh = bag.getString("ShuntCompensator.sections");
+        if (ssh != null && !ssh.isBlank()) {
+            try {
+                return (int) Math.round(Double.parseDouble(ssh.trim()));
+            } catch (NumberFormatException ignore) {
+                // fall through to EQ normalSections
+            }
+        }
+        return bag.getInt("ShuntCompensator.normalSections",
+                bag.getInt("ShuntCompensator.maximumSections", 1));
     }
 }

@@ -6,17 +6,22 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
+import com.interpss.core.aclf.Aclf3WBranch;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGen;
@@ -33,9 +38,9 @@ import com.interpss.core.aclf.AclfNetwork;
  * ACLineSegment (optionally PowerTransformer) via EQ, then to {@link AclfBranch}
  * by equipment id (with optional leading underscore).
  *
- * <p>Flow overrides: {@code -Dipss.cgmes.p4.pTolMw} (default 5.0),
- * {@code -Dipss.cgmes.p4.qTolMvar} (default 5.0),
- * {@code -Dipss.cgmes.p4.minFlowMatch} (default 0.50).
+ * <p>Flow overrides: {@code -Dipss.cgmes.p4.pTolMw} (default 1.0),
+ * {@code -Dipss.cgmes.p4.qTolMvar} (default 1.0),
+ * {@code -Dipss.cgmes.p4.minFlowMatch} (default 0.95).
  */
 final class CgmesSvCompareSupport {
 
@@ -45,8 +50,8 @@ final class CgmesSvCompareSupport {
 	record SvPowerFlow(String terminalLocalId, double pMw, double qMvar) {
 	}
 
-	/** Terminal → conducting equipment (+ optional sequenceNumber). */
-	record TerminalEquip(String equipLocalId, int sequenceNumber, String equipType) {
+	/** Terminal → conducting equipment (+ sequenceNumber and optional topological node). */
+	record TerminalEquip(String equipLocalId, int sequenceNumber, String equipType, String topoLocalId) {
 	}
 
 	record CompareStats(int compared, int matchedBoth, int matchedVOnly, int missingBus,
@@ -55,7 +60,7 @@ final class CgmesSvCompareSupport {
 	}
 
 	record FlowCompareStats(int compared, int matched, int missingBranch, int skipped,
-			List<String> mismatches) {
+			List<String> mismatches, List<String> missingReasons) {
 	}
 
 	private static final Pattern SV_BLOCK = Pattern.compile(
@@ -97,6 +102,9 @@ final class CgmesSvCompareSupport {
 			Pattern.CASE_INSENSITIVE);
 	private static final Pattern TERM_SEQ = Pattern.compile(
 			"<cim:(?:Terminal|ACDCTerminal)\\.sequenceNumber>([^<]+)</cim:(?:Terminal|ACDCTerminal)\\.sequenceNumber>",
+			Pattern.CASE_INSENSITIVE);
+	private static final Pattern TERM_TN = Pattern.compile(
+			"<cim:Terminal\\.TopologicalNode\\s+rdf:resource=\"#([^\"]+)\"",
 			Pattern.CASE_INSENSITIVE);
 
 	private static final Pattern ACLINE_BLOCK = Pattern.compile(
@@ -187,7 +195,17 @@ final class CgmesSvCompareSupport {
 					continue;
 				}
 				Matcher ce = TERM_CE.matcher(body);
+				String topo = null;
+				Matcher tnm = TERM_TN.matcher(body);
+				if (tnm.find()) {
+					topo = tnm.group(1);
+				}
 				if (!ce.find()) {
+					TerminalEquip prev = out.get(termId);
+					if (prev != null && topo != null) {
+						out.put(termId, new TerminalEquip(prev.equipLocalId(), prev.sequenceNumber(),
+								prev.equipType(), topo));
+					}
 					continue;
 				}
 				String equipId = ce.group(1);
@@ -201,7 +219,19 @@ final class CgmesSvCompareSupport {
 					}
 				}
 				String typ = equipType.getOrDefault(equipId, "");
-				out.put(termId, new TerminalEquip(equipId, seq, typ));
+				TerminalEquip prev = out.get(termId);
+				if (prev != null) {
+					if (typ.isEmpty()) {
+						typ = prev.equipType();
+					}
+					if (topo == null) {
+						topo = prev.topoLocalId();
+					}
+					if (seq == 1 && prev.sequenceNumber() != 1) {
+						seq = prev.sequenceNumber();
+					}
+				}
+				out.put(termId, new TerminalEquip(equipId, seq, typ, topo));
 			}
 		}
 		assumeTrue(!out.isEmpty(), "No Terminal→ConductingEquipment rows indexed from EQ");
@@ -234,20 +264,88 @@ final class CgmesSvCompareSupport {
 		if (equipLocalId == null || equipLocalId.isBlank()) {
 			return null;
 		}
+		AclfBranch exact = matchBranchId(net.getBranchList(), equipLocalId, false);
+		if (exact != null) {
+			return exact;
+		}
+		return matchBranchId(net.getBranchList(), equipLocalId, true);
+	}
+
+	/** 3W containers are {@link Aclf3WBranch}, not {@link AclfBranch}, and live on the special-branch list. */
+	static Aclf3WBranch find3W(AclfNetwork net, String equipLocalId) {
+		if (equipLocalId == null || equipLocalId.isBlank()) {
+			return null;
+		}
+		for (Object obj : net.getSpecialBranchList()) {
+			if (obj instanceof Aclf3WBranch w3 && idEquals(w3.getId(), equipLocalId)) {
+				return w3;
+			}
+		}
+		return null;
+	}
+
+	private static boolean idEquals(String id, String equipLocalId) {
+		if (id == null) {
+			return false;
+		}
 		String alt = equipLocalId.startsWith("_")
 				? equipLocalId.substring(1)
 				: "_" + equipLocalId;
-		for (AclfBranch br : net.getBranchList()) {
+		return equipLocalId.equals(id) || alt.equals(id);
+	}
+
+	private static AclfBranch matchBranchId(Iterable<AclfBranch> branches, String equipLocalId,
+			boolean prefix) {
+		String alt = equipLocalId.startsWith("_")
+				? equipLocalId.substring(1)
+				: "_" + equipLocalId;
+		for (AclfBranch br : branches) {
 			String id = br.getId();
-			if (equipLocalId.equals(id) || alt.equals(id)) {
+			if (idEquals(id, equipLocalId)) {
 				return br;
 			}
-			// 3W star legs sometimes suffix the transformer id
-			if (id != null && (id.startsWith(equipLocalId) || id.startsWith(alt))) {
+			if (prefix && id != null && (id.startsWith(equipLocalId) || id.startsWith(alt))) {
 				return br;
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Power into the conducting equipment at the terminal with this sequence number.
+	 * Sequence 1 is the InterPSS from side. A 3W container's legs are oriented
+	 * from-bus→star, star→to-bus, star→tertiary, so the to/tert injection is
+	 * {@code powerTo2From}.
+	 */
+	private static Complex flowIntoEquipment(AclfNetwork net, AclfBranch br, Aclf3WBranch w3,
+			TerminalEquip te) throws Exception {
+		if (w3 != null) {
+			AclfBus termBus = te.topoLocalId() == null ? null : findBus(net, te.topoLocalId());
+			AclfBranch[] legs = { w3.getFromAclfBranch(), w3.getToAclfBranch(), w3.getTertAclfBranch() };
+			for (AclfBranch leg : legs) {
+				if (leg == null || termBus == null) {
+					continue;
+				}
+				if (sameBus(leg.getFromBus(), termBus)) {
+					return leg.powerFrom2To(UnitType.mVA);
+				}
+				if (sameBus(leg.getToBus(), termBus)) {
+					return leg.powerTo2From(UnitType.mVA);
+				}
+			}
+			return null;
+		}
+		if (te.sequenceNumber() <= 1) {
+			return br.powerFrom2To(UnitType.mVA);
+		}
+		return br.powerTo2From(UnitType.mVA);
+	}
+
+	private static boolean sameBus(com.interpss.core.net.Bus branchBus, AclfBus termBus) {
+		if (branchBus == null || termBus == null || branchBus.getId() == null) {
+			return false;
+		}
+		return idEquals(branchBus.getId(), termBus.getId());
 	}
 
 	static double baseKv(AclfBus bus) {
@@ -357,8 +455,7 @@ final class CgmesSvCompareSupport {
 		SvVoltage refSv = sv.get(refId);
 		AclfBus refBus = findBus(net, refId);
 		assumeTrue(refSv != null && refBus != null, () -> "Angle reference missing: " + refId);
-		double refAclfAng = aclfAngDeg(refBus);
-		double refSvAng = refSv.angleDeg();
+		Map<String, String> refByBus = angleRefByComponent(net, sv);
 		int compared = 0;
 		int matchedBoth = 0;
 		int matchedVOnly = 0;
@@ -384,9 +481,17 @@ final class CgmesSvCompareSupport {
 				continue;
 			}
 			double svPu = s.vKv() / bk;
-			// Differential angles cancel absolute reference frame
-			double aclfDelta = aclfAngDeg(bus) - refAclfAng;
-			double svDelta = s.angleDeg() - refSvAng;
+			String busRef = refByBus.getOrDefault(bus.getId(), refId);
+			SvVoltage busRefSv = sv.get(busRef);
+			AclfBus busRefBus = findBus(net, busRef);
+			if (busRefSv == null || busRefBus == null) {
+				busRef = refId;
+				busRefSv = refSv;
+				busRefBus = refBus;
+			}
+			// Differential angles cancel the absolute frame, per connected island.
+			double aclfDelta = aclfAngDeg(bus) - aclfAngDeg(busRefBus);
+			double svDelta = s.angleDeg() - busRefSv.angleDeg();
 			double dV = Math.abs(aclfPu - svPu);
 			double dA = absAngDiffDeg(aclfDelta, svDelta);
 			compared++;
@@ -398,11 +503,11 @@ final class CgmesSvCompareSupport {
 				matchedVOnly++;
 				mismatches.add(String.format(Locale.ROOT,
 						"%s ANGLE-ONLY Vpu ok dV=%.5f angDelta aclf=%.4f sv=%.4f (d=%.4f) ref=%s",
-						s.topoLocalId(), dV, aclfDelta, svDelta, dA, refId));
+						s.topoLocalId(), dV, aclfDelta, svDelta, dA, busRef));
 			} else {
 				mismatches.add(String.format(Locale.ROOT,
 						"%s Vpu aclf=%.5f sv=%.5f (d=%.5f) angDelta aclf=%.4f sv=%.4f (d=%.4f) ref=%s",
-						s.topoLocalId(), aclfPu, svPu, dV, aclfDelta, svDelta, dA, refId));
+						s.topoLocalId(), aclfPu, svPu, dV, aclfDelta, svDelta, dA, busRef));
 			}
 		}
 
@@ -424,7 +529,7 @@ final class CgmesSvCompareSupport {
 						+ "=" + vRatio + " < " + minMatchRatio + "; missingBus=" + missingBusF
 						+ "; skippedDead=" + skippedDeadF + "; angRef=" + refF
 						+ "; sample: " + mismatchSample);
-		double minAng = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minAngMatch", "0.5"));
+		double minAng = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minAngMatch", "0.95"));
 		final double aRatio = (double) matchedBothF / (double) comparedF;
 		assertTrue(aRatio + 1e-9 >= minAng,
 				() -> "Aclf vs SV angle match ratio " + matchedBothF + "/" + comparedF + "=" + aRatio
@@ -432,6 +537,67 @@ final class CgmesSvCompareSupport {
 						+ mismatchSample);
 		return new CompareStats(comparedF, matchedBothF, matchedVOnlyF, missingBusF, skippedDeadF, refF,
 				mismatches);
+	}
+
+	/**
+	 * Angle reference for each connected component. A second island (HVDC AC
+	 * terminals, a split area) does not share the swing bus angle frame.
+	 */
+	private static Map<String, String> angleRefByComponent(AclfNetwork net, Map<String, SvVoltage> sv) {
+		Map<String, List<String>> adj = new HashMap<>();
+		for (AclfBranch br : net.getBranchList()) {
+			if (br == null || !br.isActive() || br.getFromBus() == null || br.getToBus() == null) {
+				continue;
+			}
+			String a = br.getFromBus().getId();
+			String b = br.getToBus().getId();
+			adj.computeIfAbsent(a, k -> new ArrayList<>()).add(b);
+			adj.computeIfAbsent(b, k -> new ArrayList<>()).add(a);
+		}
+		Map<String, SvVoltage> svByBus = new HashMap<>();
+		for (SvVoltage s : sv.values()) {
+			AclfBus bus = findBus(net, s.topoLocalId());
+			if (bus != null) {
+				svByBus.put(bus.getId(), s);
+			}
+		}
+		Map<String, String> refOf = new HashMap<>();
+		Set<String> seen = new HashSet<>();
+		for (String start : svByBus.keySet()) {
+			if (!seen.add(start)) {
+				continue;
+			}
+			List<String> comp = new ArrayList<>();
+			ArrayDeque<String> dq = new ArrayDeque<>();
+			dq.add(start);
+			while (!dq.isEmpty()) {
+				String id = dq.remove();
+				if (svByBus.containsKey(id)) {
+					comp.add(id);
+				}
+				for (String next : adj.getOrDefault(id, List.of())) {
+					if (seen.add(next)) {
+						dq.add(next);
+					}
+				}
+			}
+			if (comp.isEmpty()) {
+				continue;
+			}
+			String refBusId = comp.get(0);
+			for (String id : comp) {
+				AclfBus b = net.getBus(id);
+				if (b != null && b.getVoltageMag() >= 0.2 && b.getGenCode() == AclfGenCode.SWING) {
+					refBusId = id;
+					break;
+				}
+			}
+			String refTopo = svByBus.get(refBusId).topoLocalId();
+			for (String id : comp) {
+				refOf.put(id, refTopo);
+			}
+		}
+		return refOf;
 	}
 
 	/** Pick reference TN: swing if present, else first live mapped SV bus. */
@@ -460,6 +626,7 @@ final class CgmesSvCompareSupport {
 		int missingBranch = 0;
 		int skipped = 0;
 		List<String> mismatches = new ArrayList<>();
+		List<String> missingReasons = new ArrayList<>();
 
 		for (SvPowerFlow pf : flows.values()) {
 			TerminalEquip te = termIndex.get(pf.terminalLocalId());
@@ -478,44 +645,29 @@ final class CgmesSvCompareSupport {
 				skipped++;
 				continue;
 			}
-			AclfBranch br = findBranch(net, te.equipLocalId());
-			if (br == null || !br.isActive()) {
+			Aclf3WBranch w3 = find3W(net, te.equipLocalId());
+			AclfBranch br = w3 == null ? findBranch(net, te.equipLocalId()) : null;
+			if (w3 == null && (br == null || !br.isActive())) {
 				missingBranch++;
+				missingReasons.add(String.format(Locale.ROOT,
+						"term=%s equip=%s seq=%d type=%s reason=%s",
+						pf.terminalLocalId(), te.equipLocalId(), te.sequenceNumber(), typ,
+						missingBranchReason(net, te.equipLocalId(), br != null && !br.isActive())));
 				continue;
 			}
-			Complex sPrimary;
-			Complex sAlt;
+			Complex s;
 			try {
-				if (te.sequenceNumber() <= 1) {
-					sPrimary = br.powerFrom2To(UnitType.mVA);
-					sAlt = br.powerTo2From(UnitType.mVA);
-				} else {
-					sPrimary = br.powerTo2From(UnitType.mVA);
-					sAlt = br.powerFrom2To(UnitType.mVA);
-				}
+				s = flowIntoEquipment(net, br, w3, te);
 			} catch (Exception ex) {
 				skipped++;
 				continue;
 			}
-			if (sPrimary == null || !Double.isFinite(sPrimary.getReal())
-					|| !Double.isFinite(sPrimary.getImaginary())) {
+			if (s == null || !Double.isFinite(s.getReal()) || !Double.isFinite(s.getImaginary())) {
 				skipped++;
 				continue;
 			}
-			// Pick the orientation closest to SV (CGMES Terminal seq vs InterPSS from/to
-			// can disagree when ends were reordered during mapping).
-			Complex s = sPrimary;
-			double dP = Math.abs(sPrimary.getReal() - pf.pMw());
-			double dQ = Math.abs(sPrimary.getImaginary() - pf.qMvar());
-			if (sAlt != null && Double.isFinite(sAlt.getReal()) && Double.isFinite(sAlt.getImaginary())) {
-				double dP2 = Math.abs(sAlt.getReal() - pf.pMw());
-				double dQ2 = Math.abs(sAlt.getImaginary() - pf.qMvar());
-				if (dP2 + dQ2 < dP + dQ) {
-					s = sAlt;
-					dP = dP2;
-					dQ = dQ2;
-				}
-			}
+			double dP = Math.abs(s.getReal() - pf.pMw());
+			double dQ = Math.abs(s.getImaginary() - pf.qMvar());
 			compared++;
 			if (dP <= pTolMw && dQ <= qTolMvar) {
 				matched++;
@@ -543,19 +695,73 @@ final class CgmesSvCompareSupport {
 				() -> "Aclf vs SvPowerFlow match ratio " + matchedF + "/" + comparedF + "=" + ratio
 						+ " < " + minMatchRatio + "; missingBranch=" + missingBranchF
 						+ "; skipped=" + skippedF + "; sample: " + mismatchSample);
-		return new FlowCompareStats(comparedF, matchedF, missingBranchF, skippedF, mismatches);
+		return new FlowCompareStats(comparedF, matchedF, missingBranchF, skippedF, mismatches,
+				missingReasons);
+	}
+
+	/**
+	 * Always-on diagnostic. Printed even when the loose floor still passes, so
+	 * mapper edits can be scored against the buses and branches that miss SV.
+	 */
+	static void printVoltageDump(String label, CompareStats stats) {
+		System.out.println("SvVoltage " + label + ": both=" + stats.matchedBoth()
+				+ " vOnly=" + stats.matchedVOnly() + "/" + stats.compared()
+				+ " missingBus=" + stats.missingBus()
+				+ " skippedDead=" + stats.skippedDead()
+				+ " angRef=" + stats.angRef());
+		for (String row : stats.mismatches()) {
+			System.out.println("  V " + row);
+		}
+	}
+
+	static void printFlowDump(String label, FlowCompareStats stats) {
+		System.out.println("SvPowerFlow " + label + ": " + stats.matched() + "/" + stats.compared()
+				+ " missingBranch=" + stats.missingBranch() + " skipped=" + stats.skipped());
+		for (String row : stats.missingReasons()) {
+			System.out.println("  MISS " + row);
+		}
+		for (String row : stats.mismatches()) {
+			System.out.println("  FLOW " + row);
+		}
+	}
+
+	/**
+	 * Why {@link #findBranch} failed. Prefix hits that were not returned are a 3W id
+	 * mismatch; otherwise the equipment was not mapped (boundary topological node or
+	 * a skipped transformer/line).
+	 */
+	private static String missingBranchReason(AclfNetwork net, String equipLocalId, boolean inactive) {
+		if (inactive) {
+			return "inactive";
+		}
+		String bare = equipLocalId.startsWith("_") ? equipLocalId.substring(1) : equipLocalId;
+		List<String> hits = new ArrayList<>();
+		for (AclfBranch br : net.getBranchList()) {
+			String id = br.getId();
+			if (id == null) {
+				continue;
+			}
+			String idBare = id.startsWith("_") ? id.substring(1) : id;
+			if (idBare.startsWith(bare) || bare.startsWith(idBare)) {
+				hits.add(id + (br.isActive() ? "" : "/inactive"));
+			}
+		}
+		if (!hits.isEmpty()) {
+			return "3W-id-prefix-miss candidates=" + hits;
+		}
+		return "no-branch (unmapped or boundary topological node)";
 	}
 
 	static double defaultPTolMw() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.pTolMw", "5.0"));
+		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.pTolMw", "1.0"));
 	}
 
 	static double defaultQTolMvar() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.qTolMvar", "5.0"));
+		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.qTolMvar", "1.0"));
 	}
 
 	static double defaultMinFlowMatch() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.50"));
+		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.95"));
 	}
 
 	private static double absAngDiffDeg(double a, double b) {

@@ -260,6 +260,7 @@ public class CGMESDirectParser {
 
         CGMESTransformer3WMapper xfr3wMapper = new CGMESTransformer3WMapper(DEFAULT_BASE_MVA);
         xfr3wMapper.setCimModel(cimModel);
+        xfr3wMapper.indexMeshImpedances(cimModel.transformerMeshImpedances());
         xfr3wMapper.indexRatioTapChangers(cimModel.ratioTapChangers());
         xfr3wMapper.indexPhaseTapChangers(cimModel.phaseTapChangers(),
                 cimModel.phaseTapChangerTablePoints());
@@ -295,9 +296,21 @@ public class CGMESDirectParser {
 
         CGMESLoadMapper loadMapper = new CGMESLoadMapper(DEFAULT_BASE_MVA);
         loadMapper.setCimModel(cimModel);
+        java.util.Set<String> loadBuses = new java.util.HashSet<>();
         for (CGMESPropertyBag load : cimModel.energyConsumers()) {
+            String busId = loadMapper.resolveBusId(load.getId());
+            if (busId != null) loadBuses.add(busId);
             int before = loadMapper.getMappedCount();
             loadMapper.map(load, builder);
+            if (loadMapper.getMappedCount() > before) loadCount++;
+        }
+        // Boundary MW that is not already an EnergyConsumer. Nordheim puts both
+        // on the same node; counting the equivalent there replaces the 200 MW load.
+        for (CGMESPropertyBag ei : cimModel.equivalentInjections()) {
+            String busId = loadMapper.resolveBusId(ei.getId());
+            if (busId == null || loadBuses.contains(busId)) continue;
+            int before = loadMapper.getMappedCount();
+            loadMapper.map(ei, builder);
             if (loadMapper.getMappedCount() > before) loadCount++;
         }
         for (CGMESPropertyBag asm : cimModel.asynchronousMachines()) {

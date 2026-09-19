@@ -61,10 +61,43 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        AclfBranch branch = builder.addLine(fromBusId, toBusId, cirId,
-                new Complex(rPU, xPU),
-                new Complex(gPU * 0.5, bPU * 0.5),
-                null, null, 0.0, 0.0, 0.0, true);
+        Double fromBase = busBaseKV(builder, fromBusId);
+        Double toBase = busBaseKV(builder, toBusId);
+        boolean crossVoltage = fromBase != null && toBase != null && Math.abs(fromBase - toBase) > 0.05;
+        AclfBranch branch;
+        if (crossVoltage) {
+            // Refer series Z to the from-bus base. toTap = fromBase/toBase makes
+            // equal pu voltages the same kilovolts across the conductor.
+            double zKv = fromBase;
+            double crossZ = zKv * zKv / baseMVA;
+            rPU = r / crossZ;
+            xPU = x / crossZ;
+            double fromY = baseMVA / (fromBase * fromBase);
+            double toY = baseMVA / (toBase * toBase);
+            // InterPSS rejects a turn ratio outside (0, 2]. Keep the kilovolt
+            // match when it fits; otherwise use a 1:1 pu transformer.
+            double fromTap = 1.0;
+            double toTap = fromBase / toBase;
+            // setToTurnRatio rejects 2.0 itself, not only values above it.
+            if (!(toTap > 0.0 && toTap < 2.0)) {
+                fromTap = toBase / fromBase;
+                toTap = 1.0;
+            }
+            if (!(fromTap > 0.0 && fromTap < 2.0 && toTap > 0.0 && toTap < 2.0)) {
+                fromTap = 1.0;
+                toTap = 1.0;
+            }
+            Complex yFrom = new Complex((gch * 0.5) / fromY, (bch * 0.5) / fromY).multiply(fromTap * fromTap);
+            Complex yTo = new Complex((gch * 0.5) / toY, (bch * 0.5) / toY).multiply(toTap * toTap);
+            branch = builder.addXformer2W(fromBusId, toBusId, cirId,
+                    new Complex(rPU, xPU), fromTap, toTap,
+                    yFrom, yTo, 0.0, 0.0, 0.0, 0, true);
+        } else {
+            branch = builder.addLine(fromBusId, toBusId, cirId,
+                    new Complex(rPU, xPU),
+                    new Complex(gPU * 0.5, bPU * 0.5),
+                    null, null, 0.0, 0.0, 0.0, true);
+        }
         branch.setId(lineId);
         branch.setName(name.isEmpty() ? lineId : name);
 
