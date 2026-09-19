@@ -98,7 +98,11 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
 
         String busId = resolveBusId(bag.getId());
         if (busId == null) {
-            log.warn("Skipping shunt {} - cannot resolve bus", name);
+            if (isUnresolvedTopologyExpected(bag.getId())) {
+                log.debug("Skipping shunt {} - out of topology / no TP TopologicalNode", name);
+            } else {
+                log.warn("Skipping shunt {} - cannot resolve bus", name);
+            }
             return;
         }
 

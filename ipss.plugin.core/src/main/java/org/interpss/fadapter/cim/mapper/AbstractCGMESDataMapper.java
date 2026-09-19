@@ -309,6 +309,25 @@ public abstract class AbstractCGMESDataMapper {
         return null;
     }
 
+    /**
+     * True when no terminal of this equipment maps to a created bus via
+     * {@code Terminal.TopologicalNode}. Typical for EQ gear absent from TP
+     * (CN-only / out-of-topology Cub_ terminals) and for multi-MAS EQ merged
+     * without the matching TP — skip at debug, not WARN.
+     */
+    protected boolean isUnresolvedTopologyExpected(String equipmentId) {
+        if (cimModel == null || equipmentId == null) return false;
+        java.util.List<String> terms = cimModel.getTerminalsForEquipment(equipmentId);
+        if (terms.isEmpty()) return true;
+        for (String tid : terms) {
+            String tn = cimModel.getTopologicalNodeByTerminal(tid);
+            if (tn != null && cimModel.getBusId(tn) != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     protected String[] resolveBranchBusIds(String equipmentId) {
         if (cimModel == null) return new String[]{null, null};
         java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(equipmentId);

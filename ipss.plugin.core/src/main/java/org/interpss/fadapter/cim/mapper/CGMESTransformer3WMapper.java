@@ -81,8 +81,13 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
         String bus3Id = resolveBusIdForEnd(bag.getId(), 3, sortedEnds);
 
         if (bus1Id == null || bus2Id == null || bus3Id == null) {
-            log.warn("Skipping 3W transformer {} - cannot resolve all buses (bus1={}, bus2={}, bus3={})",
-                name, bus1Id, bus2Id, bus3Id);
+            if (isUnresolvedTopologyExpected(bag.getId())) {
+                log.debug("Skipping 3W transformer {} - out of topology / no TP TopologicalNode (bus1={}, bus2={}, bus3={})",
+                    name, bus1Id, bus2Id, bus3Id);
+            } else {
+                log.warn("Skipping 3W transformer {} - cannot resolve all buses (bus1={}, bus2={}, bus3={})",
+                    name, bus1Id, bus2Id, bus3Id);
+            }
             return;
         }
 

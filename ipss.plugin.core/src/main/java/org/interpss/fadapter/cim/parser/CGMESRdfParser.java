@@ -78,7 +78,12 @@ public class CGMESRdfParser {
         sanitized = FULL_MODEL_ABOUT.matcher(sanitized).replaceAll("$1" + BASE_URI + "$2");
         InputStream is = new ByteArrayInputStream(sanitized.getBytes(StandardCharsets.UTF_8));
         try {
-            model.read(is, BASE_URI, "RDF/XML");
+            // Large CGMES files (e.g. ReliCap multi-MAS CGM) trip ARP WARN_BIG_FILE (W137)
+            // once >10k rdf:IDs are seen — checking is then disabled anyway. Ignore up front.
+            var reader = model.getReader("RDF/XML");
+            reader.setProperty(
+                    "http://jena.hpl.hp.com/arp/properties/WARN_BIG_FILE", "EM_IGNORE");
+            reader.read(model, is, BASE_URI);
         } finally {
             is.close();
         }

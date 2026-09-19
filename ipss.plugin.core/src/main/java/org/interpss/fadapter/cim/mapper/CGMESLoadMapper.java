@@ -49,7 +49,11 @@ public class CGMESLoadMapper extends AbstractCGMESDataMapper {
 
         String busId = resolveBusId(bag.getId());
         if (busId == null) {
-            log.warn("Skipping load {} - cannot resolve bus", name);
+            if (isUnresolvedTopologyExpected(bag.getId())) {
+                log.debug("Skipping load {} - out of topology / no TP TopologicalNode", name);
+            } else {
+                log.warn("Skipping load {} - cannot resolve bus", name);
+            }
             return;
         }
 

@@ -13,9 +13,11 @@ import java.util.Map;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.cim.CGMESPropertyBag;
 import org.interpss.fadapter.cim.util.CGMESUnitConverter;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.BaseAclfBus;
 
@@ -48,7 +50,11 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
 
         String busId = resolveBusId(bag.getId());
         if (busId == null) {
-            log.warn("Skipping generator {} - cannot resolve bus", name);
+            if (isUnresolvedTopologyExpected(bag.getId())) {
+                log.debug("Skipping generator {} - out of topology / no TP TopologicalNode", name);
+            } else {
+                log.warn("Skipping generator {} - cannot resolve bus", name);
+            }
             return;
         }
 
@@ -103,7 +109,11 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
 
         if (pW < 0) pW = -pW;
 
+        boolean hasExplicitTarget = targetV > 0;
         double targetVPU = resolveTargetVPU(bag, targetV);
+
+        BaseAclfBus bus = builder.getBus(busId);
+        targetVPU = alignDesiredVoltMag(bus, targetVPU, hasExplicitTarget);
 
         double pPU = CGMESUnitConverter.pToPU(pW, baseMVA);
         double qPU = CGMESUnitConverter.qToPU(qVar, baseMVA);
@@ -120,12 +130,24 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
                 qMaxPU, qMinPU, pMaxPU, pMinPU,
                 null, null, 1.0, null, 1.0, 1.0);
 
-        BaseAclfBus bus = builder.getBus(busId);
+        bus = builder.getBus(busId);
         if (bus != null && bus.getGenCode() == AclfGenCode.SWING) {
             // Keep swing; refresh P
             bus.setGenP(pPU);
         } else if (isPV) {
-            builder.setPVBus(busId, pPU, targetVPU, qMaxPU, qMinPU, true);
+            // First voltage-controlling machine sets bus PV; later machines only
+            // contribute gen (initContributeGen sums P). Avoid overwriting V.
+            if (bus.getGenCode() != AclfGenCode.GEN_PV) {
+                builder.setPVBus(busId, pPU, targetVPU, qMaxPU, qMinPU, true);
+            } else {
+                double busV = busDesiredVoltMag(bus);
+                if (hasExplicitTarget && busV > 0 && Math.abs(busV - 1.0) < 1e-9
+                        && Math.abs(targetVPU - 1.0) > 1e-9) {
+                    // Earlier gens used default 1.0 pu; adopt this RegulatingControl target
+                    syncContributeGenDesiredV(bus, targetVPU);
+                    builder.setPVBus(busId, pPU, targetVPU, qMaxPU, qMinPU, true);
+                }
+            }
         } else {
             builder.setPQBus(busId, pPU, qPU, 0.0, 0.0);
         }
@@ -145,7 +167,11 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
 
         String busId = resolveBusId(bag.getId());
         if (busId == null) {
-            log.warn("Skipping ExternalNetworkInjection {} - cannot resolve bus", name);
+            if (isUnresolvedTopologyExpected(bag.getId())) {
+                log.debug("Skipping ExternalNetworkInjection {} - out of topology / no TP TopologicalNode", name);
+            } else {
+                log.warn("Skipping ExternalNetworkInjection {} - cannot resolve bus", name);
+            }
             return;
         }
 
@@ -205,6 +231,60 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
             }
         }
         return targetV <= 2.0 ? targetV : 1.0;
+    }
+
+    /**
+     * All active contribute gens on a PV/swing bus must share one desired V
+     * ({@code AclfBusInitContriGenLoadHelper}). Inherit the bus setpoint when this
+     * machine has no RegulatingControl; keep an established non-default bus V.
+     */
+    private static double alignDesiredVoltMag(BaseAclfBus bus, double targetVPU,
+                                              boolean hasExplicitTarget) {
+        if (bus == null) return targetVPU;
+        AclfGenCode code = bus.getGenCode();
+        if (code != AclfGenCode.GEN_PV && code != AclfGenCode.SWING) {
+            return targetVPU;
+        }
+        double busV = busDesiredVoltMag(bus);
+        if (busV <= 0) return targetVPU;
+        if (!hasExplicitTarget) {
+            return busV;
+        }
+        // Explicit RC but bus already has a non-default setpoint — keep bus
+        if (Math.abs(busV - 1.0) > 1e-9) {
+            return busV;
+        }
+        return targetVPU;
+    }
+
+    private static double busDesiredVoltMag(BaseAclfBus bus) {
+        try {
+            if (bus.getGenCode() == AclfGenCode.GEN_PV) {
+                return bus.toPVBus().getDesiredVoltMag();
+            }
+            if (bus.getGenCode() == AclfGenCode.SWING) {
+                return bus.toSwingBus().getDesiredVoltMag(UnitType.PU);
+            }
+        } catch (Exception e) {
+            // fall through
+        }
+        if (bus.getContributeGenList() != null) {
+            for (Object obj : bus.getContributeGenList()) {
+                if (obj instanceof AclfGen gen && gen.isActive() && gen.getDesiredVoltMag() > 0) {
+                    return gen.getDesiredVoltMag();
+                }
+            }
+        }
+        return 0.0;
+    }
+
+    private static void syncContributeGenDesiredV(BaseAclfBus bus, double vPU) {
+        if (bus.getContributeGenList() == null) return;
+        for (Object obj : bus.getContributeGenList()) {
+            if (obj instanceof AclfGen gen && gen.isActive()) {
+                gen.setDesiredVoltMag(vPU);
+            }
+        }
     }
 
     /** True only for operating mode motor, or kind exactly {@code SynchronousMachineKind.motor}. */
