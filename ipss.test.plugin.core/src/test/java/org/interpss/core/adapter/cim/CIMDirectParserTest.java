@@ -229,4 +229,40 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
                 "Boundary handling should not inflate bus count substantially");
         assertTrue(withBd.getNoBus() >= 5);
     }
+
+    @Test
+    public void testMicroGrid_RatioTapChanger() throws Exception {
+        // BE-TR2_3 end2: neutral=17, SSH step=14, stepVoltageIncrement=0.8% → 0.976
+        AclfNetwork net = new CGMESDirectParser().parse(
+                new String[]{MG_BE_EQ, MG_BE_TP, MG_BE_SSH});
+
+        AclfBranch tr23 = null;
+        for (AclfBranch b : net.getBranchList()) {
+            if (b.getBranchCode() == AclfBranchCode.XFORMER
+                    && b.getName() != null && b.getName().contains("BE-TR2_3")) {
+                tr23 = b;
+                break;
+            }
+        }
+        assertNotNull(tr23, "Should find 2W BE-TR2_3");
+        double expected = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .linearRatioTap(14, 17, 0.8);
+        assertEquals(0.976, expected, 1e-9);
+        assertEquals(1.0, tr23.getFromTurnRatio(), 1e-6, "end1 has no RTC");
+        assertEquals(expected, tr23.getToTurnRatio(), 1e-4,
+                "end2 RatioTapChanger step 14 vs neutral 17 @ 0.8%/step");
+    }
+
+    @Test
+    public void testLinearRatioTapFormula() {
+        assertEquals(1.0,
+                org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper.linearRatioTap(13, 13, 1.0),
+                1e-12);
+        assertEquals(0.976,
+                org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper.linearRatioTap(14, 17, 0.8),
+                1e-12);
+        assertEquals(1.024,
+                org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper.linearRatioTap(20, 17, 0.8),
+                1e-12);
+    }
 }

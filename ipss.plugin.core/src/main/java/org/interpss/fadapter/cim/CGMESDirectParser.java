@@ -248,9 +248,11 @@ public class CGMESDirectParser {
         xfr2wMapper.indexEnds(cimModel.transformerEnds());
         xfr2wMapper.indexMeshImpedances(cimModel.transformerMeshImpedances());
         xfr2wMapper.indexCoreAdmittances(cimModel.transformerCoreAdmittances());
+        xfr2wMapper.indexRatioTapChangers(cimModel.ratioTapChangers());
 
         CGMESTransformer3WMapper xfr3wMapper = new CGMESTransformer3WMapper(DEFAULT_BASE_MVA);
         xfr3wMapper.setCimModel(cimModel);
+        xfr3wMapper.indexRatioTapChangers(cimModel.ratioTapChangers());
 
         Map<String, List<CGMESPropertyBag>> endsByXfr = new HashMap<>();
         for (CGMESPropertyBag end : cimModel.transformerEnds()) {

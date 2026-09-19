@@ -86,20 +86,10 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        Double nominalV1 = busBaseKV(builder, bus1Id);
-        Double nominalV2 = busBaseKV(builder, bus2Id);
-        Double nominalV3 = busBaseKV(builder, bus3Id);
-        if (nominalV1 == null) nominalV1 = getNominalVForBus(bus1Id);
-        if (nominalV2 == null) nominalV2 = getNominalVForBus(bus2Id);
-        if (nominalV3 == null) nominalV3 = getNominalVForBus(bus3Id);
-
-        if (nominalV1 == null || nominalV1 == 0.0) nominalV1 = ratedU1 > 0 ? ratedU1 : 100.0;
-        if (nominalV2 == null || nominalV2 == 0.0) nominalV2 = ratedU2 > 0 ? ratedU2 : 100.0;
-        if (nominalV3 == null || nominalV3 == 0.0) nominalV3 = ratedU3 > 0 ? ratedU3 : 100.0;
-
-        double fromTurnRatio = clampTap(ratedU1 > 0 ? ratedU1 / nominalV1 : 1.0);
-        double toTurnRatio = clampTap(ratedU2 > 0 ? ratedU2 / nominalV2 : 1.0);
-        double tertTurnRatio = clampTap(ratedU3 > 0 ? ratedU3 / nominalV3 : 1.0);
+        // Voltage levels from bus bases + Z on ratedU; InterPSS tap from RatioTapChanger only.
+        double fromTurnRatio = ratioTapForEnd(end1);
+        double toTurnRatio = ratioTapForEnd(end2);
+        double tertTurnRatio = ratioTapForEnd(end3);
 
         String cirId = "1";
         for (int ci = 1; ci <= 10; ci++) {
@@ -125,6 +115,7 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
         }
         log.warn("Skipping 3W transformer {} - too many parallel circuits", name);
     }
+
 
     private double getRatedU(CGMESPropertyBag end) {
         return CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
@@ -155,23 +146,6 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
         return null;
     }
 
-    private Double getNominalVForBus(String busId) {
-        if (cimModel == null) return null;
-        return cimModel.getNominalVoltageForTopoNode(busId);
-    }
 
-    private static Double busBaseKV(AclfNetworkBuilder builder, String busId) {
-        if (busId == null) return null;
-        var bus = builder.getBus(busId);
-        if (bus == null || bus.getBaseVoltage() <= 0) return null;
-        return bus.getBaseVoltage() / 1000.0;
-    }
 
-    private static double clampTap(double tap) {
-        if (tap <= 0.0 || tap > 2.0) {
-            log.warn("3W transformer tap {} outside (0,2] — using 1.0", tap);
-            return 1.0;
-        }
-        return tap;
-    }
 }
