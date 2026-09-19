@@ -276,6 +276,10 @@ import org.interpss.core.dstab.St5cIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St6bIndependentSmibConformanceTest;
 import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
+import org.interpss.core.adapter.cim.CGMESCasType3HourCoverageStubTest;
+import org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest;
+import org.interpss.core.adapter.cim.CGMESCasCoverageStubTest;
+import org.interpss.core.adapter.cim.CGMESReliCapDcCoverageStubTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
 import org.interpss.core.adapter.ge.GESampleTestCases;
 import org.interpss.core.adapter.ieee.IEEE009Bus_Test;
@@ -963,6 +967,10 @@ import org.junit.platform.suite.api.Suite;
 	// CIM File Adapter
 	CIMDirectParserTest.class,
 	IEEE118CimVsMatpowerJsonCompareTest.class,
+	CGMESCasType3HourCoverageStubTest.class,
+	CGMESCasCoverageStubTest.class,
+	CGMESReliCapDcCoverageStubTest.class,
+	CGMESCasP4AclfSmokeStubTest.class,
 	
 	///Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,
