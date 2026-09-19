@@ -148,14 +148,16 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
     }
 
     /**
-     * Closed switch with terminals on two topological nodes. CGMES keeps that
-     * pair as distinct nodes and the switch as a zero-impedance branch. Leaving
-     * it out opens the tie: MicroGrid breaker B1 is the only direct link between
-     * NL-Busbar_2 and NL_Busbar__4, which SV holds at the same angle.
+     * Closed retained switch. CGMES keeps the two topological nodes distinct and
+     * the switch as the branch between them. A non-retained switch is already
+     * inside one topological node; mapping it uses connectivity-node ids that
+     * were never created as buses. MicroGrid breaker B1 is retained and is the
+     * only direct link between NL-Busbar_2 and NL_Busbar__4.
      */
     public void mapClosedSwitch(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
         if (!bag.getBoolean("Equipment.inService", true)) return;
         if (bag.getBoolean("Switch.open", false)) return;
+        if (!bag.getBoolean("Switch.retained", false)) return;
 
         String lineId = bag.getLocalId();
         String name = bag.getName();
@@ -165,6 +167,10 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         String fromBusId = busIds[0];
         String toBusId = busIds[1];
         if (fromBusId == null || toBusId == null || fromBusId.equals(toBusId)) {
+            return;
+        }
+        if (builder.getBus(fromBusId) == null || builder.getBus(toBusId) == null) {
+            log.debug("Skipping closed switch {} - bus missing ({}, {})", name, fromBusId, toBusId);
             return;
         }
 
