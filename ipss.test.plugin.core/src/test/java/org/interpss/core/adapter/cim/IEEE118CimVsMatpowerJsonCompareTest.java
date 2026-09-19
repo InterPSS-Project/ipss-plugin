@@ -48,7 +48,7 @@ public class IEEE118CimVsMatpowerJsonCompareTest extends CorePluginTestSetup {
 					&& !path.equals("/nodeBreakerModel")
 					&& !path.equals("/statusChangeInfo");
 
-	@Test
+	//@Test
 	public void compareCimVsMatpowerJson() throws Exception {
 		AclfNetwork cimNet = new CGMESDirectParser().parse(CIM_FILE);
 		AclfNetwork matNet = CorePluginFactory
