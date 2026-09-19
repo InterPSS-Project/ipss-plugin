@@ -201,10 +201,6 @@ public class CGMESModel {
         return listByType(cimNamespace + "RatioTapChangerTablePoint");
     }
 
-    /**
-     * EnergyConsumer plus concrete subclasses. RDF stores the leaf type only;
-     * Jena does not infer {@code rdf:type EnergyConsumer} from ConformLoad.
-     */
     public List<CGMESPropertyBag> energyConsumers() {
         List<CGMESPropertyBag> result = new ArrayList<>();
         for (String type : new String[] {
@@ -215,6 +211,11 @@ public class CGMESModel {
             result.addAll(listByType(entsoeNamespace + "StationSupply"));
         }
         return dedupeById(result);
+    }
+
+    /** ZIP fractions for an EnergyConsumer. Exponent model is not this list. */
+    public List<CGMESPropertyBag> loadResponseCharacteristics() {
+        return listByType(cimNamespace + "LoadResponseCharacteristic");
     }
 
     private static List<CGMESPropertyBag> dedupeById(List<CGMESPropertyBag> bags) {
@@ -269,6 +270,37 @@ public class CGMESModel {
     /** Boundary equivalent. SSH {@code p}/{@code q} use the load sign convention. */
     public List<CGMESPropertyBag> equivalentInjections() {
         return listByType(cimNamespace + "EquivalentInjection");
+    }
+
+    /** VSC HVDC converters. AC power is an injection; the DC line itself is not a branch. */
+    public List<CGMESPropertyBag> vsConverters() {
+        return listByType(cimNamespace + "VsConverter");
+    }
+
+    /** LCC HVDC converters. AC power is an injection; the DC line itself is not a branch. */
+    public List<CGMESPropertyBag> csConverters() {
+        return listByType(cimNamespace + "CsConverter");
+    }
+
+    public List<CGMESPropertyBag> dcLineSegments() {
+        return listByType(cimNamespace + "DCLineSegment");
+    }
+
+    /**
+     * DC line and converter DC terminals. A converter terminal is typed
+     * {@code ACDCConverterDCTerminal}, not {@code DCTerminal}.
+     */
+    public List<CGMESPropertyBag> dcTerminals() {
+        List<CGMESPropertyBag> result = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (String type : new String[] {"DCTerminal", "ACDCConverterDCTerminal"}) {
+            for (CGMESPropertyBag bag : listByType(cimNamespace + type)) {
+                if (seen.add(bag.getId())) {
+                    result.add(bag);
+                }
+            }
+        }
+        return result;
     }
 
     public List<CGMESPropertyBag> terminals() {

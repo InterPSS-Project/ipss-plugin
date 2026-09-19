@@ -107,11 +107,13 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         Double x1Obj = endHasX(end1) ? end1.getDouble("PowerTransformerEnd.x",
                 end1.getDouble("TransformerEnd.x", 0.0)) : null;
         if (x1Obj != null) x1Obj = applyRatioTableOhm(end1, "x", x1Obj);
+        if (x1Obj != null) x1Obj = phaseTapSeriesOhm(end1, x1Obj);
         double r2 = end2.getDouble("PowerTransformerEnd.r", end2.getDouble("TransformerEnd.r", 0.0));
         r2 = applyRatioTableOhm(end2, "r", r2);
         Double x2Obj = endHasX(end2) ? end2.getDouble("PowerTransformerEnd.x",
                 end2.getDouble("TransformerEnd.x", 0.0)) : null;
         if (x2Obj != null) x2Obj = applyRatioTableOhm(end2, "x", x2Obj);
+        if (x2Obj != null) x2Obj = phaseTapSeriesOhm(end2, x2Obj);
         PhaseTapResult tap1 = phaseTapForEnd(end1);
         PhaseTapResult tap2 = phaseTapForEnd(end2);
         r1 = applyPercentDeviation(r1, tap1.rPercent);
@@ -168,17 +170,11 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         double rPU = r / baseZ;
         double xPU = x / baseZ;
 
-        // Off-nominal winding only when ratedU and the node base differ by more
-        // than a few percent. Smaller scales are the tap step the 2W tests assert.
+        // ratedU/base multiplies the winding that owns it, including a 1–3% scale.
+        // Folding that scale onto the other tap keeps the from-tap unit assert but
+        // misses BE-TR2_2 Q by ~1 Mvar and BE-TR2_3 Q by ~8 Mvar.
         double fromTurnRatio = windingTurnRatio(fromEnd, busBaseKV(builder, fromBusId));
         double toTurnRatio = windingTurnRatio(toEnd, busBaseKV(builder, toBusId));
-        // A 1–3% ratedU/base scale is not written onto the from tap: the 2W tests
-        // assert that tap stays the phase/ratio step. The same ratio belongs on
-        // the other winding, which those tests do not read. BE-TR2_2 is 220 kV
-        // on a 225 kV node; leaving the ratio out misses both |V| by ~0.006 pu.
-        toTurnRatio = foldSuppressedScale(toTurnRatio,
-                ratedOverBase(fromEnd, busBaseKV(builder, fromBusId)),
-                ratedOverBase(toEnd, busBaseKV(builder, toBusId)));
         double fromAngleDeg = windingAngleDeg(fromEnd);
         double toAngleDeg = windingAngleDeg(toEnd);
 
@@ -201,6 +197,16 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         Complex toMag = endMagnetizingPu(toEnd);
         if (magY != null) {
             fromMag = fromMag == null ? magY : fromMag.add(magY);
+        }
+        // SvPowerFlow on MicroGrid matches when a single-end magnetizing branch is
+        // split across the two terminals. All of it on the owning end misses Q by
+        // about half the magnetizing Mvar (3 Mvar on NL_TR2_3, 0.5 Mvar on BE-TR2_3).
+        if (fromMag != null && toMag == null) {
+            fromMag = fromMag.multiply(0.5);
+            toMag = fromMag;
+        } else if (toMag != null && fromMag == null) {
+            toMag = toMag.multiply(0.5);
+            fromMag = toMag;
         }
 
         String cirId = nextCircuitId(builder, fromBusId, toBusId);
@@ -226,30 +232,6 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
 
         log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU rating={} MVA ps={} ang={}/{}",
             name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva, isPs, fromAngleDeg, toAngleDeg);
-    }
-
-    /**
-     * ratedU/base when it is a real off-nominal (inside the 3% test deadband but
-     * above 1%). Smaller than 1% is the 110.34375/110 step the ratio test asserts.
-     */
-    private static double ratedOverBase(CGMESPropertyBag end, Double busBaseKv) {
-        if (end == null || busBaseKv == null || busBaseKv <= 0.0) return 1.0;
-        double ratedU = CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
-                end.getDouble("TransformerEnd.ratedU", 0.0)));
-        if (ratedU <= 0.0) return 1.0;
-        double scale = ratedU / busBaseKv;
-        double gap = Math.abs(scale - 1.0);
-        if (gap <= 0.01 || gap > 0.03) return 1.0;
-        if (!(scale > 0.0 && scale < 2.0)) return 1.0;
-        return scale;
-    }
-
-    /** Keep the from tap, put the missing ratedU/base ratio on the to tap. */
-    private static double foldSuppressedScale(double toTurnRatio, double fromScale, double toScale) {
-        if (fromScale == 1.0 && toScale == 1.0) return toTurnRatio;
-        double moved = toTurnRatio * toScale / fromScale;
-        if (!(moved > 0.0 && moved < 2.0)) return toTurnRatio;
-        return moved;
     }
 
     /**

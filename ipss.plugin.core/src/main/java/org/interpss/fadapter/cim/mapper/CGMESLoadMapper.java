@@ -13,6 +13,9 @@ import org.interpss.fadapter.cim.util.CGMESUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Maps CIM EnergyConsumer (and AsynchronousMachine) to contribute load data.
  * CIM/CGMES ActivePower and ReactivePower are SI (W / var).
@@ -22,6 +25,7 @@ public class CGMESLoadMapper extends AbstractCGMESDataMapper {
 
     private final double baseMVA;
     private int mappedCount = 0;
+    private Map<String, CGMESPropertyBag> loadResponseById;
 
     public CGMESLoadMapper(double baseMVA) {
         this.baseMVA = baseMVA;
@@ -71,10 +75,67 @@ public class CGMESLoadMapper extends AbstractCGMESDataMapper {
         double pPU = CGMESUnitConverter.pToPU(pW, baseMVA);
         double qPU = CGMESUnitConverter.qToPU(qVar, baseMVA);
 
+        double[] zip = zipFractions(bag);
         builder.addContributeLoad(busId, loadId, true,
-                new Complex(pPU, qPU), null, null, null, false);
+                zipPart(pPU, qPU, zip[0], zip[3]),
+                zipPart(pPU, qPU, zip[1], zip[4]),
+                zipPart(pPU, qPU, zip[2], zip[5]),
+                null, false);
 
         log.debug(String.format("Created load: %s on bus %s, P=%.2f MW, Q=%.2f MVAr", name, busId, pMW, qMVAr));
         mappedCount++;
+    }
+
+    /**
+     * Constant-power / current / impedance fractions for P then Q.
+     * Absent characteristic, or an exponent model, stays constant power.
+     * NL-Load_3 is 80/20 P and 70/30 Q; at 1.019 pu that is the 1.9 MW the
+     * constant-power reading misses on NL_TR2_3.
+     */
+    private double[] zipFractions(CGMESPropertyBag load) {
+        double[] zip = { 1.0, 0.0, 0.0, 1.0, 0.0, 0.0 };
+        CGMESPropertyBag resp = loadResponse(load);
+        if (resp == null || resp.getBoolean("LoadResponseCharacteristic.exponentModel", false)) {
+            return zip;
+        }
+        zip[0] = resp.getDouble("LoadResponseCharacteristic.pConstantPower", 1.0);
+        zip[1] = resp.getDouble("LoadResponseCharacteristic.pConstantCurrent", 0.0);
+        zip[2] = resp.getDouble("LoadResponseCharacteristic.pConstantImpedance", 0.0);
+        zip[3] = resp.getDouble("LoadResponseCharacteristic.qConstantPower", 1.0);
+        zip[4] = resp.getDouble("LoadResponseCharacteristic.qConstantCurrent", 0.0);
+        zip[5] = resp.getDouble("LoadResponseCharacteristic.qConstantImpedance", 0.0);
+        // CGMES portions are 0..1. CIMHub writes the same attributes as percent (100 = all constant power).
+        if (portionSum(zip, 0) > 1.5 || portionSum(zip, 3) > 1.5) {
+            for (int i = 0; i < zip.length; i++) zip[i] *= 0.01;
+        }
+        return zip;
+    }
+
+    private static double portionSum(double[] zip, int from) {
+        return Math.abs(zip[from]) + Math.abs(zip[from + 1]) + Math.abs(zip[from + 2]);
+    }
+
+    private static Complex zipPart(double pPU, double qPU, double pFrac, double qFrac) {
+        if (Math.abs(pFrac) < 1e-12 && Math.abs(qFrac) < 1e-12) return null;
+        return new Complex(pPU * pFrac, qPU * qFrac);
+    }
+
+    private CGMESPropertyBag loadResponse(CGMESPropertyBag load) {
+        if (load == null || cimModel == null) return null;
+        String ref = load.getResourceId("EnergyConsumer.LoadResponse");
+        if (ref == null) return null;
+        if (loadResponseById == null) {
+            loadResponseById = new HashMap<>();
+            for (CGMESPropertyBag ch : cimModel.loadResponseCharacteristics()) {
+                if (ch.getId() != null) loadResponseById.put(ch.getId(), ch);
+                if (ch.getLocalId() != null) loadResponseById.put(ch.getLocalId(), ch);
+            }
+        }
+        CGMESPropertyBag ch = loadResponseById.get(ref);
+        if (ch == null) {
+            String local = CGMESPropertyBag.extractLocal(ref);
+            if (local != null) ch = loadResponseById.get(local);
+        }
+        return ch;
     }
 }

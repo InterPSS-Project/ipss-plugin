@@ -250,7 +250,8 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
         double expected = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
                 .linearRatioTap(14, 17, 0.8);
         assertEquals(0.976, expected, 1e-9);
-        assertEquals(1.0, tr23.getFromTurnRatio(), 1e-6, "end1 has no RTC");
+        assertEquals(110.34375 / 110.0, tr23.getFromTurnRatio(), 1e-4,
+                "end1 has no RTC; ratedU 110.34375 on a 110 kV node");
         assertEquals(expected, tr23.getToTurnRatio(), 1e-4,
                 "end2 RatioTapChanger step 14 vs neutral 17 @ 0.8%/step");
     }
@@ -314,7 +315,7 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
                 .asymmetricalPhaseTap(10, 13, 1.25, 5.0);
         AclfPSXformerAdapter ps22 = tr22.toPSXfr();
         assertEquals(asym.angleDeg, ps22.getFromAngle(UnitType.Deg), 1e-3);
-        // asym rho multiplies from-side tap (end1)
-        assertEquals(asym.rho, tr22.getFromTurnRatio(), 1e-4);
+        // asym rho on end1, times ratedU/base 220/225
+        assertEquals(asym.rho * 220.0 / 225.0, tr22.getFromTurnRatio(), 1e-4);
     }
 }

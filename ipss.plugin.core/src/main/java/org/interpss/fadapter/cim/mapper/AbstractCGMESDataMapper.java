@@ -185,9 +185,11 @@ public abstract class AbstractCGMESDataMapper {
     }
 
     /**
-     * @param deadband 2W tests assert the raw tap when ratedU/base is within 3%.
-     *                 3W ends are not those tests. BE-TR3_1 end 2 is 220 kV on a
-     *                 225 kV node; dropping that scale leaves the bus ~0.02 pu high.
+     * @param deadband ignored. A ratedU/base scale inside a few percent is still a
+     *                 real off-nominal: BE-TR2_3 is 110.34375 kV on a 110 kV node,
+     *                 and BE-TR2_2 is 220 kV on a 225 kV node. Dropping either one
+     *                 moves SvPowerFlow Q by more than 1 Mvar. The scale multiplies
+     *                 this winding's tap; it is not moved onto the other winding.
      */
     protected double windingTurnRatio(CGMESPropertyBag end, Double busBaseKv, boolean deadband) {
         double tap = ratioTapForEnd(end);
@@ -196,10 +198,7 @@ public abstract class AbstractCGMESDataMapper {
                 end.getDouble("TransformerEnd.ratedU", 0.0)));
         if (ratedU <= 0.0) return tap;
         double scale = ratedU / busBaseKv;
-        // Below 3% is the scale the 2W tests assert: 110.34375/110 stays 1.0, and
-        // phase rho 0.96265 is not multiplied by 220/225. A tighter band fails
-        // CIMDirectParserTest.
-        if (deadband && Math.abs(scale - 1.0) <= 0.03) return tap;
+        if (Math.abs(scale - 1.0) <= 1e-6) return tap;
         double scaled = tap * scale;
         if (!(scaled > 0.0) || scaled >= 2.0) {
             log.warn("ratedU/base tap {} outside (0,2) for end {} — using ratio tap {}",
@@ -364,6 +363,69 @@ public abstract class AbstractCGMESDataMapper {
         }
         it.close();
         return best;
+    }
+
+    /**
+     * Series reactance (ohm) of a symmetrical or linear phase tap at {@code step}.
+     * IEC 61970-301: a U-curve, {@code xMin} at neutral and {@code xMax} at the end step.
+     * {@code endStep} is {@code highStep} when that span is non-zero, otherwise {@code lowStep}.
+     */
+    public static double phaseTapReactanceOhm(double step, double neutralStep, double endStep,
+                                              double xMin, double xMax) {
+        double span = endStep - neutralStep;
+        if (!(Math.abs(span) > 1e-9) || !Double.isFinite(xMin) || !Double.isFinite(xMax)) {
+            return xMin;
+        }
+        double a = (step - neutralStep) / span;
+        return xMin + (xMax - xMin) * a * a;
+    }
+
+    /**
+     * Replace a winding ohm with the phase-tap U-curve when that end owns a
+     * phase tap and both {@code xMin} and {@code xMax} are present. A {@code xMin}
+     * more than 50% away from the winding ohm is a different scale; keep the winding.
+     * Linear and non-linear changers share the curve; the angle formula stays separate.
+     */
+    protected double phaseTapSeriesOhm(CGMESPropertyBag end, double windingOhm) {
+        if (end == null) return windingOhm;
+        CGMESPropertyBag ptc = lookup(phaseTapByEnd, end);
+        if (ptc == null) return windingOhm;
+        double xMin = firstPresent(ptc,
+                "PhaseTapChangerNonLinear.xMin",
+                "PhaseTapChangerLinear.xMin",
+                "PhaseTapChangerSymmetrical.xMin",
+                "PhaseTapChangerAsymmetrical.xMin");
+        double xMax = firstPresent(ptc,
+                "PhaseTapChangerNonLinear.xMax",
+                "PhaseTapChangerLinear.xMax",
+                "PhaseTapChangerSymmetrical.xMax",
+                "PhaseTapChangerAsymmetrical.xMax");
+        if (Double.isNaN(xMin) || Double.isNaN(xMax)) return windingOhm;
+        if (windingOhm != 0.0 && Math.abs(xMin - windingOhm) / Math.abs(windingOhm) > 0.5) {
+            log.debug("Phase tap xMin {} is not on the winding x {} scale — keeping winding ohm",
+                    xMin, windingOhm);
+            return windingOhm;
+        }
+        double neutral = ptc.getDouble("TapChanger.neutralStep", Double.NaN);
+        double step = resolveStep(ptc);
+        if (Double.isNaN(neutral) || Double.isNaN(step)) return windingOhm;
+        double high = ptc.getDouble("TapChanger.highStep", Double.NaN);
+        double low = ptc.getDouble("TapChanger.lowStep", Double.NaN);
+        double endStep = high;
+        if (Double.isNaN(endStep) || Math.abs(endStep - neutral) < 1e-9) {
+            endStep = low;
+        }
+        if (Double.isNaN(endStep)) return xMin;
+        return phaseTapReactanceOhm(step, neutral, endStep, xMin, xMax);
+    }
+
+    private static double firstPresent(CGMESPropertyBag bag, String... names) {
+        for (String name : names) {
+            if (bag.getString(name) != null) {
+                return bag.getDouble(name, Double.NaN);
+            }
+        }
+        return Double.NaN;
     }
 
     /** {@code 1 + (step - neutral) * incrementPercent / 100}. */

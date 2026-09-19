@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.core.aclf.Aclf3WBranch;
+import com.interpss.core.aclf.AclfBranch;
 
 /**
  * Maps CIM 3-winding PowerTransformer using the star-bus equivalent impedance model.
@@ -129,6 +130,11 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
                         true);
                 branch.setId(xfrId);
                 branch.setName(name.isEmpty() ? xfrId : name);
+                // Each leg's terminal shunt. The from leg's terminal is its from bus;
+                // the to and tertiary legs run star → terminal, so their shunt is on the to side.
+                setTerminalShunt(branch.getFromAclfBranch(), endMagnetizingPu(end1), true);
+                setTerminalShunt(branch.getToAclfBranch(), endMagnetizingPu(end2), false);
+                setTerminalShunt(branch.getTertAclfBranch(), endMagnetizingPu(end3), false);
                 log.debug("Created 3W xfr branch: {} ({}→{}→{}) ratedU={}/{}/{} z12={} ps={} ang={}/{}/{}",
                     name, bus1Id, bus2Id, bus3Id, ratedU1, ratedU2, ratedU3, zFromTo,
                     isPs, fromAngleDeg, toAngleDeg, tertAngleDeg);
@@ -175,6 +181,31 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
         return mesh;
     }
 
+    /**
+     * PowerTransformerEnd.g/b is the magnetizing branch in siemens on that
+     * winding, converted on ratedU so the tap puts it on the bus base.
+     */
+    private Complex endMagnetizingPu(CGMESPropertyBag end) {
+        if (end == null) return null;
+        double g = end.getDouble("PowerTransformerEnd.g", 0.0);
+        double b = end.getDouble("PowerTransformerEnd.b", 0.0);
+        if (g == 0.0 && b == 0.0) return null;
+        double ratedU = CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
+                end.getDouble("TransformerEnd.ratedU", 0.0)));
+        if (ratedU <= 0.0) ratedU = 100.0;
+        double baseY = baseMVA / (ratedU * ratedU);
+        return new Complex(g / baseY, b / baseY);
+    }
+
+    private static void setTerminalShunt(AclfBranch leg, Complex magPu, boolean onFromSide) {
+        if (leg == null || magPu == null) return;
+        if (onFromSide) {
+            leg.setFromShuntY(magPu);
+        } else {
+            leg.setToShuntY(magPu);
+        }
+    }
+
     private double getRatedU(CGMESPropertyBag end) {
         return CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
                 end.getDouble("TransformerEnd.ratedU", 0.0)));
@@ -189,6 +220,6 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
     private double getX(CGMESPropertyBag end) {
         double x = end.getDouble("PowerTransformerEnd.x",
                 end.getDouble("TransformerEnd.x", 0.0));
-        return applyRatioTableOhm(end, "x", x);
+        return phaseTapSeriesOhm(end, applyRatioTableOhm(end, "x", x));
     }
 }
