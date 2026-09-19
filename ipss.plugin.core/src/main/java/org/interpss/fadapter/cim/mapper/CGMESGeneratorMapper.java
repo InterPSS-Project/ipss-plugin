@@ -63,6 +63,13 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
             return;
         }
 
+        // SSH schedule on an out-of-service machine is not a solved injection.
+        // SmallGrid SynM-* keeps p=-4 MW while SvPowerFlow on that terminal is 0.
+        if (!bag.getBoolean("Equipment.inService", true)) {
+            log.debug("Skipping generator {} - out of service", name);
+            return;
+        }
+
         String machineTypeUri = bag.getResourceId("SynchronousMachine.type");
         String operatingModeUri = bag.getResourceId("SynchronousMachine.operatingMode");
         // Kind values such as generatorOrCondenserOrMotor contain "motor" but are not motors.

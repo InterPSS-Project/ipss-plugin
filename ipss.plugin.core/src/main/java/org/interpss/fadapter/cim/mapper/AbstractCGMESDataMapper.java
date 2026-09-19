@@ -32,6 +32,9 @@ public abstract class AbstractCGMESDataMapper {
     /** RatioTapChanger bags keyed by TransformerEnd URI (and local id). */
     private final Map<String, CGMESPropertyBag> ratioTapByEnd = new HashMap<>();
 
+    /** Ratio tap table: tableLocalId + "#" + step → ratio / r / x. */
+    private final Map<String, CGMESPropertyBag> ratioTablePointByTableStep = new HashMap<>();
+
     /** PhaseTapChanger bags keyed by TransformerEnd URI (and local id). */
     private final Map<String, CGMESPropertyBag> phaseTapByEnd = new HashMap<>();
 
@@ -49,15 +52,39 @@ public abstract class AbstractCGMESDataMapper {
      * Index {@code RatioTapChanger} resources by their TransformerEnd.
      * EQ carries neutralStep / stepVoltageIncrement; SSH merges {@code TapChanger.step}
      * onto the same RDF id when profiles are loaded together.
+     * A {@code RatioTapChangerTablePoint} at that step, when present, replaces the
+     * linear increment. NL_TR2_3 step 5 is 1.025 in the table and 1.0275 linearly;
+     * the linear value misses SvPowerFlow Q by ~30 Mvar on that winding.
      */
     public void indexRatioTapChangers(List<CGMESPropertyBag> tapChangers) {
+        indexRatioTapChangers(tapChangers, null);
+    }
+
+    public void indexRatioTapChangers(List<CGMESPropertyBag> tapChangers,
+                                      List<CGMESPropertyBag> tablePoints) {
         ratioTapByEnd.clear();
-        if (tapChangers == null) return;
-        for (CGMESPropertyBag rtc : tapChangers) {
-            putByEnd(ratioTapByEnd, rtc, endUriOf(rtc, true));
+        ratioTablePointByTableStep.clear();
+        if (tapChangers != null) {
+            for (CGMESPropertyBag rtc : tapChangers) {
+                putByEnd(ratioTapByEnd, rtc, endUriOf(rtc, true));
+            }
         }
-        log.debug("Indexed {} RatioTapChangers covering {} end keys",
-                tapChangers.size(), ratioTapByEnd.size());
+        if (tablePoints != null) {
+            for (CGMESPropertyBag pt : tablePoints) {
+                String table = pt.getResourceId("RatioTapChangerTablePoint.RatioTapChangerTable");
+                if (table == null) {
+                    table = pt.getResourceId("TapChangerTablePoint.TapChangerTable");
+                }
+                if (table == null) continue;
+                String stepStr = pt.getString("TapChangerTablePoint.step");
+                if (stepStr == null || stepStr.isBlank()) continue;
+                int step = (int) Math.round(Double.parseDouble(stepStr.trim()));
+                String local = CGMESPropertyBag.extractLocal(table);
+                ratioTablePointByTableStep.put(local + "#" + step, pt);
+            }
+        }
+        log.debug("Indexed {} RatioTapChangers / {} table points",
+                tapChangers == null ? 0 : tapChangers.size(), ratioTablePointByTableStep.size());
     }
 
     /**
@@ -123,11 +150,17 @@ public abstract class AbstractCGMESDataMapper {
         if (end != null) {
             CGMESPropertyBag rtc = lookup(ratioTapByEnd, end);
             if (rtc != null) {
-                double neutral = rtc.getDouble("TapChanger.neutralStep", Double.NaN);
-                double step = resolveStep(rtc);
-                if (!Double.isNaN(neutral) && !Double.isNaN(step)) {
-                    double inc = rtc.getDouble("RatioTapChanger.stepVoltageIncrement", 0.0);
-                    ratio = linearRatioTap(step, neutral, inc);
+                CGMESPropertyBag tablePoint = ratioTablePoint(rtc);
+                if (tablePoint != null) {
+                    ratio = tablePoint.getDouble("TapChangerTablePoint.ratio", 1.0);
+                    if (ratio == 0.0) ratio = 1.0;
+                } else {
+                    double neutral = rtc.getDouble("TapChanger.neutralStep", Double.NaN);
+                    double step = resolveStep(rtc);
+                    if (!Double.isNaN(neutral) && !Double.isNaN(step)) {
+                        double inc = rtc.getDouble("RatioTapChanger.stepVoltageIncrement", 0.0);
+                        ratio = linearRatioTap(step, neutral, inc);
+                    }
                 }
             }
             PhaseTapResult ptc = phaseTapForEnd(end);
@@ -148,17 +181,26 @@ public abstract class AbstractCGMESDataMapper {
      * {@code ratedU / busBase} so the solved kV ratio follows ratedU, not the bus bases.
      */
     protected double windingTurnRatio(CGMESPropertyBag end, Double busBaseKv) {
+        return windingTurnRatio(end, busBaseKv, true);
+    }
+
+    /**
+     * @param deadband 2W tests assert the raw tap when ratedU/base is within 3%.
+     *                 3W ends are not those tests. BE-TR3_1 end 2 is 220 kV on a
+     *                 225 kV node; dropping that scale leaves the bus ~0.02 pu high.
+     */
+    protected double windingTurnRatio(CGMESPropertyBag end, Double busBaseKv, boolean deadband) {
         double tap = ratioTapForEnd(end);
         if (end == null || busBaseKv == null || busBaseKv <= 0.0) return tap;
         double ratedU = CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
                 end.getDouble("TransformerEnd.ratedU", 0.0)));
         if (ratedU <= 0.0) return tap;
         double scale = ratedU / busBaseKv;
-        // A few percent is the RatioTapChanger step the 2W tests assert, not an
-        // off-nominal winding. MiniGrid's 115/110 and 400/380 are above this.
-        if (Math.abs(scale - 1.0) <= 0.03) return tap;
+        // Below 3% is the scale the 2W tests assert: 110.34375/110 stays 1.0, and
+        // phase rho 0.96265 is not multiplied by 220/225. A tighter band fails
+        // CIMDirectParserTest.
+        if (deadband && Math.abs(scale - 1.0) <= 0.03) return tap;
         double scaled = tap * scale;
-        // AclfXformerAdapter requires the tap to be strictly inside (0, 2).
         if (!(scaled > 0.0) || scaled >= 2.0) {
             log.warn("ratedU/base tap {} outside (0,2) for end {} — using ratio tap {}",
                     scaled, end.getLocalId(), tap);
@@ -265,6 +307,37 @@ public abstract class AbstractCGMESDataMapper {
         CGMESPropertyBag bag = map.get(end.getId());
         if (bag == null) bag = map.get(end.getLocalId());
         return bag;
+    }
+
+    /**
+     * Series ohm from a ratio-tap table when the table stores the step impedance
+     * rather than a percent deviation. NL_TR2_3's table x at step 5 is 5.67 ohm;
+     * the winding x is 5.38. A percent reading of that column leaves ~30 Mvar.
+     * A column that is not within 50% of the winding ohm is a percent deviation.
+     */
+    protected double applyRatioTableOhm(CGMESPropertyBag end, String field, double windingOhm) {
+        CGMESPropertyBag rtc = end == null ? null : lookup(ratioTapByEnd, end);
+        CGMESPropertyBag pt = rtc == null ? null : ratioTablePoint(rtc);
+        if (pt == null) return windingOhm;
+        double table = pt.getDouble("TapChangerTablePoint." + field, Double.NaN);
+        if (Double.isNaN(table)) return windingOhm;
+        if (windingOhm != 0.0 && Math.abs(table - windingOhm) / Math.abs(windingOhm) < 0.5) {
+            return table;
+        }
+        if (windingOhm != 0.0 && Math.abs(table) > 1e-9 && Math.abs(table) < 80.0) {
+            return windingOhm * (1.0 + table / 100.0);
+        }
+        return windingOhm;
+    }
+
+    private CGMESPropertyBag ratioTablePoint(CGMESPropertyBag rtc) {
+        String table = rtc.getResourceId("RatioTapChanger.RatioTapChangerTable");
+        if (table == null) return null;
+        double step = resolveStep(rtc);
+        if (Double.isNaN(step)) return null;
+        String local = CGMESPropertyBag.extractLocal(table);
+        if (local == null) return null;
+        return ratioTablePointByTableStep.get(local + "#" + (int) Math.round(step));
     }
 
     private static double resolveStep(CGMESPropertyBag tap) {

@@ -102,12 +102,16 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
                             end2.getDouble("TransformerEnd.ratedU", 0.0)));
 
         double r1 = end1.getDouble("PowerTransformerEnd.r", end1.getDouble("TransformerEnd.r", 0.0));
+        r1 = applyRatioTableOhm(end1, "r", r1);
         // Missing PowerTransformerEnd.x → NaN so we can detect "not provided"
         Double x1Obj = endHasX(end1) ? end1.getDouble("PowerTransformerEnd.x",
                 end1.getDouble("TransformerEnd.x", 0.0)) : null;
+        if (x1Obj != null) x1Obj = applyRatioTableOhm(end1, "x", x1Obj);
         double r2 = end2.getDouble("PowerTransformerEnd.r", end2.getDouble("TransformerEnd.r", 0.0));
+        r2 = applyRatioTableOhm(end2, "r", r2);
         Double x2Obj = endHasX(end2) ? end2.getDouble("PowerTransformerEnd.x",
                 end2.getDouble("TransformerEnd.x", 0.0)) : null;
+        if (x2Obj != null) x2Obj = applyRatioTableOhm(end2, "x", x2Obj);
         PhaseTapResult tap1 = phaseTapForEnd(end1);
         PhaseTapResult tap2 = phaseTapForEnd(end2);
         r1 = applyPercentDeviation(r1, tap1.rPercent);
@@ -168,6 +172,13 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         // than a few percent. Smaller scales are the tap step the 2W tests assert.
         double fromTurnRatio = windingTurnRatio(fromEnd, busBaseKV(builder, fromBusId));
         double toTurnRatio = windingTurnRatio(toEnd, busBaseKV(builder, toBusId));
+        // A 1–3% ratedU/base scale is not written onto the from tap: the 2W tests
+        // assert that tap stays the phase/ratio step. The same ratio belongs on
+        // the other winding, which those tests do not read. BE-TR2_2 is 220 kV
+        // on a 225 kV node; leaving the ratio out misses both |V| by ~0.006 pu.
+        toTurnRatio = foldSuppressedScale(toTurnRatio,
+                ratedOverBase(fromEnd, busBaseKV(builder, fromBusId)),
+                ratedOverBase(toEnd, busBaseKV(builder, toBusId)));
         double fromAngleDeg = windingAngleDeg(fromEnd);
         double toAngleDeg = windingAngleDeg(toEnd);
 
@@ -186,6 +197,11 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
                 magY = new Complex(g / baseY, b / baseY);
             }
         }
+        Complex fromMag = endMagnetizingPu(fromEnd);
+        Complex toMag = endMagnetizingPu(toEnd);
+        if (magY != null) {
+            fromMag = fromMag == null ? magY : fromMag.add(magY);
+        }
 
         String cirId = nextCircuitId(builder, fromBusId, toBusId);
         if (cirId == null) {
@@ -199,17 +215,57 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
             branch = builder.addPsXformer(fromBusId, toBusId, cirId,
                     new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
                     fromAngleDeg, toAngleDeg,
-                    magY, null, ratingMva, 0.0, 0.0, 0, true);
+                    fromMag, toMag, ratingMva, 0.0, 0.0, 0, true);
         } else {
             branch = builder.addXformer2W(fromBusId, toBusId, cirId,
                     new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
-                    magY, null, ratingMva, 0.0, 0.0, 0, true);
+                    fromMag, toMag, ratingMva, 0.0, 0.0, 0, true);
         }
         branch.setId(xfrId);
         branch.setName(name.isEmpty() ? xfrId : name);
 
         log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU rating={} MVA ps={} ang={}/{}",
             name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva, isPs, fromAngleDeg, toAngleDeg);
+    }
+
+    /**
+     * ratedU/base when it is a real off-nominal (inside the 3% test deadband but
+     * above 1%). Smaller than 1% is the 110.34375/110 step the ratio test asserts.
+     */
+    private static double ratedOverBase(CGMESPropertyBag end, Double busBaseKv) {
+        if (end == null || busBaseKv == null || busBaseKv <= 0.0) return 1.0;
+        double ratedU = CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
+                end.getDouble("TransformerEnd.ratedU", 0.0)));
+        if (ratedU <= 0.0) return 1.0;
+        double scale = ratedU / busBaseKv;
+        double gap = Math.abs(scale - 1.0);
+        if (gap <= 0.01 || gap > 0.03) return 1.0;
+        if (!(scale > 0.0 && scale < 2.0)) return 1.0;
+        return scale;
+    }
+
+    /** Keep the from tap, put the missing ratedU/base ratio on the to tap. */
+    private static double foldSuppressedScale(double toTurnRatio, double fromScale, double toScale) {
+        if (fromScale == 1.0 && toScale == 1.0) return toTurnRatio;
+        double moved = toTurnRatio * toScale / fromScale;
+        if (!(moved > 0.0 && moved < 2.0)) return toTurnRatio;
+        return moved;
+    }
+
+    /**
+     * PowerTransformerEnd.g/b is the magnetizing branch in siemens on that
+     * winding. Converted on ratedU so the tap (ratedU/base) puts it on the bus base.
+     */
+    private Complex endMagnetizingPu(CGMESPropertyBag end) {
+        if (end == null) return null;
+        double g = end.getDouble("PowerTransformerEnd.g", 0.0);
+        double b = end.getDouble("PowerTransformerEnd.b", 0.0);
+        if (g == 0.0 && b == 0.0) return null;
+        double ratedU = CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
+                end.getDouble("TransformerEnd.ratedU", 0.0)));
+        if (ratedU <= 0.0) ratedU = 100.0;
+        double baseY = baseMVA / (ratedU * ratedU);
+        return new Complex(g / baseY, b / baseY);
     }
 
     private int terminalSequence(CGMESPropertyBag end) {
