@@ -41,14 +41,15 @@ public final class CIMUnitConverter {
         return siemens / baseY;
     }
 
-    /** CIM ActivePower / ReactivePower are SI (W / var). */
+    /** CIM ActivePower / ReactivePower are SI (W / var); some exports already use MW / MVAr. */
     private static final double W_PER_MW = 1_000_000.0;
 
     /**
-     * Convert CIM ActivePower (Watts) or ReactivePower (var) to MW / MVAr.
+     * Convert CIM ActivePower or ReactivePower to MW / MVAr.
+     * Spec uses watts / var; values already in MW / MVAr ({@code |p| < 1e6}) are left unchanged.
      */
     public static double siPowerToMVA(double wattsOrVars) {
-        return wattsOrVars / W_PER_MW;
+        return Math.abs(wattsOrVars) >= W_PER_MW ? wattsOrVars / W_PER_MW : wattsOrVars;
     }
 
     /**
