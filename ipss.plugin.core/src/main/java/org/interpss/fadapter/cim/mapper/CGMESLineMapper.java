@@ -43,7 +43,7 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         String toBusId = busIds[1];
 
         if (fromBusId == null || toBusId == null) {
-            log.warn("Skipping line {} - cannot resolve bus connectivity (from={}, to={})", name, fromBusId, toBusId);
+            logSkippedBranch("line", name, fromBusId, toBusId, bag.getId());
             return;
         }
 
@@ -88,7 +88,7 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         String toBusId = busIds[1];
 
         if (fromBusId == null || toBusId == null) {
-            log.warn("Skipping SeriesCompensator {} - cannot resolve bus (from={}, to={})", name, fromBusId, toBusId);
+            logSkippedBranch("SeriesCompensator", name, fromBusId, toBusId, bag.getId());
             return;
         }
 
@@ -138,5 +138,32 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             baseKV = 100.0;
         }
         return baseKV;
+    }
+
+    /**
+     * Boundary interconnectors (one end on a skipped/dangling boundary TN) are expected
+     * when EQBD/TP_BD is absent — log at debug. Genuine connectivity gaps stay WARN.
+     */
+    private void logSkippedBranch(String kind, String name, String fromBusId, String toBusId,
+                                  String equipmentId) {
+        boolean boundaryTie = (fromBusId == null) != (toBusId == null)
+                || isBoundaryOrUnmappedEnd(equipmentId);
+        if (boundaryTie) {
+            log.debug("Skipping {} {} - boundary/unmapped end (from={}, to={})",
+                    kind, name, fromBusId, toBusId);
+        } else {
+            log.warn("Skipping {} {} - cannot resolve bus connectivity (from={}, to={})",
+                    kind, name, fromBusId, toBusId);
+        }
+    }
+
+    private boolean isBoundaryOrUnmappedEnd(String equipmentId) {
+        if (cimModel == null) return false;
+        for (String tn : cimModel.getTopologicalNodesForEquipment(equipmentId)) {
+            if (cimModel.isBoundaryTopologicalNode(tn) || cimModel.isUnmappedTopoNode(tn)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

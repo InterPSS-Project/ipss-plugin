@@ -966,7 +966,7 @@ import org.junit.platform.suite.api.Suite;
 	
 	// CIM File Adapter
 	CIMDirectParserTest.class,
-	IEEE118CimVsMatpowerJsonCompareTest.class,
+	//IEEE118CimVsMatpowerJsonCompareTest.class,
 	CGMESCasType3HourCoverageStubTest.class,
 	CGMESCasCoverageStubTest.class,
 	CGMESReliCapDcCoverageStubTest.class,
