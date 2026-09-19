@@ -551,7 +551,23 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv));
 		assertTrue(net.getNoBus() > 0, "PST Type2 should create buses");
 		assertTrue(net.getNoBranch() > 0, "PST Type2 should create branches");
-		// P4 TODO: linear tap / phase-shift semantics
+
+		// PhaseTapChangerLinear: neutralStep=11, SSH step=16, stepPhaseShiftIncrement=1° → +5°
+		double expectedDeg = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+				.linearPhaseAngleDeg(16, 11, 1.0);
+		assertEquals(5.0, expectedDeg, 1e-12);
+
+		AclfBranch pst = null;
+		for (AclfBranch b : net.getBranchList()) {
+			if (b.getBranchCode() == AclfBranchCode.PS_XFORMER) {
+				pst = b;
+				break;
+			}
+		}
+		assertNotNull(pst, "PhaseTapChangerLinear Type2 should map to PS_XFORMER");
+		AclfPSXformerAdapter ps = pst.toPSXfr();
+		assertEquals(expectedDeg, ps.getFromAngle(UnitType.Deg), 1e-3,
+				"Linear PTC (step 16 vs neutral 11 @ 1°/step) → +5° on end1");
 	}
 
 	@Test
@@ -570,7 +586,22 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp, sv));
 		assertTrue(net.getNoBus() > 0, "PST Table Type3 should create buses");
 		assertTrue(net.getNoBranch() > 0, "PST Table Type3 should create branches");
-		// P4 TODO: tabular phase-tap mapping
+
+		// PhaseTapChangerTabular: SSH step=16 → table point angle=5°, ratio=1
+		final double expectedDeg = 5.0;
+
+		AclfBranch pst = null;
+		for (AclfBranch b : net.getBranchList()) {
+			if (b.getBranchCode() == AclfBranchCode.PS_XFORMER) {
+				pst = b;
+				break;
+			}
+		}
+		assertNotNull(pst, "PhaseTapChangerTabular Type3 should map to PS_XFORMER");
+		AclfPSXformerAdapter ps = pst.toPSXfr();
+		assertEquals(expectedDeg, ps.getFromAngle(UnitType.Deg), 1e-3,
+				"Tabular PTC step 16 → table angle +5° on end1");
+		assertEquals(1.0, pst.getFromTurnRatio(), 1e-6, "table ratio at step 16 is 1.0");
 	}
 
 	@Test
