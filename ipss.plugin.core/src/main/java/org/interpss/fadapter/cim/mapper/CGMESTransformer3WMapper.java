@@ -86,10 +86,16 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        // Voltage levels from bus bases + Z on ratedU; InterPSS tap from RatioTapChanger only.
+        // Voltage levels from bus bases + Z on ratedU; taps/angles from Ratio/PhaseTapChanger.
         double fromTurnRatio = ratioTapForEnd(end1);
         double toTurnRatio = ratioTapForEnd(end2);
         double tertTurnRatio = ratioTapForEnd(end3);
+        double fromAngleDeg = phaseShiftDegForEnd(end1);
+        double toAngleDeg = phaseShiftDegForEnd(end2);
+        double tertAngleDeg = phaseShiftDegForEnd(end3);
+        boolean isPs = Math.abs(fromAngleDeg) > 1e-9
+                || Math.abs(toAngleDeg) > 1e-9
+                || Math.abs(tertAngleDeg) > 1e-9;
 
         String cirId = "1";
         for (int ci = 1; ci <= 10; ci++) {
@@ -102,12 +108,13 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
                         fromTurnRatio, toTurnRatio, tertTurnRatio,
                         null, 1.0, 0.0,
                         false, false, false,
-                        false, 0.0, 0.0, 0.0,
+                        isPs, fromAngleDeg, toAngleDeg, tertAngleDeg,
                         true);
                 branch.setId(xfrId);
                 branch.setName(name.isEmpty() ? xfrId : name);
-                log.debug("Created 3W xfr branch: {} ({}→{}→{}) ratedU={}/{}/{} z12={}+j{} PU",
-                    name, bus1Id, bus2Id, bus3Id, ratedU1, ratedU2, ratedU3, z12_r, z12_x);
+                log.debug("Created 3W xfr branch: {} ({}→{}→{}) ratedU={}/{}/{} z12={}+j{} PU ps={} ang={}/{}/{}",
+                    name, bus1Id, bus2Id, bus3Id, ratedU1, ratedU2, ratedU3, z12_r, z12_x,
+                    isPs, fromAngleDeg, toAngleDeg, tertAngleDeg);
                 return;
             } catch (Exception e) {
                 // parallel or conflict — try next circuit ID

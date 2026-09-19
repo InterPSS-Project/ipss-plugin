@@ -169,6 +169,29 @@ public class CGMESModel {
     }
 
     /**
+     * Phase tap changers (leaf RDF types). Includes linear, symmetrical,
+     * asymmetrical, and tabular specializations.
+     */
+    public List<CGMESPropertyBag> phaseTapChangers() {
+        List<CGMESPropertyBag> result = new ArrayList<>();
+        for (String type : new String[] {
+                "PhaseTapChangerLinear",
+                "PhaseTapChangerSymmetrical",
+                "PhaseTapChangerAsymmetrical",
+                "PhaseTapChangerTabular",
+                "PhaseTapChangerNonLinear",
+                "PhaseTapChanger" }) {
+            result.addAll(listByType(cimNamespace + type));
+        }
+        return dedupeById(result);
+    }
+
+    /** PhaseTapChangerTablePoint rows (tabular PTC). */
+    public List<CGMESPropertyBag> phaseTapChangerTablePoints() {
+        return listByType(cimNamespace + "PhaseTapChangerTablePoint");
+    }
+
+    /**
      * EnergyConsumer plus concrete subclasses. RDF stores the leaf type only;
      * Jena does not infer {@code rdf:type EnergyConsumer} from ConformLoad.
      */
