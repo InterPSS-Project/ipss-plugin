@@ -249,19 +249,25 @@ public class CGMESDirectParser {
             }
         }
 
+        for (CGMESPropertyBag sw : cimModel.switches()) {
+            lineMapper.mapClosedSwitch(sw, builder);
+        }
+
         CGMESTransformerMapper xfr2wMapper = new CGMESTransformerMapper(DEFAULT_BASE_MVA);
         xfr2wMapper.setCimModel(cimModel);
         xfr2wMapper.indexEnds(cimModel.transformerEnds());
         xfr2wMapper.indexMeshImpedances(cimModel.transformerMeshImpedances());
         xfr2wMapper.indexCoreAdmittances(cimModel.transformerCoreAdmittances());
-        xfr2wMapper.indexRatioTapChangers(cimModel.ratioTapChangers());
+        xfr2wMapper.indexRatioTapChangers(cimModel.ratioTapChangers(),
+                cimModel.ratioTapChangerTablePoints());
         xfr2wMapper.indexPhaseTapChangers(cimModel.phaseTapChangers(),
                 cimModel.phaseTapChangerTablePoints());
 
         CGMESTransformer3WMapper xfr3wMapper = new CGMESTransformer3WMapper(DEFAULT_BASE_MVA);
         xfr3wMapper.setCimModel(cimModel);
         xfr3wMapper.indexMeshImpedances(cimModel.transformerMeshImpedances());
-        xfr3wMapper.indexRatioTapChangers(cimModel.ratioTapChangers());
+        xfr3wMapper.indexRatioTapChangers(cimModel.ratioTapChangers(),
+                cimModel.ratioTapChangerTablePoints());
         xfr3wMapper.indexPhaseTapChangers(cimModel.phaseTapChangers(),
                 cimModel.phaseTapChangerTablePoints());
 
@@ -347,6 +353,29 @@ public class CGMESDirectParser {
         }
 
         if (!hasSwing) {
+            // CGMES angle reference is the in-service machine with the highest
+            // referencePriority, not the largest |P|. SmallGrid's priority-1
+            // machine is Sporn; ClinchRv has more P but priority 0, and pinning
+            // the slack there forces Sporn's SSH/SV mismatch through the island.
+            String priorityBusId = null;
+            int bestPriority = 0;
+            for (CGMESPropertyBag gen : cimModel.synchronousMachines()) {
+                if (!gen.getBoolean("Equipment.inService", true)) continue;
+                int priority = gen.getInt("SynchronousMachine.referencePriority", 0);
+                if (priority <= bestPriority) continue;
+                String busId = genMapper.resolveBusId(gen.getId());
+                if (busId == null) continue;
+                BaseAclfBus bus = builder.getBus(busId);
+                if (bus == null || bus.getGenCode() != AclfGenCode.GEN_PV) continue;
+                bestPriority = priority;
+                priorityBusId = busId;
+            }
+            if (priorityBusId != null && genMapper.promoteToSwing(builder, priorityBusId)) {
+                hasSwing = true;
+            }
+        }
+
+        if (!hasSwing) {
             // Prefer largest |P| PV machine (same policy as OpenCIM Cim17Model2AclfMapper).
             // First SM in RDF order is often a P=0 LV stub that cannot carry system slack.
             String bestBusId = null;
@@ -382,6 +411,9 @@ public class CGMESDirectParser {
         shuntMapper.setCimModel(cimModel);
         for (CGMESPropertyBag shunt : cimModel.shuntCompensators()) {
             shuntMapper.map(shunt, builder);
+        }
+        for (CGMESPropertyBag svc : cimModel.staticVarCompensators()) {
+            shuntMapper.mapStaticVarCompensator(svc, builder);
         }
     }
 

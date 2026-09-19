@@ -194,6 +194,14 @@ public class CGMESModel {
     }
 
     /**
+     * RatioTapChangerTablePoint rows. When present they replace the linear
+     * {@code stepVoltageIncrement} ratio, and may carry the step's series r/x.
+     */
+    public List<CGMESPropertyBag> ratioTapChangerTablePoints() {
+        return listByType(cimNamespace + "RatioTapChangerTablePoint");
+    }
+
+    /**
      * EnergyConsumer plus concrete subclasses. RDF stores the leaf type only;
      * Jena does not infer {@code rdf:type EnergyConsumer} from ConformLoad.
      */
@@ -246,6 +254,10 @@ public class CGMESModel {
         return result;
     }
 
+    public List<CGMESPropertyBag> staticVarCompensators() {
+        return listByType(cimNamespace + "StaticVarCompensator");
+    }
+
     public List<CGMESPropertyBag> asynchronousMachines() {
         return listByType(cimNamespace + "AsynchronousMachine");
     }
@@ -267,11 +279,21 @@ public class CGMESModel {
         return listByType(cimNamespace + "BaseVoltage");
     }
 
+    /**
+     * Breakers, disconnectors and load-break switches. A resource typed as both
+     * Switch and Breaker is returned once. A closed switch whose terminals sit on
+     * two topological nodes is a retained zero-impedance branch.
+     */
     public List<CGMESPropertyBag> switches() {
         List<CGMESPropertyBag> result = new ArrayList<>();
-        result.addAll(listByType(cimNamespace + "Switch"));
-        result.addAll(listByType(cimNamespace + "Breaker"));
-        result.addAll(listByType(cimNamespace + "Disconnector"));
+        Set<String> seen = new HashSet<>();
+        for (String type : new String[] {"Breaker", "Disconnector", "LoadBreakSwitch", "Switch"}) {
+            for (CGMESPropertyBag bag : listByType(cimNamespace + type)) {
+                if (seen.add(bag.getId())) {
+                    result.add(bag);
+                }
+            }
+        }
         return result;
     }
 

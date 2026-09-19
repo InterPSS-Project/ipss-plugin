@@ -106,9 +106,9 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        double fromTurnRatio = windingTurnRatio(end1, busBaseKV(builder, bus1Id));
-        double toTurnRatio = windingTurnRatio(end2, busBaseKV(builder, bus2Id));
-        double tertTurnRatio = windingTurnRatio(end3, busBaseKV(builder, bus3Id));
+        double fromTurnRatio = windingTurnRatio(end1, busBaseKV(builder, bus1Id), false);
+        double toTurnRatio = windingTurnRatio(end2, busBaseKV(builder, bus2Id), false);
+        double tertTurnRatio = windingTurnRatio(end3, busBaseKV(builder, bus3Id), false);
         double fromAngleDeg = windingAngleDeg(end1);
         double toAngleDeg = windingAngleDeg(end2);
         double tertAngleDeg = windingAngleDeg(end3);
@@ -181,12 +181,14 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
     }
 
     private double getR(CGMESPropertyBag end) {
-        return end.getDouble("PowerTransformerEnd.r",
+        double r = end.getDouble("PowerTransformerEnd.r",
                 end.getDouble("TransformerEnd.r", 0.0));
+        return applyRatioTableOhm(end, "r", r);
     }
 
     private double getX(CGMESPropertyBag end) {
-        return end.getDouble("PowerTransformerEnd.x",
+        double x = end.getDouble("PowerTransformerEnd.x",
                 end.getDouble("TransformerEnd.x", 0.0));
+        return applyRatioTableOhm(end, "x", x);
     }
 }

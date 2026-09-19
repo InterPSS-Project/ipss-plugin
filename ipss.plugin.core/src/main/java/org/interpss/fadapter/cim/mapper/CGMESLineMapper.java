@@ -147,6 +147,65 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             name, fromBusId, toBusId, rPU, xPU);
     }
 
+    /**
+     * Closed switch with terminals on two topological nodes. CGMES keeps that
+     * pair as distinct nodes and the switch as a zero-impedance branch. Leaving
+     * it out opens the tie: MicroGrid breaker B1 is the only direct link between
+     * NL-Busbar_2 and NL_Busbar__4, which SV holds at the same angle.
+     */
+    public void mapClosedSwitch(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+        if (!bag.getBoolean("Equipment.inService", true)) return;
+        if (bag.getBoolean("Switch.open", false)) return;
+
+        String lineId = bag.getLocalId();
+        String name = bag.getName();
+        if (name == null) name = lineId;
+
+        String[] busIds = resolveBranchBusIds(bag.getId());
+        String fromBusId = busIds[0];
+        String toBusId = busIds[1];
+        if (fromBusId == null || toBusId == null || fromBusId.equals(toBusId)) {
+            return;
+        }
+
+        String cirId = nextCircuitId(builder, fromBusId, toBusId);
+        if (cirId == null) {
+            log.warn("Skipping closed switch {} - too many parallel circuits", name);
+            return;
+        }
+
+        // 0.0001 pu keeps 100 MW inside 0.01°. Small enough to match SV, large
+        // enough that NR does not treat the branch as a singular zero-Z row.
+        final double xPu = 1.0e-4;
+        Double fromBase = busBaseKV(builder, fromBusId);
+        Double toBase = busBaseKV(builder, toBusId);
+        boolean crossVoltage = fromBase != null && toBase != null && Math.abs(fromBase - toBase) > 0.05;
+        AclfBranch branch;
+        if (crossVoltage) {
+            double fromTap = 1.0;
+            double toTap = fromBase / toBase;
+            if (!(toTap > 0.0 && toTap < 2.0)) {
+                fromTap = toBase / fromBase;
+                toTap = 1.0;
+            }
+            if (!(fromTap > 0.0 && fromTap < 2.0 && toTap > 0.0 && toTap < 2.0)) {
+                fromTap = 1.0;
+                toTap = 1.0;
+            }
+            branch = builder.addXformer2W(fromBusId, toBusId, cirId,
+                    new Complex(0.0, xPu), fromTap, toTap,
+                    null, null, 0.0, 0.0, 0.0, 0, true);
+        } else {
+            branch = builder.addLine(fromBusId, toBusId, cirId,
+                    new Complex(0.0, xPu),
+                    new Complex(0.0, 0.0),
+                    null, null, 0.0, 0.0, 0.0, true);
+        }
+        branch.setId(lineId);
+        branch.setName(name.isEmpty() ? lineId : name);
+        log.debug("Created closed switch as tie: {} ({}→{})", name, fromBusId, toBusId);
+    }
+
     private Double resolveBaseKV(CGMESPropertyBag bag, AclfNetworkBuilder builder,
                                  String fromBusId, String toBusId) {
         Double baseKV = null;

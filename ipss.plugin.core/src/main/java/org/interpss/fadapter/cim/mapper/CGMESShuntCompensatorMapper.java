@@ -130,6 +130,50 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
     }
 
     /**
+     * MicroGrid stores {@code capacitiveRating} as ohms, not Mvar:
+     * {@code 225^2 / 5062.5 = 10} and the solved SVC injection is {@code V^2/X}.
+     * A rating that is already a few hundred Mvar (Svedala 800, RealGrid 200)
+     * does not satisfy this test and is left to the SSH {@code q} schedule.
+     */
+    public void mapStaticVarCompensator(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+        if (!bag.getBoolean("Equipment.inService", true)) return;
+        String name = bag.getName();
+        if (name == null) name = bag.getLocalId();
+        String busId = resolveBusId(bag.getId());
+        if (busId == null || builder.getBus(busId) == null) return;
+
+        Double baseKV = null;
+        if (cimModel != null) {
+            java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(bag.getId());
+            if (!topoNodes.isEmpty()) {
+                baseKV = cimModel.getNominalVoltageForTopoNode(topoNodes.get(0));
+            }
+        }
+        if (baseKV == null || baseKV <= 0.0) return;
+
+        double cap = bag.getDouble("StaticVarCompensator.capacitiveRating", 0.0);
+        double bSiemens = 0.0;
+        if (cap > 1000.0) {
+            double qAtNominal = baseKV * baseKV / cap;
+            if (qAtNominal > 0.5 && qAtNominal < 80.0) {
+                bSiemens = 1.0 / cap;
+            }
+        }
+        if (bSiemens == 0.0) {
+            // SSH q>0 is into the equipment in the load convention used by SvPowerFlow
+            // on this terminal (negative q means the SVC generates). Not used when the
+            // ohm rating already explains the injection.
+            double q = bag.getDouble("StaticVarCompensator.q", 0.0);
+            if (q == 0.0) return;
+            bSiemens = -q / (baseKV * baseKV);
+        }
+
+        double baseY = baseMVA / (baseKV * baseKV);
+        builder.addFixedShunt(busId, bag.getLocalId(), true, 0.0, bSiemens / baseY, name);
+        log.debug("Created SVC shunt {} on {} B={} S", name, busId, bSiemens);
+    }
+
+    /**
      * SSH {@code ShuntCompensator.sections} is the in-service count. EQ
      * {@code normalSections} is only the fallback when SSH did not merge a step.
      */
