@@ -875,7 +875,16 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		requireFiles(eq, ssh, tp);
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp));
 		assertTrue(net.getNoBus() > 0);
-		assertTrue(net.getNoBranch() > 0);
+		// Single HVDC boundary node: EquivalentInjection + machine + load, no ACLineSegment or transformer.
+		assertEquals(0, net.getNoBranch(), "Nordheim IGM has no AC branches");
+		double loadP = 0.0;
+		double genP = 0.0;
+		for (com.interpss.core.aclf.AclfBus bus : net.getBusList()) {
+			loadP += bus.getLoadP();
+			genP += bus.getGenP();
+		}
+		assertEquals(2.0, loadP, 0.05, "NonConformLoad should be 200 MW");
+		assertEquals(0.6, genP, 0.05, "SynchronousMachine should be 60 MW");
 	}
 
 	@Test
