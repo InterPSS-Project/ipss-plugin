@@ -23,6 +23,7 @@ import org.interpss.fadapter.cim.mapper.CGMESLoadMapper;
 import org.interpss.fadapter.cim.mapper.CGMESShuntCompensatorMapper;
 import org.interpss.fadapter.cim.mapper.CGMESTransformer3WMapper;
 import org.interpss.fadapter.cim.mapper.CGMESTransformerMapper;
+import org.interpss.fadapter.cim.mapper.CGMESVsConverterMapper;
 import org.interpss.fadapter.cim.parser.CGMESRdfParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -324,6 +325,13 @@ public class CGMESDirectParser {
             loadMapper.map(asm, builder);
             if (loadMapper.getMappedCount() > before) loadCount++;
         }
+
+        CGMESVsConverterMapper vscMapper = new CGMESVsConverterMapper(DEFAULT_BASE_MVA);
+        vscMapper.setCimModel(cimModel);
+        int vscBefore = vscMapper.getMappedCount();
+        vscMapper.mapAll(cimModel.vsConverters(), cimModel.dcLineSegments(), builder);
+        vscMapper.mapCurrentSources(cimModel.csConverters(), cimModel.dcLineSegments(), builder);
+        loadCount += vscMapper.getMappedCount() - vscBefore;
 
         CGMESGeneratorMapper genMapper = new CGMESGeneratorMapper(DEFAULT_BASE_MVA);
         genMapper.setCimModel(cimModel);
