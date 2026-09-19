@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.cim;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.core.net.OriginalDataFormat;
 
 /**
@@ -384,6 +387,13 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		assertEquals(OriginalDataFormat.CIM, net.getOriginalDataFormat());
 		assertTrue(net.getNoBus() > 0, "PST Type1 should create buses");
 		assertTrue(net.getNoBranch() > 0, "PST Type1 should create branches");
+
+		// PhaseTapChangerLinear: neutralStep=11, SSH step=6, stepPhaseShiftIncrement=1° → −5°
+		double expectedDeg = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+				.linearPhaseAngleDeg(6, 11, 1.0);
+		assertEquals(-5.0, expectedDeg, 1e-12);
+
+		AclfBranch pst = null;
 		int xfr = 0;
 		for (AclfBranch b : net.getBranchList()) {
 			if (b.getBranchCode() == AclfBranchCode.XFORMER
@@ -392,10 +402,15 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 					|| b.getBranchCode() == AclfBranchCode.W3_PS_XFORMER) {
 				xfr++;
 			}
+			if (b.getBranchCode() == AclfBranchCode.PS_XFORMER) {
+				pst = b;
+			}
 		}
 		assertTrue(xfr >= 1, "PST case should include at least one transformer");
-		// P4 TODO: assert phase-shift / tap mapping; Aclf vs SV angles
-		// assertEquals(N_BUS, net.getNoBus());
+		assertNotNull(pst, "PhaseTapChangerLinear Type1 should map to PS_XFORMER");
+		AclfPSXformerAdapter ps = pst.toPSXfr();
+		assertEquals(expectedDeg, ps.getFromAngle(UnitType.Deg), 1e-3,
+				"Linear PTC (step 6 vs neutral 11 @ 1°/step) → −5° on end1");
 	}
 
 	@Test
