@@ -145,9 +145,11 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         double rPU = r / baseZ;
         double xPU = x / baseZ;
 
-        // Voltage levels from bus bases + Z on ratedU; InterPSS tap from RatioTapChanger only.
+        // Voltage levels from bus bases + Z on ratedU; taps/angles from Ratio/PhaseTapChanger.
         double fromTurnRatio = ratioTapForEnd(end1);
         double toTurnRatio = ratioTapForEnd(end2);
+        double fromAngleDeg = phaseShiftDegForEnd(end1);
+        double toAngleDeg = phaseShiftDegForEnd(end2);
 
         double ratingMva = CGMESUnitConverter.apparentPowerToMVA(
                 end1.getDouble("PowerTransformerEnd.ratedS",
@@ -171,14 +173,23 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        AclfBranch branch = builder.addXformer2W(fromBusId, toBusId, cirId,
-                new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
-                magY, null, ratingMva, 0.0, 0.0, 0, true);
+        AclfBranch branch;
+        boolean isPs = Math.abs(fromAngleDeg) > 1e-9 || Math.abs(toAngleDeg) > 1e-9;
+        if (isPs) {
+            branch = builder.addPsXformer(fromBusId, toBusId, cirId,
+                    new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
+                    fromAngleDeg, toAngleDeg,
+                    magY, null, ratingMva, 0.0, 0.0, 0, true);
+        } else {
+            branch = builder.addXformer2W(fromBusId, toBusId, cirId,
+                    new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
+                    magY, null, ratingMva, 0.0, 0.0, 0, true);
+        }
         branch.setId(xfrId);
         branch.setName(name.isEmpty() ? xfrId : name);
 
-        log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU rating={} MVA",
-            name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva);
+        log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU rating={} MVA ps={} ang={}/{}",
+            name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva, isPs, fromAngleDeg, toAngleDeg);
     }
 
 

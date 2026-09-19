@@ -387,7 +387,9 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		int xfr = 0;
 		for (AclfBranch b : net.getBranchList()) {
 			if (b.getBranchCode() == AclfBranchCode.XFORMER
-					|| b.getBranchCode() == AclfBranchCode.W3_XFORMER) {
+					|| b.getBranchCode() == AclfBranchCode.PS_XFORMER
+					|| b.getBranchCode() == AclfBranchCode.W3_XFORMER
+					|| b.getBranchCode() == AclfBranchCode.W3_PS_XFORMER) {
 				xfr++;
 			}
 		}

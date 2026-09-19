@@ -15,6 +15,8 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.simu.SimuContext;
 
@@ -264,5 +266,55 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
         assertEquals(1.024,
                 org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper.linearRatioTap(20, 17, 0.8),
                 1e-12);
+    }
+
+    @Test
+    public void testPhaseTapFormulas() {
+        var sym = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .symmetricalPhaseTap(10, 13, 1.25);
+        assertEquals(-2.14834, sym.angleDeg, 1e-4);
+        assertEquals(1.0, sym.rho, 1e-12);
+
+        var asym = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .asymmetricalPhaseTap(10, 13, 1.25, 5.0);
+        assertEquals(-0.19453, asym.angleDeg, 1e-4);
+        assertEquals(0.96265, asym.rho, 1e-4);
+
+        assertEquals(-5.0,
+                org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                        .linearPhaseAngleDeg(6, 11, 1.0),
+                1e-12);
+    }
+
+    @Test
+    public void testMicroGrid_PhaseTapChanger() throws Exception {
+        // BE-TR2_1: PhaseTapChangerSymmetrical on end1, SSH step=10, neu=13, du%=1.25
+        // BE-TR2_2: PhaseTapChangerAsymmetrical on end1, same steps + windingConnectionAngle=5°
+        AclfNetwork net = new CGMESDirectParser().parse(
+                new String[]{MG_BE_EQ, MG_BE_TP, MG_BE_SSH});
+
+        AclfBranch tr21 = null, tr22 = null;
+        for (AclfBranch b : net.getBranchList()) {
+            if (b.getName() == null) continue;
+            if (b.getName().contains("BE-TR2_1")) tr21 = b;
+            if (b.getName().contains("BE-TR2_2")) tr22 = b;
+        }
+        assertNotNull(tr21, "BE-TR2_1");
+        assertNotNull(tr22, "BE-TR2_2");
+        assertEquals(AclfBranchCode.PS_XFORMER, tr21.getBranchCode());
+        assertEquals(AclfBranchCode.PS_XFORMER, tr22.getBranchCode());
+
+        var sym = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .symmetricalPhaseTap(10, 13, 1.25);
+        AclfPSXformerAdapter ps21 = tr21.toPSXfr();
+        assertEquals(sym.angleDeg, ps21.getFromAngle(UnitType.Deg), 1e-3);
+        assertEquals(1.0, tr21.getToTurnRatio(), 1e-6);
+
+        var asym = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .asymmetricalPhaseTap(10, 13, 1.25, 5.0);
+        AclfPSXformerAdapter ps22 = tr22.toPSXfr();
+        assertEquals(asym.angleDeg, ps22.getFromAngle(UnitType.Deg), 1e-3);
+        // asym rho multiplies from-side tap (end1)
+        assertEquals(asym.rho, tr22.getFromTurnRatio(), 1e-4);
     }
 }
