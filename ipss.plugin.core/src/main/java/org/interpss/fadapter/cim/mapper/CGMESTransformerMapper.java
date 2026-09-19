@@ -132,8 +132,13 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         }
 
         if (fromBusId == null || toBusId == null) {
-            log.warn("Skipping transformer {} - cannot resolve buses (from={}, to={})",
-                name, fromBusId, toBusId);
+            if (isUnresolvedTopologyExpected(bag.getId())) {
+                log.debug("Skipping transformer {} - out of topology / no TP TopologicalNode (from={}, to={})",
+                    name, fromBusId, toBusId);
+            } else {
+                log.warn("Skipping transformer {} - cannot resolve buses (from={}, to={})",
+                    name, fromBusId, toBusId);
+            }
             return;
         }
 
