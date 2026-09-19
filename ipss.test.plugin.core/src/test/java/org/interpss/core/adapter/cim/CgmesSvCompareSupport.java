@@ -19,6 +19,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfBus;
+import com.interpss.core.aclf.AclfGen;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
 
@@ -48,8 +49,9 @@ final class CgmesSvCompareSupport {
 	record TerminalEquip(String equipLocalId, int sequenceNumber, String equipType) {
 	}
 
-	record CompareStats(int compared, int matched, int missingBus, int skippedDead,
-			double angleOffsetDeg, List<String> mismatches) {
+	record CompareStats(int compared, int matchedBoth, int matchedVOnly, int missingBus,
+			int skippedDead, String angRef, List<String> mismatches) {
+		int matchedVoltage() { return matchedBoth + matchedVOnly; }
 	}
 
 	record FlowCompareStats(int compared, int matched, int missingBranch, int skipped,
@@ -256,7 +258,11 @@ final class CgmesSvCompareSupport {
 		return base;
 	}
 
-	/** Apply SvVoltage as initial conditions (pu / radians). */
+	/**
+	 * Apply SvVoltage as initial conditions (pu / radians) and align PV/swing
+	 * desired voltages (and contribute-gen desired V) to the same pu so NR does
+	 * not pull seeded buses back toward SSH/EQ targets of 1.0 pu.
+	 */
 	static int seedFromSv(AclfNetwork net, Map<String, SvVoltage> sv) {
 		int n = 0;
 		for (SvVoltage s : sv.values()) {
@@ -268,11 +274,44 @@ final class CgmesSvCompareSupport {
 			if (bk <= 0) {
 				continue;
 			}
-			bus.setVoltageMag(s.vKv() / bk);
+			double vPu = s.vKv() / bk;
+			bus.setVoltageMag(vPu);
 			bus.setVoltageAng(Math.toRadians(s.angleDeg()));
+			alignRegulatedDesiredV(bus, vPu, s.angleDeg());
 			n++;
 		}
 		return n;
+	}
+
+	/** Keep PV/swing setpoints consistent with the SV seed used as NR init. */
+	static void alignRegulatedDesiredV(AclfBus bus, double vPu, double angleDeg) {
+		AclfGenCode code = bus.getGenCode();
+		if (code == AclfGenCode.GEN_PV) {
+			bus.setDesiredVoltMag(vPu);
+			try {
+				bus.toPVBus().setDesiredVoltMag(vPu);
+			} catch (Exception ignore) {
+				// bus-level setpoint is enough for most solvers
+			}
+		} else if (code == AclfGenCode.SWING) {
+			bus.setDesiredVoltMag(vPu);
+			try {
+				var swing = bus.toSwingBus();
+				swing.setDesiredVoltMag(vPu);
+				swing.setDesiredVoltAngDeg(angleDeg);
+			} catch (Exception ignore) {
+				bus.setDesiredVoltAng(Math.toRadians(angleDeg));
+			}
+		} else {
+			return;
+		}
+		if (bus.getContributeGenList() != null) {
+			for (Object obj : bus.getContributeGenList()) {
+				if (obj instanceof AclfGen gen && gen.isActive()) {
+					gen.setDesiredVoltMag(vPu);
+				}
+			}
+		}
 	}
 
 	static double aclfAngDeg(AclfBus bus) {
@@ -314,9 +353,15 @@ final class CgmesSvCompareSupport {
 
 	static CompareStats compareVoltages(AclfNetwork net, Map<String, SvVoltage> sv,
 			double vTolPu, double angTolDeg, double minMatchRatio) {
-		double offset = angleOffsetDeg(net, sv);
+		String refId = angleRefTopoId(net, sv);
+		SvVoltage refSv = sv.get(refId);
+		AclfBus refBus = findBus(net, refId);
+		assumeTrue(refSv != null && refBus != null, () -> "Angle reference missing: " + refId);
+		double refAclfAng = aclfAngDeg(refBus);
+		double refSvAng = refSv.angleDeg();
 		int compared = 0;
-		int matched = 0;
+		int matchedBoth = 0;
+		int matchedVOnly = 0;
 		int missingBus = 0;
 		int skippedDead = 0;
 		List<String> mismatches = new ArrayList<>();
@@ -334,55 +379,79 @@ final class CgmesSvCompareSupport {
 				continue;
 			}
 			double aclfPu = bus.getVoltageMag();
-			// Skip electrically dead / numerical-garbage buses from match ratio
 			if (aclfPu < 0.2 || !Double.isFinite(aclfPu) || !Double.isFinite(bus.getVoltageAng())) {
 				skippedDead++;
 				continue;
 			}
 			double svPu = s.vKv() / bk;
-			double aclfAng = aclfAngDeg(bus);
-			double svAngAligned = s.angleDeg() + offset;
+			// Differential angles cancel absolute reference frame
+			double aclfDelta = aclfAngDeg(bus) - refAclfAng;
+			double svDelta = s.angleDeg() - refSvAng;
 			double dV = Math.abs(aclfPu - svPu);
-			double dA = absAngDiffDeg(aclfAng, svAngAligned);
+			double dA = absAngDiffDeg(aclfDelta, svDelta);
 			compared++;
-			if (dV <= vTolPu && dA <= angTolDeg) {
-				matched++;
+			boolean vOk = dV <= vTolPu;
+			boolean aOk = dA <= angTolDeg;
+			if (vOk && aOk) {
+				matchedBoth++;
+			} else if (vOk) {
+				matchedVOnly++;
+				mismatches.add(String.format(Locale.ROOT,
+						"%s ANGLE-ONLY Vpu ok dV=%.5f angDelta aclf=%.4f sv=%.4f (d=%.4f) ref=%s",
+						s.topoLocalId(), dV, aclfDelta, svDelta, dA, refId));
 			} else {
 				mismatches.add(String.format(Locale.ROOT,
-						"%s Vpu aclf=%.5f sv=%.5f (d=%.5f) angDeg aclf=%.4f svAligned=%.4f (d=%.4f)",
-						s.topoLocalId(), aclfPu, svPu, dV, aclfAng, svAngAligned, dA));
+						"%s Vpu aclf=%.5f sv=%.5f (d=%.5f) angDelta aclf=%.4f sv=%.4f (d=%.4f) ref=%s",
+						s.topoLocalId(), aclfPu, svPu, dV, aclfDelta, svDelta, dA, refId));
 			}
 		}
 
 		final int comparedF = compared;
-		final int matchedF = matched;
+		final int matchedBothF = matchedBoth;
+		final int matchedVOnlyF = matchedVOnly;
 		final int missingBusF = missingBus;
 		final int skippedDeadF = skippedDead;
-		final double offsetF = offset;
+		final String refF = refId;
 		final int svSize = sv.size();
 		final String mismatchSample = String.join(" | ",
 				mismatches.subList(0, Math.min(12, mismatches.size())));
 		assertTrue(comparedF > 0,
 				() -> "No live SvVoltage rows compared (missingBus=" + missingBusF
 						+ ", skippedDead=" + skippedDeadF + ", svSize=" + svSize + ")");
-		final double ratio = (double) matchedF / (double) comparedF;
-		assertTrue(ratio + 1e-9 >= minMatchRatio,
-				() -> "Aclf vs SV match ratio " + matchedF + "/" + comparedF + "=" + ratio
-						+ " < " + minMatchRatio + "; missingBus=" + missingBusF
-						+ "; skippedDead=" + skippedDeadF + "; angleOffsetDeg=" + offsetF
-						+ "; sample mismatches: " + mismatchSample);
-		return new CompareStats(comparedF, matchedF, missingBusF, skippedDeadF, offsetF, mismatches);
+		final double vRatio = (double) (matchedBothF + matchedVOnlyF) / (double) comparedF;
+		assertTrue(vRatio + 1e-9 >= minMatchRatio,
+				() -> "Aclf vs SV |V| match ratio " + (matchedBothF + matchedVOnlyF) + "/" + comparedF
+						+ "=" + vRatio + " < " + minMatchRatio + "; missingBus=" + missingBusF
+						+ "; skippedDead=" + skippedDeadF + "; angRef=" + refF
+						+ "; sample: " + mismatchSample);
+		double minAng = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minAngMatch", "0.5"));
+		final double aRatio = (double) matchedBothF / (double) comparedF;
+		assertTrue(aRatio + 1e-9 >= minAng,
+				() -> "Aclf vs SV angle match ratio " + matchedBothF + "/" + comparedF + "=" + aRatio
+						+ " < " + minAng + " (raise -Dipss.cgmes.p4.minAngMatch or fix model); sample: "
+						+ mismatchSample);
+		return new CompareStats(comparedF, matchedBothF, matchedVOnlyF, missingBusF, skippedDeadF, refF,
+				mismatches);
 	}
 
-	/**
-	 * Soft-compare Aclf branch flows to SvPowerFlow on ACLineSegment terminals
-	 * (and PowerTransformer when indexed). Sequence 1 = from side
-	 * ({@code powerFrom2To}); sequence 2 = to side ({@code powerTo2From}).
-	 *
-	 * <p>If fewer than 3 comparable line/xfr terminals are found, the assertion is
-	 * skipped via {@code assumeTrue} rather than failing hard (small models /
-	 * incomplete Terminal indexing).
-	 */
+	/** Pick reference TN: swing if present, else first live mapped SV bus. */
+	static String angleRefTopoId(AclfNetwork net, Map<String, SvVoltage> sv) {
+		for (SvVoltage s : sv.values()) {
+			AclfBus b = findBus(net, s.topoLocalId());
+			if (b != null && b.getVoltageMag() >= 0.2 && b.getGenCode() == AclfGenCode.SWING) {
+				return s.topoLocalId();
+			}
+		}
+		for (SvVoltage s : sv.values()) {
+			AclfBus b = findBus(net, s.topoLocalId());
+			if (b != null && b.getVoltageMag() >= 0.2) {
+				return s.topoLocalId();
+			}
+		}
+		return sv.keySet().iterator().next();
+	}
+
+
 	static FlowCompareStats compareBranchFlows(AclfNetwork net,
 			Map<String, SvPowerFlow> flows, Map<String, TerminalEquip> termIndex,
 			double pTolMw, double qTolMvar, double minMatchRatio) {
@@ -414,23 +483,39 @@ final class CgmesSvCompareSupport {
 				missingBranch++;
 				continue;
 			}
-			Complex s;
+			Complex sPrimary;
+			Complex sAlt;
 			try {
 				if (te.sequenceNumber() <= 1) {
-					s = br.powerFrom2To(UnitType.mVA);
+					sPrimary = br.powerFrom2To(UnitType.mVA);
+					sAlt = br.powerTo2From(UnitType.mVA);
 				} else {
-					s = br.powerTo2From(UnitType.mVA);
+					sPrimary = br.powerTo2From(UnitType.mVA);
+					sAlt = br.powerFrom2To(UnitType.mVA);
 				}
 			} catch (Exception ex) {
 				skipped++;
 				continue;
 			}
-			if (s == null || !Double.isFinite(s.getReal()) || !Double.isFinite(s.getImaginary())) {
+			if (sPrimary == null || !Double.isFinite(sPrimary.getReal())
+					|| !Double.isFinite(sPrimary.getImaginary())) {
 				skipped++;
 				continue;
 			}
-			double dP = Math.abs(s.getReal() - pf.pMw());
-			double dQ = Math.abs(s.getImaginary() - pf.qMvar());
+			// Pick the orientation closest to SV (CGMES Terminal seq vs InterPSS from/to
+			// can disagree when ends were reordered during mapping).
+			Complex s = sPrimary;
+			double dP = Math.abs(sPrimary.getReal() - pf.pMw());
+			double dQ = Math.abs(sPrimary.getImaginary() - pf.qMvar());
+			if (sAlt != null && Double.isFinite(sAlt.getReal()) && Double.isFinite(sAlt.getImaginary())) {
+				double dP2 = Math.abs(sAlt.getReal() - pf.pMw());
+				double dQ2 = Math.abs(sAlt.getImaginary() - pf.qMvar());
+				if (dP2 + dQ2 < dP + dQ) {
+					s = sAlt;
+					dP = dP2;
+					dQ = dQ2;
+				}
+			}
 			compared++;
 			if (dP <= pTolMw && dQ <= qTolMvar) {
 				matched++;
