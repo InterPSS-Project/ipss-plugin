@@ -154,7 +154,7 @@ public class CGMESDirectParser {
                 }
                 String name = tn.getName() != null ? tn.getName() : tn.getLocalId();
                 Double baseKV = resolveTopoNodeVoltage(cimModel, tn);
-                double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
+                double baseV = positiveBaseKV(baseKV) * 1000.0;
 
                 String busId = tn.getLocalId();
                 builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
@@ -168,7 +168,7 @@ public class CGMESDirectParser {
                 String name = bb.getName() != null ? bb.getName() : bb.getLocalId();
                 String vlUri = bb.getResourceId("Equipment.EquipmentContainer");
                 Double baseKV = vlUri != null ? cimModel.getVLRatedVoltage(vlUri) : null;
-                double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
+                double baseV = positiveBaseKV(baseKV) * 1000.0;
 
                 String busId = bb.getLocalId();
                 builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
@@ -191,7 +191,7 @@ public class CGMESDirectParser {
                 if (baseKV == null) {
                     baseKV = cimModel.getBaseVoltageFromConnectivityNode(cnId);
                 }
-                double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
+                double baseV = positiveBaseKV(baseKV) * 1000.0;
 
                 String busId = cn.getLocalId();
                 builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
@@ -220,10 +220,16 @@ public class CGMESDirectParser {
         String name = tn.getName();
         if (name != null) {
             try {
-                return Double.parseDouble(name);
+                double parsed = Double.parseDouble(name);
+                if (parsed > 0) return parsed;
             } catch (NumberFormatException e) { /* ignore */ }
         }
         return null;
+    }
+
+    /** kV for bus creation; never return ≤ 0 (would break PV/swing voltage set). */
+    private static double positiveBaseKV(Double baseKV) {
+        return baseKV != null && baseKV > 0 ? baseKV : 100.0;
     }
 
     private void convertBranches(CGMESModel cimModel) throws Exception {

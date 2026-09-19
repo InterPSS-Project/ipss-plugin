@@ -402,9 +402,11 @@ public class CGMESModel {
         }
 
         // Build topological node → voltage level mapping
+        // Container may be a VoltageLevel or a Bay (then chase Bay.VoltageLevel)
         for (CGMESPropertyBag tn : topologicalNodes()) {
             String tnId = tn.getId();
-            String vlId = tn.getResourceId("TopologicalNode.ConnectivityNodeContainer");
+            String containerId = tn.getResourceId("TopologicalNode.ConnectivityNodeContainer");
+            String vlId = resolveVoltageLevelUri(containerId);
             if (vlId != null) {
                 voltageLevelByTopoNode.put(tnId, vlId);
             }
@@ -413,7 +415,8 @@ public class CGMESModel {
         // Build connectivity node → voltage level mapping
         for (CGMESPropertyBag cn : connectivityNodes()) {
             String cnId = cn.getId();
-            String vlId = cn.getResourceId("ConnectivityNode.ConnectivityNodeContainer");
+            String containerId = cn.getResourceId("ConnectivityNode.ConnectivityNodeContainer");
+            String vlId = resolveVoltageLevelUri(containerId);
             if (vlId != null) {
                 voltageLevelByConnectivityNode.put(cnId, vlId);
             }
@@ -546,31 +549,40 @@ public class CGMESModel {
     }
 
     /**
-     * Resolve nominal voltage (kV) for a ConnectivityNode from connected equipment
-     * {@code ConductingEquipment.BaseVoltage} via terminals, or from
+     * Resolve nominal voltage (kV) for a ConnectivityNode or TopologicalNode from
+     * connected equipment {@code ConductingEquipment.BaseVoltage} via terminals, or from
      * {@code TransformerEnd.BaseVoltage} / {@code PowerTransformerEnd.ratedU}
      * when the only connected equipment is a SynchronousMachine without BaseVoltage
      * (IEEE118 hub style).
      */
-    public Double getBaseVoltageFromConnectivityNode(String cnUri) {
-        if (cnUri == null) return null;
+    public Double getBaseVoltageFromConnectivityNode(String nodeUri) {
+        if (nodeUri == null) return null;
         for (Map.Entry<String, String> e : connectivityNodeByTerminal.entrySet()) {
-            if (!cnUri.equals(e.getValue())) continue;
-            String termId = e.getKey();
-            String equipId = equipmentByTerminal.get(termId);
-            if (equipId != null) {
-                Resource eqRes = jenaModel.getResource(equipId);
-                Property bvProp = jenaModel.createProperty(cimNamespace + "ConductingEquipment.BaseVoltage");
-                Statement st = eqRes.getProperty(bvProp);
-                if (st != null && st.getObject().isResource()) {
-                    Double val = getBaseVoltageValue(st.getObject().asResource().getURI());
-                    if (val != null) return val;
-                }
-            }
-            Double fromEnd = getBaseVoltageFromTransformerTerminal(termId);
-            if (fromEnd != null) return fromEnd;
+            if (!nodeUri.equals(e.getValue())) continue;
+            Double val = resolveVoltageFromTerminal(e.getKey());
+            if (val != null) return val;
+        }
+        // TN-based models: match TopologicalNode via terminal → TN index
+        for (Map.Entry<String, String> e : topologicalNodeByTerminal.entrySet()) {
+            if (!nodeUri.equals(e.getValue())) continue;
+            Double val = resolveVoltageFromTerminal(e.getKey());
+            if (val != null) return val;
         }
         return null;
+    }
+
+    private Double resolveVoltageFromTerminal(String termId) {
+        String equipId = equipmentByTerminal.get(termId);
+        if (equipId != null) {
+            Resource eqRes = jenaModel.getResource(equipId);
+            Property bvProp = jenaModel.createProperty(cimNamespace + "ConductingEquipment.BaseVoltage");
+            Statement st = eqRes.getProperty(bvProp);
+            if (st != null && st.getObject().isResource()) {
+                Double val = getBaseVoltageValue(st.getObject().asResource().getURI());
+                if (val != null) return val;
+            }
+        }
+        return getBaseVoltageFromTransformerTerminal(termId);
     }
 
     /**
@@ -596,10 +608,29 @@ public class CGMESModel {
     }
 
     /**
+     * If {@code containerUri} is a Bay, return its VoltageLevel; otherwise return the URI as-is
+     * when it looks like / is a VoltageLevel resource.
+     */
+    private String resolveVoltageLevelUri(String containerUri) {
+        if (containerUri == null) return null;
+        Resource res = jenaModel.getResource(containerUri);
+        Property bayVl = jenaModel.createProperty(cimNamespace + "Bay.VoltageLevel");
+        Statement st = res.getProperty(bayVl);
+        if (st != null && st.getObject().isResource()) {
+            return st.getObject().asResource().getURI();
+        }
+        return containerUri;
+    }
+
+    /**
      * Get nominal voltage from VoltageLevel resource.
      * Tries: nominalVoltage property → BaseVoltage reference → VL name (fallback).
+     * Also accepts a Bay URI and chases {@code Bay.VoltageLevel}.
      */
     public Double getVLRatedVoltage(String vlUri) {
+        if (vlUri == null) return null;
+        vlUri = resolveVoltageLevelUri(vlUri);
+
         // Try nominalVoltage property directly
         Resource vlRes = jenaModel.getResource(vlUri);
         Property nomVProp = jenaModel.createProperty(cimNamespace + "VoltageLevel.nominalVoltage");
@@ -607,7 +638,7 @@ public class CGMESModel {
         if (stmt != null && stmt.getObject().isLiteral()) {
             double v = stmt.getObject().asLiteral().getDouble();
             if (v > 1000) v = v / 1000.0; // normalize V → kV
-            return v;
+            if (v > 0) return v;
         }
 
         // Try BaseVoltage reference
@@ -616,18 +647,47 @@ public class CGMESModel {
         if (stmt != null && stmt.getObject().isResource()) {
             String bvUri = stmt.getObject().asResource().getURI();
             Double val = getBaseVoltageValue(bvUri);
-            if (val != null) return val;
+            if (val != null && val > 0) return val;
         }
 
-        // Fallback: VoltageLevel name is often the nominal voltage (e.g. "380.0", "220.0")
+        // Fallback: VoltageLevel name is often the nominal voltage (e.g. "380.0", "220.0"),
+        // ReliCap-style "VL_220" / "VL-380", or embeds kV like "EDO132KV".
+        // Do NOT treat arbitrary trailing digits (e.g. Bay name "BAY_61-62_0") as kV.
         Property nameProp = jenaModel.createProperty(cimNamespace + "IdentifiedObject.name");
         stmt = vlRes.getProperty(nameProp);
         if (stmt != null && stmt.getObject().isLiteral()) {
-            try {
-                return Double.parseDouble(stmt.getObject().asLiteral().getString());
-            } catch (NumberFormatException e) {
-                // ignore
-            }
+            Double fromName = parseVoltageFromName(stmt.getObject().asLiteral().getString());
+            if (fromName != null) return fromName;
+        }
+        return null;
+    }
+
+    /**
+     * Parse a plausible base voltage (kV) from a VoltageLevel name.
+     * @return kV or null if the name is not a voltage label
+     */
+    static Double parseVoltageFromName(String name) {
+        if (name == null || name.isBlank()) return null;
+        String n = name.trim();
+        try {
+            double v = Double.parseDouble(n);
+            return v > 0 ? v : null;
+        } catch (NumberFormatException ignore) {
+            // continue
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(?i)^VL[_-]?(\\d+(?:\\.\\d+)?)$")
+                .matcher(n);
+        if (m.matches()) {
+            double v = Double.parseDouble(m.group(1));
+            return v > 0 ? v : null;
+        }
+        m = java.util.regex.Pattern
+                .compile("(?i)(\\d+(?:\\.\\d+)?)\\s*kV$")
+                .matcher(n);
+        if (m.find()) {
+            double v = Double.parseDouble(m.group(1));
+            return v > 0 ? v : null;
         }
         return null;
     }

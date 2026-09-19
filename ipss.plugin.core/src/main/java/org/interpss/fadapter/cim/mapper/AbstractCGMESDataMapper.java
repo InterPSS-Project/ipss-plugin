@@ -332,4 +332,12 @@ public abstract class AbstractCGMESDataMapper {
         }
         return null;
     }
+
+    /** Bus base voltage in kV, or null if bus missing / base ≤ 0. */
+    protected static Double busBaseKV(AclfNetworkBuilder builder, String busId) {
+        if (busId == null) return null;
+        var bus = builder.getBus(busId);
+        if (bus == null || bus.getBaseVoltage() <= 0) return null;
+        return bus.getBaseVoltage() / 1000.0;
+    }
 }
