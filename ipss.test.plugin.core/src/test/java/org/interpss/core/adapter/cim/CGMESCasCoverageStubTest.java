@@ -452,18 +452,19 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 SmallGrid EQ+SSH+TP(+SV) import smoke")
 	public void testCasV30_SmallGrid_SshSv_Import() throws Exception {
-		Path primary = casDir("SmallGrid", "SmallGrid");
+		// CAS v3.0 ships only SmallGrid-Merged under SmallGrid/ (no BaseCase/BE/BB/NB).
+		Path primary = casDir("SmallGrid-Merged", "SmallGrid/SmallGrid-Merged");
 		Path dir = Files.isDirectory(primary)
 				? primary
 				: firstExistingSubdir(casDir("SmallGrid-root", "SmallGrid"),
-						"SmallGrid", "BaseCase", "SmallGrid-BaseCase");
+						"SmallGrid-Merged", "Merged", "BaseCase", "BE", "BB", "NB");
 		assumeTrue(Files.isDirectory(dir), () -> "CAS SmallGrid missing: " + dir);
 
 		Path eqDir = dir;
 		try {
 			pickProfile(eqDir, "EQ");
 		} catch (org.opentest4j.TestAbortedException ex) {
-			eqDir = firstExistingSubdir(dir, "BaseCase", "BE", "BB", "NB");
+			eqDir = firstExistingSubdir(dir, "SmallGrid-Merged", "Merged", "BaseCase", "BE", "BB", "NB");
 		}
 
 		Path eq = pickProfile(eqDir, "EQ");
