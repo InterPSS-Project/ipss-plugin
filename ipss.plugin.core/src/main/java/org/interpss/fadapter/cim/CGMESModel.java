@@ -48,6 +48,8 @@ public class CGMESModel {
     private Map<String, String> topologicalNodeByTerminal = new HashMap<>();
     private Map<String, String> connectivityNodeByTerminal = new HashMap<>();
     private Map<String, String> equipmentByTerminal = new HashMap<>();
+    /** Terminal URI/local id → ACDCTerminal.sequenceNumber (1-based). */
+    private Map<String, Integer> sequenceByTerminal = new HashMap<>();
     private Map<String, String> baseVoltageById = new HashMap<>();
     private Set<String> boundaryTopologicalNodes = new HashSet<>();
     private Map<String, Double> baseVoltageValueById = new HashMap<>();
@@ -252,6 +254,11 @@ public class CGMESModel {
         return listByType(cimNamespace + "ExternalNetworkInjection");
     }
 
+    /** Boundary equivalent. SSH {@code p}/{@code q} use the load sign convention. */
+    public List<CGMESPropertyBag> equivalentInjections() {
+        return listByType(cimNamespace + "EquivalentInjection");
+    }
+
     public List<CGMESPropertyBag> terminals() {
         return listByType(cimNamespace + "Terminal");
     }
@@ -333,6 +340,15 @@ public class CGMESModel {
             }
             if (connNodeId != null) {
                 connectivityNodeByTerminal.put(termId, connNodeId);
+            }
+            int seq = term.getInt("ACDCTerminal.sequenceNumber",
+                    term.getInt("Terminal.sequenceNumber", 0));
+            if (seq > 0) {
+                sequenceByTerminal.put(termId, seq);
+                String local = CGMESPropertyBag.extractLocal(termId);
+                if (local != null) {
+                    sequenceByTerminal.put(local, seq);
+                }
             }
         }
         log.debug("Indexed {} terminals", topologicalNodeByTerminal.size());
@@ -457,6 +473,19 @@ public class CGMESModel {
     }
 
     // --- Topology helpers ---
+
+    /**
+     * {@code ACDCTerminal.sequenceNumber}, or {@link Integer#MAX_VALUE} when absent
+     * so unknown terminals sort after numbered ones.
+     */
+    public int terminalSequence(String terminalId) {
+        if (terminalId == null) return Integer.MAX_VALUE;
+        Integer seq = sequenceByTerminal.get(terminalId);
+        if (seq == null) {
+            seq = sequenceByTerminal.get(CGMESPropertyBag.extractLocal(terminalId));
+        }
+        return seq == null || seq <= 0 ? Integer.MAX_VALUE : seq;
+    }
 
     /** Get the topological node URI connected to a terminal */
     public String getTopologicalNodeByTerminal(String terminalId) {

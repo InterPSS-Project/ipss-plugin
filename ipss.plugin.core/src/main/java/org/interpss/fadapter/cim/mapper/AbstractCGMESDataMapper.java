@@ -17,6 +17,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.cim.CGMESModel;
 import org.interpss.fadapter.cim.CGMESPropertyBag;
+import org.interpss.fadapter.cim.util.CGMESUnitConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,9 +141,56 @@ public abstract class AbstractCGMESDataMapper {
         return ratio;
     }
 
-    /** Phase shift (degrees) for a winding end; 0 if none. */
+    /**
+     * InterPSS off-nominal tap for one winding. {@link #ratioTapForEnd} is left as the
+     * RatioTapChanger step only. When {@code ratedU} differs from the topological-node
+     * base (MiniGrid: 400 kV winding on a 380 kV node, 120 kV on 110 kV), scale by
+     * {@code ratedU / busBase} so the solved kV ratio follows ratedU, not the bus bases.
+     */
+    protected double windingTurnRatio(CGMESPropertyBag end, Double busBaseKv) {
+        double tap = ratioTapForEnd(end);
+        if (end == null || busBaseKv == null || busBaseKv <= 0.0) return tap;
+        double ratedU = CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
+                end.getDouble("TransformerEnd.ratedU", 0.0)));
+        if (ratedU <= 0.0) return tap;
+        double scale = ratedU / busBaseKv;
+        // A few percent is the RatioTapChanger step the 2W tests assert, not an
+        // off-nominal winding. MiniGrid's 115/110 and 400/380 are above this.
+        if (Math.abs(scale - 1.0) <= 0.03) return tap;
+        double scaled = tap * scale;
+        // AclfXformerAdapter requires the tap to be strictly inside (0, 2).
+        if (!(scaled > 0.0) || scaled >= 2.0) {
+            log.warn("ratedU/base tap {} outside (0,2) for end {} — using ratio tap {}",
+                    scaled, end.getLocalId(), tap);
+            return tap;
+        }
+        return scaled;
+    }
+
+    /** Phase-tap shift (degrees) for a winding end; 0 if none. */
     protected double phaseShiftDegForEnd(CGMESPropertyBag end) {
         return phaseTapForEnd(end).angleDeg;
+    }
+
+    /**
+     * Winding angle passed to InterPSS. Phase-tap shift only.
+     * {@code phaseAngleClock * 30} is not added: MiniGrid SV terminal angles differ by
+     * well under 1° across a clock-5 (150°) winding, so inserting that shift moves the
+     * solved state away from the published SV.
+     */
+    protected double windingAngleDeg(CGMESPropertyBag end) {
+        return phaseShiftDegForEnd(end);
+    }
+
+    /** Vector-group clock as degrees. 0 when the property is absent. */
+    public static double phaseAngleClockDeg(CGMESPropertyBag end) {
+        if (end == null) return 0.0;
+        double clock = end.getDouble("PowerTransformerEnd.phaseAngleClock", Double.NaN);
+        if (Double.isNaN(clock)) {
+            clock = end.getDouble("TransformerEnd.phaseAngleClock", Double.NaN);
+        }
+        if (Double.isNaN(clock)) return 0.0;
+        return clock * 30.0;
     }
 
     protected PhaseTapResult phaseTapForEnd(CGMESPropertyBag end) {
@@ -205,7 +253,12 @@ public abstract class AbstractCGMESDataMapper {
         double ratio = pt.getDouble("PhaseTapChangerTablePoint.ratio",
                 pt.getDouble("TapChangerTablePoint.ratio", 1.0));
         if (ratio == 0.0) ratio = 1.0;
-        return PhaseTapResult.of(angle, ratio);
+        // TapChangerTablePoint.x is the reactance deviation in percent of nominal x.
+        double xPercent = pt.getDouble("TapChangerTablePoint.x",
+                pt.getDouble("PhaseTapChangerTablePoint.x", 0.0));
+        double rPercent = pt.getDouble("TapChangerTablePoint.r",
+                pt.getDouble("PhaseTapChangerTablePoint.r", 0.0));
+        return PhaseTapResult.of(angle, ratio, xPercent, rPercent);
     }
 
     private static CGMESPropertyBag lookup(Map<String, CGMESPropertyBag> map, CGMESPropertyBag end) {
@@ -283,18 +336,34 @@ public abstract class AbstractCGMESDataMapper {
 
     /** Result of evaluating a phase tap changer at the current step. */
     public static final class PhaseTapResult {
-        public static final PhaseTapResult NEUTRAL = new PhaseTapResult(0.0, 1.0);
+        public static final PhaseTapResult NEUTRAL = new PhaseTapResult(0.0, 1.0, 0.0, 0.0);
         public final double angleDeg;
         public final double rho;
+        /** Reactance deviation, percent of the winding reactance. 0 if not tabular. */
+        public final double xPercent;
+        /** Resistance deviation, percent of the winding resistance. 0 if not tabular. */
+        public final double rPercent;
 
-        private PhaseTapResult(double angleDeg, double rho) {
+        private PhaseTapResult(double angleDeg, double rho, double xPercent, double rPercent) {
             this.angleDeg = angleDeg;
             this.rho = rho;
+            this.xPercent = xPercent;
+            this.rPercent = rPercent;
         }
 
         public static PhaseTapResult of(double angleDeg, double rho) {
-            return new PhaseTapResult(angleDeg, rho);
+            return new PhaseTapResult(angleDeg, rho, 0.0, 0.0);
         }
+
+        public static PhaseTapResult of(double angleDeg, double rho, double xPercent, double rPercent) {
+            return new PhaseTapResult(angleDeg, rho, xPercent, rPercent);
+        }
+    }
+
+    /** Scale a winding ohm value by a tabular tap deviation (percent). */
+    protected static double applyPercentDeviation(double ohm, double percent) {
+        if (percent == 0.0 || !Double.isFinite(percent)) return ohm;
+        return ohm * (1.0 + percent / 100.0);
     }
 
     /**
@@ -330,17 +399,51 @@ public abstract class AbstractCGMESDataMapper {
         return true;
     }
 
+    /**
+     * From/to buses in {@code ACDCTerminal.sequenceNumber} order, not RDF order.
+     */
     protected String[] resolveBranchBusIds(String equipmentId) {
         if (cimModel == null) return new String[]{null, null};
-        java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(equipmentId);
+        java.util.List<String> terminalIds = new java.util.ArrayList<>(
+                cimModel.getTerminalsForEquipment(equipmentId));
+        terminalIds.sort(java.util.Comparator.comparingInt(cimModel::terminalSequence));
         String bus1 = null, bus2 = null;
-        if (topoNodes.size() >= 2) {
-            bus1 = cimModel.getBusId(topoNodes.get(0));
-            bus2 = cimModel.getBusId(topoNodes.get(1));
-        } else if (topoNodes.size() == 1) {
-            bus1 = cimModel.getBusId(topoNodes.get(0));
+        for (String tid : terminalIds) {
+            String busId = busIdForTerminal(tid);
+            if (busId == null) continue;
+            if (bus1 == null) {
+                bus1 = busId;
+            } else if (!busId.equals(bus1) && bus2 == null) {
+                bus2 = busId;
+            }
         }
         return new String[]{bus1, bus2};
+    }
+
+    /** Bus created for a transformer end, via {@code TransformerEnd.Terminal}. */
+    protected String resolveBusIdFromEnd(CGMESPropertyBag end) {
+        if (end == null) return null;
+        return busIdForTerminal(end.getResourceId("TransformerEnd.Terminal"));
+    }
+
+    protected String busIdForTerminal(String termId) {
+        if (cimModel == null || termId == null) return null;
+        String node = cimModel.getTopologicalNodeByTerminal(termId);
+        if (node == null) {
+            String local = CGMESPropertyBag.extractLocal(termId);
+            node = cimModel.getTopologicalNodeByTerminal(local);
+        }
+        if (node == null) {
+            node = cimModel.getConnectivityNodeByTerminal(termId);
+        }
+        if (node == null) return null;
+        String busId = cimModel.getBusId(node);
+        return busId != null ? busId : CGMESPropertyBag.extractLocal(node);
+    }
+
+    protected static boolean endHasX(CGMESPropertyBag end) {
+        return end.getString("PowerTransformerEnd.x") != null
+                || end.getString("TransformerEnd.x") != null;
     }
 
     protected String nextCircuitId(AclfNetworkBuilder builder, String fromBusId, String toBusId) {

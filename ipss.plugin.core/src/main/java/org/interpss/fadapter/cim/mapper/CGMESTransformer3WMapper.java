@@ -6,7 +6,9 @@
 
 package org.interpss.fadapter.cim.mapper;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.builder.AclfNetworkBuilder;
@@ -24,9 +26,25 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
     private static final Logger log = LoggerFactory.getLogger(CGMESTransformer3WMapper.class);
 
     private final double baseMVA;
+    /** Mesh impedance keyed by from-end local id + '#' + to-end local id. */
+    private final Map<String, CGMESPropertyBag> meshByEndPair = new HashMap<>();
 
     public CGMESTransformer3WMapper(double baseMVA) {
         this.baseMVA = baseMVA;
+    }
+
+    public void indexMeshImpedances(List<CGMESPropertyBag> meshes) {
+        meshByEndPair.clear();
+        for (CGMESPropertyBag mesh : meshes) {
+            String fromEnd = mesh.getResourceId("TransformerMeshImpedance.FromTransformerEnd");
+            String toEnd = mesh.getResourceId("TransformerMeshImpedance.ToTransformerEnd");
+            if (fromEnd == null || toEnd == null) continue;
+            String fromLocal = CGMESPropertyBag.extractLocal(fromEnd);
+            String toLocal = CGMESPropertyBag.extractLocal(toEnd);
+            if (fromLocal == null || toLocal == null) continue;
+            meshByEndPair.put(fromLocal + "#" + toLocal, mesh);
+        }
+        log.debug("Indexed {} 3W transformer mesh impedances", meshByEndPair.size());
     }
 
     @Override
@@ -48,37 +66,34 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
         CGMESPropertyBag end2 = sortedEnds.get(1);
         CGMESPropertyBag end3 = sortedEnds.get(2);
 
+        // Keep endNumber order (1 = from). Parallel units such as MiniGrid T3/T4
+        // assign sequenceNumber differently; flipping one of them changes the star-bus
+        // base and circulates reactive power that SV does not have.
         double ratedU1 = getRatedU(end1);
         double ratedU2 = getRatedU(end2);
         double ratedU3 = getRatedU(end3);
 
-        double r1 = getR(end1);
-        double x1 = getX(end1);
-        double r2 = getR(end2);
-        double x2 = getX(end2);
-        double r3 = getR(end3);
-        double x3 = getX(end3);
+        Complex zFromTo;
+        Complex zToTert;
+        Complex zFromTert;
+        boolean windingXMissing = !endHasX(end1) && !endHasX(end2) && !endHasX(end3);
+        Complex star1 = windingPu(getR(end1), getX(end1), ratedU1);
+        Complex star2 = windingPu(getR(end2), getX(end2), ratedU2);
+        Complex star3 = windingPu(getR(end3), getX(end3), ratedU3);
+        boolean windingZZero = star1.abs() + star2.abs() + star3.abs() == 0.0;
+        if ((windingXMissing || windingZZero) && hasMesh(end1, end2, end3)) {
+            zFromTo = meshPu(end1, end2, ratedU1, ratedU2);
+            zToTert = meshPu(end2, end3, ratedU2, ratedU3);
+            zFromTert = meshPu(end1, end3, ratedU1, ratedU3);
+        } else {
+            zFromTo = star1.add(star2);
+            zToTert = star2.add(star3);
+            zFromTert = star3.add(star1);
+        }
 
-        double ratedU0 = ratedU1;
-
-        double z1_pu_r = r1 * baseMVA / (ratedU0 * ratedU0);
-        double z1_pu_x = x1 * baseMVA / (ratedU0 * ratedU0);
-        double z2_pu_r = r2 * baseMVA / (ratedU0 * ratedU0);
-        double z2_pu_x = x2 * baseMVA / (ratedU0 * ratedU0);
-        double z3_pu_r = r3 * baseMVA / (ratedU0 * ratedU0);
-        double z3_pu_x = x3 * baseMVA / (ratedU0 * ratedU0);
-
-        double z12_r = z1_pu_r + z2_pu_r;
-        double z12_x = z1_pu_x + z2_pu_x;
-        double z23_r = z2_pu_r + z3_pu_r;
-        double z23_x = z2_pu_x + z3_pu_x;
-        double z31_r = z3_pu_r + z1_pu_r;
-        double z31_x = z3_pu_x + z1_pu_x;
-
-        String[] busIds = resolveBranchBusIds(bag.getId());
-        String bus1Id = busIds[0];
-        String bus2Id = busIds[1];
-        String bus3Id = resolveBusIdForEnd(bag.getId(), 3, sortedEnds);
+        String bus1Id = resolveBusIdFromEnd(end1);
+        String bus2Id = resolveBusIdFromEnd(end2);
+        String bus3Id = resolveBusIdFromEnd(end3);
 
         if (bus1Id == null || bus2Id == null || bus3Id == null) {
             if (isUnresolvedTopologyExpected(bag.getId())) {
@@ -91,25 +106,22 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        // Voltage levels from bus bases + Z on ratedU; taps/angles from Ratio/PhaseTapChanger.
-        double fromTurnRatio = ratioTapForEnd(end1);
-        double toTurnRatio = ratioTapForEnd(end2);
-        double tertTurnRatio = ratioTapForEnd(end3);
-        double fromAngleDeg = phaseShiftDegForEnd(end1);
-        double toAngleDeg = phaseShiftDegForEnd(end2);
-        double tertAngleDeg = phaseShiftDegForEnd(end3);
+        double fromTurnRatio = windingTurnRatio(end1, busBaseKV(builder, bus1Id));
+        double toTurnRatio = windingTurnRatio(end2, busBaseKV(builder, bus2Id));
+        double tertTurnRatio = windingTurnRatio(end3, busBaseKV(builder, bus3Id));
+        double fromAngleDeg = windingAngleDeg(end1);
+        double toAngleDeg = windingAngleDeg(end2);
+        double tertAngleDeg = windingAngleDeg(end3);
         boolean isPs = Math.abs(fromAngleDeg) > 1e-9
                 || Math.abs(toAngleDeg) > 1e-9
                 || Math.abs(tertAngleDeg) > 1e-9;
 
-        String cirId = "1";
+        Exception last = null;
         for (int ci = 1; ci <= 10; ci++) {
-            cirId = String.valueOf(ci);
+            String cirId = String.valueOf(ci);
             try {
                 Aclf3WBranch branch = builder.addXformer3W(bus1Id, bus2Id, bus3Id, cirId,
-                        new Complex(z12_r, z12_x),
-                        new Complex(z23_r, z23_x),
-                        new Complex(z31_r, z31_x),
+                        zFromTo, zToTert, zFromTert,
                         fromTurnRatio, toTurnRatio, tertTurnRatio,
                         null, 1.0, 0.0,
                         false, false, false,
@@ -117,17 +129,51 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
                         true);
                 branch.setId(xfrId);
                 branch.setName(name.isEmpty() ? xfrId : name);
-                log.debug("Created 3W xfr branch: {} ({}→{}→{}) ratedU={}/{}/{} z12={}+j{} PU ps={} ang={}/{}/{}",
-                    name, bus1Id, bus2Id, bus3Id, ratedU1, ratedU2, ratedU3, z12_r, z12_x,
+                log.debug("Created 3W xfr branch: {} ({}→{}→{}) ratedU={}/{}/{} z12={} ps={} ang={}/{}/{}",
+                    name, bus1Id, bus2Id, bus3Id, ratedU1, ratedU2, ratedU3, zFromTo,
                     isPs, fromAngleDeg, toAngleDeg, tertAngleDeg);
                 return;
             } catch (Exception e) {
-                // parallel or conflict — try next circuit ID
+                last = e;
             }
         }
-        log.warn("Skipping 3W transformer {} - too many parallel circuits", name);
+        log.warn("Skipping 3W transformer {} - too many parallel circuits{}",
+                name, last == null ? "" : ": " + last.getMessage());
     }
 
+    private Complex windingPu(double rOhm, double xOhm, double ratedUKv) {
+        double kv = ratedUKv > 0 ? ratedUKv : 100.0;
+        double baseZ = kv * kv / baseMVA;
+        return new Complex(rOhm / baseZ, xOhm / baseZ);
+    }
+
+    private boolean hasMesh(CGMESPropertyBag end1, CGMESPropertyBag end2, CGMESPropertyBag end3) {
+        return meshBetween(end1, end2) != null
+                || meshBetween(end2, end3) != null
+                || meshBetween(end3, end1) != null;
+    }
+
+    private Complex meshPu(CGMESPropertyBag from, CGMESPropertyBag to, double fromRatedU, double toRatedU) {
+        CGMESPropertyBag mesh = meshBetween(from, to);
+        if (mesh == null) {
+            return Complex.ZERO;
+        }
+        double r = mesh.getDouble("TransformerMeshImpedance.r", 0.0);
+        double x = mesh.getDouble("TransformerMeshImpedance.x", 0.0);
+        String fromEnd = mesh.getResourceId("TransformerMeshImpedance.FromTransformerEnd");
+        String fromLocal = CGMESPropertyBag.extractLocal(fromEnd);
+        double ratedU = fromLocal != null && fromLocal.equals(from.getLocalId()) ? fromRatedU : toRatedU;
+        return windingPu(r, x, ratedU);
+    }
+
+    private CGMESPropertyBag meshBetween(CGMESPropertyBag a, CGMESPropertyBag b) {
+        if (a == null || b == null) return null;
+        CGMESPropertyBag mesh = meshByEndPair.get(a.getLocalId() + "#" + b.getLocalId());
+        if (mesh == null) {
+            mesh = meshByEndPair.get(b.getLocalId() + "#" + a.getLocalId());
+        }
+        return mesh;
+    }
 
     private double getRatedU(CGMESPropertyBag end) {
         return CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
@@ -143,21 +189,4 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
         return end.getDouble("PowerTransformerEnd.x",
                 end.getDouble("TransformerEnd.x", 0.0));
     }
-
-    private String resolveBusIdForEnd(String xfrId, int endNumber, List<CGMESPropertyBag> ends) {
-        if (cimModel == null) return null;
-        int idx = endNumber - 1;
-        if (idx >= ends.size()) return null;
-
-        java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(xfrId);
-        if (topoNodes.size() >= endNumber) {
-            String busId = cimModel.getBusId(topoNodes.get(idx));
-            if (busId != null) return busId;
-            return CGMESPropertyBag.extractLocal(topoNodes.get(idx));
-        }
-        return null;
-    }
-
-
-
 }

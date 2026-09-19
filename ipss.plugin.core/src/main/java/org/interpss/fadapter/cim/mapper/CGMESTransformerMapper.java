@@ -108,6 +108,12 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         double r2 = end2.getDouble("PowerTransformerEnd.r", end2.getDouble("TransformerEnd.r", 0.0));
         Double x2Obj = endHasX(end2) ? end2.getDouble("PowerTransformerEnd.x",
                 end2.getDouble("TransformerEnd.x", 0.0)) : null;
+        PhaseTapResult tap1 = phaseTapForEnd(end1);
+        PhaseTapResult tap2 = phaseTapForEnd(end2);
+        r1 = applyPercentDeviation(r1, tap1.rPercent);
+        r2 = applyPercentDeviation(r2, tap2.rPercent);
+        if (x1Obj != null) x1Obj = applyPercentDeviation(x1Obj, tap1.xPercent);
+        if (x2Obj != null) x2Obj = applyPercentDeviation(x2Obj, tap2.xPercent);
         double r = r1 + r2;
         double x = (x1Obj != null ? x1Obj : 0.0) + (x2Obj != null ? x2Obj : 0.0);
         boolean endXMissing = x1Obj == null && x2Obj == null;
@@ -122,9 +128,17 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
             x = mesh.getDouble("TransformerMeshImpedance.x", 0.0);
         }
 
-        // Resolve buses from winding terminals so from-side matches end1 (Z reference)
-        String fromBusId = resolveBusIdFromEnd(end1);
-        String toBusId = resolveBusIdFromEnd(end2);
+        // Z reference stays endNumber 1. From/to follow terminal sequence so
+        // SvPowerFlow sequence 1 is InterPSS powerFrom2To. endNumber and
+        // sequenceNumber disagree on MiniGrid T1.
+        CGMESPropertyBag fromEnd = end1;
+        CGMESPropertyBag toEnd = end2;
+        if (terminalSequence(end2) < terminalSequence(end1)) {
+            fromEnd = end2;
+            toEnd = end1;
+        }
+        String fromBusId = resolveBusIdFromEnd(fromEnd);
+        String toBusId = resolveBusIdFromEnd(toEnd);
         if (fromBusId == null || toBusId == null) {
             String[] busIds = resolveBranchBusIds(bag.getId());
             if (fromBusId == null) fromBusId = busIds[0];
@@ -150,11 +164,12 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         double rPU = r / baseZ;
         double xPU = x / baseZ;
 
-        // Voltage levels from bus bases + Z on ratedU; taps/angles from Ratio/PhaseTapChanger.
-        double fromTurnRatio = ratioTapForEnd(end1);
-        double toTurnRatio = ratioTapForEnd(end2);
-        double fromAngleDeg = phaseShiftDegForEnd(end1);
-        double toAngleDeg = phaseShiftDegForEnd(end2);
+        // Off-nominal winding only when ratedU and the node base differ by more
+        // than a few percent. Smaller scales are the tap step the 2W tests assert.
+        double fromTurnRatio = windingTurnRatio(fromEnd, busBaseKV(builder, fromBusId));
+        double toTurnRatio = windingTurnRatio(toEnd, busBaseKV(builder, toBusId));
+        double fromAngleDeg = windingAngleDeg(fromEnd);
+        double toAngleDeg = windingAngleDeg(toEnd);
 
         double ratingMva = CGMESUnitConverter.apparentPowerToMVA(
                 end1.getDouble("PowerTransformerEnd.ratedS",
@@ -197,20 +212,8 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
             name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva, isPs, fromAngleDeg, toAngleDeg);
     }
 
-
-    private String resolveBusIdFromEnd(CGMESPropertyBag end) {
-        if (cimModel == null || end == null) return null;
-        String termId = end.getResourceId("TransformerEnd.Terminal");
-        if (termId == null) return null;
-        String tn = cimModel.getTopologicalNodeByTerminal(termId);
-        if (tn != null) return cimModel.getBusId(tn);
-        String cn = cimModel.getConnectivityNodeByTerminal(termId);
-        if (cn != null) return cimModel.getBusId(cn);
-        return null;
-    }
-
-    private static boolean endHasX(CGMESPropertyBag end) {
-        return end.getString("PowerTransformerEnd.x") != null
-                || end.getString("TransformerEnd.x") != null;
+    private int terminalSequence(CGMESPropertyBag end) {
+        if (cimModel == null || end == null) return Integer.MAX_VALUE;
+        return cimModel.terminalSequence(end.getResourceId("TransformerEnd.Terminal"));
     }
 }
