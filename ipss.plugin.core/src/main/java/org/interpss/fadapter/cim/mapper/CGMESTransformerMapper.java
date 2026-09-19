@@ -204,14 +204,6 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         return null;
     }
 
-    private static Double busBaseKV(AclfNetworkBuilder builder, String busId) {
-        if (busId == null) return null;
-        var bus = builder.getBus(busId);
-        if (bus == null || bus.getBaseVoltage() <= 0) return null;
-        return bus.getBaseVoltage() / 1000.0;
-    }
-
-
     private static boolean endHasX(CGMESPropertyBag end) {
         return end.getString("PowerTransformerEnd.x") != null
                 || end.getString("TransformerEnd.x") != null;

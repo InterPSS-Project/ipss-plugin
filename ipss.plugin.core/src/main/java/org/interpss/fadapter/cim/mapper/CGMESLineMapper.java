@@ -47,7 +47,7 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        Double baseKV = resolveBaseKV(bag);
+        Double baseKV = resolveBaseKV(bag, builder, fromBusId, toBusId);
         double baseZ = baseKV * baseKV / baseMVA;
         double baseY = baseMVA / (baseKV * baseKV);
         double rPU = r / baseZ;
@@ -92,7 +92,7 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        Double baseKV = resolveBaseKV(bag);
+        Double baseKV = resolveBaseKV(bag, builder, fromBusId, toBusId);
         double baseZ = baseKV * baseKV / baseMVA;
         double rPU = r / baseZ;
         double xPU = x / baseZ;
@@ -114,7 +114,8 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             name, fromBusId, toBusId, rPU, xPU);
     }
 
-    private Double resolveBaseKV(CGMESPropertyBag bag) {
+    private Double resolveBaseKV(CGMESPropertyBag bag, AclfNetworkBuilder builder,
+                                 String fromBusId, String toBusId) {
         Double baseKV = null;
         String bvRef = bag.getResourceId("ConductingEquipment.BaseVoltage");
         if (bvRef != null && cimModel != null) {
@@ -125,6 +126,12 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             if (!topoNodes.isEmpty()) {
                 baseKV = cimModel.getNominalVoltageForTopoNode(topoNodes.get(0));
             }
+        }
+        if (baseKV == null) {
+            baseKV = busBaseKV(builder, fromBusId);
+        }
+        if (baseKV == null) {
+            baseKV = busBaseKV(builder, toBusId);
         }
         if (baseKV == null) {
             log.warn("Cannot determine base voltage for {}, using 100 kV", bag.getName());
