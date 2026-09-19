@@ -10,6 +10,7 @@ package org.interpss.fadapter.cim;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -162,8 +163,33 @@ public class CIMModel {
         return listByType(cimNamespace + "TransformerCoreAdmittance");
     }
 
+    /**
+     * EnergyConsumer plus concrete subclasses. RDF stores the leaf type only;
+     * Jena does not infer {@code rdf:type EnergyConsumer} from ConformLoad.
+     */
     public List<CIMPropertyBag> energyConsumers() {
-        return listByType(cimNamespace + "EnergyConsumer");
+        List<CIMPropertyBag> result = new ArrayList<>();
+        for (String type : new String[] {
+                "EnergyConsumer", "ConformLoad", "NonConformLoad", "StationSupply" }) {
+            result.addAll(listByType(cimNamespace + type));
+        }
+        if (entsoeNamespace != null) {
+            result.addAll(listByType(entsoeNamespace + "StationSupply"));
+        }
+        return dedupeById(result);
+    }
+
+    private static List<CIMPropertyBag> dedupeById(List<CIMPropertyBag> bags) {
+        Map<String, CIMPropertyBag> byId = new LinkedHashMap<>();
+        int anon = 0;
+        for (CIMPropertyBag bag : bags) {
+            String id = bag.getId();
+            if (id == null) {
+                id = "anon-" + (anon++);
+            }
+            byId.putIfAbsent(id, bag);
+        }
+        return new ArrayList<>(byId.values());
     }
 
     public List<CIMPropertyBag> synchronousMachines() {
