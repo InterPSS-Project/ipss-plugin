@@ -31,8 +31,8 @@ import com.interpss.core.net.OriginalDataFormat;
  * P3 adds ReliCapGrid (Svedala / optional Belgovia) when the local clone exists.
  *
  * <p>CAS fixtures resolve from (1) {@code -Dipss.cgmes.cas.root}, (2) in-repo
- * symlinks under {@code testData/adpter/cim/cgmes3.0/cas/}, then (3) the Temp
- * download tree. Symlinks are gitignored; see {@code cas/README.md}.
+ * copies under {@code testData/adpter/cim/cgmes3.0/cas/}, then (3) the Temp
+ * download tree. See {@code cas/README.md}.
  *
  * <p>Tests that need the pack skip via {@code assumeTrue} when files are absent.
  *
@@ -42,7 +42,7 @@ import com.interpss.core.net.OriginalDataFormat;
 public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 
 	private static final String TD24 = "testData/adpter/cim/cgmes2.4/";
-	/** Preferred in-repo symlinks (see {@code testData/.../cgmes3.0/cas/README.md}). */
+	/** Preferred in-repo copies (see {@code testData/.../cgmes3.0/cas/README.md}). */
 	private static final String TD30_CAS = "testData/adpter/cim/cgmes3.0/cas/";
 
 	/**
@@ -50,7 +50,7 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	 * <ol>
 	 *   <li>{@code -Dipss.cgmes.cas.root=} unzipped CAS root (parent of {@code v3.0/}), then
 	 *       {@code v3.0/} + {@code relativeUnderV30}</li>
-	 *   <li>In-repo symlink under {@link #TD30_CAS}{@code localCasDirName}</li>
+	 *   <li>In-repo copy under {@link #TD30_CAS}{@code localCasDirName}</li>
 	 *   <li>Default Temp download tree under {@code ~/Documents/Temp/cgmes-test-data/}</li>
 	 * </ol>
 	 */
@@ -87,7 +87,7 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 
 
 	/**
-	 * Resolve under CAS 2.4.15 Temp tree (or in-repo symlink under {@link #TD30_CAS}).
+	 * Resolve under CAS 2.4.15 Temp tree (or in-repo copy under {@link #TD30_CAS}).
 	 */
 	private static Path cas24Dir(String localCasDirName, String relativeUnderCas24Root) {
 		Path local = Path.of(TD30_CAS + localCasDirName);
@@ -104,7 +104,7 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	/**
-	 * Resolve under ReliCapGrid clone (or in-repo symlink under {@link #TD30_CAS}).
+	 * Resolve under ReliCapGrid clone (or in-repo copy under {@link #TD30_CAS}).
 	 */
 	private static Path relicapDir(String localCasDirName, String relativeUnderClone) {
 		Path local = Path.of(TD30_CAS + localCasDirName);
@@ -738,7 +738,7 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		Path dir = relicapDir("ReliCap-Svedala-cimxml",
 				"Instance/Svedala/Grid/cimxml");
 		assumeTrue(Files.isDirectory(dir),
-				() -> "ReliCap Svedala cimxml missing (clone under ~/Documents/Temp/cgmes-test-data/relicapgrid or symlink): "
+				() -> "ReliCap Svedala cimxml missing (local cas/ copy, or clone under ~/Documents/Temp/cgmes-test-data/relicapgrid): "
 						+ dir);
 
 		Path eq = pickProfile(dir, "EQ");
