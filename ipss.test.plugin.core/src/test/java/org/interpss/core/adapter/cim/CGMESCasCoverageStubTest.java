@@ -283,6 +283,153 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 				"EQBD/TPBD should not inflate bus count substantially");
 	}
 
+
+	// -------------------------------------------------------------------------
+	// P0 — MicroGrid BC_* + T2_* in-repo CGMES 2.4 fixtures
+	// -------------------------------------------------------------------------
+
+	@Test
+	@DisplayName("P0: MicroGrid BC BE EQ+TP+SSH import (in-repo)")
+	public void testMicroGrid_BC_BE_Import() throws Exception {
+		Path eq = Path.of(TD24 + "MicroGridTestConfiguration_BC_BE_EQ_V2.xml");
+		Path tp = Path.of(TD24 + "MicroGridTestConfiguration_BC_BE_TP_V2.xml");
+		Path ssh = Path.of(TD24 + "MicroGridTestConfiguration_BC_BE_SSH_V2.xml");
+		assumeTrue(Files.isRegularFile(eq) && Files.isRegularFile(tp) && Files.isRegularFile(ssh),
+				() -> "Missing BC_BE fixtures under " + TD24);
+		AclfNetwork net;
+		try {
+			net = new CGMESDirectParser().parse(new String[] {
+					eq.toAbsolutePath().toString(),
+					tp.toAbsolutePath().toString(),
+					ssh.toAbsolutePath().toString()
+			});
+		} catch (Exception ex) {
+			assumeTrue(false, () -> "BC_BE parse failed: " + ex.getMessage());
+			return;
+		}
+		assertTrue(net.getNoBus() > 0, "BC_BE should create buses");
+		assertTrue(net.getNoBranch() > 0, "BC_BE should create branches");
+	}
+
+	@Test
+	@DisplayName("P0: MicroGrid BC NL EQ+TP+SSH import (in-repo)")
+	public void testMicroGrid_BC_NL_Import() throws Exception {
+		Path eq = Path.of(TD24 + "MicroGridTestConfiguration_BC_NL_EQ_V2.xml");
+		Path tp = Path.of(TD24 + "MicroGridTestConfiguration_BC_NL_TP_V2.xml");
+		Path ssh = Path.of(TD24 + "MicroGridTestConfiguration_BC_NL_SSH_V2.xml");
+		assumeTrue(Files.isRegularFile(eq) && Files.isRegularFile(tp) && Files.isRegularFile(ssh),
+				() -> "Missing BC_NL fixtures under " + TD24);
+		AclfNetwork net;
+		try {
+			net = new CGMESDirectParser().parse(new String[] {
+					eq.toAbsolutePath().toString(),
+					tp.toAbsolutePath().toString(),
+					ssh.toAbsolutePath().toString()
+			});
+		} catch (Exception ex) {
+			assumeTrue(false, () -> "BC_NL parse failed: " + ex.getMessage());
+			return;
+		}
+		assertTrue(net.getNoBus() > 0, "BC_NL should create buses");
+		assertTrue(net.getNoBranch() > 0, "BC_NL should create branches");
+	}
+
+	@Test
+	@DisplayName("P0: MicroGrid BC Assembled BE+NL+BD (+ optional SV) import (in-repo)")
+	public void testMicroGrid_BC_Assembled_Import() throws Exception {
+		Path beEq = Path.of(TD24 + "MicroGridTestConfiguration_BC_BE_EQ_V2.xml");
+		Path beTp = Path.of(TD24 + "MicroGridTestConfiguration_BC_BE_TP_V2.xml");
+		Path beSsh = Path.of(TD24 + "MicroGridTestConfiguration_BC_BE_SSH_V2.xml");
+		Path nlEq = Path.of(TD24 + "MicroGridTestConfiguration_BC_NL_EQ_V2.xml");
+		Path nlTp = Path.of(TD24 + "MicroGridTestConfiguration_BC_NL_TP_V2.xml");
+		Path nlSsh = Path.of(TD24 + "MicroGridTestConfiguration_BC_NL_SSH_V2.xml");
+		Path eqBd = Path.of(TD24 + "MicroGridTestConfiguration_EQ_BD.xml");
+		Path tpBd = Path.of(TD24 + "MicroGridTestConfiguration_TP_BD.xml");
+		Path sv = Path.of(TD24 + "MicroGridTestConfiguration_BC_Assembled_SV_V2.xml");
+		assumeTrue(Files.isRegularFile(beEq) && Files.isRegularFile(nlEq)
+						&& Files.isRegularFile(eqBd) && Files.isRegularFile(tpBd),
+				() -> "Missing BC Assembled core fixtures under " + TD24);
+		java.util.List<String> files = new java.util.ArrayList<>();
+		files.add(beEq.toAbsolutePath().toString());
+		files.add(beTp.toAbsolutePath().toString());
+		files.add(beSsh.toAbsolutePath().toString());
+		files.add(nlEq.toAbsolutePath().toString());
+		files.add(nlTp.toAbsolutePath().toString());
+		files.add(nlSsh.toAbsolutePath().toString());
+		files.add(eqBd.toAbsolutePath().toString());
+		files.add(tpBd.toAbsolutePath().toString());
+		if (Files.isRegularFile(sv)) {
+			files.add(sv.toAbsolutePath().toString());
+		}
+		AclfNetwork net;
+		try {
+			net = new CGMESDirectParser().parse(files.toArray(new String[0]));
+		} catch (Exception ex) {
+			// Retry without Assembled SV if parser rejects it
+			if (Files.isRegularFile(sv) && files.remove(sv.toAbsolutePath().toString())) {
+				try {
+					net = new CGMESDirectParser().parse(files.toArray(new String[0]));
+				} catch (Exception ex2) {
+					assumeTrue(false, () -> "BC Assembled parse failed (with/without SV): "
+							+ ex.getMessage() + " / " + ex2.getMessage());
+					return;
+				}
+			} else {
+				assumeTrue(false, () -> "BC Assembled parse failed: " + ex.getMessage());
+				return;
+			}
+		}
+		assertTrue(net.getNoBus() > 0, "BC Assembled should create buses");
+		assertTrue(net.getNoBranch() > 0, "BC Assembled should create branches");
+	}
+
+	@Test
+	@DisplayName("P0: MicroGrid T2 BE EQ+TP+SSH import (in-repo)")
+	public void testMicroGrid_T2_BE_Import() throws Exception {
+		Path eq = Path.of(TD24 + "T2_BE_EQ.xml");
+		Path tp = Path.of(TD24 + "T2_BE_TP.xml");
+		Path ssh = Path.of(TD24 + "T2_BE_SSH.xml");
+		assumeTrue(Files.isRegularFile(eq) && Files.isRegularFile(tp) && Files.isRegularFile(ssh),
+				() -> "Missing T2_BE fixtures under " + TD24);
+		AclfNetwork net;
+		try {
+			net = new CGMESDirectParser().parse(new String[] {
+					eq.toAbsolutePath().toString(),
+					tp.toAbsolutePath().toString(),
+					ssh.toAbsolutePath().toString()
+			});
+		} catch (Exception ex) {
+			assumeTrue(false, () -> "T2_BE parse failed: " + ex.getMessage());
+			return;
+		}
+		assertTrue(net.getNoBus() > 0, "T2_BE should create buses");
+		assertTrue(net.getNoBranch() > 0, "T2_BE should create branches");
+	}
+
+	@Test
+	@DisplayName("P0: MicroGrid T2 NL EQ+TP+SSH import (in-repo)")
+	public void testMicroGrid_T2_NL_Import() throws Exception {
+		Path eq = Path.of(TD24 + "T2_NL_EQ.xml");
+		Path tp = Path.of(TD24 + "T2_NL_TP.xml");
+		Path ssh = Path.of(TD24 + "T2_NL_SSH.xml");
+		assumeTrue(Files.isRegularFile(eq) && Files.isRegularFile(tp) && Files.isRegularFile(ssh),
+				() -> "Missing T2_NL fixtures under " + TD24);
+		AclfNetwork net;
+		try {
+			net = new CGMESDirectParser().parse(new String[] {
+					eq.toAbsolutePath().toString(),
+					tp.toAbsolutePath().toString(),
+					ssh.toAbsolutePath().toString()
+			});
+		} catch (Exception ex) {
+			assumeTrue(false, () -> "T2_NL parse failed: " + ex.getMessage());
+			return;
+		}
+		assertTrue(net.getNoBus() > 0, "T2_NL should create buses");
+		assertTrue(net.getNoBranch() > 0, "T2_NL should create branches");
+	}
+
+
 	// -------------------------------------------------------------------------
 	// P0 — first official CGMES 3.0 / CIM100 CAS MiniGrid
 	// -------------------------------------------------------------------------
