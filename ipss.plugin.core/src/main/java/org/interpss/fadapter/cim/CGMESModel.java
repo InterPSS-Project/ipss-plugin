@@ -281,8 +281,8 @@ public class CGMESModel {
 
     /**
      * Breakers, disconnectors and load-break switches. A resource typed as both
-     * Switch and Breaker is returned once. A closed switch whose terminals sit on
-     * two topological nodes is a retained zero-impedance branch.
+     * Switch and Breaker is returned once. Only a closed retained switch is a
+     * branch; a non-retained switch is already inside one topological node.
      */
     public List<CGMESPropertyBag> switches() {
         List<CGMESPropertyBag> result = new ArrayList<>();
