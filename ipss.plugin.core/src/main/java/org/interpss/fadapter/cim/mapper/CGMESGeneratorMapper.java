@@ -58,8 +58,10 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
         }
 
         String machineTypeUri = bag.getResourceId("SynchronousMachine.type");
-        boolean isMotor = machineTypeUri != null && machineTypeUri.toLowerCase().contains("motor");
-        if (isMotor) {
+        String operatingModeUri = bag.getResourceId("SynchronousMachine.operatingMode");
+        // Kind values such as generatorOrCondenserOrMotor contain "motor" but are not motors.
+        // Skip only an explicit motor operating mode, or kind exactly SynchronousMachineKind.motor.
+        if (isMotorOnly(machineTypeUri, operatingModeUri)) {
             log.debug("Skipping SynchronousMachine {} typed as motor", name);
             return;
         }
@@ -203,5 +205,25 @@ public class CGMESGeneratorMapper extends AbstractCGMESDataMapper {
             }
         }
         return targetV <= 2.0 ? targetV : 1.0;
+    }
+
+    /** True only for operating mode motor, or kind exactly {@code SynchronousMachineKind.motor}. */
+    private static boolean isMotorOnly(String typeUri, String modeUri) {
+        String mode = rdfLocalName(modeUri);
+        if ("motor".equals(mode)) {
+            return true;
+        }
+        if (mode != null) {
+            return false;
+        }
+        return "motor".equals(rdfLocalName(typeUri));
+    }
+
+    private static String rdfLocalName(String uri) {
+        if (uri == null || uri.isEmpty()) {
+            return null;
+        }
+        int cut = Math.max(uri.lastIndexOf('#'), uri.lastIndexOf('.'));
+        return uri.substring(cut + 1).toLowerCase();
     }
 }
