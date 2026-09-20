@@ -99,7 +99,7 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 			return Path.of(override).resolve(relativeUnderCas24Root);
 		}
 		String home = System.getProperty("user.home");
-		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "cas-2.4.15")
+		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "cas-v2.4.15")
 				.resolve(relativeUnderCas24Root);
 	}
 
@@ -1070,6 +1070,77 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eq, ssh, tp));
 		assertTrue(net.getNoBus() > 0);
 		assertTrue(net.getNoBranch() > 0);
+	}
+
+
+
+	// -------------------------------------------------------------------------
+	// P2c — CAS 2.4.15 MicroGrid Type4 Difference packs (in-repo copies)
+	// -------------------------------------------------------------------------
+
+	@Test
+	@DisplayName("P2: CAS 2.4.15 Type4 BE BB Difference profiles present + SSH readable")
+	public void testCas24_Type4_BE_BB_Difference_Present() throws Exception {
+		assertType4DifferencePack("MicroGrid-Type4-T4_BE_BB_Difference_v2",
+				"MicroGrid/Type4_T4/T4_BE_BB_Difference_v2", "BE");
+	}
+
+	@Test
+	@DisplayName("P2: CAS 2.4.15 Type4 BE NB Difference profiles present + SSH readable")
+	public void testCas24_Type4_BE_NB_Difference_Present() throws Exception {
+		assertType4DifferencePack("MicroGrid-Type4-T4_BE_NB_Difference_v2",
+				"MicroGrid/Type4_T4/T4_BE_NB_Difference_v2", "BE");
+	}
+
+	@Test
+	@DisplayName("P2: CAS 2.4.15 Type4 NL BB Difference profiles present + SSH readable")
+	public void testCas24_Type4_NL_BB_Difference_Present() throws Exception {
+		assertType4DifferencePack("MicroGrid-Type4-T4_NL_BB_Difference_v2",
+				"MicroGrid/Type4_T4/T4_NL_BB_Difference_v2", "NL");
+	}
+
+	@Test
+	@DisplayName("P2: CAS 2.4.15 Type4 NL NB Difference profiles present + SSH readable")
+	public void testCas24_Type4_NL_NB_Difference_Present() throws Exception {
+		assertType4DifferencePack("MicroGrid-Type4-T4_NL_NB_Difference_v2",
+				"MicroGrid/Type4_T4/T4_NL_NB_Difference_v2", "NL");
+	}
+
+	/**
+	 * Type4 packs are DifferenceModel (EQ_DIFF/TP_DIFF), not stand-alone IGMs.
+	 * Assert required profiles exist and SSH is non-empty readable XML.
+	 */
+	private static void assertType4DifferencePack(String localName, String relative, String mas)
+			throws Exception {
+		Path dir = cas24Dir(localName, relative);
+		assumeTrue(Files.isDirectory(dir), () -> "Type4 pack missing: " + dir);
+		Path eqDiff = null;
+		Path tpDiff = null;
+		Path ssh = null;
+		try (java.util.stream.Stream<Path> s = Files.list(dir)) {
+			for (Path x : (Iterable<Path>) s::iterator) {
+				String n = x.getFileName().toString().toUpperCase();
+				if (n.contains("EQ_DIFF")) {
+					eqDiff = x;
+				} else if (n.contains("TP_DIFF")) {
+					tpDiff = x;
+				} else if (n.contains("_SSH_") || n.endsWith("_SSH_V2.XML") || n.contains("_SSH.")) {
+					ssh = x;
+				}
+			}
+		}
+		final Path eqDiffF = eqDiff;
+		final Path tpDiffF = tpDiff;
+		final Path sshF = ssh;
+		assumeTrue(eqDiffF != null && Files.isRegularFile(eqDiffF), () -> "EQ_DIFF missing under " + dir);
+		assumeTrue(tpDiffF != null && Files.isRegularFile(tpDiffF), () -> "TP_DIFF missing under " + dir);
+		assumeTrue(sshF != null && Files.isRegularFile(sshF), () -> "SSH missing under " + dir);
+		String sshText = Files.readString(sshF);
+		assertTrue(sshText.contains("cim:") || sshText.contains("SteadyStateHypothesis"),
+				() -> "SSH should look like CIM XML for MAS " + mas + ": " + sshF);
+		String eqText = Files.readString(eqDiffF);
+		assertTrue(eqText.contains("DifferenceModel") || eqText.contains("dm:"),
+				() -> "EQ_DIFF should be a DifferenceModel: " + eqDiffF);
 	}
 
 

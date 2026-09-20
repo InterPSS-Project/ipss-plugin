@@ -38,3 +38,19 @@ mkdir -p "$DEST"
 cp -R "$CAS_ROOT/path/to/pack/"*.xml "$DEST/"
 # Prefer XML profiles the tests need (EQ/SSH/TP/SV/EQBD). Skip large SHACL/xlsx unless required.
 ```
+
+## CAS 2.4.15 Type4 Difference packs
+
+Copied under `MicroGrid-Type4-T4_*_Difference_v2/` from Temp `cas-v2.4.15/MicroGrid/Type4_T4/`.
+These are **DifferenceModel** profiles (`EQ_DIFF` / `TP_DIFF` + SSH/DL), not stand-alone EQ/TP/SV
+IGMs. Import stubs assert file presence and SSH readability; full Difference apply + P4 needs a
+base model + Difference merge (not wired yet).
+
+```bash
+SRC=~/Documents/Temp/cgmes-test-data/cas-v2.4.15/MicroGrid/Type4_T4
+DEST=ipss.test.plugin.core/testData/adpter/cim/cgmes3.0/cas
+for d in T4_BE_BB_Difference_v2 T4_BE_NB_Difference_v2 T4_NL_BB_Difference_v2 T4_NL_NB_Difference_v2; do
+  mkdir -p "$DEST/MicroGrid-Type4-$d"
+  cp -R "$SRC/$d/"*.xml "$DEST/MicroGrid-Type4-$d/"
+done
+```

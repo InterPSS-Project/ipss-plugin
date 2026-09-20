@@ -1,0 +1,32 @@
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#" xmlns:md="http://iec.ch/TC57/61970-552/ModelDescription/1#" xmlns:dm="http://iec.ch/TC57/61970-552/DifferenceModel/1#">
+<dm:DifferenceModel rdf:about="urn:uuid:3c51d1bc-f8fc-4ddd-9c12-137bc44964a7">
+<md:Model.created>2014-10-24T17:05:36</md:Model.created>
+<md:Model.scenarioTime/>
+<md:Model.version>2</md:Model.version>
+<md:Model.Supersedes rdf:resource="urn:uuid:f2f43818-09c8-4252-9611-7af80c398d20"/>
+<md:Model.description>CGMES Conformity Assessment: 'MicroGridTestConfiguration....T4' Test Configuration. The model is owned by ENTSO-E and is provided by ENTSO-E “as it is”. To the fullest extent permitted by law, ENTSO-E shall not be liable for any damages of any kind arising out of the use of the model (including any of its subsequent modifications). ENTSO-E neither warrants, nor represents that the use of the model will not infringe the rights of third parties. Any use of the model shall  include a reference to ENTSO-E. ENTSO-E web site is the only official source of information related to the model.</md:Model.description>
+<md:Model.modelingAuthoritySet>http://ELIA/CGMES/2.4.15</md:Model.modelingAuthoritySet>
+<md:Model.profile>http://iec.ch/TC57/61970-552/DifferenceModel/1http://entsoe.eu/CIM/Topology/4/1</md:Model.profile>
+<dm:preconditions parseType="Statements"> </dm:preconditions>
+<dm:reverseDifferences parseType="Statements"/>
+<dm:forwardDifferences parseType="Statements">
+<cim:ConnectivityNode rdf:about="#_af14c8ab-eb51-42be-89cb-abbcf37e20a3">
+<cim:ConnectivityNode.TopologicalNode rdf:resource="#_23b65c6b-2351-4673-89e9-1895c7291543"/>
+</cim:ConnectivityNode>
+<cim:TopologicalNode rdf:ID="_23b65c6b-2351-4673-89e9-1895c7291543">
+<cim:IdentifiedObject.name>Series Compensator</cim:IdentifiedObject.name>
+<cim:TopologicalNode.BaseVoltage rdf:resource="#_63893f24-5b4e-407c-9a1e-4ff71121f33c"/>
+<cim:TopologicalNode.ConnectivityNodeContainer rdf:resource="#_69ef0dbd-da79-4eef-a02f-690cb8a28361"/>
+</cim:TopologicalNode>
+<cim:Terminal rdf:about="#_67bb74f1-8620-4a32-9d7d-a44092d11d22">
+<cim:Terminal.TopologicalNode rdf:resource="#_f70f6bad-eb8d-4b8f-8431-4ab93581514e"/>
+</cim:Terminal>
+<cim:Terminal rdf:about="#_8171fc34-6891-40e0-92d1-da9f4ba69e26">
+<cim:Terminal.TopologicalNode rdf:resource="#_f70f6bad-eb8d-4b8f-8431-4ab93581514e"/>
+</cim:Terminal>
+<cim:Terminal rdf:about="#_13dcec71-4b02-4c0c-93a7-8e16db4aa0b7">
+<cim:Terminal.TopologicalNode rdf:resource="#_23b65c6b-2351-4673-89e9-1895c7291543"/>
+</cim:Terminal>
+</dm:forwardDifferences>
+</dm:DifferenceModel>
+</rdf:RDF>
