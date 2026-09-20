@@ -42,13 +42,13 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
  * Svedala-Merged {@code |V|} 0.02 / 85%, angle 1.5° / 85%, flow 0.40;
  * MiniGrid NB voltage-only (allow 2 boundary missing buses; no flow assert yet);
  * ReliCap Svedala / Britheim / Portheim voltage-only ({@code |V|} 0.02 / 85%, soft angle);
- * Type3 CGM first hour voltage-only ({@code |V|} 0.02 / 70%, soft angle; soft NR);
+ * Type3 CGM first and +1h voltage-only ({@code |V|} 0.02 / 70%, soft angle; soft NR);
  * MicroGrid T4 BE / FullGrid / RealGrid: soft NR + voltage-only floors.
  * Closed retained switches are zero-Z branches: seed, consolidate, NR, then
  * deconsolidate so SV compare still sees the original buses.
  *
- * <p>Type3 CGM mid hour and ReliCap Espheim still abort because NR does not
- * converge. Those tests live in {@link CGMESCasP4AclfUnconvergedStubTest}.
+ * <p>ReliCap Espheim and the Espheim–Svedala DC corridor still abort because NR
+ * does not converge. Those tests live in {@link CGMESCasP4AclfUnconvergedStubTest}.
  *
  * <p>RealGrid-Merged is in this class. Buses with no SV row start at flat voltage,
  * and a few degrees across a milliohm branch is tens of thousands of pu. The
@@ -769,8 +769,20 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		runType3HourP4("20210422T2230Z");
 	}
 
+	@Test
+	@DisplayName("P4: Type3 CGM mid hour SV-seeded NR + Aclf vs SvVoltage")
+	public void testP4_Type3Cgm_MidHour_AclfVsSv() throws Exception {
+		// Prefer a converging hour near the first stamp; 1030Z/1430Z fail NR,
+		// 1130Z converges but |V| collapses. +1h (2330Z) tracks first-hour quality.
+		runType3HourP4("20210422T2330Z");
+	}
+
 	/** Shared EQ (first-hour stamp) + per-hour SSH + Assembled TP/SV; voltage-only. */
 	static void runType3HourP4(String hour) throws Exception {
+		runType3HourP4(hour, 0.70);
+	}
+
+	static void runType3HourP4(String hour, double defaultMinV) throws Exception {
 		Path igms = casDir("MicroGrid-Type3-IGMs", "MicroGrid/MicroGrid-Type3/IGMs");
 		Path cgms = casDir("MicroGrid-Type3-CGMs", "MicroGrid/MicroGrid-Type3/CGMs");
 		assumeTrue(Files.isDirectory(igms), () -> "Type3 IGMs missing: " + igms);
@@ -788,7 +800,8 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() > 0, () -> "Type3 " + hour + " should create buses");
 		runNrSeededSoft(net, sv, "Type3 CGM " + hour);
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
+		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch",
+				Double.toString(defaultMinV)));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
 				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
@@ -831,5 +844,4 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 			}
 		}
 	}
-
 }
