@@ -435,7 +435,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	// -------------------------------------------------------------------------
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P0: CAS v3.0.3 MiniGrid-Merged EQ+SSH+TP+SV+EQBD (CIM100)")
 	public void testCasV30_MiniGridMerged_Import() throws Exception {
 		Path dir = casDir("MiniGrid-Merged", "MiniGrid/MiniGrid-Merged");
@@ -466,7 +465,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	// -------------------------------------------------------------------------
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P1: CAS v3.0.3 MicroGrid Type1 BE-MAS EQ+SSH+TP import")
 	public void testCasV30_MicroGridType1_BE_Import() throws Exception {
 		Path dir = casDir("MicroGrid-Type1-BE-MAS", "MicroGrid/MicroGrid-Type1/MicroGrid-Type1-BE-MAS");
@@ -483,7 +481,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P1: CAS v3.0.3 MicroGrid Type1 Merged (BE+NL EQ/SSH + Assembled TP/SV + EQBD)")
 	public void testCasV30_MicroGridType1_Merged_Import() throws Exception {
 		Path merged = casDir("MicroGrid-Type1-Merged", "MicroGrid/MicroGrid-Type1/MicroGrid-Type1-Merged");
@@ -509,7 +506,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	// -------------------------------------------------------------------------
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 PST PhaseTapChangerLinear Type1 EQ+SSH+TP+SV")
 	public void testCasV30_PST_PhaseTapChangerLinear_Type1() throws Exception {
 		// Official tree (cimgo): PST/PST_PhaseTapChangerLinear_Type1
@@ -561,7 +557,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 MicroGrid Type2 BE-MAS EQ+SSH+TP (+EQBD)")
 	public void testCasV30_MicroGridType2_BE_Import() throws Exception {
 		Path dir = casDir("MicroGrid-Type2-BE-MAS",
@@ -584,7 +579,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 MicroGrid Type2 Merged EQ/SSH + Assembled TP/SV (+EQBD) [SSH+SV]")
 	public void testCasV30_MicroGridType2_Merged_SshSv() throws Exception {
 		Path merged = casDir("MicroGrid-Type2-Merged",
@@ -613,7 +607,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 SmallGrid EQ+SSH+TP(+SV) import smoke")
 	public void testCasV30_SmallGrid_SshSv_Import() throws Exception {
 		// CAS v3.0 ships only SmallGrid-Merged under SmallGrid/ (no BaseCase/BE/BB/NB).
@@ -652,7 +645,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 RealGrid/FullGrid smoke (optional; skip if absent)")
 	public void testCasV30_RealGrid_ImportSmoke_Optional() throws Exception {
 		Path primary = casDir("RealGrid", "RealGrid");
@@ -683,7 +675,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	// -------------------------------------------------------------------------
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 PST PhaseTapChangerLinear Type2 EQ+SSH+TP+SV")
 	public void testCasV30_PST_PhaseTapChangerLinear_Type2() throws Exception {
 		Path dir = casDir("PST-PhaseTapChangerLinear-Type2",
@@ -718,7 +709,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 PST PhaseTapChangerTable Type3 EQ+SSH+TP+SV")
 	public void testCasV30_PST_PhaseTapChangerTable_Type3() throws Exception {
 		Path dir = casDir("PST-PhaseTapChangerTable-Type3",
@@ -752,7 +742,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 MicroGrid Type2 HVDC-MAS EQ+SSH+TP(+SV) smoke")
 	public void testCasV30_MicroGridType2_HVDC_ImportSmoke() throws Exception {
 		Path dir = casDir("MicroGrid-Type2-HVDC-MAS",
@@ -789,7 +778,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 MicroGrid Type3 IGM first-hour BE EQ+SSH+TP(+BD)")
 	public void testCasV30_MicroGridType3_Igm_BE_FirstHour() throws Exception {
 		Path igms = casDir("MicroGrid-Type3-IGMs", "MicroGrid/MicroGrid-Type3/IGMs");
@@ -808,7 +796,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 MicroGrid Type3 CGM first-hour BE+NL EQ/SSH + Assembled TP/SV")
 	public void testCasV30_MicroGridType3_Cgm_FirstHour() throws Exception {
 		Path igms = casDir("MicroGrid-Type3-IGMs", "MicroGrid/MicroGrid-Type3/IGMs");
@@ -834,7 +821,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 PowerFlow explicit LF case EQ+SSH+TP+SV")
 	public void testCasV30_PowerFlow_ExplicitLoadFlow() throws Exception {
 		Path primary = casDir("PowerFlow-Instance", "PowerFlow/PowerFlow");
@@ -856,7 +842,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 Svedala-Merged EQ+SSH+TP+SV+EQBD")
 	public void testCasV30_SvedalaMerged_Import() throws Exception {
 		Path dir = casDir("CAS-Svedala-Merged", "Svedala/Svedala-Merged");
@@ -879,7 +864,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	// -------------------------------------------------------------------------
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P3: ReliCapGrid Svedala IGM EQ+SSH+TP(+SV) import smoke")
 	public void testReliCap_Svedala_Igm_Import() throws Exception {
 		Path dir = relicapDir("ReliCap-Svedala-cimxml",
@@ -915,7 +899,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P3: ReliCapGrid Belgovia IGM smoke (optional)")
 	public void testReliCap_Belgovia_Igm_Import_Optional() throws Exception {
 		Path dir = relicapDir("ReliCap-Belgovia-cimxml",
@@ -938,7 +921,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	// -------------------------------------------------------------------------
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 MicroGrid Type1 NL-MAS EQ+SSH+TP (+EQBD)")
 	public void testCasV30_MicroGridType1_NL_Import() throws Exception {
 		Path dir = casDir("MicroGrid-Type1-NL-MAS",
@@ -955,7 +937,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 MicroGrid Type2 NL-MAS EQ+SSH+TP (+EQBD)")
 	public void testCasV30_MicroGridType2_NL_Import() throws Exception {
 		Path dir = casDir("MicroGrid-Type2-NL-MAS",
@@ -973,7 +954,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 MicroGrid BaseCase-Merged EQ/SSH + Assembled TP/SV (+EQBD)")
 	public void testCasV30_MicroGridBaseCase_Merged_Import() throws Exception {
 		Path merged = casDir("MicroGrid-BaseCase-Merged",
@@ -994,7 +974,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 SmallGrid-Merged EQ+SSH+TP+SV+EQBD")
 	public void testCasV30_SmallGridMerged_Import() throws Exception {
 		Path dir = casDir("SmallGrid-Merged", "SmallGrid/SmallGrid-Merged");
@@ -1011,7 +990,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 FullGrid-Merged EQ+SSH+TP+SV+EQBD (scale)")
 	public void testCasV30_FullGridMerged_Import() throws Exception {
 		Path dir = casDir("FullGrid-Merged", "FullGrid/FullGrid-Merged");
@@ -1029,7 +1007,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P2: CAS v3.0 RealGrid-Merged EQ+SSH+TP+SV (scale)")
 	public void testCasV30_RealGridMerged_Import() throws Exception {
 		Path dir = casDir("RealGrid-Merged", "RealGrid/RealGrid-Merged");
@@ -1045,7 +1022,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P3: ReliCapGrid Espheim IGM smoke")
 	public void testReliCap_Espheim_Igm_Import() throws Exception {
 		Path dir = relicapDir("ReliCap-Espheim-cimxml", "Instance/Espheim/Grid/cimxml");
@@ -1060,7 +1036,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P3: ReliCapGrid Nordheim IGM smoke")
 	public void testReliCap_Nordheim_Igm_Import() throws Exception {
 		Path dir = relicapDir("ReliCap-Nordheim-cimxml", "Instance/Nordheim/Grid/cimxml");
@@ -1084,7 +1059,6 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@Tag("requires-cas-download")
 	@DisplayName("P3: ReliCapGrid Galia IGM smoke (optional)")
 	public void testReliCap_Galia_Igm_Import_Optional() throws Exception {
 		Path dir = relicapDir("ReliCap-Galia-cimxml", "Instance/Galia/Grid/cimxml");

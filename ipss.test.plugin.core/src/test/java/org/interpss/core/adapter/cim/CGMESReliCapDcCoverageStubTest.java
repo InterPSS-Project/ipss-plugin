@@ -25,7 +25,6 @@ import com.interpss.core.aclf.AclfNetwork;
  * <em>file presence</em> (not Aclf import — NCP is out of scope for the parser).
  */
 @Tag("cgmes-cas")
-@Tag("requires-cas-download")
 @Tag("relicap")
 public class CGMESReliCapDcCoverageStubTest extends CorePluginTestSetup {
 

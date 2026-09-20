@@ -27,7 +27,6 @@ import com.interpss.core.aclf.AclfNetwork;
  * {@code -Dipss.cgmes.type3.allHours=true} to exercise all 24 published hours.
  */
 @Tag("cgmes-cas")
-@Tag("requires-cas-download")
 public class CGMESCasType3HourCoverageStubTest extends CorePluginTestSetup {
 
 	private static final String TD30_CAS = "testData/adpter/cim/cgmes3.0/cas/";

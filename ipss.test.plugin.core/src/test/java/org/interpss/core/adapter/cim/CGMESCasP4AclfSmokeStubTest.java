@@ -30,7 +30,6 @@ import com.interpss.core.algo.LoadflowAlgorithm;
  * {@code minAngMatch}, {@code pTolMw}, {@code qTolMvar}, {@code minFlowMatch}.
  */
 @Tag("cgmes-cas")
-@Tag("requires-cas-download")
 @Tag("cgmes-p4-aclf")
 public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 
@@ -45,7 +44,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 	}
 
 	private static double minMatch() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.98"));
+		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "1.0"));
 	}
 
 	private static Path casDir(String localCasDirName, String relativeUnderV30) {
