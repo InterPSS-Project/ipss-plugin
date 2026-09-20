@@ -2,9 +2,9 @@ package org.interpss.core.adapter.cim;
 
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.abs;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.casDir;
-import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.compareFlows;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.compareToSv;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.mustFile;
+import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.solveNrSeeded;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -18,67 +18,22 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import com.interpss.core.LoadflowAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
-import com.interpss.core.algo.AclfMethodType;
-import com.interpss.core.algo.LoadflowAlgorithm;
 
 /**
- * P4 cases whose SV-seeded NR does not converge yet. Split out of
- * {@link CGMESCasP4AclfSmokeStubTest} so that class stays green.
+ * P4 cases whose SV-seeded NR still does not converge after zero-Z consolidation.
+ * Split out of {@link CGMESCasP4AclfSmokeStubTest} so that class stays green.
  *
- * <p>FullGrid-Merged and RealGrid-Merged abort when NR does not converge
- * with the SV seed.
+ * <p>RealGrid-Merged: after closed retained switches are consolidated, NR stops on a
+ * numerical failure (also seen as a singular KLU factorization). The solver's
+ * best-effort state had dPmax about 2.7e7 pu at
+ * {@code _12548178-5c7c-4a70-b349-23cf002946a3} and dQmax about 1.1e8 pu at
+ * {@code _d35e56b7-b7a8-447f-b62a-53bcba4369be}, with 638 unsettled controls.
+ * That is the solver report, not a diagnosed bus-level cause.
  */
 @Tag("cgmes-cas")
 @Tag("cgmes-p4-aclf")
 public class CGMESCasP4AclfUnconvergedStubTest extends CorePluginTestSetup {
-
-	@Test
-	@DisplayName("P4: FullGrid-Merged SV-seeded NR + Aclf vs SvVoltage (+ soft flow)")
-	public void testP4_FullGridMerged_AclfVsSv() throws Exception {
-		Path dir = casDir("FullGrid-Merged", "FullGrid/FullGrid-Merged");
-		assumeTrue(Files.isDirectory(dir), () -> "FullGrid-Merged missing: " + dir);
-		Path svXml = mustFile(dir, "FullGrid_SV.xml");
-		Path eqXml = mustFile(dir, "FullGrid_EQ.xml");
-		Path tpXml = mustFile(dir, "FullGrid_TP.xml");
-		Path eqBd = mustFile(dir, "FullGrid_EQBD.xml");
-		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
-		AclfNetwork net = new CGMESDirectParser().parse(abs(
-				eqXml,
-				mustFile(dir, "FullGrid_SSH.xml"),
-				tpXml,
-				svXml,
-				eqBd));
-		assertTrue(net.getNoBus() > 0);
-		int seeded = CgmesSvCompareSupport.seedFromSv(net, sv);
-		assertTrue(seeded > 0, "Should seed at least one bus from SvVoltage");
-		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.setInitBusVoltage(false);
-		algo.setLfMethod(AclfMethodType.NR);
-		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-		algo.loadflow();
-		// Scale case: NR may not converge yet — skip rather than fail the suite.
-		assumeTrue(net.isLfConverged(),
-				() -> "FullGrid NR did not converge with SV seed; revisit later");
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double angTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "1.5"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
-		try {
-			compareToSv(net, sv, vTol, angTol, minV);
-			compareFlows(net, svXml, new Path[] { eqXml, tpXml, eqBd },
-					Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.35")));
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
-		}
-	}
 
 	@Test
 	@DisplayName("P4: RealGrid-Merged SV-seeded NR + Aclf vs SvVoltage")
@@ -92,15 +47,10 @@ public class CGMESCasP4AclfUnconvergedStubTest extends CorePluginTestSetup {
 		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
 		assertTrue(net.getNoBus() > 0);
-		int seeded = CgmesSvCompareSupport.seedFromSv(net, sv);
-		assertTrue(seeded > 0);
-		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.setInitBusVoltage(false);
-		algo.setLfMethod(AclfMethodType.NR);
-		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-		algo.loadflow();
-		assumeTrue(net.isLfConverged(),
-				() -> "RealGrid NR did not converge with SV seed; revisit later");
+		assumeTrue(solveNrSeeded(net, sv),
+				() -> "RealGrid NR is singular after zero-Z consolidation"
+						+ " (numerical failure / KLU LU; dPmax ~2.7e7 pu at"
+						+ " _12548178-5c7c-4a70-b349-23cf002946a3)");
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");

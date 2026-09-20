@@ -184,14 +184,14 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        // 0.0001 pu keeps 100 MW inside 0.01°. Small enough to match SV, large
-        // enough that NR does not treat the branch as a singular zero-Z row.
-        final double xPu = 1.0e-4;
         Double fromBase = busBaseKV(builder, fromBusId);
         Double toBase = busBaseKV(builder, toBusId);
         boolean crossVoltage = fromBase != null && toBase != null && Math.abs(fromBase - toBase) > 0.05;
         AclfBranch branch;
         if (crossVoltage) {
+            // isZeroZBranch() rejects transformers. Keep a small series X so the
+            // cross-voltage tie stays a nonsingular two-winding transformer.
+            final double xPu = 1.0e-4;
             double fromTap = 1.0;
             double toTap = fromBase / toBase;
             if (!(toTap > 0.0 && toTap < 2.0)) {
@@ -206,8 +206,10 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
                     new Complex(0.0, xPu), fromTap, toTap,
                     null, null, 0.0, 0.0, 0.0, 0, true);
         } else {
+            // Same-base closed switch is a zero-impedance branch. Load flow
+            // consolidates the two buses before NR (ZeroZBranch usage guide).
             branch = builder.addLine(fromBusId, toBusId, cirId,
-                    new Complex(0.0, xPu),
+                    new Complex(0.0, 0.0),
                     new Complex(0.0, 0.0),
                     null, null, 0.0, 0.0, 0.0, true);
         }
