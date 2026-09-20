@@ -314,8 +314,11 @@ public class CGMESDirectParser {
         // Boundary MW that is not already an EnergyConsumer. Nordheim puts both
         // on the same node; counting the equivalent there replaces the 200 MW load.
         for (CGMESPropertyBag ei : cimModel.equivalentInjections()) {
+            // Nordheim puts the equivalent on the same node as the load; skip
+            // that duplicate. A boundary equivalent has no bus yet — map() moves
+            // it to the internal end of the tie line.
             String busId = loadMapper.resolveBusId(ei.getId());
-            if (busId == null || loadBuses.contains(busId)) continue;
+            if (busId != null && loadBuses.contains(busId)) continue;
             int before = loadMapper.getMappedCount();
             loadMapper.map(ei, builder);
             if (loadMapper.getMappedCount() > before) loadCount++;
