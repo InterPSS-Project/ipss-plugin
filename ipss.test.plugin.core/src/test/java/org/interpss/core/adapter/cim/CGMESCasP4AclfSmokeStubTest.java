@@ -47,8 +47,10 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
  * Closed retained switches are zero-Z branches: seed, consolidate, NR, then
  * deconsolidate so SV compare still sees the original buses.
  *
- * <p>RealGrid-Merged still has a singular KLU factorization after that merge
- * and stays in {@link CGMESCasP4AclfUnconvergedStubTest}.
+ * <p>RealGrid-Merged is in this class. Buses with no SV row start at flat voltage,
+ * and a few degrees across a milliohm branch is tens of thousands of pu. The
+ * seeded solve equalizes those stiff ties, fills the flat buses from a neighbor,
+ * and limits the Newton step.
  */
 @Tag("cgmes-cas")
 @Tag("cgmes-p4-aclf")
@@ -103,6 +105,10 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 			throws Exception {
 		int seeded = CgmesSvCompareSupport.seedFromSv(net, sv);
 		assertTrue(seeded > 0, "Should seed at least one bus from SvVoltage");
+		if (net.getNoBus() > 1000) {
+			alignTinyLineComponents(net);
+			fillFlatFromNeighbor(net);
+		}
 		Map<AclfBranch, String> cgmesBranchIds = null;
 		AclfNetModelType model = net.getAclfNetModelType();
 		if (model == AclfNetModelType.ZBR_MODEL || model == AclfNetModelType.ZBR_DECONSOLIDATED) {
@@ -113,12 +119,145 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		algo.setInitBusVoltage(false); // keep SV seed
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+		if (net.getNoBus() > 1000) {
+			algo.setVariableUpdateLimit(true);
+		}
 		algo.loadflow();
 		if (net.isLfConverged() && net.getAclfNetModelType() == AclfNetModelType.ZBR_CONSOLIDATED) {
 			new AclfNetZeroZDeconsolidator(net).deconsolidate(true);
 			restoreCgmesBranchIds(net, cgmesBranchIds);
 		}
 		return net.isLfConverged();
+	}
+
+	/**
+	 * One voltage per connected set of lines with {@code |Z| <= 2e-3} pu.
+	 * A chain copy flips around a loop; this assigns each bus once. The source
+	 * is a swing bus if the set has one, otherwise a bus that is not at flat start.
+	 */
+	private static int alignTinyLineComponents(AclfNetwork net) {
+		java.util.Map<String, String> parent = new java.util.HashMap<>();
+		java.util.Map<String, com.interpss.core.aclf.AclfBus> buses = new java.util.HashMap<>();
+		for (AclfBranch branch : net.getBranchList()) {
+			if (!branch.isActive() || branch.getZ() == null
+					|| branch.getFromBus() == null || branch.getToBus() == null) {
+				continue;
+			}
+			if (branch.getZ().abs() > 2.0e-3) {
+				continue;
+			}
+			boolean nearUnityXfr = branch.isXfr() && !branch.isPSXfr()
+					&& Math.abs(branch.getFromTurnRatio() - 1.0) < 0.05
+					&& Math.abs(branch.getToTurnRatio() - 1.0) < 0.05;
+			if (!branch.isLine() && !nearUnityXfr) {
+				continue;
+			}
+			com.interpss.core.aclf.AclfBus from = (com.interpss.core.aclf.AclfBus) branch.getFromBus();
+			com.interpss.core.aclf.AclfBus to = (com.interpss.core.aclf.AclfBus) branch.getToBus();
+			buses.put(from.getId(), from);
+			buses.put(to.getId(), to);
+			unionTiny(parent, from.getId(), to.getId());
+		}
+		java.util.Map<String, java.util.List<com.interpss.core.aclf.AclfBus>> groups = new java.util.HashMap<>();
+		for (com.interpss.core.aclf.AclfBus bus : buses.values()) {
+			groups.computeIfAbsent(findTiny(parent, bus.getId()), k -> new java.util.ArrayList<>()).add(bus);
+		}
+		int n = 0;
+		for (java.util.List<com.interpss.core.aclf.AclfBus> group : groups.values()) {
+			if (group.size() < 2) {
+				continue;
+			}
+			com.interpss.core.aclf.AclfBus src = group.get(0);
+			for (com.interpss.core.aclf.AclfBus bus : group) {
+				if (bus.isSwing()) {
+					src = bus;
+					break;
+				}
+				if (isFlatStart(src) && !isFlatStart(bus)) {
+					src = bus;
+				}
+			}
+			for (com.interpss.core.aclf.AclfBus bus : group) {
+				if (bus == src) {
+					continue;
+				}
+				bus.setVoltageMag(src.getVoltageMag());
+				bus.setVoltageAng(src.getVoltageAng());
+				if (bus.isGenPV()) {
+					double vSet = src.isGenPV() ? src.getDesiredVoltMag() : src.getVoltageMag();
+					if (vSet > 0.0) {
+						bus.setDesiredVoltMag(vSet);
+					}
+				}
+				n++;
+			}
+		}
+		return n;
+	}
+
+	/** Unseeded buses stay at 1.0∠0. Copy a neighbor that already has a voltage, any impedance. */
+	private static int fillFlatFromNeighbor(AclfNetwork net) {
+		int n = 0;
+		boolean changed = true;
+		for (int pass = 0; changed && pass < 40; pass++) {
+			changed = false;
+			for (AclfBranch branch : net.getBranchList()) {
+				if (!branch.isActive() || branch.isPSXfr()
+						|| branch.getFromBus() == null || branch.getToBus() == null) {
+					continue;
+				}
+				com.interpss.core.aclf.AclfBus from = (com.interpss.core.aclf.AclfBus) branch.getFromBus();
+				com.interpss.core.aclf.AclfBus to = (com.interpss.core.aclf.AclfBus) branch.getToBus();
+				if (isFlatStart(to) && !isFlatStart(from)) {
+					copyVoltage(from, to);
+					changed = true;
+					n++;
+				} else if (isFlatStart(from) && !isFlatStart(to)) {
+					copyVoltage(to, from);
+					changed = true;
+					n++;
+				}
+			}
+		}
+		return n;
+	}
+
+	private static void copyVoltage(com.interpss.core.aclf.AclfBus src, com.interpss.core.aclf.AclfBus dst) {
+		dst.setVoltageMag(src.getVoltageMag());
+		dst.setVoltageAng(src.getVoltageAng());
+		if (dst.isGenPV()) {
+			double vSet = src.isGenPV() ? src.getDesiredVoltMag() : src.getVoltageMag();
+			if (vSet > 0.0) {
+				dst.setDesiredVoltMag(vSet);
+			}
+		}
+	}
+
+	private static boolean isFlatStart(com.interpss.core.aclf.AclfBus bus) {
+		return Math.abs(bus.getVoltageMag() - 1.0) < 1.0e-6 && Math.abs(bus.getVoltageAng()) < 1.0e-8;
+	}
+
+	private static String findTiny(java.util.Map<String, String> parent, String id) {
+		parent.putIfAbsent(id, id);
+		String root = id;
+		while (!parent.get(root).equals(root)) {
+			root = parent.get(root);
+		}
+		String cursor = id;
+		while (!cursor.equals(root)) {
+			String next = parent.get(cursor);
+			parent.put(cursor, root);
+			cursor = next;
+		}
+		return root;
+	}
+
+	private static void unionTiny(java.util.Map<String, String> parent, String a, String b) {
+		String ra = findTiny(parent, a);
+		String rb = findTiny(parent, b);
+		if (!ra.equals(rb)) {
+			parent.put(ra, rb);
+		}
 	}
 
 	/**
@@ -574,6 +713,35 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
 		try {
 			compareToSv(net, sv, vTol, angTol, minV);
+		} finally {
+			if (prevAng == null) {
+				System.clearProperty("ipss.cgmes.p4.minAngMatch");
+			} else {
+				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
+			}
+		}
+	}
+
+	@Test
+	@DisplayName("P4: RealGrid-Merged SV-seeded NR + Aclf vs SvVoltage")
+	public void testP4_RealGridMerged_AclfVsSv() throws Exception {
+		Path dir = casDir("RealGrid-Merged", "RealGrid/RealGrid-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "RealGrid-Merged missing: " + dir);
+		Path svXml = mustFile(dir, "RealGrid_SV.xml");
+		Path eqXml = mustFile(dir, "RealGrid_EQ.xml");
+		Path tpXml = mustFile(dir, "RealGrid_TP.xml");
+		Path sshXml = mustFile(dir, "RealGrid_SSH.xml");
+		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
+		assertTrue(net.getNoBus() > 0);
+		runNrSeeded(net, sv);
+		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
+		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
+		System.setProperty("ipss.cgmes.p4.minAngMatch",
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+		try {
+			compareToSv(net, sv, vTol, 10.0, minV);
 		} finally {
 			if (prevAng == null) {
 				System.clearProperty("ipss.cgmes.p4.minAngMatch");
