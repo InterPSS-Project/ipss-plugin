@@ -278,6 +278,7 @@ import org.interpss.core.adapter.cim.CIMDirectParserTest;
 import org.interpss.core.adapter.cim.IEEE118CimVsMatpowerJsonCompareTest;
 import org.interpss.core.adapter.cim.CGMESCasType3HourCoverageStubTest;
 import org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest;
+import org.interpss.core.adapter.cim.CGMESCasP4AclfUnconvergedStubTest;
 import org.interpss.core.adapter.cim.CGMESCasCoverageStubTest;
 import org.interpss.core.adapter.cim.CGMESReliCapDcCoverageStubTest;
 import org.interpss.core.adapter.ge.EpcDirectParser_SectionGate_Test;
@@ -971,6 +972,7 @@ import org.junit.platform.suite.api.Suite;
 	CGMESCasCoverageStubTest.class,
 	CGMESReliCapDcCoverageStubTest.class,
 	CGMESCasP4AclfSmokeStubTest.class,
+	//CGMESCasP4AclfUnconvergedStubTest.class,
 	
 	///Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,
