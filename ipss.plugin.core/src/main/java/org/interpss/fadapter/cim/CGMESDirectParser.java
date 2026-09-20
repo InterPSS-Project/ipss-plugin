@@ -29,7 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.net.OriginalDataFormat;
@@ -124,8 +126,23 @@ public class CGMESDirectParser {
         builder.finalizeNetwork();
 
         AclfNetwork net = builder.getNetwork();
+        markZeroZModel(net);
         log.info("CIM import: {} buses, {} branches", net.getNoBus(), net.getNoBranch());
         return net;
+    }
+
+    /**
+     * Closed retained switches are mapped as Z = 0 lines. Mark the network so
+     * load flow consolidates them instead of treating a singular row as a line.
+     */
+    private static void markZeroZModel(AclfNetwork net) {
+        for (AclfBranch branch : net.getBranchList()) {
+            if (branch.isZeroZBranch()) {
+                net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
+                log.info("CIM import: zero-Z branch present, model type ZBR_MODEL");
+                return;
+            }
+        }
     }
 
     private void convertBuses(CGMESModel cimModel) throws Exception {

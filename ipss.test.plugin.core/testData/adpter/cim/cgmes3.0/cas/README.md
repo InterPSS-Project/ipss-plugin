@@ -17,7 +17,7 @@ Resolution order in the stubs (`casDir` / friends):
 | `CGMESCasCoverageStubTest` | P0–P3 CAS + core ReliCap IGMs |
 | `CGMESCasType3HourCoverageStubTest` | Parameterized Type3 CGM hours |
 | `CGMESCasP4AclfSmokeStubTest` | P4 SV-seeded NR + Aclf vs SvVoltage (`cgmes-p4-aclf`) |
-| `CGMESCasP4AclfUnconvergedStubTest` | P4 cases whose SV-seeded NR does not converge (FullGrid, RealGrid) |
+| `CGMESCasP4AclfUnconvergedStubTest` | RealGrid only: SV-seeded NR stays singular (KLU LU) after zero-Z consolidation |
 | `CgmesSvCompareSupport` | SvVoltage reader + \|V\|/angle compare helpers |
 | `CGMESReliCapDcCoverageStubTest` | ReliCap HVDC / multi-MAS CGM / NCP presence |
 

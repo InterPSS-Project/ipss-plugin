@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.IdentityHashMap;
 import java.util.Map;
 
 import org.interpss.CorePluginTestSetup;
@@ -14,9 +15,15 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.LoadflowAlgoObjectFactory;
+import com.interpss.core.aclf.AclfBranch;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.algo.AclfMethodType;
 import com.interpss.core.algo.LoadflowAlgorithm;
+import com.interpss.core.funcImpl.zeroz.AclfNetZeroZBranchHelper;
+import com.interpss.core.funcImpl.zeroz.AclfNetZeroZDeconsolidator;
+
+import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 
 /**
  * P4: import + seed from SvVoltage + NR load-flow + compare solved V/angle and
@@ -35,10 +42,13 @@ import com.interpss.core.algo.LoadflowAlgorithm;
  * Svedala-Merged {@code |V|} 0.02 / 85%, angle 1.5° / 85%, flow 0.40;
  * MiniGrid NB voltage-only (allow 2 boundary missing buses; no flow assert yet);
  * ReliCap Svedala / Britheim voltage-only ({@code |V|} 0.02 / 85%, soft angle);
- * MicroGrid T4 BE voltage-only ({@code |V|} 0.02 / 70%, soft angle, 5 boundary missing buses).
+ * MicroGrid T4 BE voltage-only ({@code |V|} 0.02 / 70%, soft angle, 5 boundary missing buses);
+ * FullGrid-Merged voltage-only ({@code |V|} 0.02 / 70%, angle 1.5°, soft angle).
+ * Closed retained switches are zero-Z branches: seed, consolidate, NR, then
+ * deconsolidate so SV compare still sees the original buses.
  *
- * <p>FullGrid and RealGrid (SV-seeded NR does not converge)
- * are in {@link CGMESCasP4AclfUnconvergedStubTest}.
+ * <p>RealGrid-Merged still has a singular KLU factorization after that merge
+ * and stays in {@link CGMESCasP4AclfUnconvergedStubTest}.
  */
 @Tag("cgmes-cas")
 @Tag("cgmes-p4-aclf")
@@ -79,17 +89,73 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		return f;
 	}
 
-	private static AclfNetwork runNrSeeded(AclfNetwork net, Map<String, CgmesSvCompareSupport.SvVoltage> sv)
+	static AclfNetwork runNrSeeded(AclfNetwork net, Map<String, CgmesSvCompareSupport.SvVoltage> sv)
+			throws Exception {
+		assertTrue(solveNrSeeded(net, sv), "NR load-flow should converge with SV seed");
+		return net;
+	}
+
+	/**
+	 * Seed from SV, consolidate zero-Z branches, run NR, and deconsolidate after
+	 * a solution. Returns whether NR converged. A singular case is left consolidated.
+	 */
+	static boolean solveNrSeeded(AclfNetwork net, Map<String, CgmesSvCompareSupport.SvVoltage> sv)
 			throws Exception {
 		int seeded = CgmesSvCompareSupport.seedFromSv(net, sv);
 		assertTrue(seeded > 0, "Should seed at least one bus from SvVoltage");
+		Map<AclfBranch, String> cgmesBranchIds = null;
+		AclfNetModelType model = net.getAclfNetModelType();
+		if (model == AclfNetModelType.ZBR_MODEL || model == AclfNetModelType.ZBR_DECONSOLIDATED) {
+			cgmesBranchIds = structuralBranchIds(net);
+			new AclfNetZeroZBranchHelper(net).consolidate();
+		}
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.setInitBusVoltage(false); // keep SV seed
 		algo.setLfMethod(AclfMethodType.NR);
 		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
 		algo.loadflow();
-		assertTrue(net.isLfConverged(), "NR load-flow should converge with SV seed");
-		return net;
+		if (net.isLfConverged() && net.getAclfNetModelType() == AclfNetModelType.ZBR_CONSOLIDATED) {
+			new AclfNetZeroZDeconsolidator(net).deconsolidate(true);
+			restoreCgmesBranchIds(net, cgmesBranchIds);
+		}
+		return net.isLfConverged();
+	}
+
+	/**
+	 * Zero-Z consolidate parses branch ids as {@code from->to(cir)}. CGMES mappers
+	 * store the equipment local id in {@code getId()} and leave the lookup table
+	 * on the structural id, so reconnect cannot find the branch. Put the
+	 * structural id back for the merge and remember the equipment id.
+	 */
+	private static Map<AclfBranch, String> structuralBranchIds(AclfNetwork net) {
+		Map<AclfBranch, String> saved = new IdentityHashMap<>();
+		for (AclfBranch branch : net.getBranchList()) {
+			String id = branch.getId();
+			if (id != null && id.contains("->")) {
+				continue;
+			}
+			if (branch.getFromBus() == null || branch.getToBus() == null
+					|| branch.getCircuitNumber() == null) {
+				continue;
+			}
+			saved.put(branch, id);
+			branch.setId(ToBranchId.f(branch.getFromBus().getId(), branch.getToBus().getId(),
+					branch.getCircuitNumber()));
+		}
+		net.rebuildLookupTable();
+		return saved;
+	}
+
+	private static void restoreCgmesBranchIds(AclfNetwork net, Map<AclfBranch, String> saved) {
+		if (saved == null || saved.isEmpty()) {
+			return;
+		}
+		for (Map.Entry<AclfBranch, String> entry : saved.entrySet()) {
+			if (entry.getValue() != null) {
+				entry.getKey().setId(entry.getValue());
+			}
+		}
+		net.rebuildLookupTable();
 	}
 
 	private static void compareToSv(AclfNetwork net, Map<String, CgmesSvCompareSupport.SvVoltage> sv) {
@@ -454,14 +520,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, tpBd, eqBd));
 		assertTrue(net.getNoBus() > 0);
-		int seeded = CgmesSvCompareSupport.seedFromSv(net, sv);
-		assertTrue(seeded > 0);
-		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
-		algo.setInitBusVoltage(false);
-		algo.setLfMethod(AclfMethodType.NR);
-		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
-		algo.loadflow();
-		assertTrue(net.isLfConverged(), "NR load-flow should converge with SV seed");
+		runNrSeeded(net, sv);
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
 		String prevMiss = System.getProperty("ipss.cgmes.p4.maxMissingBus");
@@ -479,6 +538,43 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 			} else {
 				System.setProperty("ipss.cgmes.p4.maxMissingBus", prevMiss);
 			}
+			if (prevAng == null) {
+				System.clearProperty("ipss.cgmes.p4.minAngMatch");
+			} else {
+				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
+			}
+		}
+	}
+
+	@Test
+	@DisplayName("P4: FullGrid-Merged SV-seeded NR + Aclf vs SvVoltage")
+	public void testP4_FullGridMerged_AclfVsSv() throws Exception {
+		Path dir = casDir("FullGrid-Merged", "FullGrid/FullGrid-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "FullGrid-Merged missing: " + dir);
+		Path svXml = mustFile(dir, "FullGrid_SV.xml");
+		Path eqXml = mustFile(dir, "FullGrid_EQ.xml");
+		Path tpXml = mustFile(dir, "FullGrid_TP.xml");
+		Path eqBd = mustFile(dir, "FullGrid_EQBD.xml");
+		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(
+				eqXml,
+				mustFile(dir, "FullGrid_SSH.xml"),
+				tpXml,
+				svXml,
+				eqBd));
+		assertTrue(net.getNoBus() > 0);
+		runNrSeeded(net, sv);
+		// SvPowerFlow rows on this case are machines, not AC lines, so the flow
+		// helper's "fewer than 3 comparable terminals" gate would abort the test.
+		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
+		double angTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "1.5"));
+		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
+		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
+		System.setProperty("ipss.cgmes.p4.minAngMatch",
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+		try {
+			compareToSv(net, sv, vTol, angTol, minV);
+		} finally {
 			if (prevAng == null) {
 				System.clearProperty("ipss.cgmes.p4.minAngMatch");
 			} else {
