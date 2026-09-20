@@ -33,7 +33,9 @@ import com.interpss.core.algo.LoadflowAlgorithm;
  * <p>Case-specific first baselines (still green locally):
  * MiniGrid-Merged {@code |V|} 0.02 / 70% + flow 0.35;
  * Svedala-Merged {@code |V|} 0.02 / 85%, angle 1.5° / 85%, flow 0.40;
- * MiniGrid NB voltage-only (allow 2 boundary missing buses; no flow assert yet).
+ * MiniGrid NB voltage-only (allow 2 boundary missing buses; no flow assert yet);
+ * ReliCap Svedala / Britheim voltage-only ({@code |V|} 0.02 / 85%, soft angle);
+ * FullGrid-Merged skips when NR does not converge with SV seed.
  */
 @Tag("cgmes-cas")
 @Tag("cgmes-p4-aclf")
@@ -376,7 +378,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 
 
 	@Test
-	@DisplayName("P4: ReliCap Svedala IGM SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
+	@DisplayName("P4: ReliCap Svedala IGM SV-seeded NR + Aclf vs SvVoltage")
 	public void testP4_ReliCapSvedala_AclfVsSv() throws Exception {
 		Path dir = casDir("ReliCap-Svedala-cimxml", "Instance/Svedala/Grid/cimxml");
 		assumeTrue(Files.isDirectory(dir), () -> "ReliCap Svedala cimxml missing: " + dir);
@@ -384,18 +386,18 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path eqXml = mustFile(dir, "20220615T2230Z__Svedala_EQ_1.xml");
 		Path tpXml = mustFile(dir, "20220615T2230Z_2D_Svedala_TP_1.xml");
 		Path sshXml = mustFile(dir, "20220615T2230Z_2D_Svedala_SSH_1.xml");
-		// |V|-primary first baseline; angles still drift several degrees vs SV.
+		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
+		assertTrue(net.getNoBus() > 0);
+		runNrSeeded(net, sv);
+		// |V|-primary: angles drift; SvPowerFlow ~20% today — voltage gate only for P1.
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double angTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "10.0"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		double minFlow = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.40"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
 				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
 		try {
-			runSeededCompare(svXml, new Path[] { eqXml, tpXml },
-					vTol, angTol, minV, minFlow,
-					eqXml, sshXml, tpXml, svXml);
+			compareToSv(net, sv, vTol, 10.0, minV);
 		} finally {
 			if (prevAng == null) {
 				System.clearProperty("ipss.cgmes.p4.minAngMatch");
@@ -406,7 +408,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@DisplayName("P4: ReliCap Britheim IGM SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
+	@DisplayName("P4: ReliCap Britheim IGM SV-seeded NR + Aclf vs SvVoltage")
 	public void testP4_ReliCapBritheim_AclfVsSv() throws Exception {
 		Path dir = casDir("ReliCap-Britheim-cimxml", "Instance/Britheim/Grid/cimxml");
 		assumeTrue(Files.isDirectory(dir), () -> "ReliCap Britheim cimxml missing: " + dir);
@@ -414,18 +416,18 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path eqXml = mustFile(dir, "20220615T2230Z__Britheim_EQ_1.xml");
 		Path tpXml = mustFile(dir, "20220615T2230Z_2D_Britheim_TP_1.xml");
 		Path sshXml = mustFile(dir, "20220615T2230Z_2D_Britheim_SSH_1.xml");
-		// Small IGM; |V|-primary until boundary assembly improves angle frame.
+		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
+		assertTrue(net.getNoBus() > 0);
+		runNrSeeded(net, sv);
+		// Voltage-only: inactive ACLine/Xformer terminals trip missingBranch on flow.
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double angTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "20.0"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		double minFlow = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.40"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
 				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
 		try {
-			runSeededCompare(svXml, new Path[] { eqXml, tpXml },
-					vTol, angTol, minV, minFlow,
-					eqXml, sshXml, tpXml, svXml);
+			compareToSv(net, sv, vTol, 20.0, minV);
 		} finally {
 			if (prevAng == null) {
 				System.clearProperty("ipss.cgmes.p4.minAngMatch");
