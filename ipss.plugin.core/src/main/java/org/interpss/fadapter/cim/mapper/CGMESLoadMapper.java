@@ -56,6 +56,11 @@ public class CGMESLoadMapper extends AbstractCGMESDataMapper {
         }
 
         String busId = resolveBusId(bag.getId());
+        if ((busId == null || builder.getBus(busId) == null) && equivalent) {
+            // Injection is on a skipped boundary node. Put it on the internal
+            // end of the tie line so the IGM still balances.
+            busId = boundaryTieBusId(bag.getId(), builder);
+        }
         if (busId == null) {
             if (isUnresolvedTopologyExpected(bag.getId())) {
                 log.debug("Skipping load {} - out of topology / no TP TopologicalNode", name);
@@ -137,5 +142,61 @@ public class CGMESLoadMapper extends AbstractCGMESDataMapper {
             if (local != null) ch = loadResponseById.get(local);
         }
         return ch;
+    }
+
+    /**
+     * Internal bus of the tie that reaches this boundary injection.
+     * The injection's own topological node is skipped, so the schedule has to
+     * sit on the in-service end of the AC line (or series compensator).
+     */
+    private String boundaryTieBusId(String equipmentId, AclfNetworkBuilder builder) {
+        if (cimModel == null) return null;
+        java.util.List<String> ownNodes = cimModel.getTopologicalNodesForEquipment(equipmentId);
+        if (ownNodes.isEmpty()) return null;
+        for (CGMESPropertyBag line : cimModel.acLineSegments()) {
+            String partner = partnerBus(ownNodes, line.getId(), builder);
+            if (partner != null) return partner;
+        }
+        for (CGMESPropertyBag sc : cimModel.seriesCompensators()) {
+            String partner = partnerBus(ownNodes, sc.getId(), builder);
+            if (partner != null) return partner;
+        }
+        return null;
+    }
+
+    private String partnerBus(java.util.List<String> ownNodes, String branchEquipId,
+                              AclfNetworkBuilder builder) {
+        java.util.List<String> nodes = cimModel.getTopologicalNodesForEquipment(branchEquipId);
+        boolean touches = false;
+        String other = null;
+        for (String node : nodes) {
+            if (touchesNode(ownNodes, node)) {
+                touches = true;
+            } else if (other == null) {
+                other = node;
+            }
+        }
+        if (!touches || other == null) return null;
+        String busId = cimModel.getBusId(other);
+        if (busId == null) {
+            String local = CGMESPropertyBag.extractLocal(other);
+            if (local != null && cimModel.getBusId(local) != null) {
+                busId = cimModel.getBusId(local);
+            } else if (local != null && builder.getBus(local) != null) {
+                busId = local;
+            }
+        }
+        return busId != null && builder.getBus(busId) != null ? busId : null;
+    }
+
+    private static boolean touchesNode(java.util.List<String> ownNodes, String node) {
+        for (String own : ownNodes) {
+            if (own == null || node == null) continue;
+            if (own.equals(node)) return true;
+            String a = CGMESPropertyBag.extractLocal(own);
+            String b = CGMESPropertyBag.extractLocal(node);
+            if (a != null && a.equals(b)) return true;
+        }
+        return false;
     }
 }

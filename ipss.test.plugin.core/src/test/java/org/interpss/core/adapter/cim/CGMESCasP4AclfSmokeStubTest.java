@@ -34,9 +34,10 @@ import com.interpss.core.algo.LoadflowAlgorithm;
  * MiniGrid-Merged {@code |V|} 0.02 / 70% + flow 0.35;
  * Svedala-Merged {@code |V|} 0.02 / 85%, angle 1.5° / 85%, flow 0.40;
  * MiniGrid NB voltage-only (allow 2 boundary missing buses; no flow assert yet);
- * ReliCap Svedala / Britheim voltage-only ({@code |V|} 0.02 / 85%, soft angle).
+ * ReliCap Svedala / Britheim voltage-only ({@code |V|} 0.02 / 85%, soft angle);
+ * MicroGrid T4 BE voltage-only ({@code |V|} 0.02 / 70%, soft angle, 5 boundary missing buses).
  *
- * <p>FullGrid, RealGrid, and MicroGrid T4 BE (SV-seeded NR does not converge)
+ * <p>FullGrid and RealGrid (SV-seeded NR does not converge)
  * are in {@link CGMESCasP4AclfUnconvergedStubTest}.
  */
 @Tag("cgmes-cas")
@@ -431,6 +432,53 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		try {
 			compareToSv(net, sv, vTol, 20.0, minV);
 		} finally {
+			if (prevAng == null) {
+				System.clearProperty("ipss.cgmes.p4.minAngMatch");
+			} else {
+				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
+			}
+		}
+	}
+
+	@Test
+	@DisplayName("P4: MicroGrid T4 BE (cgmes2.4) SV-seeded NR + Aclf vs SvVoltage")
+	public void testP4_MicroGridT4Be_AclfVsSv() throws Exception {
+		Path dir = Path.of("testData/adpter/cim/cgmes2.4");
+		assumeTrue(Files.isDirectory(dir), () -> "cgmes2.4 fixture dir missing: " + dir);
+		Path svXml = mustFile(dir, "MicroGrid_T4_BE_SV_V2.xml");
+		Path eqXml = mustFile(dir, "MicroGrid_T4_BE_EQ_V2.xml");
+		Path tpXml = mustFile(dir, "MicroGrid_T4_BE_TP_V2.xml");
+		Path sshXml = mustFile(dir, "MicroGrid_T4_BE_SSH_V2.xml");
+		Path eqBd = mustFile(dir, "MicroGrid_T4_BE_EQ_BD_V2.xml");
+		Path tpBd = mustFile(dir, "MicroGrid_T4_BE_TP_BD_V2.xml");
+		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, tpBd, eqBd));
+		assertTrue(net.getNoBus() > 0);
+		int seeded = CgmesSvCompareSupport.seedFromSv(net, sv);
+		assertTrue(seeded > 0);
+		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+		algo.setInitBusVoltage(false);
+		algo.setLfMethod(AclfMethodType.NR);
+		algo.getDataCheckConfig().setAutoTurnLine2Xfr(true);
+		algo.loadflow();
+		assertTrue(net.isLfConverged(), "NR load-flow should converge with SV seed");
+		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
+		String prevMiss = System.getProperty("ipss.cgmes.p4.maxMissingBus");
+		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
+		// Five SvVoltage rows are boundary topological nodes, which are not buses.
+		System.setProperty("ipss.cgmes.p4.maxMissingBus",
+				System.getProperty("ipss.cgmes.p4.maxMissingBus", "5"));
+		System.setProperty("ipss.cgmes.p4.minAngMatch",
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+		try {
+			compareToSv(net, sv, vTol, 10.0, minV);
+		} finally {
+			if (prevMiss == null) {
+				System.clearProperty("ipss.cgmes.p4.maxMissingBus");
+			} else {
+				System.setProperty("ipss.cgmes.p4.maxMissingBus", prevMiss);
+			}
 			if (prevAng == null) {
 				System.clearProperty("ipss.cgmes.p4.minAngMatch");
 			} else {

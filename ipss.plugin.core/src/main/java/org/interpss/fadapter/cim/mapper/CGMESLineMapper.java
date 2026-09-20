@@ -42,7 +42,10 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         String fromBusId = busIds[0];
         String toBusId = busIds[1];
 
-        if (fromBusId == null || toBusId == null) {
+        if (fromBusId == null || toBusId == null
+                || builder.getBus(fromBusId) == null || builder.getBus(toBusId) == null) {
+            // A skipped boundary TN still yields a local id; do not build a branch
+            // whose from/to bus was never created.
             logSkippedBranch("line", name, fromBusId, toBusId, bag.getId());
             return;
         }
@@ -120,7 +123,8 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         String fromBusId = busIds[0];
         String toBusId = busIds[1];
 
-        if (fromBusId == null || toBusId == null) {
+        if (fromBusId == null || toBusId == null
+                || builder.getBus(fromBusId) == null || builder.getBus(toBusId) == null) {
             logSkippedBranch("SeriesCompensator", name, fromBusId, toBusId, bag.getId());
             return;
         }
