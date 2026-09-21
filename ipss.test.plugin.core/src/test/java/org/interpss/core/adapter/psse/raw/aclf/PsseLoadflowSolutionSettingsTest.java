@@ -34,6 +34,7 @@ class PsseLoadflowSolutionSettingsTest {
 				.replace("TOLN=0.1", "TOLN=0.25")
 				.replace("DVLIM=0.99", "DVLIM=0.42")
 				.replace("ADJTHR=0.005", "ADJTHR=0.007")
+				.replace("TAPLIM=0.0", "TAPLIM=0.035")
 				.replace("MXTPSS=99", "MXTPSS=17")
 				.replace("ACTAPS=0", "ACTAPS=1")
 				.replace("PHSHFT=0", "PHSHFT=1")
@@ -53,6 +54,7 @@ class PsseLoadflowSolutionSettingsTest {
 		assertEquals(43, settings.newton().itmxn());
 		assertEquals(0.25, settings.newton().toln(), 1.0E-12);
 		assertEquals(0.007, settings.adjust().adjthr(), 1.0E-12);
+		assertEquals(0.035, settings.adjust().taplim(), 1.0E-12);
 		assertEquals(17, settings.adjust().mxtpss());
 		assertEquals("FDNS", settings.solver().activity());
 		assertEquals(1, settings.solver().nondiv());
@@ -78,6 +80,7 @@ class PsseLoadflowSolutionSettingsTest {
 				"DVLIM must not introduce an independent angle cap");
 		assertEquals(0.007,
 				algorithm.getLfAdjAlgo().getVoltageAdjustmentThreshold(), 1.0E-12);
+		assertEquals(0.035, algorithm.getTapChangeLimit(), 1.0E-12);
 		assertEquals(17,
 				algorithm.getLfAdjAlgo().getMaxTapAndShuntAdjustmentIterations());
 		assertTrue(algorithm.getLfAdjAlgo().getVoltAdjConfig().isXfrTapControl());
@@ -96,6 +99,9 @@ class PsseLoadflowSolutionSettingsTest {
 						&& mapping.status() == MappingStatus.APPLIED));
 		assertTrue(report.mappings().stream().anyMatch(mapping ->
 				mapping.field().equals("NEWTON.DVLIM")
+						&& mapping.status() == MappingStatus.APPLIED));
+		assertTrue(report.mappings().stream().anyMatch(mapping ->
+				mapping.field().equals("ADJUST.TAPLIM")
 						&& mapping.status() == MappingStatus.APPLIED));
 		assertTrue(report.mappings().stream().anyMatch(mapping ->
 				mapping.field().equals("NEWTON.VCTOLV")
