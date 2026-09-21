@@ -201,6 +201,9 @@ public final class PsseLoadflowSolutionSettings
 				adjust.adjthr(),
 				value -> algorithm.getLfAdjAlgo().setVoltageAdjustmentThreshold(value),
 				"pu voltage-iterate gate");
+		applyPositiveDouble(result, "ADJUST.TAPLIM", raw("ADJUST", "TAPLIM"),
+				adjust.taplim(), algorithm::setTapChangeLimit,
+				"pu transformer tap-ratio step limit");
 		applyNonNegativeInt(result, "ADJUST.MXTPSS", raw("ADJUST", "MXTPSS"),
 				adjust.mxtpss(),
 				value -> algorithm.getLfAdjAlgo()
@@ -239,7 +242,6 @@ public final class PsseLoadflowSolutionSettings
 		unsupported(result, "NEWTON.VCTOLV", newton.vctolv());
 		unsupported(result, "NEWTON.NDVFCT", newton.ndvfct());
 		unsupported(result, "ADJUST.ACCTAP", adjust.acctap());
-		unsupported(result, "ADJUST.TAPLIM", adjust.taplim());
 		unsupported(result, "ADJUST.SWVBND", adjust.swvbnd());
 		unsupported(result, "ADJUST.MXSWIM", adjust.mxswim());
 		unsupported(result, "TYSL.ITMXTY", tysl.itmxty());
