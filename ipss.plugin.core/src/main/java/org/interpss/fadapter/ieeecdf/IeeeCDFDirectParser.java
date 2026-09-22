@@ -145,8 +145,8 @@ public class IeeeCDFDirectParser {
                 }
             }
         }
-        // Use the same fixed network id as the legacy ODM import path
-        builder.setNetworkInfo("Base_Case_from_IEEECDF_format", "ODM Loadflow Case",
+        // Use the same fixed network id as the import path
+        builder.setNetworkInfo("Base_Case_from_IEEECDF_format", "IEEECDF Loadflow Case",
                 baseMva * 1000.0, OriginalDataFormat.IEEECDF);
         builder.getNetwork().setDesc(null);
     }

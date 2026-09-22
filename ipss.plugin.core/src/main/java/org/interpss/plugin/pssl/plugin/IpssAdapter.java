@@ -28,7 +28,7 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import org.interpss.fadapter.bpa.BPADirectParser;
-import org.interpss.fadapter.cim.CIMDirectParser;
+import org.interpss.fadapter.cim.CGMESDirectParser;
 import org.interpss.fadapter.epc.EpcDirectParser;
 import org.interpss.fadapter.ieeecdf.IeeeCDFDirectParser;
 import org.interpss.fadapter.matpower.MatpowerDirectParser;
@@ -191,7 +191,7 @@ public class IpssAdapter extends BaseDSL {
 			} else if (this.format == FileFormat.MATPOWER) {
 				return new MatpowerDirectParser().parse(filepath);
 			} else if (this.format == FileFormat.CIM) {
-				return new CIMDirectParser().parse(filepath);
+				return new CGMESDirectParser().parse(filepath);
 			}
 			return null;
 		}
@@ -245,7 +245,7 @@ public class IpssAdapter extends BaseDSL {
 			
 			try {
 				if (this.format == FileFormat.CIM) {
-					this.importedObj = new CIMDirectParser().parse(fileNameAry);
+					this.importedObj = new CGMESDirectParser().parse(fileNameAry);
 					return this;
 				}
 				if (this.format != FileFormat.PSSE) {

@@ -244,7 +244,7 @@ public class AclfOutFunc {
 		}
 		str.append(String.format("   %-10s ", bus.getName()));
 		if (bus.getNetwork().getOriginalDataFormat() == OriginalDataFormat.CIM) 
-			str.append(String.format("   %s", bus.getId()));
+			str.append(String.format("   %s", bus.getExtUID()));
 		str.append("\n");
 		return str.toString();
 	}

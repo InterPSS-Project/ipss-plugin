@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.interpss.CorePluginFactory;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.fadapter.IpssFileAdapter;
-import org.interpss.fadapter.cim.CIMDirectParser;
+import org.interpss.fadapter.cim.CGMESDirectParser;
 import org.junit.jupiter.api.Test;
 
 import com.interpss.core.aclf.AclfBranch;
@@ -37,7 +37,7 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
 
     @Test
     public void testMicroGrid_EQ_TP_BusBranchCounts() throws Exception {
-        AclfNetwork net = new CIMDirectParser().parse(new String[]{MG_BE_EQ, MG_BE_TP});
+        AclfNetwork net = new CGMESDirectParser().parse(new String[]{MG_BE_EQ, MG_BE_TP});
 
         assertEquals(OriginalDataFormat.CIM, net.getOriginalDataFormat());
         // 7 TopologicalNodes + 1 star bus from the 3W transformer
@@ -61,7 +61,7 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
 
     @Test
     public void testMicroGrid_MultiFile_LoadsAndSwing() throws Exception {
-        AclfNetwork net = new CIMDirectParser().parse(
+        AclfNetwork net = new CGMESDirectParser().parse(
                 new String[]{MG_BE_EQ, MG_BE_TP, MG_BE_SSH, MG_BE_SV});
 
         assertTrue(net.getNoBus() > 0);
@@ -78,12 +78,12 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
         }
         assertTrue(loadBuses > 0, "Should have loads with SSH data");
         assertTrue(hasSwing, "Should have SWING bus");
-        assertTrue(CIMDirectParser.getLastLoadCount() > 0);
+        assertTrue(CGMESDirectParser.getLastLoadCount() > 0);
     }
 
     @Test
     public void testMicroGrid_3WTransformer() throws Exception {
-        AclfNetwork net = new CIMDirectParser().parse(
+        AclfNetwork net = new CGMESDirectParser().parse(
                 new String[]{MG_BE_EQ, MG_BE_TP, MG_BE_SSH});
 
         int xfr2w = 0, xfr3w = 0;
@@ -112,14 +112,14 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
 
     @Test
     public void testMiniGrid_3WTransformers() throws Exception {
-        AclfNetwork net = new CIMDirectParser().parse(new String[]{MN_EQ, MN_TP, MN_SSH});
+        AclfNetwork net = new CGMESDirectParser().parse(new String[]{MN_EQ, MN_TP, MN_SSH});
         assertTrue(net.getNoBus() > 0, "MiniGrid should have buses");
         assertTrue(net.getNoBranch() > 0, "MiniGrid should have branches");
     }
 
     @Test
     public void testIEEE118_CIMHub() throws Exception {
-        AclfNetwork net = new CIMDirectParser().parse(TD + "IEEE118_CIM.xml");
+        AclfNetwork net = new CGMESDirectParser().parse(TD + "IEEE118_CIM.xml");
 
         assertEquals(193, net.getNoBus(), "Buses should match MATPOWER");
 
@@ -130,16 +130,16 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
         }
         assertEquals(170, lines, "Lines should match MATPOWER");
         assertEquals(84, xfr2w, "2W transformers should match MATPOWER");
-        assertEquals(99, CIMDirectParser.getLastLoadCount(), "Loads should match MATPOWER");
+        assertEquals(99, CGMESDirectParser.getLastLoadCount(), "Loads should match MATPOWER");
 
         int genCount = 0, shuntCount = 0;
         for (AclfBus bus : net.getBusList()) {
             if (bus.getGenCode() != null && bus.getGenCode() != AclfGenCode.NON_GEN) {
                 genCount++;
             }
-            if (bus.getShuntY() != null && bus.getShuntY().abs() > 0) {
-                shuntCount++;
-            }
+            // CGMES maps LinearShuntCompensator as bus-owned ShuntCompensator (B),
+            // not bus.shuntY (G-only when present).
+            shuntCount += bus.getCompensatorList().size();
         }
         assertTrue(genCount >= 49, "Should have generators");
         assertEquals(14, shuntCount, "Shunts should match MATPOWER");
@@ -218,10 +218,10 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
     @Test
     public void testBoundaryNodesSkipped() throws Exception {
         // With BD file, boundary TNs should not become buses
-        AclfNetwork withBd = new CIMDirectParser().parse(new String[]{
+        AclfNetwork withBd = new CGMESDirectParser().parse(new String[]{
                 MG_BE_EQ, MG_BE_TP, TD + "MicroGrid_T4_BE_EQ_BD_V2.xml", TD + "MicroGrid_T4_BE_TP_BD_V2.xml"
         });
-        AclfNetwork withoutBd = new CIMDirectParser().parse(new String[]{MG_BE_EQ, MG_BE_TP});
+        AclfNetwork withoutBd = new CGMESDirectParser().parse(new String[]{MG_BE_EQ, MG_BE_TP});
         // Boundary merge may keep same bus count (boundary TNs skipped either way once marked)
         assertTrue(withBd.getNoBus() <= withoutBd.getNoBus() + 2,
                 "Boundary handling should not inflate bus count substantially");
