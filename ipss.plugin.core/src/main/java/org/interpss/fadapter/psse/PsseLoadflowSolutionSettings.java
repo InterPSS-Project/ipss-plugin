@@ -201,9 +201,19 @@ public final class PsseLoadflowSolutionSettings
 				adjust.adjthr(),
 				value -> algorithm.getLfAdjAlgo().setVoltageAdjustmentThreshold(value),
 				"pu voltage-iterate gate");
-		applyPositiveDouble(result, "ADJUST.TAPLIM", raw("ADJUST", "TAPLIM"),
-				adjust.taplim(), algorithm::setTapChangeLimit,
-				"pu transformer tap-ratio step limit");
+		if (adjust.taplim() != null && adjust.taplim() > 0.0) {
+			applyPositiveDouble(result, "ADJUST.TAPLIM", raw("ADJUST", "TAPLIM"),
+					adjust.taplim(), algorithm::setTapChangeLimit,
+					"pu transformer tap-ratio step limit");
+		} else if (adjust.taplim() != null) {
+			// PSS/E TAPLIM 0 means no limit; the Core setter requires a positive limit.
+			result.add(new Mapping("ADJUST.TAPLIM", raw("ADJUST", "TAPLIM"), null,
+					MappingStatus.UNSUPPORTED,
+					"zero TAPLIM means no limit; positive Core default retained"));
+		} else if (raw("ADJUST", "TAPLIM") != null) {
+			result.add(invalid("ADJUST.TAPLIM", raw("ADJUST", "TAPLIM"),
+					"value is not a valid number"));
+		}
 		applyNonNegativeInt(result, "ADJUST.MXTPSS", raw("ADJUST", "MXTPSS"),
 				adjust.mxtpss(),
 				value -> algorithm.getLfAdjAlgo()
