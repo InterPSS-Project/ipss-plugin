@@ -27,8 +27,8 @@ public class Regcb1ModelTest {
 
     @Test
     void flatAndWrappedRecordsResolveToTheSamePublishedModel() throws Exception {
-        Regcb1Model flat = load("SMIB_v33_regcb1_psse36.dyr");
-        Regcb1Model wrapped = load("SMIB_v33_regcbu1_psse36.dyr");
+        Regcb1Model flat = load("SMIB_v33_regcb1.dyr");
+        Regcb1Model wrapped = load("SMIB_v33_regcbu1.dyr");
 
         assertEquals(data(0, 1), flat.getData());
         assertEquals(flat.getData(), wrapped.getData());
@@ -109,7 +109,7 @@ public class Regcb1ModelTest {
                 "1 'USRMDL' '1' 'REGCBU1' 101 1 2 7 4 8 " + parameters() + " /\n"
                         + "2 'GENCLS' '1' 99999 0 /\n");
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_regcb1_psse36.raw").toString(), wrong.toString());
+                CASE.resolve("SMIB_v33_regcb1.raw").toString(), wrong.toString());
         DStabGen gen = (DStabGen) context.getDStabilityNet().getBus("Bus1").getContributeGen("1");
         assertTrue(!(gen.getDynamicGenDevice() instanceof Regcb1Model));
 
@@ -117,7 +117,7 @@ public class Regcb1ModelTest {
         Files.writeString(extra,
                 "1 'REGCB1' '1' " + parameters() + " 99 /\n2 'GENCLS' '1' 99999 0 /\n");
         context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_regcb1_psse36.raw").toString(), extra.toString());
+                CASE.resolve("SMIB_v33_regcb1.raw").toString(), extra.toString());
         gen = (DStabGen) context.getDStabilityNet().getBus("Bus1").getContributeGen("1");
         assertTrue(!(gen.getDynamicGenDevice() instanceof Regcb1Model));
 
@@ -128,7 +128,7 @@ public class Regcb1ModelTest {
     private static Regcb1Model load(String dyr) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_regcb1_psse36.raw").toString(), CASE.resolve(dyr).toString());
+                CASE.resolve("SMIB_v33_regcb1.raw").toString(), CASE.resolve(dyr).toString());
         DStabGen gen = (DStabGen) context.getDStabilityNet().getBus("Bus1").getContributeGen("1");
         Regcb1Model model = assertInstanceOf(Regcb1Model.class, gen.getDynamicGenDevice());
         model.initializeWithSignals(1.0, .5, 0.0);

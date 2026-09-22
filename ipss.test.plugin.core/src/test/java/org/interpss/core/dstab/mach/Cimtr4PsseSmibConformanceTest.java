@@ -41,13 +41,13 @@ public class Cimtr4PsseSmibConformanceTest {
         String hash = HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                 .digest(EmbeddedNativeTrajectoryValues.bytes(REFERENCE)));
         assertTrue(EmbeddedNativeTrajectoryValues.manifest(manifest).contains(hash));
-        assertManifestHash(manifest, CASE.resolve("SMIB_v33_cimtr4_psse36.raw"));
-        assertManifestHash(manifest, CASE.resolve("SMIB_v33_cimtr4_psse36.dyr"));
+        assertManifestHash(manifest, CASE.resolve("SMIB_v33_cimtr4.raw"));
+        assertManifestHash(manifest, CASE.resolve("SMIB_v33_cimtr4.dyr"));
         assertManifestHash(manifest, Path.of("src", "test", "python", "psse_cimtr4_probe.py"));
 
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_cimtr4_psse36.raw").toString(),
-                CASE.resolve("SMIB_v33_cimtr4_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_cimtr4.raw").toString(),
+                CASE.resolve("SMIB_v33_cimtr4.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "CIMTR4 load flow");

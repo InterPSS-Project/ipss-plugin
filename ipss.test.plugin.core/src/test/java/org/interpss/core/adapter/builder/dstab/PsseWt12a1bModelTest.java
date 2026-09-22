@@ -55,7 +55,7 @@ public class PsseWt12a1bModelTest {
                 2 'GENCLS' '1' 99999 0 /
                 """);
         var context=new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt1g1_psse36.raw").toString(),dyr.toString());
+                CASE.resolve("SMIB_v33_wt1g1.raw").toString(),dyr.toString());
         assertTrue(context.getDynSimuAlgorithm().getAclfAlgorithm().loadflow());
         context.getDynSimuAlgorithm().setSimuOutputHandler(new StateMonitor());
         assertTrue(context.getDynSimuAlgorithm().initialization());
@@ -69,7 +69,7 @@ public class PsseWt12a1bModelTest {
     void strictImportRejectsWrongAllocation(@TempDir Path tempDir) throws Exception {
         IpssCorePlugin.init();
         var context=new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt1g1_psse36.raw").toString());
+                CASE.resolve("SMIB_v33_wt1g1.raw").toString());
         Path dyr=tempDir.resolve("wrong.dyr");
         Files.writeString(dyr,"1 'USRMDL' 'WT12A1U_B' 106 0 1 14 3 2 0 .02 3 -2 .3 .2 .6 .2 .2 .5 .1 .8 .05 .95 .03 /");
         var parser=new PSSEDStabDirectParser(new DStabNetworkBuilder(context.getDStabilityNet()))

@@ -27,8 +27,8 @@ public class PsseWt1g1ModelTest {
     void exactNativeRecordAttachesAndInitializes() throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt1g1_psse36.raw").toString(),
-                CASE.resolve("SMIB_v33_wt1g1_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_wt1g1.raw").toString(),
+                CASE.resolve("SMIB_v33_wt1g1.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
@@ -54,7 +54,7 @@ public class PsseWt1g1ModelTest {
                 "1 'WT1G1' '1' .81 .035 3.6 .21 .15 .1 1 .025 1.2 .14 99 /\n"
                         + "2 'GENCLS' '1' 99999 0 /\n");
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt1g1_psse36.raw").toString(), dyr.toString());
+                CASE.resolve("SMIB_v33_wt1g1.raw").toString(), dyr.toString());
         assertTrue(!(context.getDStabilityNet().getMachine("Bus1-mach1")
                 instanceof Wt1g1Machine));
     }

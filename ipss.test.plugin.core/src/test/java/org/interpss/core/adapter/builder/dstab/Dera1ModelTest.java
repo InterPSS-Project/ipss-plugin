@@ -27,8 +27,8 @@ public class Dera1ModelTest {
 
     @Test
     void flatAndWrappedRecordsResolveToTheSamePublishedModel() throws Exception {
-        Dera1Model flat = load("SMIB_v33_dera1_psse36.dyr");
-        Dera1Model wrapped = load("SMIB_v33_derau1_psse36.dyr");
+        Dera1Model flat = load("SMIB_v33_dera1.dyr");
+        Dera1Model wrapped = load("SMIB_v33_derau1.dyr");
 
         assertEquals(data(), flat.getData());
         assertEquals(flat.getData(), wrapped.getData());
@@ -106,7 +106,7 @@ public class Dera1ModelTest {
                 "1 'USRMDL' '1' 'DERAU1' 101 1 6 41 9 23 " + parameters() + " /\n"
                         + "2 'GENCLS' '1' 99999 0 /\n");
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt3g2_psse36.raw").toString(), wrong.toString());
+                CASE.resolve("SMIB_v33_wt3g2.raw").toString(), wrong.toString());
         DStabGen gen = (DStabGen) context.getDStabilityNet().getBus("Bus1").getContributeGen("1");
         assertTrue(!(gen.getDynamicGenDevice() instanceof Dera1Model));
 
@@ -121,7 +121,7 @@ public class Dera1ModelTest {
     private static Dera1Model load(String dyr) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt3g2_psse36.raw").toString(), CASE.resolve(dyr).toString());
+                CASE.resolve("SMIB_v33_wt3g2.raw").toString(), CASE.resolve(dyr).toString());
         DStabGen gen = (DStabGen) context.getDStabilityNet().getBus("Bus1").getContributeGen("1");
         Dera1Model model = assertInstanceOf(Dera1Model.class, gen.getDynamicGenDevice());
         model.initializeWithSignals(1.04, .7164, .2705, 1.0);

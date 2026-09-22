@@ -67,7 +67,7 @@ public class PsseWt4g1ModelTest {
                 "1 'WT4G1' '1' .027 .019 .37 .93 1.07 1.23 1.8 1.7 .031 99 /\n"
                         + "2 'GENCLS' '1' 99999 0 /\n");
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt3g2_psse36.raw").toString(), dyr.toString());
+                CASE.resolve("SMIB_v33_wt3g2.raw").toString(), dyr.toString());
         DStabGen gen = (DStabGen) context.getDStabilityNet().getBus("Bus1")
                 .getContributeGen("1");
         assertTrue(!(gen.getDynamicGenDevice() instanceof Wt4g1Model));
@@ -80,8 +80,8 @@ public class PsseWt4g1ModelTest {
     private static Fixture load() throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt3g2_psse36.raw").toString(),
-                CASE.resolve("SMIB_v33_wt4g1_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_wt3g2.raw").toString(),
+                CASE.resolve("SMIB_v33_wt4g1.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         DStabGen gen = (DStabGen) network.getBus("Bus1").getContributeGen("1");

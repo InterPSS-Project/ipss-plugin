@@ -55,7 +55,7 @@ public class Reax3bu1ModelTest {
                 2 'GENCLS' '1' 99999 0 /
                 """);
         var context=new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt2g1_psse36.raw").toString(),dyr.toString());
+                CASE.resolve("SMIB_v33_wt2g1.raw").toString(),dyr.toString());
         DStabGen gen=(DStabGen)context.getDStabilityNet().getBus("Bus1").getContributeGen("1");
         Gewtgcu1Model host=assertInstanceOf(Gewtgcu1Model.class,gen.getDynamicGenDevice());
         assertNotNull(host.getAuxiliaryController());

@@ -66,8 +66,8 @@ public class Wt3e1PsseSmibConformanceTest {
     @Test void electricalControllerMatchesIndependentFaultTrajectory() throws Exception {
         IpssCorePlugin.init();
         var context=new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt2g1_psse36.raw").toString(),
-                CASE.resolve("SMIB_v33_wt3e1_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_wt2g1.raw").toString(),
+                CASE.resolve("SMIB_v33_wt3e1.dyr").toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         algorithm.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());

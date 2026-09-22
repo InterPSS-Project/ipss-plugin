@@ -41,14 +41,14 @@ public class GentraPsseSmibConformanceTest {
         IpssCorePlugin.init();
         Path manifest = REFERENCE.resolveSibling("manifest.json");
         assertManifestHash(manifest, REFERENCE);
-        assertManifestHash(manifest, CASE.resolve("SMIB_v33_gentra_psse36.raw"));
-        assertManifestHash(manifest, CASE.resolve("SMIB_v33_gentra_psse36.dyr"));
+        assertManifestHash(manifest, CASE.resolve("SMIB_v33_gentra.raw"));
+        assertManifestHash(manifest, CASE.resolve("SMIB_v33_gentra.dyr"));
         assertManifestHash(manifest, Path.of("src", "test", "python", "psse_gentra_probe.py"));
         assertEquals(9, DynamicModelCatalog.find("GENTRA").orElseThrow().parameterCount());
 
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_gentra_psse36.raw").toString(),
-                CASE.resolve("SMIB_v33_gentra_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_gentra.raw").toString(),
+                CASE.resolve("SMIB_v33_gentra.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENTRA load flow");

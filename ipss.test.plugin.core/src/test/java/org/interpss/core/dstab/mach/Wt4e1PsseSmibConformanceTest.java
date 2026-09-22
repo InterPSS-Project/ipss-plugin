@@ -54,7 +54,7 @@ public class Wt4e1PsseSmibConformanceTest {
     };
     @Test void electricalControllerMatchesIndependentFaultTrajectory() throws Exception {
         IpssCorePlugin.init(); var context=new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt3g2_psse36.raw").toString(),CASE.resolve("SMIB_v33_wt4e1_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_wt3g2.raw").toString(),CASE.resolve("SMIB_v33_wt4e1.dyr").toString());
         var net=context.getDStabilityNet(); var alg=context.getDynSimuAlgorithm();
         alg.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true); assertTrue(alg.getAclfAlgorithm().loadflow());
         alg.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER); alg.setSimuStepSec(STEP); alg.setTotalSimuTimeSec(1); alg.setSimuOutputHandler(new StateMonitor());

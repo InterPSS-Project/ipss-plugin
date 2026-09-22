@@ -45,7 +45,7 @@ public class ExeliPsseSmibConformanceTest {
 
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_exeli_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_exeli.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "EXELI SMIB load flow");

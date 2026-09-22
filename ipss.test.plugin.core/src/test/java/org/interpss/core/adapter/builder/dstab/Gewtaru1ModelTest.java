@@ -90,7 +90,7 @@ public class Gewtaru1ModelTest {
         Path dyr = tempDir.resolve("synthetic-ge-aerodynamic.dyr");
         Files.writeString(dyr, text);
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt2g1_psse36.raw").toString(), dyr.toString());
+                CASE.resolve("SMIB_v33_wt2g1.raw").toString(), dyr.toString());
         DynamicSimuAlgorithm algorithm = context.getDynSimuAlgorithm();
         DStabGen gen = (DStabGen) context.getDStabilityNet().getBus("Bus1")
                 .getContributeGen("1");
