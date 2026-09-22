@@ -39,6 +39,12 @@ public class CGMESLoadMapper extends AbstractCGMESDataMapper {
         String name = bag.getName();
         if (name == null) name = loadId;
 
+        // SSH P/Q on out-of-service equipment is not an active injection (same rule as generators).
+        if (!bag.getBoolean("Equipment.inService", true)) {
+            log.debug("Skipping load {} - out of service", name);
+            return;
+        }
+
         double pW = bag.getDouble("EnergyConsumer.p",
                     bag.getDouble("EquivalentInjection.p",
                     bag.getDouble("RotatingMachine.p", 0.0)));

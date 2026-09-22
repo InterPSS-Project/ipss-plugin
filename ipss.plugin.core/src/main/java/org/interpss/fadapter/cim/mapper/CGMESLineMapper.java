@@ -66,7 +66,24 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
 
         Double fromBase = busBaseKV(builder, fromBusId);
         Double toBase = busBaseKV(builder, toBusId);
-        boolean crossVoltage = fromBase != null && toBase != null && Math.abs(fromBase - toBase) > 0.05;
+        // UCTE labels the same EHV class as 380 or 400 (and 220/225). Those are not
+        // real voltage transformations — keep the ACLineSegment as a line.
+        boolean crossVoltage = fromBase != null && toBase != null
+                && !sameUcteVoltageClass(fromBase, toBase);
+        if (!crossVoltage) {
+            double targetKv = preferredUcteBaseKv(baseKV, fromBase, toBase);
+            if (Math.abs(targetKv - baseKV) > 0.05) {
+                baseKV = targetKv;
+                baseZ = baseKV * baseKV / baseMVA;
+                baseY = baseMVA / (baseKV * baseKV);
+                rPU = r / baseZ;
+                xPU = x / baseZ;
+                gPU = gch / baseY;
+                bPU = bch / baseY;
+            }
+            harmonizeBusBase(builder, fromBusId, fromBase, targetKv);
+            harmonizeBusBase(builder, toBusId, toBase, targetKv);
+        }
         AclfBranch branch;
         if (crossVoltage) {
             // Refer series Z to the from-bus base. toTap = fromBase/toBase makes
@@ -186,7 +203,8 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
 
         Double fromBase = busBaseKV(builder, fromBusId);
         Double toBase = busBaseKV(builder, toBusId);
-        boolean crossVoltage = fromBase != null && toBase != null && Math.abs(fromBase - toBase) > 0.05;
+        boolean crossVoltage = fromBase != null && toBase != null
+                && !sameUcteVoltageClass(fromBase, toBase);
         AclfBranch branch;
         if (crossVoltage) {
             // isZeroZBranch() rejects transformers. Keep a small series X so the
@@ -218,6 +236,32 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         log.debug("Created closed switch as tie: {} ({}→{})", name, fromBusId, toBusId);
     }
 
+    /**
+     * Align ACLineSegment end-bus bases when TP labeled one end with a UCTE synonym
+     * (380 vs 400). Safe to call after every line has been mapped.
+     */
+    public void alignUcteLineEndBases(CGMESPropertyBag bag, AclfNetworkBuilder builder) {
+        String[] busIds = resolveBranchBusIds(bag.getId());
+        String fromBusId = busIds[0];
+        String toBusId = busIds[1];
+        if (fromBusId == null || toBusId == null) {
+            return;
+        }
+        Double baseKV = resolveBaseKV(bag, builder, fromBusId, toBusId);
+        if (baseKV == null) {
+            return;
+        }
+        Double fromBase = busBaseKV(builder, fromBusId);
+        Double toBase = busBaseKV(builder, toBusId);
+        if (fromBase != null && toBase != null && !sameUcteVoltageClass(fromBase, toBase)) {
+            return;
+        }
+        // Prefer the higher UCTE synonym for 380/400 only (never pull 400→380).
+        double targetKv = preferredUcteBaseKv(baseKV, fromBase, toBase);
+        harmonizeBusBase(builder, fromBusId, fromBase, targetKv);
+        harmonizeBusBase(builder, toBusId, toBase, targetKv);
+    }
+
     private Double resolveBaseKV(CGMESPropertyBag bag, AclfNetworkBuilder builder,
                                  String fromBusId, String toBusId) {
         Double baseKV = null;
@@ -242,6 +286,49 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             baseKV = 100.0;
         }
         return baseKV;
+    }
+
+    /** UCTE EHV synonyms: 380↔400 kV and 220↔225 kV are the same voltage class. */
+    static boolean sameUcteVoltageClass(double aKv, double bKv) {
+        if (Math.abs(aKv - bKv) <= 0.05) {
+            return true;
+        }
+        double lo = Math.min(aKv, bKv);
+        double hi = Math.max(aKv, bKv);
+        return (lo >= 375.0 && hi <= 405.0) || (lo >= 215.0 && hi <= 230.0);
+    }
+
+    /** Prefer the higher synonym within a UCTE class (400 over 380, 225 over 220). */
+    static double preferredUcteBaseKv(double lineKv, Double fromKv, Double toKv) {
+        double target = lineKv;
+        if (fromKv != null && sameUcteVoltageClass(fromKv, target) && fromKv > target) {
+            target = fromKv;
+        }
+        if (toKv != null && sameUcteVoltageClass(toKv, target) && toKv > target) {
+            target = toKv;
+        }
+        return target;
+    }
+
+    private void harmonizeBusBase(AclfNetworkBuilder builder, String busId,
+            Double currentKv, double targetKv) {
+        if (busId == null) {
+            return;
+        }
+        var bus = builder.getBus(busId);
+        if (bus == null || bus.getBaseVoltage() <= 0) {
+            return;
+        }
+        double current = bus.getBaseVoltage() / 1000.0;
+        if (Math.abs(current - targetKv) <= 0.05) {
+            return;
+        }
+        if (!sameUcteVoltageClass(current, targetKv)) {
+            return;
+        }
+        bus.setBaseVoltage(targetKv * 1000.0);
+        log.debug("Aligned bus {} base from {} kV to line base {} kV",
+                busId, current, targetKv);
     }
 
     /**
