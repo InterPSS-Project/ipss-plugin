@@ -371,12 +371,13 @@ public class GEPslfDirectParser {
         int busNum = intVal(before, 0);
         int status = intVal(after, 0);
         // GE shunt data fields after status: ar zone pu_mw pu_mvar
+        // pu_mw/pu_mvar are already per-unit on the system MVA base.
         double g = after.length > 3 ? dblVal(after, 3) : 0.0;
         double b = after.length > 4 ? dblVal(after, 4) : 0.0;
 
         if (status == 1 && (g != 0.0 || b != 0.0)) {
             String busId = BUS_ID_PREFIX + busNum;
-            builder.addToBusShuntY(busId, new Complex(g / baseMva, b / baseMva));
+            builder.addToBusShuntY(busId, new Complex(g, b));
         }
     }
 
