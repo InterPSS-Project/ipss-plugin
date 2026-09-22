@@ -36,7 +36,7 @@ public class St6cPsseSmibConformanceTest {
             "testData", "reference", "psse", "smib-genrou-st6c", "psse.csv");
 
     @ParameterizedTest
-    @ValueSource(strings={"SMIB_v33_genrou_st6c_psse36.dyr","SMIB_v33_genrou_st6cu1.dyr"})
+    @ValueSource(strings={"SMIB_v33_genrou_st6c.dyr","SMIB_v33_genrou_st6cu1.dyr"})
     void voltageReferencePulseMatchesPsseBoundaryAndFiveExciterStates(String dyr) throws Exception {
         IpssCorePlugin.init();
         Path manifest = REFERENCE.resolveSibling("manifest.json");

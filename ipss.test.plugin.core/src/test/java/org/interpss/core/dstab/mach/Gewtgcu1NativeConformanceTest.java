@@ -42,8 +42,8 @@ public class Gewtgcu1NativeConformanceTest {
 
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt2g1_psse36.raw").toString(),
-                CASE.resolve("SMIB_v33_gewtgcu1_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_wt2g1.raw").toString(),
+                CASE.resolve("SMIB_v33_gewtgcu1.dyr").toString());
         var network = context.getDStabilityNet();
         DStabGen gen = (DStabGen) network.getBus("Bus1").getContributeGen("1");
         Gewtgcu1Model model = assertInstanceOf(Gewtgcu1Model.class,

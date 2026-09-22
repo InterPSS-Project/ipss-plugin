@@ -112,7 +112,7 @@ public class Plntbu1ModelTest {
                 2 'GENCLS' '1' 99999 0 /
                 """);
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt2g1_psse36.raw").toString(), dyr.toString());
+                CASE.resolve("SMIB_v33_wt2g1.raw").toString(), dyr.toString());
         DStabGen gen = (DStabGen) context.getDStabilityNet().getBus("Bus1")
                 .getContributeGen("1");
         Gewtgcu1Model host = (Gewtgcu1Model) gen.getDynamicGenDevice();
@@ -136,7 +136,7 @@ public class Plntbu1ModelTest {
     void strictImportRejectsWrongUserBusAllocation(@TempDir Path tempDir) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt2g1_psse36.raw").toString());
+                CASE.resolve("SMIB_v33_wt2g1.raw").toString());
         Path dyr = tempDir.resolve("wrong-allocation.dyr");
         Files.writeString(dyr, """
                 1 'USRBUS' 'PLNTBU1' 505 0 7 28 7 15

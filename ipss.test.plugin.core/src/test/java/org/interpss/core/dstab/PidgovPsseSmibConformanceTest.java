@@ -34,7 +34,7 @@ import com.interpss.dstab.mach.RoundRotorMachine;
 public class PidgovPsseSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
-    private static final Path DYR = CASE.resolve("SMIB_v33_genrou_pidgov_psse36.dyr");
+    private static final Path DYR = CASE.resolve("SMIB_v33_genrou_pidgov.dyr");
     private static final Path REFERENCE = Path.of(
             "testData", "reference", "psse", "smib-genrou-pidgov", "psse.csv");
 

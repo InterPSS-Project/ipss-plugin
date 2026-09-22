@@ -117,7 +117,7 @@ public class Gewtecu1ModelTest {
         Files.writeString(invalid, Files.readString(MODEL_DYR)
                 .replace("102 0 9 67 18 16", "102 0 9 66 18 16"));
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt2g1_psse36.raw").toString(), invalid.toString());
+                CASE.resolve("SMIB_v33_wt2g1.raw").toString(), invalid.toString());
         DStabGen gen = (DStabGen) context.getDStabilityNet().getBus("Bus1")
                 .getContributeGen("1");
         Gewtgcu1Model generator = assertInstanceOf(Gewtgcu1Model.class,
@@ -128,7 +128,7 @@ public class Gewtecu1ModelTest {
     private static Fixture load(Path tempDir) throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt2g1_psse36.raw").toString(),
+                CASE.resolve("SMIB_v33_wt2g1.raw").toString(),
                 MODEL_DYR.toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();

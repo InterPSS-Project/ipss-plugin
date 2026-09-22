@@ -27,8 +27,8 @@ public class PsseWt3p1ModelTest {
     void initializesPublishedThreeCoordinatesWithoutPitchTransient() throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt3g2_psse36.raw").toString(),
-                CASE.resolve("SMIB_v33_wt3p1_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_wt3g2.raw").toString(),
+                CASE.resolve("SMIB_v33_wt3p1.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         DStabGen gen = (DStabGen) network.getBus("Bus1").getContributeGen("1");
@@ -58,13 +58,13 @@ public class PsseWt3p1ModelTest {
 
     @Test
     void rejectsAnExtraConstant(@TempDir Path tempDir) throws Exception {
-        Path source = CASE.resolve("SMIB_v33_wt3p1_psse36.dyr");
+        Path source = CASE.resolve("SMIB_v33_wt3p1.dyr");
         Path dyr = tempDir.resolve("wt3p1-extra.dyr");
         Files.writeString(dyr, Files.readString(source).replace(
                 "0.0 25.0 9.0 0.92 /",
                 "0.0 25.0 9.0 0.92 99.0 /"));
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33_wt3g2_psse36.raw").toString(), dyr.toString());
+                CASE.resolve("SMIB_v33_wt3g2.raw").toString(), dyr.toString());
         DStabGen gen = (DStabGen) context.getDStabilityNet()
                 .getBus("Bus1").getContributeGen("1");
         Wt3g2Model generator = assertInstanceOf(Wt3g2Model.class,

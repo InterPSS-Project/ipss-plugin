@@ -44,7 +44,7 @@ public class GenqecuPsseSmibConformanceTest {
 
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genqecu_psse36.dyr").toString());
+                CASE.resolve("SMIB_v33_genqecu.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
