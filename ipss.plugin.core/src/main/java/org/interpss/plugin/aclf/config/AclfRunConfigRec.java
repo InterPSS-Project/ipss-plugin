@@ -398,7 +398,7 @@ public class AclfRunConfigRec extends BaseJSONBean {
 			algo.setFullNewtonTapControlEnabled(
 					this.coordinatedControlEnableInnerTaps);
 		if (this.tapChangeLimit != null)
-			algo.setTapChangeLimit(this.tapChangeLimit);
+			applyTapChangeLimit(algo, this.tapChangeLimit);
         
         NrMethodConfig nrConfig = algo.getNrMethodConfig();
         // the default AclfNet coordinate is polar coordinate
@@ -510,5 +510,22 @@ public class AclfRunConfigRec extends BaseJSONBean {
 		}
 		if (this.lfMethod == AclfMethodType.NR)
 			algo.getLfCalculator().getNrSolver().reConfigSolver(nrConfig);
+	}
+
+	/**
+	 * Apply the shared inner/outer limit when running with the patched Core API.
+	 * Released compatible Core builds still receive the full-Newton inner limit.
+	 */
+	private static void applyTapChangeLimit(LoadflowAlgorithm algo, double limit) {
+		try {
+			algo.getClass().getMethod("setTapChangeLimit", double.class)
+					.invoke(algo, limit);
+		}
+		catch (NoSuchMethodException ex) {
+			algo.setMaximumFullNewtonTapChange(limit);
+		}
+		catch (ReflectiveOperationException ex) {
+			throw new IllegalStateException("Unable to apply ACLF tap change limit", ex);
+		}
 	}
 }

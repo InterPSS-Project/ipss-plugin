@@ -721,10 +721,20 @@ public class Texas2kOneSecondDriftTest {
         String configured = System.getProperty(propertyName);
         Path path = (configured == null || configured.isBlank()
                 ? defaultPath : Path.of(configured)).normalize();
-        if (path.isAbsolute() || path.getRoot() != null) {
+        // Also reject Windows drive-relative forms (e.g. "C:portable-cases"). On
+        // Unix those are neither absolute nor rooted, but they are still not
+        // portable relative paths for this diagnostic contract.
+        if (path.isAbsolute() || path.getRoot() != null || hasWindowsDrivePrefix(configured)) {
             throw new IllegalArgumentException(propertyName + " must be a relative path");
         }
         return path;
+    }
+
+    private static boolean hasWindowsDrivePrefix(String configured) {
+        return configured != null
+                && configured.length() >= 2
+                && Character.isLetter(configured.charAt(0))
+                && configured.charAt(1) == ':';
     }
 
     private static void reportFirstDivergence(CaseFile source, double time,
