@@ -222,12 +222,23 @@ public class CGMESDirectParser {
 
     private Double resolveTopoNodeVoltage(CGMESModel cimModel, CGMESPropertyBag tn) {
         String bvUri = tn.getResourceId("TopologicalNode.BaseVoltage");
+        Double tnV = null;
         if (bvUri != null) {
-            Double v = cimModel.getBaseVoltageValue(bvUri);
-            if (v != null) return v;
+            tnV = cimModel.getBaseVoltageValue(bvUri);
+        }
+        // Connected ACLineSegment / equipment BaseVoltage is the electrical class used
+        // for pu. UCTE TP often labels the same EHV class as 380 while EQ uses 400
+        // (or 220 vs 225); prefer equipment so border ties stay lines, not fake xfrs.
+        Double equipV = cimModel.getBaseVoltageFromConnectivityNode(tn.getId());
+        if (tnV != null && equipV != null && sameUcteVoltageClass(tnV, equipV)) {
+            return equipV;
+        }
+        if (tnV != null) {
+            return tnV;
         }
         Double v = cimModel.getNominalVoltageForTopoNode(tn.getId());
         if (v != null) return v;
+        if (equipV != null) return equipV;
 
         java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(tn.getId());
         if (!topoNodes.isEmpty()) {
@@ -245,6 +256,16 @@ public class CGMESDirectParser {
         return null;
     }
 
+    /** UCTE EHV synonyms: 380↔400 kV and 220↔225 kV are the same voltage class. */
+    static boolean sameUcteVoltageClass(double aKv, double bKv) {
+        if (Math.abs(aKv - bKv) <= 0.05) {
+            return true;
+        }
+        double lo = Math.min(aKv, bKv);
+        double hi = Math.max(aKv, bKv);
+        return (lo >= 375.0 && hi <= 405.0) || (lo >= 215.0 && hi <= 230.0);
+    }
+
     /** kV for bus creation; never return ≤ 0 (would break PV/swing voltage set). */
     private static double positiveBaseKV(Double baseKV) {
         return baseKV != null && baseKV > 0 ? baseKV : 100.0;
@@ -257,6 +278,13 @@ public class CGMESDirectParser {
         log.info("Processing {} ACLineSegments", lineSegments.size());
         for (CGMESPropertyBag line : lineSegments) {
             lineMapper.map(line, builder);
+        }
+        // Multiple passes: later BE (380) / NL (400) lines raise neighbors; a second
+        // pass propagates the preferred synonym across the connected EHV class.
+        for (int pass = 0; pass < 3; pass++) {
+            for (CGMESPropertyBag line : lineSegments) {
+                lineMapper.alignUcteLineEndBases(line, builder);
+            }
         }
 
         List<CGMESPropertyBag> seriesComps = cimModel.seriesCompensators();

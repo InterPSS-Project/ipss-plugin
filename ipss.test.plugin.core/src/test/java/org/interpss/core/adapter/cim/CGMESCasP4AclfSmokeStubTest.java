@@ -47,8 +47,8 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
  * Closed retained switches are zero-Z branches: seed, consolidate, NR, then
  * deconsolidate so SV compare still sees the original buses.
  *
- * <p>ReliCap Espheim and the Espheim–Svedala DC corridor still abort because NR
- * does not converge. Those tests live in {@link CGMESCasP4AclfUnconvergedStubTest}.
+ * <p>ReliCap Espheim and the Espheim–Svedala DC corridor are {@code @Disabled}
+ * in {@link CGMESCasP4AclfUnconvergedStubTest} (KLU numerical failure from SV seed).
  *
  * <p>RealGrid-Merged is in this class. Buses with no SV row start at flat voltage,
  * and a few degrees across a milliohm branch is tens of thousands of pu. The
