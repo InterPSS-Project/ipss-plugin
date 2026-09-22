@@ -3,6 +3,34 @@
   "configurations": [
     {
       "type": "java",
+      "name": "RealGridMergedAclfSample",
+      "request": "launch",
+      "mainClass": "sample.cim.RealGridMergedAclfSample",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "PowerFlowAclfSample",
+      "request": "launch",
+      "mainClass": "sample.cim.PowerFlowAclfSample",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "MicroGridBaseCaseMergedAclfSample",
+      "request": "launch",
+      "mainClass": "sample.cim.MicroGridBaseCaseMergedAclfSample",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
+      "name": "FullGridMergedAclfSample",
+      "request": "launch",
+      "mainClass": "sample.cim.FullGridMergedAclfSample",
+      "projectName": "ipss.test.plugin.core"
+    },
+    {
+      "type": "java",
       "name": "Ieee14ZipLoadMismatchInvestigation",
       "request": "launch",
       "mainClass": "investigation.powsybl.Ieee14ZipLoadMismatchInvestigation",
