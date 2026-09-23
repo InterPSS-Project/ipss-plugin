@@ -34,7 +34,7 @@ import com.interpss.core.funcImpl.zeroz.AclfNetZeroZDeconsolidator;
  * parse profiles, seed from SvVoltage, optional large-net prep, zero-Z consolidate, NR,
  * deconsolidate on success, then print a short summary.
  */
-public final class CgmesAclfSample {
+public final class CgmesAclfUtil {
 
 	private static final String TD30_CAS = "testData/adpter/cim/cgmes3.0/cas/";
 	private static final String TD24 = "testData/adpter/cim/cgmes2.4/";
@@ -55,7 +55,7 @@ public final class CgmesAclfSample {
 	public record SvVoltage(String topoLocalId, double vKv, double angleDeg) {
 	}
 
-	private CgmesAclfSample() {
+	private CgmesAclfUtil() {
 	}
 
 	/**
