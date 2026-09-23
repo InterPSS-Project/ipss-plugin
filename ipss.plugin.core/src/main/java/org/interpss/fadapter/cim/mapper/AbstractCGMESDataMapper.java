@@ -572,8 +572,10 @@ public abstract class AbstractCGMESDataMapper {
             node = cimModel.getConnectivityNodeByTerminal(termId);
         }
         if (node == null) return null;
-        String busId = cimModel.getBusId(node);
-        return busId != null ? busId : CGMESPropertyBag.extractLocal(node);
+        // Only IDs for buses that were actually created. Falling back to the
+        // CN/TN local id invents phantom buses (ReliCap Espheim T2: EQ CNs with
+        // no TP Terminal.TopologicalNode → "Branch from && to bus not found").
+        return cimModel.getBusId(node);
     }
 
     protected static boolean endHasX(CGMESPropertyBag end) {

@@ -766,8 +766,9 @@ public class CGMESModel {
         } catch (NumberFormatException ignore) {
             // continue
         }
+        // VL_220, VL-380, VL_33_Needlehole (voltage then optional site suffix)
         java.util.regex.Matcher m = java.util.regex.Pattern
-                .compile("(?i)^VL[_-]?(\\d+(?:\\.\\d+)?)$")
+                .compile("(?i)^VL[_-]?(\\d+(?:\\.\\d+)?)(?:[_-].+)?$")
                 .matcher(n);
         if (m.matches()) {
             double v = Double.parseDouble(m.group(1));

@@ -54,6 +54,11 @@ public class CGMESTransformer3WMapper extends AbstractCGMESDataMapper {
     }
 
     public void map3W(CGMESPropertyBag bag, List<CGMESPropertyBag> sortedEnds, AclfNetworkBuilder builder) throws Exception {
+        if (!bag.getBoolean("Equipment.inService", true)) {
+            log.debug("Skipping out-of-service 3W PowerTransformer {}", bag.getName());
+            return;
+        }
+
         String xfrId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = xfrId;
