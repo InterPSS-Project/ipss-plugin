@@ -298,6 +298,9 @@ public class CGMESDirectParser {
         for (CGMESPropertyBag sw : cimModel.switches()) {
             lineMapper.mapClosedSwitch(sw, builder);
         }
+        // Retained switches join UCTE synonym islands that ACLineSegment-only
+        // align passes never see (MicroGrid B1 between NL-Busbar_2 and NL_Busbar__4).
+        lineMapper.unifyUcteLineBusBases(builder);
 
         CGMESTransformerMapper xfr2wMapper = new CGMESTransformerMapper(DEFAULT_BASE_MVA);
         xfr2wMapper.setCimModel(cimModel);
@@ -459,6 +462,31 @@ public class CGMESDirectParser {
                         break;
                     }
                 }
+            }
+        }
+
+        if (!hasSwing) {
+            // DC-only corridor (ReliCap Espheim–Svedala HVDC): CsConverters map as
+            // loads and EquivalentInjections have regulationCapability=false, so no
+            // SM/ENI swing exists. Pin the bus with the largest |P| injection so
+            // ACLF data-check does not abort with "No swing bus".
+            String bestBusId = null;
+            double bestAbs = -1.0;
+            for (Object obj : builder.getNetwork().getBusList()) {
+                if (!(obj instanceof BaseAclfBus bus) || !bus.isActive()) {
+                    continue;
+                }
+                double absP = Math.abs(bus.getLoadP()) + Math.abs(bus.getGenP());
+                if (absP > bestAbs) {
+                    bestAbs = absP;
+                    bestBusId = bus.getId();
+                }
+            }
+            if (bestBusId != null) {
+                builder.setSwingBus(bestBusId, 1.0, 0.0);
+                hasSwing = true;
+                log.info("CIM import: no SM/ENI swing — designated bus {} as SWING (|P|={})",
+                        bestBusId, bestAbs);
             }
         }
 

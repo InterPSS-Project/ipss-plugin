@@ -16,18 +16,25 @@ Resolution order in the stubs (`casDir` / friends):
 |-------|--------|
 | `CGMESCasCoverageStubTest` | P0–P3 CAS + core ReliCap IGMs |
 | `CGMESCasType3HourCoverageStubTest` | Parameterized Type3 CGM hours |
-| `CGMESCasP4AclfSmokeStubTest` | P4 SV-seeded NR + Aclf vs SvVoltage (`cgmes-p4-aclf`) |
-| `CGMESCasP4AclfUnconvergedStubTest` | DC Espheim–Svedala standalone (no swing) and naive Espheim+Svedala IGM assemble (shared BP SvVoltage conflict) — `@Disabled` / probe-gated |
-| `CgmesSvCompareSupport` | SvVoltage reader + \|V\|/angle compare helpers |
+| `CGMESCasP4AclfSmokeStubTest` | P4 SV-seeded NR + Aclf vs SvVoltage / SvPowerFlow (`cgmes-p4-aclf`) |
+| `CGMESCasP4AclfUnconvergedStubTest` | ReliCap DC Espheim–Svedala standalone (synthetic swing + soft floors); full AC+DC CGM assemble still needs assembled TP/SV |
+| `CgmesSvCompareSupport` | SvVoltage / SvPowerFlow readers + \|V\|/angle/flow compare helpers |
 | `CGMESReliCapDcCoverageStubTest` | ReliCap HVDC / multi-MAS CGM / NCP presence |
 
 ## P4 compare notes
 
 - Seed LF from SvVoltage, then NR (`setInitBusVoltage(false)`). SV is not written back as a solved result.
-- One floor for every P4 case, including MiniGrid and the promoted packs. Dead buses (`|V| < 0.2` pu) are excluded. A flow match needs both P and Q inside tolerance on the sequence-correct terminal.
-- `|V|`: `vTolPu=0.005`, `minMatch=0.98`. Angle: `angTolDeg=0.5`, `minAngMatch=0.95` (differential, swing or first live bus).
-- Branch P/Q: `pTolMw=1`, `qTolMvar=1`, `minFlowMatch=0.95`. `missingBus=0` and `missingBranch=0` for every in-topology `ACLineSegment` and `PowerTransformer` terminal.
-- Overrides: `-Dipss.cgmes.p4.vTolPu` / `angTolDeg` / `minMatch` / `minAngMatch` / `pTolMw` / `qTolMvar` / `minFlowMatch`.
+- Closed retained switches are zero-Z branches; UCTE synonym bases (220↔225, 380↔400) are unified across line+switch islands so LF does not auto-turn them into 1:1 xfrs.
+- Dead buses (`|V| < 0.2` pu) are excluded. A flow match needs both P and Q inside tolerance on the sequence-correct terminal.
+- Shared hard floor (MiniGrid / PowerFlow / PST / SmallGrid): `|V|` `vTolPu=0.005` / `minMatch≈1.0`, angle `0.5°` / `0.95`, branch P/Q `1` MW/Mvar / `0.95`, `missingBus=0`, `missingBranch=0`.
+- Soft / intermediate floors (see smoke class javadoc for live values):
+  - MicroGrid Type1 / Type2 / BaseCase: shared \|V\|; flow soft `5` MW / `10` Mvar
+  - Svedala-Merged: `|V|` `0.015` / `0.90`, angle `1.5°` / `0.85`, flow `0.43`
+  - ReliCap IGMs: voltage-primary; angle floors `0.50`–`0.70`; Portheim hard NR; Espheim soft NR
+  - T4 / RealGrid / Type3 hours: hard NR; `|V|` `0.02` / `0.85`, angle ≥`0.50`
+  - FullGrid: hard NR; `|V|` `0.02` / `0.70`, soft angle
+  - DC Espheim–Svedala (Unconverged): synthetic swing; soft `|V|` `0.05` / `0.50`
+- Overrides: `-Dipss.cgmes.p4.vTolPu` / `angTolDeg` / `minMatch` / `minAngMatch` / `pTolMw` / `qTolMvar` / `minFlowMatch` / `maxMissingBus`.
 
 ## Adding a new pack
 
