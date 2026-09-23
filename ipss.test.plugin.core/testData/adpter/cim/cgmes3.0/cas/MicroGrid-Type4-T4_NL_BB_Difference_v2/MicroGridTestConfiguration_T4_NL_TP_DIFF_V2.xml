@@ -1,0 +1,14 @@
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cim="http://iec.ch/TC57/2013/CIM-schema-cim16#" xmlns:entsoe="http://entsoe.eu/CIM/SchemaExtension/3/1#" xmlns:md="http://iec.ch/TC57/61970-552/ModelDescription/1#" xmlns:dm="http://iec.ch/TC57/61970-552/DifferenceModel/1#">
+<dm:DifferenceModel rdf:about="urn:uuid:3aeaff22-b81d-4db9-b2ab-b9abf1f2e2e6">
+<md:Model.created>2014-10-24T17:11:03</md:Model.created>
+<md:Model.scenarioTime/>
+<md:Model.version>2</md:Model.version>
+<md:Model.Supersedes rdf:resource="urn:uuid:5d32d257-1646-4906-a1f6-4d7ce3f91569"/>
+<md:Model.description>CGMES Conformity Assessment: 'MicroGridTestConfiguration....T4' Test Configuration. The model is owned by ENTSO-E and is provided by ENTSO-E “as it is”. To the fullest extent permitted by law, ENTSO-E shall not be liable for any damages of any kind arising out of the use of the model (including any of its subsequent modifications). ENTSO-E neither warrants, nor represents that the use of the model will not infringe the rights of third parties. Any use of the model shall  include a reference to ENTSO-E. ENTSO-E web site is the only official source of information related to the model.</md:Model.description>
+<md:Model.modelingAuthoritySet>http://TENNET/CGMES/2.4.15</md:Model.modelingAuthoritySet>
+<md:Model.profile>http://iec.ch/TC57/61970-552/DifferenceModel/1http://entsoe.eu/CIM/Topology/4/1</md:Model.profile>
+<dm:preconditions parseType="Statements"> </dm:preconditions>
+<dm:reverseDifferences parseType="Statements"/>
+<dm:forwardDifferences parseType="Statements"/>
+</dm:DifferenceModel>
+</rdf:RDF>

@@ -15,25 +15,29 @@ import com.interpss.core.aclf.AclfBranchCode;
 import com.interpss.core.aclf.AclfBus;
 import com.interpss.core.aclf.AclfGenCode;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.aclf.adpter.AclfPSXformerAdapter;
+import org.interpss.numeric.datatype.Unit.UnitType;
 import com.interpss.core.net.OriginalDataFormat;
 import com.interpss.simu.SimuContext;
 
 /**
  * Regression tests for CIM direct import (ODM-bypass path).
- * Fixtures under testData/adpter/cim/ — expectations ported from ipss-odm CIM tests.
+ * Fixtures under testData/adpter/cim/cgmes2.4/ and cgmes3.0/ —
+ * expectations ported from ipss-odm CIM tests.
  */
 public class CIMDirectParserTest extends CorePluginTestSetup {
 
-    private static final String TD = "testData/adpter/cim/";
+    private static final String TD24 = "testData/adpter/cim/cgmes2.4/";
+    private static final String TD30 = "testData/adpter/cim/cgmes3.0/";
 
-    private static final String MG_BE_EQ = TD + "MicroGrid_T4_BE_EQ_V2.xml";
-    private static final String MG_BE_TP = TD + "MicroGrid_T4_BE_TP_V2.xml";
-    private static final String MG_BE_SSH = TD + "MicroGrid_T4_BE_SSH_V2.xml";
-    private static final String MG_BE_SV = TD + "MicroGrid_T4_BE_SV_V2.xml";
+    private static final String MG_BE_EQ = TD24 + "MicroGrid_T4_BE_EQ_V2.xml";
+    private static final String MG_BE_TP = TD24 + "MicroGrid_T4_BE_TP_V2.xml";
+    private static final String MG_BE_SSH = TD24 + "MicroGrid_T4_BE_SSH_V2.xml";
+    private static final String MG_BE_SV = TD24 + "MicroGrid_T4_BE_SV_V2.xml";
 
-    private static final String MN_EQ = TD + "MiniGrid_NB_EQ_V3.xml";
-    private static final String MN_TP = TD + "MiniGrid_NB_TP_V3.xml";
-    private static final String MN_SSH = TD + "MiniGrid_NB_SSH_V3.xml";
+    private static final String MN_EQ = TD24 + "MiniGrid_NB_EQ_V3.xml";
+    private static final String MN_TP = TD24 + "MiniGrid_NB_TP_V3.xml";
+    private static final String MN_SSH = TD24 + "MiniGrid_NB_SSH_V3.xml";
 
     @Test
     public void testMicroGrid_EQ_TP_BusBranchCounts() throws Exception {
@@ -119,7 +123,7 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
 
     @Test
     public void testIEEE118_CIMHub() throws Exception {
-        AclfNetwork net = new CGMESDirectParser().parse(TD + "IEEE118_CIM.xml");
+        AclfNetwork net = new CGMESDirectParser().parse(TD30 + "IEEE118_CIM.xml");
 
         assertEquals(193, net.getNoBus(), "Buses should match MATPOWER");
 
@@ -219,12 +223,99 @@ public class CIMDirectParserTest extends CorePluginTestSetup {
     public void testBoundaryNodesSkipped() throws Exception {
         // With BD file, boundary TNs should not become buses
         AclfNetwork withBd = new CGMESDirectParser().parse(new String[]{
-                MG_BE_EQ, MG_BE_TP, TD + "MicroGrid_T4_BE_EQ_BD_V2.xml", TD + "MicroGrid_T4_BE_TP_BD_V2.xml"
+                MG_BE_EQ, MG_BE_TP, TD24 + "MicroGrid_T4_BE_EQ_BD_V2.xml", TD24 + "MicroGrid_T4_BE_TP_BD_V2.xml"
         });
         AclfNetwork withoutBd = new CGMESDirectParser().parse(new String[]{MG_BE_EQ, MG_BE_TP});
         // Boundary merge may keep same bus count (boundary TNs skipped either way once marked)
         assertTrue(withBd.getNoBus() <= withoutBd.getNoBus() + 2,
                 "Boundary handling should not inflate bus count substantially");
         assertTrue(withBd.getNoBus() >= 5);
+    }
+
+    @Test
+    public void testMicroGrid_RatioTapChanger() throws Exception {
+        // BE-TR2_3 end2: neutral=17, SSH step=14, stepVoltageIncrement=0.8% → 0.976
+        AclfNetwork net = new CGMESDirectParser().parse(
+                new String[]{MG_BE_EQ, MG_BE_TP, MG_BE_SSH});
+
+        AclfBranch tr23 = null;
+        for (AclfBranch b : net.getBranchList()) {
+            if (b.getBranchCode() == AclfBranchCode.XFORMER
+                    && b.getName() != null && b.getName().contains("BE-TR2_3")) {
+                tr23 = b;
+                break;
+            }
+        }
+        assertNotNull(tr23, "Should find 2W BE-TR2_3");
+        double expected = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .linearRatioTap(14, 17, 0.8);
+        assertEquals(0.976, expected, 1e-9);
+        assertEquals(110.34375 / 110.0, tr23.getFromTurnRatio(), 1e-4,
+                "end1 has no RTC; ratedU 110.34375 on a 110 kV node");
+        assertEquals(expected, tr23.getToTurnRatio(), 1e-4,
+                "end2 RatioTapChanger step 14 vs neutral 17 @ 0.8%/step");
+    }
+
+    @Test
+    public void testLinearRatioTapFormula() {
+        assertEquals(1.0,
+                org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper.linearRatioTap(13, 13, 1.0),
+                1e-12);
+        assertEquals(0.976,
+                org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper.linearRatioTap(14, 17, 0.8),
+                1e-12);
+        assertEquals(1.024,
+                org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper.linearRatioTap(20, 17, 0.8),
+                1e-12);
+    }
+
+    @Test
+    public void testPhaseTapFormulas() {
+        var sym = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .symmetricalPhaseTap(10, 13, 1.25);
+        assertEquals(-2.14834, sym.angleDeg, 1e-4);
+        assertEquals(1.0, sym.rho, 1e-12);
+
+        var asym = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .asymmetricalPhaseTap(10, 13, 1.25, 5.0);
+        assertEquals(-0.19453, asym.angleDeg, 1e-4);
+        assertEquals(0.96265, asym.rho, 1e-4);
+
+        assertEquals(-5.0,
+                org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                        .linearPhaseAngleDeg(6, 11, 1.0),
+                1e-12);
+    }
+
+    @Test
+    public void testMicroGrid_PhaseTapChanger() throws Exception {
+        // BE-TR2_1: PhaseTapChangerSymmetrical on end1, SSH step=10, neu=13, du%=1.25
+        // BE-TR2_2: PhaseTapChangerAsymmetrical on end1, same steps + windingConnectionAngle=5°
+        AclfNetwork net = new CGMESDirectParser().parse(
+                new String[]{MG_BE_EQ, MG_BE_TP, MG_BE_SSH});
+
+        AclfBranch tr21 = null, tr22 = null;
+        for (AclfBranch b : net.getBranchList()) {
+            if (b.getName() == null) continue;
+            if (b.getName().contains("BE-TR2_1")) tr21 = b;
+            if (b.getName().contains("BE-TR2_2")) tr22 = b;
+        }
+        assertNotNull(tr21, "BE-TR2_1");
+        assertNotNull(tr22, "BE-TR2_2");
+        assertEquals(AclfBranchCode.PS_XFORMER, tr21.getBranchCode());
+        assertEquals(AclfBranchCode.PS_XFORMER, tr22.getBranchCode());
+
+        var sym = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .symmetricalPhaseTap(10, 13, 1.25);
+        AclfPSXformerAdapter ps21 = tr21.toPSXfr();
+        assertEquals(sym.angleDeg, ps21.getFromAngle(UnitType.Deg), 1e-3);
+        assertEquals(1.0, tr21.getToTurnRatio(), 1e-6);
+
+        var asym = org.interpss.fadapter.cim.mapper.AbstractCGMESDataMapper
+                .asymmetricalPhaseTap(10, 13, 1.25, 5.0);
+        AclfPSXformerAdapter ps22 = tr22.toPSXfr();
+        assertEquals(asym.angleDeg, ps22.getFromAngle(UnitType.Deg), 1e-3);
+        // asym rho on end1, times ratedU/base 220/225
+        assertEquals(asym.rho * 220.0 / 225.0, tr22.getFromTurnRatio(), 1e-4);
     }
 }

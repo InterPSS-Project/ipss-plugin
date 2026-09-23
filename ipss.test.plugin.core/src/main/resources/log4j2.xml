@@ -14,6 +14,11 @@
     </RollingFile>
   </Appenders>
   <Loggers>
+    <!-- Jena ARP W137 on large CGMES RDF/XML is expected; parser also sets EM_IGNORE -->
+    <Logger name="org.apache.jena.riot" level="error" additivity="false">
+      <AppenderRef ref="Console"/>
+      <AppenderRef ref="FileLogger"/>
+    </Logger>
     <Root level="warn">
       <AppenderRef ref="Console"/>
       <AppenderRef ref="FileLogger"/>

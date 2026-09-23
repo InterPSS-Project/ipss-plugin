@@ -23,12 +23,15 @@ import org.interpss.fadapter.cim.mapper.CGMESLoadMapper;
 import org.interpss.fadapter.cim.mapper.CGMESShuntCompensatorMapper;
 import org.interpss.fadapter.cim.mapper.CGMESTransformer3WMapper;
 import org.interpss.fadapter.cim.mapper.CGMESTransformerMapper;
+import org.interpss.fadapter.cim.mapper.CGMESVsConverterMapper;
 import org.interpss.fadapter.cim.parser.CGMESRdfParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.AclfNetModelType;
 import com.interpss.core.aclf.AclfNetwork;
 import com.interpss.core.aclf.BaseAclfBus;
 import com.interpss.core.net.OriginalDataFormat;
@@ -123,8 +126,23 @@ public class CGMESDirectParser {
         builder.finalizeNetwork();
 
         AclfNetwork net = builder.getNetwork();
+        markZeroZModel(net);
         log.info("CIM import: {} buses, {} branches", net.getNoBus(), net.getNoBranch());
         return net;
+    }
+
+    /**
+     * Closed retained switches are mapped as Z = 0 lines. Mark the network so
+     * load flow consolidates them instead of treating a singular row as a line.
+     */
+    private static void markZeroZModel(AclfNetwork net) {
+        for (AclfBranch branch : net.getBranchList()) {
+            if (branch.isZeroZBranch()) {
+                net.setAclfNetModelType(AclfNetModelType.ZBR_MODEL);
+                log.info("CIM import: zero-Z branch present, model type ZBR_MODEL");
+                return;
+            }
+        }
     }
 
     private void convertBuses(CGMESModel cimModel) throws Exception {
@@ -154,7 +172,7 @@ public class CGMESDirectParser {
                 }
                 String name = tn.getName() != null ? tn.getName() : tn.getLocalId();
                 Double baseKV = resolveTopoNodeVoltage(cimModel, tn);
-                double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
+                double baseV = positiveBaseKV(baseKV) * 1000.0;
 
                 String busId = tn.getLocalId();
                 builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
@@ -168,7 +186,7 @@ public class CGMESDirectParser {
                 String name = bb.getName() != null ? bb.getName() : bb.getLocalId();
                 String vlUri = bb.getResourceId("Equipment.EquipmentContainer");
                 Double baseKV = vlUri != null ? cimModel.getVLRatedVoltage(vlUri) : null;
-                double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
+                double baseV = positiveBaseKV(baseKV) * 1000.0;
 
                 String busId = bb.getLocalId();
                 builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
@@ -191,7 +209,7 @@ public class CGMESDirectParser {
                 if (baseKV == null) {
                     baseKV = cimModel.getBaseVoltageFromConnectivityNode(cnId);
                 }
-                double baseV = (baseKV != null ? baseKV : 100.0) * 1000.0;
+                double baseV = positiveBaseKV(baseKV) * 1000.0;
 
                 String busId = cn.getLocalId();
                 builder.addBus(busId, name, busNumber++, baseV, 1.0, 0.0,
@@ -204,12 +222,23 @@ public class CGMESDirectParser {
 
     private Double resolveTopoNodeVoltage(CGMESModel cimModel, CGMESPropertyBag tn) {
         String bvUri = tn.getResourceId("TopologicalNode.BaseVoltage");
+        Double tnV = null;
         if (bvUri != null) {
-            Double v = cimModel.getBaseVoltageValue(bvUri);
-            if (v != null) return v;
+            tnV = cimModel.getBaseVoltageValue(bvUri);
+        }
+        // Connected ACLineSegment / equipment BaseVoltage is the electrical class used
+        // for pu. UCTE TP often labels the same EHV class as 380 while EQ uses 400
+        // (or 220 vs 225); prefer equipment so border ties stay lines, not fake xfrs.
+        Double equipV = cimModel.getBaseVoltageFromConnectivityNode(tn.getId());
+        if (tnV != null && equipV != null && sameUcteVoltageClass(tnV, equipV)) {
+            return equipV;
+        }
+        if (tnV != null) {
+            return tnV;
         }
         Double v = cimModel.getNominalVoltageForTopoNode(tn.getId());
         if (v != null) return v;
+        if (equipV != null) return equipV;
 
         java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(tn.getId());
         if (!topoNodes.isEmpty()) {
@@ -220,10 +249,26 @@ public class CGMESDirectParser {
         String name = tn.getName();
         if (name != null) {
             try {
-                return Double.parseDouble(name);
+                double parsed = Double.parseDouble(name);
+                if (parsed > 0) return parsed;
             } catch (NumberFormatException e) { /* ignore */ }
         }
         return null;
+    }
+
+    /** UCTE EHV synonyms: 380↔400 kV and 220↔225 kV are the same voltage class. */
+    static boolean sameUcteVoltageClass(double aKv, double bKv) {
+        if (Math.abs(aKv - bKv) <= 0.05) {
+            return true;
+        }
+        double lo = Math.min(aKv, bKv);
+        double hi = Math.max(aKv, bKv);
+        return (lo >= 375.0 && hi <= 405.0) || (lo >= 215.0 && hi <= 230.0);
+    }
+
+    /** kV for bus creation; never return ≤ 0 (would break PV/swing voltage set). */
+    private static double positiveBaseKV(Double baseKV) {
+        return baseKV != null && baseKV > 0 ? baseKV : 100.0;
     }
 
     private void convertBranches(CGMESModel cimModel) throws Exception {
@@ -234,6 +279,13 @@ public class CGMESDirectParser {
         for (CGMESPropertyBag line : lineSegments) {
             lineMapper.map(line, builder);
         }
+        // Multiple passes: later BE (380) / NL (400) lines raise neighbors; a second
+        // pass propagates the preferred synonym across the connected EHV class.
+        for (int pass = 0; pass < 3; pass++) {
+            for (CGMESPropertyBag line : lineSegments) {
+                lineMapper.alignUcteLineEndBases(line, builder);
+            }
+        }
 
         List<CGMESPropertyBag> seriesComps = cimModel.seriesCompensators();
         if (!seriesComps.isEmpty()) {
@@ -243,14 +295,27 @@ public class CGMESDirectParser {
             }
         }
 
+        for (CGMESPropertyBag sw : cimModel.switches()) {
+            lineMapper.mapClosedSwitch(sw, builder);
+        }
+
         CGMESTransformerMapper xfr2wMapper = new CGMESTransformerMapper(DEFAULT_BASE_MVA);
         xfr2wMapper.setCimModel(cimModel);
         xfr2wMapper.indexEnds(cimModel.transformerEnds());
         xfr2wMapper.indexMeshImpedances(cimModel.transformerMeshImpedances());
         xfr2wMapper.indexCoreAdmittances(cimModel.transformerCoreAdmittances());
+        xfr2wMapper.indexRatioTapChangers(cimModel.ratioTapChangers(),
+                cimModel.ratioTapChangerTablePoints());
+        xfr2wMapper.indexPhaseTapChangers(cimModel.phaseTapChangers(),
+                cimModel.phaseTapChangerTablePoints());
 
         CGMESTransformer3WMapper xfr3wMapper = new CGMESTransformer3WMapper(DEFAULT_BASE_MVA);
         xfr3wMapper.setCimModel(cimModel);
+        xfr3wMapper.indexMeshImpedances(cimModel.transformerMeshImpedances());
+        xfr3wMapper.indexRatioTapChangers(cimModel.ratioTapChangers(),
+                cimModel.ratioTapChangerTablePoints());
+        xfr3wMapper.indexPhaseTapChangers(cimModel.phaseTapChangers(),
+                cimModel.phaseTapChangerTablePoints());
 
         Map<String, List<CGMESPropertyBag>> endsByXfr = new HashMap<>();
         for (CGMESPropertyBag end : cimModel.transformerEnds()) {
@@ -283,9 +348,24 @@ public class CGMESDirectParser {
 
         CGMESLoadMapper loadMapper = new CGMESLoadMapper(DEFAULT_BASE_MVA);
         loadMapper.setCimModel(cimModel);
+        java.util.Set<String> loadBuses = new java.util.HashSet<>();
         for (CGMESPropertyBag load : cimModel.energyConsumers()) {
+            String busId = loadMapper.resolveBusId(load.getId());
+            if (busId != null) loadBuses.add(busId);
             int before = loadMapper.getMappedCount();
             loadMapper.map(load, builder);
+            if (loadMapper.getMappedCount() > before) loadCount++;
+        }
+        // Boundary MW that is not already an EnergyConsumer. Nordheim puts both
+        // on the same node; counting the equivalent there replaces the 200 MW load.
+        for (CGMESPropertyBag ei : cimModel.equivalentInjections()) {
+            // Nordheim puts the equivalent on the same node as the load; skip
+            // that duplicate. A boundary equivalent has no bus yet — map() moves
+            // it to the internal end of the tie line.
+            String busId = loadMapper.resolveBusId(ei.getId());
+            if (busId != null && loadBuses.contains(busId)) continue;
+            int before = loadMapper.getMappedCount();
+            loadMapper.map(ei, builder);
             if (loadMapper.getMappedCount() > before) loadCount++;
         }
         for (CGMESPropertyBag asm : cimModel.asynchronousMachines()) {
@@ -293,6 +373,13 @@ public class CGMESDirectParser {
             loadMapper.map(asm, builder);
             if (loadMapper.getMappedCount() > before) loadCount++;
         }
+
+        CGMESVsConverterMapper vscMapper = new CGMESVsConverterMapper(DEFAULT_BASE_MVA);
+        vscMapper.setCimModel(cimModel);
+        int vscBefore = vscMapper.getMappedCount();
+        vscMapper.mapAll(cimModel.vsConverters(), cimModel.dcLineSegments(), builder);
+        vscMapper.mapCurrentSources(cimModel.csConverters(), cimModel.dcLineSegments(), builder);
+        loadCount += vscMapper.getMappedCount() - vscBefore;
 
         CGMESGeneratorMapper genMapper = new CGMESGeneratorMapper(DEFAULT_BASE_MVA);
         genMapper.setCimModel(cimModel);
@@ -318,6 +405,29 @@ public class CGMESDirectParser {
                 if (bus != null && bus.getGenCode() == AclfGenCode.SWING) {
                     hasSwing = true;
                 }
+            }
+        }
+
+        if (!hasSwing) {
+            // CGMES angle reference is the in-service machine with the highest
+            // referencePriority, not the largest |P|. SmallGrid's priority-1
+            // machine is Sporn; ClinchRv has more P but priority 0, and pinning
+            // the slack there forces Sporn's SSH/SV mismatch through the island.
+            String priorityBusId = null;
+            int bestPriority = 0;
+            for (CGMESPropertyBag gen : cimModel.synchronousMachines()) {
+                if (!gen.getBoolean("Equipment.inService", true)) continue;
+                int priority = gen.getInt("SynchronousMachine.referencePriority", 0);
+                if (priority <= bestPriority) continue;
+                String busId = genMapper.resolveBusId(gen.getId());
+                if (busId == null) continue;
+                BaseAclfBus bus = builder.getBus(busId);
+                if (bus == null || bus.getGenCode() != AclfGenCode.GEN_PV) continue;
+                bestPriority = priority;
+                priorityBusId = busId;
+            }
+            if (priorityBusId != null && genMapper.promoteToSwing(builder, priorityBusId)) {
+                hasSwing = true;
             }
         }
 
@@ -357,6 +467,9 @@ public class CGMESDirectParser {
         shuntMapper.setCimModel(cimModel);
         for (CGMESPropertyBag shunt : cimModel.shuntCompensators()) {
             shuntMapper.map(shunt, builder);
+        }
+        for (CGMESPropertyBag svc : cimModel.staticVarCompensators()) {
+            shuntMapper.mapStaticVarCompensator(svc, builder);
         }
     }
 

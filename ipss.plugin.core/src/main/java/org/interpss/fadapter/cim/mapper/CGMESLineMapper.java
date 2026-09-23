@@ -42,12 +42,15 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         String fromBusId = busIds[0];
         String toBusId = busIds[1];
 
-        if (fromBusId == null || toBusId == null) {
-            log.warn("Skipping line {} - cannot resolve bus connectivity (from={}, to={})", name, fromBusId, toBusId);
+        if (fromBusId == null || toBusId == null
+                || builder.getBus(fromBusId) == null || builder.getBus(toBusId) == null) {
+            // A skipped boundary TN still yields a local id; do not build a branch
+            // whose from/to bus was never created.
+            logSkippedBranch("line", name, fromBusId, toBusId, bag.getId());
             return;
         }
 
-        Double baseKV = resolveBaseKV(bag);
+        Double baseKV = resolveBaseKV(bag, builder, fromBusId, toBusId);
         double baseZ = baseKV * baseKV / baseMVA;
         double baseY = baseMVA / (baseKV * baseKV);
         double rPU = r / baseZ;
@@ -61,10 +64,60 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        AclfBranch branch = builder.addLine(fromBusId, toBusId, cirId,
-                new Complex(rPU, xPU),
-                new Complex(gPU * 0.5, bPU * 0.5),
-                null, null, 0.0, 0.0, 0.0, true);
+        Double fromBase = busBaseKV(builder, fromBusId);
+        Double toBase = busBaseKV(builder, toBusId);
+        // UCTE labels the same EHV class as 380 or 400 (and 220/225). Those are not
+        // real voltage transformations — keep the ACLineSegment as a line.
+        boolean crossVoltage = fromBase != null && toBase != null
+                && !sameUcteVoltageClass(fromBase, toBase);
+        if (!crossVoltage) {
+            double targetKv = preferredUcteBaseKv(baseKV, fromBase, toBase);
+            if (Math.abs(targetKv - baseKV) > 0.05) {
+                baseKV = targetKv;
+                baseZ = baseKV * baseKV / baseMVA;
+                baseY = baseMVA / (baseKV * baseKV);
+                rPU = r / baseZ;
+                xPU = x / baseZ;
+                gPU = gch / baseY;
+                bPU = bch / baseY;
+            }
+            harmonizeBusBase(builder, fromBusId, fromBase, targetKv);
+            harmonizeBusBase(builder, toBusId, toBase, targetKv);
+        }
+        AclfBranch branch;
+        if (crossVoltage) {
+            // Refer series Z to the from-bus base. toTap = fromBase/toBase makes
+            // equal pu voltages the same kilovolts across the conductor.
+            double zKv = fromBase;
+            double crossZ = zKv * zKv / baseMVA;
+            rPU = r / crossZ;
+            xPU = x / crossZ;
+            double fromY = baseMVA / (fromBase * fromBase);
+            double toY = baseMVA / (toBase * toBase);
+            // InterPSS rejects a turn ratio outside (0, 2]. Keep the kilovolt
+            // match when it fits; otherwise use a 1:1 pu transformer.
+            double fromTap = 1.0;
+            double toTap = fromBase / toBase;
+            // setToTurnRatio rejects 2.0 itself, not only values above it.
+            if (!(toTap > 0.0 && toTap < 2.0)) {
+                fromTap = toBase / fromBase;
+                toTap = 1.0;
+            }
+            if (!(fromTap > 0.0 && fromTap < 2.0 && toTap > 0.0 && toTap < 2.0)) {
+                fromTap = 1.0;
+                toTap = 1.0;
+            }
+            Complex yFrom = new Complex((gch * 0.5) / fromY, (bch * 0.5) / fromY).multiply(fromTap * fromTap);
+            Complex yTo = new Complex((gch * 0.5) / toY, (bch * 0.5) / toY).multiply(toTap * toTap);
+            branch = builder.addXformer2W(fromBusId, toBusId, cirId,
+                    new Complex(rPU, xPU), fromTap, toTap,
+                    yFrom, yTo, 0.0, 0.0, 0.0, 0, true);
+        } else {
+            branch = builder.addLine(fromBusId, toBusId, cirId,
+                    new Complex(rPU, xPU),
+                    new Complex(gPU * 0.5, bPU * 0.5),
+                    null, null, 0.0, 0.0, 0.0, true);
+        }
         branch.setId(lineId);
         branch.setName(name.isEmpty() ? lineId : name);
 
@@ -87,12 +140,13 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         String fromBusId = busIds[0];
         String toBusId = busIds[1];
 
-        if (fromBusId == null || toBusId == null) {
-            log.warn("Skipping SeriesCompensator {} - cannot resolve bus (from={}, to={})", name, fromBusId, toBusId);
+        if (fromBusId == null || toBusId == null
+                || builder.getBus(fromBusId) == null || builder.getBus(toBusId) == null) {
+            logSkippedBranch("SeriesCompensator", name, fromBusId, toBusId, bag.getId());
             return;
         }
 
-        Double baseKV = resolveBaseKV(bag);
+        Double baseKV = resolveBaseKV(bag, builder, fromBusId, toBusId);
         double baseZ = baseKV * baseKV / baseMVA;
         double rPU = r / baseZ;
         double xPU = x / baseZ;
@@ -114,7 +168,102 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             name, fromBusId, toBusId, rPU, xPU);
     }
 
-    private Double resolveBaseKV(CGMESPropertyBag bag) {
+    /**
+     * Closed retained switch. CGMES keeps the two topological nodes distinct and
+     * the switch as the branch between them. A non-retained switch is already
+     * inside one topological node; mapping it uses connectivity-node ids that
+     * were never created as buses. MicroGrid breaker B1 is retained and is the
+     * only direct link between NL-Busbar_2 and NL_Busbar__4.
+     */
+    public void mapClosedSwitch(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+        if (!bag.getBoolean("Equipment.inService", true)) return;
+        if (bag.getBoolean("Switch.open", false)) return;
+        if (!bag.getBoolean("Switch.retained", false)) return;
+
+        String lineId = bag.getLocalId();
+        String name = bag.getName();
+        if (name == null) name = lineId;
+
+        String[] busIds = resolveBranchBusIds(bag.getId());
+        String fromBusId = busIds[0];
+        String toBusId = busIds[1];
+        if (fromBusId == null || toBusId == null || fromBusId.equals(toBusId)) {
+            return;
+        }
+        if (builder.getBus(fromBusId) == null || builder.getBus(toBusId) == null) {
+            log.debug("Skipping closed switch {} - bus missing ({}, {})", name, fromBusId, toBusId);
+            return;
+        }
+
+        String cirId = nextCircuitId(builder, fromBusId, toBusId);
+        if (cirId == null) {
+            log.warn("Skipping closed switch {} - too many parallel circuits", name);
+            return;
+        }
+
+        Double fromBase = busBaseKV(builder, fromBusId);
+        Double toBase = busBaseKV(builder, toBusId);
+        boolean crossVoltage = fromBase != null && toBase != null
+                && !sameUcteVoltageClass(fromBase, toBase);
+        AclfBranch branch;
+        if (crossVoltage) {
+            // isZeroZBranch() rejects transformers. Keep a small series X so the
+            // cross-voltage tie stays a nonsingular two-winding transformer.
+            final double xPu = 1.0e-4;
+            double fromTap = 1.0;
+            double toTap = fromBase / toBase;
+            if (!(toTap > 0.0 && toTap < 2.0)) {
+                fromTap = toBase / fromBase;
+                toTap = 1.0;
+            }
+            if (!(fromTap > 0.0 && fromTap < 2.0 && toTap > 0.0 && toTap < 2.0)) {
+                fromTap = 1.0;
+                toTap = 1.0;
+            }
+            branch = builder.addXformer2W(fromBusId, toBusId, cirId,
+                    new Complex(0.0, xPu), fromTap, toTap,
+                    null, null, 0.0, 0.0, 0.0, 0, true);
+        } else {
+            // Same-base closed switch is a zero-impedance branch. Load flow
+            // consolidates the two buses before NR (ZeroZBranch usage guide).
+            branch = builder.addLine(fromBusId, toBusId, cirId,
+                    new Complex(0.0, 0.0),
+                    new Complex(0.0, 0.0),
+                    null, null, 0.0, 0.0, 0.0, true);
+        }
+        branch.setId(lineId);
+        branch.setName(name.isEmpty() ? lineId : name);
+        log.debug("Created closed switch as tie: {} ({}→{})", name, fromBusId, toBusId);
+    }
+
+    /**
+     * Align ACLineSegment end-bus bases when TP labeled one end with a UCTE synonym
+     * (380 vs 400). Safe to call after every line has been mapped.
+     */
+    public void alignUcteLineEndBases(CGMESPropertyBag bag, AclfNetworkBuilder builder) {
+        String[] busIds = resolveBranchBusIds(bag.getId());
+        String fromBusId = busIds[0];
+        String toBusId = busIds[1];
+        if (fromBusId == null || toBusId == null) {
+            return;
+        }
+        Double baseKV = resolveBaseKV(bag, builder, fromBusId, toBusId);
+        if (baseKV == null) {
+            return;
+        }
+        Double fromBase = busBaseKV(builder, fromBusId);
+        Double toBase = busBaseKV(builder, toBusId);
+        if (fromBase != null && toBase != null && !sameUcteVoltageClass(fromBase, toBase)) {
+            return;
+        }
+        // Prefer the higher UCTE synonym for 380/400 only (never pull 400→380).
+        double targetKv = preferredUcteBaseKv(baseKV, fromBase, toBase);
+        harmonizeBusBase(builder, fromBusId, fromBase, targetKv);
+        harmonizeBusBase(builder, toBusId, toBase, targetKv);
+    }
+
+    private Double resolveBaseKV(CGMESPropertyBag bag, AclfNetworkBuilder builder,
+                                 String fromBusId, String toBusId) {
         Double baseKV = null;
         String bvRef = bag.getResourceId("ConductingEquipment.BaseVoltage");
         if (bvRef != null && cimModel != null) {
@@ -127,9 +276,85 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
             }
         }
         if (baseKV == null) {
+            baseKV = busBaseKV(builder, fromBusId);
+        }
+        if (baseKV == null) {
+            baseKV = busBaseKV(builder, toBusId);
+        }
+        if (baseKV == null) {
             log.warn("Cannot determine base voltage for {}, using 100 kV", bag.getName());
             baseKV = 100.0;
         }
         return baseKV;
+    }
+
+    /** UCTE EHV synonyms: 380↔400 kV and 220↔225 kV are the same voltage class. */
+    static boolean sameUcteVoltageClass(double aKv, double bKv) {
+        if (Math.abs(aKv - bKv) <= 0.05) {
+            return true;
+        }
+        double lo = Math.min(aKv, bKv);
+        double hi = Math.max(aKv, bKv);
+        return (lo >= 375.0 && hi <= 405.0) || (lo >= 215.0 && hi <= 230.0);
+    }
+
+    /** Prefer the higher synonym within a UCTE class (400 over 380, 225 over 220). */
+    static double preferredUcteBaseKv(double lineKv, Double fromKv, Double toKv) {
+        double target = lineKv;
+        if (fromKv != null && sameUcteVoltageClass(fromKv, target) && fromKv > target) {
+            target = fromKv;
+        }
+        if (toKv != null && sameUcteVoltageClass(toKv, target) && toKv > target) {
+            target = toKv;
+        }
+        return target;
+    }
+
+    private void harmonizeBusBase(AclfNetworkBuilder builder, String busId,
+            Double currentKv, double targetKv) {
+        if (busId == null) {
+            return;
+        }
+        var bus = builder.getBus(busId);
+        if (bus == null || bus.getBaseVoltage() <= 0) {
+            return;
+        }
+        double current = bus.getBaseVoltage() / 1000.0;
+        if (Math.abs(current - targetKv) <= 0.05) {
+            return;
+        }
+        if (!sameUcteVoltageClass(current, targetKv)) {
+            return;
+        }
+        bus.setBaseVoltage(targetKv * 1000.0);
+        log.debug("Aligned bus {} base from {} kV to line base {} kV",
+                busId, current, targetKv);
+    }
+
+    /**
+     * Boundary interconnectors (one end on a skipped/dangling boundary TN) are expected
+     * when EQBD/TP_BD is absent — log at debug. Genuine connectivity gaps stay WARN.
+     */
+    private void logSkippedBranch(String kind, String name, String fromBusId, String toBusId,
+                                  String equipmentId) {
+        boolean boundaryTie = (fromBusId == null) != (toBusId == null)
+                || isBoundaryOrUnmappedEnd(equipmentId);
+        if (boundaryTie) {
+            log.debug("Skipping {} {} - boundary/unmapped end (from={}, to={})",
+                    kind, name, fromBusId, toBusId);
+        } else {
+            log.warn("Skipping {} {} - cannot resolve bus connectivity (from={}, to={})",
+                    kind, name, fromBusId, toBusId);
+        }
+    }
+
+    private boolean isBoundaryOrUnmappedEnd(String equipmentId) {
+        if (cimModel == null) return false;
+        for (String tn : cimModel.getTopologicalNodesForEquipment(equipmentId)) {
+            if (cimModel.isBoundaryTopologicalNode(tn) || cimModel.isUnmappedTopoNode(tn)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
