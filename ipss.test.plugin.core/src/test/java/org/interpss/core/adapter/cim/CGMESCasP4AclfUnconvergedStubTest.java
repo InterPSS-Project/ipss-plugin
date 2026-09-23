@@ -5,6 +5,7 @@ import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.casDir;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.compareToSv;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.mustFile;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.runNrSeededSoft;
+import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.runSeededCompare;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.runType3HourP4;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.solveNrSeeded;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -25,8 +26,11 @@ import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import com.interpss.core.aclf.AclfNetwork;
 
 /**
- * P4 cases whose SV-seeded NR still does not converge. Split out of
- * {@link CGMESCasP4AclfSmokeStubTest} so that class stays green.
+ * P4 cases split out of {@link CGMESCasP4AclfSmokeStubTest} so that class stays green.
+ *
+ * <p>MicroGrid Type1 / Type2 Merged: NR converges but |V| vs SV falls short of the
+ * shared 0.005 pu / 100% floor (~73–76% match). BaseCase-Merged: voltage OK, branch
+ * SvPowerFlow match ~10% vs 95%.
  *
  * <p>ReliCap Espheim and the Espheim–Svedala DC corridor are {@code @Disabled}:
  * NR hits a KLU numerical failure (dangling EQ ConnectivityNodes with no TP
@@ -41,6 +45,64 @@ import com.interpss.core.aclf.AclfNetwork;
 @Tag("cgmes-cas")
 @Tag("cgmes-p4-aclf")
 public class CGMESCasP4AclfUnconvergedStubTest extends CorePluginTestSetup {
+
+	@Test
+	@DisplayName("P4: MicroGrid Type1 Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
+	public void testP4_MicroGridType1Merged_AclfVsSv() throws Exception {
+		Path dir = casDir("MicroGrid-Type1-Merged",
+				"MicroGrid/MicroGrid-Type1/MicroGrid-Type1-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid Type1 Merged missing: " + dir);
+		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
+		Path beEq = mustFile(dir, "20210323T1730Z_1D_BE_EQ_1.xml");
+		Path nlEq = mustFile(dir, "20210323T1730Z_1D_NL_EQ_1.xml");
+		Path tp = mustFile(dir, "20210323T1730Z_1D_ASSEMBLED_TP_1.xml");
+		Path sv = mustFile(dir, "20210323T1730Z_1D_ASSEMBLED_SV_1.xml");
+		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
+				eqBd, beEq, nlEq,
+				mustFile(dir, "20210323T1730Z_1D_BE_SSH_1.xml"),
+				mustFile(dir, "20210323T1730Z_1D_NL_SSH_1.xml"),
+				tp, sv);
+	}
+
+	@Test
+	@DisplayName("P4: MicroGrid Type2 Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
+	public void testP4_MicroGridType2Merged_AclfVsSv() throws Exception {
+		Path dir = casDir("MicroGrid-Type2-Merged",
+				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid Type2 Merged missing: " + dir);
+		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
+		Path beEq = mustFile(dir, "20210401T1730Z_1D_BE_EQ_1.xml");
+		Path nlEq = mustFile(dir, "20210401T1730Z_1D_NL_EQ_1.xml");
+		Path tp = mustFile(dir, "20210401T1730Z_1D_ASSEMBLED_TP_1.xml");
+		Path sv = mustFile(dir, "20210401T1730Z_1D_ASSEMBLED_SV_1.xml");
+		// HVDC profiles stay in the CGM so the assembled topology is complete.
+		// Converter flows are not part of this AC compare.
+		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
+				eqBd, beEq, nlEq,
+				mustFile(dir, "20210401T1730Z_1D_HVDC_EQ_1.xml"),
+				mustFile(dir, "20210401T1730Z_1D_BE_SSH_1.xml"),
+				mustFile(dir, "20210401T1730Z_1D_NL_SSH_1.xml"),
+				mustFile(dir, "20210401T1730Z_1D_HVDC_SSH_1.xml"),
+				tp, sv);
+	}
+
+	@Test
+	@DisplayName("P4: MicroGrid BaseCase-Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
+	public void testP4_MicroGridBaseCaseMerged_AclfVsSv() throws Exception {
+		Path dir = casDir("MicroGrid-BaseCase-Merged",
+				"MicroGrid/MicroGid-BaseCase/MicroGrid-BaseCase-Merged");
+		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid BaseCase-Merged missing: " + dir);
+		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
+		Path beEq = mustFile(dir, "20210325T1530Z_1D_BE_EQ_001.xml");
+		Path nlEq = mustFile(dir, "20210325T1530Z_1D_NL_EQ_001.xml");
+		Path tp = mustFile(dir, "20210325T1530Z_1D_ASSEMBLED_TP_001.xml");
+		Path sv = mustFile(dir, "20210325T1530Z_1D_ASSEMBLED_SV_001.xml");
+		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
+				eqBd, beEq, nlEq,
+				mustFile(dir, "20210325T1530Z_1D_BE_SSH_001.xml"),
+				mustFile(dir, "20210325T1530Z_1D_NL_SSH_001.xml"),
+				tp, sv);
+	}
 
 	@Test
 	@DisplayName("P4: Type3 CGM mid hour SV-seeded NR + Aclf vs SvVoltage")

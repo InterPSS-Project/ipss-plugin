@@ -47,8 +47,9 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
  * Closed retained switches are zero-Z branches: seed, consolidate, NR, then
  * deconsolidate so SV compare still sees the original buses.
  *
- * <p>ReliCap Espheim and the Espheim–Svedala DC corridor are {@code @Disabled}
- * in {@link CGMESCasP4AclfUnconvergedStubTest} (KLU numerical failure from SV seed).
+ * <p>ReliCap Espheim / Espheim–Svedala DC and MicroGrid Type1 / Type2 / BaseCase
+ * Merged live in {@link CGMESCasP4AclfUnconvergedStubTest} until SV match (or NR)
+ * is fixed.
  *
  * <p>RealGrid-Merged is in this class. Buses with no SV row start at flat voltage,
  * and a few degrees across a milliohm branch is tens of thousands of pu. The
@@ -349,7 +350,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		return out;
 	}
 
-	private static void runSeededCompare(Path svXml, Path[] terminalFiles, Path... inputs) throws Exception {
+	static void runSeededCompare(Path svXml, Path[] terminalFiles, Path... inputs) throws Exception {
 		runSeededCompare(svXml, terminalFiles,
 				vTolPu(), angTolDeg(), minMatch(),
 				CgmesSvCompareSupport.defaultMinFlowMatch(),
@@ -357,7 +358,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 	}
 
 	/** Same as {@link #runSeededCompare(Path, Path[], Path...)} with explicit compare floors. */
-	private static void runSeededCompare(Path svXml, Path[] terminalFiles,
+	static void runSeededCompare(Path svXml, Path[] terminalFiles,
 			double vTol, double angTol, double minVMatch, double minFlowMatch,
 			Path... inputs) throws Exception {
 		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
@@ -435,46 +436,6 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@DisplayName("P4: MicroGrid Type1 Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
-	public void testP4_MicroGridType1Merged_AclfVsSv() throws Exception {
-		Path dir = casDir("MicroGrid-Type1-Merged",
-				"MicroGrid/MicroGrid-Type1/MicroGrid-Type1-Merged");
-		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid Type1 Merged missing: " + dir);
-		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
-		Path beEq = mustFile(dir, "20210323T1730Z_1D_BE_EQ_1.xml");
-		Path nlEq = mustFile(dir, "20210323T1730Z_1D_NL_EQ_1.xml");
-		Path tp = mustFile(dir, "20210323T1730Z_1D_ASSEMBLED_TP_1.xml");
-		Path sv = mustFile(dir, "20210323T1730Z_1D_ASSEMBLED_SV_1.xml");
-		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
-				eqBd, beEq, nlEq,
-				mustFile(dir, "20210323T1730Z_1D_BE_SSH_1.xml"),
-				mustFile(dir, "20210323T1730Z_1D_NL_SSH_1.xml"),
-				tp, sv);
-	}
-
-	@Test
-	@DisplayName("P4: MicroGrid Type2 Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
-	public void testP4_MicroGridType2Merged_AclfVsSv() throws Exception {
-		Path dir = casDir("MicroGrid-Type2-Merged",
-				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-Merged");
-		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid Type2 Merged missing: " + dir);
-		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
-		Path beEq = mustFile(dir, "20210401T1730Z_1D_BE_EQ_1.xml");
-		Path nlEq = mustFile(dir, "20210401T1730Z_1D_NL_EQ_1.xml");
-		Path tp = mustFile(dir, "20210401T1730Z_1D_ASSEMBLED_TP_1.xml");
-		Path sv = mustFile(dir, "20210401T1730Z_1D_ASSEMBLED_SV_1.xml");
-		// HVDC profiles stay in the CGM so the assembled topology is complete.
-		// Converter flows are not part of this AC compare.
-		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
-				eqBd, beEq, nlEq,
-				mustFile(dir, "20210401T1730Z_1D_HVDC_EQ_1.xml"),
-				mustFile(dir, "20210401T1730Z_1D_BE_SSH_1.xml"),
-				mustFile(dir, "20210401T1730Z_1D_NL_SSH_1.xml"),
-				mustFile(dir, "20210401T1730Z_1D_HVDC_SSH_1.xml"),
-				tp, sv);
-	}
-
-	@Test
 	@DisplayName("P4: PST Type2 SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
 	public void testP4_PstType2_AclfVsSv() throws Exception {
 		Path dir = casDir("PST-PhaseTapChangerLinear-Type2",
@@ -539,24 +500,6 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
 			}
 		}
-	}
-
-	@Test
-	@DisplayName("P4: MicroGrid BaseCase-Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
-	public void testP4_MicroGridBaseCaseMerged_AclfVsSv() throws Exception {
-		Path dir = casDir("MicroGrid-BaseCase-Merged",
-				"MicroGrid/MicroGid-BaseCase/MicroGrid-BaseCase-Merged");
-		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid BaseCase-Merged missing: " + dir);
-		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
-		Path beEq = mustFile(dir, "20210325T1530Z_1D_BE_EQ_001.xml");
-		Path nlEq = mustFile(dir, "20210325T1530Z_1D_NL_EQ_001.xml");
-		Path tp = mustFile(dir, "20210325T1530Z_1D_ASSEMBLED_TP_001.xml");
-		Path sv = mustFile(dir, "20210325T1530Z_1D_ASSEMBLED_SV_001.xml");
-		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
-				eqBd, beEq, nlEq,
-				mustFile(dir, "20210325T1530Z_1D_BE_SSH_001.xml"),
-				mustFile(dir, "20210325T1530Z_1D_NL_SSH_001.xml"),
-				tp, sv);
 	}
 
 	@Test
