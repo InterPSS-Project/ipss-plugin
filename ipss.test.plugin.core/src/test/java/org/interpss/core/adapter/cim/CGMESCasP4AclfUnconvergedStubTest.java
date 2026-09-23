@@ -5,7 +5,6 @@ import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.casDir;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.compareToSv;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.mustFile;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.runNrSeededSoft;
-import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.solveNrSeeded;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -40,7 +39,7 @@ import com.interpss.core.aclf.AclfNetwork;
  * boundary TNs ({@code BP_SD-EH*}) coalesce, but each IGM SvVoltage disagrees at
  * those BPs (e.g. DC1 Δangle≈36°), and both sides keep boundary EquivalentInjections.
  * Needs a CGM assembled TP/SV (like Type3), not raw IGM merge. Optional re-check:
- * {@code -Dipss.cgmes.p4.probeEspheim=true}.
+ * {@code -Dipss.cgmes.p4.probeDc=true}.
  */
 @Tag("cgmes-cas")
 @Tag("cgmes-p4-aclf")
@@ -49,14 +48,14 @@ public class CGMESCasP4AclfUnconvergedStubTest extends CorePluginTestSetup {
 	@Test
 	@Disabled("DC Espheim–Svedala standalone: swingN=0 (CsConverter+EI loads only). "
 			+ "Espheim+Svedala IGM assemble also fails NR (shared BP SvVoltage conflict). "
-			+ "Re-check: -Dipss.cgmes.p4.probeEspheim=true")
+			+ "Re-check: -Dipss.cgmes.p4.probeDc=true")
 	@DisplayName("P4: ReliCap DC Espheim–Svedala SV-seeded NR + Aclf vs SvVoltage (AC soft)")
 	public void testP4_ReliCapDcEspheimSvedala_AclfVsSv() throws Exception {
 		runReliCapDcEspheimSvedalaP4();
 	}
 
 	@Test
-	@EnabledIfSystemProperty(named = "ipss.cgmes.p4.probeEspheim", matches = "true")
+	@EnabledIfSystemProperty(named = "ipss.cgmes.p4.probeDc", matches = "true")
 	@DisplayName("P4 probe: ReliCap DC Espheim–Svedala SV-seeded NR (dev)")
 	public void testP4_ReliCapDcEspheimSvedala_Probe_AclfVsSv() throws Exception {
 		runReliCapDcEspheimSvedalaP4();
@@ -99,39 +98,6 @@ public class CGMESCasP4AclfUnconvergedStubTest extends CorePluginTestSetup {
 			} else {
 				System.setProperty("ipss.cgmes.p4.maxMissingBus", prevMiss);
 			}
-		}
-	}
-
-	@Test
-	@EnabledIfSystemProperty(named = "ipss.cgmes.p4.probeType3", matches = "true")
-	@DisplayName("P4 probe: Type3 hours NR converge map (dev)")
-	public void testP4_Type3Cgm_ProbeHours_Converge() throws Exception {
-		Path igms = casDir("MicroGrid-Type3-IGMs", "MicroGrid/MicroGrid-Type3/IGMs");
-		Path cgms = casDir("MicroGrid-Type3-CGMs", "MicroGrid/MicroGrid-Type3/CGMs");
-		Path eqBd = mustFile(igms, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
-		Path beEq = mustFile(igms, "20210422T2230Z_1D_BE_EQ_001.xml");
-		Path nlEq = mustFile(igms, "20210422T2230Z_1D_NL_EQ_001.xml");
-		String[] hours = {
-				"20210422T2230Z", "20210422T2330Z", "20210423T0230Z", "20210423T0530Z",
-				"20210423T0830Z", "20210423T1030Z", "20210423T1130Z", "20210423T1430Z",
-				"20210423T1730Z", "20210423T2030Z"
-		};
-		for (String hour : hours) {
-			Path beSsh = igms.resolve(hour + "_1D_BE_SSH_001.xml");
-			Path nlSsh = igms.resolve(hour + "_1D_NL_SSH_001.xml");
-			Path tp = cgms.resolve(hour + "_1D_ASSEMBLED_TP_001.xml");
-			Path svXml = cgms.resolve(hour + "_1D_ASSEMBLED_SV_001.xml");
-			if (!Files.isRegularFile(beSsh) || !Files.isRegularFile(nlSsh)
-					|| !Files.isRegularFile(tp) || !Files.isRegularFile(svXml)) {
-				System.out.println("Type3Probe " + hour + " MISSING_FILES");
-				continue;
-			}
-			Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
-			AclfNetwork net = new CGMESDirectParser().parse(abs(
-					eqBd, beEq, nlEq, beSsh, nlSsh, tp, svXml));
-			boolean ok = solveNrSeeded(net, sv);
-			System.out.println("Type3Probe " + hour + " buses=" + net.getNoBus()
-					+ " converged=" + ok);
 		}
 	}
 }
