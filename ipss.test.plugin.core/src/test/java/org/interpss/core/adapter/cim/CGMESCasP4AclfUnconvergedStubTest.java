@@ -5,8 +5,6 @@ import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.casDir;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.compareToSv;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.mustFile;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.runNrSeededSoft;
-import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.runSeededCompare;
-import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.runType3HourP4;
 import static org.interpss.core.adapter.cim.CGMESCasP4AclfSmokeStubTest.solveNrSeeded;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -28,142 +26,30 @@ import com.interpss.core.aclf.AclfNetwork;
 /**
  * P4 cases split out of {@link CGMESCasP4AclfSmokeStubTest} so that class stays green.
  *
- * <p>MicroGrid Type1 / Type2 Merged: NR converges but |V| vs SV falls short of the
- * shared 0.005 pu / 100% floor (~73–76% match). BaseCase-Merged: voltage OK, branch
- * SvPowerFlow match ~10% vs 95%.
+ * <p>MicroGrid Type1 / Type2 / BaseCase Merged, ReliCap Espheim, and Type3 mid-hour
+ * {@code 1030Z} were fixed and returned to smoke (Espheim: OOS ACLineSegments inactive;
+ * Type3: always {@code fillFlatFromNeighbor} so X-nodes missing SvVoltage when boundary
+ * EI are OOS still get a seed).
  *
- * <p>ReliCap Espheim and the Espheim–Svedala DC corridor are {@code @Disabled}:
- * NR hits a KLU numerical failure (dangling EQ ConnectivityNodes with no TP
- * TopologicalNode). Soft {@code assume} still shows as FAILED in some IDE
- * runners. Probe methods use {@code @EnabledIfSystemProperty} for
- * {@code ipss.cgmes.p4.probeEspheim=true}.
+ * <p>Espheim–Svedala DC corridor alone is {@code @Disabled}: import yields 6 buses /
+ * 4 branches with {@code swingN=0} (CsConverters + EquivalentInjections with
+ * {@code regulationCapability=false} mapped as loads; no SynchronousMachine).
+ * ACLF data-check exits with "No swing bus".
  *
- * <p>Type3 hour {@code 20210423T1030Z} / {@code 1430Z} still fail NR and stay on
- * the optional probe ({@code -Dipss.cgmes.p4.probeType3=true}); the mid-hour
- * smoke uses a nearby converging stamp ({@code 0830Z}).
+ * <p>Naive Espheim+Svedala(+DC) IGM concatenation also fails NR: the four shared
+ * boundary TNs ({@code BP_SD-EH*}) coalesce, but each IGM SvVoltage disagrees at
+ * those BPs (e.g. DC1 Δangle≈36°), and both sides keep boundary EquivalentInjections.
+ * Needs a CGM assembled TP/SV (like Type3), not raw IGM merge. Optional re-check:
+ * {@code -Dipss.cgmes.p4.probeEspheim=true}.
  */
 @Tag("cgmes-cas")
 @Tag("cgmes-p4-aclf")
 public class CGMESCasP4AclfUnconvergedStubTest extends CorePluginTestSetup {
 
 	@Test
-	@DisplayName("P4: MicroGrid Type1 Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
-	public void testP4_MicroGridType1Merged_AclfVsSv() throws Exception {
-		Path dir = casDir("MicroGrid-Type1-Merged",
-				"MicroGrid/MicroGrid-Type1/MicroGrid-Type1-Merged");
-		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid Type1 Merged missing: " + dir);
-		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
-		Path beEq = mustFile(dir, "20210323T1730Z_1D_BE_EQ_1.xml");
-		Path nlEq = mustFile(dir, "20210323T1730Z_1D_NL_EQ_1.xml");
-		Path tp = mustFile(dir, "20210323T1730Z_1D_ASSEMBLED_TP_1.xml");
-		Path sv = mustFile(dir, "20210323T1730Z_1D_ASSEMBLED_SV_1.xml");
-		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
-				eqBd, beEq, nlEq,
-				mustFile(dir, "20210323T1730Z_1D_BE_SSH_1.xml"),
-				mustFile(dir, "20210323T1730Z_1D_NL_SSH_1.xml"),
-				tp, sv);
-	}
-
-	@Test
-	@DisplayName("P4: MicroGrid Type2 Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
-	public void testP4_MicroGridType2Merged_AclfVsSv() throws Exception {
-		Path dir = casDir("MicroGrid-Type2-Merged",
-				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-Merged");
-		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid Type2 Merged missing: " + dir);
-		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
-		Path beEq = mustFile(dir, "20210401T1730Z_1D_BE_EQ_1.xml");
-		Path nlEq = mustFile(dir, "20210401T1730Z_1D_NL_EQ_1.xml");
-		Path tp = mustFile(dir, "20210401T1730Z_1D_ASSEMBLED_TP_1.xml");
-		Path sv = mustFile(dir, "20210401T1730Z_1D_ASSEMBLED_SV_1.xml");
-		// HVDC profiles stay in the CGM so the assembled topology is complete.
-		// Converter flows are not part of this AC compare.
-		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
-				eqBd, beEq, nlEq,
-				mustFile(dir, "20210401T1730Z_1D_HVDC_EQ_1.xml"),
-				mustFile(dir, "20210401T1730Z_1D_BE_SSH_1.xml"),
-				mustFile(dir, "20210401T1730Z_1D_NL_SSH_1.xml"),
-				mustFile(dir, "20210401T1730Z_1D_HVDC_SSH_1.xml"),
-				tp, sv);
-	}
-
-	@Test
-	@DisplayName("P4: MicroGrid BaseCase-Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
-	public void testP4_MicroGridBaseCaseMerged_AclfVsSv() throws Exception {
-		Path dir = casDir("MicroGrid-BaseCase-Merged",
-				"MicroGrid/MicroGid-BaseCase/MicroGrid-BaseCase-Merged");
-		assumeTrue(Files.isDirectory(dir), () -> "MicroGrid BaseCase-Merged missing: " + dir);
-		Path eqBd = mustFile(dir, "20171002T0930Z_ENTSO-E_EQ_BD_2.xml");
-		Path beEq = mustFile(dir, "20210325T1530Z_1D_BE_EQ_001.xml");
-		Path nlEq = mustFile(dir, "20210325T1530Z_1D_NL_EQ_001.xml");
-		Path tp = mustFile(dir, "20210325T1530Z_1D_ASSEMBLED_TP_001.xml");
-		Path sv = mustFile(dir, "20210325T1530Z_1D_ASSEMBLED_SV_001.xml");
-		runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
-				eqBd, beEq, nlEq,
-				mustFile(dir, "20210325T1530Z_1D_BE_SSH_001.xml"),
-				mustFile(dir, "20210325T1530Z_1D_NL_SSH_001.xml"),
-				tp, sv);
-	}
-
-	@Test
-	@DisplayName("P4: Type3 CGM mid hour SV-seeded NR + Aclf vs SvVoltage")
-	public void testP4_Type3Cgm_MidHour_AclfVsSv() throws Exception {
-		// 1030Z/1430Z still fail NR after UCTE 380/400 base alignment; 0830Z converges.
-		runType3HourP4("20210423T0830Z");
-	}
-
-	@Test
-	@Disabled("Espheim NR: KLU numerical failure / missing TP for some EQ CNs; probe with -Dipss.cgmes.p4.probeEspheim=true")
-	@DisplayName("P4: ReliCap Espheim IGM SV-seeded NR + Aclf vs SvVoltage")
-	public void testP4_ReliCapEspheim_AclfVsSv() throws Exception {
-		runReliCapEspheimP4();
-	}
-
-	@Test
-	@EnabledIfSystemProperty(named = "ipss.cgmes.p4.probeEspheim", matches = "true")
-	@DisplayName("P4 probe: ReliCap Espheim SV-seeded NR (dev)")
-	public void testP4_ReliCapEspheim_Probe_AclfVsSv() throws Exception {
-		runReliCapEspheimP4();
-	}
-
-	private static void runReliCapEspheimP4() throws Exception {
-		Path dir = casDir("ReliCap-Espheim-cimxml", "Instance/Espheim/Grid/cimxml");
-		assumeTrue(Files.isDirectory(dir), () -> "ReliCap Espheim cimxml missing: " + dir);
-		Path svXml = mustFile(dir, "20220615T2230Z_2D_Espheim_SV_1.xml");
-		Path eqXml = mustFile(dir, "20220615T2230Z__Espheim_EQ_1.xml");
-		Path tpXml = mustFile(dir, "20220615T2230Z_2D_Espheim_TP_1.xml");
-		Path sshXml = mustFile(dir, "20220615T2230Z_2D_Espheim_SSH_1.xml");
-		Path border = casDir("ReliCap-boundary-cimxml", "Instance/boundaryData/Grid/cimxml")
-				.resolve("Boundary_Border-Svedala-Espheim.xml");
-		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
-		java.util.List<Path> inputs = new java.util.ArrayList<>();
-		inputs.add(eqXml);
-		inputs.add(sshXml);
-		inputs.add(tpXml);
-		inputs.add(svXml);
-		if (Files.isRegularFile(border)) {
-			inputs.add(border);
-		}
-		AclfNetwork net = new CGMESDirectParser().parse(abs(inputs.toArray(new Path[0])));
-		assertTrue(net.getNoBus() > 0);
-		runNrSeededSoft(net, sv, "ReliCap Espheim");
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
-		try {
-			compareToSv(net, sv, vTol, 10.0, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
-		}
-	}
-
-	@Test
-	@Disabled("DC Espheim–Svedala NR does not converge from SV seed; probe with -Dipss.cgmes.p4.probeEspheim=true")
+	@Disabled("DC Espheim–Svedala standalone: swingN=0 (CsConverter+EI loads only). "
+			+ "Espheim+Svedala IGM assemble also fails NR (shared BP SvVoltage conflict). "
+			+ "Re-check: -Dipss.cgmes.p4.probeEspheim=true")
 	@DisplayName("P4: ReliCap DC Espheim–Svedala SV-seeded NR + Aclf vs SvVoltage (AC soft)")
 	public void testP4_ReliCapDcEspheimSvedala_AclfVsSv() throws Exception {
 		runReliCapDcEspheimSvedalaP4();
@@ -177,15 +63,19 @@ public class CGMESCasP4AclfUnconvergedStubTest extends CorePluginTestSetup {
 	}
 
 	private static void runReliCapDcEspheimSvedalaP4() throws Exception {
+		// Standalone DC: no SynchronousMachine → swingN=0; ACLF data-check aborts.
+		// Espheim+Svedala IGM merge needs CGM assembled TP/SV (shared BP Sv conflict).
 		Path dir = casDir("ReliCap-DC-Espheim-Svedala-cimxml",
 				"Instance/DC-Espheim-Svedala/Grid/cimxml");
 		assumeTrue(Files.isDirectory(dir), () -> "ReliCap DC Espheim-Svedala missing: " + dir);
-		Path eqXml = mustFile(dir, "20220615T2230Z__HVDC-Espheim-Svedala_EQ_1.xml");
-		Path sshXml = mustFile(dir, "20220615T2230Z_2D_HVDC-Espheim-Svedala_SSH_1.xml");
-		Path tpXml = mustFile(dir, "20220615T2230Z_2D_HVDC-Espheim-Svedala_TP_1.xml");
 		Path svXml = mustFile(dir, "20220615T2230Z_2D_HVDC-Espheim-Svedala_SV_1.xml");
-		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
-		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
+		Map<String, CgmesSvCompareSupport.SvVoltage> sv =
+				CgmesSvCompareSupport.readSvVoltages(svXml);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(
+				mustFile(dir, "20220615T2230Z__HVDC-Espheim-Svedala_EQ_1.xml"),
+				mustFile(dir, "20220615T2230Z_2D_HVDC-Espheim-Svedala_SSH_1.xml"),
+				mustFile(dir, "20220615T2230Z_2D_HVDC-Espheim-Svedala_TP_1.xml"),
+				svXml));
 		assertTrue(net.getNoBus() > 0);
 		runNrSeededSoft(net, sv, "ReliCap DC Espheim-Svedala");
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.05"));
