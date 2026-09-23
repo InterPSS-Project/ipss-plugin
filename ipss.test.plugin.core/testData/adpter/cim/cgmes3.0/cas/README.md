@@ -17,7 +17,7 @@ Resolution order in the stubs (`casDir` / friends):
 | `CGMESCasCoverageStubTest` | P0–P3 CAS + core ReliCap IGMs |
 | `CGMESCasType3HourCoverageStubTest` | Parameterized Type3 CGM hours |
 | `CGMESCasP4AclfSmokeStubTest` | P4 SV-seeded NR + Aclf vs SvVoltage (`cgmes-p4-aclf`) |
-| `CGMESCasP4AclfUnconvergedStubTest` | MicroGrid Type1/Type2/BaseCase Merged (SV |V| or flow mismatch); Type3 1030Z; ReliCap Espheim + Espheim–Svedala DC (NR) |
+| `CGMESCasP4AclfUnconvergedStubTest` | DC Espheim–Svedala standalone (no swing) and naive Espheim+Svedala IGM assemble (shared BP SvVoltage conflict) — `@Disabled` / probe-gated |
 | `CgmesSvCompareSupport` | SvVoltage reader + \|V\|/angle compare helpers |
 | `CGMESReliCapDcCoverageStubTest` | ReliCap HVDC / multi-MAS CGM / NCP presence |
 

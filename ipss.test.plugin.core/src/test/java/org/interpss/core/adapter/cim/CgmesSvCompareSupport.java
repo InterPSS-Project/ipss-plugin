@@ -647,12 +647,18 @@ final class CgmesSvCompareSupport {
 			}
 			Aclf3WBranch w3 = find3W(net, te.equipLocalId());
 			AclfBranch br = w3 == null ? findBranch(net, te.equipLocalId()) : null;
-			if (w3 == null && (br == null || !br.isActive())) {
+			if (w3 == null && br == null) {
 				missingBranch++;
 				missingReasons.add(String.format(Locale.ROOT,
 						"term=%s equip=%s seq=%d type=%s reason=%s",
 						pf.terminalLocalId(), te.equipLocalId(), te.sequenceNumber(), typ,
-						missingBranchReason(net, te.equipLocalId(), br != null && !br.isActive())));
+						missingBranchReason(net, te.equipLocalId(), false)));
+				continue;
+			}
+			// SSH Equipment.inService=false → mapped inactive; SV may still list
+			// SvPowerFlow — skip rather than treat as a missing branch.
+			if (w3 == null && br != null && !br.isActive()) {
+				skipped++;
 				continue;
 			}
 			Complex s;
