@@ -102,12 +102,24 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
                             end2.getDouble("TransformerEnd.ratedU", 0.0)));
 
         double r1 = end1.getDouble("PowerTransformerEnd.r", end1.getDouble("TransformerEnd.r", 0.0));
+        r1 = applyRatioTableOhm(end1, "r", r1);
         // Missing PowerTransformerEnd.x → NaN so we can detect "not provided"
         Double x1Obj = endHasX(end1) ? end1.getDouble("PowerTransformerEnd.x",
                 end1.getDouble("TransformerEnd.x", 0.0)) : null;
+        if (x1Obj != null) x1Obj = applyRatioTableOhm(end1, "x", x1Obj);
+        if (x1Obj != null) x1Obj = phaseTapSeriesOhm(end1, x1Obj);
         double r2 = end2.getDouble("PowerTransformerEnd.r", end2.getDouble("TransformerEnd.r", 0.0));
+        r2 = applyRatioTableOhm(end2, "r", r2);
         Double x2Obj = endHasX(end2) ? end2.getDouble("PowerTransformerEnd.x",
                 end2.getDouble("TransformerEnd.x", 0.0)) : null;
+        if (x2Obj != null) x2Obj = applyRatioTableOhm(end2, "x", x2Obj);
+        if (x2Obj != null) x2Obj = phaseTapSeriesOhm(end2, x2Obj);
+        PhaseTapResult tap1 = phaseTapForEnd(end1);
+        PhaseTapResult tap2 = phaseTapForEnd(end2);
+        r1 = applyPercentDeviation(r1, tap1.rPercent);
+        r2 = applyPercentDeviation(r2, tap2.rPercent);
+        if (x1Obj != null) x1Obj = applyPercentDeviation(x1Obj, tap1.xPercent);
+        if (x2Obj != null) x2Obj = applyPercentDeviation(x2Obj, tap2.xPercent);
         double r = r1 + r2;
         double x = (x1Obj != null ? x1Obj : 0.0) + (x2Obj != null ? x2Obj : 0.0);
         boolean endXMissing = x1Obj == null && x2Obj == null;
@@ -122,9 +134,17 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
             x = mesh.getDouble("TransformerMeshImpedance.x", 0.0);
         }
 
-        // Resolve buses from winding terminals so from-side matches end1 (Z reference)
-        String fromBusId = resolveBusIdFromEnd(end1);
-        String toBusId = resolveBusIdFromEnd(end2);
+        // Z reference stays endNumber 1. From/to follow terminal sequence so
+        // SvPowerFlow sequence 1 is InterPSS powerFrom2To. endNumber and
+        // sequenceNumber disagree on MiniGrid T1.
+        CGMESPropertyBag fromEnd = end1;
+        CGMESPropertyBag toEnd = end2;
+        if (terminalSequence(end2) < terminalSequence(end1)) {
+            fromEnd = end2;
+            toEnd = end1;
+        }
+        String fromBusId = resolveBusIdFromEnd(fromEnd);
+        String toBusId = resolveBusIdFromEnd(toEnd);
         if (fromBusId == null || toBusId == null) {
             String[] busIds = resolveBranchBusIds(bag.getId());
             if (fromBusId == null) fromBusId = busIds[0];
@@ -132,26 +152,31 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
         }
 
         if (fromBusId == null || toBusId == null) {
-            log.warn("Skipping transformer {} - cannot resolve buses (from={}, to={})",
-                name, fromBusId, toBusId);
+            if (isUnresolvedTopologyExpected(bag.getId())) {
+                log.debug("Skipping transformer {} - out of topology / no TP TopologicalNode (from={}, to={})",
+                    name, fromBusId, toBusId);
+            } else {
+                log.warn("Skipping transformer {} - cannot resolve buses (from={}, to={})",
+                    name, fromBusId, toBusId);
+            }
             return;
         }
 
-        Double baseKV_from = busBaseKV(builder, fromBusId);
-        Double baseKV_to = busBaseKV(builder, toBusId);
-        if (baseKV_from == null || baseKV_from == 0.0) baseKV_from = ratedU1 > 0 ? ratedU1 : 100.0;
-        if (baseKV_to == null || baseKV_to == 0.0) baseKV_to = ratedU2 > 0 ? ratedU2 : 100.0;
-
         // Mesh / winding Z is in ohms on the from-end (end1) voltage base
-        double zBaseKV = ratedU1 > 0 ? ratedU1 : baseKV_from;
+        double zBaseKV = ratedU1 > 0 ? ratedU1 : 100.0;
+        Double busFrom = busBaseKV(builder, fromBusId);
+        if (ratedU1 <= 0 && busFrom != null && busFrom > 0) zBaseKV = busFrom;
         double baseZ = zBaseKV * zBaseKV / baseMVA;
         double rPU = r / baseZ;
         double xPU = x / baseZ;
 
-        double fromTurnRatio = ratedU1 > 0 ? ratedU1 / baseKV_from : 1.0;
-        double toTurnRatio = ratedU2 > 0 ? ratedU2 / baseKV_to : 1.0;
-        fromTurnRatio = clampTap(fromTurnRatio);
-        toTurnRatio = clampTap(toTurnRatio);
+        // ratedU/base multiplies the winding that owns it, including a 1–3% scale.
+        // Folding that scale onto the other tap keeps the from-tap unit assert but
+        // misses BE-TR2_2 Q by ~1 Mvar and BE-TR2_3 Q by ~8 Mvar.
+        double fromTurnRatio = windingTurnRatio(fromEnd, busBaseKV(builder, fromBusId));
+        double toTurnRatio = windingTurnRatio(toEnd, busBaseKV(builder, toBusId));
+        double fromAngleDeg = windingAngleDeg(fromEnd);
+        double toAngleDeg = windingAngleDeg(toEnd);
 
         double ratingMva = CGMESUnitConverter.apparentPowerToMVA(
                 end1.getDouble("PowerTransformerEnd.ratedS",
@@ -168,6 +193,21 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
                 magY = new Complex(g / baseY, b / baseY);
             }
         }
+        Complex fromMag = endMagnetizingPu(fromEnd);
+        Complex toMag = endMagnetizingPu(toEnd);
+        if (magY != null) {
+            fromMag = fromMag == null ? magY : fromMag.add(magY);
+        }
+        // SvPowerFlow on MicroGrid matches when a single-end magnetizing branch is
+        // split across the two terminals. All of it on the owning end misses Q by
+        // about half the magnetizing Mvar (3 Mvar on NL_TR2_3, 0.5 Mvar on BE-TR2_3).
+        if (fromMag != null && toMag == null) {
+            fromMag = fromMag.multiply(0.5);
+            toMag = fromMag;
+        } else if (toMag != null && fromMag == null) {
+            toMag = toMag.multiply(0.5);
+            fromMag = toMag;
+        }
 
         String cirId = nextCircuitId(builder, fromBusId, toBusId);
         if (cirId == null) {
@@ -175,45 +215,43 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
             return;
         }
 
-        AclfBranch branch = builder.addXformer2W(fromBusId, toBusId, cirId,
-                new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
-                magY, null, ratingMva, 0.0, 0.0, 0, true);
+        AclfBranch branch;
+        boolean isPs = Math.abs(fromAngleDeg) > 1e-9 || Math.abs(toAngleDeg) > 1e-9;
+        if (isPs) {
+            branch = builder.addPsXformer(fromBusId, toBusId, cirId,
+                    new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
+                    fromAngleDeg, toAngleDeg,
+                    fromMag, toMag, ratingMva, 0.0, 0.0, 0, true);
+        } else {
+            branch = builder.addXformer2W(fromBusId, toBusId, cirId,
+                    new Complex(rPU, xPU), fromTurnRatio, toTurnRatio,
+                    fromMag, toMag, ratingMva, 0.0, 0.0, 0, true);
+        }
         branch.setId(xfrId);
         branch.setName(name.isEmpty() ? xfrId : name);
 
-        log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU rating={} MVA",
-            name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva);
+        log.debug("Created xfr branch: {} ({}→{}) ratedU1={} ratedU2={} r={} x={} PU rating={} MVA ps={} ang={}/{}",
+            name, fromBusId, toBusId, ratedU1, ratedU2, rPU, xPU, ratingMva, isPs, fromAngleDeg, toAngleDeg);
     }
 
-    private String resolveBusIdFromEnd(CGMESPropertyBag end) {
-        if (cimModel == null || end == null) return null;
-        String termId = end.getResourceId("TransformerEnd.Terminal");
-        if (termId == null) return null;
-        String tn = cimModel.getTopologicalNodeByTerminal(termId);
-        if (tn != null) return cimModel.getBusId(tn);
-        String cn = cimModel.getConnectivityNodeByTerminal(termId);
-        if (cn != null) return cimModel.getBusId(cn);
-        return null;
+    /**
+     * PowerTransformerEnd.g/b is the magnetizing branch in siemens on that
+     * winding. Converted on ratedU so the tap (ratedU/base) puts it on the bus base.
+     */
+    private Complex endMagnetizingPu(CGMESPropertyBag end) {
+        if (end == null) return null;
+        double g = end.getDouble("PowerTransformerEnd.g", 0.0);
+        double b = end.getDouble("PowerTransformerEnd.b", 0.0);
+        if (g == 0.0 && b == 0.0) return null;
+        double ratedU = CGMESUnitConverter.toKV(end.getDouble("PowerTransformerEnd.ratedU",
+                end.getDouble("TransformerEnd.ratedU", 0.0)));
+        if (ratedU <= 0.0) ratedU = 100.0;
+        double baseY = baseMVA / (ratedU * ratedU);
+        return new Complex(g / baseY, b / baseY);
     }
 
-    private static Double busBaseKV(AclfNetworkBuilder builder, String busId) {
-        if (busId == null) return null;
-        var bus = builder.getBus(busId);
-        if (bus == null || bus.getBaseVoltage() <= 0) return null;
-        return bus.getBaseVoltage() / 1000.0;
-    }
-
-    /** InterPSS rejects taps outside (0, 2]; fall back to 1.0 when data is inconsistent. */
-    private static double clampTap(double tap) {
-        if (tap <= 0.0 || tap > 2.0) {
-            log.warn("Transformer tap {} outside (0,2] — using 1.0", tap);
-            return 1.0;
-        }
-        return tap;
-    }
-
-    private static boolean endHasX(CGMESPropertyBag end) {
-        return end.getString("PowerTransformerEnd.x") != null
-                || end.getString("TransformerEnd.x") != null;
+    private int terminalSequence(CGMESPropertyBag end) {
+        if (cimModel == null || end == null) return Integer.MAX_VALUE;
+        return cimModel.terminalSequence(end.getResourceId("TransformerEnd.Terminal"));
     }
 }

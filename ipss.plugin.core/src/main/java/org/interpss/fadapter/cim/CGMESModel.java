@@ -10,6 +10,7 @@ package org.interpss.fadapter.cim;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,6 +48,8 @@ public class CGMESModel {
     private Map<String, String> topologicalNodeByTerminal = new HashMap<>();
     private Map<String, String> connectivityNodeByTerminal = new HashMap<>();
     private Map<String, String> equipmentByTerminal = new HashMap<>();
+    /** Terminal URI/local id → ACDCTerminal.sequenceNumber (1-based). */
+    private Map<String, Integer> sequenceByTerminal = new HashMap<>();
     private Map<String, String> baseVoltageById = new HashMap<>();
     private Set<String> boundaryTopologicalNodes = new HashSet<>();
     private Map<String, Double> baseVoltageValueById = new HashMap<>();
@@ -162,8 +165,70 @@ public class CGMESModel {
         return listByType(cimNamespace + "TransformerCoreAdmittance");
     }
 
+    /** RatioTapChanger (EQ + SSH step merged on the same resource id). */
+    public List<CGMESPropertyBag> ratioTapChangers() {
+        return listByType(cimNamespace + "RatioTapChanger");
+    }
+
+    /**
+     * Phase tap changers (leaf RDF types). Includes linear, symmetrical,
+     * asymmetrical, and tabular specializations.
+     */
+    public List<CGMESPropertyBag> phaseTapChangers() {
+        List<CGMESPropertyBag> result = new ArrayList<>();
+        for (String type : new String[] {
+                "PhaseTapChangerLinear",
+                "PhaseTapChangerSymmetrical",
+                "PhaseTapChangerAsymmetrical",
+                "PhaseTapChangerTabular",
+                "PhaseTapChangerNonLinear",
+                "PhaseTapChanger" }) {
+            result.addAll(listByType(cimNamespace + type));
+        }
+        return dedupeById(result);
+    }
+
+    /** PhaseTapChangerTablePoint rows (tabular PTC). */
+    public List<CGMESPropertyBag> phaseTapChangerTablePoints() {
+        return listByType(cimNamespace + "PhaseTapChangerTablePoint");
+    }
+
+    /**
+     * RatioTapChangerTablePoint rows. When present they replace the linear
+     * {@code stepVoltageIncrement} ratio, and may carry the step's series r/x.
+     */
+    public List<CGMESPropertyBag> ratioTapChangerTablePoints() {
+        return listByType(cimNamespace + "RatioTapChangerTablePoint");
+    }
+
     public List<CGMESPropertyBag> energyConsumers() {
-        return listByType(cimNamespace + "EnergyConsumer");
+        List<CGMESPropertyBag> result = new ArrayList<>();
+        for (String type : new String[] {
+                "EnergyConsumer", "ConformLoad", "NonConformLoad", "StationSupply" }) {
+            result.addAll(listByType(cimNamespace + type));
+        }
+        if (entsoeNamespace != null) {
+            result.addAll(listByType(entsoeNamespace + "StationSupply"));
+        }
+        return dedupeById(result);
+    }
+
+    /** ZIP fractions for an EnergyConsumer. Exponent model is not this list. */
+    public List<CGMESPropertyBag> loadResponseCharacteristics() {
+        return listByType(cimNamespace + "LoadResponseCharacteristic");
+    }
+
+    private static List<CGMESPropertyBag> dedupeById(List<CGMESPropertyBag> bags) {
+        Map<String, CGMESPropertyBag> byId = new LinkedHashMap<>();
+        int anon = 0;
+        for (CGMESPropertyBag bag : bags) {
+            String id = bag.getId();
+            if (id == null) {
+                id = "anon-" + (anon++);
+            }
+            byId.putIfAbsent(id, bag);
+        }
+        return new ArrayList<>(byId.values());
     }
 
     public List<CGMESPropertyBag> synchronousMachines() {
@@ -190,12 +255,52 @@ public class CGMESModel {
         return result;
     }
 
+    public List<CGMESPropertyBag> staticVarCompensators() {
+        return listByType(cimNamespace + "StaticVarCompensator");
+    }
+
     public List<CGMESPropertyBag> asynchronousMachines() {
         return listByType(cimNamespace + "AsynchronousMachine");
     }
 
     public List<CGMESPropertyBag> externalNetworkInjections() {
         return listByType(cimNamespace + "ExternalNetworkInjection");
+    }
+
+    /** Boundary equivalent. SSH {@code p}/{@code q} use the load sign convention. */
+    public List<CGMESPropertyBag> equivalentInjections() {
+        return listByType(cimNamespace + "EquivalentInjection");
+    }
+
+    /** VSC HVDC converters. AC power is an injection; the DC line itself is not a branch. */
+    public List<CGMESPropertyBag> vsConverters() {
+        return listByType(cimNamespace + "VsConverter");
+    }
+
+    /** LCC HVDC converters. AC power is an injection; the DC line itself is not a branch. */
+    public List<CGMESPropertyBag> csConverters() {
+        return listByType(cimNamespace + "CsConverter");
+    }
+
+    public List<CGMESPropertyBag> dcLineSegments() {
+        return listByType(cimNamespace + "DCLineSegment");
+    }
+
+    /**
+     * DC line and converter DC terminals. A converter terminal is typed
+     * {@code ACDCConverterDCTerminal}, not {@code DCTerminal}.
+     */
+    public List<CGMESPropertyBag> dcTerminals() {
+        List<CGMESPropertyBag> result = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (String type : new String[] {"DCTerminal", "ACDCConverterDCTerminal"}) {
+            for (CGMESPropertyBag bag : listByType(cimNamespace + type)) {
+                if (seen.add(bag.getId())) {
+                    result.add(bag);
+                }
+            }
+        }
+        return result;
     }
 
     public List<CGMESPropertyBag> terminals() {
@@ -206,11 +311,21 @@ public class CGMESModel {
         return listByType(cimNamespace + "BaseVoltage");
     }
 
+    /**
+     * Breakers, disconnectors and load-break switches. A resource typed as both
+     * Switch and Breaker is returned once. Only a closed retained switch is a
+     * branch; a non-retained switch is already inside one topological node.
+     */
     public List<CGMESPropertyBag> switches() {
         List<CGMESPropertyBag> result = new ArrayList<>();
-        result.addAll(listByType(cimNamespace + "Switch"));
-        result.addAll(listByType(cimNamespace + "Breaker"));
-        result.addAll(listByType(cimNamespace + "Disconnector"));
+        Set<String> seen = new HashSet<>();
+        for (String type : new String[] {"Breaker", "Disconnector", "LoadBreakSwitch", "Switch"}) {
+            for (CGMESPropertyBag bag : listByType(cimNamespace + type)) {
+                if (seen.add(bag.getId())) {
+                    result.add(bag);
+                }
+            }
+        }
         return result;
     }
 
@@ -280,6 +395,15 @@ public class CGMESModel {
             if (connNodeId != null) {
                 connectivityNodeByTerminal.put(termId, connNodeId);
             }
+            int seq = term.getInt("ACDCTerminal.sequenceNumber",
+                    term.getInt("Terminal.sequenceNumber", 0));
+            if (seq > 0) {
+                sequenceByTerminal.put(termId, seq);
+                String local = CGMESPropertyBag.extractLocal(termId);
+                if (local != null) {
+                    sequenceByTerminal.put(local, seq);
+                }
+            }
         }
         log.debug("Indexed {} terminals", topologicalNodeByTerminal.size());
 
@@ -348,9 +472,11 @@ public class CGMESModel {
         }
 
         // Build topological node → voltage level mapping
+        // Container may be a VoltageLevel or a Bay (then chase Bay.VoltageLevel)
         for (CGMESPropertyBag tn : topologicalNodes()) {
             String tnId = tn.getId();
-            String vlId = tn.getResourceId("TopologicalNode.ConnectivityNodeContainer");
+            String containerId = tn.getResourceId("TopologicalNode.ConnectivityNodeContainer");
+            String vlId = resolveVoltageLevelUri(containerId);
             if (vlId != null) {
                 voltageLevelByTopoNode.put(tnId, vlId);
             }
@@ -359,7 +485,8 @@ public class CGMESModel {
         // Build connectivity node → voltage level mapping
         for (CGMESPropertyBag cn : connectivityNodes()) {
             String cnId = cn.getId();
-            String vlId = cn.getResourceId("ConnectivityNode.ConnectivityNodeContainer");
+            String containerId = cn.getResourceId("ConnectivityNode.ConnectivityNodeContainer");
+            String vlId = resolveVoltageLevelUri(containerId);
             if (vlId != null) {
                 voltageLevelByConnectivityNode.put(cnId, vlId);
             }
@@ -400,6 +527,19 @@ public class CGMESModel {
     }
 
     // --- Topology helpers ---
+
+    /**
+     * {@code ACDCTerminal.sequenceNumber}, or {@link Integer#MAX_VALUE} when absent
+     * so unknown terminals sort after numbered ones.
+     */
+    public int terminalSequence(String terminalId) {
+        if (terminalId == null) return Integer.MAX_VALUE;
+        Integer seq = sequenceByTerminal.get(terminalId);
+        if (seq == null) {
+            seq = sequenceByTerminal.get(CGMESPropertyBag.extractLocal(terminalId));
+        }
+        return seq == null || seq <= 0 ? Integer.MAX_VALUE : seq;
+    }
 
     /** Get the topological node URI connected to a terminal */
     public String getTopologicalNodeByTerminal(String terminalId) {
@@ -458,6 +598,14 @@ public class CGMESModel {
         return boundaryTopologicalNodes.contains(tnId);
     }
 
+    /**
+     * True if this TN URI is referenced by a terminal but has no bus mapping
+     * (dangling boundary ref when TP_BD is not loaded, or skipped boundary TN).
+     */
+    public boolean isUnmappedTopoNode(String tnUri) {
+        return tnUri != null && getBusId(tnUri) == null;
+    }
+
     /** Get voltage level URI for a topological node */
     public String getVoltageLevelByTopoNode(String topoNodeUri) {
         return voltageLevelByTopoNode.get(topoNodeUri);
@@ -492,31 +640,40 @@ public class CGMESModel {
     }
 
     /**
-     * Resolve nominal voltage (kV) for a ConnectivityNode from connected equipment
-     * {@code ConductingEquipment.BaseVoltage} via terminals, or from
+     * Resolve nominal voltage (kV) for a ConnectivityNode or TopologicalNode from
+     * connected equipment {@code ConductingEquipment.BaseVoltage} via terminals, or from
      * {@code TransformerEnd.BaseVoltage} / {@code PowerTransformerEnd.ratedU}
      * when the only connected equipment is a SynchronousMachine without BaseVoltage
      * (IEEE118 hub style).
      */
-    public Double getBaseVoltageFromConnectivityNode(String cnUri) {
-        if (cnUri == null) return null;
+    public Double getBaseVoltageFromConnectivityNode(String nodeUri) {
+        if (nodeUri == null) return null;
         for (Map.Entry<String, String> e : connectivityNodeByTerminal.entrySet()) {
-            if (!cnUri.equals(e.getValue())) continue;
-            String termId = e.getKey();
-            String equipId = equipmentByTerminal.get(termId);
-            if (equipId != null) {
-                Resource eqRes = jenaModel.getResource(equipId);
-                Property bvProp = jenaModel.createProperty(cimNamespace + "ConductingEquipment.BaseVoltage");
-                Statement st = eqRes.getProperty(bvProp);
-                if (st != null && st.getObject().isResource()) {
-                    Double val = getBaseVoltageValue(st.getObject().asResource().getURI());
-                    if (val != null) return val;
-                }
-            }
-            Double fromEnd = getBaseVoltageFromTransformerTerminal(termId);
-            if (fromEnd != null) return fromEnd;
+            if (!nodeUri.equals(e.getValue())) continue;
+            Double val = resolveVoltageFromTerminal(e.getKey());
+            if (val != null) return val;
+        }
+        // TN-based models: match TopologicalNode via terminal → TN index
+        for (Map.Entry<String, String> e : topologicalNodeByTerminal.entrySet()) {
+            if (!nodeUri.equals(e.getValue())) continue;
+            Double val = resolveVoltageFromTerminal(e.getKey());
+            if (val != null) return val;
         }
         return null;
+    }
+
+    private Double resolveVoltageFromTerminal(String termId) {
+        String equipId = equipmentByTerminal.get(termId);
+        if (equipId != null) {
+            Resource eqRes = jenaModel.getResource(equipId);
+            Property bvProp = jenaModel.createProperty(cimNamespace + "ConductingEquipment.BaseVoltage");
+            Statement st = eqRes.getProperty(bvProp);
+            if (st != null && st.getObject().isResource()) {
+                Double val = getBaseVoltageValue(st.getObject().asResource().getURI());
+                if (val != null) return val;
+            }
+        }
+        return getBaseVoltageFromTransformerTerminal(termId);
     }
 
     /**
@@ -542,10 +699,29 @@ public class CGMESModel {
     }
 
     /**
+     * If {@code containerUri} is a Bay, return its VoltageLevel; otherwise return the URI as-is
+     * when it looks like / is a VoltageLevel resource.
+     */
+    private String resolveVoltageLevelUri(String containerUri) {
+        if (containerUri == null) return null;
+        Resource res = jenaModel.getResource(containerUri);
+        Property bayVl = jenaModel.createProperty(cimNamespace + "Bay.VoltageLevel");
+        Statement st = res.getProperty(bayVl);
+        if (st != null && st.getObject().isResource()) {
+            return st.getObject().asResource().getURI();
+        }
+        return containerUri;
+    }
+
+    /**
      * Get nominal voltage from VoltageLevel resource.
      * Tries: nominalVoltage property → BaseVoltage reference → VL name (fallback).
+     * Also accepts a Bay URI and chases {@code Bay.VoltageLevel}.
      */
     public Double getVLRatedVoltage(String vlUri) {
+        if (vlUri == null) return null;
+        vlUri = resolveVoltageLevelUri(vlUri);
+
         // Try nominalVoltage property directly
         Resource vlRes = jenaModel.getResource(vlUri);
         Property nomVProp = jenaModel.createProperty(cimNamespace + "VoltageLevel.nominalVoltage");
@@ -553,7 +729,7 @@ public class CGMESModel {
         if (stmt != null && stmt.getObject().isLiteral()) {
             double v = stmt.getObject().asLiteral().getDouble();
             if (v > 1000) v = v / 1000.0; // normalize V → kV
-            return v;
+            if (v > 0) return v;
         }
 
         // Try BaseVoltage reference
@@ -562,18 +738,47 @@ public class CGMESModel {
         if (stmt != null && stmt.getObject().isResource()) {
             String bvUri = stmt.getObject().asResource().getURI();
             Double val = getBaseVoltageValue(bvUri);
-            if (val != null) return val;
+            if (val != null && val > 0) return val;
         }
 
-        // Fallback: VoltageLevel name is often the nominal voltage (e.g. "380.0", "220.0")
+        // Fallback: VoltageLevel name is often the nominal voltage (e.g. "380.0", "220.0"),
+        // ReliCap-style "VL_220" / "VL-380", or embeds kV like "EDO132KV".
+        // Do NOT treat arbitrary trailing digits (e.g. Bay name "BAY_61-62_0") as kV.
         Property nameProp = jenaModel.createProperty(cimNamespace + "IdentifiedObject.name");
         stmt = vlRes.getProperty(nameProp);
         if (stmt != null && stmt.getObject().isLiteral()) {
-            try {
-                return Double.parseDouble(stmt.getObject().asLiteral().getString());
-            } catch (NumberFormatException e) {
-                // ignore
-            }
+            Double fromName = parseVoltageFromName(stmt.getObject().asLiteral().getString());
+            if (fromName != null) return fromName;
+        }
+        return null;
+    }
+
+    /**
+     * Parse a plausible base voltage (kV) from a VoltageLevel name.
+     * @return kV or null if the name is not a voltage label
+     */
+    static Double parseVoltageFromName(String name) {
+        if (name == null || name.isBlank()) return null;
+        String n = name.trim();
+        try {
+            double v = Double.parseDouble(n);
+            return v > 0 ? v : null;
+        } catch (NumberFormatException ignore) {
+            // continue
+        }
+        java.util.regex.Matcher m = java.util.regex.Pattern
+                .compile("(?i)^VL[_-]?(\\d+(?:\\.\\d+)?)$")
+                .matcher(n);
+        if (m.matches()) {
+            double v = Double.parseDouble(m.group(1));
+            return v > 0 ? v : null;
+        }
+        m = java.util.regex.Pattern
+                .compile("(?i)(\\d+(?:\\.\\d+)?)\\s*kV$")
+                .matcher(n);
+        if (m.find()) {
+            double v = Double.parseDouble(m.group(1));
+            return v > 0 ? v : null;
         }
         return null;
     }

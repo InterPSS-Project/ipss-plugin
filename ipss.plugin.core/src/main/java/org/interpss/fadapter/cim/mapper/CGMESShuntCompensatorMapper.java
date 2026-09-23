@@ -37,15 +37,13 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
         double gPerSection = bag.getDouble("LinearShuntCompensator.gPerSection", 0.0);
 
         if (bPerSection != 0.0 || gPerSection != 0.0) {
-            int sections = bag.getInt("ShuntCompensator.normalSections",
-                         bag.getInt("ShuntCompensator.maximumSections", 1));
+            int sections = inServiceSections(bag);
             totalB = bPerSection * sections;
             totalG = gPerSection * sections;
         } else {
             totalB = 0.0;
             totalG = 0.0;
-            int normalSections = bag.getInt("ShuntCompensator.normalSections",
-                            bag.getInt("ShuntCompensator.maximumSections", 1));
+            int sections = inServiceSections(bag);
             if (cimModel != null) {
                 java.util.List<org.apache.jena.query.QuerySolution> points = cimModel.sparqlSelect(
                     "PREFIX cim: <" + cimModel.getCimNamespace() + "> " +
@@ -54,26 +52,27 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
                     "  ?point cim:NonlinearShuntCompensatorPoint.sectionNumber ?section . " +
                     "  ?point cim:NonlinearShuntCompensatorPoint.b ?b . " +
                     "  ?point cim:NonlinearShuntCompensatorPoint.g ?g . " +
-                    "  FILTER(?section = " + normalSections + ") " +
+                    "  FILTER(?section = " + sections + ") " +
                     "}");
                 if (!points.isEmpty()) {
                     totalB = points.get(0).getLiteral("b").getDouble();
                     totalG = points.get(0).getLiteral("g").getDouble();
                 } else {
-                    java.util.List<org.apache.jena.query.QuerySolution> allPoints = cimModel.sparqlSelect(
+                    // Points are cumulative totals, not increments. Take the single
+                    // in-service step, never the sum of every point at or below it.
+                    java.util.List<org.apache.jena.query.QuerySolution> atOrBelow = cimModel.sparqlSelect(
                         "PREFIX cim: <" + cimModel.getCimNamespace() + "> " +
                         "SELECT ?b ?g ?section WHERE { " +
                         "  ?point cim:NonlinearShuntCompensatorPoint.NonlinearShuntCompensator <" + bag.getResource().getURI() + "> . " +
                         "  ?point cim:NonlinearShuntCompensatorPoint.sectionNumber ?section . " +
                         "  ?point cim:NonlinearShuntCompensatorPoint.b ?b . " +
                         "  ?point cim:NonlinearShuntCompensatorPoint.g ?g . " +
-                        "  FILTER(?section <= " + normalSections + ") " +
-                        "}");
-                    for (var pt : allPoints) {
-                        totalB += pt.getLiteral("b").getDouble();
-                        totalG += pt.getLiteral("g").getDouble();
-                    }
-                    if (totalB == 0.0 && totalG == 0.0) {
+                        "  FILTER(?section <= " + sections + ") " +
+                        "} ORDER BY DESC(?section) LIMIT 1");
+                    if (!atOrBelow.isEmpty()) {
+                        totalB = atOrBelow.get(0).getLiteral("b").getDouble();
+                        totalG = atOrBelow.get(0).getLiteral("g").getDouble();
+                    } else {
                         java.util.List<org.apache.jena.query.QuerySolution> minPoint = cimModel.sparqlSelect(
                             "PREFIX cim: <" + cimModel.getCimNamespace() + "> " +
                             "SELECT ?b ?g WHERE { " +
@@ -98,7 +97,11 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
 
         String busId = resolveBusId(bag.getId());
         if (busId == null) {
-            log.warn("Skipping shunt {} - cannot resolve bus", name);
+            if (isUnresolvedTopologyExpected(bag.getId())) {
+                log.debug("Skipping shunt {} - out of topology / no TP TopologicalNode", name);
+            } else {
+                log.warn("Skipping shunt {} - cannot resolve bus", name);
+            }
             return;
         }
 
@@ -124,5 +127,66 @@ public class CGMESShuntCompensatorMapper extends AbstractCGMESDataMapper {
 
         log.debug(String.format("Created shunt: %s on bus %s, B=%.6f S (%.4f PU)",
             name, busId, totalB, bPU));
+    }
+
+    /**
+     * MicroGrid stores {@code capacitiveRating} as ohms, not Mvar:
+     * {@code 225^2 / 5062.5 = 10} and the solved SVC injection is {@code V^2/X}.
+     * A rating that is already a few hundred Mvar (Svedala 800, RealGrid 200)
+     * does not satisfy this test and is left to the SSH {@code q} schedule.
+     */
+    public void mapStaticVarCompensator(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+        if (!bag.getBoolean("Equipment.inService", true)) return;
+        String name = bag.getName();
+        if (name == null) name = bag.getLocalId();
+        String busId = resolveBusId(bag.getId());
+        if (busId == null || builder.getBus(busId) == null) return;
+
+        Double baseKV = null;
+        if (cimModel != null) {
+            java.util.List<String> topoNodes = cimModel.getTopologicalNodesForEquipment(bag.getId());
+            if (!topoNodes.isEmpty()) {
+                baseKV = cimModel.getNominalVoltageForTopoNode(topoNodes.get(0));
+            }
+        }
+        if (baseKV == null || baseKV <= 0.0) return;
+
+        double cap = bag.getDouble("StaticVarCompensator.capacitiveRating", 0.0);
+        double bSiemens = 0.0;
+        if (cap > 1000.0) {
+            double qAtNominal = baseKV * baseKV / cap;
+            if (qAtNominal > 0.5 && qAtNominal < 80.0) {
+                bSiemens = 1.0 / cap;
+            }
+        }
+        if (bSiemens == 0.0) {
+            // SSH q>0 is into the equipment in the load convention used by SvPowerFlow
+            // on this terminal (negative q means the SVC generates). Not used when the
+            // ohm rating already explains the injection.
+            double q = bag.getDouble("StaticVarCompensator.q", 0.0);
+            if (q == 0.0) return;
+            bSiemens = -q / (baseKV * baseKV);
+        }
+
+        double baseY = baseMVA / (baseKV * baseKV);
+        builder.addFixedShunt(busId, bag.getLocalId(), true, 0.0, bSiemens / baseY, name);
+        log.debug("Created SVC shunt {} on {} B={} S", name, busId, bSiemens);
+    }
+
+    /**
+     * SSH {@code ShuntCompensator.sections} is the in-service count. EQ
+     * {@code normalSections} is only the fallback when SSH did not merge a step.
+     */
+    private static int inServiceSections(CGMESPropertyBag bag) {
+        String ssh = bag.getString("ShuntCompensator.sections");
+        if (ssh != null && !ssh.isBlank()) {
+            try {
+                return (int) Math.round(Double.parseDouble(ssh.trim()));
+            } catch (NumberFormatException ignore) {
+                // fall through to EQ normalSections
+            }
+        }
+        return bag.getInt("ShuntCompensator.normalSections",
+                bag.getInt("ShuntCompensator.maximumSections", 1));
     }
 }
