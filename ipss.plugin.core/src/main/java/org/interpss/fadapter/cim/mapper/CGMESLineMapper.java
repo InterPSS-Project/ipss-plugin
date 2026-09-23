@@ -277,6 +277,66 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         harmonizeBusBase(builder, toBusId, toBase, targetKv);
     }
 
+    /**
+     * Propagate the preferred UCTE synonym across every Line (ACLineSegment and
+     * closed retained switch). EQ/SSH alignment only walks ACLineSegments, so a
+     * BE 225 kV raise on a border TN never reaches NL buses tied only through a
+     * retained breaker — LF then auto-turns the path into a 1:1 xfr and SvPowerFlow
+     * matching collapses (MicroGrid Type1).
+     *
+     * <p>When a bus base changes, rescale that line's pu Z and shunt Y so the ohm
+     * model stays consistent with the new kilovolt base.
+     */
+    public void unifyUcteLineBusBases(AclfNetworkBuilder builder) {
+        var net = builder.getNetwork();
+        if (net == null) {
+            return;
+        }
+        boolean changed = true;
+        for (int guard = 0; changed && guard < 32; guard++) {
+            changed = false;
+            for (AclfBranch br : net.getBranchList()) {
+                if (br == null || !br.isLine() || !br.isActive()) {
+                    continue;
+                }
+                var from = br.getFromAclfBus();
+                var to = br.getToAclfBus();
+                if (from == null || to == null) {
+                    continue;
+                }
+                double fromKv = from.getBaseVoltage() / 1000.0;
+                double toKv = to.getBaseVoltage() / 1000.0;
+                if (!(fromKv > 0.0 && toKv > 0.0)) {
+                    continue;
+                }
+                if (Math.abs(fromKv - toKv) <= 0.05) {
+                    continue;
+                }
+                if (!sameUcteVoltageClass(fromKv, toKv)) {
+                    continue;
+                }
+                double targetKv = Math.max(fromKv, toKv);
+                double oldRefKv = 0.5 * (fromKv + toKv);
+                if (Math.abs(fromKv - targetKv) > 0.05) {
+                    from.setBaseVoltage(targetKv * 1000.0);
+                    changed = true;
+                }
+                if (Math.abs(toKv - targetKv) > 0.05) {
+                    to.setBaseVoltage(targetKv * 1000.0);
+                    changed = true;
+                }
+                if (oldRefKv > 0.0 && Math.abs(oldRefKv - targetKv) > 0.05) {
+                    double zScale = (oldRefKv * oldRefKv) / (targetKv * targetKv);
+                    double yScale = (targetKv * targetKv) / (oldRefKv * oldRefKv);
+                    br.setZ(br.getZ().multiply(zScale));
+                    br.setHShuntY(br.getHShuntY().multiply(yScale));
+                    log.debug("UCTE unify {}: buses→{} kV, Z×{}, Y×{}",
+                            br.getId(), targetKv, zScale, yScale);
+                }
+            }
+        }
+    }
+
     private Double resolveBaseKV(CGMESPropertyBag bag, AclfNetworkBuilder builder,
                                  String fromBusId, String toBusId) {
         Double baseKV = null;

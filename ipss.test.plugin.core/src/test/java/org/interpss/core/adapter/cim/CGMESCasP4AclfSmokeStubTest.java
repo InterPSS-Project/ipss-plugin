@@ -39,17 +39,19 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
  *
  * <p>Case-specific first baselines (still green locally):
  * MiniGrid-Merged {@code |V|} 0.02 / 70% + flow 0.35;
- * Svedala-Merged {@code |V|} 0.02 / 85%, angle 1.5° / 85%, flow 0.40;
+ * Svedala-Merged {@code |V|} 0.015 / 90%, angle 1.5° / 85%, flow 0.43;
  * MiniGrid NB voltage-only (allow 2 boundary missing buses; no flow assert yet);
- * ReliCap Svedala / Britheim / Portheim / Espheim voltage-only ({@code |V|} 0.02 / 85%, soft angle);
- * Type3 CGM first and mid hour ({@code 1030Z}) voltage-only ({@code |V|} 0.02 / 70%, soft angle; soft NR);
- * MicroGrid T4 BE / FullGrid / RealGrid: soft NR + voltage-only floors.
+ * ReliCap Svedala / Britheim / Portheim: hard NR + voltage ({@code |V|} 0.02 / 85%, angle ≥70%);
+ * ReliCap Espheim: soft NR + voltage ({@code |V|} 0.02 / 85%, angle ≥50%);
+ * Type3 CGM first and mid hour ({@code 1030Z}): hard NR + voltage ({@code |V|} 0.02 / 85%, angle ≥50%);
+ * MicroGrid T4 BE / RealGrid: hard NR + voltage ({@code |V|} 0.02 / 85%, angle ≥50%);
+ * FullGrid-Merged: hard NR + voltage ({@code |V|} 0.02 / 70%, soft angle).
  * Closed retained switches are zero-Z branches: seed, consolidate, NR, then
  * deconsolidate so SV compare still sees the original buses.
  *
  * <p>Espheim–Svedala DC lives in {@link CGMESCasP4AclfUnconvergedStubTest} until NR is fixed.
- * MicroGrid Type1 / Type2 Merged are voltage-only here ({@code |V|} 0.02 pu);
- * BaseCase-Merged keeps shared |V| and softens flow to 5 MW / 10 Mvar.
+ * MicroGrid Type1 / Type2 / BaseCase Merged use shared |V|; flow softens to 5 MW / 10 Mvar
+ * until xfmr Q (magnetizing / ratedU) reaches the 1/1 floor.
  *
  * <p>RealGrid-Merged is in this class. Buses with no SV row start at flat voltage,
  * and a few degrees across a milliohm branch is tens of thousands of pu. The
@@ -352,6 +354,35 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		return out;
 	}
 
+	/** Soft branch P/Q floor used by MicroGrid Merged packs (5 MW / 10 Mvar). */
+	@FunctionalInterface
+	interface ThrowingRunnable {
+		void run() throws Exception;
+	}
+
+	static void withSoftBranchFlow(ThrowingRunnable body) throws Exception {
+		String prevP = System.getProperty("ipss.cgmes.p4.pTolMw");
+		String prevQ = System.getProperty("ipss.cgmes.p4.qTolMvar");
+		System.setProperty("ipss.cgmes.p4.pTolMw",
+				System.getProperty("ipss.cgmes.p4.pTolMw", "5"));
+		System.setProperty("ipss.cgmes.p4.qTolMvar",
+				System.getProperty("ipss.cgmes.p4.qTolMvar", "10"));
+		try {
+			body.run();
+		} finally {
+			if (prevP == null) {
+				System.clearProperty("ipss.cgmes.p4.pTolMw");
+			} else {
+				System.setProperty("ipss.cgmes.p4.pTolMw", prevP);
+			}
+			if (prevQ == null) {
+				System.clearProperty("ipss.cgmes.p4.qTolMvar");
+			} else {
+				System.setProperty("ipss.cgmes.p4.qTolMvar", prevQ);
+			}
+		}
+	}
+
 	static void runSeededCompare(Path svXml, Path[] terminalFiles, Path... inputs) throws Exception {
 		runSeededCompare(svXml, terminalFiles,
 				vTolPu(), angTolDeg(), minMatch(),
@@ -458,7 +489,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	@DisplayName("P4: MicroGrid Type1 Merged SV-seeded NR + Aclf vs SvVoltage (voltage-only)")
+	@DisplayName("P4: MicroGrid Type1 Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
 	public void testP4_MicroGridType1Merged_AclfVsSv() throws Exception {
 		Path dir = casDir("MicroGrid-Type1-Merged",
 				"MicroGrid/MicroGrid-Type1/MicroGrid-Type1-Merged");
@@ -470,22 +501,14 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path sv = mustFile(dir, "20210323T1730Z_1D_ASSEMBLED_SV_1.xml");
 		Path beSsh = mustFile(dir, "20210323T1730Z_1D_BE_SSH_1.xml");
 		Path nlSsh = mustFile(dir, "20210323T1730Z_1D_NL_SSH_1.xml");
-		// NR converges; max |dV|≈0.018 pu so use 0.02 floor (shared 0.005 fails 4/17).
-		// Branch SvPowerFlow is 0/39 at 1 MW/1 Mvar while 220↔225 kV lines are
-		// auto-turned to Xfr — voltage-only until that model gap is fixed.
-		Map<String, CgmesSvCompareSupport.SvVoltage> svMap =
-				CgmesSvCompareSupport.readSvVoltages(sv);
-		AclfNetwork net = new CGMESDirectParser().parse(abs(
+		// Shared |V| after UCTE unify across retained switches; flow soft 5/10
+		// (xfmr Q still ~3–5 Mvar on BE-TR2_*/NL-TR2_1 vs 1/1 floor).
+		withSoftBranchFlow(() -> runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
 				eqBd, beEq, nlEq, beSsh, nlSsh, tp, sv));
-		assertTrue(net.getNoBus() > 0);
-		runNrSeeded(net, svMap);
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "1.0"));
-		compareToSv(net, svMap, vTol, 0.5, minV);
 	}
 
 	@Test
-	@DisplayName("P4: MicroGrid Type2 Merged SV-seeded NR + Aclf vs SvVoltage (voltage-only)")
+	@DisplayName("P4: MicroGrid Type2 Merged SV-seeded NR + Aclf vs SvVoltage + SvPowerFlow")
 	public void testP4_MicroGridType2Merged_AclfVsSv() throws Exception {
 		Path dir = casDir("MicroGrid-Type2-Merged",
 				"MicroGrid/MicroGrid-Type2/MicroGrid-Type2-Merged");
@@ -495,24 +518,15 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path nlEq = mustFile(dir, "20210401T1730Z_1D_NL_EQ_1.xml");
 		Path tp = mustFile(dir, "20210401T1730Z_1D_ASSEMBLED_TP_1.xml");
 		Path sv = mustFile(dir, "20210401T1730Z_1D_ASSEMBLED_SV_1.xml");
-		// HVDC profiles stay so assembled topology is complete; converter flows
-		// are not part of this AC voltage compare.
-		// NR converges; max |dV|≈0.018 → 0.02 floor (19/26 @ 0.005, 26/26 @ 0.02).
-		// Flow 21/55 at 1 MW/1 Mvar — voltage-only until that gap is closed.
-		Map<String, CgmesSvCompareSupport.SvVoltage> svMap =
-				CgmesSvCompareSupport.readSvVoltages(sv);
-		AclfNetwork net = new CGMESDirectParser().parse(abs(
-				eqBd, beEq, nlEq,
-				mustFile(dir, "20210401T1730Z_1D_HVDC_EQ_1.xml"),
+		Path hvdcEq = mustFile(dir, "20210401T1730Z_1D_HVDC_EQ_1.xml");
+		// HVDC profiles keep assembled topology; VsConverter AC loads are mapped.
+		// Shared |V|; flow soft 5/10 until remaining xfmr Q closes.
+		withSoftBranchFlow(() -> runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp, hvdcEq },
+				eqBd, beEq, nlEq, hvdcEq,
 				mustFile(dir, "20210401T1730Z_1D_BE_SSH_1.xml"),
 				mustFile(dir, "20210401T1730Z_1D_NL_SSH_1.xml"),
 				mustFile(dir, "20210401T1730Z_1D_HVDC_SSH_1.xml"),
 				tp, sv));
-		assertTrue(net.getNoBus() > 0);
-		runNrSeeded(net, svMap);
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "1.0"));
-		compareToSv(net, svMap, vTol, 0.5, minV);
 	}
 
 	@Test
@@ -526,31 +540,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path nlEq = mustFile(dir, "20210325T1530Z_1D_NL_EQ_001.xml");
 		Path tp = mustFile(dir, "20210325T1530Z_1D_ASSEMBLED_TP_001.xml");
 		Path sv = mustFile(dir, "20210325T1530Z_1D_ASSEMBLED_SV_001.xml");
-		// |V| passes shared 0.005 floor; flow is 4/39 @ 1 MW/1 Mvar but 39/39 @ 5/10.
-		String prevP = System.getProperty("ipss.cgmes.p4.pTolMw");
-		String prevQ = System.getProperty("ipss.cgmes.p4.qTolMvar");
-		System.setProperty("ipss.cgmes.p4.pTolMw",
-				System.getProperty("ipss.cgmes.p4.pTolMw", "5"));
-		System.setProperty("ipss.cgmes.p4.qTolMvar",
-				System.getProperty("ipss.cgmes.p4.qTolMvar", "10"));
-		try {
-			runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
-					eqBd, beEq, nlEq,
-					mustFile(dir, "20210325T1530Z_1D_BE_SSH_001.xml"),
-					mustFile(dir, "20210325T1530Z_1D_NL_SSH_001.xml"),
-					tp, sv);
-		} finally {
-			if (prevP == null) {
-				System.clearProperty("ipss.cgmes.p4.pTolMw");
-			} else {
-				System.setProperty("ipss.cgmes.p4.pTolMw", prevP);
-			}
-			if (prevQ == null) {
-				System.clearProperty("ipss.cgmes.p4.qTolMvar");
-			} else {
-				System.setProperty("ipss.cgmes.p4.qTolMvar", prevQ);
-			}
-		}
+		// Shared |V|; flow soft 5/10 (4/39 at 1/1 today — xfmr/line Q residual).
+		withSoftBranchFlow(() -> runSeededCompare(sv, new Path[] { eqBd, beEq, nlEq, tp },
+				eqBd, beEq, nlEq,
+				mustFile(dir, "20210325T1530Z_1D_BE_SSH_001.xml"),
+				mustFile(dir, "20210325T1530Z_1D_NL_SSH_001.xml"),
+				tp, sv));
 	}
 
 	@Test
@@ -578,12 +573,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path eqXml = mustFile(dir, "Svedala_EQ.xml");
 		Path tpXml = mustFile(dir, "Svedala_TP.xml");
 		Path eqBd = mustFile(dir, "Svedala_EQBD.xml");
-		// Larger CAS case: softer first baseline than the MiniGrid/PST 0.005/100% floor.
+		// Larger CAS case: intermediate floor after MicroGrid UCTE unify.
 		// Override: -Dipss.cgmes.p4.vTolPu / minMatch / minFlowMatch / minAngMatch.
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
+		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.015"));
 		double angTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "1.5"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		double minFlow = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.40"));
+		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.90"));
+		double minFlow = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.43"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
 				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.85"));
@@ -654,12 +649,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
 		assertTrue(net.getNoBus() > 0);
 		runNrSeeded(net, sv);
-		// |V|-primary: angles drift; SvPowerFlow ~20% today — voltage gate only for P1.
+		// |V|-primary; angle floor raised after UCTE unify (was 0.0).
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.70"));
 		try {
 			compareToSv(net, sv, vTol, 10.0, minV);
 		} finally {
@@ -689,7 +684,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.70"));
 		try {
 			compareToSv(net, sv, vTol, 20.0, minV);
 		} finally {
@@ -715,16 +710,16 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, tpBd, eqBd));
 		assertTrue(net.getNoBus() > 0);
-		runNrSeededSoft(net, sv, "MicroGrid T4 BE");
+		runNrSeeded(net, sv);
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
+		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
 		String prevMiss = System.getProperty("ipss.cgmes.p4.maxMissingBus");
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		// Five SvVoltage rows are boundary topological nodes, which are not buses.
 		System.setProperty("ipss.cgmes.p4.maxMissingBus",
 				System.getProperty("ipss.cgmes.p4.maxMissingBus", "5"));
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.50"));
 		try {
 			compareToSv(net, sv, vTol, 10.0, minV);
 		} finally {
@@ -758,9 +753,10 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 				svXml,
 				eqBd));
 		assertTrue(net.getNoBus() > 0);
-		runNrSeededSoft(net, sv, "FullGrid-Merged");
+		runNrSeeded(net, sv);
 		// SvPowerFlow rows on this case are machines, not AC lines, so the flow
 		// helper's "fewer than 3 comparable terminals" gate would abort the test.
+		// |V| match stays ~71% @ 0.02 — SVC / ZIP residuals keep the 0.70 floor.
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
 		double angTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "1.5"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
@@ -790,12 +786,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
 		assertTrue(net.getNoBus() > 0);
-		runNrSeededSoft(net, sv, "RealGrid-Merged");
+		runNrSeeded(net, sv);
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
+		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.50"));
 		try {
 			compareToSv(net, sv, vTol, 10.0, minV);
 		} finally {
@@ -824,7 +820,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 
 	/** Shared EQ (first-hour stamp) + per-hour SSH + Assembled TP/SV; voltage-only. */
 	static void runType3HourP4(String hour) throws Exception {
-		runType3HourP4(hour, 0.70);
+		runType3HourP4(hour, 0.85);
 	}
 
 	static void runType3HourP4(String hour, double defaultMinV) throws Exception {
@@ -843,13 +839,13 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		AclfNetwork net = new CGMESDirectParser().parse(abs(
 				eqBd, beEq, nlEq, beSsh, nlSsh, tp, svXml));
 		assertTrue(net.getNoBus() > 0, () -> "Type3 " + hour + " should create buses");
-		runNrSeededSoft(net, sv, "Type3 CGM " + hour);
+		runNrSeeded(net, sv);
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch",
 				Double.toString(defaultMinV)));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.50"));
 		try {
 			compareToSv(net, sv, vTol, 10.0, minV);
 		} finally {
@@ -873,12 +869,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Map<String, CgmesSvCompareSupport.SvVoltage> sv = CgmesSvCompareSupport.readSvVoltages(svXml);
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
 		assertTrue(net.getNoBus() > 0);
-		runNrSeededSoft(net, sv, "ReliCap Portheim");
+		runNrSeeded(net, sv);
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.70"));
 		try {
 			compareToSv(net, sv, vTol, 10.0, minV);
 		} finally {
@@ -912,12 +908,13 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		}
 		AclfNetwork net = new CGMESDirectParser().parse(abs(inputs.toArray(new Path[0])));
 		assertTrue(net.getNoBus() > 0);
+		// Soft NR: dangling CNs / OOS ties still leave residual mismatch islands.
 		runNrSeededSoft(net, sv, "ReliCap Espheim");
 		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
 		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
 		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
 		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.50"));
 		try {
 			compareToSv(net, sv, vTol, 10.0, minV);
 		} finally {
@@ -925,6 +922,52 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 				System.clearProperty("ipss.cgmes.p4.minAngMatch");
 			} else {
 				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
+			}
+		}
+	}
+
+	@Test
+	@DisplayName("P4: ReliCap DC Espheim–Svedala SV-seeded NR + Aclf vs SvVoltage (AC soft)")
+	public void testP4_ReliCapDcEspheimSvedala_AclfVsSv() throws Exception {
+		runReliCapDcEspheimSvedalaP4();
+	}
+
+	private static void runReliCapDcEspheimSvedalaP4() throws Exception {
+		// Standalone DC: synthetic swing from largest |P| bus (CsConverter loads).
+		// Espheim+Svedala IGM merge still needs CGM assembled TP/SV (shared BP Sv conflict).
+		Path dir = casDir("ReliCap-DC-Espheim-Svedala-cimxml",
+				"Instance/DC-Espheim-Svedala/Grid/cimxml");
+		assumeTrue(Files.isDirectory(dir), () -> "ReliCap DC Espheim-Svedala missing: " + dir);
+		Path svXml = mustFile(dir, "20220615T2230Z_2D_HVDC-Espheim-Svedala_SV_1.xml");
+		Map<String, CgmesSvCompareSupport.SvVoltage> sv =
+				CgmesSvCompareSupport.readSvVoltages(svXml);
+		AclfNetwork net = new CGMESDirectParser().parse(abs(
+				mustFile(dir, "20220615T2230Z__HVDC-Espheim-Svedala_EQ_1.xml"),
+				mustFile(dir, "20220615T2230Z_2D_HVDC-Espheim-Svedala_SSH_1.xml"),
+				mustFile(dir, "20220615T2230Z_2D_HVDC-Espheim-Svedala_TP_1.xml"),
+				svXml));
+		assertTrue(net.getNoBus() > 0);
+		runNrSeededSoft(net, sv, "ReliCap DC Espheim-Svedala");
+		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.05"));
+		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.50"));
+		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
+		String prevMiss = System.getProperty("ipss.cgmes.p4.maxMissingBus");
+		System.setProperty("ipss.cgmes.p4.minAngMatch",
+				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
+		System.setProperty("ipss.cgmes.p4.maxMissingBus",
+				System.getProperty("ipss.cgmes.p4.maxMissingBus", "20"));
+		try {
+			compareToSv(net, sv, vTol, 20.0, minV);
+		} finally {
+			if (prevAng == null) {
+				System.clearProperty("ipss.cgmes.p4.minAngMatch");
+			} else {
+				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
+			}
+			if (prevMiss == null) {
+				System.clearProperty("ipss.cgmes.p4.maxMissingBus");
+			} else {
+				System.setProperty("ipss.cgmes.p4.maxMissingBus", prevMiss);
 			}
 		}
 	}
