@@ -29,6 +29,8 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
 
     @Override
     public void map(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+        boolean inService = bag.getBoolean("Equipment.inService", true);
+
         String lineId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = lineId;
@@ -120,6 +122,13 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
         }
         branch.setId(lineId);
         branch.setName(name.isEmpty() ? lineId : name);
+        // SSH/SvStatus may mark the segment out of service. Keep the branch for
+        // SV compare / topology ids, but leave it inactive so NR does not short
+        // SV-distant buses (e.g. ReliCap Espheim line 8-9).
+        if (!inService) {
+            branch.setStatus(false);
+            log.debug("Mapped out-of-service ACLineSegment {} as inactive", name);
+        }
 
         log.debug("Created line branch: {} ({}→{}) r={} x={} bch={} PU",
             name, fromBusId, toBusId, rPU, xPU, bPU);
@@ -129,6 +138,8 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
      * Map SeriesCompensator as a line (PowSyBl behavior).
      */
     public void mapSeriesCompensator(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+        boolean inService = bag.getBoolean("Equipment.inService", true);
+
         String lineId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = lineId;
@@ -163,6 +174,10 @@ public class CGMESLineMapper extends AbstractCGMESDataMapper {
                 null, null, 0.0, 0.0, 0.0, true);
         branch.setId(lineId);
         branch.setName(name.isEmpty() ? lineId : name);
+        if (!inService) {
+            branch.setStatus(false);
+            log.debug("Mapped out-of-service SeriesCompensator {} as inactive", name);
+        }
 
         log.debug("Created SeriesCompensator as line: {} ({}→{}) r={} x={} PU",
             name, fromBusId, toBusId, rPU, xPU);

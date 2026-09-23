@@ -74,6 +74,11 @@ public class CGMESTransformerMapper extends AbstractCGMESDataMapper {
 
     @Override
     public void map(CGMESPropertyBag bag, AclfNetworkBuilder builder) throws Exception {
+        if (!bag.getBoolean("Equipment.inService", true)) {
+            log.debug("Skipping out-of-service PowerTransformer {}", bag.getName());
+            return;
+        }
+
         String xfrId = bag.getLocalId();
         String name = bag.getName();
         if (name == null) name = xfrId;
