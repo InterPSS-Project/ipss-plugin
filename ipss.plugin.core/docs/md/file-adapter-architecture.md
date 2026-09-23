@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The `org.interpss.fadapter` package provides a unified framework for importing power system network data from industry-standard file formats and exporting simulation results back to those formats. It bridges external data representations (PSS/E, IEEE CDF, MATPOWER, etc.) with InterPSS in-memory models (`AclfNetwork`, `AcscNetwork`, `DStabilityNetwork`).
+The `org.interpss.fadapter` package provides a unified framework for importing power system network data from industry-standard file formats and exporting simulation results back to those formats. It bridges external data representations (PSS/E, IEEE CDF, MATPOWER, CIM/CGMES, etc.) with InterPSS in-memory models (`AclfNetwork`, `AcscNetwork`, `DStabilityNetwork`).
 
 **Design note:** All import paths use *direct file-to-model* parsers. The IEEE ODM (Open Data Model) XML intermediate layer has been removed. Format adapters call parsers that populate network objects via shared builders—no JAXB schema, no ODM mappers.
 
@@ -57,8 +57,26 @@ org.interpss.fadapter
 │   └── EpcDirectParser
 ├── bpa/
 │   └── BPADirectParser
-└── pwd/
-    └── PWDDirectParser
+├── pwd/
+│   └── PWDDirectParser
+└── cim/                           # CIM RDF/XML / CGMES (no IpssFileAdapter facade yet)
+    ├── CGMESDirectParser          # EQ/TP/SSH/(SV)/BD → AclfNetwork via AclfNetworkBuilder
+    ├── CGMESModel                 # Jena indices: TN, Terminal, BaseVoltage, equipment lists
+    ├── CGMESPropertyBag          # RDF property bag for one resource
+    ├── CGMESConstants
+    ├── parser/
+    │   └── CGMESRdfParser         # RDF/XML → Apache Jena Model
+    ├── util/
+    │   └── CGMESUnitConverter     # SI / kV / MW ↔ InterPSS units
+    └── mapper/
+        ├── AbstractCGMESDataMapper    # Terminal→bus, ratio/phase taps, shared helpers
+        ├── CGMESLineMapper            # ACLineSegment, SeriesCompensator, closed retained Switch
+        ├── CGMESTransformerMapper     # 2W PowerTransformer (+ mesh / core / taps)
+        ├── CGMESTransformer3WMapper   # 3W star-bus model
+        ├── CGMESLoadMapper            # EnergyConsumer, EquivalentInjection, ZIP response
+        ├── CGMESGeneratorMapper       # SynchronousMachine, ExternalNetworkInjection, swing
+        ├── CGMESShuntCompensatorMapper  # Linear/nonlinear shunt, SVC
+        └── CGMESVsConverterMapper       # VsConverter / CsConverter AC injections (DC line not AC branch)
 ```
 
 ## Class Hierarchy
@@ -143,6 +161,64 @@ External File (.raw, .rawx, .ieee, .m, …)
 | `GEFormat`        | `EpcDirectParser`        |
 | `PWDFormat`       | `PWDDirectParser`        |
 | `BPAFormat`       | `BPADirectParser`        |
+| — (direct API)    | `CGMESDirectParser`      |
+
+### Import Pipeline (CIM / CGMES)
+
+`CGMESDirectParser` has no `IpssFileAdapter` facade yet. Call it directly with one RDF/XML file or a multi-profile set (EQ + TP + SSH + optional SV / EQBD / HVDC). Profiles are merged into one Jena model; SSH attributes land on the same RDF ids as EQ. **SvVoltage / SvPowerFlow are not applied during import** — P4 tests seed and compare against SV after parse.
+
+```
+EQ + TP + SSH (+ SV, EQBD, HVDC, …) RDF/XML
+       │
+       ▼
+ CGMESRdfParser  →  Jena Model (merged)
+       │
+       ▼
+ CGMESModel.buildIndices()
+   · BaseVoltage, Terminal → Equipment / TN / CN / sequenceNumber
+   · Boundary TopologicalNodes, VL / Bay → nominal kV
+       │
+       ▼
+ CGMESDirectParser.buildNetwork()
+   1. convertBuses()       TN (skip boundary) → Busbar → CN
+   2. convertBranches()    ACLine + SeriesComp + closed retained Switch
+                           + 2W/3W PowerTransformer (taps, mesh, magnetizing)
+                           + UCTE 220↔225 / 380↔400 base unify across line+switch islands
+   3. convertInjections()  loads / EI / async → gens / ENI → Vs/Cs converters → shunts / SVC
+                           swing: referencePriority → largest |P| PV → synthetic (DC-only)
+   4. finalizeNetwork(); mark ZBR_MODEL if zero-Z switches present
+       │
+       ▼
+ AclfNetwork (baseMVA=100, OriginalDataFormat.CIM)
+```
+
+Typical calls:
+
+```java
+// Single CIM RDF/XML
+AclfNetwork net = new CGMESDirectParser().parse("MiniGrid_EQ.xml");
+
+// CGMES multi-profile merge (order does not matter for Jena merge)
+AclfNetwork net = new CGMESDirectParser().parse(new String[] {
+    eq.toAbsolutePath().toString(),
+    ssh.toAbsolutePath().toString(),
+    tp.toAbsolutePath().toString(),
+    sv.toAbsolutePath().toString()   // optional; not used for bus voltages at import
+});
+```
+
+**Accuracy-sensitive mapping (CAS P4 SV benchmark):**
+
+| Area | Behavior |
+|------|----------|
+| Bus base kV | Prefer equipment `BaseVoltage` over TP UCTE synonyms when same class |
+| Lines | Classic π; same UCTE class stays a line; after switches, `unifyUcteLineBusBases` propagates preferred synonym and rescales pu Z/Y |
+| Closed retained switches | Zero-Z lines → `ZBR_MODEL` for LF consolidate |
+| Transformers | End Z or mesh; ratio-tap linear + table; phase-tap angle/ρ + U-curve x; magnetizing half-split |
+| Loads | SSH P/Q; optional `LoadResponseCharacteristic` ZIP; skip OOS |
+| Generators | PV/PQ via RC/GU; skip OOS; slack via `referencePriority` then largest \|P\| |
+| DC-only islands | If no SM/ENI, designate largest \|P\| bus as swing (ReliCap HVDC corridor) |
+| HVDC | Vs/Cs converter AC P/Q as contribute loads; DC line is not an AC branch |
 
 ### Import Pipeline (Internal Format)
 
@@ -215,7 +291,7 @@ Builders isolate model-construction logic from format parsing. Parsers only toke
 
 ### `AclfNetworkBuilder`
 
-Shared ACLF construction used by all direct parsers (and by PSS/E when parsing into an existing `AcscNetwork` / `DStabilityNetwork`):
+Shared ACLF construction used by all direct parsers including `CGMESDirectParser` (and by PSS/E when parsing into an existing `AcscNetwork` / `DStabilityNetwork`):
 
 - Network metadata, areas, zones, owners, Xfr Z-table
 - Buses (swing / PV / PQ), contribute gens & loads, shunt Y
@@ -322,6 +398,7 @@ ODM mapper factory methods have been removed from `CorePluginFactory`.
 ```java
 AclfNetwork net = new PSSEDirectParser(35).parse("case.raw");
 AclfNetwork jsonNet = new PSSEJsonDirectParser().parse("case.rawx");
+AclfNetwork cimNet = new CGMESDirectParser().parse(new String[] { eq, ssh, tp, sv });
 ```
 
 ### CLI Converters
@@ -344,6 +421,7 @@ java org.interpss.fadapter.psse.monitor.MonFileConverter input.mon output.json
 | EPC | `GE_PSLF` | `GEFormat` | `EpcDirectParser` | Sectioned `.epc` (bus/gen/load/branch/xfr/shunt/area/zone); multi-line records (branch=2, xfr=3, gen=2); `.dyd` dynamics out of ACLF scope; SVD/DC/3W/TCUL control skipped |
 | BPA | `BPA` | `BPAFormat` | `BPADirectParser` | IPF card types B/L/T/E/A; `/MVA_BASE` currently hardcoded 100 MVA; R/TP/+ stubs skipped; LF from first file only (no `.swi`) |
 | PowerWorld | `PWD` | `PWDFormat` | `PWDDirectParser` | Legacy `DATA (…)` AUX; field aliases for BusNomVolt/LoadSMW/BusNum:1/LineC; BRANCH transformers via BranchDeviceType; concise headers / XFAuto controls not supported |
+| CIM / CGMES | — | `new CGMESDirectParser()` | `CGMESDirectParser` | RDF/XML CGMES 2.4 / 3.0; multi-profile merge (EQ/TP/SSH/SV/BD/HVDC); no `IpssFileAdapter` facade yet; SV seed/compare is test-side (P4) |
 | InterPSS Internal | `IpssInternal` | `IpssInternalFormat` | `_in` / `_out` | Read + write |
 | PSS/E sequence | — | `PSSEMultiFileLoader` | `PSSEAcscDirectParser` | `.seq` overlay |
 | PSS/E dynamics | — | `PSSEMultiFileLoader` | `PSSEDStabDirectParser` | `.dyr` overlay |
@@ -370,12 +448,15 @@ ipss.test.plugin.core/
 │       ├── psse/raw/aclf|acsc|dstab/  # PSS/E RAW, sequence, dynamics
 │       ├── psse/json/aclf/            # RAWX import + JSON export
 │       ├── pwd/, ge/, bpa/, ucte/     # Other format facades
+│       ├── cim/                       # CGMES DirectParser + CAS P4 SV benchmarks
 │       └── CoreAdapterTestSuite.java  # Smaller IEEE + internal subset
 ├── src/main/java/sample/              # Runnable main() examples (load → simulate → export)
+│   └── cim/                           # CGMES ACLF samples (mirror P4 smoke / soft packs)
 └── testData/                          # Fixture files (paths relative to module CWD)
     ├── adpter/                        # Primary adapter fixtures
     │   ├── psse/v{29..36}/, json/
     │   ├── ieee_format/, matpower/, pwd/, bpa/, ge/, ucte/
+    │   ├── cim/cgmes2.4/, cim/cgmes3.0/cas/   # CGMES CAS / ReliCap packs
     │   └── …
     └── psse/                          # Large cases, contingency, monitored-branch JSON
 ```
@@ -398,7 +479,7 @@ Most adapter tests extend `CorePluginTestSetup` and load cases via one of:
 
 - `IpssAdapter.importAclfNet(path).setFormat(...).setPsseVersion(...).load().getImportedObj()`
 - `CorePluginFactory.getFileAdapter(FileFormat, Version).load(path).getAclfNet()`
-- Direct parser: `new PSSEDirectParser(ver).parse(path)`, `new PSSEJsonDirectParser().parse(path)`
+- Direct parser: `new PSSEDirectParser(ver).parse(path)`, `new PSSEJsonDirectParser().parse(path)`, `new CGMESDirectParser().parse(paths)`
 - Multi-file: `new PSSEMultiFileLoader(ver).loadAcsc(...)` / `.loadDStab(...)`
 
 ### Running tests
@@ -426,6 +507,10 @@ mvn -pl ipss.test.plugin.core test -Dtest=PWDDirectParser_ObjectGate_Test,PWDIEE
 # Fast EPC DirectParser / adapter subset
 mvn -pl ipss.test.plugin.core test -Dtest=GEAdapterTestSuite
 mvn -pl ipss.test.plugin.core test -Dtest=EpcDirectParser_SectionGate_Test,GESampleTestCases
+
+# CGMES DirectParser + CAS P4 SV-seeded ACLF vs SV (needs fixtures under testData/adpter/cim/)
+mvn -pl ipss.test.plugin.core test -Dtest=CIMDirectParserTest
+mvn -pl ipss.test.plugin.core test -Dtest=CGMESCasP4AclfSmokeStubTest,CGMESCasP4AclfUnconvergedStubTest
 
 # Builder unit tests (Aclf)
 mvn -pl ipss.test.plugin.core test -Dtest=AclfNetworkBuilderCoreTest
@@ -472,6 +557,7 @@ Fixtures: `DStabBuilderTestFixture`, `AcscBuilderTestFixture`.
 | EPC | `GESampleTestCases`, `EpcDirectParser_SectionGate_Test`, `Epc2k10kComparisonTest` (`GEAdapterTestSuite`) | `GEFormat` + `EpcDirectParser`; fixtures under `testData/adpter/ge/` (+ `unit/` for SHUNT / PS angle) |
 | PWD | `PWDIEEE14BusTestCase`, `PWDDirectParser_ObjectGate_Test`, `SixBus_DclfPsXfr_pwd`, `SixBus_XfrControl_pwd` (`PWDAdapterTestSuite`) | `PWDFormat` + `PWDDirectParser`; fixtures under `testData/adpter/pwd/` (+ `unit/` for SHUNT) |
 | BPA | `BPASampleTestCases`, `BPADirectParser_CardGate_Test`, `Bpa07c_0615_Test`, `BpaO7CTest` (`BPAAdapterTestSuite`) | `BPAFormat` + `BPADirectParser`; fixtures under `testData/adpter/bpa/` (+ `unit/` for E / R-TP-skip) |
+| CIM / CGMES | `CIMDirectParserTest`, `CGMESCasCoverageStubTest`, `CGMESCasP4AclfSmokeStubTest`, `CGMESCasP4AclfUnconvergedStubTest`, `CGMESCasType3HourCoverageStubTest`, `CGMESReliCapDcCoverageStubTest` | `CGMESDirectParser`; fixtures under `testData/adpter/cim/`; P4 seeds from SvVoltage and compares \|V\|/angle/flow via `CgmesSvCompareSupport` |
 | Internal format | `IEEE14Test`, `Bus1824Test`, `Bus6384Test`, `Bus11856Test` | `IpssInternalFormat` round-trip |
 | Compare / regression | `IEEE14JsonCompareTest`, `PSSE_ACTIVSg25kObjectCompareTest` | Load twice, `AclfNetJsonComparator` |
 
@@ -513,6 +599,23 @@ EPC section coverage (`EpcDirectParser`):
 | `svd` / `dc *` / `owner` / `interface` / … | Non-core ACLF — skip-safe | Sample18 empty headers |
 | Regional | `UCTE_2002_Summer.EPC` parse smoke (≥1200 buses) | SectionGate `ucte2002_summer_parseSmoke` |
 
+CGMES / CIM coverage (`CGMESDirectParser`):
+
+| Profile / feature | Meaning | Asserted by |
+|------|---------|-------------|
+| EQ + TP + SSH (+ SV) | Multi-profile Jena merge → buses/branches/injections | `CIMDirectParserTest`, CAS coverage stubs |
+| TopologicalNode buses | Skip boundary TNs; base kV from BV / VL / equipment | MiniGrid / MicroGrid P4 |
+| ACLineSegment + SeriesCompensator | π line; UCTE synonym class stays line | Type1/Type2 (no auto-Xfr after unify) |
+| Closed retained Switch | Zero-Z branch → `ZBR_MODEL` | MicroGrid B1 path |
+| PowerTransformer 2W/3W | Mesh/core, ratio/phase taps, magnetizing | PST Type1–3, MicroGrid xfmr Q |
+| EnergyConsumer / EI / ZIP | SSH schedule; OOS skip; ZIP response | SmallGrid / BaseCase |
+| SynchronousMachine / ENI | PV/PQ; `referencePriority` slack | SmallGrid |
+| VsConverter / CsConverter | AC contribute loads; synthetic swing if no SM | Type2 HVDC; DC Espheim–Svedala |
+| Shunt / SVC | `sections` × bPerSection; nonlinear points | FullGrid / MicroGrid |
+| P4 SV seed + NR | `seedFromSv` → NR (`setInitBusVoltage(false)`) → vs SvVoltage / SvPowerFlow | `CGMESCasP4AclfSmokeStubTest` |
+
+Fixture resolution and live P4 floors: [`testData/adpter/cim/cgmes3.0/cas/README.md`](../../../ipss.test.plugin.core/testData/adpter/cim/cgmes3.0/cas/README.md).
+
 #### PSS/E auxiliary files
 
 `.sub` / `.mon` parsing and resolution are covered indirectly by downstream DCLF/contingency tests that consume JSON converted from `.sub`/`.mon` files. Dedicated API docs:
@@ -533,6 +636,19 @@ These are `main()` programs (not JUnit). Run from IDE or `exec:java` after build
 | Result exchange | `sample.exchange.AclfResultExchangeIeee14Sample` | `CorePluginFactory.getFileAdapter(IEEECDF)` → loadflow → `AclfResultExchangeAdapter` |
 | Contingency / DCLF | `sample.contingency.*`, `sample.dclf.*` | Large-case workflows after network import |
 | ACLF large cases | `sample.aclf.ACTIVSg25kBus*` | PSSE large-network load + controls |
+| CGMES ACLF | `sample.cim.*` (`CgmesAclfUtil`, `MiniGridMergedAclfSample`, `PowerFlowAclfSample`, `MicroGrid*`, `SvedalaMergedAclfSample`, `ReliCap*`, `FullGridMergedAclfSample`, `Type3Cgm*`, …) | `CGMESDirectParser` → SV seed → NR; mirrors P4 smoke packs |
+
+**Example — CGMES multi-profile parse + SV-seeded NR** (from `sample.cim.PowerFlowAclfSample` / `CgmesAclfUtil`):
+
+```java
+Path dir = CgmesAclfUtil.casDir("PowerFlow-Instance", "PowerFlow/PowerFlow");
+Path eq = dir.resolve("PowerFlow_EQ.xml");
+Path ssh = dir.resolve("PowerFlow_SSH.xml");
+Path tp = dir.resolve("PowerFlow_TP.xml");
+Path sv = dir.resolve("PowerFlow_SV.xml");
+CgmesAclfUtil.run("PowerFlow", sv, eq, ssh, tp, sv);
+// internally: new CGMESDirectParser().parse(abs(...)) → seedFromSv → NR
+```
 
 **Example — PSSE JSON export with bus filtering** (from `PSSE_IEEE9Bus_BusSetSample`):
 
@@ -566,6 +682,8 @@ BaseDStabNetwork dsNet = ctx.getDStabilityNet();
 | `adpter/matpower/case*.m` | case9, case30, case118, Pegase/RTE large cases |
 | `adpter/ieee_format/` | `Ieee14Bus.ieee`, `ieee39.ieee`, etc. |
 | `adpter/pwd/`, `adpter/bpa/`, `adpter/ge/` | PowerWorld AUX, BPA, GE PSLF |
+| `adpter/cim/cgmes2.4/` | MiniGrid NB, MicroGrid T4 BE (cgmes 2.4 fixtures) |
+| `adpter/cim/cgmes3.0/cas/` | CAS v3.0 / ReliCap packs (MiniGrid, MicroGrid, PST, Svedala, FullGrid, RealGrid, Type3, HVDC, …); see pack `README.md` |
 | `psse/v33/`, `psse/v36/Texas2k/` | ACTIVSg, OpenEI, monitored-branch / contingency JSON |
 
 ## Migration Notes (ODM Removed)
@@ -573,6 +691,7 @@ BaseDStabNetwork dsNet = ctx.getDStabilityNet();
 | Former ODM path | Current path |
 |-----------------|--------------|
 | `IODMAdapter` + `ODMAclfParserMapper` | `*DirectParser` + `AclfNetworkBuilder` |
+| CIM / CGMES via ODM (if any) | `CGMESDirectParser` + CIM mappers + `AclfNetworkBuilder` |
 | `ODMAcscParserMapper` / `ODMDStabParserMapper` | `PSSEAcscDirectParser` / `PSSEDStabDirectParser` + builders |
 | `org.ieee.odm.adapter.psse.bean.PSSESchema` | `org.interpss.fadapter.psse.bean.PSSESchema` |
 | `IODMModelParser.BusIdPreFix` | Local `"Bus"` prefix in `BasePSSEJSonUpdater` |
