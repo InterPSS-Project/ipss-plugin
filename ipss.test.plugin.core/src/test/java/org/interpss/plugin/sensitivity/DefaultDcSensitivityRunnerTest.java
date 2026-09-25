@@ -324,8 +324,55 @@ class DefaultDcSensitivityRunnerTest extends CorePluginTestSetup {
 		Object inverse = scalar.calMultiOutageInvE_PTDF("expected");
 		double[] expected = scalar.calMultiOutageLODFs(net.getBranch(MONITOR), inverse);
 		for (int i = 0; i < outages.size(); i++) {
-			int factorIndex = scalar.getOutageBranchList().get(i).getBranch().getSortNumber();
+			int factorIndex = scalar.getMultiOutageMatrixIndex(i);
 			assertEquals(expected[factorIndex], sink.rows().get(i).factor(), 1.0e-10);
+		}
+	}
+
+	@Test
+	void multiOutageLodfMatchesPostOutageDclfForEitherOutageOrder() throws Exception {
+		List<String> outages = List.of("Bus2->Bus3(1)", "Bus4->Bus5(1)");
+		String secondMonitor = "Bus6->Bus13(1)";
+		LinearInterface monitored = new LinearInterface("interface", "weighted interface", List.of(
+				new InterfaceMember(MONITOR, 1.0), new InterfaceMember(secondMonitor, -2.0)));
+		DcSensitivityStudyDefinition study = new DcSensitivityStudyDefinition(1, "mlodf-flow", "multi",
+				new NetworkReference("", ""), EndpointCatalog.empty(), List.of(new MultiOutageLodfSpec(List.of(
+						new OutageGroup("forward", "forward", outages),
+						new OutageGroup("reverse", "reverse", outages.reversed())),
+						new MonitorSet(List.of(MONITOR), List.of(monitored)))), CalculationOptions.defaults());
+		AclfNetwork net = loadIeee14();
+		InMemorySensitivityResultSink sink = new InMemorySensitivityResultSink();
+		var manifest = new DefaultDcSensitivityRunner().run(net, study, sink);
+		assertTrue(manifest.complete());
+		assertEquals(8, sink.rows().size());
+
+		// Independently recompute flows with the lines open, without using the LODF API.
+		AclfNetwork referenceNet = loadIeee14();
+		ContingencyAnalysisAlgorithm base = createContingencyAnalysisAlgorithm(referenceNet);
+		assertTrue(base.calculateDclf(DclfMethod.STD));
+		double baseFlow = base.getDclfAlgoBranch(MONITOR).getDclfFlow();
+		double baseInterfaceFlow = baseFlow - 2.0 * base.getDclfAlgoBranch(secondMonitor).getDclfFlow();
+		Map<String, Double> outageFlows = Map.of(
+				outages.get(0), base.getDclfAlgoBranch(outages.get(0)).getDclfFlow(),
+				outages.get(1), base.getDclfAlgoBranch(outages.get(1)).getDclfFlow());
+		for (String id : outages) referenceNet.getBranch(id).setStatus(false);
+		ContingencyAnalysisAlgorithm post = createContingencyAnalysisAlgorithm(referenceNet);
+		assertTrue(post.calculateDclf(DclfMethod.STD));
+		double postFlow = post.getDclfAlgoBranch(MONITOR).getDclfFlow();
+		double postInterfaceFlow = postFlow - 2.0 * post.getDclfAlgoBranch(secondMonitor).getDclfFlow();
+		for (String groupId : List.of("forward", "reverse")) {
+			for (String monitorId : List.of(MONITOR, "interface")) {
+				List<Row> rows = sink.rows().stream()
+						.filter(row -> row.directionId().equals(groupId) && row.monitorId().equals(monitorId))
+						.toList();
+				assertEquals(groupId.equals("forward") ? outages : outages.reversed(),
+						rows.stream().map(Row::outageId).toList());
+				double predictedChange = rows.stream()
+						.mapToDouble(row -> row.factor() * outageFlows.get(row.outageId())).sum();
+				double actualChange = monitorId.equals(MONITOR)
+						? postFlow - baseFlow : postInterfaceFlow - baseInterfaceFlow;
+				assertEquals(actualChange, predictedChange, 1.0e-10, groupId + ": " + monitorId);
+			}
 		}
 	}
 
