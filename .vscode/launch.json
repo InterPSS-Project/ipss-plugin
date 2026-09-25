@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "GvySample",
+      "request": "launch",
+      "mainClass": "org.interpss.gvy.GvySample",
+      "projectName": "ipss.plugin.core"
+    },
+    {
+      "type": "java",
       "name": "RealGridMergedAclfSample",
       "request": "launch",
       "mainClass": "sample.cim.RealGridMergedAclfSample",

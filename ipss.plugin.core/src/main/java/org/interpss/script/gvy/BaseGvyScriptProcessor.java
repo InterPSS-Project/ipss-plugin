@@ -7,8 +7,10 @@ import groovy.lang.GroovyShell;
  *
  */
 public abstract class BaseGvyScriptProcessor {
-	public static final String GVY_IMPORTS = 
-			"import org.apache.commons.math3.complex.Complex;";
+	public static final String GVY_IMPORTS = """
+			import org.apache.commons.math3.complex.Complex;
+			import com.interpss.core.algo.dclf.SenAnalysisType;
+		""";
 	
 	protected GroovyShell shell;
 	

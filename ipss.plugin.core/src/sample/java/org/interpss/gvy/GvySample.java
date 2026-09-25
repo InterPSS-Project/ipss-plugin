@@ -27,7 +27,7 @@ public class GvySample {
 		// load the IEEE-14 Bus system
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.IEEECDF)
-				.load("testData/adpter/ieee_format/Ieee14Bus.ieee")
+				.load("ipss.plugin.core/testData/adpter/ieee_format/Ieee14Bus.ieee")
 				.getAclfNet();	
 		
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -61,6 +61,14 @@ public class GvySample {
     			load = bus.getContributeLoad("Bus14-L1"); 
     			load.loadCP = new Complex(0.18, 0.07);
 				return 'Bus contribute load: ' + aclfnet.getBus("Bus14").getContributeLoad("Bus14-L1").loadCP; 
+    		""";
+		result = gvyProcessor.evaluate(groovyCode);
+		System.out.println("Result: " + result);
+
+		// Bus14 dV/dQ via SenAnalysisAlgorithm (QVOLTAGE) from Groovy
+		groovyCode = """
+    			dVdQ = senAlgo.calBusSensitivity(SenAnalysisType.QVOLTAGE, 'Bus14', 'Bus14')
+    			return 'Bus14 dV/dQ: ' + dVdQ
     		""";
 		result = gvyProcessor.evaluate(groovyCode);
 		System.out.println("Result: " + result);

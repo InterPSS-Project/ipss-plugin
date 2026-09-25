@@ -1,6 +1,8 @@
 package org.interpss.script.gvy;
 
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.aclf.AclfNetwork;
+import com.interpss.core.algo.dclf.SenAnalysisAlgorithm;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -23,6 +25,10 @@ public class AclfNetGvyScriptProcessor extends BaseGvyScriptProcessor {
 	  	// 创建Binding对象，用于传递变量
         Binding binding = new Binding();
         binding.setVariable("aclfnet", aclfNet);
+
+		// add the SenAnalysisAlgorithm to the binding
+		SenAnalysisAlgorithm senAlgo = DclfAlgoObjectFactory.createSenAnalysisAlgorithm(aclfNet);
+		binding.setVariable("senAlgo", senAlgo);
         
         this.shell = new GroovyShell(binding);
 	}
