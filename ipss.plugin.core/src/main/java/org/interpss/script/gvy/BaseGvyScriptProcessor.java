@@ -9,7 +9,9 @@ import groovy.lang.GroovyShell;
 public abstract class BaseGvyScriptProcessor {
 	public static final String GVY_IMPORTS = """
 			import org.apache.commons.math3.complex.Complex;
+			import com.interpss.core.DclfAlgoObjectFactory;
 			import com.interpss.core.algo.dclf.SenAnalysisType;
+			import com.interpss.core.contingency.ContingencyBranchOutageType;
 		""";
 	
 	protected GroovyShell shell;

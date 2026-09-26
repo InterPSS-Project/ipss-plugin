@@ -10,6 +10,7 @@ Typical uses:
 - Query bus sensitivities (e.g. dV/dQ via `SenAnalysisType.QVOLTAGE`) without leaving the script
 - Query generation shift factors (GSF) via `senAlgo.calGenShiftFactor(injectBusId, monitorBranch)`
 - Query weighted gen-transfer factors via `senAlgo` inject/withdraw lists + `genTransferDistFactor(branch)`
+- Query line outage distribution factors (LODF) via `DclfAlgoObjectFactory.createCaOutageBranch` + `senAlgo.lineOutageDFactor`
 - Drive study automation (batch parameter changes before load flow)
 - Keep scenario edits as readable scripts next to case data
 
@@ -36,7 +37,7 @@ Related (outside package)
 | Artifact                           | Role                                                                              |
 | ---------------------------------- | --------------------------------------------------------------------------------- |
 | `org.apache.groovy:groovy` (4.0.x) | `GroovyShell`, `Binding`                                                          |
-| `com.interpss:ipss.core.lib`       | `AclfNetwork`, `SenAnalysisAlgorithm`, `SenAnalysisType`, `DclfAlgoObjectFactory` |
+| `com.interpss:ipss.core.lib`       | `AclfNetwork`, `SenAnalysisAlgorithm`, `SenAnalysisType`, `DclfAlgoObjectFactory`, `ContingencyBranchOutageType` |
 | `org.apache.commons.math3`         | `Complex` — pre-imported for scripts via `GVY_IMPORTS`                            |
 
 
@@ -96,6 +97,8 @@ BaseGvyScriptProcessor
                   calGenShiftFactor(...)      # GSF (withdraw = ref)
                   injectBusList / withdrawBusList
                   genTransferDistFactor(...)  # weighted transfer
+                  getDclfAlgoBranch(...)
+                  lineOutageDFactor(...)      # LODF
 ```
 
 
@@ -116,10 +119,12 @@ Current shared imports:
 
 ```java
 import org.apache.commons.math3.complex.Complex;
+import com.interpss.core.DclfAlgoObjectFactory;
 import com.interpss.core.algo.dclf.SenAnalysisType;
+import com.interpss.core.contingency.ContingencyBranchOutageType;
 ```
 
-Scripts can therefore write `new Complex(r, x)` and `SenAnalysisType.QVOLTAGE` / `PANGLE` without local import statements.
+Scripts can therefore write `new Complex(r, x)`, `SenAnalysisType.QVOLTAGE` / `PANGLE`, `DclfAlgoObjectFactory.createCaOutageBranch(...)`, and `ContingencyBranchOutageType.OPEN` without local import statements.
 
 ### `AclfNetGvyScriptProcessor`
 
@@ -161,12 +166,12 @@ net.getBus("Bus14").getLoadP() == 0.18   // same instance
 
 ```
 evaluate("""
-  dVdQ = senAlgo.calBusSensitivity(SenAnalysisType.QVOLTAGE, 'Bus14', 'Bus14')
-  return 'Bus14 dV/dQ: ' + dVdQ
+  dVdQ = senAlgo.calBusSensitivity(SenAnalysisType.QVOLTAGE, 'Bus14', 'Bus13')
+  return 'dV(Bus13)/dQ(Bus14): ' + dVdQ
   """)
        │
        ▼
-senAlgo.calBusSensitivity(QVOLTAGE, ...) on live aclfnet
+senAlgo.calBusSensitivity(QVOLTAGE, injectBusId, busId) on live aclfnet
 ```
 
 `SenAnalysisType.QVOLTAGE` returns **dV/dQ** (B″ path). Self-bus dQ/dV is the reciprocal when needed: `1.0 / dVdQ`.
@@ -208,6 +213,25 @@ senAlgo.genTransferDistFactor(monitorBranch)
 
 `dFactor` on each inject/withdraw bus is the contributing fraction of total injection or withdrawal. Reference numeric values for IEEE14 live in `Ieee14_GSF_Test.gsfInjWithTest` (e.g. Bus2 inject / Bus14(0.9)+Bus13(0.1) withdraw on `Bus9->Bus14(1)` ≈ 0.569027).
 
+### LODF query (inline)
+
+```
+evaluate("""
+  dclfBranch = senAlgo.getDclfAlgoBranch('Bus13->Bus14(1)')
+  outBranch = DclfAlgoObjectFactory.createCaOutageBranch(
+      dclfBranch, ContingencyBranchOutageType.OPEN)
+  lodf = senAlgo.lineOutageDFactor(outBranch, aclfnet.getBranch('Bus9->Bus14(1)'))
+  return 'Line outage DFactor: ' + lodf
+  """)
+       │
+       ▼
+1. senAlgo.getDclfAlgoBranch(outageBranchId)
+2. DclfAlgoObjectFactory.createCaOutageBranch(..., OPEN)
+3. senAlgo.lineOutageDFactor(outage, monitorBranch)
+```
+
+`DclfAlgoObjectFactory` and `ContingencyBranchOutageType` come from `GVY_IMPORTS`. Outage branch is built from a `DclfAlgoBranch`; monitor branch is a normal `AclfBranch` from `aclfnet`.
+
 ### Script file (`.gvy`)
 
 ```
@@ -231,7 +255,7 @@ File loading is **outside** the processor (`FileUtil` or equivalent). The proces
 | `senAlgo`    | `com.interpss.core.algo.dclf.SenAnalysisAlgorithm` | DC sensitivity / GSF / PTDF–LODF API on the same network |
 
 
-Scripts may introduce local variables (`bus`, `load`, `branch`, `dVdQ`, `gsf`, `f`, …). Those live in the Groovy script scope for that evaluation; they are not required binding entries.
+Scripts may introduce local variables (`bus`, `load`, `branch`, `dVdQ`, `gsf`, `f`, `outBranch`, `lodf`, …). Those live in the Groovy script scope for that evaluation; they are not required binding entries.
 
 ### Groovy ↔ Java property mapping
 
@@ -250,9 +274,12 @@ Groovy property assignment uses JavaBean conventions on InterPSS objects, for ex
 | `senAlgo.addInjectBus(bus, dFactor)` / `addWithdrawBus(...)`        | Populate participation lists for transfers     |
 | `senAlgo.injectBusList.clear()` / `withdrawBusList.clear()`         | Reset lists before a new transfer scenario     |
 | `senAlgo.genTransferDistFactor(branch)`                             | Weighted gen-transfer factor on monitor branch |
+| `senAlgo.getDclfAlgoBranch(branchId)`                               | DCLF branch wrapper for outage construction    |
+| `DclfAlgoObjectFactory.createCaOutageBranch(dclfBranch, OPEN)`      | Build `DclfOutageBranch` for LODF              |
+| `senAlgo.lineOutageDFactor(outBranch, monitorBranch)`               | LODF of outage on monitor branch               |
 
 
-Method calls (`getBus`, `getBranch`, `getContributeLoad`, `calBusSensitivity`, `calGenShiftFactor`, `addInjectBus`, `addWithdrawBus`, `genTransferDistFactor`) are ordinary Java API calls from Groovy.
+Method calls (`getBus`, `getBranch`, `getContributeLoad`, `calBusSensitivity`, `calGenShiftFactor`, `addInjectBus`, `addWithdrawBus`, `genTransferDistFactor`, `getDclfAlgoBranch`, `lineOutageDFactor`) and factory helpers (`DclfAlgoObjectFactory.createCaOutageBranch`) are ordinary Java API calls from Groovy.
 
 ## Usage Patterns
 
@@ -330,7 +357,22 @@ Object result = gvyProcessor.evaluate(groovyCode);
 
 Clear the lists first (they persist on the shared `senAlgo`), then set inject/withdraw buses with participation weights, then call `genTransferDistFactor(monitorBranch)`. Same scenario as `Ieee14_GSF_Test.gsfInjWithTest` (expected ≈ 0.569027 on IEEE14).
 
-### 6. External `.gvy` fixture
+### 6. Line outage distribution factor (LODF) via `senAlgo`
+
+```java
+String groovyCode = """
+    dclfBranch = senAlgo.getDclfAlgoBranch('Bus13->Bus14(1)')
+    outBranch = DclfAlgoObjectFactory.createCaOutageBranch(
+        dclfBranch, ContingencyBranchOutageType.OPEN)
+    lodf = senAlgo.lineOutageDFactor(outBranch, aclfnet.getBranch('Bus9->Bus14(1)'))
+    return 'Line outage DFactor: ' + lodf
+    """;
+Object result = gvyProcessor.evaluate(groovyCode);
+```
+
+Build a `DclfOutageBranch` with `ContingencyBranchOutageType.OPEN`, then call `lineOutageDFactor(outage, monitor)`. `DclfAlgoObjectFactory` and `ContingencyBranchOutageType` are in `GVY_IMPORTS` — omitting them causes `MissingPropertyException` at eval time.
+
+### 7. External `.gvy` fixture
 
 ```java
 String groovyCode = FileUtil.readFileAsString("script/ieee14_adjBranch1_2.gvy");
@@ -351,7 +393,7 @@ branch.status = false;
 branch.z = new Complex(r, x);
 ```
 
-`Complex` and `SenAnalysisType` are available because `BaseGvyScriptProcessor` prepends `GVY_IMPORTS`.
+`Complex`, `SenAnalysisType`, `DclfAlgoObjectFactory`, and `ContingencyBranchOutageType` are available because `BaseGvyScriptProcessor` prepends `GVY_IMPORTS`.
 
 ## Evaluation Semantics
 
@@ -360,9 +402,10 @@ branch.z = new Complex(r, x);
 | -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
 | Mutation       | In-place on the bound network                                                                                                     |
 | Sensitivity    | Bus dθ/dP, dV/dQ via `senAlgo.calBusSensitivity(...)`                                                                             |
-| GSF / factors  | `calGenShiftFactor`; weighted `genTransferDistFactor` via inject/withdraw lists; PTDF / LODF                                      |
+| GSF / factors  | `calGenShiftFactor`; weighted `genTransferDistFactor` via inject/withdraw lists                                                   |
+| LODF           | `getDclfAlgoBranch` + `createCaOutageBranch` + `lineOutageDFactor`                                                                |
 | Return value   | Last Groovy expression / explicit `return`; often unused for mutation scripts                                                     |
-| Imports        | Always prefixed with `GVY_IMPORTS` (`Complex`, `SenAnalysisType`)                                                                 |
+| Imports        | Always prefixed with `GVY_IMPORTS` (`Complex`, `DclfAlgoObjectFactory`, `SenAnalysisType`, `ContingencyBranchOutageType`)         |
 | Shell lifetime | One `GroovyShell` per processor instance; reusable across multiple `evaluate` calls                                               |
 | Isolation      | No sandbox; scripts have full access to the bound Java objects                                                                    |
 | Errors         | Groovy compile/runtime exceptions propagate to the caller (e.g. `MissingPropertyException` if a type is not imported and not FQN) |
@@ -377,8 +420,9 @@ Reuse one processor for a sequence of scripts against the same network (as in `G
 | -------------------------------------------- | --------------------------------------------------------------------------------------------- |
 | `GvyScriptEval_Test.bus14testCase`           | Inline: id, bus `loadP`, contribute `loadCP`, branch `z`                                      |
 | `GvyScriptEval_Test.bus14ScriptFileTestCase` | `.gvy` files: Bus14 load CP; Branch 1–2 `z` + status off                                      |
-| `GvySample` (sample main)                    | End-to-end smoke: mutations, Bus14 dV/dQ, Bus8 GSF, weighted gen-transfer on `Bus9->Bus14(1)` |
+| `GvySample` (sample main)                    | End-to-end smoke: mutations, cross-bus dV/dQ, Bus8 GSF, weighted gen-transfer, LODF (`Bus13->Bus14` outage on `Bus9->Bus14`) |
 | `Ieee14_GSF_Test` (core CA tests)            | Numeric GSF / gen-transfer factors for IEEE14 (Java API reference for scripted GSF / GTDF)    |
+| `LODFSenFuncTest` / CA LODF tests (core)     | Numeric LODF reference for Java API parity with scripted `lineOutageDFactor`                  |
 
 
 Fixtures live under `ipss.test.plugin.core/script/`. Sample case data: `ipss.plugin.core/testData/adpter/ieee_format/Ieee14Bus.ieee`.
@@ -415,7 +459,7 @@ Loadflow / contingency / export
 File adapters **create** the model; Groovy adapters **edit** and **query** it after load. They are complementary, not overlapping:
 
 - `fadapter` — format parsing / builders
-- `script.gvy` — runtime scripting against the built model (mutations + sensitivity / GSF / gen-transfer)
+- `script.gvy` — runtime scripting against the built model (mutations + sensitivity / GSF / gen-transfer / LODF)
 
 
 
@@ -428,6 +472,7 @@ File adapters **create** the model; Groovy adapters **edit** and **query** it af
 - **Property names** — prefer documented JavaBean names (`loadCP`, `z`, `status`); typos fail at Groovy runtime
 - **Sensitivity semantics** — `QVOLTAGE` is dV/dQ; do not confuse with dQ/dV used in AC voltage-control adjustment (`LfAdjSensitivity`)
 - **GSF vs gen-transfer** — `calGenShiftFactor(inject, branch)` withdraws at the ref bus; weighted multi-bus transfers use `genTransferDistFactor` after clearing and setting `injectBusList` / `withdrawBusList` (lists persist across `evaluate` calls)
+- **LODF construction** — outage objects must be built with `DclfAlgoObjectFactory.createCaOutageBranch` from `senAlgo.getDclfAlgoBranch(...)`; monitor branch comes from `aclfnet.getBranch(...)`
 - **Working directory** — relative case paths depend on cwd; prefer module-prefixed paths when launching from the repo root
 
 
@@ -435,14 +480,14 @@ File adapters **create** the model; Groovy adapters **edit** and **query** it af
 ## Source Index
 
 
-| Path                                                               | Role                                                     |
-| ------------------------------------------------------------------ | -------------------------------------------------------- |
-| `ipss.plugin.core/.../script/gvy/BaseGvyScriptProcessor.java`      | Shared evaluate + imports (`Complex`, `SenAnalysisType`) |
-| `ipss.plugin.core/.../script/gvy/AclfNetGvyScriptProcessor.java`   | ACLF binding (`aclfnet`, `senAlgo`)                      |
-| `ipss.plugin.core/src/sample/java/org/interpss/gvy/GvySample.java` | Runnable sample (mutations + dV/dQ + GSF + gen-transfer) |
-| `ipss.test.plugin.core/.../gvy/GvyScriptEval_Test.java`            | Unit coverage                                            |
-| `ipss.test.plugin.core/.../ca/Ieee14_GSF_Test.java`                | IEEE14 GSF / gen-transfer reference tests                |
-| `ipss.test.plugin.core/script/ieee14_adjBus14.gvy`                 | Load adjustment fixture                                  |
-| `ipss.test.plugin.core/script/ieee14_adjBranch1_2.gvy`             | Branch z/status fixture                                  |
+| Path                                                               | Role                                                                              |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `ipss.plugin.core/.../script/gvy/BaseGvyScriptProcessor.java`      | Shared evaluate + imports (`Complex`, `DclfAlgoObjectFactory`, `SenAnalysisType`, `ContingencyBranchOutageType`) |
+| `ipss.plugin.core/.../script/gvy/AclfNetGvyScriptProcessor.java`   | ACLF binding (`aclfnet`, `senAlgo`)                                               |
+| `ipss.plugin.core/src/sample/java/org/interpss/gvy/GvySample.java` | Runnable sample (mutations + dV/dQ + GSF + gen-transfer + LODF)                   |
+| `ipss.test.plugin.core/.../gvy/GvyScriptEval_Test.java`            | Unit coverage                                                                     |
+| `ipss.test.plugin.core/.../ca/Ieee14_GSF_Test.java`                | IEEE14 GSF / gen-transfer reference tests                                         |
+| `ipss.test.plugin.core/script/ieee14_adjBus14.gvy`                 | Load adjustment fixture                                                           |
+| `ipss.test.plugin.core/script/ieee14_adjBranch1_2.gvy`             | Branch z/status fixture                                                           |
 
 

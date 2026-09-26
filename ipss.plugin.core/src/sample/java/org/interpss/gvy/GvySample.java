@@ -95,5 +95,15 @@ public class GvySample {
     		""";
 		result = gvyProcessor.evaluate(groovyCode);
 		System.out.println("Result: " + result);
+
+		// Line outage DFactor via DclfAlgoObjectFactory from Groovy
+		groovyCode = """
+			dclfBranch = senAlgo.getDclfAlgoBranch("Bus13->Bus14(1)");
+			outBranch = DclfAlgoObjectFactory.createCaOutageBranch(dclfBranch, ContingencyBranchOutageType.OPEN);	
+			lodf = senAlgo.lineOutageDFactor(outBranch, aclfnet.getBranch("Bus9->Bus14(1)"));		
+			return 'Line outage DFactor: ' + lodf
+		""";
+		result = gvyProcessor.evaluate(groovyCode);
+		System.out.println("Result: " + result);
     }
 }
