@@ -8,6 +8,8 @@ Typical uses:
 
 - Adjust bus loads, branch impedance / status, network id, or contribute gen/load data after import
 - Query bus sensitivities (e.g. dV/dQ via `SenAnalysisType.QVOLTAGE`) without leaving the script
+- Query generation shift factors (GSF) via `senAlgo.calGenShiftFactor(injectBusId, monitorBranch)`
+- Query weighted gen-transfer factors via `senAlgo` inject/withdraw lists + `genTransferDistFactor(branch)`
 - Drive study automation (batch parameter changes before load flow)
 - Keep scenario edits as readable scripts next to case data
 
@@ -83,6 +85,9 @@ BaseGvyScriptProcessor
                      │ shares network
               SenAnalysisAlgorithm
                   calBusSensitivity(...)
+                  calGenShiftFactor(...)      # GSF (withdraw = ref)
+                  injectBusList / withdrawBusList
+                  genTransferDistFactor(...)  # weighted transfer
 ```
 
 ## Core Components
@@ -117,7 +122,7 @@ AC load-flow specialization:
 
 Scripts address the network through `aclfnet` and sensitivity through `senAlgo` (lowercase binding keys) — not the Java field names.
 
-**Lifetime:** `senAlgo` is created once at processor construction and reuses the bound network. Call `senAlgo` after structural edits if you need sensitivities that reflect the updated topology/parameters (the algorithm reads the live `AclfNetwork`).
+**Lifetime:** `senAlgo` is created once at processor construction and reuses the bound network. Call `senAlgo` after structural edits if you need sensitivities that reflect the updated topology/parameters (the algorithm reads the live `AclfNetwork`). Inject/withdraw bus lists on `senAlgo` **persist across `evaluate` calls** on the same processor — clear and repopulate them when changing transfer scenarios.
 
 ## Data Flow
 
@@ -150,6 +155,43 @@ senAlgo.calBusSensitivity(QVOLTAGE, ...) on live aclfnet
 
 `SenAnalysisType.QVOLTAGE` returns **dV/dQ** (B″ path). Self-bus dQ/dV is the reciprocal when needed: `1.0 / dVdQ`.
 
+### GSF query (inline)
+
+```
+evaluate("""
+  branch = aclfnet.getBranch('Bus5->Bus6(1)')
+  gsf = senAlgo.calGenShiftFactor('Bus8', branch)
+  return 'Bus8 - Bus5->Bus6(1) GSF: ' + gsf
+  """)
+       │
+       ▼
+senAlgo.calGenShiftFactor(injectBusId, monitorBranch)
+  // withdraw = reference / slack bus
+```
+
+`calGenShiftFactor` is the single-injection GSF API (inject bus vs ref/slack on one monitor branch).
+
+### Weighted gen-transfer factor (inline)
+
+```
+evaluate("""
+  senAlgo.injectBusList.clear()
+  senAlgo.addInjectBus(aclfnet.getBus('Bus2'), 1.0)
+  senAlgo.withdrawBusList.clear()
+  senAlgo.addWithdrawBus(aclfnet.getBus('Bus14'), 0.9)
+  senAlgo.addWithdrawBus(aclfnet.getBus('Bus13'), 0.1)
+  branch = aclfnet.getBranch('Bus9->Bus14(1)')
+  f = senAlgo.genTransferDistFactor(branch)
+  return '... ' + f
+  """)
+       │
+       ▼
+senAlgo.genTransferDistFactor(monitorBranch)
+  // uses injectBusList + withdrawBusList participation weights
+```
+
+`dFactor` on each inject/withdraw bus is the contributing fraction of total injection or withdrawal. Reference numeric values for IEEE14 live in `Ieee14_GSF_Test.gsfInjWithTest` (e.g. Bus2 inject / Bus14(0.9)+Bus13(0.1) withdraw on `Bus9->Bus14(1)` ≈ 0.569027).
+
 ### Script file (`.gvy`)
 
 ```
@@ -169,9 +211,9 @@ File loading is **outside** the processor (`FileUtil` or equivalent). The proces
 | Binding name | Java type | Meaning |
 |---|---|---|
 | `aclfnet` | `com.interpss.core.aclf.AclfNetwork` | Live ACLF network under study |
-| `senAlgo` | `com.interpss.core.algo.dclf.SenAnalysisAlgorithm` | DC sensitivity / PTDF–LODF API on the same network |
+| `senAlgo` | `com.interpss.core.algo.dclf.SenAnalysisAlgorithm` | DC sensitivity / GSF / PTDF–LODF API on the same network |
 
-Scripts may introduce local variables (`bus`, `load`, `branch`, `dVdQ`, …). Those live in the Groovy script scope for that evaluation; they are not required binding entries.
+Scripts may introduce local variables (`bus`, `load`, `branch`, `dVdQ`, `gsf`, `f`, …). Those live in the Groovy script scope for that evaluation; they are not required binding entries.
 
 ### Groovy ↔ Java property mapping
 
@@ -185,8 +227,12 @@ Groovy property assignment uses JavaBean conventions on InterPSS objects, for ex
 | `branch.z = new Complex(r, x)` | `branch.setZ(...)` |
 | `branch.status = false` | deactivates branch (`isActive()` → false) |
 | `senAlgo.calBusSensitivity(SenAnalysisType.QVOLTAGE, injId, busId)` | dV(bus)/dQ(inj) |
+| `senAlgo.calGenShiftFactor(injBusId, branch)` | GSF: inject@bus vs ref on monitor branch |
+| `senAlgo.addInjectBus(bus, dFactor)` / `addWithdrawBus(...)` | Populate participation lists for transfers |
+| `senAlgo.injectBusList.clear()` / `withdrawBusList.clear()` | Reset lists before a new transfer scenario |
+| `senAlgo.genTransferDistFactor(branch)` | Weighted gen-transfer factor on monitor branch |
 
-Method calls (`getBus`, `getBranch`, `getContributeLoad`, `calBusSensitivity`) are ordinary Java API calls from Groovy.
+Method calls (`getBus`, `getBranch`, `getContributeLoad`, `calBusSensitivity`, `calGenShiftFactor`, `addInjectBus`, `addWithdrawBus`, `genTransferDistFactor`) are ordinary Java API calls from Groovy.
 
 ## Usage Patterns
 
@@ -229,7 +275,38 @@ Object result = gvyProcessor.evaluate(groovyCode);
 
 `SenAnalysisType` is available from `GVY_IMPORTS`; `senAlgo` comes from the processor binding. See also core usage guide `SenAnalysisAlgorithm_usage_guide.md` (`PANGLE` / `QVOLTAGE`, PTDF, LODF).
 
-### 4. External `.gvy` fixture
+### 4. Generation shift factor (GSF) via `senAlgo`
+
+```java
+String groovyCode = """
+    branch = aclfnet.getBranch('Bus5->Bus6(1)')
+    gsf = senAlgo.calGenShiftFactor('Bus8', branch)
+    return 'Bus8 - Bus5->Bus6(1) GSF: ' + gsf
+    """;
+Object result = gvyProcessor.evaluate(groovyCode);
+```
+
+Resolve the monitor branch from `aclfnet`, then call `calGenShiftFactor(injectBusId, branch)`. Withdraw is the network reference/slack bus. Reference values and interface-sum checks for IEEE14 live in `Ieee14_GSF_Test.gsfInjOnlyTest` (e.g. Bus8 on `Bus5->Bus6(1)` / `Bus4->Bus7(1)` / `Bus4->Bus9(1)` sum to −1.0).
+
+### 5. Weighted gen-transfer factor via inject/withdraw lists
+
+```java
+String groovyCode = """
+    senAlgo.injectBusList.clear()
+    senAlgo.addInjectBus(aclfnet.getBus('Bus2'), 1.0)
+    senAlgo.withdrawBusList.clear()
+    senAlgo.addWithdrawBus(aclfnet.getBus('Bus14'), 0.9)
+    senAlgo.addWithdrawBus(aclfnet.getBus('Bus13'), 0.1)
+    branch = aclfnet.getBranch('Bus9->Bus14(1)')
+    f = senAlgo.genTransferDistFactor(branch)
+    return 'genTransferDistFactor Bus9->Bus14(1): ' + f
+    """;
+Object result = gvyProcessor.evaluate(groovyCode);
+```
+
+Clear the lists first (they persist on the shared `senAlgo`), then set inject/withdraw buses with participation weights, then call `genTransferDistFactor(monitorBranch)`. Same scenario as `Ieee14_GSF_Test.gsfInjWithTest` (expected ≈ 0.569027 on IEEE14).
+
+### 6. External `.gvy` fixture
 
 ```java
 String groovyCode = FileUtil.readFileAsString("script/ieee14_adjBranch1_2.gvy");
@@ -257,7 +334,8 @@ branch.z = new Complex(r, x);
 | Concern | Behavior |
 |---|---|
 | Mutation | In-place on the bound network |
-| Sensitivity | Queries via bound `senAlgo` against the same live network |
+| Sensitivity | Bus dθ/dP, dV/dQ via `senAlgo.calBusSensitivity(...)` |
+| GSF / factors | `calGenShiftFactor`; weighted `genTransferDistFactor` via inject/withdraw lists; PTDF / LODF |
 | Return value | Last Groovy expression / explicit `return`; often unused for mutation scripts |
 | Imports | Always prefixed with `GVY_IMPORTS` (`Complex`, `SenAnalysisType`) |
 | Shell lifetime | One `GroovyShell` per processor instance; reusable across multiple `evaluate` calls |
@@ -272,7 +350,8 @@ Reuse one processor for a sequence of scripts against the same network (as in `G
 |---|---|
 | `GvyScriptEval_Test.bus14testCase` | Inline: id, bus `loadP`, contribute `loadCP`, branch `z` |
 | `GvyScriptEval_Test.bus14ScriptFileTestCase` | `.gvy` files: Bus14 load CP; Branch 1–2 `z` + status off |
-| `GvySample` (sample main) | End-to-end smoke: plain GroovyShell + ACLF processor after LF, including Bus14 dV/dQ via `senAlgo` |
+| `GvySample` (sample main) | End-to-end smoke: mutations, Bus14 dV/dQ, Bus8 GSF, weighted gen-transfer on `Bus9->Bus14(1)` |
+| `Ieee14_GSF_Test` (core CA tests) | Numeric GSF / gen-transfer factors for IEEE14 (Java API reference for scripted GSF / GTDF) |
 
 Fixtures live under `ipss.test.plugin.core/script/`. Sample case data: `ipss.plugin.core/testData/adpter/ieee_format/Ieee14Bus.ieee`.
 
@@ -308,7 +387,7 @@ Loadflow / contingency / export
 File adapters **create** the model; Groovy adapters **edit** and **query** it after load. They are complementary, not overlapping:
 
 - `fadapter` — format parsing / builders
-- `script.gvy` — runtime scripting against the built model (mutations + sensitivity)
+- `script.gvy` — runtime scripting against the built model (mutations + sensitivity / GSF / gen-transfer)
 
 ## Design Constraints & Caveats
 
@@ -318,6 +397,7 @@ File adapters **create** the model; Groovy adapters **edit** and **query** it af
 - **Contribute vs aggregate model** — script examples for contribute loads assume `net.isContributeGenLoadModel()` (as in IEEE14 tests)
 - **Property names** — prefer documented JavaBean names (`loadCP`, `z`, `status`); typos fail at Groovy runtime
 - **Sensitivity semantics** — `QVOLTAGE` is dV/dQ; do not confuse with dQ/dV used in AC voltage-control adjustment (`LfAdjSensitivity`)
+- **GSF vs gen-transfer** — `calGenShiftFactor(inject, branch)` withdraws at the ref bus; weighted multi-bus transfers use `genTransferDistFactor` after clearing and setting `injectBusList` / `withdrawBusList` (lists persist across `evaluate` calls)
 - **Working directory** — relative case paths depend on cwd; prefer module-prefixed paths when launching from the repo root
 
 ## Source Index
@@ -326,7 +406,8 @@ File adapters **create** the model; Groovy adapters **edit** and **query** it af
 |---|---|
 | `ipss.plugin.core/.../script/gvy/BaseGvyScriptProcessor.java` | Shared evaluate + imports (`Complex`, `SenAnalysisType`) |
 | `ipss.plugin.core/.../script/gvy/AclfNetGvyScriptProcessor.java` | ACLF binding (`aclfnet`, `senAlgo`) |
-| `ipss.plugin.core/src/sample/java/org/interpss/gvy/GvySample.java` | Runnable sample (mutations + dV/dQ) |
+| `ipss.plugin.core/src/sample/java/org/interpss/gvy/GvySample.java` | Runnable sample (mutations + dV/dQ + GSF + gen-transfer) |
 | `ipss.test.plugin.core/.../gvy/GvyScriptEval_Test.java` | Unit coverage |
+| `ipss.test.plugin.core/.../ca/Ieee14_GSF_Test.java` | IEEE14 GSF / gen-transfer reference tests |
 | `ipss.test.plugin.core/script/ieee14_adjBus14.gvy` | Load adjustment fixture |
 | `ipss.test.plugin.core/script/ieee14_adjBranch1_2.gvy` | Branch z/status fixture |

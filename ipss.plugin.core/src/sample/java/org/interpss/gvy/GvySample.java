@@ -67,8 +67,31 @@ public class GvySample {
 
 		// Bus14 dV/dQ via SenAnalysisAlgorithm (QVOLTAGE) from Groovy
 		groovyCode = """
-    			dVdQ = senAlgo.calBusSensitivity(SenAnalysisType.QVOLTAGE, 'Bus14', 'Bus14')
-    			return 'Bus14 dV/dQ: ' + dVdQ
+    			dVdQ = senAlgo.calBusSensitivity(SenAnalysisType.QVOLTAGE, 'Bus14', 'Bus13')
+    			return 'dV(Bus13)/dQ(Bus14): ' + dVdQ
+    		""";
+		result = gvyProcessor.evaluate(groovyCode);
+		System.out.println("Result: " + result);
+
+		// Bus8 - Bus5->Bus6(1) GSF via SenAnalysisAlgorithm (PBRANCH) from Groovy
+		groovyCode = """
+				branch = aclfnet.getBranch('Bus5->Bus6(1)');
+    			gsf = senAlgo.calGenShiftFactor('Bus8', branch)
+    			return 'Bus8 - Bus5->Bus6(1) GSF: ' + gsf
+    		""";
+		result = gvyProcessor.evaluate(groovyCode);
+		System.out.println("Result: " + result);
+
+		// Weighted gen-transfer factor via senAlgo inject/withdraw lists from Groovy
+		groovyCode = """
+    			senAlgo.injectBusList.clear()
+    			senAlgo.addInjectBus(aclfnet.getBus('Bus2'), 1.0)
+    			senAlgo.withdrawBusList.clear()
+    			senAlgo.addWithdrawBus(aclfnet.getBus('Bus14'), 0.9)
+    			senAlgo.addWithdrawBus(aclfnet.getBus('Bus13'), 0.1)
+    			branch = aclfnet.getBranch('Bus9->Bus14(1)')
+    			f = senAlgo.genTransferDistFactor(branch)
+    			return 'Bus2 inject / Bus14(0.9)+Bus13(0.1) withdraw on Distrbution factor on Brancgh: Bus9->Bus14(1): ' + f
     		""";
 		result = gvyProcessor.evaluate(groovyCode);
 		System.out.println("Result: " + result);
