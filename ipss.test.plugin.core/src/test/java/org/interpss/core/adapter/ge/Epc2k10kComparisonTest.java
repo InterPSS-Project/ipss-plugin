@@ -2,7 +2,6 @@ package org.interpss.core.adapter.ge;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -51,7 +50,7 @@ import com.interpss.core.net.NameTag;
 
 /**
  * Texas2k and TAMU ACTIVSg10k EPC model comparison against the RAW parser.
- * Supply repository-relative public case directories with
+ * Override the default public case directories with relative or absolute paths using
  * {@code -Dipss.epc.texas2k.dir=...} and {@code -Dipss.epc.activs10k.dir=...}
  * when running this optional suite.
  */
@@ -76,44 +75,8 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 
 	private static Path configuredCaseDirectory(String propertyName, Path defaultPath) {
 		String configured = System.getProperty(propertyName);
-		Path path = (configured == null || configured.isBlank()
+		return (configured == null || configured.isBlank()
 				? defaultPath : Path.of(configured)).normalize();
-		if (path.isAbsolute() || path.getRoot() != null || path.startsWith("..")) {
-			throw new IllegalArgumentException(
-					propertyName + " must be repository-relative: " + path);
-		}
-		return path;
-	}
-
-	@Test
-	public void publicCaseConfigurationRequiresRepositoryRelativePaths() {
-		String propertyName = "ipss.epc.relative.path.contract";
-		String previous = System.getProperty(propertyName);
-		try {
-			System.setProperty(propertyName, "testData/public/portable-case");
-			assertEquals(Path.of("testData", "public", "portable-case"),
-					configuredCaseDirectory(propertyName, Path.of("unused")));
-
-			System.setProperty(propertyName, Path.of("testData").toAbsolutePath().toString());
-			assertThrows(IllegalArgumentException.class,
-					() -> configuredCaseDirectory(propertyName, Path.of("unused")));
-
-			System.setProperty(propertyName, "C:portable-case");
-			assertThrows(IllegalArgumentException.class,
-					() -> configuredCaseDirectory(propertyName, Path.of("unused")));
-
-			System.setProperty(propertyName, "testData/../../portable-case");
-			assertThrows(IllegalArgumentException.class,
-					() -> configuredCaseDirectory(propertyName, Path.of("unused")));
-		}
-		finally {
-			if (previous == null) {
-				System.clearProperty(propertyName);
-			}
-			else {
-				System.setProperty(propertyName, previous);
-			}
-		}
 	}
 
 	@Test
