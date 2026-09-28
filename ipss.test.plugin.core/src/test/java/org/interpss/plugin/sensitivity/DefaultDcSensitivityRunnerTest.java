@@ -387,6 +387,54 @@ class DefaultDcSensitivityRunnerTest extends CorePluginTestSetup {
 	}
 
 	@Test
+	void selfOutagedMonitorsAndInterfacesMatchIndependentPostOutageFlows() throws Exception {
+		List<String> outages = List.of("Bus2->Bus3(1)", "Bus4->Bus5(1)");
+		var members = List.of(new InterfaceMember(outages.getFirst(), -2.0), new InterfaceMember(MONITOR, 0.5));
+		var interfaces = List.of(new LinearInterface("sum", "sum", members),
+				new LinearInterface("normalized", "normalized", members, InterfaceAggregation.NORMALIZED_WEIGHTED_SUM));
+		AclfNetwork reference = loadIeee14();
+		var base = createContingencyAnalysisAlgorithm(reference);
+		assertTrue(base.calculateDclf(DclfMethod.STD));
+		Map<String, Double> before = new java.util.LinkedHashMap<>();
+		for (var branch : reference.getBranchList())
+			if (branch.isActive()) before.put(branch.getId(), base.getDclfAlgoBranch(branch.getId()).getDclfFlow());
+		for (String id : outages) reference.getBranch(id).setStatus(false);
+		var post = createContingencyAnalysisAlgorithm(reference);
+		assertTrue(post.calculateDclf(DclfMethod.STD));
+		Map<String, Double> changes = new java.util.LinkedHashMap<>();
+		for (var entry : before.entrySet()) changes.put(entry.getKey(),
+				(outages.contains(entry.getKey()) ? 0.0 : post.getDclfAlgoBranch(entry.getKey()).getDclfFlow()) - entry.getValue());
+		changes.put("sum", -2.0 * changes.get(outages.getFirst()) + 0.5 * changes.get(MONITOR));
+		changes.put("normalized", changes.get("sum") / 2.5);
+
+		for (boolean allMonitors : List.of(false, true)) {
+			AclfNetwork net = loadIeee14();
+			var monitors = allMonitors ? MonitorSet.empty()
+					: new MonitorSet(List.of(outages.get(0), outages.get(1), MONITOR), interfaces);
+			var spec = new MultiOutageLodfSpec(List.of(new OutageGroup("forward", "", outages),
+					new OutageGroup("reverse", "", outages.reversed())), monitors);
+			var options = new CalculationOptions(DclfMethod.STD, null, ResultRetentionPolicy.FULL, 0, 10, 100, false, 16);
+			var definition = new DcSensitivityStudyDefinition(2, "self", "self", null, null, List.of(spec), options);
+			var sink = new InMemorySensitivityResultSink();
+			var manifest = new DefaultDcSensitivityRunner().run(net, definition, sink);
+			assertTrue(manifest.complete());
+			assertEquals((allMonitors ? before.size() : 5) * 4, manifest.candidateCount());
+			assertEquals(manifest.candidateCount(), sink.rows().size());
+			for (String group : List.of("forward", "reverse")) {
+				var grouped = sink.rows().stream().filter(row -> row.directionId().equals(group))
+						.collect(java.util.stream.Collectors.groupingBy(Row::monitorId));
+				for (var entry : grouped.entrySet()) {
+					double predicted = entry.getValue().stream().mapToDouble(row -> row.factor() * before.get(row.outageId())).sum();
+					assertEquals(changes.get(entry.getKey()), predicted, 1.0e-10, group + ": " + entry.getKey());
+					if (outages.contains(entry.getKey())) for (var row : entry.getValue())
+						assertEquals(entry.getKey().equals(row.outageId()) ? -1.0 : 0.0, row.factor(), 0.0);
+				}
+			}
+			assertTrue(net.getBranchList().stream().allMatch(AclfBranch::isActive));
+		}
+	}
+
+	@Test
 	void generatedCartesianDirectionsExpandWithoutPersistingPairRows() throws Exception {
 		AclfNetwork net = loadIeee14();
 		PtdfSpec spec = new PtdfSpec(List.of(), List.of(new GeneratedDirectionSet("set", "generated",

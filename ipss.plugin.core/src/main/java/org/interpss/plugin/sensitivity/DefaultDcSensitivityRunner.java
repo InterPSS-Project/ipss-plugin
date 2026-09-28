@@ -311,6 +311,14 @@ public final class DefaultDcSensitivityRunner implements DcSensitivityRunner {
 				for (Monitor monitor : monitors) {
 					double[] factors = new double[outageIds.size()];
 					for (int i = 0; i < monitor.branches().size(); i++) {
+						int selfOutage = outageIds.indexOf(monitor.branches().get(i).getId());
+						if (selfOutage >= 0) {
+							// The opened line's final flow is zero: remove its own pre-outage
+							// flow and add no contribution from other outages. Apply the
+							// interface coefficient here, before retention/aggregation.
+							factors[selfOutage] -= monitor.coefficients().get(i);
+							continue;
+						}
 						double[] branchFactors = algo.calMultiOutageLODFs(monitor.branches().get(i), inverse);
 						for (int j = 0; j < factors.length; j++) {
 							// LODF columns use the algorithm's compact outage mapping, not branch sort numbers.
