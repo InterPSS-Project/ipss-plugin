@@ -328,12 +328,9 @@ public class OpenDSSDataParser {
 	     List<String> redirectFiles  = new ArrayList<>();
 
 	 if(!feederFile.equals("")){
-		 try {
-			    String fullFilePath = folderPath+"/"+feederFile;
-				    final File file = new File(fullFilePath);
-				final InputStream stream = new FileInputStream(file);
-				final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
-				BufferedReader reader = din;
+		 String fullFilePath = folderPath+"/"+feederFile;
+		 try (InputStream stream = new FileInputStream(new File(fullFilePath));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
 
 				logger.info("Start to parse feeder file and create the parser object # " + fullFilePath);
 
@@ -715,12 +712,9 @@ public class OpenDSSDataParser {
 	     List<String> redirectFiles  = new ArrayList<>();
 
 	 if(!fileName.equals("")){
-		 try {
-			    String fullFilePath = folderPath+"/"+fileName;
-				final File file = new File(fullFilePath);
-				final InputStream stream = new FileInputStream(file);
-				final BufferedReader din = new BufferedReader(new InputStreamReader(stream));
-				BufferedReader reader = din;
+		 String fullFilePath = folderPath+"/"+fileName;
+		 try (InputStream stream = new FileInputStream(new File(fullFilePath));
+				BufferedReader reader = new BufferedReader(new InputStreamReader(stream))) {
 
 				logger.info("Start to parse file: " + fullFilePath);
 
