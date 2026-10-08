@@ -18,7 +18,7 @@ public class Bpa07c_0615_Test extends CorePluginTestSetup {
 
 	@Test
 	public void regionalNotBe_parseAndLoadflow() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c_0615_notBE.dat");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/07c/07c_0615_notBE.dat");
 
 		assertNotNull(net);
 		assertTrue(net.getNoActiveBus() >= 140, "expected ~141 buses, got " + net.getNoActiveBus());

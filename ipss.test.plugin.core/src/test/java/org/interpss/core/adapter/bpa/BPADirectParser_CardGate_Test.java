@@ -22,7 +22,7 @@ public class BPADirectParser_CardGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee9_directParser_busLineXfr() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/IEEE9.dat");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/ieee9/IEEE9.dat");
 
 		assertEquals(9, net.getNoActiveBus());
 		assertTrue(net.getNoActiveBranch() >= 9, "6 L + 3 T");
@@ -35,7 +35,7 @@ public class BPADirectParser_CardGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void test009_bqMapsToPv() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/Test009bpa.DAT");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/ieee9/Test009bpa.DAT");
 
 		assertEquals(9, net.getNoActiveBus());
 		long pvCount = net.getBusList().stream()
@@ -50,7 +50,7 @@ public class BPADirectParser_CardGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void ieee9cn_areaCard() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/IEEE9_cn.dat");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/ieee9/IEEE9_cn.dat");
 
 		assertEquals(9, net.getNoActiveBus());
 		assertNotNull(net.getAreaMap());
@@ -62,7 +62,7 @@ public class BPADirectParser_CardGate_Test extends CorePluginTestSetup {
 
 	@Test
 	public void omib_smoke() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/omib-2bus.dat");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/omib/omib-2bus.dat");
 
 		assertEquals(2, net.getNoActiveBus());
 		assertEquals(1, net.getNoActiveBranch());
@@ -92,7 +92,7 @@ public class BPADirectParser_CardGate_Test extends CorePluginTestSetup {
 	@Test
 	public void commentsAndEndMarker() throws Exception {
 		// IEEE9 has .comment lines and (END); parse must stop cleanly
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/IEEE9.dat");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/ieee9/IEEE9.dat");
 		assertEquals(9, net.getNoActiveBus());
 		assertTrue(net.getNoActiveBranch() >= 9);
 	}

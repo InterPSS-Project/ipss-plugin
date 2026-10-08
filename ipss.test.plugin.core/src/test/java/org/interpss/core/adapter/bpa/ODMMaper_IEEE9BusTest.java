@@ -11,6 +11,6 @@ public class ODMMaper_IEEE9BusTest  extends DStabTestSetupBase {
 	// @Test
 	// public void lfTestCase() throws Exception {
 	// 	// Previously used: BPAAdapter (DStabNet) + ODMDStabParserMapper
-	// 	// Loaded from: testData/adpter/bpa/IEEE9.dat + IEEE9-dyn.swi
+	// 	// Loaded from: testData/adpter/bpa/ieee9/IEEE9.dat + IEEE9-dyn.swi
 	// }
 }

@@ -27,7 +27,7 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 	public void ieee9FacadeLoadflow() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.BPA)
-				.load("testData/adpter/bpa/IEEE9.dat")
+				.load("testData/adpter/bpa/ieee9/IEEE9.dat")
 				.getAclfNet();
 
 		assertEquals(9, net.getNoActiveBus());
@@ -48,7 +48,7 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 
 	@Test
 	public void ieee9DirectParser() throws Exception {
-		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/IEEE9.dat");
+		AclfNetwork net = new BPADirectParser().parse("testData/adpter/bpa/ieee9/IEEE9.dat");
 		assertEquals(9, net.getNoActiveBus());
 		assertTrue(net.getNoActiveBranch() >= 9);
 		assertEquals(AclfGenCode.SWING, net.getBus("Bus1").getGenCode());
@@ -59,7 +59,7 @@ public class BPASampleTestCases extends CorePluginTestSetup {
 	public void test009FacadeLoadflow() throws Exception {
 		AclfNetwork net = CorePluginFactory
 				.getFileAdapter(IpssFileAdapter.FileFormat.BPA)
-				.load("testData/adpter/bpa/Test009bpa.DAT")
+				.load("testData/adpter/bpa/ieee9/Test009bpa.DAT")
 				.getAclfNet();
 
 		assertEquals(9, net.getNoActiveBus());
