@@ -248,6 +248,7 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 			    else{
 			    	
 			    	addTransNetTheveninEquivToDistYABCMatrix(false);
+                    reapplyActiveDistributionFaults(time);
 			    }
 			}
 		}
@@ -370,7 +371,9 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							//solveDistNetFixedSourceVolt(dsNet3Ph, sourceId);
 							
 							DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(dsNet);
-							distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
+							// Fixed-point current injection supports weak and looped feeders.
+							distPFAlgo.setPFMethod(DistributionPFMethod.Fixed_Point);
+							distPFAlgo.setMaxIteration(100);
 							
 							// always use the set source bus voltage above as the initial voltage
 							distPFAlgo.setInitBusVoltageEnabled(false);
@@ -811,9 +814,11 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							//consider active or in-service machine only
 							 if(gen.isActive() && ((DStabGen)gen).getMach()!=null){
 								  Machine mach = ((DStabGen)gen).getMach();
+                                  if (wantsPreparedMonitorOutput(DStabSimuEvent.PlotStepMachineStates, mach.getId())) {
 								  Hashtable<String, Object> states = BuiltMachineState.f(mach, 0.0, this.dstabAlgo);
 								  procOutputEvent(DStabSimuEvent.PlotStepMachineStates, states);
 								  procOutputEvent(DStabSimuEvent.TimeStepMachineStates, states);
+                                  }
 							 }
 						  }
 						}
@@ -823,9 +828,11 @@ public class T3seqD3phaseMultiNetDStabSolverImpl extends MultiNetDStabSolverImpl
 							procOutputEvent(DStabSimuEvent.PlotStepScriptDynamicBusDeviceStates, states);
 						}
 						//else {
-				            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
+				            if (wantsPreparedMonitorOutput(DStabSimuEvent.PlotStepBusStates, bus.getId())) {
+                            Hashtable<String, Object> states = BuiltBusState.f(bus, 0.0, this.dstabAlgo);
 				            procOutputEvent(DStabSimuEvent.TimeStepBusStates, states);
 							procOutputEvent(DStabSimuEvent.PlotStepBusStates, states);
+                            }
 						//}
 					 }
 			}
