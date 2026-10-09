@@ -133,7 +133,9 @@ public class TDMultiNetPowerflowAlgorithm {
 				sourceBus.setVoltage(new Complex(1.0,0));
 				
 				DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
-				distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
+                // Fixed-point current injection supports weak and looped feeders.
+                distPFAlgo.setPFMethod(DistributionPFMethod.Fixed_Point);
+                distPFAlgo.setMaxIteration(100);
 				distPFAlgo.setTolerance(this.distTolerance);
 			
 				if(!distPFAlgo.powerflow()){
@@ -277,7 +279,9 @@ public class TDMultiNetPowerflowAlgorithm {
 		    		  sourceBus3Ph.setVoltage(sourceBus3Ph.getThreeSeqVoltage().b_1);
 		    		  
 		    		  DistributionPowerFlowAlgorithm distPFAlgo = ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(distNet);
-		    		  distPFAlgo.setPFMethod(DistributionPFMethod.Forward_Backword_Sweep);
+                // Fixed-point current injection supports weak and looped feeders.
+                distPFAlgo.setPFMethod(DistributionPFMethod.Fixed_Point);
+                distPFAlgo.setMaxIteration(100);
                       
 		    		  // use the voltages obtained from the last step and transmission system power flow results
 		    		  distPFAlgo.setInitBusVoltageEnabled(false);
