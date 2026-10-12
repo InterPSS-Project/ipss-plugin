@@ -12,7 +12,6 @@ import com.interpss.core.acsc.BaseAcscBus;
 import com.interpss.core.acsc.BaseAcscNetwork;
 import com.interpss.core.acsc.SequenceCode;
 import com.interpss.core.algo.sc.ScBusModelType;
-import com.interpss.core.sparse.impl.csj.CSJSparseEqnComplexImpl;
 import com.interpss.core.sparse.solver.ISparseEqnSolver;
 import com.interpss.core.sparse.solver.SparseEqnSolverFactory;
 
@@ -86,7 +85,7 @@ public class SequenceNetworkSolver {
 	public  Hashtable<String,Complex3x1> solveNegZeroSeqNetwork(Hashtable<String, Complex3x1> threeSeqCurInjTable){
 		
 		// negative sequence
-		((CSJSparseEqnComplexImpl)negSeqYMatrix).setB2Zero();
+		negSeqYMatrix.setB2Zero();
 		for(String busId: this.monitorBusAry){
 			int sortNum = net.getBus(busId).getSortNumber();
 			Complex i2 =threeSeqCurInjTable.get(busId).c_2;
@@ -107,7 +106,7 @@ public class SequenceNetworkSolver {
 		
 		//zero sequence
 		
-		((CSJSparseEqnComplexImpl)zeroSeqYMatrix).setB2Zero();
+		zeroSeqYMatrix.setB2Zero();
 		for(String busId: this.monitorBusAry){
 		   zeroSeqYMatrix.setBi(threeSeqCurInjTable.get(busId).a_0, net.getBus(busId).getSortNumber());
 		}
@@ -138,7 +137,7 @@ public class SequenceNetworkSolver {
 		
 		Hashtable<String, Complex> zeroSeqVoltHashtable = new Hashtable<>();
 
-		((CSJSparseEqnComplexImpl)zeroSeqYMatrix).setB2Zero();
+		zeroSeqYMatrix.setB2Zero();
 		
 		for(String busId: zeroSeqCurInjTable.keySet()){
 		   zeroSeqYMatrix.setBi(zeroSeqCurInjTable.get(busId), net.getBus(busId).getSortNumber());
@@ -165,7 +164,7 @@ public class SequenceNetworkSolver {
 	public Hashtable<String, Complex> calcNegativeSeqVolt(Hashtable<String, Complex> negSeqCurInjTable){
 		
 		Hashtable<String, Complex> negSeqVoltHashtable = new Hashtable<>();
-		((CSJSparseEqnComplexImpl)negSeqYMatrix).setB2Zero();
+		negSeqYMatrix.setB2Zero();
 
 		for(String busId: negSeqCurInjTable.keySet()){
 			int sortNum = net.getBus(busId).getSortNumber();
