@@ -5,6 +5,7 @@ import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 /** Standard round-rotor machine with an optional IEEEVC sensing boundary. */
 public final class IeeeVcRoundRotorMachine extends RoundRotorMachineImpl
         implements IeeeVoltageCompensatedMachine {
+    static { IeeeVcMachineState.register(IeeeVcRoundRotorMachine.class,IeeeVcRoundRotorMachine::new); }
     private IeeeVcData ieeeVcData;
 
     @Override

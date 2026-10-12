@@ -520,6 +520,13 @@ public class Dstab3PBranchImpl extends DStabBranchImpl implements DStab3PBranch 
 	}
 
 	@Override
+	public void clearPhaseTurnRatios() {
+		this.fromTurnRatioABC = null;
+		this.toTurnRatioABC = null;
+		invalidateMatrixCache();
+	}
+
+	@Override
 	public boolean hasPhaseTurnRatio() {
 		return this.fromTurnRatioABC != null && this.toTurnRatioABC != null;
 	}

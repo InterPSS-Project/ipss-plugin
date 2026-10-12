@@ -46,6 +46,13 @@ import com.interpss.dstab.mach.Machine;
         refPoint="mach.speed",
         display= {})
 public class SimpleStabilizer extends AnnotateStabilizer {
+    static {
+        com.interpss.state.dstab.ControllerState.registerExtension(SimpleStabilizer.class,
+            new com.interpss.state.dstab.ControllerState.Extension(SimpleStabilizer::new,
+                source -> new com.google.gson.Gson().toJson(new SimpleStabilizerState((SimpleStabilizer)source)),
+                (target, json) -> new com.google.gson.Gson().fromJson(json, SimpleStabilizerState.class).restore((SimpleStabilizer)target)));
+    }
+
 	// define a CML filer block
 	public double k1 = 1.0, t1 = 0.05, t2 = 0.5;
     @AnControllerField(
@@ -54,7 +61,7 @@ public class SimpleStabilizer extends AnnotateStabilizer {
             parameter={"type.NoLimit", "this.k1", "this.t1", "this.t2"},
             y0="this.filterBlock2.u0"	)
     FilterControlBlock filterBlock1;
-	
+
 	// define a CML filer block
     public double k2 = 1.0, t3 = 0.05, t4 = 0.25, vmax = 0.2, vmin = -0.2;
     @AnControllerField(
@@ -66,13 +73,13 @@ public class SimpleStabilizer extends AnnotateStabilizer {
 
 	// UI Editor panel
 //	private static final NBSimpleStabilizerEditPanel _editPanel = new NBSimpleStabilizerEditPanel();
-	
+
 	public SimpleStabilizer() {
 		this("id", "name", "caty");
         this.setName("Simple Stabilizer");
         this.setCategory("InterPSS");
 	}
-	
+
 	/**
 	 * Constructor
 	 * 
@@ -84,7 +91,7 @@ public class SimpleStabilizer extends AnnotateStabilizer {
 		// _data is defined in the parent class. However init it here is a MUST
 		_data = new SimpleStabilizerData();
 	}
-	
+
 	/**
 	 * Get the PSS data 
 	 * 
@@ -93,7 +100,7 @@ public class SimpleStabilizer extends AnnotateStabilizer {
 	public SimpleStabilizerData getData() {
 		return (SimpleStabilizerData)_data;
 	}
-	
+
 	/**
 	 *  Init the controller states
 	 *  
@@ -123,7 +130,7 @@ public class SimpleStabilizer extends AnnotateStabilizer {
 //		_editPanel.init(this);
 //		return _editPanel;
 //	}
-	
+
     // the following statement must be added to all CML controller
     @Override public AnController getAnController() {
     	return getClass().getAnnotation(AnController.class);  }

@@ -5,6 +5,7 @@ import com.interpss.dstab.mach.impl.EConstMachineImpl;
 /** Classical machine with an optional IEEEVC sensing boundary. */
 public final class IeeeVcEConstMachine extends EConstMachineImpl
         implements IeeeVoltageCompensatedMachine {
+    static { IeeeVcMachineState.register(IeeeVcEConstMachine.class,IeeeVcEConstMachine::new); }
     private IeeeVcData ieeeVcData;
 
     @Override
