@@ -71,6 +71,9 @@ public interface DStab3PBranch extends IBranch3Phase, DStabBranch{
 
 	public boolean hasPhaseTurnRatio();
 
+	/** Return to scalar transformer ratios and invalidate derived matrices. */
+	public void clearPhaseTurnRatios();
+
 	public void setExplicitYabc(Complex3x3 yff, Complex3x3 yft, Complex3x3 ytf, Complex3x3 ytt);
 
 	public boolean hasExplicitYabc();

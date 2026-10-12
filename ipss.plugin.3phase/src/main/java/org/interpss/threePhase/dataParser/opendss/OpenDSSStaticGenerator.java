@@ -10,6 +10,20 @@ import com.interpss.core.threephase.impl.Static3PGenImpl;
  * Static OpenDSS generator model with model-1 voltage-limit fallback.
  */
 public class OpenDSSStaticGenerator extends Static3PGenImpl {
+    static {
+        com.interpss.state.threephase.Static3PGenState.registerExtension(OpenDSSStaticGenerator.class,
+            new com.interpss.state.threephase.Static3PGenState.Extension(OpenDSSStaticGenerator::new,
+                source -> {
+                    var model=(OpenDSSStaticGenerator)source;
+                    return java.util.Map.of("model",(double)model.getOpenDssModel(),"minimumVoltage",model.getVminpu(),"maximumVoltage",model.getVmaxpu());
+                },
+                (target,state) -> {
+                    var model=(OpenDSSStaticGenerator)target;
+                    model.setOpenDssModel(state.get("model").intValue());
+                    model.setVminpu(state.get("minimumVoltage"));model.setVmaxpu(state.get("maximumVoltage"));
+                }));
+    }
+
 	private int openDssModel = 1;
 	private double vminpu = 0.9;
 	private double vmaxpu = 1.1;

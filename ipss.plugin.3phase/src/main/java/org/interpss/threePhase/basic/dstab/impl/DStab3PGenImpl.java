@@ -44,12 +44,14 @@ public class DStab3PGenImpl extends DStabGenImpl implements DStab3PGen {
 	@Override
 	public void setZabc(Complex3x3 genZAbc) {
 		this.zAbc = genZAbc;
+		this.yAbc = null;
 
 	}
 
 	@Override
 	public void setZabc(Complex z1, Complex z2, Complex z0) {
 		 this.zAbc = new Complex3x3(z1,z2,z0).ToAbc();
+		 this.yAbc = null;
 
 	}
 

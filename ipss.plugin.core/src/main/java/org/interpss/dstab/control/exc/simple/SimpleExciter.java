@@ -46,6 +46,13 @@ import com.interpss.dstab.mach.Machine;
         refPoint="this.delayBlock.u0 - pss.vs + mach.vt",
         display= {} )
 public class SimpleExciter extends AnnotateExciter {
+    static {
+        com.interpss.state.dstab.ControllerState.registerExtension(SimpleExciter.class,
+            new com.interpss.state.dstab.ControllerState.Extension(SimpleExciter::new,
+                source -> new com.google.gson.Gson().toJson(new SimpleExciterState((SimpleExciter)source)),
+                (target, json) -> new com.google.gson.Gson().fromJson(json, SimpleExciterState.class).restore((SimpleExciter)target)));
+    }
+
 	// define a CML delay block
 	public double k = 50.0, t = 0.05, vmax = 10.0, vmin = 0.0;
     @AnControllerField(

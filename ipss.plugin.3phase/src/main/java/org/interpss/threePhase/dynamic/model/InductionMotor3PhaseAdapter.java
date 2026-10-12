@@ -27,6 +27,63 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
  *
  */
 public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
+    /** Adapter values; the underlying motor is an index into the copied bus device pool. */
+    public static final class ModelState extends com.interpss.state.net.NameTagState {
+        public int motorIndex;
+        public boolean busBound,parentBound;
+        public double loadPercentage,baseMva;
+        public String scriptsValue,extendedId,deviceKind;
+        public com.interpss.state.threephase.Complex3x3State zabc,yabc,z120,equivalent;
+        public com.interpss.common.datatype.Complex3x1ValueBean current,initialPower;
+        public ModelState(InductionMotor3PhaseAdapter source){
+            super(source);
+            if(source.getClass()!=InductionMotor3PhaseAdapter.class)throw new IllegalArgumentException("Unsupported induction adapter subclass");
+            if(!(source.indMotor instanceof org.interpss.dstab.dynLoad.impl.InductionMotorImpl motor)
+                    ||motor.getClass()!=org.interpss.dstab.dynLoad.impl.InductionMotorImpl.class)
+                throw new IllegalArgumentException("Unsupported adapted induction motor");
+            var bus=motor.getDStabBus();
+            if(!(bus instanceof DStab3PBus)||source.getDStabBus()!=null&&source.getDStabBus()!=bus
+                    ||source.parentBus!=null&&source.parentBus!=bus)
+                throw new IllegalArgumentException("Induction adapter and motor must share a phase bus");
+            motorIndex=-1;var devices=bus.getDynamicBusDeviceList();
+            for(int i=0;i<devices.size();i++)if(devices.get(i)==motor){motorIndex=i;break;}
+            if(motorIndex<0)throw new IllegalArgumentException("Adapted motor must belong to the bus device pool");
+            busBound=source.getDStabBus()!=null;parentBound=source.parentBus!=null;
+            loadPercentage=source.loadPercent;baseMva=source.mvaBase;
+            scriptsValue=source.scripts;extendedId=source.extendedDeviceId;deviceKind=source.deviceType==null?null:source.deviceType.name();
+            zabc=com.interpss.state.threephase.Complex3x3State.capture(source.Zabc);
+            yabc=com.interpss.state.threephase.Complex3x3State.capture(source.Yabc);
+            z120=com.interpss.state.threephase.Complex3x3State.capture(source.Z120);
+            equivalent=com.interpss.state.threephase.Complex3x3State.capture(source.equivYabc);
+            current=source.currInj2Net==null?null:new com.interpss.common.datatype.Complex3x1ValueBean(source.currInj2Net);
+            initialPower=source.initLoadPQ3phase==null?null:new com.interpss.common.datatype.Complex3x1ValueBean(source.initLoadPQ3phase);
+        }
+        public InductionMotor3PhaseAdapter create(DStab3PBus bus,java.util.List<com.interpss.dstab.device.DynamicBusDevice> copies){
+            if(motorIndex<0||motorIndex>=copies.size()||!(copies.get(motorIndex) instanceof org.interpss.dstab.dynLoad.impl.InductionMotorImpl motor)
+                    ||motor.getDStabBus()!=bus)throw new IllegalArgumentException("Adapter motor reference is missing or foreign");
+            var target=new InductionMotor3PhaseAdapter();map2EObject(target);target.indMotor=motor;
+            if(busBound)target.setDStabBus(bus);target.parentBus=parentBound?bus:null;
+            target.loadPercent=loadPercentage;target.mvaBase=baseMva;
+            target.scripts=scriptsValue;target.extendedDeviceId=extendedId;target.deviceType=deviceKind==null?null:com.interpss.dstab.device.DynamicBusDeviceType.valueOf(deviceKind);
+            target.Zabc=com.interpss.state.threephase.Complex3x3State.restore(zabc);
+            target.Yabc=com.interpss.state.threephase.Complex3x3State.restore(yabc);
+            target.Z120=com.interpss.state.threephase.Complex3x3State.restore(z120);
+            target.equivYabc=com.interpss.state.threephase.Complex3x3State.restore(equivalent);
+            target.currInj2Net=current==null?null:current.toComplex3x1();
+            target.initLoadPQ3phase=initialPower==null?null:initialPower.toComplex3x1();
+            return target;
+        }
+    }
+    static {
+        com.interpss.state.dstab.DynamicBusDeviceState.registerLinkedExtension(InductionMotor3PhaseAdapter.class,
+            new com.interpss.state.dstab.DynamicBusDeviceState.LinkedExtension(
+                source->new com.google.gson.Gson().toJson(new ModelState((InductionMotor3PhaseAdapter)source)),
+                (bus,json,copies)->{
+                    if(!(bus instanceof DStab3PBus phase))throw new IllegalArgumentException("Induction adapter requires a phase bus");
+                    return new com.google.gson.Gson().fromJson(json,ModelState.class).create(phase,copies);
+                }));
+    }
+
 
 	private InductionMotor indMotor = null;
 
@@ -40,6 +97,7 @@ public class InductionMotor3PhaseAdapter extends DynLoadModel3Phase {
 
     public InductionMotor3PhaseAdapter(InductionMotor motor){
 		this.indMotor = motor;
+        setStatus(motor.isActive());
 		this.parentBus = (DStab3PBus) motor.getDStabBus();
 
 		this.loadPercent = this.indMotor.getLoadPercent();

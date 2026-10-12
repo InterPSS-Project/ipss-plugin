@@ -5,6 +5,7 @@ import com.interpss.dstab.mach.impl.SalientPoleMachineImpl;
 /** Standard salient-pole machine with an optional IEEEVC sensing boundary. */
 public final class IeeeVcSalientPoleMachine extends SalientPoleMachineImpl
         implements IeeeVoltageCompensatedMachine {
+    static { IeeeVcMachineState.register(IeeeVcSalientPoleMachine.class,IeeeVcSalientPoleMachine::new); }
     private IeeeVcData ieeeVcData;
 
     @Override

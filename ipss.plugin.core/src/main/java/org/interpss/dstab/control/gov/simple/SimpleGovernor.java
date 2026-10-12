@@ -46,6 +46,13 @@ import com.interpss.dstab.mach.Machine;
         refPoint="this.gainBlock.u0 + this.delayBlock.y",
         display= {})
 public class SimpleGovernor extends AnnotateGovernor {
+    static {
+        com.interpss.state.dstab.ControllerState.registerExtension(SimpleGovernor.class,
+            new com.interpss.state.dstab.ControllerState.Extension(SimpleGovernor::new,
+                source -> new com.google.gson.Gson().toJson(new SimpleGovernorState((SimpleGovernor)source)),
+                (target, json) -> new com.google.gson.Gson().fromJson(json, SimpleGovernorState.class).restore((SimpleGovernor)target)));
+    }
+
 	// define a CML delay block
 	public double ka = 10.0, ta = 0.5;
     @AnControllerField(
