@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -30,7 +32,10 @@ import com.interpss.simu.SimuContext;
 
 /** GENROU-only Texas2k trajectory fixture shared with the ANDES benchmark. */
 public class Texas2kGenrouFaultBenchmarkTest {
-    private static final Path CASE = Path.of(System.getProperty("texas2k.case1.dir",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kGenrouFaultBenchmarkTest");
+
+    private static final Path CASE = Path.of(CONFIG.string("texas2k.case1.dir",
             Path.of("testData", "private", "texas2k",
                     "Texas2k_series24_case1_2016summerpeak").toString()));
     private static final Path RAW = CASE.resolve("Texas2k_series24_case1_2016summerPeak_v33.RAW");

@@ -1,5 +1,6 @@
 package org.interpss.plugin.contingency.dclf;
 
+
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
@@ -43,6 +44,7 @@ import com.interpss.core.contingency.dclf.DclfMultiOutage;
 import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
+
     @Test
     public void panelMatchesInterpssLineOutageFactors() throws InterpssException {
         AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
@@ -220,54 +222,45 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
 
     @Test
     public void parallelAnalyzerWoodburyHonorsConfiguredMonitorBatchSize() throws InterpssException {
-        String monitorBatchSizeProperty = "interpss.dclf.woodbury.monitorBatchSize";
-        String originalMonitorBatchSize = System.getProperty(monitorBatchSizeProperty);
-        try {
-            System.setProperty(monitorBatchSizeProperty, "2");
+        AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
+        ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
+        sourceAlgo.calculateDclf();
 
-            AclfNetwork net = IEEE14_SensHelper_SampleCase.createSenTestCase();
-            ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
-            sourceAlgo.calculateDclf();
+        List<DclfBranchOutage> contingencies = firstNonRefBranchOutages(net, sourceAlgo, 5);
+        Set<String> monitors = new LinkedHashSet<>(Arrays.asList(
+                "Bus2->Bus3(1)",
+                "Bus2->Bus4(1)",
+                "Bus3->Bus4(1)",
+                "Bus4->Bus5(1)",
+                "Bus6->Bus11(1)"));
 
-            List<DclfBranchOutage> contingencies = firstNonRefBranchOutages(net, sourceAlgo, 5);
-            Set<String> monitors = new LinkedHashSet<>(Arrays.asList(
-                    "Bus2->Bus3(1)",
-                    "Bus2->Bus4(1)",
-                    "Bus3->Bus4(1)",
-                    "Bus4->Bus5(1)",
-                    "Bus6->Bus11(1)"));
+        ConcurrentLinkedQueue<BranchCAResultRec> sparseResults =
+                ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
+                        net,
+                        contingencies,
+                        monitors,
+                        0.0,
+                        false,
+                        2,
+                        DclfContingencySolutionMethod.SparseEqnSolve);
+        DclfContingencyConfig woodburyConfig = DclfContingencyConfig.createDefaultConfig();
+        woodburyConfig.setOverloadThreshold(0.0);
+        woodburyConfig.setDclfInclLoss(false);
+        woodburyConfig.setSolutionMethod(DclfContingencySolutionMethod.WoodburyMatrixUpdate);
+        woodburyConfig.setWoodburyMonitorBatchSize(2);
+        ConcurrentLinkedQueue<BranchCAResultRec> woodburyResults =
+                ParallelDclfContingencyAnalyzer.executeContingencyAnalysis(
+                        net, contingencies, monitors, woodburyConfig, 2);
 
-            ConcurrentLinkedQueue<BranchCAResultRec> sparseResults =
-                    ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
-                            net,
-                            contingencies,
-                            monitors,
-                            0.0,
-                            false,
-                            2,
-                            DclfContingencySolutionMethod.SparseEqnSolve);
-            ConcurrentLinkedQueue<BranchCAResultRec> woodburyResults =
-                    ParallelDclfContingencyAnalyzer.performContingencyAnalysis(
-                            net,
-                            contingencies,
-                            monitors,
-                            0.0,
-                            false,
-                            2,
-                            DclfContingencySolutionMethod.WoodburyMatrixUpdate);
-
-            Map<String, BranchCAResultRec> sparseByKey = toResultMap(sparseResults);
-            Map<String, BranchCAResultRec> woodburyByKey = toResultMap(woodburyResults);
-            assertEquals(sparseByKey.keySet(), woodburyByKey.keySet());
-            for (Map.Entry<String, BranchCAResultRec> entry : sparseByKey.entrySet()) {
-                BranchCAResultRec expected = entry.getValue();
-                BranchCAResultRec actual = woodburyByKey.get(entry.getKey());
-                assertEquals(expected.preFlowMW, actual.preFlowMW, 1.0e-5);
-                assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, 1.0e-5);
-                assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), 1.0e-5);
-            }
-        } finally {
-            restoreProperty(monitorBatchSizeProperty, originalMonitorBatchSize);
+        Map<String, BranchCAResultRec> sparseByKey = toResultMap(sparseResults);
+        Map<String, BranchCAResultRec> woodburyByKey = toResultMap(woodburyResults);
+        assertEquals(sparseByKey.keySet(), woodburyByKey.keySet());
+        for (Map.Entry<String, BranchCAResultRec> entry : sparseByKey.entrySet()) {
+            BranchCAResultRec expected = entry.getValue();
+            BranchCAResultRec actual = woodburyByKey.get(entry.getKey());
+            assertEquals(expected.preFlowMW, actual.preFlowMW, 1.0e-5);
+            assertEquals(expected.shiftedFlowMW, actual.shiftedFlowMW, 1.0e-5);
+            assertEquals(expected.getPostFlowMW(), actual.getPostFlowMW(), 1.0e-5);
         }
     }
 
@@ -516,14 +509,6 @@ public class DclfTransferPanelCacheTest extends CorePluginTestSetup {
         return results.stream().collect(Collectors.toMap(
                 result -> result.contingency.getId() + "|" + result.aclfBranch.getId(),
                 result -> result));
-    }
-
-    private static void restoreProperty(String name, String value) {
-        if (value == null) {
-            System.clearProperty(name);
-        } else {
-            System.setProperty(name, value);
-        }
     }
 
     private static OpenBranchOutageBatch buildOpenBranchOutageBatch(DclfContingencyStudySpec spec)

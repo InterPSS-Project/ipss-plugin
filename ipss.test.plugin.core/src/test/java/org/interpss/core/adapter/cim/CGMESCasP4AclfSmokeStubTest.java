@@ -1,5 +1,6 @@
 package org.interpss.core.adapter.cim;
 
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -33,7 +34,7 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
  * branch P/Q 1 MW / 1 Mvar / 95%, {@code missingBus=0} and {@code missingBranch=0}.
  * Dead buses ({@code |V| < 0.2} pu) stay out of the ratio.
  *
- * <p>Overrides: {@code -Dipss.cgmes.p4.vTolPu}, {@code angTolDeg}, {@code minMatch},
+ * <p>Overrides: {@code JSON setting ipss.cgmes.p4.vTolPu}, {@code angTolDeg}, {@code minMatch},
  * {@code minAngMatch}, {@code pTolMw}, {@code qTolMvar}, {@code minFlowMatch},
  * {@code maxMissingBus}.
  *
@@ -62,22 +63,23 @@ import static com.interpss.common.util.NetUtilFunc.ToBranchId;
 @Tag("cgmes-p4-aclf")
 public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 
+
 	private static final String TD30_CAS = "testData/adpter/cim/cgmes3.0/cas/";
 
 	private static double vTolPu() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.005"));
+		return Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.005"));
 	}
 
 	private static double angTolDeg() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "0.5"));
+		return Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.angTolDeg", "0.5"));
 	}
 
 	private static double minMatch() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "1.0"));
+		return Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "1.0"));
 	}
 
 	static Path casDir(String localCasDirName, String relativeUnderV30) {
-		String override = System.getProperty("ipss.cgmes.cas.root");
+		String override = CgmesComparisonFixture.settings().string("ipss.cgmes.cas.root");
 		if (override != null && !override.isBlank()) {
 			return Path.of(override).resolve("v3.0").resolve(relativeUnderV30);
 		}
@@ -85,7 +87,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		if (Files.isDirectory(local)) {
 			return local;
 		}
-		String home = System.getProperty("user.home");
+		String home = CgmesComparisonFixture.settings().string("fixtures.home", "testData/external");
 		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "cas-v3.0.3",
 				"CGMES_ConformityAssessmentScheme_TestConfigurations_v3-0-3", "v3.0")
 				.resolve(relativeUnderV30);
@@ -323,7 +325,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 				net, sv, vTol, angTol, minRatio);
 		CgmesSvCompareSupport.printVoltageDump(net.getId(), stats);
 		assertTrue(stats.matchedVoltage() > 0);
-		int maxMissing = Integer.parseInt(System.getProperty("ipss.cgmes.p4.maxMissingBus", "0"));
+		int maxMissing = Integer.parseInt(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.maxMissingBus", "0"));
 		assertTrue(stats.missingBus() <= maxMissing,
 				() -> "SvVoltage TopologicalNodes without Aclf bus: missing="
 						+ stats.missingBus() + " (maxAllowed=" + maxMissing + ")");
@@ -361,25 +363,10 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 	}
 
 	static void withSoftBranchFlow(ThrowingRunnable body) throws Exception {
-		String prevP = System.getProperty("ipss.cgmes.p4.pTolMw");
-		String prevQ = System.getProperty("ipss.cgmes.p4.qTolMvar");
-		System.setProperty("ipss.cgmes.p4.pTolMw",
-				System.getProperty("ipss.cgmes.p4.pTolMw", "5"));
-		System.setProperty("ipss.cgmes.p4.qTolMvar",
-				System.getProperty("ipss.cgmes.p4.qTolMvar", "10"));
-		try {
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.pTolMw", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.pTolMw", "5"),
+                "ipss.cgmes.p4.qTolMvar", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.qTolMvar", "10")))) {
 			body.run();
-		} finally {
-			if (prevP == null) {
-				System.clearProperty("ipss.cgmes.p4.pTolMw");
-			} else {
-				System.setProperty("ipss.cgmes.p4.pTolMw", prevP);
-			}
-			if (prevQ == null) {
-				System.clearProperty("ipss.cgmes.p4.qTolMvar");
-			} else {
-				System.setProperty("ipss.cgmes.p4.qTolMvar", prevQ);
-			}
 		}
 	}
 
@@ -462,7 +449,7 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path tpXml = mustFile(dir, "SmallGrid_TP.xml");
 		// Correct SSH inService=false leaves OOS lines inactive; redistribution
 		// drops a few terminals just over 1 MW (363/388≈0.936). Soften floor.
-		double minFlow = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.93"));
+		double minFlow = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minFlowMatch", "0.93"));
 		runSeededCompare(svXml, new Path[] { eqXml, tpXml, mustFile(dir, "SmallGrid_EQBD.xml") },
 				vTolPu(), angTolDeg(), minMatch(), minFlow,
 				eqXml,
@@ -574,15 +561,13 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		Path tpXml = mustFile(dir, "Svedala_TP.xml");
 		Path eqBd = mustFile(dir, "Svedala_EQBD.xml");
 		// Larger CAS case: intermediate floor after MicroGrid UCTE unify.
-		// Override: -Dipss.cgmes.p4.vTolPu / minMatch / minFlowMatch / minAngMatch.
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.015"));
-		double angTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "1.5"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.90"));
-		double minFlow = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.43"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.85"));
-		try {
+		// Override: JSON setting ipss.cgmes.p4.vTolPu / minMatch / minFlowMatch / minAngMatch.
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.015"));
+		double angTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.angTolDeg", "1.5"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.90"));
+		double minFlow = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minFlowMatch", "0.43"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.85")))) {
 			runSeededCompare(svXml, new Path[] { eqXml, tpXml, eqBd },
 					vTol, angTol, minV, minFlow,
 					eqXml,
@@ -590,12 +575,6 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 					tpXml,
 					svXml,
 					eqBd);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -619,17 +598,9 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() > 0);
 		runNrSeeded(net, sv);
 		// Boundary-only SvVoltage TNs (2) have no Aclf bus — allow them.
-		String prevMiss = System.getProperty("ipss.cgmes.p4.maxMissingBus");
-		System.setProperty("ipss.cgmes.p4.maxMissingBus",
-				System.getProperty("ipss.cgmes.p4.maxMissingBus", "2"));
-		try {
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.maxMissingBus", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.maxMissingBus", "2")))) {
 			compareToSv(net, sv);
-		} finally {
-			if (prevMiss == null) {
-				System.clearProperty("ipss.cgmes.p4.maxMissingBus");
-			} else {
-				System.setProperty("ipss.cgmes.p4.maxMissingBus", prevMiss);
-			}
 		}
 		// SvPowerFlow branch matching finds 0 comparable ACLine/PowerTransformer
 		// terminals on this fixture today — voltage gate only for this P0 case.
@@ -650,19 +621,11 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() > 0);
 		runNrSeeded(net, sv);
 		// |V|-primary; angle floor raised after UCTE unify (was 0.0).
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.70"));
-		try {
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.85"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.70")))) {
 			compareToSv(net, sv, vTol, 10.0, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -680,19 +643,11 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() > 0);
 		runNrSeeded(net, sv);
 		// Voltage-only: inactive ACLine/Xformer terminals trip missingBranch on flow.
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.70"));
-		try {
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.85"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.70")))) {
 			compareToSv(net, sv, vTol, 20.0, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -711,28 +666,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, tpBd, eqBd));
 		assertTrue(net.getNoBus() > 0);
 		runNrSeeded(net, sv);
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		String prevMiss = System.getProperty("ipss.cgmes.p4.maxMissingBus");
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		// Five SvVoltage rows are boundary topological nodes, which are not buses.
-		System.setProperty("ipss.cgmes.p4.maxMissingBus",
-				System.getProperty("ipss.cgmes.p4.maxMissingBus", "5"));
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.50"));
-		try {
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.85"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.maxMissingBus", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.maxMissingBus", "5"),
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.50")))) {
 			compareToSv(net, sv, vTol, 10.0, minV);
-		} finally {
-			if (prevMiss == null) {
-				System.clearProperty("ipss.cgmes.p4.maxMissingBus");
-			} else {
-				System.setProperty("ipss.cgmes.p4.maxMissingBus", prevMiss);
-			}
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -757,20 +696,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		// SvPowerFlow rows on this case are machines, not AC lines, so the flow
 		// helper's "fewer than 3 comparable terminals" gate would abort the test.
 		// |V| match stays ~71% @ 0.02 — SVC / ZIP residuals keep the 0.70 floor.
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double angTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.angTolDeg", "1.5"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.70"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
-		try {
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double angTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.angTolDeg", "1.5"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.70"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.0")))) {
 			compareToSv(net, sv, vTol, angTol, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -787,19 +718,11 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
 		assertTrue(net.getNoBus() > 0);
 		runNrSeeded(net, sv);
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.50"));
-		try {
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.85"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.50")))) {
 			compareToSv(net, sv, vTol, 10.0, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -840,20 +763,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 				eqBd, beEq, nlEq, beSsh, nlSsh, tp, svXml));
 		assertTrue(net.getNoBus() > 0, () -> "Type3 " + hour + " should create buses");
 		runNrSeeded(net, sv);
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch",
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch",
 				Double.toString(defaultMinV)));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.50"));
-		try {
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.50")))) {
 			compareToSv(net, sv, vTol, 10.0, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -870,19 +785,11 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		AclfNetwork net = new CGMESDirectParser().parse(abs(eqXml, sshXml, tpXml, svXml));
 		assertTrue(net.getNoBus() > 0);
 		runNrSeeded(net, sv);
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.70"));
-		try {
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.85"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.70")))) {
 			compareToSv(net, sv, vTol, 10.0, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -910,19 +817,11 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 		assertTrue(net.getNoBus() > 0);
 		// Soft NR: dangling CNs / OOS ties still leave residual mismatch islands.
 		runNrSeededSoft(net, sv, "ReliCap Espheim");
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.02"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.85"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.50"));
-		try {
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.02"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.85"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.50")))) {
 			compareToSv(net, sv, vTol, 10.0, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
 		}
 	}
 
@@ -948,27 +847,12 @@ public class CGMESCasP4AclfSmokeStubTest extends CorePluginTestSetup {
 				svXml));
 		assertTrue(net.getNoBus() > 0);
 		runNrSeededSoft(net, sv, "ReliCap DC Espheim-Svedala");
-		double vTol = Double.parseDouble(System.getProperty("ipss.cgmes.p4.vTolPu", "0.05"));
-		double minV = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minMatch", "0.50"));
-		String prevAng = System.getProperty("ipss.cgmes.p4.minAngMatch");
-		String prevMiss = System.getProperty("ipss.cgmes.p4.maxMissingBus");
-		System.setProperty("ipss.cgmes.p4.minAngMatch",
-				System.getProperty("ipss.cgmes.p4.minAngMatch", "0.0"));
-		System.setProperty("ipss.cgmes.p4.maxMissingBus",
-				System.getProperty("ipss.cgmes.p4.maxMissingBus", "20"));
-		try {
+		double vTol = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.vTolPu", "0.05"));
+		double minV = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minMatch", "0.50"));
+        try (var fixture = CgmesComparisonFixture.withOverrides(Map.of(
+                "ipss.cgmes.p4.minAngMatch", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.0"),
+                "ipss.cgmes.p4.maxMissingBus", CgmesComparisonFixture.settings().string("ipss.cgmes.p4.maxMissingBus", "20")))) {
 			compareToSv(net, sv, vTol, 20.0, minV);
-		} finally {
-			if (prevAng == null) {
-				System.clearProperty("ipss.cgmes.p4.minAngMatch");
-			} else {
-				System.setProperty("ipss.cgmes.p4.minAngMatch", prevAng);
-			}
-			if (prevMiss == null) {
-				System.clearProperty("ipss.cgmes.p4.maxMissingBus");
-			} else {
-				System.setProperty("ipss.cgmes.p4.maxMissingBus", prevMiss);
-			}
 		}
 	}
 }

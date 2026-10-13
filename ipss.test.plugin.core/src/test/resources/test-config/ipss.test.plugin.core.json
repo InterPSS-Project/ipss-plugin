@@ -1,0 +1,301 @@
+{
+  "AclfOpenEiJkluPerformanceTest": {
+    "interpss.aclfOpenEiMethod": "NR",
+    "interpss.aclfOpenEiRepeats": 3,
+    "interpss.aclfOpenEiWarmups": 1,
+    "interpss.largeAclfTests": false
+  },
+  "RegcaPositiveQRecoveryDiagnosticTest": {
+    "regca.positiveq.diagnostic.dyr": "case.dyr",
+    "regca.positiveq.diagnostic.enabled": false,
+    "regca.positiveq.diagnostic.case": null
+  },
+  "RenewableAggregateQvModeTest": {
+    "renewable.bus1062.output": "bus1062-public",
+    "renewable.bus1062.step": null
+  },
+  "Texas2kCase1StagedFaultDiagnosticTest": {
+    "texas2k.case1.staged.disabledPssBuses": "",
+    "texas2k.case1.staged.disabledPssRegions": "",
+    "texas2k.case1.staged.enabled": false,
+    "texas2k.case1.staged.end": "10.0",
+    "texas2k.case1.staged.reactiveEnabledBuses": "",
+    "texas2k.case1.staged.reactiveEnabledPrefixes": "",
+    "texas2k.case1.staged.reecaVariant": "NORMAL",
+    "texas2k.case1.staged.regcaVariant": "NORMAL",
+    "texas2k.case1.staged.removedConverterBuses": "",
+    "texas2k.case1.staged.removedDynamicBuses": "",
+    "texas2k.case1.staged.removedSynchronousRegions": "",
+    "texas2k.case1.staged.retainedDynamicBuses": "",
+    "texas2k.case1.staged.stage": "",
+    "texas2k.case1.staged.traceBuses": "",
+    "texas2k.case1.staged.root": null,
+    "texas2k.case1.staged.output": null,
+    "texas2k.case1.staged.step": null,
+    "texas2k.case1.staged.controllerMode": null
+  },
+  "Texas2kConventionalStackCoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kDyrInventoryTest": {
+    "texas2k.dynamic.case.dir": null
+  },
+  "Texas2kEsst1aCoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kEsst4bCoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kFullDynamicCoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kGenrouFaultBenchmarkTest": {
+    "texas2k.case1.dir": null
+  },
+  "Texas2kGgov1CoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kHygovCoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kIndependentRenewableParameterParityTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kLegacyControllerProfileTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kOneSecondDriftTest": {
+    "texas2k.drift.case": "",
+    "texas2k.drift.controllerMovementLimit": "1.0e-10",
+    "texas2k.drift.disableGovernors": false,
+    "texas2k.drift.disablePlantControllers": false,
+    "texas2k.drift.enabled": false,
+    "texas2k.drift.endTime": "1.0",
+    "texas2k.drift.excludeRenewables": false,
+    "texas2k.drift.freezeActiveCommand": false,
+    "texas2k.drift.freezeElectricalControllers": false,
+    "texas2k.drift.freezeReactiveCommand": false,
+    "texas2k.drift.loadflowTolerance": "1.0e-8",
+    "texas2k.drift.onlySelectedRenewables": false,
+    "texas2k.drift.pFlag": "",
+    "texas2k.drift.qFlag": "",
+    "texas2k.drift.rankingLimit": 10,
+    "texas2k.drift.renewableBuses": "",
+    "texas2k.drift.renewableDevices": "",
+    "texas2k.drift.renewables": null,
+    "texas2k.drift.traceFirstDivergence": false,
+    "texas2k.gridStrength.enabled": false,
+    "texas2k.drift.step": null,
+    "texas2k.case.root": null,
+    "texas2k.gridStrength.reportDir": null,
+    "texas2k.drift.reportDir": null
+  },
+  "Texas2kReeca1CoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kRegfma1CoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kSixCaseDynamicSmokeTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kSynchronousMachineCoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kTopologyFaultMatrixTest": {
+    "texas2k.fault.matrix.enabled": false,
+    "texas2k.case.root": null
+  },
+  "Texas2kType3WindCoverageTest": {
+    "texas2k.case.root": null
+  },
+  "Texas2kWindProfileCoverageTest": {
+    "texas2k.dynamic.case.dir": null
+  },
+  "Type3WindAndesTrajectoryTest": {
+    "type3.wind.step": null
+  },
+  "Wecc179FaultBenchmarkTest": {
+    "wecc179.total.time": "5.0",
+    "andes.wecc179.case.dir": null,
+    "wecc179.time.step": null
+  },
+  "Wecc179FullDyrDiagnosticTest": {
+    "wecc179.full.buses": "",
+    "wecc179.full.default.solver": false,
+    "wecc179.full.disable.saturation": false,
+    "wecc179.full.fault.bus": "",
+    "wecc179.full.fault.duration": "0.05",
+    "wecc179.full.fault.start": "1.0",
+    "wecc179.full.fault.x": "0.005",
+    "wecc179.full.focus.bus": "",
+    "wecc179.full.models": "",
+    "wecc179.full.total.time": "1.0",
+    "andes.wecc179.case.dir": null,
+    "wecc179.full.time.step": null,
+    "wecc179.full.output.dir": null
+  },
+  "Wecc240DStabTest": {
+    "wecc240.expected.renewables": 37,
+    "wecc240.case.dir": null,
+    "wecc240.raw.file": null,
+    "wecc240.dyr.file": null
+  },
+  "Wecc240FaultBenchmarkTest": {
+    "wecc240.case.dir": null
+  },
+  "MatpowerOpfMapperTest": {
+    "rts.gmlc.matpower": null
+  },
+  "JacobianMatrixExportTest": {
+    "jklu.matrix.output.dir": null
+  },
+  "JkluPowerSystemMatrixExportTest": {
+    "jklu.matrix.export.dir": null,
+    "jklu.matrix.export.cases": null
+  },
+  "CGMESCasCoverageStubTest": {
+    "ipss.cgmes.cas.root": null,
+    "ipss.cgmes.cas24.root": null,
+    "ipss.cgmes.relicap.root": null,
+    "fixtures.home": null
+  },
+  "CGMESCasType3HourCoverageStubTest": {
+    "ipss.cgmes.cas.root": null,
+    "ipss.cgmes.type3.allHours": false,
+    "fixtures.home": null
+  },
+  "CGMESReliCapDcCoverageStubTest": {
+    "ipss.cgmes.relicap.root": null,
+    "fixtures.home": null
+  },
+  "Epc2k10kComparisonTest": {
+    "ipss.epc.activs10k.dir": null,
+    "ipss.epc.texas2k.dir": null,
+    "ipss.epc.activs.hotspot.diagnostic": false,
+    "ipss.epc.gen.control.diagnostic": false,
+    "ipss.epc.mismatch.diagnostic": false,
+    "ipss.epc.model.signature.diagnostic": false,
+    "ipss.epc.solved.adjust.diagnostic": false,
+    "ipss.epc.solved.diagnostic": false,
+    "ipss.epc.solved.savedcase.diagnostic": false,
+    "ipss.epc.texas.hotspot.diagnostic": false
+  },
+  "DclfMixedActionComparisonTest": {
+    "interpss.dclfMixedStress.mixedCount": 70,
+    "interpss.dclfMixedStress.singularCount": 30,
+    "interpss.dclfMixedStress.solvableOpenPrefixes": 1,
+    "interpss.largeDclfMixedActionTests": false,
+    "interpss.largeDclfTests": false,
+    "interpss.dclfMixedComparison.solutionMethod": null
+  },
+  "DclfSolverComparisonLargeCaseTest": {
+    "interpss.dclfSolverCompareAssertParity": false,
+    "interpss.dclfSolverCompareCases": "ACTIVSg25k,OpenEI",
+    "interpss.dclfSolverCompareWarmups": 1,
+    "interpss.largeDclfTests": false,
+    "interpss.performance25kContingencyJson": null,
+    "interpss.performance25kMonitorJson": null,
+    "interpss.performanceOpenEiContingencyJson": "testData/psse/v33/OpenEI_filtered_contingencies.json",
+    "interpss.performanceOpenEiMonitorJson": "testData/psse/v33/OpenEI_monitored_branches.json",
+    "interpss.dclfSolverCompareSolutionMethod": null,
+    "interpss.dclfSolverCompareRepeats": null,
+    "interpss.dclfSolverCompareParallelism": null,
+    "interpss.performance25kContingencies": null,
+    "interpss.performance25kMonitors": null,
+    "interpss.performanceOpenEiContingencies": null,
+    "interpss.performanceOpenEiMonitors": null
+  },
+  "DclfTransferPanelLargeCaseTest": {
+    "interpss.full25kDclfTests": false,
+    "interpss.fullJsonDclfTests": false,
+    "interpss.hourlyDclfTests": false,
+    "interpss.largeDclfTests": false,
+    "interpss.performance25kContingencies": null,
+    "interpss.performance25kMonitors": null,
+    "interpss.performanceOpenEiContingencies": null,
+    "interpss.performanceOpenEiMonitors": null,
+    "interpss.performanceParallelism": null,
+    "interpss.performanceOverloadThreshold": null
+  },
+  "DclfViolationCheckLargeCasePerformanceTest": {
+    "interpss.activs70kFullReplayDefinitionToken": null,
+    "interpss.activs70kFullReplayProfile": false,
+    "interpss.activs70kMultiBranchTiming": false,
+    "interpss.activs70kSingleVsMultiTiming": false,
+    "interpss.largeViolationCheckPerf": false,
+    "interpss.violationCheckPerfInclude70k": false,
+    "interpss.violationCheckPerf25k": null,
+    "interpss.violationCheckPerf25kContJson": null,
+    "interpss.violationCheckPerf70k": null,
+    "interpss.violationCheckPerf70kContJson": null,
+    "interpss.activs70kRaw": null,
+    "interpss.activs70kMultiJson": null,
+    "interpss.activs70kTimingContingencies": null,
+    "interpss.activs70kTimingMonitors": null,
+    "interpss.activs70kTimingWarmups": null,
+    "interpss.activs70kTimingRepeats": null,
+    "interpss.activs70kTimingParallelism": null,
+    "interpss.activs70kTimingRhsBatchSize": null,
+    "interpss.activs70kTimingSolutionMethod": null,
+    "interpss.activs70kTimingIslandingTreatment": null,
+    "interpss.activs70kMultiBranchContingencies": null,
+    "interpss.activs70kMultiBranchWarmups": null,
+    "interpss.activs70kMultiBranchRepeats": null,
+    "interpss.activs70kMultiBranchCandidateMultiplier": null,
+    "interpss.activs70kMultiBranchRequireSolvable": null,
+    "interpss.activs70kMultiBranchRequireFullRank": null,
+    "interpss.activs70kMultiBranchDefinitionToken": null,
+    "interpss.activs70kFullReplayContingencies": null,
+    "interpss.activs70kFullReplayMonitors": null,
+    "interpss.activs70kFullReplayWarmups": null,
+    "interpss.activs70kFullReplayRepeats": null,
+    "interpss.activs70kFullReplayParallelism": null,
+    "interpss.activs70kFullReplayRhsBatchSize": null,
+    "interpss.activs70kFullReplayIslandingTreatment": null,
+    "interpss.violationCheckPerfMaxCont": null,
+    "interpss.violationCheckPerfMaxMon": null,
+    "interpss.violationCheckPerfWarmups": null,
+    "interpss.violationCheckPerfRepeats": null,
+    "interpss.violationCheckPerfParallelism": null,
+    "interpss.violationCheckPerfRhsBatchSize": null,
+    "interpss.violationCheckPerfMaxFlowgates": null,
+    "interpss.violationCheckPerfMaxFlowgateContingencies": null,
+    "interpss.violationCheckPerfMaxNomograms": null
+  },
+  "FastN2CandidateSelectorTexas7kTest": {
+    "interpss.fastN2Activs25kExactMonitorPruning": false,
+    "interpss.fastN2Activs25kInventory": false,
+    "interpss.fastN2Activs25kPrunedOnly": false,
+    "interpss.fastN2Activs25kTopK": 10000,
+    "interpss.fastN2Activs25kTopKExact": false,
+    "interpss.fastN2Activs25kValidationSamples": 30,
+    "interpss.fastN2Activs25kValidationSampling": false,
+    "interpss.fastN2Texas7kExactEvaluationThreads": 1,
+    "interpss.fastN2Texas7kExactMonitorPruning": false,
+    "interpss.fastN2Texas7kFailOnSampleDangerous": false,
+    "interpss.fastN2Texas7kFullSet": false,
+    "interpss.fastN2Texas7kMaxReturnedCandidates": 10000,
+    "interpss.fastN2Texas7kMaxSurvivorValidationPairs": 250000,
+    "interpss.fastN2Texas7kMonitorLimit": 600,
+    "interpss.fastN2Texas7kOutageLimit": 300,
+    "interpss.fastN2Texas7kValidationSamples": 100,
+    "interpss.largeDclfTests": false,
+    "interpss.fastN2Texas7kExactEvaluationChunkSize": null,
+    "interpss.fastN2Activs25kStreamingOutageBatchSize": null,
+    "interpss.fastN2Activs25kStreamingMonitorBatchSize": null,
+    "interpss.fastN2Activs25kStreamingEndpointRhsBatchSize": null
+  },
+  "CgmesComparisonFixture": {
+    "ipss.cgmes.cas.root": null,
+    "fixtures.home": null,
+    "ipss.cgmes.p4.vTolPu": null,
+    "ipss.cgmes.p4.angTolDeg": null,
+    "ipss.cgmes.p4.minMatch": null,
+    "ipss.cgmes.p4.minAngMatch": null,
+    "ipss.cgmes.p4.pTolMw": null,
+    "ipss.cgmes.p4.qTolMvar": null,
+    "ipss.cgmes.p4.minFlowMatch": null,
+    "ipss.cgmes.p4.maxMissingBus": null
+  }
+}

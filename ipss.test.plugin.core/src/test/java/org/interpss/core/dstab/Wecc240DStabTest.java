@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -23,7 +25,10 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.simu.SimuContext;
 
 class Wecc240DStabTest {
-    private static final Path CASE_DIR = Path.of(System.getProperty("wecc240.case.dir",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Wecc240DStabTest");
+
+    private static final Path CASE_DIR = Path.of(CONFIG.string("wecc240.case.dir",
             Path.of("testData", "private", "wecc240",
                     "WECC 240-bus case (2018 summar peak) for 2021 IEEE-NASPI OSL Contest").toString()));
     private static final Path RAW = resolveCaseFile("wecc240.raw.file",
@@ -31,8 +36,8 @@ class Wecc240DStabTest {
     private static final Path DYR = resolveCaseFile("wecc240.dyr.file",
             "240busWECC_2018_PSS.dyr", "WECC240_v32.dyr");
 
-    private static Path resolveCaseFile(String property, String preferredName, String alternateName) {
-        String configured = System.getProperty(property);
+    private static Path resolveCaseFile(String setting, String preferredName, String alternateName) {
+        String configured = CONFIG.string(setting);
         if (configured != null && !configured.isBlank()) return Path.of(configured);
         Path preferred = CASE_DIR.resolve(preferredName);
         return Files.isRegularFile(preferred) ? preferred : CASE_DIR.resolve(alternateName);
@@ -40,8 +45,8 @@ class Wecc240DStabTest {
 
     @Test
     void loadsAndInitializesOfficialWecc240Case() throws Exception {
-        assumeTrue(Files.isRegularFile(RAW), "Set -Dwecc240.case.dir to the official WECC 240 case directory");
-        assumeTrue(Files.isRegularFile(DYR), "Set -Dwecc240.case.dir to the official WECC 240 case directory");
+        assumeTrue(Files.isRegularFile(RAW), "Set JSON setting wecc240.case.dir to the official WECC 240 case directory");
+        assumeTrue(Files.isRegularFile(DYR), "Set JSON setting wecc240.case.dir to the official WECC 240 case directory");
 
         IpssCorePlugin.init();
         SimuContext context = new PSSEMultiFileLoader().loadDStab(RAW.toString(), DYR.toString());
@@ -54,7 +59,7 @@ class Wecc240DStabTest {
                 .map(gen -> (com.interpss.dstab.DStabGen) gen)
                 .filter(gen -> gen.getDynamicGenDevice() instanceof Regca1Model)
                 .count();
-        assertEquals(Long.getLong("wecc240.expected.renewables", 37L), renewableCount);
+        assertEquals(CONFIG.longValue("wecc240.expected.renewables", 37L), renewableCount);
         network.setBypassDataCheck(true);
 
         DynamicSimuAlgorithm algorithm = context.getDynSimuAlgorithm();

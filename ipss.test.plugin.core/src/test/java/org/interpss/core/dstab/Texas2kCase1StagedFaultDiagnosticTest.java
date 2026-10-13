@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -49,11 +51,14 @@ import com.interpss.simu.SimuContext;
  * or frequency deviation as controller families are added.
  */
 public class Texas2kCase1StagedFaultDiagnosticTest {
-    private static final Path ROOT = Path.of(System.getProperty(
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kCase1StagedFaultDiagnosticTest");
+
+    private static final Path ROOT = Path.of(CONFIG.string(
             "texas2k.case1.staged.root",
             Path.of("..", "target", "private-texas2k-case1-debug").toString())).normalize();
     private static final Path INPUT = ROOT.resolve("input");
-    private static final Path OUTPUT = Path.of(System.getProperty(
+    private static final Path OUTPUT = Path.of(CONFIG.string(
             "texas2k.case1.staged.output", ROOT.toString())).normalize();
     private static final Path RAW = INPUT.resolve(
             "Texas2k_series24_case1_2016summerPeak_v36.RAW");
@@ -69,9 +74,9 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
     private static final double SUSTAINED_VOLTAGE_DURATION = 0.05;
     private static final double ANGLE_THRESHOLD_DEG = 5.0;
     private static final double FREQUENCY_THRESHOLD_PU = 0.002;
-    private static final double SIMULATION_STEP = Double.parseDouble(System.getProperty(
+    private static final double SIMULATION_STEP = Double.parseDouble(CONFIG.string(
             "texas2k.case1.staged.step", Double.toString(1.0 / 240.0)));
-    private static final double SIMULATION_END = Double.parseDouble(System.getProperty(
+    private static final double SIMULATION_END = Double.parseDouble(CONFIG.string(
             "texas2k.case1.staged.end", "10.0"));
 
     private static final Set<String> MACHINES = Set.of("GENROU", "GENSAL");
@@ -88,15 +93,15 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
 
     @Test
     void rankFirstPostFaultDeviationByControllerLayer() throws Exception {
-        assumeTrue(Boolean.getBoolean("texas2k.case1.staged.enabled"),
-                "Enable with -Dtexas2k.case1.staged.enabled=true");
+        assumeTrue(CONFIG.bool("texas2k.case1.staged.enabled"),
+                "Enable with JSON setting texas2k.case1.staged.enabled=true");
         for (Path input : List.of(RAW, DYR, GNET, REMOVE)) {
             assumeTrue(Files.isRegularFile(input), "Missing staged private input: " + input);
         }
 
         List<PsseDyrRecord> records = PsseDyrRecordReader.read(DYR);
         Map<String, String> stacks = modelStacks(records);
-        String stageFilter = System.getProperty("texas2k.case1.staged.stage", "");
+        String stageFilter = CONFIG.string("texas2k.case1.staged.stage", "");
         List<Stage> selected = stages().stream()
                 .filter(stage -> stageFilter.isBlank()
                         || stage.name().equalsIgnoreCase(stageFilter))
@@ -112,9 +117,9 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
     private static StageResult runStage(Stage stage, List<PsseDyrRecord> records,
             Map<String, String> stacks) throws Exception {
         Path stageDyr = OUTPUT.resolve(stage.fileStem() + ".dyr");
-        String regcaVariant = System.getProperty(
+        String regcaVariant = CONFIG.string(
                 "texas2k.case1.staged.regcaVariant", "NORMAL");
-        String removedBusesProperty = System.getProperty(
+        String removedBusesProperty = CONFIG.string(
                 "texas2k.case1.staged.removedConverterBuses", "");
         Set<String> allConverterBuses = records.stream()
                 .filter(record -> record.canonicalModelName().equals("REGCA1"))
@@ -124,7 +129,7 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
                 ? CAUSAL_EIGHT
                 : removedBusesProperty.equalsIgnoreCase("ALL_CONVERTERS")
                         ? allConverterBuses : parsedSet(removedBusesProperty);
-        String removedDynamicProperty = System.getProperty(
+        String removedDynamicProperty = CONFIG.string(
                 "texas2k.case1.staged.removedDynamicBuses", "");
         Set<String> explicitlyRemovedDynamicBuses = removedDynamicProperty
                 .equalsIgnoreCase("ALL_SYNCHRONOUS")
@@ -139,7 +144,7 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
                                         .map(record -> Integer.toString(record.busNumber()))
                                         .collect(java.util.stream.Collectors.toUnmodifiableSet())
                                 : parsedSet(removedDynamicProperty);
-        Set<String> removedSynchronousRegions = parsedSet(System.getProperty(
+        Set<String> removedSynchronousRegions = parsedSet(CONFIG.string(
                 "texas2k.case1.staged.removedSynchronousRegions", ""));
         Set<String> regionRemovedDynamicBuses = records.stream()
                 .filter(record -> Set.of("GENROU", "GENSAL")
@@ -148,11 +153,11 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
                         Integer.toString(record.busNumber()).substring(0, 1)))
                 .map(record -> Integer.toString(record.busNumber()))
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
-        Set<String> retainedDynamicBuses = parsedSet(System.getProperty(
+        Set<String> retainedDynamicBuses = parsedSet(CONFIG.string(
                 "texas2k.case1.staged.retainedDynamicBuses", ""));
-        Set<String> disabledPssBuses = parsedSet(System.getProperty(
+        Set<String> disabledPssBuses = parsedSet(CONFIG.string(
                 "texas2k.case1.staged.disabledPssBuses", ""));
-        Set<String> disabledPssRegions = parsedSet(System.getProperty(
+        Set<String> disabledPssRegions = parsedSet(CONFIG.string(
                 "texas2k.case1.staged.disabledPssRegions", ""));
         Set<String> removedDynamicBuses = union(removedConverterBuses,
                 explicitlyRemovedDynamicBuses, regionRemovedDynamicBuses).stream()
@@ -167,7 +172,7 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
                 .filter(record -> !removedDynamicBuses.contains(
                         Integer.toString(record.busNumber())))
                 .forEach(record -> content.append(diagnosticRecord(record, regcaVariant,
-                                System.getProperty("texas2k.case1.staged.reecaVariant", "NORMAL")))
+                                CONFIG.string("texas2k.case1.staged.reecaVariant", "NORMAL")))
                         .append(" /\n"));
         if (stage.freezeConverters()) {
             records.stream().filter(record -> record.canonicalModelName().equals("REGCA1"))
@@ -190,7 +195,7 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
         SimuContext context = new PSSEMultiFileLoader().loadDStab(
                 RAW.toString(), stageDyr.toString(), GNET.toString(), REMOVE.toString());
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
-        ControllerMode controllerMode = ControllerMode.valueOf(System.getProperty(
+        ControllerMode controllerMode = ControllerMode.valueOf(CONFIG.string(
                 "texas2k.case1.staged.controllerMode", stage.controllerMode().name())
                 .trim().toUpperCase(Locale.ROOT));
         applyControllerMode(network, controllerMode);
@@ -423,9 +428,9 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
     private static void applyControllerMode(BaseDStabNetwork<?, ?> network,
             ControllerMode mode) {
         if (mode == ControllerMode.NORMAL) return;
-        Set<String> reactiveEnabledPrefixes = Set.of(System.getProperty(
+        Set<String> reactiveEnabledPrefixes = Set.of(CONFIG.string(
                         "texas2k.case1.staged.reactiveEnabledPrefixes", "").split(","));
-        Set<String> reactiveEnabledBuses = Set.of(System.getProperty(
+        Set<String> reactiveEnabledBuses = Set.of(CONFIG.string(
                         "texas2k.case1.staged.reactiveEnabledBuses", "").split(","));
         network.getBusList().stream().flatMap(bus -> bus.getContributeGenList().stream())
                 .map(gen -> (DStabGen) gen)
@@ -561,7 +566,7 @@ public class Texas2kCase1StagedFaultDiagnosticTest {
             this.buses = List.copyOf(buses);
             this.referenceBus = referenceBus;
             this.analyzeAfter = faultClear + 0.5 * simulationStep;
-            this.traceBuses = parsedSet(System.getProperty(
+            this.traceBuses = parsedSet(CONFIG.string(
                             "texas2k.case1.staged.traceBuses", "")).stream()
                     .map(bus -> bus.startsWith("Bus") ? bus : "Bus" + bus)
                     .collect(java.util.stream.Collectors.toUnmodifiableSet());

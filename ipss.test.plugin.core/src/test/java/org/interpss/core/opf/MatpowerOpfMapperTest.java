@@ -1,5 +1,7 @@
 package org.interpss.core.opf;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,6 +26,9 @@ import com.interpss.opf.OpfGenOperatingMode;
 import com.interpss.opf.OpfNetwork;
 
 public class MatpowerOpfMapperTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "MatpowerOpfMapperTest");
+
 	@Test
 	public void rtsStyleExtensionsMapToOpfNetwork() throws Exception {
 		OpfNetwork net = new MatpowerOpfDirectParser()
@@ -82,7 +87,7 @@ public class MatpowerOpfMapperTest extends CorePluginTestSetup {
 
 	@Test
 	public void optionalRtsGmlcMatpowerMapsToOpfNetwork() throws Exception {
-		String file = System.getProperty("rts.gmlc.matpower");
+		String file = CONFIG.string("rts.gmlc.matpower");
 		assumeTrue(file != null && Files.isRegularFile(Path.of(file)));
 
 		OpfNetwork net = new MatpowerOpfDirectParser().parse(file);

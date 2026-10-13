@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -15,7 +17,10 @@ import org.junit.jupiter.api.Test;
 
 /** Exact coverage anchors for the six private Texas2k Series 24 DYR files. */
 class Texas2kDyrInventoryTest {
-    private static final Path CASE_ROOT = Path.of(System.getProperty("texas2k.dynamic.case.dir",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kDyrInventoryTest");
+
+    private static final Path CASE_ROOT = Path.of(CONFIG.string("texas2k.dynamic.case.dir",
             Path.of("testData", "private", "texas2k").toString()));
 
     private static final List<String> CASES = List.of(

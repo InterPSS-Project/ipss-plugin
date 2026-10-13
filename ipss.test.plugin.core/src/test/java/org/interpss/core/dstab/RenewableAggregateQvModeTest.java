@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,6 +43,9 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 
 /** Public reduced-network reproducer for an aggregate REGCA1/REECA1/REPCA1 Q/V mode. */
 public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "RenewableAggregateQvModeTest");
+
     private static final double STEP = 1.0 / 240.0;
     private static final double CASE5_MODE_GROWTH = .8512333985675469;
     private static final double CASE5_MODE_FREQUENCY = 3.8082198136353123;
@@ -536,7 +541,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
         network.setAllowGenWithoutMach(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "public PSS/E fixture load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        double simulationStep = Double.parseDouble(System.getProperty(
+        double simulationStep = Double.parseDouble(CONFIG.string(
                 "renewable.bus1062.step", Double.toString(STEP)));
         algorithm.setSimuStepSec(simulationStep);
         algorithm.setTotalSimuTimeSec(4.0);
@@ -566,7 +571,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 "InterPSS Bus-1062 public benchmark: plantMin=%.9g plantFinal=%.9g "
                         + "poiMin=%.9g poiFinal=%.9g%n",
                 plantMin, plantFinal, poiMin, poiFinal);
-        String outputVariant = System.getProperty(
+        String outputVariant = CONFIG.string(
                 "renewable.bus1062.output", "bus1062-public");
         Path output = Path.of("target", "andes-benchmarks", outputVariant,
                 "interpss.csv");

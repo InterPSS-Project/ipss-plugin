@@ -1,5 +1,7 @@
 package org.interpss.core.adapter.cim;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -24,15 +26,18 @@ import com.interpss.core.aclf.AclfNetwork;
  *
  * <p>Default source returns a <strong>subset</strong> of hours (first, +6h, +12h, last)
  * so a normal {@code cgmes-cas} run stays bounded. Set
- * {@code -Dipss.cgmes.type3.allHours=true} to exercise all 24 published hours.
+ * {@code JSON setting ipss.cgmes.type3.allHours=true} to exercise all 24 published hours.
  */
 @Tag("cgmes-cas")
 public class CGMESCasType3HourCoverageStubTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "CGMESCasType3HourCoverageStubTest");
+
 
 	private static final String TD30_CAS = "testData/adpter/cim/cgmes3.0/cas/";
 
 	private static Path casDir(String localCasDirName, String relativeUnderV30) {
-		String override = System.getProperty("ipss.cgmes.cas.root");
+		String override = CONFIG.string("ipss.cgmes.cas.root");
 		if (override != null && !override.isBlank()) {
 			return Path.of(override).resolve("v3.0").resolve(relativeUnderV30);
 		}
@@ -40,7 +45,7 @@ public class CGMESCasType3HourCoverageStubTest extends CorePluginTestSetup {
 		if (Files.isDirectory(local)) {
 			return local;
 		}
-		String home = System.getProperty("user.home");
+		String home = CONFIG.string("fixtures.home", "testData/external");
 		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "cas-v3.0.3",
 				"CGMES_ConformityAssessmentScheme_TestConfigurations_v3-0-3", "v3.0")
 				.resolve(relativeUnderV30);
@@ -59,7 +64,7 @@ public class CGMESCasType3HourCoverageStubTest extends CorePluginTestSetup {
 					.forEach(hours::add);
 		}
 		assumeTrue(!hours.isEmpty(), "No Type3 BE SSH hours found");
-		if (Boolean.getBoolean("ipss.cgmes.type3.allHours")) {
+		if (CONFIG.bool("ipss.cgmes.type3.allHours")) {
 			return hours.stream();
 		}
 		// Subset: first, ~+6h, ~+12h, last

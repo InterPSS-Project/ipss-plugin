@@ -1,5 +1,7 @@
 package org.interpss.core.adapter.ge;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -51,10 +53,13 @@ import com.interpss.core.net.NameTag;
 /**
  * Texas2k and TAMU ACTIVSg10k EPC model comparison against the RAW parser.
  * Override the default public case directories with relative or absolute paths using
- * {@code -Dipss.epc.texas2k.dir=...} and {@code -Dipss.epc.activs10k.dir=...}
+ * {@code JSON setting ipss.epc.texas2k.dir=...} and {@code JSON setting ipss.epc.activs10k.dir=...}
  * when running this optional suite.
  */
 public class Epc2k10kComparisonTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Epc2k10kComparisonTest");
+
 	private static final double FIELD_TOL = 5.0e-2;
 	private static final double LIMIT_TOL = 1.0e-1;
 	private static final double COMMON_BRANCH_MIN_COVERAGE = 0.80;
@@ -73,8 +78,8 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 			"Texas2k_series24_case5_2024highrenewables/Texas2k_series24_case5_2024highrenewables",
 			"Texas2k_series24_case6_2024lowloadwithgfm/Texas2k_series24_case6_2024lowloadwithgfm");
 
-	private static Path configuredCaseDirectory(String propertyName, Path defaultPath) {
-		String configured = System.getProperty(propertyName);
+	private static Path configuredCaseDirectory(String settingName, Path defaultPath) {
+		String configured = CONFIG.string(settingName);
 		return (configured == null || configured.isBlank()
 				? defaultPath : Path.of(configured)).normalize();
 	}
@@ -141,8 +146,8 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 
 	@Test
 	public void activs10k_importMismatchDiagnostic() throws Exception {
-		assumeTrue(Boolean.getBoolean("ipss.epc.mismatch.diagnostic"),
-				"Set -Dipss.epc.mismatch.diagnostic=true to print imported-state mismatch diagnostics");
+		assumeTrue(CONFIG.bool("ipss.epc.mismatch.diagnostic"),
+				"Set JSON setting ipss.epc.mismatch.diagnostic=true to print imported-state mismatch diagnostics");
 		Path epc = ACTIVS10K_DIR.resolve("ACTIVSg10k.EPC");
 		Path raw = ACTIVS10K_DIR.resolve("ACTIVSg10k.RAW");
 		assumeTrue(Files.isRegularFile(epc), () -> "Missing local EPC fixture: " + epc);
@@ -233,8 +238,8 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 
 	@Test
 	public void solvedLoadflowParityDiagnostic() throws Exception {
-		assumeTrue(Boolean.getBoolean("ipss.epc.solved.diagnostic"),
-				"Set -Dipss.epc.solved.diagnostic=true to print solved load-flow parity diagnostics");
+		assumeTrue(CONFIG.bool("ipss.epc.solved.diagnostic"),
+				"Set JSON setting ipss.epc.solved.diagnostic=true to print solved load-flow parity diagnostics");
 		Path activsEpc = ACTIVS10K_DIR.resolve("ACTIVSg10k.EPC");
 		Path activsRaw = ACTIVS10K_DIR.resolve("ACTIVSg10k.RAW");
 		if (Files.isRegularFile(activsEpc) && Files.isRegularFile(activsRaw)) {
@@ -253,8 +258,8 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 
 	@Test
 	public void texas2kSolvedHotspotDiagnostic() throws Exception {
-		assumeTrue(Boolean.getBoolean("ipss.epc.texas.hotspot.diagnostic"),
-				"Set -Dipss.epc.texas.hotspot.diagnostic=true to print Texas2k solved hotspot diagnostics");
+		assumeTrue(CONFIG.bool("ipss.epc.texas.hotspot.diagnostic"),
+				"Set JSON setting ipss.epc.texas.hotspot.diagnostic=true to print Texas2k solved hotspot diagnostics");
 		assumeTrue(Files.isDirectory(TEXAS2K_DIR), () -> "Missing local Texas2k fixture dir: " + TEXAS2K_DIR);
 
 		for (int caseIndex : List.of(0, 1, 2)) {
@@ -282,8 +287,8 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 
 	@Test
 	public void activs10kSolvedHotspotDiagnostic() throws Exception {
-		assumeTrue(Boolean.getBoolean("ipss.epc.activs.hotspot.diagnostic"),
-				"Set -Dipss.epc.activs.hotspot.diagnostic=true to print ACTIVSg10k solved hotspot diagnostics");
+		assumeTrue(CONFIG.bool("ipss.epc.activs.hotspot.diagnostic"),
+				"Set JSON setting ipss.epc.activs.hotspot.diagnostic=true to print ACTIVSg10k solved hotspot diagnostics");
 		Path epc = ACTIVS10K_DIR.resolve("ACTIVSg10k.EPC");
 		Path raw = ACTIVS10K_DIR.resolve("ACTIVSg10k.RAW");
 		assumeTrue(Files.isRegularFile(epc), () -> "Missing local EPC fixture: " + epc);
@@ -309,8 +314,8 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 
 	@Test
 	public void generatorControlParityDiagnostic() throws Exception {
-		assumeTrue(Boolean.getBoolean("ipss.epc.gen.control.diagnostic"),
-				"Set -Dipss.epc.gen.control.diagnostic=true to print generator control parity diagnostics");
+		assumeTrue(CONFIG.bool("ipss.epc.gen.control.diagnostic"),
+				"Set JSON setting ipss.epc.gen.control.diagnostic=true to print generator control parity diagnostics");
 		Path activsEpc = ACTIVS10K_DIR.resolve("ACTIVSg10k.EPC");
 		Path activsRaw = ACTIVS10K_DIR.resolve("ACTIVSg10k.RAW");
 		if (Files.isRegularFile(activsEpc) && Files.isRegularFile(activsRaw)) {
@@ -335,8 +340,8 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 
 	@Test
 	public void modelSignatureParityDiagnostic() throws Exception {
-		assumeTrue(Boolean.getBoolean("ipss.epc.model.signature.diagnostic"),
-				"Set -Dipss.epc.model.signature.diagnostic=true to print model signature diagnostics");
+		assumeTrue(CONFIG.bool("ipss.epc.model.signature.diagnostic"),
+				"Set JSON setting ipss.epc.model.signature.diagnostic=true to print model signature diagnostics");
 		Path activsEpc = ACTIVS10K_DIR.resolve("ACTIVSg10k.EPC");
 		Path activsRaw = ACTIVS10K_DIR.resolve("ACTIVSg10k.RAW");
 		if (Files.isRegularFile(activsEpc) && Files.isRegularFile(activsRaw)) {
@@ -501,7 +506,7 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 				+ " maxBranchFlowDiffAbs=" + maxBranchFlowDiff.abs()
 				+ " busParity=" + (maxBusVoltageDiff < 1.0e-3)
 				+ " branchParity=" + (maxBranchFlowDiff.abs() < 1.0e-2));
-		if (Boolean.getBoolean("ipss.epc.solved.adjust.diagnostic")) {
+		if (CONFIG.bool("ipss.epc.solved.adjust.diagnostic")) {
 			AclfNetwork adjustedRawNet = new PSSEDirectParser(psseVersion).parse(rawPath.toString());
 			AclfNetwork adjustedEpcNet = new EpcDirectParser().parse(epcPath.toString());
 			boolean adjustedRawSolved = runLoadflow(adjustedRawNet, true);
@@ -521,7 +526,7 @@ public class Epc2k10kComparisonTest extends CorePluginTestSetup {
 					+ " busParity=" + (adjustedMaxBusVoltageDiff < 1.0e-3)
 					+ " branchParity=" + (adjustedMaxBranchFlowDiff.abs() < 1.0e-2));
 		}
-		if (Boolean.getBoolean("ipss.epc.solved.savedcase.diagnostic")) {
+		if (CONFIG.bool("ipss.epc.solved.savedcase.diagnostic")) {
 			AclfNetwork replayRawNet = new PSSEDirectParser(psseVersion).parse(rawPath.toString());
 			AclfNetwork replayEpcNet = new EpcDirectParser().parse(epcPath.toString());
 			int rawPvToPq = replaySolvedPvLimitState(replayRawNet, 1.0e-3);

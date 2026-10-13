@@ -1,5 +1,6 @@
 package org.interpss.threePhase.system;
 
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -9,6 +10,7 @@ import java.util.Map;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSDataParser;
 import org.interpss.threePhase.dataParser.opendss.OpenDSSStaticDataParser;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
+import org.interpss.threePhase.powerflow.DistributionPowerFlowOptions;
 import org.interpss.threePhase.qsts.QstsBusVoltageSample;
 import org.interpss.threePhase.qsts.QstsControlMode;
 import org.interpss.threePhase.qsts.QstsMode;
@@ -18,6 +20,7 @@ import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 import org.junit.jupiter.api.Test;
 
 public class RegulatorSymbolicUpdatePerformanceTest {
+
 	private static final double VOLTAGE_MAG_TOLERANCE = 1.0e-6;
 	private static final double VOLTAGE_ANGLE_TOLERANCE = 1.0e-4;
 
@@ -53,44 +56,35 @@ public class RegulatorSymbolicUpdatePerformanceTest {
 	}
 
 	private static SolvedMode solveIeee123(Mode mode) {
-		String oldDisableSymbolReuse = System.getProperty("ipss.qsts.disableFixedPointSymbolReuse");
-		String oldDisableValueUpdate = System.getProperty("ipss.qsts.disableFixedPointValueUpdate");
-		try {
-			setBooleanProperty("ipss.qsts.disableFixedPointSymbolReuse", mode.disableSymbolReuse);
-			setBooleanProperty("ipss.qsts.disableFixedPointValueUpdate", mode.disableValueUpdate);
+		OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
+		assertTrue(parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master.dss"));
+		assertTrue(parser.calcVoltageBases());
+		assertTrue(parser.convertActualValuesToPU(1.0));
 
-			OpenDSSStaticDataParser parser = OpenDSSDataParser.forStaticNetwork();
-			assertTrue(parser.parseFeederData("testData/feeder/IEEE123", "IEEE123Master.dss"));
-			assertTrue(parser.calcVoltageBases());
-			assertTrue(parser.convertActualValuesToPU(1.0));
-
-			DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
-					.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
-			long startNanos = System.nanoTime();
-			QstsResult result = OpenDSSQstsStudyFactory.from(parser)
-					.setPowerFlowAlgorithm(algorithm)
-					.setMode(QstsMode.DAILY)
-					.setNumberOfSteps(3)
-					.setStepSizeHours(1.0)
-					.setControlMode(QstsControlMode.STATIC)
-					.setMaxControlIterations(20)
-					.setMaxPowerFlowIterations(200)
-					.setTolerance(1.0e-8)
-					.run();
-			long elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000L;
-			System.out.println("QSTS IEEE123 regulator mode=" + mode
-					+ ", converged=" + result.isConverged()
-					+ ", elapsedMillis=" + elapsedMillis
-					+ ", symbolicFactors=" + algorithm.getFixedPointYMatrixSymbolicFactorizationCount()
-					+ ", numericFactors=" + algorithm.getFixedPointYMatrixNumericFactorizationCount()
-					+ ", valueUpdates=" + algorithm.getFixedPointYMatrixValueUpdateCount()
-					+ ", fallbackCount=" + algorithm.getFixedPointFallbackCount());
-			return new SolvedMode(mode, result, algorithm, elapsedMillis);
-		}
-		finally {
-			restoreProperty("ipss.qsts.disableFixedPointSymbolReuse", oldDisableSymbolReuse);
-			restoreProperty("ipss.qsts.disableFixedPointValueUpdate", oldDisableValueUpdate);
-		}
+		DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
+				.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
+		algorithm.setPowerFlowOptions(DistributionPowerFlowOptions.withMatrixReuse(
+				!mode.disableSymbolReuse, !mode.disableValueUpdate));
+		long startNanos = System.nanoTime();
+		QstsResult result = OpenDSSQstsStudyFactory.from(parser)
+				.setPowerFlowAlgorithm(algorithm)
+				.setMode(QstsMode.DAILY)
+				.setNumberOfSteps(3)
+				.setStepSizeHours(1.0)
+				.setControlMode(QstsControlMode.STATIC)
+				.setMaxControlIterations(20)
+				.setMaxPowerFlowIterations(200)
+				.setTolerance(1.0e-8)
+				.run();
+		long elapsedMillis = (System.nanoTime() - startNanos) / 1_000_000L;
+		System.out.println("QSTS IEEE123 regulator mode=" + mode
+				+ ", converged=" + result.isConverged()
+				+ ", elapsedMillis=" + elapsedMillis
+				+ ", symbolicFactors=" + algorithm.getFixedPointYMatrixSymbolicFactorizationCount()
+				+ ", numericFactors=" + algorithm.getFixedPointYMatrixNumericFactorizationCount()
+				+ ", valueUpdates=" + algorithm.getFixedPointYMatrixValueUpdateCount()
+				+ ", fallbackCount=" + algorithm.getFixedPointFallbackCount());
+		return new SolvedMode(mode, result, algorithm, elapsedMillis);
 	}
 
 	private static void assertVoltageParity(QstsResult expected, QstsResult actual) {
@@ -113,24 +107,6 @@ public class RegulatorSymbolicUpdatePerformanceTest {
 			samples.put(sample.getStepIndex() + "|" + sample.getBusId() + "|" + sample.getPhase(), sample);
 		}
 		return samples;
-	}
-
-	private static void setBooleanProperty(String key, boolean value) {
-		if(value) {
-			System.setProperty(key, "true");
-		}
-		else {
-			System.clearProperty(key);
-		}
-	}
-
-	private static void restoreProperty(String key, String value) {
-		if(value == null) {
-			System.clearProperty(key);
-		}
-		else {
-			System.setProperty(key, value);
-		}
 	}
 
 	private enum Mode {

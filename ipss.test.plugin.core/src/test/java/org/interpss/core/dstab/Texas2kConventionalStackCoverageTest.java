@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -25,7 +27,10 @@ import com.interpss.dstab.BaseDStabNetwork;
 
 /** End-to-end attachment gate for the conventional generator stacks. */
 class Texas2kConventionalStackCoverageTest {
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kConventionalStackCoverageTest");
+
+    private static final Path ROOT = Path.of(CONFIG.string("texas2k.case.root",
             Path.of("testData", "private", "texas2k").toString()));
     private static final Set<String> CONVENTIONAL_CONTROLLERS = Set.of(
             "EXST1", "IEEET1", "ESST1A", "ESST4B",

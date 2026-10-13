@@ -1,5 +1,7 @@
 package org.interpss.plugin.contingency.dclf;
 
+import org.interpss.test.TestConfig;
+
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
 import static com.interpss.core.DclfAlgoObjectFactory.createMultiOutageContingency;
@@ -38,17 +40,20 @@ import com.interpss.core.contingency.dclf.DclfOutageBranch;
 
 import org.interpss.fadapter.psse.PSSEDirectParser;
 public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "DclfMixedActionComparisonTest");
+
     private static final double MW_TOLERANCE = 1.0e-4;
     private static final int CLOSE_TARGET_COUNT = 20;
     private static final int OPEN_CANDIDATE_COUNT = 100;
     private static final int MONITOR_COUNT = 40;
     private static final int PARALLELISM = 4;
-    private static final int STRESS_MIXED_COUNT = Integer.getInteger("interpss.dclfMixedStress.mixedCount", 70);
-    private static final int STRESS_SINGULAR_COUNT = Integer.getInteger("interpss.dclfMixedStress.singularCount", 30);
+    private static final int STRESS_MIXED_COUNT = CONFIG.integer("interpss.dclfMixedStress.mixedCount", 70);
+    private static final int STRESS_SINGULAR_COUNT = CONFIG.integer("interpss.dclfMixedStress.singularCount", 30);
     private static final int STRESS_CLOSE_TARGET_COUNT = 40;
     private static final int STRESS_OPEN_CANDIDATE_COUNT = 240;
     private static final int STRESS_SOLVABLE_OPEN_PREFIX_COUNT =
-            Integer.getInteger("interpss.dclfMixedStress.solvableOpenPrefixes", 1);
+            CONFIG.integer("interpss.dclfMixedStress.solvableOpenPrefixes", 1);
     private static final int[][] MIXED_ACTION_PATTERNS = {
             {1, 1},
             {2, 1},
@@ -67,9 +72,9 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
     @Test
     @Tag("large")
     public void compareTexasAndActivsOpenCloseAndMixedContingencies() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.largeDclfMixedActionTests")
-                        || Boolean.getBoolean("interpss.largeDclfTests"),
-                "Set -Dinterpss.largeDclfMixedActionTests=true to run Texas2k/Texas7k/ACTIVSg25k mixed-action tests");
+        assumeTrue(CONFIG.bool("interpss.largeDclfMixedActionTests")
+                        || CONFIG.bool("interpss.largeDclfTests"),
+                "Set JSON setting interpss.largeDclfMixedActionTests=true to run Texas2k/Texas7k/ACTIVSg25k mixed-action tests");
 
         for (CaseSpec caseSpec : List.of(
                 CaseSpec.psse("Texas2k", Path.of("testData/psse/v36/Texas2k/Texas2k_series24_case1_2016summerPeak_v36.RAW")),
@@ -83,9 +88,9 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
     @Test
     @Tag("large")
     public void compareTexas7kAndActivs25kMixedStressContingencies() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.largeDclfMixedActionTests")
-                        || Boolean.getBoolean("interpss.largeDclfTests"),
-                "Set -Dinterpss.largeDclfMixedActionTests=true to run Texas7k/ACTIVSg25k mixed stress tests");
+        assumeTrue(CONFIG.bool("interpss.largeDclfMixedActionTests")
+                        || CONFIG.bool("interpss.largeDclfTests"),
+                "Set JSON setting interpss.largeDclfMixedActionTests=true to run Texas7k/ACTIVSg25k mixed stress tests");
 
         for (CaseSpec caseSpec : List.of(
                 CaseSpec.psse("Texas7k", TEXAS7K_DIR.resolve("Texas7k_20210804.RAW")),
@@ -107,7 +112,7 @@ public class DclfMixedActionComparisonTest extends CorePluginTestSetup {
         List<Scenario> scenarios = scenarios(net, openBranches, closeBranches);
         List<DclfMultiOutage> contingencies = contingencies(net, scenarios);
         DclfContingencySolutionMethod solutionMethod =
-                DclfContingencySolutionMethod.valueOf(System.getProperty(
+                DclfContingencySolutionMethod.valueOf(CONFIG.string(
                         "interpss.dclfMixedComparison.solutionMethod",
                         DclfContingencySolutionMethod.WoodburyMatrixUpdate.name()));
 
