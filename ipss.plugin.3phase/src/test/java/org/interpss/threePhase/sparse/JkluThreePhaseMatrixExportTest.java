@@ -1,5 +1,7 @@
 package org.interpss.threePhase.sparse;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -33,14 +35,17 @@ import com.interpss.core.sparse.impl.AbstractSparseEqnComplexImpl;
  * three-phase feeder Y matrices.
  */
 public class JkluThreePhaseMatrixExportTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.plugin.3phase.json", "JkluThreePhaseMatrixExportTest");
+
 	private static final String EXPORT_DIR = "jklu.3phase.matrix.export.dir";
 	private static final String CASES = "jklu.3phase.matrix.export.cases";
 
 	@Test
 	public void exportOpenDssYMatrixCases() throws Exception {
-		String dir = System.getProperty(EXPORT_DIR);
+		String dir = CONFIG.string(EXPORT_DIR);
 		assumeTrue(dir != null && dir.trim().length() > 0,
-				"Set -D" + EXPORT_DIR + "=<dir> to generate JKLU Matrix Market cases");
+				"Set JSON setting " + EXPORT_DIR + "=<dir> to generate JKLU Matrix Market cases");
 
 		Path outputDir = Paths.get(dir);
 		Files.createDirectories(outputDir);
@@ -58,7 +63,7 @@ public class JkluThreePhaseMatrixExportTest {
 	}
 
 	private static String[] requestedCases() {
-		String value = System.getProperty(CASES, "Ckt24,Ckt7,IEEE8500");
+		String value = CONFIG.string(CASES, "Ckt24,Ckt7,IEEE8500");
 		return value.split(",");
 	}
 

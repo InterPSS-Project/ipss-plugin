@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -41,6 +43,9 @@ import org.interpss.dstab.renewable.Regfma1Model;
  * Series-24 PSS/E cases. The committed test contains no licensed case data.
  */
 public class Texas2kTopologyFaultMatrixTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kTopologyFaultMatrixTest");
+
     private static final double STEP = 1.0 / 240.0;
     private static final Path SITE_MANIFEST = Path.of("testData", "expected",
             "texas2k_topology_fault_sites.csv");
@@ -65,7 +70,7 @@ public class Texas2kTopologyFaultMatrixTest {
     }
 
     private static Path relativeCaseRoot() {
-        Path path = Path.of(System.getProperty("texas2k.case.root",
+        Path path = Path.of(CONFIG.string("texas2k.case.root",
                 Path.of("testData", "private", "texas2k").toString()));
         if (path.isAbsolute() || path.getRoot() != null) {
             throw new IllegalArgumentException("texas2k.case.root must be a relative path");
@@ -93,8 +98,8 @@ public class Texas2kTopologyFaultMatrixTest {
 
     @Test
     void runTopologySelectedFaultMatrix() throws Exception {
-        assumeTrue(Boolean.getBoolean("texas2k.fault.matrix.enabled"),
-                "Enable with -Dtexas2k.fault.matrix.enabled=true");
+        assumeTrue(CONFIG.bool("texas2k.fault.matrix.enabled"),
+                "Enable with JSON setting texas2k.fault.matrix.enabled=true");
         assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
 
         List<FaultSite> sites = faultSites();

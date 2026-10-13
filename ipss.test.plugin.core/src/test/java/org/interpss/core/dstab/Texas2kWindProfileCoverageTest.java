@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -20,7 +22,10 @@ import org.junit.jupiter.api.Test;
 
 /** Generated behavioral coverage over every distinct Texas2k wind-control profile. */
 public class Texas2kWindProfileCoverageTest {
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.dynamic.case.dir",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kWindProfileCoverageTest");
+
+    private static final Path ROOT = Path.of(CONFIG.string("texas2k.dynamic.case.dir",
             Path.of("testData", "private", "texas2k").toString()));
     private static final List<String> CASES = List.of(
             "Texas2k_series24_case1_2016summerpeak/dynamic_models_case1.dyr",

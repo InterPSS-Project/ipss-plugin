@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -31,7 +33,10 @@ import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.simu.SimuContext;
 
 class Wecc240FaultBenchmarkTest {
-    private static final Path CASE_DIR = Path.of(System.getProperty("wecc240.case.dir",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Wecc240FaultBenchmarkTest");
+
+    private static final Path CASE_DIR = Path.of(CONFIG.string("wecc240.case.dir",
             Path.of("testData", "private", "wecc240",
                     "WECC 240-bus case (2018 summar peak) for 2021 IEEE-NASPI OSL Contest")
                     .toString()));

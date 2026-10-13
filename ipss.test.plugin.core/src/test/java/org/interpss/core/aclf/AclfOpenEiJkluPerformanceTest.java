@@ -1,5 +1,7 @@
 package org.interpss.core.aclf;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -19,20 +21,21 @@ import com.interpss.core.sparse.solver.klu.KLUSolverProfiler;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class AclfOpenEiJkluPerformanceTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "AclfOpenEiJkluPerformanceTest");
+
 	private static final String OPEN_EI_RAW =
 			"testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW";
 
 	@Test
 	public void compareCsjAndJkluForOpenEiAclf() throws Exception {
-		assumeTrue(Boolean.getBoolean("interpss.largeAclfTests"),
-				"Set -Dinterpss.largeAclfTests=true to run the OpenEI ACLF benchmark");
+		assumeTrue(CONFIG.bool("interpss.largeAclfTests"),
+				"Set JSON setting interpss.largeAclfTests=true to run the OpenEI ACLF benchmark");
 
-		int warmups = Math.max(0, Integer.getInteger("interpss.aclfOpenEiWarmups", 1));
-		int repeats = Math.max(1, Integer.getInteger("interpss.aclfOpenEiRepeats", 3));
-		String previousProfile = System.getProperty(KLUSolverProfiler.ENABLED_PROPERTY);
-		String previousNrProfile = System.getProperty(LfNrProfiler.ENABLED_PROPERTY);
-		System.setProperty(KLUSolverProfiler.ENABLED_PROPERTY, "true");
-		System.setProperty(LfNrProfiler.ENABLED_PROPERTY, "true");
+		int warmups = Math.max(0, CONFIG.integer("interpss.aclfOpenEiWarmups", 1));
+		int repeats = Math.max(1, CONFIG.integer("interpss.aclfOpenEiRepeats", 3));
+
+
 
 		System.out.println("case,solver,repeat,warmup,buses,branches,importMs,loadflowMs,totalMs,"
 				+ "converged,maxP,maxQ,cscBuildMs,analyzeMs,factorMs,refactorMs,solveMs,"
@@ -40,7 +43,8 @@ public class AclfOpenEiJkluPerformanceTest extends CorePluginTestSetup {
 				+ "nrMismatchMs,nrAdjustmentMs,nrCoreStepMs,nrJMatrixMs,nrRhsMs,nrSolveMs,"
 				+ "nrUpdateVoltageMs,nrResetMs,nrIterations,nrRebuilds");
 
-		try {
+        try (var kluProfile = KLUSolverProfiler.withEnabled(true);
+             var nrProfile = LfNrProfiler.withEnabled(true)) {
 			for (int repeat = 0; repeat < warmups + repeats; repeat++) {
 				boolean warmup = repeat < warmups;
 				int reportedRepeat = warmup ? 0 : repeat - warmups + 1;
@@ -48,14 +52,6 @@ public class AclfOpenEiJkluPerformanceTest extends CorePluginTestSetup {
 				printRun("OpenEI", "JAVA_KLU", reportedRepeat, warmup, runOnce(true));
 			}
 		} finally {
-			if (previousProfile == null)
-				System.clearProperty(KLUSolverProfiler.ENABLED_PROPERTY);
-			else
-				System.setProperty(KLUSolverProfiler.ENABLED_PROPERTY, previousProfile);
-			if (previousNrProfile == null)
-				System.clearProperty(LfNrProfiler.ENABLED_PROPERTY);
-			else
-				System.setProperty(LfNrProfiler.ENABLED_PROPERTY, previousNrProfile);
 			SparseEqnSolverProvider.useCSJ();
 		}
 	}
@@ -74,7 +70,7 @@ public class AclfOpenEiJkluPerformanceTest extends CorePluginTestSetup {
 
 		LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 		algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
-		AclfMethodType method = AclfMethodType.valueOf(System.getProperty("interpss.aclfOpenEiMethod", "NR"));
+		AclfMethodType method = AclfMethodType.valueOf(CONFIG.string("interpss.aclfOpenEiMethod", "NR"));
 		algo.setLfMethod(method);
 		algo.setTolerance(0.0001);
 

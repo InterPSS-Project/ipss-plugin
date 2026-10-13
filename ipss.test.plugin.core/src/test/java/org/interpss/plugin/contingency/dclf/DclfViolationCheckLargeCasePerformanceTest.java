@@ -1,5 +1,7 @@
 package org.interpss.plugin.contingency.dclf;
 
+import org.interpss.test.TestConfig;
+
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
@@ -67,12 +69,15 @@ import com.interpss.monitor.result.FlowgateViolationResult;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "DclfViolationCheckLargeCasePerformanceTest");
+
     private static final double NO_VIOLATION_LIMIT_MW = 1.0e9;
 
     @Test
     public void compareViolationCheckOverheadOnLargeCases() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.largeViolationCheckPerf"),
-                "Set -Dinterpss.largeViolationCheckPerf=true to run large violation-check performance tests");
+        assumeTrue(CONFIG.bool("interpss.largeViolationCheckPerf"),
+                "Set JSON setting interpss.largeViolationCheckPerf=true to run large violation-check performance tests");
 
         SparseEqnSolverProvider.useJavaKlu();
 
@@ -83,42 +88,42 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         System.out.println("case,checkType,repeat,warmup,contingencies,monitors,checkCount,parallelism,elapsedMs,results");
 
         runCase("ACTIVSg25k",
-                Path.of(property("interpss.violationCheckPerf25k",
+                Path.of(setting("interpss.violationCheckPerf25k",
                         "testData/psse/v33/ACTIVSg25k.RAW")),
                 optionalPath("interpss.violationCheckPerf25kContJson", null),
                 true);
 
         runCase("ACTIVSg70k",
-                Path.of(property("interpss.violationCheckPerf70k",
+                Path.of(setting("interpss.violationCheckPerf70k",
                         "/Users/ipssdev/Downloads/ACTIVSg70k/ACTIVSg70k.RAW")),
                 optionalPath("interpss.violationCheckPerf70kContJson",
                         "/Users/ipssdev/Downloads/ACTIVSg70k/ACTIVSg70k_filtered_contingencies.json"),
-                Boolean.getBoolean("interpss.violationCheckPerfInclude70k"));
+                CONFIG.bool("interpss.violationCheckPerfInclude70k"));
     }
 
     @Test
     @Tag("large")
     public void compareActivs70kSingleVsMultiLineOutageTiming() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.activs70kSingleVsMultiTiming"),
-                "Set -Dinterpss.activs70kSingleVsMultiTiming=true to run ACTIVSg70k single vs multi outage timing");
+        assumeTrue(CONFIG.bool("interpss.activs70kSingleVsMultiTiming"),
+                "Set JSON setting interpss.activs70kSingleVsMultiTiming=true to run ACTIVSg70k single vs multi outage timing");
 
         SparseEqnSolverProvider.useJavaKlu();
 
-        Path rawPath = Path.of(property("interpss.activs70kRaw",
+        Path rawPath = Path.of(setting("interpss.activs70kRaw",
                 "/Users/ipssdev/Downloads/ACTIVSg70k/ACTIVSg70k.RAW"));
-        Path multiJsonPath = Path.of(property("interpss.activs70kMultiJson",
+        Path multiJsonPath = Path.of(setting("interpss.activs70kMultiJson",
                 "testData/psse/v33/ACTIVSg70k_random_multiline_outages_10000_n3_n4.json"));
         assumeTrue(Files.isRegularFile(rawPath), "ACTIVSg70k RAW not found: " + rawPath);
         assumeTrue(Files.isRegularFile(multiJsonPath), "ACTIVSg70k multi-outage JSON not found: " + multiJsonPath);
 
-        int contingencyCount = intProperty("interpss.activs70kTimingContingencies", 1000);
-        int monitorCount = intProperty("interpss.activs70kTimingMonitors", 1000);
-        int warmups = intProperty("interpss.activs70kTimingWarmups", 0);
-        int repeats = intProperty("interpss.activs70kTimingRepeats", 1);
-        int parallelism = intProperty("interpss.activs70kTimingParallelism", 4);
-        int rhsBatchSize = intProperty("interpss.activs70kTimingRhsBatchSize", 64);
+        int contingencyCount = intSetting("interpss.activs70kTimingContingencies", 1000);
+        int monitorCount = intSetting("interpss.activs70kTimingMonitors", 1000);
+        int warmups = intSetting("interpss.activs70kTimingWarmups", 0);
+        int repeats = intSetting("interpss.activs70kTimingRepeats", 1);
+        int parallelism = intSetting("interpss.activs70kTimingParallelism", 4);
+        int rhsBatchSize = intSetting("interpss.activs70kTimingRhsBatchSize", 64);
         DclfContingencySolutionMethod solutionMethod =
-                DclfContingencySolutionMethod.valueOf(property(
+                DclfContingencySolutionMethod.valueOf(setting(
                         "interpss.activs70kTimingSolutionMethod",
                         DclfContingencySolutionMethod.SparseEqnSolve.name()));
 
@@ -141,7 +146,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         config.setDclfInclLoss(false);
         config.setSolutionMethod(solutionMethod);
         config.setKluEndpointRhsBatchSize(rhsBatchSize);
-        config.setIslandingTreatment(DclfIslandingTreatment.valueOf(property(
+        config.setIslandingTreatment(DclfIslandingTreatment.valueOf(setting(
                 "interpss.activs70kTimingIslandingTreatment",
                 DclfIslandingTreatment.FULL_DCLF_REPLAY.name())));
 
@@ -166,26 +171,26 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
     @Test
     @Tag("large")
     public void benchmarkActivs70kMultiBranchOutageAnalysis() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.activs70kMultiBranchTiming"),
-                "Set -Dinterpss.activs70kMultiBranchTiming=true to run ACTIVSg70k multiBranchOutageAnalysis timing");
+        assumeTrue(CONFIG.bool("interpss.activs70kMultiBranchTiming"),
+                "Set JSON setting interpss.activs70kMultiBranchTiming=true to run ACTIVSg70k multiBranchOutageAnalysis timing");
 
         SparseEqnSolverProvider.useJavaKlu();
 
-        Path rawPath = Path.of(property("interpss.activs70kRaw",
+        Path rawPath = Path.of(setting("interpss.activs70kRaw",
                 "/Users/ipssdev/Downloads/ACTIVSg70k/ACTIVSg70k.RAW"));
-        Path multiJsonPath = Path.of(property("interpss.activs70kMultiJson",
+        Path multiJsonPath = Path.of(setting("interpss.activs70kMultiJson",
                 "testData/psse/v33/ACTIVSg70k_random_multiline_outages_10000_n3_n4.json"));
         assumeTrue(Files.isRegularFile(rawPath), "ACTIVSg70k RAW not found: " + rawPath);
         assumeTrue(Files.isRegularFile(multiJsonPath), "ACTIVSg70k multi-outage JSON not found: " + multiJsonPath);
 
-        int contingencyCount = intProperty("interpss.activs70kMultiBranchContingencies", 100);
-        int warmups = intProperty("interpss.activs70kMultiBranchWarmups", 1);
-        int repeats = intProperty("interpss.activs70kMultiBranchRepeats", 3);
-        int candidateMultiplier = intProperty("interpss.activs70kMultiBranchCandidateMultiplier", 4);
+        int contingencyCount = intSetting("interpss.activs70kMultiBranchContingencies", 100);
+        int warmups = intSetting("interpss.activs70kMultiBranchWarmups", 1);
+        int repeats = intSetting("interpss.activs70kMultiBranchRepeats", 3);
+        int candidateMultiplier = intSetting("interpss.activs70kMultiBranchCandidateMultiplier", 4);
         boolean requireSolvable = Boolean.parseBoolean(
-                property("interpss.activs70kMultiBranchRequireSolvable", "true"));
+                setting("interpss.activs70kMultiBranchRequireSolvable", "true"));
         boolean requireFullRank = Boolean.parseBoolean(
-                property("interpss.activs70kMultiBranchRequireFullRank", "true"));
+                setting("interpss.activs70kMultiBranchRequireFullRank", "true"));
 
         AclfNetwork net = new PSSEDirectParser().parse(rawPath.toString());
         ContingencyAnalysisAlgorithm dclfAlgo =
@@ -193,7 +198,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         dclfAlgo.setSolutionMethod(DclfContingencySolutionMethod.SparseEqnSolve);
         dclfAlgo.calculateDclf();
 
-        String definitionToken = property("interpss.activs70kMultiBranchDefinitionToken", "RANDOM");
+        String definitionToken = setting("interpss.activs70kMultiBranchDefinitionToken", "RANDOM");
         List<DclfMultiOutage> multiOutages =
                 loadMultiOutagesByNameToken(
                         dclfAlgo,
@@ -230,25 +235,25 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
     @Test
     @Tag("large")
     public void profileActivs70kFullReplayOneBusIslandContingencies() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.activs70kFullReplayProfile"),
-                "Set -Dinterpss.activs70kFullReplayProfile=true to run ACTIVSg70k full replay profiling");
+        assumeTrue(CONFIG.bool("interpss.activs70kFullReplayProfile"),
+                "Set JSON setting interpss.activs70kFullReplayProfile=true to run ACTIVSg70k full replay profiling");
 
         SparseEqnSolverProvider.useJavaKlu();
 
-        Path rawPath = Path.of(property("interpss.activs70kRaw",
+        Path rawPath = Path.of(setting("interpss.activs70kRaw",
                 "/Users/ipssdev/Downloads/ACTIVSg70k/ACTIVSg70k.RAW"));
-        Path multiJsonPath = Path.of(property("interpss.activs70kMultiJson",
+        Path multiJsonPath = Path.of(setting("interpss.activs70kMultiJson",
                 "testData/psse/v33/ACTIVSg70k_random_multiline_outages_10000_n3_n4.json"));
         assumeTrue(Files.isRegularFile(rawPath), "ACTIVSg70k RAW not found: " + rawPath);
         assumeTrue(Files.isRegularFile(multiJsonPath), "ACTIVSg70k multi-outage JSON not found: " + multiJsonPath);
 
-        int contingencyCount = intProperty("interpss.activs70kFullReplayContingencies", 50);
-        int monitorCount = intProperty("interpss.activs70kFullReplayMonitors", 1000);
-        int warmups = intProperty("interpss.activs70kFullReplayWarmups", 1);
-        int repeats = intProperty("interpss.activs70kFullReplayRepeats", 3);
-        int parallelism = intProperty("interpss.activs70kFullReplayParallelism", 1);
-        int rhsBatchSize = intProperty("interpss.activs70kFullReplayRhsBatchSize", 64);
-        String definitionToken = System.getProperty("interpss.activs70kFullReplayDefinitionToken");
+        int contingencyCount = intSetting("interpss.activs70kFullReplayContingencies", 50);
+        int monitorCount = intSetting("interpss.activs70kFullReplayMonitors", 1000);
+        int warmups = intSetting("interpss.activs70kFullReplayWarmups", 1);
+        int repeats = intSetting("interpss.activs70kFullReplayRepeats", 3);
+        int parallelism = intSetting("interpss.activs70kFullReplayParallelism", 1);
+        int rhsBatchSize = intSetting("interpss.activs70kFullReplayRhsBatchSize", 64);
+        String definitionToken = CONFIG.string("interpss.activs70kFullReplayDefinitionToken");
 
         AclfNetwork net = new PSSEDirectParser().parse(rawPath.toString());
         ContingencyAnalysisAlgorithm dclfAlgo = createContingencyAnalysisAlgorithm(net);
@@ -269,7 +274,7 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
         config.setDclfInclLoss(false);
         config.setSolutionMethod(DclfContingencySolutionMethod.SparseEqnSolve);
         config.setKluEndpointRhsBatchSize(rhsBatchSize);
-        DclfIslandingTreatment islandingTreatment = DclfIslandingTreatment.valueOf(property(
+        DclfIslandingTreatment islandingTreatment = DclfIslandingTreatment.valueOf(setting(
                 "interpss.activs70kFullReplayIslandingTreatment",
                 DclfIslandingTreatment.FULL_DCLF_REPLAY.name()));
         config.setIslandingTreatment(islandingTreatment);
@@ -292,21 +297,21 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
             Path contingencyJsonPath,
             boolean enabled) throws Exception {
         if (!enabled) {
-            System.out.println(caseName + ",skipped,set include property to true");
+            System.out.println(caseName + ",skipped,set include setting to true");
             return;
         }
         assumeTrue(Files.isRegularFile(rawPath), "Case file not found: " + rawPath);
 
         AclfNetwork net = new PSSEDirectParser().parse(rawPath.toString());
-        int maxContingencies = intProperty("interpss.violationCheckPerfMaxCont", 300);
-        int maxMonitors = intProperty("interpss.violationCheckPerfMaxMon", 1000);
-        int warmups = intProperty("interpss.violationCheckPerfWarmups", 1);
-        int repeats = intProperty("interpss.violationCheckPerfRepeats", 3);
-        int parallelism = intProperty("interpss.violationCheckPerfParallelism", 4);
-        int rhsBatchSize = intProperty("interpss.violationCheckPerfRhsBatchSize", 64);
-        int maxFlowgates = intProperty("interpss.violationCheckPerfMaxFlowgates", 500);
-        int maxFlowgateContingencies = intProperty("interpss.violationCheckPerfMaxFlowgateContingencies", 50);
-        int maxNomograms = intProperty("interpss.violationCheckPerfMaxNomograms", 1000);
+        int maxContingencies = intSetting("interpss.violationCheckPerfMaxCont", 300);
+        int maxMonitors = intSetting("interpss.violationCheckPerfMaxMon", 1000);
+        int warmups = intSetting("interpss.violationCheckPerfWarmups", 1);
+        int repeats = intSetting("interpss.violationCheckPerfRepeats", 3);
+        int parallelism = intSetting("interpss.violationCheckPerfParallelism", 4);
+        int rhsBatchSize = intSetting("interpss.violationCheckPerfRhsBatchSize", 64);
+        int maxFlowgates = intSetting("interpss.violationCheckPerfMaxFlowgates", 500);
+        int maxFlowgateContingencies = intSetting("interpss.violationCheckPerfMaxFlowgateContingencies", 50);
+        int maxNomograms = intSetting("interpss.violationCheckPerfMaxNomograms", 1000);
 
         PreparedStudy study = prepareStudy(net, maxContingencies, maxMonitors);
         if (contingencyJsonPath != null) {
@@ -905,18 +910,18 @@ public class DclfViolationCheckLargeCasePerformanceTest extends CorePluginTestSe
                 + "," + result.resultCount);
     }
 
-    private static String property(String name, String defaultValue) {
-        String value = System.getProperty(name);
+    private static String setting(String name, String defaultValue) {
+        String value = CONFIG.string(name);
         return value == null || value.isBlank() ? defaultValue : value;
     }
 
     private static Path optionalPath(String name, String defaultValue) {
-        String value = property(name, defaultValue);
+        String value = setting(name, defaultValue);
         return value == null || value.isBlank() ? null : Path.of(value);
     }
 
-    private static int intProperty(String name, int defaultValue) {
-        return Integer.getInteger(name, defaultValue);
+    private static int intSetting(String name, int defaultValue) {
+        return CONFIG.integer(name, defaultValue);
     }
 
     private static double ms(long nanos) {

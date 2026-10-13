@@ -1,5 +1,7 @@
 package org.interpss.threePhase.system;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -31,6 +33,9 @@ import org.junit.jupiter.api.Test;
  * does not end with Test so it is not picked up by the default Surefire scan.
  */
 public class QstsLargeFeederComparisonExport {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.plugin.3phase.json", "QstsLargeFeederComparisonExport");
+
 	private static final FeederCase CKT24 = new FeederCase("ckt24", "Ckt24",
 			"testData/feeder/Ckt24", "master_ckt24_interpss.dss");
 	private static final FeederCase IEEE8500 = new FeederCase("ieee8500", "IEEE8500",
@@ -38,29 +43,29 @@ public class QstsLargeFeederComparisonExport {
 
 	@Test
 	void exportBusVoltages() throws IOException {
-		int steps = Integer.getInteger("qsts.compare.steps", 24);
-		String caseSelector = System.getProperty("qsts.compare.case", "all");
+		int steps = CONFIG.integer("qsts.compare.steps", 24);
+		String caseSelector = CONFIG.string("qsts.compare.case", "all");
 		QstsControlMode controlMode = QstsControlMode.from(
-				System.getProperty("qsts.compare.controlMode", "STATIC"));
-		QstsMode qstsMode = QstsMode.from(System.getProperty("qsts.compare.mode", "DAILY"));
-		double stepSizeHours = Double.parseDouble(System.getProperty("qsts.compare.stepSizeHours", "1.0"));
-		int startIndex = Integer.getInteger("qsts.compare.startIndex", 0);
-		int maxControlIterations = Integer.getInteger("qsts.compare.maxControlIterations", 100);
-		double tolerance = Double.parseDouble(System.getProperty("qsts.compare.tolerance", "1.0e-4"));
+				CONFIG.string("qsts.compare.controlMode", "STATIC"));
+		QstsMode qstsMode = QstsMode.from(CONFIG.string("qsts.compare.mode", "DAILY"));
+		double stepSizeHours = Double.parseDouble(CONFIG.string("qsts.compare.stepSizeHours", "1.0"));
+		int startIndex = CONFIG.integer("qsts.compare.startIndex", 0);
+		int maxControlIterations = CONFIG.integer("qsts.compare.maxControlIterations", 100);
+		double tolerance = Double.parseDouble(CONFIG.string("qsts.compare.tolerance", "1.0e-4"));
 		boolean regControlsEnabled = Boolean.parseBoolean(
-				System.getProperty("qsts.compare.regControlsEnabled", "true"));
+				CONFIG.string("qsts.compare.regControlsEnabled", "true"));
 		boolean capControlsEnabled = Boolean.parseBoolean(
-				System.getProperty("qsts.compare.capControlsEnabled", "true"));
+				CONFIG.string("qsts.compare.capControlsEnabled", "true"));
 		boolean allowDisabledControls = Boolean.parseBoolean(
-				System.getProperty("qsts.compare.allowDisabledControls", "false"));
+				CONFIG.string("qsts.compare.allowDisabledControls", "false"));
 		requireEnabledControls(controlMode, maxControlIterations, regControlsEnabled,
 				capControlsEnabled, allowDisabledControls);
-		Path outputDir = Path.of(System.getProperty("qsts.compare.outputDir",
+		Path outputDir = Path.of(CONFIG.string("qsts.compare.outputDir",
 				"target/qsts-comparison"));
 		Files.createDirectories(outputDir);
 
 		for(FeederCase feeder : selectedFeeders(caseSelector)) {
-			feeder = withMasterOverride(feeder, System.getProperty("qsts.compare.masterFile"));
+			feeder = withMasterOverride(feeder, CONFIG.string("qsts.compare.masterFile"));
 			QstsExportResult export = runQsts(feeder, steps, qstsMode, stepSizeHours,
 					startIndex, controlMode, maxControlIterations, tolerance,
 					regControlsEnabled, capControlsEnabled);
@@ -246,16 +251,16 @@ public class QstsLargeFeederComparisonExport {
 		}
 		assertTrue(controlMode != QstsControlMode.OFF,
 				"Large-feeder QSTS comparisons must run with controls enabled; set "
-						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
+						+ "JSON setting qsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
 		assertTrue(maxControlIterations >= 100,
 				"Large-feeder QSTS comparisons must allow at least 100 control iterations; set "
-						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
+						+ "JSON setting qsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
 		assertTrue(regControlsEnabled,
 				"Large-feeder QSTS comparisons must keep regulator controls enabled; set "
-						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
+						+ "JSON setting qsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
 		assertTrue(capControlsEnabled,
 				"Large-feeder QSTS comparisons must keep capacitor controls enabled; set "
-						+ "-Dqsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
+						+ "JSON setting qsts.compare.allowDisabledControls=true only for frozen-state diagnostics");
 	}
 
 	private static String controlTag(QstsControlMode controlMode, boolean regControlsEnabled,

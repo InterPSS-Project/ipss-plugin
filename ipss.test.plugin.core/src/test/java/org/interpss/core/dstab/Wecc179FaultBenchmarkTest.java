@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -28,7 +30,10 @@ import com.interpss.dstab.cache.StateMonitor.MonitorRecord;
 import com.interpss.simu.SimuContext;
 
 class Wecc179FaultBenchmarkTest {
-    private static final Path CASE_DIR = Path.of(System.getProperty("andes.wecc179.case.dir",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Wecc179FaultBenchmarkTest");
+
+    private static final Path CASE_DIR = Path.of(CONFIG.string("andes.wecc179.case.dir",
             Path.of("target", "andes-python", "andes", "cases", "wecc").toString()));
     private static final Path RAW = CASE_DIR.resolve("wecc.raw");
     private static final Path DYR = CASE_DIR.resolve("wecc_gencls.dyr");
@@ -37,8 +42,8 @@ class Wecc179FaultBenchmarkTest {
 
     @Test
     void runsThreeCycleFaultAtBus84WithClassicalMachines() throws Exception {
-        assumeTrue(Files.isRegularFile(RAW), "Install ANDES or set -Dandes.wecc179.case.dir");
-        assumeTrue(Files.isRegularFile(DYR), "Install ANDES or set -Dandes.wecc179.case.dir");
+        assumeTrue(Files.isRegularFile(RAW), "Install ANDES or set JSON setting andes.wecc179.case.dir");
+        assumeTrue(Files.isRegularFile(DYR), "Install ANDES or set JSON setting andes.wecc179.case.dir");
         IpssCorePlugin.init();
         SparseEqnSolverProvider.useJavaKlu();
 
@@ -63,9 +68,9 @@ class Wecc179FaultBenchmarkTest {
         algorithm.setSimuOutputHandler(monitor);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(Double.parseDouble(
-                System.getProperty("wecc179.time.step", Double.toString(1.0 / 240.0))));
+                CONFIG.string("wecc179.time.step", Double.toString(1.0 / 240.0))));
         algorithm.setTotalSimuTimeSec(Double.parseDouble(
-                System.getProperty("wecc179.total.time", "5.0")));
+                CONFIG.string("wecc179.total.time", "5.0")));
         algorithm.setOutPutPerSteps(1);
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus84", network, SimpleFaultCode.GROUND_3P,

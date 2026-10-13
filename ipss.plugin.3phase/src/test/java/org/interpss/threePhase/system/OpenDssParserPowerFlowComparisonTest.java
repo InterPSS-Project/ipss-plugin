@@ -1,5 +1,7 @@
 package org.interpss.threePhase.system;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -59,6 +61,9 @@ import org.interpss.core.sparse.solver.klusolvex.KlusolveXPerformanceCounters;
 
 
 public class OpenDssParserPowerFlowComparisonTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.plugin.3phase.json", "OpenDssParserPowerFlowComparisonTest");
+
 	private static final double VOLTAGE_MAG_TOLERANCE_PU = 2.0e-2;
 	private static final double VOLTAGE_ANGLE_TOLERANCE_DEG = 2.0;
 
@@ -917,7 +922,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 	@Test
 	@Disabled("Diagnostic only: exports Ckt24 voltage mismatch versus source depth")
 	public void ckt24VoltageDepthExportDiagnostic() throws IOException {
-		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
+		System.out.println(IpssCorePlugin.configureSparseSolver(CONFIG.string("sparseSolver", "java-klu")).message());
 		List<VoltageReference> references = readReferences(
 				"opendss-reference/ckt24-controls-off-dss-python-voltage-reference.csv");
 		OpenDSSDataParser parser = new OpenDSSDataParser();
@@ -949,7 +954,7 @@ public class OpenDssParserPowerFlowComparisonTest {
 	@Test
 	@Disabled("Diagnostic only: compares Ckt24 voltage mismatch across fixed-point tolerances")
 	public void ckt24ToleranceSensitivityDiagnostic() throws IOException {
-		System.out.println(IpssCorePlugin.configureSparseSolverFromSystemProperties().message());
+		System.out.println(IpssCorePlugin.configureSparseSolver(CONFIG.string("sparseSolver", "java-klu")).message());
 		List<VoltageReference> references = readReferences(
 				"opendss-reference/ckt24-controls-off-dss-python-voltage-reference.csv");
 

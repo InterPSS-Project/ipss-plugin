@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -22,17 +24,20 @@ import com.interpss.dstab.cache.StateMonitor;
 
 /** Opt-in positive-Q REGCA1 recovery-boundary diagnostic. */
 public class RegcaPositiveQRecoveryDiagnosticTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "RegcaPositiveQRecoveryDiagnosticTest");
+
     private static final double STEP = .0005;
-    private static final Path CASE = Path.of(System.getProperty(
+    private static final Path CASE = Path.of(CONFIG.string(
             "regca.positiveq.diagnostic.case",
             Path.of("..", "target", "private-regca-positiveq-smib").toString()))
             .normalize();
-    private static final String DYR = System.getProperty(
+    private static final String DYR = CONFIG.string(
             "regca.positiveq.diagnostic.dyr", "case.dyr");
 
     @Test
     void positiveQFaultKeepsTheZeroUpperRecoveryRateBoundaryActive() throws Exception {
-        assumeTrue(Boolean.getBoolean("regca.positiveq.diagnostic.enabled"));
+        assumeTrue(CONFIG.bool("regca.positiveq.diagnostic.enabled"));
         assumeTrue(Files.isRegularFile(CASE.resolve("case.raw")));
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(

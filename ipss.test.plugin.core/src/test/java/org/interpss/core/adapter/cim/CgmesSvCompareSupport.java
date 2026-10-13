@@ -1,5 +1,6 @@
 package org.interpss.core.adapter.cim;
 
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -38,11 +39,12 @@ import com.interpss.core.aclf.AclfNetwork;
  * ACLineSegment (optionally PowerTransformer) via EQ, then to {@link AclfBranch}
  * by equipment id (with optional leading underscore).
  *
- * <p>Flow overrides: {@code -Dipss.cgmes.p4.pTolMw} (default 1.0),
- * {@code -Dipss.cgmes.p4.qTolMvar} (default 1.0),
- * {@code -Dipss.cgmes.p4.minFlowMatch} (default 0.95).
+ * <p>Flow overrides: {@code JSON setting ipss.cgmes.p4.pTolMw} (default 1.0),
+ * {@code JSON setting ipss.cgmes.p4.qTolMvar} (default 1.0),
+ * {@code JSON setting ipss.cgmes.p4.minFlowMatch} (default 0.95).
  */
 final class CgmesSvCompareSupport {
+
 
 	record SvVoltage(String topoLocalId, double vKv, double angleDeg) {
 	}
@@ -529,11 +531,11 @@ final class CgmesSvCompareSupport {
 						+ "=" + vRatio + " < " + minMatchRatio + "; missingBus=" + missingBusF
 						+ "; skippedDead=" + skippedDeadF + "; angRef=" + refF
 						+ "; sample: " + mismatchSample);
-		double minAng = Double.parseDouble(System.getProperty("ipss.cgmes.p4.minAngMatch", "0.95"));
+		double minAng = Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minAngMatch", "0.95"));
 		final double aRatio = (double) matchedBothF / (double) comparedF;
 		assertTrue(aRatio + 1e-9 >= minAng,
 				() -> "Aclf vs SV angle match ratio " + matchedBothF + "/" + comparedF + "=" + aRatio
-						+ " < " + minAng + " (raise -Dipss.cgmes.p4.minAngMatch or fix model); sample: "
+						+ " < " + minAng + " (raise JSON setting ipss.cgmes.p4.minAngMatch or fix model); sample: "
 						+ mismatchSample);
 		return new CompareStats(comparedF, matchedBothF, matchedVOnlyF, missingBusF, skippedDeadF, refF,
 				mismatches);
@@ -759,15 +761,15 @@ final class CgmesSvCompareSupport {
 	}
 
 	static double defaultPTolMw() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.pTolMw", "1.0"));
+		return Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.pTolMw", "1.0"));
 	}
 
 	static double defaultQTolMvar() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.qTolMvar", "1.0"));
+		return Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.qTolMvar", "1.0"));
 	}
 
 	static double defaultMinFlowMatch() {
-		return Double.parseDouble(System.getProperty("ipss.cgmes.p4.minFlowMatch", "0.95"));
+		return Double.parseDouble(CgmesComparisonFixture.settings().string("ipss.cgmes.p4.minFlowMatch", "0.95"));
 	}
 
 	private static double absAngDiffDeg(double a, double b) {

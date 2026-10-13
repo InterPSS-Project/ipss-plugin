@@ -1,5 +1,7 @@
 package org.interpss.plugin.contingency.dclf;
 
+import org.interpss.test.TestConfig;
+
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createCaMonitoringBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
@@ -55,13 +57,16 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "DclfTransferPanelLargeCaseTest");
+
     private static final double MW_TOLERANCE = 1.0e-7;
     private static final double LARGE_CASE_CA_MW_TOLERANCE = 1.0e-2;
 
     @BeforeEach
     public void requireLargeTestsEnabled() {
-        assumeTrue(Boolean.getBoolean("interpss.largeDclfTests"),
-                "Set -Dinterpss.largeDclfTests=true to run large DCLF transfer-panel regressions");
+        assumeTrue(CONFIG.bool("interpss.largeDclfTests"),
+                "Set JSON setting interpss.largeDclfTests=true to run large DCLF transfer-panel regressions");
     }
 
     @Test
@@ -140,8 +145,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
         AclfNetwork net = importPsse("testData/psse/v33/ACTIVSg25k.RAW");
         setDefaultRatings(net);
 
-        int contingencyCount = intProperty("interpss.performance25kContingencies", 30);
-        int monitorCount = intProperty("interpss.performance25kMonitors", 60);
+        int contingencyCount = intSetting("interpss.performance25kContingencies", 30);
+        int monitorCount = intSetting("interpss.performance25kMonitors", 60);
         int parallelism = performanceParallelism();
 
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
@@ -160,8 +165,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
 
     @Test
     public void activsg25kFullWoodburyAnalyzerCompletesWithDefaultMonitorBatching() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.full25kDclfTests"),
-                "Set -Dinterpss.full25kDclfTests=true to run full 25k Woodbury DCLF contingency analysis");
+        assumeTrue(CONFIG.bool("interpss.full25kDclfTests"),
+                "Set JSON setting interpss.full25kDclfTests=true to run full 25k Woodbury DCLF contingency analysis");
 
         AclfNetwork net = importPsse("testData/psse/v33/ACTIVSg25k.RAW");
         setDefaultRatings(net);
@@ -198,14 +203,14 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
 
     @Test
     public void openEiJsonParallelCaSparseVsWoodburyPerformance() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
-                "Set -Dinterpss.fullJsonDclfTests=true to run OpenEI JSON DCLF performance comparison");
+        assumeTrue(CONFIG.bool("interpss.fullJsonDclfTests"),
+                "Set JSON setting interpss.fullJsonDclfTests=true to run OpenEI JSON DCLF performance comparison");
 
         AclfNetwork net = importPsse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
         setDefaultRatings(net);
 
-        int contingencyCount = intProperty("interpss.performanceOpenEiContingencies", 10);
-        int monitorCount = intProperty("interpss.performanceOpenEiMonitors", 60);
+        int contingencyCount = intSetting("interpss.performanceOpenEiContingencies", 10);
+        int monitorCount = intSetting("interpss.performanceOpenEiMonitors", 60);
         int parallelism = performanceParallelism();
 
         ContingencyAnalysisAlgorithm sourceAlgo = createContingencyAnalysisAlgorithm(net);
@@ -234,14 +239,14 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
 
     @Test
     public void openEiJsonParallelAnalyzerSparseVsWoodburyPerformance() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
-                "Set -Dinterpss.fullJsonDclfTests=true to run OpenEI JSON DCLF performance comparison");
+        assumeTrue(CONFIG.bool("interpss.fullJsonDclfTests"),
+                "Set JSON setting interpss.fullJsonDclfTests=true to run OpenEI JSON DCLF performance comparison");
 
         AclfNetwork net = importPsse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
         setDefaultRatings(net);
 
-        int contingencyCount = intProperty("interpss.performanceOpenEiContingencies", 10);
-        int monitorCount = intProperty("interpss.performanceOpenEiMonitors", 60);
+        int contingencyCount = intSetting("interpss.performanceOpenEiContingencies", 10);
+        int monitorCount = intSetting("interpss.performanceOpenEiMonitors", 60);
         int parallelism = performanceParallelism();
         double overloadThreshold = performanceOverloadThreshold();
 
@@ -290,8 +295,8 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
 
     @Test
     public void openEiFullJsonChunkedPanelMatchesParallelAnalyzer() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
-                "Set -Dinterpss.fullJsonDclfTests=true to run full JSON DCLF transfer-panel regressions");
+        assumeTrue(CONFIG.bool("interpss.fullJsonDclfTests"),
+                "Set JSON setting interpss.fullJsonDclfTests=true to run full JSON DCLF transfer-panel regressions");
 
         AclfNetwork net = importPsse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
         setDefaultRatings(net);
@@ -352,10 +357,10 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
 
     @Test
     public void openEiFullJsonTwentyFourHourProfilesReuseTransferPanel() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.fullJsonDclfTests"),
-                "Set -Dinterpss.fullJsonDclfTests=true to run full JSON DCLF transfer-panel regressions");
-        assumeTrue(Boolean.getBoolean("interpss.hourlyDclfTests"),
-                "Set -Dinterpss.hourlyDclfTests=true to run 24-hour full JSON DCLF performance comparison");
+        assumeTrue(CONFIG.bool("interpss.fullJsonDclfTests"),
+                "Set JSON setting interpss.fullJsonDclfTests=true to run full JSON DCLF transfer-panel regressions");
+        assumeTrue(CONFIG.bool("interpss.hourlyDclfTests"),
+                "Set JSON setting interpss.hourlyDclfTests=true to run 24-hour full JSON DCLF performance comparison");
 
         AclfNetwork net = importPsse("testData/psse/v33/Base_Eastern_Interconnect_515GW.RAW");
         setDefaultRatings(net);
@@ -1072,13 +1077,13 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
     }
 
     private static int performanceParallelism() {
-        return intProperty(
+        return intSetting(
                 "interpss.performanceParallelism",
                 Math.max(1, Runtime.getRuntime().availableProcessors() - 1));
     }
 
-    private static int intProperty(String name, int defaultValue) {
-        String value = System.getProperty(name);
+    private static int intSetting(String name, int defaultValue) {
+        String value = CONFIG.string(name);
         if (value == null || value.trim().isEmpty()) {
             return defaultValue;
         }
@@ -1086,11 +1091,11 @@ public class DclfTransferPanelLargeCaseTest extends CorePluginTestSetup {
     }
 
     private static double performanceOverloadThreshold() {
-        return doubleProperty("interpss.performanceOverloadThreshold", 0.0);
+        return doubleSetting("interpss.performanceOverloadThreshold", 0.0);
     }
 
-    private static double doubleProperty(String name, double defaultValue) {
-        String value = System.getProperty(name);
+    private static double doubleSetting(String name, double defaultValue) {
+        String value = CONFIG.string(name);
         if (value == null || value.trim().isEmpty()) {
             return defaultValue;
         }

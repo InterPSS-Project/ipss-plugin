@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -18,7 +20,10 @@ import org.junit.jupiter.api.Test;
 
 /** Fleet-wide schema/profile gate for existing Texas2k legacy controllers. */
 public class Texas2kLegacyControllerProfileTest {
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kLegacyControllerProfileTest");
+
+    private static final Path ROOT = Path.of(CONFIG.string("texas2k.case.root",
             Path.of("testData", "private", "texas2k").toString()));
     private static final Set<String> MODELS = Set.of("EXST1", "IEEET1", "IEEEG1");
     private static final Map<String, Integer> EXPECTED_RECORDS = Map.of(

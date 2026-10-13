@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -24,7 +26,10 @@ import com.interpss.dstab.DStabGen;
 
 /** Private-data integration gate for every Case 1 synchronous machine and GGOV1. */
 class Texas2kGgov1CoverageTest {
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kGgov1CoverageTest");
+
+    private static final Path ROOT = Path.of(CONFIG.string("texas2k.case.root",
             Path.of("testData", "private", "texas2k").toString()));
     private static final Path CASE = ROOT.resolve("Texas2k_series24_case1_2016summerpeak");
     private static final Path RAW = CASE.resolve("Texas2k_series24_case1_2016summerPeak_v36.RAW");

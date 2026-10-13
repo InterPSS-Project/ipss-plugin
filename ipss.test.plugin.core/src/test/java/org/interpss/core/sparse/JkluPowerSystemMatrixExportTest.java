@@ -1,5 +1,7 @@
 package org.interpss.core.sparse;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -31,14 +33,17 @@ import org.interpss.fadapter.psse.PSSEDirectParser;
  * InterPSS power-system Y matrices.
  */
 public class JkluPowerSystemMatrixExportTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "JkluPowerSystemMatrixExportTest");
+
     private static final String EXPORT_DIR = "jklu.matrix.export.dir";
     private static final String CASES = "jklu.matrix.export.cases";
 
     @Test
     public void exportAclfYMatrixCases() throws Exception {
-        String dir = System.getProperty(EXPORT_DIR);
+        String dir = CONFIG.string(EXPORT_DIR);
         assumeTrue(dir != null && dir.trim().length() > 0,
-                "Set -D" + EXPORT_DIR + "=<dir> to generate JKLU Matrix Market cases");
+                "Set JSON setting " + EXPORT_DIR + "=<dir> to generate JKLU Matrix Market cases");
 
         Path outputDir = Paths.get(dir);
         Files.createDirectories(outputDir);
@@ -56,7 +61,7 @@ public class JkluPowerSystemMatrixExportTest extends CorePluginTestSetup {
     }
 
     private static String[] requestedCases() {
-        String value = System.getProperty(CASES, "BUS1824,BUS6384,BUS11856");
+        String value = CONFIG.string(CASES, "BUS1824,BUS6384,BUS11856");
         return value.split(",");
     }
 

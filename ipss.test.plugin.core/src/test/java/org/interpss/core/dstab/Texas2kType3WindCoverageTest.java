@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -27,7 +29,10 @@ import com.interpss.dstab.DStabGen;
 
 /** Strict private-data gate for the Texas2k Type-3 wind stacks without WTDTA1. */
 class Texas2kType3WindCoverageTest {
-    private static final Path ROOT = Path.of(System.getProperty("texas2k.case.root",
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kType3WindCoverageTest");
+
+    private static final Path ROOT = Path.of(CONFIG.string("texas2k.case.root",
             Path.of("testData", "private", "texas2k").toString()));
     private static final Set<String> STACK_MODELS = Set.of(
             "REGCA1", "REECA1", "WTPTA1", "WTTQA1", "WTARA1", "REPCA1");

@@ -1,5 +1,7 @@
 package org.interpss.plugin.contingency.dclf;
 
+import org.interpss.test.TestConfig;
+
 import static com.interpss.core.DclfAlgoObjectFactory.createCaOutageBranch;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingency;
 import static com.interpss.core.DclfAlgoObjectFactory.createContingencyAnalysisAlgorithm;
@@ -43,12 +45,15 @@ import com.interpss.monitor.definition.MonitoredBranchRecord;
 import org.interpss.fadapter.psse.PSSEDirectParser;
 @Tag("large")
 public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "DclfSolverComparisonLargeCaseTest");
+
     private static final double RESULT_TOLERANCE_MW = 1.0e-2;
 
     @Test
     public void compareCsjAndJavaKluForLargeDclfContingencyAnalysis() throws Exception {
-        assumeTrue(Boolean.getBoolean("interpss.largeDclfTests"),
-                "Set -Dinterpss.largeDclfTests=true to run large DCLF solver comparison");
+        assumeTrue(CONFIG.bool("interpss.largeDclfTests"),
+                "Set JSON setting interpss.largeDclfTests=true to run large DCLF solver comparison");
 
         System.out.println("case,solver,repeat,warmup,contingencies,monitors,parallelism,"
                 + "dclfSetupMs,analyzerMs,totalMs,records,parity");
@@ -62,9 +67,9 @@ public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
     }
 
     private static void compareCase(AclfNetwork net, CaseConfig config) throws Exception {
-        int warmups = Math.max(0, Integer.getInteger("interpss.dclfSolverCompareWarmups", 1));
-        int repeats = intProperty("interpss.dclfSolverCompareRepeats", 3);
-        int parallelism = intProperty("interpss.dclfSolverCompareParallelism", 4);
+        int warmups = Math.max(0, CONFIG.integer("interpss.dclfSolverCompareWarmups", 1));
+        int repeats = intSetting("interpss.dclfSolverCompareRepeats", 3);
+        int parallelism = intSetting("interpss.dclfSolverCompareParallelism", 4);
 
         List<DclfBranchOutage> contingencies = config.contingencies(net);
         Set<String> monitors = config.monitors(net);
@@ -79,10 +84,10 @@ public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
             RunResult csj = runOnce("CSJ", net, contingencies, monitors, parallelism);
             RunResult javaKlu = runOnce("JAVA_KLU", net, contingencies, monitors, parallelism);
             Parity parity = compareResults(config.name, csj.results, javaKlu.results);
-            if (Boolean.getBoolean("interpss.dclfSolverCompareAssertParity")) {
+            if (CONFIG.bool("interpss.dclfSolverCompareAssertParity")) {
                 assertTrue(parity.matches, parity.message);
             }
-            if (reference != null && Boolean.getBoolean("interpss.dclfSolverCompareAssertParity")) {
+            if (reference != null && CONFIG.bool("interpss.dclfSolverCompareAssertParity")) {
                 Parity repeatParity = compareResults(config.name + " repeat consistency", reference.results, csj.results);
                 assertTrue(repeatParity.matches, repeatParity.message);
             }
@@ -145,7 +150,7 @@ public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
     }
 
     private static DclfContingencySolutionMethod solutionMethod() {
-        String configured = System.getProperty("interpss.dclfSolverCompareSolutionMethod",
+        String configured = CONFIG.string("interpss.dclfSolverCompareSolutionMethod",
                 DclfContingencySolutionMethod.SparseEqnSolve.name());
         return DclfContingencySolutionMethod.valueOf(configured);
     }
@@ -247,27 +252,27 @@ public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
     private static CaseConfig activs25kConfig() {
         return new CaseConfig(
                 "ACTIVSg25k",
-                intProperty("interpss.performance25kContingencies",
-                        System.getProperty("interpss.performance25kContingencyJson") == null
+                intSetting("interpss.performance25kContingencies",
+                        CONFIG.string("interpss.performance25kContingencyJson") == null
                                 ? 30 : Integer.MAX_VALUE),
-                intProperty("interpss.performance25kMonitors", 60),
-                System.getProperty("interpss.performance25kContingencyJson"),
-                System.getProperty("interpss.performance25kMonitorJson"));
+                intSetting("interpss.performance25kMonitors", 60),
+                CONFIG.string("interpss.performance25kContingencyJson"),
+                CONFIG.string("interpss.performance25kMonitorJson"));
     }
 
     private static CaseConfig openEiConfig() {
         return new CaseConfig(
                 "OpenEI",
-                intProperty("interpss.performanceOpenEiContingencies", Integer.MAX_VALUE),
-                intProperty("interpss.performanceOpenEiMonitors", 60),
-                System.getProperty("interpss.performanceOpenEiContingencyJson",
+                intSetting("interpss.performanceOpenEiContingencies", Integer.MAX_VALUE),
+                intSetting("interpss.performanceOpenEiMonitors", 60),
+                CONFIG.string("interpss.performanceOpenEiContingencyJson",
                         "testData/psse/v33/OpenEI_filtered_contingencies.json"),
-                System.getProperty("interpss.performanceOpenEiMonitorJson",
+                CONFIG.string("interpss.performanceOpenEiMonitorJson",
                         "testData/psse/v33/OpenEI_monitored_branches.json"));
     }
 
     private static boolean shouldRunCase(String name) {
-        String configured = System.getProperty("interpss.dclfSolverCompareCases", "ACTIVSg25k,OpenEI");
+        String configured = CONFIG.string("interpss.dclfSolverCompareCases", "ACTIVSg25k,OpenEI");
         for (String token : configured.split(",")) {
             if (name.equalsIgnoreCase(token.trim())) {
                 return true;
@@ -276,8 +281,8 @@ public class DclfSolverComparisonLargeCaseTest extends CorePluginTestSetup {
         return false;
     }
 
-    private static int intProperty(String name, int defaultValue) {
-        return Math.max(1, Integer.getInteger(name, defaultValue));
+    private static int intSetting(String name, int defaultValue) {
+        return Math.max(1, CONFIG.integer(name, defaultValue));
     }
 
     private static double ms(long ns) {

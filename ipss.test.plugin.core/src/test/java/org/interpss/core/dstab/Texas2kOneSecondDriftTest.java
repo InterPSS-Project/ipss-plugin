@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -47,6 +49,9 @@ import com.interpss.dstab.cache.StateMonitor;
  * synchronous machine. All selected cases execute before failures are reported.
  */
 public class Texas2kOneSecondDriftTest {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Texas2kOneSecondDriftTest");
+
     private static final double VOLTAGE_DRIFT_LIMIT = 1.0e-6;
     private static final double SPEED_DRIFT_LIMIT = 1.0e-7;
     private static final Set<String> RENEWABLE_MODELS = Set.of(
@@ -58,7 +63,7 @@ public class Texas2kOneSecondDriftTest {
             "Bus1037", "Bus1039", "Bus1040", "Bus1042", "Bus1043", "Bus1044",
             "Bus1046", "Bus1055", "Bus1057", "Bus1061", "Bus1062", "Bus1063",
             "Bus1083");
-    private static final Path ROOT = relativePathProperty("texas2k.case.root",
+    private static final Path ROOT = relativePathSetting("texas2k.case.root",
             Path.of("testData", "private", "texas2k"));
     private static final List<CaseFile> CASES = List.of(
             new CaseFile("Texas2k_series24_case1_2016summerpeak",
@@ -87,10 +92,10 @@ public class Texas2kOneSecondDriftTest {
 
     @Test
     void allSixCasesMeetOneSecondVoltageAndSpeedDriftGates() throws Exception {
-        assumeTrue(Boolean.getBoolean("texas2k.drift.enabled"),
-                "Enable the private, long-running gate with -Dtexas2k.drift.enabled=true");
+        assumeTrue(CONFIG.bool("texas2k.drift.enabled"),
+                "Enable the private, long-running gate with JSON setting texas2k.drift.enabled=true");
         assumeTrue(Files.isDirectory(ROOT), "Missing private Texas2k root: " + ROOT);
-        String caseFilter = System.getProperty("texas2k.drift.case", "");
+        String caseFilter = CONFIG.string("texas2k.drift.case", "");
         List<CaseFile> selectedCases = CASES.stream()
                 .filter(source -> caseFilter.isEmpty()
                         || source.directory().contains(caseFilter))
@@ -113,30 +118,22 @@ public class Texas2kOneSecondDriftTest {
 
     @Test
     void diagnosticPathConfigurationRejectsAbsolutePaths() {
-        String propertyName = "texas2k.relative.path.contract";
-        String previous = System.getProperty(propertyName);
-        try {
-            System.setProperty(propertyName, "../../../portable/cases");
-            assertEquals(Path.of("../../../portable/cases").normalize(),
-                    relativePathProperty(propertyName, Path.of("unused")));
-
-            System.setProperty(propertyName, Path.of("cases").toAbsolutePath().toString());
-            assertThrows(IllegalArgumentException.class,
-                    () -> relativePathProperty(propertyName, Path.of("unused")));
-
-            System.setProperty(propertyName, "C:portable-cases");
-            assertThrows(IllegalArgumentException.class,
-                    () -> relativePathProperty(propertyName, Path.of("unused")));
-        } finally {
-            if (previous == null) System.clearProperty(propertyName);
-            else System.setProperty(propertyName, previous);
-        }
+        String key = "texas2k.relative.path.contract";
+        assertEquals(Path.of("../../../portable/cases").normalize(),
+                relativePathSetting(CONFIG.withOverrides(Map.of(key, "../../../portable/cases")),
+                        key, Path.of("unused")));
+        assertThrows(IllegalArgumentException.class,
+                () -> relativePathSetting(CONFIG.withOverrides(Map.of(key,
+                        Path.of("cases").toAbsolutePath().toString())), key, Path.of("unused")));
+        assertThrows(IllegalArgumentException.class,
+                () -> relativePathSetting(CONFIG.withOverrides(Map.of(key, "C:portable-cases")),
+                        key, Path.of("unused")));
     }
 
     @Test
     void case5ReportsControllerWeightedQvMode() throws Exception {
-        assumeTrue(Boolean.getBoolean("texas2k.gridStrength.enabled"),
-                "Enable the private diagnostic with -Dtexas2k.gridStrength.enabled=true");
+        assumeTrue(CONFIG.bool("texas2k.gridStrength.enabled"),
+                "Enable the private diagnostic with JSON setting texas2k.gridStrength.enabled=true");
         CaseFile source = CASES.get(4);
         Path directory = ROOT.resolve(source.directory());
         Path raw = directory.resolve(source.raw());
@@ -239,7 +236,7 @@ public class Texas2kOneSecondDriftTest {
                                 + region.dominantMode().real() + "+j"
                                 + region.dominantMode().imaginary() + ", coneFeasible="
                                 + region.tangentCone().feasible()).toList());
-        Path reportDirectory = relativePathProperty("texas2k.gridStrength.reportDir",
+        Path reportDirectory = relativePathSetting("texas2k.gridStrength.reportDir",
                 Path.of("target", "dynamic-model-validation", "texas2k-case5-qv"));
         LocalRenewableQvEigenReportWriter.write(reportDirectory, qvAnalysis);
         System.out.println("  machine-readable Q/V benchmark: " + reportDirectory);
@@ -311,8 +308,8 @@ public class Texas2kOneSecondDriftTest {
         assumeTrue(Files.isRegularFile(gnet), "Missing Texas2k GNET IDV: " + gnet);
 
         Path effectiveDyr = dyr;
-        String renewableSelection = System.getProperty("texas2k.drift.renewables");
-        if (Boolean.getBoolean("texas2k.drift.excludeRenewables") || renewableSelection != null) {
+        String renewableSelection = CONFIG.string("texas2k.drift.renewables");
+        if (CONFIG.bool("texas2k.drift.excludeRenewables") || renewableSelection != null) {
             List<org.interpss.fadapter.psse.dyr.PsseDyrRecord> sourceRecords =
                     PsseDyrRecordReader.read(dyr);
             Set<String> selectedRenewables = renewableSelection == null ? Set.of()
@@ -320,21 +317,21 @@ public class Texas2kOneSecondDriftTest {
                             .map(String::trim).filter(value -> !value.isEmpty())
                             .collect(Collectors.toSet());
             Set<Integer> selectedRenewableBuses = java.util.Arrays.stream(
-                            System.getProperty("texas2k.drift.renewableBuses", "").split(","))
+                            CONFIG.string("texas2k.drift.renewableBuses", "").split(","))
                     .map(String::trim).filter(value -> !value.isEmpty())
                     .map(Integer::parseInt).collect(Collectors.toSet());
             Set<String> selectedRenewableDevices = java.util.Arrays.stream(
-                            System.getProperty("texas2k.drift.renewableDevices", "").split(","))
+                            CONFIG.string("texas2k.drift.renewableDevices", "").split(","))
                     .map(String::trim).filter(value -> !value.isEmpty())
                     .collect(Collectors.toSet());
-            String selectedQFlag = System.getProperty("texas2k.drift.qFlag", "");
+            String selectedQFlag = CONFIG.string("texas2k.drift.qFlag", "");
             Set<String> selectedQFlagDevices = selectedQFlag.isEmpty() ? Set.of()
                     : sourceRecords.stream()
                             .filter(record -> record.canonicalModelName().equals("REECA1"))
                             .filter(record -> record.parameters().get(3).equals(selectedQFlag))
                             .map(Texas2kOneSecondDriftTest::deviceKey)
                             .collect(Collectors.toSet());
-            String selectedPFlag = System.getProperty("texas2k.drift.pFlag", "");
+            String selectedPFlag = CONFIG.string("texas2k.drift.pFlag", "");
             Set<String> selectedPFlagDevices = selectedPFlag.isEmpty() ? Set.of()
                     : sourceRecords.stream()
                             .filter(record -> record.canonicalModelName().equals("REECA1"))
@@ -345,7 +342,7 @@ public class Texas2kOneSecondDriftTest {
             filteredDirectory.toFile().deleteOnExit();
             effectiveDyr = filteredDirectory.resolve("selected.dyr");
             effectiveDyr.toFile().deleteOnExit();
-            boolean onlySelectedRenewables = Boolean.getBoolean(
+            boolean onlySelectedRenewables = CONFIG.bool(
                     "texas2k.drift.onlySelectedRenewables");
             String filtered = sourceRecords.stream()
                     .filter(record -> (selectedRenewables.contains(record.canonicalModelName())
@@ -370,7 +367,7 @@ public class Texas2kOneSecondDriftTest {
                 gnet.toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
-        if (Boolean.getBoolean("texas2k.drift.freezeElectricalControllers")) {
+        if (CONFIG.bool("texas2k.drift.freezeElectricalControllers")) {
             network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
                     .filter(DStabGen.class::isInstance)
                     .map(DStabGen.class::cast)
@@ -379,10 +376,10 @@ public class Texas2kOneSecondDriftTest {
                     .map(Regca1Model.class::cast)
                     .forEach(converter -> converter.setActiveElectricalController(
                             new FixedCurrentController())));
-        } else if (Boolean.getBoolean("texas2k.drift.freezeActiveCommand")
-                || Boolean.getBoolean("texas2k.drift.freezeReactiveCommand")) {
-            boolean freezeActive = Boolean.getBoolean("texas2k.drift.freezeActiveCommand");
-            boolean freezeReactive = Boolean.getBoolean("texas2k.drift.freezeReactiveCommand");
+        } else if (CONFIG.bool("texas2k.drift.freezeActiveCommand")
+                || CONFIG.bool("texas2k.drift.freezeReactiveCommand")) {
+            boolean freezeActive = CONFIG.bool("texas2k.drift.freezeActiveCommand");
+            boolean freezeReactive = CONFIG.bool("texas2k.drift.freezeReactiveCommand");
             network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
                     .filter(DStabGen.class::isInstance)
                     .map(DStabGen.class::cast)
@@ -393,7 +390,7 @@ public class Texas2kOneSecondDriftTest {
                             new FrozenAxisController(converter.getActiveElectricalController(),
                                     freezeActive, freezeReactive))));
         }
-        if (Boolean.getBoolean("texas2k.drift.disablePlantControllers")) {
+        if (CONFIG.bool("texas2k.drift.disablePlantControllers")) {
             network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
                     .filter(DStabGen.class::isInstance)
                     .map(DStabGen.class::cast)
@@ -404,7 +401,7 @@ public class Texas2kOneSecondDriftTest {
                     .forEach(converter -> converter.getActiveElectricalController()
                             .setPlantController(null)));
         }
-        if (Boolean.getBoolean("texas2k.drift.disableGovernors")) {
+        if (CONFIG.bool("texas2k.drift.disableGovernors")) {
             network.getBusList().forEach(bus -> bus.getContributeGenList().stream()
                     .filter(DStabGen.class::isInstance)
                     .map(DStabGen.class::cast)
@@ -421,7 +418,7 @@ public class Texas2kOneSecondDriftTest {
         loadflow.setNonDivergent(true);
         loadflow.setMaxIterations(50);
         loadflow.setTolerance(Double.parseDouble(
-                System.getProperty("texas2k.drift.loadflowTolerance", "1.0e-8")));
+                CONFIG.string("texas2k.drift.loadflowTolerance", "1.0e-8")));
         assertTrue(loadflow.loadflow(), () -> source.directory() + " load flow: "
                 + network.maxMismatch(AclfMethodType.NR));
         network.setBypassDataCheck(false);
@@ -430,9 +427,9 @@ public class Texas2kOneSecondDriftTest {
 
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(Double.parseDouble(
-                System.getProperty("texas2k.drift.step", Double.toString(1.0 / 240.0))));
+                CONFIG.string("texas2k.drift.step", Double.toString(1.0 / 240.0))));
         algorithm.setTotalSimuTimeSec(Double.parseDouble(
-                System.getProperty("texas2k.drift.endTime", "1.0")));
+                CONFIG.string("texas2k.drift.endTime", "1.0")));
         algorithm.setOutPutPerSteps(1);
         algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.initialization(), source.directory() + " initialization");
@@ -517,12 +514,12 @@ public class Texas2kOneSecondDriftTest {
                 "%s initial REGCA1 Iq boundary mismatch=%.9g@%s REECA1 dips=%d%n",
                 source.directory(), iqBoundary.value(), iqBoundary.id(), initialDipCount);
 
-        if (Boolean.getBoolean("texas2k.drift.traceFirstDivergence")) {
+        if (CONFIG.bool("texas2k.drift.traceFirstDivergence")) {
             boolean reported = false;
             boolean controllerMovementReported = false;
             boolean dipTransitionReported = false;
             boolean limitTransitionReported = false;
-            double controllerMovementLimit = Double.parseDouble(System.getProperty(
+            double controllerMovementLimit = Double.parseDouble(CONFIG.string(
                     "texas2k.drift.controllerMovementLimit", "1.0e-10"));
             double endTime = algorithm.getTotalSimuTimeSec();
             // Match AbstractDStabSolver.performSimulation(): it executes the step
@@ -665,7 +662,7 @@ public class Texas2kOneSecondDriftTest {
             Map<String, Double> initialVoltage, Map<String, Double> initialSpeed,
             Map<String, ReecaSnapshot> initialReeca,
             Map<String, RepcaSnapshot> initialRepca) throws java.io.IOException {
-        int limit = Math.max(1, Integer.getInteger("texas2k.drift.rankingLimit", 10));
+        int limit = Math.max(1, CONFIG.integer("texas2k.drift.rankingLimit", 10));
         List<RankingRow> voltage = rankRows(initialVoltage.entrySet().stream().map(entry -> {
             double current = network.getBus(entry.getKey()).getVoltage().abs();
             return new RankingRow("BUS_VOLTAGE", "", entry.getKey(), "magnitude",
@@ -702,7 +699,7 @@ public class Texas2kOneSecondDriftTest {
 
     private static void writeRankingCsv(CaseFile source, List<RankingRow> rows)
             throws java.io.IOException {
-        Path reportDirectory = relativePathProperty("texas2k.drift.reportDir",
+        Path reportDirectory = relativePathSetting("texas2k.drift.reportDir",
                 Path.of("target", "dynamic-model-validation", "texas2k-flat-ranking"));
         Files.createDirectories(reportDirectory);
         StringBuilder csv = new StringBuilder(
@@ -717,15 +714,19 @@ public class Texas2kOneSecondDriftTest {
         System.out.println("  ranking CSV: " + output.normalize());
     }
 
-    private static Path relativePathProperty(String propertyName, Path defaultPath) {
-        String configured = System.getProperty(propertyName);
+    private static Path relativePathSetting(String key, Path defaultPath) {
+        return relativePathSetting(CONFIG, key, defaultPath);
+    }
+
+    private static Path relativePathSetting(TestConfig config, String key, Path defaultPath) {
+        String configured = config.string(key);
         Path path = (configured == null || configured.isBlank()
                 ? defaultPath : Path.of(configured)).normalize();
         // Also reject Windows drive-relative forms (e.g. "C:portable-cases"). On
         // Unix those are neither absolute nor rooted, but they are still not
         // portable relative paths for this diagnostic contract.
         if (path.isAbsolute() || path.getRoot() != null || hasWindowsDrivePrefix(configured)) {
-            throw new IllegalArgumentException(propertyName + " must be a relative path");
+            throw new IllegalArgumentException(key + " must be a relative path");
         }
         return path;
     }

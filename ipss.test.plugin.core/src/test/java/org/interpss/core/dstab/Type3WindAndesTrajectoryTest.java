@@ -1,5 +1,7 @@
 package org.interpss.core.dstab;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -27,6 +29,9 @@ import com.interpss.dstab.cache.StateMonitor;
 
 /** Public full-stack Type-3 trajectory comparison fixture shared with ANDES. */
 public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "Type3WindAndesTrajectoryTest");
+
     private static final double STEP = 1.0 / 240.0;
 
     @Test
@@ -41,7 +46,7 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
         network.setAllowGenWithoutMach(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "Type-3 public load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        double simulationStep = Double.parseDouble(System.getProperty(
+        double simulationStep = Double.parseDouble(CONFIG.string(
                 "type3.wind.step", Double.toString(STEP)));
         algorithm.setSimuStepSec(simulationStep);
         algorithm.setTotalSimuTimeSec(1.0);

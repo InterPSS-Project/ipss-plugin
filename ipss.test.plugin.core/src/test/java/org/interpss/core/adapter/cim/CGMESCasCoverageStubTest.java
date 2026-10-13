@@ -1,5 +1,7 @@
 package org.interpss.core.adapter.cim;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,7 +32,7 @@ import com.interpss.core.net.OriginalDataFormat;
  * P2 adds PST, MicroGrid Type2/HVDC/Type3, SmallGrid SSH+SV, PowerFlow, optional RealGrid smoke.
  * P3 adds ReliCapGrid (Svedala / optional Belgovia) when the local clone exists.
  *
- * <p>CAS fixtures resolve from (1) {@code -Dipss.cgmes.cas.root}, (2) in-repo
+ * <p>CAS fixtures resolve from (1) {@code JSON setting ipss.cgmes.cas.root}, (2) in-repo
  * copies under {@code testData/adpter/cim/cgmes3.0/cas/}, then (3) the Temp
  * download tree. See {@code cas/README.md}.
  *
@@ -40,6 +42,9 @@ import com.interpss.core.net.OriginalDataFormat;
  */
 @Tag("cgmes-cas")
 public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "CGMESCasCoverageStubTest");
+
 
 	private static final String TD24 = "testData/adpter/cim/cgmes2.4/";
 	/** Preferred in-repo copies (see {@code testData/.../cgmes3.0/cas/README.md}). */
@@ -48,14 +53,14 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	/**
 	 * Resolve a CAS fixture directory. Order:
 	 * <ol>
-	 *   <li>{@code -Dipss.cgmes.cas.root=} unzipped CAS root (parent of {@code v3.0/}), then
+	 *   <li>{@code JSON setting ipss.cgmes.cas.root=} unzipped CAS root (parent of {@code v3.0/}), then
 	 *       {@code v3.0/} + {@code relativeUnderV30}</li>
 	 *   <li>In-repo copy under {@link #TD30_CAS}{@code localCasDirName}</li>
 	 *   <li>Default Temp download tree under {@code ~/Documents/Temp/cgmes-test-data/}</li>
 	 * </ol>
 	 */
 	private static Path casDir(String localCasDirName, String relativeUnderV30) {
-		String override = System.getProperty("ipss.cgmes.cas.root");
+		String override = CONFIG.string("ipss.cgmes.cas.root");
 		if (override != null && !override.isBlank()) {
 			return Path.of(override).resolve("v3.0").resolve(relativeUnderV30);
 		}
@@ -63,7 +68,7 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		if (Files.isDirectory(local)) {
 			return local;
 		}
-		String home = System.getProperty("user.home");
+		String home = CONFIG.string("fixtures.home", "testData/external");
 		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "cas-v3.0.3",
 				"CGMES_ConformityAssessmentScheme_TestConfigurations_v3-0-3", "v3.0")
 				.resolve(relativeUnderV30);
@@ -72,7 +77,7 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 	private static void requireFiles(Path... files) {
 		for (Path f : files) {
 			assumeTrue(Files.isRegularFile(f),
-					() -> "Missing CAS fixture (download/unzip under ~/Documents/Temp/cgmes-test-data or set -Dipss.cgmes.cas.root=...): "
+					() -> "Missing CAS fixture (download/unzip under ~/Documents/Temp/cgmes-test-data or set JSON setting ipss.cgmes.cas.root=...): "
 							+ f);
 		}
 	}
@@ -94,11 +99,11 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		if (Files.isDirectory(local)) {
 			return local;
 		}
-		String override = System.getProperty("ipss.cgmes.cas24.root");
+		String override = CONFIG.string("ipss.cgmes.cas24.root");
 		if (override != null && !override.isBlank()) {
 			return Path.of(override).resolve(relativeUnderCas24Root);
 		}
-		String home = System.getProperty("user.home");
+		String home = CONFIG.string("fixtures.home", "testData/external");
 		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "cas-v2.4.15")
 				.resolve(relativeUnderCas24Root);
 	}
@@ -111,11 +116,11 @@ public class CGMESCasCoverageStubTest extends CorePluginTestSetup {
 		if (Files.isDirectory(local)) {
 			return local;
 		}
-		String override = System.getProperty("ipss.cgmes.relicap.root");
+		String override = CONFIG.string("ipss.cgmes.relicap.root");
 		if (override != null && !override.isBlank()) {
 			return Path.of(override).resolve(relativeUnderClone);
 		}
-		String home = System.getProperty("user.home");
+		String home = CONFIG.string("fixtures.home", "testData/external");
 		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "relicapgrid")
 				.resolve(relativeUnderClone);
 	}

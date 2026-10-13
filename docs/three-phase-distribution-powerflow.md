@@ -94,7 +94,6 @@ Ckt24, and IEEE8500:
 ```bash
 mvn -pl ipss.plugin.3phase \
   -Dtest=OpenDSSQstsFeederSmokeTest#ieee123ControlsOffRepeatedStateDailyWindowConverges+ckt7ControlsOffYearlyWindowConverges+ckt24ControlsOffRepeatedStateDailyWindowConverges+ieee8500ControlsOffShortRepeatedStateDailyWindowConverges \
-  -Dipss.sparse.solver=csj \
   -Dsurefire.failIfNoSpecifiedTests=false test
 ```
 
@@ -147,17 +146,18 @@ delayed/event controls, inverter controls, and any QSTS profile-bound case.
 
 Commands used on 2026-06-11:
 
+Test run settings now live in the module JSON fixture. For the annual InterPSS
+run below, set `qsts.perf.case` to `ckt24`, `qsts.perf.warmupSteps` to `24`,
+`qsts.perf.steps` to `8760`, `qsts.perf.repeats` to `1`, and `qsts.perf.profile`
+to `true` in `QstsLargeFeederPerformanceBenchmark`. See
+[test configuration](test-configuration.md).
+
 ```bash
 python3 ipss.plugin.3phase/src/test/python/qsts_large_feeder_perf.py \
   --case ckt24 --warmup-steps 24 --steps 8760 --repeats 1
 
 mvn -pl ipss.plugin.3phase -am test \
   -Dtest=QstsLargeFeederPerformanceBenchmark \
-  -Dqsts.perf.case=ckt24 \
-  -Dqsts.perf.warmupSteps=24 \
-  -Dqsts.perf.steps=8760 \
-  -Dqsts.perf.repeats=1 \
-  -Dipss.qsts.profile=true \
   -Dsurefire.failIfNoSpecifiedTests=false
 ```
 

@@ -1,5 +1,7 @@
 package org.interpss.core.adapter.cim;
 
+import org.interpss.test.TestConfig;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -27,6 +29,9 @@ import com.interpss.core.aclf.AclfNetwork;
 @Tag("cgmes-cas")
 @Tag("relicap")
 public class CGMESReliCapDcCoverageStubTest extends CorePluginTestSetup {
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "CGMESReliCapDcCoverageStubTest");
+
 
 	private static final String TD30_CAS = "testData/adpter/cim/cgmes3.0/cas/";
 
@@ -35,11 +40,11 @@ public class CGMESReliCapDcCoverageStubTest extends CorePluginTestSetup {
 		if (Files.isDirectory(local)) {
 			return local;
 		}
-		String override = System.getProperty("ipss.cgmes.relicap.root");
+		String override = CONFIG.string("ipss.cgmes.relicap.root");
 		if (override != null && !override.isBlank()) {
 			return Path.of(override).resolve(relativeUnderClone);
 		}
-		String home = System.getProperty("user.home");
+		String home = CONFIG.string("fixtures.home", "testData/external");
 		return Path.of(home, "Documents", "Temp", "cgmes-test-data", "relicapgrid")
 				.resolve(relativeUnderClone);
 	}
