@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Texas2K_OptN1Scan_SsaResult_Sparse_Sample",
+      "request": "launch",
+      "mainClass": "org.interpss.optadj.texas2k.sparse.Texas2K_OptN1Scan_SsaResult_Sparse_Sample",
+      "projectName": "ipss.plugin.core"
+    },
+    {
+      "type": "java",
       "name": "IEEE39_OptN1Scan_Sparse_Sample",
       "request": "launch",
       "mainClass": "org.interpss.optadj.ieee39.sparse.IEEE39_OptN1Scan_Sparse_Sample",
