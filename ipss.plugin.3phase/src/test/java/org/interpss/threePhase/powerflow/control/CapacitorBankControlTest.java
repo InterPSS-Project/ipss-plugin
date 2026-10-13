@@ -12,6 +12,8 @@ import org.interpss.threePhase.powerflow.control.CapacitorControlData.ControlTyp
 import org.interpss.threePhase.powerflow.control.CapacitorControlData.PhaseSelection;
 import org.interpss.threePhase.qsts.control.QstsControlQueue;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.interpss.common.exp.InterpssException;
 import com.interpss.core.aclf.AclfGenCode;
@@ -24,8 +26,9 @@ import com.interpss.core.threephase.Static3PNetwork;
 import com.interpss.core.threephase.Static3PhaseFactory;
 
 public class CapacitorBankControlTest {
-	@Test
-	void voltageControlSwitchesStaticCapacitorLoad() throws InterpssException {
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void voltageControlSwitchesStaticCapacitorLoad(boolean prepared) throws InterpssException {
 		Static3PNetwork network = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
 		network.setBaseKva(10000.0);
 		Static3PBus bus = Static3PhaseFactory.eINSTANCE.createStatic3PBus();
@@ -45,6 +48,7 @@ public class CapacitorBankControlTest {
 				ControlType.VOLTAGE, 118.0, 121.0, 60.0, 1.0, false, 0.0, 0.0,
 				0.0, 0.0, PhaseCode.ABC, PhaseSelection.AVG);
 		CapacitorBankControl capacitorControl = new CapacitorBankControl();
+		if(prepared) capacitorControl.prepareNetwork(network);
 
 		bus.set3PhaseVotlages(balancedVoltage(1.02));
 		assertTrue(capacitorControl.apply(network, List.of(control)));
@@ -57,8 +61,9 @@ public class CapacitorBankControlTest {
 		assertEquals(-0.01, capacitor.getInit3PhaseLoad().a_0.getImaginary(), 1.0e-12);
 	}
 
-	@Test
-	void delayedVoltageControlSchedulesAndCancelsCapacitorSwitching() throws InterpssException {
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void delayedVoltageControlSchedulesAndCancelsCapacitorSwitching(boolean prepared) throws InterpssException {
 		Static3PNetwork network = Static3PhaseFactory.eINSTANCE.createStatic3PNetwork();
 		network.setBaseKva(10000.0);
 		Static3PBus bus = Static3PhaseFactory.eINSTANCE.createStatic3PBus();
@@ -79,6 +84,7 @@ public class CapacitorBankControlTest {
 				5.0, 10.0, PhaseCode.ABC, PhaseSelection.AVG);
 		CapacitorBankControl capacitorControl = new CapacitorBankControl();
 		QstsControlQueue queue = new QstsControlQueue();
+		if(prepared) capacitorControl.prepareNetwork(network);
 
 		bus.set3PhaseVotlages(balancedVoltage(1.02));
 		assertEquals(1, capacitorControl.scheduleDelayed(network, List.of(control), queue, 0.0));

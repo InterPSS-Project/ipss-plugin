@@ -136,6 +136,10 @@ public class QstsLargeFeederComparisonExport {
 
 		DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
 				.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
+		org.interpss.core.sparse.solver.klusolvex.KlusolveXLibrary.configureLibrary(CONFIG.string("nativeLibraryPath"));
+		org.interpss.IpssCorePlugin.configureSparseSolver(CONFIG.string("sparseSolver", "java-klu"));
+		algorithm.setMinIteration(CONFIG.integer("qsts.compare.minIterations", 2));
+		algorithm.setPrimitiveVoltageStateEnabled(CONFIG.bool("qsts.compare.primitiveVoltageState", false));
 		List<RegulatorControlData> regulatorControls = parser.getRegulatorControls();
 		var study = OpenDSSQstsStudyFactory.from(parser)
 				.setPowerFlowAlgorithm(algorithm)

@@ -74,6 +74,7 @@ def compile_case(
     max_control_iterations: int,
     reg_controls_enabled: bool,
     cap_controls_enabled: bool,
+    tolerance: float = 1.0e-4,
 ) -> None:
     dss.Basic.ClearAll()
     previous_cwd = Path.cwd()
@@ -89,6 +90,7 @@ def compile_case(
         dss.Text.Command(f"set mode={mode}")
         dss.Text.Command(f"set stepsize={step_size_hours}h")
         dss.Text.Command("set number=1")
+        dss.Text.Command(f"set tolerance={tolerance:.12g} maxiterations=1000")
     finally:
         os.chdir(previous_cwd)
 
@@ -104,9 +106,10 @@ def run_case(
     max_control_iterations: int,
     reg_controls_enabled: bool,
     cap_controls_enabled: bool,
+    tolerance: float = 1.0e-4,
 ) -> RunSummary:
     compile_case(feeder, mode, step_size_hours, control_mode, max_control_iterations,
-                 reg_controls_enabled, cap_controls_enabled)
+                 reg_controls_enabled, cap_controls_enabled, tolerance)
     converged = True
     max_iterations = 0
     start = time.perf_counter()
@@ -188,6 +191,7 @@ def main() -> None:
     parser.add_argument("--step-size-hours", type=float, default=1.0)
     parser.add_argument("--control-mode", choices=["off", "static", "time", "event"], default="static")
     parser.add_argument("--max-control-iterations", type=int, default=100)
+    parser.add_argument("--tolerance", type=float, default=1.0e-4)
     parser.add_argument("--disable-reg-controls", action="store_true")
     parser.add_argument("--disable-cap-controls", action="store_true")
     parser.add_argument("--allow-disabled-controls", action="store_true")
@@ -223,14 +227,14 @@ def main() -> None:
         warmup = run_case(feeder, args.warmup_steps, "warmup", 0,
                           args.mode, args.step_size_hours,
                           args.control_mode, args.max_control_iterations,
-                          reg_controls_enabled, cap_controls_enabled)
+                          reg_controls_enabled, cap_controls_enabled, args.tolerance)
         if not warmup.converged:
             raise RuntimeError(f"Warm-up failed for {feeder.name}")
 
         measured = [run_case(feeder, args.steps, "measured", run,
                              args.mode, args.step_size_hours,
                              args.control_mode, args.max_control_iterations,
-                             reg_controls_enabled, cap_controls_enabled)
+                             reg_controls_enabled, cap_controls_enabled, args.tolerance)
                     for run in range(1, args.repeats + 1)]
         if not all(summary.converged for summary in measured):
             raise RuntimeError(f"Measured run failed for {feeder.name}")

@@ -50,6 +50,28 @@ public interface DistributionPowerFlowAlgorithm {
 	 */
 	public boolean powerflow();
 
+	/** Enables detailed profiling for this algorithm instance. */
+	public default void setFixedPointRuntimeProfileEnabled(boolean enabled) {
+	}
+
+	public default void setMinIteration(int minimum) {
+		if(minimum < 1) throw new IllegalArgumentException("minimum iterations must be positive");
+	}
+
+	public default void setPrimitiveVoltageStateEnabled(boolean enabled) {
+	}
+
+	/** Prepares control device lookups for a study with fixed device membership. */
+	public default void prepareControlLookups() {
+	}
+
+	/** Defers unobserved bus voltage objects during a closed QSTS execution. */
+	public default void setDeferredVoltageSyncEnabled(boolean enabled) {
+	}
+
+	public default void syncThreePhaseVoltages() {
+	}
+
 	public void setRegulatorControls(List<RegulatorControlData> controls);
 
 	public List<RegulatorControlData> getRegulatorControls();
@@ -108,6 +130,11 @@ public interface DistributionPowerFlowAlgorithm {
 	public boolean isFixedPointYMatrixCacheEnabled();
 
 	public void clearFixedPointYMatrixCache();
+
+	/** Invalidates numeric values after a tap change without discarding topology. */
+	public default void notifyRegulatorTapChange() {
+		clearFixedPointYMatrixCache();
+	}
 
 	public default int getFixedPointYMatrixSymbolicFactorizationCount() {
 		return 0;

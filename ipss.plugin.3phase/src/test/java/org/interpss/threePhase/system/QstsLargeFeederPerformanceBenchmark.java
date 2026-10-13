@@ -38,7 +38,20 @@ public class QstsLargeFeederPerformanceBenchmark {
 			"testData/feeder/IEEE8500", "Master-InterPSS.dss");
 
 	@Test
-	void controlledRepeatedStateDailyWindow() {
+	void controlledRepeatedStateDailyWindow() throws Exception {
+		String recordingPath = CONFIG.string("qsts.perf.flightRecording");
+		try(jdk.jfr.Recording recording = recordingPath == null ? null
+				: new jdk.jfr.Recording(jdk.jfr.Configuration.getConfiguration("profile"))) {
+			if(recording != null) recording.start();
+			runConfiguredBenchmark();
+			if(recording != null) {
+				recording.stop();
+				recording.dump(java.nio.file.Path.of(recordingPath));
+			}
+		}
+	}
+
+	private void runConfiguredBenchmark() {
 		int warmupSteps = CONFIG.integer("qsts.perf.warmupSteps", 24);
 		int measureSteps = CONFIG.integer("qsts.perf.steps", 240);
 		int repeats = CONFIG.integer("qsts.perf.repeats", 3);
@@ -57,6 +70,8 @@ public class QstsLargeFeederPerformanceBenchmark {
 				CONFIG.string("qsts.perf.allowDisabledControls", "false"));
 		requireEnabledControls(controlMode, maxControlIterations, regControlsEnabled,
 				capControlsEnabled, allowDisabledControls);
+		org.interpss.core.sparse.solver.klusolvex.KlusolveXLibrary.configureLibrary(
+				CONFIG.string("nativeLibraryPath"));
 		System.out.println(IpssCorePlugin.configureSparseSolver(CONFIG.string("sparseSolver", "java-klu")).message());
 
 		List<FeederCase> feeders = selectedFeeders(caseSelector);
@@ -105,6 +120,9 @@ public class QstsLargeFeederPerformanceBenchmark {
 
 		DistributionPowerFlowAlgorithm algorithm = ThreePhaseObjectFactory
 				.createDistPowerFlowAlgorithm(parser.getStaticNetwork());
+		algorithm.setFixedPointRuntimeProfileEnabled(CONFIG.bool("qsts.perf.fixedPointProfile", false));
+		algorithm.setMinIteration(CONFIG.integer("qsts.perf.minIterations", 2));
+		algorithm.setPrimitiveVoltageStateEnabled(CONFIG.bool("qsts.perf.primitiveVoltageState", false));
 		long startNanos = System.nanoTime();
 		var study = OpenDSSQstsStudyFactory.from(parser)
 				.setRuntimeProfileEnabled(CONFIG.bool("qsts.perf.profile"))

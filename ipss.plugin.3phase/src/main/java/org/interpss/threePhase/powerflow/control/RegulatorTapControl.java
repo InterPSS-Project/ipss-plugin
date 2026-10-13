@@ -2,6 +2,9 @@ package org.interpss.threePhase.powerflow.control;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Locale;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Complex3x1;
@@ -18,6 +21,47 @@ import com.interpss.core.threephase.IBus3Phase;
 import com.interpss.core.threephase.INetwork3Phase;
 
 public class RegulatorTapControl {
+	private BaseAclfNetwork<?, ?> preparedNetwork;
+	private final Map<String, IBranch3Phase> preparedBranches = new HashMap<>();
+	private final Map<String, BaseAclfBus<?, ?>> preparedBuses = new HashMap<>();
+
+	/** Resolves stable references; tap positions and measurements remain live. */
+	public void prepareNetwork(INetwork3Phase network) {
+		clearLookupCache();
+		BaseAclfNetwork<?, ?> aclf = aclfNetwork(network);
+		for(AclfBranch branch : (List<AclfBranch>) aclf.getBranchList()) {
+			if(branch.isActive() && branch instanceof IBranch3Phase threePhaseBranch) {
+				if(branch.getName() != null) preparedBranches.putIfAbsent(branch.getName(), threePhaseBranch);
+				if(branch.getId() != null) preparedBranches.putIfAbsent(branch.getId(), threePhaseBranch);
+			}
+		}
+		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) aclf.getBusList()) {
+			if(bus.getId() != null) preparedBuses.putIfAbsent(bus.getId().toLowerCase(Locale.ROOT), bus);
+			if(bus.getName() != null) preparedBuses.putIfAbsent(bus.getName().toLowerCase(Locale.ROOT), bus);
+		}
+		preparedNetwork = aclf;
+	}
+
+	public void clearLookupCache() {
+		preparedNetwork = null;
+		preparedBranches.clear();
+		preparedBuses.clear();
+	}
+
+	public List<IBus3Phase> observedBuses(INetwork3Phase network, List<RegulatorControlData> controls) {
+		BaseAclfNetwork<?, ?> aclf = aclfNetwork(network);
+		List<IBus3Phase> buses = new ArrayList<>();
+		for(RegulatorControlData control : controls) {
+			IBranch3Phase branch = findBranch(aclf, control.getBranchName());
+			if(branch != null) {
+				buses.add((IBus3Phase) ((Branch) branch).getFromBus());
+				buses.add((IBus3Phase) ((Branch) branch).getToBus());
+				if(controlledBus(aclf, branch, control) instanceof IBus3Phase bus) buses.add(bus);
+			}
+		}
+		return buses;
+	}
+
 	public boolean apply(INetwork3Phase network, List<RegulatorControlData> controls) {
 		return apply(network, controls, true);
 	}
@@ -105,6 +149,10 @@ public class RegulatorTapControl {
 	}
 
 	private IBranch3Phase findBranch(BaseAclfNetwork<?, ?> network, String branchName) {
+		if(network == preparedNetwork) {
+			IBranch3Phase branch = preparedBranches.get(branchName);
+			if(branch == null || ((AclfBranch) branch).isActive()) return branch;
+		}
 		for(AclfBranch branch : (List<AclfBranch>) network.getBranchList()) {
 			if(branch.isActive() && branch instanceof IBranch3Phase
 					&& (branch.getName().equals(branchName) || branch.getId().equals(branchName))) {
@@ -129,6 +177,8 @@ public class RegulatorTapControl {
 	}
 
 	private BaseAclfBus<?, ?> findBus(BaseAclfNetwork<?, ?> network, String busId) {
+		if(network == preparedNetwork && busId != null)
+			return preparedBuses.get(busId.toLowerCase(Locale.ROOT));
 		for(BaseAclfBus<?, ?> bus : (List<BaseAclfBus<?, ?>>) network.getBusList()) {
 			if(bus.getId().equals(busId) || bus.getId().equalsIgnoreCase(busId)
 					|| bus.getName().equals(busId) || bus.getName().equalsIgnoreCase(busId)) {

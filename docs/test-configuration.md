@@ -56,17 +56,48 @@ For the annual Ckt24 benchmark, update `QstsLargeFeederPerformanceBenchmark`:
 ```json
 {
   "qsts.perf.case": "ckt24",
+  "qsts.perf.masterFile": "master_ckt24_yearly_interpss.dss",
+  "qsts.perf.mode": "YEARLY",
+  "qsts.perf.stepSizeHours": 1.0,
   "qsts.perf.warmupSteps": 24,
   "qsts.perf.steps": 8760,
-  "qsts.perf.repeats": 1,
-  "qsts.perf.profile": true,
+  "qsts.perf.repeats": 3,
+  "qsts.perf.profile": false,
+  "qsts.perf.tolerance": "1.0e-4",
+  "qsts.perf.minIterations": 1,
+  "qsts.perf.primitiveVoltageState": true,
   "qsts.perf.staticStateReuseEnabled": true,
-  "sparseSolver": "csj"
+  "sparseSolver": "java-klu"
 }
 ```
 
 Merge these keys into the existing section rather than replacing the whole file.
 Profiling and static-state reuse are applied through explicit study settings.
+
+For native runs, use `"sparseSolver": "klusolvex"` and set `nativeLibraryPath`
+to the KLUSolveX library installed on the benchmark machine. The measured yearly
+Ckt24 configuration uses Java KLU; the other large-feeder acceptance workloads
+use KLUSolveX. Keep the same tolerance,
+master, time-step size, and control settings on both engines. The tuned minimum
+iteration setting still requires the normal convergence criterion to pass.
+`qsts.perf.fixedPointProfile` enables detailed per-instance PF counters, and
+`qsts.perf.flightRecording` optionally names a JVM flight-recording output file.
+Leave both disabled during final timing runs.
+
+For IEEE8500, `Master-InterPSS.dss` with `DAILY` and one-hour steps is a repeated
+static operating point. `Master-InterPSS-QSTS-PV-Duty.dss` with `DUTY` and
+`qsts.perf.stepSizeHours = 0.0002777777777777778` follows the one-second PV
+profile; 8760 such steps represent 2 hours 26 minutes rather than an annual
+load-profile study. Comparison exports expose matching `sparseSolver`,
+`nativeLibraryPath`, `qsts.compare.minIterations`, and
+`qsts.compare.primitiveVoltageState` settings.
+
+QSTS prepares capacitor/regulator device references once per run while reading
+live voltages and control states every step. Regulator tap changes update matrix
+values without discarding stable topology. With primitive voltage state enabled,
+`NONE` result sampling and `VOLTAGE_ONLY` output, QSTS synchronizes buses observed
+by controls during the run and all bus voltages on exit. Full sampling, inverter
+controls, and delayed control queues retain full voltage synchronization.
 
 ## Java fixtures and core APIs
 

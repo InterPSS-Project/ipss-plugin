@@ -26,6 +26,35 @@ import com.interpss.core.threephase.Static3PhaseFactory;
 public class QstsLoadStateStoreTest {
 
 	@Test
+	void sharedProfilesPreserveDeviceStatusAndIndependentPAndQScaling() {
+		QstsProfileRegistry registry = new QstsProfileRegistry();
+		registry.add(new QstsProfile("daily", new double[0], new double[] {.5, 1.2},
+				new double[] {.7, .9}, null));
+		QstsLoadStateStore store = new QstsLoadStateStore();
+		Static3PLoad[] loads = new Static3PLoad[4];
+		QstsDeviceStatus[] statuses = {QstsDeviceStatus.VARIABLE, QstsDeviceStatus.VARIABLE,
+				QstsDeviceStatus.FIXED, QstsDeviceStatus.EXEMPT};
+		java.util.ArrayList<QstsProfileBinding> bindings = new java.util.ArrayList<>();
+		for(int i = 0; i < loads.length; i++) {
+			loads[i] = Static3PhaseFactory.eINSTANCE.createStatic3PLoad();
+			loads[i].setId("load" + i);
+			loads[i].set3PhaseLoad(new Complex3x1(new Complex(1, .4), new Complex(1, .4), new Complex(1, .4)));
+			store.register(loads[i]);
+			bindings.add(new QstsProfileBinding("load", "load" + i, Map.of("daily", "daily"), statuses[i]));
+		}
+		QstsStateApplier applier = new QstsStateApplier(new QstsScheduleData(registry, bindings, null), store, null);
+		for(int step = 0; step < 2; step++) {
+			applier.apply(new QstsStepContext(step, step, step, QstsMode.DAILY, 1, .8, QstsControlMode.STATIC));
+			for(int i = 0; i < loads.length; i++) {
+				double p = i < 2 ? new double[] {.5, 1.2}[step] * .8 : 1;
+				double q = i < 2 ? new double[] {.7, .9}[step] * .8 : 1;
+				assertEquals(p, loads[i].getInit3PhaseLoad().a_0.getReal(), 1e-12);
+				assertEquals(.4 * q, loads[i].getInit3PhaseLoad().a_0.getImaginary(), 1e-12);
+			}
+		}
+	}
+
+	@Test
 	void resolverAppliesProfileAndGlobalMultiplier() {
 		QstsProfileRegistry registry = new QstsProfileRegistry();
 		registry.add(new QstsProfile("daily", new double[0], new double[] {0.5, 1.2}, null, null));

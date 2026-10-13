@@ -138,15 +138,15 @@ The default fixed-point path is now:
 
 ## Controlled QSTS Performance Evidence
 
-Ckt24 annual QSTS performance was checked with OpenDSS static controls enabled
-on both sides. The checked-in InterPSS Ckt24 QSTS case has no time-varying
-profile bindings, so QSTS solves the first controlled static state and reuses
-the settled network state for the remaining samples. This is disabled for
-delayed/event controls, inverter controls, and any QSTS profile-bound case.
+Ckt24 repeated-state QSTS performance was checked with OpenDSS static controls enabled
+on both sides. The default InterPSS Ckt24 master has no time-varying
+profile bindings. This historical workload must be distinguished from the
+yearly-profile master `master_ckt24_yearly_interpss.dss`. QSTS caches the matrix,
+while enabled controls still evaluate the solved operating point at each step.
 
 Commands used on 2026-06-11:
 
-Test run settings now live in the module JSON fixture. For the annual InterPSS
+Test run settings now live in the module JSON fixture. For the historical InterPSS
 run below, set `qsts.perf.case` to `ckt24`, `qsts.perf.warmupSteps` to `24`,
 `qsts.perf.steps` to `8760`, `qsts.perf.repeats` to `1`, and `qsts.perf.profile`
 to `true` in `QstsLargeFeederPerformanceBenchmark`. See
@@ -184,6 +184,63 @@ controls enabled. The current comparison maxima are `0.00104704199 pu`,
 `0.0267427413 deg`, `2.87351585 kW`, `2.728537974 kvar`, `0.014988296 kW`,
 and `0.00406943705 kvar`, with zero voltage, load-power, branch-power,
 generator-power, and capacitor-state tolerance failures.
+
+## Paired 8,760-step benchmark, 2026-10-13
+
+The optimized QSTS execution exceeds the 90% DSS-Python throughput target for
+both large feeders. These are medians of three measured runs per engine and
+workload, after a separate 24-step warmup. All 24 measured runs converged at
+every step. Throughput is DSS-Python elapsed time divided by InterPSS elapsed
+time; DSS-Python represents 100%.
+
+| Workload | InterPSS solver | InterPSS total (s) | DSS-Python total (s) | InterPSS throughput |
+|---|---|---:|---:|---:|
+| IEEE8500 static, hourly | KLUSolveX | 3.439474 | 9.172926 | 266.7% |
+| IEEE8500 PV duty, 1-second | KLUSolveX | 4.130892 | 5.207665 | 126.1% |
+| Ckt24 static, hourly | KLUSolveX | 3.753073 | 15.590169 | 415.4% |
+| Ckt24 yearly profile, hourly | Java KLU | 19.788752 | 24.758709 | 125.1% |
+
+Each run has 8,760 steps. The PV-duty workload covers 2 hours 26 minutes,
+not a year. The hourly workloads cover 365 days; the static masters repeat
+their static operating point, whereas the Ckt24 yearly master varies its load
+profiles. Circuit compilation and full row exports are excluded. Java timing
+includes study construction; DSS-Python timing includes the solve loop and
+convergence checks. Both engines use tolerance `1e-4`, maximum 1,000 power-flow
+iterations, and static regulator/capacitor controls with up to 100 control
+iterations. InterPSS uses minimum one iteration, primitive voltage state,
+`NONE` sampling and `VOLTAGE_ONLY` output. See the explicit JSON settings in
+`test-configuration.md`; the default test configuration remains unchanged.
+
+Measured on Windows with an Intel Core i7-13700KF and Temurin Java 21.0.6+7.
+The reference uses DSS-Python 0.15.7, OpenDSSDirect.py 0.9.4 and DSS C-API
+0.14.5 (OpenDSS SVN 3723). Raw configurations, repeat timings, accuracy exports
+and provenance are retained locally in
+`target/qsts-performance-optimization/final-paired-8760/`.
+
+The performance improvements cache prepared control lookups and profile
+multipliers, defer unobserved voltage object updates until study exit, preserve
+the fixed-point matrix structure across regulator taps, and update only changed
+native matrix entries. Control observations still use current voltages at each
+step. Final full-versus-deferred voltage tests match to `1e-10` with identical
+tap and capacitor states for all four workloads.
+
+Independent 24-step row comparisons use energized bus phases and total
+terminal-1 branch real power on a 1 MVA three-phase base:
+
+| Workload | Max Vmag difference (pu) | Avg Vmag difference (pu) | Max branch P difference (pu) | Avg branch P difference (pu) |
+|---|---:|---:|---:|---:|
+| IEEE8500 static | 8.3987e-4 | 4.1928e-4 | 1.5461e-3 | 8.5099e-6 |
+| IEEE8500 PV duty | 1.0682e-3 | 4.2860e-4 | 4.6890e-3 | 1.7941e-4 |
+| Ckt24 static | 1.7439e-3 | 9.6788e-4 | 1.6956e-4 | 4.7504e-7 |
+| Ckt24 yearly profile | 1.7549e-3 | 9.7762e-4 | 3.1045e-3 | 1.2826e-5 |
+
+All compared regulator taps and capacitor states agree with DSS-Python. There
+are no missing reference energized voltage phases; unmatched reference branches
+have zero real power. These accuracy checks cover 24 steps, rather than every
+annual step. This total terminal-1 metric differs from historical per-phase or
+both-terminal branch metrics. The full three-phase suite passed (384 tests,
+28 skipped), as did ten core three-phase regressions and the actual native
+matrix-update test with 100 updates and pattern changes.
 
 ## Long-Term Direction: OpenDSS-Style Primitive Y Matrix
 
