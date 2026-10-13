@@ -13,7 +13,22 @@ import com.sun.jna.ptr.IntByReference;
 public interface KlusolveXLibrary extends Library {
 	long REUSE_SYMBOLIC_FACTORIZATION = 2L;
 
+	/** Selects a native library explicitly; null restores legacy discovery. */
+	static void configureLibrary(String pathOrName) {
+		Configuration.pathOrName = pathOrName != null && (pathOrName.contains("/") || pathOrName.contains("\\"))
+				? java.nio.file.Path.of(pathOrName).toAbsolutePath().normalize().toString() : pathOrName;
+	}
+
+	final class Configuration {
+		private static volatile String pathOrName;
+		private Configuration() { }
+	}
+
 	static KlusolveXLibrary load() {
+		String configured = Configuration.pathOrName;
+		if(configured != null && !configured.isBlank()) {
+			return Native.load(configured, KlusolveXLibrary.class);
+		}
 		String libraryPath = System.getProperty(KlusolveXAvailability.LIBRARY_PATH_PROPERTY);
 		if(libraryPath != null && !libraryPath.isBlank()) {
 			return Native.load(libraryPath, KlusolveXLibrary.class);

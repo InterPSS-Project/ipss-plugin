@@ -107,6 +107,8 @@ public class OpenDssIeee13DailyQstsProfileTest {
 		assertTrue(bruteForce.result.isConverged());
 		assertTrue(symbolicReuse.result.isConverged());
 		assertTrue(symbolicReuse.algorithm.isFixedPointYMatrixCacheEnabled());
+		assertTrue(symbolicReuse.algorithm.getFixedPointYMatrixValueUpdateCount() > 0,
+				"Stepped QSTS regulator controls must reuse the numeric matrix update path");
 		assertTrue(symbolicReuse.algorithm.getFixedPointYMatrixNumericFactorizationCount()
 						>= symbolicReuse.algorithm.getFixedPointYMatrixSymbolicFactorizationCount(),
 				"Regulator cache reuse should not require more symbolic than numeric factorizations");

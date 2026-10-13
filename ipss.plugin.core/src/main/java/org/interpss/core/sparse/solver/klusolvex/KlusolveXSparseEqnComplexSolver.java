@@ -270,14 +270,14 @@ public class KlusolveXSparseEqnComplexSolver extends BaseSparseEqnSolver {
 
 	private boolean tryUpdateNativeValues(List<KlusolveXMatrixEntry> entries) {
 		List<KlusolveXMatrixEntry> previous = this.sparseSet.matrixPattern();
-		for(KlusolveXMatrixEntry entry : previous) {
-			if(!this.sparseSet.tryZeroise(entry.row(), entry.col())) {
-				profile().addReuseFallback();
-				return false;
-			}
-		}
-		for(KlusolveXMatrixEntry entry : entries) {
-			if(!this.sparseSet.tryIncrement(entry.row(), entry.col(), entry.re(), entry.im())) {
+		for(int i = 0; i < entries.size(); i++) {
+			KlusolveXMatrixEntry entry = entries.get(i);
+			KlusolveXMatrixEntry old = previous.get(i);
+			if(entry.re() == old.re() && entry.im() == old.im()) continue;
+			// Reset only changed entries, preserving exact values across many tap
+			// updates without paying native-call overhead for the whole matrix.
+			if(!this.sparseSet.tryZeroise(entry.row(), entry.col())
+					|| !this.sparseSet.tryIncrement(entry.row(), entry.col(), entry.re(), entry.im())) {
 				profile().addReuseFallback();
 				return false;
 			}

@@ -7,6 +7,10 @@
     "sparseSolver": null
   },
   "QstsLargeFeederComparisonExport": {
+    "nativeLibraryPath": null,
+    "sparseSolver": "java-klu",
+    "qsts.compare.minIterations": 2,
+    "qsts.compare.primitiveVoltageState": false,
     "qsts.compare.allowDisabledControls": "false",
     "qsts.compare.capControlsEnabled": "true",
     "qsts.compare.case": "all",
@@ -22,6 +26,11 @@
     "qsts.compare.tolerance": "1.0e-4"
   },
   "QstsLargeFeederPerformanceBenchmark": {
+    "nativeLibraryPath": null,
+    "qsts.perf.minIterations": 2,
+    "qsts.perf.primitiveVoltageState": false,
+    "qsts.perf.fixedPointProfile": false,
+    "qsts.perf.flightRecording": null,
     "qsts.perf.allowDisabledControls": "false",
     "qsts.perf.capControlsEnabled": "true",
     "qsts.perf.case": "all",

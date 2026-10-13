@@ -48,6 +48,7 @@ def compile_case(
     max_control_iterations: int,
     reg_controls_enabled: bool,
     cap_controls_enabled: bool,
+    tolerance: float = 1.0e-4,
 ) -> None:
     dss.Basic.ClearAll()
     previous_cwd = Path.cwd()
@@ -63,6 +64,7 @@ def compile_case(
         dss.Text.Command(f"set mode={mode}")
         dss.Text.Command(f"set stepsize={step_size_hours}h")
         dss.Text.Command("set number=1")
+        dss.Text.Command(f"set tolerance={tolerance:.12g} maxiterations=1000")
     finally:
         os.chdir(previous_cwd)
 
@@ -272,9 +274,10 @@ def export_case(
     include_load_powers: bool,
     include_generator_powers: bool,
     include_capacitor_states: bool,
+    tolerance: float = 1.0e-4,
 ) -> None:
     compile_case(feeder, mode, step_size_hours, control_mode, max_control_iterations,
-                 reg_controls_enabled, cap_controls_enabled)
+                 reg_controls_enabled, cap_controls_enabled, tolerance)
     output_dir.mkdir(parents=True, exist_ok=True)
 
     tag = control_tag(control_mode, reg_controls_enabled, cap_controls_enabled)
@@ -428,6 +431,7 @@ def export_case(
         f"regControlsEnabled={str(reg_controls_enabled).lower()} "
         f"capControlsEnabled={str(cap_controls_enabled).lower()} "
         f"masterFile={feeder.master_file} "
+        f"tolerance={tolerance:.12g} buses={dss.Circuit.NumBuses()} nodes={dss.Circuit.NumNodes()} "
         f"converged={str(converged).lower()} maxIterations={max_iterations} "
         f"voltageRows={voltage_rows} branchPowerRows={branch_rows} loadPowerRows={load_rows} "
         f"generatorPowerRows={generator_rows} capacitorStateRows={capacitor_rows} "
@@ -479,6 +483,7 @@ def main() -> None:
     parser.add_argument("--step-size-hours", type=float, default=1.0)
     parser.add_argument("--control-mode", choices=["off", "static", "time", "event"], default="static")
     parser.add_argument("--max-control-iterations", type=int, default=100)
+    parser.add_argument("--tolerance", type=float, default=1.0e-4)
     parser.add_argument("--disable-reg-controls", action="store_true")
     parser.add_argument("--disable-cap-controls", action="store_true")
     parser.add_argument("--allow-disabled-controls", action="store_true")
@@ -522,6 +527,7 @@ def main() -> None:
             include_load_powers,
             include_generator_powers,
             include_capacitor_states,
+            args.tolerance,
         )
 
 
