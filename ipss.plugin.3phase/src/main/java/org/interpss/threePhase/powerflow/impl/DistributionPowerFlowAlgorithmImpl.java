@@ -26,6 +26,7 @@ import org.interpss.threePhase.powerflow.control.RegulatorTapControl;
 import org.interpss.threePhase.powerflow.DistributionPFMethod;
 import org.interpss.threePhase.powerflow.DistributionPostSolveOutputMode;
 import org.interpss.threePhase.powerflow.DistributionPowerFlowAlgorithm;
+import org.interpss.threePhase.powerflow.DistributionPowerFlowOptions;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
 
 import com.interpss.common.datatype.Constants;
@@ -64,6 +65,29 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 			"ipss.distpf.disableFloatingComponentAntiFloat";
 	private static final String ENABLE_PRIMITIVE_VOLTAGE_STATE_PROPERTY =
 			"ipss.distpf.enablePrimitiveVoltageState";
+
+    private DistributionPowerFlowOptions powerFlowOptions;
+
+    @Override
+    public DistributionPowerFlowOptions getPowerFlowOptions() {
+        if (powerFlowOptions != null) return powerFlowOptions;
+        // Preserve legacy application settings; explicit options take precedence.
+        return new DistributionPowerFlowOptions(
+                !Boolean.getBoolean("ipss.qsts.disableFixedPointSymbolReuse"),
+                !Boolean.getBoolean("ipss.qsts.disableFixedPointValueUpdate"),
+                !Boolean.getBoolean("ipss.distpf.disableZeroDiagonalFill"),
+                !Boolean.getBoolean("ipss.distpf.disableTransformerAntiFloat"),
+                !Boolean.getBoolean(DISABLE_FLOATING_COMPONENT_ANTI_FLOAT_PROPERTY),
+                Boolean.getBoolean("ipss.distpf.enableNonSwingBusAntiFloat")
+                        && !Boolean.getBoolean("ipss.distpf.disableNonSwingBusAntiFloat"),
+                !Boolean.getBoolean("ipss.distpf.disableFloatingComponentDeactivation"));
+    }
+
+    @Override
+    public void setPowerFlowOptions(DistributionPowerFlowOptions options) {
+        this.powerFlowOptions = java.util.Objects.requireNonNull(options, "options");
+        clearFixedPointYMatrixCache();
+    }
 
 	private INetwork3Phase distNet = null;
 
@@ -1023,11 +1047,11 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private boolean fixedPointSymbolReuseEnabled() {
-		return !Boolean.getBoolean("ipss.qsts.disableFixedPointSymbolReuse");
+		return getPowerFlowOptions().symbolReuseEnabled();
 	}
 
 	private boolean fixedPointValueUpdateEnabled() {
-		return !Boolean.getBoolean("ipss.qsts.disableFixedPointValueUpdate");
+		return getPowerFlowOptions().valueUpdateEnabled();
 	}
 
 	private boolean canUpdateFixedPointYMatrixValues(BaseAclfNetwork<?, ?> distNet, String symbolSignature) {
@@ -1476,25 +1500,23 @@ public class DistributionPowerFlowAlgorithmImpl implements DistributionPowerFlow
 	}
 
 	private boolean disableZeroDiagonalFill() {
-		return Boolean.getBoolean("ipss.distpf.disableZeroDiagonalFill");
+		return !getPowerFlowOptions().zeroDiagonalFillEnabled();
 	}
 
 	private boolean disableTransformerAntiFloat() {
-		return Boolean.getBoolean("ipss.distpf.disableTransformerAntiFloat");
+		return !getPowerFlowOptions().transformerAntiFloatEnabled();
 	}
 
 	private boolean enableFloatingComponentAntiFloat() {
-		// Enabled by default; use the JVM system property as a runtime escape hatch.
-		return !Boolean.getBoolean(DISABLE_FLOATING_COMPONENT_ANTI_FLOAT_PROPERTY);
+		return getPowerFlowOptions().floatingComponentAntiFloatEnabled();
 	}
 
 	private boolean enableNonSwingBusAntiFloat() {
-		return Boolean.getBoolean("ipss.distpf.enableNonSwingBusAntiFloat")
-				&& !Boolean.getBoolean("ipss.distpf.disableNonSwingBusAntiFloat");
+		return getPowerFlowOptions().nonSwingBusAntiFloatEnabled();
 	}
 
 	private boolean disableFloatingComponentDeactivation() {
-		return Boolean.getBoolean("ipss.distpf.disableFloatingComponentDeactivation");
+		return !getPowerFlowOptions().floatingComponentDeactivationEnabled();
 	}
 
 	private void applySwingBusVoltageBoundary(ISparseEqnComplexMatrix3x3 yMatrix) {

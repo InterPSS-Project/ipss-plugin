@@ -57,6 +57,8 @@ public class QstsStudy {
 	private int maxPowerFlowIterations = 100;
 	private double tolerance = 1.0e-6;
 	private boolean initializeFirstStepVoltages = true;
+	private Boolean runtimeProfileEnabled;
+	private Boolean staticStateReuseEnabled;
 	private List<RegulatorControlData> regulatorControls = Collections.emptyList();
 	private List<CapacitorControlData> capacitorControls = Collections.emptyList();
 	private List<InverterControlData> inverterControls = Collections.emptyList();
@@ -97,6 +99,17 @@ public class QstsStudy {
 
 	public QstsStudy setStateApplier(QstsStateApplier stateApplier) {
 		this.stateApplier = stateApplier == null ? QstsStateApplier.fromNetwork(network, scheduleData) : stateApplier;
+		return this;
+	}
+
+	/** Enables runtime timing through an explicit study setting. */
+	public QstsStudy setRuntimeProfileEnabled(boolean enabled) {
+		this.runtimeProfileEnabled = enabled;
+		return this;
+	}
+
+	public QstsStudy setStaticStateReuseEnabled(boolean enabled) {
+		this.staticStateReuseEnabled = enabled;
 		return this;
 	}
 
@@ -220,7 +233,7 @@ public class QstsStudy {
 	}
 
 	public QstsResult run() {
-		QstsRuntimeProfile profile = QstsRuntimeProfile.enabled();
+		QstsRuntimeProfile profile = QstsRuntimeProfile.enabled(runtimeProfileEnabled);
 		long setupStartNanos = profile == null ? 0L : System.nanoTime();
 		DistributionPowerFlowAlgorithm algorithm = powerFlowAlgorithm == null
 				? ThreePhaseObjectFactory.createDistPowerFlowAlgorithm(network)
@@ -240,7 +253,7 @@ public class QstsStudy {
 		boolean regulatorControlsEnabled = regulatorControlsEnabledForMode(controlsEnabled);
 		boolean steppedRegulatorControls = usesSteppedRegulatorControls(regulatorControlsEnabled);
 		algorithm.setFixedPointYMatrixCacheEnabled(qstsFixedPointYMatrixCacheEnabled(
-				delayedCapacitorControls));
+				algorithm, delayedCapacitorControls));
 		algorithm.setRegulatorControlEnabled(regulatorControlsEnabled && !steppedRegulatorControls
 				&& !regulatorControls.isEmpty());
 		algorithm.setCapacitorControlEnabled(controlsEnabled && !delayedCapacitorControls
@@ -351,15 +364,17 @@ public class QstsStudy {
 				&& !regulatorControls.isEmpty();
 	}
 
-	private boolean qstsFixedPointYMatrixCacheEnabled(boolean delayedCapacitorControls) {
+	private boolean qstsFixedPointYMatrixCacheEnabled(DistributionPowerFlowAlgorithm algorithm,
+			boolean delayedCapacitorControls) {
 		return pfMethod == DistributionPFMethod.Fixed_Point
 				&& !delayedCapacitorControls
-				&& !Boolean.getBoolean("ipss.qsts.disableFixedPointSymbolReuse")
-				&& !Boolean.getBoolean("ipss.qsts.disableFixedPointValueUpdate");
+				&& algorithm.getPowerFlowOptions().symbolReuseEnabled()
+				&& algorithm.getPowerFlowOptions().valueUpdateEnabled();
 	}
 
 	private boolean qstsStaticStateReuseEnabled(boolean delayedCapacitorControls) {
-		return !Boolean.getBoolean("ipss.qsts.disableStaticStateReuse")
+		return (staticStateReuseEnabled != null ? staticStateReuseEnabled
+				: !Boolean.getBoolean("ipss.qsts.disableStaticStateReuse"))
 				&& !delayedCapacitorControls
 				&& controlMode == QstsControlMode.OFF
 				&& inverterControls.isEmpty();
@@ -958,8 +973,9 @@ public class QstsStudy {
 		private int powerFlowIterations;
 		private int reusedPowerFlowSteps;
 
-		private static QstsRuntimeProfile enabled() {
-			return Boolean.getBoolean("ipss.qsts.profile") ? new QstsRuntimeProfile() : null;
+		private static QstsRuntimeProfile enabled(Boolean configured) {
+			boolean enabled = configured != null ? configured : Boolean.getBoolean("ipss.qsts.profile");
+			return enabled ? new QstsRuntimeProfile() : null;
 		}
 
 		private void addSetup(long nanos) {
