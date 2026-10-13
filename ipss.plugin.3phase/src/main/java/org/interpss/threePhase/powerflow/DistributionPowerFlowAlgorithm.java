@@ -10,6 +10,15 @@ import org.interpss.threePhase.powerflow.control.RegulatorControlData;
 public interface DistributionPowerFlowAlgorithm {
 
 
+    /** Explicit options override legacy runtime settings for this algorithm. */
+    default DistributionPowerFlowOptions getPowerFlowOptions() {
+        return DistributionPowerFlowOptions.DEFAULTS;
+    }
+
+    default void setPowerFlowOptions(DistributionPowerFlowOptions options) {
+        throw new UnsupportedOperationException("This algorithm does not support fixed-point options");
+    }
+
 	INetwork3Phase getNetwork();
 
 	void setNetwork(INetwork3Phase net);

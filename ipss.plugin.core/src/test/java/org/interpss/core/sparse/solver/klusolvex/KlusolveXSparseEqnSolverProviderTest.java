@@ -33,23 +33,17 @@ public class KlusolveXSparseEqnSolverProviderTest {
 	@AfterEach
 	public void resetSolverProvider() {
 		SparseEqnSolverProvider.useCSJ();
-		System.clearProperty(SparseEqnSolverProvider.SOLVER_PROPERTY);
-		System.clearProperty(KlusolveXMatrixMarketExporter.EXPORT_DIR_PROPERTY);
-		System.clearProperty(KlusolveXMatrixMarketExporter.EXPORT_PREFIX_PROPERTY);
 	}
 
 	@Test
 	public void matrixMarketExporterWritesJkluReplayFiles(@TempDir Path tempDir) throws Exception {
-		System.setProperty(KlusolveXMatrixMarketExporter.EXPORT_DIR_PROPERTY, tempDir.toString());
-		System.setProperty(KlusolveXMatrixMarketExporter.EXPORT_PREFIX_PROPERTY, "jklu-bench");
-
 		KlusolveXMatrixMarketExporter.exportSnapshot(2,
 				List.of(
 						new KlusolveXMatrixEntry(0, 0, 4.0, 0.5),
 						new KlusolveXMatrixEntry(0, 1, 0.5, -1.0),
 						new KlusolveXMatrixEntry(1, 1, 5.0, -0.25)),
 				new double[] {1.0, 2.0, -0.5, 1.0},
-				"test");
+				"test", tempDir, "jklu-bench", 1L);
 
 		Path matrix = tempDir.resolve("jklu-bench-test-000001-matrix.mtx");
 		Path rhs = tempDir.resolve("jklu-bench-test-000001-rhs.mtx");
@@ -61,7 +55,7 @@ public class KlusolveXSparseEqnSolverProviderTest {
 
 	@Test
 	public void defaultSelectionUsesJavaKluComplex3x3() {
-		IpssCorePlugin.Selection selection = IpssCorePlugin.configureSparseSolverFromSystemProperties();
+		IpssCorePlugin.Selection selection = IpssCorePlugin.configureSparseSolver("java-klu");
 
 		assertEquals(SparseSolverType.JAVA_KLU, selection.active());
 		assertInstanceOf(JKLUSparseEqnComplexMatrix3x3Impl.class,

@@ -1,0 +1,15 @@
+{
+  "valid": {
+    "name": "fixture",
+    "enabled": true,
+    "steps": 24,
+    "count": 4000000000,
+    "optional": null
+  },
+  "invalid": {
+    "enabled": "typo",
+    "steps": "1.5",
+    "count": "overflow",
+    "object": {}
+  }
+}
