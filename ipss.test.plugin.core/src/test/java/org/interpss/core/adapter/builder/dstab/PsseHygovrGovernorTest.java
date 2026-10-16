@@ -26,6 +26,13 @@ public class PsseHygovrGovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
+    void rejectsZeroWaterInertiaRequiredPositiveByNativeModel() throws Exception {
+        var governor=new PsseHygovrGovernor("zero-tw","HYGOVR","test");
+        governor.getData().setTw(0);
+        org.junit.jupiter.api.Assertions.assertFalse(governor.validateParameters());
+    }
+
+    @Test
     void mapsNativeTwentySixConstantRecord(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Path dyr = tempDir.resolve("hygovr1.dyr");

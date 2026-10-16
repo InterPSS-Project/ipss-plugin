@@ -922,6 +922,21 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void pss4bZeroLagsExposeSpeedImmediatelyWithoutAdvancingMemories() throws Exception {
+        var builder=DStabBuilderTestFixture.createWithMachine();
+        var machine=builder.getDStabNetwork().getMachine("Bus1-mach1");
+        double[] p=new double[Ieee2005PSS4BStabilizerData.PARAMETER_COUNT];
+        p[16]=1;p[17]=1;p[32]=2;p[33]=1;p[34]=-1;p[73]=1;p[74]=-1;
+        var pss=builder.addPss4b("Bus1","1",p);
+        assertTrue(pss.initStates(machine.getDStabBus(),machine));
+        var before=pss.getNamedStates();
+        machine.setSpeed(machine.getSpeed()+.01);
+        assertEquals(.02,pss.getOutput(machine),1e-12);
+        assertEquals(.02,pss.getOutput(machine),1e-12);
+        assertEquals(before,pss.getNamedStates());
+    }
+
+    @Test
     void pss4b_matchesAnalyticSingleBandStepResponse() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");

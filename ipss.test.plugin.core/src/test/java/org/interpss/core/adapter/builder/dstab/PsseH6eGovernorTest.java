@@ -164,6 +164,19 @@ public class PsseH6eGovernorTest extends CorePluginTestSetup {
         assertEquals(ref0 + .001, f.governor.getMovingReference(), TOL);
     }
 
+    @Test
+    void zeroWaterInertiaUsesSteadyHeadAsTheGateMoves() throws Exception {
+        Fixture f=initialized(1);
+        f.governor.getData().setTw(0);
+        assertTrue(f.governor.initStates(f.machine.getDStabBus(),f.machine));
+        double initialFlow=f.governor.getWaterFlow();
+        f.machine.setSpeed(.99);
+        for(int i=0;i<400;i++)step(f.governor,f.machine,.0025);
+        assertEquals(1,f.governor.getHead(),1e-12);
+        assertTrue(f.governor.getWaterFlow()>initialFlow);
+        assertEquals(f.governor.flowArea(f.governor.getGateOutput()),f.governor.getWaterFlow(),1e-10);
+    }
+
     private static Fixture initialized(int fd) throws Exception { return initialized(fd, .02, 0.0); }
 
     private static Fixture initialized(int fd, double tsp, double sprate) throws Exception {

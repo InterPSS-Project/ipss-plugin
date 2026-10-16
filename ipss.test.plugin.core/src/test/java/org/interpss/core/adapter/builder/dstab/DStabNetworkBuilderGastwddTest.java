@@ -62,5 +62,23 @@ public class DStabNetworkBuilderGastwddTest extends CorePluginTestSetup {
     private static Fixture fixture() throws Exception {DStabNetworkBuilder b=DStabBuilderTestFixture.createWithMachine(); Machine m=b.getDStabNetwork().getMachine("Bus1-mach1"); m.setPm(.6);m.setPe(.6);m.setSpeed(1); PsseGastwddGovernor g=b.addGovGastwdd("Bus1","1",data()); assertNotNull(g);g.configureIntegrationStep(.01);assertTrue(g.initStates(m.getDStabBus(),m));return new Fixture(m,g);}
     private static PsseGastwddGovernorData data(){PsseGastwddGovernorData d=new PsseGastwddGovernorData();d.setKdroop(.05);d.setKp(2);d.setKi(1);d.setKd(0);d.setEtd(.02);d.setTcd(.1);d.setTrate(0);d.setT(0);d.setMaxLimit(1.2);d.setMinLimit(0);d.setEcr(.03);d.setK3(1);d.setA(1);d.setB(.2);d.setC(1);d.setTauF(.1);d.setKf(.05);d.setK5(.4);d.setK4(.6);d.setT3(.2);d.setT4(.3);d.setTauT(1);d.setT5(.1);d.setAf1(.1);d.setBf1(.1);d.setAf2(.05);d.setBf2(.2);d.setCf2(.8);d.setTr(1);d.setK6(0);d.setTc(500);d.setTd(.1);d.setDbH(.003);d.setDbL(-.004);return d;}
     private static void advance(PsseGastwddGovernor g,Machine m,int n,double dt){for(int i=0;i<n;i++){assertTrue(g.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,0));assertTrue(g.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,m,1));}}
+
+    @Test void zeroTurbineLagReadsLiveSpeedWithoutAdvancingState() throws Exception {
+        Fixture f=fixture();
+        var g=f.gov;var m=f.machine;
+        g.getData().setTcd(0);g.getData().setEcr(0);
+        assertTrue(g.initStates(m.getDStabBus(),m));
+        double initial=g.getOutput(m),fuel=g.getFuelFlow(),valve=g.getValvePosition();
+        m.setSpeed(1.01);
+        double speed=g.applySpeedDeadband(.01);
+        double expected=(initial-g.getData().getCf2()*speed)*(1+speed);
+        assertEquals(expected,g.getOutput(m),1e-12);
+        assertEquals(fuel,g.getTurbineDynamics(),1e-12);
+        for(int i=0;i<2;i++)assertTrue(g.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,m,i));
+        assertEquals(expected,g.getOutput(m),1e-12);
+        assertEquals(fuel,g.getFuelFlow(),0);
+        assertEquals(valve,g.getValvePosition(),0);
+    }
+
     private record Fixture(Machine machine,PsseGastwddGovernor gov){}
 }

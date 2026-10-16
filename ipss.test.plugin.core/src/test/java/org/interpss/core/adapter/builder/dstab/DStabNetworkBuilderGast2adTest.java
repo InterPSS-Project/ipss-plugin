@@ -214,6 +214,24 @@ public class DStabNetworkBuilderGast2adTest extends CorePluginTestSetup {
         }
     }
 
+
+    @Test void zeroTurbineLagReadsLiveSpeedWithoutAdvancingState() throws Exception {
+        Fixture f=fixture(1);
+        var g=f.governor;var m=f.machine;
+        g.getData().setTcd(0);g.getData().setEcr(0);
+        assertTrue(g.initStates(m.getDStabBus(),m));
+        double initial=g.getOutput(m),fuel=g.getFuelFlow(),valve=g.getValvePosition();
+        m.setSpeed(1.01);
+        double speed=g.applySpeedDeadband(.01);
+        double expected=(initial-g.getData().getCf2()*speed)*(1+speed);
+        assertEquals(expected,g.getOutput(m),1e-12);
+        assertEquals(fuel,g.getTurbineDynamics(),1e-12);
+        for(int i=0;i<2;i++)assertTrue(g.nextStep(0,DynamicSimuMethod.MODIFIED_EULER,m,i));
+        assertEquals(expected,g.getOutput(m),1e-12);
+        assertEquals(fuel,g.getFuelFlow(),0);
+        assertEquals(valve,g.getValvePosition(),0);
+    }
+
     private record Fixture(Machine machine, PsseGast2adGovernor governor) {
     }
 }
