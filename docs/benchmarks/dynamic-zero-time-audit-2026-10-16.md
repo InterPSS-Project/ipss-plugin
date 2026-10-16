@@ -90,6 +90,9 @@ The AC profiles use TA=0 and positive TE; no native claim is made for TE=0.
 
 ## Regression results and limits
 
+These are the initial audit results. The [release follow-up](#release-follow-up-pss3c-failure-resolved)
+below resolves the PSS3C failure and records the subsequent release validation.
+
 - Core full build/test/install: **2,904 tests, zero failures/errors**.
 - Plugin complete registered suite, including `extended-tests`: **2,545 tests;
   2,436 passed, 108 skipped, one failure, zero errors**.
@@ -117,7 +120,7 @@ Public inputs are in `ipss.test.plugin.core/testData/adpter/psse/v33/zero-time`.
 Exact numeric boundary checkpoints are embedded in
 `EmbeddedZeroTimeBoundaryValues`, following the repository's existing reference
 pattern. `ReferenceArtifactManifestIntegrityTest` verifies their SHA-256 hashes.
-The native library SHA-256 is
+The benchmark model documentation (`ModelLibrary.pdf`) SHA-256 is
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
 
 The complete local archive is
@@ -146,3 +149,94 @@ The full plugin suite needs local loopback socket access for Jena's HTTP
 initialization even when importing local CIM fixtures. Without it, 74 parser
 tests fail at infrastructure initialization; that sandbox run is not used as
 the model regression result.
+
+## Release follow-up: PSS3C failure resolved
+
+The PSS3C failure reported above came primarily from mismatched load models in
+the SMIB comparison. The native producer calls `CONL` with four zero percentages,
+which preserves constant-MVA load (benchmark API documentation, `conl`, `LOADIN`).
+The InterPSS test had used the default constant-impedance representation. The
+test now selects constant active and reactive power and removes those loads
+from the fixed network admittance matrix. It asserts the initialized load
+components and requires network convergence to `1e-6`, with at most 100
+iterations. RAW/DYR inputs, embedded native checkpoints, channel limits and
+the existing event-window comparison rules are unchanged.
+
+Three additional numerical defects were corrected and covered by independent
+regressions:
+
+- A zero-duration PSS3C refresh preserves positive-time-constant filter states
+  and evaluates the compensated-frequency signal at the new terminal voltage.
+- The compensated-frequency transducer corrector samples the predicted
+  washout state, so its derivative uses the same Heun endpoint as the filter.
+- `SecondOrderLeadLagBlock` calculates both corrector slopes before updating
+  either state, preserving simultaneous modified-Euler integration.
+
+Enforcing the network tolerance also exposed a core convergence-monitor defect:
+the bus scan stopped at its first mismatch before saving the new voltage. A
+nonlinear load could therefore converge numerically while the monitor continued
+comparing against an obsolete iterate. The scan now checks and refreshes all
+active buses on every iteration. Two regressions cover successful convergence
+and rejection when the final bus has not settled within the iteration limit.
+The simulation runner also stops and clears initialization after a failed
+step, instead of retrying forever without advancing time; a third regression
+covers that failure path.
+
+Two internal system checks needed their numerical assumptions made explicit.
+The IEEE39 compressor-motor regression now enforces a `1e-6` network tolerance
+and passes its unchanged voltage checkpoint. The five-plant synthetic renewable
+test retains its historical default `1e-4` tolerance and 20-iteration limit,
+and refreshes its internal repeatability snapshot for the corrected stopping
+rule. It is renamed to identify that repeatability-only purpose. No native
+reference, assertion delta or physical recovery bound was changed.
+That synthetic deep-fault case did not converge in separate mandatory-check
+diagnostics: `1e-10`/100 iterations at `0.051 s`, and `1e-4`/20 iterations at
+`0.0535 s`. This is a remaining limitation of the fixed-point network coupling,
+not a zero-time-constant model fix or evidence of a converged benchmark-equivalent
+trajectory. The existing test does not enforce convergence; its near-zero
+fault-voltage snapshot must not be interpreted as an accuracy claim at the
+number of printed digits. The PSS3C and IEEE39 motor checks do enforce their
+declared network tolerance.
+
+The original embedded comparison now passes all 19 channels. Its maximum EFD
+error falls from `0.0110020990` to `0.0005039830` pu. No acceptance limit was
+increased. This corrects the earlier interpretation of that failure as an
+unresolved solver-parity difference.
+
+Two fresh benchmarking runs used the same `0.0005 s` time step and `1e-6`
+network tolerance as InterPSS. Their complete 2,005-row CSVs are byte-identical,
+SHA-256 `03a024c51f45e1e1c14f5e043ccec9f917f41bbcfbf2d7105c3262b51f8a619e`.
+The native `DSMDL.DLL` SHA-256 is
+`c77448250fb965bc2d397f88993855cfb792345b0a86a4bc78ad90f66540ebb6`.
+Across 1,996 aligned rows under the existing event-window rule, all 19 channels
+pass the existing limits. Maximum EFD error is `0.0006938271` pu; bus-voltage
+errors are `0.0001852579` and `0.0000631741` pu; relative-speed error is
+`1.174456e-6` pu. The denser native record includes points absent from the
+embedded checkpoint set, hence the different maximum errors. These results
+do not claim exact parity inside the excluded one-step event windows.
+
+The producer, two native outputs, comparison script and per-channel errors
+are retained locally under `target/pss3c-release/` and the private reference
+archive, following the artifact policy above. The earlier IEEE39 parity and
+missing-private-dataset qualifications still apply.
+
+### Final release validation
+
+Both complete registered suites passed before changing the versions:
+
+- Core: **2,907 passed, zero failures/errors/skips** (`mvn -o install`).
+- Plugin with `extended-tests`: **2,548 executed; 2,440 passed, 108 skipped,
+  zero failures/errors** (`mvn -o --fail-at-end test -Pextended-tests`).
+
+Core was then bumped to **1.4.2**, and plugin to **1.4.5** with its core
+dependency set to **1.4.2**. Both release artifact sets were built and installed
+locally. At the new coordinates, **9 core** zero-time/convergence regressions
+and **29 plugin** model/reference/integrity/system checks passed. The PSS3C
+Surefire runtime classpath explicitly contains `ipss.core.lib-1.4.2.jar` and
+does not contain the prior core version. Core release commit: `ddd517b80`.
+
+The full logs, release-build logs, exact native producer and per-channel
+comparison are preserved in the private archive's `release-followup/` folder,
+with a SHA-256 inventory. No claim is made that skipped private-data gates,
+the existing IEEE39 fault parity gaps, or the synthetic renewable deep-fault
+convergence limitation have been resolved.
