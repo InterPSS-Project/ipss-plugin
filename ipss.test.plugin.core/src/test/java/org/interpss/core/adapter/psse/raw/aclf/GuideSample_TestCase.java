@@ -1,6 +1,7 @@
 package org.interpss.core.adapter.psse.raw.aclf;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginFactory;
@@ -26,13 +27,15 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.setLfMethod(AclfMethodType.NR);
 		algo.getNrMethodConfig().setNonDivergent(true);
-	  	algo.loadflow();
+        assertTrue(algo.loadflow());
 	  	
   		AclfBus swingBus = net.getBus("Bus3011");
 		AclfSwingBusAdapter swing = swingBus.toSwingBus();
   		Complex p = swing.getGenResults(UnitType.mW);
-  		assertTrue(Math.abs(p.getReal()-258.6568)<0.01);
-  		assertTrue(Math.abs(p.getImaginary()-104.04017)<0.01);
+        // Native PSS/E 36.7, explicit v30 import, discrete taps normalized.
+        // See docs/benchmarks/transformer-tap-data-check-2026-10-15.md.
+        assertEquals(258.63946533, p.getReal(), 0.01);
+        assertEquals(103.60634613, p.getImaginary(), 0.01);
 	}
 
 	@Test
@@ -42,9 +45,11 @@ public class GuideSample_TestCase extends CorePluginTestSetup {
 				.loadAclfNet("testData/adpter/psse/PSSE_GuideSample.raw");
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+        // Preserve the historical off-grid RAW ratios when explicitly requested.
+        algo.getDataCheckConfig().setAutoSnapTransformerTap(false);
 	  	algo.setLfMethod(AclfMethodType.NR);
 		algo.getNrMethodConfig().setNonDivergent(true);
-	  	algo.loadflow();
+        assertTrue(algo.loadflow());
 	  	
   		AclfBus swingBus = net.getBus("Bus3011");
 		AclfSwingBusAdapter swing = swingBus.toSwingBus();
