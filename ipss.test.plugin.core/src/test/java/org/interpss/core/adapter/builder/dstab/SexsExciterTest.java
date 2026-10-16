@@ -84,12 +84,12 @@ public class SexsExciterTest extends CorePluginTestSetup {
             double oldSecond = state[1];
             double firstDerivative0 = ((1.0 - ratio) * input - oldFirst);
             double predictedFirst = oldFirst + firstDerivative0 * dt;
-            double secondDerivative0 = (10.0 * (ratio * input + predictedFirst)
+            double secondDerivative0 = (10.0 * (ratio * input + oldFirst)
                     - oldSecond) / .1;
             double predictedSecond = oldSecond + secondDerivative0 * dt;
             double firstDerivative1 = ((1.0 - ratio) * input - predictedFirst);
             state[0] = oldFirst + .5 * (firstDerivative0 + firstDerivative1) * dt;
-            double secondDerivative1 = (10.0 * (ratio * input + state[0])
+            double secondDerivative1 = (10.0 * (ratio * input + predictedFirst)
                     - predictedSecond) / .1;
             state[1] = oldSecond + .5 * (secondDerivative0 + secondDerivative1) * dt;
             step(fixture.exciter, fixture.machine, dt);

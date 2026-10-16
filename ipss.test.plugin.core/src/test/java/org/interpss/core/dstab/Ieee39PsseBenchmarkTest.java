@@ -29,6 +29,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController;
@@ -44,14 +45,19 @@ public class Ieee39PsseBenchmarkTest {
     private static final double NETWORK_TOLERANCE = 1.e-6;
 
     static Stream<Arguments> benchmarkCases() {
-        return Stream.of(CONFIG.string("ieee39.steps", "0.00025").split(","))
-                .flatMap(step -> Stream.of("flat", "fault")
-                        .map(scenario -> Arguments.of(scenario, Double.parseDouble(step))));
+        return Stream.of(CONFIG.string("ieee39.methods", "modified-euler,psse-staggered-euler").split(","))
+                .flatMap(method -> Stream.of(CONFIG.string("ieee39.steps", "0.00025").split(","))
+                        .flatMap(step -> Stream.of("flat", "fault")
+                                .map(scenario -> Arguments.of(scenario, Double.parseDouble(step), method))));
     }
 
     @ParameterizedTest
     @MethodSource("benchmarkCases")
-    void exportBenchmark(String scenario, double step) throws Exception {
+    void exportBenchmark(String scenario, double step, String method) throws Exception {
+        // Keep events and the endpoint on the fixed integration grid in both simulators.
+        double faultStart = Math.round(1.0 / step) * step;
+        double faultClear = Math.round(1.05 / step) * step;
+        double stop = Math.round(5.0 / step) * step;
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("IEEE39bus_v30.raw").toString(), CASE.resolve("IEEE39bus.dyr").toString());
@@ -65,7 +71,10 @@ public class Ieee39PsseBenchmarkTest {
         String directory = step==.001 ? "target/ieee39-psse-benchmark"
                 : step==.0005 ? "target/ieee39-psse-benchmark-fine"
                 : String.format(Locale.ROOT,"target/ieee39-psse-benchmark-step-%.6f",step);
-        directory += "-staggered";
+        assertTrue(method.equals("modified-euler") || method.equals("psse-staggered-euler"),
+                "Unknown integration method: " + method);
+        boolean staggered = method.equals("psse-staggered-euler");
+        directory += staggered ? "-staggered" : "-modified-euler";
         directory += CONFIG.string("ieee39.outputSuffix", "");
         Path out = Path.of(directory, scenario);
         Files.createDirectories(out);
@@ -76,7 +85,7 @@ public class Ieee39PsseBenchmarkTest {
         }
         Files.writeString(out.resolve("interpss-powerflow.csv"),pf);
         final java.io.Writer[] output = new java.io.Writer[1];
-        algo.setSolver(new PsseStaggeredEulerSolver(algo) {
+        algo.setSolver(staggered ? new PsseStaggeredEulerSolver(algo) {
             { setNetworkSolutionTolerance(NETWORK_TOLERANCE); setMaxIterationTimes(100); }
 
             @Override public boolean networkSolutionStep() throws DStabSimuException {
@@ -94,15 +103,31 @@ public class Ieee39PsseBenchmarkTest {
                 try { write(output[0],algo.getSimuTime(),record(net)); }
                 catch (Exception e) { throw new DStabSimuException(e.toString()); }
             }
+        } : new DStabSolverImpl(algo) {
+            { converge_tol = NETWORK_TOLERANCE; setMaxIterationTimes(100); }
+
+            @Override public boolean networkSolutionStep() throws DStabSimuException {
+                if (!super.networkSolutionStep())
+                    throw new DStabSimuException("IEEE39 network did not converge to 1e-6 at "
+                            + algo.getSimuTime());
+                return true;
+            }
+
+            @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
+                    throws DStabSimuException {
+                super.rebaseDynamicModelInputs(method);
+                try { write(output[0],algo.getSimuTime(),record(net)); }
+                catch (Exception e) { throw new DStabSimuException(e.toString()); }
+            }
         });
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algo.setSimuStepSec(step);
-        algo.setTotalSimuTimeSec(5.0);
+        algo.setTotalSimuTimeSec(stop);
         algo.setSimuOutputHandler(new StateMonitor());
         algo.setOutPutPerSteps(1);
         if (scenario.equals("fault")) {
             net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus17",net,
-                    SimpleFaultCode.GROUND_3P,new Complex(0,.01),null,1.,.05),"IEEE39Fault");
+                    SimpleFaultCode.GROUND_3P,new Complex(0,.01),null,faultStart,faultClear-faultStart),"IEEE39Fault");
         }
         assertTrue(algo.initialization(), "IEEE39 initialization");
         var initial=record(net);
@@ -110,7 +135,7 @@ public class Ieee39PsseBenchmarkTest {
             output[0] = writer;
             writer.write("time_s,"+String.join(",",initial.keySet())+"\n");
             write(writer,0.,initial);
-            while (algo.getSimuTime()<5.-step/2) {
+            while (algo.getSimuTime()<stop-step/2) {
                 assertTrue(algo.solveDEqnStep(true),"IEEE39 integration");
                 write(writer,algo.getSimuTime(),record(net));
             }
@@ -119,8 +144,9 @@ public class Ieee39PsseBenchmarkTest {
                 .setPrettyPrinting().create().toJson(Map.of(
                         "step_s", step, "network_tolerance", NETWORK_TOLERANCE,
                         "network_max_iterations", 100, "frequency_filter_s", .05,
-                        "stop_s", 5.0, "scenario", scenario,
-                        "integration_method", "psse-staggered-euler")) + "\n");
+                        "stop_s", stop, "scenario", scenario,
+                        "fault_start_s", faultStart, "fault_clear_s", faultClear,
+                        "integration_method", staggered ? "psse-staggered-euler" : "modified-euler")) + "\n");
     }
 
     private static void write(java.io.Writer writer,double time,Map<String,Double> values) throws Exception {

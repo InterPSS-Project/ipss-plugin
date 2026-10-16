@@ -146,8 +146,9 @@ public class TestDynLoad_IEEE39 {
 		// With all ten machine records participating, the three-cycle fault stalls
 		// the monitored compressor motor and Bus507 remains depressed at 1.245 s.
         // Internal regression checkpoint with full-gain frequency measurement and
-        // corrected exciter saturation. This is not a native PSS/E acceptance value.
-		assertEquals(0.59025943, minPostFaultVolt, 1.0E-6);
+        // corrected exciter saturation and simultaneous controller stage sampling.
+        // This is not a native PSS/E acceptance value.
+		assertEquals(0.59024405, minPostFaultVolt, 1.0E-6);
 		Hashtable<Integer, MonitorRecord> motorState =
 				sm.getAcMotorStateTable().get("ACMotor_2@Bus504");
 		assertTrue(motorState != null);
