@@ -49,6 +49,8 @@ public class TestDynLoad_IEEE39 {
 		DynamicSimuAlgorithm dstabAlgo = simuCtx.getDynSimuAlgorithm();
 		LoadflowAlgorithm aclfAlgo = dstabAlgo.getAclfAlgorithm();
 		aclfAlgo.setTolerance(1.0E-6);
+        // This historical motor trajectory was recorded with imported off-grid taps.
+        aclfAlgo.getDataCheckConfig().setAutoSnapTransformerTap(false);
 		assertTrue(aclfAlgo.loadflow());
 		//System.out.println(AclfOutFunc.loadFlowSummary(dsNet));
 		
@@ -143,8 +145,9 @@ public class TestDynLoad_IEEE39 {
 
 		// With all ten machine records participating, the three-cycle fault stalls
 		// the monitored compressor motor and Bus507 remains depressed at 1.245 s.
-		// Keep this as a tight trajectory checkpoint rather than a broad envelope.
-		assertEquals(0.58953655, minPostFaultVolt, 1.0E-6);
+        // Internal regression checkpoint with full-gain frequency measurement and
+        // corrected exciter saturation. This is not a native PSS/E acceptance value.
+		assertEquals(0.59025943, minPostFaultVolt, 1.0E-6);
 		Hashtable<Integer, MonitorRecord> motorState =
 				sm.getAcMotorStateTable().get("ACMotor_2@Bus504");
 		assertTrue(motorState != null);

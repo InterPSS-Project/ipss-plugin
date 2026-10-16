@@ -131,8 +131,10 @@ public class GenrouConformanceTest extends TestSetupBase {
         double angle0 = machine.getAngle();
         double frequency = fixture.network().getFrequency();
         double dampingPu = machine.getD() * 0.01 * frequency;
-        double dSpeed = 0.5 * (machine.getPm() - machine.getPe()
-                - dampingPu * (speed0 - 1.0)) / machine.getH();
+        // PSS/E PAGV2 36.7, section 15.4.4: mechanical power becomes torque
+        // at actual rotor speed; Pe is the Flux0 electrical torque coordinate.
+        double dSpeed = 0.5 * ((machine.getPm() - dampingPu * (speed0 - 1.0))
+                / speed0 - machine.getPe()) / machine.getH();
         double dAngle = (speed0 - 1.0) * 2.0 * Math.PI * frequency;
 
         double dt = 0.002;
