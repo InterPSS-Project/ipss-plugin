@@ -115,12 +115,9 @@ public class CGMESModel {
     /** Return all resources of a given CIM type */
     private List<CGMESPropertyBag> listByType(String typeUri) {
         List<CGMESPropertyBag> result = new ArrayList<>();
-        Resource typeRes = jenaModel.createResource(typeUri);
-        ResIterator it = jenaModel.listSubjectsWithProperty(RDF.type, typeRes);
-        while (it.hasNext()) {
-            result.add(new CGMESPropertyBag(it.next(), cimNamespace, entsoeNamespace));
+        for (Resource resource : CimRdfUtils.resourcesOfType(jenaModel, typeUri)) {
+            result.add(new CGMESPropertyBag(resource, cimNamespace, entsoeNamespace));
         }
-        it.close();
         return result;
     }
 

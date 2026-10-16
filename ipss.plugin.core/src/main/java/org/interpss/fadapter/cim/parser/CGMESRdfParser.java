@@ -8,13 +8,14 @@
 package org.interpss.fadapter.cim.parser;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.interpss.fadapter.cim.CimRdfUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,32 +42,27 @@ public class CGMESRdfParser {
     static final String BASE_URI = "http://cim.import/base";
 
     public Model parse(BufferedReader reader) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line).append("\n");
-        }
-        return parseString(sb.toString());
+        return parseMultiple(new BufferedReader[]{reader});
     }
 
     public Model parseMultiple(BufferedReader[] readers) throws Exception {
         Model model = ModelFactory.createDefaultModel();
-        for (BufferedReader reader : readers) {
-            StringBuilder sb = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line).append("\n");
+        try {
+            for (BufferedReader reader : readers) {
+                var text = new StringWriter();
+                reader.transferTo(text);
+                parseOne(text.toString(), model);
             }
-            parseOne(sb.toString(), model);
+            log.info("RDF model loaded with {} triples", model.size());
+            return model;
+        } catch (Exception ex) {
+            model.close();
+            throw ex;
         }
-        return model;
     }
 
     public Model parseString(String rdfXml) throws Exception {
-        Model model = ModelFactory.createDefaultModel();
-        parseOne(rdfXml, model);
-        log.info("RDF model loaded with {} triples", model.size());
-        return model;
+        return parse(new BufferedReader(new StringReader(rdfXml)));
     }
 
     private void parseOne(String rdfXml, Model model) throws Exception {
@@ -76,16 +72,6 @@ public class CGMESRdfParser {
         //    This prevents Jena from rejecting malformed UUIDs and ensures
         //    all files use the same base URI for resource ID resolution.
         sanitized = FULL_MODEL_ABOUT.matcher(sanitized).replaceAll("$1" + BASE_URI + "$2");
-        InputStream is = new ByteArrayInputStream(sanitized.getBytes(StandardCharsets.UTF_8));
-        try {
-            // Large CGMES files (e.g. ReliCap multi-MAS CGM) trip ARP WARN_BIG_FILE (W137)
-            // once >10k rdf:IDs are seen — checking is then disabled anyway. Ignore up front.
-            var reader = model.getReader("RDF/XML");
-            reader.setProperty(
-                    "http://jena.hpl.hp.com/arp/properties/WARN_BIG_FILE", "EM_IGNORE");
-            reader.read(model, is, BASE_URI);
-        } finally {
-            is.close();
-        }
+        CimRdfUtils.read(model, sanitized.getBytes(StandardCharsets.UTF_8), BASE_URI);
     }
 }
