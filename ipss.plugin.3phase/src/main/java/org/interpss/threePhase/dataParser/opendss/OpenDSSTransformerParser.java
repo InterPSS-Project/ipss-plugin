@@ -10,6 +10,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.numeric.datatype.Unit.UnitType;
 import org.interpss.numeric.datatype.Complex3x3;
 import org.interpss.threePhase.util.ThreePhaseObjectFactory;
+import org.interpss.threePhase.basic.ThreeWindingTransformerAdmittance;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -237,6 +238,9 @@ public class OpenDSSTransformerParser {
 			else if(element.contains("kvs=")) {
 				code.kvs = doubleValues(listValues(element));
 			}
+			else if(element.startsWith("conns=")) {
+				code.conns = listValues(element);
+			}
 			else if(element.contains("kvas=")) {
 				code.kvas = doubleValues(listValues(element));
 			}
@@ -433,6 +437,9 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		double imagPercent = 0.0;
 		double noLoadLossPercent = 0.0;
 		String[] busTerminals = new String[0];
+		String[] windingConnections = new String[0];
+		double[] windingTaps = {1, 1, 1};
+		boolean lead = false;
 		String xfrId = "";
 		String fromBusId = "", toBusId = "";
 		String fromConnection="", toConnection = "";
@@ -544,6 +551,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 			}
 			else if(element.startsWith("conns=")){
 				String[] connTypes = listValues(element);
+				windingConnections = connTypes;
 				fromConnection = connTypes[0];
 				toConnection = connTypes[1];
 			}
@@ -554,6 +562,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				else if(windingContext == 2) {
 					toConnection = element.substring(5);
 				}
+			}
+			else if(element.startsWith("taps=")){
+				windingTaps = doubleValues(listValues(element));
+			}
+			else if(element.startsWith("leadlag=")){
+				lead = element.substring(8).equals("lead");
 			}
 			else if(element.startsWith("kvs=")){
 				String[] kvs = listValues(element);
@@ -673,11 +687,12 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 				noLoadLossPercent = code.noLoadLossPercent;
 			}
 		}
-		if(isCenterTappedServiceTransformer(phaseNum, windingNum, busTerminals,
-				normKVs, kvaRatings, rPercents, xhl, xht, xlt)) {
-			return createCenterTappedServiceTransformer(xfrId, busTerminals,
-					normKVs, kvaRatings, rPercents, xhl, xht, xlt, imagPercent, noLoadLossPercent);
+		if(windingNum == 3) {
+			if (windingConnections.length == 0) windingConnections = code == null ? new String[]{"wye", "wye", "wye"} : code.conns;
+			return createThreeWindingTransformer(xfrId, phaseNum, busTerminals, windingConnections,
+					normKVs, kvaRatings, rPercents, windingTaps, xhl, xht, xlt, imagPercent, noLoadLossPercent, lead);
 		}
+		if (windingNum != 2) throw new IllegalArgumentException("Expected two or three transformer windings: " + xfrId);
 
 		fromBusId =this.dataParser.getBusIdPrefix()+fromBusId;
 		toBusId =this.dataParser.getBusIdPrefix()+toBusId;
@@ -833,72 +848,95 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		return no_error;
 	}
 
-	private boolean isCenterTappedServiceTransformer(int phaseNum, int windingNum, String[] busTerminals,
-			double[] kvs, double[] kvas, double[] rPercents, double xhl, double xht, double xlt) {
-		if(phaseNum != 1 || windingNum != 3 || busTerminals.length < 3
-				|| kvs.length < 3 || kvas.length < 1 || rPercents.length < 3
-				|| xhl == 0.0 || xht == 0.0 || xlt == 0.0) {
-			return false;
-		}
-		TerminalBus primary = terminalBus(busTerminals[0]);
-		TerminalBus secondary1 = terminalBus(busTerminals[1]);
-		TerminalBus secondary2 = terminalBus(busTerminals[2]);
-		return primary.nodes.length == 1
-				&& secondary1.busId.equals(secondary2.busId)
-				&& secondaryPolarity(secondary1) != 0
-				&& secondaryPolarity(secondary2) != 0
-				&& secondaryPolarity(secondary1) == -secondaryPolarity(secondary2);
-	}
-
-	private boolean createCenterTappedServiceTransformer(String xfrId, String[] busTerminals,
-			double[] kvs, double[] kvas, double[] rPercents, double xhl, double xht, double xlt,
-			double imagPercent, double noLoadLossPercent)
-			throws InterpssException {
-		TerminalBus primary = terminalBus(busTerminals[0]);
-		TerminalBus secondary1 = terminalBus(busTerminals[1]);
-		TerminalBus secondary2 = terminalBus(busTerminals[2]);
-		String fromBusId = this.dataParser.getBusIdPrefix() + primary.busId;
-		String toBusId = this.dataParser.getBusIdPrefix() + secondary1.busId;
-
-		AcscBranch xfrBranch = createTransformerBranch(fromBusId, toBusId, xfrId);
-		IBranch3Phase xfr3P = (IBranch3Phase) xfrBranch;
-		xfrBranch.setName(this.dataParser.getBusIdPrefix()+xfrId);
-		xfrBranch.setBranchCode(AclfBranchCode.XFORMER);
-		xfr3P.setPhaseCode(phaseCode(primary.nodes[0]));
-		xfrBranch.setFromTurnRatio(kvs[0]*1000.0);
-		xfrBranch.setToTurnRatio(kvs[1]*1000.0);
-		xfr3P.setXfrRatedKVA(kvas[0]);
-		setTransformerSeriesImpedance(xfrBranch, xfr3P, transformerSeriesImpedanceOhm(kvs[0], kvs[1],
-				kvas[0], kvas[1], rPercents[0] + rPercents[1], xhl));
-
-		Complex[][] windingY = centerTappedWindingAdmittance(kvs, kvas[0], rPercents, xhl, xht, xlt);
-		Complex3x3 yff = new Complex3x3();
-		Complex3x3 yft = new Complex3x3();
-		Complex3x3 ytf = new Complex3x3();
-		Complex3x3 ytt = new Complex3x3();
-		TerminalRef[] refs = {
-				new TerminalRef(true, phaseIndex(primary.nodes[0]), 1),
-				new TerminalRef(false, phaseIndex(nonGroundNode(secondary1)), secondaryPolarity(secondary1)),
-				new TerminalRef(false, phaseIndex(nonGroundNode(secondary2)), secondaryPolarity(secondary2))
-		};
-		for(int row = 0; row < 3; row++) {
-			for(int col = 0; col < 3; col++) {
-				Complex value = windingY[row][col].multiply(refs[row].polarity * refs[col].polarity);
-				addToBlock(refs[row], refs[col], value, yff, yft, ytf, ytt);
+	/** Stamp a three-terminal primitive using existing two-terminal explicit Y blocks.
+	 * Diagonal blocks are partitioned across incident branches; off-diagonal blocks
+	 * are exact. Co-located split-phase windings are collected into one bus block.
+	 */
+	private boolean createThreeWindingTransformer(String id, int phases, String[] buses, String[] conns,
+			double[] kv, double[] kva, double[] resistance, double[] taps, double x12, double x13, double x23,
+			double imag, double loss, boolean lead) throws InterpssException {
+		if ((phases != 1 && phases != 3) || buses.length != 3 || conns.length != 3 || kv.length != 3
+				|| kva.length != 3 || resistance.length != 3 || taps.length != 3)
+			throw new IllegalArgumentException("Three-winding transformer requires three buses, connections, ratings, resistances and taps: " + id);
+		TerminalBus[] terminals = new TerminalBus[3];
+		List<String> nodes = new ArrayList<>();
+		int[] group = new int[3];
+		double[][][] connection = new double[3][3][3];
+		double[] commonR = new double[3], effectiveKv = new double[3];
+		for (int i = 0; i < 3; i++) {
+			if (!Double.isFinite(kv[i] + kva[i] + taps[i] + resistance[i]) || kv[i] <= 0 || kva[i] <= 0 || taps[i] <= 0 || resistance[i] < 0)
+				throw new IllegalArgumentException("Invalid winding rating/tap/resistance: " + id);
+			terminals[i] = terminalBus(buses[i]);
+			if (!nodes.contains(terminals[i].busId)) nodes.add(terminals[i].busId);
+			group[i] = nodes.indexOf(terminals[i].busId);
+			// OpenDSS %Rs, like XHL/XHT/XLT, use winding-one's power base.
+			commonR[i] = resistance[i];
+			effectiveKv[i] = kv[i] * taps[i];
+			boolean delta = conns[i].equals("delta") || conns[i].equals("d");
+			if (!delta && !conns[i].equals("wye") && !conns[i].equals("y"))
+				throw new IllegalArgumentException("Unsupported winding connection: " + conns[i]);
+			if (!delta && !terminals[i].wyeGrounded)
+				throw new IllegalArgumentException("Three-winding wye neutral must be grounded: " + id);
+			if (phases == 1) {
+				String[] p = terminals[i].nodes;
+				if (p.length == 1) connection[i][0][phaseIndex(p[0])] = 1;
+				else if (p.length == 2) {
+					if (p[0].equals(p[1])) throw new IllegalArgumentException("Winding terminals must differ: " + id);
+					if (!p[0].equals("0")) connection[i][0][phaseIndex(p[0])] = 1;
+					if (!p[1].equals("0")) connection[i][0][phaseIndex(p[1])] = -1;
+				} else throw new IllegalArgumentException("Single-phase winding needs one or two conductor nodes: " + id);
+			} else {
+				String[] pnodes = terminals[i].nodes;
+				if (pnodes.length != 0 && pnodes.length != 3 && !(pnodes.length == 4 && pnodes[3].equals("0")))
+					throw new IllegalArgumentException("Three-phase winding requires three phases and optional grounded neutral: " + id);
+				for (int p = 0; p < 3; p++) {
+					int first = pnodes.length == 0 ? p : phaseIndex(pnodes[p]);
+					connection[i][p][first] = delta ? 1 / Math.sqrt(3) : 1;
+					int offset = conns[0].startsWith("d") ? (lead ? 1 : 2) : (lead ? 2 : 1);
+					int second = pnodes.length == 0 ? (p + offset) % 3 : phaseIndex(pnodes[(p + offset) % 3]);
+					if (delta) connection[i][p][second] = -1 / Math.sqrt(3);
+				}
 			}
 		}
-		addCenterTapNoLoadAdmittance(ytt, phaseIndex(nonGroundNode(secondary1)),
-				noLoadAdmittance(kvs[1], kvas.length > 1 ? kvas[1] : kvas[0],
-						imagPercent, noLoadLossPercent));
-		xfr3P.setExplicitYabc(yff, yft, ytf, ytt);
-		this.dataParser.registerBranchPowerTerminal(xfrBranch, phaseIndex(nonGroundNode(secondary1)), 2);
-		this.dataParser.registerBranchPowerTerminal(xfrBranch, phaseIndex(nonGroundNode(secondary2)), 3);
-
-		AcscXformerAdapter xfr0 = acscXfrAptr.apply(xfrBranch);
-		xfr0.setFromGrounding(BusGroundCode.SOLID_GROUNDED,
-				XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
-		xfr0.setToGrounding(BusGroundCode.SOLID_GROUNDED,
-				XFormerConnectCode.WYE, new Complex(0.0,0.0), UnitType.PU);
+		if (nodes.size() < 2) throw new IllegalArgumentException("Transformer requires at least two distinct buses: " + id);
+		Complex[][] windingY = centerTappedWindingAdmittance(effectiveKv, kva[0], commonR, x12, x13, x23);
+		Complex3x3[][] blocks = new Complex3x3[nodes.size()][nodes.size()];
+		for (int i = 0; i < nodes.size(); i++) for (int j = 0; j < nodes.size(); j++) blocks[i][j] = new Complex3x3();
+		for (int i = 0; i < 3; i++) for (int j = 0; j < 3; j++)
+			for (int a = 0; a < 3; a++) for (int b = 0; b < 3; b++) {
+				double coefficient = 0;
+				for (int p = 0; p < phases; p++) coefficient += connection[i][p][a] * connection[j][p][b];
+				var block = blocks[group[i]][group[j]];
+				setPhaseValue(block, a, b, getPhaseValue(block, a, b).add(windingY[i][j].multiply(coefficient)));
+			}
+		// OpenDSS places the excitation branch on winding two, on winding-one's kVA base.
+		Complex ym = noLoadAdmittance(effectiveKv[1], kva[0], imag, loss);
+		for (int a = 0; a < 3; a++) for (int b = 0; b < 3; b++) {
+			double coefficient = 0;
+			for (int p = 0; p < phases; p++) coefficient += connection[1][p][a] * connection[1][p][b];
+			var block = blocks[group[1]][group[1]];
+			setPhaseValue(block, a, b, getPhaseValue(block, a, b).add(ym.multiply(coefficient)));
+		}
+		for (int a = 0; a < nodes.size(); a++) for (int b = a + 1; b < nodes.size(); b++) {
+			int i = 0, j = 0;
+			while (group[i] != a) i++;
+			while (group[j] != b) j++;
+			String branchId = nodes.size() == 2 ? id : id + "_w" + (i + 1) + "_w" + (j + 1);
+			var branch = createTransformerBranch(dataParser.getBusIdPrefix() + nodes.get(a), dataParser.getBusIdPrefix() + nodes.get(b), branchId);
+			var branch3p = (IBranch3Phase) branch;
+			branch.setName(dataParser.getBusIdPrefix() + branchId);
+			branch.setBranchCode(AclfBranchCode.XFORMER);
+			branch3p.setPhaseCode(phases == 3 ? PhaseCode.ABC : phaseCode(nonGroundNode(terminals[0])));
+			branch.setFromTurnRatio(kv[i] * 1000);
+			branch.setToTurnRatio(kv[j] * 1000);
+			branch3p.setXfrRatedKVA(kva[0]);
+			branch3p.setExplicitYabc(blocks[a][a].multiply(1.0 / (nodes.size() - 1)), blocks[a][b], blocks[b][a], blocks[b][b].multiply(1.0 / (nodes.size() - 1)));
+			var adapter = acscXfrAptr.apply(branch);
+			adapter.setFromGrounding(BusGroundCode.SOLID_GROUNDED, conns[i].startsWith("d") ? XFormerConnectCode.DELTA : XFormerConnectCode.WYE, Complex.ZERO, UnitType.PU);
+			adapter.setToGrounding(BusGroundCode.SOLID_GROUNDED, conns[j].startsWith("d") ? XFormerConnectCode.DELTA : XFormerConnectCode.WYE, Complex.ZERO, UnitType.PU);
+			if (nodes.size() == 2 && phases == 1) for (int w = 1; w < 3; w++)
+				dataParser.registerBranchPowerTerminal(branch, phaseIndex(nonGroundNode(terminals[w])), w + 1);
+		}
 		return true;
 	}
 
@@ -907,24 +945,11 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		Complex z12 = new Complex((rPercents[0] + rPercents[1])/100.0, xhl/100.0);
 		Complex z13 = new Complex((rPercents[0] + rPercents[2])/100.0, xht/100.0);
 		Complex z23 = new Complex((rPercents[1] + rPercents[2])/100.0, xlt/100.0);
-		Complex z1 = z12.add(z13).subtract(z23).multiply(0.5);
-		Complex z2 = z12.add(z23).subtract(z13).multiply(0.5);
-		Complex z3 = z13.add(z23).subtract(z12).multiply(0.5);
-		Complex[] y = {
-				Complex.ONE.divide(z1),
-				Complex.ONE.divide(z2),
-				Complex.ONE.divide(z3)
-		};
-		Complex ysum = y[0].add(y[1]).add(y[2]);
-		Complex[][] ypu = new Complex[3][3];
+		Complex[][] ypu = ThreeWindingTransformerAdmittance.perUnit(z12, z13, z23);
 		double mvaBase = kvaBase/1000.0;
 		for(int i = 0; i < 3; i++) {
 			for(int j = 0; j < 3; j++) {
-				Complex value = y[i].multiply(y[j]).divide(ysum).multiply(-1.0);
-				if(i == j) {
-					value = y[i].add(value);
-				}
-				ypu[i][j] = value.multiply(mvaBase/(kvs[i]*kvs[j]));
+				ypu[i][j] = ypu[i][j].multiply(mvaBase/(kvs[i]*kvs[j]));
 			}
 		}
 		return ypu;
@@ -938,26 +963,6 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		double susceptancePu = imagPercent/100.0;
 		Complex admittancePu = new Complex(conductancePu, -susceptancePu);
 		return admittancePu.multiply((kva/1000.0)/(kv*kv));
-	}
-
-	private static void addCenterTapNoLoadAdmittance(Complex3x3 ytt, int phase, Complex admittance) {
-		if(admittance.equals(Complex.ZERO)) {
-			return;
-		}
-		setPhaseValue(ytt, phase, phase, getPhaseValue(ytt, phase, phase).add(admittance));
-	}
-
-	private static int secondaryPolarity(TerminalBus terminal) {
-		if(terminal.nodes.length != 2) {
-			return 0;
-		}
-		if("0".equals(terminal.nodes[1]) && !"0".equals(terminal.nodes[0])) {
-			return 1;
-		}
-		if("0".equals(terminal.nodes[0]) && !"0".equals(terminal.nodes[1])) {
-			return -1;
-		}
-		return 0;
 	}
 
 	private static String nonGroundNode(TerminalBus terminal) {
@@ -983,13 +988,9 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 	}
 
 	private static int phaseIndex(String node) {
-		return Integer.valueOf(node) - 1;
-	}
-
-	private static void addToBlock(TerminalRef row, TerminalRef col, Complex value,
-			Complex3x3 yff, Complex3x3 yft, Complex3x3 ytf, Complex3x3 ytt) {
-		Complex3x3 block = row.fromBus ? (col.fromBus ? yff : yft) : (col.fromBus ? ytf : ytt);
-		setPhaseValue(block, row.phase, col.phase, getPhaseValue(block, row.phase, col.phase).add(value));
+		int phase = Integer.parseInt(node) - 1;
+		if (phase < 0 || phase > 2) throw new IllegalArgumentException("Phase node must be 1, 2 or 3: " + node);
+		return phase;
 	}
 
 	private static Complex getPhaseValue(Complex3x3 matrix, int row, int col) {
@@ -1014,18 +1015,6 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 		else if(row == 2 && col == 0) matrix.ca = value;
 		else if(row == 2 && col == 1) matrix.cb = value;
 		else matrix.cc = value;
-	}
-
-	private static final class TerminalRef {
-		private final boolean fromBus;
-		private final int phase;
-		private final int polarity;
-
-		private TerminalRef(boolean fromBus, int phase, int polarity) {
-			this.fromBus = fromBus;
-			this.phase = phase;
-			this.polarity = polarity;
-		}
 	}
 
 	private static String normalizeInlineRpnDivisions(String value) {
@@ -1180,6 +1169,7 @@ public boolean parseTransformerDataOneLine(String xfrStr) throws InterpssExcepti
 	}
 
 	private static class XfmrCodeData {
+		private String[] conns = {"wye", "wye", "wye"};
 		private int phaseNum = 3;
 		private int windingNum = 2;
 		private double[] kvs = new double[0];

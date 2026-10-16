@@ -1,0 +1,11 @@
+clear
+new circuit.split_clock bus1=source basekv=12.470765814495914 pu=1 phases=3 r1=.01 x1=.03 r0=.02 x0=.06
+set earthmodel=carson
+new transformer.bank phases=1 windings=3 buses=[source.1 secondary.1.0 secondary.0.2] conns=[wye wye wye] kvs=[7.2 0.12 0.12] kvas=[25 12.5 12.5] %rs=[0.4 0.4 0.4] xhl=2 xht=2 xlt=1.2 taps=[1.0125 1 0.9875] leadlag=lag %noloadloss=.1 %imag=.2 ppm_antifloat=0
+new linecode.drop nphases=2 units=m rmatrix=[.0006 | .0002 .0007] xmatrix=[.0003 | .0001 .00035] cmatrix=[0 | 0 0]
+new line.drop bus1=secondary.1.2 bus2=service.1.2 phases=2 linecode=drop length=20 units=m
+new load.leg1 phases=1 bus1=service.1 conn=wye kv=0.12 kw=2 kvar=0.4 vminpu=0 vmaxpu=1000000
+new load.leg2 phases=1 bus1=service.2 conn=wye kv=0.12 kw=1 kvar=0.2 vminpu=0 vmaxpu=1000000
+new load.both phases=1 bus1=service.1.2 conn=delta kv=0.24 kw=2 kvar=0.3 vminpu=0 vmaxpu=1000000
+set maxiterations=200 tolerance=1e-10
+solve

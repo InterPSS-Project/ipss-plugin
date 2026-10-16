@@ -88,6 +88,25 @@ public class OpenDSSDataParser {
 	private final Map<AclfBranch, Map<Integer, Integer>> branchPowerTerminalByPhase = new IdentityHashMap<>();
 	private boolean regControlEnabled = true;
 	private double minLineSeriesImpedancePu = 1.0E-7;
+	private boolean geometryUseSpecifiedAcResistance;
+	private boolean preserveSpecifiedLineImpedance;
+	private boolean normalizeSinglePhaseLoadVoltageBases;
+
+	/** Convert single-phase ZIP coefficients from rated winding voltage to bus voltage base. */
+	public void setNormalizeSinglePhaseLoadVoltageBases(boolean normalize) { this.normalizeSinglePhaseLoadVoltageBases = normalize; }
+
+	/** Preserve positive physical impedances instead of applying the legacy numerical floor. */
+	public void setPreserveSpecifiedLineImpedance(boolean preserve) { this.preserveSpecifiedLineImpedance = preserve; }
+	public boolean isPreserveSpecifiedLineImpedance() { return this.preserveSpecifiedLineImpedance; }
+
+	/** Use the supplied AC wire resistance in Carson geometry instead of the skin-effect approximation. */
+	public void setGeometryUseSpecifiedAcResistance(boolean enabled) {
+		this.geometryUseSpecifiedAcResistance = enabled;
+	}
+
+	public boolean isGeometryUseSpecifiedAcResistance() {
+		return this.geometryUseSpecifiedAcResistance;
+	}
 
 
 	boolean debug = false;
@@ -1122,9 +1141,11 @@ public class OpenDSSDataParser {
 		  }
 	  }
 	  else if(bra.isXfr() || bra.isPSXfr()){
-		  // convert the Z to high voltage side
-		  vBase = bra.getFromBus().getBaseVoltage()>=bra.getToBus().getBaseVoltage()?
-				  bra.getFromBus().getBaseVoltage():bra.getToBus().getBaseVoltage();
+		  // Leakage is already in ohms on the rated high-voltage winding.
+		  // The terminal tap ratios below account for rated-to-bus voltage;
+		  // dividing by the bus impedance base here would count that ratio twice.
+		  vBase = Math.max(bra.getFromTurnRatio(), bra.getToTurnRatio());
+		  if (bra3Phase.getPhaseCode() != PhaseCode.ABC) vBase *= Math.sqrt(3);
 		  zBase = vBase*vBase*1.0E-6/mvabase;
 		  ((AcscBranch) bra).setZ(bra.getAdjustedZ().divide(zBase));
 		  if(bra3Phase.getZabc() != null) {
@@ -1277,6 +1298,22 @@ public class OpenDSSDataParser {
     }
 
      private void convertPhaseLoadToPU(BaseAclfBus bus, AclfLoad3Phase load, double loadBaseKva) {
+	 if (normalizeSinglePhaseLoadVoltageBases && load instanceof DStab1PLoad
+			 && !(load instanceof DStab3PLoad) && load.getNominalKV() > 0) {
+		 double ratio = bus.getBaseVoltage() / 1000 / load.getNominalKV();
+		 if (load.getLoadConnectionType() == LoadConnectionType.SINGLE_PHASE_WYE) ratio /= Math.sqrt(3);
+		 load.setLoadCI(load.getLoadCI().multiply(ratio));
+		 load.setLoadCZ(load.getLoadCZ().multiply(ratio * ratio));
+		 if (load.getOpenDssLoadModel() == 8) {
+			 double[] zip = load.getOpenDssZipv().clone();
+			 zip[0] *= ratio * ratio; zip[1] *= ratio;
+			 zip[3] *= ratio * ratio; zip[4] *= ratio;
+			 zip[6] /= ratio;
+			 load.setOpenDssLoadModel(8, load.getCvrWatts(), load.getCvrVars(), zip);
+		 }
+		 load.setVminpu(load.getVminpu() / ratio);
+		 load.setVmaxpu(load.getVmaxpu() / ratio);
+	 }
 	 double voltageScale = threePhaseConstZVoltageScale(bus, load);
 	 load.setLoadCP(load.getLoadCP().divide(loadBaseKva));
 	 load.setLoadCI(load.getLoadCI().divide(loadBaseKva));

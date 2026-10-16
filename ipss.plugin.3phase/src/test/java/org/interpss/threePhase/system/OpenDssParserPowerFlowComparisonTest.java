@@ -404,10 +404,12 @@ public class OpenDssParserPowerFlowComparisonTest {
 		Static3PBranch transformer = findStaticBranchByName(parser.getStaticNetwork(), "step_05410_g2101cd0200");
 		assertNotNull(transformer, "Missing Ckt24 step transformer with %rs data");
 		Complex zPhaseB = transformer.getZabc().bb;
-		assertEquals(0.00946080416900833, zPhaseB.getReal(), 1.0e-12,
+		// 333-kVA single-phase winding on the network's 1-MVA three-phase base.
+		double powerBaseRatio = 1000.0 / (3 * 333.0);
+		assertEquals(0.00945 * powerBaseRatio, zPhaseB.getReal(), 1.0e-12,
 				"Ckt24 step transformer %rs=(0.4725,0.4725) should produce nonzero series R");
-		assertEquals(0.04059636074637965, zPhaseB.getImaginary(), 1.0e-12,
-				"Ckt24 step transformer xhl should stay unchanged while parsing %rs");
+		assertEquals(0.04055 * powerBaseRatio, zPhaseB.getImaginary(), 1.0e-12,
+				"Ckt24 step transformer xhl is converted on rated winding voltage and system power base");
 	}
 
 	@Test

@@ -1,0 +1,13 @@
+clear
+new circuit.cable_cn_permuted bus1=source basekv=12.47 pu=1 phases=3 r1=.01 x1=.03 r0=.02 x0=.06
+set earthmodel=carson
+new cndata.wire0 rac=.0002 rdc=.00019 runits=m gmrac=.006 gmrunits=m radius=.008 radunits=m epsr=2.3 inslayer=.005 diains=.026 diacable=.032 k=13 gmrstrand=.0006 diastrand=.0016 rstrand=.008
+new cndata.wire1 rac=.0002 rdc=.00019 runits=m gmrac=.006 gmrunits=m radius=.008 radunits=m epsr=2.3 inslayer=.005 diains=.026 diacable=.032 k=13 gmrstrand=.0006 diastrand=.0016 rstrand=.008
+new linegeometry.cable nconds=2 nphases=2 reduce=yes
+~ cond=1 cncable=wire0 x=0.0 h=-1 units=m
+~ cond=2 cncable=wire1 x=0.15 h=-1 units=m
+new line.cable phases=2 bus1=source.3.1 bus2=end.3.1 geometry=cable length=500 units=m
+new load.loadC phases=1 bus1=end.3 conn=wye kv=7.199557856794634 kw=200 kvar=40 vminpu=0 vmaxpu=1000000
+new load.loadA phases=1 bus1=end.1 conn=wye kv=7.199557856794634 kw=400 kvar=40 vminpu=0 vmaxpu=1000000
+set maxiterations=200 tolerance=1e-10
+solve

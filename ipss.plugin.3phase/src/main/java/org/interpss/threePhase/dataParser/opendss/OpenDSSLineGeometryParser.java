@@ -113,7 +113,8 @@ public class OpenDSSLineGeometryParser {
 				if (i == j) {
 					double gmr = Math.max(wireI.getGmrFeet(), 1.0e-9);
 					z[i][j] = new Complex(
-							deriInternalResistanceOhmPerMile(wireI) + CARSON_R_OHM_PER_MILE,
+							(dataParser.isGeometryUseSpecifiedAcResistance() ? wireI.getRacOhmPerMile()
+									: deriInternalResistanceOhmPerMile(wireI)) + CARSON_R_OHM_PER_MILE,
 							CARSON_X_COEFF * (Math.log(1.0 / gmr) + CARSON_LOG_CONSTANT));
 				}
 				else {

@@ -1,0 +1,15 @@
+clear
+new circuit.mixed phases=3 bus1=source basekv=12.47 pu=1 angle=5.729577951308233 r1=.01 x1=.05 r0=.02 x0=.1
+new line.seq phases=3 bus1=source bus2=n1 length=500 r1=.0001 x1=.0002 r0=.0003 x0=.0006 c1=0.0026525823848649226 c0=0
+new linecode.bc nphases=2 units=m rmatrix=[.0005 | .0001 .0004] xmatrix=[.0009 | .0002 .0008] cmatrix=[.005835681246702829 | -.0005305164769729845 .005305164769729845]
+new line.bc phases=2 bus1=n1.2.3 bus2=n2.2.3 linecode=bc length=200 units=m
+new line.b phases=1 bus1=n2.2 bus2=n3.2 length=50 r1=.001 x1=.0005 r0=.001 x0=.0005 c1=0 c0=0
+new transformer.t phases=1 windings=2 buses=[n3.2 n4.2] conns=[wye wye] kvs=[7.199557856794634 0.2771281292110204] kvas=[100 100] xhl=2 %loadloss=.4 %imag=.2 %noloadloss=.1 taps=[1 1.0125]
+new load.delta phases=1 bus1=n2.2.3 conn=delta kv=12.47 kw=100 kvar=50 model=8 zipv=[.2 .3 .5 .1 .2 .7 0] vminpu=0 vmaxpu=1000000
+new load.low phases=1 bus1=n4.2 conn=wye kv=0.2771281292110204 kw=20 kvar=5 model=1 vminpu=0 vmaxpu=1000000
+new capacitor.cap phases=1 bus1=n2.3 kv=7.199557856794634 kvar=2.073345333333333
+new generator.pv phases=1 bus1=n2.2 conn=wye kv=7.199557856794634 kw=5 kvar=1 model=1
+set voltagebases=[12.47 .48]
+calcvoltagebases
+set controlmode=off tolerance=1e-10 maxiterations=100
+solve

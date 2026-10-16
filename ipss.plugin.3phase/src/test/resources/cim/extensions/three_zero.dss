@@ -1,0 +1,12 @@
+clear
+new circuit.three_zero bus1=source basekv=12.47 pu=1 phases=3 r1=.01 x1=.03 r0=.02 x0=.06
+set earthmodel=carson
+new transformer.bank phases=3 windings=3 buses=[source secondary tertiary] conns=[wye wye wye] kvs=[12.47 4.16 0.48] kvas=[10000 5000 3000] %rs=[0 0.3 0.4] xhl=3 xht=4 xlt=7 taps=[1.025 0.9875 1] leadlag=lag %noloadloss=.1 %imag=.2 ppm_antifloat=0
+new load.secondaryA phases=1 bus1=secondary.1 conn=wye kv=2.4017771198288433 kw=450.0 kvar=112.5 vminpu=0 vmaxpu=1000000
+new load.secondaryB phases=1 bus1=secondary.2 conn=wye kv=2.4017771198288433 kw=540.0 kvar=112.5 vminpu=0 vmaxpu=1000000
+new load.secondaryC phases=1 bus1=secondary.3 conn=wye kv=2.4017771198288433 kw=630.0 kvar=112.5 vminpu=0 vmaxpu=1000000
+new load.tertiaryA phases=1 bus1=tertiary.1 conn=wye kv=0.27712812921102037 kw=150.0 kvar=37.5 vminpu=0 vmaxpu=1000000
+new load.tertiaryB phases=1 bus1=tertiary.2 conn=wye kv=0.27712812921102037 kw=180.0 kvar=37.5 vminpu=0 vmaxpu=1000000
+new load.tertiaryC phases=1 bus1=tertiary.3 conn=wye kv=0.27712812921102037 kw=210.0 kvar=37.5 vminpu=0 vmaxpu=1000000
+set maxiterations=200 tolerance=1e-10
+solve

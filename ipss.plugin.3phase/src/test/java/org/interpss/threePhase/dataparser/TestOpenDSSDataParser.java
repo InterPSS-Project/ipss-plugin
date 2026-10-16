@@ -386,7 +386,9 @@ public class TestOpenDSSDataParser {
 
 			  DStab3PBranch xfr2 = parser.getBranchByName("reg4a");
 			  Complex reg4aZOhm = new Complex(2.884802000000001E-7, 0.00028848020000000004);
-			  assertTrue(xfr2.getAdjustedZ().subtract(reg4aZOhm.multiply(1.0/zbase)).abs()<1.0E-9);
+			  // Leakage uses the rated 2.402-kV winding base; taps carry the bus-base ratio.
+			  double ratedZBase = zbase * Math.pow(2402.0 * Math.sqrt(3) / 4160.0, 2);
+			  assertTrue(xfr2.getAdjustedZ().subtract(reg4aZOhm.divide(ratedZBase)).abs()<1.0E-9);
 		  assertTrue(xfr2.getFromBus().getId().equals("160"));
 		  assertTrue(xfr2.getToBus().getId().equals("160r"));
 
