@@ -2,6 +2,7 @@ package org.interpss.threePhase.model;
 
 import static com.interpss.core.funcImpl.AcscFunction.acscXfrAptr;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
@@ -66,7 +67,9 @@ public class TestDER_A_model {
 
 	  	dstabAlgo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 		dstabAlgo.setSimuStepSec(0.005d);
-		dstabAlgo.setTotalSimuTimeSec(0.5);
+        // Power-frequency control has TPord=5 s. Allow ten time constants
+        // before asserting recovery, rather than assuming settling at 0.5 s.
+		dstabAlgo.setTotalSimuTimeSec(50.2);
 	    //dstabAlgo.setRefMachine(net.getMachine("Bus3-mach1"));
 		distNet.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus4",distNet, SimpleFaultCode.GROUND_3P, new Complex(0,0), null, 0.1, 0.05),"fault@bus4");
 
@@ -82,18 +85,32 @@ public class TestDER_A_model {
 		dstabAlgo.setSimuOutputHandler(sm);
 		dstabAlgo.setOutPutPerSteps(1);
 
-		dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase());
-
-	  	if(dstabAlgo.initialization()){
-	  		System.out.println(ThreePhaseAclfOutFunc.busLfSummary(distNet));
-	  		System.out.println(distNet.getMachineInitCondition());
-
-	  		dstabAlgo.performSimulation();
-	  	}
+        int[] eventBoundaries = {0};
+        dstabAlgo.setDynamicEventHandler(new DynamicEventProcessor3Phase() {
+            @Override public boolean onDynamicEvent(com.interpss.dstab.datatype.DStabSimuTimeEvent event) {
+                boolean boundary = event.getType() == com.interpss.dstab.datatype.DStabSimuTimeEvent.ProessDynamicEvent
+                        && (Math.abs(event.getTime() - .1) < 1.e-9
+                            || Math.abs(event.getTime() - .15) < 1.e-9);
+                var frequency = (com.interpss.dstab.controller.deqn.measure.BusFreqMeasurementImpl)
+                        distNet.getBus("Bus3").getBusFreqMeasureBlock();
+                double before = boundary ? frequency.getY() : 0.;
+                boolean result = super.onDynamicEvent(event);
+                if (boundary) {
+                    var state = frequency.captureModelState();
+                    assertEquals(before, frequency.getY(), 0., "Zero-time event retains frequency");
+                    assertEquals(distNet.getBus("Bus3").getVoltageAng(),
+                            state.angle0() + state.lastInput(), 1.e-12,
+                            "Event rebases the frequency input to the solved angle");
+                    eventBoundaries[0]++;
+                }
+                return result;
+            }
+        });
+        assertTrue(dstabAlgo.initialization());
+        assertTrue(dstabAlgo.performSimulation());
+        assertEquals(2, eventBoundaries[0]);
 
 	  	//System.out.println(sm.toCSVString(sm.getBusAngleTable()));
-	  	System.out.println(sm.toCSVString(sm.getBusVoltTable()));
-	  	System.out.println(sm.toCSVString(sm.getPvGenPTable()));
 	  	//System.out.println(sm.toCSVString(sm.getPvGenQTable()));
 	  	//System.out.println(sm.toCSVString(sm.getPvGenIpTable()));
 	  	//System.out.println(sm.toCSVString(sm.getPvGenIqTable()));
@@ -102,14 +119,16 @@ public class TestDER_A_model {
 	  	MonitorRecord rec18 = sm.getBusVoltTable().get("Bus2").get(18);
 	  	assertTrue(Math.abs(rec1.getValue()-rec18.getValue())<1.0E-4);
 
-		MonitorRecord rec98 = sm.getBusVoltTable().get("Bus2").get(98);
-		assertTrue(Math.abs(rec98.getValue()-rec18.getValue())<1.0E-4);
+		MonitorRecord finalVoltage = sm.getBusVoltTable().get("Bus2").get(
+                sm.getBusVoltTable().get("Bus2").size() - 1);
+		assertTrue(Math.abs(finalVoltage.getValue()-rec18.getValue())<1.0E-4);
 		
 		MonitorRecord pvgenp_18 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(18);
 		assertTrue(Math.abs(pvgenp_18.getValue()-0.5)<2.0E-4);
 
-		MonitorRecord pvgenp_98 = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(98);
-		assertTrue(Math.abs(pvgenp_98.getValue()-0.5)<2.0E-3);
+		MonitorRecord finalPower = sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").get(
+                sm.getPvGenPTable().get("PVGen3Phase_1@Bus3").size() - 1);
+		assertTrue(Math.abs(finalPower.getValue()-0.5)<2.0E-3);
 	}
 
 	private DStabNetwork3Phase createDistNetWithDG() throws InterpssException{
