@@ -1,0 +1,151 @@
+{
+  "engine": "DSS C-API Library version 0.14.5 revision 87d85c2622c8281b92255335bc7c09b11191b21d based on OpenDSS SVN 3723 [FPC 3.2.2] (64-bit build) MVMULT INCREMENTAL_Y CONTEXT_API PM 20240329033747; License Status: Open \nDSS-Python version: 0.15.7",
+  "cimhub_commit": "5ba4c63fa525108928942d564fddc022c3fb031f",
+  "converter_jar": "cimhub-1.1.0.jar",
+  "converter_sha256": "94a9d67384c0abde3d4824040eb6fd9a28da634b99ffe89cd61ddbeddf95c04a",
+  "cases": [
+    {
+      "name": "ieee13x",
+      "xml_sha256": "2271c20bb43d59864b0a699cb793ce7a701a3295dce28070ca996914b73f8e1f",
+      "bus_count": 21,
+      "source_kw_kvar": [
+        3438.928863366772,
+        1709.9353071616079
+      ],
+      "files": {
+        "ieee13x_base.dss": "d838fad2452535245e2cd31c839cd04418feb14b444abacc8363a00c7905babd",
+        "ieee13x_busxy.dss": "cc857a34adc5eb46ac8eb2855c0f56176a285cf6fd1d31e8b4d11299931e45db",
+        "ieee13x_snapshot.dss": "fa25ff1895d6a0de3900c216a5e8486b0af98f0ac4d41b90b867ecac09f0ca96",
+        "ieee13x_uuid.dss": "1014d6bc42548eb6884700ac033af0928bd7ef4ac609e36aea7a61f33b2a5780"
+      }
+    },
+    {
+      "name": "IEEE13_PV",
+      "xml_sha256": "5cdfd160f84214406683bd9121c5b7ee361845557a19581c5631fb1ad261c216",
+      "bus_count": 24,
+      "source_kw_kvar": [
+        3256.735095421389,
+        1687.9290012143663
+      ],
+      "files": {
+        "IEEE13_PV_base.dss": "95e794341c005bb80b7c112105fe659e0a103ce5b19a2b6b7719191abd048361",
+        "IEEE13_PV_busxy.dss": "e3fca32e95abfd6d171deb0c86d22b83a4fd50422dffa9c21f83c8db2fa8b35c",
+        "IEEE13_PV_snapshot.dss": "0d3d93dd8fc1017a8461c77a5f1f69a663477f4a5573a1e5c31bbd06630a3b69",
+        "IEEE13_PV_uuid.dss": "3b020e426450b6e991efb038ce0089b3cb73713ee090577e88e67de1bda9c993"
+      }
+    },
+    {
+      "name": "IEEE123",
+      "xml_sha256": "34df0fb4bb254a733bacbc704f17356724a3857762531472f607c0458b72fe81",
+      "bus_count": 130,
+      "source_kw_kvar": [
+        3614.2169863681,
+        1310.899578453612
+      ],
+      "files": {
+        "IEEE123_base.dss": "ea43de9306f94476acf41fa3fae504ebfacfdd6a3c8cf73bb0d6f80bb1832b51",
+        "IEEE123_busxy.dss": "d0f1a4ab5f4c9b307d346923a6dce7655bdb71eeff05ac96b382d46d64fa6467",
+        "IEEE123_PV_base.dss": "63b25e669ad8bc02a9867141efafd4d4cf192ba58f61c150be2c49404df1c1e7",
+        "IEEE123_PV_busxy.dss": "6ee27c655a4d160ecaf0c02537c61ba01f96c9e42f932321cb5085c316eb6290",
+        "IEEE123_PV_snapshot.dss": "9efd03c5b656a9b075d99591115f79c615eb357426cb0855579f51dd9d53ed7c",
+        "IEEE123_PV_uuid.dss": "0c7d740cf873eb76043b4f8f43734087c96759609860b43ff282bdbd588e7021",
+        "IEEE123_snapshot.dss": "3f85b11da5a24a250e376ea3a79bad6f15aeef87d5ac4a01872dd821ed49f99b",
+        "IEEE123_uuid.dss": "d65e50cc34acb4696473853225b294ed5981cf1c6bf7fc584bd36f9c693a9061"
+      }
+    },
+    {
+      "name": "IEEE123_PV",
+      "xml_sha256": "30ef6b3e0720f8a7cbf92f98ed9958dd23449465d616490c7a9dd95ac0942199",
+      "bus_count": 214,
+      "source_kw_kvar": [
+        269.2605393529826,
+        1266.5304138859574
+      ],
+      "files": {
+        "IEEE123_PV_base.dss": "63b25e669ad8bc02a9867141efafd4d4cf192ba58f61c150be2c49404df1c1e7",
+        "IEEE123_PV_busxy.dss": "6ee27c655a4d160ecaf0c02537c61ba01f96c9e42f932321cb5085c316eb6290",
+        "IEEE123_PV_snapshot.dss": "9efd03c5b656a9b075d99591115f79c615eb357426cb0855579f51dd9d53ed7c",
+        "IEEE123_PV_uuid.dss": "0c7d740cf873eb76043b4f8f43734087c96759609860b43ff282bdbd588e7021"
+      }
+    },
+    {
+      "name": "IEEE390par",
+      "xml_sha256": "325aec8171b3c2cb60cb6e4b43edae492ef3459bd9d489cd6235422407b6b4bf",
+      "bus_count": 390,
+      "source_kw_kvar": [
+        42759.4899330403,
+        29044.66492717302
+      ],
+      "files": {
+        "IEEE390par_base.dss": "867bcfae9b31c01e495766efb5c278057b2555e49a13d651237f402c775bd7ff",
+        "IEEE390par_busxy.dss": "25a0f959c369d1130beb8f8d4a736ee88a03d0e66b0c3978a7c40f17b708a5f6",
+        "IEEE390par_snapshot.dss": "cceed707cc6c206f7a29d44bfd72de27b333d0d43cdc3833cfb725f7fa006c5c",
+        "IEEE390par_uuid.dss": "f31044ec7bce29f7c7ed461c67d4450620a7a13395604cfd37486a6bb989c770"
+      }
+    },
+    {
+      "name": "IEEE390_PV",
+      "xml_sha256": "9f79e13342deba1eb5e0295c519cf6f1071497c81f9e0de600cdc2316fdc1d42",
+      "bus_count": 390,
+      "source_kw_kvar": [
+        34652.97323766509,
+        28271.685565337517
+      ],
+      "files": {
+        "IEEE390_PV_base.dss": "a05d251c959e3d7b9fbd7eba91afb2b741eb6ff73cfa0b99633a57b3c087c378",
+        "IEEE390_PV_busxy.dss": "74e93201bc9e8b7648a00b962bce7ae7c33c94d8c80a75933931b047b459d389",
+        "IEEE390_PV_snapshot.dss": "9d4c7a54152ab6a5e8cf61e0d0c057688c5b1b3e7df57db0c48d90f068013aae",
+        "IEEE390_PV_uuid.dss": "cfa377ea35406ffc0b8beacfea01ed40985c079dfc0cc26437a90b2b0624bb5f"
+      }
+    },
+    {
+      "name": "R2_12_47_2",
+      "xml_sha256": "e1deb11b10ff72332b82a522ba438ca2fa7d2dd34ea3518753902a2f107a79f4",
+      "bus_count": 853,
+      "source_kw_kvar": [
+        6243.326636093974,
+        4763.575198409718
+      ],
+      "files": {
+        "R2_12_47_2_base.dss": "2ba1d6f335f8867699f361f5d0e432e35b5b748a22c7b973caee37c140179e7f",
+        "R2_12_47_2_busxy.dss": "a7fad8e22c4b188071dcfe5470f5ad5217b60ffb154f412e2b32e542bfaa3727",
+        "R2_12_47_2_snapshot.dss": "1acacf45d0074484a5105ead54a354c12b50ba5868fffb0a5f5e5ece3eec8f02",
+        "R2_12_47_2_uuid.dss": "8ee6d5b809c1afa2af55566ab9b7428a520007f780c28467a5ab5dc450542aab"
+      }
+    },
+    {
+      "name": "Transactive",
+      "xml_sha256": "34147adbfd79e2532c93fdc0cd6bc0648d30235a9d3b330eb2c62ab75a297472",
+      "bus_count": 1511,
+      "source_kw_kvar": [
+        3988.648069327931,
+        -448.127407500107
+      ],
+      "files": {
+        "Transactive_base.dss": "1a5d6732b2d3f7070786c443d019100007ca768d98598bb0760b67d7aae07904",
+        "Transactive_busxy.dss": "3d834880d3341960b8b6e02f5a6264dea23277a40998d880d81cb0baf4df9d17",
+        "Transactive_snapshot.dss": "d6d53245f1f84d090987003af42dbf89922900305271b10755f39964f4085037",
+        "Transactive_uuid.dss": "8855627ab95d14b1f5023bd5c75fa144a0637bbbc2e6f727002c35f0b639f14f"
+      }
+    }
+  ],
+  "native_archive_sha256": "4c18e8c7c0602b9b39c6ab5aa923b321c6de0fffffbb1bc196b63f155cddaf8b",
+  "reference_sha256": {
+    "ieee13x-voltage.csv": "92b62c13c4f5cd916506a673d0e01a8ba7261b72b33aabae2eaf8353a733a478",
+    "ieee13x-power.csv": "8aadc0a5d091cb0af36267082141084489fb2b772097d2dc7e9a9fb883479ec5",
+    "IEEE13_PV-voltage.csv": "600dcfdf11eda42a554d7ac9a7257b1b5d6d45ecf48a33ee8a13ca6cb142e217",
+    "IEEE13_PV-power.csv": "17c7beddd3b8dacbf052e55a34dd242ba64180160fb66a62130aac822e234adf",
+    "IEEE123-voltage.csv": "6a4a4683dd6a4070dfb6e5d99ae7463ec3f642b72d7b31044cab5f9fa456c4c9",
+    "IEEE123-power.csv": "ca288f5312d7b4772f2b4ae29d9932d4cbd679057e7077ddb4781a8598a0f935",
+    "IEEE123_PV-voltage.csv": "73c30e0b8204a399a78d005eea4c82c7a065a99d7383280bd11b15472dcd4a04",
+    "IEEE123_PV-power.csv": "bbf4cafac11c9bd8bd1b00d12316a77dc36b8de110a61e033911b69a7f5fa2e0",
+    "IEEE390par-voltage.csv": "18a890196f94de9d3e1b8e590a7375da5b5860fc9cf4d036c0897f800e3e45ea",
+    "IEEE390par-power.csv": "62d8c0822c7b699427c38c2d83c37f8c760416c35fe9800efe0bcb20736542cd",
+    "IEEE390_PV-voltage.csv": "dbe55d8a4f2bd6a7bb33083ac6acde793043b1ec0bf73cd3fd0237a9fdd843d0",
+    "IEEE390_PV-power.csv": "75ff324759fd6bcec2485ee2ec00bc5c0842e9729f97807f88d0cd57b6225e39",
+    "R2_12_47_2-voltage.csv": "a316e5e04f7a85f9175f115b0a1d0064d09cd309bf278e06a0ebe239b5171ef3",
+    "R2_12_47_2-power.csv": "e078e5395d2022662db56e30ec2536bfb3f550b6e60fb8a6271fdc5c7b9c1177",
+    "Transactive-voltage.csv": "1ae341ac32de40c43af702f09dc0ce4fbffad0409302f342427e7e95ceab7f12",
+    "Transactive-power.csv": "877af4810521889df58f2f95a373ef0a24c91203d1196d6e1b5566d60cfa171b"
+  }
+}
