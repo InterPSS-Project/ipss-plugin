@@ -120,7 +120,7 @@ Public inputs are in `ipss.test.plugin.core/testData/adpter/psse/v33/zero-time`.
 Exact numeric boundary checkpoints are embedded in
 `EmbeddedZeroTimeBoundaryValues`, following the repository's existing reference
 pattern. `ReferenceArtifactManifestIntegrityTest` verifies their SHA-256 hashes.
-The benchmark model documentation (`ModelLibrary.pdf`) SHA-256 is
+The benchmark model documentation SHA-256 is
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
 
 The complete local archive is
@@ -145,10 +145,21 @@ mvn -o -pl ipss.test.plugin.core -am test -Dtest=ZeroTimePsseBoundaryReplayTest,
 mvn -o test -Pextended-tests --fail-at-end
 ```
 
-The full plugin suite needs local loopback socket access for Jena's HTTP
-initialization even when importing local CIM fixtures. Without it, 74 parser
-tests fail at infrastructure initialization; that sandbox run is not used as
-the model regression result.
+An earlier sandbox run failed 74 parser tests because Jena 4.10's generic RDF
+reader initialized an HTTP client even for local CIM bytes. On Windows, that
+client creates a selector that needs a loopback connection; those infrastructure
+failures were not used as the model regression result.
+
+Local CIM and CGMES imports now share a direct RDF/XML language-reader path
+that avoids HTTP-client initialization. DTD and external-entity rejection,
+base-URI handling, namespace prefixes and typed RDF values are retained. A
+fresh-JVM regression rejects selector creation, verifies both local parsing
+paths still succeed, and confirms that HTTP-client initialization fails as a
+positive control.
+
+After this fix, `mvn -o -Pextended-tests test` passed under the restricted
+sandbox permissions: 2,640 tests reported, 2,532 passed and 108 existing skips,
+with zero failures/errors. The log is `target/cim-offline-full-tests.log`.
 
 ## Release follow-up: PSS3C failure resolved
 
@@ -206,8 +217,7 @@ unresolved solver-parity difference.
 Two fresh benchmarking runs used the same `0.0005 s` time step and `1e-6`
 network tolerance as InterPSS. Their complete 2,005-row CSVs are byte-identical,
 SHA-256 `03a024c51f45e1e1c14f5e043ccec9f917f41bbcfbf2d7105c3262b51f8a619e`.
-The native `DSMDL.DLL` SHA-256 is
-`c77448250fb965bc2d397f88993855cfb792345b0a86a4bc78ad90f66540ebb6`.
+
 Across 1,996 aligned rows under the existing event-window rule, all 19 channels
 pass the existing limits. Maximum EFD error is `0.0006938271` pu; bus-voltage
 errors are `0.0001852579` and `0.0000631741` pu; relative-speed error is
