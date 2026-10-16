@@ -65,7 +65,10 @@ algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
 algorithm.setSimuStepSec(0.00025);
 ```
 
-The existing default solver is unchanged. This new solver supports GENROU and
+The production default remains modified Euler. A subsequent
+[controller-stage accuracy correction and default-solver comparison](ieee39-modified-euler-2026-10-15.md)
+retains that scheme and documents its remaining benchmark reference differences separately.
+This opt-in solver supports GENROU and
 GENCLS with IEEET1, GAST, TGOV1, IEESGO and IEEEG1 controllers. It rejects
 unsupported models and dynamic loads/branches. It requires a fixed step;
 reinitialize after changing model attachments. Network-list events are detected

@@ -1,7 +1,8 @@
 {
   "Ieee39PsseBenchmarkTest": {
-    "ieee39.steps": "0.00025",
-    "ieee39.outputSuffix": ""
+    "ieee39.steps": "0.00025,0.004333",
+    "ieee39.methods": "modified-euler,psse-staggered-euler",
+    "ieee39.outputSuffix": "-stage-consistent"
   },
   "Tgov3dIndependentSmibConformanceTest": {
     "tgov3d.nativeReference": null

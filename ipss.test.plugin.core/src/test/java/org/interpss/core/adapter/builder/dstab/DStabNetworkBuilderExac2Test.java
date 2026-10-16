@@ -68,14 +68,18 @@ public class DStabNetworkBuilderExac2Test extends CorePluginTestSetup {
     @Test void fiveCmlStatesMatchIndependentBlockwiseModifiedEulerOracle() throws Exception {
         Fixture fixture=fixture(baseData());double dt=.0001,maxError=0;
         fixture.exciter.setRefPoint(fixture.exciter.getRefPoint()+.1);
+        // Refresh the changed algebraic reference without advancing physical states.
+        assertTrue(fixture.exciter.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,fixture.machine,0));
         for(int n=0;n<2000;n++){
+            double[] firstInputs=fixture.exciter.getStateInputSnapshot();
             double[] old=fixture.exciter.getStateSnapshot();
             assertTrue(fixture.exciter.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,fixture.machine,0));
-            double[] predicted=fixture.exciter.getStateSnapshot(),firstInputs=fixture.exciter.getStateInputSnapshot();
+            double[] predicted=fixture.exciter.getStateSnapshot();
             double[] d0=blockDerivatives(old,firstInputs);
             for(int i=0;i<old.length;i++)maxError=Math.max(maxError,Math.abs(predicted[i]-old[i]-d0[i]*dt));
+            double[] secondInputs=fixture.exciter.getStateInputSnapshot();
             assertTrue(fixture.exciter.nextStep(dt,DynamicSimuMethod.MODIFIED_EULER,fixture.machine,1));
-            double[] corrected=fixture.exciter.getStateSnapshot(),secondInputs=fixture.exciter.getStateInputSnapshot();
+            double[] corrected=fixture.exciter.getStateSnapshot();
             double[] d1=blockDerivatives(predicted,secondInputs);
             for(int i=0;i<old.length;i++){
                 double expected=predicted[i]+.5*(d1[i]-d0[i])*dt;
