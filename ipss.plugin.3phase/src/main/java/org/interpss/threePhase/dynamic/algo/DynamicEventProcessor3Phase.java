@@ -101,6 +101,15 @@ public class DynamicEventProcessor3Phase extends DynamicEventProcessor {
 					// solve network and update bus voltage
 					//TODO no need any more as network solution is solved at the beginning in the nextStep, or just right after this
 					net.solveNetEqn();
+                    // Switching changes the algebraic voltage angle without elapsed
+                    // time. Rebase the frequency input while retaining its filter state,
+                    // as in the positive-sequence event processor.
+                    for (var bus : net.getBusList()) {
+                        if (bus.getBusFreqMeasureBlock() instanceof
+                                com.interpss.dstab.controller.deqn.measure.BusFreqMeasurementImpl frequency) {
+                            frequency.synchronizeNetworkAngle(bus.getVoltageAng());
+                        }
+                    }
 				}
 		}
 		return true;
