@@ -22,13 +22,15 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 
 public class IEEE300BusTest extends CorePluginTestSetup {
 	@Test
-	public void xtestCase5() throws Exception{
+	public void testImportedTapRatiosWithControlsDisabled() throws Exception{
 		AclfNetwork net = loadIeee300();
 		
   		assertTrue((net.getBusList().size() == 300 && net.getBranchList().size() == 411));
 
 	  	LoadflowAlgorithm algo = LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
 	  	algo.getLfAdjAlgo().setApplyAdjustAlgo(false);
+            // The historical IEEE-CDF swing reference retains imported off-grid taps.
+            algo.getDataCheckConfig().setAutoSnapTransformerTap(false);
 	  	algo.loadflow();
   		//System.out.println(net.net2String());
 	  	

@@ -1,4 +1,11 @@
 {
+  "Ieee39PsseBenchmarkTest": {
+    "ieee39.steps": "0.00025",
+    "ieee39.outputSuffix": ""
+  },
+  "Tgov3dIndependentSmibConformanceTest": {
+    "tgov3d.nativeReference": null
+  },
   "AclfOpenEiJkluPerformanceTest": {
     "interpss.aclfOpenEiMethod": "NR",
     "interpss.aclfOpenEiRepeats": 3,

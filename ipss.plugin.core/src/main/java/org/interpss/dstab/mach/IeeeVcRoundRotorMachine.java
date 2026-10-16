@@ -9,6 +9,11 @@ public final class IeeeVcRoundRotorMachine extends RoundRotorMachineImpl
     private IeeeVcData ieeeVcData;
 
     @Override
+    protected double cal_dW_dt(double speed, double baseFrequency) {
+        return PsseSwingEquation.speedDerivative(this, speed, baseFrequency);
+    }
+
+    @Override
     public IeeeVcData getIeeeVcData() {
         return ieeeVcData;
     }

@@ -47,8 +47,10 @@ from the IEEE39 dynamic benchmark's 1e-6 network tolerance. A cold repeat gives
 identical summary values. Local evidence is retained under
 `target/guide-default-taps-native-1e4/` and its `-repeat` counterpart.
 
-The full core run completed 2,894 tests with two frequency-expectation failures
+The initial full core run completed 2,894 tests with two frequency-expectation failures
 in `TestStaticLoadModel`. The registered plugin run completed 1,700 tests with
 25 skipped and five failures: two guide-case assertions resolved here, and the
-three existing PSS2B/TGOV3D/WESGOVD trajectory comparisons still under investigation.
-This tap change does not imply full dynamic-model regression acceptance.
+three PSS2B/TGOV3D/WESGOVD trajectory comparisons requiring boundary investigation.
+Those follow-up issues are resolved in the [final IEEE39 report](ieee39-benchmark-2026-10-15.md):
+2,894 core tests and 1,704 registered plugin tests pass (25 plugin skips).
+Dynamic trajectory acceptance remains scoped to the cases documented there.
