@@ -6,12 +6,7 @@
 
 package org.interpss.fadapter.cim;
 
-import org.apache.jena.rdf.model.Literal;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,13 +33,7 @@ public class CGMESPropertyBag {
 
     /** Get local ID part (after # or last /) */
     public String getLocalId() {
-        String uri = resource.getURI();
-        if (uri == null) return null;
-        int hashIdx = uri.lastIndexOf('#');
-        if (hashIdx >= 0) return uri.substring(hashIdx + 1);
-        int slashIdx = uri.lastIndexOf('/');
-        if (slashIdx >= 0) return uri.substring(slashIdx + 1);
-        return uri;
+        return extractLocal(resource.getURI());
     }
 
     /** Get cim:IdentifiedObject.name */
@@ -70,12 +59,8 @@ public class CGMESPropertyBag {
 
     /** Get a string property from a specific namespace */
     public String getStringFromNS(String ns, String propertyLocalName) {
-        Property prop = resource.getModel().createProperty(ns + propertyLocalName);
-        Statement stmt = resource.getProperty(prop);
-        if (stmt != null && stmt.getObject().isLiteral()) {
-            return stmt.getObject().asLiteral().getString();
-        }
-        return null;
+        var value = CimRdfUtils.value(resource, ns + propertyLocalName, false);
+        return value != null && value.isLiteral() ? value.asLiteral().getString() : null;
     }
 
     /** Get a double property value */
@@ -146,24 +131,17 @@ public class CGMESPropertyBag {
     }
 
     public String getResourceIdFromNS(String ns, String propertyLocalName) {
-        Property prop = resource.getModel().createProperty(ns + propertyLocalName);
-        Statement stmt = resource.getProperty(prop);
-        if (stmt != null && stmt.getObject().isResource()) {
-            return stmt.getObject().asResource().getURI();
-        }
-        return null;
+        var value = CimRdfUtils.value(resource, ns + propertyLocalName, false);
+        return value != null && value.isResource() ? value.asResource().getURI() : null;
     }
 
     /**
      * Get a referenced resource as a CGMESPropertyBag.
      */
     public CGMESPropertyBag getResourceBag(String propertyLocalName) {
-        Property prop = resource.getModel().createProperty(cimNamespace + propertyLocalName);
-        Statement stmt = resource.getProperty(prop);
-        if (stmt != null && stmt.getObject().isResource()) {
-            return new CGMESPropertyBag(stmt.getObject().asResource(), cimNamespace, entsoeNamespace);
-        }
-        return null;
+        var value = CimRdfUtils.value(resource, cimNamespace + propertyLocalName, false);
+        return value != null && value.isResource()
+                ? new CGMESPropertyBag(value.asResource(), cimNamespace, entsoeNamespace) : null;
     }
 
     /** Get the underlying Jena Resource */
