@@ -7,10 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -25,8 +23,11 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.cache.StateMonitor;
+import com.interpss.dstab.common.DStabSimuException;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
@@ -50,7 +51,23 @@ public class Pss3cPsseSmibConformanceTest {
                 CASE.resolve("SMIB_v33.raw").toString(),
                 CASE.resolve("SMIB_v33_genrou_esst1a_pss3c.dyr").toString());
         var network = context.getDStabilityNet();
+        // Native CONL uses zero current/admittance percentages: retain the
+        // constant-MVA load in both active and reactive components.
+        network.setStaticLoadModel(StaticLoadModel.CONST_P);
+        network.setReactiveStaticLoadModel(StaticLoadModel.CONST_P);
+        network.setStaticLoadIncludedInYMatrix(false);
         var algorithm = context.getDynSimuAlgorithm();
+        algorithm.getAclfAlgorithm().setTolerance(1e-10);
+        algorithm.setSolver(new DStabSolverImpl(algorithm) {
+            { converge_tol = 1e-6; setMaxIterationTimes(100); }
+
+            @Override public boolean networkSolutionStep() throws DStabSimuException {
+                if (!super.networkSolutionStep())
+                    throw new DStabSimuException("PSS3C network did not converge to 1e-6 at "
+                            + algorithm.getSimuTime());
+                return true;
+            }
+        });
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "PSS3C SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(STEP);
@@ -60,6 +77,8 @@ public class Pss3cPsseSmibConformanceTest {
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
         assertTrue(algorithm.initialization(), "PSS3C SMIB initialization");
+        assertEquals(new Complex(1.0, 0.5), network.getBus("Bus2").getInitConstPStaticLoad());
+        assertEquals(Complex.ZERO, network.getBus("Bus2").getInitConstZStaticLoad());
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
@@ -77,6 +96,12 @@ public class Pss3cPsseSmibConformanceTest {
                     pss, initialRelativeAngle);
         }
 
+        List<String> export = new ArrayList<>();
+        export.add("time_s,V_BUS1,V_BUS2,P_PU,Q_PU,REL_ANGLE,REL_SPEED,EFD,VOTHSG,"
+                + String.join(",", STATE_NAMES));
+        actual.stream().map(row -> Arrays.stream(row).mapToObj(Double::toString)
+                .collect(java.util.stream.Collectors.joining(","))).forEach(export::add);
+        Files.write(Path.of("target", "pss3c-interpss.csv"), export);
         Csv reference = read(REFERENCE);
         assertTrue(!reference.rows().isEmpty());
         double[] initial = reference.rows().stream().filter(row -> row[0] >= -1.0e-9)

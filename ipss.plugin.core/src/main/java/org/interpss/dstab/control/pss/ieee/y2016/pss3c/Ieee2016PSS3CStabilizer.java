@@ -106,10 +106,12 @@ public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
 
     private double updateFilteredPgen(double pgen, double dt, int flag) {
         double timeConstant = pss3cData.tpgfilt();
-        if (timeConstant <= 0.0 || dt <= 0.0) {
+        if (timeConstant <= 0.0) {
             filteredPgen = pgen;
             return filteredPgen;
         }
+        // A switching-event refresh samples inputs without advancing storage.
+        if (dt <= 0.0) return filteredPgen;
         if (flag == 0) {
             pgenFilterDerivative = (pgen - filteredPgen) / timeConstant;
             pgenFilterTrial = filteredPgen + pgenFilterDerivative * dt;
@@ -138,7 +140,6 @@ public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
     }
 
     private double updateCompensatedFrequency(Machine machine, double dt, int flag) {
-        if (dt <= 0.0) return 0.0;
         double angle = compensatedVoltageAngle(machine, pss3cData.xcomp());
         double timeConstant = pss3cData.tcomp();
         if (timeConstant <= 0.0) {
@@ -149,6 +150,7 @@ public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
         double target = angle / timeConstant;
         double omegaBase = 2.0 * Math.PI
                 * machine.getDStabBus().getNetwork().getFrequency();
+        if (dt <= 0.0) return (target - compensatedWashoutState) / omegaBase;
         if (flag == 0) {
             compensatedWashoutDerivative =
                     (target - compensatedWashoutState) / timeConstant;
@@ -158,9 +160,12 @@ public final class Ieee2016PSS3CStabilizer extends Ieee2005PSS3BStabilizer {
         }
         double correctedDerivative =
                 (target - compensatedWashoutTrial) / timeConstant;
+        // The downstream transducer's corrector must sample the predicted
+        // washout state, just like every other derivative in the Heun stage.
+        double stageSignal = (target - compensatedWashoutTrial) / omegaBase;
         compensatedWashoutState += 0.5
                 * (compensatedWashoutDerivative + correctedDerivative) * dt;
-        return (target - compensatedWashoutState) / omegaBase;
+        return stageSignal;
     }
 
     private static Complex compensatedVoltage(Machine machine, double xcomp) {

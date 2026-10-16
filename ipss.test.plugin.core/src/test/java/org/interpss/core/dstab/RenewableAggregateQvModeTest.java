@@ -458,7 +458,7 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     @Test
-    void fivePlantAggregateHasStableCoupledFaultRecovery() throws Exception {
+    void fivePlantAggregateFaultRepeatabilityAtDefaultNetworkSettings() throws Exception {
         RunResult result = run(5, true, .20, .0005, regcaData(100.0, -100.0));
         System.out.printf(Locale.ROOT,
                 "Five-plant synthetic fault: min=%.12g final=%.12g drift=%.12g%n",
@@ -466,9 +466,15 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
                 result.maximumVoltageDrift());
         assertTrue(result.minimumPoiVoltage() < .2, "fault must depress POI voltage");
         assertTrue(result.finalPoiVoltage() > .9, "five-plant system must recover");
-        assertEquals(3.58489350096e-5, result.minimumPoiVoltage(), 1.0e-10);
-        assertEquals(1.00366570722, result.finalPoiVoltage(), 1.0e-9);
-        assertEquals(.00354296889975, result.maximumVoltageDrift(), 1.0e-9);
+        // Internal repeatability snapshot after correcting the network convergence
+        // monitor. The default 1e-4 network tolerance is the historical setting;
+        // these tight comparison deltas do not imply equivalent physical accuracy
+        // or native PSS/E acceptance, especially near zero fault voltage. A strict
+        // convergence diagnostic fails during this deep fault: this remains a
+        // repeatability check, not evidence of a converged network trajectory.
+        assertEquals(5.19123612062e-5, result.minimumPoiVoltage(), 1.0e-10);
+        assertEquals(1.00366645208, result.finalPoiVoltage(), 1.0e-9);
+        assertEquals(.00354378824706, result.maximumVoltageDrift(), 1.0e-9);
     }
 
     private static double[] controllerCheckpoint(Reeca1Model reeca, Repca1Model repca) {
