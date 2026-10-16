@@ -113,13 +113,13 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             double dv1 = derivative(v, vFiltered, data.tfltr());
             double dip1 = activeCurrentDerivative(ipcmd, ipState);
             double diq1 = reactiveCurrentDerivative(iqcmd, iqState);
-            vFiltered = data.tfltr() <= EPS ? v : oldVFiltered + 0.5 * dt * (dv0 + dv1);
-            ipState = data.tg() <= EPS ? limitedActiveCommand(ipcmd) :
+            vFiltered = data.tfltr() <= EPS ? oldVFiltered : oldVFiltered + 0.5 * dt * (dv0 + dv1);
+            ipState = data.tg() <= EPS ? oldIpState :
                     oldIpState + 0.5 * dt * (dip0 + dip1);
-            iqState = data.tg() <= EPS ? -iqcmd :
+            iqState = data.tg() <= EPS ? oldIqState :
                     oldIqState + 0.5 * dt * (diq0 + diq1);
         }
-        ipState = Math.min(ipState, lowVoltagePowerLimit());
+        if (data.tg() > EPS) ipState = Math.min(ipState, lowVoltagePowerLimit());
         return finite(ipState) && finite(iqState);
     }
 
@@ -145,11 +145,12 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     private double lowVoltagePowerLimit() {
-        if (data.lvplsw() == 0 || data.lvpl1() < 0.0 || vFiltered >= data.brkpt()) {
+        double voltage = getFilteredVoltage();
+        if (data.lvplsw() == 0 || data.lvpl1() < 0.0 || voltage >= data.brkpt()) {
             return Double.POSITIVE_INFINITY;
         }
-        if (vFiltered <= data.zerox()) return 0.0;
-        return (vFiltered - data.zerox()) * data.lvpl1() / (data.brkpt() - data.zerox());
+        if (voltage <= data.zerox()) return 0.0;
+        return (voltage - data.zerox()) * data.lvpl1() / (data.brkpt() - data.zerox());
     }
 
     static double lowVoltageActiveGain(double value, double low, double high) {
@@ -169,7 +170,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     private static double advance(double state, double algebraicInput, double rate,
             double timeConstant, double dt) {
-        return timeConstant <= EPS ? algebraicInput : state + dt * rate;
+        return timeConstant <= EPS ? state : state + dt * rate;
     }
 
     @Override
@@ -186,8 +187,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     private Complex injectedCurrent(Complex voltage) {
-        double ip = ipState * lowVoltageActiveGain(voltage.abs(), data.lvpnt0(), data.lvpnt1());
-        double iq = highVoltageReactiveOutput(iqState, voltage.abs(),
+        double ip = activeCurrentOutput() * lowVoltageActiveGain(voltage.abs(), data.lvpnt0(), data.lvpnt1());
+        double iq = highVoltageReactiveOutput(reactiveCurrentOutput(), voltage.abs(),
                 data.volim(), data.khv(), data.iolim());
         double theta = voltage.getArgument();
         double scale = deviceBaseMva / systemBaseMva;
@@ -198,7 +199,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     @Override
     public Hashtable<String, Object> getStates(Object ref) {
-        states.put("REGCA1_V", vFiltered);
+        states.put("REGCA1_V", getFilteredVoltage());
         states.put("REGCA1_IP", getIp());
         states.put("REGCA1_IQ", getIq());
         states.put("REGCA1_P", p);
@@ -259,22 +260,31 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         }
     }
     public RenewableElectricalController getActiveElectricalController() { return activeController(); }
-    public double getFilteredVoltage() { return vFiltered; }
+    public double getFilteredVoltage() {
+        return data.tfltr() <= EPS && getDStabBus() != null
+                ? Math.max(.01, getDStabBus().getVoltageMag()) : vFiltered;
+    }
+    private double activeCurrentOutput() {
+        return data.tg() <= EPS ? limitedActiveCommand(activeController().getIpcmd()) : ipState;
+    }
+    private double reactiveCurrentOutput() {
+        return data.tg() <= EPS ? -activeController().getIqcmd() : iqState;
+    }
     public double getIpRegulatorState() { return ipState; }
     public double getIqRegulatorState() { return iqState; }
     public double getIp() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
-        return ipState * lowVoltageActiveGain(v, data.lvpnt0(), data.lvpnt1());
+        return activeCurrentOutput() * lowVoltageActiveGain(v, data.lvpnt0(), data.lvpnt1());
     }
     public double getIq() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
-        return highVoltageReactiveOutput(iqState, v, data.volim(), data.khv(), data.iolim());
+        return highVoltageReactiveOutput(reactiveCurrentOutput(), v, data.volim(), data.khv(), data.iolim());
     }
 
     @Override
     public Map<String, Double> getNamedStates() {
         Map<String, Double> named = new LinkedHashMap<>();
-        named.put("Filtered Voltage", vFiltered);
+        named.put("Filtered Voltage", getFilteredVoltage());
         named.put("Active Current Regulator", ipState);
         named.put("Reactive Current Regulator", iqState);
         named.put("Active Power", p);

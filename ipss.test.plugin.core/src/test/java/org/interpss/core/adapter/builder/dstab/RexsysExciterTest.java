@@ -97,6 +97,19 @@ public class RexsysExciterTest extends CorePluginTestSetup {
         d.setKe(1);d.setTe(.3);d.setKc(0);d.setKd(0);d.setE1(0);d.setSe1(0);d.setE2(0);d.setSe2(0);d.setFlimf(0);
         return d;
     }
+    @Test void zeroRegulatorTimeUsesLiveAlgebraicFeedbackWithoutChangingStorage() throws Exception {
+        var builder=DStabBuilderTestFixture.createWithMachine();
+        var data=baseData();data.setTa(0.);data.setKf(.2);data.setTf(.5);
+        var exciter=builder.addExcRexsys("Bus1","1",data);
+        var machine=builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setEfd(1.2);assertTrue(exciter.initStates(machine.getDStabBus(),machine));
+        exciter.setRefPoint(exciter.getRefPoint()+.1);
+        // VR = .1 - KF/TF * VR, with all physical states held fixed.
+        assertEquals(.1/1.4,exciter.getRegulatorOutput(),1e-11);
+        assertEquals(.4*.1/1.4,exciter.getFeedbackWashoutOutput(),1e-11);
+        assertEquals(1.2,exciter.getInternalFieldVoltage(),0.);
+        assertEquals(.1/1.4,exciter.getRegulatorOutput(),1e-11);
+    }
     private static double[] derivatives(double[] x){
         double voltagePi=.1+x[0];double vr=x[1];double currentPi=vr+x[2];
         return new double[]{.2,(voltagePi-vr)/.1,3*vr,(currentPi-x[3])/.2,(x[3]-x[4])/.3};

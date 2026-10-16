@@ -138,7 +138,15 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
         return true;
     }
 
-    @Override public double getOutput(Machine mach) { return currentOutput * governorToMachineBase; }
+    @Override public double getOutput(Machine mach) {
+        return (initialized && effective.tw <= SMALL ? currentAlgebraic().pmech : currentOutput)
+                * governorToMachineBase;
+    }
+
+    private Algebraic currentAlgebraic() {
+        return algebraic(state, committedGateCommand, committedGate,
+                committedBladeDemand, committedBlade, deadbandMode);
+    }
     @Override public void setRefPoint(double value) { targetPref = value; }
 
     public void setAuxiliaryInput(double value) { auxiliaryInput = value; }
@@ -162,8 +170,8 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
     /** PowerWorld H6E state 8, blade servomotor position. */
     public double getBladeServoState() { return state.bladeServo; }
     public double getBladePosition() { return currentBlade; }
-    public double getWaterFlow() { return state.flow; }
-    public double getHead() { return currentHead; }
+    public double getWaterFlow() { return initialized && effective.tw <= SMALL ? currentAlgebraic().flow : state.flow; }
+    public double getHead() { return initialized && effective.tw <= SMALL ? currentAlgebraic().head : currentHead; }
     public double getEffectiveGmax() { return effective.gmax; }
     public double getEffectiveGmin() { return effective.gmin; }
     public double getEffectiveKi() { return effective.ki; }
@@ -238,7 +246,7 @@ public class PsseH6eGovernor extends AbstractGovernor implements IntegrationStep
         double bladeArea = effective.bgvmin + (1.0 - effective.bgvmin) * blade;
         double flowArea = bladeArea * gate;
         double flow = s.flow;
-        if (flowArea < 0.005) flow = Math.sqrt(effective.hdam) * flowArea;
+        if (effective.tw <= SMALL || flowArea < 0.005) flow = Math.sqrt(effective.hdam) * flowArea;
         double head = square(flow / Math.max(SMALL, flowArea));
         double hydraulic = turbinePower(flow, head, bladeDemand, blade);
         double pmech = hydraulic - effective.dturb * (getMachine().getSpeed() - 1.0) * gate;

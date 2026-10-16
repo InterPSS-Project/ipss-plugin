@@ -127,7 +127,16 @@ public final class Ieee2016PSS4CStabilizer extends AnnotateStabilizer
         return true;
     }
 
-    @Override public double getOutput(Machine machine) { return outputSignal; }
+    @Override public double getOutput(Machine machine) {
+        if (veryLowBand == null) return outputSignal;
+        threeBandModel.getOutput(machine);
+        veryLowOutput = veryLowBand.advance(threeBandModel.getLowIntermediateInput(), 0.0, -1);
+        outputSignal = Ieee2005PSS4BStabilizer.clamp(
+                veryLowOutput + threeBandModel.getLowOutput()
+                        + threeBandModel.getIntermediateOutput() + threeBandModel.getHighOutput(),
+                threeBandModel.getEffectiveData().vstmax(), threeBandModel.getEffectiveData().vstmin());
+        return outputSignal;
+    }
     @Override public AnController getAnController() { return getClass().getAnnotation(AnController.class); }
     @Override public Field getField(String name) throws Exception { return getClass().getField(name); }
     @Override public Object getFieldObject(Field field) throws Exception { return field.get(this); }

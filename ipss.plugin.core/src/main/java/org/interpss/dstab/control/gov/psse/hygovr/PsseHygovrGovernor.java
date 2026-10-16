@@ -122,7 +122,7 @@ public class PsseHygovrGovernor extends AbstractGovernor implements IntegrationS
                 d.getAt(), d.getDturb(), d.getQnl(), d.getTrate())
                 && d.getTd() >= 0.0 && d.getT2() >= 0.0 && d.getT4() >= 0.0
                 && d.getT6() >= 0.0 && d.getT8() >= 0.0 && d.getTt() >= 0.0
-                && d.getTp() >= 0.0 && d.getTw() >= 0.0 && d.getTrate() >= 0.0;
+                && d.getTp() >= 0.0 && d.getTw() > 0.0 && d.getTrate() >= 0.0;
     }
 
     public double getGatePosition() { return state.gate; }
