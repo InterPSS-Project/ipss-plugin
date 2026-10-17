@@ -133,10 +133,10 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double reactiveCurrentDerivative(double command, double state) {
         double derivative = derivative(-command, state, data.tg());
         // REGCA1 selects one recovery-rate boundary from the initialized
-        // machine Q sign. Exact zero belongs to the nonpositive/Iqrmin branch;
-        // zero-valued limits remain active bounds rather than disable flags.
+        // machine Q sign. Exact zero selects neither directional boundary;
+        // for nonzero Q, zero-valued limits remain active bounds, not disable flags.
         if (initialQ > 0.0) derivative = Math.min(data.iqrmax(), derivative);
-        else derivative = Math.max(data.iqrmin(), derivative);
+        else if (initialQ < 0.0) derivative = Math.max(data.iqrmin(), derivative);
         return derivative;
     }
 

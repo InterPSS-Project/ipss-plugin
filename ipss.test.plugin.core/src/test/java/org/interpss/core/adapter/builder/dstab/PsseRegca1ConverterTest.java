@@ -161,7 +161,7 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     }
 
     @Test
-    void exactZeroReactivePowerUsesTheLowerRateAndBlocksDownwardReturn()
+    void exactZeroReactivePowerSelectsNeitherRateAndAllowsDownwardReturn()
             throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         DStabGen gen = (DStabGen) builder.getDStabNetwork().getDStabBus("Bus1")
@@ -177,12 +177,37 @@ public class PsseRegca1ConverterTest extends CorePluginTestSetup {
         step(model, .01);
         double raisedState = model.getIqRegulatorState();
         assertTrue(raisedState > initialState,
-                "exact-zero Q uses Iqrmin=0, which permits positive motion");
+                "exact-zero Q selects neither recovery-rate boundary");
 
         controller.iqcmd = -(initialState - 1.0);
         step(model, .01);
-        assertEquals(raisedState, model.getIqRegulatorState(), TOL,
-                "Iqrmin=0 blocks downward recovery after the state rises");
+        assertTrue(model.getIqRegulatorState() < raisedState,
+                "Iqrmin=0 must not block downward return when initial Q is exactly zero");
+    }
+
+    @Test
+    void signedZeroAndTinyNonzeroReactivePowerKeepStrictSelectorSemantics() throws Exception {
+        for (double initialQ : new double[] {0.0, -0.0, 1.e-15, -1.e-15}) {
+            DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+            DStabGen gen = (DStabGen)builder.getDStabNetwork().getDStabBus("Bus1").getContributeGen("1");
+            gen.setGen(new Complex(gen.getGen().getReal(), initialQ));
+            Regca1Model model = builder.addRegca1("Bus1", "1", data(10.0, 0.0, 0.0));
+            CommandController controller = new CommandController();
+            model.setActiveElectricalController(controller);
+            assertTrue(model.initStates(model.getDStabBus()));
+            double start = model.getIqRegulatorState();
+            controller.iqcmd = -(start + 1);
+            step(model, .01);
+            double raised = model.getIqRegulatorState();
+            if (initialQ > 0) assertEquals(start, raised, 0, "Positive Q activates the upper zero rate");
+            else assertTrue(raised > start, "Zero and negative Q allow upward motion");
+            controller.iqcmd = -(start - 1);
+            step(model, .01);
+            if (initialQ < 0) assertEquals(raised, model.getIqRegulatorState(), 0,
+                    "Even tiny genuinely negative Q activates the lower zero rate");
+            else assertTrue(model.getIqRegulatorState() < raised,
+                    "Zero and positive Q allow downward motion");
+        }
     }
 
     @Test

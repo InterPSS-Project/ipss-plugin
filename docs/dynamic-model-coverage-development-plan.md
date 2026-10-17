@@ -130,7 +130,8 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
   the fault, generator speed/angle, P/Q, EFD/PM, and controller states.
 - [ ] Resolve severe GFM/weak-grid post-fault responses before calling the
   faults physically accepted: current broad smoke checks pass, but Case 6
-  Bus1016 reaches 1.699 pu at 0.5 s, and Case 5 Bus1011 reaches 1.519 pu.
+  Bus1016 still reaches 1.682 pu at 0.5 s after the exact-zero-Q selector fix.
+  Case 5 Bus1011 improves from 1.519 to 1.082 pu; all fifteen traces change.
   Rank first divergent states against an independent reference and repeat at
   a reduced timestep; do not fit parameters or bless loose smoke bounds.
   The selected Case 5 weak-grid and Case 6 GFM events have now run at h/2 and
@@ -396,7 +397,7 @@ its GFM ratings equal the network base and no plant offset is attached.
   fifteen faults: 2,710 tests, 2,621 passed, 89 skipped, zero failures/errors.
   Verify all 40,590 original network/machine monitor values are unchanged;
   archive enabled settings and reports, then restore private opt-ins.
-- [ ] Fix the confirmed REGCA1 exactly-zero selector mismatch: native applies
+- [x] Fix the confirmed REGCA1 exactly-zero selector mismatch: native applies
   neither recovery bound at zero; current code incorrectly selects the lower.
   Preserve strict sign behavior for genuinely nonzero Q, without epsilon fitting.
 - [ ] Resolve high-voltage boundary/current-measurement discrepancies before
@@ -406,3 +407,30 @@ its GFM ratings equal the network base and no plant offset is attached.
 
 See the [timing contract, native probes and open discrepancies](benchmarks/texas2k-endpoint-alignment-2026-10-17.md).
 The instrumentation slice changes no production model or integration equation.
+
+## REGCA1 exactly-zero-Q model slice
+
+- [x] Replace the nonpositive lower-rate branch with a strict negative-Q
+  selector. Neither direction is rate-limited at exactly zero initial Q.
+- [x] Verify signed zero and ±1e-15 pu without epsilon normalization; retain
+  the native active-zero-rate behavior for genuinely nonzero Q.
+- [x] Observe two focused test failures and a full-solver failure before the
+  fix. Pass all 34 converter/recovery/timing/aggregate/ANDES focused tests.
+- [x] Add the exact native lossless fixture and five final-recovery checkpoints;
+  score them separately from the still-unaccepted complete transient profile.
+- [x] Cold-run the same profile twice in PowerWorld, with no overrides or
+  auto-correction; all 2,003 samples and eight channels repeat exactly.
+- [x] Confirm that all four model records and numeric parameters round-trip
+  through PowerWorld. Preserve a separate stalled export-audit attempt honestly.
+- [x] Finish the full registered regression with six strict flat cases and all
+  fifteen topology faults enabled: 2,712 tests, 2,623 passed, 89 skipped,
+  zero failures/errors. Archive results and enabled settings, restore opt-ins.
+- [x] Compare all fifteen matched-input before/after traces. Case 5 Bus1011
+  final voltage improves from 1.5193 to 1.0820 pu; Case 6 Bus1016 still reaches
+  1.6821 pu. These changes do not establish independent system acceptance.
+- [ ] Correct the independent high-voltage network-boundary discrepancy now
+  localized by the same PSS/E and PowerWorld profile. Current early errors are
+  reported explicitly, not accepted by widening bounds or fitting Khv.
+- [ ] Close complete-profile, instantaneous event-side and Texas2k acceptance.
+
+See the [selector proof, new PowerWorld artifact and remaining boundary gap](benchmarks/regca-zero-q-selector-2026-10-17.md).
