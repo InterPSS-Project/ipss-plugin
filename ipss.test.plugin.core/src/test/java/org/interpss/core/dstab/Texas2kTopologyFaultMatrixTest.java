@@ -3,6 +3,8 @@ package org.interpss.core.dstab;
 import org.interpss.test.TestConfig;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -17,12 +19,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.core.aclf.AclfBranch;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
@@ -104,20 +108,22 @@ public class Texas2kTopologyFaultMatrixTest {
 
         List<FaultSite> sites = faultSites();
         assertTrue(sites.size() == 15, "Reviewed fault-site manifest must contain 15 events");
+        RunProfile profile = profile(CONFIG, sites);
+        requireFreshDiagnosticOutput(profile, Path.of("target"));
         List<MatrixResult> results = new ArrayList<>();
-        for (FaultSite site : sites) {
+        for (FaultSite site : selectedSites(profile, sites)) {
             CaseFile source = CASES.stream().filter(candidate -> candidate.number() == site.caseNumber())
                     .findFirst().orElseThrow();
-            results.add(run(source, site));
+            results.add(run(source, site, profile));
         }
 
-        Path report = Path.of("target", "texas2k-topology-fault-matrix.csv");
+        Path report = Path.of("target", profile.outputName() + ".csv");
         Files.createDirectories(report.getParent());
-        Files.writeString(report, toCsv(results), StandardCharsets.UTF_8);
+        Files.writeString(report, toCsv(results, profile), StandardCharsets.UTF_8);
         System.out.println("Texas2k topology fault matrix: " + report);
     }
 
-    private static MatrixResult run(CaseFile source, FaultSite site) throws Exception {
+    private static MatrixResult run(CaseFile source, FaultSite site, RunProfile profile) throws Exception {
         SimuContext context = load(source);
         BaseDStabNetwork<?, ?> network = context.getDStabilityNet();
         DynamicSimuAlgorithm algorithm = context.getDynSimuAlgorithm();
@@ -132,8 +138,8 @@ public class Texas2kTopologyFaultMatrixTest {
         monitor.addGeneratorStdMonitor(monitoredMachines.toArray(String[]::new));
         algorithm.setSimuOutputHandler(monitor);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuStepSec(STEP);
-        algorithm.setTotalSimuTimeSec(.50);
+        algorithm.setSimuStepSec(profile.step());
+        algorithm.setTotalSimuTimeSec(profile.end());
         algorithm.setOutPutPerSteps(1);
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 site.busId(), network, SimpleFaultCode.GROUND_3P, Complex.ZERO, null,
@@ -145,14 +151,14 @@ public class Texas2kTopologyFaultMatrixTest {
                 monitoredRenewables);
         List<double[]> stateTrace = new ArrayList<>();
         recordStates(stateTrace, algorithm.getSimuTime(), stateChannels);
-        while (algorithm.getSimuTime() < .50 - STEP / 2.0) {
+        while (algorithm.getSimuTime() < profile.end() - profile.step() / 2.0) {
             assertTrue(algorithm.solveDEqnStep(true), source.directory() + " "
                     + site.category() + " simulation at t=" + algorithm.getSimuTime());
             recordStates(stateTrace, algorithm.getSimuTime(), stateChannels);
         }
         TrajectoryArtifact artifact = writeTrajectory(source, site, monitor,
                 monitoredBuses, monitoredMachines,
-                monitoredRenewables, stateChannels, stateTrace);
+                monitoredRenewables, stateChannels, stateTrace, profile);
 
         double faultMinimum = minimum(monitor, site.busId());
         double faultFinal = last(monitor, site.busId());
@@ -351,8 +357,8 @@ public class Texas2kTopologyFaultMatrixTest {
     private static TrajectoryArtifact writeTrajectory(CaseFile source, FaultSite site,
             StateMonitor monitor,
             List<String> buses, List<String> machines, List<RenewableDevice> renewables,
-            List<StateChannel> stateChannels, List<double[]> stateTrace) throws Exception {
-        Path directory = Path.of("target", "texas2k-topology-fault-matrix");
+            List<StateChannel> stateChannels, List<double[]> stateTrace, RunProfile profile) throws Exception {
+        Path directory = Path.of("target", profile.outputName());
         Files.createDirectories(directory);
         Path path = directory.resolve("case" + source.number() + "-" + site.category()
                 + "-" + site.busId() + ".csv");
@@ -462,12 +468,12 @@ public class Texas2kTopologyFaultMatrixTest {
         return values.get(values.size() - 1).value;
     }
 
-    private static String toCsv(List<MatrixResult> results) {
+    private static String toCsv(List<MatrixResult> results, RunProfile profile) {
         StringBuilder csv = new StringBuilder("case,category,fault_bus,monitored_buses,"
                 + "monitored_machines,"
                 + "minimum_voltage,final_voltage,max_nearby_voltage_deviation,"
                 + "max_machine_speed_deviation,input_hashes,trajectory_path,"
-                + "trajectory_sha256,channel_count\n");
+                + "trajectory_sha256,channel_count,step_s,end_time_s,run_tag\n");
         for (MatrixResult result : results) {
             csv.append(result.caseNumber()).append(',').append(result.category()).append(',')
                     .append(result.faultBus()).append(',').append(result.monitoredBuses()).append(',')
@@ -481,12 +487,130 @@ public class Texas2kTopologyFaultMatrixTest {
                     .append(result.inputHashes()).append(',')
                     .append(result.trajectoryPath()).append(',')
                     .append(result.trajectorySha256()).append(',')
-                    .append(result.channelCount()).append('\n');
+                    .append(result.channelCount()).append(',').append(profile.step()).append(',')
+                    .append(profile.end()).append(',').append(profile.tag()).append('\n');
         }
         return csv.toString();
     }
 
     private record CaseFile(int number, String directory, String raw, String dyr) { }
+
+    private record RunProfile(double step, double end, Set<String> selection, String tag) {
+        String outputName() { return "texas2k-topology-fault-matrix" + (tag.isEmpty() ? "" : "-" + tag); }
+    }
+
+    private static RunProfile profile(TestConfig settings, List<FaultSite> sites) {
+        double step = Double.parseDouble(settings.string("texas2k.fault.matrix.step", Double.toString(STEP)));
+        double end = Double.parseDouble(settings.string("texas2k.fault.matrix.end", "0.5"));
+        String tag = settings.string("texas2k.fault.matrix.tag", "");
+        String filter = settings.string("texas2k.fault.matrix.sites", "");
+        if (!Double.isFinite(step) || step <= 0.0 || !Double.isFinite(end)
+                || end < .1 + step || end / step > 1_000_000
+                || !onStepGrid(.05, step) || !onStepGrid(.1, step) || !onStepGrid(end, step)) {
+            throw new IllegalArgumentException("Fault start, clear and end must lie on a finite positive timestep grid");
+        }
+        if (!tag.matches("[a-z0-9-]{0,64}"))
+            throw new IllegalArgumentException("Run tag must be a portable lowercase identifier");
+        Set<String> selection = new LinkedHashSet<>();
+        if (!filter.isBlank()) {
+            for (String token : filter.split(",", -1)) {
+                String key = token.trim();
+                if (!selection.add(key) || sites.stream().noneMatch(site -> siteKey(site).equals(key)))
+                    throw new IllegalArgumentException("Unknown or duplicate reviewed fault site: " + key);
+            }
+        }
+        if (tag.isEmpty() && (step != STEP || end != .5 || !selection.isEmpty()))
+            throw new IllegalArgumentException("A diagnostic run requires a tag to protect baseline artifacts");
+        return new RunProfile(step, end, Set.copyOf(selection), tag);
+    }
+
+    private static boolean onStepGrid(double time, double step) {
+        double ticks = time / step;
+        return Double.isFinite(ticks) && Math.abs(ticks - Math.rint(ticks)) <= 1.e-9;
+    }
+
+    private static String siteKey(FaultSite site) { return site.caseNumber() + ":" + site.category(); }
+
+    private static List<FaultSite> selectedSites(RunProfile profile, List<FaultSite> sites) {
+        return sites.stream().filter(site -> profile.selection().isEmpty()
+                || profile.selection().contains(siteKey(site))).toList();
+    }
+
+    private static void requireFreshDiagnosticOutput(RunProfile profile, Path root) {
+        if (!profile.tag().isEmpty() && (Files.exists(root.resolve(profile.outputName()))
+                || Files.exists(root.resolve(profile.outputName() + ".csv"))))
+            throw new IllegalStateException("Diagnostic output already exists; choose a new run tag");
+    }
+
+    @Test void diagnosticCannotReplaceAnExistingTaggedRun(@TempDir Path directory) throws Exception {
+        var settings = CONFIG.withOverrides(Map.of("texas2k.fault.matrix.step", STEP / 2,
+                "texas2k.fault.matrix.end", .5, "texas2k.fault.matrix.tag", "protected",
+                "texas2k.fault.matrix.sites", "6:gfm-terminal"));
+        var profile = profile(settings, faultSites());
+        Path summaryRoot = Files.createDirectory(directory.resolve("summary"));
+        requireFreshDiagnosticOutput(profile, summaryRoot);
+        Files.writeString(summaryRoot.resolve(profile.outputName() + ".csv"), "retained\n");
+        assertThrows(IllegalStateException.class, () -> requireFreshDiagnosticOutput(profile, summaryRoot));
+        Path traceRoot = Files.createDirectory(directory.resolve("trace"));
+        Files.createDirectory(traceRoot.resolve(profile.outputName()));
+        assertThrows(IllegalStateException.class, () -> requireFreshDiagnosticOutput(profile, traceRoot));
+    }
+
+    @Test void diagnosticDefaultsPreserveTheFifteenCaseBaseline() throws Exception {
+        var settings = CONFIG.withOverrides(Map.of("texas2k.fault.matrix.step", STEP,
+                "texas2k.fault.matrix.end", .5, "texas2k.fault.matrix.tag", "",
+                "texas2k.fault.matrix.sites", ""));
+        var sites = faultSites();
+        var profile = profile(settings, sites);
+        assertEquals(15, selectedSites(profile, sites).size());
+        assertEquals("texas2k-topology-fault-matrix", profile.outputName());
+        assertTrue(toCsv(List.of(), profile).endsWith("step_s,end_time_s,run_tag\n"));
+    }
+
+    @Test void diagnosticHalfAndQuarterStepsRetainReviewedSiteOrderAndSeparateArtifacts() throws Exception {
+        for (int divisor : new int[] {2, 4}) {
+            var settings = CONFIG.withOverrides(Map.of("texas2k.fault.matrix.step", STEP / divisor,
+                    "texas2k.fault.matrix.end", .5, "texas2k.fault.matrix.tag", "step-" + divisor,
+                    "texas2k.fault.matrix.sites", "6:gfm-terminal,5:weak-grid"));
+            var profile = profile(settings, faultSites());
+            assertEquals(List.of("5:weak-grid", "6:gfm-terminal"),
+                    selectedSites(profile, faultSites()).stream().map(Texas2kTopologyFaultMatrixTest::siteKey).toList());
+            assertEquals("texas2k-topology-fault-matrix-step-" + divisor, profile.outputName());
+        }
+    }
+
+    @Test void diagnosticRejectsOffGridNonfiniteOrNonpositiveSteps() throws Exception {
+        var sites = faultSites();
+        for (String step : List.of("0", "-0.01", "NaN", "Infinity", "0.003")) {
+            var settings = CONFIG.withOverrides(Map.of("texas2k.fault.matrix.step", step,
+                    "texas2k.fault.matrix.end", .5, "texas2k.fault.matrix.tag", "bad-step"));
+            assertThrows(IllegalArgumentException.class, () -> profile(settings, sites));
+        }
+    }
+
+    @Test void diagnosticRejectsUnknownDuplicateSitesAndUnsafeTags() throws Exception {
+        var sites = faultSites();
+        for (String filter : List.of("7:gfm-terminal", "5:gfm-terminal", "5:weak-grid,5:weak-grid", "5:weak-grid,")) {
+            var settings = CONFIG.withOverrides(Map.of("texas2k.fault.matrix.sites", filter,
+                    "texas2k.fault.matrix.tag", "invalid"));
+            assertThrows(IllegalArgumentException.class, () -> profile(settings, sites));
+        }
+        for (String tag : List.of("../outside", "C:outside", "contains space")) {
+            var settings = CONFIG.withOverrides(Map.of("texas2k.fault.matrix.tag", tag));
+            assertThrows(IllegalArgumentException.class, () -> profile(settings, sites));
+        }
+    }
+
+    @Test void diagnosticCannotOverwriteBaselineWithAChangedProfile() throws Exception {
+        var sites = faultSites();
+        for (Map<String, ?> change : List.<Map<String, ?>>of(
+                Map.of("texas2k.fault.matrix.step", STEP / 2),
+                Map.of("texas2k.fault.matrix.sites", "6:gfm-terminal"),
+                Map.of("texas2k.fault.matrix.end", 1.0))) {
+            var settings = CONFIG.withOverrides(change).withOverrides(Map.of("texas2k.fault.matrix.tag", ""));
+            assertThrows(IllegalArgumentException.class, () -> profile(settings, sites));
+        }
+    }
 
     private record FaultSite(int caseNumber, String category, String busId,
             String selectionReason) { }

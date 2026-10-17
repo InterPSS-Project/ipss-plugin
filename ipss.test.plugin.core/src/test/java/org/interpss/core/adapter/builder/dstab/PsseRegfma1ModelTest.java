@@ -108,7 +108,8 @@ public class PsseRegfma1ModelTest extends CorePluginTestSetup {
                 com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
 
         assertEquals(1.02, model.getSpeed(), 1.0e-12);
-        assertEquals(initialVoltage + .1, model.getInternalVoltage(), 1.0e-12);
+        // QVflag=0 injects Qref before Mq, not a voltage offset after Mq.
+        assertEquals(initialVoltage + .2 * .1, model.getInternalVoltage(), 1.0e-12);
     }
 
     @Test
@@ -197,6 +198,52 @@ public class PsseRegfma1ModelTest extends CorePluginTestSetup {
 
         assertEquals(2.0 * sourcePower.getReal(), model.getActivePower(), 1.0e-10);
         assertEquals(2.0 * sourcePower.getImaginary(), model.getReactivePower(), 1.0e-10);
+    }
+
+    @Test
+    void currentLimitRemainsOnInverterBaseForSmallerEqualAndLargerRatings() throws Exception {
+        for (double mva : new double[] {50.0, 100.0, 200.0}) {
+            DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+            var network = builder.getDStabNetwork();
+            DStabGen gen = (DStabGen)network.getDStabBus("Bus1").getContributeGen("1");
+            gen.setMvaBase(mva);
+            gen.setZMultiFactor(network.getBaseMva() / mva);
+            double maximumDeviceCurrent = 1.25;
+            Regfma1Model model = builder.addRegfma1("Bus1", "1",
+                    new Regfma1Data(0, .02, .02, .02, maximumDeviceCurrent, 1.2, 0,
+                            2, -2, 2, -2, 0, 0, 0, 1, 0, 0, 0, 1));
+            assertTrue(model.initStates(model.getDStabBus()));
+            Complex voltage = new Complex(.1, 0);
+            model.getDStabBus().setVoltage(voltage);
+            Complex zSystem = gen.getPosGenZ().multiply(gen.getZMultiFactor());
+            double initialInternalVoltage = model.getInternalVoltage();
+            for (int read = 0; read < 2; read++) {
+                Complex norton = (Complex)model.getOutputObject();
+                Complex currentSystem = norton.subtract(voltage.divide(zSystem));
+                double currentDevice = currentSystem.abs() * network.getBaseMva() / mva;
+                assertTrue(model.isCurrentLimited(), "Limit must be active at MVA=" + mva);
+                assertEquals(maximumDeviceCurrent, currentDevice, 1.e-12, "MVA=" + mva);
+                assertEquals(voltage.abs() * maximumDeviceCurrent,
+                        Math.hypot(model.getActivePower(), model.getReactivePower()), 1.e-12);
+                assertEquals(initialInternalVoltage, model.getInternalVoltage(), 0.0,
+                        "An algebraic current limit must not accumulate voltage-state changes");
+            }
+        }
+    }
+
+    @Test
+    void plantReactiveOffsetUsesTheSelectedQOrVoltageInputJunction() throws Exception {
+        for (int qvflag : new int[] {0, 1}) {
+            Regfma1Model model = model(new Regfma1Data(
+                    .02, .02, .02, 0, .15, 0, 5, 0, 99, -99, 99, -99,
+                    0, .2, 0, 1, 0, 0, 0, 0, 0, qvflag));
+            double initial = model.getInternalVoltage();
+            model.setReferenceOffsets(0, .04);
+            assertTrue(model.nextStep(0, DynamicSimuMethod.MODIFIED_EULER, 0));
+            double expectedChange = qvflag == 0 ? .2 * .04 : .04;
+            assertEquals(initial + expectedChange, model.getInternalVoltage(), 1.e-12,
+                    "QVflag=" + qvflag + " must select the correct side of the Q-V droop gain");
+        }
     }
 
     @Test

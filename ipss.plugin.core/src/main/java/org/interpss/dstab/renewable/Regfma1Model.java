@@ -175,7 +175,10 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
         double limitOutput = Math.min(0.0,
                 data.kpqmax() * highError + state.qUpperIntegral())
                 + Math.max(0.0, data.kpqmax() * lowError + state.qLowerIntegral());
-        return vReference + qvOffset + data.mq() * (qReference - state.qMeasured())
+        double voltageOffset = data.qvflag() != 0 ? qvOffset : 0.0;
+        double reactiveOffset = data.qvflag() == 0 ? qvOffset : 0.0;
+        return vReference + voltageOffset
+                + data.mq() * (qReference + reactiveOffset - state.qMeasured())
                 + limitOutput;
     }
 
@@ -262,9 +265,12 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
         Complex impedance = couplingImpedance();
         Complex internal = polar(eDroop, angle);
         Complex outputCurrent = internal.subtract(voltage).divide(impedance);
-        currentLimited = data.imax() > EPS && outputCurrent.abs() > data.imax();
+        // Network injection is on system base; Imax is on inverter MVA base,
+        // like the measured P/Q used by the droop and power-limit controls.
+        double maximumSystemCurrent = data.imax() * deviceBaseMva / systemBaseMva;
+        currentLimited = data.imax() > EPS && outputCurrent.abs() > maximumSystemCurrent;
         if (currentLimited) {
-            outputCurrent = polar(data.imax(), outputCurrent.getArgument());
+            outputCurrent = polar(maximumSystemCurrent, outputCurrent.getArgument());
             internal = voltage.add(impedance.multiply(outputCurrent));
         }
         Complex power = voltage.multiply(outputCurrent.conjugate());

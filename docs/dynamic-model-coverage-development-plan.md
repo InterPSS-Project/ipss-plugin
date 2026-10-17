@@ -132,6 +132,9 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
   Bus1016 reaches 1.699 pu at 0.5 s, and Case 5 Bus1011 reaches 1.519 pu.
   Rank first divergent states against an independent reference and repeat at
   a reduced timestep; do not fit parameters or bless loose smoke bounds.
+  The selected Case 5 weak-grid and Case 6 GFM events have now run at h/2 and
+  h/4: severe voltages persist and common-time errors are not consistently
+  decreasing. See the [REGFMA1 boundary and timestep investigation](benchmarks/regfma1-boundaries-2026-10-17.md).
 - [ ] Obtain matched native PSS/E or PowerWorld trajectories for complete
   stacks. Add ANDES comparisons where its topology and parameterization match.
 - [ ] Compare every channel at aligned event sides and matched timesteps;
@@ -336,3 +339,41 @@ See the [source, lifecycle and acceptance report](benchmarks/texas2k-original-so
 Strict flat initialization is now verified on current original inputs, but the
 Texas2k physical fault/cross-tool milestone and the full approved-model goal
 are not complete. No gain, physical parameter or comparison bound was fitted.
+
+## REGFMA1 boundary and timestep diagnostic slice
+
+- [x] Discriminate and fix active Imax conversion from inverter to network
+  base at 50, 100 and 200 MVA, including actual Norton injection and repeated
+  algebraic reads without state accumulation.
+- [x] Discriminate and fix plant Q/V offsets on the selected side of Mq;
+  retain the published equations rather than an old incorrect test expectation.
+- [x] Preserve the existing independent trajectory and all its tolerances.
+- [x] Generate three additional active-current-limit PowerWorld profiles
+  twice cold; all six complete and paired full CSV values match exactly.
+- [x] Preserve and hash-check raw artifacts, runnable inputs, runner and
+  specifications outside build directories in the ignored private archive.
+- [x] Add class-scoped timestep/end/site/tag settings with baseline and tagged
+  artifact protections, exact event-grid checks and six unit tests.
+- [x] Rerun Case 5 weak-grid and Case 6 GFM faults at h/2 and h/4. Preserve
+  event-side rows and report the lack of demonstrated convergence honestly.
+- [x] Finish the full registered regression with strict six-case flat and
+  fifteen-event fault gates enabled: 2,704 tests, 2,615 passed, 89 skipped,
+  zero failures/errors. All fifteen baseline trajectory hashes are unchanged.
+  Archive enabled settings and fresh reports; restore private opt-ins to false.
+- [ ] Implement exact PSS/E 36.7 REGFMA1 two-ICON/eighteen-CON (twenty-value)
+  parsing and RAW coupling impedance, separately from Texas2k's nineteen-value
+  legacy exchange. Current parser loadability does not prove this schema.
+- [ ] Add complete active-limiter cross-tool trajectory comparisons for the
+  new rating profiles; boundary agreement alone is insufficient.
+- [ ] Correct the inherited fault writer's one-step offset between monitor
+  timestamps and custom-state snapshots before using it for exact independent
+  first-divergence acceptance. Keep old raw exports immutable.
+- [x] Cold-run native negative-initial-Q REGCA1 fault recovery with Iqrmin=0
+  twice. Both produce identical exports and retain high post-fault current.
+- [ ] Compare that exact new native profile in InterPSS after fixing observation
+  alignment; PowerWorld's zero-disables rule differs from the native bound.
+- [ ] Resolve severe fault responses and full-system independent execution.
+
+See the [source contracts, failures-before-fix and benchmark evidence](benchmarks/regfma1-boundaries-2026-10-17.md).
+The two boundary fixes do not directly explain the severe source-case faults:
+its GFM ratings equal the network base and no plant offset is attached.

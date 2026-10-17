@@ -112,6 +112,10 @@
   },
   "Texas2kTopologyFaultMatrixTest": {
     "texas2k.fault.matrix.enabled": false,
+    "texas2k.fault.matrix.step": null,
+    "texas2k.fault.matrix.end": null,
+    "texas2k.fault.matrix.sites": "",
+    "texas2k.fault.matrix.tag": "",
     "texas2k.case.root": null
   },
   "Texas2kType3WindCoverageTest": {

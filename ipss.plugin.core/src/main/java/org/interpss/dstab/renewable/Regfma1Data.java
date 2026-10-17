@@ -3,11 +3,14 @@ package org.interpss.dstab.renewable;
 /**
  * WECC REGFM_A1 parameters on the inverter MVA base.
  *
- * <p>The 19-value PSS/E REGFMA1 record contains {@code Vflag} followed by
- * eighteen control parameters.  Its voltage-source interface uses the WECC
+ * <p>The supported legacy 19-value exchange used by Texas2k contains
+ * {@code Vflag} followed by eighteen control parameters. Its compatibility
+ * voltage-source interface uses the WECC
  * defaults {@code Re=0} and {@code Xe=0.15}; {@code QVflag=0} selects the
  * reactive-power plant-controller input.  The full constructor also represents
- * the complete PowerWorld REGFM_A1 data record.</p>
+ * the complete PowerWorld REGFM_A1 data record. This legacy exchange is not
+ * the current PSS/E 36.7 two-ICON, 18-CON layout, whose coupling impedance is
+ * supplied by the generator RAW record.</p>
  */
 public record Regfma1Data(
         double tpf, double tqf, double tvf, double re, double xe, double imax,
@@ -16,7 +19,7 @@ public record Regfma1Data(
         double kppmax, double kipmax, double kpqmax, double kiqmax,
         int vflag, int qvflag) {
 
-    /** PSS/E REGFMA1 exchange order (one flag and 18 constants after the machine ID). */
+    /** Legacy exchange order (one flag and 18 constants after the machine ID). */
     public Regfma1Data(int vflag, double tpf, double tqf, double tvf, double imax,
             double emax, double emin, double pmax, double pmin, double qmax, double qmin,
             double mp, double mq, double kppmax, double kipmax,
