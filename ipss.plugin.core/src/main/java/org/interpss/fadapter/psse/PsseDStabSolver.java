@@ -30,6 +30,12 @@ final class PsseDStabSolver extends DStabSolverImpl {
             PsseDStabSolver.class.getName() + ".compensation";
     PsseDStabSolver(DynamicSimuAlgorithm algorithm) {
         super(algorithm);
+        // Current-source networks can require substantially more than the
+        // legacy 20 iterations at a fault boundary (280 observed on Texas2k).
+        // This is only an iteration ceiling: retain the core voltage tolerance
+        // and stop as soon as convergence is established. Callers may override
+        // it through their configured solver before initialization.
+        setMaxIterationTimes(500);
     }
 
     @Override

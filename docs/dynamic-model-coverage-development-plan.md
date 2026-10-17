@@ -129,15 +129,19 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
 - [x] Run the reviewed 15-event topology fault matrix. Record voltages near
   the fault, generator speed/angle, P/Q, EFD/PM, and controller states.
 - [ ] Resolve severe GFM/weak-grid post-fault responses before calling the
-  faults physically accepted: current broad smoke checks pass, but Case 6
-  Bus1016 still reaches 1.681707 pu at 0.5 s after the Iolim correction.
-  Case 5 Bus1011 now reaches 1.121556 pu (the preceding selector fix gave
-  1.081986 pu); the latest correction changes six of the fifteen traces.
+  faults physically accepted. After enforcing convergence with sufficient
+  iteration headroom, Case 6 Bus1016 still reaches 1.681472 pu at 0.5 s;
+  Case 5 Bus1011 reaches 1.030318 pu. The preceding Iolim-only run gave
+  1.681707 and 1.121556 pu respectively but ignored exhausted network stages.
   Rank first divergent states against an independent reference and repeat at
   a reduced timestep; do not fit parameters or bless loose smoke bounds.
-  Both selected events have now been rerun at h/2 and h/4 on the latest Iolim
-  equations. Severe voltage persists and common-time voltage/speed errors are
-  not consistently decreasing. See the [current Iolim timestep investigation](benchmarks/regca-iolim-direction-2026-10-17.md).
+  Historical h/2 and h/4 Iolim runs also ignored exhausted stages; they do not
+  certify the newly guarded trajectories. Fresh h/2 matrix runs complete both
+  events at 500 iterations. The h/4 matrix rejects Case 5 at 0.0958333 s;
+  voltage-only probes complete identically at 800/1,600 iterations (up to 614
+  recorded corrector iterations), but h/4 machine/state acceptance remains open.
+  Case 6 still ends at 1.684953 pu at h/4. See the [Iolim timestep investigation](benchmarks/regca-iolim-direction-2026-10-17.md)
+  and [convergence follow-up](benchmarks/network-convergence-propagation-2026-10-17.md).
 - [ ] Obtain matched native PSS/E or PowerWorld trajectories for complete
   stacks. Add ANDES comparisons where its topology and parameterization match.
 - [ ] Compare every channel at aligned event sides and matched timesteps;
@@ -147,17 +151,39 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
 
 ## Remaining model work and release gates
 
-**Immediate core reliability gap:** at tested core `e886019ce`, all three
+**Core reliability slice:** at baseline core `e886019ce`, all three
 modified-Euler calls in `AbstractDStabSolver.nextStep()` ignore the boolean
 returned by `DStabSolverImpl.networkSolutionStep()`. Iteration-budget exhaustion
-can therefore fail to propagate to the outer step result. Current green execution
-gates do not certify network convergence. This source inspection does not identify
-which saved timesteps failed; instrument the runtime before assigning causes.
+could fail to propagate to the outer step result. That baseline's green execution
+gates did not certify network convergence. The correction now stops all three
+stages and both simulation entry points, invalidates partial state and requires
+reinitialization. Immutable last-solve diagnostics expose time, stage, iteration
+count, leading bus and componentwise voltage change (not a KCL residual).
 
-- [ ] Propagate network non-convergence at every integration stage, with time,
-  stage, iteration/residual and leading-bus diagnostics; add failing-before
-  regressions and rerun system gates. Resolve convergence failures without
-  changing physical parameters before declaring physical trajectory acceptance.
+- [x] Implement failure propagation and failing-before regressions; complete
+  all 2,918 core tests. Keep core's general limit 20 and tolerance 1e-4 unchanged.
+- [x] Diagnose actual rejected stages on the tiny REGCA1 and Texas2k cases;
+  establish identical complete exports at independently sufficient budgets.
+  Give the PSS/E adapter a configurable 500-iteration ceiling, without changing
+  model parameters, tolerance or timestep.
+- [x] Complete the coupled full plugin regression for core `12c231df5`.
+  All 2,730 registered plugin tests finish: 2,641 passed, 89 skipped, no
+  failures/errors; all 2,918 core tests pass without skips. Archive exact binary,
+  source, settings, fresh XML and trajectories before restoring private opt-ins.
+  Its first run exposed three formerly hidden failures in synthetic tests.
+  The REECB1 fixture now has an explicit voltage-forming grid. The two deep
+  aggregate faults still fail at 500 iterations; exact passive-network reduction
+  proves no symmetric root at their rejected states under the current boundary.
+  Their old recovery literals are withdrawn, with explicit analytical rejection
+  guards instead. The 23 focused fixture/convergence tests pass. These guards
+  do not establish native low-voltage behavior or synthetic recovery acceptance.
+  The six-case smokes, strict flats and 15 topology faults pass with enforcement.
+  All fifteen complete fault exports repeat byte-for-byte across both guarded
+  full runs. See the [coupled slice report](benchmarks/network-convergence-propagation-2026-10-17.md)
+  for changed historical baselines, module totals and explicit acceptance limits.
+- [ ] Verify native converter low-voltage/angle handling on the symmetric
+  five-/thirty-plant deep-fault profiles; their recovered trajectories are not
+  accepted. Do not loosen convergence tolerance or silently advance failed stages.
 
 Current REGCA1 evidence correction: the preceding native zero-Q baseline has
 95 network non-convergence diagnostics despite successful export. It is retained
@@ -204,7 +230,7 @@ the latest Iolim result. No existing trajectory bound or physical parameter is
 changed. The Iolim direction bug is closed; iterative HV management, joint limiter
 profiles and independent physical system acceptance remain open.
 
-Latest system-step evidence is also preserved for the corrected code: two
+Historical Iolim-only system-step evidence is preserved: two
 additional eight-test runs at h/2 and h/4 pass their execution checks, but Case 6
 still ends at 1.682565/1.684869 pu and Case 5 common-time differences grow rather
 than converge. All three monitored speeds are compared at matching physical

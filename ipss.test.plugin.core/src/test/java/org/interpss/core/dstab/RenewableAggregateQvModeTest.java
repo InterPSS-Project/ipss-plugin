@@ -17,6 +17,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
+import org.apache.commons.math3.linear.Array2DRowFieldMatrix;
+import org.apache.commons.math3.linear.FieldLUDecomposition;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.analysis.LocalRenewableQvEigenAnalyzer;
 import org.interpss.dstab.renewable.Reeca1Data;
@@ -38,6 +40,7 @@ import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.DStabilityNetwork;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 
@@ -112,22 +115,11 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     };
 
     @Test
-    void aggregateProfileIsStationaryAndRecoversFromThreeCyclePoiFault() throws Exception {
+    void aggregateProfileIsStationaryButDeepFaultLosesSymmetricAlgebraicSolution() throws Exception {
         RunResult aggregate = run(30, false, .20, STEP);
-        RunResult faulted = run(30, true, .20, STEP);
-
-        System.out.printf(java.util.Locale.ROOT,
-                "Renewable aggregate Q/V mode: thirtyPlants=%.9g faultMin=%.9g "
-                        + "faultFinal=%.9g qvSensitivity=%.9g%n",
-                aggregate.maximumVoltageDrift(),
-                faulted.minimumPoiVoltage(), faulted.finalPoiVoltage(),
-                aggregate.commonModeQvSensitivity());
         assertTrue(aggregate.maximumVoltageDrift() < 1.0e-6,
                 "aggregate flat-run drift " + aggregate.maximumVoltageDrift());
-        assertTrue(faulted.minimumPoiVoltage() < .2,
-                "three-cycle POI fault must depress voltage");
-        assertTrue(faulted.finalPoiVoltage() > .9,
-                "aggregate renewable voltage must recover after clearing");
+        assertDeepFaultHasNoSymmetricAlgebraicRoot(30, STEP, regcaData());
     }
 
     @Test
@@ -458,23 +450,84 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     }
 
     @Test
-    void fivePlantAggregateFaultRepeatabilityAtDefaultNetworkSettings() throws Exception {
-        RunResult result = run(5, true, .20, .0005, regcaData(100.0, -100.0));
+    void fivePlantDeepFaultRejectsAnInfeasibleSymmetricCurrentSourceBoundary() throws Exception {
+        assertDeepFaultHasNoSymmetricAlgebraicRoot(5, .0005, regcaData(100.0, -100.0));
+    }
+
+    /**
+     * The old recovery snapshot advanced through an unsolved rotating-current
+     * boundary. Prove infeasibility of its symmetric state, not just exhaustion.
+     * This does not establish native low-voltage handling or fault recovery.
+     */
+    private static void assertDeepFaultHasNoSymmetricAlgebraicRoot(int count, double step,
+            Regca1Data data) throws Exception {
+        var profile = new PlantProfile(.01, 0, .10, reecaData(), repcaData());
+        var network = buildNetwork(count, .20, profile, data);
+        var algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
+        var solver = new DStabSolverImpl(algorithm);
+        solver.setMaxIterationTimes(500);
+        algorithm.setSolver(solver);
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(step);
+        algorithm.setTotalSimuTimeSec(.5);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Poi", network,
+                SimpleFaultCode.GROUND_3P, new Complex(0, .0001), null, .05, .05), "DeepPoiFault");
+        assertTrue(algorithm.initialization());
+        assertTrue(!algorithm.performSimulation(), "Do not accept an unsolved fault trajectory");
+        var diagnostic = solver.getLastNetworkSolutionDiagnostics();
+        assertEquals("ITERATION_LIMIT", diagnostic.reason());
+        assertEquals("PREDICTOR", diagnostic.stage());
+        assertTrue(diagnostic.evaluationTime() >= .05 && diagnostic.evaluationTime() < .1);
+        assertTrue(diagnostic.maximumVoltageChange() >= diagnostic.voltageTolerance());
+
+        // Remove only the converters' cancelling Norton admittances from a COPY
+        // of the actual faulted matrix. Retain grid Norton Y and its fixed source.
+        int size = network.getNoBus();
+        Complex[][] passive = new Complex[size][size];
+        for (int i=0;i<size;i++) for (int j=0;j<size;j++)
+            passive[i][j] = network.getYMatrix().getA(i,j);
+        Complex[] source = new Complex[size];
+        Arrays.fill(source, Complex.ZERO);
+        var grid = network.getDStabBus("Grid");
+        source[grid.getSortNumber()] = (Complex)grid.getMachine().getOutputObject();
+        Regca1Model first = null;
+        for (int i=1;i<=count;i++) {
+            var bus = network.getDStabBus("Plant" + i);
+            var gen = (DStabGen)bus.getContributeGen("1");
+            var converter = (Regca1Model)gen.getDynamicGenDevice();
+            assertEquals(100, gen.getMvaBase(), 0, "Derivation uses the common 100-MVA base");
+            if (first == null) first = converter;
+            assertEquals(first.getIpRegulatorState(), converter.getIpRegulatorState(), 1e-12);
+            assertEquals(first.getIqRegulatorState(), converter.getIqRegulatorState(), 1e-12);
+            int k = bus.getSortNumber();
+            passive[k][k] = passive[k][k].subtract(
+                    gen.getPosGenZ().multiply(gen.getZMultiFactor()).reciprocal());
+        }
+        var inverse = new FieldLUDecomposition<>(new Array2DRowFieldMatrix<>(passive))
+                .getSolver().getInverse();
+        int terminal = network.getBus("Plant1").getSortNumber();
+        Complex e = inverse.operate(source)[terminal];
+        Complex z = Complex.ZERO;
+        for (int i=1;i<=count;i++) z = z.add(inverse.getEntry(terminal,
+                network.getBus("Plant" + i).getSortNumber()));
+        double ip = first.getIpRegulatorState(), iq = first.getIqRegulatorState();
+        assertTrue(iq > 0 && iq < -data.iolim());
+        // V = E + Z*(Ip-jIq)*exp(j theta). Including the HV branch gives
+        // |V| <= [|E|+|Z|*(|IpState|+|IqState|)] / (1-|Z|*Khv).
+        double feedback = z.abs()*data.khv();
+        assertTrue(feedback < 1);
+        double bound = (e.abs()+z.abs()*(Math.abs(ip)+Math.abs(iq)))/(1-feedback);
+        assertTrue(bound < data.lvpnt0() && bound < data.volim());
+        // Every symmetric candidate must therefore have LVG=0, HV inactive:
+        // Vmag-Z*(-jIq)=E*exp(-j theta), requiring |R*Iq| <= |E|.
+        assertTrue(Math.abs(z.getReal()*iq) > e.abs(), "No symmetric algebraic root");
         System.out.printf(Locale.ROOT,
-                "Five-plant synthetic fault: min=%.12g final=%.12g drift=%.12g%n",
-                result.minimumPoiVoltage(), result.finalPoiVoltage(),
-                result.maximumVoltageDrift());
-        assertTrue(result.minimumPoiVoltage() < .2, "fault must depress POI voltage");
-        assertTrue(result.finalPoiVoltage() > .9, "five-plant system must recover");
-        // Internal repeatability snapshot after correcting the network convergence
-        // monitor. The default 1e-4 network tolerance is the historical setting;
-        // these tight comparison deltas do not imply equivalent physical accuracy
-        // or native PSS/E acceptance, especially near zero fault voltage. A strict
-        // convergence diagnostic fails during this deep fault: this remains a
-        // repeatability check, not evidence of a converged network trajectory.
-        assertEquals(5.19123612062e-5, result.minimumPoiVoltage(), 1.0e-10);
-        assertEquals(1.00366645208, result.finalPoiVoltage(), 1.0e-9);
-        assertEquals(.00354378824706, result.maximumVoltageDrift(), 1.0e-9);
+                "Deep fault feasibility: plants=%d stage=%s t=%.9g |R*Iq|=%.12g "
+                        + "|E|=%.12g globalSymmetricVBound=%.12g%n",
+                count, diagnostic.stage(), diagnostic.evaluationTime(),
+                Math.abs(z.getReal()*iq), e.abs(), bound);
     }
 
     private static double[] controllerCheckpoint(Reeca1Model reeca, Repca1Model repca) {
@@ -708,9 +761,21 @@ public class RenewableAggregateQvModeTest extends CorePluginTestSetup {
     private static RunResult run(int plantCount, boolean withFault, double gridReactance,
             double simulationStep, PlantProfile profile, double endTime,
             Regca1Data converterData) throws Exception {
+        return run(plantCount, withFault, gridReactance, simulationStep, profile,
+                endTime, converterData, 500);
+    }
+
+    private static RunResult run(int plantCount, boolean withFault, double gridReactance,
+            double simulationStep, PlantProfile profile, double endTime,
+            Regca1Data converterData, int iterationLimit) throws Exception {
         DStabilityNetwork network = buildNetwork(plantCount, gridReactance, profile,
                 converterData);
         DynamicSimuAlgorithm algorithm = DStabObjectFactory.createDynamicSimuAlgorithm(network);
+        // Match the PSS/E adapter's numerical policy; physical data and 1e-4
+        // convergence tolerance are unchanged. Exhaustion must still fail.
+        var solver = new DStabSolverImpl(algorithm);
+        solver.setMaxIterationTimes(iterationLimit);
+        algorithm.setSolver(solver);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algorithm.setSimuStepSec(simulationStep);
         algorithm.setTotalSimuTimeSec(endTime);

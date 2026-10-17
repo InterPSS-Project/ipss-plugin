@@ -234,3 +234,10 @@ historical reference-log audits, native REGFMA1 twenty-value parsing, and matche
 complete-system acceptance. A separate deliberately forced-state native diagnostic
 is retained privately for the next HV-interface investigation; it is not a
 physical fault benchmark or evidence that the current network interface is fixed.
+
+Follow-up: core `12c231df5` now propagates stage failures and exposes permanent
+last-solve diagnostics. The [convergence-enforced report](network-convergence-propagation-2026-10-17.md)
+supersedes this report's system-execution baseline, not its native Iolim
+coordinate evidence. All fifteen production-step faults now execute with the
+convergence criterion enforced; synthetic deep-fault recovery and complete
+independent/model acceptance remain explicitly open.

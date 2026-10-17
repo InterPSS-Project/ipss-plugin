@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecb1Model;
@@ -15,6 +16,7 @@ import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus;
@@ -139,6 +141,18 @@ public class PsseReecb1ControllerTest extends CorePluginTestSetup {
     @Test
     void fullRegcaReecbRepcaStackInitializesAndRuns() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        // A grid-following converter cannot establish the island's voltage/angle.
+        // The old one-bus fixture only "ran" because failed network solves were ignored.
+        var topology = new AclfNetworkBuilder(builder.getDStabNetwork());
+        topology.setPQBus("Bus1", .3, .05, 0, 0);
+        topology.addBus("Grid", "Infinite grid", 2L, 16500, 1.04, 0,
+                null, null, null);
+        topology.setSwingBus("Grid", 1.04, 0);
+        topology.addContributeGen("Grid", "1", true, 0, 0, 100, 1.04,
+                0, 0, 0, 0, new Complex(0, .01), null, 0, null, 0, 0);
+        topology.addLine("Bus1", "Grid", "1", new Complex(.001, .02), Complex.ZERO,
+                null, null, 0, 0, 0, true);
+        builder.addInfiniteMachine("Grid", "1");
         Regca1Model converter = builder.addRegca1("Bus1", "1", regcaData());
         Reecb1Model electrical = builder.addReecb1("Bus1", "1",
                 data(0, 0, 1.11, .02, .05, .02));
