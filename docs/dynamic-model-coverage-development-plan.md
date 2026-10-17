@@ -146,6 +146,40 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
 
 ## Remaining model work and release gates
 
+Current REGCA1 evidence correction: the preceding native zero-Q baseline has
+95 network non-convergence diagnostics despite successful export. It is retained
+as diagnostic history, not accepted transient evidence. A fresh unchanged-model
+baseline with a 200-iteration network budget is twice-repeatable, has no
+recognized failures and is byte-identical at a 400-iteration budget. The public
+final-recovery test now uses those clean values at unchanged bounds. The
+[network-quality report](benchmarks/regca-network-run-quality-2026-10-17.md)
+records the permanent log/CSV quality gate and remaining full-transient errors.
+
+- [x] Reject recognized native convergence/initialization failures independently
+  of API return codes, export status and cold repeatability.
+- [x] Cold-regenerate and quality-check the zero-Q baseline at 200 and 400
+  network iterations; preserve the original failed-network logs and CSV.
+- [ ] Audit original log quality for all historical native reference profiles;
+  embedded hashes and clean new runs do not certify old artifacts.
+- [ ] Resolve native REGCA1 Khv/Accel/Iolim versus WECC network-flowchart
+  semantics before replacing the finite-gain runtime boundary. Keep PowerWorld's
+  distinct convention separate; do not mutate dynamic states during reads.
+- [ ] Correct the independently localized Iolim sign/coordinate mismatch:
+  native Iolim=-0.25 clips **positive generated current at +0.25 pu** during the
+  low-voltage fault; the current implementation instead clips negative current.
+  Two clean cold fault runs and the opposite-direction capacitive discriminator
+  are archived in the network-quality report. Implement and gate this model
+  fix separately; the evidence/quality slice changes no production equation.
+
+Network-quality slice validation: 15 focused tests pass without skips. Full
+registered regression passes with 2,722 tests: 2,633 passed, 89 skipped, zero
+failures/errors. All six strict flat cases, six-case flat/fault/trip smokes and
+fifteen topology faults pass their existing gates. All fifteen complete fault
+traces are byte-identical to the preceding committed baseline. Enabled settings,
+fresh reports and raw traces are archived; source opt-ins are restored to false.
+This closes the new quality utility and clean final-recovery checkpoint work,
+not the open Iolim fix, HV boundary or independent system acceptance.
+
 1. Build a current per-model evidence inventory connecting each native model
    to exact schema tests, equation/limit tests, named-state coverage, reference
    simulator/version, repeatable artifact, and trajectory comparison. Recount

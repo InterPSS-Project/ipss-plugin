@@ -58,12 +58,14 @@ public class RegcaZeroQRecoveryTest {
         assertTrue(maximumIq>1,"Fault must exercise the upward current excursion");
         assertTrue(actual[1]<0,"Exactly zero Q must allow downward return, not latch the fault current");
 
-        // PSS/E 36.7, two identical cold exports; raw CSV SHA-256:
-        // 24f709656b6885be8aa2b9e91ef1a299197626e445995a75c45f7ab3e5536385
+        // PSS/E 36.7, network iteration limit 200, two identical cold exports;
+        // initialization O.K. and no recognized network-convergence failures.
+        // Raw CSV SHA-256:
+        // 5a1d1a0724556c861c10f00e4a0693cfdc4fec13fa0eb32f92cd8fe73384d345
         // Native last sample is 0.500009357929 s (single-precision clock drift).
         // These five values score final recovery only; early high-voltage-boundary
         // differences remain explicitly open in the benchmark report.
-        double[] expected={0,-.0069112223573,.997537732124,.998524069786,-.0069010220468};
+        double[] expected={0,-.00694300374016,.99753087759,.998517394066,-.00693270983174};
         assertEquals(expected[0],actual[0],0);
         for(int channel=1;channel<expected.length;channel++)
             assertEquals(expected[channel],actual[channel],1.e-4,"Final recovery channel "+channel);

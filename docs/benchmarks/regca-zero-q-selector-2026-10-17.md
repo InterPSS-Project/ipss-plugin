@@ -1,5 +1,13 @@
 # REGCA1 exactly-zero initial-Q recovery selector
 
+**Reference-quality correction:** subsequent complete-log review found 95
+native network non-convergence messages in the baseline used below. The raw
+artifact and these historical numbers are preserved, but are not accepted
+transient evidence. A clean twice-cold 200/400-iteration reference now supplies
+the public final-recovery checkpoints, without changing their bounds or the
+selector implementation. See the [network run-quality audit](regca-network-run-quality-2026-10-17.md)
+for corrected values, full-profile errors and the permanent rejection gate.
+
 ## Fixed equation and precise scope
 
 The native REGCA1 recovery-rate selector uses the sign of initialized generator

@@ -178,6 +178,7 @@ import org.interpss.core.dstab.PsseDyrRepresentativeSelectorTest;
 import org.interpss.core.dstab.EmbeddedTrajectoryCoverageInventoryTest;
 import org.interpss.core.dstab.ReferenceArtifactManifestIntegrityTest;
 import org.interpss.core.dstab.PowerWorldCsvRepeatabilityTest;
+import org.interpss.core.dstab.PsseRunQualityTest;
 import org.interpss.core.dstab.EndpointAlignedStateMonitorTest;
 import org.interpss.core.dstab.RegcaZeroQRecoveryTest;
 import org.interpss.core.dstab.dynLoad.Perc1ModelTest;
@@ -896,6 +897,7 @@ import org.junit.platform.suite.api.Suite;
 	EmbeddedTrajectoryCoverageInventoryTest.class,
 	ReferenceArtifactManifestIntegrityTest.class,
 	PowerWorldCsvRepeatabilityTest.class,
+	PsseRunQualityTest.class,
 	EndpointAlignedStateMonitorTest.class,
 	RegcaZeroQRecoveryTest.class,
 	Perc1ModelTest.class,
