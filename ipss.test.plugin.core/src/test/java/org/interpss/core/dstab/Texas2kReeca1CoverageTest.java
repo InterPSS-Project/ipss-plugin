@@ -45,7 +45,7 @@ class Texas2kReeca1CoverageTest {
     @Test
     void case1AttachesAndInitializesAllReeca1Chains(@TempDir Path tempDir) throws Exception {
         verifyCase("Texas2k_series24_case1_2016summerpeak",
-                "Texas2k_series24_case1_2016summerPeak_v36.RAW",
+                "Texas2k_series24_case1_2016summerPeak.RAW",
                 "dynamic_models_case1.dyr", 107, tempDir);
     }
 

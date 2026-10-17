@@ -100,30 +100,38 @@ entry and is recorded in the local `input-sha256.json`. Other formats were not
 mixed into the native input set. The source archive and external folder are
 unchanged.
 
-The default private input location is still absent. Old tests also request a
-derived Case 1 `_v36.RAW` that is not in the original archive; its original
-unversioned RAW declares version 34. Establish the original-input loading path
-or a documented conversion rather than renaming a file to imply a new version.
-The current regression started without this dataset, so September results and
-the current skipped private gates are not October system acceptance.
+The 27 verified originals are now also under the default ignored private input
+location. Eleven ordinary Case 1 test paths now use the provided unversioned
+version-34 RAW instead of requiring an absent derived `_v36.RAW`. No original
+is renamed or relabeled; the separate staged diagnostic keeps its custom-input
+contract. Fresh loading, six-case smokes and strict-flat results are recorded in
+[the original-source report](benchmarks/texas2k-original-source-2026-10-17.md).
 
-- [ ] Restore the six original RAW/DYR cases and both preparation IDVs into
+- [x] Restore the six original RAW/DYR cases and both preparation IDVs into
   the private input location; verify hashes before simulation.
 - [x] Locate the original source ZIP, stage only native inputs separately, and
   verify all 27 extracted files against their archive entries.
 - [x] Rescan the six recovered DYR files and reproduce the reviewed 16,311
   records, 17 types and per-case counts before preparation.
-- [ ] Reaudit every applicable DYR record after GNET/MODREMOVE: attached,
+- [x] Reaudit every applicable DYR record after GNET/MODREMOVE: attached,
   intentionally removed, rejected, unsupported, or missing target.
-- [ ] Rerun all six short flat, common three-cycle-fault, and generator-trip
+- [x] Rerun all six short flat, common three-cycle-fault, and generator-trip
   smokes on the current production solver.
-- [ ] Enable and run all six strict one-second flat gates at 1/240 s with
+- [x] Enable and run all six strict one-second flat gates at 1/240 s with
   voltage drift <= 1e-6 pu and speed drift <= 1e-7 pu.
+  All six pass on the current corrected core: maximum observed voltage drift
+  3.13e-12 pu and speed drift 5.67e-14 pu. Historical 0/6 strict-flat results
+  no longer describe this current source/code combination.
 - [ ] Rank the first and largest bus-voltage, generator-speed, and controller
   state differences. Revisit the historically leading REECA1/REPCA1 devices
   only after confirming they still lead on the current equations.
-- [ ] Run the reviewed 15-event topology fault matrix. Record voltages near
+- [x] Run the reviewed 15-event topology fault matrix. Record voltages near
   the fault, generator speed/angle, P/Q, EFD/PM, and controller states.
+- [ ] Resolve severe GFM/weak-grid post-fault responses before calling the
+  faults physically accepted: current broad smoke checks pass, but Case 6
+  Bus1016 reaches 1.699 pu at 0.5 s, and Case 5 Bus1011 reaches 1.519 pu.
+  Rank first divergent states against an independent reference and repeat at
+  a reduced timestep; do not fit parameters or bless loose smoke bounds.
 - [ ] Obtain matched native PSS/E or PowerWorld trajectories for complete
   stacks. Add ANDES comparisons where its topology and parameterization match.
 - [ ] Compare every channel at aligned event sides and matched timesteps;
@@ -301,3 +309,30 @@ existing InterPSS trajectory comparisons pass. The report records the exact
 command, module totals, cold-run hashes and source-input staging correction.
 The newly recovered Texas2k dataset was kept outside the default test root
 during this run; it does not turn skipped private gates into passed tests.
+
+## Original-source loading and shared CML initialization slice
+
+- [x] Copy and hash-check all 27 native source inputs into the ignored default
+  private case location, preserving the external originals.
+- [x] Make eleven ordinary Case 1 test paths select the actual provided
+  version-34 RAW. Keep the separate custom staged-diagnostic path unchanged.
+- [x] Fix shared CML output refresh on partially initialized annotation graphs;
+  add three lifecycle regressions. Core commit: `e886019ce`.
+- [x] Pass 13 focused core tests and all 2,910 core tests with zero skips/errors.
+- [x] Pass fresh native inventory, GNET/MODREMOVE attachment accounting, all
+  six short flat/fault/trip smokes, and all six strict one-second flat gates.
+- [x] Execute and hash-check all 15 topology fault traces with 65-135 channels.
+- [x] Preserve traces, strict rankings, exact inputs, completed logs and the
+  seven current PowerWorld cold-run bundles outside build outputs in the
+  ignored private verification archive.
+- [x] Run the full registered plugin regression with private data and enabled
+  fault matrix: 2,606 passed, 90 skipped, zero failures/errors. Restore opt-ins.
+- [ ] Diagnose severe weak-grid/GFM fault responses; broad smoke success is
+  not physical acceptance (up to 1.699 pu fault-bus voltage at 0.5 s).
+- [ ] Resolve the full-case PowerWorld load stop and obtain exact independent
+  fault trajectories. Its current probe times out before RAW completion.
+
+See the [source, lifecycle and acceptance report](benchmarks/texas2k-original-source-2026-10-17.md).
+Strict flat initialization is now verified on current original inputs, but the
+Texas2k physical fault/cross-tool milestone and the full approved-model goal
+are not complete. No gain, physical parameter or comparison bound was fitted.
