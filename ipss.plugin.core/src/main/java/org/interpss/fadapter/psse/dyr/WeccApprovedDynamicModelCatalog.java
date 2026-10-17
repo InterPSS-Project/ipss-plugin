@@ -57,7 +57,9 @@ public final class WeccApprovedDynamicModelCatalog {
             exciter("ESDC1A", "esdc1a", "ESDC1A", "ESDC1A", APPROVED, "2011-01-21", "ESDC1A"),
             exciter("ESDC1C", "esdc1c", "DC1C", "DC1C", APPROVED, "2020-04-22", "DC1C"),
             exciter("EXDC2", "exdc2", "EXDC2", "EXDC2_GE and EXDC2_PTI", APPROVED, "2006-08-11", "EXDC2"),
-            exciter("EXDC2A", "exdc2a", "EXDC2", "EXDC2A and EXDC2_PTI", APPROVED, "2006-08-11", "EXDC2A"),
+            // The PSLF EXDC2A row converts to native PSS/E EXDC2. Its Tf2
+            // parameter must not be read as EXDC2's unused Switch slot.
+            exciter("EXDC2A", "exdc2a", "EXDC2", "EXDC2A and EXDC2_PTI", APPROVED, "2006-08-11", "EXDC2"),
             exciter("ESDC2A", "esdc2a", "ESDC2A", "ESDC2A", APPROVED, "2011-01-21", "ESDC2A"),
             exciter("ESDC2C", "esdc2c", "DC2C", "DC2C", APPROVED, "2020-04-22", "DC2C"),
             exciter("EXDC4", "exdc4", "IEEET4", "EXDC4 and IEEET4", APPROVED, "2006-08-11", "IEEET4"),

@@ -75,6 +75,18 @@ class DynamicModelCatalogTest {
     }
 
     @Test
+    void mapsPslfExdc2aRowToNativeExdc2WithoutInventingADyrAlias() {
+        var row = WeccApprovedDynamicModelCatalog.findExciter("EXDC2A").orElseThrow();
+        assertEquals("exdc2a", row.pslfModel());
+        assertEquals("EXDC2", row.psseModel());
+        assertEquals("EXDC2", row.interpssModel());
+        assertTrue(row.isImplementedExactly());
+        assertTrue(DynamicModelCatalog.find("EXDC2A").isEmpty());
+        assertFalse(DynamicModelCatalog.find("EXDC2").orElseThrow().allNames().contains("EXDC2A"));
+        assertTrue(DynamicModelCatalog.find("IEEEX2").isPresent());
+    }
+
+    @Test
     void catalogsEveryMay2026StabilizerRowAndExposesSupportGaps() {
         assertEquals(16, WeccApprovedDynamicModelCatalog.stabilizers().size());
         long approved = WeccApprovedDynamicModelCatalog.stabilizers().stream()

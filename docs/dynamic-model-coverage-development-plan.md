@@ -189,3 +189,30 @@ Full output is retained locally at
 remain skipped or disabled because the source dataset is unavailable. No new
 simulator trajectory was created in this slice; existing checkpoint values and
 comparison tolerances are preserved.
+
+## Native EXDC2 dialect slice
+
+The exciter audit found that the approved PSLF `EXDC2A` row was wrongly
+represented as a distinct native PSS/E DYR model. The provided May 2026 table
+maps that row to EXDC2. Native EXDC2 uses Switch where PowerWorld EXDC2A uses
+Tf2; a same-width input record cannot safely substitute one for the other.
+See the [source-contract report](benchmarks/exdc2-native-dialect-2026-10-17.md).
+
+- [x] Verify the table columns visually and check native PSS/E 36.7 schemas.
+- [x] Correct the source-list mapping to native EXDC2 and remove the
+  non-native EXDC2A reader path, with an explanatory import report.
+- [x] Preserve the explicit EXDC2A builder API and its independent equations.
+- [x] Regenerate the support matrix; approved native exciter rows remain 64/64.
+- [x] Pass focused schema, rejection, builder, equilibrium, native simulator,
+  and ANDES regressions without changing trajectory tolerances.
+- [x] Complete the full registered reactor regression plus CorePluginTestSuite.
+- [x] Record results and prepare this slice for a scoped commit.
+
+Validation on 2026-10-17: 56 focused tests pass without skips. The full
+registered reactor command in the source-contract report exits zero with
+2,687 tests: 2,574 passed, 113 skipped, zero failures/errors. It excludes only
+the unrelated untracked WECC240/JAX test. Native trajectory checkpoints and
+tolerances are unchanged. Texas2k private simulations remain unexecuted.
+
+The larger exciter/stabilizer evidence inventory remains open; this slice
+closes a concrete native-format classification error discovered during it.

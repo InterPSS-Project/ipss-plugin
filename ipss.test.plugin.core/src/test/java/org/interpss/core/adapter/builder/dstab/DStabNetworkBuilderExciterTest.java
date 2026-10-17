@@ -236,15 +236,10 @@ public class DStabNetworkBuilderExciterTest extends CorePluginTestSetup {
 	}
 
 	@Test
-	public void parseExdc2a_mapsTf2AndAttachesDedicatedModel() throws Exception {
+	public void explicitExdc2aBuilder_mapsTf2AndAttachesDedicatedModel() throws Exception {
 		DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-		Path dyr = tempDir.resolve("exdc2a.dyr");
-		Files.writeString(dyr, "1 'EXDC2A' '1' .02 40 .05 .5 1 10 -10 1 .6 "
-				+ ".03 1 .25 3 0 4 0 /\n");
-		new PSSEDStabDirectParser(builder).setStrictImport(true).parseDynFile(dyr.toString());
-
-		Exdc2aExciter exc = (Exdc2aExciter) builder.getDStabNetwork()
-				.getMachine("Bus1-mach1").getExciter();
+		Exdc2aExciter exc = builder.addExcExdc2a("Bus1", "1", .02, 40, .05, .5, 1,
+				10, -10, 1, .6, .03, 1, .25, 3, 0, 4, 0);
 		assertNotNull(exc);
 		assertEquals(0.25, exc.getTf2(), TOL);
 		assertEquals(1.0, exc.getData().getTf(), TOL);

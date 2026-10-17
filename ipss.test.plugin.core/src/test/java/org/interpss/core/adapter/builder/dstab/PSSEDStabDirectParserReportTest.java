@@ -46,6 +46,29 @@ public class PSSEDStabDirectParserReportTest extends CorePluginTestSetup {
     }
 
     @Test
+    void exdc2aVendorRecordIsNotSilentlyTreatedAsNativeExdc2() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("vendor-exdc2a.dyr");
+        Files.writeString(dyr, "1 'EXDC2A' '1' .02 40 .05 .5 1 10 -10 1 .6 "
+                + ".03 1 .25 3 0 4 0 /\n");
+        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        assertThrows(InterpssException.class, () -> parser.parseDynFile(dyr.toString()));
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.UNSUPPORTED));
+        assertEquals("EXDC2A", parser.getLastImportReport().failures().get(0).sourceModelName());
+        assertTrue(parser.getLastImportReport().failures().get(0).message()
+                .contains("Switch parameter is not Tf2"));
+        assertNull(builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter());
+
+        // The supported native name uses Switch in slot J+11, not a second lag.
+        Files.writeString(dyr, "1 'EXDC2' '1' .02 40 .05 .5 1 10 -10 1 .6 "
+                + ".03 1 0 3 0 4 0 /\n");
+        parser.parseDynFile(dyr.toString());
+        assertEquals(1, parser.getLastImportReport().count(DynamicModelImportStatus.ATTACHED));
+        assertEquals(org.interpss.dstab.control.exc.psse.exdc2.Exdc2Exciter.class,
+                builder.getDStabNetwork().getMachine("Bus1-mach1").getExciter().getClass());
+    }
+
+    @Test
     void strictImportPassesWhenEverySourceRecordIsAttached() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("complete.dyr");
