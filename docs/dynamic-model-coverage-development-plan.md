@@ -127,8 +127,12 @@ useful diagnostics only until the original inputs and hashes are restored.
    comparisons and two native PSS/E comparisons (IEEEG1D and TGOV3D).
    GENROU has ANDES evidence; GENQEC and GENQEJ have native PSS/E evidence.
    Reference presence does not establish every profile or full-system parity.
-   Extending this audit to exciters, stabilizers, renewable controls, simulator
-   versions, and cold-regeneration provenance remains open.
+   The [exciter inventory](exciter-evidence.md) now links all 59 distinct native
+   models behind the 64 approved exciter rows. Its local provenance audit
+   identifies 17 PowerWorld input/specification gaps; one AC1C profile has
+   current twice-cold numerical-repeatability evidence. Stabilizer and renewable
+   inventories, exhaustive profiles, simulator-version audits and the remaining
+   cold-regeneration provenance work are still open.
 2. Close missing independent profiles for generators and controllers first.
    Exercise active limiters, zero-time branches, saturation selectors, base
    conversion, remote measurements, and lifecycle events separately where the
@@ -214,5 +218,36 @@ registered reactor command in the source-contract report exits zero with
 the unrelated untracked WECC240/JAX test. Native trajectory checkpoints and
 tolerances are unchanged. Texas2k private simulations remain unexecuted.
 
-The larger exciter/stabilizer evidence inventory remains open; this slice
-closes a concrete native-format classification error discovered during it.
+This slice closes a concrete native-format classification error discovered
+during the exciter audit. The subsequent evidence-link slice below completes
+the exciter mapping inventory, not its exhaustive profile or provenance work.
+
+## Native exciter evidence slice
+
+- [x] Link all 59 distinct native exciter models (64 approved source-list rows)
+  to fixtures, focused tests, checkpoints and registered trajectory tests.
+- [x] Check fixture native names and record lengths; keep the generated
+  [exciter evidence document](exciter-evidence.md) synchronized.
+- [x] Restore six missing focused-class suite registrations: SCRX, DC3A,
+  ESAC4A, EXAC4, EXST2 and ST5B. Preserve their existing assertions.
+- [x] Pass 28 focused tests with zero failures/errors/skips.
+- [x] Audit the selected private PowerWorld manifests read-only using their
+  documented newline normalization: 46/46 output hashes match, but only 29/46
+  have all declared inputs present and hash-matching in this checkout.
+- [x] Cold-run the input-complete AC1C PowerWorld profile twice into separate
+  new directories. Both outputs have identical canonical hashes and agree
+  with every old timestamp/channel value; only empty trailing CSV fields
+  differ across executable versions. Keep the original reference unchanged.
+- [x] Finish full registered reactor validation including CorePluginTestSuite.
+- [x] Record results and prepare the scoped commit.
+- [ ] Recover exact inputs/specifications for the 17 provenance gaps, then
+  cold-regenerate and compare without rewriting old manifests or fitting curves.
+
+See the [audit and explicit provenance gaps](benchmarks/exciter-evidence-audit-2026-10-17.md).
+This inventory does not close branch/profile coverage or system acceptance.
+
+Full validation on 2026-10-17 exits zero with 2,688 tests: 2,575 passed,
+113 skipped, zero failures/errors. The command and module counts are in the
+audit report. This includes all 25 restored focused tests, the three inventory
+tests and the existing AC1C trajectory comparison; it excludes the unrelated
+untracked WECC240/JAX test. No reference checkpoint or tolerance changes.

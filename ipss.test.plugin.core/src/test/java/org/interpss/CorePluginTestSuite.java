@@ -21,6 +21,12 @@ import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderBranchTest;
 import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderCoreTest;
 import org.interpss.core.adapter.builder.acsc.AcscNetworkBuilderFinalizeTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderExciterTest;
+import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderScrxTest;
+import org.interpss.core.adapter.builder.dstab.Dc3aExciterTest;
+import org.interpss.core.adapter.builder.dstab.Esac4aExciterTest;
+import org.interpss.core.adapter.builder.dstab.Exac4ExciterTest;
+import org.interpss.core.adapter.builder.dstab.Exst2ExciterTest;
+import org.interpss.core.adapter.builder.dstab.St5bExciterTest;
 import org.interpss.core.adapter.builder.dstab.Dera1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Regcb1ModelTest;
 import org.interpss.core.adapter.builder.dstab.Exdc2aOpenSourceEquationConformanceTest;
@@ -556,6 +562,12 @@ import org.junit.platform.suite.api.Suite;
 	Ieeet4PsseSmibConformanceTest.class,
 	ExeliPsseSmibConformanceTest.class,
 	ScrxPsseSmibConformanceTest.class,
+	DStabNetworkBuilderScrxTest.class,
+	Dc3aExciterTest.class,
+	Esac4aExciterTest.class,
+	Exac4ExciterTest.class,
+	Exst2ExciterTest.class,
+	St5bExciterTest.class,
 	SexsExciterTest.class,
 	Exst2PsseSmibConformanceTest.class,
 	IeeestPsseSmibConformanceTest.class,

@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 import org.interpss.CorePluginTestSuite;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import org.interpss.core.dstab.reference.GeneratorGovernorEvidenceInventory;
+import org.interpss.core.dstab.reference.ExciterEvidenceInventory;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
@@ -24,6 +25,41 @@ import org.junit.platform.suite.api.SelectClasses;
 
 /** Verifies representative categories in the embedded public checkpoint inventory. */
 public class EmbeddedTrajectoryCoverageInventoryTest {
+    @Test
+    void everyApprovedNativeExciterHasExplicitEvidenceLinks() throws Exception {
+        var rows = WeccApprovedDynamicModelCatalog.exciters().stream()
+                .filter(row -> row.approvalStatus() == WeccModelApprovalStatus.APPROVED)
+                .filter(row -> row.hasPsseModel()).toList();
+        assertEquals(64, rows.size());
+        Set<String> required = rows.stream().map(row -> row.interpssModel())
+                .collect(Collectors.toSet());
+        var entries = ExciterEvidenceInventory.entries();
+        assertEquals(59, required.size());
+        assertEquals(required, entries.stream().map(entry -> entry.model()).collect(Collectors.toSet()));
+        assertEquals(required.size(), entries.size(), "Duplicate native exciter evidence row");
+        Set<Class<?>> registered = Set.copyOf(Arrays.asList(
+                CorePluginTestSuite.class.getAnnotation(SelectClasses.class).value()));
+        for (var entry : entries) {
+            var descriptor = DynamicModelCatalog.find(entry.model()).orElseThrow();
+            assertTrue(registered.contains(entry.focusedTestClass()),
+                    entry.model() + " focused test is not registered");
+            assertTrue(registered.contains(entry.trajectoryTestClass()),
+                    entry.model() + " trajectory comparison is not registered");
+            var records = PsseDyrRecordReader.read(entry.fixture()).stream()
+                    .filter(record -> record.canonicalModelName().equals(entry.model())).toList();
+            assertEquals(1, records.size(), entry.model() + " fixture must contain one native record");
+            assertTrue(descriptor.recordSchema().accepts(records.get(0).parameterCount()),
+                    entry.model() + " fixture violates its native record-length contract");
+            entry.requireReadableCheckpoint();
+        }
+        String markdown = ExciterEvidenceInventory.markdown();
+        Path report = Path.of("target", "exciter-evidence.md");
+        Files.createDirectories(report.getParent());
+        Files.writeString(report, markdown);
+        assertEquals(Files.readString(Path.of("..", "docs", "exciter-evidence.md"))
+                .replace("\r\n", "\n"), markdown, "Regenerate the exciter evidence document");
+    }
+
     @Test
     void everyApprovedGeneratorAndGovernorHasExplicitEvidenceLinks() throws Exception {
         var entries = GeneratorGovernorEvidenceInventory.entries();
