@@ -24,6 +24,7 @@ import java.util.Map;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.core.dstab.reference.EndpointAlignedStateMonitor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -133,7 +134,7 @@ public class Texas2kTopologyFaultMatrixTest {
         List<String> monitoredBuses = nearbyBuses(network, site.busId());
         List<String> monitoredMachines = monitoredMachines(network, site.busId());
         List<RenewableDevice> monitoredRenewables = monitoredRenewables(network, monitoredBuses);
-        StateMonitor monitor = new StateMonitor();
+        EndpointAlignedStateMonitor monitor = new EndpointAlignedStateMonitor(site.busId());
         monitor.addBusStdMonitor(monitoredBuses.toArray(String[]::new));
         monitor.addGeneratorStdMonitor(monitoredMachines.toArray(String[]::new));
         algorithm.setSimuOutputHandler(monitor);
@@ -149,16 +150,16 @@ public class Texas2kTopologyFaultMatrixTest {
                 + " initialization");
         List<StateChannel> stateChannels = stateChannels(network, monitoredMachines,
                 monitoredRenewables);
-        List<double[]> stateTrace = new ArrayList<>();
-        recordStates(stateTrace, algorithm.getSimuTime(), stateChannels);
+        monitor.initializeStateCapture(algorithm.getSimuTime(), () -> captureStates(stateChannels));
         while (algorithm.getSimuTime() < profile.end() - profile.step() / 2.0) {
+            monitor.beginStep(algorithm.getSimuTime(), profile.step());
             assertTrue(algorithm.solveDEqnStep(true), source.directory() + " "
                     + site.category() + " simulation at t=" + algorithm.getSimuTime());
-            recordStates(stateTrace, algorithm.getSimuTime(), stateChannels);
+            monitor.endStep(algorithm.getSimuTime());
         }
         TrajectoryArtifact artifact = writeTrajectory(source, site, monitor,
                 monitoredBuses, monitoredMachines,
-                monitoredRenewables, stateChannels, stateTrace, profile);
+                monitoredRenewables, stateChannels, profile);
 
         double faultMinimum = minimum(monitor, site.busId());
         double faultFinal = last(monitor, site.busId());
@@ -324,17 +325,15 @@ public class Texas2kTopologyFaultMatrixTest {
                 new StateChannel(csvName(prefix + "_" + name), provider, name)));
     }
 
-    private static void recordStates(List<double[]> trace, double time,
-            List<StateChannel> channels) {
-        double[] row = new double[channels.size() + 1];
-        row[0] = time;
+    private static double[] captureStates(List<StateChannel> channels) {
+        double[] row = new double[channels.size()];
         for (int index = 0; index < channels.size(); index++) {
-            row[index + 1] = channels.get(index).provider()
+            row[index] = channels.get(index).provider()
                     .getNamedState(channels.get(index).stateName());
-            assertTrue(Double.isFinite(row[index + 1]),
+            assertTrue(Double.isFinite(row[index]),
                     "Non-finite controller state " + channels.get(index).label());
         }
-        trace.add(row);
+        return row;
     }
 
     private static List<FaultSite> faultSites() throws Exception {
@@ -355,14 +354,14 @@ public class Texas2kTopologyFaultMatrixTest {
     }
 
     private static TrajectoryArtifact writeTrajectory(CaseFile source, FaultSite site,
-            StateMonitor monitor,
+            EndpointAlignedStateMonitor monitor,
             List<String> buses, List<String> machines, List<RenewableDevice> renewables,
-            List<StateChannel> stateChannels, List<double[]> stateTrace, RunProfile profile) throws Exception {
+            List<StateChannel> stateChannels, RunProfile profile) throws Exception {
         Path directory = Path.of("target", profile.outputName());
         Files.createDirectories(directory);
         Path path = directory.resolve("case" + source.number() + "-" + site.category()
                 + "-" + site.busId() + ".csv");
-        StringBuilder csv = new StringBuilder("time_s");
+        StringBuilder csv = new StringBuilder("time_s,solver_time_s,sample_kind");
         for (String bus : buses) csv.append(',').append(bus).append("_V")
                 .append(',').append(bus).append("_ANGLE");
         for (String machine : machines) csv.append(',').append(machine).append("_SPEED")
@@ -378,10 +377,13 @@ public class Texas2kTopologyFaultMatrixTest {
         for (StateChannel channel : stateChannels) csv.append(',').append(channel.label());
         csv.append('\n');
         int samples = monitor.getBusVoltTable().get(site.busId()).size();
+        var frames = monitor.frames();
+        assertEquals(samples, frames.size(), "Each output callback must have exactly one state snapshot");
         for (int index = 0; index < samples; index++) {
-            double time = monitor.getBusVoltTable().get(site.busId()).get(index).t;
-            double[] stateRow = stateRowAtTime(stateTrace, time);
-            csv.append(format(time));
+            var frame = frames.get(index);
+            double[] stateRow = frame.states();
+            csv.append(format(frame.time())).append(',').append(format(frame.solverTime()))
+                    .append(',').append(frame.kind());
             for (String bus : buses) {
                 csv.append(',').append(format(value(monitor.getBusVoltTable(), bus, index)))
                         .append(',').append(format(value(monitor.getBusAngleTable(), bus, index)));
@@ -400,7 +402,7 @@ public class Texas2kTopologyFaultMatrixTest {
                         .append(',').append(format(stateValue(stateRow, stateChannels,
                                 csvName(renewable.id() + "_Reactive Power"))));
             }
-            for (int state = 1; state < stateRow.length; state++) {
+            for (int state = 0; state < stateRow.length; state++) {
                 csv.append(',').append(format(stateRow[state]));
             }
             csv.append('\n');
@@ -416,15 +418,9 @@ public class Texas2kTopologyFaultMatrixTest {
 
     private static double stateValue(double[] row, List<StateChannel> channels, String label) {
         for (int index = 0; index < channels.size(); index++) {
-            if (channels.get(index).label().equals(label)) return row[index + 1];
+            if (channels.get(index).label().equals(label)) return row[index];
         }
         throw new IllegalStateException("Missing controller state channel " + label);
-    }
-
-    private static double[] stateRowAtTime(List<double[]> trace, double time) {
-        return trace.stream().filter(row -> Math.abs(row[0] - time) < 1.0e-9)
-                .findFirst().orElseThrow(() -> new IllegalStateException(
-                        "Missing controller-state sample at t=" + time));
     }
 
     private static String inputHashes(CaseFile source) throws Exception {
@@ -496,7 +492,7 @@ public class Texas2kTopologyFaultMatrixTest {
     private record CaseFile(int number, String directory, String raw, String dyr) { }
 
     private record RunProfile(double step, double end, Set<String> selection, String tag) {
-        String outputName() { return "texas2k-topology-fault-matrix" + (tag.isEmpty() ? "" : "-" + tag); }
+        String outputName() { return "texas2k-topology-fault-matrix-endpoint-v2" + (tag.isEmpty() ? "" : "-" + tag); }
     }
 
     private static RunProfile profile(TestConfig settings, List<FaultSite> sites) {
@@ -563,7 +559,7 @@ public class Texas2kTopologyFaultMatrixTest {
         var sites = faultSites();
         var profile = profile(settings, sites);
         assertEquals(15, selectedSites(profile, sites).size());
-        assertEquals("texas2k-topology-fault-matrix", profile.outputName());
+        assertEquals("texas2k-topology-fault-matrix-endpoint-v2", profile.outputName());
         assertTrue(toCsv(List.of(), profile).endsWith("step_s,end_time_s,run_tag\n"));
     }
 
@@ -575,7 +571,7 @@ public class Texas2kTopologyFaultMatrixTest {
             var profile = profile(settings, faultSites());
             assertEquals(List.of("5:weak-grid", "6:gfm-terminal"),
                     selectedSites(profile, faultSites()).stream().map(Texas2kTopologyFaultMatrixTest::siteKey).toList());
-            assertEquals("texas2k-topology-fault-matrix-step-" + divisor, profile.outputName());
+            assertEquals("texas2k-topology-fault-matrix-endpoint-v2-step-" + divisor, profile.outputName());
         }
     }
 

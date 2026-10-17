@@ -20,7 +20,8 @@ and state definitions agree.
   rediscovered source ZIP's six original DYR files have now been rescanned:
   16,311 records across 17 distinct native types before GNET/MODREMOVE. Their
   per-case totals (2,223, 2,223, 2,965, 2,965, 2,965, 2,970) reproduce the
-  reviewed inventory. This does not yet prove current full-stack attachment.
+  reviewed inventory. Attachment accounting is verified separately below;
+  neither inventory nor attachment proves independent dynamic acceptance.
 - [x] May 2026 approved native PSS/E exciter implementation coverage: 64/64
   source-list rows, as asserted by `DynamicModelCatalogTest`.
 - [x] All 24 approved governor rows with native PSS/E mappings have runtime
@@ -365,15 +366,43 @@ are not complete. No gain, physical parameter or comparison bound was fitted.
   legacy exchange. Current parser loadability does not prove this schema.
 - [ ] Add complete active-limiter cross-tool trajectory comparisons for the
   new rating profiles; boundary agreement alone is insufficient.
-- [ ] Correct the inherited fault writer's one-step offset between monitor
-  timestamps and custom-state snapshots before using it for exact independent
-  first-divergence acceptance. Keep old raw exports immutable.
+- [x] Correct the inherited fault writer's one-step offset between monitor
+  timestamps and custom-state snapshots. The `endpoint-v2` recorder below keeps
+  old exports immutable; exact independent event-post acceptance is still open.
 - [x] Cold-run native negative-initial-Q REGCA1 fault recovery with Iqrmin=0
   twice. Both produce identical exports and retain high post-fault current.
-- [ ] Compare that exact new native profile in InterPSS after fixing observation
-  alignment; PowerWorld's zero-disables rule differs from the native bound.
+- [x] Run diagnostic matched-network comparisons of that native profile at two
+  steps with corrected observation alignment. Do not classify these as accepted:
+  voltage/Q boundary differences and unmatched event-post observations remain.
 - [ ] Resolve severe fault responses and full-system independent execution.
 
 See the [source contracts, failures-before-fix and benchmark evidence](benchmarks/regfma1-boundaries-2026-10-17.md).
 The two boundary fixes do not directly explain the severe source-case faults:
 its GFM ratings equal the network base and no plant offset is attached.
+
+## Synchronous fault-observation slice
+
+- [x] Add immutable callback-time state snapshots and explicit physical versus
+  raw solver timestamps; remove the inherited timestamp join.
+- [x] Preserve event-pre samples, label integrated endpoints correctly and use
+  a distinct `endpoint-v2` output name without rewriting old artifacts.
+- [x] Register six timing/lifecycle/state tests, including exact voltage/speed
+  equality in a public full-solver three-phase fault.
+- [x] Export the exact native negative-Q network and compare InterPSS at
+  matched and half steps; preserve unmatched native event-post/prehistory rows.
+- [x] Cold-repeat native half-step and boundary discriminators. Establish a
+  real exactly-zero initial-Q case rather than misclassifying a tiny negative.
+- [x] Complete the full registered reactor with all six strict flat gates and
+  fifteen faults: 2,710 tests, 2,621 passed, 89 skipped, zero failures/errors.
+  Verify all 40,590 original network/machine monitor values are unchanged;
+  archive enabled settings and reports, then restore private opt-ins.
+- [ ] Fix the confirmed REGCA1 exactly-zero selector mismatch: native applies
+  neither recovery bound at zero; current code incorrectly selects the lower.
+  Preserve strict sign behavior for genuinely nonzero Q, without epsilon fitting.
+- [ ] Resolve high-voltage boundary/current-measurement discrepancies before
+  accepting the new native negative-Q profile or the complete Texas2k faults.
+- [ ] Provide exact instantaneous event-post observations if needed for complete
+  independent comparisons; do not relabel an integrated endpoint as event-post.
+
+See the [timing contract, native probes and open discrepancies](benchmarks/texas2k-endpoint-alignment-2026-10-17.md).
+The instrumentation slice changes no production model or integration equation.
