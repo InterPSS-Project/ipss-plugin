@@ -161,7 +161,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     static double highVoltageReactiveOutput(double iqState, double voltage,
             double volim, double khv, double iolim) {
-        return Math.max(iolim, iqState - khv * Math.max(0.0, voltage - volim));
+        // Native PSS/E Iolim is a negative limit in the opposite current
+        // convention. Here Iq is positive for generated Q, so it is an upper
+        // boundary at -Iolim, not a lower boundary at Iolim. It applies also
+        // below Volim; it limits the network output, never the regulator state.
+        return Math.min(-iolim, iqState - khv * Math.max(0.0, voltage - volim));
     }
 
     private static double derivative(double input, double state, double timeConstant) {

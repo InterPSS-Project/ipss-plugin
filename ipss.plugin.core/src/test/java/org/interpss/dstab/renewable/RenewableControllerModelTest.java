@@ -86,11 +86,13 @@ class RenewableControllerModelTest {
     }
 
     @Test
-    void regca1HighVoltageLogicIsAlgebraicAndLowerLimited() {
+    void regca1ReactiveOutputHasANativeGeneratedCurrentCeiling() {
         assertEquals(0.93,
                 Regca1Model.highVoltageReactiveOutput(1.0, 1.3, 1.2, 0.7, -1.3), TOL);
-        assertEquals(-1.3,
+        assertEquals(-1.41,
                 Regca1Model.highVoltageReactiveOutput(-1.2, 1.5, 1.2, 0.7, -1.3), TOL);
+        assertEquals(.25,
+                Regca1Model.highVoltageReactiveOutput(1, .6, 1.2, .7, -.25), TOL);
     }
 
     @Test

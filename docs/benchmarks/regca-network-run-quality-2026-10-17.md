@@ -1,5 +1,10 @@
 # REGCA1 native network-convergence audit
 
+Follow-up: the localized Iolim direction error is now implemented and fully
+regression-tested in the [next model slice](regca-iolim-direction-2026-10-17.md).
+The iterative high-voltage boundary remains open. The evidence and pre-fix
+results below retain this report's original baseline.
+
 Baseline: plugin `c06869052` (1.4.6), using the locally rebuilt core 1.4.3 at
 `e886019ce`. This slice does not publish or change the core dependency.
 

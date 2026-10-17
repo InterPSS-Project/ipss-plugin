@@ -130,13 +130,14 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
   the fault, generator speed/angle, P/Q, EFD/PM, and controller states.
 - [ ] Resolve severe GFM/weak-grid post-fault responses before calling the
   faults physically accepted: current broad smoke checks pass, but Case 6
-  Bus1016 still reaches 1.682 pu at 0.5 s after the exact-zero-Q selector fix.
-  Case 5 Bus1011 improves from 1.519 to 1.082 pu; all fifteen traces change.
+  Bus1016 still reaches 1.681707 pu at 0.5 s after the Iolim correction.
+  Case 5 Bus1011 now reaches 1.121556 pu (the preceding selector fix gave
+  1.081986 pu); the latest correction changes six of the fifteen traces.
   Rank first divergent states against an independent reference and repeat at
   a reduced timestep; do not fit parameters or bless loose smoke bounds.
-  The selected Case 5 weak-grid and Case 6 GFM events have now run at h/2 and
-  h/4: severe voltages persist and common-time errors are not consistently
-  decreasing. See the [REGFMA1 boundary and timestep investigation](benchmarks/regfma1-boundaries-2026-10-17.md).
+  Both selected events have now been rerun at h/2 and h/4 on the latest Iolim
+  equations. Severe voltage persists and common-time voltage/speed errors are
+  not consistently decreasing. See the [current Iolim timestep investigation](benchmarks/regca-iolim-direction-2026-10-17.md).
 - [ ] Obtain matched native PSS/E or PowerWorld trajectories for complete
   stacks. Add ANDES comparisons where its topology and parameterization match.
 - [ ] Compare every channel at aligned event sides and matched timesteps;
@@ -145,6 +146,18 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
   before marking the Texas2k milestone complete.
 
 ## Remaining model work and release gates
+
+**Immediate core reliability gap:** at tested core `e886019ce`, all three
+modified-Euler calls in `AbstractDStabSolver.nextStep()` ignore the boolean
+returned by `DStabSolverImpl.networkSolutionStep()`. Iteration-budget exhaustion
+can therefore fail to propagate to the outer step result. Current green execution
+gates do not certify network convergence. This source inspection does not identify
+which saved timesteps failed; instrument the runtime before assigning causes.
+
+- [ ] Propagate network non-convergence at every integration stage, with time,
+  stage, iteration/residual and leading-bus diagnostics; add failing-before
+  regressions and rerun system gates. Resolve convergence failures without
+  changing physical parameters before declaring physical trajectory acceptance.
 
 Current REGCA1 evidence correction: the preceding native zero-Q baseline has
 95 network non-convergence diagnostics despite successful export. It is retained
@@ -164,12 +177,14 @@ records the permanent log/CSV quality gate and remaining full-transient errors.
 - [ ] Resolve native REGCA1 Khv/Accel/Iolim versus WECC network-flowchart
   semantics before replacing the finite-gain runtime boundary. Keep PowerWorld's
   distinct convention separate; do not mutate dynamic states during reads.
-- [ ] Correct the independently localized Iolim sign/coordinate mismatch:
+- [x] Correct the independently localized Iolim sign/coordinate mismatch:
   native Iolim=-0.25 clips **positive generated current at +0.25 pu** during the
   low-voltage fault; the current implementation instead clips negative current.
-  Two clean cold fault runs and the opposite-direction capacitive discriminator
-  are archived in the network-quality report. Implement and gate this model
-  fix separately; the evidence/quality slice changes no production equation.
+  The generated-current ceiling is now -Iolim, applied at the algebraic output
+  without clamping the lag state. Two clean cold runs at each of two steps and
+  the opposite-direction capacitive discriminator support the correction.
+  See the [Iolim model-fix report](benchmarks/regca-iolim-direction-2026-10-17.md)
+  for the failing-before evidence, 44 focused checks and full system regression.
 
 Network-quality slice validation: 15 focused tests pass without skips. Full
 registered regression passes with 2,722 tests: 2,633 passed, 89 skipped, zero
@@ -179,6 +194,22 @@ traces are byte-identical to the preceding committed baseline. Enabled settings,
 fresh reports and raw traces are archived; source opt-ins are restored to false.
 This closes the new quality utility and clean final-recovery checkpoint work,
 not the open Iolim fix, HV boundary or independent system acceptance.
+
+Subsequent Iolim model slice: the full registered regression passes with 2,727
+tests, 2,638 passed, 89 skipped and zero failures/errors, including all six strict
+flat cases and fifteen topology faults. Six fault traces change; Case 5 weak-grid
+final voltage increases to 1.121556 pu and Case 6 GFM remains severe at 1.681707 pu.
+The earlier 1.081986 value is the preceding selector/quality-slice result, not
+the latest Iolim result. No existing trajectory bound or physical parameter is
+changed. The Iolim direction bug is closed; iterative HV management, joint limiter
+profiles and independent physical system acceptance remain open.
+
+Latest system-step evidence is also preserved for the corrected code: two
+additional eight-test runs at h/2 and h/4 pass their execution checks, but Case 6
+still ends at 1.682565/1.684869 pu and Case 5 common-time differences grow rather
+than converge. All three monitored speeds are compared at matching physical
+times and sample kinds. Do not reuse the older pre-selector timestep study as
+proof of current-system accuracy, or mark this open acceptance item complete.
 
 1. Build a current per-model evidence inventory connecting each native model
    to exact schema tests, equation/limit tests, named-state coverage, reference
