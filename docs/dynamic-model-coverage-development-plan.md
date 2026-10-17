@@ -120,6 +120,15 @@ useful diagnostics only until the original inputs and hashes are restored.
    simulator/version, repeatable artifact, and trajectory comparison. Recount
    the old PowerWorld artifact gaps from the current archive; the September
    count of 47 is not a current completeness claim.
+   The [generator/governor inventory](generator-governor-evidence.md) now links
+   all three approved generators and all 24 approved native governor mappings
+   to focused tests, the exact public DYR fixture, embedded checkpoints, and
+   registered comparison classes. It identifies 22 governor PowerWorld
+   comparisons and two native PSS/E comparisons (IEEEG1D and TGOV3D).
+   GENROU has ANDES evidence; GENQEC and GENQEJ have native PSS/E evidence.
+   Reference presence does not establish every profile or full-system parity.
+   Extending this audit to exciters, stabilizers, renewable controls, simulator
+   versions, and cold-regeneration provenance remains open.
 2. Close missing independent profiles for generators and controllers first.
    Exercise active limiters, zero-time branches, saturation selectors, base
    conversion, remote measurements, and lifecycle events separately where the
@@ -139,3 +148,44 @@ useful diagnostics only until the original inputs and hashes are restored.
 Completion requires both the model evidence inventory and all Texas2k release
 gates to be closed. A green public regression with skipped private cases does
 not establish that milestone.
+
+## Generator/governor evidence slice
+
+- [x] Add an explicit 27-model inventory checked against the May 2026 approved
+  native mappings; keep the generated Markdown synchronized with it.
+- [x] Require every linked model fixture to contain the corresponding native
+  model and every linked checkpoint store to be readable.
+- [x] Require both focused and trajectory test classes in CorePluginTestSuite.
+  This exposed missing GASTD, IEEEG1D, IEESGOD, and TGOV1D focused-test
+  registrations. Their existing tests are now public and registered.
+- [x] Focused inventory and all four restored governor classes pass (10 tests,
+  zero failures/errors/skips).
+- [x] Complete the full reactor regression including CorePluginTestSuite.
+- [x] Record results and prepare the scoped commit after available gates pass.
+
+The inventory records links to reviewed tests rather than issuing VERIFIED
+labels. Existing trajectory tolerances and model equations are unchanged by
+this slice. Missing private Texas2k inputs still prevent its case acceptance
+gates from executing.
+
+Completed validation on 2026-10-17:
+
+```text
+mvn -q test -Pextended-tests --fail-at-end
+    -Dtest=Test*,*Test,*Tests,*TestCase,CorePluginTestSuite
+    -Dsurefire.failIfNoSpecifiedTests=false
+```
+
+The command exits zero. Surefire reports written during this run contain 2,686
+tests: 2,573 passed, 113 skipped, zero failures/errors. Module totals are 128
+core-plugin tests (4 skipped), 468 three-phase tests (28 skipped), and 2,090
+integration tests (81 skipped). The explicit suite adds coverage beyond default
+test-name discovery. These counts include the separate, unchanged WECC240/JAX
+test present in the shared checkout. The four restored focused classes pass
+all eight tests through the suite. Both evidence-inventory tests pass.
+
+Full output is retained locally at
+`target/generator-governor-evidence-regression.log`. Texas2k private simulations
+remain skipped or disabled because the source dataset is unavailable. No new
+simulator trajectory was created in this slice; existing checkpoint values and
+comparison tolerances are preserved.

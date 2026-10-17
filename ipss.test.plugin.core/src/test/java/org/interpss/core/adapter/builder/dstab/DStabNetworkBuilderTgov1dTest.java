@@ -19,7 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.common.exp.InterpssException;
 import com.interpss.dstab.mach.Machine;
 
-class DStabNetworkBuilderTgov1dTest extends CorePluginTestSetup {
+public class DStabNetworkBuilderTgov1dTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @TempDir

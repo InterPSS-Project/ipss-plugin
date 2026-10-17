@@ -1,0 +1,159 @@
+package org.interpss.core.dstab.reference;
+
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * Reviewed links to model-specific public evidence, not a VERIFIED status.
+ * Simulator scripts, versions, hashes and full traces remain in the private archive.
+ */
+public final class GeneratorGovernorEvidenceInventory {
+    private GeneratorGovernorEvidenceInventory() {}
+
+    public enum Oracle { POWERWORLD, PSSE, ANDES, PSSE_TGOV3D }
+
+    public record Evidence(String model, String focusedTest, String trajectoryTest,
+                           Oracle oracle, String checkpoint, String dyr) {
+        public Path fixture() {
+            return Path.of("testData", "adpter", "psse", "v33", "SMIB", dyr);
+        }
+
+        public Class<?> focusedTestClass() throws ClassNotFoundException {
+            return Class.forName("org.interpss.core.adapter.builder.dstab." + focusedTest,
+                    false, GeneratorGovernorEvidenceInventory.class.getClassLoader());
+        }
+
+        public Class<?> trajectoryTestClass() throws ClassNotFoundException {
+            return Class.forName("org.interpss.core.dstab." + trajectoryTest,
+                    false, GeneratorGovernorEvidenceInventory.class.getClassLoader());
+        }
+
+        public void requireReadableCheckpoint() {
+            switch (oracle) {
+                case POWERWORLD -> {
+                    if (EmbeddedTrajectoryReference.embedded(checkpoint).samples().isEmpty())
+                        throw new IllegalStateException("Empty " + checkpoint);
+                }
+                case PSSE -> EmbeddedNativeTrajectoryValues.verifyCheckpoint(
+                        Path.of(checkpoint), EmbeddedNativeTrajectoryValues.bytes(Path.of(checkpoint)));
+                case ANDES -> {
+                    if (EmbeddedCsvTrajectoryValues.lines(checkpoint).isEmpty())
+                        throw new IllegalStateException("Empty " + checkpoint);
+                }
+                case PSSE_TGOV3D -> {
+                    if (Tgov3dPsseReference.lines().isEmpty())
+                        throw new IllegalStateException("Empty TGOV3D checkpoints");
+                }
+            }
+        }
+    }
+
+    private static final List<Evidence> ENTRIES = List.of(
+            new Evidence("GENROU", "DStabNetworkBuilderMachineTest",
+                    "mach.GenrouAndesSmibConformanceTest", Oracle.ANDES,
+                    "genrou-smib-line-trip.csv", "SMIB_v33_genrou.dyr"),
+            new Evidence("GENQEC", "DStabNetworkBuilderMachineTest",
+                    "mach.GenqecuPsseSmibConformanceTest", Oracle.PSSE,
+                    "smib-genqecu/psse.csv", "SMIB_v33_genqecu.dyr"),
+            new Evidence("GENQEJ", "DStabNetworkBuilderMachineTest",
+                    "mach.GenqejPsseSmibConformanceTest", Oracle.PSSE,
+                    "smib-genqej/psse.csv", "SMIB_v33_genqej.dyr"),
+            new Evidence("GGOV1", "PsseGgov1GovernorTest",
+                    "Ggov1IndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-ggov1", "SMIB_v33_genrou_ggov1.dyr"),
+            new Evidence("H6E", "PsseH6eGovernorTest",
+                    "H6eIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-h6e", "SMIB_v33_genrou_h6e_independent.dyr"),
+            new Evidence("HYG3", "PsseHyg3GovernorTest",
+                    "Hyg3IndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-hyg3", "SMIB_v33_genrou_hyg3_independent.dyr"),
+            new Evidence("HYGOV", "PsseHygovGovernorTest",
+                    "HygovIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-hygov", "SMIB_v33_genrou_hygov.dyr"),
+            new Evidence("IEEEG3", "DStabNetworkBuilderIeeeg3Test",
+                    "Ieeeg3dIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-ieeeg3", "SMIB_v33_genrou_ieeeg3.dyr"),
+            new Evidence("HYGOVR", "PsseHygovrGovernorTest",
+                    "Hygovr1IndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-hygovr1", "SMIB_v33_genrou_hygovr1_independent.dyr"),
+            new Evidence("IEEEG1", "DStabNetworkBuilderGovernorTest",
+                    "Ieeeg1IndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-ieeeg1", "SMIB_v33_genrou_ieeeg1.dyr"),
+            new Evidence("LCFB1", "Lcfb1PrefControllerTest",
+                    "Lcfb1IndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-tgov1-lcfb1", "SMIB_v33_genrou_tgov1_lcfb1.dyr"),
+            new Evidence("TGOV1", "DStabNetworkBuilderGovernorTest",
+                    "Tgov1IndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-tgov1", "SMIB_v33_genrou_tgov1.dyr"),
+            new Evidence("GGOV1D", "PsseGgov1GovernorTest",
+                    "Ggov1IndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-ggov1d", "SMIB_v33_genrou_ggov1d.dyr"),
+            new Evidence("IEEEG1D", "DStabNetworkBuilderIeeeg1dTest",
+                    "Ieeeg1dPsseSmibConformanceTest", Oracle.PSSE,
+                    "smib-genrou-ieeeg1d/psse.csv", "SMIB_v33_genrou_ieeeg1d.dyr"),
+            new Evidence("IEESGOD", "DStabNetworkBuilderIeesgodTest",
+                    "IeesgodIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-ieesgod", "SMIB_v33_genrou_ieesgod.dyr"),
+            new Evidence("WESGOVD", "DStabNetworkBuilderWesgovdTest",
+                    "WesgovdIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-wesgovd", "SMIB_v33_genrou_wesgovd.dyr"),
+            new Evidence("WPIDHYD", "DStabNetworkBuilderWpidhydTest",
+                    "WpidhydIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-wpidhyd", "SMIB_v33_genrou_wpidhyd.dyr"),
+            new Evidence("GASTWDD", "DStabNetworkBuilderGastwddTest",
+                    "GastwddIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-gastwdd", "SMIB_v33_genrou_gastwdd.dyr"),
+            new Evidence("GAST2AD", "DStabNetworkBuilderGast2adTest",
+                    "Gast2adIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-gast2ad", "SMIB_v33_genrou_gast2ad.dyr"),
+            new Evidence("GASTD", "DStabNetworkBuilderGastdTest",
+                    "GastdIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-gastd", "SMIB_v33_genrou_gastd.dyr"),
+            new Evidence("HYGOVD", "PsseHygovGovernorTest",
+                    "HygovdIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-hygovd", "SMIB_v33_genrou_hygovd_independent.dyr"),
+            new Evidence("TGOV1D", "DStabNetworkBuilderTgov1dTest",
+                    "Tgov1IndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-tgov1d", "SMIB_v33_genrou_tgov1d.dyr"),
+            new Evidence("IEEEG3D", "DStabNetworkBuilderIeeeg3dTest",
+                    "Ieeeg3dIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-ieeeg3d", "SMIB_v33_genrou_ieeeg3d.dyr"),
+            new Evidence("DEGOV1D", "DStabNetworkBuilderDegov1dTest",
+                    "Degov1dIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-degov1d", "SMIB_v33_genrou_degov1d.dyr"),
+            new Evidence("PIDGOVD", "DStabNetworkBuilderPidgovdTest",
+                    "PidgovdIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-pidgovd", "SMIB_v33_genrou_pidgovd.dyr"),
+            new Evidence("TGOV3D", "DStabNetworkBuilderTgov3dTest",
+                    "Tgov3dIndependentSmibConformanceTest", Oracle.PSSE_TGOV3D,
+                    "TGOV3D native 0.1 ms checkpoints", "SMIB_v33_genrou_tgov3d.dyr"),
+            new Evidence("HYGOV2D", "DStabNetworkBuilderHygov2dTest",
+                    "Hygov2dIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-hygov2d", "SMIB_v33_genrou_hygov2d_independent.dyr")
+    ).stream().sorted(Comparator.comparing(Evidence::model)).toList();
+
+    public static List<Evidence> entries() { return ENTRIES; }
+
+    public static String markdown() {
+        StringBuilder text = new StringBuilder("# Generator and governor verification evidence\n\n")
+                .append("Generated from GeneratorGovernorEvidenceInventory. Covers the three approved ")
+                .append("generator models and 24 approved native PSS/E governor mappings in the May 2026 catalog.\n\n")
+                .append("Each row links a DYR fixture, focused tests, readable checkpoints and a ")
+                .append("registered trajectory comparison. It does not establish coverage of all ")
+                .append("selectors, limits, lifecycle events or Texas2k system acceptance. ")
+                .append("Simulator versions, cold regeneration and raw provenance require the private archive.\n\n")
+                .append("POWERWORLD identifies archived PowerWorld exports; PSSE and PSSE_TGOV3D ")
+                .append("identify native PSS/E exports; ANDES identifies the separate open-source oracle. ")
+                .append("A reference's presence alone does not prove its comparison passes.\n\n")
+                .append("| Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |\n")
+                .append("|---|---|---|---|---|---|\n");
+        for (Evidence entry : ENTRIES) {
+            text.append("| ").append(entry.model()).append(" | ").append(entry.oracle())
+                    .append(" | ").append(entry.dyr()).append(" | ").append(entry.focusedTest())
+                    .append(" | ").append(entry.trajectoryTest()).append(" | ")
+                    .append(entry.checkpoint()).append(" |\n");
+        }
+        return text.toString();
+    }
+}

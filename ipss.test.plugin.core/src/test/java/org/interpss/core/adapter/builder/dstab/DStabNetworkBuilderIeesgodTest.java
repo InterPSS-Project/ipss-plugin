@@ -16,7 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.interpss.dstab.mach.Machine;
 
-class DStabNetworkBuilderIeesgodTest extends CorePluginTestSetup {
+public class DStabNetworkBuilderIeesgodTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @TempDir Path tempDir;
