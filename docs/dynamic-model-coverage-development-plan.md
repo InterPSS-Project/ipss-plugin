@@ -16,8 +16,11 @@ and state definitions agree.
 ## What current source proves
 
 - [x] Catalog and runtime paths for the Texas2k model families. The current
-  catalog's `texas2kModels()` contains 25 descriptors; this is a curated family
-  inventory, not a fresh count of models in the six missing case files.
+  catalog's `texas2kModels()` contains 25 curated family descriptors. The
+  rediscovered source ZIP's six original DYR files have now been rescanned:
+  16,311 records across 17 distinct native types before GNET/MODREMOVE. Their
+  per-case totals (2,223, 2,223, 2,965, 2,965, 2,965, 2,970) reproduce the
+  reviewed inventory. This does not yet prove current full-stack attachment.
 - [x] May 2026 approved native PSS/E exciter implementation coverage: 64/64
   source-list rows, as asserted by `DynamicModelCatalogTest`.
 - [x] All 24 approved governor rows with native PSS/E mappings have runtime
@@ -87,14 +90,29 @@ Full output is retained locally at
 
 ## Texas2k system acceptance
 
-The configured `testData/private/texas2k` dataset is absent. The previously
-provided OneDrive case directory exists but currently contains no entries.
-Therefore the September six-case results cannot be promoted to acceptance of
-the October code. Historical short-smoke and 15-event execution results are
-useful diagnostics only until the original inputs and hashes are restored.
+Availability correction, 2026-10-17: the extracted OneDrive directory is empty,
+but the original `Texas2k_series24_cases_with_dynamics.zip` exists in its parent.
+The earlier check was too narrow. Its raw SHA-256 is
+`a66623bbf3b3faf910f494910f08cca9620066f8964c990aa04ea50b7106ca4e`.
+All 27 original RAW/DYR/IDV files (six cases) are now staged under
+`target/texas2k-source-20261017`; each extracted file's raw hash matches its ZIP
+entry and is recorded in the local `input-sha256.json`. Other formats were not
+mixed into the native input set. The source archive and external folder are
+unchanged.
+
+The default private input location is still absent. Old tests also request a
+derived Case 1 `_v36.RAW` that is not in the original archive; its original
+unversioned RAW declares version 34. Establish the original-input loading path
+or a documented conversion rather than renaming a file to imply a new version.
+The current regression started without this dataset, so September results and
+the current skipped private gates are not October system acceptance.
 
 - [ ] Restore the six original RAW/DYR cases and both preparation IDVs into
   the private input location; verify hashes before simulation.
+- [x] Locate the original source ZIP, stage only native inputs separately, and
+  verify all 27 extracted files against their archive entries.
+- [x] Rescan the six recovered DYR files and reproduce the reviewed 16,311
+  records, 17 types and per-case counts before preparation.
 - [ ] Reaudit every applicable DYR record after GNET/MODREMOVE: attached,
   intentionally removed, rejected, unsupported, or missing target.
 - [ ] Rerun all six short flat, common three-cycle-fault, and generator-trip
@@ -129,8 +147,9 @@ useful diagnostics only until the original inputs and hashes are restored.
    Reference presence does not establish every profile or full-system parity.
    The [exciter inventory](exciter-evidence.md) now links all 59 distinct native
    models behind the 64 approved exciter rows. Its local provenance audit
-   identifies 17 PowerWorld input/specification gaps; one AC1C profile has
-   current twice-cold numerical-repeatability evidence. Stabilizer and renewable
+   identifies 17 historical PowerWorld input/specification gaps; AC1C and six
+   additional exciter profiles now have current twice-cold numerical-repeatability
+   evidence, without rewriting the historical manifests. Stabilizer and renewable
    inventories, exhaustive profiles, simulator-version audits and the remaining
    cold-regeneration provenance work are still open.
 2. Close missing independent profiles for generators and controllers first.
@@ -251,3 +270,34 @@ Full validation on 2026-10-17 exits zero with 2,688 tests: 2,575 passed,
 audit report. This includes all 25 restored focused tests, the three inventory
 tests and the existing AC1C trajectory comparison; it excludes the unrelated
 untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
+
+## PowerWorld repeatability slice
+
+- [x] Add a permanent strict SINGLE-CSV comparison utility and command-line
+  entry point; preserve metadata, all channels and event-side duplicate samples.
+- [x] Register eight positive/negative tests in CorePluginTestSuite; the focused
+  run plus four existing checkpoint-integrity tests passes without skips.
+- [x] Check the six changed specifications against declared native inputs,
+  events, solver settings, channel selection and disabled auto-correction.
+- [x] Cold-run AC7B, ESAC4A, ESAC6A, ESAC8B, EXAC4 and REXSYS twice each into
+  new directories. All twelve runs complete, with identical paired CSV hashes.
+- [x] Compare every new sample/channel against the old export with the permanent
+  utility: all six models match numerically, including both event-side rows.
+- [x] Preserve exact current specifications and runner beside staged native
+  RAW/DYR inputs, runnable AUX, raw results, logs and manifests in the local
+  private run bundle; independently check its output/input hashes.
+- [x] Complete full registered reactor validation and record the results.
+- [x] Prepare the scoped commit after available gates pass.
+
+See the [run identities and reproducibility report](benchmarks/powerworld-exciter-repeatability-2026-10-17.md).
+This establishes current repeatability for six additional SMIB profiles, not
+recovery of their old specification bytes or exhaustive model acceptance.
+Eleven other PowerWorld datasets still lack declared DYR inputs, and the
+earlier seventeen historical provenance discrepancies are preserved as such.
+
+Full validation on 2026-10-17 exits zero: 2,696 tests, 2,583 passed,
+113 skipped, zero failures/errors. All eight new verifier tests and the six
+existing InterPSS trajectory comparisons pass. The report records the exact
+command, module totals, cold-run hashes and source-input staging correction.
+The newly recovered Texas2k dataset was kept outside the default test root
+during this run; it does not turn skipped private gates into passed tests.
