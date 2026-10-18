@@ -342,9 +342,12 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     throw new DStabSimuException("Governor derivative failed: "+m.getId());
                 m.setPm(m.getGovernor().getOutput(m));
             }
+            // Classical machines have mechanical states and constant internal
+            // voltage; they do not inherit the electrical-state implementation.
             if (!m.nextStepMechanical(0.,DynamicSimuMethod.MODIFIED_EULER,dstabAlgo.getNetwork(),0)
-                    ||!((DynamicMachineImpl)m).nextStepElectrical(0.,DynamicSimuMethod.MODIFIED_EULER,
-                            dstabAlgo.getNetwork(),0))
+                    ||m instanceof DynamicMachineImpl dynamic
+                        &&!dynamic.nextStepElectrical(0.,DynamicSimuMethod.MODIFIED_EULER,
+                                dstabAlgo.getNetwork(),0))
                 throw new DStabSimuException("Machine derivative failed: "+m.getId());
         }
     }

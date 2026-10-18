@@ -455,3 +455,72 @@ metrics almost unchanged and is retained as a diagnostic, not enabled in code.
 
 The complete frozen evidence for this follow-up is retained in the private
 verification-artifact directory `2026-10-18-plant-reference-limits`.
+
+## Fleet localization and coupled-source check, October 18 follow-up
+
+A completed one-second Case 2 diagnostic observes all 26 unique generators
+monitored across its six supplied events. All original 50 signals remain
+exactly unchanged in 2,003 samples; repeated prefault reference channels across
+events also agree exactly. The broader observation finds maximum rotor-angle
+error of `1.84454` degrees at bus 1078. Initial errors at buses 5038 and 6245
+already exceed `0.002` degrees. Mechanical-power discrepancies occur in both
+governor families; this check does not isolate a governor defect.
+
+Independent PSS2A diagram playback, driven by the unchanged commercial speed
+and power samples, covers all 16 monitored ESST4B units. Their outer regulator
+integrals agree within `0.000002082` pu through one second. This extends the
+previous limited stabilizer check, but does not verify the remaining exciters
+or explain the full-network drift.
+
+Bus 1084 has the largest observed renewable reactive-power excursion. An
+isolated commercial playback uses its unchanged model parameters, initial P/Q,
+and recorded terminal-voltage boundary. The prescribed waveform is sampled on
+the commercial integration clock; whole-case acceptance sampling is unchanged.
+Two fresh processes produce byte-identical raw CSV. Across 2,003 samples,
+terminal-voltage discrepancy is below `0.000000203` pu. Checked converter and
+controller states differ by at most `0.000000924` pu, including the plant
+reactive integral. This supports the checked component equations and storage
+under that prescribed boundary. It is not a whole-network comparison.
+
+The coupled three-bus discriminator exposes an initialization crash in the
+extended staggered solver: its classical source was incorrectly cast to a
+machine with electrical states. Classical sources now evaluate their mechanical
+states without that cast. The new regression fails against the frozen previous
+solver and passes with the correction. Six frozen-runtime solver tests and
+13 focused reactor tests pass. The latter count includes those same six tests;
+these are overlapping checks, not 19 distinct tests.
+
+With this correction, the coupled synchronous-machine/renewable diagnostic
+completes one second. It retains the source model parameters in an explicitly
+synthetic network, with an independently solved operating point. Maximum rotor
+angle error is `0.000348398` degrees; maximum bus-voltage error is
+`0.000020884` pu. Terminal P/Q maximum errors are `0.000095765` and
+`0.000081869` pu on the system base. Two fresh commercial runs are byte-identical.
+Case 2 has no active classical machines, so this correction does not resolve
+its full-network discrepancy.
+
+Separate native netting probes establish that operation order matters:
+netting before I/Z load conversion makes the negative load follow I/Z;
+netting afterward retains constant P/Q. Each profile repeats in two fresh
+processes. The supplied preparation order is still unconfirmed. A Case 2
+after-conversion experiment preserves initial injected power, but worsens
+maximum prefault angle error from `0.302794` to `0.361175` degrees. The existing
+load-conversion order remains unchanged; comparison error alone does not
+establish the original preparation procedure.
+
+The remaining 17 active renewable units use PFLAG zero and have zero initial
+reactive power in the solved InterPSS case. Bus 1011's controlled playback
+exposes an initialization-sensitive recovery selector: the commercial two-bus
+initialization reports a tiny positive Q (`3.85e-11` Mvar), while the full-case
+model starts at exactly zero. With zero directional recovery-rate limits,
+those signs select different subsequent current behavior. Its current and
+electrical-controller discrepancies are consequently much larger than bus
+1084's. This is unresolved evidence for the zero-Q branch; it is not accepted
+as proof of a PFLAG-zero equation defect or a justified change to the case's
+initial Q. No initial-Q offsets are fitted to the supplied references.
+
+Uncontrolled initial P/Q and inactive-model playback attempts are retained as
+rejected diagnostics. They are excluded from the numerical claims above.
+Frozen inputs, runtimes, producers, raw traces, comparison reports, and test
+logs are retained under the private verification-artifact directory
+`2026-10-18-fleet-localization`. No full ten-second event is accepted.

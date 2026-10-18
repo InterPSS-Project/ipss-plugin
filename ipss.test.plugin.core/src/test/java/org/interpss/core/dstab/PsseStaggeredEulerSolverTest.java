@@ -15,6 +15,31 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class PsseStaggeredEulerSolverTest {
+    @Test void classicalSourceAdvancesAlongsideTheExtendedControllerStack() throws Exception {
+        IpssCorePlugin.init();
+        String base="testData/adpter/psse/v33/SMIB/";
+        var context=new PSSEMultiFileLoader().loadDStab(
+                base+"SMIB_v33.raw",base+"SMIB_v33_genrou_esst4b.dyr");
+        var algo=context.getDynSimuAlgorithm();
+        var source=context.getDStabilityNet().getMachine("Bus2-mach1");
+        source.setH(2.);
+        assertTrue(algo.getAclfAlgorithm().loadflow());
+        var shared=new PsseStaggeredEulerSolver(algo);
+        algo.setSolver(shared);
+        algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algo.setSimuStepSec(.0005);
+        algo.setTotalSimuTimeSec(.01);
+        algo.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algo.initialization());
+        assertEquals(2,shared.getBoundMachineCount());
+        double initialAngle=source.getAngle();
+        source.setPm(source.getPm()+.01);
+        for (int i=0;i<20;i++) assertTrue(algo.solveDEqnStep(true));
+        assertTrue(source.getSpeed()>1.,"classical source responds to mechanical-power input");
+        assertTrue(source.getAngle()>initialAngle,"classical rotor angle advances");
+        assertTrue(Double.isFinite(source.getPe()));
+    }
+
     @Test void compoundFilterExposesEveryActualStateAtTheCommonEndpoint() {
         var block=new com.interpss.dstab.controller.cml.field.block.FilterNthOrderBlock(.2,.5,2,2);
         assertTrue(block.initStateU0(1.));
