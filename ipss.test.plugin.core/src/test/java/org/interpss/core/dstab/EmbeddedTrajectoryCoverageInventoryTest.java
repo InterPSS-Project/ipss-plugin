@@ -70,6 +70,8 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
                 "Equivalent play-in cannot silently become an exact-model reference");
         assertTrue(registered.contains(Pss1aPowerWorldPlaybackConformanceTest.class),
                 "Supplementary exact typed PSS1A playback must remain registered");
+        assertTrue(registered.contains(Pss1aPowerWorldActiveConformanceTest.class),
+                "Supplementary active-limit/cutout PSS1A playback must remain registered");
     }
 
     @Test

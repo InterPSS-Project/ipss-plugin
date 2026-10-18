@@ -52,10 +52,28 @@ and state definitions agree.
   scoped commit without staging concurrent renewable integration changes.
 - [ ] Resolve full-network SMIB differences and exact event-post observations;
   do not replace this requirement with the passing controller replay.
-- [ ] Close inactive-selector/limiter/voltage-gate profiles and native PSS1A
+- [x] Independently exercise both output-limit directions and upper/lower
+  voltage cutouts with exact PowerWorld speed/voltage play-in at both steps,
+  twelve cold runs, unchanged exported parameters and active-branch guards.
+- [x] Correct the test observation to compare the unclipped published LL2
+  coordinate; retain production equations and all previous baseline values.
+- [x] Add cutoff-boundary, zero-disable, continued-state-evolution and immutable
+  observation checks. Distinguish local exact-boundary guards from oracle traces.
+- [x] Pass the final active-branch snapshot: 1,169 SMIB/model tests with one
+  diagnostic skip, 133 plugin-core units with six optional skips, zero
+  failures/errors. Include committed renewable integration `94321b10c`.
+- [x] Retain the shared-checkout gate's four concurrent GENSAL test failures;
+  do not relax them or mislabel that gate green. The isolated snapshot excludes
+  uncommitted GENSAL edits, not the committed renewable implementation.
+- [x] Seal and hash-verify 1,639 active-branch evidence files and prepare the
+  tested scoped commit, preserving all unrelated GENSAL work.
+- [ ] Close remaining input-selector/lifecycle profiles and native PSS1A
   dialect verification before complete model acceptance.
 
 See [exact typed PSS1A playback evidence](benchmarks/pss1a-exact-powerworld-playback-2026-10-17.md).
+The [active-limit/cutout follow-up](benchmarks/pss1a-active-limits-2026-10-17.md)
+retains the rejected lower-only validation probe and the shared-checkout
+GENSAL failures separately from the accepted PSS1A profiles.
 
 ## What current source proves
 

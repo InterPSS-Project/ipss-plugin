@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.controller.cml.field.block.TFunc2ndOrderBlock;
+import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 
 /**
  * Exact typed PowerWorld PSS1A speed playback, not native PTI PSS1A DYR evidence
@@ -108,7 +109,7 @@ public class Pss1aPowerWorldPlaybackConformanceTest {
         return maximum;
     }
 
-    private static double[] publishedSignals(Ieee1992PSS1AStabilizer pss,double output) throws Exception {
+    static double[] publishedSignals(Ieee1992PSS1AStabilizer pss,double output) throws Exception {
         // Test-only coordinate audit: CML owns the blocks in its state registry;
         // the model's Java block fields may remain null. Do not change the solver
         // realization to match a commercial display coordinate. The CML API has
@@ -120,8 +121,13 @@ public class Pss1aPowerWorldPlaybackConformanceTest {
         double y=filter.getY();
         // z=ydot+(A1/A2)y yields zdot=(u-y)/A2, ydot=z-(A1/A2)y.
         double filter1=second.getDouble(filter)+(pss.a1/pss.a2)*y;
+        var leadLag2=(FilterControlBlock)blocks.get("filterBlock2");
+        // Published LL2 is before the separate algebraic output limiter.
+        double beforeLimit=leadLag2.getT2()>0
+                ?leadLag2.getStateX()+leadLag2.getK()*leadLag2.getT1()/leadLag2.getT2()*leadLag2.getU()
+                :leadLag2.getK()*leadLag2.getU();
         return new double[]{blocks.get("washoutBlock").getY(),blocks.get("filterBlock1").getY(),
-                blocks.get("filterBlock2").getY(),blocks.get("delayBlock").getY(),filter1,y,output};
+                beforeLimit,blocks.get("delayBlock").getY(),filter1,y,output};
     }
 
     private static String text(String name) throws Exception {
