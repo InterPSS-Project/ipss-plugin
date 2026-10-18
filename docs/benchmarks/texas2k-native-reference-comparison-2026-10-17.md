@@ -633,3 +633,51 @@ still fail, and the run does not cover the ten-second acceptance window.
 Frozen evidence for these follow-ups is retained under the private
 verification-artifact directory `2026-10-18-current-limit-staging`.
 No full ten-second event is accepted.
+
+## First complete ten-second window and exciter localization
+
+The frozen corrected runtime completes Case 2's first bus fault through ten
+seconds. All 2,405 samples and 218 diagnostic fields through `1.2` seconds
+reproduce the preceding run exactly. Every required comparison channel is
+present and every period is complete. This event passes 6 of 40 channel
+criteria and fails acceptance.
+
+| Quantity | Worst prefault result | Worst fault/postfault or full-window result |
+| --- | ---: | ---: |
+| Voltage NRMSE | 0.00118173 | 0.00861415 |
+| Terminal P NRMSE | 0.00224012 | 0.0201838 |
+| Terminal Q NRMSE | 0.00331266 | 0.0985075 |
+| Rotor angle | 0.211550 degrees maximum error | 19.0749 degrees ten-second RMSE |
+
+The two voltage/power periods retain the full ten-second reference range as
+their denominator. Fault application, including the fault, begins the relaxed
+period. Rotor angle uses the confirmed absolute maximum-error and RMSE limits
+in degrees. No offset or tolerance is changed. The complete project scope
+remains six cases and 36 disturbances; no event has passed the full contract.
+
+An independent prefault exciter replay now covers all 26 monitored generators.
+It supplies recorded terminal voltage, field current, speed, current, and
+stabilizer output, and uses the frozen solver's actual controller-state
+bindings. Reference exciter states are not injected. Sixteen ESST4B units and
+one IEEET1 unit agree within `0.0000123` pu in field voltage. The nine units
+using the shared ST1 implementation differ by up to `0.00642330` pu. This
+localizes a controller discrepancy without establishing its cause.
+
+A separate two-bus commercial voltage playback retains bus 1078's GENROU and
+EXST1 parameters and omits the stabilizer. Replaying its recorded physical
+inputs through the same controller integration gives maximum field-voltage
+error `0.00817420` pu. A second fresh commercial process adds observations of
+the constants, compensated voltage, and voltage reference; all original
+channels remain exactly unchanged. The constants retain the declared values
+to native storage precision, compensated voltage equals terminal voltage,
+and the voltage reference is constant. Simple input-lag alternatives do not
+establish a correction. No ST1 production change is made by this follow-up.
+
+The first replay helper failed compilation because its evaluation method used
+a narrower controller type than the loader returns. A first equation audit
+also keyed parameters by bus alone and encountered another unit at a
+multiple-generator bus; its corrected version uses bus and unit ID. Both
+incomplete attempts are retained separately from the completed evidence.
+
+Frozen evidence is retained under the private verification-artifact directory
+`2026-10-18-first-full-window-and-st1-localization`.
