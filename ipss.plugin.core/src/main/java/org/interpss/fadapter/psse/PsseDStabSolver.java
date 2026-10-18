@@ -25,10 +25,10 @@ import org.interpss.dstab.control.util.IntegrationStepAware;
  * that residual as a fixed Norton compensation current before the first
  * integration step.</p>
  */
-final class PsseDStabSolver extends DStabSolverImpl {
+public class PsseDStabSolver extends DStabSolverImpl {
     private static final String COMPENSATION_KEY =
             PsseDStabSolver.class.getName() + ".compensation";
-    PsseDStabSolver(DynamicSimuAlgorithm algorithm) {
+    public PsseDStabSolver(DynamicSimuAlgorithm algorithm) {
         super(algorithm);
         // Current-source networks can require substantially more than the
         // legacy 20 iterations at a fault boundary (280 observed on Texas2k).
