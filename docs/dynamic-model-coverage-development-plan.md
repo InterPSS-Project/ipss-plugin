@@ -31,6 +31,32 @@ preparation. GE PSLF DYD inputs and rows without a native PSS/E model name are
 excluded. Reuse core GENROU and existing controller engines where equations
 and state definitions agree.
 
+## Exact typed PSS1A playback follow-up
+
+- [x] Generate exact `Stabilizer_PSS1A` PowerWorld references at 0.5 and 0.25 ms,
+  twice cold per step, without automatic parameter correction or gain fitting.
+- [x] Audit actual model identity and every declared parameter before and after
+  initialization; retain the rejected native fourteen-value DYR import and
+  stalled export diagnostics as failures, not accepted references.
+- [x] Compare all regular endpoints, isolate the controller by exact recorded
+  speed playback, and derive the second-order filter observation coordinate.
+- [x] Add permanent two-step playback checks for six published states and Vstab,
+  fixed fingerprints, negative mutation guards and pure repeated observations.
+- [x] Finish the final registered regression: 1,160 SMIB/model tests with zero
+  failures/errors and one existing diagnostic skip; 130 plugin-core unit tests
+  with zero failures/errors and six optional skips. Scoped tested sources match
+  byte-for-byte. Preserve the empty-selection diagnostic as non-evidence.
+- [x] Reproduce the original full CSV through a frozen-runner/spec cold replay;
+  preserve the exact typed-model audit and raw artifacts in the private archive.
+- [x] Seal and hash-verify 2,656 private evidence files; prepare the tested
+  scoped commit without staging concurrent renewable integration changes.
+- [ ] Resolve full-network SMIB differences and exact event-post observations;
+  do not replace this requirement with the passing controller replay.
+- [ ] Close inactive-selector/limiter/voltage-gate profiles and native PSS1A
+  dialect verification before complete model acceptance.
+
+See [exact typed PSS1A playback evidence](benchmarks/pss1a-exact-powerworld-playback-2026-10-17.md).
+
 ## What current source proves
 
 - [x] Catalog and runtime paths for the Texas2k model families. The current

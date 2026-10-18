@@ -68,6 +68,8 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
                 .filter(row -> row.scope()==StabilizerEvidenceInventory.ReferenceScope.EQUIVALENT_SIGNAL_PLAYBACK)
                 .map(row -> row.model()).collect(Collectors.toSet()),
                 "Equivalent play-in cannot silently become an exact-model reference");
+        assertTrue(registered.contains(Pss1aPowerWorldPlaybackConformanceTest.class),
+                "Supplementary exact typed PSS1A playback must remain registered");
     }
 
     @Test

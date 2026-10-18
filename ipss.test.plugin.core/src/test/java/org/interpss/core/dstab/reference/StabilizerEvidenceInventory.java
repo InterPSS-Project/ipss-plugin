@@ -31,7 +31,7 @@ public final class StabilizerEvidenceInventory {
                     "IeeestPsseSmibConformanceTest",Oracle.PSSE,
                     "smib-genrou-esst1a-ieeest/psse.csv","SMIB_v33_genrou_esst1a_pss1a.dyr"),
                     ReferenceScope.EQUIVALENT_SIGNAL_PLAYBACK,
-                    "IEEEST recorded-speed reference only; exact PSS1A commercial SMIB reference is missing."),
+                    "Primary link is equivalent IEEEST playback; supplementary exact typed PowerWorld playback is registered, but complete commercial SMIB agreement remains open."),
             powerWorld("PSS2A","Pss2aIndependentSmibConformanceTest"),
             powerWorld("PSS2B","Pss2bIndependentSmibConformanceTest"),
             nativeReference("PSS2C","Pss2cPsseSmibConformanceTest"),
@@ -78,8 +78,11 @@ public final class StabilizerEvidenceInventory {
                 .append("claims that later installed releases lack those models. Existing implementation ")
                 .append("and benchmark links are retained separately, including supplemental models.\n\n")
                 .append("Thirteen mappings have model-specific comparison links: eight native PSS/E ")
-                .append("and five PowerWorld. PSS1A has only an equivalent IEEEST recorded-signal comparison, ")
-                .append("not an exact-model commercial SMIB reference. None of these inventory rows is a ")
+                .append("and five PowerWorld. PSS1A's primary row below retains its equivalent IEEEST recorded-signal comparison. ")
+                .append("Supplementary exact typed PowerWorld playback is registered in Pss1aPowerWorldPlaybackConformanceTest ")
+                .append("at 0.5 and 0.25 ms, with all six published stabilizer states and Vstab scored at 5 ms checkpoints; ")
+                .append("full-network SMIB differences and inactive limiter/selector profiles remain open. ")
+                .append("This typed reference is not proof of a native PTI PSS1A DYR schema. None of these inventory rows is a ")
                 .append("VERIFIED label or proof that every selector, limiter, state coordinate and lifecycle ")
                 .append("profile is independently accepted. Current raw versions, repeatability and provenance ")
                 .append("must be audited separately; no new simulator reference is generated here.\n\n")
