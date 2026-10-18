@@ -867,10 +867,19 @@ run still fails acceptance.
 
 The worst full-window rotor-angle RMSE increases from `19.0749` to `24.4420`
 degrees. The correction's component evidence and improved prefault results
-therefore leave a substantial unresolved full-system discrepancy. Five of the
-six Case 2 disturbances have now completed with this exact ST1-only frozen
-runtime; none passes acceptance. The final generator trip remains in progress.
-Its in-flight trajectory is not scored or presented as a complete result.
+therefore leave a substantial unresolved full-system discrepancy. All six
+Case 2 disturbances have now completed with this exact ST1-only frozen runtime,
+before the subsequent load-curve correction. Thirty-five of 240 criteria pass;
+none of the six events passes acceptance.
+
+| Completed ST1-only Case 2 event | Passing criteria | Worst full-window rotor-angle RMSE, degrees |
+| --- | ---: | ---: |
+| Bus fault 1 | 15/40 | 24.4420 |
+| Generator trip 1 | 4/40 | 22.6786 |
+| Bus fault 2 | 3/40 | 14.2745 |
+| Generator trip 2 | 5/40 | 18.0273 |
+| Bus fault 3 | 5/40 | 14.2209 |
+| Generator trip 3 | 3/40 | 20.2925 |
 
 A new independent two-bus experiment retains bus 1078's original GENROU, EXST1,
 and PSS2A parameters and applies a declared external voltage waveform. Two
@@ -1048,6 +1057,40 @@ which leaves the synchronous-machine/controller fleet and coupled network
 behavior as the next localization targets. These tests do not establish
 full-fleet disturbance or system acceptance.
 
+A further read-only snapshot captures all 103 active synchronous machines;
+every original startup output remains byte-identical. Three complete original
+GENROU/exciter/GGOV1/PSS2A stacks, at buses 1072, 5038, and 1078, are then tested
+against declared positive and negative five-percent source-voltage ramps for
+one second. All three commercial initializations are clean, and all 2,003
+samples per unit repeat exactly in fresh processes. Maximum rotor-angle errors
+are `0.00109`, `0.0000711`, and `0.0000709` degrees, respectively. Source
+interpolation and scalar precision contribute to these bounded errors; the
+native float clock is validated before alignment by integration-step count.
+These three units do not establish complete synchronous-fleet coverage.
+
+Another frozen diagnostic moves the existing constant-impedance load term from
+the current-injection loop into the diagonal admittance matrix. The physical
+I/Z load curve is unchanged. Both physical power and total Norton power,
+including the matrix contribution, pass all 12,018 independent load
+observations. Full-case initialization changes by at most `0.000000000000129`
+in the exported quantities. Combined with the independent network-loop
+hypothesis, the completed 1.2-second prefix still passes only 2/20 prefault
+criteria. Worst voltage/P/Q NRMSE is `0.00141991` / `0.00283579` / `0.00384489`,
+and rotor-angle maximum error is `0.270712` degrees. This equivalent matrix
+split also leaves the system discrepancy unresolved; production code remains
+unchanged.
+
+An additional operating-point diagnostic infers terminal voltage angles from
+the exported GENROU states and physical terminal P/Q/V. The phasor identity is
+first checked against 6,009 directly recorded commercial bus-angle samples in
+the three independent cells; maximum inference error is `0.0000118` degrees.
+Applied to the 26 observed full-case machines, the inferred initial terminal
+angles differ from the solved network by up to `0.004342` degrees. The supplied
+RAW angles also differ from those inferred observations, so simply retaining
+the RAW angle values cannot remove this discrepancy. This is an inference,
+not a direct full-case bus-angle measurement or an acceptance result. No
+inferred angle, state, initial Q, or fitted offset is injected into a run.
+
 Completed native observations, frozen runtimes, failed channel-cap attempts,
 primary-source provenance, cold-repeat checks, the corrected-load ten-second
 event, and the completed additional ST1 baseline events are retained in the
@@ -1056,3 +1099,8 @@ private verification-artifact directory
 retained separately in `2026-10-18-network-loop-prefix`. All six cases and
 36 events remain required; no event is accepted. The one-second independent
 renewable observations are retained in `2026-10-18-renewable-one-second-controls`.
+The complete synchronous-stack checks and clock validation are retained in
+`2026-10-18-synchronous-coupled-controls`; the matrix-split diagnostic and final
+ST1 baseline event are retained in `2026-10-18-static-z-matrix-and-case2-complete`.
+The independently checked angle inference is retained in
+`2026-10-18-initial-bus-angle-inference`.
