@@ -37,12 +37,13 @@ class Reece1ModelTest {
         assertEquals(.300001,m.getNamedStates().get("PIP"),1e-15);
         m.setReferenceSteps(-.2,0);m.step(.001,.3,.1,1,1);assertEquals(.2999,m.getPreparedPowerReference(),1e-15);
     }
-    @Test void dipFreezesDynamicStatesButProportionalPiAndFRTLimitsStillAct() {
+    @Test void nativeDipFreezesReactiveStatesButActivePiAndFRTLimitsStillAct() {
         var m=model(change(data(2,0,1),Map.of(TRV,0.0,TPORD,0.0,KQV,1.0,DPMAX,1000.0)));
         var before=m.getNamedStates();m.setReferenceSteps(.1,.2);m.step(.001,.3,.1,.5,1);
-        for(String key:new String[]{"PIQ","PIV","Q_V","PIP"})assertEquals(before.get(key),m.getNamedStates().get(key),0,key);
+        for(String key:new String[]{"PIQ","PIV","Q_V"})assertEquals(before.get(key),m.getNamedStates().get(key),0,key);
+        assertEquals(.301,m.getNamedStates().get("PIP"),1e-12);
         assertTrue(m.isVoltageDip());assertTrue(-m.getIqcmd()>.5);
-        assertEquals(.5,m.getNamedStates().get("Pord"),1e-12,"zero Tpord bypasses freezing");
+        assertEquals(.501,m.getNamedStates().get("Pord"),1e-12,"zero Tpord bypasses freezing");
         assertTrue(Math.hypot(m.getIpcmd(),m.getIqcmd())<=1.3+1e-12);
     }
     @Test void nonzeroPordFreezesDuringDipWhileMeasurementStatesContinue() {
@@ -126,6 +127,19 @@ class Reece1ModelTest {
         var m=model(change(data(1,1,0),Map.of(VMAX,1.1,VMIN,.9)));
         m.setReferenceSteps(0,.02);for(int i=0;i<1500;i++)m.step(.001,.3,.1,1,1);
         assertEquals(1.1,m.getNamedStates().get("PIQ"),1e-12);
+    }
+    @Test void nativeActivePiKeepsItsBoundsAndReleasesWhilePowerOrderIsFrozen() {
+        for(double sign:new double[]{-1,1}) {
+            var m=model(change(data(2,0,1),Map.of(TRV,0.0,KPP,0.0,KPI,10.0)));
+            m.setReferenceSteps(2*sign,0);
+            for(int i=0;i<1000;i++)m.step(.001,.3,.1,.5,1);
+            assertTrue(m.isVoltageDip());assertEquals(sign,m.getNamedStates().get("PIP"),1e-12);
+            assertEquals(.3,m.getNamedStates().get("Pord"),0);
+            m.setReferenceSteps(-2*sign,0);
+            for(int i=0;i<50;i++)m.step(.001,.3,.1,.5,1);
+            assertTrue(sign*m.getNamedStates().get("PIP")<.9);
+            assertEquals(.3,m.getNamedStates().get("Pord"),0);
+        }
     }
     @Test void restartClearsReferenceEventsAndStageHistoryAndRejectsInvalidInputs() {
         var m=model(data(2,0,1));m.setReferenceSteps(.1,.1);m.step(.001,.3,.1,1,1,0);m.initialize(.3,.1,1);

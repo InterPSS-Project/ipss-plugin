@@ -24,7 +24,8 @@ import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
 layouts, complete callback parity or coupled trajectory acceptance. The REECE/REGCB
 hardware-blocking current boundary is corrected with failing-before and cold-paired
-native evidence; a timestep-independent active PI discrepancy remains open.
+native evidence. A subsequent native discriminator resolves the printed-diagram
+active-PI freeze mismatch; other coupled trajectory residuals remain open.
 WTGIBFFRA now has
 strict standard-native import, REGCA/REGCB + REECD Paux attachment, seven kernel
 replay profiles and bounded governed-SMIB comparisons. Native automatic recovery,
@@ -56,8 +57,14 @@ and state definitions agree.
   retain failing-before evidence and two cold-paired native boundary profiles.
 - [x] Validate this slice: 95 focused checks, 266 plugin-core tests (six optional
   skips), 1,306 SMIB/model tests (one existing diagnostic skip), no failures/errors.
-- [ ] Resolve REECE active PI/callback mismatch in independently coupled faults;
-  the blocking fix improves voltage/current agreement but is not full acceptance.
+- [x] Resolve the native REECE active PI voltage-dip freeze discrepancy using
+  cold-paired recorded-input replay; preserve native-versus-diagram distinction.
+  See [active PI evidence](benchmarks/reece-active-pi-dip-2026-10-18.md).
+- [x] Validate the native PI correction: 35 focused checks, 267 plugin-core tests
+  (six optional skips), 1,308 SMIB/model tests (one existing diagnostic skip),
+  zero failures/errors. Confirm the replay class is discovered in the SMIB XML.
+- [ ] Resolve remaining REECE coupled reactive-limit/callback mismatch;
+  the blocking and active PI fixes are not full trajectory acceptance.
   See [slice evidence](benchmarks/reece-native-import-2026-10-18.md).
 - [x] Visually review pages 3-4 of the user-supplied May 2026 PDF, retain its
   SHA-256 identity, and transcribe all 45 renewable rows into the approval catalog.

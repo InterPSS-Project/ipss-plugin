@@ -91,7 +91,10 @@ public final class Reece1Model implements RenewableElectricalController, ICMLSta
                 if((pre>=s.limits.iqmax&&down>0&&dx[2]>0)||(pre<=s.limits.iqmin&&down<0&&dx[2]<0))dx[2]=0;
             }
         }
-        if(peflag())dx[7]=Reece1LocalPi.rate(x[7],value(KPI),s.pref-x[1],pmin,pmax,frozen);
+        // Native 36.7 keeps the active PI integrating during a voltage dip,
+        // unlike the freeze arrow in its printed diagram. Only Pord freezes.
+        // Cold-paired REGCB terminal-input replays distinguish these behaviors.
+        if(peflag())dx[7]=Reece1LocalPi.rate(x[7],value(KPI),s.pref-x[1],pmin,pmax,false);
         dx[5]=frozen?0:lagRate(x[5],s.powerTarget,value(TPORD));
         return dx;
     }
@@ -102,7 +105,7 @@ public final class Reece1Model implements RenewableElectricalController, ICMLSta
             if(data.selectors().voltageFlag()==1)x[2]=Reece1LocalPi.project(x[2],vmin,vmax);
             x[3]=Reece1LocalPi.project(x[3],s.limits.iqmin,s.limits.iqmax);
         }
-        if(peflag()&&!dip())x[7]=Reece1LocalPi.project(x[7],pmin,pmax);
+        if(peflag())x[7]=Reece1LocalPi.project(x[7],pmin,pmax);
         x[5]=clamp(x[5],pmin,pmax);
     }
     private void refreshBypasses(double p,double q,double v) {

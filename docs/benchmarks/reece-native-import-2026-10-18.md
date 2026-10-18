@@ -90,7 +90,9 @@ and after blocking correction are:
 | Active PI state | 0.10375 / 0.10370 | 0.1031163 / 0.1031642 |
 
 This is diagnostic improvement, not coupled-trajectory acceptance. The persistent
-PI discrepancy needs a native callback/hold discriminator, not a looser tolerance.
+PI discrepancy is addressed by the subsequent
+[native active-PI discriminator](reece-active-pi-dip-2026-10-18.md), not by a
+looser tolerance. The numbers above remain the original slice's evidence.
 
 Final XML gates: 95 focused tests (no skips), 266 plugin-core tests (six optional
 skips), and 1,306 SMIB/model tests (one existing diagnostic skip), zero failures
