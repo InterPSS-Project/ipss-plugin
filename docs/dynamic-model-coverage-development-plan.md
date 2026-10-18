@@ -53,6 +53,20 @@ and state definitions agree.
 
 ## Approved renewable source and evidence audit
 
+- [x] Freeze native 36.7 REGFMC1U allocation (three ICONs, 34 CONs, eleven
+  STATEs, 27 VARs), initialization and hybrid GFM/GFL boundary from rendered
+  diagrams; implement typed data and algebraic primitives without a dummy runtime.
+- [x] Cold-run flat, three-cycle fault and severe current-limited SMIB profiles
+  twice at two steps; retain all native channels, history and event sides.
+  Compare GFL priority/deadband and the shared current limiter against every raw row.
+  See [REGFMC1U foundation](benchmarks/regfmc-native-contract-2026-10-18.md).
+- [x] Validate the REGFMC1U foundation: 46 focused checks, 290 plugin-core tests
+  (six optional skips), 1,333 SMIB/model checks (one existing diagnostic skip),
+  zero failures/errors. Audit thirteen tested files and six byte-identical native
+  cold pairs, with complete log/CSV quality checks.
+- [ ] Complete REGFMC1U eleven-state kernel, native parser/network adapter,
+  plant routing, selector/lifecycle tests and independently coupled SMIB comparisons.
+  Foundation work does not change the 23/27 loadable count or four missing runtimes.
 - [x] Add strict native REGFMB1U wrapper import, non-overwriting device attachment,
   machine/system-base Norton boundary and deferred REPCA1 routing. Coverage is
   23/27 versioned runtime paths; HPLNTD, REPCCU, REGFMC1 and REPCGFMC1 remain missing.
@@ -322,6 +336,8 @@ and state definitions agree.
   measurement/dispatch interfaces and explicit native-version schemas.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter
   and plant models. Do not alias them to REGFMA1 or REPCA1.
+  REGFMB1U now has a loadable adapter and bounded native SMIB evidence; its full
+  acceptance remains open. REGFMC1U has a typed/algebraic foundation only.
 - [ ] Complete REECD beyond its new native Paux active-path profiles, close the
   independent WT12A1U_B trajectory gap and establish native conformance
   for the six currently bounded ANDES links.
