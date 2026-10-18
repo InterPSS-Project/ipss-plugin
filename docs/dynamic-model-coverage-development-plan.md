@@ -405,11 +405,27 @@ and state definitions agree.
     See [standard-native import and exact release boundary](benchmarks/reece-native-import-2026-10-18.md).
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
   measurement/dispatch interfaces and explicit native-version schemas.
+  - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
+    57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
+    initialization, plus eight cold-paired native foundation profiles. Preserve
+    the source-list REPCCU mapping without inventing a standard-name alias.
+    See [REPCC foundation](benchmarks/repcc-foundation-2026-10-18.md).
+  - [x] Validate the bounded foundation: 50 focused checks, 325 plugin-core
+    tests (six optional skips), 1,377 SMIB/model/solver checks (one existing
+    diagnostic skip), zero failures/errors. Audit 22 owned files, 2,074 baseline
+    Java/POM files and sixteen accepted native runs with eight identical cold
+    pairs. Preserve rejected PF/alias probes; do not raise runtime coverage.
+  - [ ] Implement the REPCC dynamic kernel, freeze/recovery and slew semantics,
+    shunt switching/timers, exact import and downstream reference routing; add
+    two-step coupled SMIB disturbance/lifecycle evidence. Foundation data and
+    initialization do not raise 25/27 runtime coverage.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter
   and plant models. Do not alias them to REGFMA1 or REPCA1.
   REGFMB1U now has a loadable adapter and bounded native SMIB evidence; its full
   acceptance remains open. REGFMC1U now has an eleven-state kernel, exact native
-  import/network adapter and bounded coupled SMIB evidence; plant routing and full acceptance remain open.
+  import/network adapter and bounded coupled SMIB evidence. REPCGFMC1U now has
+  dedicated four-output plant routing and bounded coupled SMIB evidence; full
+  acceptance remains open.
 - [ ] Complete REECD beyond its new native Paux active-path profiles, close the
   independent WT12A1U_B trajectory gap and establish native conformance
   for the six currently bounded ANDES links.
