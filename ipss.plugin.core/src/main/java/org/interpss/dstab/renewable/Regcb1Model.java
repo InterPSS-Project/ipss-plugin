@@ -206,6 +206,9 @@ public final class Regcb1Model extends DynamicBusDeviceImpl
     }
 
     private Complex physicalCurrent(Complex terminalVoltage) {
+        // Native REGCB/REECE blocking disconnects current without resetting E states.
+        // getOutputObject still cancels the Norton admittance while blocked.
+        if (controller != null && controller.isConverterBlocked()) return Complex.ZERO;
         Complex systemCurrent = unlimitedPhysicalCurrent(terminalVoltage);
         double deviceScale = systemBaseMva > EPS && deviceBaseMva > EPS
                 ? systemBaseMva / deviceBaseMva : 1.0;

@@ -17,8 +17,15 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 21 loadable,
-six not implemented**, not merely missing benchmark coverage. WTGIBFFRA now has
+The approved native renewable audit finds **27 distinct families: 22 with a
+versioned loadable runtime path, five not implemented**, not merely missing
+benchmark coverage. REEC_E now has strict native 36.7 standard-name `REECE`
+import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
+names/wrappers remain unsupported; family runtime presence does not prove their
+layouts, complete callback parity or coupled trajectory acceptance. The REECE/REGCB
+hardware-blocking current boundary is corrected with failing-before and cold-paired
+native evidence; a timestep-independent active PI discrepancy remains open.
+WTGIBFFRA now has
 strict standard-native import, REGCA/REGCB + REECD Paux attachment, seven kernel
 replay profiles and bounded governed-SMIB comparisons. Native automatic recovery,
 callback parity and frequency/voltage residual floors remain open. WTGWGOA/WTGWGOAU
@@ -43,6 +50,15 @@ and state definitions agree.
 
 ## Approved renewable source and evidence audit
 
+- [x] Native REECE import slice: exact eight-ICON/79-CON standard schema,
+  deferred REGCA/REGCB attachment and malformed/duplicate/GNET/base guards.
+- [x] Correct REGCB physical-current blocking without clearing retained states;
+  retain failing-before evidence and two cold-paired native boundary profiles.
+- [x] Validate this slice: 95 focused checks, 266 plugin-core tests (six optional
+  skips), 1,306 SMIB/model tests (one existing diagnostic skip), no failures/errors.
+- [ ] Resolve REECE active PI/callback mismatch in independently coupled faults;
+  the blocking fix improves voltage/current agreement but is not full acceptance.
+  See [slice evidence](benchmarks/reece-native-import-2026-10-18.md).
 - [x] Visually review pages 3-4 of the user-supplied May 2026 PDF, retain its
   SHA-256 identity, and transcribe all 45 renewable rows into the approval catalog.
 - [x] Separate 29 approved rows, 28 concrete native PTI mappings, and 27 distinct
@@ -211,8 +227,8 @@ and state definitions agree.
     See [kernel foundation and explicit limitations](benchmarks/wtgibffra-foundation-2026-10-18.md).
     See [native import and coupled SMIB verification](benchmarks/wtgibffra-native-import-2026-10-18.md).
     See [Paux correction and WTGIBFFRA investigation](benchmarks/reecd-paux-native-2026-10-18.md).
-- [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
-  paths and controller initialization; do not silently substitute REECD.
+- [ ] Complete REEC_E across documented native releases, including unresolved
+  REECE1/REECEU1 record layouts; do not silently substitute REECD.
   - [x] Inspect native 36.7 REECE eight-ICON/79-CON/eight-STATE/20-VAR schema
     and diagrams; independently consult WECC's July 2025 memo and PowerWorld.
     Cold-prove the installed standard name REECE. Plain REECE1/REECEU1 records
@@ -242,13 +258,20 @@ and state definitions agree.
     Audit 22 scoped sources/resources and 2,021 baseline Java/POM files against
     `890e887f0`, including its committed static-load SMIB regression and excluding
     the unrelated untracked JAX comparison.
-  - [ ] Finish exact versioned native import/attachment, reference callback
+  - [x] Add exact standard-name native 36.7 REECE (eight ICONs/79 CONs) catalog,
+    parser and deferred active REGCA/REGCB attachment, before deferred REPCA.
+    Reject duplicate/conflicting controls, inactive/missing/wrong hosts, malformed
+    values/cardinality and guessed release aliases/wrappers. Preserve GNET/removal
+    behavior and verify machine-base conversion on both converter types.
+  - [ ] Finish release-specific REECE1/REECEU1 import layouts, reference callback
     parity, independent coupled native/PowerWorld trajectories and remaining
     active-boundary, lifecycle, speed/base and time-constant-policy profiles.
-    Typed-runtime work leaves native loadability at 21/27.
+    Native 36.7 import raises family runtime presence to 22/27, not full alias
+    coverage or complete model acceptance.
     See [REECE local-PI foundation](benchmarks/reece-local-pi-foundation-2026-10-18.md).
     The [typed runtime and limiter correction](benchmarks/reece-runtime-2026-10-18.md)
     supersedes the foundation's inactive-limit-only anti-windup assumption.
+    See [standard-native import and exact release boundary](benchmarks/reece-native-import-2026-10-18.md).
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
   measurement/dispatch interfaces and explicit native-version schemas.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter

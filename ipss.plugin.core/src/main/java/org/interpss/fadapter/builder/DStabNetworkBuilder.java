@@ -182,6 +182,8 @@ import org.interpss.dstab.renewable.Reecc1Data;
 import org.interpss.dstab.renewable.Reecc1Model;
 import org.interpss.dstab.renewable.Reecd1Data;
 import org.interpss.dstab.renewable.Reecd1Model;
+import org.interpss.dstab.renewable.Reece1Data;
+import org.interpss.dstab.renewable.Reece1Model;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Reeca1Model;
 import org.interpss.dstab.renewable.Dera1Data;
@@ -3581,6 +3583,20 @@ public class DStabNetworkBuilder {
             return controller;
         }
         log.warn("REGCA1/REGCB1 not found for REECD1: bus={}, gen={}", busId, genId);
+        return null;
+    }
+
+    /** Native 36.7 REECE on an active REGCA/REGCB with an unused electrical port. */
+    public Reece1Model addReece(String busId,String genId,Reece1Data data) {
+        java.util.Objects.requireNonNull(data);
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(bus==null||!bus.isActive()||gen==null||!gen.isActive())return null;
+        Reece1Model controller=new Reece1Model(data);
+        if(gen.getDynamicGenDevice() instanceof Regca1Model converter
+                &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
+        if(gen.getDynamicGenDevice() instanceof Regcb1Model converter
+                &&converter.getActiveElectricalController()==null){converter.setActiveElectricalController(controller);return controller;}
         return null;
     }
 

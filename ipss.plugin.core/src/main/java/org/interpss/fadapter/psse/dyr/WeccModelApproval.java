@@ -31,6 +31,8 @@ public record WeccModelApproval(
         comments = clean(comments);
     }
 
+    /** Runtime-path presence for this family mapping, not complete source-name,
+     * version/alias coverage, equation conformance or trajectory acceptance. */
     public boolean isImplementedExactly() {
         return !interpssModel.isEmpty()
                 && DynamicModelCatalog.find(interpssModel)

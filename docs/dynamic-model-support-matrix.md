@@ -149,6 +149,7 @@ source-approved families that have no implementation or parser descriptor.
 | REECB1 | ELECTRICAL_CONTROLLER |  | 30 | LOADABLE | `org.interpss.dstab.renewable.Reecb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_B.htm) |
 | REECC1 | ELECTRICAL_CONTROLLER | REECCU1 | 50 | LOADABLE | `org.interpss.dstab.renewable.Reecc1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_C.htm) |
 | REECD | ELECTRICAL_CONTROLLER | REECD1, REECDU1 | 83 | LOADABLE | `org.interpss.dstab.renewable.Reecd1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_D.htm) |
+| REECE | ELECTRICAL_CONTROLLER |  | 87 | LOADABLE | `org.interpss.dstab.renewable.Reece1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20REEC_E.htm) |
 | WT2E1 | ELECTRICAL_CONTROLLER |  | 6 | LOADABLE | `org.interpss.dstab.mach.Wt2e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT2E1.htm) |
 | WT3E1 | ELECTRICAL_CONTROLLER |  | 37 | LOADABLE | `org.interpss.dstab.mach.Wt3e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT3E1.htm) |
 | WT4E1 | ELECTRICAL_CONTROLLER |  | 27 | LOADABLE | `org.interpss.dstab.mach.Wt4e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT4E1.htm) |

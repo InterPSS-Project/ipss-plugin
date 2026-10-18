@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 class DynamicModelCatalogTest {
     @Test
-    void approvedRenewableRowsExposeTheSixMissingNativeFamilies() {
+    void approvedRenewableRowsExposeTheFiveMissingNativeFamilies() {
         var rows=WeccApprovedDynamicModelCatalog.renewables();
         assertEquals(45,rows.size(),"Preserve every source renewable row, not just implemented entries");
         assertEquals(45,rows.stream().map(WeccModelApproval::catalogName).distinct().count());
@@ -29,10 +29,10 @@ class DynamicModelCatalogTest {
                 "WT1T and WT2T share WT12T1");
         var missing=nativeRows.stream().filter(row->!row.isImplementedExactly())
                 .map(WeccModelApproval::interpssModel).collect(java.util.stream.Collectors.toSet());
-        assertEquals(Set.of("REGFMB1","REGFMC1","REECE1",
+        assertEquals(Set.of("REGFMB1","REGFMC1",
                 "REPCCU","HPLNTD","REPCGFMC1"),missing,
                 "Any implementation claim must be backed by a real parser/runtime descriptor");
-        assertEquals(22,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(23,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         for(String model:missing)assertTrue(DynamicModelCatalog.find(model).isEmpty(),
                 "Do not add a loadable placeholder, guessed schema, or unrelated engine: "+model);
     }

@@ -185,6 +185,7 @@ public final class Reece1Model implements RenewableElectricalController, ICMLSta
     public Reece1Data getData(){return data;}
     public boolean isVoltageDip(){requireInitialized();return dip();}
     public boolean isBlocked(){requireInitialized();return blocked||unblock>0;}
+    @Override public boolean isConverterBlocked(){return initialized && isBlocked();}
     public double getPreparedPowerReference(){requireInitialized();return preparedPref;}
     @Override public double getIpcmd(){requireInitialized();return output.ip;}
     @Override public double getIqcmd(){requireInitialized();return -output.iq;}

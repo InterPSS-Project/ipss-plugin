@@ -220,7 +220,7 @@ public final class WeccApprovedDynamicModelCatalog {
             renewable("REEC_A","reec_a","REECAU1, REECA1","REEC_A",ELECTRICAL_CONTROLLER,APPROVED,"2014-03-19","REECA1","Generic IBR electrical controller."),
             renewable("REEC_C","reec_c","REECCU1, REECC1","REEC_C",ELECTRICAL_CONTROLLER,APPROVED,"2015-03-18","REECC1","Energy-storage electrical controller."),
             renewable("REEC_D","reec_d","REECDU1, REECD1","REEC_D",ELECTRICAL_CONTROLLER,APPROVED,"2020-08-25","REECD","Photovoltaic electrical controller; existing canonical mapping is REECD."),
-            renewable("REEC_E","reec_e","REECEU1, REECE1","REEC_E",ELECTRICAL_CONTROLLER,APPROVED,"2025-09-11","REECE1","Missing runtime and native import path."),
+            renewable("REEC_E","reec_e","REECEU1, REECE1","REEC_E",ELECTRICAL_CONTROLLER,APPROVED,"2025-09-11","REECE","Native 36.7 standard name REECE; source-listed REECE1/REECEU1 aliases and wrappers are not inferred."),
             renewable("WT1T","wt1t","WT12T1","WT1T and WT12T1",DRIVE_TRAIN,APPROVED,"2011-01-21","WT12T1","Shares native WT12T1 with the WT2T row; not a second implementation."),
             renewable("WT1P_B","wt1p_b","WT12A1U_B","WT1P_B",AERODYNAMIC_CONTROLLER,APPROVED,"2014-03-19","WT12A1B","PSS/E equivalent available in 34.6 and later; preserve the U_B spelling."),
             renewable("WT2T","wt2t","WT12T1","WT2T",DRIVE_TRAIN,APPROVED,"2009-08-28","WT12T1","Shares native WT12T1 with WT1T."),

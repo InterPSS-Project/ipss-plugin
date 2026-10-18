@@ -15,7 +15,7 @@ public final class RenewableEvidenceInventory {
     public enum Scope { MISSING_IMPLEMENTATION, FOCUSED_ONLY, BOUNDED_DIALECT_COMPARISON,
         NATIVE_PARTIAL_PROFILE, NATIVE_RECORDED_PROFILE }
     public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP, WTPTB_NATIVE_MAP, WTGWGO_NATIVE_MAP, REECD_PAUX_NATIVE_MAP,
-        WTGIBFFR_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
+        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
     public record Entry(String model,String focusedTest,String trajectoryTest,Scope scope,
                         CheckpointKind storage,String checkpoint,String fixture,String limitation) {
         public Class<?> focusedClass() throws ClassNotFoundException {
@@ -69,6 +69,15 @@ public final class RenewableEvidenceInventory {
                     if(WtgibffraCoupledReference.profiles().size()!=2)throw new IllegalStateException("Incomplete coupled WTGIBFFRA references");
                     for(var reference:WtgibffraCoupledReference.profiles())reference.body();
                 }
+                case REECE_NATIVE_MAP -> {
+                    if(ReeceLocalPiNativeReference.profiles().size()!=2||ReeceBranchNativeReference.profiles().size()!=10)
+                        throw new IllegalStateException("Incomplete native REECE replay matrix");
+                    for(var p:ReeceLocalPiNativeReference.profiles()){p.inputs();p.states();}
+                    for(var p:ReeceBranchNativeReference.profiles())p.body();
+                    if(ReeceRegcbNativeBoundaryReference.profiles().size()!=2)
+                        throw new IllegalStateException("Incomplete REGCB blocking boundary references");
+                    for(var p:ReeceRegcbNativeBoundaryReference.profiles())p.body();
+                }
                 case INLINE_REGCA_CURRENT_LIMIT -> {
                     for(String name:List.of("QUARTER","EIGHTH")) {
                         var field=trajectoryClass().getDeclaredField(name);field.setAccessible(true);
@@ -121,6 +130,9 @@ public final class RenewableEvidenceInventory {
                 new Entry("WTGWGOAU","PsseWtgwgoaModelTest","WtgwgoaNativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTGWGO_NATIVE_MAP,"WtgwgoaNativeReference","renewable/regca_reeca_wtgwgoa_bus1062.dyr",
                         "Native 36.7 strict standard/legacy import and REEC reference routing; ten recorded-input profiles plus coupled flat/fault/no-plant/trip checks at two steps. Callback/handoff and instantaneous network-post parity remain open; published second-fault restart is a separate explicit convention. PowerWorld export diagnostic is not accepted evidence."),
+                new Entry("REECE","PsseReeceModelTest","ReeceRuntimeNativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
+                        CheckpointKind.REECE_NATIVE_MAP,"ReeceBranchNativeReference + ReeceLocalPiNativeReference","renewable/regca_reece_bus1062.dyr",
+                        "Native 36.7 standard REECE eight-ICON/79-CON import and deferred active REGCA/REGCB attachment; twelve recorded-input replay datasets, two cold-paired REGCB hardware-blocking boundary profiles and two-step flat/fault/trip checks. Source-listed REECE1/REECEU1 names/wrappers remain unsupported. Prepared-reference/current-limit callbacks, remaining active-limit branches and independent coupled native/PowerWorld trajectories remain open; not complete conformance."),
                 bounded("REECA1","PsseReeca1ControllerTest"),
                 bounded("REPCA1","PsseRepca1PlantControllerTest"),
                 bounded("WTDTA1","PsseType3WindControllerTest"),
@@ -128,12 +140,10 @@ public final class RenewableEvidenceInventory {
                 bounded("WTPTA1","PsseType3WindControllerTest"),
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
-            Set.of("REGFMB1","REGFMC1","REECE1",
+            Set.of("REGFMB1","REGFMC1",
                     "REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        model.equals("REECE1")
-                            ? "Typed native-36.7 eight-state REECE runtime, state-limited PI correction, twelve terminal-input replay datasets and typed two-step flat/fault/trip checks. Exact catalog/parser/host attachment, prepared-reference callback parity and independent coupled trajectories remain open. REECE1/REECEU1 layouts are not assumed from the installed REECE schema; not native-loadable or fully verified."
-                            : "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
+                        "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {
@@ -161,10 +171,11 @@ public final class RenewableEvidenceInventory {
                 .append("Source SHA-256: `").append(WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256).append("`.\n\n")
                 .append("The source renewable section has 45 rows: 29 approved, 28 with a native PTI mapping, ")
                 .append("and 27 distinct planned native families because WT1T/WT2T share WT12T1. ")
-                .append("21 families currently have loadable runtime paths; six implementations are genuinely missing. ")
+                .append("22 families currently have loadable runtime paths; five implementations are genuinely missing. ")
+                .append("REEC_E uses the proved native 36.7 standard name REECE; the source-listed REECE1/REECEU1 names and wrappers remain unsupported. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
-                .append("Eight families have native recorded-profile links, six have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux and WTGIBFFRA kernel), ")
+                .append("Eight families have native recorded-profile links, seven have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel and REECE), ")
                 .append("six have only the explicitly bounded ANDES coupled comparison, and one has focused tests only. ")
                 .append("None of the latter seven is established as native simulator conformance. Legacy/retired and ")
                 .append("manufacturer-package supplemental models need a separate evidence expansion; their source rows ")

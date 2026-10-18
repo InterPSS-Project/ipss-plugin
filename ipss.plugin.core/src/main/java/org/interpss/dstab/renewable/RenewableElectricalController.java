@@ -16,6 +16,8 @@ public interface RenewableElectricalController extends IntegrationStepAware {
     }
     double getIpcmd();
     double getIqcmd();
+    /** Explicit hardware blocking, distinct from a zero current command. */
+    default boolean isConverterBlocked() { return false; }
     Repca1Model getPlantController();
     void setPlantController(Repca1Model plantController);
     /** Optional weak-grid limiter on the absolute plant power reference. */

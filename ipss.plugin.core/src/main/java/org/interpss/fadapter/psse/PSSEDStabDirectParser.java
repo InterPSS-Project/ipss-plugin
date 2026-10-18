@@ -32,6 +32,7 @@ import org.interpss.fadapter.psse.PsseGnetIdvProcessor.GeneratorKey;
 import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecc1Data;
 import org.interpss.dstab.renewable.Reecd1Data;
+import org.interpss.dstab.renewable.Reece1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Dera1Data;
 import org.interpss.dstab.renewable.Regca1Data;
@@ -168,6 +169,7 @@ public class PSSEDStabDirectParser {
     private final List<PsseDyrRecord> pendingWtptb1 = new ArrayList<>();
     private final List<PsseDyrRecord> pendingWtgwgoa = new ArrayList<>();
     private final List<PsseDyrRecord> pendingWtgibffra = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingReece = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
@@ -241,6 +243,7 @@ public class PSSEDStabDirectParser {
         pendingWtptb1.clear();
         pendingWtgwgoa.clear();
         pendingWtgibffra.clear();
+        pendingReece.clear();
         pendingLcfb1.clear();
         pendingIeeeVc.clear();
         pendingUel1.clear();
@@ -277,7 +280,7 @@ public class PSSEDStabDirectParser {
                     continue;
                 }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
-                        || type.equals("REPCA1") || type.equals("LCFB1")
+                        || type.equals("REPCA1") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
                         || type.equals("OEL2C") || type.equals("UEL2C")
                         || type.equals("WTDTB1") || type.equals("WTPTB1") || type.equals("WTGWGOA") || type.equals("WTGIBFFRA");
@@ -293,6 +296,21 @@ public class PSSEDStabDirectParser {
                 report.add(record, DynamicModelImportStatus.ERROR, e.getMessage());
             }
         }
+        // Electrical controls must attach after their converter but before
+        // deferred plant controls, regardless of source-record ordering.
+        for(PsseDyrRecord record:pendingReece) {
+            try {
+                boolean attached=procReece(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"PSS/E 36.7 standard REECE: eight ICONs/79 CONs; no inferred legacy aliases"
+                                :"REECE requires standard native schema and active REGCA1/REGCB1 with an unused electrical-controller port");
+            } catch(IllegalArgumentException failure) {
+                report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());
+            } catch(RuntimeException failure) {
+                report.add(record,DynamicModelImportStatus.ERROR,failure.getMessage());
+            }
+        }
+        pendingReece.clear();
         // Attach after REGCA/REECA and mechanical auxiliary records, regardless
         // of the drivetrain record's position. Report the actual final outcome.
         for (PsseDyrRecord record : pendingWtdtb1) {
@@ -846,6 +864,9 @@ public class PSSEDStabDirectParser {
             case "REECD1":
             case "REECDU1":
                 return procReecd1(busId, genId, fields);
+            case "REECE":
+                pendingReece.add(record);
+                return true;
             case "REECA1":
             case "REECAU1":
                 return procReeca1(busId, genId, fields);
@@ -3775,6 +3796,15 @@ public class PSSEDStabDirectParser {
                 getDouble(f, con + 76, 0.0), reactiveVoltage, reactiveCurrent,
                 activeVoltage, activeCurrent);
         return builder.addReecd1(busId, genId, data) != null;
+    }
+
+    private boolean procReece(String busId,String genId,PsseDyrRecord record) {
+        if(record.parameterOffset()!=3||!record.fields().get(1).equalsIgnoreCase("REECE")
+                ||record.parameterCount()!=Reece1Data.ICON_COUNT+Reece1Data.CON_COUNT)return false;
+        int[] icons=new int[Reece1Data.ICON_COUNT];double[] constants=new double[Reece1Data.CON_COUNT];
+        for(int i=0;i<icons.length;i++)icons[i]=record.intParameter(i);
+        for(int i=0;i<constants.length;i++)constants[i]=record.doubleParameter(icons.length+i);
+        return builder.addReece(busId,genId,Reece1Data.fromNativeParameters(icons,constants))!=null;
     }
 
     // REECA1: IBUS MODEL ID BUSR PFFLAG VFLAG QFLAG PFLAG PQFLAG followed by
