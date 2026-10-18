@@ -363,6 +363,23 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		return Math.min(value, voel);
 	}
 
+	/**
+	 * Field output after a local state advance and before refreshing algebraic
+	 * block inputs. The zero-Ta regulator retains its last evaluated input at
+	 * this stage; a dynamic regulator exposes its newly advanced state.
+	 */
+	public double getStaggeredFieldVoltage() {
+		double value = kg * (getRegulatorOutput() + stabilizerSignal() * vosOutput)
+				- fieldCurrentLimiterSignal();
+		if (uel == 3) value = Math.max(value, vuel);
+		value = Math.min(value, voel);
+		double upper = getFieldVoltageUpperLimit();
+		double lower = getFieldVoltageLowerLimit();
+		if (value > upper) return upper;
+		if (value < lower) return lower;
+		return value;
+	}
+
 	/** Rate-feedback washout output. */
 	public double getRateFeedback() { return signal("this.washoutBlock.y"); }
 

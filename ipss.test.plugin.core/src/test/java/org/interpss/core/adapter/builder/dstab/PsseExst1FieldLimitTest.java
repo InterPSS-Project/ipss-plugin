@@ -66,6 +66,16 @@ public class PsseExst1FieldLimitTest extends CorePluginTestSetup {
             exciter.setRefPoint(100.0);
             assertTrue(exciter.nextStep(0.0, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
             assertEquals(upper, exciter.getOutput(machine), 1e-10, name + " upper bound, Ifd=" + ifd);
+            if (convention == FieldVoltageLimitConvention.ESST1A && ifd > 0.) {
+                // A severe voltage dip can put the rectifier upper bound below
+                // the lower bound. Preserve the source block's upper-first rule.
+                machine.getDStabBus().setVoltage(new Complex(.01, 0.));
+                assertTrue(exciter.nextStep(0., DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+                double dippedUpper=.05-.15*ifd;
+                assertTrue(exciter.getFieldVoltageUpperLimit()<exciter.getFieldVoltageLowerLimit());
+                assertEquals(dippedUpper,exciter.getOutput(machine),1e-10);
+                assertEquals(dippedUpper,exciter.getStaggeredFieldVoltage(),1e-10);
+            }
         }
     }
 

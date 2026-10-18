@@ -782,3 +782,66 @@ adopted from these alternatives.
 Frozen runs, failed attempts, source snapshots, and numerical checks are retained
 under the private verification-artifact directory
 `2026-10-18-case2-six-events-and-exst1-limits`. No ten-second event is accepted.
+
+## ST1 local integration and field publication
+
+Read-only observations of the commercial model-writing interface expose the
+state, derivative, and retained integration-history values. Every state read is
+cross-checked against the normal state API. All original channel samples remain
+exactly unchanged when these observations are added. A second fresh process
+reproduces the controlled EXST1 history observations exactly.
+
+The observations distinguish ST1's ten internal steps per network step from the
+common network-step rule used by the IEEET1 control. With the existing
+discontinuity-history averaging rule, ten local steps reproduce the independent
+EXST1 reference-step endpoint within `0.000000167` pu. The original Case 2
+voltage playback, with all controller parameters unchanged, reduces maximum
+field-voltage error from `0.00817420` to `0.0000125` pu. Replaying all nine
+observed ST1 units through the production solver's actual local path gives a
+maximum error of `0.0000539` pu. Only physical boundary signals and initial
+field voltage are supplied; reference controller states are not injected.
+
+The opt-in staggered solver now advances ST1 states on those local steps while
+holding machine, network, and stabilizer inputs at the preceding network
+endpoint. It publishes field voltage before refreshing the last local
+algebraic input. This preserves the observed distinction between a zero-Ta
+regulator's internal value and the field voltage supplied to the machine.
+Machine states and other controller families retain their common network-step
+rule. The default simulation method is unchanged.
+
+The completed Case 2 prefix retains exactly the same 218 startup quantities and
+covers `1.2` seconds. Thirteen of its 20 prefault criteria pass, compared with
+four previously. All five voltage channels and all five terminal P channels
+pass. Two Q channels and all five rotor-angle channels still fail.
+
+| First-event acceptance quantity | Previous worst prefault result | Corrected worst prefault result | Limit |
+| --- | ---: | ---: | ---: |
+| Voltage NRMSE | 0.00118173 | 0.000546972 | 0.001 |
+| Terminal P NRMSE | 0.00224012 | 0.000829732 | 0.001 |
+| Terminal Q NRMSE | 0.00331266 | 0.00148035 | 0.001 |
+| Rotor-angle maximum error, degrees | 0.211550 | 0.115433 | 0.002 |
+
+The table uses the original first event's acceptance channels and unchanged
+full-ten-second reference ranges. Across all 26 diagnostic machines, maximum
+prefault angle error remains `0.356432` degrees. This prefix does not establish
+ten-second acceptance or acceptance of the other disturbances.
+
+Twenty focused tests pass, including three new integration/publication and
+lifecycle regressions. All three fail their intended assertions against the
+previous solver and pass with the correction. A separate negative control
+confirms upper-bound priority when a severe voltage dip causes output bounds
+to cross. The new regression class is registered in the core plugin suite;
+no full registered-suite pass is claimed. The extended IEEE39 exporter remains
+excluded by the normal test configuration and is not counted as validation.
+
+An early prefix completed but its strict startup check detected two field
+observations differing by at most `0.000000000000014` pu. Restoring the original
+initial field refresh preserves every startup observation exactly. A first
+ten-second attempt was deliberately interrupted while correcting the new
+output path's crossed-bound priority; its partial output is retained and is
+not scored as a completed event. A fresh ten-second run uses the corrected,
+frozen runtime. No parameter, reference, angle offset, or tolerance is fitted.
+
+Frozen evidence and rejected attempts are retained under the private
+verification-artifact directory `2026-10-18-st1-local-integration`. The required
+scope remains six cases and 36 ten-second disturbances; no event is accepted.

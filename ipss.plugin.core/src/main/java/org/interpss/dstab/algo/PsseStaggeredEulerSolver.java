@@ -57,6 +57,10 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * The extended stack starts with zero derivative history; the original
  * IEEE39 controller subset retains its verified initial-derivative history.
  * Renewable event-history parity and full-fleet accuracy remain unverified.
+ * ST1 controllers use ten local STORE steps per network step with physical
+ * and stabilizer inputs held at the old endpoint. Their field outputs are
+ * published before the final local algebraic refresh; machine and other
+ * controller states retain the common network-step rule.
  * Unsupported
  * dynamic models are rejected at initialization rather than silently omitted.
  * This solver does not replace the default predictor/corrector solver. Select
@@ -74,6 +78,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private final List<BooleanSupplier> machineActive = new ArrayList<>();
     private final List<BooleanSupplier> attachmentsUnchanged = new ArrayList<>();
     private final List<State> states = new ArrayList<>();
+    private final List<LocalSt1Controller> localSt1Controllers = new ArrayList<>();
     private double[] previous;
     private boolean[] wasActive;
     private double fixedStep;
@@ -89,6 +94,61 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             DoubleSupplier derivative, DoubleUnaryOperator project, BooleanSupplier active,
             BooleanSupplier frozen) {}
     private record Renewable(Regca1Model model, BooleanSupplier active) {}
+    /** ST1's local STORE recurrence uses ten steps per network step. */
+    private static final class LocalSt1Controller {
+        private static final int SUBSTEPS = 10;
+        final IEEE1981ST1Exciter model;
+        final BooleanSupplier active;
+        final List<State> states;
+        final double[] previous, start, rates;
+        final boolean[] frozen;
+        boolean wasActive;
+
+        LocalSt1Controller(IEEE1981ST1Exciter model, BooleanSupplier active, List<State> states) {
+            this.model=model; this.active=active; this.states=List.copyOf(states);
+            previous=new double[states.size()]; start=new double[states.size()];
+            rates=new double[states.size()]; frozen=new boolean[states.size()];
+            wasActive=active.getAsBoolean();
+        }
+
+        private void evaluate() throws DStabSimuException {
+            if (!model.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,model.getMachine(),0))
+                throw new DStabSimuException("ST1 local evaluation failed: "+model.getId());
+        }
+
+        void advance(double dt, boolean discontinuity) throws DStabSimuException {
+            if (!active.getAsBoolean()) {
+                java.util.Arrays.fill(previous,0.); wasActive=false; return;
+            }
+            double localStep=dt/SUBSTEPS, field=model.getMachine().getEfd();
+            for (int sub=0;sub<SUBSTEPS;sub++) {
+                evaluate();
+                for (int i=0;i<states.size();i++) {
+                    State state=states.get(i);
+                    start[i]=state.value.getAsDouble(); rates[i]=state.derivative.getAsDouble();
+                    frozen[i]=state.frozen.getAsBoolean();
+                    if (!wasActive) previous[i]=rates[i];
+                    if (sub==0&&discontinuity) rates[i]=.5*(rates[i]+previous[i]);
+                }
+                wasActive=true;
+                for (int i=0;i<states.size();i++) {
+                    State state=states.get(i);
+                    if (frozen[i]) { previous[i]=0.; continue; }
+                    double trial=start[i]+localStep*(1.5*rates[i]-.5*previous[i]);
+                    double end=state.project.applyAsDouble(trial);
+                    state.set.accept(end); previous[i]=end!=trial?0.:rates[i];
+                }
+                // Publish before the zero-time regulator's input is refreshed.
+                // Physical machine, network and PSS inputs remain at the old
+                // network endpoint throughout these local steps.
+                field=model.getStaggeredFieldVoltage();
+                evaluate();
+            }
+            if (!Double.isFinite(field))
+                throw new DStabSimuException("Non-finite ST1 field voltage: "+model.getId());
+            model.getMachine().setEfd(field);
+        }
+    }
     private static final class Participant {
         final StaggeredEulerParticipant model;
         final BooleanSupplier active;
@@ -110,9 +170,10 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     public double getNetworkSolutionTolerance() { return converge_tol; }
     public int getBoundMachineCount() { return machines.size(); }
     public int getBoundRenewableCount() { return renewables.size(); }
-    /** Shared machine/controller states; excludes renewable bundle-owned states. */
+    /** Bound machine/controller states; excludes renewable bundle-owned states. */
     public int getBoundDifferentialStateCount() {
-        return states.size()+participants.stream().mapToInt(p->p.values.length).sum();
+        return states.size()+participants.stream().mapToInt(p->p.values.length).sum()
+                +localSt1Controllers.stream().mapToInt(c->c.states.size()).sum();
     }
 
     public void setNetworkSolutionTolerance(double tolerance) {
@@ -126,6 +187,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
 
     @Override public boolean initialization() {
         machines.clear(); machineActive.clear(); attachmentsUnchanged.clear(); states.clear();
+        localSt1Controllers.clear();
         participants.clear(); participantByController.clear(); renewables.clear(); extendedStack=false;
         previous = null; wasActive = null; inputDiscontinuity = false;
         fixedStep = dstabAlgo.getSimuStepSec();
@@ -135,7 +197,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         bind();
         try {
             networkSolutionStep();
-            evaluate();
+            evaluate(true);
             for (int i=0;i<states.size();i++) {
                 previous[i]=extendedStack ? 0.0 : states.get(i).derivative.getAsDouble();
                 wasActive[i]=states.get(i).active.getAsBoolean();
@@ -222,6 +284,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 || controller instanceof Ieee1992PSS2AStabilizer) extendedStack=true;
         BooleanSupplier owner=ownerActive;
         ownerActive=()->owner.getAsBoolean()&&c.isActive();
+        int firstState=states.size();
         for (var wrapper:c.getFieldWrapperList()) {
             if (wrapper instanceof ControllerFieldAnWrapper child) {
                 controller(child.getField());
@@ -235,6 +298,11 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             } else if (wrapper.getField() instanceof CMLControlBlock1stOrderAdapter b) {
                 block(b,wrapper.getFieldName());
             } else throw new IllegalArgumentException("Unsupported block " + wrapper.getFieldName());
+        }
+        if (controller instanceof IEEE1981ST1Exciter st1) {
+            localSt1Controllers.add(new LocalSt1Controller(st1,ownerActive,
+                    states.subList(firstState,states.size())));
+            states.subList(firstState,states.size()).clear();
         }
         ownerActive=owner;
     }
@@ -313,7 +381,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         start=new double[states.size()]; derivative=new double[states.size()];
     }
 
-    private void evaluate() throws DStabSimuException {
+    private void evaluate() throws DStabSimuException { evaluate(false); }
+
+    private void evaluate(boolean initialEndpoint) throws DStabSimuException {
         for (var r:renewables)
             if (r.active.getAsBoolean()&&!r.model.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,0))
                 throw new DStabSimuException("Renewable boundary refresh failed: "+r.model.getId());
@@ -333,7 +403,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             if (m.hasExciter()&&m.getExciter().isActive()) {
                 if (!m.getExciter().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
                     throw new DStabSimuException("Exciter derivative failed: "+m.getId());
-                m.setEfd(m.getExciter().getOutput(m));
+                if (initialEndpoint || !(m.getExciter() instanceof IEEE1981ST1Exciter))
+                    m.setEfd(m.getExciter().getOutput(m));
             }
             if (m.hasGovernor()&&m.getGovernor().isActive()) {
                 Participant p=participantByController.get(m.getGovernor());
@@ -383,6 +454,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             if (discontinuity)
                 for (int i=0;i<p.rates.length;i++) p.rates[i]=.5*(p.rates[i]+p.history[i]);
         }
+        // Advance ST1 while its physical and upstream controller inputs still
+        // belong to the old endpoint. Global machine rates are already captured.
+        for (var controller:localSt1Controllers) controller.advance(dt,discontinuity);
         for (var bus:dstabAlgo.getNetwork().getBusList())
             if (bus.isActive()) bus.nextStep(dt,method,0);
         // Renewable derivatives observe the old synchronous-machine and network
