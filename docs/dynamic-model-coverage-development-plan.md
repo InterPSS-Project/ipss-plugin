@@ -2,7 +2,8 @@
 
 ## Current checkpoint
 
-Updated 2026-10-17 against plugin `dcea9ab30` (1.4.6, core 1.4.3).
+Updated 2026-10-17; upstream baseline is plugin `dcea9ab30` (1.4.6, core 1.4.3).
+Subsequent local implementation and validation slices are recorded below.
 This document restores the ongoing coverage checklist after rebasing to master.
 The generated [support matrix](dynamic-model-support-matrix.md) records parser
 and runtime availability. A `LOADABLE` row does not prove independent equation,
@@ -108,6 +109,16 @@ is renamed or relabeled; the separate staged diagnostic keeps its custom-input
 contract. Fresh loading, six-case smokes and strict-flat results are recorded in
 [the original-source report](benchmarks/texas2k-original-source-2026-10-17.md).
 
+**Version boundary:** the stationary-flat results below apply to the tested
+plugin `3453ae674` convention, including the newer-core integration snapshot.
+Subsequent `511618835` retains a native PFLAG speed multiplier and independently
+demonstrates a nonzero startup derivative in supplied wind profiles. The
+stationarity assertion is therefore not yet a valid current-main acceptance
+contract. Do not suppress that derivative or fit references to recover a flat
+trace. Reconcile initialization and the no-event gate with native evidence;
+the [supplied-reference investigation](benchmarks/texas2k-native-reference-comparison-2026-10-17.md)
+records the newer failures and open full-window comparison.
+
 - [x] Restore the six original RAW/DYR cases and both preparation IDVs into
   the private input location; verify hashes before simulation.
 - [x] Locate the original source ZIP, stage only native inputs separately, and
@@ -120,8 +131,9 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
   smokes on the current production solver.
 - [x] Enable and run all six strict one-second flat gates at 1/240 s with
   voltage drift <= 1e-6 pu and speed drift <= 1e-7 pu.
-  All six pass on the current corrected core: maximum observed voltage drift
-  3.13e-12 pu and speed drift 5.67e-14 pu. Historical 0/6 strict-flat results
+  All six pass on the corrected core. The newer merged-core check observes
+  maximum voltage drift 1.38e-14 pu and zero reported speed drift; the preceding
+  guarded baseline observed 3.13e-12 pu and 5.67e-14 pu. Historical 0/6 strict-flat results
   no longer describe this current source/code combination.
 - [ ] Rank the first and largest bus-voltage, generator-speed, and controller
   state differences. Revisit the historically leading REECA1/REPCA1 devices
@@ -130,8 +142,10 @@ contract. Fresh loading, six-case smokes and strict-flat results are recorded in
   the fault, generator speed/angle, P/Q, EFD/PM, and controller states.
 - [ ] Resolve severe GFM/weak-grid post-fault responses before calling the
   faults physically accepted. After enforcing convergence with sufficient
-  iteration headroom, Case 6 Bus1016 still reaches 1.681472 pu at 0.5 s;
-  Case 5 Bus1011 reaches 1.030318 pu. The preceding Iolim-only run gave
+  iteration headroom, the preceding guarded core gave Case 6 Bus1016 1.681472 pu
+  and Case 5 Bus1011 1.030318 pu at 0.5 s. Integrating newer core shunt/generation
+  corrections gives 1.512620 pu and 1.064186 pu respectively; neither is an
+  independent physical acceptance result. The preceding Iolim-only run gave
   1.681707 and 1.121556 pu respectively but ignored exhausted network stages.
   Rank first divergent states against an independent reference and repeat at
   a reduced timestep; do not fit parameters or bless loose smoke bounds.
@@ -225,10 +239,27 @@ records the permanent log/CSV quality gate and remaining full-transient errors.
   through a no-op participant. No production converter opts in yet;
   this does not close its HV/low-voltage modeling gaps. See the
   [lifecycle report](benchmarks/network-iteration-lifecycle-2026-10-17.md).
-- [ ] Integrate lifecycle commit `95051f797` with newer core master and rerun
-  combined core/plugin/system gates. Concurrent master `124bca40f` and later
-  plugin controller/parser edits were not in the archived tested binary/source
-  baseline. Preserve those changes; do not reuse old results as merged validation.
+- [x] Integrate lifecycle commit `95051f797` with core `124bca40f` and rerun
+  combined core/plugin/system gates. Merge `830b47d0d` preserves both parents;
+  all 2,939 core tests pass. Its
+  first full plugin run finds a real SVSMO1T2 benchmark load-law mismatch.
+  The native zero-percentage CONL profile retains constant MVA, but the test used
+  constant impedance. The explicit load-law correction and perturbation guard
+  pass focused checks with tightened diagnostic bounds. The full rerun exits zero:
+  2,641 passes, 91 skips, no failures/errors. Six-case smokes, six strict flats
+  and fifteen faults execute; all fifteen fault traces repeat exactly after the
+  benchmark correction. All 1,549 archived artifact hashes are rechecked;
+  enabled settings are preserved and private opt-ins restored.
+  See the [combined integration report](benchmarks/network-iteration-integration-2026-10-17.md).
+- [ ] Integrate newer core `9893d5bae` and plugin `511618835`/`be8bd790c`,
+  reconcile the native wind startup/no-event contract and rerun latest-source
+  combined acceptance. Those concurrent commits were not in the clean tested
+  baseline above; do not reuse its green result for the newer source tree.
+- [ ] Resolve SVSMO1T2 native point-control initialization and remaining
+  transient discrepancies. Two cold native runs reproduce the original full
+  reference exactly and pass run-quality checks, but the corrected comparison
+  still has 0.152376-pu voltage and 0.165174-pu susceptance-state errors. Tightened
+  diagnostic non-regression bounds do not make this model trajectory-verified.
 - [ ] Establish a model-specific joint convergence/admissibility criterion
   before enabling the accumulating HV boundary. The lifecycle preserves the
   old voltage-update rule and does not yet expose participant convergence vetoes;

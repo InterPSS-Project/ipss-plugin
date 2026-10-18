@@ -24,6 +24,8 @@ import org.junit.jupiter.api.Test;
 
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
@@ -50,6 +52,7 @@ public class Svsmo1t2PsseConformanceTest {
         var context = new PSSEMultiFileLoader().loadDStab(RAW.toString(), DYR.toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        configureNativeLoadLaw(network);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         network.setLfConverged(true);
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -95,13 +98,44 @@ public class Svsmo1t2PsseConformanceTest {
         }
         System.out.println("SVSMO1T2 PSS/E max errors: " + Arrays.toString(maximum));
         System.out.println("SVSMO1T2 PSS/E max-error times: " + Arrays.toString(maximumTime));
-        double[] diagnosticBounds = {.12, .27, .12, .12, .05, .17, 1.0e-12, .14,
-                1.05, .12, .004, .004, .14, .14, 90.0};
+        // Diagnostic non-regression envelope, not tight model-parity acceptance:
+        // initial switched-shunt control and transient discrepancies remain open.
+        double[] diagnosticBounds = {.065, .16, .065, .032, .012, .17, 1.0e-12, .04,
+                .95, .032, .004, .004, .04, .04, 55.0};
         for (int column = 0; column < signals.length; column++) {
             assertTrue(maximum[column] <= diagnosticBounds[column], String.format(Locale.ROOT,
                     "%s max error %.9g at %.9g exceeds %.9g", signals[column],
                     maximum[column], maximumTime[column], diagnosticBounds[column]));
         }
+    }
+
+    @Test
+    void nativeConlZeroProfileRetainsConstantPowerUnderVoltagePerturbation() throws Exception {
+        IpssCorePlugin.init();
+        var context = new PSSEMultiFileLoader().loadDStab(RAW.toString(), DYR.toString());
+        var network = context.getDStabilityNet();
+        var algorithm = context.getDynSimuAlgorithm();
+        configureNativeLoadLaw(network);
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(STEP);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algorithm.initialization());
+        var bus = network.getDStabBus("Bus4");
+        Complex initialLoad = bus.calStaticLoad();
+        assertEquals(0.0, initialLoad.subtract(new Complex(.45, .45)).abs(), 1e-12);
+        bus.setVoltage(bus.getVoltage().multiply(.9));
+        assertEquals(0.0, bus.calStaticLoad().subtract(initialLoad).abs(), 1e-12,
+                "Native CONL [0,0,0,0] leaves both load components constant MVA");
+    }
+
+    private static void configureNativeLoadLaw(BaseDStabNetwork<?, ?> network) {
+        // The frozen native probe calls CONL with [0,0,0,0]: no P or Q is
+        // converted to constant current/admittance. Merely selecting CONST_P
+        // is insufficient while the all-loads-in-Y representation remains enabled.
+        network.setStaticLoadIncludedInYMatrix(false);
+        network.setStaticLoadModel(StaticLoadModel.CONST_P);
+        network.setReactiveStaticLoadModel(StaticLoadModel.CONST_P);
     }
 
     @Test
