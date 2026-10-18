@@ -44,6 +44,11 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
         var algorithm = context.getDynSimuAlgorithm();
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
+        // ANDES disables REEC_A's speed multiplier when WTTQ_A supplies Pref.
+        // Keep that explicit dialect boundary for this existing ANDES oracle.
+        ((Regca1Model) ((DStabGen) network.getBus("Bus1").getContributeGen("1"))
+                .getDynamicGenDevice()).getReeca1Controller().setWindSpeedConvention(
+                        org.interpss.dstab.renewable.Reeca1Model.WindSpeedConvention.WTTQA_POWER_REFERENCE);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "Type-3 public load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         double simulationStep = Double.parseDouble(CONFIG.string(

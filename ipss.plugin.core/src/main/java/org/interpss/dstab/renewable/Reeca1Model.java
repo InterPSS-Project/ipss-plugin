@@ -10,6 +10,8 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** WECC REEC_A electrical controller producing REGC_A current commands. */
 public final class Reeca1Model implements RenewableElectricalController, ICMLStateProvider {
+    /** Native PSS/E retains PFLAG's speed input even when WTTQA1 is connected. */
+    public enum WindSpeedConvention { PSSE_GENERATOR_SPEED, WTTQA_POWER_REFERENCE }
     private static final double EPS = 1.0e-9;
     /** Suppress only solver partitioning roundoff at the initialized equilibrium. */
     private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
@@ -20,6 +22,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private final Regca1Model converter;
     private Repca1Model plantController;
     private WindControlStack windControlStack;
+    private WindSpeedConvention windSpeedConvention = WindSpeedConvention.WTTQA_POWER_REFERENCE;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
     private double q0;
@@ -194,12 +197,10 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double rateTarget = Repca1Model.limit(pref,
                 pFilter + data.dpmin() * dt, pFilter + data.dpmax() * dt);
         pFilter = rateTarget;
-        // PFLAG selects drive-train generator speed wg, not network frequency.
-        // WTTQ_A already multiplies torque by wg when producing Pref and, as in
-        // ANDES, resets the REEC_A multiplier to 1.0 to avoid applying speed
-        // twice.
-        double generatorSpeed = windControlStack == null ? 1.0
-                : windControlStack.getElectricalControllerSpeed();
+        // PSS/E applies PFLAG to wg independently of WTTQA1's own Pref output.
+        // The explicit power-reference convention retains the older ANDES
+        // coupling for typed clients and cross-vendor comparison fixtures.
+        double generatorSpeed = getActivePowerSpeedMultiplier();
         double selectedP = data.pFlag() == 1 ? generatorSpeed * pFilter : pFilter;
         if (!voltageDip) {
             pOrder = Repca1Model.lag(pOrder,
@@ -414,6 +415,16 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
     public WindControlStack getWindControlStack() { return windControlStack; }
     public void setWindControlStack(WindControlStack stack) { windControlStack = stack; }
+    public WindSpeedConvention getWindSpeedConvention() { return windSpeedConvention; }
+    public void setWindSpeedConvention(WindSpeedConvention convention) {
+        windSpeedConvention = java.util.Objects.requireNonNull(convention);
+    }
+    public double getActivePowerSpeedMultiplier() {
+        if (windControlStack == null) return 1.0;
+        return windSpeedConvention == WindSpeedConvention.PSSE_GENERATOR_SPEED
+                ? windControlStack.getGeneratorSpeed()
+                : windControlStack.getElectricalControllerSpeed();
+    }
     public double getMeasuredVoltage() { return vMeasured; }
     public double getMeasuredActivePower() { return pMeasured; }
     public double getActivePowerFilter() { return pFilter; }

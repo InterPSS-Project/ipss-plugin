@@ -1,5 +1,7 @@
 package org.interpss.fadapter.psse;
 
+import org.interpss.dstab.renewable.Reeca1Model;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -3703,7 +3705,10 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 48, 0), getDouble(f, 49, 0),
                 getDouble(f, 50, 0), getDouble(f, 51, 0),
                 getDouble(f, 52, 0), getDouble(f, 53, 0));
-        return builder.addReeca1(busId, genId, data) != null;
+        var model = builder.addReeca1(busId, genId, data);
+        if (model == null) return false;
+        model.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED);
+        return true;
     }
 
     private boolean procWtara1(String busId, String genId, String[] f) {

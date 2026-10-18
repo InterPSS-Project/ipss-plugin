@@ -49,6 +49,8 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertNotNull(controller);
         assertSame(controller, converter.getActiveElectricalController());
         assertEquals(expectedData(), controller.getData());
+        assertEquals(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED,
+                controller.getWindSpeedConvention());
         assertEquals(Set.of("Filtered Voltage", "Active Current Regulator",
                 "Reactive Current Regulator", "Active Power", "Reactive Power"),
                 converter.getNamedStates().keySet());
@@ -195,6 +197,53 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
         assertEquals(.8 + plantIncrement, stack.getPref(), 1.0e-12);
         assertEquals(.8 + .05 * CONTROL_STEP,
                 controller.getActivePowerFilter(), 1.0e-12);
+    }
+
+    @Test
+    void nativeWindPflagRetainsTheGeneratorSpeedMultiplierWithAndWithoutDriveTrain() {
+        // PSS/E 36.7 Model Library pp. 840-843 and native Bus-2089 discriminator:
+        // P0=.625, wg0=.8775, Tpord=.03 gives dPord/dt=-2.5520833333.
+        // The same native profile with PFLAG=0 has exactly zero initial rate.
+        for (boolean withDrive : new boolean[] {false, true}) {
+            for (int flag : new int[] {0, 1}) {
+                Reeca1Model controller = new Reeca1Model(nativeWindData(flag), null);
+                controller.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED);
+                WindControlStack stack = new WindControlStack();
+                stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
+                        1, 2.4, .5, .04, 60, 1.002, 0,
+                        .2, .58, .4, .72, .6, .86, .8, 1, 0)));
+                if (withDrive) stack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(
+                        new org.interpss.dstab.renewable.Wtdta1Data(5, .1, .8, 1.5, .2)));
+                controller.setWindControlStack(stack);
+                controller.initialize(.625, .11453417, 1.0);
+                assertEquals(.8775, controller.getActivePowerSpeedMultiplier(), 1.e-12);
+                assertEquals(.625, stack.getPref(), 0.0);
+                double target = flag == 1 ? .625 * .8775 : .625;
+                assertEquals(flag == 1 ? -2.552083333333333 : 0.0,
+                        (target - .625) / .03, 1.e-12);
+                controller.step(.0005, .625, .11453417, 1.0, .8, 0);
+                double expected = modifiedEulerLag(.625, target, .03, .0005);
+                assertEquals(expected, controller.getActivePowerOrder(), 1.e-12);
+                controller.step(.0005, .625, .11453417, 1.0, .8, 1);
+                assertEquals(expected, controller.getActivePowerOrder(), 1.e-12,
+                        "The corrector must not integrate the controller a second time");
+            }
+        }
+    }
+
+    @Test
+    void explicitPowerReferenceConventionRetainsTypedClientBehavior() {
+        Reeca1Model controller = new Reeca1Model(nativeWindData(1), null);
+        WindControlStack stack = new WindControlStack();
+        stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
+                1, 2.4, .5, .04, 60, 1.002, 0,
+                .2, .58, .4, .72, .6, .86, .8, 1, 0)));
+        controller.setWindControlStack(stack);
+        controller.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.WTTQA_POWER_REFERENCE);
+        controller.initialize(.625, .1, 1.0);
+        controller.step(.0005, .625, .1, 1.0, 1.0);
+        assertEquals(1.0, controller.getActivePowerSpeedMultiplier(), 0.0);
+        assertEquals(.625, controller.getActivePowerOrder(), 1.e-12);
     }
 
     @Test
@@ -500,6 +549,14 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
                 2, -2, 1, 0, 1.2, .07,
                 .1, .2, .3, .4, .5, .6, .7, .8,
                 .11, .21, .31, .41, .51, .61, .71, .81);
+    }
+
+    private static Reeca1Data nativeWindData(int pFlag) {
+        return new Reeca1Data(0, 0, 1, 1, pFlag, 0,
+                .85, 1.15, .02, 0, 0, 5, 1.1, -1.1, 0, 0, 0, .5,
+                .02, .436, -.436, 1.1, .9, 0, .1, 0, 39.5, 0, .02,
+                99, -99, 1, 0, 1.3, .03,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     }
 
     private static Reeca1Data texasData(int vFlag, int qFlag, int pFlag) {
