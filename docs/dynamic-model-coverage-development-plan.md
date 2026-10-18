@@ -70,6 +70,19 @@ and state definitions agree.
   selectors and bounds, FFR timer/re-arm/ramp logic, measurement resolution and
   base conversion, strict import and REGFMC1U reference routing. Validate all
   states and independently coupled SMIB profiles before raising loadability.
+  - [x] Implement the fifteen-state kernel, semantic states, explicit modified-
+    Euler stages, bounded integrals, algebraic bypasses and actual-step frequency
+    correction; preserve unused storage when both voltage paths are disabled.
+  - [x] Add ten cold-paired native manual-reference, active P/Q/voltage-limit and
+    FFR hold/ramp/re-arm datasets at two steps. Replay all states from recorded
+    physical measurements and external references, without injecting native states.
+    See [kernel evidence and remaining work](benchmarks/repcgfmc-kernel-2026-10-18.md).
+  - [x] Validate the kernel: 52 focused checks, 318 plugin-core tests (six optional
+    skips), 1,364 SMIB/model/solver checks (one existing diagnostic skip), zero
+    failures/errors. Audit 26 tested source/resource files, twenty new native
+    runs and ten byte-identical cold pairs; retain float/history/timer gaps.
+  - [ ] Complete strict native import, signed branch/frequency-bus measurement,
+    base conversion, REGFMC1U four-output routing and coupled SMIB acceptance.
 
 - [x] Add exact native REGFMC1U wrapper parsing and hybrid network adapter, with
   non-overwriting attachment, machine/system-base Norton conversion, semantic

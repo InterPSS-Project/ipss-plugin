@@ -4,6 +4,9 @@ Status: typed contract and algebraic initialization only. There is no dynamic
 kernel, DYR import handler or network attachment yet. Approved renewable runtime
 coverage remains 24/27; HPLNTD, REPCCU and REPCGFMC1 remain missing runtimes.
 
+The subsequent [fifteen-state kernel slice](repcgfmc-kernel-2026-10-18.md) builds
+on this foundation. Status and counts below describe the original checkpoint.
+
 ## Source and exact allocation
 
 The reference simulator Model Library section 27.5, printed pages 926-935

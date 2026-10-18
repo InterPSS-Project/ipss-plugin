@@ -161,7 +161,7 @@ public final class RenewableEvidenceInventory {
             Set.of("REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
                         model.equals("REPCGFMC1")
-                        ?"Exact REPCGFMC1U seven-ICON/54-CON typed contract, algebraic initialization and eight cold-paired native foundation datasets exist. No dynamic kernel/parser/network attachment yet; runtime remains missing. Complete selectors, limits, FFR, plant routing and independent trajectories."
+                        ?"Exact REPCGFMC1U typed contract and fifteen-state kernel, with ten cold-paired recorded-input profiles, active P/Q/voltage bounds and FFR hold/ramp/re-arm evidence. Native float/history/timer-boundary residuals remain explicit. No parser/network attachment yet; runtime remains missing. Complete plant routing, lifecycle and independent coupled/PowerWorld acceptance."
                         :"No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
