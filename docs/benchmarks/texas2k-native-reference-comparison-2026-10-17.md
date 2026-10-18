@@ -845,3 +845,53 @@ frozen runtime. No parameter, reference, angle offset, or tolerance is fitted.
 Frozen evidence and rejected attempts are retained under the private
 verification-artifact directory `2026-10-18-st1-local-integration`. The required
 scope remains six cases and 36 ten-second disturbances; no event is accepted.
+
+## Corrected ten-second window and coupled stabilizer check
+
+The corrected first Case 2 bus-fault run completes all ten seconds. Its first
+2,405 observations reproduce the final ST1 prefix exactly, including all 218
+diagnostic quantities. All required acceptance samples and channels are present.
+Fifteen of 40 criteria pass, compared with six before the ST1 correction. The
+run still fails acceptance.
+
+| First-event quantity | Corrected worst result | Limit | Passing channels |
+| --- | ---: | ---: | ---: |
+| Prefault voltage NRMSE | 0.000546972 | 0.001 | 5/5 |
+| Prefault terminal P NRMSE | 0.000829732 | 0.001 | 5/5 |
+| Prefault terminal Q NRMSE | 0.00148035 | 0.001 | 3/5 |
+| Prefault rotor-angle maximum error, degrees | 0.115433 | 0.002 | 0/5 |
+| Fault and postfault voltage NRMSE | 0.00798972 | 0.005 | 2/5 |
+| Fault and postfault terminal P NRMSE | 0.0181861 | 0.005 | 0/5 |
+| Fault and postfault terminal Q NRMSE | 0.0998041 | 0.005 | 0/5 |
+| Full-window rotor-angle RMSE, degrees | 24.4420 | 0.01 | 0/5 |
+
+The worst full-window rotor-angle RMSE increases from `19.0749` to `24.4420`
+degrees. The correction's component evidence and improved prefault results
+therefore leave a substantial unresolved full-system discrepancy. The remaining
+five Case 2 disturbances are being evaluated with this exact frozen runtime;
+their in-flight trajectories are not scored or presented as complete results.
+
+A new independent two-bus experiment retains bus 1078's original GENROU, EXST1,
+and PSS2A parameters and applies a declared external voltage waveform. Two
+fresh commercial processes reproduce all 2,003 output rows exactly. Replaying
+the recorded physical speed and electrical-power inputs through the production
+stabilizer gives maximum output error `0.0000000640` pu with the existing common
+network-step recurrence. Ten stabilizer substeps increase that error to
+`0.0000779` pu; the stabilizer's integration rule is unchanged.
+
+The production solver also runs the complete machine, exciter, and stabilizer
+together against the external voltage source. Over this one-second experiment,
+maximum rotor-angle error is `0.000297` degrees, stabilizer-output error is
+`0.000000719` pu, and field-voltage error is `0.000114` pu. Maximum terminal
+voltage difference is `0.00000670` pu. A companion run without the stabilizer
+has maximum rotor-angle error `0.000325` degrees. The source waveform uses the
+declared physical time points; no reference machine or controller states are
+injected. These coupled checks cover one original unit and narrow the next
+investigation toward the other fleet components and network interactions.
+
+Completed trajectories, the failed first compilation of the diagnostic helper,
+frozen binaries, source snapshots, and exact comparison results are retained
+under the private verification-artifact directory
+`2026-10-18-st1-full-window-and-coupled-pss`. The original six-case, 36-event
+contract, I/Z load assumption, normalization ranges, and angle limits remain
+unchanged. No event is accepted.
