@@ -496,7 +496,19 @@ and state definitions agree.
       (six optional skips), and 1,412 SMIB/model/solver tests (one diagnostic
       skip), zero failures/errors. Retain the strict-import failure-before-fix,
       tested sources, generated inventory and unchanged independent references.
-    - [ ] Complete exact startup/zero-time endpoint shunt dispatch, independent
+    - [x] Correct the missing accepted-origin sample in the solver adapter.
+      Verify time-zero timer states, zero-delay physical actions without
+      compensation absorption, hybrid-current identity and inactive owners.
+      Compare all raw rows of four fast-band coupled profiles at two steps;
+      retain four unaccepted slow-band profiles with a clock-only discriminator.
+      See [origin and coupled switching](benchmarks/repcc-switching-origin-2026-10-18.md).
+    - [x] Validate origin/coupled switching on `674583ce0`: 54 focused,
+      347 plugin-core (six optional skips), and 1,417 SMIB/model/solver tests
+      (one diagnostic skip), zero failures/errors. Preserve failing-before
+      diagnostics, all sixteen paired/status traces and exact binary32-clock
+      audit. Keep slow-band trajectory and complete REPCC acceptance open.
+    - [ ] Complete slow-band clock/trajectory acceptance, independent zero-delay
+      and generic-solver startup coverage, independent
       discharge-lockout evidence, remaining initialization
       and selector/limit profiles, independent coupled SMIB acceptance and the
       declared integration-history/precision/timer gaps.

@@ -52,7 +52,7 @@ public class PsseDStabSolver extends DStabSolverImpl {
         // Do not overwrite a hybrid-simulation current source supplied by a caller.
         Hashtable<String, Complex> existing = network.getCustomBusCurrInjHashtable();
         Object previous = network.getExtraInfo().get(COMPENSATION_KEY);
-        if (existing != null && existing != previous) return true;
+        if (existing != null && existing != previous) return acceptInitialPlantEndpoints(network);
 
         Hashtable<String, Complex> compensation = new Hashtable<>();
         Complex[] voltage = new Complex[network.getNoBus()];
@@ -74,6 +74,26 @@ public class PsseDStabSolver extends DStabSolverImpl {
         }
         network.setCustomBusCurrInjHashtable(compensation);
         network.getExtraInfo().put(COMPENSATION_KEY, compensation);
+        return acceptInitialPlantEndpoints(network);
+    }
+
+    /** The solved initial network is an accepted endpoint. Start discrete plant
+     * timers here, after Y/compensation setup, never inside a trial integrator
+     * stage. Zero-delay actions change the physical Y for the next solve; they
+     * must not be absorbed into the operating-point compensation current. */
+    private static boolean acceptInitialPlantEndpoints(BaseDStabNetwork<?, ?> network) {
+        for (BaseDStabBus<?, ?> bus : network.getBusList()) {
+            if (!bus.isActive()) continue;
+            for (DStabGen generator : bus.getContributeGenList()) {
+                if (!generator.isActive()) continue;
+                if (generator.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.Regca1Model converter
+                        && converter.isActive()) {
+                    var electrical=converter.getActiveElectricalController();
+                    if (electrical!=null && electrical.getRepccController()!=null)
+                        electrical.getRepccController().acceptedEndpoint();
+                }
+            }
+        }
         return true;
     }
 

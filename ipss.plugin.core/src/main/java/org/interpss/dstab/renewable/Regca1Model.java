@@ -241,6 +241,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     @Override
     public Hashtable<String, Object> getStates(Object ref) {
+        // Inactive devices can be observed before dynamic initialization.
+        states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
         states.put("REGCA1_V", getFilteredVoltage());
         states.put("REGCA1_IP", getIp());
         states.put("REGCA1_IQ", getIq());
