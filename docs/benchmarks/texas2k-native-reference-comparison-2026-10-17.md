@@ -1813,3 +1813,86 @@ not model results and not substitute reference trajectories. Supplied immutable
 results remain the final accuracy oracle. These diagnostics and the plot are
 retained with the selector-history evidence. Case 2 still passes only 19 of
 40 original criteria; no event or model acceptance label is upgraded.
+
+
+## Odessa plant boundary localization
+
+The upstream prefault investigation uses the supplied results only. Additional
+full-size native observations are unavailable. Physical-input replays at buses
+1073, 1072 and 6349 cover each exciter, governor and stabilizer independently;
+all nine maximum output errors remain below `0.0000061` pu over the prefault
+second. These checks retain the original parameters and independently evolved
+controller states.
+
+The three online units at buses 1072, 1073 and 1078 share plant bus 1071.
+Their supplied GENROU electrical states and physical terminal P/Q/V reconstruct
+terminal phasors using the previously independently checked stator identity.
+Applying each original unity-tap generator transformer gives three independent
+estimates of the same plant voltage. Across 2,003 startup/prefault observations,
+the maximum complex-voltage spread is `0.000000249682` pu. These are inferred
+diagnostic boundaries; they are not newly supplied bus-angle channels.
+
+A new read-only observer records plant voltages, machine states and the
+physical injections of all 199 active dynamic generators. All original 218
+numerical channels remain exactly unchanged in every one of the 2,003 prefix
+observations. The three generator-transformer voltage/current equations close
+within `0.0000000000000018` pu in the InterPSS trace. This checks the local
+transformer boundary without attributing the upstream mismatch to a controller.
+
+At bus 1071, the largest prefault voltage-magnitude difference from the
+supplied inferred boundary is `0.00232733` pu; its RMS difference is
+`0.00105812` pu. The inferred phase difference peaks at `0.282233` degrees.
+The reference's float clock is validated and mapped by its original integration
+index. No offset, time shift, fitted state or model parameter is applied.
+
+The complete original machine/controller stacks are next simulated with the
+inferred external plant-voltage boundary. Each simulation initializes its own
+internal states from physical P/Q/V. A separate control prescribes the original
+InterPSS boundary and compares every exported machine state and physical output
+with the unchanged full-network trace. The latter checks the replay setup;
+it is not an independent accuracy reference.
+
+| Generator bus | Original full-network prefault peak rotor error, degrees | Supplied-boundary conditional peak error, degrees | Own-boundary control peak error, degrees |
+| --- | ---: | ---: | ---: |
+| 1073 | 0.244950335 | 0.000960261838 | 1.49074888e-07 |
+| 1072 | 0.200658953 | 0.000981307298 | 1.77183097e-07 |
+| 1078 | 0.217197719 | 0.000153003978 | 2.11958398e-07 |
+
+These conditional replays localize the larger discrepancy to the wider network
+feeding the plant. They do not establish acceptance of the original connected
+system, replace its voltage boundary, or authorize changing controller gains.
+The inferred boundary depends on supplied phasor identities and therefore
+cannot serve as an independent replacement acceptance test.
+
+## Original-step convergence-only controls
+
+Three further controls retain the original `0.0005`-second step, two-step
+startup history, physical inputs, runtime, model parameters, I/Z loads and
+supplied-reference scoring. Only the network tolerance and its matching status
+metadata change. A producer-source reversal check recovers the exact baseline
+source, and hashes verify every runtime dependency, input and scoring file.
+These are accuracy diagnostics without a runtime-performance claim.
+
+All twenty prefault criteria have their complete original 2,001 observations.
+The ten-second fault/postfault periods remain incomplete, so no prefix can
+pass the complete-event contract. Both prefault periods and the original
+full-event control use the unchanged full ten-second supplied-reference ranges.
+
+| Network tolerance | Complete prefault criteria passed | Worst prefault rotor maximum error, degrees | Worst prefault voltage/P/Q NRMSE |
+| --- | ---: | ---: | ---: |
+| `1e-8` existing control | 13 / 20 | 0.0993162986 | 0.00123800076 |
+| `1e-04` | 3 / 20 | 0.2475924 | 0.00352112643 |
+| `1e-05` | 13 / 20 | 0.115124323 | 0.00147370734 |
+| `1e-06` | 13 / 20 | 0.115427898 | 0.00148100069 |
+
+The prefixes do not accept a new network tolerance for final accuracy. The
+working performance tolerance and original-grid sensitivity control remain
+separate from supplied-reference acceptance. The complete original first
+Case 2 event still passes only 19 of 40 criteria. All six cases, 36 complete
+ten-second disturbances and the 20-second quarter-cycle runtime target remain
+open. No production equation or acceptance assertion changes in this slice.
+
+Supplied prefixes and inference inputs, exact observer equivalence checks,
+all six conditional replays, the standalone comparison plot, unchanged
+producer/scorer snapshots and fine-step tolerance controls are retained
+privately in `2026-10-18-plant1071-boundary-and-fine-tolerance-controls`.
