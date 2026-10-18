@@ -91,6 +91,45 @@ requires further integration/coupling investigation. The observation option
 also reproduces all 50 numerical columns exactly at all 41 samples of a
 separate ordinary-step, 20-ms regression check.
 
+## Integration and operating-point follow-up
+
+An independent cold replay exactly reproduces the commercial two-bus wind
+trajectory. Three unconstrained lag states follow
+`x[n+1] = x[n] + h*(1.5*f[n] - 0.5*f[n-1])`, with zero previous derivative
+at startup and `h=0.0005` seconds. Here `f=(u-x)/T`, using the recorded inputs
+and unchanged time constants:
+
+| State | Maximum recurrence error (pu) | Steps checked |
+| --- | ---: | ---: |
+| REGCA1 active current | 7.09e-8 | 2,002 |
+| REECA1 active-power order | 7.38e-8 | 2,002 |
+| WTTQA1 measured power | 7.25e-8 | 2,002 |
+
+Each float32-rounded prediction differs by at most one rounding unit. This
+identifies the observed two-step update for these branches, rather than a
+Heun update. Limiter transitions, event histories, and coordination of all
+model derivatives still need verification before a production integration
+change. Adding two Heun startup steps alone does not solve Case 2: worst
+prefault voltage/P/Q NRMSE remains `0.00141946` / `0.00295138` / `0.00385832`,
+and maximum rotor-angle error is `0.333880` degrees.
+
+A separate two-bus probe retains Case 2 generator 6245's GENROU parameters
+and operating P/Q. Its initial rotor-angle error is `5.86e-5` degrees, and all
+four electrical-state errors are below `5.5e-7` pu. The commercial reference
+repeats with an identical raw CSV hash. Stator-equation reconstruction from
+30 supplied Case 2 observations, covering 26 generators, instead locates
+initial network-angle differences up to `0.004342` degrees. The reconstructed
+internal-voltage magnitudes agree within `1.20e-7` pu. These inferred angles
+are diagnostic observations only; they are not injected into simulations or
+substituted for the supplied rotor-angle acceptance channels.
+
+Enabling the tap, shunt, phase-shift, and interchange controls recorded in the
+RAW file changes the solved Case 2 voltages by at most `5.33e-15` pu and angles
+by `1.86e-12` degrees. Explicit augmented zero-impedance power flow also gives
+the same solution; this case has no eligible branches at its saved `0.0002`-pu
+threshold. Neither variant resolves the initial network-angle gap. The
+reference generation's remaining preparation settings are still unconfirmed.
+
 ## Rotor-angle reference
 
 The reference simulator's `SET_RELANG` supports absolute synchronous-frame angles with

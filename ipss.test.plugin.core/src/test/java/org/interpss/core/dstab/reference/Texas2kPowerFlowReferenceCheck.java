@@ -51,10 +51,24 @@ public final class Texas2kPowerFlowReferenceCheck {
             lf.setMaxIterations(1000);
             lf.setNonDivergent(true);
             lf.setInitBusVoltage(false);
-            lf.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(false);
-            lf.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(false);
-            lf.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(false);
-            lf.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
+            boolean enableSavedControls = plan.has("enable_saved_powerflow_controls")
+                    && plan.get("enable_saved_powerflow_controls").getAsBoolean();
+            lf.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(enableSavedControls);
+            lf.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(enableSavedControls);
+            lf.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(enableSavedControls);
+            lf.getNetAdjAlgo().setAreaInterchangeControlEnabled(enableSavedControls);
+            boolean augmentedZeroZ = plan.has("use_augmented_zero_impedance_powerflow")
+                    && plan.get("use_augmented_zero_impedance_powerflow").getAsBoolean();
+            if (augmentedZeroZ) {
+                net.setAclfNetModelType(com.interpss.core.aclf.AclfNetModelType.ZBR_MODEL);
+                lf.getDataCheckConfig().setAutoSetZeroZBranch(false);
+                lf.getLfCalculator().setNrSolver(new com.interpss.core.algo.impl.solver.ZbrNrSolver(
+                        net, lf.getNrMethodConfig()));
+            }
+            status.put("augmented_zero_impedance_powerflow", augmentedZeroZ);
+            status.put("zero_impedance_threshold_pu", net.getZeroZBranchThreshold());
+            status.put("eligible_zero_impedance_branches", net.getBranchList().stream()
+                    .filter(branch -> branch.isActive() && branch.isZeroZBranch()).count());
             boolean solved = lf.loadflow();
             var report = lf.getTerminationReport();
             status.put("loadflow_termination", report.status().toString());
@@ -64,8 +78,9 @@ public final class Texas2kPowerFlowReferenceCheck {
             status.put("maximum_q_mismatch_pu", report.maxQpu());
             status.put("tolerance_pu", 1.e-10);
             status.put("maximum_iterations", 1000);
-            status.put("fixed_taps_shunts_phase_shifts_and_interchange", true);
+            status.put("fixed_taps_shunts_phase_shifts_and_interchange", !enableSavedControls);
             status.put("system_mva_base", net.getBaseMva());
+            status.put("powerflow_solver_class", lf.getLfCalculator().getNrSolver().getClass().getName());
             int reactiveViolations = 0;
             try (var writer = Files.newBufferedWriter(out.resolve("reactive-limit-state.csv"))) {
                 writer.write("bus,gen_code,control_active,adjust_active,voltage_pu,target_voltage_pu,required_q_pu,q_min_pu,q_max_pu\n");
