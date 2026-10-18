@@ -353,6 +353,9 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         if (controller != null && controller.getWeakGridController() != null)
             controller.getWeakGridController().getNamedStates().forEach(
                     (key, value) -> named.put("WTGWGOA." + key, value));
+        if (controller != null && controller.getInertialResponseController() != null)
+            controller.getInertialResponseController().getNamedStates().forEach(
+                    (key, value) -> named.put("WTGIBFFRA." + key, value));
         if (reeca1Controller != null && reeca1Controller.getWindControlStack() != null) {
             Wtdtb1Model drivetrain = reeca1Controller.getWindControlStack().getTorsionalEmulation();
             if (drivetrain != null) drivetrain.getNamedStates().forEach(

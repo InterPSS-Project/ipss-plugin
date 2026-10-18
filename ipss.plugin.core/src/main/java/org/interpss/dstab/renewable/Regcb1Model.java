@@ -272,6 +272,9 @@ public final class Regcb1Model extends DynamicBusDeviceImpl
         if (controller != null && controller.getWeakGridController() != null)
             controller.getWeakGridController().getNamedStates().forEach(
                     (key, value) -> named.put("WTGWGOA." + key, value));
+        if (controller != null && controller.getInertialResponseController() != null)
+            controller.getInertialResponseController().getNamedStates().forEach(
+                    (key, value) -> named.put("WTGIBFFRA." + key, value));
         return Map.copyOf(named);
     }
 

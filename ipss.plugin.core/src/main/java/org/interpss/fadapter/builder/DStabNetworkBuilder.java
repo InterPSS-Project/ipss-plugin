@@ -207,6 +207,8 @@ import org.interpss.dstab.renewable.Wtpta1Model;
 import org.interpss.dstab.renewable.Wtptb1Data;
 import org.interpss.dstab.renewable.Wtptb1Model;
 import org.interpss.dstab.renewable.WtgwgoaData;
+import org.interpss.dstab.renewable.WtgibffraData;
+import org.interpss.dstab.renewable.WtgibffraModel;
 import org.interpss.dstab.renewable.WtgwgoaModel;
 import org.interpss.dstab.renewable.RenewableElectricalController;
 import org.interpss.dstab.renewable.Wttqa1Data;
@@ -3630,6 +3632,24 @@ public class DStabNetworkBuilder {
                     || controller instanceof Reecc1Model || controller instanceof Reecd1Model)) return null;
         WtgwgoaModel model = WtgwgoaModel.forNativePsse367(data);
         controller.setWeakGridController(model);
+        return model;
+    }
+
+    /** Native inertia-response Paux port, currently supported by REECD only. */
+    public WtgibffraModel addWtgibffra(String busId, String genId, WtgibffraData data) {
+        Regca1Model currentSource = findRegca1(busId, genId);
+        Regcb1Model voltageSource = findRegcb1(busId, genId);
+        RenewableElectricalController controller = currentSource != null
+                ? currentSource.getActiveElectricalController() : voltageSource != null
+                ? voltageSource.getActiveElectricalController() : null;
+        if (!(controller instanceof Reecd1Model reecd)
+                || reecd.getInertialResponseController() != null) return null;
+        BaseDStabBus<?, ?> local = network.getDStabBus(busId);
+        BaseDStabBus<?, ?> remote = data.frequencyBus() == 0 ? null
+                : network.getDStabBus("Bus" + data.frequencyBus());
+        WtgibffraModel model = new WtgibffraModel(data);
+        reecd.setInertialResponseController(model,
+                () -> remote != null && remote.isActive() ? remote.getFreq() : local.getFreq());
         return model;
     }
 

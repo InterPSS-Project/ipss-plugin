@@ -1,12 +1,39 @@
 package org.interpss.dstab.mach;
 
 import com.interpss.dstab.mach.impl.EConstMachineImpl;
+import com.interpss.dstab.BaseDStabBus;
+import com.interpss.dstab.algo.DynamicSimuMethod;
 
 /** Classical machine with an optional IEEEVC sensing boundary. */
 public final class IeeeVcEConstMachine extends EConstMachineImpl
         implements IeeeVoltageCompensatedMachine {
     static { IeeeVcMachineState.register(IeeeVcEConstMachine.class,IeeeVcEConstMachine::new); }
     private IeeeVcData ieeeVcData;
+
+    @Override
+    public boolean initStates(BaseDStabBus<?, ?> bus) {
+        if (!super.initStates(bus)) return false;
+        // The core classical machine omits the DynamicMachine controller
+        // lifecycle. GENCLS can have a governor in native PSS/E; do not accept
+        // an attached but uninitialized/non-advancing turbine controller.
+        return !hasGovernor() || !getGovernor().isActive()
+                || getGovernor().initStates(bus, this);
+    }
+
+    @Override
+    public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+        boolean governed = hasGovernor() && getGovernor().isActive();
+        if (governed && !getGovernor().nextStep(dt, method, this, flag)) return false;
+        if (!super.nextStep(dt, method, flag)) return false;
+        // Match the existing DynamicMachine staging: publish corrected Pm
+        // after the mechanical stage, not a different integration realization.
+        if (governed) {
+            double output = getGovernor().getOutput(this);
+            if (!Double.isFinite(output)) return false;
+            setPm(output);
+        }
+        return true;
+    }
 
     @Override
     protected double cal_dW_dt(double speed, double baseFrequency) {

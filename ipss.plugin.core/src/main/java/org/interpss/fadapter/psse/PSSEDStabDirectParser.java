@@ -44,6 +44,7 @@ import org.interpss.dstab.renewable.Wtdtb1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtptb1Data;
 import org.interpss.dstab.renewable.WtgwgoaData;
+import org.interpss.dstab.renewable.WtgibffraData;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.svc.Csvgn5Data;
 import org.interpss.dstab.svc.Svsmo1t2Data;
@@ -166,6 +167,7 @@ public class PSSEDStabDirectParser {
     private final List<PsseDyrRecord> pendingWtdtb1 = new ArrayList<>();
     private final List<PsseDyrRecord> pendingWtptb1 = new ArrayList<>();
     private final List<PsseDyrRecord> pendingWtgwgoa = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingWtgibffra = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
@@ -238,6 +240,7 @@ public class PSSEDStabDirectParser {
         pendingWtdtb1.clear();
         pendingWtptb1.clear();
         pendingWtgwgoa.clear();
+        pendingWtgibffra.clear();
         pendingLcfb1.clear();
         pendingIeeeVc.clear();
         pendingUel1.clear();
@@ -277,7 +280,7 @@ public class PSSEDStabDirectParser {
                         || type.equals("REPCA1") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
                         || type.equals("OEL2C") || type.equals("UEL2C")
-                        || type.equals("WTDTB1") || type.equals("WTPTB1") || type.equals("WTGWGOA");
+                        || type.equals("WTDTB1") || type.equals("WTPTB1") || type.equals("WTGWGOA") || type.equals("WTGIBFFRA");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
@@ -348,6 +351,17 @@ public class PSSEDStabDirectParser {
             }
         }
         pendingWtgwgoa.clear();
+        for (PsseDyrRecord record : pendingWtgibffra) {
+            try {
+                boolean attached = procWtgibffra(BUS_ID_PREFIX + record.busNumber(), record.deviceId(), record);
+                report.add(record, attached ? DynamicModelImportStatus.ATTACHED : DynamicModelImportStatus.REJECTED,
+                        attached ? "WTGIBFFRA native one-ICON/45-CON schema; published WECC recovery equation"
+                                : "WTGIBFFRA requires standard native schema and REGCA1/REGCB1 with an unused REECD Paux host");
+            } catch (RuntimeException failure) {
+                report.add(record, DynamicModelImportStatus.ERROR, failure.getMessage());
+            }
+        }
+        pendingWtgibffra.clear();
         for (PendingLcfb1 pending : pendingLcfb1) {
             boolean attached = procLcfb1(pending.busId(), pending.genId(), pending.fields());
             report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
@@ -847,6 +861,9 @@ public class PSSEDStabDirectParser {
                 return true;
             case "WTGWGOA":
                 pendingWtgwgoa.add(record);
+                return true;
+            case "WTGIBFFRA":
+                pendingWtgibffra.add(record);
                 return true;
             case "WTARA1":
             case "WTARAU1":
@@ -3867,6 +3884,17 @@ public class PSSEDStabDirectParser {
                 record.doubleParameter(con+1), record.doubleParameter(con+2), record.doubleParameter(con+3),
                 record.doubleParameter(con+4), record.doubleParameter(con+5), record.doubleParameter(con+6),
                 record.doubleParameter(con+7))) != null;
+    }
+
+    private boolean procWtgibffra(String busId, String genId, PsseDyrRecord record) {
+        // No guessed USRMDL allocation or cross-tool aliases.
+        if (!record.fields().get(1).equalsIgnoreCase("WTGIBFFRA")
+                || !record.sourceModelName().equals("WTGIBFFRA") || record.parameterCount() != 46) return false;
+        int frequencyBus = record.intParameter(0);
+        double[] constants = new double[45];
+        for (int i = 0; i < constants.length; i++) constants[i] = record.doubleParameter(i + 1);
+        return builder.addWtgibffra(busId, genId,
+                WtgibffraData.fromNativeParameters(frequencyBus, constants)) != null;
     }
 
     private boolean procWtpta1(String busId, String genId, String[] f) {

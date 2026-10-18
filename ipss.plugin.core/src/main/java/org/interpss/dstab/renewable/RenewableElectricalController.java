@@ -20,6 +20,8 @@ public interface RenewableElectricalController extends IntegrationStepAware {
     void setPlantController(Repca1Model plantController);
     /** Optional weak-grid limiter on the absolute plant power reference. */
     default WtgwgoaModel getWeakGridController() { return null; }
+    /** Optional inertia-response power increment, distinct from weak-grid Pref. */
+    default WtgibffraModel getInertialResponseController() { return null; }
     default void setWeakGridController(WtgwgoaModel controller) {
         throw new UnsupportedOperationException("This electrical controller has no weak-grid reference input");
     }

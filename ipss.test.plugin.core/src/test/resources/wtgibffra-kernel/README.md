@@ -40,3 +40,31 @@ which profiles/channels received partial kernel acceptance.
 Ignored/disabled data and nonpositive cooldown probes remain diagnostic only.
 Native automatic/too-short recovery differs from the published energy balance.
 Do not use those native outputs to fit the published kernel.
+
+## Coupled governed-SMIB extension
+
+`coupled-coarse.b64` and `coupled-fine.b64` retain full native channel tokens
+at selected checkpoints, decoded and hashed by `WtgibffraCoupledReference`.
+The header adds nominal tick and explicit post-event side before the unmodified
+native CSV columns. Tick counts advance only for nonduplicate timestamps.
+Negative initialization history remains in the sealed raw files. Selection
+keeps every 5 ms, the last row, all post-event duplicates and four rows either
+side of every WTGIBFFRA mode transition. No interpolation is used.
+
+Protocol: add a 100 MW/20 Mvar load at Bus 2, GENCLS H=3/D=0 and TGOV1
+R=.05/T1=.1/Vmax=1.5/Vmin=0/T2=0/T3=.1/Dt=0 at Bus 3. Apply
+`increment_gref(3,'1',-.01)` at 0.05 s. Explicitly set the global native
+bus-frequency measurement time constant to 0.05 s, matching InterPSS. WTGIBFFRA
+uses remote Bus 3 and 1.2 s user recovery. The existing public converter and
+REECD parameters are unchanged. Each timestep has two byte-identical cold runs.
+
+All four inertia STATEs, seventeen VARs, seven REECD STATEs, generator/governor
+STATEs and network channels remain in checkpoint data. Tests explicitly exclude
+inactive REECD PIV/Vcomp storage from parity, preserve raw reset discrepancies,
+and report synchronous-machine speed diagnostically rather than claiming full
+GENCLS/governor conformance. Native REECD VAR6 is the external auxiliary input;
+the inertia contribution is the documented sum of its first three STATEs.
+
+The final runnable native probe, raw RAW/DYR, logs, output and manifests are
+retained under the private native-import slice archive documented in the report.
+Simulator-driving Python remains private under repository policy.

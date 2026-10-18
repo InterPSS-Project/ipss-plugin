@@ -15,6 +15,8 @@ public final class Reecd1Model
     private final Reecd1Data data;
     private Repca1Model plantController;
     private WtgwgoaModel weakGridController;
+    private WtgibffraModel inertialResponseController;
+    private java.util.function.DoubleSupplier inertialFrequency;
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
     private double effectiveTrv;
@@ -35,6 +37,7 @@ public final class Reecd1Model
     private double dipReference;
     private double generatorSpeed = 1.0;
     private double auxiliaryPower;
+    private double inertialAuxiliaryPower;
     private double lastReactiveDesired;
     private boolean initialized;
 
@@ -85,6 +88,10 @@ public final class Reecd1Model
     @Override
     public void initialize(double p, double q, double v) {
         loadEffectiveTimes();
+        if (inertialResponseController != null) {
+            inertialResponseController.initialize(inertialFrequency.getAsDouble());
+            inertialAuxiliaryPower = 0;
+        }
         initialP = p;
         reactiveReference = q;
         powerFactorRatio = Math.abs(p) > EPS ? q / p : 0.0;
@@ -119,6 +126,29 @@ public final class Reecd1Model
 
     @Override
     public void step(double dt, double p, double q, double v, double frequency) {
+        if (inertialResponseController != null) {
+            inertialResponseController.step(dt, p, inertialFrequency.getAsDouble());
+            inertialAuxiliaryPower = inertialResponseController.getAuxiliaryPower();
+            refreshAuxiliaryPowerCommands();
+        }
+        advanceControls(dt, p, q, v, frequency);
+    }
+
+    @Override
+    public void step(double dt, double p, double q, double v, double frequency, int flag) {
+        if (flag != 0 && flag != 1) throw new IllegalArgumentException("REECD stage must be 0 or 1");
+        if (inertialResponseController != null) {
+            inertialResponseController.step(dt, p, inertialFrequency.getAsDouble(), flag);
+            inertialAuxiliaryPower = inertialResponseController.getAuxiliaryPower();
+            refreshAuxiliaryPowerCommands();
+        }
+        // Keep the established REECD realization. Only the inertia kernel uses
+        // both stages; its corrected Paux refreshes final current limits without
+        // advancing REECD lag states, timers or plant controls a second time.
+        if (flag == 0) advanceControls(dt, p, q, v, frequency);
+    }
+
+    private void advanceControls(double dt, double p, double q, double v, double frequency) {
         if (dt <= 0.0 || !Double.isFinite(dt)) return;
         if (plantController != null) {
             plantController.step(dt, p, q, nonzero(v), frequency);
@@ -162,7 +192,7 @@ public final class Reecd1Model
         double voltage = nonzero(measuredVoltage);
         // WECC REEC_D Figure 3: Paux is power on machine base, summed
         // with Pord before conversion to active current.
-        double rawIp = (powerOrder + auxiliaryPower) / voltage;
+        double rawIp = (powerOrder + getAuxiliaryPower()) / voltage;
         double preliminaryIqMaximum = preliminaryReactiveMaximum(rawIp);
 
         double baseReactive;
@@ -229,7 +259,7 @@ public final class Reecd1Model
     }
 
     private void updateCommands(double q) {
-        double rawIp = (powerOrder + auxiliaryPower) / nonzero(measuredVoltage);
+        double rawIp = (powerOrder + getAuxiliaryPower()) / nonzero(measuredVoltage);
         double reactive = data.reactiveControlFlag() == 0
                 ? reactiveLag : q / nonzero(measuredVoltage);
         applyCurrentLimits(rawIp, reactive + reactiveInjection(),
@@ -405,6 +435,19 @@ public final class Reecd1Model
     @Override public void setPlantController(Repca1Model value) { plantController = value; }
     @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
     @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
+    @Override public WtgibffraModel getInertialResponseController() { return inertialResponseController; }
+    /** Attach before initialization; supplied frequency is absolute per unit. */
+    public void setInertialResponseController(WtgibffraModel controller,
+            java.util.function.DoubleSupplier measuredFrequency) {
+        if (initialized || inertialResponseController != null)
+            throw new IllegalStateException("WTGIBFFRA must attach once before REECD initialization");
+        java.util.Objects.requireNonNull(controller);
+        java.util.Objects.requireNonNull(measuredFrequency);
+        inertialResponseController = controller;
+        inertialFrequency = measuredFrequency;
+    }
+    public double getAuxiliaryPower() { return auxiliaryPower + inertialAuxiliaryPower; }
+    public double getExternalAuxiliaryPower() { return auxiliaryPower; }
     public void setGeneratorSpeed(double value) {
         if (!Double.isFinite(value) || value <= 0.0) {
             throw new IllegalArgumentException("REEC_D generator speed must be positive");
@@ -417,10 +460,14 @@ public final class Reecd1Model
             throw new IllegalArgumentException("REEC_D auxiliary power must be finite");
         }
         auxiliaryPower = value;
+        refreshAuxiliaryPowerCommands();
+    }
+
+    private void refreshAuxiliaryPowerCommands() {
         // Paux is an algebraic input after the Pord lag. Publish its boundary
         // change without advancing a state, timer or dip-history sample. Retain
         // the pre-limit reactive request so P-priority headroom can be released.
-        if (initialized) applyCurrentLimits((powerOrder + auxiliaryPower) / nonzero(measuredVoltage),
+        if (initialized) applyCurrentLimits((powerOrder + getAuxiliaryPower()) / nonzero(measuredVoltage),
                 lastReactiveDesired, voltageDipActive());
     }
     public boolean isBlocked() { return blocked || unblockTimer > 0.0; }

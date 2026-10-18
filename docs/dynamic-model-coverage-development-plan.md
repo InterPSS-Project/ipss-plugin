@@ -17,8 +17,11 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 20 loadable,
-seven not implemented**, not merely missing benchmark coverage. WTGWGOA/WTGWGOAU
+The approved native renewable audit finds **27 distinct families: 21 loadable,
+six not implemented**, not merely missing benchmark coverage. WTGIBFFRA now has
+strict standard-native import, REGCA/REGCB + REECD Paux attachment, seven kernel
+replay profiles and bounded governed-SMIB comparisons. Native automatic recovery,
+callback parity and frequency/voltage residual floors remain open. WTGWGOA/WTGWGOAU
 now has strict native import, controller reference routing and bounded SMIB
 evidence; callback/handoff and instantaneous network-post parity remain open. WTDTB1/WTDTBU1
 now has strict native import and bounded SMIB/reference evidence, with explicit
@@ -182,10 +185,31 @@ and state definitions agree.
   - [x] Pass foundation regression on `972fed2ba`: 227 plugin units (six
     optional skips), 1,254 SMIB/catalog/solver tests (one diagnostic skip), zero
     failures/errors. Preserve concurrent ST1/parser work outside this slice.
-  - [ ] Complete strict native import, supported REECD Paux host attachment,
-    remote-frequency fallback, removal/trip/reconnect and coupled SMIB tests.
-    WTGIBFFRA remains missing end-to-end; loadable coverage remains 20/27.
+  - [x] Complete strict standard native one-ICON/45-CON import, deferred
+    REGCA/REGCB + REECD Paux attachment, duplicate/malformed/missing-host rejection,
+    remote/local/missing/inactive frequency-bus selection and GNET/model removal.
+    Keep unproven legacy allocations and cross-tool aliases unsupported.
+  - [x] Preserve independent external and inertial Paux inputs; sum both after
+    Pord and before the voltage divider. Test stage rollback, algebraic corrector
+    refresh, weak-grid Pref coexistence, machine-base conversion and reinit.
+  - [x] Fix the classical GENCLS plugin wrapper's omitted governor initialization,
+    stage stepping and Pm publication, matching the existing DynamicMachine
+    stage ordering. Do not change GENROU or the external core dependency.
+  - [x] Cold-repeat two native governed-SMIB frequency-response profiles with
+    explicit matched 50 ms bus-frequency measurement; retain all event sides,
+    actual parameter audits and native STATE/VAR/network checkpoints.
+    Add two-step flat, frequency-step, three-cycle fault and trip/reinit tests.
+  - [x] Pass merged native-import regression on `9579cf207`: 55 focused checks,
+    234 plugin units (six optional skips) and 1,274 SMIB/catalog/solver tests
+    (one diagnostic skip), zero failures/errors. Update the stale EXST1 lower-
+    limit assertion to the prior committed source convention; leave concurrent
+    ST1/staggered-solver work outside this tested slice.
+  - [ ] Close native automatic-recovery/callback discrepancies, frequency and
+    voltage residual floors, alternate-host/base native profiles, online
+    reconnect and independent PowerWorld artifacts. Loadability is now 21/27,
+    not complete verification.
     See [kernel foundation and explicit limitations](benchmarks/wtgibffra-foundation-2026-10-18.md).
+    See [native import and coupled SMIB verification](benchmarks/wtgibffra-native-import-2026-10-18.md).
     See [Paux correction and WTGIBFFRA investigation](benchmarks/reecd-paux-native-2026-10-18.md).
 - [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
   paths and controller initialization; do not silently substitute REECD.
