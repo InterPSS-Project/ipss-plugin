@@ -414,10 +414,18 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     @Override public Repca1Model getPlantController() { return plantController; }
     @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
     public WindControlStack getWindControlStack() { return windControlStack; }
-    public void setWindControlStack(WindControlStack stack) { windControlStack = stack; }
+    public void setWindControlStack(WindControlStack stack) {
+        windControlStack = stack;
+        applyWindSpeedConvention();
+    }
     public WindSpeedConvention getWindSpeedConvention() { return windSpeedConvention; }
     public void setWindSpeedConvention(WindSpeedConvention convention) {
         windSpeedConvention = java.util.Objects.requireNonNull(convention);
+        applyWindSpeedConvention();
+    }
+    private void applyWindSpeedConvention() {
+        if (windControlStack != null) windControlStack.setHoldInitialSpeedWithoutDriveTrain(
+                windSpeedConvention == WindSpeedConvention.PSSE_GENERATOR_SPEED);
     }
     public double getActivePowerSpeedMultiplier() {
         if (windControlStack == null) return 1.0;

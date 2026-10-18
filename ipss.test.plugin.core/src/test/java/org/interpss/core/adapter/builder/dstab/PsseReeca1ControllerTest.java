@@ -247,6 +247,32 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void nativeUnmodeledShaftSpeedDoesNotFollowTheTorqueSpeedReference() {
+        for (boolean withDrive : new boolean[] {false, true}) {
+            Reeca1Model controller = new Reeca1Model(nativeWindData(1), null);
+            WindControlStack stack = new WindControlStack();
+            stack.setTorqueController(new Wttqa1Model(new Wttqa1Data(
+                    1, 2.4, .5, .04, 60, 1.002, 0,
+                    .2, .58, .4, .72, .6, .86, .8, 1, 0)));
+            if (withDrive) stack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(
+                    new org.interpss.dstab.renewable.Wtdta1Data(5, .1, .8, 1.5, .2)));
+            controller.setWindControlStack(stack);
+            controller.setWindSpeedConvention(Reeca1Model.WindSpeedConvention.PSSE_GENERATOR_SPEED);
+            controller.initialize(.625, .1, 1.0);
+            double initialSpeed = stack.getGeneratorSpeed();
+            for (int index = 0; index < 100; index++) {
+                stack.step(.005, .4, .625, .625, false, 0);
+                stack.step(.005, .4, .625, .625, false, 1);
+            }
+            assertTrue(stack.getTorqueController().getSpeedReference() < initialSpeed);
+            if (withDrive) assertTrue(stack.getGeneratorSpeed() > initialSpeed,
+                    "An attached mechanical model must still supply changing shaft speed");
+            else assertEquals(initialSpeed, stack.getGeneratorSpeed(), 0.0,
+                    "PSS/E retains SPEED while the WTTQA1 reference state moves independently");
+        }
+    }
+
+    @Test
     void coordinatedReactiveControlInitializesBothPisAtEquilibrium() {
         Reeca1Model controller = new Reeca1Model(
                 texasData(1, 1, 1), null);

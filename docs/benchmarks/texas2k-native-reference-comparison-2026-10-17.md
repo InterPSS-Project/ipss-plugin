@@ -81,6 +81,19 @@ In first-20-ms diagnostics, maximum bus-voltage error falls from 0.01655 to
 0.000947 pu in Case 4 and from 0.006732 to 0.0000953 pu in Case 5. These short
 errors are diagnostics, not full-window NRMSE acceptance.
 
+A second native discriminator separates shaft speed from WTTQA1's filtered
+speed reference. With no drive train, native SPEED stays exactly at
+`-0.1224999428` deviation over one second while the torque speed-reference state
+changes. Adding WTDTA1 produces changing shaft speed. The native convention now
+retains initialized shaft speed only when the mechanical model is absent;
+the connected drive train and the existing typed-client convention continue
+to supply changing speed. Focused controller and cross-tool tests pass.
+
+On the identical native two-bus inputs, the corrected active-power order ends
+at `0.603619608` versus native `0.603622019` at one second. The largest order
+error is `0.000632356` at time zero, which still exposes a startup-history
+difference. This diagnostic does not establish full-system accuracy.
+
 ## Open validation
 
 The previous full-run epoch was stopped after isolating the missing native
@@ -96,6 +109,17 @@ the correct native startup algorithm or reproduces every operating-point
 quantity. They remain diagnostic variants. Load conversion is currently
 assumed constant impedance for both P and Q; the reference CONL settings have
 not been confirmed.
+
+A subsequent frozen Case 1 fault-2 prefix completes 1.2 seconds, including the
+fault, in 154.55 seconds. This epoch includes the native speed multiplier but
+precedes the retained-shaft-speed follow-up. Its maximum voltage error is
+`0.0197468` pu and maximum rotor-angle error is `2.4254` degrees. Using only the
+observed squared error and the full ten-second reference sample count/range
+already gives NRMSE lower bounds of `0.00301678`, `0.00236012`, and `0.00430510`
+for buses 6219, 6289, and 6024. Even zero future error cannot make this epoch
+pass those channels. It remains an incomplete diagnostic, with all dependency
+jars frozen and hashed in classpath order. The reference operating point,
+startup history, and remaining fleet response still require verification.
 
 The registered plugin regression was executed with a bounded 3-GB test heap.
 It exposes failures in the old Texas2k no-event stationarity assertion and
