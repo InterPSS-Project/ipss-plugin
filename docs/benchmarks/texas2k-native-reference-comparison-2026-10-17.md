@@ -28,6 +28,12 @@ commercial references and documented equations. Do not change model behavior
 or relax tolerances solely to match ANDES. Missing commercial verification
 remains an open verification gap.
 
+The supplied commercial-simulator outputs are the final accuracy reference for
+this benchmark and for selecting a network convergence tolerance. A tighter
+InterPSS run is an internal numerical-sensitivity control. Agreement between
+InterPSS runs cannot establish correctness or replace the supplied-reference
+voltage, terminal P/Q and rotor-angle acceptance checks.
+
 The local comparison producer retains input and reference SHA-256 hashes,
 freezes compiled runtime jars, preserves event-pre/event-post samples, and
 validates the native float32 clock before mapping samples by integration-step
@@ -1527,7 +1533,7 @@ regression controls, and convergence-only pair are retained privately in
 `2026-10-18-ggov1-rates-and-network-tolerance`. The complete accuracy goal remains
 all six cases and 36 supplied-reference disturbances.
 
-## Network tolerance sensitivity and tighter-control verification
+## Internal network tolerance sensitivity (historical)
 
 Nine additional full ten-second controls test `1e-4`, `1e-5`, `1e-6`, `1e-7`,
 `3e-8`, a fresh `1e-8` repeat, `1e-9`, `1e-10` and `1e-11`. The same frozen
@@ -1580,8 +1586,9 @@ degrees against `1e-11`, but `0.0126538` degrees against `1e-10`; three of the
 26 angle channels exceed `0.01` degrees in the latter comparison. Selecting
 only its favorable comparison would overstate the evidence.
 
-For this fixture, `1e-10` is the conservative accuracy-control setting supported
-by the sweep. Against `1e-11`, worst rotor-angle RMSE is `0.00677680` degrees,
+The internal sweep provisionally selected `1e-10` as a control. This selection
+is withdrawn as an accuracy recommendation by the supplied-reference review
+below. Against the internal `1e-11` run, worst rotor-angle RMSE is `0.00677680` degrees,
 prefault maximum angle difference is `0.000000265278` degrees, and maximum
 bus-voltage difference is `0.0000286842` pu. All five voltage channels and all
 26 terminal-P, terminal-Q and rotor-angle channels meet the incremental
@@ -1590,7 +1597,7 @@ the duplicate post-event observation begins the fault period, which includes
 fault application and clearing. Voltage/P/Q use each tighter-control channel's
 full ten-second range for both periods.
 
-This accuracy control takes `83.8215` seconds and 95,712 iterations, 31.54%
+This internal sensitivity control takes `83.8215` seconds and 95,712 iterations, 31.54%
 more iterations than the original `1e-8` control. Relative to `1e-11`, it saves
 10.74% of iterations and 2.57% of measured integration time. The sweep does not
 establish a tolerance relaxation that both preserves the angle budget and
@@ -1606,3 +1613,81 @@ remain open. No production solver or acceptance assertion changes in this
 study. Raw outputs, logs, producer sources, full per-channel metrics, hash audits
 and the tighter cross-checks are retained privately in
 `2026-10-18-network-tolerance-sweep`.
+
+## Supplied-reference review supersedes the internal recommendation
+
+The supplied commercial-simulator trajectories determine final accuracy.
+The prior `34.54`-degree figure measures a difference between two InterPSS
+trajectories, using 26 diagnostic machines. It is not an error against the
+supplied reference. The same distinction applies to the `0.00677680`-degree
+internal agreement at `1e-10`. Neither establishes which network tolerance
+reproduces the supplied results. The prior `1e-10` accuracy recommendation is
+withdrawn; no network tolerance is accepted by this review.
+
+The first Case 2 supplied-reference event has 20 scored channels: five bus
+voltage magnitudes and angle/P/Q for five nearby generators. Its unchanged
+acceptance contract has 40 criteria. Additional InterPSS diagnostic channels
+without supplied reference values cannot establish commercial-reference
+accuracy or replace these channel checks.
+
+The raw supplied CSV is rehashed against the original recorded digest. The
+20-channel scoring snapshot retains identical values at every original sample;
+its hash, the float-clock mapping and the original scorer remain unchanged.
+All normalization ranges come from the complete ten-second supplied reference.
+
+The saved quarter-cycle trajectories use `1/240`-second steps; the supplied
+trajectory uses `0.0005`-second steps. Their original reference grid contains
+20,003 zero-through-ten-second observations, including event sides. Only 802
+observations have exact common logical timestamps and event sides. Clearing
+also occurs at different step endpoints. This review applies no interpolation,
+time shift, extrapolation or angle offset to bridge those differences.
+
+At those exact common observations, every saved quarter-cycle tolerance already
+fails all five full-window rotor-angle criteria. The table reports rigorous
+**lower bounds**, not complete-grid RMSEs. For a full reference-grid RMSE, even
+assigning zero error to every unmatched observation leaves
+`sqrt(sum(common squared errors) / full reference sample count)`. Actual
+unmatched errors can only increase that value. Prefault maxima in the table
+are observed lower bounds on the complete prefault maximum. Incomplete
+comparisons cannot pass, and criteria not certified to fail are not counted
+as passing.
+
+| Network tolerance | Network iterations | Worst full-window rotor RMSE lower bound, degrees | Largest observed prefault rotor error, degrees | Criteria already certified to fail |
+| --- | ---: | ---: | ---: | ---: |
+| `1e-03` | 18,042 | 21.263117 | 5.668494 | 35 / 40 |
+| `1e-04` | 28,092 | 26.215015 | 2.159870 | 32 / 40 |
+| `1e-05` | 38,705 | 28.258735 | 3.021863 | 35 / 40 |
+| `1e-06` | 49,917 | 20.041444 | 1.704512 | 28 / 40 |
+| `1e-07` | 61,285 | 20.032107 | 1.702664 | 28 / 40 |
+| `3e-08` | 67,310 | 20.047587 | 1.702554 | 28 / 40 |
+| `1e-08` | 72,765 | 20.050296 | 1.702491 | 28 / 40 |
+| `1e-09` | 84,150 | 20.044922 | 1.702490 | 28 / 40 |
+| `1e-10` | 95,712 | 20.043203 | 1.702468 | 28 / 40 |
+| `1e-11` | 107,226 | 20.044301 | 1.702468 | 28 / 40 |
+
+The original-grid comparison is also rerun for the already completed ten-second
+`0.0005`-second run with declared governor actuator rates and a `1e-8` network
+tolerance. The unchanged scorer reproduces every previous per-channel metric
+exactly: 19 of 40 criteria pass, worst rotor-angle RMSE is `20.3843403` degrees,
+prefault maximum rotor error is `0.115432881` degrees, and worst
+fault-and-postfault voltage/P/Q NRMSE is `0.0203515629`. This is a complete
+comparison and remains unaccepted. Its corresponding limits are `0.01`
+degrees, `0.002` degrees and `0.005`.
+
+As a method control, the exact-common-timestamp lower-bound calculation is also
+checked against all five complete fine-step rotor-angle scores. Every bound
+remains below its known complete-grid RMSE, confirming that the sparse
+diagnostic does not masquerade as a full-window score.
+
+Tolerance selection must now follow the supplied-reference gates. Internal
+comparisons retain a role in finding numerical sensitivity and checking
+performance-only changes. Model, initialization and integration discrepancies
+remain to be resolved before declaring an accuracy-preserving tolerance or
+extending acceptance to all six cases and 36 disturbances. The 20-second
+quarter-cycle performance target remains separate and open.
+
+Raw reference snapshots, unchanged scoring sources, exact-common-timestamp
+metrics and error bounds, method controls, the complete original-grid rescore,
+and the superseding decision are retained privately in
+`2026-10-18-supplied-reference-tolerance-review`. Earlier evidence archives are
+retained unchanged as historical numerical-sensitivity records.
