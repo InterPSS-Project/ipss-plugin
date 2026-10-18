@@ -419,6 +419,22 @@ and state definitions agree.
     shunt switching/timers, exact import and downstream reference routing; add
     two-step coupled SMIB disturbance/lifecycle evidence. Foundation data and
     initialization do not raise 25/27 runtime coverage.
+    - [x] Add the thirteen-state kernel, explicit modified-Euler stages,
+      conditional PI non-windup, reference slew, command-rate limits and
+      filtered-voltage freeze/recovery. Preserve native observation coordinates.
+    - [x] Record fourteen two-step native discriminator datasets (28 cold runs)
+      and compare every raw sample of all thirteen states and three observable
+      outputs. Ten pairs are byte-identical; four differ only in a bounded
+      inactive-timer residue, with both raw files retained.
+      See [REPCC kernel evidence](benchmarks/repcc-kernel-2026-10-18.md).
+    - [x] Validate on plugin `8342c05fe` with an isolated archived core jar:
+      56 focused checks, 334 plugin-core tests (six optional skips), 1,379
+      SMIB/model/solver checks (one existing diagnostic skip), zero failures or
+      errors. Audit 33 owned files, 2,079 baseline Java/POM files, all 28 native
+      runs and fourteen complete raw-row replay traces.
+    - [ ] Complete shunt dispatch, import/attachment, remaining initialization
+      and selector/limit profiles, independent coupled SMIB acceptance and the
+      declared integration-history/precision/timer gaps.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter
   and plant models. Do not alias them to REGFMA1 or REPCA1.
   REGFMB1U now has a loadable adapter and bounded native SMIB evidence; its full

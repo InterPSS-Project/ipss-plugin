@@ -8,6 +8,9 @@ DYR import handler or mechanically switched shunt operations. Runtime coverage
 remains 25/27; REPCCU's family and HPLNTD still lack loadable implementations.
 This report is a development checkpoint, not full model verification.
 
+The subsequent [dynamic kernel slice](repcc-kernel-2026-10-18.md) extends this
+foundation. Counts and implementation status below describe the original slice.
+
 ## Exact source boundary
 
 The installed reference Model Library section 27.4, printed pages 913-925
