@@ -301,23 +301,28 @@ public final class Texas2kReferenceRunner {
             values.put("bus_voltage_pu__bus_" + id, bus.getVoltageMag());
             values.put("bus_angle_deg__bus_" + id, Math.toDegrees(bus.getVoltageAng()));
         }
-        for (var generator : event.getAsJsonArray("nearby_generators")) {
+        var observedGenerators = event.has("diagnostic_generators")
+                ? event.getAsJsonArray("diagnostic_generators") : event.getAsJsonArray("nearby_generators");
+        for (var generator : observedGenerators) {
             var g = generator.getAsJsonObject();
             String id = "Bus" + g.get("bus").getAsInt() + "-mach" + g.get("id").getAsString();
             var machine = net.getMachine(id);
             if (machine == null) throw new IllegalStateException("Missing machine " + id);
             String suffix = "__bus_" + g.get("bus").getAsInt() + "__id_" + g.get("id").getAsString();
-            values.put("machine_ANGLE_deg" + suffix, Math.toDegrees(machine.getAngle()));
-            values.put("machine_SPEED_dev_pu" + suffix, machine.getSpeed() - 1.);
-            values.put("machine_EFD_pu" + suffix, machine.getEfd());
-            values.put("machine_PMECH_pu_mbase" + suffix, machine.getPm());
-            values.put("machine_ETERM_pu" + suffix, machine.getDStabBus().getVoltageMag());
+            // Commercial machine channels are zero after disconnection. Keep
+            // the retained internal states intact; this is an output convention.
+            boolean active = machine.isActive();
+            values.put("machine_ANGLE_deg" + suffix, active ? Math.toDegrees(machine.getAngle()) : 0.);
+            values.put("machine_SPEED_dev_pu" + suffix, active ? machine.getSpeed() - 1. : 0.);
+            values.put("machine_EFD_pu" + suffix, active ? machine.getEfd() : 0.);
+            values.put("machine_PMECH_pu_mbase" + suffix, active ? machine.getPm() : 0.);
+            values.put("machine_ETERM_pu" + suffix, active ? machine.getDStabBus().getVoltageMag() : 0.);
             // getPe() includes stator copper loss and may be averaged at an
             // event. PSS/E PELEC/QELEC require the instantaneous terminal power.
-            Complex terminalPower = machine.isActive()
+            Complex terminalPower = active
                     ? machine.getDStabBus().getVoltage().multiply(machine.getIxy().conjugate())
                     : Complex.ZERO;
-            values.put("machine_AIRGAP_pu_mbase" + suffix, machine.getPe());
+            values.put("machine_AIRGAP_pu_mbase" + suffix, active ? machine.getPe() : 0.);
             values.put("machine_PELEC_pu_sbase" + suffix, terminalPower.getReal());
             values.put("machine_QELEC_pu" + suffix, terminalPower.getImaginary());
         }

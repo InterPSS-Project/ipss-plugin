@@ -681,3 +681,35 @@ incomplete attempts are retained separately from the completed evidence.
 
 Frozen evidence is retained under the private verification-artifact directory
 `2026-10-18-first-full-window-and-st1-localization`.
+
+## Disconnected-machine reporting
+
+All three supplied Case 2 generator-trip references set seven machine channels
+to exactly zero for all 18,001 disconnected samples: angle, speed, field voltage,
+mechanical power, terminal voltage, terminal P, and terminal Q. Internal rotor
+states remain nonzero and can continue changing. The comparison runner now
+reports zero for disconnected-machine channels while preserving the engine's
+retained states. Connected-machine and bus observations are unchanged. Optional
+diagnostic-generator observations also fall back to the original scoring subset
+when that extra observation list is absent.
+
+The new regression fails against the previous frozen runner and passes with
+the correction. A focused reactor run passes its one reporting test. Its first
+attempt stopped because an upstream module contained no matching specified test;
+the corrected command permits that upstream condition and confirms the test
+actually runs in the integration module. No new full-suite result is claimed.
+
+An independent ten-second angle/speed audit supports the supplied angle
+convention. The largest one-step angle residual is `0.000217` degrees; nearly all
+increments agree within two native float32 units. Pairwise angle discrepancies
+also remain, so an angle offset is not an accepted remedy. Absolute-angle
+acceptance and all thresholds are unchanged.
+
+The first expanded event batch stopped at initialization because five plans
+lacked the extra observation list. The corrected second batch was deliberately
+stopped after identifying the disconnected-channel reporting issue. Failed and
+interrupted outputs are retained as diagnostics, not completed event results.
+The next batch uses a fresh frozen runner and the original model parameters.
+
+Frozen evidence is retained under the private verification-artifact directory
+`2026-10-18-disconnected-machine-reporting`.
