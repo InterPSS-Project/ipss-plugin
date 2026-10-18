@@ -139,6 +139,7 @@ import org.interpss.core.adapter.builder.dstab.PSSEDStabDirectParserReportTest;
 import org.interpss.core.adapter.builder.dstab.PsseDyrRecordReaderTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegca1ConverterTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
+import org.interpss.core.adapter.builder.dstab.PsseRegfma1NativeSchemaTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecb1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecc1ControllerTest;
@@ -423,6 +424,7 @@ import org.interpss.core.dstab.mach.GenqecIndependentSmibConformanceTest;
 import org.interpss.core.dstab.mach.GentraPsseSmibConformanceTest;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReferenceTest;
 import org.interpss.core.dstab.Regfma1IndependentTrajectoryTest;
+import org.interpss.core.dstab.Regfma1NativeTrajectoryTest;
 import org.interpss.core.dstab.mach.GenrouConformanceTest;
 import org.interpss.core.dstab.mach.GenrouAndesSmibConformanceTest;
 import org.interpss.core.dstab.mach.MachineSaturationTest;
@@ -597,6 +599,7 @@ import org.junit.platform.suite.api.Suite;
 	St10cPsseSmibConformanceTest.class,
 	EmbeddedTrajectoryReferenceTest.class,
 	Regfma1IndependentTrajectoryTest.class,
+	Regfma1NativeTrajectoryTest.class,
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
 	Esst4bAndesSmibConformanceTest.class,
@@ -855,6 +858,7 @@ import org.junit.platform.suite.api.Suite;
 	Lcfb1PrefControllerTest.class,
 	PsseRegca1ConverterTest.class,
 	PsseRegfma1ModelTest.class,
+	PsseRegfma1NativeSchemaTest.class,
 	PsseReeca1ControllerTest.class,
 	PsseReecb1ControllerTest.class,
 	PsseReecc1ControllerTest.class,

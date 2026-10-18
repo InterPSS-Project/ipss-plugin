@@ -9,6 +9,23 @@ The generated [support matrix](dynamic-model-support-matrix.md) records parser
 and runtime availability. A `LOADABLE` row does not prove independent equation,
 trajectory, or full-system acceptance.
 
+**User scope revision, 2026-10-17: focus on SMIB verification.** Do not require
+or launch full Texas2k dynamic simulations for this work. Keep Texas2k's input
+model inventory as a coverage requirement, but verify those models using
+small, independently reproducible machine/infinite-bus or controller testbeds.
+Existing system results and failures remain historical evidence, not release
+gates for this revised objective.
+
+**Latest scoped acceptance status: incomplete.** Stabilizer/renewable evidence
+inventories, exhaustive independent model profiles and remaining provenance
+gaps still need closure. Generated `LOADABLE` entries do not prove complete
+verification. The new `DynamicModelSmibTestSuite` selects model-unit and
+small-network independent comparisons without full Texas2k/WECC/IEEE39 runs.
+Earlier system gates below apply only to their recorded snapshots; the latest
+six-case drift failures are retained in the
+[REGFMA1 report](benchmarks/regfma1-native-schema-2026-10-17.md), outside the
+revised SMIB acceptance scope.
+
 Scope remains native PSS/E RAW/DYR with `_gnet.idv` and `_MODREMOVE.idv`
 preparation. GE PSLF DYD inputs and rows without a native PSS/E model name are
 excluded. Reuse core GENROU and existing controller engines where equations
@@ -327,15 +344,19 @@ proof of current-system accuracy, or mark this open acceptance item complete.
    user-requested PowerWorld/WECC diagrams, implement, compare the first
    divergent derivative/state, and cold-regenerate twice. Do not fit parameters
    or loosen a bound to conceal a structural difference.
-5. Run focused tests, registered core tests, available six-case smokes, strict
-   flat gate, 15-fault matrix, and complete registered reactor tests. Record
-   unavailable private-data gates explicitly as unexecuted.
+5. Run focused tests, applicable registered core/unit regressions and the
+   complete `DynamicModelSmibTestSuite`. For each model, verify schema,
+   initialization/equilibrium, the independent three-cycle fault or input-step
+   response, active limits/selectors, timestep refinement and lifecycle paths.
+   Do not launch full Texas2k dynamic gates for this revised scope. Record
+   unavailable independent reference profiles explicitly as unexecuted.
 6. Update this checklist and the generated support matrix as appropriate.
    Commit a scoped slice and report its hash, evidence, and remaining gaps.
 
-Completion requires both the model evidence inventory and all Texas2k release
-gates to be closed. A green public regression with skipped private cases does
-not establish that milestone.
+Completion of the revised objective requires the full model evidence inventory
+and each model's independent SMIB/profile gates to be closed. Full Texas2k
+system acceptance is separate and not required here. A green SMIB suite does
+not establish exhaustive coverage when missing profiles or artifacts remain.
 
 ## Generator/governor evidence slice
 
@@ -514,9 +535,11 @@ are not complete. No gain, physical parameter or comparison bound was fitted.
   fifteen-event fault gates enabled: 2,704 tests, 2,615 passed, 89 skipped,
   zero failures/errors. All fifteen baseline trajectory hashes are unchanged.
   Archive enabled settings and fresh reports; restore private opt-ins to false.
-- [ ] Implement exact PSS/E 36.7 REGFMA1 two-ICON/eighteen-CON (twenty-value)
+- [x] Implement exact PSS/E 36.7 REGFMA1 two-ICON/eighteen-CON (twenty-value)
   parsing and RAW coupling impedance, separately from Texas2k's nineteen-value
-  legacy exchange. Current parser loadability does not prove this schema.
+  legacy exchange. Implementation and focused native comparisons now pass;
+  native comparisons and the selected SMIB/model-unit regression pass. This
+  does not close the remaining independent profiles listed below.
 - [ ] Add complete active-limiter cross-tool trajectory comparisons for the
   new rating profiles; boundary agreement alone is insufficient.
 - [x] Correct the inherited fault writer's one-step offset between monitor
@@ -532,6 +555,53 @@ are not complete. No gain, physical parameter or comparison bound was fitted.
 See the [source contracts, failures-before-fix and benchmark evidence](benchmarks/regfma1-boundaries-2026-10-17.md).
 The two boundary fixes do not directly explain the severe source-case faults:
 its GFM ratings equal the network base and no plant offset is attached.
+
+### Native REGFMA1 schema and initialization follow-up
+
+- [x] Implement the exact native twenty-value layout and RAW ZSOURCE interface,
+  keeping native parameter validation separate from PowerWorld corrections.
+- [x] Retain and explicitly identify the nineteen-value Texas2k exchange; allow
+  callers to pin a known layout rather than infer a truncated record.
+- [x] Fix initialization before core impedance-base setup; discriminate actual
+  Norton power at 50, 100 and 200 MVA, with a failing-before-fix test.
+- [x] Expose pure immutable native nine-STATE/eight-VAR observations without
+  changing solver coordinates or existing named-state keys.
+- [x] Cold-repeat nine native datasets; preserve twenty completed native runs
+  and the failed API-allocation diagnostic. Compare all 24 regular-endpoint
+  channels and halve both simulators' steps without changing physical inputs.
+- [x] Fix the native internal-voltage VAR coordinate using an active-Imax
+  discriminator; retain pre-limit Edroop and verify current limiting/release
+  at matched and half steps. No physical limiter equation was changed.
+- [x] Replay a frozen native probe in a fresh isolated input tree and reproduce
+  the complete RAW, DYR and CSV hashes, with the permanent quality auditor.
+- [x] Pass 41 final focused tests and 2,945 core tests with zero failures/errors/skips.
+- [x] Archive and hash-verify 2,673 source, reference, audit and focused-build
+  evidence files in the ignored private native-evidence archive.
+- [x] Finish and preserve the initial full regression: 2,747 tests, three
+  failures, zero errors, 91 skips. Correct its inventory assertion in focused
+  tests. Do not erase its strict-flat/smoke failures or mark it green.
+- [x] Follow the revised user scope: stop the subsequent full-system run and
+  restore the private full-system opt-ins to their disabled baseline.
+- [x] Finish the complete selected SMIB/model-unit regression with the final
+  native observation fix, inventory guard and new active-limit references.
+  1,150 tests, zero failures/errors, one existing opt-in diagnostic skipped.
+  Plugin-core units: 129 tests, zero failures/errors, six optional skips.
+- [x] Seal final evidence: native follow-up 91 files, core validation 1,629,
+  initial full regression 1,346, final SMIB/unit validation 666; all hashes pass.
+- [x] Commit the tested core integration as `a036d9a78` in the separate lifecycle
+  checkout; the original concurrently used core master is not reset or edited.
+- [ ] Finish native active-PQ-limit, plant-input, lifecycle and exact
+  instantaneous event-post comparisons before complete REGFMA1 acceptance.
+- [ ] Verify active-Imax operation with terminal-voltage PI enabled; current
+  active-limit references use direct voltage and reactive plant input only.
+- [x] Record final SMIB regression evidence and create the scoped native-schema,
+  initialization-base, observation and SMIB-gate implementation slice.
+
+Supplied-case no-event drift under the newer native wind semantics is deferred
+to separate full-system work under the user's revised scope. Old passing
+stationary-flat claims apply to their recorded snapshots, not the latest one.
+
+See [native REGFMA1 source, base bug and trajectory evidence](benchmarks/regfma1-native-schema-2026-10-17.md).
 
 ## Synchronous fault-observation slice
 

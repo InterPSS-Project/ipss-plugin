@@ -110,7 +110,7 @@ public final class DynamicModelCatalog {
             descriptor("WTTQA1", Set.of("WTTQAU1"), TORQUE_CONTROLLER, 16, LOADABLE,
                     "org.interpss.dstab.renewable.Wttqa1Model",
                     "Pref%20Controller%20WTGTRQ_A.htm"),
-            descriptor("REGFMA1", Set.of(), CONVERTER_MACHINE, 19, LOADABLE,
+            descriptorWithVariants("REGFMA1", Set.of(), CONVERTER_MACHINE, 20, new int[]{19}, LOADABLE,
                     "org.interpss.dstab.renewable.Regfma1Model",
                     "Machine%20Model%20REGFM_A1.htm")
     );

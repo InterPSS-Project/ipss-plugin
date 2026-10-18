@@ -3,6 +3,7 @@ package org.interpss.core.dstab;
 import org.interpss.test.TestConfig;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -60,12 +61,27 @@ class Texas2kDyrInventoryTest {
 
         List<String> schemaMismatches = new ArrayList<>();
         union.byModel().forEach((name, stats) -> {
-            int expectedParameterCount = org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find(name)
-                    .orElseThrow().parameterCount();
+            var descriptor = org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find(name).orElseThrow();
+            // These reviewed source files use the legacy exchange, not the
+            // newer native PSS/E 36.7 primary layout. Keep the exact inventory
+            // anchor while independently checking catalog acceptance.
+            int expectedParameterCount = name.equals("REGFMA1") ? 19 : descriptor.parameterCount();
             if (!stats.parameterCounts().equals(java.util.Set.of(expectedParameterCount))) {
                 schemaMismatches.add(name + "=" + stats.parameterCounts());
             }
+            stats.parameterCounts().stream().filter(count -> !descriptor.recordSchema().accepts(count))
+                    .forEach(count -> schemaMismatches.add(name + " unsupported count=" + count));
         });
         assertTrue(schemaMismatches.isEmpty(), "Unexpected Texas2k DYR schemas: " + schemaMismatches);
+    }
+
+    @Test
+    void regfmaCatalogDistinguishesNativePrimaryAndReviewedLegacyVariant() {
+        var descriptor = org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMA1").orElseThrow();
+        assertEquals(20, descriptor.parameterCount());
+        assertTrue(descriptor.recordSchema().accepts(19));
+        assertTrue(descriptor.recordSchema().accepts(20));
+        assertFalse(descriptor.recordSchema().accepts(18));
+        assertFalse(descriptor.recordSchema().accepts(21));
     }
 }

@@ -166,6 +166,9 @@ public class PSSEDStabDirectParser {
     private final List<PendingUel2c> pendingUel2c = new ArrayList<>();
     private final List<PendingOel2c> pendingOel2c = new ArrayList<>();
     private boolean strictImport;
+    /** Pin a known native schema when legacy cardinality inference is not appropriate. */
+    public enum Regfma1RecordFormat { AUTO_COMPATIBLE, NATIVE_PSSE_36_7, TEXAS2K_LEGACY }
+    private Regfma1RecordFormat regfma1RecordFormat = Regfma1RecordFormat.AUTO_COMPATIBLE;
     private final Set<GeneratorKey> gnetRemovedGenerators = new HashSet<>();
     private final Set<GeneratorKey> modelRemovedGenerators = new HashSet<>();
     private DynamicModelImportReport lastImportReport = DynamicModelImportReport.empty();
@@ -177,6 +180,12 @@ public class PSSEDStabDirectParser {
     /** Enable or disable fail-fast coverage checking after a complete DYR import. */
     public PSSEDStabDirectParser setStrictImport(boolean strictImport) {
         this.strictImport = strictImport;
+        return this;
+    }
+
+    /** AUTO retains existing Texas2k imports but identifies their distinct layout in the report. */
+    public PSSEDStabDirectParser setRegfma1RecordFormat(Regfma1RecordFormat format) {
+        regfma1RecordFormat = java.util.Objects.requireNonNull(format,"format");
         return this;
     }
 
@@ -335,6 +344,12 @@ public class PSSEDStabDirectParser {
     }
 
     private boolean hasExpectedParameterCount(PsseDyrRecord record) {
+        if (record.canonicalModelName().equals("REGFMA1")) {
+            if (regfma1RecordFormat == Regfma1RecordFormat.NATIVE_PSSE_36_7)
+                return record.parameterCount() == 20;
+            if (regfma1RecordFormat == Regfma1RecordFormat.TEXAS2K_LEGACY)
+                return record.parameterCount() == 19;
+        }
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .map(model -> model.recordSchema().accepts(record.parameterCount()))
                 .orElse(true);
@@ -753,7 +768,7 @@ public class PSSEDStabDirectParser {
             case "DERA1":
                 return procDera1(busId, genId, fields);
             case "REGFMA1":
-                return procRegfma1(busId, genId, fields);
+                return procRegfma1(busId, genId, record);
             case "CSVGN5":
                 return procCsvgn5(busId, genId, fields);
             case "SVSMO1T2":
@@ -3374,20 +3389,26 @@ public class PSSEDStabDirectParser {
         return builder.addDera1(busId,genId,d)!=null;
     }
 
-    // PSS/E REGFMA1: IBUS MODEL ID Vflag TPf TQf TVf Imax Emax Emin
-    // Pmax Pmin Qmax Qmin Mp Mq Kppmax Kipmax Kpqmax Kiqmax Kpv Kiv
-    private boolean procRegfma1(String busId, String genId, String[] f) {
-        if (f.length < 22) return false;
-        Regfma1Data data = new Regfma1Data(
-                getInt(f, 3, 0), getDouble(f, 4, 0.02), getDouble(f, 5, 0.02),
-                getDouble(f, 6, 0.02), getDouble(f, 7, 0.0),
-                getDouble(f, 8, 1.2), getDouble(f, 9, 0.0),
-                getDouble(f, 10, 1.0), getDouble(f, 11, 0.0),
-                getDouble(f, 12, 1.0), getDouble(f, 13, -1.0),
-                getDouble(f, 14, 0.01), getDouble(f, 15, 0.05),
-                getDouble(f, 16, 0.01), getDouble(f, 17, 0.1),
-                getDouble(f, 18, 3.0), getDouble(f, 19, 20.0),
-                getDouble(f, 20, 0.0), getDouble(f, 21, 6.0));
+    private boolean procRegfma1(String busId, String genId, PsseDyrRecord record) {
+        boolean nativeLayout = record.parameterCount() == 20;
+        if (!nativeLayout && record.parameterCount() != 19) return false;
+        int offset = nativeLayout ? 2 : 1;
+        int vflag = record.intParameter(0);
+        double[] constants = new double[18];
+        for (int i=0;i<constants.length;i++) constants[i]=record.doubleParameter(offset+i);
+        Regfma1Data data;
+        if (nativeLayout) {
+            var bus = builder.getBaseDStabNetwork().getDStabBus(busId);
+            DStabGen gen = (DStabGen)bus.getContributeGen(genId);
+            if (gen.getXfrZ() != null && gen.getXfrZ().abs() != 0.0)
+                throw new IllegalArgumentException("Native REGFMA1 must not have an implicit RAW transformer (RTRAN/XTRAN)");
+            data = Regfma1Data.nativePsse(vflag,record.intParameter(1),gen.getSourceZ(),constants);
+        } else {
+            data = new Regfma1Data(vflag,constants[0],constants[1],constants[2],constants[3],
+                    constants[4],constants[5],constants[6],constants[7],constants[8],constants[9],
+                    constants[10],constants[11],constants[12],constants[13],constants[14],constants[15],
+                    constants[16],constants[17]);
+        }
         return builder.addRegfma1(busId, genId, data) != null;
     }
 
@@ -4072,6 +4093,10 @@ public class PSSEDStabDirectParser {
     }
 
     private String attachedMessage(PsseDyrRecord record) {
+        if (record.canonicalModelName().equals("REGFMA1"))
+            return record.parameterCount() == 20
+                    ? "PSS/E 36.7 native 2-ICON/18-CON REGFMA1; coupling uses machine-base RAW ZSOURCE"
+                    : "Texas2k legacy 19-value REGFMA1; QVflag=0 and compatibility Re=0, Xe=0.15; not native PSS/E 36.7";
         return DynamicModelCatalog.find(record.canonicalModelName())
                 .map(model -> model.supportStatus() == DynamicModelSupportStatus.PARTIAL
                         ? "compatibility implementation is partial and is not accepted by strict import"
@@ -4080,6 +4105,11 @@ public class PSSEDStabDirectParser {
     }
 
     private String rejectionMessage(String type, PsseDyrRecord record) {
+        if (type.equals("REGFMA1") && !hasExpectedParameterCount(record)
+                && regfma1RecordFormat != Regfma1RecordFormat.AUTO_COMPATIBLE)
+            return "REGFMA1 expected "
+                    + (regfma1RecordFormat == Regfma1RecordFormat.NATIVE_PSSE_36_7 ? 20 : 19)
+                    + " parameters for " + regfma1RecordFormat + " but found " + record.parameterCount();
         if (type.equals("EXDC2A")) {
             return "EXDC2A is a PSLF/PowerWorld model name, not native PSS/E DYR; "
                     + "the WECC row maps to EXDC2, whose Switch parameter is not Tf2. "

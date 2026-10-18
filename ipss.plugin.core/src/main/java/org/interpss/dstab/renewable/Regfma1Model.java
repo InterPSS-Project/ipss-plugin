@@ -65,6 +65,14 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
         if (parentGen == null || bus == null || parentGen.getGen() == null) return false;
         systemBaseMva = bus.getNetwork().getBaseMva();
         deviceBaseMva = parentGen.getMvaBase() > EPS ? parentGen.getMvaBase() : systemBaseMva;
+        // The core forms its dynamic matrix after device initialization. Do not
+        // derive E0 with the untouched default multiplier and then inject through
+        // a differently scaled impedance once the matrix sets the machine base.
+        double impedanceBase = parentGen.getMvaBase() > EPS
+                ? com.interpss.core.funcImpl.AcscFunction.zMultiFactor.apply(parentGen)
+                : systemBaseMva / deviceBaseMva;
+        if (!finite(impedanceBase) || impedanceBase <= 0.0) return false;
+        parentGen.setZMultiFactor(impedanceBase);
         double scale = systemBaseMva / deviceBaseMva;
         Complex voltage = bus.getVoltage();
         Complex systemPower = parentGen.getGen();
@@ -363,6 +371,52 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
     public double getReactiveUpperLimitIntegral() { return qUpperIntegral; }
     public double getReactiveLowerLimitIntegral() { return qLowerIntegral; }
     public boolean isCurrentLimited() { return currentLimited; }
+
+    /**
+     * Published PSS/E 36.7 K..K+8 observation coordinates, in that order.
+     * The bypassed voltage PI is an unused zero native state when Vflag=0;
+     * the engine's constant initialization storage is not that published state.
+     * Existing generic named-state keys and integration coordinates are unchanged.
+     */
+    public Map<String, Double> getPsseStateSnapshot() {
+        Map<String, Double> result = new LinkedHashMap<>();
+        result.put("Active power measurement transducer", pMeasured);
+        result.put("Active upper limit PI integrator", pUpperIntegral);
+        result.put("Active lower limit PI integrator", pLowerIntegral);
+        result.put("Internal source angle", angle);
+        result.put("Reactive power measurement transducer", qMeasured);
+        result.put("Terminal voltage measurement transducer", vMeasured);
+        result.put("Reactive upper limit PI integrator", qUpperIntegral);
+        result.put("Reactive lower limit PI integrator", qLowerIntegral);
+        result.put("Terminal voltage PI integrator", data.vflag() == 0 ? 0.0 : voltageIntegral);
+        return Collections.unmodifiableMap(result);
+    }
+
+    /** Pure L..L+7 observations; terminal current is on the device MVA base. */
+    public Map<String, Double> getPsseVariableSnapshot() {
+        Complex voltage = getDStabBus().getVoltage();
+        Complex impedance = couplingImpedance();
+        Complex current = polar(eDroop, angle).subtract(voltage).divide(impedance);
+        double maximum = data.imax() * deviceBaseMva / systemBaseMva;
+        if (data.imax() > EPS && current.abs() > maximum)
+            current = polar(maximum, current.getArgument());
+        Map<String, Double> result = new LinkedHashMap<>();
+        result.put("Voltage command", voltageCommand(state()));
+        // Native L+1 retains Edroop before the transient current limit. The
+        // equivalent limited Norton source is a different algebraic quantity.
+        result.put("Internal source voltage magnitude before current limit", eDroop);
+        result.put("Active upper limit PI output", Math.min(0.0,
+                data.kppmax() * (data.pmax() - pMeasured) + pUpperIntegral));
+        result.put("Active lower limit PI output", Math.max(0.0,
+                data.kppmax() * (data.pmin() - pMeasured) + pLowerIntegral));
+        result.put("Reactive upper limit PI output", Math.min(0.0,
+                data.kpqmax() * (data.qmax() - qMeasured) + qUpperIntegral));
+        result.put("Reactive lower limit PI output", Math.max(0.0,
+                data.kpqmax() * (data.qmin() - qMeasured) + qLowerIntegral));
+        result.put("Terminal current magnitude on machine base", current.abs() * systemBaseMva / deviceBaseMva);
+        result.put("Fixed voltage reference", data.qvflag() == 0 ? vReference : 0.0);
+        return Collections.unmodifiableMap(result);
+    }
 
     @Override
     public Map<String, Double> getNamedStates() {
