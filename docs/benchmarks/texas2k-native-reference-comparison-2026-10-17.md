@@ -1303,7 +1303,7 @@ with profiling disabled for the before/after timing controls.
 | Existing interpreter | 230.1045 | 46.8975 |
 | Resolved live expression bindings | 220.0948 | 50.7518 |
 | Combined execution-plan prototype and fixed-input ST1/PSS observation | 113.7893 | 45.9377 |
-| Production default, final source snapshot | 118.7351 | 49.2201 |
+| First production execution plan | 118.7351 | 49.2201 |
 
 All monitored trajectory CSV bytes match the interpreter in both complete
 ten-second prototype controls and the final production-source control, including
@@ -1350,12 +1350,12 @@ Independent exciter/stabilizer trajectories and the existing staggered history
 tests retain their assertions and tolerances. The earlier registered-suite
 failures remain separately documented above.
 
-The next execution design should retain the annotation front end and lower hot
-graphs into explicit numerical kernels with primitive state, input and output
-arrays. Output, derivative, limiter projection and algebraic feedback remain
-separate stage operations. The current interpreter supplies the comparison
-path for every kernel; output reuse requires an explicit unchanged-input/state
-scope. A controller-wide output cache without such a scope would be unsafe.
+The subsequent implementation below retains the annotation front end and lowers
+hot graphs into explicit numerical kernels with primitive working arrays.
+Output, derivative, limiter projection and algebraic feedback remain separate
+stage operations. The interpreter supplies the comparison path for every kernel;
+output reuse requires an explicit unchanged-input/state scope. A controller-wide
+output cache without such a scope would be unsafe.
 
 ```mermaid
 flowchart LR
@@ -1370,3 +1370,81 @@ Performance evidence, immutable source overlays, exact inputs, trajectories,
 profiling recordings and numerical controls are retained privately in
 `2026-10-18-cml-quarter-cycle-performance`. The 36-event accuracy goal remains
 open and is separate from this performance improvement.
+
+## Numerical stage kernels and measured network costs
+
+The completed CML follow-up reduces the same ten-second Case 2 integration
+from **118.7351 to 79.3730 seconds**, a further **33.15% reduction**. Nested
+network time is essentially unchanged at `49.1904` seconds. The complete loop
+including observations takes `80.7695` seconds. The 20-second target remains
+open. These remain single fresh-process observations on the same workstation.
+
+The runtime now prepares an ordered numerical stage tape with reusable arrays
+for inputs, states, derivatives, outputs and variable-limit expression values.
+All parent and child inputs and limits are captured before any state advances.
+Predictor and corrector arithmetic, retained derivatives, two observation
+sweeps and static feedback order follow the interpreter. Reentrant calls use
+separate frames; failed preparation releases its partial frame.
+
+Exact standard delay, lead-lag, washout and PI blocks use specialized numerical
+kernels. Custom subclasses and non-windup projection retain their existing
+methods. Public block states remain authoritative, including state restoration.
+Every block-output getter remains live, including shared block aliases and
+changing limits. The solver reuses a settled PSS2A output within each exciter
+evaluation only while all its physical inputs and states are fixed, and releases
+that scope before governor and machine updates.
+
+All 218 recorded numerical channels and 2,405 samples are byte-identical to
+the earlier production control, including history and event-side observations.
+The focused core checks pass 36 tests and the plugin checks pass ten. These
+cover complete solver endpoints, fixed-input scope handling and independent
+exciter/stabilizer trajectories. A warmed two-lag component allocation control performs 200,000
+predictor/corrector pairs with zero measured allocated bytes on the numerical
+path, versus 147,200,368 bytes through the interpreter, with identical final
+state bits. This component result does not imply zero system-wide allocation.
+
+The registered core plugin suite completes 2,006 tests with three failures,
+zero errors and 13 skips. The failures match the earlier run: Case 1 no-event
+voltage drift in `Texas2kSixCaseDynamicSmokeTest`, the large static power-flow
+case in `MatpowerCase8387PegaseTest`, and the voltage comparison in
+`CGMESCasP4AclfSmokeStubTest`. Their assertions are unchanged; the suite is
+not classified as passing.
+
+A separate diagnostic run times network phases without changing equations or
+production sources. Its trajectory is also byte-identical. During ten simulated
+seconds it performs **two numeric factorizations**, at fault application and
+clearing, taking **0.0670 seconds combined**, including compressed-column
+assembly. The original initialization factorization is outside the timed window.
+Both event factorizations reuse cached symbolic analysis. The LU factors are
+reused while the network matrix remains unchanged.
+
+| Network operation | Measured wall time, seconds |
+| --- | ---: |
+| Current-injection calculation and right-hand-side assembly | 15.4497 |
+| Custom current injections | 0.0036 |
+| Linear-solver interface, including triangular solves | 10.5621 |
+| Bus-voltage update, validation and magnitude checks | 10.2200 |
+| Remaining iteration control, convergence checks and network work | approximately 14.6828 |
+| Complete nested network time | 50.9182 |
+
+The `10.5621`-second linear-solver measurement includes `8.4893` seconds in
+72,767 factored triangular solves; those times must not be added together.
+The normal iteration diagnostics count 72,765 iterations across 4,800 network
+calls, averaging 15.16 iterations per call, with a maximum of 39. The low-level
+counter also observes the two event-processor solves in the timed integration
+window.
+Instrumentation and fresh-process variation increase total integration time
+to `83.0985` seconds in this diagnostic control.
+
+Repeated nonlinear network work is the remaining bottleneck. Profiling also
+identifies EMF collection iteration, repeated voltage-angle calculations,
+complex-number work and convergence-table accesses. The next optimization
+should reduce per-iteration bus/device traversal and allocation, reuse numerical
+right-hand-side work buffers, and investigate the high iteration count while
+preserving the existing tolerance and physical equations. Reusing a factorized
+matrix does not permit reusing voltage-dependent current injections.
+
+Immutable sources, exact inputs, paired trajectories, allocation controls,
+network counters, raw profiles and validation logs are retained privately in
+`2026-10-18-cml-numerical-stage-kernels`. The 36-event independent accuracy goal
+remains open.

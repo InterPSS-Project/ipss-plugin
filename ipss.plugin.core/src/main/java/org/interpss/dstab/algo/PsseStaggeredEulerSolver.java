@@ -428,10 +428,19 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     &&!m.getStabilizer().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
                 throw new DStabSimuException("Stabilizer derivative failed: "+m.getId());
             if (m.hasExciter()&&m.getExciter().isActive()) {
-                if (!m.getExciter().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
-                    throw new DStabSimuException("Exciter derivative failed: "+m.getId());
-                if (initialEndpoint || !(m.getExciter() instanceof IEEE1981ST1Exciter))
-                    m.setEfd(m.getExciter().getOutput(m));
+                // PSS state and physical inputs stay fixed while this AVR is
+                // evaluated. Release before governor or machine updates below.
+                Ieee1992PSS2AStabilizer held = runtimeControllerOptimizationEnabled
+                        && m.getStabilizer() instanceof Ieee1992PSS2AStabilizer pss ? pss : null;
+                if (held != null) held.beginFixedInputObservation();
+                try {
+                    if (!m.getExciter().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
+                        throw new DStabSimuException("Exciter derivative failed: "+m.getId());
+                    if (initialEndpoint || !(m.getExciter() instanceof IEEE1981ST1Exciter))
+                        m.setEfd(m.getExciter().getOutput(m));
+                } finally {
+                    if (held != null) held.endFixedInputObservation();
+                }
             }
             if (m.hasGovernor()&&m.getGovernor().isActive()) {
                 Participant p=participantByController.get(m.getGovernor());
