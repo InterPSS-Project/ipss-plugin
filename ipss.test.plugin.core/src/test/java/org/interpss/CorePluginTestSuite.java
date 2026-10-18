@@ -149,6 +149,7 @@ import org.interpss.core.adapter.builder.dstab.PsseReecd1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeceModelTest;
 import org.interpss.core.dstab.ReeceNativeImportSmibIntegrationTest;
 import org.interpss.core.dstab.Regfmb1NativeContractConformanceTest;
+import org.interpss.core.dstab.Regfmb1NativeRuntimePartialConformanceTest;
 import org.interpss.core.dstab.ReeceRegcbNativePartialConformanceTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
@@ -919,6 +920,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseReeceModelTest.class,
 	ReeceNativeImportSmibIntegrationTest.class,
 	Regfmb1NativeContractConformanceTest.class,
+	Regfmb1NativeRuntimePartialConformanceTest.class,
 	ReeceRegcbNativePartialConformanceTest.class,
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,

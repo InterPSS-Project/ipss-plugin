@@ -62,8 +62,16 @@ and state definitions agree.
 - [x] Validate the REGFMB1U foundation: 32 focused checks, 276 plugin-core tests
   (six optional skips), 1,313 SMIB/model tests (one existing diagnostic skip),
   zero failures/errors; audit all eight native runs and four byte-identical pairs.
-- [ ] Implement REGFMB1U fourteen-state dynamics, selectors/limits/PLL freezing,
-  strict wrapper attachment, plant routing and lifecycle, then replay/compare.
+- [x] Implement the typed REGFMB1U fourteen-state kernel and replay all states
+  for thirteen native datasets, retaining explicit modified-/staggered-Euler
+  differences. Add cold-paired selector/sign/washout/PLL discriminators.
+- [x] Validate the kernel: 44 focused checks, 283 plugin-core tests (six optional
+  skips), 1,318 SMIB/model tests (one existing diagnostic skip), zero failures/errors;
+  audit 22 new native runs and eleven byte-identical cold pairs. Keep family missing.
+- [ ] Expand native active-limit, zero-time, negative-power and PLL recovery
+  profiles; add strict wrapper/device attachment, plant routing and lifecycle,
+  then independently compare coupled flat/fault/trip trajectories.
+  See [kernel evidence and remaining work](benchmarks/regfmb-kernel-2026-10-18.md).
   This foundation does not increase the 22/27 loadability count. See
   [REGFMB1 native foundation](benchmarks/regfmb-native-contract-2026-10-18.md).
 - [x] Native REECE import slice: exact eight-ICON/79-CON standard schema,

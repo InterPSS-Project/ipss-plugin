@@ -143,7 +143,9 @@ public final class RenewableEvidenceInventory {
             Set.of("REGFMB1","REGFMC1",
                     "REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
+                        model.equals("REGFMB1")
+                                ?"Native 36.7 REGFMB1U typed fourteen-state kernel and partial recorded-input/boundary evidence exist; no catalog/parser/network-device attachment yet. Remaining selectors, active limits, lifecycle and independent coupled acceptance are open; family remains missing."
+                                :"No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {
