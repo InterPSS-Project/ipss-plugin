@@ -590,10 +590,27 @@ its GFM ratings equal the network base and no plant offset is attached.
   initial full regression 1,346, final SMIB/unit validation 666; all hashes pass.
 - [x] Commit the tested core integration as `a036d9a78` in the separate lifecycle
   checkout; the original concurrently used core master is not reset or edited.
-- [ ] Finish native active-PQ-limit, plant-input, lifecycle and exact
+- [x] Verify all four native P/Q limit paths in direct-voltage mode, at matched
+  and half timesteps with twice-cold native references and active-branch guards.
+- [ ] Finish native plant-input, lifecycle and exact
   instantaneous event-post comparisons before complete REGFMA1 acceptance.
-- [ ] Verify active-Imax operation with terminal-voltage PI enabled; current
-  active-limit references use direct voltage and reactive plant input only.
+- [x] Verify active-Imax operation with terminal-voltage PI enabled, including
+  native current limiting/release and voltage-integral trajectories at two steps.
+- [x] Correct native voltage PI anti-windup: bound s8 independently of the
+  algebraic proportional-plus-integral output. Preserve typed/PowerWorld behavior
+  until its active-voltage-limit branch has its own independent evidence.
+- [x] Preserve two failing-before-fix guards and both-step structural mismatch;
+  verify upper integral saturation and inward release against native PSS/E.
+- [x] Expand to fifteen fixed-digest native datasets with immutable source-DYR
+  CON vectors. Pass 54 focused checks and the 1,155-test SMIB gate (one existing
+  diagnostic skip), plus 129 plugin units (six optional skips); no full Texas2k
+  dynamics. Seal/hash-verify 844 new evidence files and two exact isolated replays.
+- [x] Record implementation in commit `26660c135`; recheck its four model/test
+  files against the completed isolated verification snapshot, and retain the
+  full validation report rather than relying on its smaller focused subset.
+- [ ] Add independent lower voltage-integral saturation, terminal-voltage PI/PQ
+  limiter interaction, native zero-time/limit-initialization and typed/PowerWorld
+  active-voltage-limit profiles.
 - [x] Record final SMIB regression evidence and create the scoped native-schema,
   initialization-base, observation and SMIB-gate implementation slice.
 
@@ -602,6 +619,8 @@ to separate full-system work under the user's revised scope. Old passing
 stationary-flat claims apply to their recorded snapshots, not the latest one.
 
 See [native REGFMA1 source, base bug and trajectory evidence](benchmarks/regfma1-native-schema-2026-10-17.md).
+The [native limiter follow-up](benchmarks/regfma1-native-limiters-2026-10-17.md)
+records the new source-backed PI correction and remaining SMIB profile gaps.
 
 ## Synchronous fault-observation slice
 

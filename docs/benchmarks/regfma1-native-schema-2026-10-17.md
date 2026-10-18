@@ -1,5 +1,10 @@
 # REGFMA1: native schema and initialization-base verification
 
+Later follow-up: [native limiter SMIB verification](regfma1-native-limiters-2026-10-17.md)
+adds active P/Q and terminal-voltage-PI current-limit profiles, corrects native
+voltage-integral limiting, and expands the references to fifteen datasets.
+The counts and remaining-work list below describe this earlier schema slice.
+
 ## Scope and source contract
 
 This slice separates native PSS/E 36.7 REGFMA1 input from the older Texas2k
