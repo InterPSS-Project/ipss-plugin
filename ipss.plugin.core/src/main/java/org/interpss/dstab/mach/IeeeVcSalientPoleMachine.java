@@ -9,6 +9,12 @@ public final class IeeeVcSalientPoleMachine extends SalientPoleMachineImpl
     private IeeeVcData ieeeVcData;
 
     @Override
+    protected double cal_dW_dt(double speed, double baseFrequency) {
+        // Native GENSAL uses the same Flux0 torque convention as GENROU.
+        return PsseSwingEquation.speedDerivative(this, speed, baseFrequency);
+    }
+
+    @Override
     public IeeeVcData getIeeeVcData() {
         return ieeeVcData;
     }

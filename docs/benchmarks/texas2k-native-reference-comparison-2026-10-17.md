@@ -147,6 +147,26 @@ update and `1.03e-6` radians for the trapezoidal update. This localizes the next
 integration investigation to a consistent machine/controller/network update;
 it does not verify the remaining machine equations or full-system accuracy.
 
+The commercial application guide's equation 15.2 confirms
+`2H*dn/dt = (Pm - D*n)/(1+n) - Telec` for the native Flux0 convention. The
+frozen GENROU adapter already implements this equation. The GENSAL adapter
+was missing the corresponding override and now uses the same calculation.
+Four public two-bus response profiles cover speed deviations of both signs,
+with zero and nonzero damping. Each repeats with an identical CSV hash from
+a second cold process. Independent Java initialization plus the corrected
+derivative predicts the first native speed increment within `5.38e-10` pu;
+the old equation differs by `9.67e-7` to `1.18e-6` pu. The pulse initializes
+both STATE and STORE consistently, with zero previous derivative.
+
+All 35 focused machine checks pass, including four new checks that fail before
+the correction. The six-case fault/trip smokes, all-six machine attachment
+check, and four reference-integrity checks also pass. Case 2 has all 25 GENSAL
+units offline, so the corrected first-fault run reproduces every exported
+field exactly in all 2,403 samples. Its worst prefault angle error remains
+`0.325219` degrees. This correction does not resolve Case 2 or establish
+ten-second acceptance. The existing shared staggered-Euler solver supports a
+smaller controller set; extending it to the actual Texas2k stack remains open.
+
 A separate two-bus probe retains Case 2 generator 6245's GENROU parameters
 and operating P/Q. Its initial rotor-angle error is `5.86e-5` degrees, and all
 four electrical-state errors are below `5.5e-7` pu. The commercial reference
