@@ -432,7 +432,19 @@ and state definitions agree.
       SMIB/model/solver checks (one existing diagnostic skip), zero failures or
       errors. Audit 33 owned files, 2,079 baseline Java/POM files, all 28 native
       runs and fourteen complete raw-row replay traces.
-    - [ ] Complete shunt dispatch, import/attachment, remaining initialization
+    - [x] Add the ordered ten-slot shunt state machine, strict two-band timers,
+      overlapping breaker delays, latched commands, safe unused slots and
+      source-correct capacitor discharge lockout. Match eight two-step native
+      event/timer datasets; preserve two additional discharge-discrepancy
+      datasets without accepting premature native reclosure. Twenty cold runs
+      retained. PowerWorld remains non-activating, not lockout acceptance.
+      See [REPCC shunt evidence](benchmarks/repcc-shunts-2026-10-18.md).
+    - [x] Validate the shunt slice on `b5c27de3f`: 84 focused, 344 plugin-core
+      checks (six optional skips), 1,386 SMIB/model/solver checks (one existing
+      diagnostic skip), zero failures/errors with the isolated accepted engine.
+      Runtime coverage remains 25/27; no shunt network attachment is claimed.
+    - [ ] Complete shunt network dispatch, import/attachment, independent
+      discharge-lockout evidence, remaining initialization
       and selector/limit profiles, independent coupled SMIB acceptance and the
       declared integration-history/precision/timer gaps.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter

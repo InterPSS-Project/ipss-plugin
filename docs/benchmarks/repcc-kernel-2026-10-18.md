@@ -109,8 +109,10 @@ initial state or model parameter is rewritten to hide the residue.
   PF initialization, charging/discharging, initial limits and all selector modes.
 - Additional active reactive-PI limits, zero-time paths, active output-rate
   limits, native voltage-command bypass and frequency-voltage gating profiles.
-- Mechanically switched shunt state machine, ordered dispatch, breaker and
-  discharge/re-arm timers, and admittance changes.
+- The [subsequent shunt slice](repcc-shunts-2026-10-18.md) adds ordered
+  switching, breaker/discharge timers and bounded independent event replay.
+  Network admittance attachment and independent operational discharge-lockout
+  acceptance remain open.
 - Exact native import, non-overwriting attachment, branch/frequency measurement
   resolution, base conversion and downstream command routing.
 - Coupled InterPSS SMIB flat, three-cycle fault, reference and lifecycle events
