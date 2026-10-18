@@ -13,18 +13,72 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.interpss.CorePluginTestSuite;
+import org.interpss.DynamicModelSmibTestSuite;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import org.interpss.core.dstab.reference.GeneratorGovernorEvidenceInventory;
 import org.interpss.core.dstab.reference.ExciterEvidenceInventory;
+import org.interpss.core.dstab.reference.StabilizerEvidenceInventory;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.IncludeClassNamePatterns;
+import org.junit.platform.suite.api.ExcludeClassNamePatterns;
+import org.junit.platform.suite.api.SelectPackages;
 
 /** Verifies representative categories in the embedded public checkpoint inventory. */
 public class EmbeddedTrajectoryCoverageInventoryTest {
+    @Test
+    void approvedStabilizerMappingsHaveExplicitEvidenceAndEquivalenceGaps() throws Exception {
+        var rows=WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(row -> row.approvalStatus()==WeccModelApprovalStatus.APPROVED)
+                .toList();
+        assertEquals(15,rows.size());
+        Set<String> required=rows.stream().map(row -> row.interpssModel()).collect(Collectors.toSet());
+        var entries=StabilizerEvidenceInventory.entries();
+        assertEquals(14,required.size());
+        assertEquals(required,entries.stream().map(row -> row.model()).collect(Collectors.toSet()));
+        assertEquals(required.size(),entries.size(),"Do not count source-list aliases twice");
+        Set<Class<?>> registered=Set.copyOf(Arrays.asList(
+                CorePluginTestSuite.class.getAnnotation(SelectClasses.class).value()));
+        for(var row:entries) {
+            var e=row.evidence();
+            var descriptor=DynamicModelCatalog.find(e.model()).orElseThrow();
+            assertTrue(registered.contains(e.focusedTestClass()),e.model()+" focused test is not registered");
+            assertTrue(registered.contains(e.trajectoryTestClass()),e.model()+" comparison is not registered");
+            for(Class<?> test:List.of(e.focusedTestClass(),e.trajectoryTestClass())) {
+                String name=test.getName();
+                assertTrue(Arrays.stream(DynamicModelSmibTestSuite.class.getAnnotation(SelectPackages.class).value())
+                        .anyMatch(pkg -> name.startsWith(pkg+".")),name+" is outside SMIB discovery packages");
+                assertTrue(Arrays.stream(DynamicModelSmibTestSuite.class.getAnnotation(IncludeClassNamePatterns.class).value())
+                        .anyMatch(name::matches),name+" is not selected by the SMIB gate");
+                assertFalse(Arrays.stream(DynamicModelSmibTestSuite.class.getAnnotation(ExcludeClassNamePatterns.class).value())
+                        .anyMatch(name::matches),name+" is excluded by the SMIB gate");
+            }
+            var records=PsseDyrRecordReader.read(e.fixture()).stream()
+                    .filter(record -> record.canonicalModelName().equals(e.model())).toList();
+            assertEquals(1,records.size(),e.model()+" fixture must contain its native mapping exactly once");
+            assertTrue(descriptor.recordSchema().accepts(records.get(0).parameterCount()),e.model());
+            e.requireReadableCheckpoint();
+            assertFalse(row.limitation().isBlank(),"An evidence link must disclose its scope limitations");
+        }
+        assertEquals(Set.of("PSS1A"),entries.stream()
+                .filter(row -> row.scope()==StabilizerEvidenceInventory.ReferenceScope.EQUIVALENT_SIGNAL_PLAYBACK)
+                .map(row -> row.model()).collect(Collectors.toSet()),
+                "Equivalent play-in cannot silently become an exact-model reference");
+    }
+
+    @Test
+    void stabilizerEvidenceDocumentMatchesItsReviewedInventory() throws Exception {
+        String markdown=StabilizerEvidenceInventory.markdown();
+        Path report=Path.of("target","stabilizer-evidence.md");
+        Files.createDirectories(report.getParent());
+        Files.writeString(report,markdown);
+        assertEquals(Files.readString(Path.of("..","docs","stabilizer-evidence.md")).replace("\r\n","\n"),markdown);
+    }
+
     @Test
     void everyApprovedNativeExciterHasExplicitEvidenceLinks() throws Exception {
         var rows = WeccApprovedDynamicModelCatalog.exciters().stream()

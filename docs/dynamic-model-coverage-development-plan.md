@@ -16,8 +16,8 @@ small, independently reproducible machine/infinite-bus or controller testbeds.
 Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
-**Latest scoped acceptance status: incomplete.** Stabilizer/renewable evidence
-inventories, exhaustive independent model profiles and remaining provenance
+**Latest scoped acceptance status: incomplete.** The renewable evidence
+inventory, missing exact stabilizer profiles, exhaustive independent model profiles and remaining provenance
 gaps still need closure. Generated `LOADABLE` entries do not prove complete
 verification. The new `DynamicModelSmibTestSuite` selects model-unit and
 small-network independent comparisons without full Texas2k/WECC/IEEE39 runs.
@@ -331,9 +331,13 @@ proof of current-system accuracy, or mark this open acceptance item complete.
    models behind the 64 approved exciter rows. Its local provenance audit
    identifies 17 historical PowerWorld input/specification gaps; AC1C and six
    additional exciter profiles now have current twice-cold numerical-repeatability
-   evidence, without rewriting the historical manifests. Stabilizer and renewable
-   inventories, exhaustive profiles, simulator-version audits and the remaining
-   cold-regeneration provenance work are still open.
+   evidence, without rewriting the historical manifests. The new
+   [stabilizer inventory](stabilizer-evidence.md) links all fourteen implemented
+   mappings behind fifteen approved source rows, explicitly distinguishing
+   PSS1A equivalent play-in from exact-model references. Source PTI cells are
+   preserved independently of implementation names. The renewable inventory,
+   exhaustive profiles, simulator-version audits and remaining cold-regeneration
+   provenance work are still open.
 2. Close missing independent profiles for generators and controllers first.
    Exercise active limiters, zero-time branches, saturation selectors, base
    conversion, remote measurements, and lifecycle events separately where the
@@ -456,6 +460,31 @@ Full validation on 2026-10-17 exits zero with 2,688 tests: 2,575 passed,
 audit report. This includes all 25 restored focused tests, the three inventory
 tests and the existing AC1C trajectory comparison; it excludes the unrelated
 untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
+
+## Stabilizer evidence and source-column slice
+
+- [x] Link all fifteen approved source rows/fourteen implemented mappings to
+  focused tests, declared DYR fixtures, comparisons and readable checkpoints.
+- [x] Verify registration and actual selection by the permanent SMIB gate;
+  keep generated Markdown synchronized with the reviewed Java inventory.
+- [x] Correct the source catalog against the supplied May 2026 PDF: PSS1A's
+  PTI cell is IEEEST, and PSS3C/PSS4C/PSS5C PTI cells are blank. Preserve all
+  implementations separately; do not invent aliases or remove later-release
+  benchmark evidence. Twelve nonblank source PTI cells contain nine names.
+- [x] Retain explicit scope for thirteen model-specific comparisons and the
+  PSS1A equivalent-only play-in. Neither category is an exhaustive VERIFIED label.
+- [x] Observe the source-column regression fail before the fix; complete the
+  1,158-test SMIB gate (one existing diagnostic skip) and 130 plugin units
+  (six optional skips), with zero failures/errors and no full-system dynamics.
+- [x] Seal and hash-verify 694 source, fixture, checkpoint and regression
+  evidence files; record the source-column correction and inventory in one slice.
+- [ ] Add exact PSS1A commercial SMIB evidence and audit PSS1A/PSSSB input
+  dialects independently of the WECC cross-vendor source mapping.
+- [ ] Audit raw artifact versions/cold repeatability and remaining active
+  limiter, selector and lifecycle profiles for the stabilizer links.
+- [ ] Complete the renewable evidence inventory and remaining model profiles.
+
+See the [source discrepancy, evidence scope and validation report](benchmarks/stabilizer-evidence-audit-2026-10-17.md).
 
 ## PowerWorld repeatability slice
 

@@ -87,6 +87,25 @@ class DynamicModelCatalogTest {
     }
 
     @Test
+    void stabilizerSourceColumnsDoNotInventNativeNamesFromOtherVendors() {
+        var rows=WeccApprovedDynamicModelCatalog.stabilizers();
+        assertEquals("IEEEST",rows.stream().filter(row -> row.catalogName().equals("PSS1A"))
+                .findFirst().orElseThrow().psseModel());
+        assertEquals("PSS2A",rows.stream().filter(row -> row.catalogName().equals("PSSSB"))
+                .findFirst().orElseThrow().psseModel());
+        for(String name:Set.of("PSS3C","PSS4C","PSS5C")) {
+            var row=rows.stream().filter(value -> value.catalogName().equals(name)).findFirst().orElseThrow();
+            assertEquals("",row.psseModel(),name+" PTI cell is blank in the supplied May 2026 PDF");
+            assertFalse(row.hasPsseModel());
+            assertEquals(name,row.interpssModel(),"Preserve separately implemented models, not invented source names");
+        }
+        assertEquals(12,rows.stream().filter(row -> row.approvalStatus()==WeccModelApprovalStatus.APPROVED)
+                .filter(WeccModelApproval::hasPsseModel).count());
+        assertEquals(9,rows.stream().filter(row -> row.approvalStatus()==WeccModelApprovalStatus.APPROVED)
+                .filter(WeccModelApproval::hasPsseModel).map(WeccModelApproval::psseModel).distinct().count());
+    }
+
+    @Test
     void catalogsEveryMay2026StabilizerRowAndExposesSupportGaps() {
         assertEquals(16, WeccApprovedDynamicModelCatalog.stabilizers().size());
         long approved = WeccApprovedDynamicModelCatalog.stabilizers().stream()
