@@ -895,3 +895,30 @@ under the private verification-artifact directory
 `2026-10-18-st1-full-window-and-coupled-pss`. The original six-case, 36-event
 contract, I/Z load assumption, normalization ranges, and angle limits remain
 unchanged. No event is accepted.
+
+## Low-voltage constant-current load discrepancy
+
+A separate two-bus experiment isolates the static I/Z load characteristic using
+a declared source-voltage sweep. A 50 MW, 20 Mvar load is converted to
+constant-current P and constant-impedance Q. The current implementation applies
+a sine reduction to the constant-current term below its shared `0.65` pu switch
+voltage. The commercial reference instead retains constant current down to
+`0.5` pu and follows an elliptic characteristic below that point.
+
+The primary manual describes that transition graphically without printing its
+equation. A scalar candidate recovered from separate native observations is
+`I/I0 = sqrt(1 + 12*V*(1 - V)) - 1` below `0.5` pu, and unity above it. Independent
+dense voltage sweeps with positive and negative active loads each contain
+2,003 samples, including 941 below `0.5` pu. Each sweep repeats exactly in a
+second fresh commercial process. Maximum active-power difference for this
+candidate is `0.0000000341` pu on the 100 MVA system base. The existing sine
+characteristic differs by up to `0.0323068` pu, or `3.231` MW for this load.
+Constant-impedance Q agrees within `0.0000000207` pu.
+
+These experiments isolate a network-load discrepancy while preserving the
+confirmed I/Z assumption. The candidate has not yet been adopted in production
+or evaluated in the full-system benchmark. Frozen producers, raw outputs,
+manual-page provenance, cold-repeat checks, and comparison programs are retained
+under the private verification-artifact directory
+`2026-10-18-static-current-voltage-characteristic`. Full-system acceptance
+remains unproven.
