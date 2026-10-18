@@ -5,7 +5,10 @@ import java.nio.file.*;
 import java.util.*;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.core.dstab.reference.RepccNativeReference;
+import org.interpss.core.dstab.reference.RepccShuntNativeReference;
 import org.interpss.dstab.renewable.*;
+import org.interpss.fadapter.builder.AclfNetworkBuilder;
+import org.apache.commons.math3.complex.Complex;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuMethod;
@@ -15,6 +18,44 @@ import org.junit.jupiter.api.io.TempDir;
 
 /** Full-solver typed composition; native import is a separate claim. */
 public class RepccTypedRuntimeSmibTest extends CorePluginTestSetup {
+    @Test void enabledTypedSwitchingAdvancesOnlyAtAcceptedEndpoints(@TempDir Path dir)throws Exception {
+        for(double h:new double[]{.0005,.00025}) {
+            var profile=RepccShuntNativeReference.profiles().getFirst();
+            Path file=dir.resolve("switching-"+h+".dyr");
+            Files.writeString(file,profile.input().lines().filter(s->!s.contains("'REPCC'")).reduce("",(a,b)->a+b+"\n"));
+            var ctx=new PSSEMultiFileLoader().loadDStab("testData/adpter/psse/v33/renewable/regfma1_native.raw",file.toString());
+            var net=ctx.getDStabilityNet();var algo=ctx.getDynSimuAlgorithm();net.setAllowGenWithoutMach(true);
+            var topology=new AclfNetworkBuilder(net);var nominal=new HashMap<RepccData.Shunt,Complex>();
+            var lines=profile.status().lines().toList();var headers=lines.getFirst().split(",");var values=lines.get(1).split(",");
+            var initial=new HashMap<String,Double>();for(int i=0;i<headers.length;i++)initial.put(headers[i],Double.parseDouble(values[i]));
+            for(var key:profile.parameters().shunts()) {
+                double g=initial.get(key.id()+"_G_NOM")/100,b=initial.get(key.id()+"_B_NOM")/100;
+                topology.addFixedShunt("Bus"+key.bus(),key.id(),initial.get(key.id()+"_STATUS")==1,g,b,null);
+                nominal.put(key,new Complex(g,b));
+            }
+            algo.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true);algo.getAclfAlgorithm().setTolerance(1e-10);assertTrue(algo.getAclfAlgorithm().loadflow());
+            var converter=assertInstanceOf(Regca1Model.class,((DStabGen)net.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice());
+            var plant=new RepccModel(profile.parameters(),converter,nominal);converter.getActiveElectricalController().setRepccController(plant);
+            algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algo.setSimuStepSec(h);algo.setSimuOutputHandler(new StateMonitor());assertTrue(algo.initialization());
+            assertTrue(plant.getBoundary().shuntController().isEnabled());
+            var before=plant.getBoundary().shuntController().slots();int index=net.getBus("Bus2").getSortNumber();
+            Complex original=net.getYMatrix().getA(index,index);
+            for(int tick=0;tick<(int)Math.round(.03/h);tick++) {
+                assertTrue(algo.solveDEqnStep(true));
+                assertEquals(plant.getKernel().time(),plant.getBoundary().shuntController().time(),1e-14);
+                for(double state:plant.getNamedStates().values())assertTrue(Double.isFinite(state));
+            }
+            int changed=0;Complex delta=Complex.ZERO;
+            var after=plant.getBoundary().shuntController().slots();
+            for(int i=0;i<10;i++)if(before.get(i).inService()!=after.get(i).inService()) {
+                changed++;delta=delta.add(nominal.get(after.get(i).key()).multiply(after.get(i).inService()?1:-1));
+            }
+            assertTrue(changed>0,"The profile must activate physical switching at h="+h);
+            assertTrue(net.getYMatrix().getA(index,index).subtract(original.add(delta)).abs()<1e-11);
+            net.formYMatrix4DStab();assertTrue(net.getYMatrix().getA(index,index).subtract(original.add(delta)).abs()<1e-11);
+            assertTrue(plant.acceptedEndpoint().isEmpty(),"Repeated accepted endpoint is idempotent");
+        }
+    }
     @Test void referenceOffsetsStagesAndInactiveOwnerLifecycleAreExplicit(@TempDir Path dir)throws Exception{
         Path file=dir.resolve("plant.dyr");Files.writeString(file,RepccNativeReference.profiles().getFirst().input());
         var ctx=new PSSEMultiFileLoader().loadDStab("testData/adpter/psse/v33/renewable/regfma1_native.raw",file.toString());

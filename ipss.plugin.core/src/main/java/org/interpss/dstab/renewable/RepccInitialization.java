@@ -45,11 +45,12 @@ public final class RepccInitialization {
     }
 
     public static Result initialize(RepccData d, Measurements m) {
-        // Proportional-only initialization and switched-shunt timers require
-        // their own native discriminators; do not invent an equilibrium.
-        if (d.value(KI) <= 0 || d.value(KIG) <= 0 || d.switchingFlag() != 0
+        // Shunt status/timers belong to the separate physical boundary and do
+        // not alter these continuous-state equilibrium equations.
+        // Proportional-only and alternate output paths remain unestablished.
+        if (d.value(KI) <= 0 || d.value(KIG) <= 0
                 || d.frequencyFlag() != 1 || d.reactiveFlag() != 1)
-            throw new IllegalArgumentException("REPCC foundation requires positive integral gains, enabled control loops and disabled shunt switching");
+            throw new IllegalArgumentException("REPCC foundation requires positive integral gains and enabled control paths");
         int mode = d.effectiveReferenceFlag(m.branchActive());
         if (mode == 2 && d.feedbackFlag() == 0)
             throw new IllegalArgumentException("REPCC foundation has not established PF initialization with disabled electrical feedback");

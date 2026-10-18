@@ -475,6 +475,16 @@ and state definitions agree.
       SMIB/model/solver checks (one existing diagnostic skip), zero failures or
       errors. Audit all eight native runs and every history/event-side row;
       preserve seven earlier sealed archives and the frozen companion core.
+    - [x] Separate enabled-MSS continuous initialization from physical device
+      setup. Compare all thirteen initial states/references against ten frozen
+      native profiles; activate typed coupled switching at both steps and
+      check endpoint clocks, persistent Y changes and idempotence.
+      See [enabled initialization](benchmarks/repcc-enabled-initialization-2026-10-18.md).
+      This is not enabled-MSS import or independent coupled transient acceptance.
+    - [x] Validate enabled initialization on `a6b69e592`: 29 focused,
+      344 plugin-core (six optional skips), and 1,406 SMIB/model/solver tests
+      (one diagnostic skip), zero failures/errors. Preserve the failing-before
+      discriminator, unchanged reference hashes and isolated core dependency.
     - [ ] Complete automatic endpoint shunt dispatch, per-device input-G
       retention, import/attachment, independent
       discharge-lockout evidence, remaining initialization

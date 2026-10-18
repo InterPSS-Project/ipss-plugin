@@ -5,6 +5,7 @@ import java.io.StringReader;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.core.dstab.reference.RepccNativeReference;
+import org.interpss.core.dstab.reference.RepccShuntNativeReference;
 import org.interpss.dstab.renewable.RepccInitialization;
 import org.interpss.fadapter.psse.dyr.*;
 import org.junit.jupiter.api.Test;
@@ -76,5 +77,24 @@ public class RepccNativeContractConformanceTest {
         assertEquals(92,DynamicModelCatalog.find("REPCC").orElseThrow().parameterCount());
         assertEquals("org.interpss.dstab.renewable.RepccModel",DynamicModelCatalog.find("REPCC").orElseThrow().runtimeClassName());
         assertTrue(DynamicModelCatalog.find("REPCCU").isEmpty());
+    }
+    @Test void enabledSwitchingDoesNotChangeContinuousStateInitialization() {
+        int count=0;
+        for(var profile:RepccShuntNativeReference.profiles()) {
+            var row=rows(profile.body()).stream().filter(r->r.get("time_s")==0).findFirst().orElseThrow();
+            var data=profile.parameters();assertEquals(1,data.switchingFlag());
+            double active=row.get("PLANT_VAR4")/50,reactive=row.get("PLANT_VAR5")/50;
+            Complex current=new Complex(active,reactive).divide(polar(row,2)).conjugate();
+            var measured=new RepccInitialization.Measurements(polar(row,3),current,active,reactive,
+                    2*row.get("P_PU"),2*row.get("Q_PU"));
+            var initialized=RepccInitialization.initialize(data,measured);
+            for(int i=0;i<13;i++)assertEquals(row.get("PLANT_STATE"+i),initialized.states()[i],1e-7,
+                    profile.name()+" state "+i);
+            assertEquals(row.get("PLANT_VAR0"),initialized.voltageReference(),1e-7);
+            assertEquals(row.get("PLANT_VAR1"),initialized.reactiveReference(),1e-7);
+            assertEquals(row.get("PLANT_VAR3"),initialized.plantReference(),1e-7);
+            count++;
+        }
+        assertEquals(10,count);
     }
 }
