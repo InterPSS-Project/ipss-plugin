@@ -107,6 +107,20 @@
         </plugins>
     </build>
 
+    <profiles>
+        <!-- Keep long verification runs independent of IDE/default-target rebuilds.
+             This changes output locations only: no test selection or tolerances. -->
+        <profile>
+            <id>isolated-verification</id>
+            <properties>
+                <verification.run.id>local</verification.run.id>
+            </properties>
+            <build>
+                <directory>${maven.multiModuleProjectDirectory}/.verification-build/${verification.run.id}/${project.artifactId}</directory>
+            </build>
+        </profile>
+    </profiles>
+
   <repositories>
     <repository>
       <id>codeartifact</id>

@@ -21,6 +21,7 @@
 /.cursorignore
 /logs/
 /target/
+.verification-build/
 /tmp/
 /ipss.plugin.3phase/logs/*.log
 **/.flattened-pom.xml

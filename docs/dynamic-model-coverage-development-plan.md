@@ -184,6 +184,13 @@ count, leading bus and componentwise voltage change (not a KCL residual).
 - [ ] Verify native converter low-voltage/angle handling on the symmetric
   five-/thirty-plant deep-fault profiles; their recovered trajectories are not
   accepted. Do not loosen convergence tolerance or silently advance failed stages.
+  The five-plant native counterpart has now been run twice with exact exported
+  dynamic parameters and initial voltages within 5.7104e-8 pu: initialization
+  passes, but both runs report 211 network non-convergences (0.0525-0.1775 s).
+  The identical exported recoveries are rejected by the quality gate, not treated
+  as a reference to fit. This corroborates the synthetic domain problem; exact
+  low-voltage handling and the thirty-plant counterpart remain open. See the
+  [native failure evidence](benchmarks/network-iteration-lifecycle-2026-10-17.md).
 
 Current REGCA1 evidence correction: the preceding native zero-Q baseline has
 95 network non-convergence diagnostics despite successful export. It is retained
@@ -203,6 +210,29 @@ records the permanent log/CSV quality gate and remaining full-transient errors.
 - [ ] Resolve native REGCA1 Khv/Accel/Iolim versus WECC network-flowchart
   semantics before replacing the finite-gain runtime boundary. Keep PowerWorld's
   distinct convention separate; do not mutate dynamic states during reads.
+- [x] Implement the shared opt-in algebraic network-iteration lifecycle needed
+  for a correct converter boundary: immutable stage/time context, one explicit
+  update per network iteration, identity deduplication, activation rediscovery,
+  and failure-safe completion. Ten new core lifecycle tests plus eleven prior
+  convergence tests pass; the complete core suite passes 2,928 tests with no skips.
+- [x] Complete the coupled lifecycle regression and prepare scoped commits.
+  Core commit `95051f797` on `codex/network-iteration-lifecycle-20261017` is based
+  directly on tested `12c231df5`; all 2,928 core tests pass. The isolated plugin
+  run passes 2,643 tests with 89 skips and no failures/errors, including six-case
+  smokes, six strict flats and fifteen complete byte-identical fault exports.
+  All 688 archived artifact hashes are rechecked. Private opt-ins are restored.
+  The 34 focused checks include exact unchanged imported flat/fault endpoints
+  through a no-op participant. No production converter opts in yet;
+  this does not close its HV/low-voltage modeling gaps. See the
+  [lifecycle report](benchmarks/network-iteration-lifecycle-2026-10-17.md).
+- [ ] Integrate lifecycle commit `95051f797` with newer core master and rerun
+  combined core/plugin/system gates. Concurrent master `124bca40f` and later
+  plugin controller/parser edits were not in the archived tested binary/source
+  baseline. Preserve those changes; do not reuse old results as merged validation.
+- [ ] Establish a model-specific joint convergence/admissibility criterion
+  before enabling the accumulating HV boundary. The lifecycle preserves the
+  old voltage-update rule and does not yet expose participant convergence vetoes;
+  near a turning point, a small update is not proof of a solved boundary.
 - [x] Correct the independently localized Iolim sign/coordinate mismatch:
   native Iolim=-0.25 clips **positive generated current at +0.25 pu** during the
   low-voltage fault; the current implementation instead clips negative current.
