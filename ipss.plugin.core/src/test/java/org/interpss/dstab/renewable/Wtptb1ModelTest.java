@@ -105,12 +105,54 @@ class Wtptb1ModelTest {
     }
 
     @Test void invalidParametersAndInitialLimitViolationsAreExplicit() {
-        assertThrows(IllegalArgumentException.class,()->new Wtptb1Data(1,1,1,1,0,0,27,0,10,-10,5,-5,25,0));
+        assertThrows(IllegalArgumentException.class,()->new Wtptb1Data(1,1,1,1,0,-1,27,0,10,-10,5,-5,25,0));
         assertThrows(IllegalArgumentException.class,()->new Wtptb1Data(Double.NaN,1,1,1,0,.3,27,0,10,-10,5,-5,25,0));
         assertThrows(IllegalArgumentException.class,()->new Wtptb1Data(1,1,1,1,0,.3,27,0,0,-10,5,-5,25,0));
         assertThrows(IllegalArgumentException.class,()->new Wtptb1Data(1,1,1,1,0,.3,27,0,10,-10,-5,5,25,0));
         var model=new Wtptb1Model(data(27,0));
         assertThrows(IllegalArgumentException.class,()->model.initialize(-1));
         assertThrows(IllegalArgumentException.class,()->model.initialize(26));
+    }
+    @Test void zeroTimeIsAnAlgebraicAngleLimitedBypassNotAnArtificialFastLag() {
+        var model=new Wtptb1Model(new Wtptb1Data(1,2,3,4,.5,0,27,0,.1,-.1,5,-5,25,0));
+        model.initialize(2);
+        model.step(0,.34,.24,1,1);
+        assertArrayEquals(new double[]{2.5,2,0},model.getNativeStates(),1e-14);
+        model.step(.001,.34,.24,1,1);
+        assertArrayEquals(new double[]{2.50035,2.00005,.0003},model.getNativeStates(),1e-14);
+        model.step(0,100,.24,1,1);
+        assertEquals(27,model.getPitch(),"The bypass retains the final angle limit");
+    }
+
+    @Test void twoStepHasIndependentHistoryAndZeroRefreshDoesNotConsumeIt() {
+        var first=new Wtptb1Model(data(27,0));var second=new Wtptb1Model(data(27,0));
+        first.initialize(2);second.initialize(2);
+        first.stepTwoStep(.001,.34,.24,1,1);
+        second.stepTwoStep(.001,.34,.24,1,1);
+        first.stepTwoStep(0,.34,.24,1,1);
+        first.stepTwoStep(.001,.34,.24,1,1);
+        second.stepTwoStep(.001,.34,.24,1,1);
+        assertArrayEquals(first.getNativeStates(),second.getNativeStates(),0);
+        first.initialize(2);first.stepTwoStep(.001,.34,.24,1,1);
+        assertEquals(2+.0015*29*.025,first.getNativeStates()[1],1e-14);
+    }
+
+    @Test void allZeroNativeTorqueCurveSelectsNominalSpeedWithoutWeakeningOtherCurveValidation() {
+        var data=new Wttqa1Data(1,2,1,.02,.1,2,0,0,0,0,0,0,0,0,0,100);
+        var torque=new Wttqa1Model(data);torque.initialize(.24);
+        assertTrue(data.hasDefaultSpeedCurve());
+        for(double power:new double[]{-1,0,.24,1,2})assertEquals(1,torque.speedForPower(power),0);
+        assertThrows(IllegalArgumentException.class,
+                ()->new Wttqa1Data(1,2,1,.02,.1,2,0,0,1,0,0,0,0,0,0,100));
+    }
+    @Test void twoStepCrossLimitFreezeDiscardsOutwardHistoryWithoutSpuriousInwardMotion() {
+        var model=new Wtptb1Model(data(2.01,0));model.initialize(2);
+        model.stepTwoStep(.001,.34,.24,1,1);
+        assertEquals(2.01,model.getPitch());
+        double[] held=model.getNativeStates();
+        for(int i=0;i<20;i++)model.stepTwoStep(.001,.34,.24,1,1);
+        assertArrayEquals(held,model.getNativeStates(),0);
+        model.stepTwoStep(.001,.14,.24,1,1);
+        assertTrue(model.getPitch()<2.01);
     }
 }

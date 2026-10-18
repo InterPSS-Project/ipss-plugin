@@ -204,6 +204,8 @@ import org.interpss.dstab.renewable.Wtdtb1Data;
 import org.interpss.dstab.renewable.Wtdtb1Model;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtpta1Model;
+import org.interpss.dstab.renewable.Wtptb1Data;
+import org.interpss.dstab.renewable.Wtptb1Model;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.dstab.mach.GenqecData;
@@ -3684,8 +3686,23 @@ public class DStabNetworkBuilder {
             log.warn("REECA1 not found for WTPTA1: bus={}, gen={}", busId, genId);
             return null;
         }
+        WindControlStack stack=windStack(controller);
+        if(stack.getPitchController()!=null || stack.getPitchControllerB()!=null)return null;
         Wtpta1Model model = new Wtpta1Model(data);
-        windStack(controller).setPitchController(model);
+        stack.setPitchController(model);
+        return model;
+    }
+
+    /** Attach native WTPTB1 only to its supported complete mechanical stack. */
+    public Wtptb1Model addWtptb1(String busId,String genId,Wtptb1Data data) {
+        Reeca1Model controller=findReeca1(busId,genId);
+        if(controller==null)return null;
+        WindControlStack stack=windStack(controller);
+        if(stack.getPitchController()!=null || stack.getPitchControllerB()!=null
+                || stack.getAerodynamics()==null || stack.getTorqueController()==null
+                || stack.getDriveTrain()==null && stack.getTorsionalEmulation()==null)return null;
+        Wtptb1Model model=new Wtptb1Model(data);
+        stack.setPitchControllerB(model);
         return model;
     }
 

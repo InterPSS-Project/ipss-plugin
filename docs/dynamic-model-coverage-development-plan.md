@@ -17,8 +17,8 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 18 loadable,
-nine not implemented**, not merely missing benchmark coverage. WTDTB1/WTDTBU1
+The approved native renewable audit finds **27 distinct families: 19 loadable,
+eight not implemented**, not merely missing benchmark coverage. WTDTB1/WTDTBU1
 now has strict native import and bounded SMIB/reference evidence, with explicit
 non-unit precision and instantaneous network-post limitations. The runtime
 catalog previously omitted those unsupported families. Missing exact stabilizer
@@ -95,8 +95,8 @@ and state definitions agree.
     branch/base profiles and independently referenced reconnect/restart coverage.
     See [native implementation and exact acceptance scope](benchmarks/wtdtb1-native-import-2026-10-18.md).
   See [WTDTB1 foundation evidence and open discrepancies](benchmarks/wtdtb1-foundation-2026-10-18.md).
-- [ ] Implement WTPTBU1 / current-library WTPTB1 with exact pitch-controller
-  attachment, state initialization, active limits and two-step references.
+- [ ] Complete WTPTBU1 / current-library WTPTB1 verification; native import and
+  runtime integration now exist, with partial independent acceptance.
   - [x] Freeze native fourteen-CON/three-STATE/one-VAR source and visually
     inspect its diagram; keep the different PowerWorld parameter layout separate.
   - [x] Add a typed source kernel with state-based PI anti-windup, independent
@@ -108,10 +108,28 @@ and state definitions agree.
   - [x] Complete merged regression on committed plugin `4e5405ce8` plus this
     foundation: 171 plugin units (six optional skips), 1,220 registered
     SMIB/catalog/solver tests (one existing diagnostic skip), zero failures/errors.
-  - [ ] Finish native import/legacy allocation, wind-stack signals, Tp=0,
-    active lower-angle/integral profiles, PowerWorld artifacts and coupled SMIB
-    lifecycle coverage. This foundation does not change the missing-model count.
+  - [x] Add strict standard/legacy import, deferred complete-host attachment,
+    duplicate/layout rejection, named states and GNET/model-removal accounting.
+    Native `104 0 0 14 3 1` legacy output repeats the standard record exactly.
+  - [x] Wire plant Pref and atomically captured torque speed reference without
+    changing WTPTA1 behavior. Support native all-zero WTTQA1 curve as Wref=1.
+  - [x] Implement native Tp=0 algebraic bypass and explicit two-step history
+    freeze handling; independently check zero-time, moving speed reference,
+    lower angle and both PI-state limits at two steps with cold repeats.
+  - [x] Add coupled flat, three-cycle fault and trip checks at both steps;
+    require pitch/PI/generator-speed errors to reduce under step halving.
+  - [x] Create four exact typed PowerWorld WTGPT_B cold-run artifacts at two
+    steps, with unchanged audited parameters and automatic correction disabled.
+    These establish repeatability, not complete cross-tool trajectory acceptance.
+  - [x] Pass final native-import regression: 178 plugin units (six optional
+    skips), 1,233 SMIB/catalog/solver tests (one diagnostic skip), zero
+    failures/errors. Keep the 25-family Texas2k source inventory unchanged.
+  - [ ] Close instantaneous network-post comparison, plant-reference steps,
+    additional host/base and reconnect/restart profiles, native opt-in solver
+    precision and complete PowerWorld trajectory acceptance.
     See [WTPTB1 foundation scope and native evidence](benchmarks/wtptb1-foundation-2026-10-18.md).
+    The [native import/SMIB report](benchmarks/wtptb1-native-import-2026-10-18.md)
+    records the production path, exact evidence and remaining limitations.
 - [ ] Implement WTGWGOAU and WTGIBFFRA, auditing installed-release identifiers,
   input/output coupling and weak-grid/inertial-response branches separately.
 - [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector

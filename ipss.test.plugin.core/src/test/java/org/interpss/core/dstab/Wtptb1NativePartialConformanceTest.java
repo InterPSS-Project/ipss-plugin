@@ -41,7 +41,7 @@ public class Wtptb1NativePartialConformanceTest {
                 Wtptb1NativeReference.digest(bundle.toString()));
     }
 
-    private static double[] replay(Profile profile,double[] bounds) {
+    static double[] replay(Profile profile,double[] bounds) {
         profile.verify();
         var inputs=profile.inputs().lines().map(Wtptb1NativePartialConformanceTest::numbers).toList();
         var checkpoints=profile.states().lines().map(Wtptb1NativePartialConformanceTest::numbers).toList();

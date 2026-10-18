@@ -11,10 +11,7 @@ public record Wtptb1Data(double kiw, double kpw, double kic, double kpc,
                 compensationMin, speedMax, speedMin}) {
             if (!Double.isFinite(value)) throw new IllegalArgumentException("WTPTB1 parameters must be finite");
         }
-        // Zero-time native servo semantics require a separate discriminator.
-        // This source-kernel foundation deliberately rejects, rather than
-        // guessing, that unverified branch. It is not a native import path yet.
-        if (tp <= 0) throw new IllegalArgumentException("WTPTB1 source kernel currently requires Tp > 0");
+        if (tp < 0) throw new IllegalArgumentException("WTPTB1 requires Tp >= 0");
         if (thetaMax < thetaMin || compensationMax < compensationMin || speedMax < speedMin)
             throw new IllegalArgumentException("WTPTB1 upper limits must be >= lower limits");
         if (rateMax <= 0 || rateMin >= 0)

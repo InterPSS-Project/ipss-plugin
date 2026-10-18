@@ -288,6 +288,9 @@ import org.interpss.core.dstab.Wtdtb1PowerWorldPlaybackConformanceTest;
 import org.interpss.core.dstab.Wtdtb1SmibIntegrationTest;
 import org.interpss.core.dstab.Wtdtb1NativePartialConformanceTest;
 import org.interpss.core.dstab.Wtptb1NativePartialConformanceTest;
+import org.interpss.core.dstab.Wtptb1SmibIntegrationTest;
+import org.interpss.core.dstab.Wtptb1NativeExtendedConformanceTest;
+import org.interpss.core.adapter.builder.dstab.PsseWtptb1ModelTest;
 import org.interpss.core.dstab.Tgov1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
@@ -699,6 +702,9 @@ import org.junit.platform.suite.api.Suite;
 	Wtdtb1SmibIntegrationTest.class,
 	Wtdtb1NativePartialConformanceTest.class,
 	Wtptb1NativePartialConformanceTest.class,
+	Wtptb1SmibIntegrationTest.class,
+	Wtptb1NativeExtendedConformanceTest.class,
+	PsseWtptb1ModelTest.class,
 	Tgov1IndependentSmibConformanceTest.class,
 	Lcfb1IndependentSmibConformanceTest.class,
 	Dc4bIndependentSmibConformanceTest.class,

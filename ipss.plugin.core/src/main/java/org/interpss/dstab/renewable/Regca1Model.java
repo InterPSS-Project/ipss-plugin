@@ -347,6 +347,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             Wtdtb1Model drivetrain = reeca1Controller.getWindControlStack().getTorsionalEmulation();
             if (drivetrain != null) drivetrain.getNamedStates().forEach(
                     (key, value) -> named.put("WTDTB1." + key, value));
+            Wtptb1Model pitch=reeca1Controller.getWindControlStack().getPitchControllerB();
+            if(pitch!=null)pitch.getNamedStates().forEach((key,value)->named.put("WTPTB1."+key,value));
         }
         return Collections.unmodifiableMap(named);
     }

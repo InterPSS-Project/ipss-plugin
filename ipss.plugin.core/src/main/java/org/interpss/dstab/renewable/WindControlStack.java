@@ -8,6 +8,7 @@ package org.interpss.dstab.renewable;
 public final class WindControlStack {
     private Wtara1Model aerodynamics;
     private Wtpta1Model pitchController;
+    private Wtptb1Model pitchControllerB;
     private Wttqa1Model torqueController;
     private Wtdta1Model driveTrain;
     private Wtdtb1Model torsionalEmulation;
@@ -20,10 +21,12 @@ public final class WindControlStack {
     private double predictorGeneratorSpeed;
     private double predictorTurbineSpeed;
     private double predictorPref;
+    private double predictorSpeedReference;
     private double predictorMechanicalPower;
     void setSinglePrecisionStates(boolean enabled) {
         if (torqueController!=null) torqueController.setSinglePrecisionStates(enabled);
         if (pitchController!=null) pitchController.setSinglePrecisionStates(enabled);
+        if (pitchControllerB!=null) pitchControllerB.setSinglePrecisionStates(enabled);
         if (driveTrain!=null) driveTrain.setSinglePrecisionStates(enabled);
     }
 
@@ -54,6 +57,11 @@ public final class WindControlStack {
         if (pitchController != null) {
             double theta0 = aerodynamics == null ? 0.0 : aerodynamics.getData().theta0();
             pitchController.initialize(theta0, turbineSpeed);
+        }
+        if (pitchControllerB != null) {
+            if (aerodynamics==null || torqueController==null || driveTrain==null)
+                throw new IllegalStateException("WTPTB1 requires aerodynamic, torque and drive-train models");
+            pitchControllerB.initialize(aerodynamics.getData().theta0());
         }
     }
 
@@ -93,10 +101,10 @@ public final class WindControlStack {
         if (pitchController != null) {
             pitchController.step(dt, pOrder, pref, turbineSpeed);
         }
+        if (activePitchControllerB()!=null) activePitchControllerB().step(dt,pOrder,powerReference,
+                turbineSpeed,torqueController.getSpeedReference());
         if (aerodynamics != null) {
-            double pitch = pitchController == null
-                    ? aerodynamics.getData().theta0() : pitchController.getPitch();
-            aerodynamics.step(pitch);
+            aerodynamics.step(pitchAngle(pitchController));
         }
     }
 
@@ -136,6 +144,7 @@ public final class WindControlStack {
         double oldGeneratorSpeed = generatorSpeed;
         double oldTurbineSpeed = turbineSpeed;
         double oldPref = pref;
+        double oldSpeedReference=torqueController==null?1:torqueController.getSpeedReference();
         if (driveTrain != null) {
             driveTrain.step(dt, mechanicalPower, electricalPower, 0);
         }
@@ -146,6 +155,8 @@ public final class WindControlStack {
         if (pitchController != null) {
             pitchController.step(dt, pOrder, oldPref, oldTurbineSpeed, 0);
         }
+        if (activePitchControllerB()!=null) activePitchControllerB().step(dt,pOrder,powerReference,
+                oldTurbineSpeed,oldSpeedReference,0);
         generatorSpeed = driveTrain == null
                 ? torqueController == null || holdInitialSpeedWithoutDriveTrain ? oldGeneratorSpeed
                         : torqueController.getSpeedReference()
@@ -153,13 +164,12 @@ public final class WindControlStack {
         turbineSpeed = driveTrain == null ? generatorSpeed : driveTrain.getTurbineSpeed();
         if (torqueController != null) pref = torqueController.getPref();
         if (aerodynamics != null) {
-            double pitch = pitchController == null
-                    ? aerodynamics.getData().theta0() : pitchController.getPitch();
-            aerodynamics.step(pitch);
+            aerodynamics.step(pitchAngle(pitchController));
         }
         predictorGeneratorSpeed = generatorSpeed;
         predictorTurbineSpeed = turbineSpeed;
         predictorPref = pref;
+        predictorSpeedReference=torqueController==null?1:torqueController.getSpeedReference();
         predictorMechanicalPower = aerodynamics == null
                 ? mechanicalPower : aerodynamics.getMechanicalPower();
         predictorActive = true;
@@ -181,6 +191,8 @@ public final class WindControlStack {
             pitchController.step(dt, pOrder, predictorPref,
                     predictorTurbineSpeed, 1);
         }
+        if (activePitchControllerB()!=null) activePitchControllerB().step(dt,pOrder,powerReference,
+                predictorTurbineSpeed,predictorSpeedReference,1);
         generatorSpeed = driveTrain == null
                 ? torqueController == null || holdInitialSpeedWithoutDriveTrain ? generatorSpeed
                         : torqueController.getSpeedReference()
@@ -188,16 +200,14 @@ public final class WindControlStack {
         turbineSpeed = driveTrain == null ? generatorSpeed : driveTrain.getTurbineSpeed();
         if (torqueController != null) pref = torqueController.getPref();
         if (aerodynamics != null) {
-            double pitch = pitchController == null
-                    ? aerodynamics.getData().theta0() : pitchController.getPitch();
-            aerodynamics.step(pitch);
+            aerodynamics.step(pitchAngle(pitchController));
         }
         predictorActive = false;
     }
 
     public boolean isComplete() {
         return torsionalEmulation != null && aerodynamics == null
-                || aerodynamics != null && pitchController != null && torqueController != null;
+                || aerodynamics != null && (pitchController != null || pitchControllerB != null) && torqueController != null;
     }
 
     /** All differential inputs are captured before any component is advanced. */
@@ -209,6 +219,7 @@ public final class WindControlStack {
         double oldSpeed = generatorSpeed;
         double oldTurbineSpeed = turbineSpeed;
         double oldPref = pref;
+        double oldSpeedReference=torqueController==null?1:torqueController.getSpeedReference();
         double mechanicalPower = aerodynamics == null
                 ? driveTrain == null ? electricalPower : driveTrain.getInitialInputPower()
                 : aerodynamics.getMechanicalPower();
@@ -216,6 +227,8 @@ public final class WindControlStack {
         if (torqueController != null) torqueController.stepTwoStep(dt, electricalPower,
                 oldSpeed, powerReference, voltageDip);
         if (pitchController != null) pitchController.stepTwoStep(dt, pOrder, oldPref, oldTurbineSpeed);
+        if (activePitchControllerB()!=null) activePitchControllerB().stepTwoStep(dt,pOrder,powerReference,
+                oldTurbineSpeed,oldSpeedReference);
         generatorSpeed = driveTrain == null
                 ? torqueController == null || holdInitialSpeedWithoutDriveTrain ? oldSpeed
                         : torqueController.getSpeedReference()
@@ -227,14 +240,22 @@ public final class WindControlStack {
                     powerReference, voltageDip);
             pref = torqueController.getPref();
         }
-        if (aerodynamics != null) aerodynamics.step(pitchController == null
-                ? aerodynamics.getData().theta0() : pitchController.getPitch());
+        if (aerodynamics != null) aerodynamics.step(pitchAngle(pitchController));
     }
 
     public Wtara1Model getAerodynamics() { return aerodynamics; }
     public void setAerodynamics(Wtara1Model model) { aerodynamics = model; }
     public Wtpta1Model getPitchController() { return pitchController; }
-    public void setPitchController(Wtpta1Model model) { pitchController = model; }
+    public void setPitchController(Wtpta1Model model) {
+        if(pitchControllerB!=null)throw new IllegalStateException("A WTPTB1 pitch controller is already attached");
+        pitchController = model;
+    }
+    public Wtptb1Model getPitchControllerB() { return pitchControllerB; }
+    public void setPitchControllerB(Wtptb1Model model) {
+        if(pitchController!=null || pitchControllerB!=null)
+            throw new IllegalStateException("A wind pitch controller is already attached");
+        pitchControllerB=java.util.Objects.requireNonNull(model);
+    }
     public Wttqa1Model getTorqueController() { return torqueController; }
     public void setTorqueController(Wttqa1Model model) { torqueController = model; }
     public Wtdta1Model getDriveTrain() { return driveTrain; }
@@ -254,6 +275,11 @@ public final class WindControlStack {
     private WindDriveTrain activeDriveTrain() { return torsionalEmulation!=null?torsionalEmulation:driveTrain; }
     private Wttqa1Model activeTorqueController() { return emulatesPitch()?null:torqueController; }
     private Wtpta1Model activePitchController() { return emulatesPitch()?null:pitchController; }
+    private Wtptb1Model activePitchControllerB() { return emulatesPitch()?null:pitchControllerB; }
+    private double pitchAngle(Wtpta1Model activeA) {
+        return activePitchControllerB()!=null?pitchControllerB.getPitch():activeA==null
+                ?aerodynamics.getData().theta0():activeA.getPitch();
+    }
     public double getGeneratorSpeed() { return generatorSpeed; }
     void setHoldInitialSpeedWithoutDriveTrain(boolean value) {
         holdInitialSpeedWithoutDriveTrain = value;

@@ -16,8 +16,14 @@ public record Wttqa1Data(
         if (teMax < teMin) {
             throw new IllegalArgumentException("WTTQA1 Temax must be >= Temin");
         }
-        if (!(p1 < p2 && p2 < p3 && p3 < p4)) {
+        boolean defaultCurve=p1==0 && sp1==0 && p2==0 && sp2==0
+                && p3==0 && sp3==0 && p4==0 && sp4==0;
+        if (!defaultCurve && !(p1 < p2 && p2 < p3 && p3 < p4)) {
             throw new IllegalArgumentException("WTTQA1 power breakpoints must increase");
         }
+    }
+    /** Native Model Library section 26.1: all-zero curve selects fixed Wref=1. */
+    public boolean hasDefaultSpeedCurve() {
+        return p1==0 && sp1==0 && p2==0 && sp2==0 && p3==0 && sp3==0 && p4==0 && sp4==0;
     }
 }

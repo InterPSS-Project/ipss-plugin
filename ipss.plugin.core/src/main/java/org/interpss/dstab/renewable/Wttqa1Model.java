@@ -217,6 +217,7 @@ public final class Wttqa1Model {
     }
 
     public double speedForPower(double power) {
+        if(data.hasDefaultSpeedCurve())return 1;
         double[] p = {data.p1(), data.p2(), data.p3(), data.p4()};
         double[] s = {data.sp1(), data.sp2(), data.sp3(), data.sp4()};
         if (power <= p[0]) return s[0];

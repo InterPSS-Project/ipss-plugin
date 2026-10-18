@@ -42,6 +42,7 @@ import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtdta1Data;
 import org.interpss.dstab.renewable.Wtdtb1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
+import org.interpss.dstab.renewable.Wtptb1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.svc.Csvgn5Data;
 import org.interpss.dstab.svc.Svsmo1t2Data;
@@ -162,6 +163,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
     private final List<PsseDyrRecord> pendingWtdtb1 = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingWtptb1 = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
@@ -232,6 +234,7 @@ public class PSSEDStabDirectParser {
         pendingIeeest.clear();
         pendingRepca1.clear();
         pendingWtdtb1.clear();
+        pendingWtptb1.clear();
         pendingLcfb1.clear();
         pendingIeeeVc.clear();
         pendingUel1.clear();
@@ -271,7 +274,7 @@ public class PSSEDStabDirectParser {
                         || type.equals("REPCA1") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
                         || type.equals("OEL2C") || type.equals("UEL2C")
-                        || type.equals("WTDTB1");
+                        || type.equals("WTDTB1") || type.equals("WTPTB1");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
@@ -299,6 +302,17 @@ public class PSSEDStabDirectParser {
             }
         }
         pendingWtdtb1.clear();
+        for(PsseDyrRecord record:pendingWtptb1) {
+            try {
+                boolean attached=procWtptb1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"PSS/E 36.7 WTPTB1 fourteen-CON or exact legacy allocation"
+                                :"WTPTB1 requires an exact schema and complete compatible wind stack with no existing pitch controller");
+            } catch(RuntimeException failure) {
+                report.add(record,DynamicModelImportStatus.ERROR,failure.getMessage());
+            }
+        }
+        pendingWtptb1.clear();
         for (PendingSt2cut pending : pendingSt2cut) {
             boolean attached = procPssSt2cut(pending.busId(), pending.genId(), pending.fields());
             report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
@@ -813,6 +827,9 @@ public class PSSEDStabDirectParser {
                 return procWtdta1(busId, genId, fields);
             case "WTDTB1":
                 pendingWtdtb1.add(record);
+                return true;
+            case "WTPTB1":
+                pendingWtptb1.add(record);
                 return true;
             case "WTARA1":
             case "WTARAU1":
@@ -3791,6 +3808,25 @@ public class PSSEDStabDirectParser {
                 record.doubleParameter(con), record.doubleParameter(con + 1),
                 record.doubleParameter(con + 2), record.doubleParameter(con + 3),
                 record.doubleParameter(con + 4), record.doubleParameter(con + 5))) != null;
+    }
+
+    private boolean procWtptb1(String busId,String genId,PsseDyrRecord record) {
+        int con;
+        if(record.fields().get(1).equalsIgnoreCase("USRMDL")) {
+            if(!record.sourceModelName().equals("WTPTBU1") || record.parameterCount()!=20)return false;
+            int[] allocation={104,0,0,14,3,1};
+            for(int i=0;i<allocation.length;i++)if(record.intParameter(i)!=allocation[i])return false;
+            con=6;
+        } else {
+            if(!record.fields().get(1).equalsIgnoreCase("WTPTB1")
+                    || !record.sourceModelName().equals("WTPTB1") || record.parameterCount()!=14)return false;
+            con=0;
+        }
+        return builder.addWtptb1(busId,genId,new Wtptb1Data(record.doubleParameter(con),record.doubleParameter(con+1),
+                record.doubleParameter(con+2),record.doubleParameter(con+3),record.doubleParameter(con+4),
+                record.doubleParameter(con+5),record.doubleParameter(con+6),record.doubleParameter(con+7),
+                record.doubleParameter(con+8),record.doubleParameter(con+9),record.doubleParameter(con+10),
+                record.doubleParameter(con+11),record.doubleParameter(con+12),record.doubleParameter(con+13)))!=null;
     }
 
     private boolean procWtpta1(String busId, String genId, String[] f) {
