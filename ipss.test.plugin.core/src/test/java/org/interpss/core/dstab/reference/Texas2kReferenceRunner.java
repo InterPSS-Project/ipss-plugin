@@ -161,7 +161,10 @@ public final class Texas2kReferenceRunner {
                 net.addDynamicEvent(DStabObjectFactory.createGeneratorTripEvent(bus,
                         event.get("target_machine_id").getAsString(), net, start), args[1]);
             }
-            try (var writer = Files.newBufferedWriter(trace)) {
+            boolean fullNetworkDiagnostics = plan.has("full_network_diagnostics")
+                    && plan.get("full_network_diagnostics").getAsBoolean();
+            try (var writer = Files.newBufferedWriter(trace);
+                    var fullNetwork = fullNetworkDiagnostics ? new Texas2kFullNetworkRecorder(net, out) : null) {
                 final JsonObject selected = event;
                 // Preserve the loader's initialization and integration-step configuration.
                 String globalScheme = plan.has("solver_integration_scheme")
@@ -184,7 +187,7 @@ public final class Texas2kReferenceRunner {
                         @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
                                 throws DStabSimuException {
                             super.rebaseDynamicModelInputs(method);
-                            try { write(writer, algo.getSimuTime(), "EVENT_POST", record(net, selected)); }
+                            try { write(writer, algo.getSimuTime(), "EVENT_POST", record(net, selected), fullNetwork); }
                             catch (Exception failure) { throw new DStabSimuException("Event observation failed: "+failure); }
                         }
                     });
@@ -211,7 +214,7 @@ public final class Texas2kReferenceRunner {
                     @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
                             throws DStabSimuException {
                         super.rebaseDynamicModelInputs(method);
-                        try { write(writer, algo.getSimuTime(), "EVENT_POST", record(net, selected)); }
+                        try { write(writer, algo.getSimuTime(), "EVENT_POST", record(net, selected), fullNetwork); }
                         catch (Exception failure) {
                             throw new DStabSimuException("Event observation failed: " + failure);
                         }
@@ -257,13 +260,13 @@ public final class Texas2kReferenceRunner {
                 if (historySteps == 2) {
                     algo.setSimuTime(-historySteps * step);
                     for (int index = 0; index < historySteps; index++) {
-                        write(writer, algo.getSimuTime(), "HISTORY", record(net, event));
+                        write(writer, algo.getSimuTime(), "HISTORY", record(net, event), fullNetwork);
                         if (!algo.solveDEqnStep(true))
                             throw new IllegalStateException("Startup history integration failed");
                     }
                     initial = record(net, event);
                 }
-                write(writer, 0., "INITIAL", initial);
+                write(writer, 0., "INITIAL", initial, fullNetwork);
                 status.put("step_s", step);
                 status.put("reference_output_step_s", outputStep);
                 status.put("stop_s", stop);
@@ -273,7 +276,7 @@ public final class Texas2kReferenceRunner {
                         throw new IllegalStateException("Integration failed at " + algo.getSimuTime());
                     reached = algo.getSimuTime();
                     if ((index + 1) % outputEvery == 0)
-                        write(writer, reached, "STEP_END", record(net, event));
+                        write(writer, reached, "STEP_END", record(net, event), fullNetwork);
                     if ((index + 1) % 2000 == 0) {
                         writer.flush();
                         System.out.println(args[1] + " t=" + reached);
@@ -331,7 +334,7 @@ public final class Texas2kReferenceRunner {
     }
 
     private static void write(BufferedWriter writer, double time, String kind,
-            Map<String, Double> values) throws Exception {
+            Map<String, Double> values, Texas2kFullNetworkRecorder fullNetwork) throws Exception {
         writer.write(Double.toString(time));
         writer.write("," + kind);
         for (var entry : values.entrySet()) {
@@ -340,5 +343,6 @@ public final class Texas2kReferenceRunner {
             writer.write("," + entry.getValue());
         }
         writer.newLine();
+        if (fullNetwork != null) fullNetwork.record(time, kind);
     }
 }

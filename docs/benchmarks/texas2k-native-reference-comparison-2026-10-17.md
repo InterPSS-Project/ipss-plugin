@@ -1954,3 +1954,53 @@ the complete six-case, 36-event goal remains open. The standalone plot, staged
 supplied states, corrected observers, failed-balance invalidation and runnable
 producers are retained privately in
 `2026-10-18-plant1071-port-balance-and-observed-phasors`.
+
+## Full-network export preparation
+
+The reference producer now accepts an optional `full_network_diagnostics: true`
+plan field. It writes `full-network.csv.gz` and a channel manifest containing
+quantities, units, bus numbers, machine IDs and angle/time conventions. The
+default producer path and original scoring subset are unchanged. The extra
+recording is intended for diagnosis and its elapsed time is not a simulation
+performance measurement.
+
+For the original Case 2 topology, the optional trace contains 4,810 numerical
+channels: voltage magnitude and angle for all 2,000 buses; terminal P/Q for all
+199 online generators; and rotor angle, speed, mechanical power and field
+voltage for the 103 synchronous machines. Terminal powers use MW/Mvar. Stored
+angles are exported in degrees without offsets or rotations. Startup samples
+and duplicate event timestamps keep their original sample sides. Disconnected
+generator channels become zero while retained machine states remain intact.
+
+The initial recorder exposed a legacy getter side effect: querying terminal
+current also refreshes the subtransient machine's cached currents and air-gap
+power. The preliminary export therefore differed from the original trajectory
+after fault application by up to `9.49401e-11` pu in a reactive-power channel.
+Two cold controls with recording disabled reproduce the original observations
+exactly, establishing that the difference requires the added observation path.
+The preliminary observer is not accepted as an unchanged-trajectory producer.
+
+The corrected recorder preserves the electrical snapshot and scalar air-gap
+power around the current query. A regression changes terminal voltage before
+observation so a cache refresh is observable; it fails with the preliminary
+recorder and passes with the correction. A separate converter check verifies
+instantaneous terminal P/Q against current with the Norton-admittance term
+removed, distinguishes it from an event-averaged cached power, and checks a
+machine base different from the system base. The two recorder tests and the
+existing disconnected-channel reporting test all pass.
+
+An original-grid 1.2-second Case 2 check covers startup, fault application,
+clearing and early recovery. All 2,405 observations of every original 218
+numerical channel are exactly unchanged with the corrected full-network export
+enabled. Every exported value is finite, channel identifiers are unique, and
+matched instantaneous terminal powers agree exactly after unit conversion.
+Reversing only the exporter hooks recovers the exact frozen original producer
+source. These are observation-integrity checks, not new reference-accuracy
+results or evidence of full ten-second parity.
+
+The matching export is ready for the expanded supplied measurements. No new
+reference data have arrived in this slice. The latest complete original first
+Case 2 event remains at 19 of 40 criteria passed; all six cases and 36 complete
+events remain required. Frozen runtimes, source snapshots, focused tests,
+rejected-prototype controls, corrected full-network trace and integrity checks
+are retained privately in `2026-10-18-full-network-export-validation`.
