@@ -22,7 +22,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 /** Native 36.7 nine-state/24-channel nominal-grid checkpoints, not full model acceptance.
- * Instantaneous event-post, active PQ limits and plant-input excursions remain separate profiles.
+ * Instantaneous event-post and plant-input excursions remain separate profiles.
  */
 public class Regfma1NativeTrajectoryTest {
     private static final double[] FLAT={6e-7,1e-12,1e-12,3.5e-7,3e-6,3.5e-7,1e-12,1e-12,1e-6,
@@ -35,6 +35,14 @@ public class Regfma1NativeTrajectoryTest {
             5e-5,5e-5,1e-12,1e-12,1e-12,1e-12,1.3e-5,1e-6,1.7e-5,8.5e-6,8e-7,2.8e-5,7e-5,1.7e-5,3.7e-5};
     private static final double[] CURRENT_HALF={.00095,1e-12,1e-12,5.8e-6,.0009,.00042,1e-12,1e-12,1e-12,
             2.7e-5,2.7e-5,1e-12,1e-12,1e-12,1e-12,6e-6,1e-6,1.3e-5,6.5e-6,5.6e-7,1.3e-5,3.6e-5,1.3e-5,2e-5};
+    private static final double[] CURRENT_PI={.0017,1e-12,1e-12,2.4e-5,.0017,.00085,1e-12,1e-12,9e-6,
+            5.3e-5,.00021,1e-12,1e-12,1e-12,1e-12,1.2e-5,1e-12,3.5e-5,1.9e-5,1.8e-6,9e-5,.00017,3.5e-5,3.6e-5};
+    private static final double[] CURRENT_PI_HALF={.0009,1e-12,1e-12,6e-6,.0009,.00044,1e-12,1e-12,3e-6,
+            2.8e-5,.00011,1e-12,1e-12,1e-12,1e-12,1e-5,1e-12,2e-5,1.1e-5,9e-7,4.1e-5,8.1e-5,2e-5,1.9e-5};
+    private static final double[] PQ={.00031,4.7e-8,7e-7,9e-6,.003,.0007,.00014,2.3e-5,1e-12,
+            .00047,.00047,4.5e-7,3.2e-6,.00038,1.8e-5,.00027,1e-6,.00015,7.7e-5,7e-6,.00012,.0007,.00015,9.5e-6};
+    private static final double[] PQ_HALF={.00016,1.2e-8,2.7e-7,2.4e-6,.0016,.00036,3e-5,6e-6,1e-12,
+            .00023,.00023,1.2e-7,1.6e-6,.00018,4e-6,.00014,1e-6,7.2e-5,3.8e-5,3.5e-6,5.9e-5,.00035,7.2e-5,4.9e-6};
 
     @Test void allVoltageAndPlantSelectorsHoldTheirNativeInitialPoint(@TempDir Path directory) throws Exception {
         for(String key:List.of("flat00","flat01","flat10","flat11")) {
@@ -65,12 +73,30 @@ public class Regfma1NativeTrajectoryTest {
     @Test void activeCurrentLimitAtHalfStepReducesNativeStateErrors(@TempDir Path directory) throws Exception {
         compareFault("current00h2",CURRENT_HALF,directory);
     }
+    @Test void terminalVoltagePiCurrentLimitMatchesNativeAtBothSteps(@TempDir Path directory) throws Exception {
+        compareFault("current11",CURRENT_PI,directory);
+        compareFault("current11h2",CURRENT_PI_HALF,directory);
+    }
+    @Test void allFourPowerLimitPathsMatchNativeAtBothSteps(@TempDir Path directory) throws Exception {
+        compareFault("pq00",PQ,directory);
+        compareFault("pq00h2",PQ_HALF,directory);
+    }
+    @Test void independentlyBoundedVoltageIntegralMatchesNativeAtBothSteps(@TempDir Path directory) throws Exception {
+        compareFault("voltage11",TERMINAL,directory);
+        double[] half=TERMINAL.clone();
+        for(int i=0;i<half.length;i++)half[i]=Math.max(FLAT[i],half[i]*.5);
+        // Native float-clock/limit-release residual does not halve for s8.
+        half[8]=6e-6;
+        compareFault("voltage11h2",half,directory);
+    }
     @Test void fixedCheckpointDigestsRejectMutation() {
-        assertEquals(9,Regfma1NativeReferenceCheckpoints.references().size());
+        assertEquals(15,Regfma1NativeReferenceCheckpoints.references().size());
         for(var reference:Regfma1NativeReferenceCheckpoints.references().values()) {
             assertDoesNotThrow(()->reference.verify(reference.body()));
             assertThrows(IllegalArgumentException.class,()->reference.verify(reference.body()+" "));
             assertEquals(64,reference.nativeCsvSha256().length());
+            assertEquals(18,reference.constants().size());
+            assertThrows(UnsupportedOperationException.class,()->reference.constants().set(0,999.0));
         }
         assertThrows(IllegalArgumentException.class,()->Regfma1NativeReferenceCheckpoints.get("unknown"));
     }
@@ -98,7 +124,7 @@ public class Regfma1NativeTrajectoryTest {
     private static List<double[]> run(Reference reference,Path dyr) throws Exception {
         IpssCorePlugin.init();
         Files.writeString(dyr,"1 'REGFMA1' '1' "+reference.vflag()+" "+reference.qvflag()
-                +" .01 .012 .014 "+reference.imax()+" 1.5 .5 .9 -.9 .8 -.8 .02 .03 .01 .1 .1 20 .25 5.86 /\n"
+                +" "+String.join(" ",reference.constants().stream().map(Object::toString).toList())+" /\n"
                 +"3 'GENCLS' '1' 9999999 0 /\n");
         var context=new PSSEMultiFileLoader().loadDStab(
                 "testData/adpter/psse/v33/renewable/regfma1_native.raw",dyr.toString());
@@ -120,6 +146,9 @@ public class Regfma1NativeTrajectoryTest {
         int steps=(int)Math.round(.3/reference.step());
         List<double[]> rows=new ArrayList<>();
         boolean sawCurrentLimit=false;
+        boolean narrowPowerLimits=reference.constants().get(6)<.9;
+        boolean[] sawPowerLimit=new boolean[4];
+        int[] powerIntegralIndices={1,2,6,7};
         for(int tick=0;tick<=steps;tick++) {
             assertEquals(tick*reference.step(),algorithm.getSimuTime(),1e-10);
             model.getOutputObject();
@@ -143,12 +172,26 @@ public class Regfma1NativeTrajectoryTest {
                 assertEquals(.5,row[15],1e-10,"Current is limited on the device MVA base");
                 assertEquals(model.getInternalVoltage(),row[10],0,"Native VAR L+1 remains before Imax");
             }
-            for(int index:new int[]{1,2,6,7})assertEquals(0,row[index],1e-12,"The selected profile keeps PQ limits inactive");
+            for(int i=0;i<powerIntegralIndices.length;i++) {
+                int index=powerIntegralIndices[i];
+                sawPowerLimit[i]|=Math.abs(row[index])>1e-10;
+                if(!narrowPowerLimits)assertEquals(0,row[index],1e-12,"This profile keeps PQ limits inactive");
+                else assertTrue(i%2==0 ? row[index]<=0 : row[index]>=0,"Power-limit integrals retain their one-sided bounds");
+            }
+            if(reference.constants().get(4)==1.08) {
+                assertTrue(row[8]>=1.07 && row[8]<=1.08,"Native voltage integral has independent hard bounds");
+            }
             rows.add(row);
             if(tick<steps)assertTrue(algorithm.solveDEqnStep(true),"Native REGFMA1 step="+tick);
         }
         assertEquals(reference.imax()==.5,sawCurrentLimit);
         if(reference.imax()==.5)assertTrue(rows.get(rows.size()-1)[15]<.49,"Imax must release after clearing");
+        if(narrowPowerLimits) {
+            for(boolean active:sawPowerLimit)assertTrue(active,"Every P/Q limit path must be exercised");
+            for(int index:new int[]{11,12,13,14})assertEquals(0,rows.get(rows.size()-1)[index],1e-12,"Power-limit outputs release by the end");
+        }
+        if(reference.constants().get(4)==1.08)
+            assertEquals(1.08,rows.stream().mapToDouble(row->row[8]).max().orElseThrow(),1e-12);
         return rows;
     }
     private static void compare(double[] expected,double[] actual,double[] bounds,String context) {

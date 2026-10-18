@@ -159,8 +159,16 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
         double voltageRate = 0.0;
         if (data.vflag() != 0) {
             double error = voltageCommand(state) - state.vMeasured();
-            voltageRate = limitedIntegralRate(state.voltageIntegral(), data.kiv(), error,
-                    data.kpv(), data.emin(), data.emax());
+            if (nativeVoltageIntegralLimits()) {
+                // Native PSS/E s8 has its own Emin/Emax limiter; saturation
+                // of Kpv*error+s8 must not freeze an interior integral.
+                double integral=state.voltageIntegral();
+                voltageRate=((integral>=data.emax() && error>0.0)
+                        || (integral<=data.emin() && error<0.0)) ? 0.0 : data.kiv()*error;
+            } else {
+                voltageRate = limitedIntegralRate(state.voltageIntegral(), data.kiv(), error,
+                        data.kpv(), data.emin(), data.emax());
+            }
         }
         double angleRate = 2.0 * Math.PI * getDStabBus().getNetwork().getFrequency()
                 * frequencyDeviation(state);
@@ -252,7 +260,8 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
                 data.tpf() <= EPS ? endpoint.p() : state.pMeasured(),
                 data.tqf() <= EPS ? endpoint.q() : state.qMeasured(),
                 data.tvf() <= EPS ? endpoint.v() : state.vMeasured(),
-                state.voltageIntegral(),
+                nativeVoltageIntegralLimits() && data.vflag()!=0
+                        ? limit(state.voltageIntegral(),data.emin(),data.emax()) : state.voltageIntegral(),
                 Math.min(0.0, state.pUpperIntegral()),
                 Math.max(0.0, state.pLowerIntegral()),
                 Math.min(0.0, state.qUpperIntegral()),
@@ -265,6 +274,10 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
                 && finite(voltageIntegral) && finite(pUpperIntegral)
                 && finite(pLowerIntegral) && finite(qUpperIntegral)
                 && finite(qLowerIntegral);
+    }
+
+    private boolean nativeVoltageIntegralLimits() {
+        return data.parameterRules()==Regfma1Data.ParameterRules.NATIVE_PSSE_36_7;
     }
 
     @Override

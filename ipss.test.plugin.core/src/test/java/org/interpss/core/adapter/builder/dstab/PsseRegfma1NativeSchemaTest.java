@@ -133,6 +133,52 @@ public class PsseRegfma1NativeSchemaTest extends CorePluginTestSetup {
         assertEquals(before,model.getNamedStates());
     }
 
+    @Test void nativeVoltagePiContinuesIntegratingWhenOnlyTheOutputIsLimited(@TempDir Path directory)
+            throws Exception {
+        var model=nativeNarrowVoltageModel(directory,"voltage-upper");
+        double initial=model.getVoltageIntegral();
+        model.setReferenceOffsets(0,.1);
+        assertTrue(model.nextStep(.001,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,0));
+        assertEquals(initial+.001*5.86*.1,model.getVoltageIntegral(),1e-12,
+                "Native s8 is limited independently of Kpv*error+s8");
+        assertEquals(1.10,model.getInternalVoltage(),1e-12);
+    }
+
+    @Test void nativeVoltagePiClampsAndUnwindsAtBothIntegralBounds(@TempDir Path directory)
+            throws Exception {
+        var model=nativeNarrowVoltageModel(directory,"voltage-bounds");
+        model.setReferenceOffsets(0,.1);
+        for(int step=0;step<100;step++) {
+            assertTrue(model.nextStep(.01,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,0));
+            assertTrue(model.nextStep(.01,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,1));
+            assertTrue(model.getVoltageIntegral()<=1.10);
+        }
+        assertEquals(1.10,model.getVoltageIntegral(),1e-12);
+        model.setReferenceOffsets(0,-.1);
+        assertTrue(model.nextStep(.001,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(model.getVoltageIntegral()<1.10,"Upper integral limit must allow inward motion");
+        assertEquals(1.085,model.getInternalVoltage(),1e-12);
+        assertTrue(model.nextStep(.001,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,1));
+        for(int step=0;step<100;step++) {
+            assertTrue(model.nextStep(.01,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,0));
+            assertTrue(model.nextStep(.01,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,1));
+            assertTrue(model.getVoltageIntegral()>=1.085);
+        }
+        assertEquals(1.085,model.getVoltageIntegral(),1e-12);
+        model.setReferenceOffsets(0,.1);
+        assertTrue(model.nextStep(.001,com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER,0));
+        assertTrue(model.getVoltageIntegral()>1.085,"Lower integral limit must allow inward motion");
+    }
+
+    private static Regfma1Model nativeNarrowVoltageModel(Path directory,String name) throws Exception {
+        var builder=fixture(new Complex(.015,.23));
+        parse(builder,directory,name,"1 1 "+CONSTANTS.replace("1.5 .5","1.10 1.085"));
+        var model=(Regfma1Model)generator(builder).getDynamicGenDevice();
+        assertTrue(model.initStates(model.getDStabBus()));
+        assertTrue(model.getVoltageIntegral()>1.085 && model.getVoltageIntegral()<1.10);
+        return model;
+    }
+
     @Test void nativeInvalidFieldsDoNotDefaultOrPartiallyAttach(@TempDir Path directory) throws Exception {
         String[] invalid={"0 0 "+CONSTANTS+" 999", "0 0 "+CONSTANTS.replace("5.86","NaN"),
                 "0 0 "+CONSTANTS.replace(".012","bad"),"0.5 0 "+CONSTANTS,
