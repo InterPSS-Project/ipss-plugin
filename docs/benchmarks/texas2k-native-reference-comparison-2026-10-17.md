@@ -2034,3 +2034,54 @@ The larger trajectory mismatch remains unresolved, and the original six-case,
 36-event acceptance contract is unchanged. The selected physical snapshots,
 all bus residuals and independent producer are retained privately in
 `2026-10-18-case2-full-network-current-balance`.
+
+## Remaining coupled-component discriminators
+
+Existing cold-paired ten-second component references for original units 7356
+and 6147 permit further checks while the expanded full-network measurements
+are being prepared. These are previously generated independent reference cells,
+with prescribed source waveforms, rather than the original connected-system
+disturbance. No new reference simulation is generated in this slice.
+
+Recompiled legacy controls reproduce the existing component traces exactly.
+Preserving machine caches during observation and separately omitting the PSS
+output query leave both rotor trajectories exactly unchanged. Thus the recorder
+side effect found in the full-network export does not explain these component
+errors. Reference power-sensor state transitions also support the current
+physical-input endpoint: their RMS recurrence residual is about `2.73e-8` pu,
+versus `4.39e-7` to `4.79e-7` pu for the two adjacent-sample hypotheses.
+
+Reconstructing source EMF from reference phasors and physical currents reveals
+a profile-clock difference. Evaluating the unchanged prescribed waveform on
+the validated float32 clock reduces its peak source-voltage error from roughly
+`3.7e-6`--`4.5e-6` pu to a few `1e-7` pu. It barely changes the rotor error.
+The source profile is evaluated at its declared input time; reference output
+samples are not shifted or fitted.
+
+| Component control | Unit 7356 rotor RMSE, degrees | Unit 6147 rotor RMSE, degrees |
+| --- | ---: | ---: |
+| Original `0.0005`-second control | 0.434234 | 0.123497 |
+| Profile evaluated on reference float clock | 0.433057 | 0.123783 |
+| Integration step `0.00025` seconds | 0.454850 | 0.144465 |
+| Integration step `0.000125` seconds | 0.468827 | 0.154263 |
+| Fixed binary32 serialization of original input literals | 0.434933 | 0.123515 |
+| Float32 integration store for the measured-power state only | 0.433457 | 0.123480 |
+
+The last control follows an offline scalar discriminator: float32 arithmetic
+for integration storage reproduces the observed measured-power state within one
+float32 step (`5.96047e-8` pu); rounding only the published state does not.
+That offline check starts from the observed scalar value and is explicitly
+separate from independent model initialization. The coupled overlay initializes
+its own states and changes only this storage representation. Its small
+improvement does not justify a production change or establish a complete
+native storage policy for other state coordinates.
+
+All refinement runs retain the original 20,003 output/reference samples without
+interpolation. No parameter is tuned to trajectory error. The fixed input and
+storage representation controls are not applied to the original input files
+or production code; original acceptance criteria remain unchanged. These controls eliminate
+several simple explanations without resolving the coupled-component errors.
+The original complete first Case 2 event remains at 19 of 40 criteria passed;
+the six-case, 36-event objective remains open. Inputs, cold-reference hashes,
+producers, outputs and the recovered serial refinement job are retained
+privately in `2026-10-18-remaining-component-discriminators`.
