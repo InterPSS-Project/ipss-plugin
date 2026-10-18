@@ -1896,3 +1896,61 @@ Supplied prefixes and inference inputs, exact observer equivalence checks,
 all six conditional replays, the standalone comparison plot, unchanged
 producer/scorer snapshots and fine-step tolerance controls are retained
 privately in `2026-10-18-plant1071-boundary-and-fine-tolerance-controls`.
+
+## Supplied-only plant power-balance localization
+
+The supplied Case 2 results remain the final accuracy reference. No additional
+full-size reference run or new reference channels are required for the following
+diagnostics. Reconstructing terminal phasors for all 26 observed generators at
+201 prefault samples per unit places buses 1073, 1072 and 1078 first by peak
+complex-voltage difference. Their peaks are `0.00484675`, `0.00461636` and
+`0.00457273` pu. The maximum supplied stator-magnitude identity residual across
+all 26 units is `0.000000235425` pu. Inferred phase remains a diagnostic quantity;
+it does not become a directly supplied bus-angle acceptance channel.
+
+Plant bus 1071 has seven external transmission connections: five lines to
+buses 1001, 1019 and 1037, plus transformers to buses 1079 and 1081. Although
+the generator records at the latter two buses are offline, those buses carry
+transmission power. A preliminary five-line balance omitted these transformer
+paths, failed its current-balance check, and is explicitly invalidated. Its
+source attribution and plot are excluded from the evidence conclusions.
+
+A corrected read-only observer retains exact equality of all original prefix
+observations, machine-state outputs and fleet-power outputs. The five remaining
+offline-generator leaf buses have a maximum current residual of
+`1.36733e-14` pu. Including all seven external connections, the plant current
+balance closes within `1.53753e-9` pu throughout the prefault second. Thus the
+following decomposition accounts for the observed local network equations.
+
+The seven series admittances define a weighted upstream voltage aggregate.
+The supplied plant phasor, three supplied generator currents, original line
+charging and confirmed I/Z local load infer that aggregate independently of
+the InterPSS neighbour voltages. Subtracting the two plant equations separates
+upstream-boundary, generator-current, load-current and line-charging terms.
+An exact complex-voltage projection then gives their contributions to the
+voltage-magnitude error; its maximum closure residual is `7.67631e-12` pu.
+
+| Prefault voltage-magnitude quantity | RMS, pu | Maximum absolute value, pu |
+| --- | ---: | ---: |
+| Total plant error | 0.00105812 | 0.00232733 |
+| Upstream-boundary contribution | 0.00109094 | 0.00239219 |
+| Local generator-current contribution | 0.0000411147 | 0.000148579 |
+| Local load-current contribution | 0.00000559486 | 0.0000132653 |
+| Line-charging contribution | 0.0000000684340 | 0.000000135553 |
+
+The upstream contribution dominates and is partly offset by the local terms.
+Using either untouched cold conversion-voltage observation to evaluate the
+supplied local load changes the inferred upstream voltage by at most
+`0.0000000822900` pu. That diagnostic ambiguity is much smaller than the
+observed discrepancy. The three generators' combined power delivered to the
+plant differs by up to `5.06947` MW and `2.85205` Mvar over this prefault second.
+
+This balance localizes the boundary mismatch; it does not establish which
+unobserved upstream device causes it. One inferred voltage aggregate cannot
+uniquely identify five individual neighbour voltages. No model gain, state,
+power-flow point, network tolerance or acceptance limit is adjusted. The latest
+original complete ten-second event remains at 19 of 40 criteria passed, and
+the complete six-case, 36-event goal remains open. The standalone plot, staged
+supplied states, corrected observers, failed-balance invalidation and runnable
+producers are retained privately in
+`2026-10-18-plant1071-port-balance-and-observed-phasors`.
