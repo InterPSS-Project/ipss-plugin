@@ -2,12 +2,23 @@
 
 ## Acceptance contract
 
-The supplied corpus contains 36 ten-second disturbances across six cases, with
-five bus-voltage magnitudes and five generator rotor angles per disturbance.
-The user's angle clarification selects rotor angles; bus-voltage angles are
-absent from these references. Every requested channel must satisfy
-`RMSE / (reference maximum - reference minimum) < 0.001`.
-This target has **not** been achieved. Partial or failed trajectories cannot pass.
+The supplied corpus contains 36 ten-second disturbances across six cases. The
+updated user contract covers all matched bus-voltage magnitudes, machine
+terminal P/Q, and generator rotor angles. Bus-voltage angles are absent from
+the references. The user confirmed the following limits and conventions:
+
+- Voltage and P/Q: NRMSE below `0.001` before the event and `0.005` from event
+  application, including the fault, through the end of the run.
+- Both periods use the **full ten-second reference range** as the denominator.
+- Rotor angle: maximum absolute error below `0.002` degrees before the event;
+  **RMSE below `0.01` degrees** across the full ten seconds.
+- Load conversion: constant-current P and constant-impedance Q.
+
+The prefault side at the application timestamp is a prefault observation; the
+duplicate event-post sample belongs to the fault/postfault period. The earlier
+single `0.001` full-window gate is retained only as historical evidence.
+The updated target has **not** been achieved. Partial or failed trajectories
+cannot pass.
 
 The local comparison producer retains input and reference SHA-256 hashes,
 freezes compiled runtime jars, preserves event-pre/event-post samples, and
@@ -58,6 +69,44 @@ The authoritative installed API page is PSS/E 36.7
   two-machine fixture, including both limit directions. Zero-power sharing also
   counts active machines only. The full core regression passes **2,945 tests**,
   with no failures, errors or skips.
+- Core `1208a94c2` preserves solved slack-machine P/Q when reactive limits
+  cannot supply the bus total. A sole slack machine retains the required Q;
+  with several machines, the first active machine absorbs unavoidable excess
+  after the other machines reach their limits. The allocation still reports
+  the limit violation. Eight native PSS/E scenarios cover both directions and
+  reproduce exactly from a second cold process. All **2,947 core tests** pass.
+- Core `2576b7950` restores Q-limit enforcement after a bound is released,
+  solves the changed network before another limit is selected, and includes
+  colocated loads in generator power-flow results before dynamic initialization.
+  Both defects fail focused regressions before correction. The complete core
+  gate then passes **2,949 tests**, with no failures, errors, or skips.
+
+## Power-flow voltage check requested by the user
+
+The six cases were solved independently before any dynamic-state initialization,
+using fixed input taps/shunts/phase shifts/interchange, active generator Q-limit
+control, Java KLU, and a `1e-10`-pu mismatch tolerance. All six final runs converge
+with zero unsettled controls and zero PV-generator Q-limit violations. All
+2,000 active buses per case are compared with the solved RAW voltage values:
+
+| Case | Bus-voltage RMSE vs RAW (pu) | Maximum difference vs RAW (pu) | Maximum difference vs first dynamic reference (pu) |
+| --- | ---: | ---: | ---: |
+| 1 | 7.016e-7 | 9.795e-6 | 3.141e-5 |
+| 2 | 1.565e-6 | 2.288e-5 | 2.140e-6 |
+| 3 | 5.003e-7 | 7.283e-6 | 3.400e-4 |
+| 4 | 1.939e-6 | 9.797e-6 | 5.640e-4 |
+| 5 | 6.889e-7 | 9.405e-6 | 2.596e-4 |
+| 6 | 5.981e-7 | 6.017e-6 | 1.698e-4 |
+
+The last column uses all 360 supplied initial bus-voltage/ETERM observations,
+covering 304 unique case/bus pairs. These samples occur after PSS/E dynamic
+initialization, at `-2*dt`; they are distinct from a saved power-flow bus-voltage
+export. The corrected power-flow solution agrees closely with the supplied
+solved RAW values. The remaining initial dynamic-reference differences are
+retained for investigation; neither data set is used to fit voltage offsets.
+Before correction, Case 3 and 4 initial-reference differences reached `0.02270`
+and `0.02020` pu respectively. Intermediate incomplete control variants are
+preserved as failed diagnostics, not accepted power-flow solutions.
 
 ## Native wind-speed discrepancy
 
@@ -106,9 +155,40 @@ RAW initialization, solved power flow, removal of fixed Norton corrections,
 and two explicit startup-history steps have been compared separately. Neither
 the history experiment nor the fixed-control load-flow experiment establishes
 the correct native startup algorithm or reproduces every operating-point
-quantity. They remain diagnostic variants. Load conversion is currently
-assumed constant impedance for both P and Q; the reference CONL settings have
-not been confirmed.
+quantity. They remain diagnostic variants. The initial runs assumed constant
+impedance for both P and Q; each later diagnostic declares its own load
+assumption. The user has now confirmed constant-current P and impedance Q.
+
+The retained-speed follow-up compares two explicitly declared load assumptions
+with identical frozen code. Case 1 fault 2 through 1.2 seconds gives maximum
+voltage/rotor-angle errors of `0.0197555` pu / `2.43263` degrees with impedance
+P/Q, versus `0.00236607` pu / `0.0608879` degrees with constant-current P and
+impedance Q. This load profile has since been confirmed by the user. The runner
+now selects the load-current network
+path for mixed load profiles instead of silently leaving them in a fixed Y.
+
+The slack fix also exposes the need to finish all enabled power-flow controls:
+the old 50-iteration diagnostic ends with 42 controls unsettled. A 300-iteration
+allowance reaches `CONVERGED`, zero unsettled controls, and a maximum initial
+Norton residual of `9.62e-13` pu. The first-20-ms voltage/rotor errors then fall
+to `2.48108e-5` pu / `0.00132629` degrees. The runner now refuses an unsettled
+power-flow result. A fresh ten-second current-P/impedance-Q diagnostic using
+that operating point was stopped after its prefault rotor-angle error reached
+`0.00829852` degrees, exceeding the updated `0.002`-degree maximum. The trace is
+preserved and marked aborted. Full-window acceptance is still required.
+
+Machine electrical output now uses instantaneous terminal `V * conjugate(I)`
+on system base. The old `getPe()` field contains air-gap power, including stator
+loss and possible event averaging, so it cannot substitute for terminal P/Q at
+event boundaries. Historical traces retain their original column definitions.
+
+The native frequency discriminator uses a finite-inertia grid. Giving both
+simulators the same explicit 0.05-second bus-frequency filter reduces maximum
+frequency differences to `3.62e-6` pu at the renewable bus and `3.53e-6` pu at
+the grid bus. The installed application guide documents native PSS/E's default
+filter as 0.04 seconds. All 107 Case 1/2 and all 306 Case 3–6 REPCA1 records
+have FreqFlag=0, so this plant-controller frequency branch is inactive in the
+supplied profiles. No global filter setting was fitted or changed.
 
 A subsequent frozen Case 1 fault-2 prefix completes 1.2 seconds, including the
 fault, in 154.55 seconds. This epoch includes the native speed multiplier but

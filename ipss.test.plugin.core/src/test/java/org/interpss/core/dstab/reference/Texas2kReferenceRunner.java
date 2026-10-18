@@ -63,18 +63,27 @@ public final class Texas2kReferenceRunner {
             net.setAllowGenWithoutMach(true);
             net.setStaticLoadModel(plan.has("active_load_model")
                     ? StaticLoadModel.valueOf(plan.get("active_load_model").getAsString())
-                    : StaticLoadModel.CONST_Z);
+                    : StaticLoadModel.CONST_I);
             net.setReactiveStaticLoadModel(plan.has("reactive_load_model")
                     ? StaticLoadModel.valueOf(plan.get("reactive_load_model").getAsString())
                     : StaticLoadModel.CONST_Z);
+            // A fixed admittance represents only the all-impedance profile.
+            // Mixed P/Q profiles must use the engine's initialized load-current path.
+            net.setStaticLoadIncludedInYMatrix(net.getStaticLoadModel() == StaticLoadModel.CONST_Z
+                    && net.getReactiveStaticLoadModel() == StaticLoadModel.CONST_Z);
+            status.put("static_load_in_y_matrix", net.isStaticLoadIncludedInYMatrix());
             status.put("active_load_model", net.getStaticLoadModel().toString());
             status.put("reactive_load_model", net.getReactiveStaticLoadModel().toString());
+            status.put("machine_power_quantity", "instantaneous terminal P/Q on system MVA base");
             var lf = algo.getAclfAlgorithm();
             lf.getDataCheckConfig().setAutoTurnLine2Xfr(true);
             lf.getDataCheckConfig().setTurnOffIslandBus(true);
             lf.getDataCheckConfig().setAllowGenWithoutMachine(true);
             lf.setNonDivergent(true);
-            lf.setMaxIterations(50);
+            int loadflowIterations = plan.has("loadflow_max_iterations")
+                    ? plan.get("loadflow_max_iterations").getAsInt() : 50;
+            lf.setMaxIterations(loadflowIterations);
+            status.put("loadflow_max_iterations", loadflowIterations);
             lf.setTolerance(1.e-10);
             if (plan.has("fixed_powerflow_controls") && plan.get("fixed_powerflow_controls").getAsBoolean()) {
                 lf.setInitBusVoltage(false);
@@ -93,7 +102,14 @@ public final class Texas2kReferenceRunner {
                 // No reference trajectory values are supplied to the initialization.
                 net.setLfConverged(true);
                 status.put("initialization_source", "solved-raw-diagnostic");
-            } else if (!lf.loadflow()) throw new IllegalStateException("Load flow failed");
+            } else {
+                if (!lf.loadflow()) throw new IllegalStateException("Load flow failed");
+                var termination = lf.getTerminationReport();
+                status.put("loadflow_termination", termination.status().toString());
+                status.put("loadflow_unsettled_controls", termination.unsettledControlCount());
+                if (!termination.controlsSettled())
+                    throw new IllegalStateException("Load-flow controls remain unsettled: " + termination);
+            }
             net.setBypassDataCheck(false);
             if (!net.checkData(lf.getDataCheckConfig()))
                 throw new IllegalStateException("Network data validation failed");
@@ -235,8 +251,14 @@ public final class Texas2kReferenceRunner {
             values.put("machine_EFD_pu" + suffix, machine.getEfd());
             values.put("machine_PMECH_pu_mbase" + suffix, machine.getPm());
             values.put("machine_ETERM_pu" + suffix, machine.getDStabBus().getVoltageMag());
-            values.put("machine_PELEC_pu_mbase" + suffix, machine.getPe());
-            values.put("machine_QELEC_pu_mbase" + suffix, machine.getQGen());
+            // getPe() includes stator copper loss and may be averaged at an
+            // event. PSS/E PELEC/QELEC require the instantaneous terminal power.
+            Complex terminalPower = machine.isActive()
+                    ? machine.getDStabBus().getVoltage().multiply(machine.getIxy().conjugate())
+                    : Complex.ZERO;
+            values.put("machine_AIRGAP_pu_mbase" + suffix, machine.getPe());
+            values.put("machine_PELEC_pu_sbase" + suffix, terminalPower.getReal());
+            values.put("machine_QELEC_pu" + suffix, terminalPower.getImaginary());
         }
         return values;
     }
