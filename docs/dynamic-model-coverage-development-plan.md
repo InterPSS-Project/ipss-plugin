@@ -18,9 +18,11 @@ gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
 The approved native renewable audit finds **27 distinct families: 26 with a
-versioned loadable runtime path, one not implemented (HPLNTD)**, not merely missing
+versioned loadable runtime path, one without a loadable runtime (HPLNTD)**, not merely missing
 benchmark coverage. REPCC now has exact standard import and a bounded REGCA1/REECA1
-runtime; automatic MSS and other initialization/host modes remain unsupported.
+runtime, enabled-MSS import and bounded fast-band switching comparisons. Slow-band
+clock precision and other initialization/host modes remain open. HPLNTD now has a
+typed native data/aggregation foundation, but no plant or downstream lag runtime.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -407,6 +409,23 @@ and state definitions agree.
     See [standard-native import and exact release boundary](benchmarks/reece-native-import-2026-10-18.md).
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
   measurement/dispatch interfaces and explicit native-version schemas.
+  - [x] Freeze native HPLNTDU bus-wrapper and REAXDU per-unit contracts, including
+    35/61/13/45 and 9/8/2/7 allocations, plant/device bases and weighted dispatch.
+    Implement immutable typed data and multi-unit aggregation with fixed initial
+    references, trip reweighting, explicit ignore/no-command and pause views.
+  - [x] Cold-repeat seven four-bus/two-unit profiles (fourteen runs), retain all
+    raw channels/history/event sides, compare six algebraic interface profiles
+    and preserve the explicit-base pause counterexample with its matched
+    no-intermediate-pause control. This does not raise runtime presence.
+    See [hybrid aggregation foundation](benchmarks/hplntd-aggregation-foundation-2026-10-18.md).
+  - [x] Validate the foundation on Java baseline `40eb7b164`: 41 focused,
+    356 plugin-core (six optional skips), and 1,429 SMIB/model/solver tests
+    (one diagnostic skip), zero failures/errors. Audit fourteen native runs,
+    all raw interface rows and the explicit-base pause counterexample;
+    keep HPLNTD runtime presence missing rather than count data as a model.
+  - [ ] Implement HPLNTDU's thirteen-state kernel and REAXDU's two-state interface,
+    exact production import/attachment and stage-coherent multi-unit coupling;
+    verify all remaining selectors, limits, lifecycle and actual SMIB responses.
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve
