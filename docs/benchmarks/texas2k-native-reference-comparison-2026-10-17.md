@@ -27,9 +27,65 @@ count. It does not fit parameters, initial angles, offsets, or trajectories.
 Simulator-driving programs and full numerical evidence remain in the ignored
 private verification archive, following repository policy.
 
+## First validation case
+
+Case 2 is the first testing and benchmarking case, as requested by the user.
+Its largest initial voltage difference is `2.14042e-6` pu across the supplied
+observations. This power-flow agreement supports starting here; dynamic
+acceptance still requires the separate voltage, terminal P/Q, and rotor-angle
+checks above.
+
+The first disturbance is `case2_bus_fault_01` at bus 6307. A 1.2-second
+diagnostic covers the prefault interval, fault application, clearing, and early
+recovery. It uses the confirmed constant-current P / constant-impedance Q
+profile, a fully settled power flow, and a frozen runtime. The full ten-second
+reference range remains the normalization denominator for this short check.
+After the prefault mismatch is resolved, Case 2's remaining faults and
+generator trips follow before expanding to the other five cases. Short
+diagnostics cannot establish ten-second acceptance.
+
+The first frozen run completes 1.2 seconds in 92.009 seconds of wall time,
+including loading and initialization. Power flow reaches zero unsettled
+controls; the largest initial Norton residual is `1.025e-12` pu. Fault
+application and clearing both converge. The prefault comparison nevertheless
+fails 18 of the 20 channel criteria:
+
+| Quantity | Worst prefault error | Required limit | Channels passing |
+| --- | ---: | ---: | ---: |
+| Bus voltage, NRMSE | 0.00148441 | < 0.001 | 2 / 5 |
+| Terminal P, NRMSE | 0.00305938 | < 0.001 | 0 / 5 |
+| Terminal Q, NRMSE | 0.00388275 | < 0.001 | 0 / 5 |
+| Rotor angle, maximum degrees | 0.325219 | < 0.002 | 0 / 5 |
+
+Using only observed prefault squared errors and the full ten-second reference
+sample count gives rotor-angle RMSE lower bounds of `0.01845`–`0.02994` degrees
+for these five machines. Even zero subsequent error cannot make this runtime
+pass the ten-second angle criterion. The unobserved remainder is incomplete;
+no full-window NRMSE result is claimed.
+
+Recorded-boundary controller diagnostics retain the original Case 2 data.
+Replaying reference speed and electrical power through the five PSS2A
+stabilizers gives maximum output errors below `1.8e-5` pu. Replaying terminal
+voltage, field current, and stabilizer output through their exciters gives
+maximum EFD errors below `7.6e-5` pu for four ESST4B machines and `0.001224` pu
+for the EXST1 machine. These diagnostics use 0.5-, 0.25-, and 0.125-ms
+integration steps and narrow the remaining investigation; they do not prove
+full-system agreement or complete model conformance. Fourteen comparison
+contract tests pass, including event sides, full-window normalization,
+degree-based angle limits, and rejection of incomplete trajectories.
+
+A separate 0.25-ms full-network diagnostic covers the complete prefault
+interval while retaining the 0.5-ms reference observation grid. All five
+voltage channels pass, with worst NRMSE `0.000587661`. Worst P/Q NRMSE falls to
+`0.00148466` / `0.00167444`, and maximum rotor-angle error falls to `0.218461`
+degrees. P, Q, and angle acceptance remains unmet. This step-size sensitivity
+requires further integration/coupling investigation. The observation option
+also reproduces all 50 numerical columns exactly at all 41 samples of a
+separate ordinary-step, 20-ms regression check.
+
 ## Rotor-angle reference
 
-PSS/E 36.7 `SET_RELANG` supports absolute synchronous-frame angles with
+The reference simulator's `SET_RELANG` supports absolute synchronous-frame angles with
 `SWITCH=0`, or angles relative to a selected machine (`SWITCH=1`, positive
 `IBUSEX`). System-average and weighted-average references are additional modes.
 This is an output-reference choice; a generator rotor angle need not equal its
@@ -42,8 +98,7 @@ is `3.55834e-5` degrees, consistent with native float/export rounding. There is
 no observed additional reference-machine subtraction in these supplied channels.
 The comparison therefore retains the synchronous-frame convention.
 
-The authoritative installed API page is PSS/E 36.7
-`psspy/_as_gen/psspy.set_relang.html`, SHA-256
+The archived installed API page for `SET_RELANG` has SHA-256
 `a45a5476b0c324fd0c287b4cdb019bb2a7c53ed2f894ea081d44b9f1597ce1ce`.
 
 ## Shared engine corrections
@@ -65,7 +120,7 @@ The authoritative installed API page is PSS/E 36.7
 - Core `9893d5bae` clamps a violating machine at its reactive limit and
   redistributes the residual among machines with headroom. It preserves machine
   active power and the solved bus reactive total; infeasible totals return false.
-  The correction is independently reproduced by native PSS/E on a public
+  The correction is independently reproduced by the reference simulator on a public
   two-machine fixture, including both limit directions. Zero-power sharing also
   counts active machines only. The full core regression passes **2,945 tests**,
   with no failures, errors or skips.
@@ -73,7 +128,7 @@ The authoritative installed API page is PSS/E 36.7
   cannot supply the bus total. A sole slack machine retains the required Q;
   with several machines, the first active machine absorbs unavoidable excess
   after the other machines reach their limits. The allocation still reports
-  the limit violation. Eight native PSS/E scenarios cover both directions and
+  the limit violation. Eight reference-simulator scenarios cover both directions and
   reproduce exactly from a second cold process. All **2,947 core tests** pass.
 - Core `2576b7950` restores Q-limit enforcement after a bound is released,
   solves the changed network before another limit is selected, and includes
@@ -99,7 +154,7 @@ with zero unsettled controls and zero PV-generator Q-limit violations. All
 | 6 | 5.981e-7 | 6.017e-6 | 1.698e-4 |
 
 The last column uses all 360 supplied initial bus-voltage/ETERM observations,
-covering 304 unique case/bus pairs. These samples occur after PSS/E dynamic
+covering 304 unique case/bus pairs. These samples occur after reference-simulator dynamic
 initialization, at `-2*dt`; they are distinct from a saved power-flow bus-voltage
 export. The corrected power-flow solution agrees closely with the supplied
 solved RAW values. The remaining initial dynamic-reference differences are
@@ -110,10 +165,10 @@ preserved as failed diagnostics, not accepted power-flow solutions.
 
 ## Native wind-speed discrepancy
 
-A native PSS/E 36.7 two-bus discriminator uses the unchanged Case 4 Bus 2089
+A reference-simulator two-bus discriminator uses the unchanged Case 4 Bus 2089
 REGCA1/REECA1/REPCA1/WTTQA1 parameter stack. PFLAG=1 retains the generator-speed
 multiplier even though WTTQA1 already forms `Pref = torque * speed`.
-For `P0=0.625`, `speed0=0.8775`, and `Tpord=0.03`, native PSS/E reports
+For `P0=0.625`, `speed0=0.8775`, and `Tpord=0.03`, the reference simulator reports
 `dPord/dt = -2.5521`, matching `(0.625 * 0.8775 - 0.625) / 0.03`.
 Adding WTDTA1 retains this startup derivative; changing only PFLAG to zero
 removes it. This is a genuine non-equilibrium initial condition in the supplied
@@ -123,7 +178,7 @@ The native DYR importer now explicitly selects that speed convention.
 Typed clients retain the existing power-reference convention, and the ANDES
 comparison fixture explicitly selects its existing convention. No comparison
 tolerance is relaxed. Focused REECA1, wind-control and cross-tool tests pass.
-The PSS/E Model Library 36.7 REECA1/WTTQA1 diagrams and native outputs support
+The installed model-library REECA1/WTTQA1 diagrams and reference outputs support
 this distinction; it is not a claim of complete wind-model conformance.
 
 In first-20-ms diagnostics, maximum bus-voltage error falls from 0.01655 to
@@ -185,7 +240,7 @@ event boundaries. Historical traces retain their original column definitions.
 The native frequency discriminator uses a finite-inertia grid. Giving both
 simulators the same explicit 0.05-second bus-frequency filter reduces maximum
 frequency differences to `3.62e-6` pu at the renewable bus and `3.53e-6` pu at
-the grid bus. The installed application guide documents native PSS/E's default
+the grid bus. The installed application guide documents the reference simulator's default
 filter as 0.04 seconds. All 107 Case 1/2 and all 306 Case 3–6 REPCA1 records
 have FreqFlag=0, so this plant-controller frequency branch is inactive in the
 supplied profiles. No global filter setting was fitted or changed.
@@ -208,7 +263,7 @@ observed native wind startup. Both failures are retained and must be addressed;
 the full registered gate is not reported as passing. An earlier smaller-heap
 attempt exhausted the test heap and is not an accuracy result.
 
-The installed native PSS/E Xplore accepts only 50 buses. Its Texas2k load probe
+The installed reference-simulator license accepts only 50 buses. Its Texas2k load probe
 reports just 50 loaded buses despite a zero read error, so it cannot regenerate
 the complete 2,000-bus references. Small native discriminators are supported;
 full-case comparisons use the supplied immutable outputs.

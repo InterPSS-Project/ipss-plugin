@@ -113,7 +113,14 @@ public final class Texas2kReferenceRunner {
             net.setBypassDataCheck(false);
             if (!net.checkData(lf.getDataCheckConfig()))
                 throw new IllegalStateException("Network data validation failed");
-            double step = event.get("dt_s").getAsDouble();
+            double outputStep = event.get("dt_s").getAsDouble();
+            double step = plan.has("integration_step_s")
+                    ? plan.get("integration_step_s").getAsDouble() : outputStep;
+            double ratio = outputStep / step;
+            if (!Double.isFinite(step) || step <= 0. || ratio < 1.
+                    || Math.abs(ratio - Math.rint(ratio)) > 1.e-9)
+                throw new IllegalArgumentException("Integration step must divide the reference output step");
+            int outputEvery = (int)Math.round(ratio);
             double stop = event.get("end_s").getAsDouble();
             if (plan.has("stop_s")) stop = Math.min(stop, plan.get("stop_s").getAsDouble());
             algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
@@ -205,13 +212,15 @@ public final class Texas2kReferenceRunner {
                 }
                 write(writer, 0., "INITIAL", initial);
                 status.put("step_s", step);
+                status.put("reference_output_step_s", outputStep);
                 status.put("stop_s", stop);
                 int count = (int)Math.round(stop / step);
                 for (int index = 0; index < count; index++) {
                     if (!algo.solveDEqnStep(true))
                         throw new IllegalStateException("Integration failed at " + algo.getSimuTime());
                     reached = algo.getSimuTime();
-                    write(writer, reached, "STEP_END", record(net, event));
+                    if ((index + 1) % outputEvery == 0)
+                        write(writer, reached, "STEP_END", record(net, event));
                     if ((index + 1) % 2000 == 0) {
                         writer.flush();
                         System.out.println(args[1] + " t=" + reached);
