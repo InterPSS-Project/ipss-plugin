@@ -83,9 +83,9 @@ class Reece1LocalPiTest {
             assertTrue(sign*m.getIntegralContributions()[0]<1);assertTrue(sign*m.getIntegralContributions()[1]<1);
         }
     }
-    @Test void aProportionalJumpCannotReverseTheIntegratingStateToTrackAnOutputLimit() {
+    @Test void proportionalOutputSaturationDoesNotPrematurelyFreezeTheNativeIntegral() {
         var m=initialized();m.step(.01,input(.31,.11,false),0);m.step(.01,input(1.3,1.1,false),1);
-        assertArrayEquals(new double[]{.1,.3},m.getIntegralContributions(),1e-15);assertEquals(1,m.reactiveOutput());assertEquals(1,m.activeOutput());
+        assertArrayEquals(new double[]{.12525,.3505},m.getIntegralContributions(),1e-15);assertEquals(1,m.reactiveOutput());assertEquals(1,m.activeOutput());
     }
     @Test void movingNegativeReactiveCurrentLimitsDoNotRewriteStateDuringAlgebraicRefresh() {
         var m=initialized();m.step(0,new Input(.3,.3,.1,.1,-.2,-.2,-1,1,false));

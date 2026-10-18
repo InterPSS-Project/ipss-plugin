@@ -296,6 +296,8 @@ import org.interpss.core.dstab.Wtptb1NativeExtendedConformanceTest;
 import org.interpss.core.dstab.WtgwgoaNativePartialConformanceTest;
 import org.interpss.core.dstab.WtgibffraNativePartialConformanceTest;
 import org.interpss.core.dstab.ReeceLocalPiNativePartialConformanceTest;
+import org.interpss.core.dstab.ReeceRuntimeNativePartialConformanceTest;
+import org.interpss.core.dstab.ReeceTypedSmibIntegrationTest;
 import org.interpss.core.dstab.WtgibffraSmibIntegrationTest;
 import org.interpss.core.adapter.builder.dstab.PsseWtgibffraModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseGenclsGovernorTest;
@@ -721,6 +723,8 @@ import org.junit.platform.suite.api.Suite;
 	WtgwgoaNativePartialConformanceTest.class,
 	WtgibffraNativePartialConformanceTest.class,
 	ReeceLocalPiNativePartialConformanceTest.class,
+	ReeceRuntimeNativePartialConformanceTest.class,
+	ReeceTypedSmibIntegrationTest.class,
 	WtgibffraSmibIntegrationTest.class,
 	PsseWtgibffraModelTest.class,
 	PsseGenclsGovernorTest.class,

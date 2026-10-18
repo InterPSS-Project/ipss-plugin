@@ -132,7 +132,7 @@ public final class RenewableEvidenceInventory {
                     "REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
                         model.equals("REECE1")
-                            ? "Exact native 36.7 REECE data and local-PI/FRT-selector components with two cold-paired local PI replay profiles. Full eight-state controller, catalog/parser/host attachment and coupled SMIB remain missing. REECE1/REECEU1 standard-name layouts are not assumed from the installed REECE schema."
+                            ? "Typed native-36.7 eight-state REECE runtime, state-limited PI correction, twelve terminal-input replay datasets and typed two-step flat/fault/trip checks. Exact catalog/parser/host attachment, prepared-reference callback parity and independent coupled trajectories remain open. REECE1/REECEU1 layouts are not assumed from the installed REECE schema; not native-loadable or fully verified."
                             : "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 

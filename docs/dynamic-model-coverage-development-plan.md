@@ -228,13 +228,27 @@ and state definitions agree.
     and 1,276 SMIB/catalog/staggered-solver tests (one diagnostic skip), with
     zero failures/errors. Audit the tested source snapshot against `639e50c90`;
     keep this component foundation distinct from full-model acceptance.
-  - [ ] Implement the complete controller/attachment: shared voltage and power
-    measurement (Pe filter also active for PEFLAG=1), reference ramp before
-    the power PI, QFLAG 0/1/2 branches, current limits/FRT priority, blocking,
-    holds, compensation, zero-Tpord bypass and linked anti-windup. Then close
-    full-solver/native/PowerWorld profiles and exact versioned import routes.
-    Component-only work leaves native loadability at 21/27.
+  - [x] Implement the typed eight-state controller: measurement (Pe filter also
+    active for PEFLAG=1), reference ramp before the power PI, QFLAG 0/1/2,
+    current limits/FRT priority, blocking, holds, compensation and bypasses.
+    Correct Vext-before-Vbias limiting and independently bounded integral-state
+    anti-windup using native branch/saturation discriminators; reuse the corrected
+    PI rule. Retain both reference-event sides and the native callback discrepancy.
+  - [x] Add ten new cold-paired branch/timestep replay datasets and typed
+    two-step-size equilibrium, three-cycle fault and trip/reinitialization tests.
+    These are not complete independent coupled trajectory acceptance.
+  - [x] Pass 47 focused tests, 266 plugin units (six optional skips), and 1,284
+    SMIB/catalog/staggered-solver tests (one diagnostic skip), zero failures/errors.
+    Audit 22 scoped sources/resources and 2,021 baseline Java/POM files against
+    `890e887f0`, including its committed static-load SMIB regression and excluding
+    the unrelated untracked JAX comparison.
+  - [ ] Finish exact versioned native import/attachment, reference callback
+    parity, independent coupled native/PowerWorld trajectories and remaining
+    active-boundary, lifecycle, speed/base and time-constant-policy profiles.
+    Typed-runtime work leaves native loadability at 21/27.
     See [REECE local-PI foundation](benchmarks/reece-local-pi-foundation-2026-10-18.md).
+    The [typed runtime and limiter correction](benchmarks/reece-runtime-2026-10-18.md)
+    supersedes the foundation's inactive-limit-only anti-windup assumption.
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
   measurement/dispatch interfaces and explicit native-version schemas.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter

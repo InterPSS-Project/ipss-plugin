@@ -1,5 +1,10 @@
 # REECE typed data and local-PI foundation
 
+Historical checkpoint: the subsequent [typed-runtime slice](reece-runtime-2026-10-18.md)
+adds the eight-state runtime and corrects the integral limiter using independent
+active-boundary native profiles. The inactive-limit tests recorded here could
+not distinguish the earlier incorrect output-based integration freeze.
+
 Status: **component foundation, not loadable or a complete REECE implementation**.
 Approved native renewable coverage stays **21/27**. REECE1 remains one of the six
 missing complete controller/import paths. No full Texas2k dynamics were run.

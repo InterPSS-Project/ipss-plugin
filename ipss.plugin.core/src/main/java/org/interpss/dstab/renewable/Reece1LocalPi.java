@@ -50,24 +50,25 @@ public final class Reece1LocalPi {
     }
     private double[] rates(Input input) {
         return new double[]{data.selectors().reactiveControlFlag()==2
-                ? rate(state[0],data.value(KQP),data.value(KQI),qError(input),input.iqMinimum(),input.iqMaximum(),input.voltageDip()):0,
+                ? rate(state[0],data.value(KQI),qError(input),input.iqMinimum(),input.iqMaximum(),input.voltageDip()):0,
             data.selectors().activePowerPiFlag()==1
-                ? rate(state[1],data.value(KPP),data.value(KPI),pError(input),input.powerMinimum(),input.powerMaximum(),input.voltageDip()):0};
+                ? rate(state[1],data.value(KPI),pError(input),input.powerMinimum(),input.powerMaximum(),input.voltageDip()):0};
     }
-    private static double rate(double state,double kp,double ki,double error,double min,double max,boolean frozen) {
-        double derivative=ki*error,output=state+kp*error;
-        return frozen||output>=max&&derivative>0||output<=min&&derivative<0?0:derivative;
+    static double rate(double state,double ki,double error,double min,double max,boolean frozen) {
+        double derivative=ki*error;
+        // Native 36.7 limits the integral contribution independently from
+        // clipping the proportional-plus-integral output. Active-boundary
+        // probes are required: inactive-limit profiles cannot distinguish it.
+        return frozen||state>=max&&derivative>0||state<=min&&derivative<0?0:derivative;
     }
     private double advance(int index,double old,double increment,Input input) {
-        if(increment==0||input.voltageDip())return old;
-        double proportional=data.value(index==0?KQP:KPP)*(index==0?qError(input):pError(input));
+        if(input.voltageDip())return old;
         double min=index==0?input.iqMinimum():input.powerMinimum(),max=index==0?input.iqMaximum():input.powerMaximum();
-        double candidate=old+increment;
-        // Stop an integrating state at a crossed boundary. A pure proportional
-        // jump does not itself rewrite the integral coordinate.
-        if(increment>0&&candidate+proportional>max)candidate=Math.max(old,Math.min(candidate,max-proportional));
-        if(increment<0&&candidate+proportional<min)candidate=Math.min(old,Math.max(candidate,min-proportional));
-        return candidate;
+        return project(old+increment,min,max);
+    }
+    static double project(double candidate,double min,double max) {
+        // Proportional gain never changes the stored-state limiter coordinate.
+        return clamp(candidate,min,max);
     }
     private static double qError(Input input){return input.reactiveReference()-input.measuredReactivePower();}
     private static double pError(Input input){return input.activeReference()-input.measuredPower();}
