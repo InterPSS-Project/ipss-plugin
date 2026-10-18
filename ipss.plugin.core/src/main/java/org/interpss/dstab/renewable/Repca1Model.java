@@ -52,12 +52,17 @@ public final class Repca1Model implements ICMLStateProvider {
     private boolean initialized;
     private final TwoStepHistory twoStep = new TwoStepHistory(6);
     void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
+    /** Configure the absolute reactive-reference coordinate during initialization. */
     void setReactiveStateOffset(double initialReference) {
         // Native REPCA1 stores absolute Q-reference coordinates for s2/s3.
         // The controller API exposes increments; retain the physical storage
-        // coordinate when testing finite-precision state accumulation.
+        // coordinate and translate the absolute limiter thresholds below.
         twoStep.setOffset(3,initialReference);
         twoStep.setOffset(4,initialReference);
+        // QMAX/QMIN limit the absolute reference, not the increment returned
+        // by this API. Translate both PI limiting and anti-windup thresholds.
+        effectiveQmax=Math.max(data.qmax()-initialReference,0.0);
+        effectiveQmin=Math.min(data.qmin()-initialReference,0.0);
     }
 
     public Repca1Model(Repca1Data data) {

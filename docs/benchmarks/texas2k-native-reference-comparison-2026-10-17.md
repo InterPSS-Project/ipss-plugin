@@ -413,3 +413,45 @@ logs are retained under the private verification-artifact directory
 `2026-10-17-shared-integration`. An earlier precision run failed because its
 frozen runtime mixed incompatible versions of a shared wind-controller class;
 that assembly failure is retained separately and is not numerical evidence.
+
+## Absolute plant reactive-reference limits, October 18 follow-up
+
+REPCA1's QMAX/QMIN limits apply to its absolute reactive reference. REECA1
+consumes an incremental plant command in this implementation. The limiter and
+anti-windup thresholds now subtract the initialized reference to use that same
+incremental coordinate. Source parameters and the existing equilibrium guard
+are retained. This correction applies to all three integration paths when
+REECA1 initializes its plant controller.
+
+A crafted two-bus commercial discriminator sets PFLAG to zero and plant
+QMAX/QMIN to `0.12/-0.12`, then applies a moderate voltage disturbance at
+`0.01` seconds. These deliberate probe settings are separate from the unchanged
+Texas2k cases. Two fresh commercial processes produce byte-identical raw CSV.
+Across 223 matched samples, maximum plant reactive-command error falls from
+`0.0105335020` to `0.000000153265` pu. The new upper/lower limit tests fail
+against the frozen old model and pass with the correction. A focused reactor
+run passes 56 tests; 13 selected coupling/limit tests also pass when independently
+compiled against the frozen corrected runtime. A later reactor attempt cannot
+compile a concurrently edited drive-train reference; it is not a passing full
+registered-suite result.
+
+Matched Case 2 runs both complete through `1.2` seconds, including fault
+application and clearing. Their physical inputs and references are byte-identical;
+only REPCA1 runtime entries change. The first observed difference above
+`1e-10` occurs at `0.2195` seconds. Worst prefault voltage/P/Q NRMSE changes
+from `0.00198830/0.00573411/0.00652135` to
+`0.00168580/0.00483185/0.00531888`. Maximum prefault rotor-angle error changes
+from `0.441264` to `0.302794` degrees. Both variants still fail 18 of 20 prefault
+channel criteria. No ten-second event is accepted.
+
+Independent PSS2A diagram playback for the two observed ESST4B machines uses
+the supplied reference speed and electrical power without feedback or fitted
+offsets. Regulator-integral error remains below `0.00000168` pu. Replaying the
+same diagram with the actual simulation inputs reproduces the solver's
+stabilizer output within `0.000000000741` pu. This supports the checked equations
+and dispatch, rather than complete stabilizer conformance. An isolated
+machine-only storage-precision experiment leaves the failed Case 2 prefault
+metrics almost unchanged and is retained as a diagnostic, not enabled in code.
+
+The complete frozen evidence for this follow-up is retained in the private
+verification-artifact directory `2026-10-18-plant-reference-limits`.
