@@ -213,6 +213,28 @@ and state definitions agree.
     See [Paux correction and WTGIBFFRA investigation](benchmarks/reecd-paux-native-2026-10-18.md).
 - [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
   paths and controller initialization; do not silently substitute REECD.
+  - [x] Inspect native 36.7 REECE eight-ICON/79-CON/eight-STATE/20-VAR schema
+    and diagrams; independently consult WECC's July 2025 memo and PowerWorld.
+    Cold-prove the installed standard name REECE. Plain REECE1/REECEU1 records
+    with this layout are rejected by this installed release; do not guess a
+    legacy wrapper or silently equate identifiers from different versions.
+  - [x] Add immutable typed data and local QFLAG=2 / PEFLAG=1 PI components,
+    explicit modified-Euler stages, conditional anti-windup, state-only voltage-
+    dip freezing, algebraic refresh and fault/nonfault priority selection.
+  - [x] Cold-repeat two native local-PI profiles; retain prepared Pref (VAR5),
+    filtered Pe, Q and limit inputs and both reference-event sides. The local
+    block must not confuse the external Pref step with the ramp output.
+  - [x] Pass 16 focused checks, 248 plugin-core tests (six optional skips),
+    and 1,276 SMIB/catalog/staggered-solver tests (one diagnostic skip), with
+    zero failures/errors. Audit the tested source snapshot against `639e50c90`;
+    keep this component foundation distinct from full-model acceptance.
+  - [ ] Implement the complete controller/attachment: shared voltage and power
+    measurement (Pe filter also active for PEFLAG=1), reference ramp before
+    the power PI, QFLAG 0/1/2 branches, current limits/FRT priority, blocking,
+    holds, compensation, zero-Tpord bypass and linked anti-windup. Then close
+    full-solver/native/PowerWorld profiles and exact versioned import routes.
+    Component-only work leaves native loadability at 21/27.
+    See [REECE local-PI foundation](benchmarks/reece-local-pi-foundation-2026-10-18.md).
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
   measurement/dispatch interfaces and explicit native-version schemas.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter
