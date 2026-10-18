@@ -573,3 +573,63 @@ Neither experiment changes the default case preparation.
 Frozen evidence for this follow-up is retained under the private
 verification-artifact directory `2026-10-18-converter-command-staging`.
 No full ten-second event is accepted.
+
+## Initialization discriminators, October 18 follow-up
+
+Independent GENROU initialization at all 26 monitored machines uses only each
+commercial reference's terminal P/Q and voltage magnitude. Maximum errors in
+the four electrical states are below `0.000000445` pu; maximum relative rotor
+orientation error is `0.000033920` degrees. No reference rotor states or bus
+angles are injected. This supports initialization at a given physical
+operating point; it does not establish the full network's operating point.
+
+A two-bus converted-network startup prototype agrees with the commercial
+startup solve within `0.000000127` pu in voltage and `0.000000762` degrees in
+bus angle. Two fresh commercial processes reproduce the captured operating
+points exactly. Applying that procedure to the original Case 2 RAW increases
+maximum initial rotor-angle error across the 26 monitors from `0.00320180` to
+`0.00327459` degrees. Using the RAW's recorded Newton tolerance instead gives
+`0.00318620` degrees and leaves a larger discarded network-current residual.
+Neither preparation discriminator meets the initialization requirement. The
+strict power-flow preparation remains in use.
+
+## Current-limit staging and dip history, October 18 follow-up
+
+The frozen one-second fleet observation identifies 11 units crossing the high
+voltage threshold and 15 reaching the circular current limit. All 96 active
+plant controllers use the same selector combination. Two additional commercial
+component replays retain the original Case 2 parameters and initial operating
+points at buses 1026 and 1033. Each prescribed voltage profile is constructed
+from the frozen fleet observation; each commercial replay repeats exactly in
+two fresh processes. These are component discriminators, not independent
+full-network acceptance runs.
+
+The checks isolate three defects in the opt-in two-step path. The converter's
+active command must combine the newly advanced power order and voltage filter
+with the current limit computed before those states advance. The linked Q
+integrator must remain frozen when the downstream voltage PI wants to move
+farther into saturation, including when its limited derivative is already zero.
+Finally, zero-duration network refreshes must not consume a dip transition or
+start its post-dip hold timer. Exposed commercial timer variables confirm the
+transition timing; observing them leaves every original output sample unchanged.
+
+With these corrections, maximum active-current error falls from `0.303491` to
+`0.00000146` pu in the current-limit replay, and from `0.0189640` to
+`0.000000387` pu in the high-voltage replay. The checked Q-integral traces agree
+exactly. Previous wind and solar component traces and the complete coupled
+wind/synchronous-machine trace remain byte-identical. All three new regression
+checks fail against the previous frozen runtime and pass with the corrections.
+The focused reactor checks pass 18 tests; a separate compatibility run passes
+59 additional tests. This is not a full registered-suite pass. The first focused
+attempt encountered a floating-point boundary in the test's nominally zero
+current limit; the corrected test drives the limit decisively into saturation.
+
+The unchanged Case 2 run completes through `1.2` seconds, with all 218 initial
+diagnostic fields exactly unchanged. Worst prefault voltage/P/Q NRMSE improves
+to `0.00118173/0.00224012/0.00331266`; maximum rotor-angle error falls to
+`0.211550` degrees. Four of 20 prefault criteria pass. The remaining requirements
+still fail, and the run does not cover the ten-second acceptance window.
+
+Frozen evidence for these follow-ups is retained under the private
+verification-artifact directory `2026-10-18-current-limit-staging`.
+No full ten-second event is accepted.

@@ -195,8 +195,13 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     private void stepElectricalControls(double dt, double p, double q, double v,
             double sensedV) {
+        stepElectricalControls(dt, p, q, v, sensedV, true);
+    }
+
+    private void stepElectricalControls(double dt, double p, double q, double v,
+            double sensedV, boolean updateDipHistory) {
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
-        updateDipTimers(dt, voltageDip);
+        if (updateDipHistory) updateDipTimers(dt, voltageDip);
         vMeasured = Repca1Model.lag(vMeasured, sensedV, data.trv(), dt);
         pMeasured = Repca1Model.lag(pMeasured, p, data.tp(), dt);
 
@@ -303,7 +308,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         reactiveCurrentInjection = iqInjection;
         double rawIq = -(rawQCurrent + iqInjection);
         applyCurrentLimits(rawIp, rawIq, voltageDip);
-        previousDip = voltageDip;
+        if (updateDipHistory) previousDip = voltageDip;
     }
 
     /** Refresh upstream algebraic signals without consuming derivative history. */
@@ -318,7 +323,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double plantPref = plantController == null ? 0.0 : plantController.getPref();
         if (windControlStack != null)
             windControlStack.stepTwoStep(0.0, p, pOrder, p0 + plantPref, dip);
-        stepElectricalControls(0.0, p, q, v, sensedV);
+        stepElectricalControls(0.0, p, q, v, sensedV, false);
     }
 
     /**
@@ -344,7 +349,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         updateDipTimers(dt, dip);
         pFilter = Repca1Model.limit(pref, pFilter + data.dpmin() * dt,
                 pFilter + data.dpmax() * dt);
-        stepElectricalControls(0.0, p, q, v, sensedV);
+        stepElectricalControls(0.0, p, q, v, sensedV, false);
         double selectedP = data.pFlag() == 1
                 ? getActivePowerSpeedMultiplier() * pFilter : pFilter;
         double vRate = lagRate(vMeasured, sensedV, data.trv());
@@ -359,9 +364,12 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
                 ? integralRate(vIntegral, data.kvi(), voltageControlError, data.kvp(),
                         -preliminaryIqLimit, preliminaryIqLimit) : 0.0;
         if ((voltageControlPreLimitOutput >= preliminaryIqLimit - EPS
-                    && vIntegralRate > 0.0 && qIntegralRate > 0.0)
+                    && data.kvi() * voltageControlError > 0.0 && qIntegralRate > 0.0)
                 || (voltageControlPreLimitOutput <= -preliminaryIqLimit + EPS
-                    && vIntegralRate < 0.0 && qIntegralRate < 0.0)) qIntegralRate = 0.0;
+                    && data.kvi() * voltageControlError < 0.0 && qIntegralRate < 0.0)) qIntegralRate = 0.0;
+        // Current-limit logic precedes the state advance. The next converter
+        // command combines this limit with the advanced Pord/Vt_filt path.
+        double stagedIpLimit = ipLimit;
         twoStep.begin(dt);
         vMeasured = twoStep.advance(0, vMeasured, vRate);
         pMeasured = twoStep.advance(1, pMeasured, pRate);
@@ -377,13 +385,16 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         // proportional Q inputs belong to this completed step, while these
         // controller states have advanced. Retain that boundary before the
         // plant advances or an endpoint/network refresh changes those inputs.
-        stepElectricalControls(0.0, p, q, v, sensedV);
-        twoStepIpcmd = ipcmd;
+        stepElectricalControls(0.0, p, q, v, sensedV, false);
+        twoStepIpcmd = Repca1Model.limit(pOrder / nonzero(vMeasured), 0.0, stagedIpLimit);
         twoStepIqcmd = iqcmd;
         if (windControlStack != null)
             windControlStack.stepTwoStep(dt, p, oldPorder, p0 + plantPref, dip);
         if (plantController != null) plantController.stepTwoStep(dt, p, q, sensedV, frequency);
         refreshTwoStep(p, q, v, frequency);
+        // Network/output refreshes must not consume a dip transition or start
+        // its hold timer before the next integration step evaluates it.
+        previousDip = dip;
     }
 
     private static double lagRate(double state, double input, double timeConstant) {

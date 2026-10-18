@@ -6,6 +6,61 @@ import org.junit.jupiter.api.Test;
 
 class RenewableTwoStepIntegrationTest {
     @Test
+    void activeCommandUsesTheCurrentLimitComputedBeforeTheStateAdvance() {
+        Reeca1Model electrical=limitController(1,0.,2.,1.,0.,.1);
+        electrical.initialize(.8,.5,1.);
+        electrical.stepTwoStep(.01,.8,.5,.5,1.);
+
+        assertEquals(.515,electrical.getVoltageControlIntegral(),1.e-14);
+        assertEquals(Math.sqrt(1.-.5*.5),electrical.getTwoStepIpcmd(),1.e-14,
+                "the converter consumes the pre-advance current limit with advanced Pord/V");
+        assertEquals(Math.sqrt(1.-.515*.515),electrical.getIpcmd(),1.e-14);
+        electrical.refreshTwoStep(.8,.5,.5,1.);
+        assertEquals(Math.sqrt(.75),electrical.getTwoStepIpcmd(),1.e-14);
+    }
+
+    @Test
+    void downstreamPiSaturationKeepsTheUpstreamIntegralFrozen() {
+        for(double voltage:new double[]{.5,1.5}) {
+            Reeca1Model electrical=limitController(1,1.,50.,1.3,0.,.1);
+            electrical.initialize(.5,0.,1.);
+            double measuredQ=voltage>1. ? .2 : -.2;
+            for(int i=0;i<200;i++) electrical.stepTwoStep(.001,.5,measuredQ,voltage,1.);
+            assertTrue(Math.abs(electrical.getVoltageControlIntegral())>=1.3);
+            double integral=electrical.getReactiveControlIntegral();
+            assertNotEquals(1.,integral);
+            for(int i=0;i<200;i++) electrical.stepTwoStep(.001,.5,measuredQ,voltage,1.);
+            assertEquals(integral,electrical.getReactiveControlIntegral(),1.e-14,
+                    "zeroing the downstream limited derivative must not release upstream anti-windup");
+        }
+    }
+
+    @Test
+    void algebraicRefreshDoesNotStartThePostDipHoldEarly() {
+        Reeca1Model electrical=limitController(0,0.,0.,1.,.02,.85);
+        electrical.initialize(.8,0.,1.);
+        electrical.stepTwoStep(.01,.8,0.,.7,1.);
+        assertEquals(0.,electrical.getActiveCurrentLimit(),0.);
+        for(int i=0;i<10;i++) electrical.refreshTwoStep(.8,0.,1.,1.);
+
+        electrical.stepTwoStep(.01,.8,0.,1.,1.);
+        electrical.stepTwoStep(.01,.8,0.,1.,1.);
+        assertEquals(0.,electrical.getActiveCurrentLimit(),0.,
+                "the hold starts when integration observes clearing, regardless of refresh count");
+        electrical.stepTwoStep(.01,.8,0.,1.,1.);
+        assertEquals(1.,electrical.getActiveCurrentLimit(),0.);
+    }
+
+    private static Reeca1Model limitController(int qFlag,double kqi,double kvi,
+            double imax,double holdTime,double vdip) {
+        return new Reeca1Model(new Reeca1Data(
+                0,0,1,qFlag,0,0,
+                vdip,2.,0.,0.,0.,5.,1.1,-1.1,0.,0.,0.,holdTime,.5,2.,-2.,
+                10.,-10.,0.,kqi,0.,kvi,0.,.02,99.,-99.,1.,0.,imax,.02,
+                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),null);
+    }
+
+    @Test
     void converterCommandRetainsTheCompletedStepsProportionalInputs() {
         Reeca1Model electrical=new Reeca1Model(new Reeca1Data(
                 0,0,1,1,0,0,
