@@ -14,7 +14,7 @@ public final class RenewableEvidenceInventory {
     private RenewableEvidenceInventory() {}
     public enum Scope { MISSING_IMPLEMENTATION, FOCUSED_ONLY, BOUNDED_DIALECT_COMPARISON,
         NATIVE_PARTIAL_PROFILE, NATIVE_RECORDED_PROFILE }
-    public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP, WTPTB_NATIVE_MAP, WTGWGO_NATIVE_MAP,
+    public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP, WTPTB_NATIVE_MAP, WTGWGO_NATIVE_MAP, REECD_PAUX_NATIVE_MAP,
         INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
     public record Entry(String model,String focusedTest,String trajectoryTest,Scope scope,
                         CheckpointKind storage,String checkpoint,String fixture,String limitation) {
@@ -57,6 +57,11 @@ public final class RenewableEvidenceInventory {
                             ||!WtgwgoaNetworkFine.BODY_SHA256.equals(WtgwgoaNativeReference.digest(WtgwgoaNetworkFine.body())))
                         throw new IllegalStateException("Changed WTGWGOA native network reference");
                 }
+                case REECD_PAUX_NATIVE_MAP -> {
+                    var references=ReecdAuxiliaryPowerReference.profiles();
+                    if(references.size()!=4)throw new IllegalStateException("Incomplete REECD Paux profile matrix");
+                    for(var reference:references)reference.verify();
+                }
                 case INLINE_REGCA_CURRENT_LIMIT -> {
                     for(String name:List.of("QUARTER","EIGHTH")) {
                         var field=trajectoryClass().getDeclaredField(name);field.setAccessible(true);
@@ -96,7 +101,9 @@ public final class RenewableEvidenceInventory {
                 new Entry("WTDTBU1","PsseWtdtb1ModelTest","Wtdtb1NativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTDTB_NATIVE_MAP,"Wtdtb1NativeReference","renewable/regca_reeca_wtdtb1_bus1062.dyr",
                         "Native 36.7 standard/exact legacy wrapper; 14 cold-repeated profiles. Unit-speed five-state playback is bounded; non-unit absolute integrated-coordinate precision and instantaneous coupled-network event-post parity remain open. Published PowerWorld convention is separate."),
-                focused("REECD","PsseReecd1ControllerTest","No independent REECD-specific trajectory link found; unit equations/schema are not simulator parity."),
+                new Entry("REECD","PsseReecd1ControllerTest","ReecdAuxiliaryPowerNativeConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
+                        CheckpointKind.REECD_PAUX_NATIVE_MAP,"ReecdAuxiliaryPowerReference","renewable/regca_reecd_paux_bus1062.dyr",
+                        "Native 36.7 Paux power-before-voltage-divider and algebraic-update profile only: four cold-paired recorded-input/coupled SMIB profiles at two steps. Both reference-update sides retained. Inactive PI/bypass storage differs; other selectors, limits, lifecycle and complete REECD conformance remain open. This is not WTGIBFFRA implementation evidence."),
                 new Entry("WTPTBU1","PsseWtptb1ModelTest","Wtptb1NativeExtendedConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTPTB_NATIVE_MAP,"Wtptb1NativeExtendedReference","renewable/regca_reeca_wtptb1_bus1062.dyr",
                         "Native 36.7 strict standard/legacy import, zero-time bypass and recorded-input branch matrix. Coupled two-step flat/fault/trip checks; instantaneous network-post, additional lifecycle/base profiles and complete cross-tool acceptance remain open. Typed PowerWorld cold-repeat artifacts are separate evidence."),
@@ -145,9 +152,9 @@ public final class RenewableEvidenceInventory {
                 .append("20 families currently have loadable runtime paths; seven implementations are genuinely missing. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
-                .append("Eight families have native recorded-profile links, four have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1 and WTGWGOA), ")
-                .append("six have only the explicitly bounded ANDES coupled comparison, and two have focused tests only. ")
-                .append("None of the latter eight is established as native simulator conformance. Legacy/retired and ")
+                .append("Eight families have native recorded-profile links, five have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA and REECD Paux), ")
+                .append("six have only the explicitly bounded ANDES coupled comparison, and one has focused tests only. ")
+                .append("None of the latter seven is established as native simulator conformance. Legacy/retired and ")
                 .append("manufacturer-package supplemental models need a separate evidence expansion; their source rows ")
                 .append("are retained below and must not be counted as approved implementations. No new simulator run ")
                 .append("or complete raw-provenance acceptance is claimed by this inventory.\n\n")

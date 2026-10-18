@@ -157,13 +157,30 @@ and state definitions agree.
     neither loadability nor matching-mode playback establishes full verification.
     See [foundation evidence and remaining acceptance](benchmarks/wtgwgoa-foundation-2026-10-18.md).
     See [native import and coupled SMIB scope](benchmarks/wtgwgoa-native-import-2026-10-18.md).
+  - [x] Freeze WTGIBFFRA's documented one-ICON/45-CON/four-STATE/17-VAR
+    contract and inspect its diagrams. Runtime six-ICON allocation is not six
+    DYR inputs. Trace its distinct Paux port rather than reusing weak-grid Pref.
+  - [x] Identify and correct REECD's Paux power/current units and algebraic
+    input refresh. Generate eight final cold native Paux references and retain
+    three additional cold WTGIBFFRA recovery-discriminator pairs.
+  - [x] Pass the merged Paux prerequisite regression on `c8890ae1f`: 205 plugin
+    units (six optional skips), 1,251 SMIB/catalog/solver tests (one diagnostic
+    skip), zero failures/errors. Both reference-update sides are compared;
+    inactive native PI/bypass storage differences remain explicitly unaccepted.
+  - [ ] Implement WTGIBFFRA data/kernel, strict native import and supported Paux
+    attachment, six power-band branches, remote-frequency fallback, recovery,
+    cooldown/rearm and lifecycle tests. Resolve the observed native automatic-
+    recovery discrepancy against published WECC/PowerWorld behavior explicitly.
+    This prerequisite leaves WTGIBFFRA missing and coverage unchanged at 20/27.
+    See [Paux correction and WTGIBFFRA investigation](benchmarks/reecd-paux-native-2026-10-18.md).
 - [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
   paths and controller initialization; do not silently substitute REECD.
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
   measurement/dispatch interfaces and explicit native-version schemas.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter
   and plant models. Do not alias them to REGFMA1 or REPCA1.
-- [ ] Close independent REECD and WT12A1U_B trajectory gaps and native conformance
+- [ ] Complete REECD beyond its new native Paux active-path profiles, close the
+  independent WT12A1U_B trajectory gap and establish native conformance
   for the six currently bounded ANDES links.
 - [ ] Expand the evidence inventory to retired/legacy and vendor-package models
   required by supplied cases, keeping those separate from approved-list counts.

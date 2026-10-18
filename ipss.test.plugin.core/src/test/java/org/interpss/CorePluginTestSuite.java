@@ -291,6 +291,7 @@ import org.interpss.core.dstab.Wtptb1NativePartialConformanceTest;
 import org.interpss.core.dstab.Wtptb1SmibIntegrationTest;
 import org.interpss.core.dstab.Wtptb1NativeExtendedConformanceTest;
 import org.interpss.core.dstab.WtgwgoaNativePartialConformanceTest;
+import org.interpss.core.dstab.ReecdAuxiliaryPowerNativeConformanceTest;
 import org.interpss.core.dstab.WtgwgoaSmibIntegrationTest;
 import org.interpss.core.adapter.builder.dstab.PsseWtgwgoaModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWtptb1ModelTest;
@@ -708,6 +709,7 @@ import org.junit.platform.suite.api.Suite;
 	Wtptb1SmibIntegrationTest.class,
 	Wtptb1NativeExtendedConformanceTest.class,
 	WtgwgoaNativePartialConformanceTest.class,
+	ReecdAuxiliaryPowerNativeConformanceTest.class,
 	WtgwgoaSmibIntegrationTest.class,
 	PsseWtgwgoaModelTest.class,
 	PsseWtptb1ModelTest.class,

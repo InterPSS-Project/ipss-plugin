@@ -35,6 +35,8 @@ public final class Reecd1Model
     private double dipReference;
     private double generatorSpeed = 1.0;
     private double auxiliaryPower;
+    private double lastReactiveDesired;
+    private boolean initialized;
 
     // Published state order: Vmeas, Pmeas, PIQ, PIV, Q_V, Pord, Vcomp.
     private double measuredVoltage;
@@ -112,6 +114,7 @@ public final class Reecd1Model
             plantController.initialize(p, q, measuredVoltage);
         }
         if (weakGridController != null) weakGridController.initialize(v, p);
+        initialized = true;
     }
 
     @Override
@@ -157,7 +160,9 @@ public final class Reecd1Model
                 ? measuredPower * powerFactorRatio : reactiveReference + plantQ;
         double qTarget = clamp(selectedQ, effectiveQmin, effectiveQmax);
         double voltage = nonzero(measuredVoltage);
-        double rawIp = powerOrder / voltage + auxiliaryPower;
+        // WECC REEC_D Figure 3: Paux is power on machine base, summed
+        // with Pord before conversion to active current.
+        double rawIp = (powerOrder + auxiliaryPower) / voltage;
         double preliminaryIqMaximum = preliminaryReactiveMaximum(rawIp);
 
         double baseReactive;
@@ -224,7 +229,7 @@ public final class Reecd1Model
     }
 
     private void updateCommands(double q) {
-        double rawIp = powerOrder / nonzero(measuredVoltage) + auxiliaryPower;
+        double rawIp = (powerOrder + auxiliaryPower) / nonzero(measuredVoltage);
         double reactive = data.reactiveControlFlag() == 0
                 ? reactiveLag : q / nonzero(measuredVoltage);
         applyCurrentLimits(rawIp, reactive + reactiveInjection(),
@@ -232,6 +237,7 @@ public final class Reecd1Model
     }
 
     private void applyCurrentLimits(double rawIp, double rawIq, boolean dip) {
+        lastReactiveDesired = rawIq;
         Limits limits = currentLimits(rawIp, rawIq);
         if (blocked || unblockTimer > 0.0) limits = new Limits(0.0, 0.0, 0.0, 0.0);
         if (!dip && activeLimitHoldTimer > 0.0 && !isBlocked()) {
@@ -405,11 +411,17 @@ public final class Reecd1Model
         }
         generatorSpeed = value;
     }
+    /** Auxiliary active power on machine MVA base, independent of the Pref/Pord lag. */
     public void setAuxiliaryPower(double value) {
         if (!Double.isFinite(value)) {
             throw new IllegalArgumentException("REEC_D auxiliary power must be finite");
         }
         auxiliaryPower = value;
+        // Paux is an algebraic input after the Pord lag. Publish its boundary
+        // change without advancing a state, timer or dip-history sample. Retain
+        // the pre-limit reactive request so P-priority headroom can be released.
+        if (initialized) applyCurrentLimits((powerOrder + auxiliaryPower) / nonzero(measuredVoltage),
+                lastReactiveDesired, voltageDipActive());
     }
     public boolean isBlocked() { return blocked || unblockTimer > 0.0; }
     public boolean isVoltageDip() { return voltageDipActive(); }
