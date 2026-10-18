@@ -86,6 +86,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private boolean inputDiscontinuity;
     private BooleanSupplier ownerActive;
     private boolean extendedStack;
+    private boolean runtimeControllerOptimizationEnabled = true;
     private double[] start;
     private double[] derivative;
     private final List<Participant> participants = new ArrayList<>();
@@ -103,9 +104,12 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         final List<State> states;
         final double[] previous, start, rates;
         final boolean[] frozen;
+        final boolean reuseFixedPssOutput;
         boolean wasActive;
 
-        LocalSt1Controller(IEEE1981ST1Exciter model, BooleanSupplier active, List<State> states) {
+        LocalSt1Controller(IEEE1981ST1Exciter model, BooleanSupplier active, List<State> states,
+                boolean reuseFixedPssOutput) {
+            this.reuseFixedPssOutput = reuseFixedPssOutput;
             this.model=model; this.active=active; this.states=List.copyOf(states);
             previous=new double[states.size()]; start=new double[states.size()];
             rates=new double[states.size()]; frozen=new boolean[states.size()];
@@ -122,28 +126,35 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 java.util.Arrays.fill(previous,0.); wasActive=false; return;
             }
             double localStep=dt/SUBSTEPS, field=model.getMachine().getEfd();
-            for (int sub=0;sub<SUBSTEPS;sub++) {
-                evaluate();
-                for (int i=0;i<states.size();i++) {
-                    State state=states.get(i);
-                    start[i]=state.value.getAsDouble(); rates[i]=state.derivative.getAsDouble();
-                    frozen[i]=state.frozen.getAsBoolean();
-                    if (!wasActive) previous[i]=rates[i];
-                    if (sub==0&&discontinuity) rates[i]=.5*(rates[i]+previous[i]);
+            Ieee1992PSS2AStabilizer held = reuseFixedPssOutput
+                    && model.getMachine().getStabilizer() instanceof Ieee1992PSS2AStabilizer pss ? pss : null;
+            if (held != null) held.beginFixedInputObservation();
+            try {
+                for (int sub=0;sub<SUBSTEPS;sub++) {
+                    evaluate();
+                    for (int i=0;i<states.size();i++) {
+                        State state=states.get(i);
+                        start[i]=state.value.getAsDouble(); rates[i]=state.derivative.getAsDouble();
+                        frozen[i]=state.frozen.getAsBoolean();
+                        if (!wasActive) previous[i]=rates[i];
+                        if (sub==0&&discontinuity) rates[i]=.5*(rates[i]+previous[i]);
+                    }
+                    wasActive=true;
+                    for (int i=0;i<states.size();i++) {
+                        State state=states.get(i);
+                        if (frozen[i]) { previous[i]=0.; continue; }
+                        double trial=start[i]+localStep*(1.5*rates[i]-.5*previous[i]);
+                        double end=state.project.applyAsDouble(trial);
+                        state.set.accept(end); previous[i]=end!=trial?0.:rates[i];
+                    }
+                    // Publish before the zero-time regulator's input is refreshed.
+                    // Physical machine, network and PSS inputs remain at the old
+                    // network endpoint throughout these local steps.
+                    field=model.getStaggeredFieldVoltage();
+                    evaluate();
                 }
-                wasActive=true;
-                for (int i=0;i<states.size();i++) {
-                    State state=states.get(i);
-                    if (frozen[i]) { previous[i]=0.; continue; }
-                    double trial=start[i]+localStep*(1.5*rates[i]-.5*previous[i]);
-                    double end=state.project.applyAsDouble(trial);
-                    state.set.accept(end); previous[i]=end!=trial?0.:rates[i];
-                }
-                // Publish before the zero-time regulator's input is refreshed.
-                // Physical machine, network and PSS inputs remain at the old
-                // network endpoint throughout these local steps.
-                field=model.getStaggeredFieldVoltage();
-                evaluate();
+            } finally {
+                if (held != null) held.endFixedInputObservation();
             }
             if (!Double.isFinite(field))
                 throw new DStabSimuException("Non-finite ST1 field voltage: "+model.getId());
@@ -166,6 +177,16 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         super(algo);
         setNetworkSolutionTolerance(1.e-6);
         setMaxIterationTimes(100);
+    }
+
+    /** Select before initialization; the interpreter remains available for numerical controls. */
+    public void setRuntimeControllerOptimizationEnabled(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Configure controller evaluation before initialization");
+        runtimeControllerOptimizationEnabled = enabled;
+    }
+
+    public boolean isRuntimeControllerOptimizationEnabled() {
+        return runtimeControllerOptimizationEnabled;
     }
 
     public double getNetworkSolutionTolerance() { return converge_tol; }
@@ -281,6 +302,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
         if (!(controller instanceof AbstractAnnotateController c))
             throw new IllegalArgumentException("Unsupported controller " + controller.getClass());
+        c.setRuntimeExpressionBindingsEnabled(runtimeControllerOptimizationEnabled);
         if (controller instanceof IEEE2005ST4BExciter || controller instanceof IEEE1981ST1Exciter
                 || controller instanceof Ieee1992PSS2AStabilizer) extendedStack=true;
         BooleanSupplier owner=ownerActive;
@@ -302,7 +324,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
         if (controller instanceof IEEE1981ST1Exciter st1) {
             localSt1Controllers.add(new LocalSt1Controller(st1,ownerActive,
-                    states.subList(firstState,states.size())));
+                    states.subList(firstState,states.size()), runtimeControllerOptimizationEnabled));
             states.subList(firstState,states.size()).clear();
         }
         ownerActive=owner;

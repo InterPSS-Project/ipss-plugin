@@ -1283,3 +1283,90 @@ Angle scoring continues to use the supplied channels directly. The installed
 API supports absolute angles and designated machine or system-average
 references, but the exported reference files do not identify that option.
 No inferred average, fitted frame or offset is removed from the scored angles.
+
+## Quarter-cycle runtime and CML execution plan
+
+The performance target is **20 seconds of wall time for a ten-second
+simulation**, using a quarter-cycle step at 60 Hz (`1/240` second, 2,400
+integration steps). The older 325.201-to-223.536-second comparison above used
+a 1.2-second window at a 0.0005-second step; it is a different workload.
+
+The new control uses the first Case 2 fault, the same physical inputs and
+controller parameters, I/Z loads, two startup history steps, the same
+staggered integration rules, Java KLU, a `1e-8` network voltage tolerance and
+the same 500-iteration ceiling. The step and observation interval alone change
+to `1/240` second. These are preliminary single-process timing observations,
+with profiling disabled for the before/after timing controls.
+
+| Runtime path | Integration wall time, seconds | Nested network time, seconds |
+| --- | ---: | ---: |
+| Existing interpreter | 230.1045 | 46.8975 |
+| Resolved live expression bindings | 220.0948 | 50.7518 |
+| Combined execution-plan prototype and fixed-input ST1/PSS observation | 113.7893 | 45.9377 |
+| Production default, final source snapshot | 118.7351 | 49.2201 |
+
+All monitored trajectory CSV bytes match the interpreter in both complete
+ten-second prototype controls and the final production-source control, including
+the startup history, fault and clearing
+observations: 218 numerical channels across 2,405 samples. The final integration
+time is 48.40% below the interpreter control. This proves equivalence of the
+recorded channels at this step;
+it does not establish acceptance against the supplied finer-step references.
+The final control spends 120.2350 seconds in the loop including CSV observations,
+and 122.7587 seconds including setup. The 20-second target remains open.
+The combined control makes 4,800 network
+solution calls and 72,765 linear network iterations, with a maximum of 39
+iterations per call. Network work alone still exceeds the target.
+
+The syntax cache is already effective: an instrumented 24-step prefix records
+12,825,040 primary-field lookups but only 4,443 misses, including setup. Some
+inlined profiler samples were attributed to the string helper; that attribution
+does not mean those samples repeatedly parsed uncached names. Reducing graph
+traversal and repeated evaluations has a larger effect than name caching alone.
+
+The implementation retains CML model declarations and adds an optional runtime
+execution plan. It resolves expression accessors once, stores the original
+block order, uses controller-owned expression working storage with a separate
+reentrant path, and avoids unused advance closures during observation sweeps.
+Signal, parameter and block values remain live. Changed expression records,
+symbols and types invalidate their bindings; reparsing or explicitly resetting
+the option clears the whole plan. Annotation wrappers, order and feedback
+configuration must remain fixed while the plan is active.
+
+The staggered solver selects this plan after controller initialization. It also
+reuses the settled PSS2A output only across ST1's local substeps, where the
+existing integration contract already holds every physical input and PSS state
+unchanged. A `finally` block releases this observation scope before global
+states or network inputs change. A stage update inside that scope is rejected.
+The interpreter can be selected before initialization for numerical controls.
+
+All 26 focused core tests and ten plugin tests pass. New coverage checks live
+symbols and parameters, controller isolation, block replacement within a
+wrapper, changed expression metadata, reparsing, arithmetic order, special
+floating-point values and both integration stages. A full-solver control
+compares every recorded bus voltage, machine quantity and named controller
+state bit for bit at each endpoint through fault application and clearing.
+Independent exciter/stabilizer trajectories and the existing staggered history
+tests retain their assertions and tolerances. The earlier registered-suite
+failures remain separately documented above.
+
+The next execution design should retain the annotation front end and lower hot
+graphs into explicit numerical kernels with primitive state, input and output
+arrays. Output, derivative, limiter projection and algebraic feedback remain
+separate stage operations. The current interpreter supplies the comparison
+path for every kernel; output reuse requires an explicit unchanged-input/state
+scope. A controller-wide output cache without such a scope would be unsafe.
+
+```mermaid
+flowchart LR
+    A[CML model declarations] --> B[Initialize and resolve graph]
+    B --> C[Ordered numerical execution plan]
+    C --> D[Outputs and derivatives at one state vector]
+    D --> E[State update and limiter projection]
+    E --> F[Network and endpoint refresh]
+```
+
+Performance evidence, immutable source overlays, exact inputs, trajectories,
+profiling recordings and numerical controls are retained privately in
+`2026-10-18-cml-quarter-cycle-performance`. The 36-event accuracy goal remains
+open and is separate from this performance improvement.

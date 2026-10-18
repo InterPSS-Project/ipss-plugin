@@ -257,6 +257,26 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 		this.input2Bus = input2Bus;
 	}
 
+    private boolean fixedInputObservation;
+    private double fixedInputOutput;
+
+    /**
+     * Reuse the settled algebraic output only while all PSS states and physical
+     * inputs remain unchanged. The solver releases this scope in a finally block
+     * before any global state, network voltage or physical input changes.
+     */
+    public void beginFixedInputObservation() {
+        if (fixedInputObservation) throw new IllegalStateException("Nested fixed-input observation");
+        fixedInputOutput=super.getOutput(getMachine());
+        fixedInputObservation=true;
+    }
+
+    public void endFixedInputObservation() { fixedInputObservation=false; }
+
+    @Override public double getOutput(Machine machine) {
+        return fixedInputObservation ? fixedInputOutput : super.getOutput(machine);
+    }
+
 	private static double selectedInput(int code, BaseDStabBus<?, ?> bus, Machine machine) {
 		return switch (code) {
 			case 1 -> machine.getSpeed();
@@ -276,6 +296,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 	 */
 	@Override
 	public boolean initStates(BaseDStabBus<?,?> abus, Machine mach) {
+        fixedInputObservation = false;
 		if (input1Bus == null) input1Bus = abus;
 		if (input2Bus == null) input2Bus = abus;
 		input1Signal = selectedInput(getData().getIcs1(), input1Bus, mach);
@@ -366,6 +387,8 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 
 	@Override
 	public boolean nextStep(double dt, DynamicSimuMethod method, Machine mach, int flag) {
+        if (fixedInputObservation)
+            throw new IllegalStateException("End fixed-input observation before evaluating a new PSS stage");
 		input1Signal = getData().getIcs1() == 6
 				? (input1Bus.getVoltageMag() - input1PreviousVoltage) / dt
 				: selectedInput(getData().getIcs1(), input1Bus, mach);
