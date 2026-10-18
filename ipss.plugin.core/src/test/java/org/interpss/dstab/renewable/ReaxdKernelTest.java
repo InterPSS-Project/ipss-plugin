@@ -1,0 +1,14 @@
+package org.interpss.dstab.renewable;
+
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+
+class ReaxdKernelTest {
+    private static ReaxdKernel kernel(double tz,double tw){return new ReaxdKernel(new ReaxdData(2,"HPLNTDU",new int[]{37,38,39,42,43,44,45},new double[]{1,tz,2,tw,.6,-.2,.3,-.3}));}
+    @Test void equilibriumAndNamedStates(){var k=kernel(.02,.03);k.initialize(.4,.1);for(int i=0;i<100;i++)k.step(.001,new ReaxdKernel.Input(0,0));assertArrayEquals(new double[]{.4,.1},k.states(),0);assertEquals(.4,k.getNamedStates().get("ActiveCommandLag"));assertThrows(UnsupportedOperationException.class,()->k.getNamedStates().clear());var x=k.states();x[0]=9;assertEquals(.4,k.states()[0]);}
+    @Test void predictorCorrectorAndEndpointInput(){var k=kernel(.02,.04);k.initialize(.4,.1);k.step(.002,new ReaxdKernel.Input(.1,-.2),0);assertArrayEquals(new double[]{.41,.09},k.states(),1e-15);k.step(.002,new ReaxdKernel.Input(.2,-.1),1);assertArrayEquals(new double[]{.4145,.09275},k.states(),1e-15);}
+    @Test void limitsClipOutputWithoutClampingStorage(){var k=kernel(.02,.03);k.initialize(.4,.1);for(int i=0;i<1000;i++)k.step(.001,new ReaxdKernel.Input(1,-1));assertEquals(.6,k.output().active());assertEquals(-.3,k.output().reactive());assertEquals(1.4,k.states()[0],1e-12);assertEquals(-.9,k.states()[1],1e-12);k.step(.001,new ReaxdKernel.Input(0,0));assertEquals(.6,k.output().active());assertTrue(k.states()[0]>.6);for(int i=0;i<1000;i++)k.step(.001,new ReaxdKernel.Input(-1,1));assertEquals(-.2,k.output().active());assertEquals(.3,k.output().reactive());}
+    @Test void minimumTimesAndZeroGainInput(){var k=kernel(-1,0);k.initialize(.4,.1);k.step(.001,new ReaxdKernel.Input(.2,.4));assertArrayEquals(new double[]{.475,.25},k.states(),1e-15);}
+    @Test void stageDisciplineAndValidation(){var k=kernel(.02,.03);assertThrows(IllegalStateException.class,k::output);k.initialize(.4,.1);assertThrows(IllegalStateException.class,()->k.step(.001,new ReaxdKernel.Input(0,0),1));assertThrows(IllegalArgumentException.class,()->k.step(0,new ReaxdKernel.Input(0,0)));k.step(.001,new ReaxdKernel.Input(0,0),0);assertThrows(IllegalStateException.class,()->k.step(.002,new ReaxdKernel.Input(0,0),1));assertThrows(IllegalStateException.class,()->k.step(.001,new ReaxdKernel.Input(0,0),0));k.step(.001,new ReaxdKernel.Input(0,0),1);assertThrows(IllegalArgumentException.class,()->k.initialize(1,0));assertThrows(IllegalArgumentException.class,()->new ReaxdKernel.Input(Double.NaN,0));}
+    @Test void dispatchIsWeightedExactlyOnce(){var d=new HplntdAggregation.Dispatch(true,.3,.4,.06,.2);assertEquals(new ReaxdKernel.Input(.06,.2),ReaxdKernel.Input.from(d));assertThrows(IllegalArgumentException.class,()->ReaxdKernel.Input.from(new HplntdAggregation.Dispatch(false,0,0,0,0)));}
+}

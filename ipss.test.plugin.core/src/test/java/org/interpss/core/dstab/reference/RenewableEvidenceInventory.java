@@ -177,7 +177,7 @@ public final class RenewableEvidenceInventory {
             ).stream(),
             Set.of("HPLNTD").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        "Native HPLNTDU/REAXDU data and multi-aggregate aggregation/dispatch foundation have seven cold-paired datasets, including a preserved explicit-base pause counterexample. No catalog/parser/controller or downstream lag runtime yet; family runtime presence remains missing."))
+                        "Native HPLNTDU/REAXDU data and weighted dispatch have seven cold-paired datasets, including an explicit-base pause counterexample. A two-state REAXDU kernel has bounded recorded-input comparisons, limit-storage and minimum-time discriminators. No plant controller or production attachment yet; family runtime presence remains missing."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {

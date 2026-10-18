@@ -22,7 +22,8 @@ versioned loadable runtime path, one without a loadable runtime (HPLNTD)**, not 
 benchmark coverage. REPCC now has exact standard import and a bounded REGCA1/REECA1
 runtime, enabled-MSS import and bounded fast-band switching comparisons. Slow-band
 clock precision and other initialization/host modes remain open. HPLNTD now has a
-typed native data/aggregation foundation, but no plant or downstream lag runtime.
+typed data/aggregation and a bounded downstream lag kernel, but no plant controller
+or production downstream attachment.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -423,7 +424,15 @@ and state definitions agree.
     (one diagnostic skip), zero failures/errors. Audit fourteen native runs,
     all raw interface rows and the explicit-base pause counterexample;
     keep HPLNTD runtime presence missing rather than count data as a model.
-  - [ ] Implement HPLNTDU's thirteen-state kernel and REAXDU's two-state interface,
+  - [x] Implement REAXDU's two-state command-lag kernel with explicit modified-Euler
+    stages, immutable named states and output-only limits. Replay all four unit
+    states in eight independent profiles; add four cold-paired limit/minimum-time
+    datasets. Ordinary-time residuals reduce approximately fourfold at half step.
+    This is recorded-input kernel evidence, not attached runtime acceptance.
+    Final gates: 26 focused, 362 core-unit (six optional skips), and 1,436
+    SMIB/model/solver tests (one existing diagnostic skip), zero failures/errors.
+    See [downstream lag evidence and gaps](benchmarks/reaxd-lag-kernel-2026-10-18.md).
+  - [ ] Implement HPLNTDU's thirteen-state kernel and complete REAXDU's interface,
     exact production import/attachment and stage-coherent multi-unit coupling;
     verify all remaining selectors, limits, lifecycle and actual SMIB responses.
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
