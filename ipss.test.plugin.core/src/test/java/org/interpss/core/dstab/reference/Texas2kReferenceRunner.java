@@ -218,6 +218,7 @@ public final class Texas2kReferenceRunner {
                     }
                 });
                 if (!algo.initialization()) throw new IllegalStateException("Initialization failed");
+                status.put("constant_current_load_voltage_curve", net.getConstantCurrentLoadVoltageCurve().toString());
                 if (!net.isDStabNetInitialized())
                     throw new IllegalStateException("A dynamic device failed initialization");
                 if (algo.getSolver() instanceof PsseStaggeredEulerSolver shared) {

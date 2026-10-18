@@ -239,6 +239,7 @@ import org.interpss.core.dstab.Esac1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aAndesSmibConformanceTest;
 import org.interpss.core.dstab.Esst1aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.PsseSt1LocalIntegrationTest;
+import org.interpss.core.dstab.PsseStaticCurrentLoadVoltageCurveTest;
 import org.interpss.core.dstab.Exst1AndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovAndesSmibConformanceTest;
 import org.interpss.core.dstab.HygovIndependentSmibConformanceTest;
@@ -661,6 +662,7 @@ import org.junit.platform.suite.api.Suite;
 	Esst1aAndesSmibConformanceTest.class,
 	Esst1aIndependentSmibConformanceTest.class,
 	PsseSt1LocalIntegrationTest.class,
+	PsseStaticCurrentLoadVoltageCurveTest.class,
 	Exst1AndesSmibConformanceTest.class,
 	Ieeet1AndesSmibConformanceTest.class,
 	Ieeet1IndependentSmibConformanceTest.class,

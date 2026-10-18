@@ -916,9 +916,62 @@ characteristic differs by up to `0.0323068` pu, or `3.231` MW for this load.
 Constant-impedance Q agrees within `0.0000000207` pu.
 
 These experiments isolate a network-load discrepancy while preserving the
-confirmed I/Z assumption. The candidate has not yet been adopted in production
-or evaluated in the full-system benchmark. Frozen producers, raw outputs,
+confirmed I/Z assumption. The production correction and fleet check follow
+below. Frozen producers, raw outputs,
 manual-page provenance, cold-repeat checks, and comparison programs are retained
 under the private verification-artifact directory
 `2026-10-18-static-current-voltage-characteristic`. Full-system acceptance
 remains unproven.
+
+## Elliptic current-load implementation and fleet check
+
+Core now exposes a typed, per-network constant-current voltage curve. Its
+general default remains the existing sine characteristic. The reference
+simulation adapter selects the verified elliptic characteristic before dynamic
+load initialization, including reinitialization and runs with externally
+supplied current injections. Constant-power and constant-impedance terms keep
+their existing characteristics. The elliptic expression is evaluated in
+rationalized form to preserve accuracy near zero voltage.
+
+The production power and Norton-current paths agree with all 12,018 recorded
+observations from the six cold-process sweeps within `0.0000000341` pu for P
+and `0.0000000207` pu for Q. A public regression fixture contains 204 points
+selected at fixed sample indices independently of their errors. All 2,953 core
+tests and 21 focused plugin tests pass. Frozen negative controls confirm that
+the preceding load calculation fails the native power assertion and the
+preceding reference adapter fails the curve-selection assertion; all five
+new tests pass with the correction. The adapter regression is registered in
+the core plugin suite; no full registered-plugin-suite pass is claimed.
+
+The completed first Case 2 prefix covers `1.2` seconds. Every one of its first
+2,003 observations, including startup history and all prefault diagnostic
+quantities, is exactly unchanged. Thirteen of 20 prefault criteria still pass.
+For the 402 matched fault-and-clearing samples from fault application through
+`1.2` seconds, the diagnostic errors are:
+
+| Worst channel quantity over the short fault segment | Before | Elliptic current curve |
+| --- | ---: | ---: |
+| Voltage NRMSE | 0.00277852 | 0.00286267 |
+| Terminal P NRMSE | 0.0180521 | 0.0191282 |
+| Terminal Q NRMSE | 0.0156181 | 0.0153606 |
+| Rotor-angle RMSE, degrees | 0.133198 | 0.148022 |
+
+The NRMSE denominators remain the full ten-second reference ranges. Q improves
+slightly in this segment; voltage, P, and angle errors increase slightly. The
+isolated load-equation correction leaves other full-system discrepancies
+unresolved. A fresh ten-second run uses the exact frozen runtime and unchanged
+inputs. Its in-flight output is not scored or presented as a completed event.
+
+The preceding ST1-only six-event batch completed the first generator trip
+before its driver stopped on an overly broad startup assertion: different
+events monitor different bus sets. All 208 shared machine quantities and
+their first-second times match exactly. The corrected audit reports differing
+bus-monitor columns explicitly, and the resumed batch reuses both completed
+events. Acceptance scoring still requires each event's complete original
+channel set.
+
+Frozen code, raw component observations, negative controls, complete test
+reports, the corrected prefix, and the batch-audit failure are retained under
+the private verification-artifact directory
+`2026-10-18-elliptic-current-load-correction`. The required scope remains all
+six cases and 36 ten-second events. No event is accepted.

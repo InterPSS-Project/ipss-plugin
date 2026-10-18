@@ -6,6 +6,7 @@ import org.apache.commons.math3.complex.Complex;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
+import com.interpss.dstab.ConstantCurrentLoadVoltageCurve;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
@@ -40,10 +41,14 @@ public class PsseDStabSolver extends DStabSolverImpl {
 
     @Override
     public boolean initialization() {
+        BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
+        // Native constant-current loads retain I down to 0.5 pu, then use an
+        // elliptic reduction. The generic core's sine curve remains available
+        // to other solvers. Apply this before load-current initialization.
+        network.setConstantCurrentLoadVoltageCurve(ConstantCurrentLoadVoltageCurve.ELLIPTIC);
         configureIntegrationStepAwareModels(dstabAlgo.getNetwork(), dstabAlgo.getSimuStepSec());
         if (!super.initialization()) return false;
 
-        BaseDStabNetwork<?, ?> network = dstabAlgo.getNetwork();
         // Do not overwrite a hybrid-simulation current source supplied by a caller.
         Hashtable<String, Complex> existing = network.getCustomBusCurrInjHashtable();
         Object previous = network.getExtraInfo().get(COMPENSATION_KEY);
