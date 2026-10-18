@@ -1691,3 +1691,125 @@ metrics and error bounds, method controls, the complete original-grid rescore,
 and the superseding decision are retained privately in
 `2026-10-18-supplied-reference-tolerance-review`. Earlier evidence archives are
 retained unchanged as historical numerical-sensitivity records.
+
+
+## Governor selector history at staggered endpoints
+
+Two remaining synchronous source-boundary cells motivate a read-only governor
+audit. The earlier declared-rate correction reduces rotor-angle RMSE at bus
+6147 from `11.6751` to `0.0361408` degrees and at bus 7356 from `45.5251` to
+`0.282415` degrees. Physical-input replay still leaves mechanical-power errors
+of `0.00126112` and `0.00157773` pu. Rounding governor storage coordinates to
+binary32 does not remove those errors and is rejected as a production change.
+
+Seven additional read-only governor algebraic channels are recorded in two
+cold native runs. Both augmented CSVs are byte-identical, and all 55 original
+channels remain exactly unchanged at every one of the 20,003 observations.
+The selector recurrence uses the preceding derivative endpoint's selector.
+An independent calculation with the original declared parameters reproduces
+that recurrence within `0.0000000397` pu; omitting its time-step multiplier
+instead produces an error up to `0.66613` pu. No reference state is injected
+into a simulation.
+
+The staggered-step completion previously recomputed the committed selector
+using newly advanced filter states and the preceding network input. It now
+commits the selector already evaluated at the derivative endpoint. Endpoint
+refresh then evaluates the following selector from that value. The ordinary
+modified-Euler path, imported constants and physical assumptions are unchanged.
+
+Maximum physical-input mechanical-power errors fall to `0.00000237455` pu at
+bus 6147 and `0.00000458847` pu at bus 7356. Coupled evidence remains mixed:
+their voltage-ramp rotor RMSEs increase to `0.123497` and `0.434234` degrees.
+The bus 1050 original and asymmetric-rate frequency cells improve slightly to
+`0.00192768` and `0.00443605` degrees. The two frequency IEEEG1 controls, the
+voltage IEEEG1 control and bus 5303 retain byte-identical complete trajectories.
+Physical-equation improvement does not establish coupled trajectory acceptance.
+
+The unchanged original first Case 2 fault completes through ten seconds at
+`0.0005`-second steps and `1e-8` network tolerance. Physical inputs, reference
+values, scorer, periods, normalization and limits retain their original hashes.
+The tested overlay and the final production governor have identical disassembled
+instructions throughout the class.
+
+| Complete original-event metric | Before selector correction | After selector correction | Required limit |
+| --- | ---: | ---: | ---: |
+| Worst ten-second rotor RMSE, degrees | 20.3843403 | 19.6532265 | 0.01 |
+| Worst prefault rotor maximum error, degrees | 0.115432881 | 0.099316299 | 0.002 |
+| Worst fault/postfault voltage/P/Q NRMSE | 0.020351563 | 0.019953833 | 0.005 |
+| Passing channel criteria | 19 / 40 | 19 / 40 | 40 / 40 |
+
+All 42 focused checks pass. The new analytical selector recurrence test fails
+against the old implementation at both tested step sizes and passes with the
+correction. The registered core suite completes 2,017 tests, with zero errors,
+13 skips and the same three previously recorded failures: the Case 1 flat
+voltage-drift assertion, the large imported power-flow case and the CIM voltage
+agreement case. Explicit old/new no-event controls attempt all six cases; all
+six retain their existing drift failure and every reported metric is identical.
+No assertion or acceptance tolerance is relaxed.
+
+The shared checkout contains unrelated work under development. Its initial
+focused build stops on an unrelated missing core API. The reported focused and
+registered results instead use an isolated export of committed base
+`b93548450` plus only the governor and its test changes; exact source hashes
+are retained. This does not claim the entire current shared checkout passes.
+
+For exploratory performance work, `1e-6` remains a provisional network tolerance
+at the observed sensitivity knee. The original-grid accuracy control above
+retains `1e-8` to isolate this governor correction. Neither tolerance has passed
+the supplied-reference accuracy contract. The 20-second quarter-cycle runtime
+target and the complete six-case/36-disturbance goal remain open.
+
+The source snapshots, repeated native observations, rejected precision control,
+coupled checks, complete original event, unchanged scorer, negative test controls
+and scoped validation are retained privately in
+`2026-10-18-ggov1-selector-history`.
+
+## Largest rotor discrepancy and physical-power localization
+
+The largest original first-event rotor discrepancy is bus 6245, unit 1:
+`19.6532265` degrees RMSE, reaching `65.2861351` degrees at ten seconds. The
+comparison plot retains all 20,003 original observations, both event sides,
+the original step and the absolute synchronous-frame angles. No angle offset,
+interpolation or time shift is applied.
+
+Across the five original scored machines, the mean angle-error trajectory has
+`19.1809921` degrees RMS. Bus 6245's deviation from that mean has `0.523368`
+degrees RMS. This is a diagnostic decomposition only; no mean is removed from
+an acceptance channel. It directs investigation toward the shared network
+response as well as the local controller.
+
+Physical-input replay with the original bus 6245 parameters yields maximum
+governor, exciter and stabilizer output errors of `0.00000842018`, `0.000700487`
+and `0.00000308930` pu, respectively. Their prefault maxima are only
+`0.00000361196`, `0.00000287390` and `0.00000154295` pu. Controller states evolve
+independently. A diagnostic that omits event derivative-history averaging
+produces a spurious exciter spike; its earlier results are superseded by the
+event-aware replay, which follows the existing production event protocol.
+The generic replay is not valid evidence for the separate ST1 local-step path.
+
+An independent integration of the published swing equation with the supplied
+mechanical and electrical powers reproduces the supplied angle *change* with
+`0.000662254` degrees RMSE. With InterPSS physical powers, it reproduces the
+InterPSS angle change within `0.00000385890` degrees RMSE. Original inertia and
+damping are retained, speed starts at its cold equilibrium, and angle change
+starts at zero. These increment identities diagnose the power boundary; they
+do not replace or pass the absolute-angle acceptance gate. Mixed-power
+diagnostics show a larger sensitivity to the electrical-power discrepancy,
+partly opposed by the mechanical-power discrepancy; those mixed inputs are
+not claimed as physically coupled trajectories.
+
+The unchanged prefault observations across all six Case 2 disturbances cover
+26 synchronous machines. Shared observations are required to agree exactly
+before merging. Bus 1073 has the largest observed prefault speed error,
+`0.0000493772` pu, and a `0.244950`-degree peak angle discrepancy. Its
+electrical-power mismatch has `0.508211` MW RMS, compared with `0.00766115` MW
+RMS in the mechanical torque-equivalent term. This identifies an upstream
+electrical-input investigation; it does not prove a bus 1073 controller defect.
+
+An attempted fresh whole-fleet native observation cannot load the complete
+network because the installed executable is limited to 50 buses. Its partial
+network, island and ordering failures are rejected tool-capacity evidence,
+not model results and not substitute reference trajectories. Supplied immutable
+results remain the final accuracy oracle. These diagnostics and the plot are
+retained with the selector-history evidence. Case 2 still passes only 19 of
+40 original criteria; no event or model acceptance label is upgraded.

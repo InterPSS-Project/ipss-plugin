@@ -57,6 +57,44 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         assertArrayEquals(next,observed,0.0,"committing transport history cannot integrate again");
     }
 
+    @ParameterizedTest(name = "selector endpoint recurrence at step {0}")
+    @CsvSource({"0.0005", "0.001"})
+    void staggeredAccelerationSelectorUsesThePrecedingDerivativeEndpoint(double dt) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(.4); machine.setPe(.4);
+        var data = texasData();
+        data.setTrate(0.0); data.setRselect(0); data.setR(0.0);
+        data.setKpgov(.01); data.setKigov(.01); data.setLdref(10.0);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        governor.configureIntegrationStep(dt);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        machine.setSpeed(1.005);
+        double[] values = new double[10], rates = new double[10], history = new double[10];
+        governor.evaluateStaggered(dt, rates, 0);
+        for (int step = 0; step < 20; step++) {
+            double precedingSelector = governor.getFsr();
+            governor.readStaggeredState(values, 0);
+            governor.evaluateStaggered(dt, rates, 0);
+            for (int i = 0; i < values.length; i++) {
+                values[i] += dt * (1.5 * rates[i] - .5 * history[i]);
+                history[i] = rates[i];
+            }
+            governor.applyStaggeredState(values, 0, dt);
+            governor.completeStaggeredStep(dt);
+            double acceleration = (machine.getSpeed() - 1.0 - values[7]) / data.getTa();
+            double expectedSelector = precedingSelector
+                    + data.getKa() * dt * (data.getAset() - acceleration);
+            assertTrue(expectedSelector > governor.getEffectiveVmin()
+                    && expectedSelector < governor.getEffectiveVmax());
+            for (int observation = 0; observation < 3; observation++) {
+                governor.evaluateStaggered(dt, rates, 0);
+                assertEquals(expectedSelector, governor.getFsr(), 1.e-12,
+                        "a state update must not recompute the preceding selector reference");
+            }
+        }
+    }
+
     @Test
     void builderAttachesExactDataIncludingTransportDelay() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();

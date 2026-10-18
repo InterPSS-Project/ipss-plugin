@@ -184,7 +184,8 @@ public class PsseGgov1Governor extends AbstractGovernor
 
     @Override public void completeStaggeredStep(double stepSec) {
         Algebraic a = algebraic(state, stepSec, stepSec, committedFsr);
-        currentFsr = committedFsr = a.fsr;
+        // Endpoint refresh evaluates the next selector from this derivative-endpoint value.
+        committedFsr = currentFsr;
         currentOutput = a.pmech;
         simulationTime += stepSec;
         engineHistory.addLast(new DelaySample(simulationTime, a.rawTurbineInput));
