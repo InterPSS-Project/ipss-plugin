@@ -53,6 +53,19 @@ and state definitions agree.
 
 ## Approved renewable source and evidence audit
 
+- [x] REGFMB1 foundation: visually freeze native 36.7 REGFMB1U exact wrapper,
+  six ICONs/25 CONs/14 STATEs/17 VARs, distinct from PowerWorld parameter fields.
+- [x] Cold-run flat and three-cycle-fault native SMIB profiles twice at two
+  steps; retain all channels/event sides and byte-identical cold pairs.
+- [x] Implement native typed data and algebraic network-boundary primitives,
+  with initialization/base and filtered-bound comparisons against native output.
+- [x] Validate the REGFMB1U foundation: 32 focused checks, 276 plugin-core tests
+  (six optional skips), 1,313 SMIB/model tests (one existing diagnostic skip),
+  zero failures/errors; audit all eight native runs and four byte-identical pairs.
+- [ ] Implement REGFMB1U fourteen-state dynamics, selectors/limits/PLL freezing,
+  strict wrapper attachment, plant routing and lifecycle, then replay/compare.
+  This foundation does not increase the 22/27 loadability count. See
+  [REGFMB1 native foundation](benchmarks/regfmb-native-contract-2026-10-18.md).
 - [x] Native REECE import slice: exact eight-ICON/79-CON standard schema,
   deferred REGCA/REGCB attachment and malformed/duplicate/GNET/base guards.
 - [x] Correct REGCB physical-current blocking without clearing retained states;
