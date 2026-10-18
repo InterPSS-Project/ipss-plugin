@@ -160,7 +160,9 @@ public final class RenewableEvidenceInventory {
             ).stream(),
             Set.of("REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
+                        model.equals("REPCGFMC1")
+                        ?"Exact REPCGFMC1U seven-ICON/54-CON typed contract, algebraic initialization and eight cold-paired native foundation datasets exist. No dynamic kernel/parser/network attachment yet; runtime remains missing. Complete selectors, limits, FFR, plant routing and independent trajectories."
+                        :"No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {

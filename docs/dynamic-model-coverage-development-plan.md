@@ -53,6 +53,24 @@ and state definitions agree.
 
 ## Approved renewable source and evidence audit
 
+- [x] Freeze the exact REPCGFMC1U seven-ICON/54-CON/15-STATE/20-VAR contract
+  and four distinct GFM/GFL output paths. Implement typed data and algebraic
+  initialization without an invented REPCA1 alias or dummy runtime.
+- [x] Preserve eight cold-paired native foundation datasets: branch flat,
+  two-step three-cycle fault, automatic loss estimation, missing-branch fallback,
+  alternate plant MVA base, feasible proportional-only voltage control and
+  terminal-voltage selection. Retain rejected infeasible/undefined-branch attempts.
+  See [plant foundation evidence](benchmarks/repcgfmc-native-contract-2026-10-18.md).
+- [x] Validate the plant foundation on baseline `18414693e`: 53 focused checks,
+  307 plugin-core tests (six optional skips), 1,359 registered SMIB/model/solver
+  checks (one existing diagnostic skip), zero failures/errors. Audit 23 tested
+  source/resource files, sixteen accepted native runs and eight byte-identical
+  cold pairs. Runtime coverage remains 24/27, not complete model verification.
+- [ ] Implement the exact fifteen-state REPCGFMC1U kernel, frequency/voltage
+  selectors and bounds, FFR timer/re-arm/ramp logic, measurement resolution and
+  base conversion, strict import and REGFMC1U reference routing. Validate all
+  states and independently coupled SMIB profiles before raising loadability.
+
 - [x] Add exact native REGFMC1U wrapper parsing and hybrid network adapter, with
   non-overwriting attachment, machine/system-base Norton conversion, semantic
   monitoring, explicit removal and trip behavior. Coverage is now 24/27 runtime
