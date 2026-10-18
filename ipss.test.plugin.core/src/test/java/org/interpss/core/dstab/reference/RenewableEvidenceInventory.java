@@ -15,7 +15,7 @@ public final class RenewableEvidenceInventory {
     public enum Scope { MISSING_IMPLEMENTATION, FOCUSED_ONLY, BOUNDED_DIALECT_COMPARISON,
         NATIVE_PARTIAL_PROFILE, NATIVE_RECORDED_PROFILE }
     public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP, WTPTB_NATIVE_MAP, WTGWGO_NATIVE_MAP, REECD_PAUX_NATIVE_MAP,
-        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, REPCGFMC_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
+        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, REPCGFMC_NATIVE_MAP, REPCC_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
     public record Entry(String model,String focusedTest,String trajectoryTest,Scope scope,
                         CheckpointKind storage,String checkpoint,String fixture,String limitation) {
         public Class<?> focusedClass() throws ClassNotFoundException {
@@ -75,6 +75,10 @@ public final class RenewableEvidenceInventory {
                     for(var p:Regfmc1SelectorNativeReference.profiles())p.body();
                     if(Regfmc1LifecycleNativeReference.profiles().size()!=2)throw new IllegalStateException("Incomplete REGFMC1U lifecycle reference matrix");
                     for(var p:Regfmc1LifecycleNativeReference.profiles())p.body();
+                }
+                case REPCC_NATIVE_MAP -> {
+                    if(RepccRuntimeNativeReference.profiles().size()!=4)throw new IllegalStateException("Incomplete REPCC coupled profiles");
+                    for(var p:RepccRuntimeNativeReference.profiles()){p.body();p.input();}
                 }
                 case REPCGFMC_NATIVE_MAP -> {
                     if(Repcgfmc1NativeContractReference.profiles().size()!=8||Repcgfmc1KernelNativeReference.profiles().size()!=10
@@ -161,6 +165,9 @@ public final class RenewableEvidenceInventory {
                 new Entry("REPCGFMC1U","PsseRepcgfmc1ModelTest","Repcgfmc1NativeImportSmibTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.REPCGFMC_NATIVE_MAP,"Repcgfmc1NativeContractReference + Repcgfmc1KernelNativeReference + Repcgfmc1ImportNativeReference","renewable/regfmc_repcgfmc_native.dyr",
                         "Exact seven-ICON/54-CON wrapper, deferred REGFMC1U attachment, four-output/base routing and bounded coupled flat/fault/trip profiles. Signed measurements follow documented network-flow directions; native negative-bus inputs fall back and are rejected as direction oracles. Precision/history/callback, further lifecycle and independent PowerWorld acceptance remain open."),
+                new Entry("REPCC","PsseRepccModelTest","RepccRuntimeNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,
+                        CheckpointKind.REPCC_NATIVE_MAP,"RepccRuntimeNativeReference","renewable/regca_reeca_repcc_native.dyr",
+                        "Exact 35-ICON/57-CON standard import, dedicated REGCA1/REECA1 reference port, eight typed equilibrium modes and cold-paired flat/three-cycle fault comparisons at two steps. Every history/event-side row and all thirteen plant states are compared. REPCCU is not an inferred alias; automatic shunts, disabled loops, further initialization/limits, lifecycle, integration/precision floors and independent PowerWorld acceptance remain open."),
                 bounded("REECA1","PsseReeca1ControllerTest"),
                 bounded("REPCA1","PsseRepca1PlantControllerTest"),
                 bounded("WTDTA1","PsseType3WindControllerTest"),
@@ -168,7 +175,7 @@ public final class RenewableEvidenceInventory {
                 bounded("WTPTA1","PsseType3WindControllerTest"),
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
-            Set.of("REPCCU","HPLNTD").stream().map(model->
+            Set.of("HPLNTD").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
                         "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
@@ -198,11 +205,11 @@ public final class RenewableEvidenceInventory {
                 .append("Source SHA-256: `").append(WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256).append("`.\n\n")
                 .append("The source renewable section has 45 rows: 29 approved, 28 with a native PTI mapping, ")
                 .append("and 27 distinct planned native families because WT1T/WT2T share WT12T1. ")
-                .append("25 families currently have loadable runtime paths; two implementations are genuinely missing. ")
+                .append("26 families currently have loadable runtime paths; HPLNTD remains missing. REPCC has a bounded standard-native runtime; source REPCCU is not an inferred alias and automatic shunts/other initialization modes remain open. ")
                 .append("REEC_E uses the proved native reference standard name REECE; the source-listed REECE1/REECEU1 names and wrappers remain unsupported. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
-                .append("Eight families have native recorded-profile links, ten have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U, REGFMC1U and REPCGFMC1U), ")
+                .append("Eight families have native recorded-profile links, eleven have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U, REGFMC1U, REPCGFMC1U and REPCC), ")
                 .append("six have only the explicitly bounded ANDES coupled comparison, and one has focused tests only. ")
                 .append("None of the latter seven is established as native simulator conformance. Legacy/retired and ")
                 .append("manufacturer-package supplemental models need a separate evidence expansion; their source rows ")

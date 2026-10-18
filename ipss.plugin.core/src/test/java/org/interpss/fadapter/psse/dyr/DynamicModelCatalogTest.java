@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 class DynamicModelCatalogTest {
     @Test
-    void approvedRenewableRowsExposeTheFiveMissingNativeFamilies() {
+    void approvedRenewableRowsExposeTheRemainingMissingNativeFamily() {
         var rows=WeccApprovedDynamicModelCatalog.renewables();
         assertEquals(45,rows.size(),"Preserve every source renewable row, not just implemented entries");
         assertEquals(45,rows.stream().map(WeccModelApproval::catalogName).distinct().count());
@@ -29,9 +29,9 @@ class DynamicModelCatalogTest {
                 "WT1T and WT2T share WT12T1");
         var missing=nativeRows.stream().filter(row->!row.isImplementedExactly())
                 .map(WeccModelApproval::interpssModel).collect(java.util.stream.Collectors.toSet());
-        assertEquals(Set.of("REPCCU","HPLNTD"),missing,
+        assertEquals(Set.of("HPLNTD"),missing,
                 "Any implementation claim must be backed by a real parser/runtime descriptor");
-        assertEquals(26,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(27,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         for(String model:missing)assertTrue(DynamicModelCatalog.find(model).isEmpty(),
                 "Do not add a loadable placeholder, guessed schema, or unrelated engine: "+model);
     }
@@ -54,6 +54,9 @@ class DynamicModelCatalogTest {
         var wt1pb=rows.stream().filter(row->row.catalogName().equals("WT1P_B")).findFirst().orElseThrow();
         assertEquals("WT12A1U_B",wt1pb.psseModel());
         assertEquals("WT12A1B",wt1pb.interpssModel());
+        var repcc=rows.stream().filter(row->row.catalogName().equals("REPC_C")).findFirst().orElseThrow();
+        assertEquals("REPCCU",repcc.psseModel());assertEquals("REPCC",repcc.interpssModel());
+        assertTrue(repcc.isImplementedExactly());assertTrue(DynamicModelCatalog.find("REPCCU").isEmpty());
         assertEquals("b4add4a9d584e69f2a97823f87cb4c40362f1e868b2b9d3c60e3c59ba62af635",
                 WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256);
     }

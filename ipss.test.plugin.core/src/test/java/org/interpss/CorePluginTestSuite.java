@@ -157,6 +157,9 @@ import org.interpss.core.dstab.RepccNativeContractConformanceTest;
 import org.interpss.core.dstab.RepccKernelNativeConformanceTest;
 import org.interpss.core.dstab.RepccShuntNativeConformanceTest;
 import org.interpss.core.dstab.RepccNetworkBoundaryConformanceTest;
+import org.interpss.core.dstab.RepccTypedRuntimeSmibTest;
+import org.interpss.core.dstab.RepccRuntimeNativeSmibTest;
+import org.interpss.core.adapter.builder.dstab.PsseRepccModelTest;
 import org.interpss.core.dstab.Repcgfmc1KernelNativeConformanceTest;
 import org.interpss.core.dstab.Repcgfmc1NativeImportSmibTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepcgfmc1ModelTest;
@@ -944,6 +947,9 @@ import org.junit.platform.suite.api.Suite;
 	RepccKernelNativeConformanceTest.class,
 	RepccShuntNativeConformanceTest.class,
 	RepccNetworkBoundaryConformanceTest.class,
+	RepccTypedRuntimeSmibTest.class,
+	RepccRuntimeNativeSmibTest.class,
+	PsseRepccModelTest.class,
 	Repcgfmc1KernelNativeConformanceTest.class,
 	Repcgfmc1NativeImportSmibTest.class,
 	PsseRepcgfmc1ModelTest.class,

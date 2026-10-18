@@ -3640,6 +3640,17 @@ public class DStabNetworkBuilder {
         return controller;
     }
 
+    /** Dedicated native REPCC port; no legacy controller is overwritten. */
+    public org.interpss.dstab.renewable.RepccModel addRepcc(String busId,String genId,org.interpss.dstab.renewable.RepccData data){
+        var converter=findRegca1(busId,genId);
+        if(converter==null||!(converter.getActiveElectricalController() instanceof Reeca1Model electrical)
+                ||electrical.getPlantController()!=null||electrical.getRepccController()!=null
+                ||data.switchingFlag()!=0||data.frequencyFlag()!=1||data.reactiveFlag()!=1
+                ||data.value(org.interpss.dstab.renewable.RepccData.Parameter.KI)<=0
+                ||data.value(org.interpss.dstab.renewable.RepccData.Parameter.KIG)<=0)return null;
+        var plant=new org.interpss.dstab.renewable.RepccModel(data,converter);electrical.setRepccController(plant);return plant;
+    }
+
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
         Regca1Model converter = findRegca1(busId, genId);
         if (converter != null && converter.getActiveElectricalController() != null) {

@@ -157,6 +157,7 @@ source-approved families that have no implementation or parser descriptor.
 | WT4E1 | ELECTRICAL_CONTROLLER |  | 27 | LOADABLE | `org.interpss.dstab.mach.Wt4e1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Electrical%20Control%20WT4E1.htm) |
 | PLNTBU1 | PLANT_CONTROLLER |  | 41 | LOADABLE | `org.interpss.dstab.mach.Plntbu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | REPCA1 | PLANT_CONTROLLER | REPCAU1, REPCTA1, REPCTAU1 | 34 | LOADABLE | `org.interpss.dstab.renewable.Repca1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Plant%20Controller%20REPC_A.htm) |
+| REPCC | PLANT_CONTROLLER |  | 92 | LOADABLE | `org.interpss.dstab.renewable.RepccModel` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Plant%20Controller%20REPC_C.htm) |
 | REPCGFMC1U | PLANT_CONTROLLER |  | 67 | LOADABLE | `org.interpss.dstab.renewable.Repcgfmc1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Plant%20Controller%20REPCGFM_C1.htm) |
 | GEWT2MU1 | DRIVE_TRAIN |  | 12 | LOADABLE | `org.interpss.dstab.mach.Gewt2mu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | WT12T1 | DRIVE_TRAIN |  | 5 | LOADABLE | `org.interpss.dstab.mach.Wt12t1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WT12T1.htm) |

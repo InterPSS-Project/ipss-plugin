@@ -266,7 +266,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         }
         return finite(p) && finite(q);
     }
-    @Override public boolean afterStep(double dt) { return true; }
+    @Override public boolean afterStep(double dt) {
+        var controller=activeController();
+        if(controller!=null&&controller.getRepccController()!=null)controller.getRepccController().acceptedEndpoint();
+        return true;
+    }
     @Override public DStabGen getParentGen() { return parentGen; }
 
     @Override
@@ -291,6 +295,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
      * its commercial lag identities are verified, full fleet/event parity is open.
      */
     public void setIntegrationScheme(IntegrationScheme scheme) {
+        if(scheme==IntegrationScheme.TWO_STEP&&activeController()!=null&&activeController().getRepccController()!=null)
+            throw new IllegalArgumentException("REPCC uses staged modified Euler, not the converter two-step path");
         integrationScheme = java.util.Objects.requireNonNull(scheme);
         twoStep.reset();
     }
@@ -350,6 +356,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         named.put("Active Power", p);
         named.put("Reactive Power", q);
         RenewableElectricalController controller = activeController();
+        if (controller != null && controller.getRepccController() != null)
+            controller.getRepccController().getNamedStates().forEach((key,value)->named.put("REPCC."+key,value));
         if (controller != null && controller.getWeakGridController() != null)
             controller.getWeakGridController().getNamedStates().forEach(
                     (key, value) -> named.put("WTGWGOA." + key, value));

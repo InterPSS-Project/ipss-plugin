@@ -72,7 +72,9 @@ public class RepccNativeContractConformanceTest {
             assertEquals(13,init.namedStates().size());
         }
     }
-    @Test void typedFoundationDoesNotRaiseRuntimeCoverage() {
-        assertTrue(DynamicModelCatalog.find("REPCC").isEmpty());assertTrue(DynamicModelCatalog.find("REPCCU").isEmpty());
+    @Test void nativeRuntimeDoesNotInventTheUnprovedSourceAlias() {
+        assertEquals(92,DynamicModelCatalog.find("REPCC").orElseThrow().parameterCount());
+        assertEquals("org.interpss.dstab.renewable.RepccModel",DynamicModelCatalog.find("REPCC").orElseThrow().runtimeClassName());
+        assertTrue(DynamicModelCatalog.find("REPCCU").isEmpty());
     }
 }

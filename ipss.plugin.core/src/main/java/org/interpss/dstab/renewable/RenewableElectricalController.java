@@ -20,6 +20,10 @@ public interface RenewableElectricalController extends IntegrationStepAware {
     default boolean isConverterBlocked() { return false; }
     Repca1Model getPlantController();
     void setPlantController(Repca1Model plantController);
+    default RepccModel getRepccController() { return null; }
+    default void setRepccController(RepccModel plantController) {
+        throw new UnsupportedOperationException("This electrical controller has no REPCC input port");
+    }
     /** Optional weak-grid limiter on the absolute plant power reference. */
     default WtgwgoaModel getWeakGridController() { return null; }
     /** Optional inertia-response power increment, distinct from weak-grid Pref. */
@@ -28,6 +32,7 @@ public interface RenewableElectricalController extends IntegrationStepAware {
         throw new UnsupportedOperationException("This electrical controller has no weak-grid reference input");
     }
     default double getPlantPowerReference(double initialPower) {
+        if (getRepccController() != null) return initialPower + getRepccController().activeIncrement();
         return initialPower + (getPlantController() == null ? 0.0 : getPlantController().getPref());
     }
     default double getSelectedPowerReference(double initialPower) {

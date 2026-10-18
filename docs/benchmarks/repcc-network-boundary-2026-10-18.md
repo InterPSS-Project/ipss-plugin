@@ -10,6 +10,10 @@ positive-sequence equivalent and live Y matrix. This is a typed integration
 boundary, **not** an automatically attached REPCC runtime or DYR import path.
 Approved-family runtime coverage remains 25/27.
 
+The subsequent [standard import/runtime slice](repcc-native-runtime-2026-10-18.md)
+adds a bounded REGCA1/REECA1 path and advances runtime presence to 26/27.
+Automatic enabled-MSS operation and complete coupled acceptance remain open.
+
 Source: installed Model Library section 27.4, especially notes 1 and 3–8, and
 the visually reviewed main diagram. The document SHA-256 remains
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.

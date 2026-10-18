@@ -172,6 +172,7 @@ public class PSSEDStabDirectParser {
     private final List<PsseDyrRecord> pendingWtgibffra = new ArrayList<>();
     private final List<PsseDyrRecord> pendingReece = new ArrayList<>();
     private final List<PsseDyrRecord> pendingRepcgfmc1 = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingRepcc = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
@@ -248,6 +249,7 @@ public class PSSEDStabDirectParser {
         pendingReece.clear();
         pendingLcfb1.clear();
         pendingRepcgfmc1.clear();
+        pendingRepcc.clear();
         pendingIeeeVc.clear();
         pendingUel1.clear();
         pendingUel2c.clear();
@@ -283,7 +285,7 @@ public class PSSEDStabDirectParser {
                     continue;
                 }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
-                        || type.equals("REPCA1") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
+                        || type.equals("REPCA1") || type.equals("REPCC") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
                         || type.equals("OEL2C") || type.equals("UEL2C")
                         || type.equals("WTDTB1") || type.equals("WTPTB1") || type.equals("WTGWGOA") || type.equals("WTGIBFFRA");
@@ -369,6 +371,15 @@ public class PSSEDStabDirectParser {
             } catch(RuntimeException failure){report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());}
         }
         pendingRepcgfmc1.clear();
+        for(PsseDyrRecord record:pendingRepcc){
+            try{
+                boolean attached=procRepcc(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"Exact standard REPCC schema and dedicated plant reference port"
+                                :"REPCC requires REGCA1/REECA1, an unused plant port, positive integral gains, enabled control loops and disabled automatic shunt switching");
+            }catch(RuntimeException failure){report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());}
+        }
+        pendingRepcc.clear();
         for (PsseDyrRecord record : pendingWtgwgoa) {
             try {
                 boolean attached = procWtgwgoa(BUS_ID_PREFIX + record.busNumber(), record.deviceId(), record);
@@ -865,6 +876,8 @@ public class PSSEDStabDirectParser {
                 return procRegfmc1(busId,genId,record);
             case "REPCGFMC1U":
                 pendingRepcgfmc1.add(record);return true;
+            case "REPCC":
+                pendingRepcc.add(record);return true;
             case "CSVGN5":
                 return procCsvgn5(busId, genId, fields);
             case "SVSMO1T2":
@@ -3539,6 +3552,28 @@ public class PSSEDStabDirectParser {
         for(int i=0;i<3;i++)flags[i]=record.intParameter(6+i);
         for(int i=0;i<34;i++)constants[i]=record.doubleParameter(9+i);
         return builder.addRegfmc1(busId,genId,org.interpss.dstab.renewable.Regfmc1Data.nativePsse(gen.getSourceZ(),flags,constants))!=null;
+    }
+
+    private boolean procRepcc(String busId,String genId,PsseDyrRecord r){
+        if(r.parameterOffset()!=3||r.parameterCount()!=92)return false;
+        var matcher=java.util.regex.Pattern.compile("'(?:[^']|'')*'|[^\\s,]+").matcher(r.rawText());
+        var tokens=new java.util.ArrayList<String>();while(matcher.find())tokens.add(matcher.group());
+        var character=new java.util.HashSet<Integer>(java.util.List.of(3,12));
+        for(int i=0;i<10;i++)character.add(14+2*i);
+        for(int index:character){
+            boolean unused=index>=14&&r.intParameter(index-1)==0&&r.parameter(index).equals("0");
+            if(!unused&&!tokens.get(r.parameterOffset()+index).startsWith("'"))return false;
+        }
+        for(int i=0;i<35;i++)if(!character.contains(i))r.intParameter(i);
+        var shunts=new java.util.ArrayList<org.interpss.dstab.renewable.RepccData.Shunt>();
+        for(int i=0;i<10;i++)shunts.add(new org.interpss.dstab.renewable.RepccData.Shunt(r.intParameter(13+2*i),r.parameter(14+2*i)));
+        double[] c=new double[57];for(int i=0;i<57;i++)c[i]=r.doubleParameter(35+i);
+        var d=new org.interpss.dstab.renewable.RepccData(r.intParameter(0),
+                new org.interpss.dstab.renewable.RepccData.Branch(r.intParameter(1),r.intParameter(2),r.parameter(3)),
+                r.intParameter(4),r.intParameter(5),r.intParameter(6),r.intParameter(7),r.intParameter(8),r.intParameter(9),
+                new org.interpss.dstab.renewable.RepccData.Branch(r.intParameter(10),r.intParameter(11),r.parameter(12)),
+                shunts,r.intParameter(33),r.intParameter(34),c);
+        return builder.addRepcc(busId,genId,d)!=null;
     }
 
     private boolean procRepcgfmc1(String busId,String genId,PsseDyrRecord record){

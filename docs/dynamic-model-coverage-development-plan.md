@@ -17,9 +17,11 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 25 with a
-versioned loadable runtime path, two not implemented (REPCCU and HPLNTD)**, not merely missing
-benchmark coverage. REEC_E now has strict native reference standard-name `REECE`
+The approved native renewable audit finds **27 distinct families: 26 with a
+versioned loadable runtime path, one not implemented (HPLNTD)**, not merely missing
+benchmark coverage. REPCC now has exact standard import and a bounded REGCA1/REECA1
+runtime; automatic MSS and other initialization/host modes remain unsupported.
+The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
 layouts, complete callback parity or coupled trajectory acceptance. The REECE/REGCB
@@ -418,7 +420,8 @@ and state definitions agree.
   - [ ] Implement the REPCC dynamic kernel, freeze/recovery and slew semantics,
     shunt switching/timers, exact import and downstream reference routing; add
     two-step coupled SMIB disturbance/lifecycle evidence. Foundation data and
-    initialization do not raise 25/27 runtime coverage.
+    initialization alone do not raise coverage; the bounded native runtime below
+    advances runtime presence to 26/27 without claiming full conformance.
     - [x] Add the thirteen-state kernel, explicit modified-Euler stages,
       conditional PI non-windup, reference slew, command-rate limits and
       filtered-voltage freeze/recovery. Preserve native observation coordinates.
@@ -456,6 +459,22 @@ and state definitions agree.
       (one existing diagnostic skip), all with zero failures/errors. Verify all
       physical statuses/Y increments for eight recorded-voltage profiles and
       preserve/recheck the engine fix and both old/new isolated dependencies.
+    - [x] Add exact 35-ICON/57-CON standard import, deferred dedicated
+      REGCA1/REECA1 attachment, absolute-to-incremental command routing,
+      modified-Euler stage guards, immutable named values and inactive-owner
+      holds. Eight typed equilibrium modes remain stationary. Unsupported
+      automatic MSS/disabled-loop initialization is rejected, not substituted.
+      Source REPCCU remains unsupported rather than guessed as an alias.
+    - [x] Cold-repeat flat and three-cycle fault SMIB profiles at 0.5/0.25 ms:
+      eight native runs, all raw history/event-side rows and all thirteen plant
+      states compared with separate tightened channel bounds. Preserve the
+      load-flow tolerance discriminator and remaining numerical floors.
+      See [REPCC native runtime](benchmarks/repcc-native-runtime-2026-10-18.md).
+    - [x] Validate on committed plugin baseline `c8f866351`: 102 focused checks,
+      344 plugin-core tests (six optional skips) and 1,404 registered
+      SMIB/model/solver checks (one existing diagnostic skip), zero failures or
+      errors. Audit all eight native runs and every history/event-side row;
+      preserve seven earlier sealed archives and the frozen companion core.
     - [ ] Complete automatic endpoint shunt dispatch, per-device input-G
       retention, import/attachment, independent
       discharge-lockout evidence, remaining initialization

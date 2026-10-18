@@ -21,6 +21,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private final Reeca1Data data;
     private final Regca1Model converter;
     private Repca1Model plantController;
+    private RepccModel repccController;
     private WtgwgoaModel weakGridController;
     private WindControlStack windControlStack;
     private WindSpeedConvention windSpeedConvention = WindSpeedConvention.WTTQA_POWER_REFERENCE;
@@ -125,6 +126,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             plantController.initialize(p, q, sensedV);
             plantController.setReactiveStateOffset(qReference);
         }
+        if (repccController != null) repccController.initialize(p,qReference,!(data.qFlag()==1&&data.vFlag()==0));
         if (weakGridController != null) weakGridController.initialize(v, p);
         if (windControlStack != null) windControlStack.initialize(p);
         twoStepIpcmd = ipcmd;
@@ -144,6 +146,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         frequency = snapToInitial(frequency, 1.0);
         double sensedV = snapToInitial(sensedVoltage(v), sensedVoltage0);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
+        if (repccController != null) { repccController.step(dt,0); repccController.step(dt,1); }
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0));
         if (windControlStack != null) {
@@ -178,6 +181,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         if (plantController != null) {
             plantController.step(dt, p, q, sensedV, frequency, flag);
         }
+        if (repccController != null) repccController.step(dt,flag);
         if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0), flag);
         if (windControlStack != null) {
             windControlStack.step(dt, p, pOrder, getSelectedPowerReference(p0), voltageDip, flag);
@@ -224,7 +228,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             pOrder = Repca1Model.limit(pOrder, effectivePmin, effectivePmax);
         }
 
-        double plantQref = plantController == null ? 0.0 : plantController.getQref();
+        double plantQref = repccController!=null?repccController.reactiveIncrement():plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.pfFlag() == 1
                 ? pMeasured * powerFactorRatio : qReference + plantQref;
         double qTarget = Repca1Model.limit(selectedQ, effectiveQmin, effectiveQmax);
@@ -531,7 +535,16 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         if (windControlStack!=null) windControlStack.setSinglePrecisionStates(enabled);
     }
     @Override public Repca1Model getPlantController() { return plantController; }
-    @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
+    @Override public void setPlantController(Repca1Model controller) {
+        if(controller!=null&&repccController!=null)throw new IllegalStateException("REPCC already owns the plant reference port");
+        plantController = controller;
+    }
+    @Override public RepccModel getRepccController(){return repccController;}
+    @Override public void setRepccController(RepccModel controller){
+        if(controller!=null&&(plantController!=null||repccController!=null))throw new IllegalStateException("Plant reference port is occupied");
+        if(controller!=null&&controller.getConverter()!=converter)throw new IllegalArgumentException("REPCC converter ownership mismatch");
+        repccController=controller;
+    }
     @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
     @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
     public WindControlStack getWindControlStack() { return windControlStack; }
