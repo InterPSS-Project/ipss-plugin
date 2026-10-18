@@ -7,7 +7,7 @@ all native versions or all Texas2k cases are fully verified.
 
 ## Implemented path
 
-The native PSS/E reader accepts exactly:
+The native reference simulator reader accepts exactly:
 
 - `IBUS 'WTDTB1' ID H DAMP Htfrac Freq1 Dshaft Tp /`.
 - `IBUS 'USRMDL' ID 'WTDTBU1' 103 0 0 6 5 3 H DAMP Htfrac Freq1 Dshaft Tp /`.
@@ -17,7 +17,7 @@ Unproven flat WTDTBU1 forms, alternate allocations, wrong wrappers, missing or
 extra values and PowerWorld's eight-parameter WTGT_B form are rejected.
 The native standard and legacy forms produce identical complete native CSVs
 for the independently exercised profile. The current native convention is
-explicitly scoped to **PSS/E 36.7**, not silently asserted for every library version.
+explicitly scoped to **reference simulator**, not silently asserted for every library version.
 
 Attachment requires the supported REGCA1/REECA1 host. The drivetrain record may
 precede that host in the DYR file. Missing targets, incompatible hosts and
@@ -60,7 +60,7 @@ electrical-power refresh, and an aerodynamic model deactivates the fifth state.
 Freq1 is Hz for this six-CON contract; it is not passed through the older
 WTDTA1 exchange-frequency convention.
 
-Native source: PSS/E 36.7 Model Library, physical pages 897-898, SHA-256
+Native source: reference simulator Model Library, physical pages 897-898, SHA-256
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
 Published comparison: [PowerWorld WTGT_B description and diagram](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WTGT_B.htm).
 Its separate Ht/Hg, stiffness, MVA-base and W0 inputs are not native DYR fields.
@@ -78,7 +78,7 @@ Native DSMDL SHA-256:
 `c77448250fb965bc2d397f88993855cfb792345b0a86a4bc78ad90f66540ebb6`.
 
 Earlier non-unit probes reused PFLAG=1 while WTTQA1 already supplied the
-speed-converted reference. PSS/E reported a suspect REECA1 initialization,
+speed-converted reference. reference simulator reported a suspect REECA1 initialization,
 including a -1.44 power-order derivative. These runs and the rejected generated
 checkpoint source are retained as failed diagnostics. They were removed from
 the accepted reference matrix, not blessed as trajectory evidence. The valid

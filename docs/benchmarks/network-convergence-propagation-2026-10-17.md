@@ -94,9 +94,9 @@ enforced. The severe GFM response persists near 1.68 pu even with converged
 updates and extra budget independence. Convergence enforcement does not close
 the REGCA1 iterative-HV or complete-system physical acceptance gaps.
 
-## PSS/E numerical default
+## reference simulator numerical default
 
-The PSS/E loader's solver now allows 500 iterations, stopping immediately when
+The reference simulator loader's solver now allows 500 iterations, stopping immediately when
 the existing criterion is met. Core's general default and all physical model
 parameters, integration steps and tolerances remain unchanged. The 500 ceiling
 provides bounded headroom beyond the observed 280; it is not a target iteration
@@ -156,7 +156,7 @@ Build the corrected core sources locally before reproducing this plugin slice;
 the public dependency guards intentionally fail against the older unpatched core.
 
 Three registered plugin guards cover all false-return stages through the public
-algorithm, actual iteration exhaustion and the configurable PSS/E ceiling. The
+algorithm, actual iteration exhaustion and the configurable reference simulator ceiling. The
 focused plugin run passes **32 tests without skips**, including both native-Iolim
 steps, zero-Q recovery, converter equations, endpoint alignment and reference
 integrity. Existing comparison bounds and native reference bytes are unchanged.

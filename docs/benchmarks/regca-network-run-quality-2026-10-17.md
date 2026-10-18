@@ -26,7 +26,7 @@ integration step or fault is adjusted in this slice.
 
 ## Fresh native probes
 
-PSS/E Xplore 36.7.0 runs the same three-bus, 100-MVA, exact-zero-Q lossless
+reference simulator Xplore 36.7.0 runs the same three-bus, 100-MVA, exact-zero-Q lossless
 fixture at 0.25 ms through 0.5 s. The fault is j0.01 pu at Bus1, 0.05–0.10 s.
 The native API's `dynamics_solution_param_2` documents INTGAR(1) as the network
 iteration limit. Setting it to 200 eliminates the recognized non-convergence
@@ -64,7 +64,7 @@ Native model DLL SHA-256:
 `c77448250fb965bc2d397f88993855cfb792345b0a86a4bc78ad90f66540ebb6`.
 Probe script SHA-256:
 `1764cf1973f34d8c00f93797eb0432fd26fd872f5aecebdd50fb1cfde1d57ee8`.
-The native PSS/E model library PDF remains the installed 36.7 source identified
+The native reference simulator model library PDF remains the installed 36.7 source identified
 in the preceding report. Exact input files, requested solver settings, actual
 model CON values, logs, raw outputs and manifests are preserved in the ignored
 private archive `2026-10-17-regca-network-quality`; no existing reference is
@@ -137,7 +137,7 @@ dynamic Iq state during output reads.
 
 Remaining implementation work: establish the native Khv/Accel/limit mapping
 with isolated boundary probes, introduce an explicit idempotent network-
-iteration lifecycle where required (including non-PSS/E builder paths), and
+iteration lifecycle where required (including non-reference simulator builder paths), and
 verify every state and limiter before repeating the full system gates.
 No such production network-boundary fix is claimed in this slice.
 

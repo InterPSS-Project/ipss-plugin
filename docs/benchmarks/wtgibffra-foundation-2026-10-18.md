@@ -33,7 +33,7 @@ Tests also prove this cannot become a timestep-sized early-transition deadband.
 
 ## Authoritative contracts and explicit discrepancies
 
-Consulted installed PSS/E 36.7 Model Library section 29.1, printed pages 942-949
+Consulted installed reference simulator Model Library section 29.1, printed pages 942-949
 (physical pages 954-961), and previously inspected source diagrams. Library PDF
 SHA-256: `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
 Independent published sources:

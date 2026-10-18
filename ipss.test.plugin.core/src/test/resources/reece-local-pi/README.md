@@ -1,6 +1,6 @@
 # REECE local PI reference scope
 
-Native PSS/E 36.7 standard `REECE`, eight ICONs and 79 CONs. These two cold-paired
+Native reference simulator standard `REECE`, eight ICONs and 79 CONs. These two cold-paired
 profiles check only QFLAG=2 and PEFLAG=1 local PI components. They do not prove
 complete REECE1 import, the remaining controller blocks or coupled SMIB parity.
 

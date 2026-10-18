@@ -26,7 +26,7 @@ directional bound; there is no epsilon or initialization adjustment. A zero
 rate remains an active zero rate when its direction is selected. This is not
 PowerWorld's different convention of disabling zero-valued recovery limits.
 
-The source contract is PSS/E 36.7 Model Library, printed page 798, and the
+The source contract is reference simulator Model Library, printed page 798, and the
 two cold native lossless-case probes described in the
 [preceding instrumentation report](texas2k-endpoint-alignment-2026-10-17.md).
 Model Library PDF SHA-256:
@@ -123,7 +123,7 @@ trajectory thresholds. Final recovery agreement does not prove the full model.
 
 | Tool | Post-fault voltage peak | Final voltage |
 |---|---:|---:|
-| Native PSS/E | 1.20973337 | 0.99852407 |
+| Native reference simulator | 1.20973337 | 0.99852407 |
 | PowerWorld | 1.20000005 | 0.99857450 |
 | InterPSS, selector fixed | 1.21955198 | 0.99855576 |
 

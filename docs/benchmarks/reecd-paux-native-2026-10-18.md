@@ -33,7 +33,7 @@ limits, final current clipping, state-neutral updates and headroom release.
 
 ## Native references and exact scope
 
-Eight final PSS/E 36.7 runs form four cold pairs at 0.5/0.25 ms:
+Eight final reference simulator runs form four cold pairs at 0.5/0.25 ms:
 
 - Recorded-input profile: public three-bus RAW with native REGCA1/REECD and
   PLBVF1. Voltage drops from 1.0 to 0.8 pu at the source, then Paux steps to
@@ -99,7 +99,7 @@ WTGIBFFRA kernel, native import/coupling and full verification remain TODOs.
 
 Source identities:
 
-- PSS/E 36.7 Model Library:
+- reference simulator Model Library:
   `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
 - DSMDL:
   `c77448250fb965bc2d397f88993855cfb792345b0a86a4bc78ad90f66540ebb6`.

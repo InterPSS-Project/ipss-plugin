@@ -138,13 +138,13 @@ public final class GeneratorGovernorEvidenceInventory {
     public static String markdown() {
         StringBuilder text = new StringBuilder("# Generator and governor verification evidence\n\n")
                 .append("Generated from GeneratorGovernorEvidenceInventory. Covers the three approved ")
-                .append("generator models and 24 approved native PSS/E governor mappings in the May 2026 catalog.\n\n")
+                .append("generator models and 24 approved native reference simulator governor mappings in the May 2026 catalog.\n\n")
                 .append("Each row links a DYR fixture, focused tests, readable checkpoints and a ")
                 .append("registered trajectory comparison. It does not establish coverage of all ")
                 .append("selectors, limits, lifecycle events or Texas2k system acceptance. ")
                 .append("Simulator versions, cold regeneration and raw provenance require the private archive.\n\n")
                 .append("POWERWORLD identifies archived PowerWorld exports; PSSE and PSSE_TGOV3D ")
-                .append("identify native PSS/E exports; ANDES identifies the separate open-source oracle. ")
+                .append("identify native reference simulator exports; ANDES identifies the separate open-source oracle. ")
                 .append("A reference's presence alone does not prove its comparison passes.\n\n")
                 .append("| Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |\n")
                 .append("|---|---|---|---|---|---|\n");

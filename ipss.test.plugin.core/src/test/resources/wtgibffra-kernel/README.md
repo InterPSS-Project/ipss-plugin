@@ -1,6 +1,6 @@
 # WTGIBFFRA kernel-only native references
 
-PSS/E 36.7, public three-bus RAW, REGCA1/REECD/WTGIBFFRA and PLBVF1 frequency
+reference simulator, public three-bus RAW, REGCA1/REECD/WTGIBFFRA and PLBVF1 frequency
 playback. These are partial recorded-input kernel references, not import,
 coupled-network, automatic-recovery or complete-model acceptance.
 
@@ -22,7 +22,7 @@ Each of the seven profiles was independently cold-run twice with identical raw
 CSV bytes. Repository policy keeps simulator-driving Python programs private.
 The exact probe is retained in the local sealed archive
 `ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-18-wtgibffra-foundation-final/psse_wtgibffra_native_probe.py`.
-Reproduce from the repository root with a licensed native PSS/E 36.7 Python runtime
+Reproduce from the repository root with a licensed native reference simulator Python runtime
 and fresh output tags (existing directories are never overwritten):
 
 ```text

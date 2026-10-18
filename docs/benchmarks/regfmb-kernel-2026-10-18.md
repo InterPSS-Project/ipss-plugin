@@ -41,7 +41,7 @@ Three exact-version details have permanent independent guards:
    these rules. Integral/angle then freeze, except native integration-history
    carryover on the first endpoint.
 
-Source fingerprints remain the foundation's native 36.7 ModelLibrary.pdf and
+Source fingerprints remain the foundation's native reference ModelLibrary.pdf and
 DSMDL.DLL hashes. No vendor dialects, gains or initial states are averaged/fitted.
 
 ## Replay and numerical-method boundary
@@ -52,7 +52,7 @@ base. No native state, PI output or current bound is fed back into the model.
 All fourteen states are compared at every nonnegative sample, including both
 instantaneous event sides. Initial states derive from physical equilibrium.
 
-Native PSS/E uses STORE/staggered-Euler history, not the kernel's default
+Native reference simulator uses STORE/staggered-Euler history, not the kernel's default
 modified Euler. A discriminator proves the first disturbed Q filter advances by
 3/4 of an Euler increment, versus almost one increment for modified Euler. No
 event is dropped or input/state shifted to hide that difference. The initially

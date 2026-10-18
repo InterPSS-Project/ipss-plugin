@@ -11,7 +11,7 @@ missing complete controller/import paths. No full Texas2k dynamics were run.
 
 ## Exact source/version contract
 
-Installed PSS/E 36.7 Model Library section 22.6, printed pp859-866 / physical
+Installed reference simulator Model Library section 22.6, printed pp859-866 / physical
 pp871-878, defines standard **REECE**: eight ICONs, 79 CONs, eight STATEs and
 twenty VARs. The native diagram was rendered and inspected. Library PDF SHA-256:
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
@@ -121,7 +121,7 @@ catalog/parser/attachment path, reference ramp, PE-enabled power measurement,
 QFLAG 0/1/2 branches, current limits/FRT selection, blocking and holds, compensation,
 zero-Tpord bypass, linked anti-windup, lifecycle and coupled native/PowerWorld
 profiles. These local profiles do not exercise freeze/limiter/FRT branches in
-native PSS/E; those currently have unit-equation evidence only.
+native reference simulator; those currently have unit-equation evidence only.
 
 The local private evidence archive is
 `ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-18-reece-local-pi-foundation`.

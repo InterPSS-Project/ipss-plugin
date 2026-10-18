@@ -1,6 +1,6 @@
 # REGFMB1U native import and network-device slice
 
-Status: LOADABLE native 36.7 exact wrapper, with bounded partial native evidence;
+Status: LOADABLE native reference exact wrapper, with bounded partial native evidence;
 not complete model conformance. Baseline `15e54ec71`. Approved native renewable
 runtime-path coverage is now 23/27. Four remain missing: HPLNTD, REPCCU,
 REGFMC1 and REPCGFMC1. Original source-list REGFMB1 spelling is retained, not
@@ -50,7 +50,7 @@ three-phase Bus 2 fault has j1-pu impedance, starts at 0.05 s and clears at
 approximately 0.924748 pu. Trip at 0.20 s removes physical injection while
 retaining all fourteen states. Machine/system bases are 50/100 MVA.
 
-Six boundary channels compare independently with frozen native PSS/E output:
+Six boundary channels compare independently with frozen native reference simulator output:
 
 | Maximum absolute error | 0.5 ms | 0.25 ms |
 |---|---:|---:|

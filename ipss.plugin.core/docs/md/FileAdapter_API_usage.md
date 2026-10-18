@@ -1,6 +1,6 @@
 # File Adapter Implementation
 
-##### Custom (PSS/E) File Loading
+##### Custom (reference simulator) File Loading
 
 There are three ways to use a custom file adapter to load a file and create an InterPSS object
 

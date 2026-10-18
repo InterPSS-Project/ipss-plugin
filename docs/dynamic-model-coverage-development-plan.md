@@ -19,7 +19,7 @@ gates for this revised objective.
 **Latest scoped acceptance status: incomplete, including missing implementations.**
 The approved native renewable audit finds **27 distinct families: 23 with a
 versioned loadable runtime path, four not implemented**, not merely missing
-benchmark coverage. REEC_E now has strict native 36.7 standard-name `REECE`
+benchmark coverage. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
 layouts, complete callback parity or coupled trajectory acceptance. The REECE/REGCB
@@ -46,14 +46,14 @@ six-case drift failures are retained in the
 [REGFMA1 report](benchmarks/regfma1-native-schema-2026-10-17.md), outside the
 revised SMIB acceptance scope.
 
-Scope remains native PSS/E RAW/DYR with `_gnet.idv` and `_MODREMOVE.idv`
-preparation. GE PSLF DYD inputs and rows without a native PSS/E model name are
+Scope remains native RAW/DYR with `_gnet.idv` and `_MODREMOVE.idv`
+preparation. GE PSLF DYD inputs and rows without a native reference simulator model name are
 excluded. Reuse core GENROU and existing controller engines where equations
 and state definitions agree.
 
 ## Approved renewable source and evidence audit
 
-- [x] Freeze native 36.7 REGFMC1U allocation (three ICONs, 34 CONs, eleven
+- [x] Freeze native reference REGFMC1U allocation (three ICONs, 34 CONs, eleven
   STATEs, 27 VARs), initialization and hybrid GFM/GFL boundary from rendered
   diagrams; implement typed data and algebraic primitives without a dummy runtime.
 - [x] Cold-run flat, three-cycle fault and severe current-limited SMIB profiles
@@ -88,7 +88,7 @@ and state definitions agree.
 - [x] Validate REGFMB1U import: 70 focused checks, 283 plugin-core tests (six
   optional skips), 1,327 SMIB/model tests (one existing diagnostic skip), zero
   failures/errors; audit fourteen tested source/fixture files and prior native evidence.
-- [x] REGFMB1 foundation: visually freeze native 36.7 REGFMB1U exact wrapper,
+- [x] REGFMB1 foundation: visually freeze native reference REGFMB1U exact wrapper,
   six ICONs/25 CONs/14 STATEs/17 VARs, distinct from PowerWorld parameter fields.
 - [x] Cold-run flat and three-cycle-fault native SMIB profiles twice at two
   steps; retain all channels/event sides and byte-identical cold pairs.
@@ -226,7 +226,7 @@ and state definitions agree.
 - [ ] Complete WTGWGOAU verification and implement WTGIBFFRA, auditing installed-release identifiers,
   input/output coupling and weak-grid/inertial-response branches separately.
   - [x] Add WTGWGOA eight-CON/three-STATE/three-VAR kernel foundation;
-    distinguish published second-fault restart from observed PSS/E 36.7
+    distinguish published second-fault restart from observed reference simulator
     continuation. Preserve default published behavior and explicit native factory.
   - [x] Audit 22 cold native runs, including an exact legacy wrapper, and retain
     ten immutable recorded-input/checkpoint profiles. Pass 14 equation/stage
@@ -301,7 +301,7 @@ and state definitions agree.
     See [Paux correction and WTGIBFFRA investigation](benchmarks/reecd-paux-native-2026-10-18.md).
 - [ ] Complete REEC_E across documented native releases, including unresolved
   REECE1/REECEU1 record layouts; do not silently substitute REECD.
-  - [x] Inspect native 36.7 REECE eight-ICON/79-CON/eight-STATE/20-VAR schema
+  - [x] Inspect native reference REECE eight-ICON/79-CON/eight-STATE/20-VAR schema
     and diagrams; independently consult WECC's July 2025 memo and PowerWorld.
     Cold-prove the installed standard name REECE. Plain REECE1/REECEU1 records
     with this layout are rejected by this installed release; do not guess a
@@ -330,7 +330,7 @@ and state definitions agree.
     Audit 22 scoped sources/resources and 2,021 baseline Java/POM files against
     `890e887f0`, including its committed static-load SMIB regression and excluding
     the unrelated untracked JAX comparison.
-  - [x] Add exact standard-name native 36.7 REECE (eight ICONs/79 CONs) catalog,
+  - [x] Add exact standard-name native reference REECE (eight ICONs/79 CONs) catalog,
     parser and deferred active REGCA/REGCB attachment, before deferred REPCA.
     Reject duplicate/conflicting controls, inactive/missing/wrong hosts, malformed
     values/cardinality and guessed release aliases/wrappers. Preserve GNET/removal
@@ -338,7 +338,7 @@ and state definitions agree.
   - [ ] Finish release-specific REECE1/REECEU1 import layouts, reference callback
     parity, independent coupled native/PowerWorld trajectories and remaining
     active-boundary, lifecycle, speed/base and time-constant-policy profiles.
-    Native 36.7 import raises family runtime presence to 22/27, not full alias
+    Native reference import raises family runtime presence to 22/27, not full alias
     coverage or complete model acceptance.
     See [REECE local-PI foundation](benchmarks/reece-local-pi-foundation-2026-10-18.md).
     The [typed runtime and limiter correction](benchmarks/reece-runtime-2026-10-18.md)
@@ -360,7 +360,7 @@ and state definitions agree.
   the remaining renewable gaps are not a claim that all other sections are complete.
 
 See [all source rows, actual implementation gaps and profile scopes](renewable-model-evidence.md).
-Installed PSS/E 36.7 documentation contains entries for the missing families,
+Installed reference simulator documentation contains entries for the missing families,
 sometimes under updated standard names. Source-list names are not sufficient
 evidence to infer their current native/USRMDL allocations or aliases.
 
@@ -417,9 +417,9 @@ GENSAL failures separately from the accepted PSS1A profiles.
   per-case totals (2,223, 2,223, 2,965, 2,965, 2,965, 2,970) reproduce the
   reviewed inventory. Attachment accounting is verified separately below;
   neither inventory nor attachment proves independent dynamic acceptance.
-- [x] May 2026 approved native PSS/E exciter implementation coverage: 64/64
+- [x] May 2026 approved native reference simulator exciter implementation coverage: 64/64
   source-list rows, as asserted by `DynamicModelCatalogTest`.
-- [x] All 24 approved governor rows with native PSS/E mappings have runtime
+- [x] All 24 approved governor rows with native reference simulator mappings have runtime
   implementations. This does not imply every profile has independent parity.
 - [x] Approved stabilizer implementation mappings are present, including
   PSS2A/B/C and PSS3B/C through PSS7C. Source-list aliases must not be counted
@@ -550,7 +550,7 @@ records the newer failures and open full-window comparison.
   recorded corrector iterations), but h/4 machine/state acceptance remains open.
   Case 6 still ends at 1.684953 pu at h/4. See the [Iolim timestep investigation](benchmarks/regca-iolim-direction-2026-10-17.md)
   and [convergence follow-up](benchmarks/network-convergence-propagation-2026-10-17.md).
-- [ ] Obtain matched native PSS/E or PowerWorld trajectories for complete
+- [ ] Obtain matched native reference simulator or PowerWorld trajectories for complete
   stacks. Add ANDES comparisons where its topology and parameterization match.
 - [ ] Compare every channel at aligned event sides and matched timesteps;
   halve the step to distinguish integration and equation discrepancies.
@@ -572,7 +572,7 @@ count, leading bus and componentwise voltage change (not a KCL residual).
   all 2,918 core tests. Keep core's general limit 20 and tolerance 1e-4 unchanged.
 - [x] Diagnose actual rejected stages on the tiny REGCA1 and Texas2k cases;
   establish identical complete exports at independently sufficient budgets.
-  Give the PSS/E adapter a configurable 500-iteration ceiling, without changing
+  Give the reference simulator adapter a configurable 500-iteration ceiling, without changing
   model parameters, tolerance or timestep.
 - [x] Complete the coupled full plugin regression for core `12c231df5`.
   All 2,730 registered plugin tests finish: 2,641 passed, 89 skipped, no
@@ -701,8 +701,8 @@ proof of current-system accuracy, or mark this open acceptance item complete.
    all three approved generators and all 24 approved native governor mappings
    to focused tests, the exact public DYR fixture, embedded checkpoints, and
    registered comparison classes. It identifies 22 governor PowerWorld
-   comparisons and two native PSS/E comparisons (IEEEG1D and TGOV3D).
-   GENROU has ANDES evidence; GENQEC and GENQEJ have native PSS/E evidence.
+   comparisons and two native reference simulator comparisons (IEEEG1D and TGOV3D).
+   GENROU has ANDES evidence; GENQEC and GENQEJ have native reference simulator evidence.
    Reference presence does not establish every profile or full-system parity.
    The [exciter inventory](exciter-evidence.md) now links all 59 distinct native
    models behind the 64 approved exciter rows. Its local provenance audit
@@ -783,12 +783,12 @@ comparison tolerances are preserved.
 ## Native EXDC2 dialect slice
 
 The exciter audit found that the approved PSLF `EXDC2A` row was wrongly
-represented as a distinct native PSS/E DYR model. The provided May 2026 table
+represented as a distinct native DYR model. The provided May 2026 table
 maps that row to EXDC2. Native EXDC2 uses Switch where PowerWorld EXDC2A uses
 Tf2; a same-width input record cannot safely substitute one for the other.
 See the [source-contract report](benchmarks/exdc2-native-dialect-2026-10-17.md).
 
-- [x] Verify the table columns visually and check native PSS/E 36.7 schemas.
+- [x] Verify the table columns visually and check native reference simulator schemas.
 - [x] Correct the source-list mapping to native EXDC2 and remove the
   non-native EXDC2A reader path, with an explanatory import report.
 - [x] Preserve the explicit EXDC2A builder API and its independent equations.
@@ -941,7 +941,7 @@ are not complete. No gain, physical parameter or comparison bound was fitted.
   fifteen-event fault gates enabled: 2,704 tests, 2,615 passed, 89 skipped,
   zero failures/errors. All fifteen baseline trajectory hashes are unchanged.
   Archive enabled settings and fresh reports; restore private opt-ins to false.
-- [x] Implement exact PSS/E 36.7 REGFMA1 two-ICON/eighteen-CON (twenty-value)
+- [x] Implement exact reference simulator REGFMA1 two-ICON/eighteen-CON (twenty-value)
   parsing and RAW coupling impedance, separately from Texas2k's nineteen-value
   legacy exchange. Implementation and focused native comparisons now pass;
   native comparisons and the selected SMIB/model-unit regression pass. This
@@ -1006,7 +1006,7 @@ its GFM ratings equal the network base and no plant offset is attached.
   algebraic proportional-plus-integral output. Preserve typed/PowerWorld behavior
   until its active-voltage-limit branch has its own independent evidence.
 - [x] Preserve two failing-before-fix guards and both-step structural mismatch;
-  verify upper integral saturation and inward release against native PSS/E.
+  verify upper integral saturation and inward release against native reference simulator.
 - [x] Expand to fifteen fixed-digest native datasets with immutable source-DYR
   CON vectors. Pass 54 focused checks and the 1,155-test SMIB gate (one existing
   diagnostic skip), plus 129 plugin units (six optional skips); no full Texas2k
@@ -1076,7 +1076,7 @@ The instrumentation slice changes no production model or integration equation.
   final voltage improves from 1.5193 to 1.0820 pu; Case 6 Bus1016 still reaches
   1.6821 pu. These changes do not establish independent system acceptance.
 - [ ] Correct the independent high-voltage network-boundary discrepancy now
-  localized by the same PSS/E and PowerWorld profile. Current early errors are
+  localized by the same reference simulator and PowerWorld profile. Current early errors are
   reported explicitly, not accepted by widening bounds or fitting Khv.
 - [ ] Close complete-profile, instantaneous event-side and Texas2k acceptance.
 

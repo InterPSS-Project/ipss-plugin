@@ -8,7 +8,7 @@ is retained as historical evidence, not overwritten.
 
 ## Exact native path
 
-The PSS/E reader accepts precisely:
+The reference simulator reader accepts precisely:
 
 ```text
 IBUS 'WTPTB1' ID CON(1) ... CON(14) /
@@ -19,7 +19,7 @@ All six legacy metadata integers and exact record counts are checked. Flat
 WTPTBU1 aliases, incorrect wrappers, truncated/extra parameters, nonfinite
 values and invalid limits are rejected. Two cold native legacy probes have
 byte-identical full outputs to the standard record, with the same actual
-14-CON/3-STATE/1-VAR allocation. This is a PSS/E 36.7 contract, not an assertion
+14-CON/3-STATE/1-VAR allocation. This is a reference simulator contract, not an assertion
 about every older library release.
 
 Deferred attachment permits WTPTB1 to precede its mechanical host. The supported

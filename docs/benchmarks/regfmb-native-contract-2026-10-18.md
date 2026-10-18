@@ -9,7 +9,7 @@ parser, generator attachment or dummy dynamics is added.
 The subsequent [fourteen-state kernel slice](regfmb-kernel-2026-10-18.md) builds
 on this foundation. Counts and implementation status here describe this snapshot.
 
-The installed PSS/E 36.7 Model Library, section 21.8, printed pages 811-819
+The installed reference simulator Model Library, section 21.8, printed pages 811-819
 (PDF pages 823-831), defines REGFMB1U. The exact documented and experimentally
 loaded record is:
 

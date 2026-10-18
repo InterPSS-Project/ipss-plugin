@@ -7,7 +7,7 @@ This slice follows the [native contract and hybrid-boundary foundation](regfmc-n
 
 ## Source and implementation
 
-The native contract remains PSS/E 36.7 Model Library section 21.9, printed
+The native contract remains reference simulator Model Library section 21.9, printed
 pages 820-828 / PDF 832-840. Its controller diagram and non-windup pseudocode
 were visually rechecked. Source PDF SHA-256 is
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`;

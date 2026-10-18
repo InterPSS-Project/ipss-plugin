@@ -14,7 +14,7 @@ Visual review of pages 3-4 and the new approval-catalog transcription establish:
 - 45 source renewable rows, including approved, retired, unapproved and
   never-approved rows.
 - 29 approved rows; 28 have concrete native PTI names. PVD1's PTI cell is blank,
-  so its PowerWorld name is not invented as a native PSS/E alias.
+  so its PowerWorld name is not invented as a native reference simulator alias.
 - 27 distinct planned native families, because WT1T and WT2T share WT12T1.
 - **17 loadable families and ten genuinely missing implementations.** This is
   not a statement that the 17 loadable models are fully verified.
@@ -46,7 +46,7 @@ links every approved native family, including missing ones:
 - Eight have native recorded-profile links.
 - REGCA1 has a partial native Iolim/selected-endpoint profile; its complete
   high-voltage/fault/event-post gap is not hidden.
-- Six have the bounded coupled ANDES comparison, not native PSS/E conformance.
+- Six have the bounded coupled ANDES comparison, not native reference simulator conformance.
   The test explicitly selects an ANDES-specific WTTQA speed convention and
   documents REECA VFLAG/REPCA dialect differences.
 - REECD and WT12A1U_B have focused tests but no linked exact independent
@@ -108,14 +108,14 @@ source PDF or raw simulator script is force-added to Git.
 ## Next implementation work
 
 The plan now lists all ten missing families as actual implementation TODOs,
-not benchmark-only gaps. Installed PSS/E 36.7 documentation contains relevant
+not benchmark-only gaps. Installed reference simulator documentation contains relevant
 entries, sometimes under newer standard names such as WTDTB1, WTPTB1, REPCC,
 REECE and WTGWGOA. Those entries do not by themselves establish compatibility
 with a historical USRMDL name or allocation.
 
 The next model slice should freeze WTDTBU1/current WTDTB1 native schemas,
 implement its drivetrain-emulation states and attachment, generate small native
-PSS/E and PowerWorld discriminators, verify initialization/limits/integration,
+reference simulator and PowerWorld discriminators, verify initialization/limits/integration,
 run the full selected SMIB/unit gates, and commit separately. The updated
 development plan also retains the pitch/weak-grid/inertial/electrical/plant/GFM
 families, exact-reference gaps, supplemental legacy/vendor evidence expansion,

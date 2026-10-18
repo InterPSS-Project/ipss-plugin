@@ -1,4 +1,4 @@
-# REECE native 36.7 import and SMIB slice
+# REECE native reference import and SMIB slice
 
 Status: loadable standard-name native REECE, with partial independent model
 evidence. Not complete REEC_E alias coverage or complete trajectory acceptance.
@@ -6,7 +6,7 @@ Baseline: plugin `ae26dbfff`, core 1.4.3. No full Texas2k dynamics are run.
 
 ## Exact source/version boundary
 
-The native 36.7 Model Library section 22.6 defines `REECE`: eight ICONs followed
+The native reference Model Library section 22.6 defines `REECE`: eight ICONs followed
 by 79 CONs, eight STATEs and 20 VARs. The [typed-runtime report](reece-runtime-2026-10-18.md)
 records the diagram/source hashes, independent native branch campaigns and
 state-limited PI correction. Those equations and frozen references are reused;

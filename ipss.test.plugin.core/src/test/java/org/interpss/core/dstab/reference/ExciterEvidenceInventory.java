@@ -104,11 +104,11 @@ public final class ExciterEvidenceInventory {
     public static String markdown() {
         StringBuilder text = new StringBuilder("# Exciter verification evidence\n\n")
                 .append("Generated from ExciterEvidenceInventory. The 64 approved source-list rows ")
-                .append("with native PSS/E mappings in the May 2026 catalog resolve to 59 distinct ")
+                .append("with native reference simulator mappings in the May 2026 catalog resolve to 59 distinct ")
                 .append("native models. Vendor rows sharing a native mapping are not separate models.\n\n")
                 .append("Each row links a native DYR fixture, focused tests, readable embedded ")
                 .append("checkpoints and a registered trajectory comparison. POWERWORLD identifies ")
-                .append("archived PowerWorld exports; PSSE identifies native PSS/E exports. ")
+                .append("archived PowerWorld exports; PSSE identifies native reference simulator exports. ")
                 .append("These are reviewed evidence links, not VERIFIED labels or proof of all ")
                 .append("selectors, active limits, zero-time branches, lifecycle events, or Texas2k acceptance. ")
                 .append("Raw simulator provenance, exact versions and cold regeneration remain ")

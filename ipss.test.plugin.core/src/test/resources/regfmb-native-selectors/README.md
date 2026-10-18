@@ -1,6 +1,6 @@
 # REGFMB1U native selector and PLL references
 
-Eleven gzip/base64 resources preserve complete raw native 36.7 CSVs, each with
+Eleven gzip/base64 resources preserve complete raw native reference CSVs, each with
 two cold runs whose CSV bytes are identical. Java checks decoded SHA-256 and
 records input DYR digests and selectors. These are 22 formal new native runs;
 the first unexcited PLL-fault probe is retained separately, not substituted.

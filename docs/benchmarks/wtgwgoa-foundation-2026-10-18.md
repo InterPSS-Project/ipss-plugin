@@ -7,7 +7,7 @@ dummy attachment or support-matrix entry is added by this slice.
 
 ## Source and exact contract
 
-The installed PSS/E 36.7 Model Library, section 28.1, printed pages 937–940
+The installed reference simulator Model Library, section 28.1, printed pages 937–940
 (physical PDF pages 949–952), defines eight CONs, three STATEs and three VARs.
 Its block diagram was visually inspected. Model Library SHA-256:
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
@@ -52,7 +52,7 @@ the initialized voltage STATE and retain zero VARs.
 ## Explicit published/native convention distinction
 
 The [PowerWorld WTGWGO_A documentation](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Pref%20Controller%20WTGWGO_A.htm)
-describes restarting recovery on another fault. The tested native PSS/E 36.7
+describes restarting recovery on another fault. The tested native reference simulator
 profiles instead continue an already active recovery. Three separate cold-paired
 discriminators apply the second fault during first ramp, hold and second ramp.
 Actual terminal and filtered voltages fall below the trigger threshold in all

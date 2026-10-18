@@ -83,7 +83,7 @@ are used throughout these reports.
 ### Documented benchmark load-law correction
 
 The frozen native SVSMO1T2 probe calls CONL with four zero percentages. The
-installed PSS/E 36.7 API documentation describes those entries as the P/Q
+installed reference simulator API documentation describes those entries as the P/Q
 fractions converted to constant current and admittance, respectively. Zero
 therefore preserves the original constant-MVA load. The InterPSS test instead
 left the default all-loads-in-Y representation enabled, making the load constant
@@ -111,7 +111,7 @@ tightened, not widened; unchanged published parameters and native checkpoints
 are retained. These are still diagnostic non-regression bounds, not tight
 independent model-parity acceptance.
 
-Two fresh native PSS/E 36.7 cold runs reproduce the old full reference exactly:
+Two fresh native reference simulator cold runs reproduce the old full reference exactly:
 both 1,605-sample, 37-channel CSVs have SHA-256
 `917a22970f52cf3b9a2927e2af6281fe12352648d1b3dd6059278122d90a0e87`.
 Both pass the permanent native log/CSV quality gate: two initialization-history

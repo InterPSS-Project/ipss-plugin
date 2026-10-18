@@ -59,7 +59,7 @@ disabled in this focused run. Full system validation is recorded below.
 ## Matched-network negative-Q investigation
 
 The previous slice's native negative-Q reference was exported from its actual
-saved case using PSS/E 36.7 `writerawversion('33',...)`, then imported into
+saved case using reference simulator `writerawversion('33',...)`, then imported into
 InterPSS. The exact exported RAW SHA-256 is
 `f1ebd3ac3ec4e7bbe4b20ab3790b06f3e7d39d26aa347131efbbda8de8d30452`.
 Both tools use the same public REGCA1/REECA1/REPCA1 control data and a Bus1
@@ -88,14 +88,14 @@ fault boundaries:
 The first three errors approximately halve, but terminal-voltage and Q errors
 do not. That separates event integration effects from a remaining boundary or
 measurement discrepancy; it does not by itself identify the incorrect model.
-The published native REGCA1 diagram (PSS/E 36.7 Model Library, printed page
+The published native REGCA1 diagram (reference simulator Model Library, printed page
 798) was visually inspected at high resolution. Its Khv boundary equation is
 not replaced by a gain inferred from a trace.
 
 The native VAR and machine-Q channels do not yet reconstruct a single accepted
 algebraic current boundary. A separately cold-repeated half-Khv discriminator
 is retained for the next investigation. An observed VAR ratio is not a reason
-to multiply the production gain. PSS/E model-library binary SHA-256 is
+to multiply the production gain. reference simulator model-library binary SHA-256 is
 `c77448250fb965bc2d397f88993855cfb792345b0a86a4bc78ad90f66540ebb6`.
 
 Comparison limitations are explicit. Native timestamps drift by up to 4.65 us

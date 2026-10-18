@@ -2,7 +2,7 @@
 
 Foundation snapshot: commit `54b4c53c0`. The subsequent
 [PowerWorld playback slice](wtdtb1-powerworld-playback-2026-10-18.md) adds an
-independent runtime comparison; native PSS/E acceptance remains open.
+independent runtime comparison; native reference simulator acceptance remains open.
 
 This slice adds a published-diagram kernel and typed wind-stack support, not an
 accepted native implementation. Neither identifier is registered in the DYR
@@ -11,7 +11,7 @@ No native trajectory tolerance has been relaxed to accept the remaining errors.
 
 ## Frozen source and record contract
 
-PSS/E 36.7 Model Library, physical pages 897-898 (printed 885-886), SHA-256
+reference simulator Model Library, physical pages 897-898 (printed 885-886), SHA-256
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
 The native diagram was rendered and visually inspected. Standard data order is
 `H DAMP Htfrac Freq1 Dshaft Tp`: six CON, five STATE, three VAR. Freq1 is Hz.
@@ -47,7 +47,7 @@ full lifecycle/native attachment still require independent profiles.
 
 ## Native reference audit
 
-Native PSS/E 36.7, DSMDL library SHA-256
+Native reference simulator, DSMDL library SHA-256
 `c77448250fb965bc2d397f88993855cfb792345b0a86a4bc78ad90f66540ebb6`.
 The small network has REGCA1/REECA1, WTDTB1 and a GENCLS infinite-bus source.
 Baseline constants are `4.5 1.5 .6 2 .4 .1`; one-mass uses zero fraction/frequency,

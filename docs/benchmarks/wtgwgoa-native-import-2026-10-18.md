@@ -7,7 +7,7 @@ seven implementations remain missing. The earlier
 
 ## Production path
 
-The reader accepts only the tested PSS/E 36.7 standard eight-CON WTGWGOA record
+The reader accepts only the tested reference simulator standard eight-CON WTGWGOA record
 or the exact legacy USRMDL WTGWGOAU allocation `109 0 0 8 3 3`. Both map to the
 same immutable parameter record and explicit native-36.7 recovery convention.
 Incorrect field counts, allocation metadata, wrapper types, non-finite/invalid

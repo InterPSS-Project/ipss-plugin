@@ -1,11 +1,11 @@
 # REECE native active-PI voltage-dip correction
 
-Status: a native 36.7 equation correction with bounded recorded-input evidence;
+Status: a native reference equation correction with bounded recorded-input evidence;
 not complete coupled trajectory acceptance. Baseline `73bd45865`.
 
 ## Discriminator and source difference
 
-The installed native 36.7 diagram (printed page 866) marks both active PI
+The installed native reference diagram (printed page 866) marks both active PI
 STATE7 and power-order lag STATE5 as frozen during Voltage_dip. The executable
 does not freeze STATE7. Four converged, cold-paired REGCB/REECE fault runs from
 the [preceding slice](reece-native-import-2026-10-18.md) prove that distinction

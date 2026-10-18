@@ -1,4 +1,4 @@
-# PSS/E Subsystem Definition Support
+# reference simulator Subsystem Definition Support
 
 Package: `org.interpss.plugin.subsystem`  
 Module: `ipss.plugin.core`
@@ -7,9 +7,9 @@ Module: `ipss.plugin.core`
 
 ## Overview
 
-The subsystem package parses PSS/E **Subsystem Definition (`.sub`)** files and resolves named subsystems to sets of bus and branch IDs in a live `AclfNetwork`. This is a prerequisite for resolving monitored-element directives defined in `.mon` files (see [psse-monitor.md](psse-monitor.md)).
+The subsystem package parses reference simulator **Subsystem Definition (`.sub`)** files and resolves named subsystems to sets of bus and branch IDs in a live `AclfNetwork`. This is a prerequisite for resolving monitored-element directives defined in `.mon` files (see [psse-monitor.md](psse-monitor.md)).
 
-A PSS/E `.sub` file defines named groups of buses selected by area, zone, owner, bus number, or base-kV. The resolved bus sets are used to classify network branches as *internal* (both terminals in a subsystem) or *ties* (exactly one terminal in).
+A reference simulator `.sub` file defines named groups of buses selected by area, zone, owner, bus number, or base-kV. The resolved bus sets are used to classify network branches as *internal* (both terminals in a subsystem) or *ties* (exactly one terminal in).
 
 ---
 
@@ -73,7 +73,7 @@ subsystems  : List<Subsystem>  // all SYSTEM/SUBSYSTEM definitions in order
 
 ---
 
-## PSS/E `.sub` File Format
+## reference simulator `.sub` File Format
 
 Supported constructs (case-insensitive, `/` starts an inline comment):
 

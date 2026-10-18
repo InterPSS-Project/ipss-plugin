@@ -10,7 +10,7 @@ PTI cells, implementation names, oracle, comparison scope, fixture and readable
 checkpoint. Both registered-suite membership and selection by the permanent
 SMIB gate are checked automatically.
 
-Thirteen mappings have model-specific comparison links: eight native PSS/E
+Thirteen mappings have model-specific comparison links: eight native reference simulator
 and five PowerWorld. PSS1A's current comparison replays an IEEEST speed signal
 through an equivalent PSS1A configuration. It is explicitly classified as
 equivalent signal playback, not an exact PSS1A commercial SMIB reference.
@@ -23,7 +23,7 @@ The supplied `Approved Dynamic Models May 2026_1.pdf`, page 2, has SHA-256
 Its table was text-extracted and visually reviewed to preserve column alignment.
 The previous catalog invented PTI names from other columns:
 
-| Source row | Correct PTI PSS/E cell | Previous transcription |
+| Source row | Correct PTI reference simulator cell | Previous transcription |
 |---|---|---|
 | PSS1A | IEEEST | PSS1A |
 | PSS3C | blank | PSS3C |
@@ -34,15 +34,15 @@ The PSSSB row's PTI cell is PSS2A; its PowerWorld cell is PSSSB. That existing
 source distinction is retained. The twelve nonblank approved PTI cells contain
 nine distinct names; this is not the same count as fourteen implemented
 stabilizer mappings. A blank source cell is not evidence that a later installed
-PSS/E release lacks a model. For example, an existing PSS3C comparison declares
-native PSS/E 36.7 separately from this May table.
+reference simulator release lacks a model. For example, an existing PSS3C comparison declares
+native reference simulator separately from this May table.
 
 The regression fails before the correction: expected PSS1A source PTI name
 IEEEST, observed PSS1A. The corrected test also freezes all three blank cells,
 the PSSSB-to-PSS2A source cell and the twelve-cell/nine-name counts.
 
 No implementation was removed, no model equation or simulation tolerance was
-changed, and no new DYR alias or PSLF-to-PSS/E conversion was introduced.
+changed, and no new DYR alias or PSLF-to-reference simulator conversion was introduced.
 The source catalog's metadata is corrected while implementation and benchmark
 availability remain separately recorded. In particular, the inventory does not
 claim that the dedicated PSS1A/PSSSB record layouts are validated native PTI

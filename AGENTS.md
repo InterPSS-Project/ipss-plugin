@@ -81,6 +81,9 @@ ieee-odm (external) ─────┘
 
 ## Conventions
 
+- Use neutral benchmark/reference-simulator language in all documentation and new Java files; do not name the proprietary native simulator or its release in prose. Existing Java files at policy baseline `8e7337574b69eb332991a0c539ef0a0a18662bbf` are exempt. Preserve class names, packages, APIs, protocol identifiers, and resource paths. Keep exact tool/version provenance in the existing private evidence manifests rather than public prose.
+- Before delivering documentation or new Java files, run `python tools/check_neutral_benchmark_language.py`. Keep documentation-generator output neutral too. The separate wording CI check enforces this policy without requiring a simulator or Maven.
+
 - DistOPF uses static power-flow network model only — never include dynamic simulation Y-matrix contributions
 - OPF variable indexing is centralized in `DistOpfVariableIndex` — collectors look up column numbers, never hard-code index arithmetic
 - Three-phase data uses per-unit on feeder base; `OpenDSSUnitConverter` handles OpenDSS → PU conversion

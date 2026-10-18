@@ -10,7 +10,7 @@ REGFMA1 or REPCA1 is introduced.
 The subsequent [eleven-state kernel slice](regfmc-kernel-2026-10-18.md) builds on
 this foundation. Implementation status and gate counts below describe this snapshot.
 
-PSS/E 36.7 Model Library section 21.9, printed pages 820-828 (PDF 832-840),
+reference simulator Model Library section 21.9, printed pages 820-828 (PDF 832-840),
 defines the exact native record:
 
 ```text
@@ -23,7 +23,7 @@ Native DSMDL.DLL SHA-256:
 `c77448250fb965bc2d397f88993855cfb792345b0a86a4bc78ad90f66540ebb6`.
 The diagram, priority equations, phasor limiter and non-windup pseudocode were
 rendered and visually checked. The source-list name REGFMC1 is not sufficient
-evidence for a standard-record alias; native 36.7 uses REGFMC1U.
+evidence for a standard-record alias; native reference uses REGFMC1U.
 
 ICON order is Fflag, PQFlag, VFlag. CON order is mq, Kpe, Kie, dEmax/min,
 Tvr, Te, Tvf, Tif, Tpf, H, D1, D2, wD, mp, dPgfmMax/min, dPdMax/min,
@@ -36,7 +36,7 @@ transient-damping storage and GFM network-frame angle.
 Native impedance comes from machine-base RAW ZSOURCE, not extra CONs. The
 [PowerWorld REGFM_C1 documentation](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_C1.htm)
 was consulted independently: it exposes Re/Xe and additional automatic corrections.
-These must not be silently mixed into native PSS/E ordering or parameter handling.
+These must not be silently mixed into native reference simulator ordering or parameter handling.
 
 ## Implemented primitives
 

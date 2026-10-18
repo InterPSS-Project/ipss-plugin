@@ -51,7 +51,7 @@ the opt-in staggered solver is not newly claimed by this slice.
 
 ## Native reference protocol and provenance
 
-PSS/E 36.7 on the existing public three-bus network, with a 100 MW/20 Mvar load
+reference simulator on the existing public three-bus network, with a 100 MW/20 Mvar load
 added at Bus 2. Bus 3 has GENCLS H=3/D=0 and TGOV1
 R=.05/T1=.1/Vmax=1.5/Vmin=0/T2=0/T3=.1/Dt=0. Apply a -0.01 PU governor reference
 increment at 0.05 s. WTGIBFFRA measures Bus 3 and uses 1.2 s user recovery.

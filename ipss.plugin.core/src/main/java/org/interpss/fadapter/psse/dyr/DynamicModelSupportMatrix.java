@@ -14,7 +14,7 @@ public final class DynamicModelSupportMatrix {
 
     public static String generateMarkdown() {
         StringBuilder markdown = new StringBuilder();
-        markdown.append("# InterPSS PSS/E dynamic-model support matrix\n\n")
+        markdown.append("# InterPSS dynamic-model support matrix\n\n")
                 .append("Generated from `DynamicModelCatalog`; do not edit model rows manually.\n\n")
                 .append("`LOADABLE` means that a catalog entry, parser path, and runtime class exist. It\n")
                 .append("does **not** mean that the model has passed equation conformance, a stationary\n")

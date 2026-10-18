@@ -2,7 +2,7 @@
 
 ## Coverage and changes
 
-The May 2026 approved catalog's 64 exciter rows with native PSS/E mappings
+The May 2026 approved catalog's 64 exciter rows with native reference simulator mappings
 resolve to 59 distinct native models. The generated
 [evidence inventory](../exciter-evidence.md) links all 59 to native DYR fixtures,
 focused tests, embedded checkpoints and registered trajectory comparisons.
@@ -10,7 +10,7 @@ The guard checks fixture presence, canonical model name and accepted native
 record length, as well as test registration and readable checkpoints.
 
 The selected comparisons use 46 archived PowerWorld datasets and 13 native
-PSS/E datasets. Additional ANDES or native allocation comparisons remain in
+reference simulator datasets. Additional ANDES or native allocation comparisons remain in
 the suite; this is one explicit evidence path per approved native mapping,
 not an exhaustive profile inventory or a VERIFIED designation.
 

@@ -1,4 +1,4 @@
-# InterPSS PSS/E dynamic-model support matrix
+# InterPSS dynamic-model support matrix
 
 Generated from `DynamicModelCatalog`; do not edit model rows manually.
 

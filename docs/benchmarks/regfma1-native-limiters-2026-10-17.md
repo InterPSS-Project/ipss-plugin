@@ -10,7 +10,7 @@ isolated tested snapshot before this report was finalized.
 
 This follows plugin `8eb6ad000`. It verifies additional REGFMA1 limiter paths
 on the same public three-bus, 50-MVA converter/infinite-bus fixture. It does
-not run or require full Texas2k dynamics. Source is the installed PSS/E 36.7
+not run or require full Texas2k dynamics. Source is the installed reference simulator
 Model Library, printed pages 808–809 (PDF pages 820–821, one-based), with
 the PDF/model-DLL hashes recorded in the
 [preceding source contract](regfma1-native-schema-2026-10-17.md).
@@ -52,7 +52,7 @@ implementation does not incorrectly equate integral release with output release.
 ## Bug found and corrected
 
 The previous native path stopped voltage integration when `Kpv*error+s8`
-reached an output limit. Native PSS/E instead continues integrating until s8
+reached an output limit. Native reference simulator instead continues integrating until s8
 itself reaches its independent bound. Two blockwise guards fail before the
 correction: the first predicted integral should be 1.0939402014202504 but
 remains 1.0933542014202504; an upper-bound run also stalls at that initial
@@ -62,7 +62,7 @@ The fix applies the native integral-bound rule and clamps native s8 at both
 predictor/corrector stages. It retains inward motion at both bounds and does
 not alter the algebraic voltage-output limiter. Inactive native bounds do not
 change the derivative. The existing typed/PowerWorld-compatible path remains
-unchanged: this is a native PSS/E correction, not evidence that PowerWorld
+unchanged: this is a native reference simulator correction, not evidence that PowerWorld
 has a different active-limit equation. That path still needs its own targeted
 active-voltage-limit reference.
 

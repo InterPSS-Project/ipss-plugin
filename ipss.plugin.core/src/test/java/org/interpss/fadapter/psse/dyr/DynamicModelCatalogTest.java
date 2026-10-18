@@ -412,7 +412,7 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst2a")
                 .orElseThrow().isImplementedExactly());
         assertFalse(DynamicModelCatalog.find("EXST2A").isPresent(),
-                "PowerWorld/PSLF EXST2A must not become a native PSS/E DYR alias");
+                "PowerWorld/PSLF EXST2A must not become a native DYR alias");
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst2")
                 .orElseThrow().isImplementedExactly());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst3")
@@ -422,14 +422,14 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst3a")
                 .orElseThrow().isImplementedExactly());
         assertFalse(DynamicModelCatalog.find("EXST3A").isPresent(),
-                "PowerWorld/PSLF EXST3A must not become a native PSS/E DYR alias");
+                "PowerWorld/PSLF EXST3A must not become a native DYR alias");
         assertEquals("IEEET4", DynamicModelCatalog.canonicalName("EXDC4"));
         assertEquals("ESST4B", WeccApprovedDynamicModelCatalog.findExciter("exst4b")
                 .orElseThrow().interpssModel());
         assertTrue(WeccApprovedDynamicModelCatalog.findExciter("exst4b")
                 .orElseThrow().isImplementedExactly());
         assertFalse(DynamicModelCatalog.find("EXST4B").isPresent(),
-                "PowerWorld/PSLF EXST4B must not become a native PSS/E DYR alias");
+                "PowerWorld/PSLF EXST4B must not become a native DYR alias");
     }
 
     @Test
@@ -538,7 +538,7 @@ class DynamicModelCatalogTest {
     @Test
     void markdownSupportMatrixContainsEveryCatalogModel() {
         String markdown = DynamicModelSupportMatrix.generateMarkdown();
-        assertTrue(markdown.startsWith("# InterPSS PSS/E dynamic-model support matrix"));
+        assertTrue(markdown.startsWith("# InterPSS dynamic-model support matrix"));
         assertEquals(DynamicModelCatalog.allModels().size(), markdown.lines()
                 .filter(line -> line.startsWith("| ") && !line.startsWith("| Model"))
                 .count());

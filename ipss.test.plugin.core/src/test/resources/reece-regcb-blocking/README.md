@@ -4,7 +4,7 @@ These gzip/base64 resources preserve the complete raw UTF-8 CSV, including
 negative initialization history and duplicate event sides. The reference Java
 class checks each raw SHA-256 before use and records the cold-repeat digest.
 
-PSS/E 36.7, standard REGCB1 (two ICONs/seven CONs), standard REECE (eight
+reference simulator, standard REGCB1 (two ICONs/seven CONs), standard REECE (eight
 ICONs/79 CONs), three-bus 100-MVA SMIB. REGCB normal PQ priority is 1, matching
 REECE; REECE fault priority remains explicitly 0. A Bus 1 three-phase fault
 of j0.01 pu starts at 0.1 s and clears at 0.15 s; end time is 0.4 s.

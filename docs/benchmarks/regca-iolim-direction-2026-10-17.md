@@ -5,7 +5,7 @@
 Baseline: plugin `03d158833` (1.4.6), locally rebuilt core 1.4.3 at
 `e886019ce`. No core source or dependency version changes in this slice.
 
-Native PSS/E REGCA1 specifies negative Iolim in the opposite reactive-current
+Native reference simulator REGCA1 specifies negative Iolim in the opposite reactive-current
 coordinate from the positive-generated-Q current stored and injected by this
 InterPSS model. The correct generated-current ceiling is **-Iolim**, not a
 generated-current floor at Iolim. The conversion is:
@@ -30,7 +30,7 @@ after the correction, so it isolates Iolim without high-voltage activation.
 
 ## Sources and exact input contract
 
-The native source is PSS/E 36.7 Model Library, printed page 797, with one ICON
+The native source is reference simulator Model Library, printed page 797, with one ICON
 and fourteen CON values; Iolim is CON J+8. The parser's fifteen-value record
 and ordering are unchanged. The preceding
 [network-quality audit](regca-network-run-quality-2026-10-17.md) documents the
@@ -47,7 +47,7 @@ floor. Actual native CON readbacks confirm the requested values.
 does not use its Qmin/Khv fields; it cannot serve as an active-native-Iolim
 oracle. The WECC appendix's differently labeled reactive-power floor must not
 be silently substituted for the native current limit. No new vendor dialect or
-auto-correction option is added to the PSS/E reader.
+auto-correction option is added to the reference simulator reader.
 
 The three-bus lossless network is the existing public
 `regca_zero_q_lossless.raw`, SHA-256

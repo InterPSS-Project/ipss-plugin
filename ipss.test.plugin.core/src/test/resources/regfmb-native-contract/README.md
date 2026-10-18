@@ -1,6 +1,6 @@
 # REGFMB1U native contract references
 
-Scope: native 36.7 data/initialization/algebraic-boundary evidence, not an
+Scope: native reference data/initialization/algebraic-boundary evidence, not an
 implemented or loadable dynamic model. The approved-list REGFMB1 name is not
 silently made an alias. Exact installed syntax is USRMDL REGFMB1U with wrapper
 101 1 6 25 14 17; source impedance comes from machine-base RAW ZSOURCE.

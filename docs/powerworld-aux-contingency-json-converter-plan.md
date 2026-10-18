@@ -87,7 +87,7 @@ ipss.plugin.core/src/main/java/org/interpss/plugin/contingency/aux_fmt/
 
 Rationale:
 
-- Keeps PowerWorld AUX concerns separate from PSS/E `.con` parsing.
+- Keeps PowerWorld AUX concerns separate from reference simulator `.con` parsing.
 - Mirrors the existing `con_fmt` structure without coupling to `.con` syntax.
 - Lets parser tests and mapper tests stay independent.
 
@@ -175,7 +175,7 @@ Field mapping:
 
 Bus id normalization should be configurable:
 
-- Default: prefix numeric bus numbers with `Bus`, matching existing PSS/E-based
+- Default: prefix numeric bus numbers with `Bus`, matching existing reference simulator-based
   JSON examples such as `Bus1001`.
 - Option: preserve source bus ids exactly for users whose InterPSS network ids
   do not use the `Bus` prefix.
@@ -285,7 +285,7 @@ CLI flags:
 
 - `--input <file>`: required AUX file path.
 - `--output <file>`: required InterPSS contingency JSON path.
-- `--network <file>`: required PSS/E RAW file used to resolve branch objects.
+- `--network <file>`: required RAW file used to resolve branch objects.
 - `--psse-version auto|29|30|31|32|33|34|35|36`: default `auto`.
 - `--bus-id-mode prefix-bus|preserve`: default `prefix-bus`.
 - `--unsupported warn|fail`: default `warn`.

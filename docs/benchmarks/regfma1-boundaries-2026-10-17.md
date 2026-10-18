@@ -19,7 +19,7 @@ The [PowerWorld REGFM_A1 reference](https://www.powerworld.com/WebHelp/Content/T
 documents the QVflag selection and zero-current-limit bypass. Its explicit
 Re/Xe fields belong to that tool's data representation.
 
-An additional native-format gap was found in the installed PSS/E 36.7 Model
+An additional native-format gap was found in the installed reference simulator Model
 Library, printed pages 807-810 (PDF pages 819-822). That version has two ICONs
 (Vflag, QVflag), eighteen CONs, and coupling impedance supplied by the generator
 RAW record. Library SHA-256:
@@ -143,7 +143,7 @@ this rule or comparing unchanged numeric inputs as equivalent vendor profiles.
 The [PowerWorld REGC_A documentation](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_A.htm)
 identifies this zero-limit behavior explicitly.
 
-A new three-bus PSS/E 36.7 discriminator was then cold-run twice. It uses the
+A new three-bus reference simulator discriminator was then cold-run twice. It uses the
 existing public Bus1062 control DYR, a 0.98-pu plant setpoint, two 0.1-pu
 reactance branches, and a Bus1 j0.01-pu three-cycle fault. Initial generation is
 24 MW/-10.97093868 Mvar and initialization reports OK. At a 0.5-ms step both
@@ -153,7 +153,7 @@ The final native REGCA Iq state is 0.94644308 pu (initial -0.11194882 pu),
 and terminal voltage is 1.20232344 pu. The state maximum is 0.94684905 pu,
 so this is not evidence of strict mathematical monotonicity at every native
 integration sample. It does demonstrate a repeatable high-current post-fault
-response with the zero-rate input in native PSS/E, not only InterPSS.
+response with the zero-rate input in native reference simulator, not only InterPSS.
 Matched InterPSS execution of this new profile remains necessary.
 
 The isolated case is built through the documented native bus/plant/machine
@@ -206,7 +206,7 @@ SHA-256 is `40ca4ce7720c1dcf36f582ac05b0230812e2f029cf18528d1085394808a8eafa`.
   distinguish PowerWorld's documented zero-disables convention.
 - [ ] Compare the exact new negative-Q profile and every named state in
   InterPSS after correcting observation-time alignment.
-- [ ] Add the exact PSS/E 36.7 twenty-value schema and RAW coupling path with
+- [ ] Add the exact reference simulator twenty-value schema and RAW coupling path with
   strict parser tests; preserve the separate legacy exchange contract.
 - [ ] Compare complete new active-limiter trajectories, not just the boundary.
 - [ ] Localize the first differing state and network iteration in the severe

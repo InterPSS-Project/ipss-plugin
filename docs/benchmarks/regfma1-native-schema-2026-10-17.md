@@ -7,7 +7,7 @@ The counts and remaining-work list below describe this earlier schema slice.
 
 ## Scope and source contract
 
-This slice separates native PSS/E 36.7 REGFMA1 input from the older Texas2k
+This slice separates native reference simulator REGFMA1 input from the older Texas2k
 nineteen-value exchange and the full typed PowerWorld-compatible interface.
 It does not establish complete model or Texas2k system acceptance.
 
@@ -16,7 +16,7 @@ Texas2k dynamic runs are no longer required for this slice or the revised
 coverage goal. Their already-completed results below are retained honestly;
 the later running system regression was stopped and its opt-ins restored.
 
-The installed PSS/E 36.7 Model Library, printed pages 807–810 (PDF pages
+The installed reference simulator Model Library, printed pages 807–810 (PDF pages
 819–822, one-based), defines two ICONs and eighteen CONs. The consulted PDF
 SHA-256 is `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`;
 the model DLL SHA-256 is
@@ -199,7 +199,7 @@ visible while the native wind startup contract is diagnosed; neither old
 stationary-flat results nor these mild REGFMA1 references resolve them.
 
 The completed strict-gate ranking files identify the following largest
-within-InterPSS changes over one second. These are **not** InterPSS–PSS/E
+within-InterPSS changes over one second. These are **not** InterPSS–reference simulator
 errors and do not by themselves identify a defective leading model.
 
 | Case | Worst voltage bus / drift (pu) | Worst synchronous speed unit / drift (pu) | Leading controller change |
@@ -233,7 +233,7 @@ contains both fixes and the two additional active-limit references.
 
 Native replay instructions: use the archived
 `replay_regfma_native_reference.ps1` with `-Python`, `-ReferenceDirectory` and a
-new `-ReplayDirectory`. Configure that Python environment for PSS/E 36.7 first.
+new `-ReplayDirectory`. Configure that Python environment for reference simulator first.
 The wrapper validates the archived hashes before staging, refuses an existing
 destination, and requires unchanged model-library and output hashes afterward.
 The tested example uses `regfma1-native-v0q0-current-limit-a` as its reference.

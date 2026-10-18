@@ -7,7 +7,7 @@ full-network trajectory acceptance. Approved native renewable coverage remains
 The verification workflow localized the discrepancy with recorded electrical
 power instead of changing model gains, state initialization or torque equations
 to fit a native trace. The unchanged kernel agrees closely with an independent
-PowerWorld implementation of the published diagram. The non-converging PSS/E
+PowerWorld implementation of the published diagram. The non-converging reference simulator
 mechanical difference described in the [foundation report](wtdtb1-foundation-2026-10-18.md)
 remains unresolved; the new evidence does not prove its cause.
 
@@ -93,7 +93,7 @@ is registered in CorePluginTestSuite and discovered by DynamicModelSmibTestSuite
 
 ## Remaining work
 
-Resolve the native PSS/E two-mass/interface discrepancy without fitting.
+Resolve the native reference simulator two-mass/interface discrepancy without fitting.
 Independently exercise non-unit speed and model bases, one-mass/aerodynamic
 branches, damping and Tp=0, as well as lifecycle transitions. Implement the exact
 native/wrapper parser and builder attachment only with appropriate rejection

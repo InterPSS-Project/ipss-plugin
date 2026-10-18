@@ -6,7 +6,7 @@ Approved native renewable loadability remains **21/27**.
 
 ## Source and implementation
 
-The installed PSS/E 36.7 Model Library, section 22.6 (printed pages 859-866),
+The installed reference simulator Model Library, section 22.6 (printed pages 859-866),
 defines standard-name REECE: eight ICONs, 79 CONs, eight STATEs and 20 VARs.
 Model Library SHA-256:
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.

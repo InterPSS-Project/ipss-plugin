@@ -1,6 +1,6 @@
 ---
 name: Fixed shunt ShuntCompensator
-overview: Map PSS/E fixed-shunt records to bus-owned `ShuntCompensator` objects (named BL banks), put GL only on `bus.shuntY`, and resolve NB type-`F` terminals via `bus.getCompensator(id)`.
+overview: Map reference simulator fixed-shunt records to bus-owned `ShuntCompensator` objects (named BL banks), put GL only on `bus.shuntY`, and resolve NB type-`F` terminals via `bus.getCompensator(id)`.
 todos:
   - id: builder-api
     content: Add AclfNetworkBuilder.addFixedShunt (ShuntCompensator + G-only shuntY)
@@ -20,15 +20,15 @@ todos:
 isProject: false
 ---
 
-# Represent PSS/E Fixed Shunts as ShuntCompensator
+# Represent reference simulator Fixed Shunts as ShuntCompensator
 
 ## Chosen electrical mapping
 
 LF adds **both** `compensatorList` B and `bus.shuntY` in [`AclfBusYMatrixHelper.calShuntEquivY`](ipss-core/ipss.core_EMF/src/main/java/com/interpss/core/aclf/impl/func/bus/AclfBusYMatrixHelper.java). Putting the same BL in both paths double-counts.
 
-**Policy (IpssInternal-style for B + PSS/E GL):**
+**Policy (IpssInternal-style for B + reference simulator GL):**
 - Create one `ShuntCompensator` per fixed-shunt record on `bus.getCompensatorList()`
-- `id` = PSS/E ID (`F1`, `1`, …); `name` from RAW name field; `status` from STATUS
+- `id` = reference simulator ID (`F1`, `1`, …); `name` from RAW name field; `status` from STATUS
 - `type` = `CAPACITOR` if `BL >= 0`, else `INDUCTOR`
 - `steps = 1`; `setB(bl / baseMva)` (LF reads `getB()`)
 - Put **only GL** into `bus.shuntY`: `addToBusShuntY(busId, Complex(gl/baseMva, 0))` when status is in-service
@@ -36,7 +36,7 @@ LF adds **both** `compensatorList` B and `bus.shuntY` in [`AclfBusYMatrixHelper.
 
 ```mermaid
 flowchart LR
-  RAW["PSS/E Fixed Shunt I,ID,STATUS,GL,BL,NAME"]
+  RAW["reference simulator Fixed Shunt I,ID,STATUS,GL,BL,NAME"]
   Builder["AclfNetworkBuilder.addFixedShunt"]
   Comp["bus.compensatorList ShuntCompensator"]
   Y["bus.shuntY G only"]

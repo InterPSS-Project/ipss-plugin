@@ -121,26 +121,26 @@ public final class RenewableEvidenceInventory {
                 nativeRow("WT12T1","PsseWt12t1ModelTest","mach.Wt1g1PsseSmibConformanceTest","smib-wt12t1/psse.csv","SMIB/SMIB_v33_wt12t1.dyr"),
                 new Entry("WTDTBU1","PsseWtdtb1ModelTest","Wtdtb1NativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTDTB_NATIVE_MAP,"Wtdtb1NativeReference","renewable/regca_reeca_wtdtb1_bus1062.dyr",
-                        "Native 36.7 standard/exact legacy wrapper; 14 cold-repeated profiles. Unit-speed five-state playback is bounded; non-unit absolute integrated-coordinate precision and instantaneous coupled-network event-post parity remain open. Published PowerWorld convention is separate."),
+                        "Native reference standard/exact legacy wrapper; 14 cold-repeated profiles. Unit-speed five-state playback is bounded; non-unit absolute integrated-coordinate precision and instantaneous coupled-network event-post parity remain open. Published PowerWorld convention is separate."),
                 new Entry("REECD","PsseReecd1ControllerTest","ReecdAuxiliaryPowerNativeConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.REECD_PAUX_NATIVE_MAP,"ReecdAuxiliaryPowerReference","renewable/regca_reecd_paux_bus1062.dyr",
-                        "Native 36.7 Paux power-before-voltage-divider and algebraic-update profile only: four cold-paired recorded-input/coupled SMIB profiles at two steps. Both reference-update sides retained. Inactive PI/bypass storage differs; other selectors, limits, lifecycle and complete REECD conformance remain open. This is not WTGIBFFRA implementation evidence."),
+                        "Native reference Paux power-before-voltage-divider and algebraic-update profile only: four cold-paired recorded-input/coupled SMIB profiles at two steps. Both reference-update sides retained. Inactive PI/bypass storage differs; other selectors, limits, lifecycle and complete REECD conformance remain open. This is not WTGIBFFRA implementation evidence."),
                 new Entry("WTPTBU1","PsseWtptb1ModelTest","Wtptb1NativeExtendedConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTPTB_NATIVE_MAP,"Wtptb1NativeExtendedReference","renewable/regca_reeca_wtptb1_bus1062.dyr",
-                        "Native 36.7 strict standard/legacy import, zero-time bypass and recorded-input branch matrix. Coupled two-step flat/fault/trip checks; instantaneous network-post, additional lifecycle/base profiles and complete cross-tool acceptance remain open. Typed PowerWorld cold-repeat artifacts are separate evidence."),
+                        "Native reference strict standard/legacy import, zero-time bypass and recorded-input branch matrix. Coupled two-step flat/fault/trip checks; instantaneous network-post, additional lifecycle/base profiles and complete cross-tool acceptance remain open. Typed PowerWorld cold-repeat artifacts are separate evidence."),
                 focused("WT12A1B","PsseWt12a1bModelTest","No independent WT12A1U_B trajectory link found; the older WT12A1 reference is a different model."),
                 new Entry("WTGIBFFRA","PsseWtgibffraModelTest","WtgibffraNativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTGIBFFR_NATIVE_MAP,"WtgibffraNativeReference","renewable/regca_reecd_wtgibffra_bus1062.dyr",
-                        "Strict native one-ICON/45-CON import and REGCA/REGCB + REECD Paux attachment; seven cold-paired kernel replay profiles, two cold-paired governed-SMIB trajectories and two-step flat/frequency-step/fault/trip tests. Published automatic recovery differs from native 36.7. Callback parity, nonconvergent frequency/voltage floors, alternate hosts/bases and complete PowerWorld verification remain open."),
+                        "Strict native one-ICON/45-CON import and REGCA/REGCB + REECD Paux attachment; seven cold-paired kernel replay profiles, two cold-paired governed-SMIB trajectories and two-step flat/frequency-step/fault/trip tests. Published automatic recovery differs from native reference. Callback parity, nonconvergent frequency/voltage floors, alternate hosts/bases and complete PowerWorld verification remain open."),
                 new Entry("WTGWGOAU","PsseWtgwgoaModelTest","WtgwgoaNativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTGWGO_NATIVE_MAP,"WtgwgoaNativeReference","renewable/regca_reeca_wtgwgoa_bus1062.dyr",
-                        "Native 36.7 strict standard/legacy import and REEC reference routing; ten recorded-input profiles plus coupled flat/fault/no-plant/trip checks at two steps. Callback/handoff and instantaneous network-post parity remain open; published second-fault restart is a separate explicit convention. PowerWorld export diagnostic is not accepted evidence."),
+                        "Native reference strict standard/legacy import and REEC reference routing; ten recorded-input profiles plus coupled flat/fault/no-plant/trip checks at two steps. Callback/handoff and instantaneous network-post parity remain open; published second-fault restart is a separate explicit convention. PowerWorld export diagnostic is not accepted evidence."),
                 new Entry("REECE","PsseReeceModelTest","ReeceRuntimeNativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.REECE_NATIVE_MAP,"ReeceBranchNativeReference + ReeceLocalPiNativeReference","renewable/regca_reece_bus1062.dyr",
-                        "Native 36.7 standard REECE eight-ICON/79-CON import and deferred active REGCA/REGCB attachment; twelve recorded-input replay datasets, two cold-paired REGCB hardware-blocking boundary profiles and two-step flat/fault/trip checks. Source-listed REECE1/REECEU1 names/wrappers remain unsupported. Prepared-reference/current-limit callbacks, remaining active-limit branches and independent coupled native/PowerWorld trajectories remain open; not complete conformance."),
+                        "Native reference standard REECE eight-ICON/79-CON import and deferred active REGCA/REGCB attachment; twelve recorded-input replay datasets, two cold-paired REGCB hardware-blocking boundary profiles and two-step flat/fault/trip checks. Source-listed REECE1/REECEU1 names/wrappers remain unsupported. Prepared-reference/current-limit callbacks, remaining active-limit branches and independent coupled native/PowerWorld trajectories remain open; not complete conformance."),
                 new Entry("REGFMB1U","PsseRegfmb1ModelTest","Regfmb1NativeRuntimePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.REGFMB_NATIVE_MAP,"Regfmb1NativeContractReference + Regfmb1SelectorNativeReference","renewable/regfmb1u_native.dyr",
-                        "Native 36.7 exact USRMDL 101 1 6 25 14 17 import and network adapter; thirteen fourteen-state replays and two-step flat/fault/trip checks. Source REGFMB1 is not an inferred alias. Modified-/staggered-Euler, active limits, further selectors/lifecycle and complete coupled/PowerWorld acceptance remain open."),
+                        "Native reference exact USRMDL 101 1 6 25 14 17 import and network adapter; thirteen fourteen-state replays and two-step flat/fault/trip checks. Source REGFMB1 is not an inferred alias. Modified-/staggered-Euler, active limits, further selectors/lifecycle and complete coupled/PowerWorld acceptance remain open."),
                 bounded("REECA1","PsseReeca1ControllerTest"),
                 bounded("REPCA1","PsseRepca1PlantControllerTest"),
                 bounded("WTDTA1","PsseType3WindControllerTest"),
@@ -152,7 +152,7 @@ public final class RenewableEvidenceInventory {
                     "REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
                         model.equals("REGFMC1")
-                        ?"Native 36.7 REGFMC1U data, hybrid boundary and eleven-state kernel exist, with twelve bounded native replays. No parser or network device yet; retain missing-runtime classification. Import, coupled SMIB, precision/callback, lifecycle and PowerWorld acceptance remain open."
+                        ?"Native reference REGFMC1U data, hybrid boundary and eleven-state kernel exist, with twelve bounded native replays. No parser or network device yet; retain missing-runtime classification. Import, coupled SMIB, precision/callback, lifecycle and PowerWorld acceptance remain open."
                         :"No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
@@ -166,7 +166,7 @@ public final class RenewableEvidenceInventory {
     private static Entry bounded(String model,String focused) {
         return new Entry(model,focused,"Type3WindAndesTrajectoryTest",Scope.BOUNDED_DIALECT_COMPARISON,
                 CheckpointKind.ANDES_CSV,"type3-wind-bus1062-fault.csv","renewable/type3_wind_bus1062.dyr",
-                "ANDES-specific WTTQA speed convention and documented REECA VFLAG/REPCA differences: bounded coupled comparison, not native PSS/E conformance. PowerWorld Type-3 test is finite-error diagnostic only.");
+                "ANDES-specific WTTQA speed convention and documented REECA VFLAG/REPCA differences: bounded coupled comparison, not native reference simulator conformance. PowerWorld Type-3 test is finite-error diagnostic only.");
     }
     public static List<Entry> entries() { return ENTRIES; }
     public static Set<String> requiredModels() {
@@ -182,7 +182,7 @@ public final class RenewableEvidenceInventory {
                 .append("The source renewable section has 45 rows: 29 approved, 28 with a native PTI mapping, ")
                 .append("and 27 distinct planned native families because WT1T/WT2T share WT12T1. ")
                 .append("23 families currently have loadable runtime paths; four implementations are genuinely missing. ")
-                .append("REEC_E uses the proved native 36.7 standard name REECE; the source-listed REECE1/REECEU1 names and wrappers remain unsupported. ")
+                .append("REEC_E uses the proved native reference standard name REECE; the source-listed REECE1/REECEU1 names and wrappers remain unsupported. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
                 .append("Eight families have native recorded-profile links, eight have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE and REGFMB1U), ")
@@ -202,7 +202,7 @@ public final class RenewableEvidenceInventory {
                 .append("These are frozen source-list statuses, not a claim about today's WECC approval. ")
                 .append("Planned mappings for absent models do not add parser aliases, guessed field counts or dummy runtimes. ")
                 .append("Descriptive vendor-package cells are retained as comments rather than invented native model identifiers.\n\n")
-                .append("| Source row | PSLF | PTI PSS/E | PowerWorld | Source status | Runtime/planned mapping | Loadable primary mapping |\n")
+                .append("| Source row | PSLF | PTI reference simulator | PowerWorld | Source status | Runtime/planned mapping | Loadable primary mapping |\n")
                 .append("|---|---|---|---|---|---|---|\n");
         for(var row:source)text.append("| ").append(row.catalogName()).append(" | ").append(row.pslfModel())
                 .append(" | ").append(row.psseModel().isEmpty()?"(blank/no concrete identifier)":row.psseModel())

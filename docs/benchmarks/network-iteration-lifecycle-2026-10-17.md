@@ -12,7 +12,7 @@ The WECC 2014 second-generation wind specification, Appendix A (PDF pages
 34-35), separates network-iteration corrections from differential states and
 resets working correction after a solved network. The consulted PDF SHA-256 is
 `aef13405133f110351eeb341ffb4c674af5b498bd7881a936c03521e3584caea`.
-Its diagrams were visually reviewed. Native PSS/E 36.7 REGCA1 also exposes
+Its diagrams were visually reviewed. Native reference simulator REGCA1 also exposes
 previous voltage, previous angle and overvoltage correction as VARs, separately
 from its three differential states. The installed Model Library SHA-256 is
 `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.

@@ -145,7 +145,7 @@ or null annotation-field-list exceptions in this full run. An unrelated
 MultiNet dummy-bus test still logs a caught null-bus exception also seen in the
 earlier baseline; a green reactor is not a general exception-free guarantee.
 
-Complete native PSS/E/PowerWorld Texas2k trajectory parity remains open, as do
+Complete native reference simulator/PowerWorld Texas2k trajectory parity remains open, as do
 the broader approved-model branch/profile and reproducibility gaps. Finite
 fault execution or a stationary flat run alone is not an independent model
 acceptance claim.

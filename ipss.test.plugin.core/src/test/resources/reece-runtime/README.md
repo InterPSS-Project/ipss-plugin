@@ -1,6 +1,6 @@
 # REECE typed-runtime terminal-input replay
 
-These twelve immutable datasets are derived from native PSS/E 36.7 three-bus
+These twelve immutable datasets are derived from native reference simulator three-bus
 runs, not InterPSS output. `native-coarse/fine` reuse the foundation's two
 cold-paired QFLAG=2/PEFLAG=1 runs. Ten additional profiles cover voltage control,
 the cascaded Q/voltage PIs, power-factor reactive lag, and positive/negative

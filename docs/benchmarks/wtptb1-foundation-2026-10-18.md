@@ -6,7 +6,7 @@ remains 18 loadable families and nine missing import/runtime integrations.
 
 ## Frozen source contract
 
-PSS/E 36.7 Model Library section 24.4, printed pages 892-894 (physical PDF
+reference simulator Model Library section 24.4, printed pages 892-894 (physical PDF
 pages 904-906), defines fourteen CONs, three STATEs and one VAR. Source PDF
 SHA-256: `40df1c7e72fcb626e60b7f76180d4f866439c333398eb66354dde21567bb846d`.
 The table and diagram were extracted and the diagram visually inspected.
@@ -60,7 +60,7 @@ semantics are not silently approximated with a small time constant.
 
 ## Independent native artifacts
 
-Sixteen completed PSS/E 36.7 three-bus runs cover eight step/profile pairs:
+Sixteen completed reference simulator three-bus runs cover eight step/profile pairs:
 baseline at 0.5 and 0.25 ms, upper-angle, lower-angle-configured, narrow PI
 limits, slow rate limits, zero-time and no-event flat. Every profile is repeated
 twice cold. Each pair's complete CSV is byte-identical. All sixteen runs pass

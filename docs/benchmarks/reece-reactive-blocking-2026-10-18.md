@@ -1,6 +1,6 @@
 # REECE local reactive PI and blocking entry
 
-Status: native 36.7 QFLAG=2 moving-bound correction, with partial recorded-input
+Status: native reference QFLAG=2 moving-bound correction, with partial recorded-input
 and coupled SMIB evidence. Baseline `724c4791f`; not complete model acceptance.
 
 ## Native contract and failing-before evidence
