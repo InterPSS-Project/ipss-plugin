@@ -151,7 +151,9 @@ public final class RenewableEvidenceInventory {
             Set.of("REGFMC1",
                     "REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
+                        model.equals("REGFMC1")
+                        ?"Native 36.7 REGFMC1U data, hybrid boundary and eleven-state kernel exist, with twelve bounded native replays. No parser or network device yet; retain missing-runtime classification. Import, coupled SMIB, precision/callback, lifecycle and PowerWorld acceptance remain open."
+                        :"No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {

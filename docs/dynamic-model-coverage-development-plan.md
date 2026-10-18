@@ -67,6 +67,18 @@ and state definitions agree.
 - [ ] Complete REGFMC1U eleven-state kernel, native parser/network adapter,
   plant routing, selector/lifecycle tests and independently coupled SMIB comparisons.
   Foundation work does not change the 23/27 loadable count or four missing runtimes.
+  - [x] Implement the eleven-state kernel, semantic states, explicit modified-Euler
+    stages, PI/speed anti-windup, zero-time measurements and distinct GFM/GFL references.
+  - [x] Add twelve accepted native cold runs / six datasets for off/bounded and
+    Fflag-only selectors, reference reversals and both active PI/speed limits.
+  - [x] Replay all eleven states in twelve datasets at two steps; retain explicit
+    native event-history, absolute-speed float-floor and current-circle limitations.
+    See [kernel evidence and remaining work](benchmarks/regfmc-kernel-2026-10-18.md).
+  - [x] Validate the kernel: 79 focused checks, 298 plugin-core tests (six optional
+    skips), 1,338 SMIB/model checks (one existing diagnostic skip), zero failures/errors.
+    Audit twelve tested files, all 24 native runs and twelve byte-identical cold pairs.
+  - [ ] Add the exact native wrapper, network adapter and independently coupled
+    flat/fault/trip SMIB gates. Runtime presence remains missing until then.
 - [x] Add strict native REGFMB1U wrapper import, non-overwriting device attachment,
   machine/system-base Norton boundary and deferred REPCA1 routing. Coverage is
   23/27 versioned runtime paths; HPLNTD, REPCCU, REGFMC1 and REPCGFMC1 remain missing.
@@ -337,7 +349,8 @@ and state definitions agree.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter
   and plant models. Do not alias them to REGFMA1 or REPCA1.
   REGFMB1U now has a loadable adapter and bounded native SMIB evidence; its full
-  acceptance remains open. REGFMC1U has a typed/algebraic foundation only.
+  acceptance remains open. REGFMC1U now has an eleven-state kernel and bounded
+  native replay; its import/network adapter remains missing.
 - [ ] Complete REECD beyond its new native Paux active-path profiles, close the
   independent WT12A1U_B trajectory gap and establish native conformance
   for the six currently bounded ANDES links.

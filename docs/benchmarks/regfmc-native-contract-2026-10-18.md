@@ -7,6 +7,9 @@ REGFMA1 or REPCA1 is introduced.
 
 ## Exact source and dialect
 
+The subsequent [eleven-state kernel slice](regfmc-kernel-2026-10-18.md) builds on
+this foundation. Implementation status and gate counts below describe this snapshot.
+
 PSS/E 36.7 Model Library section 21.9, printed pages 820-828 (PDF 832-840),
 defines the exact native record:
 
