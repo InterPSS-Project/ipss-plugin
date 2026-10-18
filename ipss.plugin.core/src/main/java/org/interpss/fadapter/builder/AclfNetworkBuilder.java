@@ -583,6 +583,7 @@ public class AclfNetworkBuilder {
         shunt.setStatus(status);
         shunt.setSteps(1);
         shunt.setB(bPu);
+        FixedShuntAdmittance.retain(shunt,gPu,bPu);
         bus.getCompensatorList().add(shunt);
         if (status && gPu != 0.0) {
             addToBusShuntY(busId, new Complex(gPu, 0.0));

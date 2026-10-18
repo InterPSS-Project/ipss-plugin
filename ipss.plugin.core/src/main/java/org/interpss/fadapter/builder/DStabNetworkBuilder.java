@@ -3645,10 +3645,24 @@ public class DStabNetworkBuilder {
         var converter=findRegca1(busId,genId);
         if(converter==null||!(converter.getActiveElectricalController() instanceof Reeca1Model electrical)
                 ||electrical.getPlantController()!=null||electrical.getRepccController()!=null
-                ||data.switchingFlag()!=0||data.frequencyFlag()!=1||data.reactiveFlag()!=1
+                ||data.frequencyFlag()!=1||data.reactiveFlag()!=1
                 ||data.value(org.interpss.dstab.renewable.RepccData.Parameter.KI)<=0
                 ||data.value(org.interpss.dstab.renewable.RepccData.Parameter.KIG)<=0)return null;
-        var plant=new org.interpss.dstab.renewable.RepccModel(data,converter);electrical.setRepccController(plant);return plant;
+        var nominal=new HashMap<org.interpss.dstab.renewable.RepccData.Shunt,org.apache.commons.math3.complex.Complex>();
+        var boundary=new org.interpss.dstab.renewable.RepccNetworkBoundary(data,converter.getParentGen(),converter.getDStabBus());
+        if(data.switchingFlag()==1&&data.switchingThresholdsValid()&&boundary.isSwitchingBranchFound()) {
+            for(var key:data.shunts()) {
+                if(key.bus()==0)continue;
+                var bus=network.getDStabBus("Bus"+key.bus());
+                if(bus==null)throw new IllegalArgumentException("REPCC shunt bus not found: "+key);
+                var matches=bus.getCompensatorList().stream().filter(s->s.getId().equals(key.id())).toList();
+                if(matches.size()!=1)throw new IllegalArgumentException("One named fixed shunt required: "+key);
+                var value=FixedShuntAdmittance.find(matches.getFirst()).orElseThrow(
+                        ()->new IllegalArgumentException("Retained nominal fixed-shunt admittance required: "+key));
+                if(nominal.putIfAbsent(key,value)!=null)throw new IllegalArgumentException("Duplicate REPCC shunt "+key);
+            }
+        }
+        var plant=new org.interpss.dstab.renewable.RepccModel(data,converter,nominal);electrical.setRepccController(plant);return plant;
     }
 
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {

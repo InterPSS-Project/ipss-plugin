@@ -485,8 +485,18 @@ and state definitions agree.
       344 plugin-core (six optional skips), and 1,406 SMIB/model/solver tests
       (one diagnostic skip), zero failures/errors. Preserve the failing-before
       discriminator, unchanged reference hashes and isolated core dependency.
-    - [ ] Complete automatic endpoint shunt dispatch, per-device input-G
-      retention, import/attachment, independent
+    - [x] Retain original per-device G+jB through fixed-shunt import, including
+      initially open devices, and wire enabled-MSS standard REPCC attachment.
+      Reject missing/changed provenance and ambiguous identities before taking
+      the plant port. Activate both opening and insertion with nonzero G at
+      two steps and verify persistent matrix increments.
+      See [enabled-switching import](benchmarks/repcc-switching-import-2026-10-18.md).
+      Transient device metadata is not a persistent core serialization feature.
+    - [x] Validate enabled import on `41922fc74`: 77 focused, 347 plugin-core
+      (six optional skips), and 1,412 SMIB/model/solver tests (one diagnostic
+      skip), zero failures/errors. Retain the strict-import failure-before-fix,
+      tested sources, generated inventory and unchanged independent references.
+    - [ ] Complete exact startup/zero-time endpoint shunt dispatch, independent
       discharge-lockout evidence, remaining initialization
       and selector/limit profiles, independent coupled SMIB acceptance and the
       declared integration-history/precision/timer gaps.
