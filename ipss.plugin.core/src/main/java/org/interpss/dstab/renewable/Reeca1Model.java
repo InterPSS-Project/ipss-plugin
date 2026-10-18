@@ -61,6 +61,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private boolean previousDip;
     private double ipcmd;
     private double iqcmd;
+    private double twoStepIpcmd;
+    private double twoStepIqcmd;
     private final TwoStepHistory twoStep = new TwoStepHistory(6);
 
     public Reeca1Model(Reeca1Data data, Regca1Model converter) {
@@ -123,6 +125,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             plantController.setReactiveStateOffset(qReference);
         }
         if (windControlStack != null) windControlStack.initialize(p);
+        twoStepIpcmd = ipcmd;
+        twoStepIqcmd = iqcmd;
     }
 
     @Override
@@ -369,6 +373,13 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
                 : twoStep.advance(4, qIntegral, qIntegralRate);
         vIntegral = dip ? twoStep.hold(5, vIntegral)
                 : twoStep.advance(5, vIntegral, vIntegralRate);
+        // REGCA consumes the last published electrical-control command. Its
+        // proportional Q inputs belong to this completed step, while these
+        // controller states have advanced. Retain that boundary before the
+        // plant advances or an endpoint/network refresh changes those inputs.
+        stepElectricalControls(0.0, p, q, v, sensedV);
+        twoStepIpcmd = ipcmd;
+        twoStepIqcmd = iqcmd;
         if (windControlStack != null)
             windControlStack.stepTwoStep(dt, p, oldPorder, p0 + plantPref, dip);
         if (plantController != null) plantController.stepTwoStep(dt, p, q, sensedV, frequency);
@@ -548,6 +559,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     public boolean isVoltageDip() { return previousDip; }
     @Override public double getIpcmd() { return ipcmd; }
     @Override public double getIqcmd() { return iqcmd; }
+    double getTwoStepIpcmd() { return twoStepIpcmd; }
+    double getTwoStepIqcmd() { return twoStepIqcmd; }
 
     @Override
     public Map<String, Double> getNamedStates() {

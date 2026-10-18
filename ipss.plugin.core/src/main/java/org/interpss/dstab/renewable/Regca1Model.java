@@ -143,8 +143,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         reeca1Controller.refreshTwoStep(p, q, v, frequency);
         if (flag == 0 && dt > 0.0) {
             double dv = derivative(v, vFiltered, data.tfltr());
-            double dip = activeCurrentDerivative(reeca1Controller.getIpcmd(), ipState);
-            double diq = reactiveCurrentDerivative(reeca1Controller.getIqcmd(), iqState);
+            double dip = activeCurrentDerivative(reeca1Controller.getTwoStepIpcmd(), ipState);
+            double diq = reactiveCurrentDerivative(reeca1Controller.getTwoStepIqcmd(), iqState);
             reeca1Controller.stepTwoStep(dt, p, q, v, frequency);
             twoStep.begin(dt);
             vFiltered = twoStep.advance(0, vFiltered, dv);

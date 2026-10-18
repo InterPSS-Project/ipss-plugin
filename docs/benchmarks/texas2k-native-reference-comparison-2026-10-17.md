@@ -524,3 +524,52 @@ rejected diagnostics. They are excluded from the numerical claims above.
 Frozen inputs, runtimes, producers, raw traces, comparison reports, and test
 logs are retained under the private verification-artifact directory
 `2026-10-18-fleet-localization`. No full ten-second event is accepted.
+
+## Retained converter commands, October 18 follow-up
+
+The zero-Q probe now retains bus 1011's original zero reactive-power limits.
+The tiny positive Q still arises in the commercial linear startup solve.
+Explicitly restoring the declared zero Q after that solve isolates the
+component's exact-zero branch; two fresh processes reproduce its raw output
+exactly. This restoration is confined to the component test. No such Q offset
+or reset is applied to the Texas2k cases.
+
+An independent recurrence audit identifies a command-staging difference.
+The converter consumes a command formed from the advanced electrical-control
+states and the preceding step's proportional Q inputs. Refreshing those
+inputs before the converter derivative is evaluated changes the trajectory.
+Across 2,001 intervals, the retained-input recurrence agrees within
+`0.00000000542` pu, compared with `0.000006134` pu for simultaneous input
+refresh. The opt-in two-step path now retains the completed control command
+through zero-duration network refreshes. Its model parameters and initial
+physical operating point are unchanged.
+
+Prescribed-voltage component comparisons retain each commercial probe's
+initial P/Q. For exact-zero Q, maximum converter reactive-current error falls
+from `0.000119838` to `0.00000004843` pu. The reactive and voltage PI state
+errors fall from `0.000016928/0.000014742` to
+`0.0000001193/0.00000000559` pu. The tiny-positive-Q profile also agrees within
+`0.00000001491` pu at the reactive-current state. The checked wind profile and
+the complete coupled wind/synchronous-machine trace remain unchanged.
+Fifteen focused reactor tests pass, including the new command-retention check.
+An earlier test attempt failed to compile because its test constructor omitted
+an argument; that setup error is retained separately.
+
+The unchanged Case 2 run completes through `1.2` seconds with the correction,
+including fault application and clearing. All 218 initial diagnostic fields
+are exactly unchanged. Worst prefault voltage/P/Q NRMSE is now
+`0.00197972/0.00596826/0.00714784`; maximum rotor-angle error is `0.416129`
+degrees. These are worse than the previous full-network metrics, despite
+the independently improved component agreement. The full-network discrepancy
+remains unresolved; the component correction is not an acceptance result.
+
+Separately forcing positive or negative recovery selection for the 17 zero-Q
+units also fails the prefault requirements. Those are sensitivity experiments,
+not verified reference preparation rules. Solving power flow before netting the
+two unmodeled generators changes maximum initial rotor-angle error only from
+`0.00320180` to `0.00318654` degrees and does not close the initialization gap.
+Neither experiment changes the default case preparation.
+
+Frozen evidence for this follow-up is retained under the private
+verification-artifact directory `2026-10-18-converter-command-staging`.
+No full ten-second event is accepted.

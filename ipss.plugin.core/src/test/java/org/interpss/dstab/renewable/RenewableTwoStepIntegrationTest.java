@@ -6,6 +6,26 @@ import org.junit.jupiter.api.Test;
 
 class RenewableTwoStepIntegrationTest {
     @Test
+    void converterCommandRetainsTheCompletedStepsProportionalInputs() {
+        Reeca1Model electrical=new Reeca1Model(new Reeca1Data(
+                0,0,1,1,0,0,
+                .85,1.15,.02,0,0,5,1.1,-1.1,0,0,0,0,.5,.436,-.436,
+                1.1,.9,1,2,.5,3,0,.02,99,-99,1,0,1.3,.02,
+                0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),null);
+        electrical.initialize(.5,0.,1.);
+        electrical.stepTwoStep(.001,.5,.05,1.,1.);
+
+        assertEquals(.99985,electrical.getReactiveControlIntegral(),1.e-14);
+        assertEquals(-.000225,electrical.getVoltageControlIntegral(),1.e-14);
+        assertEquals(.0253,electrical.getTwoStepIqcmd(),1.e-14);
+        electrical.refreshTwoStep(.5,0.,1.,1.);
+        assertEquals(.0003,electrical.getIqcmd(),1.e-14);
+        assertEquals(.0253,electrical.getTwoStepIqcmd(),1.e-14,
+                "a network refresh must not replace the command consumed by the next converter step");
+        assertEquals(.5,electrical.getTwoStepIpcmd(),1.e-14);
+    }
+
+    @Test
     void singlePrecisionStoreDoesNotAccumulateSubResolutionIntegralMotion() {
         TwoStepHistory nativeStorage=new TwoStepHistory(1);
         TwoStepHistory doubleStorage=new TwoStepHistory(1);
