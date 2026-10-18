@@ -443,7 +443,21 @@ and state definitions agree.
       checks (six optional skips), 1,386 SMIB/model/solver checks (one existing
       diagnostic skip), zero failures/errors with the isolated accepted engine.
       Runtime coverage remains 25/27; no shunt network attachment is claimed.
-    - [ ] Complete shunt network dispatch, import/attachment, independent
+    - [x] Add the typed physical network boundary: signed/end-resolved branch
+      current and P/Q, independent remote/frequency fallbacks, exact MVA-base
+      conversion, full-G+jB shunt actions and persistent matrix changes.
+      Fix the discovered cached-admittance rebuild bug in core `38e269ecf`;
+      all 2,973 engine tests pass. Six direct-query datasets have twelve cold
+      runs (six byte-identical pairs), separate from deferred controller plot VARs.
+      See [REPCC physical boundary](benchmarks/repcc-network-boundary-2026-10-18.md).
+      This typed API does not yet supply automatic runtime attachment/import.
+    - [x] Validate the physical boundary with 42 focused checks, 344 plugin-core
+      tests (six optional skips) and 1,394 registered SMIB/model/solver checks
+      (one existing diagnostic skip), all with zero failures/errors. Verify all
+      physical statuses/Y increments for eight recorded-voltage profiles and
+      preserve/recheck the engine fix and both old/new isolated dependencies.
+    - [ ] Complete automatic endpoint shunt dispatch, per-device input-G
+      retention, import/attachment, independent
       discharge-lockout evidence, remaining initialization
       and selector/limit profiles, independent coupled SMIB acceptance and the
       declared integration-history/precision/timer gaps.

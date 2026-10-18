@@ -8,6 +8,10 @@ reactive power and returns completed physical-switch actions. It does not yet
 attach to a plant, resolve measurements, or modify network admittance. Runtime
 family coverage therefore remains **25/27**; REPCC/REPCCU and HPLNTD remain open.
 
+The subsequent [physical network boundary](repcc-network-boundary-2026-10-18.md)
+adds measurement resolution and persistent physical admittance updates; automatic
+plant attachment and coupled runtime acceptance remain open.
+
 The contract follows the installed native Model Library, section 27.4, printed
 pages 913–925, and the independent [PowerWorld REPC_C description](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Plant%20Controller%20REPC_C.htm).
 The source-document SHA-256 is
