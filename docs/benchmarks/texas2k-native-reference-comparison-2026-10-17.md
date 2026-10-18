@@ -2085,3 +2085,78 @@ The original complete first Case 2 event remains at 19 of 40 criteria passed;
 the six-case, 36-event objective remains open. Inputs, cold-reference hashes,
 producers, outputs and the recovered serial refinement job are retained
 privately in `2026-10-18-remaining-component-discriminators`.
+
+## Governor temperature-input characteristic
+
+An existing-reference state audit identifies an extra shaft-speed factor in the
+GGOV1 temperature/load-limiter input. Fuel flow already includes the speed
+dependence selected by `Flag`. For nonnegative `Dm`, no additional speed factor
+belongs in this branch; negative `Dm` retains its separate maximum-power
+characteristic. The correction follows the
+[published governor diagram](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20GGOV1%20and%20GGOV1D.htm)
+and the independently recorded temperature-state transitions. Original Case 2
+GGOV1 units all specify `Flag=0` and `Dm=0`.
+
+The recurrence audit covers all 88 existing ten-second GGOV1 cells and
+1,760,264 samples. The corrected measurement recurrence stays within
+`5.9600e-8` pu per step across the fleet; the canonical lead-lag recurrence
+stays within `2.9795e-8` pu. Measurement RMS recurrence error decreases in
+87 profiles. In the remaining profile, both candidates are below `2.8e-9`
+pu and do not discriminate the equation at the recorded state precision.
+This audit diagnoses the equation from observed states; independent
+initialization is checked separately below.
+
+With unchanged reference valve and speed inputs, the corrected scalar
+measurement recurrence has maximum one-step errors below `6e-8` pu for units
+7356 and 6147. Independent controller replays initialize their own states and
+retain all original physical inputs, constants and integration settings:
+
+| Temperature measurement maximum error | Unit 7356, pu | Unit 6147, pu |
+| --- | ---: | ---: |
+| Extra speed factor | 0.000926286 | 0.000466392 |
+| Corrected input | 0.0000041514 | 0.0000026959 |
+
+The canonical temperature lead-lag coordinate is obtained analytically by
+removing the declared direct feedthrough from its output. Its maximum error
+for unit 6147 decreases from `0.000323682` to `0.0000018091` pu. Other governor
+states and mechanical outputs retain their previous small errors. Both
+ten-second coupled component rotor trajectories remain unchanged, at RMSE
+`0.434234` and `0.123497` degrees: the load limiter is inactive in those cells.
+Thus the corrected equation resolves a controller-state discrepancy without
+claiming to resolve their coupled rotor errors.
+
+Eight new equation checks cover both fuel flags, under/overspeed, zero and
+positive `Dm`, and the retained negative-`Dm` characteristic. All 50 focused
+governor, lifecycle and solver tests pass. The old implementation fails the
+six new nonnegative-`Dm` profiles and passes both negative-`Dm` profiles.
+Unchanged short flat, fault and generator-trip assertions are attempted for
+all six original cases before and after the correction. All twelve fault/trip
+profiles pass in both versions; all six previously failing flat profiles
+remain failures, with no newly failing profile.
+
+The frozen-runtime registered-suite rerun discovers 2,034 tests: 2,018 pass,
+nine are skipped, four abort through assumptions and three fail. The failed
+test identities match the prior registered gate: the existing Texas2k flat
+assertion, the large Matpower load-flow assertion and the CIM voltage-match
+assertion. This remains a failed registered gate. Before/after short-flat
+observation values are byte-identical.
+
+Separate float32 turbine-storage controls, including a combined measured-power
+and turbine-store variant, do not resolve the remaining coupled rotor errors
+and are not promoted. Neither numerical storage, original inputs, output
+sampling, reference angles nor acceptance thresholds are adjusted by the
+temperature-equation correction.
+
+The original complete Case 2 bus-6307 disturbance is rerun at `0.0005` seconds
+and network tolerance `1e-8`, with the original reference samples and scoring
+contract. All 40 criterion records remain identical: 19 pass, worst rotor-angle
+RMSE remains `19.653226` degrees, prefault angle maximum remains `0.0993163`
+degrees, and worst fault/postfault voltage or power NRMSE remains `0.0199538`.
+This event still fails acceptance. The correction resolves the independently
+observed governor temperature-state error; it does not resolve the connected
+system discrepancy or complete the six-case, 36-event objective.
+
+Existing cold references, all 88 recurrence checks, independent controller and
+coupled controls, rejected storage variants, gate results and the complete
+original-event comparison are retained privately in
+`2026-10-18-ggov1-temperature-characteristic`.

@@ -452,7 +452,9 @@ public class PsseGgov1Governor extends AbstractGovernor
     private double maximumPowerFactor(double speedDeviation) {
         double dm = getData().getDm();
         double absoluteSpeed = Math.max(EPS, 1.0 + speedDeviation);
-        return dm >= 0.0 ? absoluteSpeed : Math.pow(absoluteSpeed, dm);
+        // Fuel-flow speed dependence is already selected by Flag. Only negative
+        // Dm adds a speed characteristic to the temperature/load-limit branch.
+        return dm >= 0.0 ? 1.0 : Math.pow(absoluteSpeed, dm);
     }
 
     private double loadSetpoint() {

@@ -267,6 +267,44 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         assertEquals(0.98 * proportional.getValveStroke(), proportional.getFuelFlow(), TOL);
     }
 
+    @ParameterizedTest
+    @CsvSource({"0,0,.98", "0,0,1.02", "0,1,.98", "0,1,1.02",
+            ".2,0,.98", ".2,1,1.02", "-1,0,.98", "-1,1,1.02"})
+    void temperatureDetectorKeepsFuelFlagSeparateFromNegativeDampingCharacteristic(
+            double damping, int flag, double speed) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(.4); machine.setPe(.4);
+        var data = texasData();
+        data.setTrate(0.0); data.setDm(damping); data.setFlag(flag);
+        data.setTsa(2.0); data.setTsb(4.0); data.setTfload(3.0);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        governor.configureIntegrationStep(.0005);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        double[] initial = new double[10], rates = new double[10];
+        governor.readStaggeredState(initial, 0);
+        machine.setSpeed(speed);
+
+        // The measured fuel has one Flag-selected speed factor. The separate
+        // maximum-power characteristic is active only for negative Dm.
+        double fuel = initial[3] * (flag == 1 ? speed : 1.0);
+        double temperatureInput = fuel * (damping < 0.0 ? Math.pow(speed, damping) : 1.0);
+        double leadOutput = .5 * initial[8] + .5 * temperatureInput;
+        governor.evaluateStaggered(.0005, rates, 0);
+        assertEquals(fuel, governor.getFuelFlow(), TOL);
+        assertEquals(leadOutput, governor.getTemperatureDetectionLeadLagOutput(), TOL);
+        assertEquals((temperatureInput - initial[8]) / 4.0, rates[8], TOL);
+        assertEquals((leadOutput - initial[9]) / 3.0, rates[9], TOL);
+
+        double[] next = initial.clone();
+        next[8] += .0005 * rates[8]; next[9] += .0005 * rates[9];
+        governor.applyStaggeredState(next, 0, .0005);
+        governor.evaluateStaggered(.0005, rates, 0);
+        assertEquals((temperatureInput - next[8]) / 4.0, rates[8], TOL);
+        assertEquals((.5 * next[8] + .5 * temperatureInput - next[9]) / 3.0,
+                rates[9], TOL);
+    }
+
     @Test
     void normalizesPowerWorldLimitsWithoutOverwritingImportedData() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
