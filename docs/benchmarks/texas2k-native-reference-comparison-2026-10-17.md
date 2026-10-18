@@ -1497,8 +1497,8 @@ supported actuator correction.
 
 ## Requested network tolerance control
 
-The quarter-cycle benchmark now selects a network voltage convergence tolerance
-of `1.0E-3` as requested. A fresh convergence-only pair uses the same frozen CML
+The earlier requested quarter-cycle control used a network voltage convergence
+tolerance of `1.0E-3`. That convergence-only pair uses the same frozen CML
 benchmark runtime, physical inputs, controller parameters, integration rules,
 quarter-cycle step and ten-second window on both sides.
 
@@ -1526,3 +1526,83 @@ production runtime, complete original-event output and scorer, six-case
 regression controls, and convergence-only pair are retained privately in
 `2026-10-18-ggov1-rates-and-network-tolerance`. The complete accuracy goal remains
 all six cases and 36 supplied-reference disturbances.
+
+## Network tolerance sensitivity and tighter-control verification
+
+Nine additional full ten-second controls test `1e-4`, `1e-5`, `1e-6`, `1e-7`,
+`3e-8`, a fresh `1e-8` repeat, `1e-9`, `1e-10` and `1e-11`. The same frozen
+Case 2 first-fault performance fixture, physical inputs, controller sources,
+runtime dependencies, quarter-cycle step and integration stages are retained.
+Hash checks cover the actual runtime files, dependencies, input files and eight
+source overlays. A producer-source comparison permits only the tolerance
+literal to change. The fixture predates the governor import correction recorded
+above; this is a controlled follow-up to the earlier performance measurements.
+
+Each run completes 2,400 timed steps and 4,800 network calls. All 218 numerical
+channels and 2,405 recorded observations retain exact time and event-side
+alignment. The metrics below use the 2,403 observations from zero through ten
+seconds; the two negative-time history observations are retained separately.
+They cover five bus voltage magnitudes and 26 generator rotor angles, as well as
+all exported terminal P/Q channels. No time shift, angle offset, resampling or
+physical-parameter adjustment is applied.
+
+The fresh `1e-8` repeat reproduces every exported CSV byte and exactly 72,765
+iterations from the prior control. Its integration time is `68.6559` seconds,
+versus `78.9436` seconds previously. These individual fresh-process wall times
+vary with execution conditions; iteration counts give the reproducible work
+comparison. The timings in this table are the new measurements.
+
+All errors in this table use the tightest tested `1e-11` numerical control.
+The last row is the control's self-comparison, not an independent validation.
+
+| Network tolerance | Integration wall time, seconds | Network iterations | Mean iterations per call | Maximum bus-voltage difference, pu | Worst rotor-angle RMSE, degrees |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `1e-04` | 46.3862 | 28,092 | 5.8525 | 0.0097390296 | 34.56028 |
+| `1e-05` | 54.6814 | 38,705 | 8.0635 | 0.012793438 | 42.760849 |
+| `1e-06` | 55.0009 | 49,917 | 10.3994 | 0.00044817284 | 0.058956216 |
+| `1e-07` | 60.4940 | 61,285 | 12.7677 | 0.00023373135 | 0.12338513 |
+| `3e-08` | 70.3757 | 67,310 | 14.0229 | 6.5597274e-05 | 0.022026791 |
+| `1e-08` | 68.6559 | 72,765 | 15.1594 | 7.7209706e-05 | 0.040500459 |
+| `1e-09` | 78.4684 | 84,150 | 17.5312 | 2.5365011e-05 | 0.0083075357 |
+| `1e-10` | 83.8215 | 95,712 | 19.9400 | 2.8684188e-05 | 0.0067767952 |
+| `1e-11` | 86.0299 | 107,226 | 22.3388 | 0 | 0 |
+
+The `1e-4` and `1e-5` settings reduce iterations by 61.39% and 46.81% relative
+to `1e-8`, but produce rotor-angle RMSEs of 34.5603 and 42.7608 degrees against
+the tighter control. Both also fail the voltage/P/Q comparison budgets. At
+`1e-6`, all five bus-voltage channels meet those budgets, but one terminal-P
+channel and all 26 rotor-angle channels fail. From `1e-7` through `1e-8`,
+voltage and P/Q meet the budgets while all 26 rotor-angle channels still fail.
+The observed angle error is not monotonic in convergence tolerance.
+
+The `1e-9` setting is borderline: its worst rotor-angle RMSE is `0.00830754`
+degrees against `1e-11`, but `0.0126538` degrees against `1e-10`; three of the
+26 angle channels exceed `0.01` degrees in the latter comparison. Selecting
+only its favorable comparison would overstate the evidence.
+
+For this fixture, `1e-10` is the conservative accuracy-control setting supported
+by the sweep. Against `1e-11`, worst rotor-angle RMSE is `0.00677680` degrees,
+prefault maximum angle difference is `0.000000265278` degrees, and maximum
+bus-voltage difference is `0.0000286842` pu. All five voltage channels and all
+26 terminal-P, terminal-Q and rotor-angle channels meet the incremental
+comparison budgets. Prefault includes the step endpoint at fault application;
+the duplicate post-event observation begins the fault period, which includes
+fault application and clearing. Voltage/P/Q use each tighter-control channel's
+full ten-second range for both periods.
+
+This accuracy control takes `83.8215` seconds and 95,712 iterations, 31.54%
+more iterations than the original `1e-8` control. Relative to `1e-11`, it saves
+10.74% of iterations and 2.57% of measured integration time. The sweep does not
+establish a tolerance relaxation that both preserves the angle budget and
+substantially reduces work from the original `1e-8` setting. Faster convergence
+and lower cost per iteration remain the performance priorities. The stopping
+test compares successive real and imaginary voltage components; it does not
+directly bound a ten-second rotor-angle trajectory error.
+
+These are numerical sensitivity comparisons within one frozen performance
+fixture. Independent supplied-reference acceptance, equilibrium, time-step
+accuracy, the 20-second runtime target, and the complete six-case/36-event goal
+remain open. No production solver or acceptance assertion changes in this
+study. Raw outputs, logs, producer sources, full per-channel metrics, hash audits
+and the tighter cross-checks are retained privately in
+`2026-10-18-network-tolerance-sweep`.
