@@ -370,3 +370,46 @@ The installed reference-simulator license accepts only 50 buses. Its Texas2k loa
 reports just 50 loaded buses despite a zero read error, so it cannot regenerate
 the complete 2,000-bus references. Small native discriminators are supported;
 full-case comparisons use the supplied immutable outputs.
+
+## Shared integration and state-storage diagnostics
+
+The opt-in staggered solver now binds the active Case 2 machine/controller and
+renewable stack: 103 synchronous machines, 96 renewable bundles, and 3,478 shared
+machine/controller states. The last count excludes states integrated within
+renewable bundles. GGOV1 and HYGOV expose evaluation separately from state
+advancement and history commitment. Compound controller filters expose their
+physical first-order states rather than a synthetic aggregate state.
+
+A separate opt-in renewable storage experiment retains single-precision STATE
+and STORE coordinates. REPCA1 reactive-reference states retain their absolute
+physical coordinate while the public controller API continues to expose
+increments. The commercial model-library state layout and immutable commercial
+two-bus outputs define this check. Parameters, operating points, load assumptions,
+and comparison limits are unchanged. The original solver remains the default.
+
+On the two-bus one-second probe, maximum reactive PI integral error falls from
+`0.0000728680` to zero, voltage PI integral error from `0.000829404` to
+`0.00000709295` pu, and terminal reactive-power error from `0.000122375` to
+`0.00000540610` pu. This is limited evidence for storage behavior; it does not
+establish fleet or event conformance.
+
+Case 2's first prefault second still fails the required limits. The shared
+double-precision variant has worst voltage/P/Q NRMSE of `0.00198924`,
+`0.00573879`, and `0.00652494`, with maximum rotor-angle error `0.441010` degrees.
+Using single-precision renewable storage gives `0.00198830`, `0.00573411`,
+`0.00652135`, and `0.441264` degrees. Each variant passes only two of the twenty
+prefault channel criteria and is worse than the retained original baseline.
+The denominator remains each full ten-second reference range. These are
+completed prefault diagnostics, not completed ten-second disturbance runs.
+
+Core regression passes 2,949 tests; focused plugin regression passes 89 tests.
+With both new options disabled, all 41 samples and 50 signals in the first
+20 ms of Case 2 reproduce the original baseline exactly. Renewable event-history
+averaging, remaining limiter behavior, and full-fleet accuracy remain open.
+No full ten-second event is accepted by this follow-up.
+
+Frozen inputs, sources, classpaths, raw traces, comparison reports, and validation
+logs are retained under the private verification-artifact directory
+`2026-10-17-shared-integration`. An earlier precision run failed because its
+frozen runtime mixed incompatible versions of a shared wind-controller class;
+that assembly failure is retained separately and is not numerical evidence.

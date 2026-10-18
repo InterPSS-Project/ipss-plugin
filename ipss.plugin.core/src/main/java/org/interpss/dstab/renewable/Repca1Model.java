@@ -51,6 +51,14 @@ public final class Repca1Model implements ICMLStateProvider {
     private PlantDerivatives predictorDerivatives;
     private boolean initialized;
     private final TwoStepHistory twoStep = new TwoStepHistory(6);
+    void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
+    void setReactiveStateOffset(double initialReference) {
+        // Native REPCA1 stores absolute Q-reference coordinates for s2/s3.
+        // The controller API exposes increments; retain the physical storage
+        // coordinate when testing finite-precision state accumulation.
+        twoStep.setOffset(3,initialReference);
+        twoStep.setOffset(4,initialReference);
+    }
 
     public Repca1Model(Repca1Data data) {
         this(data, null, null, null);

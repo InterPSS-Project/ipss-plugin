@@ -12,6 +12,7 @@ import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
@@ -24,7 +25,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * of the integration step size.</p>
  */
 public class PsseGgov1Governor extends AbstractGovernor
-        implements IntegrationStepAware, ICMLStateProvider {
+        implements IntegrationStepAware, ICMLStateProvider, StaggeredEulerParticipant {
     private static final double EPS = 1.0e-9;
 
     private State state = State.zero();
@@ -140,6 +141,54 @@ public class PsseGgov1Governor extends AbstractGovernor
     @Override
     public double getOutput(Machine mach) {
         return currentOutput * governorToMachineBase;
+    }
+
+    @Override public int staggeredStateCount() { return 10; }
+
+    @Override public void readStaggeredState(double[] values, int offset) {
+        values[offset] = state.peMeasured;
+        values[offset+1] = state.derivativeLag;
+        values[offset+2] = state.governorIntegrator;
+        values[offset+3] = state.valve;
+        values[offset+4] = state.turbineLag;
+        values[offset+5] = state.loadIntegrator;
+        values[offset+6] = state.mwIntegrator;
+        values[offset+7] = state.accelerationLag;
+        values[offset+8] = state.temperatureLeadLag;
+        values[offset+9] = state.temperatureLag;
+    }
+
+    @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
+        if (!initialized) throw new IllegalStateException("Initialize GGOV1 before evaluating derivatives");
+        Algebraic a = algebraic(state, stepSec, 0.0, committedFsr);
+        Derivatives d = derivatives(state, a);
+        currentFsr = a.fsr;
+        currentOutput = a.pmech;
+        rates[offset] = d.peMeasured;
+        rates[offset+1] = d.derivativeLag;
+        rates[offset+2] = d.governorIntegrator;
+        rates[offset+3] = d.valve;
+        rates[offset+4] = d.turbineLag;
+        rates[offset+5] = d.loadIntegrator;
+        rates[offset+6] = d.mwIntegrator;
+        rates[offset+7] = d.accelerationLag;
+        rates[offset+8] = d.temperatureLeadLag;
+        rates[offset+9] = d.temperatureLag;
+    }
+
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        state = new State(values[offset], values[offset+1], values[offset+2], values[offset+3],
+                values[offset+4], values[offset+5], values[offset+6], values[offset+7],
+                values[offset+8], values[offset+9]);
+    }
+
+    @Override public void completeStaggeredStep(double stepSec) {
+        Algebraic a = algebraic(state, stepSec, stepSec, committedFsr);
+        currentFsr = committedFsr = a.fsr;
+        currentOutput = a.pmech;
+        simulationTime += stepSec;
+        engineHistory.addLast(new DelaySample(simulationTime, a.rawTurbineInput));
+        trimEngineHistory(stepSec);
     }
 
     @Override

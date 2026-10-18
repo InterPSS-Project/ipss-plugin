@@ -118,7 +118,10 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         previousDip = false;
         ipcmd = p / nonzero(v);
         iqcmd = -qCurrent;
-        if (plantController != null) plantController.initialize(p, q, sensedV);
+        if (plantController != null) {
+            plantController.initialize(p, q, sensedV);
+            plantController.setReactiveStateOffset(qReference);
+        }
         if (windControlStack != null) windControlStack.initialize(p);
     }
 
@@ -497,6 +500,11 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     }
 
     public Reeca1Data getData() { return data; }
+    void setSinglePrecisionStates(boolean enabled) {
+        twoStep.setSinglePrecision(enabled);
+        if (plantController!=null) plantController.setSinglePrecisionStates(enabled);
+        if (windControlStack!=null) windControlStack.setSinglePrecisionStates(enabled);
+    }
     @Override public Repca1Model getPlantController() { return plantController; }
     @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
     public WindControlStack getWindControlStack() { return windControlStack; }

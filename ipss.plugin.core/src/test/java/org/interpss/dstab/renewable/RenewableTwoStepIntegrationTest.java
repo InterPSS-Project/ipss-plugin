@@ -6,6 +6,37 @@ import org.junit.jupiter.api.Test;
 
 class RenewableTwoStepIntegrationTest {
     @Test
+    void singlePrecisionStoreDoesNotAccumulateSubResolutionIntegralMotion() {
+        TwoStepHistory nativeStorage=new TwoStepHistory(1);
+        TwoStepHistory doubleStorage=new TwoStepHistory(1);
+        nativeStorage.setSinglePrecision(true);
+        double nativeState=1.,doubleState=1.;
+        for (int i=0;i<500;i++) {
+            nativeStorage.begin(.0005);doubleStorage.begin(.0005);
+            nativeState=nativeStorage.advance(0,nativeState,1.e-5);
+            doubleState=doubleStorage.advance(0,doubleState,1.e-5);
+        }
+        assertEquals(1.,nativeState,0.);
+        assertEquals(1.+500.5*.0005*1.e-5,doubleState,2.e-14);
+    }
+
+    @Test
+    void incrementalApiRetainsAbsoluteReactiveReferenceStorageResolution() {
+        TwoStepHistory storage=new TwoStepHistory(1);
+        storage.setSinglePrecision(true);
+        double initialReference=.11453402366925415;
+        storage.setOffset(0,initialReference);
+        double increment=0.;
+        for (int i=0;i<100;i++) {
+            storage.begin(.0005);
+            increment=storage.advance(0,increment,2.e-7);
+        }
+        assertEquals((double)(float)initialReference,increment+initialReference,0.);
+        double held=storage.hold(0,increment);
+        storage.begin(.0005);
+        assertEquals(held,storage.advance(0,held,0.),0.);
+    }
+    @Test
     void windComponentsSampleTheSameOldSpeedReferenceAndMechanicalPower() {
         WindControlStack wind = new WindControlStack();
         Wtdta1Model drive = new Wtdta1Model(new Wtdta1Data(5, .1, .8, 1.5, .2));

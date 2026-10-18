@@ -83,5 +83,7 @@ public final class Pss2aLeadLagBlock extends CMLControlBlockAdapter {
     }
 
     @Override public void setDX_dt(double value) { predictorDerivative = value; }
+    /** Derivative evaluated at the most recent predictor input/state boundary. */
+    public double getStateDerivative() { return predictorDerivative; }
     @Override public void setParameter(String name, double value) { }
 }

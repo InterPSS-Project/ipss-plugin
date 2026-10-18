@@ -26,6 +26,7 @@ public final class Wtdta1Model {
     private Derivative predictorDerivative;
     private double predictorSingleMassDerivative;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
+    void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
 
     public Wtdta1Model(Wtdta1Data data) {
         this.data = data;

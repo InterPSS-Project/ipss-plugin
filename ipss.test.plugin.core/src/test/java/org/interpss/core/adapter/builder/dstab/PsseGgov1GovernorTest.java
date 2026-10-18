@@ -26,6 +26,38 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
+    void sharedIntegratorSamplesAllTenStatesWithoutAdvancingTransportHistory() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);machine.setPm(.4);machine.setPe(.4);
+        var data = texasData();data.setTrate(0.0);data.setTeng(.05);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        governor.configureIntegrationStep(.01);
+        assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"),machine));
+        assertEquals(10,governor.staggeredStateCount());
+        double[] initial = new double[10], observed = new double[10], rates = new double[10];
+        governor.readStaggeredState(initial,0);
+        machine.setPe(.2);machine.setSpeed(.99);
+        governor.evaluateStaggered(.01,rates,0);
+        double[] firstRates = rates.clone();
+        assertEquals(-.2/data.getTpelec(),rates[0],TOL);
+        for (int i=0;i<100;i++) {
+            governor.evaluateStaggered(.01,rates,0);
+            governor.readStaggeredState(observed,0);
+            assertArrayEquals(initial,observed,0.0);
+            assertArrayEquals(firstRates,rates,0.0);
+        }
+        double[] next = initial.clone();
+        for (int i=0;i<next.length;i++) next[i]+=.015*rates[i];
+        governor.applyStaggeredState(next,0,.01);
+        governor.readStaggeredState(observed,0);
+        assertArrayEquals(next,observed,0.0,"every state coordinate must survive the commit");
+        governor.completeStaggeredStep(.01);
+        governor.readStaggeredState(observed,0);
+        assertArrayEquals(next,observed,0.0,"committing transport history cannot integrate again");
+    }
+
+    @Test
     void builderAttachesExactDataIncludingTransportDelay() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         PsseGgov1GovernorData data = texasData();

@@ -272,6 +272,15 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     public Regca1Data getData() { return data; }
     public IntegrationScheme getIntegrationScheme() { return integrationScheme; }
     /**
+     * Select before initialization for fixed-step TWO_STEP diagnostics. This
+     * opt-in storage-precision discriminator leaves equations and case data
+     * unchanged; full fleet/event accuracy has not been established.
+     */
+    public void setSinglePrecisionStates(boolean enabled) {
+        twoStep.setSinglePrecision(enabled);
+        if (reeca1Controller!=null) reeca1Controller.setSinglePrecisionStates(enabled);
+    }
+    /**
      * Select before initialization. TWO_STEP is an explicit verification path;
      * its commercial lag identities are verified, full fleet/event parity is open.
      */

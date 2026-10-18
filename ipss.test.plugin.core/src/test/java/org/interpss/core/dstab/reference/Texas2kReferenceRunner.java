@@ -11,6 +11,7 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PsseDStabSolver;
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.algo.PsseStaggeredEulerSolver;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -133,18 +134,22 @@ public final class Texas2kReferenceRunner {
             String renewableScheme = plan.has("renewable_integration_scheme")
                     ? plan.get("renewable_integration_scheme").getAsString() : "MODIFIED_EULER";
             var scheme = Regca1Model.IntegrationScheme.valueOf(renewableScheme);
+            boolean renewableSinglePrecision = plan.has("renewable_single_precision_states")
+                    && plan.get("renewable_single_precision_states").getAsBoolean();
             int configuredRenewables = 0;
             for (var networkBus : net.getBusList()) {
                 for (var generator : networkBus.getContributeGenList()) {
                     if (generator instanceof DStabGen dynamicGen
                             && dynamicGen.getDynamicGenDevice() instanceof Regca1Model renewable) {
                         renewable.setIntegrationScheme(scheme);
+                        renewable.setSinglePrecisionStates(renewableSinglePrecision);
                         configuredRenewables++;
                     }
                 }
             }
             status.put("renewable_integration_scheme", renewableScheme);
             status.put("configured_regca1_devices", configuredRenewables);
+            status.put("renewable_single_precision_states", renewableSinglePrecision);
             String bus = "Bus" + event.get("target_bus").getAsInt();
             double start = event.get("start_s").getAsDouble();
             if (event.get("event_type").getAsString().equals("bus_fault")) {
@@ -159,7 +164,31 @@ public final class Texas2kReferenceRunner {
             try (var writer = Files.newBufferedWriter(trace)) {
                 final JsonObject selected = event;
                 // Preserve the loader's initialization and integration-step configuration.
-                algo.setSolver(new PsseDStabSolver(algo) {
+                String globalScheme = plan.has("solver_integration_scheme")
+                        ? plan.get("solver_integration_scheme").getAsString() : "MODIFIED_EULER";
+                if (!globalScheme.equals("MODIFIED_EULER") && !globalScheme.equals("STAGGERED_EULER"))
+                    throw new IllegalArgumentException("Unknown shared integration scheme: "+globalScheme);
+                status.put("solver_integration_scheme", globalScheme);
+                if (globalScheme.equals("STAGGERED_EULER")) {
+                    algo.setSolver(new PsseStaggeredEulerSolver(algo) {
+                        { setNetworkSolutionTolerance(1.e-8); setMaxIterationTimes(500); }
+                        @Override public boolean hasDynEvent(double t) {
+                            for (var e : algo.getNetwork().getDynamicEventList()) {
+                                double boundary = e.isActive() ? e.getStartTimeSec()+e.getDurationSec()
+                                        : e.getStartTimeSec();
+                                if (Math.abs(t-boundary)<1.e-9 || (e.isActive()&&e.getDurationSec()>0
+                                        &&t>boundary&&t<boundary+algo.getSimuStepSec())) return true;
+                            }
+                            return false;
+                        }
+                        @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
+                                throws DStabSimuException {
+                            super.rebaseDynamicModelInputs(method);
+                            try { write(writer, algo.getSimuTime(), "EVENT_POST", record(net, selected)); }
+                            catch (Exception failure) { throw new DStabSimuException("Event observation failed: "+failure); }
+                        }
+                    });
+                } else algo.setSolver(new PsseDStabSolver(algo) {
                     { converge_tol = 1.e-8; setMaxIterationTimes(500); }
                     @Override public boolean hasDynEvent(double t) {
                         // Include a clearing time that lies between integration grid points.
@@ -191,6 +220,12 @@ public final class Texas2kReferenceRunner {
                 if (!algo.initialization()) throw new IllegalStateException("Initialization failed");
                 if (!net.isDStabNetInitialized())
                     throw new IllegalStateException("A dynamic device failed initialization");
+                if (algo.getSolver() instanceof PsseStaggeredEulerSolver shared) {
+                    status.put("bound_synchronous_machines",shared.getBoundMachineCount());
+                    status.put("bound_renewables",shared.getBoundRenewableCount());
+                    status.put("bound_differential_states",shared.getBoundDifferentialStateCount());
+                    status.put("renewable_integration_scheme","TWO_STEP");
+                }
                 double maximumCompensation = 0.;
                 String leadingCompensationBus = "";
                 try (var currents = Files.newBufferedWriter(out.resolve("initial-norton-compensation.csv"))) {

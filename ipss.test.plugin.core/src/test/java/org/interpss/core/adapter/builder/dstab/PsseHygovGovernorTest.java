@@ -24,6 +24,39 @@ public class PsseHygovGovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
+    void sharedIntegratorSeparatesDerivativeEvaluationFromGateCommit() throws Exception {
+        var builder=DStabBuilderTestFixture.createWithMachine();
+        Machine machine=builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0);machine.setPm(.4);machine.setPe(.4);
+        var governor=builder.addGovHygov("Bus1","1",texasData());
+        governor.configureIntegrationStep(.01);
+        assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"),machine));
+        double[] initial=new double[4],observed=new double[4],rates=new double[4];
+        governor.readStaggeredState(initial,0);
+        machine.setSpeed(.99);
+        governor.evaluateStaggered(.01,rates,0);
+        assertEquals(.01/governor.getEffectiveTf(),rates[0],TOL);
+        double[] firstRates=rates.clone();
+        for (int i=0;i<100;i++) {
+            governor.evaluateStaggered(.01,rates,0);
+            governor.readStaggeredState(observed,0);
+            assertArrayEquals(initial,observed,0.0);
+            assertArrayEquals(firstRates,rates,0.0);
+        }
+        double[] next=initial.clone();
+        for (int i=0;i<next.length;i++) next[i]+=.015*rates[i];
+        governor.applyStaggeredState(next,0,.01);
+        governor.readStaggeredState(observed,0);
+        double[] projected=observed.clone();
+        assertEquals(next[0],observed[0],0.0);
+        assertEquals(next[2],observed[2],0.0);
+        assertEquals(next[3],observed[3],0.0);
+        governor.completeStaggeredStep(.01);
+        governor.readStaggeredState(observed,0);
+        assertArrayEquals(projected,observed,0.0);
+    }
+
+    @Test
     void builderAttachesAllTwelveParameters() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
         PsseHygovGovernorData data = texasData();

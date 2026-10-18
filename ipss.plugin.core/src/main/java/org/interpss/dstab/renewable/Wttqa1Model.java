@@ -14,6 +14,7 @@ public final class Wttqa1Model {
     private TorqueState predictorStart;
     private TorqueDerivative predictorDerivative;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
+    void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
 
     public Wttqa1Model(Wttqa1Data data) {
         this.data = data;

@@ -7,6 +7,7 @@ import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
 /**
@@ -18,7 +19,7 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * {@code Tr} dependence that is currently absent from the ANDES HYGOV state
  * equation.</p>
  */
-public class PsseHygovGovernor extends AbstractGovernor implements IntegrationStepAware {
+public class PsseHygovGovernor extends AbstractGovernor implements IntegrationStepAware, StaggeredEulerParticipant {
     private static final double EPS = 1.0e-9;
 
     private State state = State.zero();
@@ -114,6 +115,35 @@ public class PsseHygovGovernor extends AbstractGovernor implements IntegrationSt
     @Override
     public double getOutput(Machine mach) {
         return currentOutput * governorToMachineBase;
+    }
+
+    @Override public int staggeredStateCount() { return 4; }
+
+    @Override public void readStaggeredState(double[] values, int offset) {
+        values[offset] = state.filter;
+        values[offset+1] = state.integrator;
+        values[offset+2] = state.gate;
+        values[offset+3] = state.flow;
+    }
+
+    @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
+        if (!initialized) throw new IllegalStateException("Initialize HYGOV before evaluating derivatives");
+        Derivatives d = derivatives(state);
+        rates[offset] = d.filter;
+        rates[offset+1] = d.integrator;
+        rates[offset+2] = d.gate;
+        rates[offset+3] = d.flow;
+        currentOutput = output(state);
+    }
+
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        state = constrainDesiredGate(new State(values[offset], values[offset+1],
+                values[offset+2], values[offset+3]), committedDesiredGate, stepSec);
+    }
+
+    @Override public void completeStaggeredStep(double stepSec) {
+        committedDesiredGate = desiredGate(state);
+        currentOutput = output(state);
     }
 
     @Override

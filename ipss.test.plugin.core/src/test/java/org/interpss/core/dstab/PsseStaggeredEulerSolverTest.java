@@ -15,6 +15,18 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class PsseStaggeredEulerSolverTest {
+    @Test void compoundFilterExposesEveryActualStateAtTheCommonEndpoint() {
+        var block=new com.interpss.dstab.controller.cml.field.block.FilterNthOrderBlock(.2,.5,2,2);
+        assertTrue(block.initStateU0(1.));
+        var components=block.getIntegrationBlocks();
+        assertEquals(4,components.size());
+        assertThrows(UnsupportedOperationException.class,components::clear);
+        double[] before=components.stream().mapToDouble(b->b.getStateX()).toArray();
+        block.eulerStep1(2.,0.);
+        assertArrayEquals(before,components.stream().mapToDouble(b->b.getStateX()).toArray(),0.);
+        assertArrayEquals(new double[]{1.2,.48,.32,0.},
+                components.stream().mapToDouble(b->b.getDX_dt()).toArray(),1.e-14);
+    }
     private PsseStaggeredEulerSolver solver;
     private DynamicSimuAlgorithm load() throws Exception {
         IpssCorePlugin.init();

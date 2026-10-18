@@ -20,6 +20,11 @@ public final class WindControlStack {
     private double predictorTurbineSpeed;
     private double predictorPref;
     private double predictorMechanicalPower;
+    void setSinglePrecisionStates(boolean enabled) {
+        if (torqueController!=null) torqueController.setSinglePrecisionStates(enabled);
+        if (pitchController!=null) pitchController.setSinglePrecisionStates(enabled);
+        if (driveTrain!=null) driveTrain.setSinglePrecisionStates(enabled);
+    }
 
     public void initialize(double power) {
         predictorActive = false;

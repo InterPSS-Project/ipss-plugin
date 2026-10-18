@@ -12,6 +12,7 @@ public final class Wtpta1Model {
     private PitchState predictorStart;
     private PitchDerivative predictorDerivative;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
+    void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
 
     public Wtpta1Model(Wtpta1Data data) {
         this.data = data;
