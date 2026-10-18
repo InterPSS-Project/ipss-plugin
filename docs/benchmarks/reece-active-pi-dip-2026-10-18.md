@@ -44,6 +44,9 @@ The independent coupled diagnostic also improves PI-state error from
 P 0.0281026/0.0280380 pu, Q 0.0173520/0.0166364 pu, and Bus 1 voltage
 0.00270804/0.00262849 pu. These do not establish full convergence or acceptance.
 Reactive current-limit feedback and callback publication remain open.
+The subsequent [reactive blocking slice](reece-reactive-blocking-2026-10-18.md)
+addresses frozen-state bound projection and immediate blocking entry; the
+numbers above remain this slice's original diagnostic evidence.
 
 ## Gates and archive
 

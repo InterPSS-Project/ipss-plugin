@@ -26,6 +26,8 @@ layouts, complete callback parity or coupled trajectory acceptance. The REECE/RE
 hardware-blocking current boundary is corrected with failing-before and cold-paired
 native evidence. A subsequent native discriminator resolves the printed-diagram
 active-PI freeze mismatch; other coupled trajectory residuals remain open.
+Native QFLAG=2 now also projects its frozen reactive PI state into collapsed
+blocking bounds and applies blocking at the filtered-voltage crossing endpoint.
 WTGIBFFRA now has
 strict standard-native import, REGCA/REGCB + REECD Paux attachment, seven kernel
 replay profiles and bounded governed-SMIB comparisons. Native automatic recovery,
@@ -65,6 +67,12 @@ and state definitions agree.
   zero failures/errors. Confirm the replay class is discovered in the SMIB XML.
 - [ ] Resolve remaining REECE coupled reactive-limit/callback mismatch;
   the blocking and active PI fixes are not full trajectory acceptance.
+- [x] Correct native local reactive PI bound projection during dip freeze and
+  immediate blocking entry, with failing-before and two-step native replays.
+  See [reactive blocking evidence](benchmarks/reece-reactive-blocking-2026-10-18.md).
+- [x] Validate reactive blocking: 38 focused checks, 269 plugin-core tests
+  (six optional skips), 1,309 SMIB/model tests (one existing diagnostic skip),
+  zero failures/errors; retain both failing-before attempts and raw native hashes.
   See [slice evidence](benchmarks/reece-native-import-2026-10-18.md).
 - [x] Visually review pages 3-4 of the user-supplied May 2026 PDF, retain its
   SHA-256 identity, and transcribe all 45 renewable rows into the approval catalog.

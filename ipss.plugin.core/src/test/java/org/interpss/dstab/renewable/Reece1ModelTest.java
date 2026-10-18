@@ -141,6 +141,29 @@ class Reece1ModelTest {
             assertEquals(.3,m.getNamedStates().get("Pord"),0);
         }
     }
+    @Test void nativeLocalReactivePiProjectsToBlockingBoundsDespiteDipFreeze() {
+        for(double h:new double[]{.0005,.00025}) {
+            var m=model(change(data(2,0,1),Map.of(TRV,0.0)));
+            assertEquals(.1,m.getNamedStates().get("PIQ"),0);
+            m.step(h,.3,.1,.1,1);
+            assertTrue(m.isVoltageDip());assertTrue(m.isConverterBlocked());
+            assertEquals(0,m.getNamedStates().get("PIQ"),0);
+            assertEquals(.3,m.getNamedStates().get("Pord"),0);
+            m.step(h,.3,.1,.5,1);
+            assertTrue(m.isVoltageDip());assertFalse(m.isConverterBlocked());
+            assertEquals(0,m.getNamedStates().get("PIQ"),0,"Opening bounds cannot restore the discarded integral state");
+        }
+    }
+    @Test void filteredVoltageThresholdBlocksAtTheCrossingEndpoint() {
+        for(double h:new double[]{.0005,.00025}) {
+            var m=new Reece1Model(data(2,0,1));m.initialize(.3,.1,.201);
+            assertFalse(m.isBlocked());m.step(h,.3,.1,.1,1);
+            assertTrue(m.getNamedStates().get("Vmeas")<.2);
+            assertTrue(m.isBlocked());assertTrue(m.isConverterBlocked());
+            assertEquals(0,m.getIpcmd(),0);assertEquals(0,m.getIqcmd(),0);
+            assertEquals(0,m.getNamedStates().get("PIQ"),0);
+        }
+    }
     @Test void restartClearsReferenceEventsAndStageHistoryAndRejectsInvalidInputs() {
         var m=model(data(2,0,1));m.setReferenceSteps(.1,.1);m.step(.001,.3,.1,1,1,0);m.initialize(.3,.1,1);
         assertThrows(IllegalStateException.class,()->m.step(.001,.3,.1,1,1,1));assertEquals(.3,m.getIpcmd(),1e-15);

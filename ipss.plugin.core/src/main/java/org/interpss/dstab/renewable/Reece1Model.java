@@ -100,7 +100,9 @@ public final class Reece1Model implements RenewableElectricalController, ICMLSta
     }
     private void advance(double[] start,double[] rate,double dt,Signals s) {
         for(int i=0;i<8;i++)x[i]=start[i]+dt*rate[i];
-        if(qflag()==2&&!dip())x[2]=Reece1LocalPi.project(x[2],s.limits.iqmin,s.limits.iqmax);
+        // Freezing the integral derivative does not disable moving state bounds:
+        // native local-Q PI storage collapses to zero during hardware blocking.
+        if(qflag()==2)x[2]=Reece1LocalPi.project(x[2],s.limits.iqmin,s.limits.iqmax);
         if(qflag()==1&&!dip()) {
             if(data.selectors().voltageFlag()==1)x[2]=Reece1LocalPi.project(x[2],vmin,vmax);
             x[3]=Reece1LocalPi.project(x[3],s.limits.iqmin,s.limits.iqmax);
@@ -139,7 +141,7 @@ public final class Reece1Model implements RenewableElectricalController, ICMLSta
         return new Signals(ip,clamp(rawIq,limits.iqmin,limits.iqmax),rawIq,qref,q,pref,power,error,limits);
     }
     private Limits limits(double ip,double iq,boolean dip) {
-        if(blocked||unblock>0)return new Limits(0,0,0,0);
+        if(blocked||unblock>0||outside())return new Limits(0,0,0,0);
         double ipmax=table(x[0],49),iqmax=table(x[0],29),imax=value(IMAX);
         if(data.selectors().currentPriority(dip)==0) {
             iqmax=Math.min(iqmax,imax);double iqmin=iqmax<0?iqmax:-iqmax;
@@ -187,7 +189,7 @@ public final class Reece1Model implements RenewableElectricalController, ICMLSta
     public void setGeneratorSpeed(double value){finite(value);if(value<=0)throw new IllegalArgumentException("REECE speed must be positive");speed=value;}
     public Reece1Data getData(){return data;}
     public boolean isVoltageDip(){requireInitialized();return dip();}
-    public boolean isBlocked(){requireInitialized();return blocked||unblock>0;}
+    public boolean isBlocked(){requireInitialized();return blocked||unblock>0||outside();}
     @Override public boolean isConverterBlocked(){return initialized && isBlocked();}
     public double getPreparedPowerReference(){requireInitialized();return preparedPref;}
     @Override public double getIpcmd(){requireInitialized();return output.ip;}
