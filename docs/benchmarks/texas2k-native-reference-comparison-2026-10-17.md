@@ -20,6 +20,14 @@ single `0.001` full-window gate is retained only as historical evidence.
 The updated target has **not** been achieved. Partial or failed trajectories
 cannot pass.
 
+Commercial-tool documentation and reproducible commercial-tool outputs are the
+primary verification references for the exact model and version. ANDES is a
+secondary consistency check; agreement with it does not establish correctness
+or satisfy commercial-reference acceptance. Resolve discrepancies against the
+commercial references and documented equations. Do not change model behavior
+or relax tolerances solely to match ANDES. Missing commercial verification
+remains an open verification gap.
+
 The local comparison producer retains input and reference SHA-256 hashes,
 freezes compiled runtime jars, preserves event-pre/event-post samples, and
 validates the native float32 clock before mapping samples by integration-step
@@ -174,10 +182,12 @@ Adding WTDTA1 retains this startup derivative; changing only PFLAG to zero
 removes it. This is a genuine non-equilibrium initial condition in the supplied
 profile, not a signal to fit a gain or suppress the derivative.
 
-The native DYR importer now explicitly selects that speed convention.
-Typed clients retain the existing power-reference convention, and the ANDES
-comparison fixture explicitly selects its existing convention. No comparison
-tolerance is relaxed. Focused REECA1, wind-control and cross-tool tests pass.
+The DYR importer explicitly selects the speed convention demonstrated by the
+commercial reference. Existing typed-client behavior is retained for API
+compatibility. The ANDES fixture explicitly selects its different convention
+as a secondary regression check; that convention does not define the
+commercial model's behavior or acceptance criteria. No comparison tolerance
+is relaxed. Focused REECA1, wind-control and cross-tool tests pass.
 The installed model-library REECA1/WTTQA1 diagrams and reference outputs support
 this distinction; it is not a claim of complete wind-model conformance.
 
