@@ -1,5 +1,9 @@
 # WTDTB1 / WTDTBU1 foundation: incomplete model
 
+Foundation snapshot: commit `54b4c53c0`. The subsequent
+[PowerWorld playback slice](wtdtb1-powerworld-playback-2026-10-18.md) adds an
+independent runtime comparison; native PSS/E acceptance remains open.
+
 This slice adds a published-diagram kernel and typed wind-stack support, not an
 accepted native implementation. Neither identifier is registered in the DYR
 importer/catalog. Approved renewable coverage remains **17 loadable, ten missing**.

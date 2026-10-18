@@ -63,9 +63,17 @@ and state definitions agree.
   - [x] Audit six native profiles twice cold at 0.5/0.25 ms, all input/output
     hashes, all 14 channels and duplicate event sides. Confirm the exact legacy
     `103 0 0 6 5 3` wrapper matches the standard native record byte-for-byte.
+  - [x] Independently run the exact typed PowerWorld WTGT_B baseline twice cold
+    at each timestep with unchanged exported parameters and no automatic
+    correction. Add permanent five-state power-playback checks, event-side
+    retention, frozen fingerprints and negative equation-mutation guards.
+    See [PowerWorld profile scope and native discrepancy](benchmarks/wtdtb1-powerworld-playback-2026-10-18.md).
+  - [x] Localize a candidate native-only `wg/wt` shaft-feedback term with two
+    independently perturbed speed coordinates and exact cold-repeat outputs;
+    keep it test-only until native branch and full-solver acceptance are complete.
   - [ ] Resolve non-converging two-mass native-state differences; do not fit
     torque/power conversions or widen tolerances. Complete native non-unit-speed
-    initialization and PowerWorld runtime comparisons before importer acceptance.
+    initialization and remaining PowerWorld branch profiles before importer acceptance.
   - [ ] Add strict native/wrapper parser and builder paths, missing-host and
     duplicate-record rejection, lifecycle and full-solver SMIB verification.
   See [WTDTB1 foundation evidence and open discrepancies](benchmarks/wtdtb1-foundation-2026-10-18.md).
