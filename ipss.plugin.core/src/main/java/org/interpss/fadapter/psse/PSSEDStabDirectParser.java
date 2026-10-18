@@ -851,6 +851,8 @@ public class PSSEDStabDirectParser {
                 return procRegfma1(busId, genId, record);
             case "REGFMB1U":
                 return procRegfmb1(busId,genId,record);
+            case "REGFMC1U":
+                return procRegfmc1(busId,genId,record);
             case "CSVGN5":
                 return procCsvgn5(busId, genId, fields);
             case "SVSMO1T2":
@@ -3513,6 +3515,18 @@ public class PSSEDStabDirectParser {
         return builder.addRegfma1(busId, genId, data) != null;
     }
 
+    private boolean procRegfmc1(String busId,String genId,PsseDyrRecord record) {
+        if(record.parameterOffset()!=4||!record.fields().get(1).equalsIgnoreCase("USRMDL")||record.parameterCount()!=43)return false;
+        int[] allocation={101,1,3,34,11,27};
+        for(int i=0;i<6;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var bus=builder.getBaseDStabNetwork().getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);if(gen==null)return false;
+        int[] flags=new int[3];double[] constants=new double[34];
+        for(int i=0;i<3;i++)flags[i]=record.intParameter(6+i);
+        for(int i=0;i<34;i++)constants[i]=record.doubleParameter(9+i);
+        return builder.addRegfmc1(busId,genId,org.interpss.dstab.renewable.Regfmc1Data.nativePsse(gen.getSourceZ(),flags,constants))!=null;
+    }
+
     private boolean procRegfmb1(String busId,String genId,PsseDyrRecord record) {
         if(record.parameterOffset()!=4||!record.fields().get(1).equalsIgnoreCase("USRMDL")||record.parameterCount()!=37)return false;
         int[] allocation={101,1,6,25,14,17};
@@ -4287,6 +4301,7 @@ public class PSSEDStabDirectParser {
     }
 
     private String attachedMessage(PsseDyrRecord record) {
+        if(record.canonicalModelName().equals("REGFMC1U"))return "PSS/E 36.7 exact USRMDL 101 1 3 34 11 27; hybrid GFM/GFL; machine-base RAW ZSOURCE";
         if(record.canonicalModelName().equals("REGFMB1U"))return "PSS/E 36.7 exact USRMDL 101 1 6 25 14 17; machine-base RAW ZSOURCE";
         if (record.canonicalModelName().equals("REGFMA1"))
             return record.parameterCount() == 20

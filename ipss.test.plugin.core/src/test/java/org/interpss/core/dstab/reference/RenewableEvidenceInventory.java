@@ -15,7 +15,7 @@ public final class RenewableEvidenceInventory {
     public enum Scope { MISSING_IMPLEMENTATION, FOCUSED_ONLY, BOUNDED_DIALECT_COMPARISON,
         NATIVE_PARTIAL_PROFILE, NATIVE_RECORDED_PROFILE }
     public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP, WTPTB_NATIVE_MAP, WTGWGO_NATIVE_MAP, REECD_PAUX_NATIVE_MAP,
-        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
+        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
     public record Entry(String model,String focusedTest,String trajectoryTest,Scope scope,
                         CheckpointKind storage,String checkpoint,String fixture,String limitation) {
         public Class<?> focusedClass() throws ClassNotFoundException {
@@ -68,6 +68,13 @@ public final class RenewableEvidenceInventory {
                     for(var reference:references){reference.inputs();reference.states();}
                     if(WtgibffraCoupledReference.profiles().size()!=2)throw new IllegalStateException("Incomplete coupled WTGIBFFRA references");
                     for(var reference:WtgibffraCoupledReference.profiles())reference.body();
+                }
+                case REGFMC_NATIVE_MAP -> {
+                    if(Regfmc1NativeContractReference.profiles().size()!=6||Regfmc1SelectorNativeReference.profiles().size()!=6)throw new IllegalStateException("Incomplete REGFMC1U reference matrix");
+                    for(var p:Regfmc1NativeContractReference.profiles())p.body();
+                    for(var p:Regfmc1SelectorNativeReference.profiles())p.body();
+                    if(Regfmc1LifecycleNativeReference.profiles().size()!=2)throw new IllegalStateException("Incomplete REGFMC1U lifecycle reference matrix");
+                    for(var p:Regfmc1LifecycleNativeReference.profiles())p.body();
                 }
                 case REGFMB_NATIVE_MAP -> {
                     if(Regfmb1NativeContractReference.profiles().size()!=4||Regfmb1SelectorNativeReference.profiles().size()!=11)throw new IllegalStateException("Incomplete REGFMB1U reference matrix");
@@ -141,6 +148,9 @@ public final class RenewableEvidenceInventory {
                 new Entry("REGFMB1U","PsseRegfmb1ModelTest","Regfmb1NativeRuntimePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.REGFMB_NATIVE_MAP,"Regfmb1NativeContractReference + Regfmb1SelectorNativeReference","renewable/regfmb1u_native.dyr",
                         "Native reference exact USRMDL 101 1 6 25 14 17 import and network adapter; thirteen fourteen-state replays and two-step flat/fault/trip checks. Source REGFMB1 is not an inferred alias. Modified-/staggered-Euler, active limits, further selectors/lifecycle and complete coupled/PowerWorld acceptance remain open."),
+                new Entry("REGFMC1U","PsseRegfmc1ModelTest","Regfmc1NativeRuntimePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
+                        CheckpointKind.REGFMC_NATIVE_MAP,"Regfmc1NativeContractReference + Regfmc1SelectorNativeReference","renewable/regfmc1u_native.dyr",
+                        "Native reference exact USRMDL 101 1 3 34 11 27 import and hybrid network adapter; twelve eleven-state replays and bounded two-step flat/fault/trip checks. REGFMC1 is not an inferred alias. REPCGFMC1 routing, precision/history/callback and complete lifecycle/PowerWorld acceptance remain open."),
                 bounded("REECA1","PsseReeca1ControllerTest"),
                 bounded("REPCA1","PsseRepca1PlantControllerTest"),
                 bounded("WTDTA1","PsseType3WindControllerTest"),
@@ -148,12 +158,9 @@ public final class RenewableEvidenceInventory {
                 bounded("WTPTA1","PsseType3WindControllerTest"),
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
-            Set.of("REGFMC1",
-                    "REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
+            Set.of("REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        model.equals("REGFMC1")
-                        ?"Native reference REGFMC1U data, hybrid boundary and eleven-state kernel exist, with twelve bounded native replays. No parser or network device yet; retain missing-runtime classification. Import, coupled SMIB, precision/callback, lifecycle and PowerWorld acceptance remain open."
-                        :"No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
+                        "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {
@@ -181,11 +188,11 @@ public final class RenewableEvidenceInventory {
                 .append("Source SHA-256: `").append(WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256).append("`.\n\n")
                 .append("The source renewable section has 45 rows: 29 approved, 28 with a native PTI mapping, ")
                 .append("and 27 distinct planned native families because WT1T/WT2T share WT12T1. ")
-                .append("23 families currently have loadable runtime paths; four implementations are genuinely missing. ")
+                .append("24 families currently have loadable runtime paths; three implementations are genuinely missing. ")
                 .append("REEC_E uses the proved native reference standard name REECE; the source-listed REECE1/REECEU1 names and wrappers remain unsupported. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
-                .append("Eight families have native recorded-profile links, eight have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE and REGFMB1U), ")
+                .append("Eight families have native recorded-profile links, nine have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U and REGFMC1U), ")
                 .append("six have only the explicitly bounded ANDES coupled comparison, and one has focused tests only. ")
                 .append("None of the latter seven is established as native simulator conformance. Legacy/retired and ")
                 .append("manufacturer-package supplemental models need a separate evidence expansion; their source rows ")

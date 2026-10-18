@@ -29,10 +29,9 @@ class DynamicModelCatalogTest {
                 "WT1T and WT2T share WT12T1");
         var missing=nativeRows.stream().filter(row->!row.isImplementedExactly())
                 .map(WeccModelApproval::interpssModel).collect(java.util.stream.Collectors.toSet());
-        assertEquals(Set.of("REGFMC1",
-                "REPCCU","HPLNTD","REPCGFMC1"),missing,
+        assertEquals(Set.of("REPCCU","HPLNTD","REPCGFMC1"),missing,
                 "Any implementation claim must be backed by a real parser/runtime descriptor");
-        assertEquals(24,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(25,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         for(String model:missing)assertTrue(DynamicModelCatalog.find(model).isEmpty(),
                 "Do not add a loadable placeholder, guessed schema, or unrelated engine: "+model);
     }

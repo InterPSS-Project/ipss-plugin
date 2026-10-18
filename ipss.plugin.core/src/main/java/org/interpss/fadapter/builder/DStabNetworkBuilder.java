@@ -196,6 +196,8 @@ import org.interpss.dstab.renewable.Regfma1Data;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.renewable.Regfmb1Data;
 import org.interpss.dstab.renewable.Regfmb1Model;
+import org.interpss.dstab.renewable.Regfmc1Data;
+import org.interpss.dstab.renewable.Regfmc1Model;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.dstab.renewable.WindControlStack;
@@ -3506,6 +3508,14 @@ public class DStabNetworkBuilder {
             return null;
         }
         return new Regfma1Model(gen, bus, genId, data);
+    }
+
+    public Regfmc1Model addRegfmc1(String busId,String genId,Regfmc1Data data) {
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(bus==null||!bus.isActive()||gen==null||!gen.isActive()||gen.getMach()!=null||gen.getDynamicGenDevice()!=null)return null;
+        if(gen.getXfrZ()!=null&&gen.getXfrZ().abs()!=0)throw new IllegalArgumentException("Native REGFMC1U must not have an implicit RAW transformer");
+        return new Regfmc1Model(gen,bus,genId,data);
     }
 
     public Regfmb1Model addRegfmb1(String busId,String genId,Regfmb1Data data) {

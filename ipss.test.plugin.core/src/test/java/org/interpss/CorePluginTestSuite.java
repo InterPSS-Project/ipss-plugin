@@ -151,6 +151,8 @@ import org.interpss.core.dstab.ReeceNativeImportSmibIntegrationTest;
 import org.interpss.core.dstab.Regfmb1NativeContractConformanceTest;
 import org.interpss.core.dstab.Regfmc1NativeContractConformanceTest;
 import org.interpss.core.dstab.Regfmc1NativeRuntimePartialConformanceTest;
+import org.interpss.core.dstab.Regfmc1NativeImportSmibTest;
+import org.interpss.core.adapter.builder.dstab.PsseRegfmc1ModelTest;
 import org.interpss.core.dstab.Regfmb1NativeRuntimePartialConformanceTest;
 import org.interpss.core.dstab.Regfmb1NativeImportSmibTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfmb1ModelTest;
@@ -926,6 +928,8 @@ import org.junit.platform.suite.api.Suite;
 	Regfmb1NativeContractConformanceTest.class,
 	Regfmc1NativeContractConformanceTest.class,
 	Regfmc1NativeRuntimePartialConformanceTest.class,
+	Regfmc1NativeImportSmibTest.class,
+	PsseRegfmc1ModelTest.class,
 	Regfmb1NativeRuntimePartialConformanceTest.class,
 	Regfmb1NativeImportSmibTest.class,
 	PsseRegfmb1ModelTest.class,

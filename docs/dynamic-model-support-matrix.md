@@ -31,6 +31,7 @@ source-approved families that have no implementation or parser descriptor.
 | REGCB1 | CONVERTER_MACHINE | REGCBU1 | 9 | LOADABLE | `org.interpss.dstab.renewable.Regcb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGC_B.htm) |
 | REGFMA1 | CONVERTER_MACHINE |  | 20 | LOADABLE | `org.interpss.dstab.renewable.Regfma1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_A1.htm) |
 | REGFMB1U | CONVERTER_MACHINE |  | 37 | LOADABLE | `org.interpss.dstab.renewable.Regfmb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_B1.htm) |
+| REGFMC1U | CONVERTER_MACHINE |  | 43 | LOADABLE | `org.interpss.dstab.renewable.Regfmc1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20REGFM_C1.htm) |
 | WT3G1 | CONVERTER_MACHINE |  | 6 | LOADABLE | `org.interpss.dstab.mach.Wt3g1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT3G1.htm) |
 | WT3G2 | CONVERTER_MACHINE |  | 14 | LOADABLE | `org.interpss.dstab.mach.Wt3g2Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT3G2.htm) |
 | WT4G1 | CONVERTER_MACHINE |  | 9 | LOADABLE | `org.interpss.dstab.mach.Wt4g1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Generator%20WT4G1.htm) |

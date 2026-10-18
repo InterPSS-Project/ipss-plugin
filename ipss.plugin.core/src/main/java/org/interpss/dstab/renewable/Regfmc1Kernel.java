@@ -19,6 +19,7 @@ public final class Regfmc1Kernel implements ICMLStateProvider {
     private double initialP,initialQ,initialVoltage,gflVoltageReference,voltageTime;
     private double pStep,qStep,vStep,wStep,gfmPower,gfmIq;
     private boolean initialized;
+    private boolean nominalStepPending;
 
     public Regfmc1Kernel(Regfmc1Data data,double frequencyHz) {
         this.data=Objects.requireNonNull(data);
@@ -26,17 +27,25 @@ public final class Regfmc1Kernel implements ICMLStateProvider {
         omegaBase=2*Math.PI*frequencyHz;
     }
     public void initialize(Complex terminalVoltage,Complex machinePower,double nominalStep) {
+        initializeWithVoltageTime(terminalVoltage,machinePower,data.internalVoltageTimeConstant(nominalStep));
+    }
+    /** Network devices receive their real timestep on the first predictor, not
+     * during initStates. Defer Te correction without resetting solved states or references. */
+    public void initialize(Complex terminalVoltage,Complex machinePower) {
+        initializeWithVoltageTime(terminalVoltage,machinePower,value(TE));nominalStepPending=true;
+    }
+    private void initializeWithVoltageTime(Complex terminalVoltage,Complex machinePower,double te) {
         finite(terminalVoltage);finite(machinePower);
         double voltage=terminalVoltage.abs();
         if(voltage<=0)throw new IllegalArgumentException("REGFMC1U initial voltage must be positive");
-        double te=data.internalVoltageTimeConstant(nominalStep),vref=data.gflVoltageReference(voltage);
+        double vref=data.gflVoltageReference(voltage);
         if(value(DEMIN)>0||value(DEMAX)<0||value(DWMIN)>0||value(DWMAX)<0)
             throw new IllegalArgumentException("REGFMC1U equilibrium requires zero within PI/speed bounds");
         var gfl=Regfmc1NetworkBoundary.gridFollowing(data,machinePower.getReal(),machinePower.getImaginary(),voltage,vref,terminalVoltage.getArgument());
         Complex actual=terminalVoltage.multiply(gfl.current().conjugate());
         if(actual.subtract(machinePower).abs()>1e-9||gfl.current().abs()>value(IMAX))
             throw new IllegalArgumentException("REGFMC1U initial GFL power must be feasible without clipping or voltage injection");
-        Arrays.fill(x,0);old=first=null;pStep=qStep=vStep=wStep=gfmPower=gfmIq=0;
+        Arrays.fill(x,0);old=first=null;nominalStepPending=false;pStep=qStep=vStep=wStep=gfmPower=gfmIq=0;
         initialP=machinePower.getReal();initialQ=machinePower.getImaginary();initialVoltage=voltage;
         gflVoltageReference=vref;voltageTime=te;
         x[0]=x[1]=x[4]=voltage;x[5]=x[6]=data.enabled(Regfmc1Data.Flag.FFLAG)?1:0;x[10]=terminalVoltage.getArgument();initialized=true;
@@ -55,6 +64,7 @@ public final class Regfmc1Kernel implements ICMLStateProvider {
         if(dt==0){refresh(terminalVoltage);return;}
         if(stage==1&&old==null)throw new IllegalStateException("REGFMC1U corrector without predictor");
         if(stage==1&&dt!=predictorStep)throw new IllegalArgumentException("REGFMC1U predictor/corrector steps must match");
+        if(stage==0&&nominalStepPending){voltageTime=data.internalVoltageTimeConstant(dt);nominalStepPending=false;}
         refresh(terminalVoltage);
         if(stage==0){predictorStep=dt;old=x.clone();first=rates(terminalVoltage);advance(old,first,dt);}
         else {

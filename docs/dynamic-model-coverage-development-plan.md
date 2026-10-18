@@ -17,8 +17,8 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 23 with a
-versioned loadable runtime path, four not implemented**, not merely missing
+The approved native renewable audit finds **27 distinct families: 24 with a
+versioned loadable runtime path, three not implemented**, not merely missing
 benchmark coverage. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -53,6 +53,21 @@ and state definitions agree.
 
 ## Approved renewable source and evidence audit
 
+- [x] Add exact native REGFMC1U wrapper parsing and hybrid network adapter, with
+  non-overwriting attachment, machine/system-base Norton conversion, semantic
+  monitoring, explicit removal and trip behavior. Coverage is now 24/27 runtime
+  paths; HPLNTD, REPCCU and REPCGFMC1 remain missing.
+- [x] Compare imported flat, three-cycle-fault and trip SMIB profiles against
+  native references at both steps; preserve initial offsets and callback limits.
+  Four new cold native trip runs form two byte-identical pairs. See
+  [native import evidence](benchmarks/regfmc-native-import-2026-10-18.md).
+- [x] Validate the native import slice: 75 focused checks, 299 plugin-core tests
+  (six optional skips), 1,348 registered SMIB/model/solver checks (one existing
+  diagnostic skip), zero failures/errors. Audit seventeen tested source/resource
+  files, 28 native runs and fourteen byte-identical cold pairs; preserve raw
+  event history and the declared instantaneous callback limitations.
+- [ ] Complete exact REPCGFMC1 plant routing and broader REGFMC1U coupled
+  selector/current-limit/reference/reconnect and complete independent acceptance.
 - [x] Freeze native reference REGFMC1U allocation (three ICONs, 34 CONs, eleven
   STATEs, 27 VARs), initialization and hybrid GFM/GFL boundary from rendered
   diagrams; implement typed data and algebraic primitives without a dummy runtime.
@@ -66,7 +81,8 @@ and state definitions agree.
   cold pairs, with complete log/CSV quality checks.
 - [ ] Complete REGFMC1U eleven-state kernel, native parser/network adapter,
   plant routing, selector/lifecycle tests and independently coupled SMIB comparisons.
-  Foundation work does not change the 23/27 loadable count or four missing runtimes.
+  The foundation checkpoint retained 23/27 loadable paths and four missing
+  runtimes; the later import slice above raises runtime presence to 24/27.
   - [x] Implement the eleven-state kernel, semantic states, explicit modified-Euler
     stages, PI/speed anti-windup, zero-time measurements and distinct GFM/GFL references.
   - [x] Add twelve accepted native cold runs / six datasets for off/bounded and
@@ -77,8 +93,8 @@ and state definitions agree.
   - [x] Validate the kernel: 79 focused checks, 298 plugin-core tests (six optional
     skips), 1,338 SMIB/model checks (one existing diagnostic skip), zero failures/errors.
     Audit twelve tested files, all 24 native runs and twelve byte-identical cold pairs.
-  - [ ] Add the exact native wrapper, network adapter and independently coupled
-    flat/fault/trip SMIB gates. Runtime presence remains missing until then.
+  - [x] Add the exact native wrapper, network adapter and independently coupled
+    flat/fault/trip SMIB gates. This raises runtime presence to 24/27, not full acceptance.
 - [x] Add strict native REGFMB1U wrapper import, non-overwriting device attachment,
   machine/system-base Norton boundary and deferred REPCA1 routing. Coverage is
   23/27 versioned runtime paths; HPLNTD, REPCCU, REGFMC1 and REPCGFMC1 remain missing.
@@ -349,8 +365,8 @@ and state definitions agree.
 - [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter
   and plant models. Do not alias them to REGFMA1 or REPCA1.
   REGFMB1U now has a loadable adapter and bounded native SMIB evidence; its full
-  acceptance remains open. REGFMC1U now has an eleven-state kernel and bounded
-  native replay; its import/network adapter remains missing.
+  acceptance remains open. REGFMC1U now has an eleven-state kernel, exact native
+  import/network adapter and bounded coupled SMIB evidence; plant routing and full acceptance remain open.
 - [ ] Complete REECD beyond its new native Paux active-path profiles, close the
   independent WT12A1U_B trajectory gap and establish native conformance
   for the six currently bounded ANDES links.

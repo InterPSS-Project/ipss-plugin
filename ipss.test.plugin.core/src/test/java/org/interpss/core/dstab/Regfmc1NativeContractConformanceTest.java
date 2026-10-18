@@ -92,8 +92,8 @@ public class Regfmc1NativeContractConformanceTest {
             else {assertEquals(0,active);assertEquals(0,rawLimitedSeparation);}
         }
     }
-    @Test void foundationDoesNotAdvertiseAnUnimplementedParserOrRuntime() {
+    @Test void nativeRuntimeDoesNotInferTheSourceListAlias() {
         assertTrue(org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMC1").isEmpty());
-        assertTrue(org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMC1U").isEmpty());
+        assertEquals("org.interpss.dstab.renewable.Regfmc1Model",org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMC1U").orElseThrow().runtimeClassName());
     }
 }

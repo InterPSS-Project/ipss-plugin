@@ -7,6 +7,9 @@ This slice follows the [native contract and hybrid-boundary foundation](regfmc-n
 
 ## Source and implementation
 
+The subsequent [native import/SMIB slice](regfmc-native-import-2026-10-18.md)
+adds a loadable adapter. Status and counts below describe the kernel-only snapshot.
+
 The native contract remains reference simulator Model Library section 21.9, printed
 pages 820-828 / PDF 832-840. Its controller diagram and non-windup pseudocode
 were visually rechecked. Source PDF SHA-256 is

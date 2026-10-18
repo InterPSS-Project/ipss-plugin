@@ -100,4 +100,13 @@ class Regfmc1KernelTest {
         double[] c=d.constants();c[VREF0.ordinal()]=1.5;
         assertThrows(IllegalArgumentException.class,()->model(Regfmc1Data.nativePsse(d.sourceImpedance(),d.toNativeIcons(),c)));
     }
+    @Test void networkInitializationDefersTeCorrectionToTheActualFirstStepWithoutResettingReferences() {
+        var d=data(1,0,1);double[] c=d.constants();c[TE.ordinal()]=.0001;d=Regfmc1Data.nativePsse(d.sourceImpedance(),d.toNativeIcons(),c);
+        var deferred=new Regfmc1Kernel(d,60);var explicit=new Regfmc1Kernel(d,60);
+        deferred.initialize(Complex.ONE,new Complex(.4,.2));explicit.initialize(Complex.ONE,new Complex(.4,.2),.0005);
+        deferred.setReferenceSteps(0,0,0,0,.01,.01);explicit.setReferenceSteps(0,0,0,0,.01,.01);
+        deferred.step(0,Complex.ONE);assertEquals(explicit.getNamedStates(),deferred.getNamedStates());
+        deferred.step(.0005,Complex.ONE,0);explicit.step(.0005,Complex.ONE,0);assertEquals(explicit.getNamedStates(),deferred.getNamedStates());
+        deferred.step(.0005,Complex.ONE,1);explicit.step(.0005,Complex.ONE,1);assertEquals(explicit.getNamedStates(),deferred.getNamedStates());
+    }
 }
