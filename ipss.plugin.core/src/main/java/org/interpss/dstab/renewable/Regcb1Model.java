@@ -269,6 +269,9 @@ public final class Regcb1Model extends DynamicBusDeviceImpl
         named.put("Voltage measurement filter", active[V]);
         named.put("Inner-control lag for Eq", active[EQ]);
         named.put("Inner-control lag for Ed", active[ED]);
+        if (controller != null && controller.getWeakGridController() != null)
+            controller.getWeakGridController().getNamedStates().forEach(
+                    (key, value) -> named.put("WTGWGOA." + key, value));
         return Map.copyOf(named);
     }
 

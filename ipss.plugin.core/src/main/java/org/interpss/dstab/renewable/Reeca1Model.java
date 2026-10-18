@@ -21,6 +21,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private final Reeca1Data data;
     private final Regca1Model converter;
     private Repca1Model plantController;
+    private WtgwgoaModel weakGridController;
     private WindControlStack windControlStack;
     private WindSpeedConvention windSpeedConvention = WindSpeedConvention.WTTQA_POWER_REFERENCE;
     private BaseDStabBus<?, ?> sensedBus;
@@ -124,6 +125,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             plantController.initialize(p, q, sensedV);
             plantController.setReactiveStateOffset(qReference);
         }
+        if (weakGridController != null) weakGridController.initialize(v, p);
         if (windControlStack != null) windControlStack.initialize(p);
         twoStepIpcmd = ipcmd;
         twoStepIqcmd = iqcmd;
@@ -143,9 +145,9 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double sensedV = snapToInitial(sensedVoltage(v), sensedVoltage0);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
-        double plantPref = plantController == null ? 0.0 : plantController.getPref();
+        if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0));
         if (windControlStack != null) {
-            windControlStack.step(dt, p, pOrder, p0 + plantPref, voltageDip);
+            windControlStack.step(dt, p, pOrder, getSelectedPowerReference(p0), voltageDip);
         }
 
         int substeps = Math.max(1, (int) Math.ceil(dt / MAX_CONTROL_STEP));
@@ -176,9 +178,9 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         if (plantController != null) {
             plantController.step(dt, p, q, sensedV, frequency, flag);
         }
-        double plantPref = plantController == null ? 0.0 : plantController.getPref();
+        if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0), flag);
         if (windControlStack != null) {
-            windControlStack.step(dt, p, pOrder, p0 + plantPref, voltageDip, flag);
+            windControlStack.step(dt, p, pOrder, getSelectedPowerReference(p0), voltageDip, flag);
         }
         if (flag == 0) {
             int substeps = Math.max(1, (int) Math.ceil(dt / MAX_CONTROL_STEP));
@@ -205,9 +207,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         vMeasured = Repca1Model.lag(vMeasured, sensedV, data.trv(), dt);
         pMeasured = Repca1Model.lag(pMeasured, p, data.tp(), dt);
 
-        double plantPref = plantController == null ? 0.0 : plantController.getPref();
         double pref = windControlStack != null && windControlStack.isTorqueControllerActive()
-                ? windControlStack.getPref() : p0 + plantPref;
+                ? windControlStack.getPref() : getSelectedPowerReference(p0);
         double rateTarget = Repca1Model.limit(pref,
                 pFilter + data.dpmin() * dt, pFilter + data.dpmax() * dt);
         pFilter = rateTarget;
@@ -320,9 +321,9 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double sensedV = snapToInitial(sensedVoltage(v), sensedVoltage0);
         boolean dip = sensedV < data.vdip() || sensedV > data.vup();
         if (plantController != null) plantController.stepTwoStep(0.0, p, q, sensedV, frequency);
-        double plantPref = plantController == null ? 0.0 : plantController.getPref();
+        if (weakGridController != null) weakGridController.stepTwoStep(0.0, v, getPlantPowerReference(p0));
         if (windControlStack != null)
-            windControlStack.stepTwoStep(0.0, p, pOrder, p0 + plantPref, dip);
+            windControlStack.stepTwoStep(0.0, p, pOrder, getSelectedPowerReference(p0), dip);
         stepElectricalControls(0.0, p, q, v, sensedV, false);
     }
 
@@ -344,8 +345,9 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         boolean dip = sensedV < data.vdip() || sensedV > data.vup();
         double oldPorder = pOrder;
         double plantPref = plantController == null ? 0.0 : plantController.getPref();
+        double selectedReference = getSelectedPowerReference(p0);
         double pref = windControlStack != null && windControlStack.isTorqueControllerActive()
-                ? windControlStack.getPref() : p0 + plantPref;
+                ? windControlStack.getPref() : selectedReference;
         updateDipTimers(dt, dip);
         pFilter = Repca1Model.limit(pref, pFilter + data.dpmin() * dt,
                 pFilter + data.dpmax() * dt);
@@ -389,7 +391,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         twoStepIpcmd = Repca1Model.limit(pOrder / nonzero(vMeasured), 0.0, stagedIpLimit);
         twoStepIqcmd = iqcmd;
         if (windControlStack != null)
-            windControlStack.stepTwoStep(dt, p, oldPorder, p0 + plantPref, dip);
+            windControlStack.stepTwoStep(dt, p, oldPorder, selectedReference, dip);
+        if (weakGridController != null) weakGridController.stepTwoStep(dt, v, p0 + plantPref);
         if (plantController != null) plantController.stepTwoStep(dt, p, q, sensedV, frequency);
         refreshTwoStep(p, q, v, frequency);
         // Network/output refreshes must not consume a dip transition or start
@@ -529,6 +532,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     }
     @Override public Repca1Model getPlantController() { return plantController; }
     @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
+    @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
+    @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
     public WindControlStack getWindControlStack() { return windControlStack; }
     public void setWindControlStack(WindControlStack stack) {
         windControlStack = stack;

@@ -285,6 +285,13 @@ public class Texas2kFullDynamicCoverageTest {
             case ELECTRICAL_CONTROLLER -> regca(generator) == null ? null
                     : regca(generator).getActiveElectricalController();
             case PLANT_CONTROLLER -> plantController(generator);
+            case POWER_REFERENCE_CONTROLLER -> generator.getDynamicGenDevice()
+                    instanceof org.interpss.dstab.renewable.Regca1Model converter
+                    && converter.getActiveElectricalController() != null
+                    ? converter.getActiveElectricalController().getWeakGridController()
+                    : generator.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.Regcb1Model converter
+                        && converter.getActiveElectricalController() != null
+                        ? converter.getActiveElectricalController().getWeakGridController() : null;
             case DRIVE_TRAIN -> windStack(generator) == null ? null
                     : windStack(generator).getDriveTrain();
             case AERODYNAMIC_CONTROLLER -> windStack(generator) == null ? null

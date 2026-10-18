@@ -14,6 +14,7 @@ public final class Reecd1Model
 
     private final Reecd1Data data;
     private Repca1Model plantController;
+    private WtgwgoaModel weakGridController;
     private double integrationStep;
     private double minimumTimeConstantMultiplier = 1.0;
     private double effectiveTrv;
@@ -110,6 +111,7 @@ public final class Reecd1Model
         if (plantController != null) {
             plantController.initialize(p, q, measuredVoltage);
         }
+        if (weakGridController != null) weakGridController.initialize(v, p);
     }
 
     @Override
@@ -118,6 +120,7 @@ public final class Reecd1Model
         if (plantController != null) {
             plantController.step(dt, p, q, nonzero(v), frequency);
         }
+        if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(initialP));
         int substeps = Math.max(1, (int) Math.ceil(dt / MAX_CONTROL_STEP));
         double h = dt / substeps;
         for (int index = 0; index < substeps; index++) {
@@ -138,8 +141,7 @@ public final class Reecd1Model
         updateBlocking(dt);
 
         if (!dip) {
-            double plantPref = plantController == null ? 0.0 : plantController.getPref();
-            double selected = initialP + plantPref;
+            double selected = getSelectedPowerReference(initialP);
             if (data.powerFlag() == 1) selected *= generatorSpeed;
             double target = clamp(selected, effectivePmin, effectivePmax);
             double requestedRate = effectiveTpord <= EPS
@@ -395,6 +397,8 @@ public final class Reecd1Model
     public Reecd1Data getData() { return data; }
     @Override public Repca1Model getPlantController() { return plantController; }
     @Override public void setPlantController(Repca1Model value) { plantController = value; }
+    @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
+    @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
     public void setGeneratorSpeed(double value) {
         if (!Double.isFinite(value) || value <= 0.0) {
             throw new IllegalArgumentException("REEC_D generator speed must be positive");

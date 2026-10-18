@@ -101,7 +101,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         // implementations can sample the corrected network endpoint. The interface
         // default preserves the former predictor-only behavior for legacy controls.
         RenewableElectricalController controller = activeController();
-        controller.step(dt, p, q, v, frequency, flag);
+        // WGO's voltage trigger measures the terminal, not the safe divisor
+        // used by REGCA's current equations. Preserve the legacy input when absent.
+        double controlVoltage = controller.getWeakGridController() == null
+                ? v : getDStabBus().getVoltageMag();
+        controller.step(dt, p, q, controlVoltage, frequency, flag);
         double ipcmd = controller.getIpcmd();
         double iqcmd = controller.getIqcmd();
 
@@ -140,12 +144,14 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         if (!updateAttributes(false)) return false;
         double v = Math.max(0.01, getDStabBus().getVoltageMag());
         double frequency = getDStabBus().getFreq();
-        reeca1Controller.refreshTwoStep(p, q, v, frequency);
+        double controlVoltage = reeca1Controller.getWeakGridController() == null
+                ? v : getDStabBus().getVoltageMag();
+        reeca1Controller.refreshTwoStep(p, q, controlVoltage, frequency);
         if (flag == 0 && dt > 0.0) {
             double dv = derivative(v, vFiltered, data.tfltr());
             double dip = activeCurrentDerivative(reeca1Controller.getTwoStepIpcmd(), ipState);
             double diq = reactiveCurrentDerivative(reeca1Controller.getTwoStepIqcmd(), iqState);
-            reeca1Controller.stepTwoStep(dt, p, q, v, frequency);
+            reeca1Controller.stepTwoStep(dt, p, q, controlVoltage, frequency);
             twoStep.begin(dt);
             vFiltered = twoStep.advance(0, vFiltered, dv);
             ipState = twoStep.advance(1, ipState, dip);
@@ -343,6 +349,10 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         named.put("Reactive Current Regulator", iqState);
         named.put("Active Power", p);
         named.put("Reactive Power", q);
+        RenewableElectricalController controller = activeController();
+        if (controller != null && controller.getWeakGridController() != null)
+            controller.getWeakGridController().getNamedStates().forEach(
+                    (key, value) -> named.put("WTGWGOA." + key, value));
         if (reeca1Controller != null && reeca1Controller.getWindControlStack() != null) {
             Wtdtb1Model drivetrain = reeca1Controller.getWindControlStack().getTorsionalEmulation();
             if (drivetrain != null) drivetrain.getNamedStates().forEach(

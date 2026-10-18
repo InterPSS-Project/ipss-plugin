@@ -17,8 +17,10 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 19 loadable,
-eight not implemented**, not merely missing benchmark coverage. WTDTB1/WTDTBU1
+The approved native renewable audit finds **27 distinct families: 20 loadable,
+seven not implemented**, not merely missing benchmark coverage. WTGWGOA/WTGWGOAU
+now has strict native import, controller reference routing and bounded SMIB
+evidence; callback/handoff and instantaneous network-post parity remain open. WTDTB1/WTDTBU1
 now has strict native import and bounded SMIB/reference evidence, with explicit
 non-unit precision and instantaneous network-post limitations. The runtime
 catalog previously omitted those unsupported families. Missing exact stabilizer
@@ -130,7 +132,7 @@ and state definitions agree.
     See [WTPTB1 foundation scope and native evidence](benchmarks/wtptb1-foundation-2026-10-18.md).
     The [native import/SMIB report](benchmarks/wtptb1-native-import-2026-10-18.md)
     records the production path, exact evidence and remaining limitations.
-- [ ] Implement WTGWGOAU and WTGIBFFRA, auditing installed-release identifiers,
+- [ ] Complete WTGWGOAU verification and implement WTGIBFFRA, auditing installed-release identifiers,
   input/output coupling and weak-grid/inertial-response branches separately.
   - [x] Add WTGWGOA eight-CON/three-STATE/three-VAR kernel foundation;
     distinguish published second-fault restart from observed PSS/E 36.7
@@ -141,11 +143,20 @@ and state definitions agree.
   - [x] Pass merged foundation regression on `87ef8a0eb`: 195 plugin units
     (six optional skips), 1,237 SMIB/catalog/solver tests (one diagnostic skip),
     zero failures/errors. Preserve raw callback mismatches as unaccepted evidence.
-  - [ ] Complete WTGWGOA native import, host/controller coupling and full-solver
-    SMIB flat/fault/lifecycle gates. Callback/handoff pointwise parity remains
-    open; the PowerWorld export diagnostic is not an accepted benchmark.
-    Coverage remains 19/27 loadable: this kernel does not close WTGWGOAU.
+  - [x] Complete strict WTGWGOA native import, optional plant and REGCA/REGCB
+    host attachment; route its absolute reference into REEC_A/B/C/D and Type-3
+    torque/pitch. Test both native schemas, malformed/duplicate/removal behavior.
+  - [x] Run coupled REECA/REGCA SMIB flat, three-cycle fault, no-plant and trip
+    checks at two steps; freeze additional native V1/V2/V3/P/Q checkpoints.
+  - [x] Pass native-import regression on `29f5cacd0`: 199 plugin units (six
+    optional skips), 1,248 SMIB/catalog/solver tests (one diagnostic skip), zero
+    failures/errors. Retain separate channel bounds and unaccepted event rows.
+  - [ ] Close callback/handoff and instantaneous network-post pointwise parity,
+    independently referenced alternate-host/base/Type-3/reconnect profiles,
+    and complete PowerWorld benchmark artifacts. Coverage is now 20/27 loadable;
+    neither loadability nor matching-mode playback establishes full verification.
     See [foundation evidence and remaining acceptance](benchmarks/wtgwgoa-foundation-2026-10-18.md).
+    See [native import and coupled SMIB scope](benchmarks/wtgwgoa-native-import-2026-10-18.md).
 - [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
   paths and controller initialization; do not silently substitute REECD.
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate

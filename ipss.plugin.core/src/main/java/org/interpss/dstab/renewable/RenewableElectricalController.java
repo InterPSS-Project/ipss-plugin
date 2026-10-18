@@ -18,4 +18,16 @@ public interface RenewableElectricalController extends IntegrationStepAware {
     double getIqcmd();
     Repca1Model getPlantController();
     void setPlantController(Repca1Model plantController);
+    /** Optional weak-grid limiter on the absolute plant power reference. */
+    default WtgwgoaModel getWeakGridController() { return null; }
+    default void setWeakGridController(WtgwgoaModel controller) {
+        throw new UnsupportedOperationException("This electrical controller has no weak-grid reference input");
+    }
+    default double getPlantPowerReference(double initialPower) {
+        return initialPower + (getPlantController() == null ? 0.0 : getPlantController().getPref());
+    }
+    default double getSelectedPowerReference(double initialPower) {
+        return getWeakGridController() == null ? getPlantPowerReference(initialPower)
+                : getWeakGridController().getReference();
+    }
 }

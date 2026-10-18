@@ -17,6 +17,7 @@ public final class Reecb1Model implements RenewableElectricalController {
     private final Reecb1Data data;
     private final Regca1Model converter;
     private Repca1Model plantController;
+    private WtgwgoaModel weakGridController;
     private BaseDStabBus<?, ?> sensedBus;
     private double p0;
     private double q0;
@@ -94,6 +95,7 @@ public final class Reecb1Model implements RenewableElectricalController {
         ipcmd = p / nonzero(sensedV);
         iqcmd = -qCurrent;
         if (plantController != null) plantController.initialize(p, q, sensedV);
+        if (weakGridController != null) weakGridController.initialize(v, p);
     }
 
     private void loadEffectiveParameters() {
@@ -125,6 +127,7 @@ public final class Reecb1Model implements RenewableElectricalController {
         if (dt <= 0.0) return;
         double sensedV = sensedVoltage(v);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
+        if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0));
         int substeps = Math.max(1, (int) Math.ceil(dt / MAX_CONTROL_STEP));
         double controlStep = dt / substeps;
         for (int i = 0; i < substeps; i++) {
@@ -138,8 +141,7 @@ public final class Reecb1Model implements RenewableElectricalController {
         vMeasured = lag(vMeasured, sensedV, effectiveTrv, dt);
         pMeasured = lag(pMeasured, p, effectiveTp, dt);
 
-        double plantPref = plantController == null ? 0.0 : plantController.getPref();
-        if (!voltageDip) updatePowerOrder(p0 + plantPref, dt);
+        if (!voltageDip) updatePowerOrder(getSelectedPowerReference(p0), dt);
 
         double plantQref = plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.pfFlag() == 1
@@ -244,6 +246,8 @@ public final class Reecb1Model implements RenewableElectricalController {
     public Reecb1Data getData() { return data; }
     @Override public Repca1Model getPlantController() { return plantController; }
     @Override public void setPlantController(Repca1Model controller) { plantController = controller; }
+    @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
+    @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
     public double getMeasuredVoltage() { return vMeasured; }
     public double getMeasuredActivePower() { return pMeasured; }
     public double getActivePowerOrder() { return pOrder; }

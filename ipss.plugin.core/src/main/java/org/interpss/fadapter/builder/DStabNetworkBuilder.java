@@ -206,6 +206,9 @@ import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtpta1Model;
 import org.interpss.dstab.renewable.Wtptb1Data;
 import org.interpss.dstab.renewable.Wtptb1Model;
+import org.interpss.dstab.renewable.WtgwgoaData;
+import org.interpss.dstab.renewable.WtgwgoaModel;
+import org.interpss.dstab.renewable.RenewableElectricalController;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.renewable.Wttqa1Model;
 import org.interpss.dstab.mach.GenqecData;
@@ -3613,6 +3616,21 @@ public class DStabNetworkBuilder {
         log.warn("REGCA1/REGCB1/REEC or REGFMA1 chain not found for REPCA1: bus={}, gen={}",
                 busId, genId);
         return null;
+    }
+
+    /** Native weak-grid option; an optional REPCA is not a prerequisite. */
+    public WtgwgoaModel addWtgwgoa(String busId, String genId, WtgwgoaData data) {
+        Regca1Model currentSource = findRegca1(busId, genId);
+        Regcb1Model voltageSource = findRegcb1(busId, genId);
+        RenewableElectricalController controller = currentSource != null
+                ? currentSource.getActiveElectricalController() : voltageSource != null
+                ? voltageSource.getActiveElectricalController() : null;
+        if (controller == null || controller.getWeakGridController() != null
+                || !(controller instanceof Reeca1Model || controller instanceof Reecb1Model
+                    || controller instanceof Reecc1Model || controller instanceof Reecd1Model)) return null;
+        WtgwgoaModel model = WtgwgoaModel.forNativePsse367(data);
+        controller.setWeakGridController(model);
+        return model;
     }
 
     public Wtara1Model addWtara1(String busId, String genId, Wtara1Data data) {
