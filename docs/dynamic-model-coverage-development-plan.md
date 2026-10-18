@@ -132,6 +132,20 @@ and state definitions agree.
     records the production path, exact evidence and remaining limitations.
 - [ ] Implement WTGWGOAU and WTGIBFFRA, auditing installed-release identifiers,
   input/output coupling and weak-grid/inertial-response branches separately.
+  - [x] Add WTGWGOA eight-CON/three-STATE/three-VAR kernel foundation;
+    distinguish published second-fault restart from observed PSS/E 36.7
+    continuation. Preserve default published behavior and explicit native factory.
+  - [x] Audit 22 cold native runs, including an exact legacy wrapper, and retain
+    ten immutable recorded-input/checkpoint profiles. Pass 14 equation/stage
+    tests and four partial native playback/integrity tests.
+  - [x] Pass merged foundation regression on `87ef8a0eb`: 195 plugin units
+    (six optional skips), 1,237 SMIB/catalog/solver tests (one diagnostic skip),
+    zero failures/errors. Preserve raw callback mismatches as unaccepted evidence.
+  - [ ] Complete WTGWGOA native import, host/controller coupling and full-solver
+    SMIB flat/fault/lifecycle gates. Callback/handoff pointwise parity remains
+    open; the PowerWorld export diagnostic is not an accepted benchmark.
+    Coverage remains 19/27 loadable: this kernel does not close WTGWGOAU.
+    See [foundation evidence and remaining acceptance](benchmarks/wtgwgoa-foundation-2026-10-18.md).
 - [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
   paths and controller initialization; do not silently substitute REECD.
 - [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
