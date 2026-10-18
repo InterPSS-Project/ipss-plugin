@@ -2004,3 +2004,33 @@ Case 2 event remains at 19 of 40 criteria passed; all six cases and 36 complete
 events remain required. Frozen runtimes, source snapshots, focused tests,
 rejected-prototype controls, corrected full-network trace and integrity checks
 are retained privately in `2026-10-18-full-network-export-validation`.
+
+## Independent full-network current balance
+
+The full-network trace also permits a separate reconstruction of the Case 2
+passive network directly from the untouched RAW: 2,359 lines, 861 transformers,
+two active fixed shunts and 150 active switched shunts. The balance includes
+all 1,350 original load records, the two generators netted at bus 1090 before
+I/Z conversion, transformer magnetizing admittance, line-end shunts and the
+existing elliptic low-voltage current reduction. It does not import the
+engine's assembled admittance matrix or infer missing device injections.
+
+Eleven selected startup, prefault, fault and postfault observations provide
+22,000 bus balances. The maximum cold-start current residual is `1.17841e-12`
+pu; the sampled prefault maximum is `2.37768e-8` pu. The audit also accounts for
+the existing zero-current guard below `0.0001` pu, verified in the frozen
+runtime. With that guard, the maximum across all eleven snapshots, including
+the fault and clearing, is `3.67354e-8` pu. A continuous-load counterpart retains
+the tiny current removed by that guard and explains its separate faulted-bus
+residual; the guard is unchanged. Across the eleven snapshots, the absolute
+summed active power residual stays below `0.000029` MW, and the corresponding
+reactive power residual below `0.000092` Mvar. Both sides of fault application
+and clearing remain distinct.
+
+These balances show no missing or duplicated passive-network term in the
+sampled Case 2 trace. They check internal physical bookkeeping; they do not
+show that unobserved generator dynamics agree with the supplied reference.
+The larger trajectory mismatch remains unresolved, and the original six-case,
+36-event acceptance contract is unchanged. The selected physical snapshots,
+all bus residuals and independent producer are retained privately in
+`2026-10-18-case2-full-network-current-balance`.
