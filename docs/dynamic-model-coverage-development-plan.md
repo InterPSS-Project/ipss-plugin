@@ -167,11 +167,25 @@ and state definitions agree.
     units (six optional skips), 1,251 SMIB/catalog/solver tests (one diagnostic
     skip), zero failures/errors. Both reference-update sides are compared;
     inactive native PI/bypass storage differences remain explicitly unaccepted.
-  - [ ] Implement WTGIBFFRA data/kernel, strict native import and supported Paux
-    attachment, six power-band branches, remote-frequency fallback, recovery,
-    cooldown/rearm and lifecycle tests. Resolve the observed native automatic-
-    recovery discrepancy against published WECC/PowerWorld behavior explicitly.
-    This prerequisite leaves WTGIBFFRA missing and coverage unchanged at 20/27.
+  - [x] Implement WTGIBFFRA typed data and published-equation kernel: exact
+    grouped 45-CON data, six floor-selected power bands, captured incident power,
+    latched rise/peak/fall/recovery, published minimum recovery, cooldown/rearm,
+    immutable named states and modified-Euler predictor rollback.
+  - [x] Prevent accumulated roundoff from adding a whole step at constant-rate
+    ramp/timer endpoints. Retain modified Euler; compensate additions and use
+    only ULP-scale endpoint equality, not a timestep-sized boundary tolerance.
+  - [x] Freeze seven cold-paired native kernel replay profiles, all input rows,
+    four STATEs and seventeen VARs at checkpoints including callback windows.
+    Expose cumulative callback lag and raw reset errors rather than claiming
+    pointwise conformance. Keep native automatic recovery and ignored-data
+    uninitialized VARs separate from accepted partial evidence.
+  - [x] Pass foundation regression on `972fed2ba`: 227 plugin units (six
+    optional skips), 1,254 SMIB/catalog/solver tests (one diagnostic skip), zero
+    failures/errors. Preserve concurrent ST1/parser work outside this slice.
+  - [ ] Complete strict native import, supported REECD Paux host attachment,
+    remote-frequency fallback, removal/trip/reconnect and coupled SMIB tests.
+    WTGIBFFRA remains missing end-to-end; loadable coverage remains 20/27.
+    See [kernel foundation and explicit limitations](benchmarks/wtgibffra-foundation-2026-10-18.md).
     See [Paux correction and WTGIBFFRA investigation](benchmarks/reecd-paux-native-2026-10-18.md).
 - [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
   paths and controller initialization; do not silently substitute REECD.

@@ -121,7 +121,9 @@ public final class RenewableEvidenceInventory {
             Set.of("REGFMB1","REGFMC1","REECE1","WTGIBFFRA",
                     "REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
+                        model.equals("WTGIBFFRA")
+                            ? "Typed published-equation kernel and seven cold-paired native partial replay profiles exist. No native catalog/parser/host attachment or coupled SMIB path yet; automatic-recovery and callback differences remain explicit. Not loadable or fully verified."
+                            : "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {
