@@ -1223,8 +1223,8 @@ acceptance. The completed extension covers all 64 original ESST4B stacks:
 58 trajectories are byte-identical to the baseline, all six affected cells
 improve, and 61 have rotor-angle RMSE below `0.01` degrees. Three synthetic
 cells remain above that limit: buses 7356, 6147 and 8071 have RMSE `45.5251`,
-`11.6751` and `0.0174876` degrees. The first connected ten-second event is
-running separately.
+`11.6751` and `0.0174876` degrees. The completed connected ten-second event is
+reported separately below.
 
 All 23 focused parser, initialization, limiter and commercial/secondary fixture
 tests pass. The public block tests cover output saturation with continuing
@@ -1246,3 +1246,40 @@ smoke failure therefore predates this limiter correction. No assertion or
 tolerance is relaxed. These controls are retained in
 `2026-10-18-esst4b-regression-controls`. The registered suite is not green, and
 connected-system acceptance remains open.
+
+## Corrected first-event result and further controls
+
+The first original Case 2 ten-second event completes with the corrected
+ESST4B runtime. Inputs, reference files, scoring code, periods, full-reference
+ranges and limits are hash-checked against the preceding run and are unchanged.
+The result improves from 15 to 19 passing criteria out of 40. Prefault voltage
+and P/Q still pass 13 of 15 criteria; the fault-and-postfault count rises from
+2 to 6 of 15. The worst fault-and-postfault NRMSE falls from `0.0996412` to
+`0.0203067`. Worst full-window rotor-angle RMSE falls from `24.5252` to
+`20.2929` degrees. Prefault maximum angle error remains `0.115433` degrees.
+No angle criterion passes and the event is not accepted. All six cases and
+36 disturbances remain required. The complete run, unchanged scorer and
+before/after audit are retained in `2026-10-18-esst4b-corrected-first-event`.
+
+A separate, prescribed nonzero-inner-integral countercase confirms the same
+state-limit rule for the second PI. It retains the original machine and
+physical operating point, explicitly declares its changed exciter parameters,
+and drives both inner state bounds and release in two identical cold runs.
+The production physical-input replay reaches `-0.3` and `0.5`; maximum inner
+state and EFD errors are `0.000000449296` and `0.00000521612` pu. No reference
+controller state is injected.
+
+Three further original stacks use a fixed, symmetric `+/-0.2`-Hz source
+frequency profile with unchanged dynamic parameters. All six fresh native
+processes report clean initial conditions, repeat exactly, and retain 20,003
+samples each. Maximum source-phase discrepancy is `0.000657` degrees. The
+ten-second rotor-angle RMSE values are `0.0170980` degrees at bus 1050,
+`0.000444757` at bus 4026 and `0.00648247` at bus 5262. The first stack's
+remaining frequency-response discrepancy requires physical-input replay
+before attribution to a particular controller. The inner-PI and frequency
+controls are retained in `2026-10-18-inner-pi-and-frequency-controls`.
+
+Angle scoring continues to use the supplied channels directly. The installed
+API supports absolute angles and designated machine or system-average
+references, but the exported reference files do not identify that option.
+No inferred average, fitted frame or offset is removed from the scored angles.
