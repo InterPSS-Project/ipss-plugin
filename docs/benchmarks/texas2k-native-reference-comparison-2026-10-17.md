@@ -1143,3 +1143,41 @@ finite-source checks. The self-contained private artifact
 445 verified content objects, avoiding repeated copies of identical runtimes
 and inputs. All six cases and 36 ten-second disturbances remain required;
 no full-system event is accepted.
+
+## Ten-second synchronous source-boundary controls
+
+The three previously checked synchronous stacks are extended to ten seconds
+with the original five-percent voltage ramps during the first second and a
+held source afterward. Six additional representatives cover every actual
+machine/exciter/governor/stabilizer combination in the 103-unit Case 2 inventory.
+Each completed comparison contains 20,003 samples; all commercial trajectories
+repeat exactly in separate processes and explicitly report clean initial
+conditions. These are independent component checks, not connected-system gates.
+
+The first paired-source commercial fixture does not preserve each requested
+source file, so its apparent model discrepancies are invalid. One playback
+source per process restores the declared boundary. A further check finds that
+the playback magnitude specifies internal EMF, whereas the original file uses
+terminal voltage. At bus 5262 the declared source impedance accounts for a
+`0.00000937`-pu difference. Computing EMF from the original physical P/Q/V and
+source impedance reduces ten-second rotor-angle RMSE from `0.0405205` to
+`0.00750667` degrees. No reference machine/controller state or fitted offset is
+introduced. Complete coverage of all 103 units remains open.
+
+For six units, the production trajectories are exactly unchanged when the
+independent cells are simulated together or separately, across every exported
+quantity. This isolates grouping from the invalid paired commercial source
+fixture; it does not establish behavior in the connected full network.
+
+An unchanged full-case trajectory also shows that the discrepancy develops
+beyond initialization. Across its five monitored machines, mean angle error
+is `-0.103361` degrees at one second and `78.2314` degrees at ten seconds.
+The corresponding spread about the mean at ten seconds is `0.710237` degrees.
+These quantities describe the error only; no mean is removed from any scored
+angle. Direct angle acceptance remains unchanged.
+
+The completed controls, invalid paired fixture, subsequent disk-full failure,
+source derivation, frozen runtime, and grouping audit are preserved in the
+self-contained private artifact `2026-10-18-synchronous-ten-second-controls`.
+Every content object is hash-verified. The running fleet extension is excluded
+from this completed-evidence archive.
