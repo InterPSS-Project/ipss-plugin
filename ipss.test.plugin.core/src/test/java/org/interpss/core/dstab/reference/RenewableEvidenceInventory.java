@@ -14,7 +14,8 @@ public final class RenewableEvidenceInventory {
     private RenewableEvidenceInventory() {}
     public enum Scope { MISSING_IMPLEMENTATION, FOCUSED_ONLY, BOUNDED_DIALECT_COMPARISON,
         NATIVE_PARTIAL_PROFILE, NATIVE_RECORDED_PROFILE }
-    public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
+    public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP,
+        INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
     public record Entry(String model,String focusedTest,String trajectoryTest,Scope scope,
                         CheckpointKind storage,String checkpoint,String fixture,String limitation) {
         public Class<?> focusedClass() throws ClassNotFoundException {
@@ -37,6 +38,11 @@ public final class RenewableEvidenceInventory {
                     var references=Regfma1NativeReferenceCheckpoints.references();
                     if(references.isEmpty())throw new IllegalStateException("Empty native REGFMA1 reference map");
                     for(var reference:references.values())reference.verify(reference.body());
+                }
+                case WTDTB_NATIVE_MAP -> {
+                    var references=Wtdtb1NativeReference.profiles();
+                    if(references.size()!=14)throw new IllegalStateException("Incomplete native WTDTB1 profile matrix");
+                    for(var reference:references)reference.verify();
                 }
                 case INLINE_REGCA_CURRENT_LIMIT -> {
                     for(String name:List.of("QUARTER","EIGHTH")) {
@@ -74,6 +80,9 @@ public final class RenewableEvidenceInventory {
                 nativeRow("WT2E1","PsseWt2e1ModelTest","mach.Wt2e1PsseSmibConformanceTest","smib-wt2e1/psse.csv","SMIB/SMIB_v33_wt2e1.dyr"),
                 nativeRow("REECC1","PsseReecc1ControllerTest","Reecc1NativeConformanceTest","reecc1-bus1062/psse.csv","renewable/regca_reecc1_bus1062.dyr"),
                 nativeRow("WT12T1","PsseWt12t1ModelTest","mach.Wt1g1PsseSmibConformanceTest","smib-wt12t1/psse.csv","SMIB/SMIB_v33_wt12t1.dyr"),
+                new Entry("WTDTBU1","PsseWtdtb1ModelTest","Wtdtb1NativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
+                        CheckpointKind.WTDTB_NATIVE_MAP,"Wtdtb1NativeReference","renewable/regca_reeca_wtdtb1_bus1062.dyr",
+                        "Native 36.7 standard/exact legacy wrapper; 14 cold-repeated profiles. Unit-speed five-state playback is bounded; non-unit absolute integrated-coordinate precision and instantaneous coupled-network event-post parity remain open. Published PowerWorld convention is separate."),
                 focused("REECD","PsseReecd1ControllerTest","No independent REECD-specific trajectory link found; unit equations/schema are not simulator parity."),
                 focused("WT12A1B","PsseWt12a1bModelTest","No independent WT12A1U_B trajectory link found; the older WT12A1 reference is a different model."),
                 bounded("REECA1","PsseReeca1ControllerTest"),
@@ -84,7 +93,7 @@ public final class RenewableEvidenceInventory {
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
             Set.of("REGFMB1","REGFMC1","REECE1","WTGWGOAU","WTGIBFFRA","WTPTBU1",
-                    "WTDTBU1","REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
+                    "REPCCU","HPLNTD","REPCGFMC1").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
                         "No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
@@ -114,10 +123,10 @@ public final class RenewableEvidenceInventory {
                 .append("Source SHA-256: `").append(WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256).append("`.\n\n")
                 .append("The source renewable section has 45 rows: 29 approved, 28 with a native PTI mapping, ")
                 .append("and 27 distinct planned native families because WT1T/WT2T share WT12T1. ")
-                .append("Only 17 families currently have loadable runtime paths; ten implementations are genuinely missing. ")
+                .append("18 families currently have loadable runtime paths; nine implementations are genuinely missing. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
-                .append("Eight families have native recorded-profile links, one has a partial native Iolim profile, ")
+                .append("Eight families have native recorded-profile links, two have partial native profiles (REGCA1 Iolim and WTDTB1), ")
                 .append("six have only the explicitly bounded ANDES coupled comparison, and two have focused tests only. ")
                 .append("None of the latter eight is established as native simulator conformance. Legacy/retired and ")
                 .append("manufacturer-package supplemental models need a separate evidence expansion; their source rows ")

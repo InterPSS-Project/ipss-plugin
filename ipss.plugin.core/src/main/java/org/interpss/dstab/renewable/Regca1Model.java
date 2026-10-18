@@ -343,6 +343,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         named.put("Reactive Current Regulator", iqState);
         named.put("Active Power", p);
         named.put("Reactive Power", q);
+        if (reeca1Controller != null && reeca1Controller.getWindControlStack() != null) {
+            Wtdtb1Model drivetrain = reeca1Controller.getWindControlStack().getTorsionalEmulation();
+            if (drivetrain != null) drivetrain.getNamedStates().forEach(
+                    (key, value) -> named.put("WTDTB1." + key, value));
+        }
         return Collections.unmodifiableMap(named);
     }
 

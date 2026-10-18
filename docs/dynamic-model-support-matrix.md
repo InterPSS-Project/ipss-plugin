@@ -158,6 +158,7 @@ source-approved families that have no implementation or parser descriptor.
 | WT12T1 | DRIVE_TRAIN |  | 5 | LOADABLE | `org.interpss.dstab.mach.Wt12t1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WT12T1.htm) |
 | WT3T1 | DRIVE_TRAIN |  | 8 | LOADABLE | `org.interpss.dstab.mach.Wt3t1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WT3T1.htm) |
 | WTDTA1 | DRIVE_TRAIN | WTDAT1, WTDTAU1 | 5 | LOADABLE | `org.interpss.dstab.renewable.Wtdta1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WTDTA1.htm) |
+| WTDTB1 | DRIVE_TRAIN | WTDTBU1 | 6 | LOADABLE | `org.interpss.dstab.renewable.Wtdtb1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20WTGT_B.htm) |
 | GEWTARU1 | AERODYNAMIC_CONTROLLER |  | 16 | LOADABLE | `org.interpss.dstab.mach.Gewtaru1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | GEWTGDU1 | AERODYNAMIC_CONTROLLER |  | 13 | LOADABLE | `org.interpss.dstab.mach.Gewtgdu1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Vendor_Specific_Models.pdf) |
 | WT12A1 | AERODYNAMIC_CONTROLLER |  | 8 | LOADABLE | `org.interpss.dstab.mach.Wt12a1Model` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Aerodynamic%20Model%20WT12A1.htm) |

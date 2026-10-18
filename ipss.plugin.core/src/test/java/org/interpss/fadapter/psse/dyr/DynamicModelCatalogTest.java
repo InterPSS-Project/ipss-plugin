@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 class DynamicModelCatalogTest {
     @Test
-    void approvedRenewableRowsExposeTheTenMissingNativeFamilies() {
+    void approvedRenewableRowsExposeTheNineMissingNativeFamilies() {
         var rows=WeccApprovedDynamicModelCatalog.renewables();
         assertEquals(45,rows.size(),"Preserve every source renewable row, not just implemented entries");
         assertEquals(45,rows.stream().map(WeccModelApproval::catalogName).distinct().count());
@@ -30,9 +30,9 @@ class DynamicModelCatalogTest {
         var missing=nativeRows.stream().filter(row->!row.isImplementedExactly())
                 .map(WeccModelApproval::interpssModel).collect(java.util.stream.Collectors.toSet());
         assertEquals(Set.of("REGFMB1","REGFMC1","REECE1","WTGWGOAU","WTGIBFFRA",
-                "WTPTBU1","WTDTBU1","REPCCU","HPLNTD","REPCGFMC1"),missing,
+                "WTPTBU1","REPCCU","HPLNTD","REPCGFMC1"),missing,
                 "Any implementation claim must be backed by a real parser/runtime descriptor");
-        assertEquals(18,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(19,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         for(String model:missing)assertTrue(DynamicModelCatalog.find(model).isEmpty(),
                 "Do not add a loadable placeholder, guessed schema, or unrelated engine: "+model);
     }
@@ -75,6 +75,9 @@ class DynamicModelCatalogTest {
                 DynamicModelCatalog.find("WTDTA1").orElseThrow().category());
         assertEquals(5, DynamicModelCatalog.find("WTDTAU1").orElseThrow().parameterCount());
         assertEquals("WTDTA1", DynamicModelCatalog.canonicalName("WTDAT1"));
+        assertEquals("WTDTB1", DynamicModelCatalog.canonicalName("WTDTBU1"));
+        assertEquals(Set.of(6, 12), DynamicModelCatalog.find("WTDTBU1").orElseThrow()
+                .recordSchema().acceptedParameterCounts());
         assertEquals("GENQEJ", DynamicModelCatalog.canonicalName("genqeju"));
         assertEquals(18, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
         assertEquals(16, DynamicModelCatalog.find("GENTPJ1").orElseThrow().parameterCount());

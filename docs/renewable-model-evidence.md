@@ -2,9 +2,9 @@
 
 Generated from RenewableEvidenceInventory and the visually reviewed May 2026 PDF, pages 3-4. Source SHA-256: `b4add4a9d584e69f2a97823f87cb4c40362f1e868b2b9d3c60e3c59ba62af635`.
 
-The source renewable section has 45 rows: 29 approved, 28 with a native PTI mapping, and 27 distinct planned native families because WT1T/WT2T share WT12T1. Only 17 families currently have loadable runtime paths; ten implementations are genuinely missing. PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.
+The source renewable section has 45 rows: 29 approved, 28 with a native PTI mapping, and 27 distinct planned native families because WT1T/WT2T share WT12T1. 18 families currently have loadable runtime paths; nine implementations are genuinely missing. PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.
 
-Eight families have native recorded-profile links, one has a partial native Iolim profile, six have only the explicitly bounded ANDES coupled comparison, and two have focused tests only. None of the latter eight is established as native simulator conformance. Legacy/retired and manufacturer-package supplemental models need a separate evidence expansion; their source rows are retained below and must not be counted as approved implementations. No new simulator run or complete raw-provenance acceptance is claimed by this inventory.
+Eight families have native recorded-profile links, two have partial native profiles (REGCA1 Iolim and WTDTB1), six have only the explicitly bounded ANDES coupled comparison, and two have focused tests only. None of the latter eight is established as native simulator conformance. Legacy/retired and manufacturer-package supplemental models need a separate evidence expansion; their source rows are retained below and must not be counted as approved implementations. No new simulator run or complete raw-provenance acceptance is claimed by this inventory.
 
 | Native family | Evidence scope | Focused test | Comparison | Checkpoint | Limitation |
 |---|---|---|---|---|---|
@@ -29,7 +29,7 @@ Eight families have native recorded-profile links, one has a partial native Ioli
 | WT2G1 | NATIVE_RECORDED_PROFILE | PsseWt2g1ModelTest | mach.Wt2g1PsseSmibConformanceTest | smib-wt2g1/psse.csv | Recorded profile link only; all selectors/limits, cold provenance, clock/event exclusions and channel tolerances still need profile-by-profile review. |
 | WTARA1 | BOUNDED_DIALECT_COMPARISON | PsseType3WindControllerTest | Type3WindAndesTrajectoryTest | type3-wind-bus1062-fault.csv | ANDES-specific WTTQA speed convention and documented REECA VFLAG/REPCA differences: bounded coupled comparison, not native PSS/E conformance. PowerWorld Type-3 test is finite-error diagnostic only. |
 | WTDTA1 | BOUNDED_DIALECT_COMPARISON | PsseType3WindControllerTest | Type3WindAndesTrajectoryTest | type3-wind-bus1062-fault.csv | ANDES-specific WTTQA speed convention and documented REECA VFLAG/REPCA differences: bounded coupled comparison, not native PSS/E conformance. PowerWorld Type-3 test is finite-error diagnostic only. |
-| WTDTBU1 | MISSING_IMPLEMENTATION | missing | none | none | No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit. |
+| WTDTBU1 | NATIVE_PARTIAL_PROFILE | PsseWtdtb1ModelTest | Wtdtb1NativePartialConformanceTest | Wtdtb1NativeReference | Native 36.7 standard/exact legacy wrapper; 14 cold-repeated profiles. Unit-speed five-state playback is bounded; non-unit absolute integrated-coordinate precision and instantaneous coupled-network event-post parity remain open. Published PowerWorld convention is separate. |
 | WTGIBFFRA | MISSING_IMPLEMENTATION | missing | none | none | No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit. |
 | WTGWGOAU | MISSING_IMPLEMENTATION | missing | none | none | No catalog/parser/runtime implementation. Freeze exact native schema and equations, implement attachment/initialization/limits, then independently verify and commit. |
 | WTPTA1 | BOUNDED_DIALECT_COMPARISON | PsseType3WindControllerTest | Type3WindAndesTrajectoryTest | type3-wind-bus1062-fault.csv | ANDES-specific WTTQA speed convention and documented REECA VFLAG/REPCA differences: bounded coupled comparison, not native PSS/E conformance. PowerWorld Type-3 test is finite-error diagnostic only. |
@@ -66,7 +66,7 @@ These are frozen source-list statuses, not a claim about today's WECC approval. 
 | WTGWGO | wtgwgo | WTGWGOAU | WTGWGO_A | APPROVED | WTGWGOAU | no |
 | WTGIBFFR_A | wtgibffr_a | WTGIBFFRA | WTGIBFFR_A | APPROVED | WTGIBFFRA | no |
 | WTGP_B | wtgp_b | WTPTBU1 | WTGPT_B | APPROVED | WTPTBU1 | no |
-| WTGT_B | wtgt_b | WTDTBU1 | WTGT_B | APPROVED | WTDTBU1 | no |
+| WTGT_B | wtgt_b | WTDTBU1 | WTGT_B | APPROVED | WTDTBU1 | yes (not verified) |
 | REPC_A | repc_a | REPCAU1, REPCA1; REPCTAU1, REPCTA1 | REPC_A | APPROVED | REPCA1 | yes (not verified) |
 | REPC_B | repc_b | PLNTBU1 | REPC_B | UNAPPROVED | PLNTBU1 | yes (not verified) |
 | REPC_C | repc_c | REPCCU | REPC_C | APPROVED | REPCCU | no |

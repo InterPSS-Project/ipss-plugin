@@ -40,6 +40,7 @@ import org.interpss.dstab.renewable.Regfma1Data;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Wtara1Data;
 import org.interpss.dstab.renewable.Wtdta1Data;
+import org.interpss.dstab.renewable.Wtdtb1Data;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wttqa1Data;
 import org.interpss.dstab.svc.Csvgn5Data;
@@ -160,6 +161,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingSt2cut> pendingSt2cut = new ArrayList<>();
     private final List<PendingIeeest> pendingIeeest = new ArrayList<>();
     private final List<PendingRepca1> pendingRepca1 = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingWtdtb1 = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
@@ -229,6 +231,7 @@ public class PSSEDStabDirectParser {
         pendingSt2cut.clear();
         pendingIeeest.clear();
         pendingRepca1.clear();
+        pendingWtdtb1.clear();
         pendingLcfb1.clear();
         pendingIeeeVc.clear();
         pendingUel1.clear();
@@ -267,7 +270,8 @@ public class PSSEDStabDirectParser {
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
-                        || type.equals("OEL2C") || type.equals("UEL2C");
+                        || type.equals("OEL2C") || type.equals("UEL2C")
+                        || type.equals("WTDTB1");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
                             attachedMessage(record));
@@ -280,6 +284,21 @@ public class PSSEDStabDirectParser {
                 report.add(record, DynamicModelImportStatus.ERROR, e.getMessage());
             }
         }
+        // Attach after REGCA/REECA and mechanical auxiliary records, regardless
+        // of the drivetrain record's position. Report the actual final outcome.
+        for (PsseDyrRecord record : pendingWtdtb1) {
+            try {
+                boolean attached = procWtdtb1(BUS_ID_PREFIX + record.busNumber(),
+                        record.deviceId(), record);
+                report.add(record, attached ? DynamicModelImportStatus.ATTACHED
+                        : DynamicModelImportStatus.REJECTED, attached
+                        ? "PSS/E 36.7 WTDTB1 convention; native six-CON or exact legacy allocation"
+                        : "WTDTB1 requires an exact schema, REGCA1/REECA1 host and no existing drive train");
+            } catch (RuntimeException failure) {
+                report.add(record, DynamicModelImportStatus.ERROR, failure.getMessage());
+            }
+        }
+        pendingWtdtb1.clear();
         for (PendingSt2cut pending : pendingSt2cut) {
             boolean attached = procPssSt2cut(pending.busId(), pending.genId(), pending.fields());
             report.add(pending.record(), attached ? DynamicModelImportStatus.ATTACHED
@@ -792,6 +811,9 @@ public class PSSEDStabDirectParser {
             case "WTDTAU1":
             case "WTDAT1":
                 return procWtdta1(busId, genId, fields);
+            case "WTDTB1":
+                pendingWtdtb1.add(record);
+                return true;
             case "WTARA1":
             case "WTARAU1":
                 return procWtara1(busId, genId, fields);
@@ -3746,6 +3768,29 @@ public class PSSEDStabDirectParser {
                 getDouble(f, 5, 0.5), getDouble(f, 6, 1.0),
                 getDouble(f, 7, 1.0));
         return builder.addWtdta1(busId, genId, data) != null;
+    }
+
+    private boolean procWtdtb1(String busId, String genId, PsseDyrRecord record) {
+        int con;
+        if (record.fields().get(1).equalsIgnoreCase("USRMDL")) {
+            if (!record.sourceModelName().equals("WTDTBU1") || record.parameterCount() != 12)
+                return false;
+            int[] allocation = {103, 0, 0, 6, 5, 3};
+            for (int i = 0; i < allocation.length; i++)
+                if (record.intParameter(i) != allocation[i]) return false;
+            con = 6;
+        } else {
+            // The installed native record proves WTDTB1, not a guessed flat
+            // WTDTBU1 alias or a PowerWorld eight-parameter WTGT_B record.
+            if (!record.fields().get(1).equalsIgnoreCase("WTDTB1")
+                    || !record.sourceModelName().equals("WTDTB1") || record.parameterCount() != 6)
+                return false;
+            con = 0;
+        }
+        return builder.addWtdtb1(busId, genId, new Wtdtb1Data(
+                record.doubleParameter(con), record.doubleParameter(con + 1),
+                record.doubleParameter(con + 2), record.doubleParameter(con + 3),
+                record.doubleParameter(con + 4), record.doubleParameter(con + 5))) != null;
     }
 
     private boolean procWtpta1(String busId, String genId, String[] f) {

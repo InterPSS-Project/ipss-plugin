@@ -6,6 +6,7 @@ public interface WindDriveTrain {
     void step(double dt,double mechanicalPower,double electricalPower);
     void step(double dt,double mechanicalPower,double electricalPower,int flag);
     void stepTwoStep(double dt,double mechanicalPower,double electricalPower);
+    /** Mechanical input required by the initialized equilibrium, on the caller's power base. */
     double getInitialInputPower();
     double getGeneratorSpeed();
     double getTurbineSpeed();

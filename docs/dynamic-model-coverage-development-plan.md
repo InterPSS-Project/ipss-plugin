@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-Updated 2026-10-17; upstream baseline is plugin `dcea9ab30` (1.4.6, core 1.4.3).
+Updated 2026-10-18; upstream baseline is plugin `dcea9ab30` (1.4.6, core 1.4.3).
 Subsequent local implementation and validation slices are recorded below.
 This document restores the ongoing coverage checklist after rebasing to master.
 The generated [support matrix](dynamic-model-support-matrix.md) records parser
@@ -17,8 +17,10 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 17 loadable,
-ten not implemented**, not merely missing benchmark coverage. The runtime
+The approved native renewable audit finds **27 distinct families: 18 loadable,
+nine not implemented**, not merely missing benchmark coverage. WTDTB1/WTDTBU1
+now has strict native import and bounded SMIB/reference evidence, with explicit
+non-unit precision and instantaneous network-post limitations. The runtime
 catalog previously omitted those unsupported families. Missing exact stabilizer
 profiles, exhaustive independent model profiles and remaining provenance
 gaps also need closure. Generated `LOADABLE` entries do not prove complete
@@ -54,9 +56,8 @@ and state definitions agree.
   document files match the tested snapshot byte-for-byte.
 - [x] Seal and hash-verify 732 renewable source/evidence files and prepare the
   tested scoped commit; leave unrelated governor/solver work untouched.
-- [ ] Implement WTDTBU1 / current-library WTDTB1 after exact wrapper/native
-  schema audit; verify the drivetrain-emulation equations against native PSS/E
-  and PowerWorld in a small independent case before its scoped commit.
+- [ ] Complete WTDTBU1 / current-library WTDTB1 verification. Its implementation
+  and strict native import now exist; remaining acceptance gaps stay open.
   - [x] Foundation only: source-diagram five-state kernel, common drivetrain
     interface, typed wind-stack selection, algebraic Tp=0 refresh and 13 new
     equation/attachment tests. This is not a loadable or trajectory-accepted model.
@@ -70,12 +71,29 @@ and state definitions agree.
     See [PowerWorld profile scope and native discrepancy](benchmarks/wtdtb1-powerworld-playback-2026-10-18.md).
   - [x] Localize a candidate native-only `wg/wt` shaft-feedback term with two
     independently perturbed speed coordinates and exact cold-repeat outputs;
-    keep it test-only until native branch and full-solver acceptance are complete.
-  - [ ] Resolve non-converging two-mass native-state differences; do not fit
-    torque/power conversions or widen tolerances. Complete native non-unit-speed
-    initialization and remaining PowerWorld branch profiles before importer acceptance.
-  - [ ] Add strict native/wrapper parser and builder paths, missing-host and
-    duplicate-record rejection, lifecycle and full-solver SMIB verification.
+    initially retain it test-only, then promote the explicitly versioned path
+    after the branch discriminators and bounded full-solver checks below.
+  - [x] Implement the explicitly versioned native feedback, retained one-mass
+    turbine coordinate, absolute damping and balanced non-unit aerodynamic input.
+    Preserve the separate published-diagram convention and modified Euler.
+  - [x] Add strict native/wrapper parser and builder paths, deferred attachment,
+    missing-host/duplicate/layout rejection, GNET/model-removal handling and
+    immutable named-state visibility through the converter.
+  - [x] Reject suspect-initialization non-unit probes; regenerate compatible
+    PFLAG=0 profiles. Audit 14 accepted-initialization profiles twice cold,
+    including exact CON values, 84,154 raw samples and both event sides.
+  - [x] Add permanent native playback and PowerWorld W0=.97 references; run
+    two-step-size full-solver flat, three-cycle fault and generator-trip checks.
+    Require coupled five-state error reduction when halving the step.
+  - [x] Fix the new test's JVM-global diagnostic-output setting without changing
+    model equations or trajectory tolerances. Final isolated regression on
+    committed plugin `54429b9c7` plus this slice: 160 plugin units (six optional
+    skips), 1,217 SMIB/catalog/staggered-solver tests (one diagnostic skip), zero
+    failures/errors. Unrelated uncommitted controller/JAX edits are excluded.
+  - [ ] Close native non-unit absolute integrated-coordinate precision,
+    instantaneous coupled-network event-post export, additional PowerWorld
+    branch/base profiles and independently referenced reconnect/restart coverage.
+    See [native implementation and exact acceptance scope](benchmarks/wtdtb1-native-import-2026-10-18.md).
   See [WTDTB1 foundation evidence and open discrepancies](benchmarks/wtdtb1-foundation-2026-10-18.md).
 - [ ] Implement WTPTBU1 / current-library WTPTB1 with exact pitch-controller
   attachment, state initialization, active limits and two-step references.
@@ -92,7 +110,7 @@ and state definitions agree.
 - [ ] Expand the evidence inventory to retired/legacy and vendor-package models
   required by supplied cases, keeping those separate from approved-list counts.
 - [ ] Audit the remaining non-renewable PDF sections against actual source rows;
-  the ten renewable gaps are not a claim that all other sections are complete.
+  the remaining renewable gaps are not a claim that all other sections are complete.
 
 See [all source rows, actual implementation gaps and profile scopes](renewable-model-evidence.md).
 Installed PSS/E 36.7 documentation contains entries for the missing families,

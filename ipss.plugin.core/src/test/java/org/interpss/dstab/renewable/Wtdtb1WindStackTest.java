@@ -25,6 +25,7 @@ class Wtdtb1WindStackTest {
         bare.initialize(.24);
         assertNotNull(configured.getTorqueController());
         assertFalse(configured.isTorqueControllerActive());
+        assertTrue(configured.isComplete(), "The B emulation supplies its own mechanical power path");
         assertEquals(1, configured.getGeneratorSpeed(), 0);
         for (int i = 0; i < 20; i++) {
             configured.step(.001, .12, .8, .9, false);
@@ -73,5 +74,23 @@ class Wtdtb1WindStackTest {
         stack.setDriveTrain(legacy);
         assertThrows(IllegalStateException.class,
                 () -> stack.setTorsionalEmulation(emulation.getTorsionalEmulation()));
+    }
+
+    @Test void nativeAerodynamicsStartsAtMechanicallyBalancedPowerNotElectricalPower() {
+        var stack = stack(true, true);
+        var nativeModel = Wtdtb1Model.forNativePsse367(
+                new Wtdtb1Data(4.5, 1.5, .6, 2, .4, .1), 60);
+        var nativeStack = new WindControlStack();
+        nativeStack.setTorsionalEmulation(nativeModel);
+        nativeStack.setTorqueController(stack.getTorqueController());
+        nativeStack.setPitchController(stack.getPitchController());
+        nativeStack.setAerodynamics(stack.getAerodynamics());
+        nativeStack.initialize(.24);
+        assertEquals(.88, nativeStack.getGeneratorSpeed(), 1e-12);
+        assertEquals(.0816, nativeStack.getAerodynamics().getMechanicalPower(), 1e-12);
+        double[] initial = nativeModel.getNativeStates();
+        nativeStack.step(.001, .24, .24, .24, false, 0);
+        nativeStack.step(.001, .24, .24, .24, false, 1);
+        assertArrayEquals(initial, nativeModel.getNativeStates(), 1e-12);
     }
 }

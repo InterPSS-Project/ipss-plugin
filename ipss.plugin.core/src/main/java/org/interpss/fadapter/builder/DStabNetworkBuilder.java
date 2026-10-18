@@ -200,6 +200,8 @@ import org.interpss.dstab.renewable.Wtara1Model;
 import org.interpss.dstab.renewable.Wtdta1Data;
 import org.interpss.dstab.renewable.Wtdta1Model;
 import org.interpss.dstab.renewable.WtgtAData;
+import org.interpss.dstab.renewable.Wtdtb1Data;
+import org.interpss.dstab.renewable.Wtdtb1Model;
 import org.interpss.dstab.renewable.Wtpta1Data;
 import org.interpss.dstab.renewable.Wtpta1Model;
 import org.interpss.dstab.renewable.Wttqa1Data;
@@ -3628,8 +3630,30 @@ public class DStabNetworkBuilder {
             log.warn("REECA1 not found for WTDTA1: bus={}, gen={}", busId, genId);
             return null;
         }
+        WindControlStack stack = windStack(controller);
+        if (stack.getDriveTrain() != null || stack.getTorsionalEmulation() != null) {
+            log.warn("Drive train already exists for WTDTA1: bus={}, gen={}", busId, genId);
+            return null;
+        }
         Wtdta1Model model = new Wtdta1Model(data);
-        windStack(controller).setDriveTrain(model);
+        stack.setDriveTrain(model);
+        return model;
+    }
+
+    /** Attach the exact native six-CON WTDTB1/legacy WTDTBU1 convention. */
+    public Wtdtb1Model addWtdtb1(String busId, String genId, Wtdtb1Data data) {
+        Reeca1Model controller = findReeca1(busId, genId);
+        if (controller == null) {
+            log.warn("REECA1 not found for WTDTB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        WindControlStack stack = windStack(controller);
+        if (stack.getDriveTrain() != null || stack.getTorsionalEmulation() != null) {
+            log.warn("Drive train already exists for WTDTB1: bus={}, gen={}", busId, genId);
+            return null;
+        }
+        Wtdtb1Model model = Wtdtb1Model.forNativePsse367(data, network.getFrequency());
+        stack.setTorsionalEmulation(model);
         return model;
     }
 
@@ -3641,7 +3665,7 @@ public class DStabNetworkBuilder {
             return null;
         }
         WindControlStack stack = windStack(controller);
-        if (stack.getDriveTrain() != null) {
+        if (stack.getDriveTrain() != null || stack.getTorsionalEmulation() != null) {
             log.warn("Drive train already exists for WTGT_A: bus={}, gen={}", busId, genId);
             return null;
         }

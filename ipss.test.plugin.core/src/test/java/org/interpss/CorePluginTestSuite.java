@@ -147,6 +147,7 @@ import org.interpss.core.adapter.builder.dstab.PsseReecc1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseReecd1ControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepca1PlantControllerTest;
 import org.interpss.core.adapter.builder.dstab.PsseType3WindControllerTest;
+import org.interpss.core.adapter.builder.dstab.PsseWtdtb1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseCsvgn5ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseSvsmo1t2ModelTest;
 import org.interpss.core.adapter.builder.dstab.Plntbu1ModelTest;
@@ -284,6 +285,8 @@ import org.interpss.core.dstab.Pss2aIndependentSmibConformanceTest;
 import org.interpss.core.dstab.Pss1aPowerWorldPlaybackConformanceTest;
 import org.interpss.core.dstab.Pss1aPowerWorldActiveConformanceTest;
 import org.interpss.core.dstab.Wtdtb1PowerWorldPlaybackConformanceTest;
+import org.interpss.core.dstab.Wtdtb1SmibIntegrationTest;
+import org.interpss.core.dstab.Wtdtb1NativePartialConformanceTest;
 import org.interpss.core.dstab.Tgov1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
@@ -692,6 +695,8 @@ import org.junit.platform.suite.api.Suite;
 	Pss1aPowerWorldPlaybackConformanceTest.class,
 	Pss1aPowerWorldActiveConformanceTest.class,
 	Wtdtb1PowerWorldPlaybackConformanceTest.class,
+	Wtdtb1SmibIntegrationTest.class,
+	Wtdtb1NativePartialConformanceTest.class,
 	Tgov1IndependentSmibConformanceTest.class,
 	Lcfb1IndependentSmibConformanceTest.class,
 	Dc4bIndependentSmibConformanceTest.class,
@@ -873,6 +878,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseReecd1ControllerTest.class,
 	PsseRepca1PlantControllerTest.class,
 	PsseType3WindControllerTest.class,
+	PsseWtdtb1ModelTest.class,
 	PsseCsvgn5ModelTest.class,
 	PsseSvsmo1t2ModelTest.class,
 	Plntbu1ModelTest.class,

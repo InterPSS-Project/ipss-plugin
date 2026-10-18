@@ -5,16 +5,19 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * WTDTB1 torsional-emulation source-diagram kernel (PSS/E 36.7).
- * Native trajectory conformance and DYR importer attachment are not yet accepted;
- * see docs/benchmarks/wtdtb1-foundation-2026-10-18.md.
+ * WTDTB1 torsional-emulation kernel with explicit published/native conventions.
+ * Native precision/profile limitations remain documented separately from DYR
+ * loadability; see docs/benchmarks/wtdtb1-native-import-2026-10-18.md.
  * The published shaft state is angle, not shaft torque. Electrical-power
  * filtering emulates pitch recovery; an attached aerodynamic model selects
  * the documented WTDTA1-equation fallback and leaves the fifth state inactive.
  */
 public final class Wtdtb1Model implements WindDriveTrain {
+    /** Do not silently mix the published diagram and the observed native 36.7 interface. */
+    public enum EquationConvention { PUBLISHED_DIAGRAM, PSSE_36_7 }
     private final Wtdtb1Data data;
     private final double nominalFrequency;
+    private final EquationConvention equationConvention;
     private final double[] state=new double[5];
     private final TwoStepHistory twoStep=new TwoStepHistory(5);
     private double[] start,initialRate;
@@ -22,7 +25,17 @@ public final class Wtdtb1Model implements WindDriveTrain {
     private boolean aerodynamicPresent;
 
     public Wtdtb1Model(Wtdtb1Data data,double nominalFrequency) {
+        this(data,nominalFrequency,EquationConvention.PUBLISHED_DIAGRAM);
+    }
+
+    /** Native convention independently discriminated with generator/turbine speed perturbations. */
+    public static Wtdtb1Model forNativePsse367(Wtdtb1Data data,double nominalFrequency) {
+        return new Wtdtb1Model(data,nominalFrequency,EquationConvention.PSSE_36_7);
+    }
+
+    private Wtdtb1Model(Wtdtb1Data data,double nominalFrequency,EquationConvention convention) {
         this.data=java.util.Objects.requireNonNull(data);
+        this.equationConvention=java.util.Objects.requireNonNull(convention);
         if(!Double.isFinite(nominalFrequency)||nominalFrequency<=0)
             throw new IllegalArgumentException("WTDTB1 nominal frequency must be positive");
         this.nominalFrequency=nominalFrequency;
@@ -34,10 +47,19 @@ public final class Wtdtb1Model implements WindDriveTrain {
     @Override public void initialize(double power,double speed) {
         if(!Double.isFinite(power)||!Double.isFinite(speed)||speed<=0)
             throw new IllegalArgumentException("WTDTB1 initial power/speed must be finite and speed positive");
-        initialPower=power;initialSpeed=speed;
+        if(isNativePsse()&&!aerodynamicPresent&&speed!=1)
+            throw new IllegalArgumentException("Native WTDTB1 emulation without aerodynamics initializes at nominal speed");
+        initialSpeed=speed;
+        // Native damping acts on absolute speed deviation, unlike the published
+        // WTGT_B diagram's deviation from W0. Balance the shaft and aero input
+        // backwards from Pe; do not change the solved electrical operating point.
+        double initialDamping=isNativePsse()?data.damp()*(speed-1):0;
+        double initialTorque=power/speed+initialDamping;
+        initialPower=initialTorque*speed;
         java.util.Arrays.fill(state,0);
-        // Native deviations start at zero; initial slip carries the speed offset.
-        state[0]=isSingleMass()?0:power/(speed*shaftStiffness());
+        // Internally retain perturbations from initialized speed; observation
+        // adds the native deviation-from-one offset without changing integration.
+        state[0]=isSingleMass()?0:initialTorque/shaftStiffness();
         state[4]=aerodynamicPresent?0:power;
         start=null;initialRate=null;twoStep.reset();
     }
@@ -78,19 +100,24 @@ public final class Wtdtb1Model implements WindDriveTrain {
         double wt=initialSpeed+x[1],wg=initialSpeed+x[2];
         if(wt<=0||wg<=0)throw new IllegalStateException("WTDTB1 speed crossed its physical positive-speed domain");
         double pm=aerodynamicPresent?mechanicalPower:data.tp()==0?electricalPower:x[4];
+        double dampingDeviation=isNativePsse()?wg-1:x[2];
         double[] result=new double[5];
         if(isSingleMass()) {
-            // Native inactive turbine/shaft coordinates stay zero in one-mass mode.
-            result[2]=(pm/wg-electricalPower/wg-data.damp()*x[2])/(2*data.h());
+            // Inactive turbine/shaft perturbations retain their initialized values.
+            // Native one-mass mode retains the initialized turbine coordinate
+            // for Tm, rather than substituting the changing generator speed.
+            double mechanicalTorque=pm/(isNativePsse()?wt:wg);
+            result[2]=(mechanicalTorque-electricalPower/wg-data.damp()*dampingDeviation)/(2*data.h());
         } else {
             double torque=shaftStiffness()*x[0];
             double shaftDamping=data.dshaft()*(x[1]-x[2]);
             result[0]=angularFrequency()*(x[1]-x[2]);
             result[1]=(pm/wt-torque-shaftDamping)/(2*data.h()*data.htfrac());
-            result[2]=(torque+shaftDamping-electricalPower/wg-data.damp()*x[2])
+            double generatorFeedback=(torque+shaftDamping)*(isNativePsse()?wg/wt:1);
+            result[2]=(generatorFeedback-electricalPower/wg-data.damp()*dampingDeviation)
                     /(2*data.h()*(1-data.htfrac()));
         }
-        result[3]=angularFrequency()*(x[2]+initialSpeed-1);
+        result[3]=angularFrequency()*x[2];
         if(!aerodynamicPresent&&data.tp()>0)result[4]=(electricalPower-x[4])/data.tp();
         return result;
     }
@@ -115,19 +142,27 @@ public final class Wtdtb1Model implements WindDriveTrain {
     public boolean isSingleMass() { return data.htfrac()==0; }
     public boolean isAerodynamicPresent() { return aerodynamicPresent; }
     public Wtdtb1Data getData() { return data; }
-    public double[] getNativeStates() { return state.clone(); }
+    public EquationConvention getEquationConvention() { return equationConvention; }
+    private boolean isNativePsse() { return equationConvention==EquationConvention.PSSE_36_7; }
+    public double[] getNativeStates() {
+        double[] result=state.clone();
+        result[1]+=initialSpeed-1;
+        result[2]+=initialSpeed-1;
+        return result;
+    }
     public double getInitialSpeed() { return initialSpeed; }
     @Override public double getInitialInputPower() { return initialPower; }
     @Override public double getGeneratorSpeed() { return initialSpeed+state[2]; }
-    @Override public double getTurbineSpeed() { return initialSpeed+state[1]; }
+    @Override public double getTurbineSpeed() { return isSingleMass()?getGeneratorSpeed():initialSpeed+state[1]; }
     public double getFilteredElectricalPower() { return state[4]; }
     public Map<String,Double> getNamedStates() {
+        double[] observed=getNativeStates();
         Map<String,Double> values=new LinkedHashMap<>();
-        values.put("Shaft Twist Angle",state[0]);
-        values.put("Turbine Speed Deviation",state[1]);
-        values.put("Generator Speed Deviation",state[2]);
-        values.put("Generator Rotor Angle Deviation",state[3]);
-        values.put("Electrical Power Measurement Filter",state[4]);
+        values.put("Shaft Twist Angle",observed[0]);
+        values.put("Turbine Speed Deviation",observed[1]);
+        values.put("Generator Speed Deviation",observed[2]);
+        values.put("Generator Rotor Angle Deviation",observed[3]);
+        values.put("Electrical Power Measurement Filter",observed[4]);
         return Collections.unmodifiableMap(values);
     }
 }

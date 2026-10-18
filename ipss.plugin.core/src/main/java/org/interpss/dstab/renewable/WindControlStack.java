@@ -49,7 +49,8 @@ public final class WindControlStack {
                 pref = torqueController.getPref();
             }
         }
-        if (aerodynamics != null) aerodynamics.initialize(power);
+        if (aerodynamics != null) aerodynamics.initialize(driveTrain == null
+                ? power : driveTrain.getInitialInputPower());
         if (pitchController != null) {
             double theta0 = aerodynamics == null ? 0.0 : aerodynamics.getData().theta0();
             pitchController.initialize(theta0, turbineSpeed);
@@ -195,7 +196,8 @@ public final class WindControlStack {
     }
 
     public boolean isComplete() {
-        return aerodynamics != null && pitchController != null && torqueController != null;
+        return torsionalEmulation != null && aerodynamics == null
+                || aerodynamics != null && pitchController != null && torqueController != null;
     }
 
     /** All differential inputs are captured before any component is advanced. */

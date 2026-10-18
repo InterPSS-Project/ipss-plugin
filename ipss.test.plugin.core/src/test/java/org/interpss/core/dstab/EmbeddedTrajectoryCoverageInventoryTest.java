@@ -39,9 +39,9 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
                 entries.stream().map(RenewableEvidenceInventory.Entry::model).collect(Collectors.toSet()));
         assertEquals(27,entries.stream().map(RenewableEvidenceInventory.Entry::model).distinct().count());
         var counts=entries.stream().collect(Collectors.groupingBy(RenewableEvidenceInventory.Entry::scope,Collectors.counting()));
-        assertEquals(10,counts.get(RenewableEvidenceInventory.Scope.MISSING_IMPLEMENTATION).longValue());
+        assertEquals(9,counts.get(RenewableEvidenceInventory.Scope.MISSING_IMPLEMENTATION).longValue());
         assertEquals(8,counts.get(RenewableEvidenceInventory.Scope.NATIVE_RECORDED_PROFILE).longValue());
-        assertEquals(1,counts.get(RenewableEvidenceInventory.Scope.NATIVE_PARTIAL_PROFILE).longValue());
+        assertEquals(2,counts.get(RenewableEvidenceInventory.Scope.NATIVE_PARTIAL_PROFILE).longValue());
         assertEquals(6,counts.get(RenewableEvidenceInventory.Scope.BOUNDED_DIALECT_COMPARISON).longValue());
         assertEquals(2,counts.get(RenewableEvidenceInventory.Scope.FOCUSED_ONLY).longValue());
         Set<Class<?>> registered=Set.copyOf(Arrays.asList(
@@ -64,7 +64,7 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
             if(!entry.fixture().isEmpty()) {
                 Path fixture=Path.of("testData/adpter/psse/v33").resolve(entry.fixture());
                 var records=PsseDyrRecordReader.read(fixture).stream()
-                        .filter(row->row.canonicalModelName().equals(entry.model())).toList();
+                        .filter(row->row.canonicalModelName().equals(descriptor.canonicalName())).toList();
                 assertEquals(1,records.size(),entry.model()+" must occur once in its source fixture");
                 assertTrue(descriptor.recordSchema().accepts(records.get(0).parameterCount()));
             }

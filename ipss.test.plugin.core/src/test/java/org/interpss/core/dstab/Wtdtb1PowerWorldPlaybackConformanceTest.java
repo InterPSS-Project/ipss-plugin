@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.HexFormat;
 
 import org.interpss.core.dstab.reference.Wtdtb1PowerWorldPlaybackReference;
+import org.interpss.core.dstab.reference.Wtdtb1PowerWorldNonUnitReference;
 import org.interpss.core.dstab.reference.Wtdtb1PowerWorldPlaybackReference.Profile;
 import org.interpss.dstab.renewable.Wtdtb1Data;
 import org.interpss.dstab.renewable.Wtdtb1Model;
@@ -61,14 +62,43 @@ public class Wtdtb1PowerWorldPlaybackConformanceTest {
                 new Wtdtb1Data(4.5, 1.5, .6, 2, .4, 0), COARSE));
     }
 
+    @Test void declaredNonUnitSpeedRetainsAllFivePowerWorldStatesWithoutAngleDrift() {
+        double[] coarse = replay(Wtdtb1PowerWorldNonUnitReference.coarse(), DATA,
+                new double[] {1.4e-7, 8e-8, 8e-8, 8.5e-8, 2e-7}, .97);
+        double[] fine = replay(Wtdtb1PowerWorldNonUnitReference.fine(), DATA,
+                new double[] {7e-8, 8e-8, 8e-8, 4e-8, 6e-8}, .97);
+        for (int state : new int[] {0, 3, 4}) assertTrue(fine[state] < .65 * coarse[state]);
+    }
+
+    @Test void nonUnitFrozenInputsAndStatesRejectMutation() throws Exception {
+        var coarse = Wtdtb1PowerWorldNonUnitReference.coarse();
+        var fine = Wtdtb1PowerWorldNonUnitReference.fine();
+        String[] bodies = {coarse.powers(), coarse.states(), fine.powers(), fine.states()};
+        String[] hashes = {"8bde783bd1a3c30748e820da84b563e88bed0e0b4b960710fa2c98c0d6d533fb",
+                "f4fdcafa81620b4a46c2f60891d14783bb8db4dd49283a25690db33b2bfafaef",
+                "b79d8dac6390824071661367067ac367c346c496e14dbe40680dc136c4385c2e",
+                "afc29874e733bb8068f4c20fdc09f1ca0736ca4ebb745a880d642c7533d00ee8"};
+        assertEquals("3f5b3e9278f4ec69db11cdca52e6266e3fe6d062c21a5eaf39d2b955323c46c4", coarse.rawCsvSha256());
+        assertEquals("a2e139c8136461be00bfc3b7601d803a3eba4e3e1ca0915a076bc86191560622", fine.rawCsvSha256());
+        for (int i = 0; i < bodies.length; i++) {
+            byte[] bytes = bodies[i].getBytes(StandardCharsets.UTF_8);
+            assertEquals(hashes[i], digest(bytes));
+            bytes[0] ^= 1;
+            assertNotEquals(hashes[i], digest(bytes));
+        }
+    }
+
     private static double[] replay(Profile reference, Wtdtb1Data data, double[] bounds) {
+        return replay(reference, data, bounds, 1);
+    }
+    private static double[] replay(Profile reference, Wtdtb1Data data, double[] bounds, double initialSpeed) {
         var inputs = reference.powers().lines().map(Wtdtb1PowerWorldPlaybackConformanceTest::numbers).toList();
         var checkpoints = reference.states().lines().map(Wtdtb1PowerWorldPlaybackConformanceTest::numbers).toList();
         assertEquals(reference.samples(), inputs.size());
         assertEquals(reference.checkpoints(), checkpoints.size());
         assertEquals(203, checkpoints.size(), "Every 5 ms plus both instantaneous post-event samples");
         var model = new Wtdtb1Model(data, 60);
-        model.initialize(inputs.getFirst()[1]);
+        model.initialize(inputs.getFirst()[1], initialSpeed);
         double[] maximum = new double[5], maximumTime = new double[5];
         double[] previous = inputs.getFirst();
         int next = 0, duplicateEvents = 0;

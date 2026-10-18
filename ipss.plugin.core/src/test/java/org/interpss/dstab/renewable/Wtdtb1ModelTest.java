@@ -81,7 +81,7 @@ class Wtdtb1ModelTest {
         assertEquals(0, state[0], 0);
         assertEquals(0, state[1], 0);
         assertEquals(.001 * (.24 - .10) / 9, state[2], EPS);
-        assertEquals(1, model.getTurbineSpeed(), 0);
+        assertEquals(model.getGeneratorSpeed(), model.getTurbineSpeed(), 0);
         assertEquals(0, model.shaftStiffness(), 0);
     }
 
@@ -144,5 +144,90 @@ class Wtdtb1ModelTest {
         assertThrows(IllegalArgumentException.class, () -> model.step(.1, Double.NaN, POWER));
         assertThrows(IllegalArgumentException.class, () -> model.step(.1, POWER, POWER, 2));
         assertThrows(IllegalStateException.class, () -> model.step(.1, POWER, POWER, 1));
+    }
+
+    @Test void equationConventionIsExplicitAndDefaultRetainsPublishedDiagram() {
+        var published = twoMass();
+        var nativeModel = Wtdtb1Model.forNativePsse367(published.getData(), 60);
+        assertEquals(Wtdtb1Model.EquationConvention.PUBLISHED_DIAGRAM, published.getEquationConvention());
+        assertEquals(Wtdtb1Model.EquationConvention.PSSE_36_7, nativeModel.getEquationConvention());
+    }
+
+    @Test void nativeGeneratorFeedbackHasTheIndependentlyDiscriminatedSpeedRatio() {
+        var nativeModel = Wtdtb1Model.forNativePsse367(twoMass().getData(), 60);
+        var published = twoMass();
+        for (var model : new Wtdtb1Model[] {nativeModel, published}) {
+            model.setAerodynamicPresent(true);
+            model.initialize(POWER);
+            model.step(.01, .30, POWER, 0);
+        }
+        double turbineDeviation = .01 * (.30 - POWER) / 5.4;
+        double shaft = POWER + .4 * turbineDeviation;
+        nativeModel.step(.01, .30, POWER, 1);
+        published.step(.01, .30, POWER, 1);
+        assertEquals(.005 * (shaft / (1 + turbineDeviation) - POWER) / 3.6,
+                nativeModel.getNativeStates()[2], EPS);
+        assertEquals(.005 * (shaft - POWER) / 3.6,
+                published.getNativeStates()[2], EPS);
+        assertTrue(Math.abs(nativeModel.getNativeStates()[2] - published.getNativeStates()[2]) > 1e-8);
+    }
+
+    @Test void nativeNonUnitInitializationBalancesAbsoluteDampingAndMechanicalInput() {
+        var model = Wtdtb1Model.forNativePsse367(twoMass().getData(), 60);
+        model.setAerodynamicPresent(true);
+        model.initialize(POWER, .88);
+        assertEquals(.0816, model.getInitialInputPower(), EPS);
+        assertEquals((POWER / .88 + 1.5 * (.88 - 1)) / model.shaftStiffness(),
+                model.getNativeStates()[0], EPS);
+        assertEquals(-.12, model.getNativeStates()[1], EPS);
+        assertEquals(-.12, model.getNativeStates()[2], EPS);
+        assertEquals(-.12, model.getNamedStates().get("Generator Speed Deviation"), EPS);
+        double[] initial = model.getNativeStates();
+        for (int i = 0; i < 1000; i++) model.step(.001, .0816, POWER);
+        assertArrayEquals(initial, model.getNativeStates(), EPS);
+    }
+
+    @Test void publishedNonUnitSpeedHasNoInitialRotorAngleDrift() {
+        var model = twoMass();
+        model.initialize(POWER, .97);
+        assertEquals(POWER, model.getInitialInputPower(), EPS);
+        assertEquals(-.03, model.getNativeStates()[1], EPS);
+        assertEquals(-.03, model.getNativeStates()[2], EPS);
+        double[] initial = model.getNativeStates();
+        for (int i = 0; i < 1000; i++) model.step(.001, POWER, POWER);
+        assertArrayEquals(initial, model.getNativeStates(), EPS);
+        assertEquals(0, model.getNativeStates()[3], EPS);
+    }
+
+    @Test void nativeEmulationWithoutAerodynamicsDoesNotInventAnInitialSpeedReference() {
+        var model = Wtdtb1Model.forNativePsse367(twoMass().getData(), 60);
+        assertThrows(IllegalArgumentException.class, () -> model.initialize(POWER, .88));
+        model.initialize(POWER);
+        model.step(.001, 99, POWER);
+        assertEquals(1, model.getGeneratorSpeed(), EPS);
+    }
+
+    @Test void oneMassNativeInactiveTurbineCoordinateRetainsNonUnitInitialDeviation() {
+        var model = Wtdtb1Model.forNativePsse367(new Wtdtb1Data(4.5, 1.5, 0, 0, .4, .1), 60);
+        model.setAerodynamicPresent(true);
+        model.initialize(POWER, .88);
+        model.step(.001, .0816, .12);
+        assertEquals(-.12, model.getNativeStates()[1], EPS);
+        assertEquals(-.12, model.getNamedStates().get("Turbine Speed Deviation"), EPS);
+        assertEquals(model.getGeneratorSpeed(), model.getTurbineSpeed(), 0);
+        assertNotEquals(-.12, model.getNativeStates()[2], 1e-8);
+    }
+
+    @Test void nativeOneMassMechanicalTorqueUsesTheRetainedTurbineCoordinate() {
+        var model = Wtdtb1Model.forNativePsse367(new Wtdtb1Data(4.5, 1.5, 0, 0, .4, .1), 60);
+        model.setAerodynamicPresent(true);
+        model.initialize(POWER);
+        double firstRate = (POWER - .12) / 9;
+        double predicted = .01 * firstRate;
+        model.step(.01, POWER, .12, 0);
+        assertEquals(predicted, model.getNativeStates()[2], EPS);
+        model.step(.01, POWER, .12, 1);
+        double correctedRate = (POWER - .12 / (1 + predicted) - 1.5 * predicted) / 9;
+        assertEquals(.005 * (firstRate + correctedRate), model.getNativeStates()[2], EPS);
     }
 }
