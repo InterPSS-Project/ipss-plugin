@@ -61,6 +61,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private boolean previousDip;
     private double ipcmd;
     private double iqcmd;
+    private final TwoStepHistory twoStep = new TwoStepHistory(6);
 
     public Reeca1Model(Reeca1Data data, Regca1Model converter) {
         this.data = data;
@@ -69,6 +70,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     @Override
     public void initialize(double p, double q, double v) {
+        twoStep.reset();
         resolveSensedBus();
         double sensedV = sensedVoltage(v);
         p0 = p;
@@ -295,6 +297,90 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double rawIq = -(rawQCurrent + iqInjection);
         applyCurrentLimits(rawIp, rawIq, voltageDip);
         previousDip = voltageDip;
+    }
+
+    /** Refresh upstream algebraic signals without consuming derivative history. */
+    void refreshTwoStep(double p, double q, double v, double frequency) {
+        p = snapToInitial(p, p0);
+        q = snapToInitial(q, q0);
+        v = snapToInitial(v, localVoltage0);
+        frequency = snapToInitial(frequency, 1.0);
+        double sensedV = snapToInitial(sensedVoltage(v), sensedVoltage0);
+        boolean dip = sensedV < data.vdip() || sensedV > data.vup();
+        if (plantController != null) plantController.stepTwoStep(0.0, p, q, sensedV, frequency);
+        double plantPref = plantController == null ? 0.0 : plantController.getPref();
+        if (windControlStack != null)
+            windControlStack.stepTwoStep(0.0, p, pOrder, p0 + plantPref, dip);
+        stepElectricalControls(0.0, p, q, v, sensedV);
+    }
+
+    /**
+     * Opt-in explicit two-step path. Electrical derivatives use the old wind
+     * and plant outputs; wind derivatives use the old plant output and Pord.
+     * Endpoint output refreshes occur only after all states have advanced.
+     */
+    void stepTwoStep(double dt, double p, double q, double v, double frequency) {
+        if (dt <= 0.0) {
+            refreshTwoStep(p, q, v, frequency);
+            return;
+        }
+        p = snapToInitial(p, p0);
+        q = snapToInitial(q, q0);
+        v = snapToInitial(v, localVoltage0);
+        frequency = snapToInitial(frequency, 1.0);
+        double sensedV = snapToInitial(sensedVoltage(v), sensedVoltage0);
+        boolean dip = sensedV < data.vdip() || sensedV > data.vup();
+        double oldPorder = pOrder;
+        double plantPref = plantController == null ? 0.0 : plantController.getPref();
+        double pref = windControlStack != null && windControlStack.getTorqueController() != null
+                ? windControlStack.getPref() : p0 + plantPref;
+        updateDipTimers(dt, dip);
+        pFilter = Repca1Model.limit(pref, pFilter + data.dpmin() * dt,
+                pFilter + data.dpmax() * dt);
+        stepElectricalControls(0.0, p, q, v, sensedV);
+        double selectedP = data.pFlag() == 1
+                ? getActivePowerSpeedMultiplier() * pFilter : pFilter;
+        double vRate = lagRate(vMeasured, sensedV, data.trv());
+        double pRate = lagRate(pMeasured, p, data.tp());
+        double orderRate = lagRate(pOrder,
+                Repca1Model.limit(selectedP, effectivePmin, effectivePmax), data.tpord());
+        double iqRate = lagRate(qCurrent, reactivePowerTarget / nonzero(vMeasured), data.tiq());
+        double qIntegralRate = data.qFlag() == 1 && data.vFlag() == 1
+                ? integralRate(qIntegral, data.kqi(), reactiveControlError, data.kqp(),
+                        effectiveVmin, effectiveVmax) : 0.0;
+        double vIntegralRate = data.qFlag() == 1
+                ? integralRate(vIntegral, data.kvi(), voltageControlError, data.kvp(),
+                        -preliminaryIqLimit, preliminaryIqLimit) : 0.0;
+        if ((voltageControlPreLimitOutput >= preliminaryIqLimit - EPS
+                    && vIntegralRate > 0.0 && qIntegralRate > 0.0)
+                || (voltageControlPreLimitOutput <= -preliminaryIqLimit + EPS
+                    && vIntegralRate < 0.0 && qIntegralRate < 0.0)) qIntegralRate = 0.0;
+        twoStep.begin(dt);
+        vMeasured = twoStep.advance(0, vMeasured, vRate);
+        pMeasured = twoStep.advance(1, pMeasured, pRate);
+        pOrder = dip ? twoStep.hold(2, pOrder) : Repca1Model.limit(
+                twoStep.advance(2, pOrder, orderRate), effectivePmin, effectivePmax);
+        qCurrent = dip || data.qFlag() != 0 ? twoStep.hold(3, qCurrent)
+                : twoStep.advance(3, qCurrent, iqRate);
+        qIntegral = dip ? twoStep.hold(4, qIntegral)
+                : twoStep.advance(4, qIntegral, qIntegralRate);
+        vIntegral = dip ? twoStep.hold(5, vIntegral)
+                : twoStep.advance(5, vIntegral, vIntegralRate);
+        if (windControlStack != null)
+            windControlStack.stepTwoStep(dt, p, oldPorder, p0 + plantPref, dip);
+        if (plantController != null) plantController.stepTwoStep(dt, p, q, sensedV, frequency);
+        refreshTwoStep(p, q, v, frequency);
+    }
+
+    private static double lagRate(double state, double input, double timeConstant) {
+        return timeConstant <= EPS ? 0.0 : (input - state) / timeConstant;
+    }
+
+    private static double integralRate(double integral, double gain, double error,
+            double proportionalGain, double lower, double upper) {
+        double output = proportionalGain * error + integral;
+        if ((output >= upper && error > 0.0) || (output <= lower && error < 0.0)) return 0.0;
+        return gain * error;
     }
 
     private void applyCurrentLimits(double rawIp, double rawIq, boolean voltageDip) {

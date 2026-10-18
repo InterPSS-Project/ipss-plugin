@@ -13,6 +13,7 @@ public final class Wttqa1Model {
     private double pref;
     private TorqueState predictorStart;
     private TorqueDerivative predictorDerivative;
+    private final TwoStepHistory twoStep = new TwoStepHistory(3);
 
     public Wttqa1Model(Wttqa1Data data) {
         this.data = data;
@@ -30,6 +31,9 @@ public final class Wttqa1Model {
                     "WTTQA1 initial power and generator speed must be finite and positive");
         }
         initialPower = filteredPower = power;
+        twoStep.reset();
+        predictorStart = null;
+        predictorDerivative = null;
         speedReference = speedForPower(power);
         double initialError = data.tFlag() == 1 ? 0.0
                 : speedReference - generatorSpeed;
@@ -127,6 +131,25 @@ public final class Wttqa1Model {
         double integralRate = integralRate(state.torqueIntegral(), data.kip(), error,
                 data.kpp(), data.teMin(), data.teMax(), voltageDip);
         return new TorqueDerivative(powerRate, speedReferenceRate, integralRate);
+    }
+
+    void stepTwoStep(double dt, double electricalPower, double generatorSpeed,
+            double powerReference, boolean voltageDip) {
+        TorqueState start = applyBypasses(state(), electricalPower);
+        if (dt > 0.0) {
+            TorqueDerivative rate = derivatives(start, electricalPower, generatorSpeed,
+                    powerReference, voltageDip);
+            twoStep.begin(dt);
+            apply(new TorqueState(
+                    twoStep.advance(0, start.filteredPower(), rate.filteredPower()),
+                    twoStep.advance(1, start.speedReference(), rate.speedReference()),
+                    voltageDip ? twoStep.hold(2, start.torqueIntegral())
+                            : twoStep.advance(2, start.torqueIntegral(), rate.torqueIntegral())));
+        } else {
+            apply(start);
+        }
+        apply(applyBypasses(state(), electricalPower));
+        updateStageOutputs(generatorSpeed, powerReference);
     }
 
     private TorqueState applyBypasses(TorqueState state, double electricalPower) {

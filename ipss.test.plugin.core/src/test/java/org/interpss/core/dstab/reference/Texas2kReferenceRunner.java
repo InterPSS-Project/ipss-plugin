@@ -10,6 +10,7 @@ import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.interpss.fadapter.psse.PsseDStabSolver;
+import org.interpss.dstab.renewable.Regca1Model;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -17,6 +18,7 @@ import com.google.gson.JsonParser;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabObjectFactory;
+import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.StaticLoadModel;
 import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
@@ -128,6 +130,21 @@ public final class Texas2kReferenceRunner {
             algo.setTotalSimuTimeSec(stop);
             algo.setSimuOutputHandler(new StateMonitor());
             algo.setOutPutPerSteps(1);
+            String renewableScheme = plan.has("renewable_integration_scheme")
+                    ? plan.get("renewable_integration_scheme").getAsString() : "MODIFIED_EULER";
+            var scheme = Regca1Model.IntegrationScheme.valueOf(renewableScheme);
+            int configuredRenewables = 0;
+            for (var networkBus : net.getBusList()) {
+                for (var generator : networkBus.getContributeGenList()) {
+                    if (generator instanceof DStabGen dynamicGen
+                            && dynamicGen.getDynamicGenDevice() instanceof Regca1Model renewable) {
+                        renewable.setIntegrationScheme(scheme);
+                        configuredRenewables++;
+                    }
+                }
+            }
+            status.put("renewable_integration_scheme", renewableScheme);
+            status.put("configured_regca1_devices", configuredRenewables);
             String bus = "Bus" + event.get("target_bus").getAsInt();
             double start = event.get("start_s").getAsDouble();
             if (event.get("event_type").getAsString().equals("bus_fault")) {

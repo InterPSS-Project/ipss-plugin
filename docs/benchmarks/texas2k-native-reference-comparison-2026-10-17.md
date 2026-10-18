@@ -113,6 +113,40 @@ change. Adding two Heun startup steps alone does not solve Case 2: worst
 prefault voltage/P/Q NRMSE remains `0.00141946` / `0.00295138` / `0.00385832`,
 and maximum rotor-angle error is `0.333880` degrees.
 
+An explicit `TWO_STEP` renewable integration option now captures the converter,
+electrical, plant, and wind inputs at a common old endpoint. It advances states
+once and refreshes algebraic commands at the second solver stage. The ordinary
+integration option remains the default while full-system coordination and
+limiter/event histories are unresolved. Seven new tests cover the first two
+commercial startup steps, common-endpoint coupling, bypasses, dip freezes,
+algebraic refreshes, and reinitialization. All **114 focused Java tests** and
+**14 comparison-contract tests** pass. A default-option Case 2 check reproduces
+every exported field exactly across 41 samples and 50 signal channels.
+
+On the unchanged one-second two-bus wind profile, the new option reduces the
+maximum active-power-order error from `0.000648616` to `0.00000345644` pu and
+the active-current-state error from `0.000284216` to `0.0000131210` pu. Terminal
+active-power error falls from `0.000228824` to `0.00000285113` pu on system base.
+The reactive-path discrepancy remains; these results do not establish complete
+model conformance.
+
+Changing only the 107 renewable devices does **not** resolve the full network.
+The Case 2 first-fault diagnostic completes 1.2 seconds, including clearing,
+in 88.068 seconds. Worst prefault voltage/P/Q NRMSE is `0.00198368` /
+`0.00573435` / `0.00652358`; maximum rotor-angle error is `0.441953` degrees.
+Eighteen of the twenty prefault criteria fail, and the ten-second trajectory is
+incomplete. This candidate is retained as a failed mixed-integration diagnostic.
+
+An independent audit of the supplied first-fault outputs covers 30 GENROU
+machines across all six cases. Using recorded speed to predict the next
+rotor-angle state, the two-step recurrence is within one float32 rounding unit
+for **600,021 of 600,060** intervals, compared with 596,146 for the trapezoidal
+identity. In the first three milliseconds after Case 2 fault application,
+generator 6244's maximum identity error is `7.74e-10` radians for the two-step
+update and `1.03e-6` radians for the trapezoidal update. This localizes the next
+integration investigation to a consistent machine/controller/network update;
+it does not verify the remaining machine equations or full-system accuracy.
+
 A separate two-bus probe retains Case 2 generator 6245's GENROU parameters
 and operating P/Q. Its initial rotor-angle error is `5.86e-5` degrees, and all
 four electrical-state errors are below `5.5e-7` pu. The commercial reference

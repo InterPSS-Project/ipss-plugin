@@ -11,12 +11,16 @@ public final class Wtpta1Model {
     private double pitch;
     private PitchState predictorStart;
     private PitchDerivative predictorDerivative;
+    private final TwoStepHistory twoStep = new TwoStepHistory(3);
 
     public Wtpta1Model(Wtpta1Data data) {
         this.data = data;
     }
 
     public void initialize(double theta0, double speed) {
+        twoStep.reset();
+        predictorStart = null;
+        predictorDerivative = null;
         speedReference = speed;
         speedIntegral = Repca1Model.limit(theta0, data.thetaMin(), data.thetaMax());
         compensationIntegral = 0.0;
@@ -103,6 +107,17 @@ public final class Wtpta1Model {
             pitchRate = 0.0;
         }
         return new PitchDerivative(speedRate, compensationRate, pitchRate);
+    }
+
+    void stepTwoStep(double dt, double pOrder, double pReference, double speed) {
+        if (dt <= 0.0) return;
+        PitchState start = state();
+        PitchDerivative rate = derivatives(start, dt, pOrder, pReference, speed);
+        twoStep.begin(dt);
+        apply(new PitchState(
+                twoStep.advance(0, start.speedIntegral(), rate.speedIntegral()),
+                twoStep.advance(1, start.compensationIntegral(), rate.compensationIntegral()),
+                twoStep.advance(2, start.pitch(), rate.pitch())));
     }
 
     private double integralRate(double integral, double gain, double error,

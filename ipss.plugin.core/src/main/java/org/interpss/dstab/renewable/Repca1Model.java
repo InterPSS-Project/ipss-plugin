@@ -50,6 +50,7 @@ public final class Repca1Model implements ICMLStateProvider {
     private PlantState predictorStart;
     private PlantDerivatives predictorDerivatives;
     private boolean initialized;
+    private final TwoStepHistory twoStep = new TwoStepHistory(6);
 
     public Repca1Model(Repca1Data data) {
         this(data, null, null, null);
@@ -77,6 +78,9 @@ public final class Repca1Model implements ICMLStateProvider {
     }
 
     public void initialize(double p, double q, double v) {
+        twoStep.reset();
+        predictorStart = null;
+        predictorDerivatives = null;
         resolveMeasurements();
         Measurement measurement = measure(p, q, v, 1.0);
         pReference = pMeasured = measurement.p();
@@ -183,6 +187,28 @@ public final class Repca1Model implements ICMLStateProvider {
         double pLagRate = lagRate(state.pLagState(), pPi, data.tg());
         return new PlantDerivatives(pRate, qRate, pIntegralRate, qIntegralRate,
                 leadLagRate, pLagRate);
+    }
+
+    void stepTwoStep(double dt, double p, double q, double v, double frequency) {
+        Measurement measurement = measure(p, q, v, frequency);
+        PlantState start = applyBypasses(state(), measurement);
+        if (dt > 0.0) {
+            PlantDerivatives rate = derivatives(start, measurement);
+            twoStep.begin(dt);
+            apply(new PlantState(
+                    twoStep.advance(0, start.pMeasured(), rate.pMeasured()),
+                    twoStep.advance(1, start.qOrVMeasured(), rate.qOrVMeasured()),
+                    twoStep.advance(2, start.pIntegral(), rate.pIntegral()),
+                    measurement.vMag() < data.vfrz()
+                            ? twoStep.hold(3, start.qIntegral())
+                            : twoStep.advance(3, start.qIntegral(), rate.qIntegral()),
+                    twoStep.advance(4, start.leadLagState(), rate.leadLagState()),
+                    twoStep.advance(5, start.pLagState(), rate.pLagState())));
+        } else {
+            apply(start);
+        }
+        apply(applyBypasses(state(), measurement));
+        updateStageOutputs(state());
     }
 
     private PlantState advance(PlantState start, PlantDerivatives rate,

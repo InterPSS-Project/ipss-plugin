@@ -22,6 +22,7 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
         implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider {
+    public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 
     private final Regca1Data data;
@@ -46,6 +47,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double dip0;
     private double diq0;
     private double integrationStep;
+    private IntegrationScheme integrationScheme = IntegrationScheme.MODIFIED_EULER;
+    private final TwoStepHistory twoStep = new TwoStepHistory(3);
 
     @Override
     public void configureIntegrationStep(double timeStepSec) {
@@ -64,6 +67,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
+        twoStep.reset();
         RenewableElectricalController controller = activeController();
         if (parentGen == null || controller == null || bus == null) return false;
         Complex initial = parentGen.getGen();
@@ -88,6 +92,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
+        if (integrationScheme == IntegrationScheme.TWO_STEP)
+            return nextTwoStep(dt, method, flag);
         double v = Math.max(0.01, getDStabBus().getVoltageMag());
         double frequency = getDStabBus().getFreq();
         // The enclosing DStab solver invokes flag 0 and flag 1 for one modified-Euler
@@ -121,6 +127,32 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         }
         if (data.tg() > EPS) ipState = Math.min(ipState, lowVoltagePowerLimit());
         return finite(ipState) && finite(iqState);
+    }
+
+    private boolean nextTwoStep(double dt, DynamicSimuMethod method, int flag) {
+        if (reeca1Controller == null)
+            throw new IllegalStateException("Two-step REGCA1 requires a REECA1 controller");
+        if (method != DynamicSimuMethod.MODIFIED_EULER || (flag != 0 && flag != 1)
+                || !Double.isFinite(dt) || dt < 0.0)
+            throw new IllegalArgumentException("Two-step REGCA1 requires finite dt and stages 0/1");
+        // Read power at the solved boundary, not the preceding bus-attribute update.
+        // During a two-step update flag 1 refreshes algebraic outputs only.
+        if (!updateAttributes(false)) return false;
+        double v = Math.max(0.01, getDStabBus().getVoltageMag());
+        double frequency = getDStabBus().getFreq();
+        reeca1Controller.refreshTwoStep(p, q, v, frequency);
+        if (flag == 0 && dt > 0.0) {
+            double dv = derivative(v, vFiltered, data.tfltr());
+            double dip = activeCurrentDerivative(reeca1Controller.getIpcmd(), ipState);
+            double diq = reactiveCurrentDerivative(reeca1Controller.getIqcmd(), iqState);
+            reeca1Controller.stepTwoStep(dt, p, q, v, frequency);
+            twoStep.begin(dt);
+            vFiltered = twoStep.advance(0, vFiltered, dv);
+            ipState = twoStep.advance(1, ipState, dip);
+            iqState = twoStep.advance(2, iqState, diq);
+            if (data.tg() > EPS) ipState = Math.min(ipState, lowVoltagePowerLimit());
+        }
+        return finite(vFiltered) && finite(ipState) && finite(iqState);
     }
 
     private double activeCurrentDerivative(double command, double state) {
@@ -238,6 +270,15 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     public Regca1Data getData() { return data; }
+    public IntegrationScheme getIntegrationScheme() { return integrationScheme; }
+    /**
+     * Select before initialization. TWO_STEP is an explicit verification path;
+     * its commercial lag identities are verified, full fleet/event parity is open.
+     */
+    public void setIntegrationScheme(IntegrationScheme scheme) {
+        integrationScheme = java.util.Objects.requireNonNull(scheme);
+        twoStep.reset();
+    }
     public Reecb1Model getElectricalController() {
         return electricalController instanceof Reecb1Model controller ? controller : null;
     }

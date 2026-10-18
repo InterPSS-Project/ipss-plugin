@@ -22,6 +22,8 @@ public final class WindControlStack {
     private double predictorMechanicalPower;
 
     public void initialize(double power) {
+        predictorActive = false;
+        generatorSpeed = turbineSpeed = 1.0;
         pref = power;
         if (torqueController != null) {
             torqueController.initialize(power);
@@ -174,6 +176,34 @@ public final class WindControlStack {
 
     public boolean isComplete() {
         return aerodynamics != null && pitchController != null && torqueController != null;
+    }
+
+    /** All differential inputs are captured before any component is advanced. */
+    void stepTwoStep(double dt, double electricalPower, double pOrder,
+            double powerReference, boolean voltageDip) {
+        double oldSpeed = generatorSpeed;
+        double oldTurbineSpeed = turbineSpeed;
+        double oldPref = pref;
+        double mechanicalPower = aerodynamics == null
+                ? driveTrain == null ? electricalPower : driveTrain.getInitialInputPower()
+                : aerodynamics.getMechanicalPower();
+        if (driveTrain != null) driveTrain.stepTwoStep(dt, mechanicalPower, electricalPower);
+        if (torqueController != null) torqueController.stepTwoStep(dt, electricalPower,
+                oldSpeed, powerReference, voltageDip);
+        if (pitchController != null) pitchController.stepTwoStep(dt, pOrder, oldPref, oldTurbineSpeed);
+        generatorSpeed = driveTrain == null
+                ? torqueController == null || holdInitialSpeedWithoutDriveTrain ? oldSpeed
+                        : torqueController.getSpeedReference()
+                : driveTrain.getGeneratorSpeed();
+        turbineSpeed = driveTrain == null ? generatorSpeed : driveTrain.getTurbineSpeed();
+        // Publish algebraic torque*speed using the committed endpoint speed.
+        if (torqueController != null) {
+            torqueController.stepTwoStep(0.0, electricalPower, generatorSpeed,
+                    powerReference, voltageDip);
+            pref = torqueController.getPref();
+        }
+        if (aerodynamics != null) aerodynamics.step(pitchController == null
+                ? aerodynamics.getData().theta0() : pitchController.getPitch());
     }
 
     public Wtara1Model getAerodynamics() { return aerodynamics; }

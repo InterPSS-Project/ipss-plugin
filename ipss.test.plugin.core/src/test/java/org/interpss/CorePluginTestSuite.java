@@ -138,6 +138,7 @@ import org.interpss.core.adapter.builder.dstab.PsseLegacyControllerMappingTest;
 import org.interpss.core.adapter.builder.dstab.PSSEDStabDirectParserReportTest;
 import org.interpss.core.adapter.builder.dstab.PsseDyrRecordReaderTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegca1ConverterTest;
+import org.interpss.core.adapter.builder.dstab.PsseRenewableTwoStepIntegrationTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1ModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseRegfma1NativeSchemaTest;
 import org.interpss.core.adapter.builder.dstab.PsseReeca1ControllerTest;
@@ -859,6 +860,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseHygovrGovernorTest.class,
 	Lcfb1PrefControllerTest.class,
 	PsseRegca1ConverterTest.class,
+	PsseRenewableTwoStepIntegrationTest.class,
 	PsseRegfma1ModelTest.class,
 	PsseRegfma1NativeSchemaTest.class,
 	PsseReeca1ControllerTest.class,

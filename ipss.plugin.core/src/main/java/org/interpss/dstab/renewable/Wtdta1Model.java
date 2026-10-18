@@ -25,6 +25,7 @@ public final class Wtdta1Model {
     private State predictorStart;
     private Derivative predictorDerivative;
     private double predictorSingleMassDerivative;
+    private final TwoStepHistory twoStep = new TwoStepHistory(3);
 
     public Wtdta1Model(Wtdta1Data data) {
         this.data = data;
@@ -45,6 +46,8 @@ public final class Wtdta1Model {
 
     /** WTTQA1 supplies its initialized power/speed characteristic when present. */
     public void initialize(double power, double speed) {
+        twoStep.reset();
+        clearPredictor();
         if (!Double.isFinite(power) || !Double.isFinite(speed) || speed <= 0.0) {
             throw new IllegalArgumentException("WTDTA1 initial power and speed must be finite; speed must be positive");
         }
@@ -122,6 +125,28 @@ public final class Wtdta1Model {
         }
         shaftTorque = electricalPower / nonzeroSpeed(generatorSpeed);
         dampingPower = 0.0;
+        requireFiniteState();
+    }
+
+    void stepTwoStep(double dt, double mechanicalPower, double electricalPower) {
+        if (dt <= 0.0) return;
+        mechanicalPower = scalePower(mechanicalPower);
+        electricalPower = scalePower(electricalPower);
+        State start = state();
+        twoStep.begin(dt);
+        if (isSingleMass()) {
+            generatorSpeed = turbineSpeed = twoStep.advance(0, start.generatorSpeed(),
+                    singleMassDerivative(start.generatorSpeed(), mechanicalPower, electricalPower));
+            shaftTorque = electricalPower / nonzeroSpeed(generatorSpeed);
+            dampingPower = 0.0;
+        } else {
+            Derivative rate = derivatives(start, mechanicalPower, electricalPower);
+            apply(new State(
+                    twoStep.advance(0, start.turbineSpeed(), rate.turbineSpeed()),
+                    twoStep.advance(1, start.generatorSpeed(), rate.generatorSpeed()),
+                    twoStep.advance(2, start.shaftTorque(), rate.shaftTorque())));
+            dampingPower = data.dshaft() * (turbineSpeed - generatorSpeed);
+        }
         requireFiniteState();
     }
 
