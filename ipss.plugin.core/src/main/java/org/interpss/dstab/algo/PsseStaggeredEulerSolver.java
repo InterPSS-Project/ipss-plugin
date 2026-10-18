@@ -16,6 +16,7 @@ import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.Esst4bPIControlBlock;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock;
 import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
@@ -312,6 +313,10 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             BooleanSupplier frozen=()->false;
             if (b.getType()==StaticBlockType.NonWindup) {
                 if (b instanceof DelayControlBlock delay) project=x->delay.getLimit().limit(x);
+                else if (b instanceof Esst4bPIControlBlock pi) {
+                    project=pi::projectIntegralState;
+                    frozen=pi::isIntegratorFrozen;
+                }
                 else if (b instanceof IntegrationControlBlock integral) project=x->integral.getLimit().limit(x);
                 else if (b instanceof FreezeNonWindupPIControlBlock pi) {
                     frozen=()-> {

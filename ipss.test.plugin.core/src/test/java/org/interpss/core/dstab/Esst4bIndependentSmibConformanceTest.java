@@ -41,6 +41,11 @@ public class Esst4bIndependentSmibConformanceTest {
         algorithm.setSimuStepSec(STEP);
         algorithm.setTotalSimuTimeSec(1.0);
         algorithm.setSimuOutputHandler(new StateMonitor());
+        IEEE2005ST4BExciter exciter = (IEEE2005ST4BExciter) network
+                .getMachine("Bus1-mach1").getExciter();
+        // This PowerWorld fixture uses output-freeze PI limits. Native imports
+        // use separate integral-state limits, checked against native cold runs.
+        exciter.getData().setIntegralStateLimits(false);
         network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent(
                 "Bus1", network, SimpleFaultCode.GROUND_3P,
                 new Complex(0.0, 0.2), null, 0.05, 0.05), "SmibFault");
@@ -48,7 +53,6 @@ public class Esst4bIndependentSmibConformanceTest {
 
         RoundRotorMachine machine = (RoundRotorMachine) network.getMachine("Bus1-mach1");
         Machine referenceMachine = network.getMachine("Bus2-mach1");
-        IEEE2005ST4BExciter exciter = (IEEE2005ST4BExciter) machine.getExciter();
         double initialRelativeAngle = machine.getAngle() - referenceMachine.getAngle();
         List<double[]> actual = new ArrayList<>();
         record(actual, algorithm.getSimuTime(), network, machine, referenceMachine, exciter,

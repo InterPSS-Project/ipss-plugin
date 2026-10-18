@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 import org.interpss.dstab.control.exc.UnderExcitationLimiterTarget;
-import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,13 +56,14 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	
 	   //kpr kir-- PI  block
 	   public double Kpr =1, Kir=1, vrmax =99, vrmin =-99;
+	   public double integralStateLimits = 0.0;
 	   @AnControllerField(
 			   type =CMLFieldEnum.ControlBlock,
 			   input="this.refPoint - this.trDelayBlock.y + pss.vs + this.vuel",
-			   parameter={"this.Kpr", "this.Kir","this.vrmax","this.vrmin"},
+			   parameter={"this.Kpr", "this.Kir","this.vrmax","this.vrmin", "this.integralStateLimits"},
 			   y0="this.taDelayBlock.u0"
 			   )
-	   FreezeNonWindupPIControlBlock vrPIBlock;
+	   Esst4bPIControlBlock vrPIBlock;
 
 	   //taDelayBlock----Ka/(1+sTa) with limits
 	   public double ka = 1.0, ta = 0.01;
@@ -94,10 +94,10 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	  @AnControllerField(
 			   type =CMLFieldEnum.ControlBlock,
 			   input="this.taDelayBlock.y - this.kgGainBlock.y",
-			   parameter={"this.Kpm", "this.Kim","this.vmmax","this.vmmin"},
+			   parameter={"this.Kpm", "this.Kim","this.vmmax","this.vmmin", "this.integralStateLimits"},
 			   y0="this.customBlock.u0"
 			   )
-	   FreezeNonWindupPIControlBlock vmPIBlock;
+	   Esst4bPIControlBlock vmPIBlock;
 
 	   // IEEE ST4B over-excitation limiter low-value gate.
 	   @AnFunctionField(
@@ -255,6 +255,7 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	    	
 	        this.Kpr = getData().getKpr();
 	        this.Kir = getData().getKir();
+	        this.integralStateLimits = getData().isIntegralStateLimits() ? 1.0 : 0.0;
 	        // PSS/E/PowerWorld validation keeps a zero-integral PI path usable by
 	        // supplying the documented proportional-gain defaults. Keep the
 	        // imported data object unchanged and correct only the runtime fields.

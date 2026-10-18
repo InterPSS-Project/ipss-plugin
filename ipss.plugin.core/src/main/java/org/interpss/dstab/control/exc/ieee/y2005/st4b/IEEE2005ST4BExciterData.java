@@ -21,6 +21,13 @@ public class IEEE2005ST4BExciterData {
 	private double Xl = 1.1;     // P-bar reactance
 	private double Vbmax = 8.63; // maximum excitation voltage
 	private double Vgmax = Double.POSITIVE_INFINITY; // PSS/E omits VgMax
+	private boolean integralStateLimits;
+
+	/** Native ESST4B bounds the integral state independently of the PI output. */
+	public boolean isIntegralStateLimits() { return integralStateLimits; }
+
+	/** False preserves the existing typed-client output-freeze convention. */
+	public void setIntegralStateLimits(boolean value) { integralStateLimits = value; }
 	
 	public double getTr() {
 		return tr;

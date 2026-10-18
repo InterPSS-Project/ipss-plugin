@@ -37,6 +37,7 @@ public class PsseEsst4bExciterTest extends CorePluginTestSetup {
                 .getMachine("Bus1-mach1").getExciter();
         assertNotNull(exciter);
         IEEE2005ST4BExciterData d = exciter.getData();
+        assertTrue(d.isIntegralStateLimits(), "native PI state limits require no extra CON");
         assertEquals(0, d.getTr(), TOL); assertEquals(6.46, d.getKpr(), TOL);
         assertEquals(6.45, d.getKir(), TOL); assertEquals(1, d.getVrmax(), TOL);
         assertEquals(-.87, d.getVrmin(), TOL); assertEquals(.01667, d.getTa(), TOL);

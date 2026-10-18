@@ -2179,6 +2179,7 @@ public class PSSEDStabDirectParser {
     private boolean procExcEsst4b(String busId, String genId, String[] f) {
         if (f.length < 20) return false;
         IEEE2005ST4BExciterData d = new IEEE2005ST4BExciterData();
+        d.setIntegralStateLimits(true);
         d.setTr(getDouble(f, 3, 0)); d.setKpr(getDouble(f, 4, 0));
         d.setKir(getDouble(f, 5, 0)); d.setVrmax(getDouble(f, 6, 0));
         d.setVrmin(getDouble(f, 7, 0)); d.setTa(getDouble(f, 8, 0));

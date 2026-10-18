@@ -1181,3 +1181,68 @@ source derivation, frozen runtime, and grouping audit are preserved in the
 self-contained private artifact `2026-10-18-synchronous-ten-second-controls`.
 Every content object is hash-verified. The running fleet extension is excluded
 from this completed-evidence archive.
+
+## Independent ESST4B integral-state limits
+
+The source-boundary extension now covers all 103 original synchronous stacks.
+Each native trajectory contains 20,003 samples and repeats exactly in two
+fresh processes. All 206 logs explicitly report clean initial conditions.
+These component profiles expose an ESST4B limiter discrepancy that the shorter
+checks do not activate.
+
+The native outer PI keeps integrating while its total output is clipped, until
+the integral state itself reaches the regulator bound. A second independent
+profile drives both state limits and their inward release. The integral state
+holds at `1.0` and the binary32 representation of `-0.87`, with zero outward
+derivative at either bound. The source diagram retains output clipping before
+the regulator lag. Moving that limiter after the lag is unsupported.
+
+Native imports now select separate integral-state and output limits for both
+ESST4B PI blocks. This changes no DYR parameter count or ordering. Existing
+typed clients retain their prior output-freeze convention. The separate
+commercial SMIB fixture explicitly selects its observed output-freeze
+convention; its trajectory tolerances are unchanged. The secondary open-source
+comparison remains a limited common-output check, not an authority for the
+native limiter rule.
+
+Physical-input replay uses terminal voltage/current, field current, stabilizer
+output and, for the limiter profile, the recorded reference-voltage increments.
+It injects no reference controller state. The bus 5303 EFD maximum error falls
+from `0.0384961` to `0.0000765121` pu. The strong-limit replay preserves all
+20,023 observations, including 20 duplicate endpoints with no time advance.
+Maximum integral-state, regulator-lag and EFD errors are respectively
+`0.000000352922`, `0.000000953800` and `0.0000108144` pu. Both integral-state
+bounds are reached exactly in the production replay.
+
+In coupled ten-second cells, bus 5303 rotor-angle RMSE falls from `0.0285743`
+to `0.00161541` degrees; buses 6165 and 6349 also fall below `0.002` degrees.
+Two unchanged ESST1A controls reproduce their previous trajectories. The
+synthetic weak-source cell at bus 6147 improves substantially but still has
+`11.6751` degrees RMSE. This correction does not establish full-system
+acceptance. The completed extension covers all 64 original ESST4B stacks:
+58 trajectories are byte-identical to the baseline, all six affected cells
+improve, and 61 have rotor-angle RMSE below `0.01` degrees. Three synthetic
+cells remain above that limit: buses 7356, 6147 and 8071 have RMSE `45.5251`,
+`11.6751` and `0.0174876` degrees. The first connected ten-second event is
+running separately.
+
+All 23 focused parser, initialization, limiter and commercial/secondary fixture
+tests pass. The public block tests cover output saturation with continuing
+integration, upper/lower state projection and release, a pure proportional
+path, changing modified-Euler stage inputs and explicit legacy behavior.
+Completed cold references, primary-source provenance, baseline and corrected
+replays, six coupled cells, immutable runtimes and failed helper controls are
+preserved in the private artifact `2026-10-18-esst4b-integral-state-limits`.
+The corrected fleet is retained in `2026-10-18-esst4b-fleet-coupled-controls`,
+whose manifest hash-links the immutable native baseline archive.
+The registered suite completes 1,985 tests with three failures and 13 skips:
+the no-event smoke, an 8,387-bus power-flow test and a grid-import voltage
+comparison. A first attempt exhausts a 1-GB heap during a separate large import;
+the completed attempt uses 3 GB. An explicit control attempts all six unchanged
+no-event assertions with both PI conventions. All six fail with either
+convention; Case 1's reported metrics are identical, and the largest policy
+effect on a reported complex-voltage drift is `0.000000469245` pu. The existing
+smoke failure therefore predates this limiter correction. No assertion or
+tolerance is relaxed. These controls are retained in
+`2026-10-18-esst4b-regression-controls`. The registered suite is not green, and
+connected-system acceptance remains open.

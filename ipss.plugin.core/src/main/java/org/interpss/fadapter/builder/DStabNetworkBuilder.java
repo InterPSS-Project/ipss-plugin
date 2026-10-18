@@ -2581,6 +2581,7 @@ public class DStabNetworkBuilder {
         target.setKi(source.getKi()); target.setVbmax(source.getVbmax());
         target.setKc(source.getKc()); target.setXl(source.getXl());
         target.setAngKp(source.getAngKp()); target.setVgmax(source.getVgmax());
+        target.setIntegralStateLimits(source.isIntegralStateLimits());
         return exc;
     }
 
