@@ -1722,8 +1722,12 @@ public class PSSEDStabDirectParser {
         double kc = getDouble(f, 12, 0);
         double vimax = getDouble(f, 4, 0);
         double vimin = getDouble(f, 5, 0);
-        builder.addExcIeee1981St1(busId, genId, tr, ka, ta, tc, tb,
+        var exciter = builder.addExcIeee1981St1(busId, genId, tr, ka, ta, tc, tb,
                 vrmax, vrmin, kf, tf, kc, vimax, vimin);
+        if (exciter == null) return false;
+        exciter.getData().setFieldVoltageLimitConvention(
+                org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1ExciterData
+                        .FieldVoltageLimitConvention.EXST1);
         return true;
     }
 

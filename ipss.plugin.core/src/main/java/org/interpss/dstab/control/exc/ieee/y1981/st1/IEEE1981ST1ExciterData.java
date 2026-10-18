@@ -35,7 +35,20 @@ import org.interpss.dstab.control.base.BaseControllerData;
  */
 
 public class IEEE1981ST1ExciterData extends BaseControllerData {
+    /** EXST1 subtracts Kc*Ifd from both field bounds; ESST1A from the upper bound. */
+    public enum FieldVoltageLimitConvention { ESST1A, EXST1 }
+
+    private FieldVoltageLimitConvention fieldVoltageLimitConvention = FieldVoltageLimitConvention.ESST1A;
+
     public IEEE1981ST1ExciterData() {}
+
+    public FieldVoltageLimitConvention getFieldVoltageLimitConvention() {
+        return fieldVoltageLimitConvention;
+    }
+
+    public void setFieldVoltageLimitConvention(FieldVoltageLimitConvention convention) {
+        this.fieldVoltageLimitConvention = java.util.Objects.requireNonNull(convention);
+    }
 
     // We need to put the default values here, so that the controller could be
     // properly initialized

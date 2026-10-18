@@ -128,6 +128,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderStabilizerTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst1aExciterTest;
+import org.interpss.core.adapter.builder.dstab.PsseExst1FieldLimitTest;
 import org.interpss.core.adapter.builder.dstab.PsseGgov1GovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseH6eGovernorTest;
 import org.interpss.core.adapter.builder.dstab.PsseHyg3GovernorTest;
@@ -881,6 +882,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderStabilizerTest.class,
 	PsseEsst4bExciterTest.class,
 	PsseEsst1aExciterTest.class,
+	PsseExst1FieldLimitTest.class,
 	PsseGgov1GovernorTest.class,
 	PsseH6eGovernorTest.class,
 	PsseHyg3GovernorTest.class,

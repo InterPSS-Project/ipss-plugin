@@ -35,6 +35,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 )
 
 public class IEEE1981ST1Exciter extends AnnotateExciter {
+	private boolean exst1FieldVoltageLimits;
 	public double k1 = 1.0;/*constant*/
 	
 	/*
@@ -255,6 +256,8 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         this.vrmax = getData().getVrmax();
         this.vrmin = getData().getVrmin();
         this.kc = getData().getKc();
+		this.exst1FieldVoltageLimits = getData().getFieldVoltageLimitConvention()
+				== IEEE1981ST1ExciterData.FieldVoltageLimitConvention.EXST1;
         this.kf = getData().getKf();
         this.tf = getData().getTf();
 		this.klr = getData().getKlr();
@@ -280,7 +283,8 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 		double vt0 = bus.getVoltageMag();
 		if (vt0 > 0.0) {
 			this.vrmax = Math.max(this.vrmax, (mach.getEfd() + this.kc * ifd0) / vt0);
-			this.vrmin = Math.min(this.vrmin, mach.getEfd() / vt0);
+			this.vrmin = Math.min(this.vrmin,
+					(mach.getEfd() + (exst1FieldVoltageLimits ? this.kc * ifd0 : 0.0)) / vt0);
 		}
         
 		this.k = this.tf == 0.0 ? 0.0 : this.kf / this.tf;
@@ -369,9 +373,11 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 				- kc * mach.calculateIfd(MachineIfdBase.EXCITER);
 	}
 
-	/** PTI/PowerWorld voltage-dependent EFD lower bound. */
+	/** Source-model lower bound: EXST1 also subtracts Kc*Ifd here. */
 	public double getFieldVoltageLowerLimit() {
-		return getMachine().getDStabBus().getVoltageMag() * vrmin;
+		Machine mach = getMachine();
+		return mach.getDStabBus().getVoltageMag() * vrmin
+				- (exst1FieldVoltageLimits ? kc * mach.calculateIfd(MachineIfdBase.EXCITER) : 0.0);
 	}
 
 	private double stabilizerSignal() {

@@ -713,3 +713,72 @@ The next batch uses a fresh frozen runner and the original model parameters.
 
 Frozen evidence is retained under the private verification-artifact directory
 `2026-10-18-disconnected-machine-reporting`.
+
+## Six complete Case 2 disturbances and EXST1 lower limits
+
+The frozen runtime with corrected disconnected-machine reporting completes all
+six original Case 2 disturbances through ten seconds. Every required channel
+and comparison period is complete. Eighteen of 240 channel criteria pass; none
+of the six events passes the full contract. The first bus-fault trace reproduces
+the preceding complete ten-second trace exactly.
+
+| Case 2 disturbance | Criteria passed | Fault/postfault voltage NRMSE | Terminal P NRMSE | Terminal Q NRMSE | Full-window rotor-angle RMSE, degrees |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Bus fault 1 | 6/40 | 0.00861415 | 0.0201838 | 0.0985075 | 19.0749 |
+| Generator trip 1 | 3/40 | 0.0383526 | 0.0348342 | 0.0691809 | 21.5406 |
+| Bus fault 2 | 2/40 | 0.0199602 | 0.0367603 | 0.0235084 | 13.7107 |
+| Generator trip 2 | 4/40 | 0.0374497 | 0.0250785 | 0.0378127 | 18.8921 |
+| Bus fault 3 | 1/40 | 0.00904878 | 0.0234430 | 0.0256851 | 13.1331 |
+| Generator trip 3 | 2/40 | 0.0356466 | 0.0417326 | 0.0394875 | 19.2217 |
+
+Each table entry is the worst channel in its quantity and period. Voltage and
+terminal P/Q retain the full ten-second reference range as denominator.
+Prefault rotor-angle maximum errors range from `0.204012` to `1.04970` degrees,
+exceeding the `0.002`-degree limit in every event. No acceptance threshold,
+initial state, reference signal, time alignment, or angle offset is fitted.
+These six runs precede the separate lower-limit correction below. The project
+scope remains all six cases and 36 disturbances.
+
+The commercial controller model library distinguishes the lower field-voltage
+bound of EXST1, `Vt * Vrmin - Kc * Ifd`, from ESST1A, `Vt * Vrmin`. The shared
+implementation previously used the latter for both source models. Importing an
+EXST1 record now retains its limit convention in the controller data; both
+positive and negative field currents keep their signs. The existing ESST1A
+convention is unchanged.
+
+A sustained two-bus voltage playback activates the lower bound using the
+original Case 2 generator and EXST1 parameters. Two fresh commercial processes
+produce exactly identical raw traces. In 580 saturated samples, the corrected
+output equation reduces maximum field-voltage error from `0.883235` to
+`0.000000525` pu. This check uses the recorded physical inputs at the controller's
+publication stage and independently evolved controller states. It is a lower-bound
+check, not a claim that the complete EXST1 trajectory agrees. No reference
+controller state is injected.
+
+The new source-model regression fails with the previous bound and passes with
+the correction. Twenty-eight focused tests pass in both an isolated frozen
+JUnit run and the reactor. The initial reactor command stopped during argument
+parsing; the next attempt encountered an unfinished unrelated wind-model test
+source. Both failed attempts are retained. The later reactor run completes and
+executes all 28 tests. The corrected frozen Case 2 prefix reproduces all 2,405
+samples and 218 diagnostic quantities through `1.2` seconds exactly, confirming
+that this bound correction does not change the unresolved startup discrepancy.
+An additional compatibility reactor run passes 27 tests covering the parser,
+staggered solver, and independent and secondary ST1 comparisons. These are 55
+distinct focused/compatibility tests, not a full registered-suite pass. The new
+regression is included in the registered core plugin suite.
+
+Other ST1 findings remain diagnostic. The two ESST1A regulator-state channels
+can differ from the machine field-voltage channel by `0.00641584` and
+`0.000827789` pu, so controller states and published machine signals must be
+checked separately. A declared unity-leadlag EXST1 experiment and an IEEET1
+control with the same regulator gain and pole show different numerical update
+behavior. The existing two-step rule matches the IEEET1 control within
+`0.000000075` pu; none of the canonical EXST1 update alternatives tested so far
+establishes a replacement. Both control experiments repeat exactly in fresh
+commercial processes. No ST1 integration or field-publication correction is
+adopted from these alternatives.
+
+Frozen runs, failed attempts, source snapshots, and numerical checks are retained
+under the private verification-artifact directory
+`2026-10-18-case2-six-events-and-exst1-limits`. No ten-second event is accepted.
