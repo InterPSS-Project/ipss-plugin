@@ -97,6 +97,21 @@ and state definitions agree.
   See [WTDTB1 foundation evidence and open discrepancies](benchmarks/wtdtb1-foundation-2026-10-18.md).
 - [ ] Implement WTPTBU1 / current-library WTPTB1 with exact pitch-controller
   attachment, state initialization, active limits and two-step references.
+  - [x] Freeze native fourteen-CON/three-STATE/one-VAR source and visually
+    inspect its diagram; keep the different PowerWorld parameter layout separate.
+  - [x] Add a typed source kernel with state-based PI anti-windup, independent
+    PI output limits, dynamic speed-reference input and directional final-angle
+    cross anti-windup; preserve modified Euler and immutable observations.
+  - [x] Pass ten focused equation/initialization/stage/limit tests; audit sixteen
+    twice-cold native runs with valid initialization and exact CSV/hash agreement.
+    Add bounded three-state playback at both baseline steps and active upper angle.
+  - [x] Complete merged regression on committed plugin `4e5405ce8` plus this
+    foundation: 171 plugin units (six optional skips), 1,220 registered
+    SMIB/catalog/solver tests (one existing diagnostic skip), zero failures/errors.
+  - [ ] Finish native import/legacy allocation, wind-stack signals, Tp=0,
+    active lower-angle/integral profiles, PowerWorld artifacts and coupled SMIB
+    lifecycle coverage. This foundation does not change the missing-model count.
+    See [WTPTB1 foundation scope and native evidence](benchmarks/wtptb1-foundation-2026-10-18.md).
 - [ ] Implement WTGWGOAU and WTGIBFFRA, auditing installed-release identifiers,
   input/output coupling and weak-grid/inertial-response branches separately.
 - [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
