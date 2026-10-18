@@ -502,11 +502,11 @@ its full-network discrepancy.
 Separate native netting probes establish that operation order matters:
 netting before I/Z load conversion makes the negative load follow I/Z;
 netting afterward retains constant P/Q. Each profile repeats in two fresh
-processes. The supplied preparation order is still unconfirmed. A Case 2
+processes. The user confirms that the supplied runs net bus 1090 before load
+conversion, so its negative load follows the confirmed I/Z profile. A Case 2
 after-conversion experiment preserves initial injected power, but worsens
 maximum prefault angle error from `0.302794` to `0.361175` degrees. The existing
-load-conversion order remains unchanged; comparison error alone does not
-establish the original preparation procedure.
+load-conversion order remains unchanged and agrees with that confirmation.
 
 The remaining 17 active renewable units use PFLAG zero and have zero initial
 reactive power in the solved InterPSS case. Bus 1011's controlled playback
@@ -1104,3 +1104,42 @@ The complete synchronous-stack checks and clock validation are retained in
 ST1 baseline event are retained in `2026-10-18-static-z-matrix-and-case2-complete`.
 The independently checked angle inference is retained in
 `2026-10-18-initial-bus-angle-inference`.
+
+## Operating-point preparation controls
+
+Three fixed input-serialization controls, three switching-network preparation
+controls, and three rectangular-voltage/PV-Q controls leave the initial
+rotor-angle discrepancy unresolved. The original maximum is `0.00320180`
+degrees across the 26 observed machines; the alternatives range from
+`0.00320180` to `0.00333925` degrees. Initial terminal Q also remains discrepant
+by approximately `0.000257` pu on the system base. All six reference first
+rows agree exactly on shared channels. These checks preserve the original
+dynamic model parameters and confirmed I/Z load allocation.
+
+The serialization choices are first checked independently: all 2,003 native
+samples remain byte-identical in four import profiles, each repeated in a
+fresh process. A separate, finite-source two-bus network verifies fixed
+generator Norton sources and the original I/Z coefficients through switching
+preparation. Maximum voltage, angle, and P/Q differences are `0.0000000934`
+pu, `0.00000102` degrees, and `0.000000241` pu. Applying that operator after
+strict full-case power flow changes the point only at roundoff; applying it
+to the supplied RAW point does not remove the initial discrepancy.
+
+Five original passive-network rows are also exported independently. Their
+differences are at floating precision. Native diagonals aggregate primitive
+terms, so rounding each completed matrix entry to binary32 does not
+consistently reproduce them. Simple float current-accumulation variants also
+fail to explain all five passive-power observations. Public voltage getters
+return binary32 components; this does not establish the precision of internal
+factorization or arithmetic. Neither final-voltage rounding nor the associated
+PV-Q recalculation resolves initialization. Production code and solver settings
+remain unchanged.
+
+The first passive export omits an unconverted swing row; its apparent large
+error is an invalid comparison and is retained as such. Two helper compilation
+failures and stiff-source cancellation controls are retained with the corrected
+finite-source checks. The self-contained private artifact
+`2026-10-18-operating-point-preparation-controls` preserves 1,872 file paths as
+445 verified content objects, avoiding repeated copies of identical runtimes
+and inputs. All six cases and 36 ten-second disturbances remain required;
+no full-system event is accepted.
