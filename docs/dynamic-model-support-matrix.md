@@ -8,6 +8,10 @@ flat run, disturbance coverage, or independent trajectory comparison.
 Verification status is deliberately kept separate from this generated
 loadability inventory.
 
+This runtime catalog is not the complete approved-model list. The
+[approved native renewable coverage](renewable-model-evidence.md) also lists
+source-approved families that have no implementation or parser descriptor.
+
 | Model | Category | Aliases | Parameters | Support | Runtime class | Reference |
 |---|---|---|---:|---|---|---|
 | CIMTR4 | SYNCHRONOUS_MACHINE |  | 13 | LOADABLE | `org.interpss.dstab.mach.Cimtr4Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20CIMTR4.htm) |

@@ -4,6 +4,13 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MA
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GOVERNOR;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.EXCITER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.CONVERTER_MACHINE;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLLER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.DRIVE_TRAIN;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.AERODYNAMIC_CONTROLLER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PITCH_CONTROLLER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.TORQUE_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.APPROVED;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.NEVER_APPROVED;
 import static org.interpss.fadapter.psse.dyr.WeccModelApprovalStatus.RETIRED;
@@ -18,6 +25,9 @@ import java.util.Optional;
 /** Versioned transcription of the generator rows in the WECC May 2026 list. */
 public final class WeccApprovedDynamicModelCatalog {
     public static final String VERSION = "May 2026";
+    /** Identity of the user-supplied May 2026 PDF used for the column audit. */
+    public static final String SOURCE_PDF_SHA256 =
+            "b4add4a9d584e69f2a97823f87cb4c40362f1e868b2b9d3c60e3c59ba62af635";
     public static final URI SOURCE = URI.create(
             "https://www.wecc.org/sites/default/files/documents/progress_report/2026/"
                     + "Approved%20Dynamic%20Models%20May%202026.pdf");
@@ -193,6 +203,57 @@ public final class WeccApprovedDynamicModelCatalog {
             governor("TGOV3D", "", "TGOV3DU, TGOV3D", "TGOV3D", APPROVED, "2019-11", "TGOV3D"),
             governor("HYGOV2D", "", "HYGOV2DU, HYGOV2D", "HYGOV2D", APPROVED, "2019-11", "HYGOV2D"));
 
+    /** All renewable section rows on pages 3-4, including missing implementations.
+     * Planned canonical mappings do not create parser aliases or imply support.
+     */
+    private static final List<WeccModelApproval> RENEWABLES=List.of(
+            renewable("REGFM_A1","regfm_a1","REGFMA1","REGFM_A1",CONVERTER_MACHINE,APPROVED,"2023-09-27","REGFMA1","Droop-controlled grid-forming inverter."),
+            renewable("REGFM_B1","regfm_b1","REGFMB1","REGFM_B1",CONVERTER_MACHINE,APPROVED,"2024-05-23","REGFMB1","Missing runtime and native import path."),
+            renewable("REGFM_C1","regfm_c1","REGFMC1","REGFM_C1",CONVERTER_MACHINE,APPROVED,"2025-09-11","REGFMC1","Hybrid inverter control; missing runtime and import path."),
+            renewable("PVD1","pvd1","","PVD1",CONVERTER_MACHINE,APPROVED,"2014-03-19","","PTI cell is blank; do not infer a native DYR model from PowerWorld's name."),
+            renewable("DER_A","der_a","DERAU1","DER_A",CONVERTER_MACHINE,APPROVED,"2018-01-26","DERA1","Distributed energy resource model."),
+            renewable("REGC_A","regc_a","REGCAU1, REGCA1","REGC_A",CONVERTER_MACHINE,APPROVED,"2014-03-19","REGCA1","Generic IBR generator/converter."),
+            renewable("REGC_B","regc_b","REGCBU1, REGCB1","REGC_B",CONVERTER_MACHINE,APPROVED,"2020-08-25","REGCB1","Generic IBR generator/converter."),
+            renewable("WT1G","wt1g","WT1G1","WT1G and WT1G1",SYNCHRONOUS_MACHINE,APPROVED,"2011-01-21","WT1G1","Type-1 wind generator; catalog category preserves the existing machine path."),
+            renewable("WT2G","wt2g","WT2G1","WT2G and WT2G1",SYNCHRONOUS_MACHINE,APPROVED,"2009-08-28","WT2G1","Type-2 wind generator; existing machine path."),
+            renewable("WT2E","wt2e","WT2E1","WT2E and WT2E1",ELECTRICAL_CONTROLLER,APPROVED,"2009-08-28","WT2E1","Type-2 electrical controller."),
+            renewable("REEC_A","reec_a","REECAU1, REECA1","REEC_A",ELECTRICAL_CONTROLLER,APPROVED,"2014-03-19","REECA1","Generic IBR electrical controller."),
+            renewable("REEC_C","reec_c","REECCU1, REECC1","REEC_C",ELECTRICAL_CONTROLLER,APPROVED,"2015-03-18","REECC1","Energy-storage electrical controller."),
+            renewable("REEC_D","reec_d","REECDU1, REECD1","REEC_D",ELECTRICAL_CONTROLLER,APPROVED,"2020-08-25","REECD","Photovoltaic electrical controller; existing canonical mapping is REECD."),
+            renewable("REEC_E","reec_e","REECEU1, REECE1","REEC_E",ELECTRICAL_CONTROLLER,APPROVED,"2025-09-11","REECE1","Missing runtime and native import path."),
+            renewable("WT1T","wt1t","WT12T1","WT1T and WT12T1",DRIVE_TRAIN,APPROVED,"2011-01-21","WT12T1","Shares native WT12T1 with the WT2T row; not a second implementation."),
+            renewable("WT1P_B","wt1p_b","WT12A1U_B","WT1P_B",AERODYNAMIC_CONTROLLER,APPROVED,"2014-03-19","WT12A1B","PSS/E equivalent available in 34.6 and later; preserve the U_B spelling."),
+            renewable("WT2T","wt2t","WT12T1","WT2T",DRIVE_TRAIN,APPROVED,"2009-08-28","WT12T1","Shares native WT12T1 with WT1T."),
+            renewable("WTGT_A","wtgt_a","WTDTAU1, WTDTA1","WTGT_A",DRIVE_TRAIN,APPROVED,"2014-03-19","WTDTA1","Type-3/4 drivetrain."),
+            renewable("WTGA_A","wtga_a","WTARAU1, WTARA1","WTGAR_A",AERODYNAMIC_CONTROLLER,APPROVED,"2014-03-19","WTARA1","Type-3 aerodynamics; PowerWorld source cell spells WTGAR_A."),
+            renewable("WTGP_A","wtgp_a","WTPTAU1, WTPTA1","WTGPT_A",PITCH_CONTROLLER,APPROVED,"2014-03-19","WTPTA1","Type-3 pitch controller."),
+            renewable("WTGQ_A","wtgq_a","WTTQAU1, WTTQA1","WTGTRQ_A",TORQUE_CONTROLLER,APPROVED,"2014-03-19","WTTQA1","Type-3 torque controller."),
+            renewable("WTGWGO","wtgwgo","WTGWGOAU","WTGWGO_A",ELECTRICAL_CONTROLLER,APPROVED,"2021-12-01","WTGWGOAU","Weak-grid auxiliary model; category is planning metadata, not a parser allocation."),
+            renewable("WTGIBFFR_A","wtgibffr_a","WTGIBFFRA","WTGIBFFR_A",TORQUE_CONTROLLER,APPROVED,"2022-01-26","WTGIBFFRA","Inertial fast-frequency response; missing runtime/import allocation."),
+            renewable("WTGP_B","wtgp_b","WTPTBU1","WTGPT_B",PITCH_CONTROLLER,APPROVED,"2021-12-01","WTPTBU1","Missing pitch-controller implementation."),
+            renewable("WTGT_B","wtgt_b","WTDTBU1","WTGT_B",DRIVE_TRAIN,APPROVED,"2021-12-01","WTDTBU1","Missing drivetrain-emulation implementation."),
+            renewable("REPC_A","repc_a","REPCAU1, REPCA1; REPCTAU1, REPCTA1","REPC_A",PLANT_CONTROLLER,APPROVED,"2014-03-19","REPCA1","Type-4 and type-3 names listed separately for v33 and v34; one existing mapped runtime."),
+            renewable("REPC_B","repc_b","PLNTBU1","REPC_B",PLANT_CONTROLLER,UNAPPROVED,"1/29/30 (as printed)","PLNTBU1","Source interface names: REA3XBU1, REAX4BU1, SWSAXBU1, SYNAXBU1, FCTAXBU1. Do not silently correct REA3XBU1 to an import alias. Source says retirement 2026-08-23; freeze the printed status/date."),
+            renewable("REPC_C","repc_c","REPCCU","REPC_C",PLANT_CONTROLLER,APPROVED,"2021-12-01","REPCCU","Single-aggregate plant controller; missing implementation."),
+            renewable("REPC_D","repc_d","HPLNTD","REPC_D",PLANT_CONTROLLER,APPROVED,"2024-01-24","HPLNTD","Multi-aggregate plant controller; missing implementation."),
+            renewable("REPCGFM_C1","repcgfm_c1","REPCGFMC1","REPCGFM_C1",PLANT_CONTROLLER,APPROVED,"2025-09-11","REPCGFMC1","Grid-forming plant controller; missing implementation."),
+            renewable("GENWRI","genwri","","GENWRI",CONVERTER_MACHINE,NEVER_APPROVED,"","","PTI cell describes a downloadable Vestas package, not a concrete native model name."),
+            renewable("GEWTG","gewtg","","GEWTG",CONVERTER_MACHINE,NEVER_APPROVED,"","","PTI cell describes a downloadable GEWTG vendor package. Individual GEWT* implementations are supplemental, not this approved row."),
+            renewable("WT3G","wt3g","WT3G1","WT3G and WT3G1",CONVERTER_MACHINE,RETIRED,"2020-04-22","WT3G1","Legacy model retained separately from approved generic models."),
+            renewable("WT4G","wt4g","WT4G1","WT4G and WT4G1",CONVERTER_MACHINE,RETIRED,"2020-04-22","WT4G1","Legacy type-4 generator."),
+            renewable("EXWTG1","exwtg1","Not converted (1)","EXWTG1",ELECTRICAL_CONTROLLER,NEVER_APPROVED,"","","No native source mapping; obsolete Vestas model."),
+            renewable("EXWTGE","exwtge","Not used","EXWTGE",ELECTRICAL_CONTROLLER,NEVER_APPROVED,"","","No native source mapping."),
+            renewable("WT3E","wt3e","WT3E1","WT3E and WT3E1",ELECTRICAL_CONTROLLER,RETIRED,"2020-04-22","WT3E1","Legacy electrical controller."),
+            renewable("WT4E","wt4e","WT4E1","WT4E and WT4E1",ELECTRICAL_CONTROLLER,RETIRED,"2020-04-22","WT4E1","Legacy electrical controller."),
+            renewable("REEC_B","reec_b","REECBU1, REECB1","REEC_B",ELECTRICAL_CONTROLLER,RETIRED,"2019-06-13","REECB1","Existing runtime does not by itself prove every source spelling has a valid native schema."),
+            renewable("WT2P","wt2p","WT12A1","WT2P",AERODYNAMIC_CONTROLLER,RETIRED,"2020-04-22","WT12A1","Legacy pseudo-governor/aerodynamics."),
+            renewable("WT3T","wt3t","WT3T1","WT3T and WT3T1",DRIVE_TRAIN,RETIRED,"2020-04-22","WT3T1","Legacy turbine model."),
+            renewable("WT3P","wt3p","WT3P1","WT3P and WT3P1",AERODYNAMIC_CONTROLLER,RETIRED,"2020-04-22","WT3P1","Legacy pitch model; existing category retained."),
+            renewable("WT4T","wt4t","","WT4T",DRIVE_TRAIN,RETIRED,"2020-04-22","","PTI cell says transient features are inside WT4E1; not a separate native DYR model."),
+            renewable("WNDTGE","wndtge","","",DRIVE_TRAIN,NEVER_APPROVED,"","","PTI cell describes a downloadable manufacturer package, not a concrete native model name."),
+            renewable("WT1P","wt1p","WT12A1","WT1P and WT12A1",AERODYNAMIC_CONTROLLER,RETIRED,"2020-04-22","WT12A1","Shares legacy native WT12A1 with WT2P.")
+    );
+
     private WeccApprovedDynamicModelCatalog() {
     }
 
@@ -211,6 +272,8 @@ public final class WeccApprovedDynamicModelCatalog {
     public static List<WeccModelApproval> governors() {
         return GOVERNORS;
     }
+
+    public static List<WeccModelApproval> renewables() { return RENEWABLES; }
 
     public static Optional<WeccModelApproval> findGenerator(String catalogName) {
         if (catalogName == null || catalogName.isBlank()) return Optional.empty();
@@ -250,5 +313,11 @@ public final class WeccApprovedDynamicModelCatalog {
             String interpss) {
         return new WeccModelApproval(name, EXCITER, pslf, psse, powerWorld,
                 status, effective, interpss, "");
+    }
+
+    private static WeccModelApproval renewable(String name,String pslf,String psse,String powerWorld,
+            DynamicModelCategory category,WeccModelApprovalStatus status,String effective,
+            String interpss,String comments) {
+        return new WeccModelApproval(name,category,pslf,psse,powerWorld,status,effective,interpss,comments);
     }
 }

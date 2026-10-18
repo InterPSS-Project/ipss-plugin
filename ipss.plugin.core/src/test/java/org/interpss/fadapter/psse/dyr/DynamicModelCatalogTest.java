@@ -17,6 +17,49 @@ import org.junit.jupiter.api.Test;
 
 class DynamicModelCatalogTest {
     @Test
+    void approvedRenewableRowsExposeTheTenMissingNativeFamilies() {
+        var rows=WeccApprovedDynamicModelCatalog.renewables();
+        assertEquals(45,rows.size(),"Preserve every source renewable row, not just implemented entries");
+        assertEquals(45,rows.stream().map(WeccModelApproval::catalogName).distinct().count());
+        var approved=rows.stream().filter(row->row.approvalStatus()==WeccModelApprovalStatus.APPROVED).toList();
+        assertEquals(29,approved.size());
+        var nativeRows=approved.stream().filter(WeccModelApproval::hasPsseModel).toList();
+        assertEquals(28,nativeRows.size(),"The PVD1 PTI cell is blank");
+        assertEquals(27,nativeRows.stream().map(WeccModelApproval::interpssModel).distinct().count(),
+                "WT1T and WT2T share WT12T1");
+        var missing=nativeRows.stream().filter(row->!row.isImplementedExactly())
+                .map(WeccModelApproval::interpssModel).collect(java.util.stream.Collectors.toSet());
+        assertEquals(Set.of("REGFMB1","REGFMC1","REECE1","WTGWGOAU","WTGIBFFRA",
+                "WTPTBU1","WTDTBU1","REPCCU","HPLNTD","REPCGFMC1"),missing,
+                "Any implementation claim must be backed by a real parser/runtime descriptor");
+        assertEquals(18,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        for(String model:missing)assertTrue(DynamicModelCatalog.find(model).isEmpty(),
+                "Do not add a loadable placeholder, guessed schema, or unrelated engine: "+model);
+    }
+
+    @Test
+    void renewableSourceColumnsAndRetirementStaySeparateFromNativeAliases() {
+        var rows=WeccApprovedDynamicModelCatalog.renewables();
+        var pvd=rows.stream().filter(row->row.catalogName().equals("PVD1")).findFirst().orElseThrow();
+        assertEquals("",pvd.psseModel());
+        assertEquals("PVD1",pvd.powerWorldModel());
+        assertFalse(pvd.hasPsseModel());
+        var reecb=rows.stream().filter(row->row.catalogName().equals("REEC_B")).findFirst().orElseThrow();
+        assertEquals(WeccModelApprovalStatus.RETIRED,reecb.approvalStatus());
+        assertEquals("REECBU1, REECB1",reecb.psseModel());
+        assertTrue(reecb.isImplementedExactly(),"Runtime presence is not approval or complete alias-schema coverage");
+        var wt4t=rows.stream().filter(row->row.catalogName().equals("WT4T")).findFirst().orElseThrow();
+        assertFalse(wt4t.hasPsseModel(),"Embedded WT4E1 features are not a separate native WT4T record");
+        assertFalse(rows.stream().filter(row->row.catalogName().equals("EXWTG1"))
+                .findFirst().orElseThrow().hasPsseModel(),"Not converted (1) is not a native model name");
+        var wt1pb=rows.stream().filter(row->row.catalogName().equals("WT1P_B")).findFirst().orElseThrow();
+        assertEquals("WT12A1U_B",wt1pb.psseModel());
+        assertEquals("WT12A1B",wt1pb.interpssModel());
+        assertEquals("b4add4a9d584e69f2a97823f87cb4c40362f1e868b2b9d3c60e3c59ba62af635",
+                WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256);
+    }
+
+    @Test
     void catalogsEveryTexas2kModelAndResolvesAliases() {
         assertEquals(25, DynamicModelCatalog.texas2kModels().size());
         assertEquals("GENROU", DynamicModelCatalog.canonicalName("genroe"));

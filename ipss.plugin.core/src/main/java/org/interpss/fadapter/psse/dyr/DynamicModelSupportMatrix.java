@@ -21,6 +21,9 @@ public final class DynamicModelSupportMatrix {
                 .append("flat run, disturbance coverage, or independent trajectory comparison.\n")
                 .append("Verification status is deliberately kept separate from this generated\n")
                 .append("loadability inventory.\n\n")
+                .append("This runtime catalog is not the complete approved-model list. The\n")
+                .append("[approved native renewable coverage](renewable-model-evidence.md) also lists\n")
+                .append("source-approved families that have no implementation or parser descriptor.\n\n")
                 .append("| Model | Category | Aliases | Parameters | Support | Runtime class | Reference |\n")
                 .append("|---|---|---|---:|---|---|---|\n");
         DynamicModelCatalog.allModels().stream()

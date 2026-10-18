@@ -41,8 +41,8 @@ public record WeccModelApproval(
     /** True when the WECC row defines a native PTI PSS/E dynamic-model name. */
     public boolean hasPsseModel() {
         return !psseModel.isEmpty()
-                && !psseModel.equalsIgnoreCase("Not used")
-                && !psseModel.equalsIgnoreCase("Not converted");
+                && !psseModel.toLowerCase(Locale.ROOT).startsWith("not used")
+                && !psseModel.toLowerCase(Locale.ROOT).startsWith("not converted");
     }
 
     private static String normalize(String value) {

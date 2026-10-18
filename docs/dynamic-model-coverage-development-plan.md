@@ -16,9 +16,12 @@ small, independently reproducible machine/infinite-bus or controller testbeds.
 Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
-**Latest scoped acceptance status: incomplete.** The renewable evidence
-inventory, missing exact stabilizer profiles, exhaustive independent model profiles and remaining provenance
-gaps still need closure. Generated `LOADABLE` entries do not prove complete
+**Latest scoped acceptance status: incomplete, including missing implementations.**
+The approved native renewable audit finds **27 distinct families: 17 loadable,
+ten not implemented**, not merely missing benchmark coverage. The runtime
+catalog previously omitted those unsupported families. Missing exact stabilizer
+profiles, exhaustive independent model profiles and remaining provenance
+gaps also need closure. Generated `LOADABLE` entries do not prove complete
 verification. The new `DynamicModelSmibTestSuite` selects model-unit and
 small-network independent comparisons without full Texas2k/WECC/IEEE39 runs.
 Earlier system gates below apply only to their recorded snapshots; the latest
@@ -30,6 +33,51 @@ Scope remains native PSS/E RAW/DYR with `_gnet.idv` and `_MODREMOVE.idv`
 preparation. GE PSLF DYD inputs and rows without a native PSS/E model name are
 excluded. Reuse core GENROU and existing controller engines where equations
 and state definitions agree.
+
+## Approved renewable source and evidence audit
+
+- [x] Visually review pages 3-4 of the user-supplied May 2026 PDF, retain its
+  SHA-256 identity, and transcribe all 45 renewable rows into the approval catalog.
+- [x] Separate 29 approved rows, 28 concrete native PTI mappings, and 27 distinct
+  native families. Exclude blank-PTI PVD1; do not double-count WT12T1 aliases.
+- [x] Expose ten truly missing native implementations without dummy runtime
+  classes, guessed parameter allocations or aliases copied from another tool.
+- [x] Add explicit evidence links for all 17 existing approved native families:
+  eight native profile links, one partial native Iolim profile, six bounded
+  ANDES dialect comparisons and two focused-only gaps. None is a VERIFIED label.
+- [x] Fix SMIB discovery to include the already-registered small Type-3 ANDES
+  comparison and renewable Q/V diagnostics. Keep vendor-difference limitations
+  and existing tolerances; do not call the finite-only PowerWorld diagnostic parity.
+- [x] Complete final validation: 35 focused checks without skips; 1,191 expanded
+  SMIB/model tests with one existing diagnostic skip; 135 plugin-core units
+  with six optional skips; zero failures/errors. Nine scoped source/generated-
+  document files match the tested snapshot byte-for-byte.
+- [x] Seal and hash-verify 732 renewable source/evidence files and prepare the
+  tested scoped commit; leave unrelated governor/solver work untouched.
+- [ ] Implement WTDTBU1 / current-library WTDTB1 after exact wrapper/native
+  schema audit; verify the drivetrain-emulation equations against native PSS/E
+  and PowerWorld in a small independent case before its scoped commit.
+- [ ] Implement WTPTBU1 / current-library WTPTB1 with exact pitch-controller
+  attachment, state initialization, active limits and two-step references.
+- [ ] Implement WTGWGOAU and WTGIBFFRA, auditing installed-release identifiers,
+  input/output coupling and weak-grid/inertial-response branches separately.
+- [ ] Implement REECE1/REECEU1 with exact native record allocation, all selector
+  paths and controller initialization; do not silently substitute REECD.
+- [ ] Implement REPCCU and HPLNTD with the required single-/multi-aggregate
+  measurement/dispatch interfaces and explicit native-version schemas.
+- [ ] Implement REGFMB1, REGFMC1 and REPCGFMC1 as exact grid-forming converter
+  and plant models. Do not alias them to REGFMA1 or REPCA1.
+- [ ] Close independent REECD and WT12A1U_B trajectory gaps and native conformance
+  for the six currently bounded ANDES links.
+- [ ] Expand the evidence inventory to retired/legacy and vendor-package models
+  required by supplied cases, keeping those separate from approved-list counts.
+- [ ] Audit the remaining non-renewable PDF sections against actual source rows;
+  the ten renewable gaps are not a claim that all other sections are complete.
+
+See [all source rows, actual implementation gaps and profile scopes](renewable-model-evidence.md).
+Installed PSS/E 36.7 documentation contains entries for the missing families,
+sometimes under updated standard names. Source-list names are not sufficient
+evidence to infer their current native/USRMDL allocations or aliases.
 
 ## Exact typed PSS1A playback follow-up
 

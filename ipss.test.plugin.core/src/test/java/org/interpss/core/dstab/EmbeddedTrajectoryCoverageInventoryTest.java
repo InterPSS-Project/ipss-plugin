@@ -18,6 +18,7 @@ import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
 import org.interpss.core.dstab.reference.GeneratorGovernorEvidenceInventory;
 import org.interpss.core.dstab.reference.ExciterEvidenceInventory;
 import org.interpss.core.dstab.reference.StabilizerEvidenceInventory;
+import org.interpss.core.dstab.reference.RenewableEvidenceInventory;
 import org.interpss.fadapter.psse.dyr.DynamicModelCatalog;
 import org.interpss.fadapter.psse.dyr.PsseDyrRecordReader;
 import org.interpss.fadapter.psse.dyr.WeccApprovedDynamicModelCatalog;
@@ -30,6 +31,68 @@ import org.junit.platform.suite.api.SelectPackages;
 
 /** Verifies representative categories in the embedded public checkpoint inventory. */
 public class EmbeddedTrajectoryCoverageInventoryTest {
+    @Test
+    void approvedRenewableCoverageIncludesMissingModelsAndSeparatesBoundedDialects() throws Exception {
+        var entries=RenewableEvidenceInventory.entries();
+        assertEquals(27,entries.size());
+        assertEquals(RenewableEvidenceInventory.requiredModels(),
+                entries.stream().map(RenewableEvidenceInventory.Entry::model).collect(Collectors.toSet()));
+        assertEquals(27,entries.stream().map(RenewableEvidenceInventory.Entry::model).distinct().count());
+        var counts=entries.stream().collect(Collectors.groupingBy(RenewableEvidenceInventory.Entry::scope,Collectors.counting()));
+        assertEquals(10,counts.get(RenewableEvidenceInventory.Scope.MISSING_IMPLEMENTATION).longValue());
+        assertEquals(8,counts.get(RenewableEvidenceInventory.Scope.NATIVE_RECORDED_PROFILE).longValue());
+        assertEquals(1,counts.get(RenewableEvidenceInventory.Scope.NATIVE_PARTIAL_PROFILE).longValue());
+        assertEquals(6,counts.get(RenewableEvidenceInventory.Scope.BOUNDED_DIALECT_COMPARISON).longValue());
+        assertEquals(2,counts.get(RenewableEvidenceInventory.Scope.FOCUSED_ONLY).longValue());
+        Set<Class<?>> registered=Set.copyOf(Arrays.asList(
+                CorePluginTestSuite.class.getAnnotation(SelectClasses.class).value()));
+        for(var entry:entries) {
+            assertFalse(entry.limitation().isBlank());
+            var model=DynamicModelCatalog.find(entry.model());
+            if(entry.scope()==RenewableEvidenceInventory.Scope.MISSING_IMPLEMENTATION) {
+                assertTrue(model.isEmpty(),entry.model()+" needs a real implementation before changing its scope");
+                assertTrue(entry.focusedTest().isEmpty()&&entry.trajectoryTest().isEmpty());
+                assertTrue(entry.checkpoint().isEmpty()&&entry.fixture().isEmpty());
+                continue;
+            }
+            var descriptor=model.orElseThrow();
+            assertEquals(org.interpss.fadapter.psse.dyr.DynamicModelSupportStatus.LOADABLE,descriptor.supportStatus());
+            Class.forName(descriptor.runtimeClassName(),false,getClass().getClassLoader());
+            assertSmibRegistered(entry.focusedClass(),registered);
+            if(!entry.trajectoryTest().isEmpty())assertSmibRegistered(entry.trajectoryClass(),registered);
+            entry.requireReadableCheckpoint();
+            if(!entry.fixture().isEmpty()) {
+                Path fixture=Path.of("testData/adpter/psse/v33").resolve(entry.fixture());
+                var records=PsseDyrRecordReader.read(fixture).stream()
+                        .filter(row->row.canonicalModelName().equals(entry.model())).toList();
+                assertEquals(1,records.size(),entry.model()+" must occur once in its source fixture");
+                assertTrue(descriptor.recordSchema().accepts(records.get(0).parameterCount()));
+            }
+            if(entry.scope()==RenewableEvidenceInventory.Scope.BOUNDED_DIALECT_COMPARISON)
+                assertEquals(RenewableEvidenceInventory.CheckpointKind.ANDES_CSV,entry.storage(),
+                        "The bounded ANDES dialect cannot silently become native conformance");
+        }
+        assertSmibRegistered(Type3WindAndesTrajectoryTest.class,registered);
+        assertSmibRegistered(RenewableAggregateQvModeTest.class,registered);
+    }
+
+    @Test
+    void approvedRenewableEvidenceDocumentMatchesTheReviewedInventory() throws Exception {
+        assertEquals(Files.readString(Path.of("..","docs","renewable-model-evidence.md")).replace("\r\n","\n"),
+                RenewableEvidenceInventory.markdown());
+    }
+
+    private static void assertSmibRegistered(Class<?> test,Set<Class<?>> registered) {
+        assertTrue(registered.contains(test),test.getName()+" is not registered");
+        String name=test.getName();
+        assertTrue(Arrays.stream(DynamicModelSmibTestSuite.class.getAnnotation(SelectPackages.class).value())
+                .anyMatch(pkg->name.startsWith(pkg+".")),name+" is outside SMIB discovery");
+        assertTrue(Arrays.stream(DynamicModelSmibTestSuite.class.getAnnotation(IncludeClassNamePatterns.class).value())
+                .anyMatch(name::matches),name+" is not selected by the SMIB gate");
+        assertFalse(Arrays.stream(DynamicModelSmibTestSuite.class.getAnnotation(ExcludeClassNamePatterns.class).value())
+                .anyMatch(name::matches),name+" is excluded from the SMIB gate");
+    }
+
     @Test
     void approvedStabilizerMappingsHaveExplicitEvidenceAndEquivalenceGaps() throws Exception {
         var rows=WeccApprovedDynamicModelCatalog.stabilizers().stream()
