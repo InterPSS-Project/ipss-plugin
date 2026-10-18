@@ -867,9 +867,10 @@ run still fails acceptance.
 
 The worst full-window rotor-angle RMSE increases from `19.0749` to `24.4420`
 degrees. The correction's component evidence and improved prefault results
-therefore leave a substantial unresolved full-system discrepancy. The remaining
-five Case 2 disturbances are being evaluated with this exact frozen runtime;
-their in-flight trajectories are not scored or presented as complete results.
+therefore leave a substantial unresolved full-system discrepancy. Five of the
+six Case 2 disturbances have now completed with this exact ST1-only frozen
+runtime; none passes acceptance. The final generator trip remains in progress.
+Its in-flight trajectory is not scored or presented as a complete result.
 
 A new independent two-bus experiment retains bus 1078's original GENROU, EXST1,
 and PSS2A parameters and applies a declared external voltage waveform. Two
@@ -958,9 +959,12 @@ For the 402 matched fault-and-clearing samples from fault application through
 
 The NRMSE denominators remain the full ten-second reference ranges. Q improves
 slightly in this segment; voltage, P, and angle errors increase slightly. The
-isolated load-equation correction leaves other full-system discrepancies
-unresolved. A fresh ten-second run uses the exact frozen runtime and unchanged
-inputs. Its in-flight output is not scored or presented as a completed event.
+completed ten-second run reproduces all 2,405 prefix observations exactly.
+Fifteen of 40 criteria pass; the event fails acceptance. Prefault results are
+unchanged. The complete fault-and-postfault voltage, P, and Q NRMSE values are
+`0.00803266`, `0.0184665`, and `0.0996412`, respectively. Worst full-window
+rotor-angle RMSE is `24.5252` degrees. The isolated load-equation correction
+therefore leaves the principal full-system discrepancy unresolved.
 
 The preceding ST1-only six-event batch completed the first generator trip
 before its driver stopped on an overly broad startup assertion: different
@@ -975,3 +979,80 @@ reports, the corrected prefix, and the batch-audit failure are retained under
 the private verification-artifact directory
 `2026-10-18-elliptic-current-load-correction`. The required scope remains all
 six cases and 36 ten-second events. No event is accepted.
+
+## Renewable startup audit and network-convergence diagnosis
+
+A read-only observer captures all 96 active Case 2 renewable units through
+`0.006` seconds. Every original whole-case observation remains exactly
+unchanged. The original dynamic parameter stacks are then run in 32 groups of
+three independent two-bus cells, preserving their solved physical P/Q/V points,
+machine bases, constants, and selectors. Each commercial run is repeated in a
+fresh process. All model states and physical output channels repeat exactly.
+In eight groups, diagnostic variables in the disabled plant frequency path
+differ between processes; the raw differences are retained, and whole-file
+byte identity is not claimed for those groups. Twenty-five groups retain
+native initialization warnings, so these tests do not establish clean
+equilibrium or full model verification.
+
+The largest startup voltage error with the production solver is
+`0.0000308429` pu. A documented read-only scalar getter reports a default
+network tolerance of approximately `0.0001`; a separate declared control uses
+`0.00000001`. The native convergence monitor and a fixed 45-degree rotation of
+the isolated network distinguish the magnitude of the complex voltage change
+from componentwise voltage and current-residual stopping rules. The rotated
+three-unit experiment has maximum voltage error `0.000000196` pu with the
+complex norm, versus `0.0000198` pu with the componentwise rule. Both native
+rotated runs repeat exactly; enabling the monitor leaves every channel
+unchanged.
+
+An independent diagnostic loop uses that complex norm and reuses the preceding
+network endpoint before ordinary derivative evaluation. Across all 96 isolated
+units, maximum voltage error falls to `0.000000224` pu. This runs in separate
+diagnostic helpers; production solver behavior is unchanged. The
+largest machine-base reactive-current discrepancy is already present at
+initialization: the reference cell for bus 6085 has approximately `-0.000121`
+Mvar rather than exact zero after its native power flow. Initial Q and
+controller states are not adjusted to remove this difference.
+
+The same diagnostic loop is also tested on the original full Case 2. Strict
+initialization is preserved exactly. At `0.001` seconds the largest observed
+machine-terminal voltage error falls from `0.0000591` to `0.00000190` pu.
+However, this early improvement does not persist through the completed
+`1.2`-second first-fault run:
+
+| Diagnostic quantity | Production baseline | Network-loop hypothesis |
+| --- | ---: | ---: |
+| Passing prefault criteria | 13/20 | 2/20 |
+| Worst prefault voltage NRMSE | 0.000546972 | 0.00145425 |
+| Worst prefault terminal P NRMSE | 0.000829732 | 0.00309312 |
+| Worst prefault terminal Q NRMSE | 0.00148035 | 0.00413582 |
+| Worst prefault rotor-angle maximum error, degrees | 0.115433 | 0.286794 |
+| Fault-segment voltage NRMSE, through 1.2 seconds | 0.00286267 | 0.00444208 |
+| Fault-segment terminal P NRMSE | 0.0191282 | 0.0201844 |
+| Fault-segment terminal Q NRMSE | 0.0153606 | 0.0149480 |
+| Fault-segment rotor-angle RMSE, degrees | 0.148022 | 0.403352 |
+
+All denominators, channels, event sides, and acceptance limits remain unchanged.
+The loop is retained as diagnostic evidence; production settings are unchanged.
+The initial rotor-angle error also remains above its limit.
+
+Four prespecified groups, containing twelve original renewable stacks, are
+subsequently extended to one second. All 2,003 native samples repeat exactly in
+fresh processes for each group. The independent complex-voltage-loop helper
+has maximum voltage difference `0.000000323` pu and active-current difference
+`0.00000181` pu; the latter is already present at initialization. Maximum
+terminal P and Q differences are `0.00000510` and `0.00000173` pu on system
+base. The original initialization warnings and Q residuals are retained.
+These twelve isolated stacks do not reproduce the larger full-system drift,
+which leaves the synchronous-machine/controller fleet and coupled network
+behavior as the next localization targets. These tests do not establish
+full-fleet disturbance or system acceptance.
+
+Completed native observations, frozen runtimes, failed channel-cap attempts,
+primary-source provenance, cold-repeat checks, the corrected-load ten-second
+event, and the completed additional ST1 baseline events are retained in the
+private verification-artifact directory
+`2026-10-18-startup-network-convergence`. The completed diagnostic prefix is
+retained separately in `2026-10-18-network-loop-prefix`. All six cases and
+36 events remain required; no event is accepted. The one-second independent
+renewable observations are retained in `2026-10-18-renewable-one-second-controls`.
