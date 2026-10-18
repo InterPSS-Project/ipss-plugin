@@ -275,6 +275,50 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
                 + governor.getEffectiveRopen() * elapsed + 1.0e-9);
     }
 
+    @ParameterizedTest
+    @CsvSource({"1.0,-0.03", "0.04,-0.03"})
+    void declaredValveRatesBoundBothActuatorDirections(double opening, double closing) throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(.4); machine.setPe(.4);
+        var data = texasData();
+        data.setUseDeclaredValveRates(true);
+        data.setRopen(opening); data.setRclose(closing);
+        data.setKpgov(20.0); data.setTact(.01); data.setAset(99.0);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertTrue(governor.getData().isUseDeclaredValveRates());
+        assertEquals(opening, governor.getEffectiveRopen(), TOL);
+        assertEquals(closing, governor.getEffectiveRclose(), TOL);
+        double[] rates = new double[governor.staggeredStateCount()];
+        machine.setSpeed(.9); governor.evaluateStaggered(.001, rates, 0);
+        assertEquals(opening, rates[3], TOL);
+        machine.setSpeed(1.1); governor.evaluateStaggered(.001, rates, 0);
+        assertEquals(closing, rates[3], TOL);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"GGOV1,false", "GGOV1D,true", "GGOV1DU,true"})
+    void nativeImportsSelectDeclaredValveRates(String model, boolean deadband, @TempDir Path tempDir)
+            throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        Path dyr = tempDir.resolve("declared-rates.dyr");
+        Files.writeString(dyr, "1 '" + model + "' 1 1 0 .03 1 .05 -.05 4.18 .71 0 1 "
+                + "1 .15 .4 1.22 .18 .16 0 0 3 2.56 .85 1 0 1 -.03 0 "
+                + ".01 10 .1 390.24 0 4 5 99 -99" + (deadband ? " 0 0" : "") + " /\n");
+        var parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
+        parser.parseDynFile(dyr.toString());
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(.4); machine.setPe(.4);
+        var governor = (PsseGgov1Governor)machine.getGovernor();
+        assertNotNull(governor);
+        assertTrue(governor.getData().isUseDeclaredValveRates());
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(1.0, governor.getEffectiveRopen(), TOL);
+        assertEquals(-.03, governor.getEffectiveRclose(), TOL);
+        assertTrue(parser.getLastImportReport().isStrictlyComplete());
+    }
+
     @Test
     void appliesPowerWorldTimeStepAutocorrectionsBeforeInitialization() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();

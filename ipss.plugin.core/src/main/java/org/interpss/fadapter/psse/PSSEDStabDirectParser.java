@@ -2861,6 +2861,7 @@ public class PSSEDStabDirectParser {
     private boolean procGovGgov1(String busId, String genId, String[] f, boolean deadbandVariant) {
         if (f.length < (deadbandVariant ? 40 : 38)) return false;
         PsseGgov1GovernorData d = new PsseGgov1GovernorData();
+        d.setUseDeclaredValveRates(true);
         d.setRselect(getInt(f, 3, 0)); d.setFlag(getInt(f, 4, 0));
         d.setR(getDouble(f, 5, 0)); d.setTpelec(getDouble(f, 6, 0));
         d.setMaxerr(getDouble(f, 7, 0)); d.setMinerr(getDouble(f, 8, 0));

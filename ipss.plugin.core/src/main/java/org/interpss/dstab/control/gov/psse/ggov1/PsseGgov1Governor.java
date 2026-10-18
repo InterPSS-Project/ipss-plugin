@@ -474,8 +474,9 @@ public class PsseGgov1Governor extends AbstractGovernor
         double[] errorLimits = normalizedSignedLimits(d.getMaxerr(), d.getMinerr());
         effectiveMaxerr = errorLimits[0];
         effectiveMinerr = errorLimits[1];
-        effectiveRopen = Math.min(d.getRopen(), 0.1);
-        effectiveRclose = d.getRclose() > -0.1 ? -0.1 : d.getRclose();
+        effectiveRopen = d.isUseDeclaredValveRates() ? d.getRopen() : Math.min(d.getRopen(), 0.1);
+        effectiveRclose = d.isUseDeclaredValveRates() ? d.getRclose()
+                : d.getRclose() > -0.1 ? -0.1 : d.getRclose();
         effectiveRup = Math.min(d.getRup(), 99.0);
         effectiveRdown = d.getRdown() > -99.0 ? -99.0 : d.getRdown();
     }

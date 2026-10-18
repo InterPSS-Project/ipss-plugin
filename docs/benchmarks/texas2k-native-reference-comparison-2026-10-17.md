@@ -1448,3 +1448,81 @@ Immutable sources, exact inputs, paired trajectories, allocation controls,
 network counters, raw profiles and validation logs are retained privately in
 `2026-10-18-cml-numerical-stage-kernels`. The 36-event independent accuracy goal
 remains open.
+
+## Declared governor actuator rates
+
+Physical-input replay localizes the remaining bus 1050 frequency-control
+discrepancy to GGOV1. With the recorded terminal voltage/current, speed,
+electrical power, field current and stabilizer output, the exciter's maximum
+EFD error is `0.0000363342` pu and the stabilizer's maximum output error is
+`0.00000726965` pu. The governor's mechanical-power error reaches `0.00145188`
+pu even with those recorded inputs.
+
+The native valve trajectory opens at up to `0.149965` pu/s in the original
+profile. The prior import path instead applies another reference dialect's
+`0.1`-pu/s opening cap. The primary model manual defines opening and closing
+rates as the declared actuator limits. A separate countercase declares
+`0.04` and `-0.03` pu/s; two fresh native processes repeat exactly, retain
+20,003 samples each and report clean initial conditions. They also discriminate
+the prior closing-rate adjustment from the declared rate.
+
+Native GGOV1 and GGOV1D imports now select the declared opening/closing rates.
+The data builder preserves that selection. Typed data defaults retain their
+existing convention. Parameter order, count, imported values, time constants,
+load assumptions and integration rules are unchanged.
+
+With the production correction, maximum mechanical-power error in the original
+physical-input replay falls to `0.000172786` pu. In the coupled original cell,
+ten-second rotor-angle RMSE falls from `0.0170980` to `0.00206522` degrees.
+The asymmetric-rate cell has `0.00446595` degrees RMSE. Two original IEEEG1
+controls remain byte-identical across every exported channel and sample.
+These are component controls; the six-case connected-system goal remains open.
+
+All 38 focused tests pass, including both actuator directions, native aliases,
+typed defaults, independent coupled trajectories and trip behavior. The
+registered suite completes 2,013 tests with the same three previously recorded
+failures, zero errors and 13 skips. No assertion or trajectory tolerance changes.
+An explicit no-event control attempts every case with both rate conventions.
+All six still fail their existing voltage-drift assertion; all reported voltage
+and speed metrics are identical between the two conventions.
+
+The original first Case 2 fault also completes for ten seconds at its unchanged
+`0.0005`-second step and `1e-8` network tolerance. Hash checks preserve the
+physical inputs, raw references, scorer, normalization, periods and limits.
+It still passes 19 of 40 criteria. Worst rotor-angle RMSE changes from `20.2929`
+to `20.3843` degrees, and worst fault-and-postfault voltage/P/Q NRMSE changes
+from `0.0203067` to `0.0203516`. Prefault maximum angle error remains `0.115433`
+degrees. Connected-system acceptance remains open despite the independently
+supported actuator correction.
+
+## Requested network tolerance control
+
+The quarter-cycle benchmark now selects a network voltage convergence tolerance
+of `1.0E-3` as requested. A fresh convergence-only pair uses the same frozen CML
+benchmark runtime, physical inputs, controller parameters, integration rules,
+quarter-cycle step and ten-second window on both sides.
+
+| Network tolerance | Integration wall time, seconds | Nested network time, seconds | Network iterations |
+| --- | ---: | ---: | ---: |
+| `1.0E-8` control | 78.9436 | 48.7274 | 72,765 |
+| `1.0E-3` requested setting | 51.9121 | 17.5354 | 18,042 |
+
+Integration time falls by 34.24% and iteration count by 75.21%. Both runs make
+4,800 network calls; average iterations fall from 15.16 to 3.76, and the maximum
+falls from 39 to seven. The tighter control is byte-identical to the earlier
+production control. Other long-running accuracy work is temporarily suspended
+and then resumed for these timings. These remain individual fresh-process
+measurements, not a hardware performance guarantee. The 20-second target is open.
+
+The requested setting materially changes the trajectory: compared directly
+with the tighter numerical control, the largest monitored bus-voltage
+difference is `0.0186620` pu and the largest rotor-angle difference is `59.9100`
+degrees. This comparison retains 218 numerical channels and all 2,405 history,
+endpoint and event-side observations. It establishes the runtime tradeoff;
+independent-reference accuracy acceptance remains separate and unproven.
+
+The controller replays, cold references, source-manual provenance, frozen
+production runtime, complete original-event output and scorer, six-case
+regression controls, and convergence-only pair are retained privately in
+`2026-10-18-ggov1-rates-and-network-tolerance`. The complete accuracy goal remains
+all six cases and 36 supplied-reference disturbances.

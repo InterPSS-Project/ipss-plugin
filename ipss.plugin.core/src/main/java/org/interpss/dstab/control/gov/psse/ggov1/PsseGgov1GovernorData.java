@@ -41,6 +41,11 @@ public class PsseGgov1GovernorData extends BaseControllerData {
     private double rdown = -99.0;
     private double dbH;
     private double dbL;
+    private boolean useDeclaredValveRates;
+
+    /** Use record opening/closing rates directly; typed defaults retain their prior convention. */
+    public boolean isUseDeclaredValveRates() { return useDeclaredValveRates; }
+    public void setUseDeclaredValveRates(boolean value) { useDeclaredValveRates = value; }
 
     public int getRselect() { return rselect; }
     public void setRselect(int value) { rselect = value; }
