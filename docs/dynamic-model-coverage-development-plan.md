@@ -17,8 +17,8 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 24 with a
-versioned loadable runtime path, three not implemented**, not merely missing
+The approved native renewable audit finds **27 distinct families: 25 with a
+versioned loadable runtime path, two not implemented (REPCCU and HPLNTD)**, not merely missing
 benchmark coverage. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -81,8 +81,20 @@ and state definitions agree.
     skips), 1,364 SMIB/model/solver checks (one existing diagnostic skip), zero
     failures/errors. Audit 26 tested source/resource files, twenty new native
     runs and ten byte-identical cold pairs; retain float/history/timer gaps.
-  - [ ] Complete strict native import, signed branch/frequency-bus measurement,
-    base conversion, REGFMC1U four-output routing and coupled SMIB acceptance.
+  - [x] Implement strict native import, signed branch/frequency-bus measurement,
+    base conversion and REGFMC1U four-output routing. Add nine bounded coupled
+    SMIB profiles and ten new cold native runs (five byte-identical pairs).
+    See [import evidence](benchmarks/repcgfmc-native-import-2026-10-18.md).
+    Runtime coverage is now 25/27; the earlier 24/27 counts are historical.
+  - [x] Validate import on plugin `c6cdf42ca` and the exact archived updated
+    core dependency: 78 focused checks, 318 plugin-core tests (six optional
+    skips), 1,373 SMIB/model/solver checks (one existing diagnostic skip), zero
+    failures/errors. Audit 25 owned source/resource files and all new native
+    measurement routes; preserve rejected signed-branch diagnostics separately.
+  - [ ] Close independent signed receiving-end/transformer trajectories,
+    instantaneous callback parity, broader zero-time and reconnect lifecycle
+    coverage. Native negative-bus runs used terminal fallback and are rejected
+    as receiving-end oracles; their convergence does not prove routing parity.
 
 - [x] Add exact native REGFMC1U wrapper parsing and hybrid network adapter, with
   non-overwriting attachment, machine/system-base Norton conversion, semantic

@@ -9,11 +9,12 @@ import com.interpss.dstab.device.DynamicGenDevice;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /** Native REGFMC1U hybrid network adapter. All kernel quantities use machine base.
- * No REPCA1 alias/plant adapter is inferred for the distinct REPCGFMC1 interface. */
+ * Uses the dedicated REPCGFMC1U plant interface; no REPCA1 alias is inferred. */
 public final class Regfmc1Model extends DynamicBusDeviceImpl implements DynamicGenDevice,ICMLStateProvider {
     private final Regfmc1Data data;
     private DStabGen parent;
     private Regfmc1Kernel kernel;
+    private Repcgfmc1Model plant;
     private double systemMva,deviceMva,p,q,pOffset,qOffset,vOffset,wOffset,gfmPower,gfmIq;
     public Regfmc1Model(DStabGen gen,BaseDStabBus<?,?> bus,String id,Regfmc1Data data) {
         this.data=Objects.requireNonNull(data);Objects.requireNonNull(gen);Objects.requireNonNull(bus);
@@ -28,14 +29,19 @@ public final class Regfmc1Model extends DynamicBusDeviceImpl implements DynamicG
         if(!Double.isFinite(factor)||factor<=0)return false;parent.setZMultiFactor(factor);
         kernel=new Regfmc1Kernel(data,bus.getNetwork().getFrequency());
         Complex power=parent.getGen().multiply(systemMva/deviceMva);kernel.initialize(bus.getVoltage(),power);
-        p=power.getReal();q=power.getImaginary();pOffset=qOffset=vOffset=wOffset=gfmPower=gfmIq=0;return true;
+        p=power.getReal();q=power.getImaginary();pOffset=qOffset=vOffset=wOffset=gfmPower=gfmIq=0;
+        if(plant!=null)plant.initialize();return true;
     }
     private boolean ownerActive(){return parent!=null&&parent.isActive()&&getDStabBus().isActive();}
     @Override public boolean nextStep(double dt,DynamicSimuMethod method,int flag) {
         if(!ownerActive())return true;
         if(kernel==null||method!=DynamicSimuMethod.MODIFIED_EULER||flag<0||flag>1)return false;
-        kernel.setReferenceSteps(pOffset,qOffset,vOffset,wOffset,gfmPower,gfmIq);
-        kernel.step(dt,getDStabBus().getVoltage(),flag);return true;
+        if(plant==null)kernel.setReferenceSteps(pOffset,qOffset,vOffset,wOffset,gfmPower,gfmIq);
+        else {
+            plant.refresh();var commands=plant.commands();plant.step(dt,flag);applyPlantReferences(commands);
+        }
+        kernel.step(dt,getDStabBus().getVoltage(),flag);
+        if(plant!=null){applyPlantReferences(plant.commands());kernel.step(0,getDStabBus().getVoltage(),0);}return true;
     }
     @Override public Object getOutputObject() {
         if(kernel==null||!ownerActive())return Complex.ZERO;
@@ -50,7 +56,11 @@ public final class Regfmc1Model extends DynamicBusDeviceImpl implements DynamicG
     @Override public boolean afterStep(double dt){return true;}
     @Override public DStabGen getParentGen(){return parent;}
     @Override public void setParentGen(DStabGen gen){parent=gen;if(gen!=null)gen.setDynamicGenDevice(this);}
-    @Override public Map<String,Double> getNamedStates(){return kernel==null?Map.of():kernel.getNamedStates();}
+    @Override public Map<String,Double> getNamedStates(){
+        if(kernel==null)return Map.of();if(plant==null)return kernel.getNamedStates();
+        var states=new LinkedHashMap<String,Double>(kernel.getNamedStates());
+        plant.getNamedStates().forEach((name,value)->states.put("REPCGFMC1U."+name,value));return Collections.unmodifiableMap(states);
+    }
     @Override public Hashtable<String,Object> getStates(Object ref) {
         var values=new Hashtable<String,Object>();values.put("REGFMC1U_P",getActivePower());values.put("REGFMC1U_Q",getReactivePower());
         values.put(com.interpss.dstab.common.DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID,getExtendedDeviceId());
@@ -58,6 +68,18 @@ public final class Regfmc1Model extends DynamicBusDeviceImpl implements DynamicG
     }
     public Regfmc1Data getData(){return data;}
     public Regfmc1Kernel getKernel(){return kernel;}
+    public Repcgfmc1Model getPlantController(){return plant;}
+    public void setPlantController(Repcgfmc1Model value){
+        if(kernel!=null||plant!=null)throw new IllegalStateException("Attach hybrid plant once, before initialization");
+        if(Objects.requireNonNull(value).getConverter()!=this)throw new IllegalArgumentException("Hybrid plant belongs to another converter");plant=value;
+    }
+    private void applyPlantReferences(Repcgfmc1Model.Commands commands){
+        kernel.setReferenceSteps(pOffset+commands.active(),qOffset+commands.reactive(),vOffset+commands.voltage(),wOffset+commands.speedDeviation(),gfmPower,gfmIq);
+    }
+    public Complex physicalPowerSystem(){
+        if(kernel==null||!ownerActive())return Complex.ZERO;Complex v=getDStabBus().getVoltage();
+        return v.multiply(kernel.boundary(v).totalCurrent().conjugate()).multiply(deviceMva/systemMva);
+    }
     public double getActivePower(){return ownerActive()?p:0;}
     public double getReactivePower(){return ownerActive()?q:0;}
     public void setReferenceOffsets(double activeGfl,double reactiveGfl,double voltage,double speedDeviation,double activeGfm,double reactiveGfmCurrent) {

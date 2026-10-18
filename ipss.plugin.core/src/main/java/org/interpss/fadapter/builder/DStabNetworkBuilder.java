@@ -3519,6 +3519,13 @@ public class DStabNetworkBuilder {
         return new Regfmc1Model(gen,bus,genId,data);
     }
 
+    public org.interpss.dstab.renewable.Repcgfmc1Model addRepcgfmc1(String busId,String genId,org.interpss.dstab.renewable.Repcgfmc1Data data){
+        var bus=network.getDStabBus(busId);DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(bus==null||!bus.isActive()||gen==null||!gen.isActive()||!(gen.getDynamicGenDevice() instanceof Regfmc1Model converter)
+                ||converter.getPlantController()!=null)return null;
+        var plant=new org.interpss.dstab.renewable.Repcgfmc1Model(data,converter);converter.setPlantController(plant);return plant;
+    }
+
     public Regfmb1Model addRegfmb1(String busId,String genId,Regfmb1Data data) {
         BaseDStabBus<?,?> bus=network.getDStabBus(busId);
         DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);

@@ -116,6 +116,8 @@ public final class DynamicModelCatalog {
     );
 
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
+            descriptor("REPCGFMC1U",Set.of(),PLANT_CONTROLLER,67,LOADABLE,
+                    "org.interpss.dstab.renewable.Repcgfmc1Model","Plant%20Controller%20REPCGFM_C1.htm"),
             descriptor("REGFMC1U",Set.of(),CONVERTER_MACHINE,43,LOADABLE,
                     "org.interpss.dstab.renewable.Regfmc1Model","Machine%20Model%20REGFM_C1.htm"),
             descriptor("REGFMB1U",Set.of(),CONVERTER_MACHINE,37,LOADABLE,

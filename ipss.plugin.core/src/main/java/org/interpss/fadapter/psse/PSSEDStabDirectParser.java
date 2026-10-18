@@ -171,6 +171,7 @@ public class PSSEDStabDirectParser {
     private final List<PsseDyrRecord> pendingWtgwgoa = new ArrayList<>();
     private final List<PsseDyrRecord> pendingWtgibffra = new ArrayList<>();
     private final List<PsseDyrRecord> pendingReece = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingRepcgfmc1 = new ArrayList<>();
     private final List<PendingLcfb1> pendingLcfb1 = new ArrayList<>();
     private final List<PendingIeeeVc> pendingIeeeVc = new ArrayList<>();
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
@@ -246,6 +247,7 @@ public class PSSEDStabDirectParser {
         pendingWtgibffra.clear();
         pendingReece.clear();
         pendingLcfb1.clear();
+        pendingRepcgfmc1.clear();
         pendingIeeeVc.clear();
         pendingUel1.clear();
         pendingUel2c.clear();
@@ -281,7 +283,7 @@ public class PSSEDStabDirectParser {
                     continue;
                 }
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
-                        || type.equals("REPCA1") || type.equals("REECE") || type.equals("LCFB1")
+                        || type.equals("REPCA1") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
                         || type.equals("OEL2C") || type.equals("UEL2C")
                         || type.equals("WTDTB1") || type.equals("WTPTB1") || type.equals("WTGWGOA") || type.equals("WTGIBFFRA");
@@ -359,6 +361,14 @@ public class PSSEDStabDirectParser {
                     attached ? "" : "REPCA1 requires REGCA1/REEC or REGFMA1 on the same generator");
         }
         pendingRepca1.clear();
+        for(PsseDyrRecord record:pendingRepcgfmc1){
+            try {
+                boolean attached=procRepcgfmc1(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),record);
+                report.add(record,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                        attached?"Exact hybrid-plant wrapper; four references on REGFMC1U":"REPCGFMC1U requires exact allocation and an unused REGFMC1U plant port");
+            } catch(RuntimeException failure){report.add(record,DynamicModelImportStatus.REJECTED,failure.getMessage());}
+        }
+        pendingRepcgfmc1.clear();
         for (PsseDyrRecord record : pendingWtgwgoa) {
             try {
                 boolean attached = procWtgwgoa(BUS_ID_PREFIX + record.busNumber(), record.deviceId(), record);
@@ -853,6 +863,8 @@ public class PSSEDStabDirectParser {
                 return procRegfmb1(busId,genId,record);
             case "REGFMC1U":
                 return procRegfmc1(busId,genId,record);
+            case "REPCGFMC1U":
+                pendingRepcgfmc1.add(record);return true;
             case "CSVGN5":
                 return procCsvgn5(busId, genId, fields);
             case "SVSMO1T2":
@@ -3526,6 +3538,18 @@ public class PSSEDStabDirectParser {
         for(int i=0;i<3;i++)flags[i]=record.intParameter(6+i);
         for(int i=0;i<34;i++)constants[i]=record.doubleParameter(9+i);
         return builder.addRegfmc1(busId,genId,org.interpss.dstab.renewable.Regfmc1Data.nativePsse(gen.getSourceZ(),flags,constants))!=null;
+    }
+
+    private boolean procRepcgfmc1(String busId,String genId,PsseDyrRecord record){
+        if(record.parameterOffset()!=4||!record.fields().get(1).equalsIgnoreCase("USRMDL")||record.parameterCount()!=67)return false;
+        int[] allocation={107,0,7,54,15,20};for(int i=0;i<6;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var tokens=java.util.regex.Pattern.compile("'(?:[^']|'')*'|[^\\s,]+").matcher(record.rawText());
+        for(int i=0;i<=record.parameterOffset()+9;i++)if(!tokens.find())return false;
+        if(!tokens.group().startsWith("'"))return false;
+        double[] constants=new double[54];for(int i=0;i<54;i++)constants[i]=record.doubleParameter(13+i);
+        var data=new org.interpss.dstab.renewable.Repcgfmc1Data(record.intParameter(6),record.intParameter(7),record.intParameter(8),record.parameter(9),
+                record.intParameter(10),record.intParameter(11),record.intParameter(12),constants);
+        return builder.addRepcgfmc1(busId,genId,data)!=null;
     }
 
     private boolean procRegfmb1(String busId,String genId,PsseDyrRecord record) {

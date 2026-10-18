@@ -81,7 +81,8 @@ public class Repcgfmc1NativeContractConformanceTest {
             for(int i=0;i<3;i++)assertTrue(max[i]<bounds[i],"Native float algebraic residual "+i+"="+max[i]);
         }
     }
-    @Test void foundationDoesNotPretendToBeALoadablePlantController(){
-        assertTrue(DynamicModelCatalog.find("REPCGFMC1U").isEmpty());assertTrue(DynamicModelCatalog.find("REPCGFMC1").isEmpty());
+    @Test void subsequentExactImportDoesNotCreateAnUnprovedSourceNameAlias(){
+        assertEquals("org.interpss.dstab.renewable.Repcgfmc1Model",DynamicModelCatalog.find("REPCGFMC1U").orElseThrow().runtimeClassName());
+        assertTrue(DynamicModelCatalog.find("REPCGFMC1").isEmpty());
     }
 }
