@@ -17,8 +17,8 @@ Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
 **Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 22 with a
-versioned loadable runtime path, five not implemented**, not merely missing
+The approved native renewable audit finds **27 distinct families: 23 with a
+versioned loadable runtime path, four not implemented**, not merely missing
 benchmark coverage. REEC_E now has strict native 36.7 standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -53,6 +53,15 @@ and state definitions agree.
 
 ## Approved renewable source and evidence audit
 
+- [x] Add strict native REGFMB1U wrapper import, non-overwriting device attachment,
+  machine/system-base Norton boundary and deferred REPCA1 routing. Coverage is
+  23/27 versioned runtime paths; HPLNTD, REPCCU, REGFMC1 and REPCGFMC1 remain missing.
+- [x] Run imported REGFMB1U flat/fault/trip SMIB profiles at two steps and bound
+  six physical channels against immutable native output. See
+  [import evidence](benchmarks/regfmb-native-import-2026-10-18.md).
+- [x] Validate REGFMB1U import: 70 focused checks, 283 plugin-core tests (six
+  optional skips), 1,327 SMIB/model tests (one existing diagnostic skip), zero
+  failures/errors; audit fourteen tested source/fixture files and prior native evidence.
 - [x] REGFMB1 foundation: visually freeze native 36.7 REGFMB1U exact wrapper,
   six ICONs/25 CONs/14 STATEs/17 VARs, distinct from PowerWorld parameter fields.
 - [x] Cold-run flat and three-cycle-fault native SMIB profiles twice at two
@@ -68,11 +77,12 @@ and state definitions agree.
 - [x] Validate the kernel: 44 focused checks, 283 plugin-core tests (six optional
   skips), 1,318 SMIB/model tests (one existing diagnostic skip), zero failures/errors;
   audit 22 new native runs and eleven byte-identical cold pairs. Keep family missing.
+- [x] Add the strict wrapper/device path, plant attachment and basic trip-state
+  freeze; retain bounded two-step native coupled fault checks.
 - [ ] Expand native active-limit, zero-time, negative-power and PLL recovery
-  profiles; add strict wrapper/device attachment, plant routing and lifecycle,
-  then independently compare coupled flat/fault/trip trajectories.
+  profiles, plant disturbances/reconnect and independent PowerWorld acceptance.
   See [kernel evidence and remaining work](benchmarks/regfmb-kernel-2026-10-18.md).
-  This foundation does not increase the 22/27 loadability count. See
+  The earlier foundation checkpoint was 22/27; native import above raises it to 23/27. See
   [REGFMB1 native foundation](benchmarks/regfmb-native-contract-2026-10-18.md).
 - [x] Native REECE import slice: exact eight-ICON/79-CON standard schema,
   deferred REGCA/REGCB attachment and malformed/duplicate/GNET/base guards.

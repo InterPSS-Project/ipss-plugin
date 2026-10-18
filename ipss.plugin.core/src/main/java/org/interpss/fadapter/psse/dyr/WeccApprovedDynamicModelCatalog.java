@@ -208,7 +208,7 @@ public final class WeccApprovedDynamicModelCatalog {
      */
     private static final List<WeccModelApproval> RENEWABLES=List.of(
             renewable("REGFM_A1","regfm_a1","REGFMA1","REGFM_A1",CONVERTER_MACHINE,APPROVED,"2023-09-27","REGFMA1","Droop-controlled grid-forming inverter."),
-            renewable("REGFM_B1","regfm_b1","REGFMB1","REGFM_B1",CONVERTER_MACHINE,APPROVED,"2024-05-23","REGFMB1","Missing runtime and native import path."),
+            renewable("REGFM_B1","regfm_b1","REGFMB1","REGFM_B1",CONVERTER_MACHINE,APPROVED,"2024-05-23","REGFMB1U","Native 36.7 exact REGFMB1U wrapper; source REGFMB1 name is not an inferred alias. Partial native evidence, not complete verification."),
             renewable("REGFM_C1","regfm_c1","REGFMC1","REGFM_C1",CONVERTER_MACHINE,APPROVED,"2025-09-11","REGFMC1","Hybrid inverter control; missing runtime and import path."),
             renewable("PVD1","pvd1","","PVD1",CONVERTER_MACHINE,APPROVED,"2014-03-19","","PTI cell is blank; do not infer a native DYR model from PowerWorld's name."),
             renewable("DER_A","der_a","DERAU1","DER_A",CONVERTER_MACHINE,APPROVED,"2018-01-26","DERA1","Distributed energy resource model."),

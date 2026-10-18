@@ -33,6 +33,7 @@ import org.interpss.dstab.renewable.Reecb1Data;
 import org.interpss.dstab.renewable.Reecc1Data;
 import org.interpss.dstab.renewable.Reecd1Data;
 import org.interpss.dstab.renewable.Reece1Data;
+import org.interpss.dstab.renewable.Regfmb1Data;
 import org.interpss.dstab.renewable.Reeca1Data;
 import org.interpss.dstab.renewable.Dera1Data;
 import org.interpss.dstab.renewable.Regca1Data;
@@ -848,6 +849,8 @@ public class PSSEDStabDirectParser {
                 return procDera1(busId, genId, fields);
             case "REGFMA1":
                 return procRegfma1(busId, genId, record);
+            case "REGFMB1U":
+                return procRegfmb1(busId,genId,record);
             case "CSVGN5":
                 return procCsvgn5(busId, genId, fields);
             case "SVSMO1T2":
@@ -3510,6 +3513,18 @@ public class PSSEDStabDirectParser {
         return builder.addRegfma1(busId, genId, data) != null;
     }
 
+    private boolean procRegfmb1(String busId,String genId,PsseDyrRecord record) {
+        if(record.parameterOffset()!=4||!record.fields().get(1).equalsIgnoreCase("USRMDL")||record.parameterCount()!=37)return false;
+        int[] allocation={101,1,6,25,14,17};
+        for(int i=0;i<6;i++)if(record.intParameter(i)!=allocation[i])return false;
+        var bus=builder.getBaseDStabNetwork().getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);if(gen==null)return false;
+        int[] flags=new int[6];double[] constants=new double[25];
+        for(int i=0;i<6;i++)flags[i]=record.intParameter(6+i);
+        for(int i=0;i<25;i++)constants[i]=record.doubleParameter(12+i);
+        return builder.addRegfmb1(busId,genId,Regfmb1Data.nativePsse(gen.getSourceZ(),flags,constants))!=null;
+    }
+
     // PSS/E 36.7 CSVGN5: IBUS MODEL ID IB TS1 VEMAX TS2 TS3 TS4 TS5
     // KSVS KSD BMAX B'MAX B'MIN BMIN TS6 DV
     private boolean procCsvgn5(String busId, String genId, String[] f) {
@@ -4272,6 +4287,7 @@ public class PSSEDStabDirectParser {
     }
 
     private String attachedMessage(PsseDyrRecord record) {
+        if(record.canonicalModelName().equals("REGFMB1U"))return "PSS/E 36.7 exact USRMDL 101 1 6 25 14 17; machine-base RAW ZSOURCE";
         if (record.canonicalModelName().equals("REGFMA1"))
             return record.parameterCount() == 20
                     ? "PSS/E 36.7 native 2-ICON/18-CON REGFMA1; coupling uses machine-base RAW ZSOURCE"

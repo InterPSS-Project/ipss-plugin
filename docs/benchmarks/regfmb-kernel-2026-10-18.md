@@ -7,6 +7,9 @@ source hashes, diagrams and original eight cold runs. No guessed aliases are add
 
 ## Implementation
 
+The subsequent [native-import slice](regfmb-native-import-2026-10-18.md) supplies
+the parser/device adapter. This report retains the earlier kernel-only scope.
+
 Regfmb1Kernel implements fourteen states: power-frequency droop filter, bounded
 VSM speed, scaled damping filter, bounded relative internal angle, P measurement,
 PLL integral/angle, d-axis current measurement, Q/V measurements, q-axis current

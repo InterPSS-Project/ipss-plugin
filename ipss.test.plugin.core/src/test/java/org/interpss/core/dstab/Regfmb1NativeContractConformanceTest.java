@@ -7,7 +7,7 @@ import org.interpss.core.dstab.reference.Regfmb1NativeContractReference;
 import org.interpss.dstab.renewable.Regfmb1NetworkBoundary;
 import org.junit.jupiter.api.Test;
 
-/** Native schema and boundary evidence only; REGFMB1U dynamics are not loadable. */
+/** Native schema/boundary evidence; separate import tests cover the loadable adapter. */
 public class Regfmb1NativeContractConformanceTest {
     private static List<Map<String,Double>> rows(String csv) {
         var lines=csv.lines().toList();String[] names=lines.getFirst().split(",");List<Map<String,Double>> rows=new ArrayList<>();
@@ -48,8 +48,8 @@ public class Regfmb1NativeContractConformanceTest {
             for(int i=0;i<4;i++)assertTrue(maximum[i]<bounds[i],"Boundary channel "+i+" discrepancy "+maximum[i]);
         }
     }
-    @Test void foundationDoesNotPretendThatADynamicRuntimeOrAliasExists() {
+    @Test void nativeRuntimeDoesNotInferTheSourceListAlias() {
         assertTrue(org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMB1").isEmpty());
-        assertTrue(org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMB1U").isEmpty());
+        assertEquals("org.interpss.dstab.renewable.Regfmb1Model",org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("REGFMB1U").orElseThrow().runtimeClassName());
     }
 }

@@ -194,6 +194,8 @@ import org.interpss.dstab.renewable.Regcb1Data;
 import org.interpss.dstab.renewable.Regcb1Model;
 import org.interpss.dstab.renewable.Regfma1Data;
 import org.interpss.dstab.renewable.Regfma1Model;
+import org.interpss.dstab.renewable.Regfmb1Data;
+import org.interpss.dstab.renewable.Regfmb1Model;
 import org.interpss.dstab.renewable.Repca1Data;
 import org.interpss.dstab.renewable.Repca1Model;
 import org.interpss.dstab.renewable.WindControlStack;
@@ -3506,6 +3508,14 @@ public class DStabNetworkBuilder {
         return new Regfma1Model(gen, bus, genId, data);
     }
 
+    public Regfmb1Model addRegfmb1(String busId,String genId,Regfmb1Data data) {
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);
+        DStabGen gen=bus==null?null:(DStabGen)bus.getContributeGen(genId);
+        if(bus==null||!bus.isActive()||gen==null||!gen.isActive()||gen.getMach()!=null||gen.getDynamicGenDevice()!=null)return null;
+        if(gen.getXfrZ()!=null&&gen.getXfrZ().abs()!=0)throw new IllegalArgumentException("Native REGFMB1U must not have an implicit RAW transformer");
+        return new Regfmb1Model(gen,bus,genId,data);
+    }
+
     public Csvgn5Model addCsvgn5(String busId, String genId, Csvgn5Data data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         DStabGen gen = bus == null ? null : (DStabGen) bus.getContributeGen(genId);
@@ -3631,7 +3641,12 @@ public class DStabNetworkBuilder {
             gridForming.setPlantController(controller);
             return controller;
         }
-        log.warn("REGCA1/REGCB1/REEC or REGFMA1 chain not found for REPCA1: bus={}, gen={}",
+        var vsmBus=network.getDStabBus(busId);
+        DStabGen vsmGen=vsmBus==null?null:(DStabGen)vsmBus.getContributeGen(genId);
+        if(vsmGen!=null&&vsmGen.getDynamicGenDevice() instanceof Regfmb1Model vsm) {
+            Repca1Model controller=new Repca1Model(data,vsm);vsm.setPlantController(controller);return controller;
+        }
+        log.warn("REGCA1/REGCB1/REEC or REGFMA1/REGFMB1U chain not found for REPCA1: bus={}, gen={}",
                 busId, genId);
         return null;
     }
