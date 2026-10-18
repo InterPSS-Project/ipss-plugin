@@ -8,7 +8,7 @@ package org.interpss.dstab.renewable;
  * as hertz. A zero turbine-inertia fraction selects the documented one-mass
  * representation.</p>
  */
-public final class Wtdta1Model {
+public final class Wtdta1Model implements WindDriveTrain {
     private static final double EPS = 1.0e-9;
     private static final double MIN_SPEED = 0.01;
 
@@ -129,7 +129,7 @@ public final class Wtdta1Model {
         requireFiniteState();
     }
 
-    void stepTwoStep(double dt, double mechanicalPower, double electricalPower) {
+    public void stepTwoStep(double dt, double mechanicalPower, double electricalPower) {
         if (dt <= 0.0) return;
         mechanicalPower = scalePower(mechanicalPower);
         electricalPower = scalePower(electricalPower);

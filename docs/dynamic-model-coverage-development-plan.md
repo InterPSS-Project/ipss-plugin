@@ -57,6 +57,18 @@ and state definitions agree.
 - [ ] Implement WTDTBU1 / current-library WTDTB1 after exact wrapper/native
   schema audit; verify the drivetrain-emulation equations against native PSS/E
   and PowerWorld in a small independent case before its scoped commit.
+  - [x] Foundation only: source-diagram five-state kernel, common drivetrain
+    interface, typed wind-stack selection, algebraic Tp=0 refresh and 13 new
+    equation/attachment tests. This is not a loadable or trajectory-accepted model.
+  - [x] Audit six native profiles twice cold at 0.5/0.25 ms, all input/output
+    hashes, all 14 channels and duplicate event sides. Confirm the exact legacy
+    `103 0 0 6 5 3` wrapper matches the standard native record byte-for-byte.
+  - [ ] Resolve non-converging two-mass native-state differences; do not fit
+    torque/power conversions or widen tolerances. Complete native non-unit-speed
+    initialization and PowerWorld runtime comparisons before importer acceptance.
+  - [ ] Add strict native/wrapper parser and builder paths, missing-host and
+    duplicate-record rejection, lifecycle and full-solver SMIB verification.
+  See [WTDTB1 foundation evidence and open discrepancies](benchmarks/wtdtb1-foundation-2026-10-18.md).
 - [ ] Implement WTPTBU1 / current-library WTPTB1 with exact pitch-controller
   attachment, state initialization, active limits and two-step references.
 - [ ] Implement WTGWGOAU and WTGIBFFRA, auditing installed-release identifiers,

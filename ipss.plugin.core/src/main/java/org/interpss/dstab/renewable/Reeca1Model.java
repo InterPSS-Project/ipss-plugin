@@ -197,7 +197,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         pMeasured = Repca1Model.lag(pMeasured, p, data.tp(), dt);
 
         double plantPref = plantController == null ? 0.0 : plantController.getPref();
-        double pref = windControlStack != null && windControlStack.getTorqueController() != null
+        double pref = windControlStack != null && windControlStack.isTorqueControllerActive()
                 ? windControlStack.getPref() : p0 + plantPref;
         double rateTarget = Repca1Model.limit(pref,
                 pFilter + data.dpmin() * dt, pFilter + data.dpmax() * dt);
@@ -335,7 +335,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         boolean dip = sensedV < data.vdip() || sensedV > data.vup();
         double oldPorder = pOrder;
         double plantPref = plantController == null ? 0.0 : plantController.getPref();
-        double pref = windControlStack != null && windControlStack.getTorqueController() != null
+        double pref = windControlStack != null && windControlStack.isTorqueControllerActive()
                 ? windControlStack.getPref() : p0 + plantPref;
         updateDipTimers(dt, dip);
         pFilter = Repca1Model.limit(pref, pFilter + data.dpmin() * dt,
