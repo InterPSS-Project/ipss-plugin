@@ -2368,3 +2368,92 @@ The streaming scorer reproduces all 9,620 earlier prefix metrics within
 The initial operating-point differences and the exact original fault
 admittance remain unresolved. The next numerical diagnosis uses this complete
 reference; the six-case, 36-event accuracy objective remains open.
+
+### Common rotor motion and initial voltage controls (2026-10-18)
+
+The complete reference separates common machine motion from individual-machine
+error. Using each original online machine's MVA rating times its declared
+inertia as the weight, the common angle difference has 26.887894 degrees RMSE
+and reaches 84.648825 degrees at ten seconds. It accounts for 99.9754 percent
+of the weighted mean-square rotor-angle error. The largest remaining relative
+motion RMSE is 1.597101 degrees at unit 4026/1; unit 1050/1 has 1.524251 degrees.
+This decomposition is diagnostic only: acceptance still uses the original
+absolute rotor angles, with no fitted or subtracted rotation. The common final
+speed difference is 0.098150 Hz. The local-minus-reference sums of terminal P
+and synchronous mechanical power are +52.401847 MW and -181.402010 MW at the
+last sample. These observations direct attention to system power balance and
+its voltage-dependent inputs, rather than an isolated angle offset at 1050.
+
+A paired replay of unit 1070/1 uses the same original controller parameters
+with each run's own initial physical P/Q and terminal voltage history. The
+supplied-history replay has maximum P/Q differences of 0.076741 MW and
+0.222969 Mvar. Replaying the local history reproduces local P/Q within
+0.000777352 MW and 0.000042354 Mvar. Around eight seconds the supplied-history
+reactive-current command reaches the total-current limit of 1.3 pu, leaving
+zero active-current capacity under Q priority. The local history does not
+reach that command limit at the same time. This explains the differing active
+power collapse conditionally; initial operating points also differ, so the
+paired replay does not attribute the entire discrepancy to voltage alone.
+
+Power-flow investigation identifies a separate, reproducible core defect.
+An ungrouped continuous shunt becomes ineligible after its susceptance is
+clipped at a limit. It then cannot move back inside that limit when another
+network adjustment reverses the required direction. In the sequential Case 2
+probe, bus 4196 remains at 2.0 pu susceptance and 1.067806 pu voltage despite
+a 1.03 pu target and available downward adjustment.
+
+Core commit `f0ef05989` retains adjustment eligibility after saturation for
+ordinary continuous shunts. The existing directional room check prevents
+further outward movement. Explicit holds and rejected trials remain blocked;
+SVCs retain their separate behavior. Four new limit-release cases fail on the
+baseline and pass on the correction, covering upper and lower limits, voltage
+bands and reversed sensitivity. Additional checks preserve explicit holds
+and disabled automatic control. All 12 focused tests and 212 existing
+shunt/SVC tests pass in the isolated candidate. The production reactor build
+passes all 238 selected tests without skips or failures.
+
+The original input at bus 1033 contains conflicting colocated objectives:
+the generator schedule is 1.0 pu and the continuous-shunt objective is 1.03 pu.
+The reference's initial power balance is consistent with much less shunt
+injection than the saved RAW setting. A diagnostic gives the generator
+schedule precedence, retaining all original input files and parameters.
+This precedence is an unconfirmed hypothesis, not a production policy or an
+accepted benchmark correction. A separate ordering probe solves power flow
+before converting the bus-1090 generators to negative loads, still before
+the confirmed I/Z load conversion. It uses the solved generator P/Q, without
+injecting measured voltages, inferred susceptances or reference states.
+
+All probes below include the shunt limit-release correction, one outer shunt
+adjustment per solve, and a 1e-8 voltage-control tolerance:
+
+| Diagnostic policy | Largest initial bus-magnitude difference | Bus |
+| --- | ---: | ---: |
+| Original voltage objectives; netting before power flow | 0.011200597 pu | 1033 |
+| Generator-schedule precedence; netting before power flow | 0.000184045 pu | 1090 |
+| Generator-schedule precedence; netting after power flow | 0.0000142144 pu | 4175 |
+
+For the last probe, the largest initial bus-angle and rotor-angle differences
+are 0.000266531 and 0.000544705 degrees. Initial terminal P/Q differences are
+at most 0.00889109 MW and 0.00368422 Mvar. The initial network compensation
+residual is 1.04e-12 pu; no residual injection is retained during dynamics.
+These close initial values do not establish correct dynamic behavior.
+
+The completed 1.2-second probe compares all 4,810 channels at 1,205 samples,
+preserving startup and both sides of the fault and clearing. Its prefault
+maximum voltage error is 0.109928 pu and maximum rotor-angle error is
+10.386478 degrees, worse than the original coupled result. A redundant
+ten-second extension was stopped after this prefix result; its incomplete
+output is explicitly excluded from scoring. Repeating the prefix with the
+previously observed 1e-4 complex-voltage iteration rule and preceding-endpoint
+reuse gives 0.109406 pu and 10.439524 degrees, respectively. Neither diagnostic
+passes the agreed criteria or resolves the discrepancy. The improved cold
+operating point must not be presented as a trajectory-accuracy improvement.
+
+The accepted comparison method and full-reference baseline remain unchanged.
+Original solution settings and fault admittance remain unconfirmed. The core
+fix, negative controls, production test reports, paired voltage replay, common
+motion analysis, successful and rejected power-flow probes, and both completed
+prefix comparisons are retained privately in
+`2026-10-18-case2-shunt-limit-and-operating-point-diagnostics`.
+The next localization uses the earliest divergence and the supplied complete
+machine channels; the six-case, 36-event accuracy objective remains open.
