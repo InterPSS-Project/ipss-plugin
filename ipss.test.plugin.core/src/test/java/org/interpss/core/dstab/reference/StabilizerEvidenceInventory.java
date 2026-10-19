@@ -31,7 +31,7 @@ public final class StabilizerEvidenceInventory {
                     "IeeestPsseSmibConformanceTest",Oracle.PSSE,
                     "smib-genrou-esst1a-ieeest/psse.csv","SMIB_v33_genrou_esst1a_pss1a.dyr"),
                     ReferenceScope.EQUIVALENT_SIGNAL_PLAYBACK,
-                    "Primary link is equivalent IEEEST playback; supplementary exact typed PowerWorld playback is registered, but complete commercial SMIB agreement remains open."),
+                    "Typed model, not native DYR. Primary link is equivalent IEEEST playback; supplementary exact typed PowerWorld playback is registered, but complete commercial SMIB agreement remains open."),
             powerWorld("PSS2A","Pss2aIndependentSmibConformanceTest"),
             powerWorld("PSS2B","Pss2bIndependentSmibConformanceTest"),
             nativeReference("PSS2C","Pss2cPsseSmibConformanceTest"),
@@ -74,7 +74,7 @@ public final class StabilizerEvidenceInventory {
     public static String markdown() {
         StringBuilder text=new StringBuilder("# Stabilizer verification evidence\n\n")
                 .append("Generated from StabilizerEvidenceInventory. The fifteen approved source-list rows ")
-                .append("in the May 2026 catalog resolve to thirteen distinct InterPSS stabilizer mappings, plus separate typed PSSSB evidence; ")
+                .append("in the May 2026 catalog resolve to twelve distinct InterPSS stabilizer mappings, plus separate typed PSS1A/PSSSB evidence; ")
                 .append("the PSLF PSS2C row is not a second verified native model.\n\n")
                 .append("The supplied PDF's twelve filled PTI cells contain nine distinct reference simulator names. ")
                 .append("PSS1A maps to IEEEST and PSSSB maps to PSS2A in that column; PSS3C, PSS4C and ")

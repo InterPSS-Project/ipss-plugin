@@ -1,6 +1,6 @@
 # Stabilizer verification evidence
 
-Generated from StabilizerEvidenceInventory. The fifteen approved source-list rows in the May 2026 catalog resolve to thirteen distinct InterPSS stabilizer mappings, plus separate typed PSSSB evidence; the PSLF PSS2C row is not a second verified native model.
+Generated from StabilizerEvidenceInventory. The fifteen approved source-list rows in the May 2026 catalog resolve to twelve distinct InterPSS stabilizer mappings, plus separate typed PSS1A/PSSSB evidence; the PSLF PSS2C row is not a second verified native model.
 
 The supplied PDF's twelve filled PTI cells contain nine distinct reference simulator names. PSS1A maps to IEEEST and PSSSB maps to PSS2A in that column; PSS3C, PSS4C and PSS5C have blank PTI cells. These source facts are not inferred DYR aliases or claims that later installed releases lack those models. Existing implementation and benchmark links are retained separately, including supplemental models.
 
@@ -15,7 +15,7 @@ All other focused checks below use DStabNetworkBuilderStabilizerTest.
 | InterPSS mapping | Source PTI cell | Oracle | Scope | DYR fixture | Comparison | Checkpoint | Limitation |
 |---|---|---|---|---|---|---|---|
 | IEEEST | IEEEST | PSSE | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_ieeest.dyr | IeeestPsseSmibConformanceTest | smib-genrou-esst1a-ieeest/psse.csv | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |
-| PSS1A | IEEEST | PSSE | EQUIVALENT_SIGNAL_PLAYBACK | SMIB_v33_genrou_esst1a_pss1a.dyr | IeeestPsseSmibConformanceTest | smib-genrou-esst1a-ieeest/psse.csv | Primary link is equivalent IEEEST playback; supplementary exact typed PowerWorld playback is registered, but complete commercial SMIB agreement remains open. |
+| PSS1A | (blank) | PSSE | EQUIVALENT_SIGNAL_PLAYBACK | SMIB_v33_genrou_esst1a_pss1a.dyr | IeeestPsseSmibConformanceTest | smib-genrou-esst1a-ieeest/psse.csv | Typed model, not native DYR. Primary link is equivalent IEEEST playback; supplementary exact typed PowerWorld playback is registered, but complete commercial SMIB agreement remains open. |
 | PSS2A | PSS2A | POWERWORLD | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_pss2a.dyr | Pss2aIndependentSmibConformanceTest | smib-genrou-esst1a-pss2a | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |
 | PSS2B | PSS2B | POWERWORLD | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_pss2b.dyr | Pss2bIndependentSmibConformanceTest | smib-genrou-esst1a-pss2b | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |
 | PSS2C | PSS2C | PSSE | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_pss2c.dyr | Pss2cPsseSmibConformanceTest | smib-genrou-esst1a-pss2c/psse.csv | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |

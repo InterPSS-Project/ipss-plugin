@@ -171,8 +171,9 @@ class DynamicModelCatalogTest {
         assertEquals(15, implemented);
         assertTrue(DynamicModelCatalog.find("WSCCST").orElseThrow().supportStatus()
                 == DynamicModelSupportStatus.LOADABLE);
-        assertEquals(DynamicModelSupportStatus.LOADABLE,
-                DynamicModelCatalog.find("PSS1A").orElseThrow().supportStatus());
+        assertTrue(DynamicModelCatalog.find("PSS1A").isEmpty(), "Typed model is not a native DYR name");
+        assertEquals("IEEEST", WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(row -> row.catalogName().equals("PSS1A")).findFirst().orElseThrow().interpssModel());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS1A"))
                 .findFirst().orElseThrow().isImplementedExactly());

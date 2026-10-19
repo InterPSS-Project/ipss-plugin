@@ -101,9 +101,9 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
         assertEquals(15,rows.size());
         Set<String> required=rows.stream().map(row -> row.interpssModel()).collect(Collectors.toSet());
         var entries=StabilizerEvidenceInventory.entries();
-        assertEquals(13,required.size());
+        assertEquals(12,required.size());
         var expected = new java.util.HashSet<>(required);
-        expected.add("PSSSB"); // Additional typed evidence, not an invented native mapping.
+        expected.addAll(Set.of("PSS1A", "PSSSB")); // Separate typed evidence, not native mappings.
         assertEquals(expected,entries.stream().map(row -> row.model()).collect(Collectors.toSet()));
         assertEquals(expected.size(),entries.size(),"Do not count source-list aliases twice");
         Set<Class<?>> registered=Set.copyOf(Arrays.asList(
@@ -124,10 +124,10 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
             var records=PsseDyrRecordReader.read(e.fixture()).stream()
                     .filter(record -> record.canonicalModelName().equals(e.model())).toList();
             assertEquals(1,records.size(),e.model()+" fixture must retain its source record exactly once");
-            if (row.scope()==StabilizerEvidenceInventory.ReferenceScope.TYPED_MODEL_SPECIFIC_COMPARISON) {
-                assertEquals("PSSSB", e.model());
+            if (row.scope()!=StabilizerEvidenceInventory.ReferenceScope.MODEL_SPECIFIC_COMPARISON) {
+                assertTrue(Set.of("PSS1A", "PSSSB").contains(e.model()));
                 assertTrue(DynamicModelCatalog.find(e.model()).isEmpty());
-                assertEquals(30, records.get(0).parameterCount());
+                assertEquals(e.model().equals("PSS1A") ? 14 : 30, records.get(0).parameterCount());
                 assertTrue(row.sourcePsseNames().isEmpty());
             } else {
                 var descriptor=DynamicModelCatalog.find(e.model()).orElseThrow();

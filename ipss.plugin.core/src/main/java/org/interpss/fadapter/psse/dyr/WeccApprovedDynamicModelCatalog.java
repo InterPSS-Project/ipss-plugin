@@ -141,7 +141,7 @@ public final class WeccApprovedDynamicModelCatalog {
             stabilizer("PSSSB", "psssb", "PSS2A", "PSSSB", APPROVED,
                     "2006-08-11", "PSS2A", "Native source mapping is PSS2A; the separate typed PSSSB adds transient boost and is not a DYR alias."),
             stabilizer("PSS1A", "pss1a", "IEEEST", "PSS1A", APPROVED,
-                    "2016-11-17", "PSS1A", "Generic single-input stabilizer. Source PTI name is IEEEST; the dedicated PSS1A implementation is separate."),
+                    "2016-11-17", "IEEEST", "Native source mapping is IEEEST; the dedicated typed PSS1A implementation is separate and is not a DYR alias."),
             stabilizer("PSS2B", "pss2b", "PSS2B", "PSS2B", APPROVED,
                     "2006-08-11", "PSS2B",
                     "Dual-input stabilizer with an additional lead/lag block."),

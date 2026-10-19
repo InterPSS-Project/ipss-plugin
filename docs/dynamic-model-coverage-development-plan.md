@@ -1234,8 +1234,11 @@ evidence to infer their current native/USRMDL allocations or aliases.
   uncommitted GENSAL edits, not the committed renewable implementation.
 - [x] Seal and hash-verify 1,639 active-branch evidence files and prepare the
   tested scoped commit, preserving all unrelated GENSAL work.
-- [ ] Close remaining input-selector/lifecycle profiles and native PSS1A
-  dialect verification before complete model acceptance.
+- [x] Separate typed PSS1A from native IEEEST at the reader/catalog boundary;
+  preserve typed benchmarks and verify rejection/attachment with cold pairs.
+  See the [PSS1A dialect report](benchmarks/pss1a-native-typed-boundary-2026-10-19.md).
+- [ ] Close remaining typed input-selector/lifecycle profiles and complete
+  coupled SMIB acceptance before complete model acceptance.
 
 See [exact typed PSS1A playback evidence](benchmarks/pss1a-exact-powerworld-playback-2026-10-17.md).
 The [active-limit/cutout follow-up](benchmarks/pss1a-active-limits-2026-10-17.md)
@@ -1706,8 +1709,11 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   PSS2A; reject the former in the DYR reader and preserve the explicit typed
   builder and unchanged PowerWorld SMIB comparison. See the
   [PSSSB dialect boundary report](benchmarks/psssb-native-typed-boundary-2026-10-19.md).
-- [ ] Complete exact PSS1A commercial SMIB acceptance and its separate native
-  input-dialect audit. Typed playback does not establish native schema support.
+- [x] Complete the PSS1A native input-dialect audit independently of the source
+  mapping: literal PSS1A is unsupported, native IEEEST remains accepted, and
+  the typed builder retains separate exact and equivalent playback evidence.
+- [ ] Complete exact typed PSS1A coupled commercial SMIB acceptance; existing
+  playback acceptance does not establish complete closed-loop agreement.
 - [ ] Complete typed PSSSB selector, limiter and lifecycle coverage; the existing
   short-window benchmark is not an exhaustive verification label.
 - [ ] Audit raw artifact versions/cold repeatability and remaining active
