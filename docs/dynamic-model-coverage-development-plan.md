@@ -30,6 +30,10 @@ accounting and named-state observation. Source-list HPLNTD is not an inferred al
 The coupled fault diagnostic now identifies a corrected adapter event-frequency
 reference ordering defect; instantaneous native current/frequency callback parity
 and complete coupled fault acceptance remain open.
+Disabled active/reactive plant paths now hold initial commands and leave unused
+storage at zero, while PF control retains its required active measurement.
+Sixteen two-step selector profiles add recorded-input and bounded coupled SMIB
+acceptance; enabled proportional-only initialization remains open.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -500,10 +504,21 @@ and state definitions agree.
       baseline `7866eb36e`: ten probe/audit and six wording checks, 379 core-unit
       (six optional skips), and 1,493 selected SMIB/model/solver tests (one
       diagnostic skip), zero failures/errors. Production equations are unchanged.
-    - [ ] Implement disabled-path held commands and proportional-only
-      equilibrium from the discriminators, covering voltage/PF selectors and
-      electrical-feedback/feedforward combinations before expanding the bounded
-      import/runtime contract. Preserve existing rejection until established.
+    - [x] Implement disabled-path held commands and unused storage in
+      initialization, kernel and coordinator, including PF's shared active
+      measurement, both integration stages, algebraic bypasses and group reseeding.
+      Add sixteen two-step native state/command replay and imported coupled SMIB
+      profiles; preserve explicit cross-method/filter residuals and raw unused-VAR
+      nondeterminism. See [disabled-control implementation](benchmarks/hplntd-disabled-controls-2026-10-18.md).
+      Final gates: 36 focused, 382 core-unit (six optional skips), 1,499 selected
+      SMIB/model/solver tests (one diagnostic skip), and 22 offline checks,
+      zero failures/errors. Thirty-two raw runs support sixteen cold pairs;
+      fourteen are byte-identical and two differ only in explicitly audited
+      unused reactive VAR storage. No existing reference limits are changed.
+    - [ ] Implement enabled proportional-only equilibrium from the zero-gain
+      discriminators and establish electrical-feedback/feedforward combinations.
+      Independently verify branchless/alternate-host, switching and remaining
+      lifecycle profiles; retain explicit unsupported-path rejection until proved.
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve

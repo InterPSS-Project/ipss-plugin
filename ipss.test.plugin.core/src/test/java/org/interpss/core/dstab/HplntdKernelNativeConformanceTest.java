@@ -56,8 +56,11 @@ public class HplntdKernelNativeConformanceTest {
         }
     }
     @Test void compareEveryPlantStateAndIncrement()throws Exception {
+        compareProfiles(profiles(),p->bounds(p.name()));
+    }
+    static void compareProfiles(List<Profile> profiles,java.util.function.Function<Profile,double[]> bounds)throws Exception {
         var failures=new ArrayList<String>();
-        for(var p:profiles()) {
+        for(var p:profiles) {
             var data=p.plant();var rows=rows(p);var first=rows.get(0);var in=input(first,data);double base=first.v("PLANT_VAR6");
             boolean measuredFrequency=first.values().containsKey("FREQ2");
             boolean sawFreeze=false,sawRecovery=false,sawRelease=false,sawFrequencyRateLimit=false;
@@ -99,7 +102,7 @@ public class HplntdKernelNativeConformanceTest {
             var output=Path.of("target/hplntd-kernel-comparisons",p.name()+".csv");Files.createDirectories(output.getParent());Files.writeString(output,trace);
             if(p.name().contains("window"))assertTrue(sawFreeze,"Voltage freeze must activate");
             if(p.name().contains("low-window")){assertTrue(sawRecovery&&sawRelease,"Low-voltage freeze must recover and release");assertTrue(sawFrequencyRateLimit,"Frequency derivative limits must activate");}
-            var limits=bounds(p.name());
+            var limits=bounds.apply(p);
             for(int i=0;i<17;i++)if((i!=9||measuredFrequency)&&maximum[i]>limits[i])failures.add(p.name()+" channel "+i+"="+maximum[i]+" limit="+limits[i]);
         }
         assertTrue(failures.isEmpty(),String.join("; ",failures));

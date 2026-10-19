@@ -115,24 +115,26 @@ public final class HplntdKernel implements ICMLStateProvider,StaggeredEulerParti
     }
     private double[] rates(Input in,double time){
         double[] rate=new double[13];var out=outputAt(in,time);boolean freeze=out.frozen();
-        if(referenceMode==1&&data.compensationFlag()==1)rate[0]=lag(x[0],compensated(in),v(TFLTR));
-        if(referenceMode!=1)rate[1]=lag(x[1],in.reactive(),v(TFLTR));
-        if(!freeze){
+        if(reactiveEnabled()&&referenceMode==1&&data.compensationFlag()==1)rate[0]=lag(x[0],compensated(in),v(TFLTR));
+        if(reactiveEnabled()&&referenceMode!=1)rate[1]=lag(x[1],in.reactive(),v(TFLTR));
+        if(!freeze&&reactiveEnabled()){
             // Native saturation discriminator: the integral storage is bounded
             // independently of the clipped proportional-plus-integral output.
             rate[2]=nonWindup(v(KI)*out.reactiveError(),x[2],v(QMIN),v(QMAX));
             rate[3]=lag(x[3],out.reactivePi(),v(TFV));
+        }
+        if(!freeze&&activeEnabled()){
             rate[5]=nonWindup(v(KIG)*activeError(out.frequencyError()),out.activePi(),data.activePiMinimum(),data.activePiMaximum());
             rate[6]=clip(lag(x[6],activeTarget(out),v(TG)),v(DPRMIN2),v(DPRMAX2));
         }
-        if(data.feedbackFlag()==1||referenceMode==2)rate[4]=lag(x[4],in.active(),v(TP));
+        if(activeMeasurementEnabled())rate[4]=lag(x[4],in.active(),v(TP));
         rate[7]=lag(x[7],in.regulatedVoltage().abs(),v(TFLTR));
-        if(referenceMode==1&&data.compensationFlag()==0)rate[8]=lag(x[8],v(KC)*in.reactive(),v(TC));
-        if(v(TFRQ)>=2*step)rate[9]=clip(lag(x[9],measuredFrequency(in),v(TFRQ)),v(FRMIN),v(FRMAX));
+        if(reactiveEnabled()&&referenceMode==1&&data.compensationFlag()==0)rate[8]=lag(x[8],v(KC)*in.reactive(),v(TC));
+        if(activeEnabled()&&v(TFRQ)>=2*step)rate[9]=clip(lag(x[9],measuredFrequency(in),v(TFRQ)),v(FRMIN),v(FRMAX));
         double slew=data.referenceSlewTime(step);
-        rate[10]=clip((references.active()-x[10])/slew,v(DPRMIN),v(DPRMAX));
-        if(referenceMode==0)rate[11]=clip((clip(references.reactive(),v(QREFMIN),v(QREFMAX))-x[11])/slew,v(DQREFMIN),v(DQREFMAX));
-        rate[12]=clip((leadLag(out.reactivePi())-x[12])/slew,v(QRMIN),v(QRMAX));
+        if(activeEnabled())rate[10]=clip((references.active()-x[10])/slew,v(DPRMIN),v(DPRMAX));
+        if(reactiveEnabled()&&referenceMode==0)rate[11]=clip((clip(references.reactive(),v(QREFMIN),v(QREFMAX))-x[11])/slew,v(DQREFMIN),v(DQREFMAX));
+        if(reactiveEnabled())rate[12]=clip((leadLag(out.reactivePi())-x[12])/slew,v(QRMIN),v(QRMAX));
         return rate;
     }
     private void advance(double[] start,double[] rate,double dt){
@@ -141,27 +143,28 @@ public final class HplntdKernel implements ICMLStateProvider,StaggeredEulerParti
     private void refresh(Input in){
         if(v(TFLTR)==0){
             x[7]=in.regulatedVoltage().abs();
-            if(referenceMode==1&&data.compensationFlag()==1)x[0]=compensated(in);
-            if(referenceMode!=1)x[1]=in.reactive();
+            if(reactiveEnabled()&&referenceMode==1&&data.compensationFlag()==1)x[0]=compensated(in);
+            if(reactiveEnabled()&&referenceMode!=1)x[1]=in.reactive();
         }
-        if(v(TP)==0&&(data.feedbackFlag()==1||referenceMode==2))x[4]=in.active();
-        if(v(TC)==0&&referenceMode==1&&data.compensationFlag()==0)x[8]=v(KC)*in.reactive();
-        if(v(TFRQ)<2*step||v(TFRQ)==0)x[9]=measuredFrequency(in);
+        if(v(TP)==0&&activeMeasurementEnabled())x[4]=in.active();
+        if(reactiveEnabled()&&v(TC)==0&&referenceMode==1&&data.compensationFlag()==0)x[8]=v(KC)*in.reactive();
+        if(activeEnabled()&&(v(TFRQ)<2*step||v(TFRQ)==0))x[9]=measuredFrequency(in);
         var out=outputAt(in,clock);
         if(!out.frozen()){
-            if(v(TFV)==0)x[3]=out.reactivePi();
-            if(v(TG)==0)x[6]=activeTarget(out);
+            if(reactiveEnabled()&&v(TFV)==0)x[3]=out.reactivePi();
+            if(activeEnabled()&&v(TG)==0)x[6]=activeTarget(out);
         }
     }
     public Output output(Input in){requireInitialized();Objects.requireNonNull(in);return outputAt(in,clock);}
     private Output outputAt(Input in,double time){
-        double qError=reactiveError();
-        double qPi=clip(v(KP)*qError+x[2],v(QMIN),v(QMAX));
-        double rawFrequency=deadband(references.frequency()-x[9],v(FDBD1),v(FDBD2));
+        double qError=reactiveEnabled()?reactiveError():0;
+        double qPi=reactiveEnabled()?clip(v(KP)*qError+x[2],v(QMIN),v(QMAX)):0;
+        double rawFrequency=activeEnabled()?deadband(references.frequency()-x[9],v(FDBD1),v(FDBD2)):0;
         double fError=clip(rawFrequency,v(DFMIN),v(DFMAX));
-        double pPi=clip(v(KPG)*activeError(fError)+x[5],data.activePiMinimum(),data.activePiMaximum());
-        return new Output(x[6]-initialActive,x[12]-initialReactive,qError,fError,pPi,qPi,
-                frozen(time),Double.isNaN(recoveryStart)?0:recoveryStart,rawFrequency,x[6],x[12]);
+        double pPi=activeEnabled()?clip(v(KPG)*activeError(fError)+x[5],data.activePiMinimum(),data.activePiMaximum()):0;
+        double pCommand=activeEnabled()?x[6]:initialActive,qCommand=reactiveEnabled()?x[12]:initialReactive;
+        return new Output(pCommand-initialActive,qCommand-initialReactive,qError,fError,pPi,qPi,
+                frozen(time),Double.isNaN(recoveryStart)?0:recoveryStart,rawFrequency,pCommand,qCommand);
     }
     private double reactiveError(){
         double error=switch(referenceMode){
@@ -182,6 +185,9 @@ public final class HplntdKernel implements ICMLStateProvider,StaggeredEulerParti
         double droop=limited*(limited>=0?v(DUP):v(DDN));
         return x[10]+references.activeAux()+droop;
     }
+    private boolean activeEnabled(){return data.frequencyFlag()==1;}
+    private boolean reactiveEnabled(){return data.reactiveFlag()==1;}
+    private boolean activeMeasurementEnabled(){return activeEnabled()&&data.feedbackFlag()==1||reactiveEnabled()&&referenceMode==2;}
     private double activeError(double frequencyError){return clip(activeRequest(frequencyError)-(data.feedbackFlag()==1?x[4]:0),v(PFEMIN),v(PFEMAX));}
     private double activeTarget(Output out){return clip(out.activePi()+(data.feedforwardFlag()==1?activeRequest(out.frequencyError()):0),v(PMIN),v(PMAX));}
     private double measuredFrequency(Input in){return in.frequencyVoltage()<v(VFRQ)?0:in.frequencyDeviation();}

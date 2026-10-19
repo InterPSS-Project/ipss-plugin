@@ -35,6 +35,9 @@ public final class RenewableEvidenceInventory {
                     var faults=org.interpss.core.dstab.HplntdFaultNativeSmibTest.reviewedProfiles();
                     if(faults.size()!=2)throw new IllegalStateException("Incomplete hybrid fault diagnostics");
                     for(var p:faults){p.body();p.input();}
+                    var selectors=HplntdSelectorNativeReference.profiles();
+                    if(selectors.size()!=16)throw new IllegalStateException("Incomplete disabled-control reference matrix");
+                    for(var p:selectors){p.body();p.input();}
                 }
                 case NONE -> { if(!checkpoint.isEmpty())throw new IllegalStateException("Unexpected checkpoint"); }
                 case NATIVE_CSV -> {
@@ -183,8 +186,8 @@ public final class RenewableEvidenceInventory {
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
             Set.of("HPLNTDU").stream().map(model->
-                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdFaultNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2","",
-                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime, recorded-input kernels and coupled command profiles. Fault diagnostics retain every raw state/network row; event-frequency reference ordering is corrected without changing the integrator. Instantaneous current and native frequency-callback parity remain unaccepted, as do alternate hosts/selectors/switching and complete lifecycle. Source HPLNTD is not an inferred alias; cross-method slew residuals remain explicit."))
+                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdSelectorNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2;disabled-selectors:16","",
+                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime, recorded-input kernels and coupled command profiles. Disabled active/reactive paths hold initial commands and unused storage; PF control retains its shared active measurement. Sixteen two-step selector profiles cover all plant states and bounded coupled outputs. Instantaneous fault current and native frequency-callback parity, proportional-only equilibrium, alternate hosts/switching and complete lifecycle remain unaccepted. Source HPLNTD is not an inferred alias; cross-method slew and filtered-measurement residuals remain explicit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {

@@ -1,5 +1,10 @@
 # Hybrid plant disabled-control and zero-gain discriminators
 
+Historical discriminator checkpoint. Disabled-path runtime support is now
+implemented in the [follow-up slice](hplntd-disabled-controls-2026-10-18.md);
+enabled zero-gain initialization remains open. The results below describe the
+original probe snapshot, not a claim that the later runtime still rejects flags.
+
 ## Scope and acceptance boundary
 
 This slice freezes independently repeatable four-bus HPLNTDU/REAXDU reference

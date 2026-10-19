@@ -47,17 +47,18 @@ public final class HplntdInitialization {
     public static Result initialize(HplntdData d, Measurements m) {
         // Shunt status/timers belong to the separate physical boundary and do
         // not alter these continuous-state equilibrium equations.
-        // Proportional-only and alternate output paths remain unestablished.
-        if (d.value(KI) <= 0 || d.value(KIG) <= 0
-                || d.frequencyFlag() != 1 || d.reactiveFlag() != 1)
-            throw new IllegalArgumentException("HPLNTDU foundation requires positive integral gains and enabled control paths");
+        // Proportional-only equilibrium remains a separate contract. An unused
+        // loop does not need an integral bias or initialize its storage.
+        if (d.reactiveFlag() == 1 && d.value(KI) <= 0
+                || d.frequencyFlag() == 1 && d.value(KIG) <= 0)
+            throw new IllegalArgumentException("Enabled HPLNTDU control paths require positive integral gains");
         int mode = d.effectiveReferenceFlag(m.branchActive());
-        if (mode == 2 && d.feedbackFlag() == 0)
+        if (d.reactiveFlag() == 1 && mode == 2 && d.feedbackFlag() == 0)
             throw new IllegalArgumentException("HPLNTDU foundation has not established PF initialization with disabled electrical feedback");
         double[] state = new double[HplntdData.STATE_COUNT];
         state[7] = m.regulatedVoltage().abs();
         double vref = 0, qref = 0, pfref = 0;
-        if (mode == 1) {
+        if (d.reactiveFlag() == 1 && mode == 1) {
             if (d.compensationFlag() == 1) {
                 state[0] = m.regulatedVoltage().subtract(
                         new Complex(d.value(RC), d.value(XC)).multiply(m.branchCurrent())).abs();
@@ -66,24 +67,32 @@ public final class HplntdInitialization {
                 state[8] = d.value(KC) * m.branchReactive();
                 vref = state[7] + state[8];
             }
-        } else {
+        } else if (d.reactiveFlag() == 1) {
             state[1] = m.branchReactive();
             if (mode == 0) qref = state[11] = m.branchReactive();
             else pfref = Math.copySign(Math.abs(m.branchActive()) /
                     Math.hypot(m.branchActive(), m.branchReactive()), m.branchReactive());
         }
-        state[2] = state[3] = state[12] = m.reactiveCommand();
-        state[4] = d.feedbackFlag() == 1 ? m.branchActive() : 0;
-        double pref = state[4];
-        state[10] = pref;
-        state[5] = m.activeCommand() - (d.feedforwardFlag() == 1 ? pref : 0);
-        state[6] = m.activeCommand();
-        requireWithin(m.reactiveCommand(), d.value(QMIN), d.value(QMAX), "reactive output");
-        requireWithin(m.activeCommand(), d.value(PMIN), d.value(PMAX), "active output");
-        requireWithin(state[5], d.activePiMinimum(), d.activePiMaximum(), "active PI");
-        if (mode == 1) requireWithin(vref, d.value(VREFMIN), d.value(VREFMAX), "voltage reference");
-        if (mode == 0) requireWithin(qref, d.value(QREFMIN), d.value(QREFMAX), "reactive reference");
-        if (mode == 2 && (pfref >= 0 ? pfref < d.value(PFMAX) : pfref > d.value(PFMIN)))
+        if (d.reactiveFlag() == 1) {
+            state[2] = state[3] = state[12] = m.reactiveCommand();
+            requireWithin(m.reactiveCommand(), d.value(QMIN), d.value(QMAX), "reactive output");
+        }
+        // PF control shares the active measurement even when frequency control
+        // is disabled. It does not activate the active PI/reference states.
+        state[4] = d.frequencyFlag() == 1 && d.feedbackFlag() == 1
+                || d.reactiveFlag() == 1 && mode == 2 ? m.branchActive() : 0;
+        double pref = 0;
+        if (d.frequencyFlag() == 1) {
+            pref = state[4];
+            state[10] = pref;
+            state[5] = m.activeCommand() - (d.feedforwardFlag() == 1 ? pref : 0);
+            state[6] = m.activeCommand();
+            requireWithin(m.activeCommand(), d.value(PMIN), d.value(PMAX), "active output");
+            requireWithin(state[5], d.activePiMinimum(), d.activePiMaximum(), "active PI");
+        }
+        if (d.reactiveFlag() == 1 && mode == 1) requireWithin(vref, d.value(VREFMIN), d.value(VREFMAX), "voltage reference");
+        if (d.reactiveFlag() == 1 && mode == 0) requireWithin(qref, d.value(QREFMIN), d.value(QREFMAX), "reactive reference");
+        if (d.reactiveFlag() == 1 && mode == 2 && (pfref >= 0 ? pfref < d.value(PFMAX) : pfref > d.value(PFMIN)))
             throw new IllegalArgumentException("HPLNTDU equilibrium lies outside the configured minimum power-factor magnitude");
         return new Result(mode, vref, qref, pref, pfref, state);
     }

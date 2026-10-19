@@ -37,8 +37,10 @@ public class HplntdTypedRuntimeSmibTest extends CorePluginTestSetup {
     }
     Fixture fixture(Path dir,boolean reverse,double step)throws Exception{return fixture(dir,reverse,step,false);}
     Fixture fixture(Path dir, boolean reverse, double step,boolean imported) throws Exception {
+        return fixture(dir,reverse,step,imported,HplntdAggregationNativeReference.profiles().getFirst());
+    }
+    Fixture fixture(Path dir,boolean reverse,double step,boolean imported,HplntdAggregationNativeReference.Profile profile)throws Exception {
         Path network=writeNetwork(dir);
-        var profile=HplntdAggregationNativeReference.profiles().getFirst();
         String dynamic=profile.input().lines().filter(s->imported||!s.contains("HPLNTDU")&&!s.contains("REAXDU"))
                 .reduce("",(a,b)->a+b+"\n");
         if(imported&&reverse){var records=new ArrayList<>(dynamic.lines().toList());Collections.reverse(records);dynamic=String.join("\n",records)+"\n";}
@@ -168,7 +170,7 @@ public class HplntdTypedRuntimeSmibTest extends CorePluginTestSetup {
         return result;
     }
 
-    private static double referenceHeun(double previous,double reference,double h,double lo,double hi){
+    static double referenceHeun(double previous,double reference,double h,double lo,double hi){
         double first=Math.max(lo,Math.min(hi,(reference-previous)/(2*h)));
         double predicted=previous+h*first;
         double second=Math.max(lo,Math.min(hi,(reference-predicted)/(2*h)));

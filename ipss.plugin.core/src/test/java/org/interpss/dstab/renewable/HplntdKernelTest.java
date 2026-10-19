@@ -7,6 +7,47 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.interpss.dstab.renewable.HplntdData.Parameter.*;
 
 class HplntdKernelTest {
+    private static HplntdData flags(double[] c,int mode,int comp,int active,int reactive){return new HplntdData(2,new RepccData.Branch(2,3,"1"),comp,mode,active,1,1,0,new RepccData.Branch(0,0,"0"),Collections.nCopies(10,new RepccData.Shunt(0,"0")),2,reactive,c);}
+    private static void disabledStates(HplntdKernel kernel,int mode,int active,int reactive){
+        double[] state=kernel.states();
+        if(active==0)for(int index:new int[]{5,6,9,10})assertEquals(0,state[index],0,"Inactive active storage "+index);
+        if(active==0&&(reactive==0||mode!=2))assertEquals(0,state[4],0);
+        if(reactive==0)for(int index:new int[]{0,1,2,3,8,11,12})assertEquals(0,state[index],0,"Inactive reactive storage "+index);
+        var out=kernel.output(input(1,0));
+        if(active==0){assertEquals(.32,out.activeCommand(),0);assertEquals(0,out.active(),0);}
+        if(reactive==0){assertEquals(.12,out.reactiveCommand(),0);assertEquals(0,out.reactive(),0);}
+    }
+    @Test void disabledPathsKeepInitialCommandsAcrossBothStagesAndAlgebraicBypasses(){
+        for(int mode=0;mode<3;mode++)for(int active=0;active<2;active++)for(int reactive=0;reactive<2;reactive++)for(int bypass=0;bypass<2;bypass++){
+            double[] c=constants();if(bypass==1)for(var p:new HplntdData.Parameter[]{TFLTR,TP,TC,TFRQ,TFV,TG})c[p.ordinal()]=0;
+            var k=new HplntdKernel(flags(c,mode,1,active,reactive));k.initialize(initial());disabledStates(k,mode,active,reactive);
+            k.setReferences(new HplntdKernel.References(1.05,.25,.03,.6,.9,.01,.01));
+            for(int tick=0;tick<10;tick++){
+                var in=new HplntdKernel.Input(new Complex(1.01),new Complex(.4,-.2),.4,.2,.02,1.01);
+                k.step(0,in);disabledStates(k,mode,active,reactive);
+                k.step(.0005,in,0);disabledStates(k,mode,active,reactive);
+                k.step(.0005,in,1);disabledStates(k,mode,active,reactive);
+            }
+            assertTrue(k.states()[7]>1,"Shared voltage measurement remains live");
+            if(active==0&&reactive==1&&mode==2)assertTrue(k.states()[4]>.3,"PF mode retains its shared active measurement");
+        }
+    }
+    @Test void disabledGainsAndOutputLimitsDoNotConstrainHeldCommands(){
+        double[] c=constants();c[KI.ordinal()]=c[KIG.ordinal()]=0;c[QMAX.ordinal()]=.05;c[PMAX.ordinal()]=.1;
+        var k=new HplntdKernel(flags(c,0,1,0,0));k.initialize(initial());disabledStates(k,0,0,0);
+        assertThrows(IllegalArgumentException.class,()->new HplntdKernel(flags(c,0,1,1,0)).initialize(initial()));
+        assertThrows(IllegalArgumentException.class,()->new HplntdKernel(flags(c,0,1,0,1)).initialize(initial()));
+    }
+    @Test void disabledPathsHaveZeroStaggeredDerivativesAndPreserveNamedStateOrder(){
+        for(int active=0;active<2;active++)for(int reactive=0;reactive<2;reactive++){
+            var k=new HplntdKernel(flags(constants(),2,0,active,reactive));k.initialize(initial());
+            k.setReferences(new HplntdKernel.References(1.1,.3,.02,.5,.9,0,0));k.setStaggeredInput(input(1.03,.04));
+            double[] rates=new double[13];k.evaluateStaggered(.0005,rates,0);
+            if(active==0)for(int i:new int[]{5,6,9,10})assertEquals(0,rates[i],0);
+            if(reactive==0)for(int i:new int[]{0,1,2,3,8,11,12})assertEquals(0,rates[i],0);
+            assertEquals(HplntdInitialization.STATE_NAMES,new ArrayList<>(k.getNamedStates().keySet()));
+        }
+    }
     private static double[] constants(){return new double[]{.02,1,5,0,.05,.7,0,.05,.02,1,-1,0,0,1,-1,1,.1,.02,-.0006,.0006,99,-99,2,-1,.1,20,20,1.08,.95,1,-1,99,-99,99,-99,99,-99,.8,-.8,99,-99,1,-1,.02,-.25,-.5,.3,.4,.5,.1,.06,120,.01,.02,.8,.015,-.015,0,.01,-.02,1.1};}
     private static HplntdData data(double[] c,int mode,int comp){return new HplntdData(2,new RepccData.Branch(2,3,"1"),comp,mode,1,1,1,0,new RepccData.Branch(0,0,"0"),Collections.nCopies(10,new RepccData.Shunt(0,"0")),2,1,c);}
     private static HplntdInitialization.Measurements initial(){return new HplntdInitialization.Measurements(Complex.ONE,new Complex(.3,-.1),.3,.1,.32,.12);}
