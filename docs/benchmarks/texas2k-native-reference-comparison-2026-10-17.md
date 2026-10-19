@@ -3260,3 +3260,109 @@ checks, exact physical-output comparisons, complete regression logs/reports,
 baseline controls and the supplemented-input rerun are retained in private
 evidence set `2026-10-19-renewable-event-rates`. No remaining gate is relabeled
 as passing, and no complete event is accepted.
+
+### Revised rotor limits and complete Case 2 selector diagnostic (2026-10-19)
+
+The updated prefault rotor limit is maximum absolute error below 0.02 degrees.
+This comparison provisionally interprets the updated ten-second limit as RMSE
+below 0.1 degrees, following the earlier explicit clarification of the angle
+metric. The new goal text also uses the word NRMSE with degree units; confirmation
+of that wording is pending. Voltage and terminal P/Q requirements remain
+range-normalized RMSE below 0.001 prefault and 0.005 from fault application,
+using each channel's full ten-second reference range. Historical results above
+retain their original limits.
+
+Two frozen-runtime runs now cover the entire Case 2 bus-6307 fault through ten
+seconds. Both retain the independently discriminated high-voltage network-memory
+diagnostic, production event-rate averaging, and the existing diagnostic
+power-flow/control preparation. One retains the seventeen measured initial-Q
+selector interventions; the other removes all seventeen. Neither is production
+acceptance. No reference voltage trajectory or continuous state is imposed in
+either coupled run.
+
+Each run contains 10,005 rows and 4,810 finite physical channels. Step ordinals
+and both duplicate event sides align exactly with the supplied reference.
+There are 1,001 prefault samples and 9,002 samples from fault application onward.
+All 1,205 rows of the earlier measured-selector prefix are reproduced exactly.
+The two cold physical-output records are identical. Comparing every initial
+machine/controller snapshot field confirms that only seventeen stored initial-Q
+values and their derived direction flags differ; all continuous coordinates and
+all other snapshot fields are identical. Read-only access added for custom
+governors and renewable bundles makes this separation directly inspectable.
+
+| Requirement | Measured-selector diagnostic | Original local selectors |
+| --- | ---: | ---: |
+| Prefault voltage | 2,000 / 2,000 | 0 / 2,000 |
+| Prefault terminal P | 197 / 199 | 9 / 199 |
+| Prefault terminal Q | 197 / 199 | 2 / 199 |
+| Prefault rotor maximum error < 0.02 degrees | 103 / 103 | 0 / 103 |
+| Ten-second rotor RMSE < 0.1 degrees | 103 / 103 | 0 / 103 |
+| Fault/postfault voltage | 1,998 / 2,000 | 1 / 2,000 |
+| Fault/postfault terminal P | 196 / 199 | 12 / 199 |
+| Fault/postfault terminal Q | 197 / 199 | 5 / 199 |
+
+The measured-selector diagnostic's largest prefault rotor error remains
+0.0185027 degrees at unit 1051/1. Its largest ten-second rotor RMSE is
+0.0578734 degrees at unit 5263/1, with maximum absolute error 0.1383355 degrees
+at 8.224 seconds. The original-local-selector run reaches 51.32695 degrees
+RMSE at the same unit. Passing the revised angle limits in the diagnostic
+therefore does not establish a correct initialization procedure.
+
+The eleven remaining failed voltage/power checks in the measured-selector
+diagnostic are:
+
+| Period | Quantity | Bus / unit | NRMSE | Limit |
+| --- | --- | --- | ---: | ---: |
+| Prefault | Q | 2076 / 1 | 0.00219846 | 0.001 |
+| Prefault | P | 3098 / 1 | 0.00100097 | 0.001 |
+| Prefault | P | 3137 / 1 | 0.00142274 | 0.001 |
+| Prefault | Q | 7031 / 1 | 0.00121126 | 0.001 |
+| Fault/postfault | Voltage | 3073 | 0.00504899 | 0.005 |
+| Fault/postfault | Voltage | 3074 | 0.00603441 | 0.005 |
+| Fault/postfault | Q | 3074 / 1 | 0.02601953 | 0.005 |
+| Fault/postfault | P | 3098 / 1 | 0.00708115 | 0.005 |
+| Fault/postfault | P | 3120 / 1 | 0.03587854 | 0.005 |
+| Fault/postfault | Q | 3120 / 1 | 0.01721475 | 0.005 |
+| Fault/postfault | P | 3131 / 1 | 0.00663461 | 0.005 |
+
+The small-range prefault Q failure at 7031/1 has RMSE only 0.0000347865 Mvar,
+but its complete reference range is 0.0287193 Mvar; the agreed normalization
+still classifies it as a failure. No absolute-error floor or relaxed denominator
+is introduced.
+
+The original input audit confirms that all seventeen affected generators have
+exactly zero RAW Q, Qmin and Qmax. Both converter directional recovery-rate bounds
+are also zero. Their supplied initial Q measurements are positive, from
+6.98492e-7 to 1.99676e-4 Mvar. Those external measurements do not expose the
+reference's internal selector. Setting the local stored selectors to their
+measured signs remains a counterfactual diagnostic. It is not a justified rule
+for treating exact zero as positive or for adding a small Q offset.
+
+The retained states also localize the remaining 3074/1 reactive-power error.
+At 1.2 seconds its coupled reactive-current regulator is 0.08310902 pu with
+stored derivative zero. The earlier prescribed-voltage replay gives 0.07945573
+pu; the supplied terminal Q divided by V and the original machine base is
+0.07829910 pu. This terminal-current reconstruction is an observation, not an
+injected state. The coupled and prescribed-voltage models cross the voltage-dip
+boundary on different steps during the fault, and the resulting current
+difference persists after clearing. Eight of the nine failed power checks
+above pass in the earlier prescribed-voltage replay; the remaining 3074/1 Q
+check has NRMSE 0.00606407. This points to both boundary-input and residual
+controller differences. It does not justify changing an initial state to match
+the output. The earlier replay's internal-state trace covers only selected
+units; missing state histories are recorded as unavailable.
+
+![Complete Case 2 physical-channel errors for the selector diagnostic](figures/texas2k-case2-ten-second-selector-errors-2026-10-19.png)
+
+The figure retains signed errors and uses symmetric-log axes. Channels are
+selected by the measured-selector run's largest full-window RMSE in each group.
+No angle offset is subtracted. The recorded runtimes include extensive state
+observations and concurrent execution; they do not assess the twenty-second
+performance target.
+
+No production equation or initial-state rule changes in this slice. Complete
+traces, state snapshots, original-input audit, exact-prefix checks, per-channel
+metrics, comparison/plot producers and frozen runtime hashes are retained in
+private evidence set `2026-10-19-case2-ten-second-selector-diagnostic`. The
+comparator explicitly prevents a shortened prefix from satisfying a ten-second
+rotor gate. No complete event or six-case accuracy target is accepted.
