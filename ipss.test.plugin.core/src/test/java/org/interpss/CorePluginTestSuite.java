@@ -1017,6 +1017,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseWt12t1ModelTest.class,
 	PsseWt12a1ModelTest.class,
 	PsseWt12a1bModelTest.class,
+	org.interpss.core.dstab.Wt12a1bNativeConformanceTest.class,
 	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,
 	Reecc1NativeConformanceTest.class,

@@ -5,8 +5,13 @@ import java.util.Map;
 
 /** Active-stall power-ramp controller defined by the WT1P_B/WT12A1B diagram. */
 public final class Wt12a1bModel implements Wt12AerodynamicController {
+    /** Published typed initialization and native record initialization differ
+     * when the drive train includes initial damping power. Do not fit this
+     * difference by changing the supplied machine/controller parameters. */
+    public enum Specification { PUBLISHED, NATIVE_STANDARD }
     private static final double EPS = 1e-12;
     private final Wt12a1bData data;
+    private final Specification specification;
     private double initialPower;
     private double rampState;
     private double outputState;
@@ -14,12 +19,15 @@ public final class Wt12a1bModel implements Wt12AerodynamicController {
     private double remainingTime;
     private State oldState;
     private Rates oldRates;
+    private double pendingStep;
     private boolean rampingDown;
-    private boolean armed;
     private boolean stageRampDown;
     private boolean initialized;
 
-    public Wt12a1bModel(Wt12a1bData data) { this.data = data; }
+    public Wt12a1bModel(Wt12a1bData data) { this(data,Specification.PUBLISHED); }
+    public Wt12a1bModel(Wt12a1bData data,Specification specification) {
+        this.data=java.util.Objects.requireNonNull(data);this.specification=java.util.Objects.requireNonNull(specification);
+    }
 
     @Override
     public void initialize(double electricalPower, double turbineSpeedDeviation,
@@ -27,25 +35,30 @@ public final class Wt12a1bModel implements Wt12AerodynamicController {
         if (!finite(electricalPower, aerodynamicPower, terminalVoltage)) {
             throw new IllegalArgumentException("WT12A1B initial boundary must be finite");
         }
-        initialPower = aerodynamicPower;
+        initialPower = specification==Specification.NATIVE_STANDARD?electricalPower:aerodynamicPower;
         rampState = outputState = aerodynamicPower;
         voltageState = terminalVoltage;
         remainingTime = 0.0;
         rampingDown = false;
-        armed = true;
         oldState = null;
         oldRates = null;
+        pendingStep=0;
         initialized = true;
     }
 
     @Override
     public void step(double dt, double electricalPower, double turbineSpeedDeviation,
             double terminalVoltage, int flag) {
-        if (!initialized || !finite(dt, terminalVoltage) || dt <= 0.0
+        if (!initialized || !finite(dt, terminalVoltage) || dt < 0.0
                 || (flag != 0 && flag != 1)) {
             throw new IllegalArgumentException("invalid WT12A1B step boundary");
         }
+        if(dt==0){
+            apply(withBypasses(state(),terminalVoltage));return;
+        }
         if (flag == 0) {
+            if(oldState!=null)throw new IllegalStateException("WT12A1B corrector is pending");
+            pendingStep=dt;
             oldState = state();
             updateSwitch(oldState.voltage(), terminalVoltage);
             stageRampDown = rampingDown;
@@ -53,10 +66,11 @@ public final class Wt12a1bModel implements Wt12AerodynamicController {
             apply(withBypasses(add(oldState, oldRates, dt), terminalVoltage));
         } else {
             if (oldState == null) throw new IllegalStateException("corrector without predictor");
+            if(dt!=pendingStep)throw new IllegalStateException("WT12A1B corrector must use its predictor step");
             Rates corrected = rates(state(), terminalVoltage, stageRampDown);
             apply(withBypasses(correct(oldState, oldRates, corrected, dt), terminalVoltage));
             if (stageRampDown) {
-                remainingTime = Math.max(0.0, remainingTime - dt);
+                remainingTime = Math.max(0.0, remainingTime-dt);
                 if (remainingTime <= EPS) rampingDown = false;
             }
             oldState = null;
@@ -65,13 +79,10 @@ public final class Wt12a1bModel implements Wt12AerodynamicController {
     }
 
     private void updateSwitch(double filteredVoltage, double terminalVoltage) {
-        double sensed = data.voltageTime() <= EPS ? terminalVoltage : filteredVoltage;
-        if (sensed >= data.voltage4()) {
-            armed = true;
-        } else if (armed && !rampingDown && initialPower >= data.powerThreshold()) {
-            remainingTime = duration(sensed);
+        double sensed = data.voltageTime()<=EPS?terminalVoltage:filteredVoltage;
+        if (sensed < data.voltage4() && !rampingDown && initialPower >= data.powerThreshold()) {
+            remainingTime=duration(sensed);
             rampingDown = remainingTime > EPS;
-            armed = false;
         }
     }
 
@@ -102,6 +113,7 @@ public final class Wt12a1bModel implements Wt12AerodynamicController {
     @Override public double getPowerReference() { return initialPower; }
     public double getRemainingTime() { return remainingTime; }
     public Wt12a1bData getData() { return data; }
+    public Specification getSpecification(){return specification;}
 
     @Override
     public Map<String, Double> getNamedStates() {

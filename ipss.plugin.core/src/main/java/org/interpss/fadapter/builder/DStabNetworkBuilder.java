@@ -733,12 +733,16 @@ public class DStabNetworkBuilder {
     }
 
     public Wt12a1bModel addWt12a1b(String busId, String genId, Wt12a1bData data) {
+        return addWt12a1b(busId,genId,data,Wt12a1bModel.Specification.PUBLISHED);
+    }
+
+    public Wt12a1bModel addWt12a1b(String busId,String genId,Wt12a1bData data,Wt12a1bModel.Specification specification) {
         Machine machine = network.getMachine(busId + "-mach" + genId);
         if (!(machine instanceof Wt1g1Machine wt1g1) || wt1g1.getDriveTrain() == null) {
             log.warn("WT12T1 not found for WT12A1B: bus={}, gen={}", busId, genId);
             return null;
         }
-        Wt12a1bModel model = new Wt12a1bModel(data);
+        Wt12a1bModel model = new Wt12a1bModel(data,specification);
         wt1g1.getDriveTrain().setAerodynamicController(model);
         return model;
     }

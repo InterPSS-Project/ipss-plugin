@@ -15,7 +15,7 @@ public final class RenewableEvidenceInventory {
     public enum Scope { MISSING_IMPLEMENTATION, FOCUSED_ONLY, BOUNDED_DIALECT_COMPARISON,
         NATIVE_PARTIAL_PROFILE, NATIVE_RECORDED_PROFILE }
     public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP, WTPTB_NATIVE_MAP, WTGWGO_NATIVE_MAP, REECD_PAUX_NATIVE_MAP,
-        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, REPCGFMC_NATIVE_MAP, REPCC_NATIVE_MAP, HPLNTD_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
+        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, REPCGFMC_NATIVE_MAP, REPCC_NATIVE_MAP, HPLNTD_NATIVE_MAP, WT12A1B_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
     public record Entry(String model,String focusedTest,String trajectoryTest,Scope scope,
                         CheckpointKind storage,String checkpoint,String fixture,String limitation) {
         public Class<?> focusedClass() throws ClassNotFoundException {
@@ -29,6 +29,11 @@ public final class RenewableEvidenceInventory {
         /** Readability/integrity guard only, not cold-provenance or complete-model acceptance. */
         public void requireReadableCheckpoint() throws Exception {
             switch(storage) {
+                case WT12A1B_NATIVE_MAP -> {
+                    var profiles=Wt12a1bNativeReference.profiles();
+                    if(profiles.size()!=12||profiles.stream().filter(Wt12a1bNativeReference.Profile::acceptedReplay).count()!=10)throw new IllegalStateException("Incomplete active-stall replay/diagnostic matrix");
+                    for(var p:profiles){p.body();p.input();p.status();p.network();if(p.acceptedReplay()&&p.bounds().length!=3)throw new IllegalStateException("Incomplete active-stall state bounds");}
+                }
                 case HPLNTD_NATIVE_MAP -> {
                     if(HplntdAggregationNativeReference.profiles().size()!=7)throw new IllegalStateException("Incomplete hybrid reference matrix");
                     for(var p:HplntdAggregationNativeReference.profiles()){p.body();p.input();}
@@ -168,7 +173,8 @@ public final class RenewableEvidenceInventory {
                 new Entry("WTPTBU1","PsseWtptb1ModelTest","Wtptb1NativeExtendedConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTPTB_NATIVE_MAP,"Wtptb1NativeExtendedReference","renewable/regca_reeca_wtptb1_bus1062.dyr",
                         "Native reference strict standard/legacy import, zero-time bypass and recorded-input branch matrix. Coupled two-step flat/fault/trip checks; instantaneous network-post, additional lifecycle/base profiles and complete cross-tool acceptance remain open. Typed PowerWorld cold-repeat artifacts are separate evidence."),
-                focused("WT12A1B","PsseWt12a1bModelTest","No independent WT12A1U_B trajectory link found; the older WT12A1 reference is a different model."),
+                new Entry("WT12A1B","PsseWt12a1bModelTest","Wt12a1bNativeConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.WT12A1B_NATIVE_MAP,"embedded-wt12a1b:10-bounded-replays;2-zero-time-diagnostics","",
+                        "Exact standard fourteen-CON and explicit-ID wrapper import. Ten positive-filter three-state raw-input replays at two steps; zero-filter callback behavior and coupled/PowerWorld trajectories remain diagnostics. Native electrical reference and published mechanical seed are separate. The legacy ID-less extension retains published initialization. Float-clock/float-state floors, full coupled parity, further boundaries and lifecycle remain open; older WT12A1 is not equivalent evidence."),
                 new Entry("WTGIBFFRA","PsseWtgibffraModelTest","WtgibffraNativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTGIBFFR_NATIVE_MAP,"WtgibffraNativeReference","renewable/regca_reecd_wtgibffra_bus1062.dyr",
                         "Strict native one-ICON/45-CON import and REGCA/REGCB + REECD Paux attachment; seven cold-paired kernel replay profiles, two cold-paired governed-SMIB trajectories and two-step flat/frequency-step/fault/trip tests. Published automatic recovery differs from native reference. Callback parity, nonconvergent frequency/voltage floors, alternate hosts/bases and complete PowerWorld verification remain open."),
@@ -231,9 +237,9 @@ public final class RenewableEvidenceInventory {
                 .append("REEC_E uses the proved native reference standard name REECE; the source-listed REECE1/REECEU1 names and wrappers remain unsupported. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
-                .append("Eight families have native recorded-profile links, twelve have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U, REGFMC1U, REPCGFMC1U, REPCC and HPLNTDU), ")
-                .append("six have only the explicitly bounded ANDES coupled comparison, and one has focused tests only. ")
-                .append("None of the latter seven is established as native simulator conformance. Legacy/retired and ")
+                .append("Eight families have native recorded-profile links, thirteen have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U, REGFMC1U, REPCGFMC1U, REPCC, HPLNTDU and WT12A1B), ")
+                .append("six have only the explicitly bounded ANDES coupled comparison, and none has focused tests only. ")
+                .append("The latter six are not established as native simulator conformance. Legacy/retired and ")
                 .append("manufacturer-package supplemental models need a separate evidence expansion; their source rows ")
                 .append("are retained below and must not be counted as approved implementations. No new simulator run ")
                 .append("or complete raw-provenance acceptance is claimed by this inventory.\n\n")

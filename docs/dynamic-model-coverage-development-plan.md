@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+WT12A1B slice in progress: explicit-ID wrapper parsing, native-versus-published
+initial-reference selection, persistent-low-voltage retriggering and integration
+stage guards now pass sixteen focused integration checks (21 reactor checks
+including tokenizer tests). Twenty-four native runs and twelve
+PowerWorld runs pass cold-repeatability/input audits. Ten positive-filter
+three-state replays have bounded acceptance; two zero-filter profiles and all
+independent coupled/PowerWorld trajectories remain diagnostics. Registered SMIB
+regression passes 1,551 tests (one diagnostic skip); plugin-core passes 401 (six
+optional skips), with no failures/errors. Three deliberate regressions are
+rejected. The restored-source gate passes 42 checks; private source/run/report
+hashes retain the reproducible evidence for the scoped implementation commit.
+Complete-model verification remains open. See the
+[WT12A1B checklist](benchmarks/wt12a1b-native-smib-2026-10-18.md).
+
 Updated 2026-10-18; upstream baseline is plugin `dcea9ab30` (1.4.6, core 1.4.3).
 Subsequent local implementation and validation slices are recorded below.
 This document restores the ongoing coverage checklist after rebasing to master.

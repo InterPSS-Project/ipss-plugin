@@ -167,7 +167,7 @@ public final class DynamicModelCatalog {
             descriptorWithVariants("WT12A1B", Set.of("WT12A1U_B"),
                     AERODYNAMIC_CONTROLLER, 14, new int[]{21}, LOADABLE,
                     "org.interpss.dstab.mach.Wt12a1bModel",
-                    "Aerodynamic%20Model%20WT12A1B.htm"),
+                    "Stabilizer%20WT1P_B.htm"),
             descriptorWithVariants("PSS2B", Set.of(), STABILIZER, 27,
                     new int[]{31}, LOADABLE,
                     "org.interpss.dstab.control.pss.ieee.y1992.pss2b.Ieee1992PSS2BStabilizer",

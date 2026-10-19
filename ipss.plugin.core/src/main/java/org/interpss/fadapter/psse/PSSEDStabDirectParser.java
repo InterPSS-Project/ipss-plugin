@@ -622,7 +622,7 @@ public class PSSEDStabDirectParser {
             case "WT12A1":
                 return procWt12a1(busId, genId, fields);
             case "WT12A1B":
-                return procWt12a1b(busId, genId, fields);
+                return procWt12a1b(busId, genId, record);
             case "GENSAL":
             case "GENSAE":
                 return procGensal(busId, genId, fields);
@@ -3409,32 +3409,34 @@ public class PSSEDStabDirectParser {
     }
 
     // Built-in 14-CON form or WT12A1U_B wrapper: 105 0 1 14 3 2.
-    private boolean procWt12a1b(String busId, String genId, String[] f) {
-        boolean wrapped = "USRMDL".equalsIgnoreCase(f[1]);
+    private boolean procWt12a1b(String busId,String genId,PsseDyrRecord record) {
+        boolean wrapped = "USRMDL".equalsIgnoreCase(record.fields().get(1));
         int offset;
         int icon;
         if (wrapped) {
-            if (f.length != 24 || getInt(f,3,-1)!=105 || getInt(f,4,-1)!=0
-                    || getInt(f,5,-1)!=1 || getInt(f,6,-1)!=14
-                    || getInt(f,7,-1)!=3 || getInt(f,8,-1)!=2) {
+            if (record.parameterCount()!=21 || record.intParameter(0)!=105 || record.intParameter(1)!=0
+                    || record.intParameter(2)!=1 || record.intParameter(3)!=14
+                    || record.intParameter(4)!=3 || record.intParameter(5)!=2) {
                 log.warn("Invalid WT12A1U_B allocation at bus {}", busId);
                 return false;
             }
-            icon = getInt(f,9,0);
-            offset = 10;
+            icon = record.intParameter(6);
+            offset = 7;
         } else {
-            if (f.length != 17) return false;
+            if (record.parameterCount()!=14) return false;
             icon = 0;
-            offset = 3;
+            offset = 0;
         }
+        var reference=record.deviceId().equals("*")?org.interpss.dstab.mach.Wt12a1bModel.Specification.PUBLISHED
+                :org.interpss.dstab.mach.Wt12a1bModel.Specification.NATIVE_STANDARD;
         return builder.addWt12a1b(busId, genId, new Wt12a1bData(icon,
-                getDouble(f,offset,0), getDouble(f,offset+1,0),
-                getDouble(f,offset+2,0), getDouble(f,offset+3,0),
-                getDouble(f,offset+4,0), getDouble(f,offset+5,0),
-                getDouble(f,offset+6,0), getDouble(f,offset+7,0),
-                getDouble(f,offset+8,0), getDouble(f,offset+9,0),
-                getDouble(f,offset+10,0), getDouble(f,offset+11,0),
-                getDouble(f,offset+12,0), getDouble(f,offset+13,0))) != null;
+                record.doubleParameter(offset),record.doubleParameter(offset+1),
+                record.doubleParameter(offset+2),record.doubleParameter(offset+3),
+                record.doubleParameter(offset+4),record.doubleParameter(offset+5),
+                record.doubleParameter(offset+6),record.doubleParameter(offset+7),
+                record.doubleParameter(offset+8),record.doubleParameter(offset+9),
+                record.doubleParameter(offset+10),record.doubleParameter(offset+11),
+                record.doubleParameter(offset+12),record.doubleParameter(offset+13)),reference) != null;
     }
 
     // PSS/E 36.7: IBUS 'GENTRA' ID T'do H D Xd Xq X'd S(1.0) S(1.2) AF
