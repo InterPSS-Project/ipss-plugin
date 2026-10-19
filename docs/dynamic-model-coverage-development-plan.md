@@ -2,6 +2,21 @@
 
 ## Current checkpoint
 
+TGOV1 PowerWorld follow-up: eight exact cold runs add complete fourteen-channel
+upper/lower reference-step artifacts at two steps. Explicit recorded-speed
+replay retains limiter-crossing errors; a scalar guard explains why they need
+not decrease monotonically for one step-halving pair. A source-backed test-only
+speed-scaled stator boundary, reusing core GENROU and unchanged parameters,
+reduces the coupled Bus 1 voltage floor from 0.001442 pu to below 5e-7 pu.
+Twelve matched-convention channel bounds pass; native-convention counterexamples
+remain explicit and production imports are unchanged. Successful PowerWorld
+post-initialization parameter readback and complete-family profiles remain open.
+Final gates pass 15 focused, 410 plugin-core and 1,621 scoped SMIB/model/solver
+checks, with zero failures/errors and only existing skips, plus four offline
+probe guards and six language-policy checks. All eight raw projections and
+1,815 unchanged Java/POM files are checked against the isolated snapshot.
+See the [independent active-limit checklist](benchmarks/tgov1-powerworld-limits-2026-10-19.md).
+
 TGOV1 active-valve follow-up: four positive-time-constant upper/lower reference
 steps and inward releases have eight exact cold native runs, with all seven
 parameters unchanged after initialization. Full-row two-state/mechanical-output

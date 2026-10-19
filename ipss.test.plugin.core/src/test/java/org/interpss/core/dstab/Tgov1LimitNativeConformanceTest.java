@@ -23,7 +23,11 @@ import com.interpss.dstab.cache.StateMonitor;
 public class Tgov1LimitNativeConformanceTest extends CorePluginTestSetup {
     static Stream<Profile> profiles(){return Tgov1LimitNativeReference.profiles().stream();}
 
-    private static com.interpss.simu.SimuContext load(Path input)throws Exception {
+    static com.interpss.simu.SimuContext load(Path input)throws Exception {
+        return load(input,true);
+    }
+
+    static com.interpss.simu.SimuContext load(Path input,boolean initialize)throws Exception {
         Files.createDirectories(input);Files.writeString(input.resolve("network.raw"),Tgov1LimitNativeReference.network());
         Files.writeString(input.resolve("dynamic.dyr"),Tgov1LimitNativeReference.input());
         var context=new PSSEMultiFileLoader().loadDStab(input.resolve("network.raw").toString());
@@ -32,7 +36,7 @@ public class Tgov1LimitNativeConformanceTest extends CorePluginTestSetup {
         assertEquals(3,parser.getLastImportReport().totalRecordCount());
         var algorithm=context.getDynSimuAlgorithm();algorithm.getAclfAlgorithm().setTolerance(1e-10);
         assertTrue(algorithm.getAclfAlgorithm().loadflow());algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
-        algorithm.setSimuOutputHandler(new StateMonitor());assertTrue(algorithm.initialization());return context;
+        algorithm.setSimuOutputHandler(new StateMonitor());if(initialize)assertTrue(algorithm.initialization());return context;
     }
 
     @Test void nativeCardinalityAndFixedReferenceFingerprints() {

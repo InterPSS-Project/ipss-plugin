@@ -122,6 +122,12 @@ independent coupled-network trajectory acceptance.
 
 No full Texas2k dynamic simulation is run.
 
+Subsequent [PowerWorld active-limit evidence](tgov1-powerworld-limits-2026-10-19.md)
+adds eight cold runs, bounded controller replay and source-backed
+matched-machine-convention coupled comparisons. It preserves the native
+realization and diagnoses, rather than conceals, the unmatched-convention
+voltage floor and phase-sensitive limiter errors.
+
 Validation uses baseline `656e57b78` and the frozen isolated core dependency.
 The snapshot audit matches 1,813 unchanged Java/POM files and four owned Java
 files, with no unexpected sources. Removing the accessor from the source

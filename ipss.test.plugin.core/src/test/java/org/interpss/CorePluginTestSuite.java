@@ -348,6 +348,7 @@ import org.interpss.core.adapter.builder.dstab.PsseWtgwgoaModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWtptb1ModelTest;
 import org.interpss.core.dstab.Tgov1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Tgov1LimitNativeConformanceTest;
+import org.interpss.core.dstab.Tgov1PowerWorldLimitSmibTest;
 import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St1cIndependentSmibConformanceTest;
@@ -537,17 +538,17 @@ import org.junit.platform.suite.api.Suite;
 
 	// SVC and PV limit
 	IEEE14_PVLimit_SVCTest.class,
-	
+
 	// large PSSE network
 	PSSE_ACTIVSg2000Bus_Test.class,
 	PSSE_ACTIVSg25kBus_Test.class,
-	
+
 	// Json Compare
 	Texas2KJsonCompareTest.class,
 	PSSE_ACTIVSg25kObjectCompareTest.class,
 	PSSE_ACTIVSg2000BusCompare_Test.class,
 	PSSE_IEEE14_NBreakerCompare_Test.class,
-	
+
 	// ZeroZ branch
 	///ZeroZBranchNetUtilTest.class,        // TODO needs ODM XML loader
 	ZeroZBranchFuncTest.class,
@@ -557,29 +558,29 @@ import org.junit.platform.suite.api.Suite;
 	///IEEE14ZeroZBranchDeconsolidateTest.class, // TODO needs ODM XML loader
 	///ZBrAclfDeconOutputTest.class,         // TODO needs ODM XML loader
 	///IEEE9Bus_ZbrNRSolver_Test.class,
-	
+
 	// DFrame
 	AclfResultDFrameAdapterTest.class,
-	
+
 	// acsc
 	IEEE9Bus_Acsc_Test.class,
 	IEEE39Bus_Acsc_Test.class,
 	PsseGnetIdvProcessorTest.class,
 	PsseModelRemoveIdvProcessorTest.class,
-	
+
 	// Dclf
 	Mod_SixBus_DclfPsXfr.class,
 	SixBus_DclfPsXfr.class,
 	///IEEE14BusBreaker_dclf_Test.class,
 	///IEEE14BusBreaker_equivCABranch_Test.class,
-	
+
 	// ca
 	Ieee14_CA_Test.class,
 	Ieee14_GSF_Test.class,
 	IEEE14_N1Scan_Test.class,
-	
+
 	IEEE14_AclfN1Scan_Test.class,
-	
+
 	// EDclf
 	IEEE14_Dclf_Test.class,
 	IEEE14_EDclf_Test.class,
@@ -594,18 +595,18 @@ import org.junit.platform.suite.api.Suite;
 	Texas2K_OptN1Scan_SsaResult_Test1.class,
 	Texas2K_OptN1Scan_SsaResult_Sparse_Test.class,
 	Texas2K_OptN1Scan_SsaResult_Sparse_Test1.class,
-	
+
 	// small Z branch
 	///SampleSwitchBreakerModelTest.class,
 	///IEEE14BusBreaker_lf_Test.class,
 	///IEEE14BusBreakerTest.class,
-	
+
 	// Ascsc ODM
 	///Acsc5Bus_ODM_TestCase.class,
 
 	// SE
 	///SE_IEEE118Test.class,
-	
+
 	// DStab controller building blocks
 	DelayControlBlockTests.class,
 	FilterControlBlockTests.class,
@@ -616,7 +617,7 @@ import org.junit.platform.suite.api.Suite;
 	Esst4bPIControlBlockTest.class,
 	Pss2aLeadLagBlockTest.class,
 	WashoutControlBlockTests.class,
-	
+
 	// DStab Machine
 	///Eq1Ed1MachineTest.class,
 	EConstMachineTest.class,
@@ -778,6 +779,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseWtptb1ModelTest.class,
 	Tgov1IndependentSmibConformanceTest.class,
 	Tgov1LimitNativeConformanceTest.class,
+	Tgov1PowerWorldLimitSmibTest.class,
 	Lcfb1IndependentSmibConformanceTest.class,
 	Dc4bIndependentSmibConformanceTest.class,
 	St1cIndependentSmibConformanceTest.class,
@@ -827,25 +829,25 @@ import org.junit.platform.suite.api.Suite;
 	RoundRotorMachineTest.class,
 	SalientPoleMachineTest.class,
 	SMIB_Gen_Test.class,
-	
+
 	//DStab dynamic devic model
 	///TestInductionMotorModel.class,
 	///TestLd1pacModel.class,
 	///TestDER_AModel.class,
 	///TestCMPLDWModel.class,
 	///TestCMPLDWGModel.class,
-	
+
 	///TestCalBusDStabLoad.class,
 
 
 	// DStab ODM
 	//TODO ODM file missing Gen sourceZ or genPosZ
 	///DStab_2Bus.class,
-	
+
 	//DStab PSS/E
 	DStab_IEEE9Bus_Test.class,
 	Kundur_2Area_VSCHVDC2T_Test.class,
-	
+
 	// CML
 	DelayControlBlockTests.class,
 	FilterControlBlockTests.class,
@@ -853,26 +855,26 @@ import org.junit.platform.suite.api.Suite;
 	IntegrationControlBlockTests.class,
 	PIControlBlockTests.class,
 	WashoutControlBlockTests.class,
-	
+
 	AnnotateParserTests.class,
-	AnnotationExciterTests.class,	
-	
+	AnnotationExciterTests.class,
+
 	// Dist
 	///DistLF14Bus_PathLF_Test.class,
 	///DistLF14BusTest.class,
 	///DistSample2BusTest.class,
-	///DistSys_Test.class,	
-	
+	///DistSys_Test.class,
+
 	// DC System
 	///DcSample_2BusTest.class,
 	///Inverter_2BusTest.class,
 	///PVModelList_2BusTest.class,
-	
+
 	///POC_Test1.class,
 	///POC_Test2_1.class,
 	///POC_Test2_2.class,
 	///POC_Test2_3.class,
-	
+
 	// core file adapter
 	IEEECommonFormat_CommaTest.class,
 	///IEEECommonFormatTest.class,
@@ -1105,7 +1107,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseVersionParserTest.class,
 	PSSE_AutoVersion_Bus0_Regression_Test.class,
 	IEEE9_Dstab_Adapter_Test.class,
-	
+
 	// PSSE JSON
 	PSSEJSon_IEEE9Bus_DSL_Test.class,
 	PSSEJSon_IEEE9Bus_FAdapter_Test.class,
@@ -1113,7 +1115,7 @@ import org.junit.platform.suite.api.Suite;
 
 	// PSSE Global Adjustment Control
 	SwitchedShuntGControlTest.class,
-	
+
 	// PSSE Contingency
 	ConFileParser_Test.class,
 	ConToIpssMapper_Test.class,
@@ -1142,7 +1144,7 @@ import org.junit.platform.suite.api.Suite;
 
 	// PSSE MTHVDC
 	PSSE_MTHVDC_Test.class,
-	
+
 	// CIM File Adapter
 	CIMDirectParserTest.class,
 	//IEEE118CimVsMatpowerJsonCompareTest.class,
@@ -1151,37 +1153,37 @@ import org.junit.platform.suite.api.Suite;
 	CGMESReliCapDcCoverageStubTest.class,
 	CGMESCasP4AclfSmokeStubTest.class,
 	//CGMESCasP4AclfUnconvergedStubTest.class,
-	
+
 	///Acsc5Bus_ODM_TestCase.class,
 	IEEE9Bus_Acsc_Test.class,
-	
+
 	GESampleTestCases.class,
 	EpcDirectParser_SectionGate_Test.class,
-	
+
 	IEEE14Test.class,
 	Bus1824Test.class,
 	Bus6384Test.class,
 	Bus11856Test.class,
-	
+
 	GuideSample_TestCase.class,
-	
+
 	AclfBeanMapperTest.class,
-	
+
 	// exchange
 	AclfResultExchagneIeee14Test.class,
 	ContingencyExchagneIeee14Test.class,
-	
+
 	// Piecewise Algorithm
 	IEEE14TestSubAreaSearch.class,
 	//IEEE14TestAclfNetPiesewise.class,
 	IEEE14TestAclfSubNetBuild.class,
 	IEEE14TestAclfSubAreaBuild.class,
-	
+
 	Acsc5BusTestSubAreaNet.class,
 	///Acsc5BusTesPiecewiseAlgo.class,
-	
+
 	IEEE9BusTestDStabSubAreaNet.class,
-	
+
 	// Mvel Expression
 	MvelExprEval_Test.class,
 })
