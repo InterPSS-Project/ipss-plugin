@@ -28,37 +28,48 @@ public final class RepcaNativeVerification {
         double angle=Math.toRadians(row.get("A"+bus+"_DEG")),v=row.get("V"+bus);
         return new Complex(v*Math.cos(angle),v*Math.sin(angle));
     }
-    private static Measurement measurement(RepcaNativeReference.Profile p,Map<String,Double> row) {
-        var data=p.data();int remote=data.remoteBus()==0?1:data.remoteBus();boolean branch=data.branchFromBus()!=0;
+    private static Measurement measurement(RepcaNativeReference.Profile p,Map<String,Double> row,boolean branch) {
+        var data=p.data();int remote=data.remoteBus()==0?1:data.remoteBus();
         double active=branch?row.get("PLANT_VAR4")/100:row.get("P_PU");
         double reactive=branch?row.get("PLANT_VAR5")/100:row.get("Q_PU");
         Complex current=new Complex(active,reactive).divide(voltage(row,remote)).conjugate();
         return new Measurement(active,reactive,voltage(row,remote),current,1+row.get("F"+remote+"_DEV"));
     }
     public static void replayAllStates()throws Exception {
-        for(var p:RepcaNativeReference.profiles()) {
+        verifyProfiles(RepcaNativeReference.profiles(),p->p.data().branchFromBus()!=0);
+    }
+    public static void verifyProfiles(List<RepcaNativeReference.Profile> profiles,java.util.function.Predicate<RepcaNativeReference.Profile> branchFeedback)throws Exception {
+        replayProfiles(profiles,branchFeedback,true);
+    }
+    /** Localization output alone is not bounded trajectory acceptance. */
+    public static void inspectProfiles(List<RepcaNativeReference.Profile> profiles,java.util.function.Predicate<RepcaNativeReference.Profile> branchFeedback)throws Exception {
+        replayProfiles(profiles,branchFeedback,false);
+    }
+    private static void replayProfiles(List<RepcaNativeReference.Profile> profiles,java.util.function.Predicate<RepcaNativeReference.Profile> branchFeedback,boolean bounded)throws Exception {
+        for(var p:profiles) {
             var rows=rows(p.body());assertEquals(p.samples(),rows.size());assertEquals(57,rows.getFirst().size());
             for(boolean history:new boolean[]{false,true}) {
                 var first=rows.getFirst();var previous=first;var model=Repca1Model.fromNativeRecord(p.data());
-                model.initializeMeasured(first.get("P_PU"),first.get("Q_PU"),measurement(p,first));
+                boolean branch=branchFeedback.test(p);
+                model.initializeMeasured(first.get("P_PU"),first.get("Q_PU"),measurement(p,first,branch));
                 double[] maximum=new double[7],at=new double[7];int events=0;
                 var trace=new StringBuilder("time_s");for(int i=0;i<7;i++)trace.append(",ipss_state").append(i).append(",native_state").append(i);trace.append('\n');
                 for(var row:rows) {
                     if(row.get("time_s")>previous.get("time_s")) {
-                        if(history)model.stepTwoStepMeasured(p.step(),measurement(p,previous));
-                        else{model.stepMeasured(p.step(),measurement(p,previous),0);model.stepMeasured(p.step(),measurement(p,row),1);}
+                        if(history)model.stepTwoStepMeasured(p.step(),measurement(p,previous,branch));
+                        else{model.stepMeasured(p.step(),measurement(p,previous,branch),0);model.stepMeasured(p.step(),measurement(p,row,branch),1);}
                     }else if(row!=first&&row.get("time_s")>=0) {
                         events++;
-                        if(history){model.rebaseNextTwoStep();model.stepTwoStepMeasured(0,measurement(p,row));}
-                        else model.stepMeasured(0,measurement(p,row),1);
+                        if(history){model.rebaseNextTwoStep();model.stepTwoStepMeasured(0,measurement(p,row,branch));}
+                        else model.stepMeasured(0,measurement(p,row,branch),1);
                     }
                     trace.append(row.get("time_s"));double[] actual=model.getNativeStates();
                     for(int i=0;i<7;i++){assertTrue(Double.isFinite(actual[i]));double target=row.get("PLANT_STATE"+i),error=Math.abs(actual[i]-target);if(error>maximum[i]){maximum[i]=error;at[i]=row.get("time_s");}trace.append(',').append(actual[i]).append(',').append(target);}trace.append('\n');previous=row;
                 }
                 assertEquals(2,events);var file=Path.of("target/repca-native-replay",p.name()+(history?"-history":"-staged")+".csv");Files.createDirectories(file.getParent());Files.writeString(file,trace);
-                System.out.println("REPCA replay "+p.name()+" history="+history+" maxima="+Arrays.toString(maximum)+" at="+Arrays.toString(at));
+                System.out.println("REPCA "+(bounded?"replay ":"localization ")+p.name()+" history="+history+" maxima="+Arrays.toString(maximum)+" at="+Arrays.toString(at));
                 double[] bounds=history?p.historyBounds():p.stagedBounds();
-                for(int i=0;i<7;i++)assertTrue(maximum[i]<=bounds[i],p.name()+" history="+history+" state "+i+": "+maximum[i]+" > "+bounds[i]);
+                if(bounded)for(int i=0;i<7;i++)assertTrue(maximum[i]<=bounds[i],p.name()+" history="+history+" state "+i+": "+maximum[i]+" > "+bounds[i]);
             }
         }
     }
@@ -66,7 +77,7 @@ public final class RepcaNativeVerification {
     public static void regulatedVoltageHasAnIndependentNativeInitializationWitness() {
         int witnesses=0;
         for(var p:RepcaNativeReference.profiles())if(p.name().startsWith("ldc-")) {
-            var first=rows(p.body()).getFirst();var model=Repca1Model.fromNativeRecord(p.data());var measured=measurement(p,first);
+            var first=rows(p.body()).getFirst();var model=Repca1Model.fromNativeRecord(p.data());var measured=measurement(p,first,p.data().branchFromBus()!=0);
             model.initializeMeasured(first.get("P_PU"),first.get("Q_PU"),measured);
             assertEquals(first.get("PLANT_STATE0"),model.getNativeStates()[0],2e-8);
             if(!p.name().startsWith("ldc-zero")) {
@@ -80,7 +91,14 @@ public final class RepcaNativeVerification {
     }
 
     public static void importAndRunLocalProfiles(Path staged)throws Exception {
-        for(var p:RepcaNativeReference.profiles()) {
+        importAndRunProfiles(RepcaNativeReference.profiles(),staged);
+    }
+    public static void importAndRunProfiles(List<RepcaNativeReference.Profile> profiles,Path staged)throws Exception {
+        importAndRunProfiles(profiles,staged,(profile,model)->{});
+    }
+    public static void importAndRunProfiles(List<RepcaNativeReference.Profile> profiles,Path staged,
+            java.util.function.BiConsumer<RepcaNativeReference.Profile,Repca1Model> initializationCheck)throws Exception {
+        for(var p:profiles) {
             Path directory=staged.resolve(p.name());Files.createDirectories(directory);
             Files.writeString(directory.resolve("network.raw"),p.network());Files.writeString(directory.resolve("dynamic.dyr"),p.input());
             var context=new PSSEMultiFileLoader().loadDStab(directory.resolve("network.raw").toString());
@@ -96,6 +114,7 @@ public final class RepcaNativeVerification {
             assertTrue(algorithm.initialization());
             var converter=(Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
             var model=converter.getReeca1Controller().getPlantController();assertTrue(model.isNativeRecordConvention());assertEquals(p.data(),model.getData());
+            initializationCheck.accept(p,model);
             var trace=new StringBuilder("time_s,V1,V2,V3,P_PU,Q_PU");for(int i=0;i<7;i++)trace.append(",state").append(i);trace.append('\n');
             for(int tick=0;tick<=Math.round(.5/p.step());tick++) {
                 trace.append(tick*p.step());

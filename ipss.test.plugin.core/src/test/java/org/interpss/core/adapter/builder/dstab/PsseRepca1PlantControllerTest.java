@@ -28,6 +28,61 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.core.aclf.AclfBranch;
 
 public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
+    @Test void nativeFallbackProfilesReplayAllSevenStates() throws Exception {
+        org.interpss.core.dstab.reference.RepcaNativeVerification.verifyProfiles(
+                org.interpss.core.dstab.reference.RepcaFallbackReference.profiles(),org.interpss.core.dstab.reference.RepcaFallbackReference::branchFeedback);
+    }
+    @Test void nativeFallbackProfilesHaveExactImportAndMeasurementSourceDiagnostics(@TempDir Path staged) throws Exception {
+        org.interpss.core.dstab.reference.RepcaNativeVerification.importAndRunProfiles(
+                org.interpss.core.dstab.reference.RepcaFallbackReference.profiles(),staged,(profile,model)->{
+                    var before=model.getNamedStates();
+                    var expected=org.interpss.core.dstab.reference.RepcaFallbackReference.source(profile);
+                    assertEquals(expected,model.getMeasurementSource());
+                    assertEquals(expected!=Repca1Model.MeasurementSource.MONITORED_BRANCH,model.isUsingGeneratorPowerFallback());
+                    assertEquals(expected==Repca1Model.MeasurementSource.GENERATOR_POWER_ZERO_IDENTIFIERS,model.isUsingZeroBranchFallback());
+                    assertEquals(before,model.getNamedStates());
+                });
+    }
+    @Test void nativeMissingBranchUsesGeneratorFeedbackAndRetainsTheRegulatedBus() throws Exception {
+        var fixture=measurementFixture();var data=plantData(2,1,3,1,1,.02,.08,0,1);
+        var model=fixture.builder().addRepca1("Bus1","1",data);model.initialize(.24,.047,1);
+        Complex remote=fixture.builder().getDStabNetwork().getDStabBus("Bus2").getVoltage();
+        Complex current=new Complex(.24,.047).divide(remote).conjugate();
+        assertEquals(.24,model.getMeasuredActivePower(),1e-12);
+        assertEquals(remote.subtract(new Complex(.02,.08).multiply(current)).abs(),model.getMeasuredReactiveOrVoltage(),1e-12);
+        assertEquals(data,model.getData(),"Missing-branch fallback must not rewrite entered identifiers");
+        assertTrue(model.isUsingGeneratorPowerFallback());
+        assertEquals(Repca1Model.MeasurementSource.GENERATOR_POWER_MISSING_BRANCH,model.getMeasurementSource());
+    }
+
+    @Test void nativeMissingCircuitIsResolvedAgainOnReinitializationAfterItAppears() throws Exception {
+        var fixture=measurementFixture();var data=withBranch(plantData(2,1,2,1,1,.02,.08,0,1),1,2,"Z");
+        var model=fixture.builder().addRepca1("Bus1","1",data);model.initialize(.24,.047,1);
+        assertEquals(.24,model.getMeasuredActivePower(),1e-12);
+        assertEquals(Repca1Model.MeasurementSource.GENERATOR_POWER_MISSING_BRANCH,model.getMeasurementSource());
+        var topology=new AclfNetworkBuilder(fixture.builder().getDStabNetwork());
+        var branch=topology.addLine("Bus1","Bus2","Z",new Complex(.04,.12),Complex.ZERO,null,null,0,0,0,true);
+        model.initialize(.24,.047,1);
+        assertEquals(branch.powerFrom2To(UnitType.PU).getReal(),model.getMeasuredActivePower(),1e-12);
+        assertEquals(Repca1Model.MeasurementSource.MONITORED_BRANCH,model.getMeasurementSource());
+        assertTrue(!model.isUsingGeneratorPowerFallback());
+    }
+
+    @Test void nativeNegativeTargetKeepsTheSameOriginMeasurementInsteadOfFallingBack() throws Exception {
+        var fixture=measurementFixture();var data=plantData(2,1,-2,1,1,.02,.08,0,1);
+        var model=fixture.builder().addRepca1("Bus1","1",data);model.initialize(.24,.047,1);
+        assertEquals(fixture.branch().powerFrom2To(UnitType.PU).getReal(),model.getMeasuredActivePower(),1e-12);
+        assertEquals(Repca1Model.MeasurementSource.MONITORED_BRANCH,model.getMeasurementSource());
+        assertEquals(data,model.getData());
+    }
+
+    @Test void historicalTypedMissingBranchRemainsStrictAndUnknownRegulatedBusIsNotSilentlyReplaced() throws Exception {
+        var fixture=measurementFixture();var data=plantData(2,1,3,1,1,.02,.08,0,1);
+        assertThrows(IllegalStateException.class,()->new Repca1Model(data,fixture.converter()).initialize(.24,.047,1));
+        var invalid=fixture.builder().addRepca1("Bus1","1",plantData(99,1,3,1,1,.02,.08,0,1));
+        assertThrows(IllegalStateException.class,()->invalid.initialize(.24,.047,1));
+    }
+
     @Test void nativeColdPairedProfilesReplayAllSevenAllocatedStates() throws Exception {
         org.interpss.core.dstab.reference.RepcaNativeVerification.replayAllStates();
     }
@@ -471,5 +526,12 @@ public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
                 d.qmax(), d.qmin(), d.kpg(), d.kig(), d.tp(), d.fdbd1(), d.fdbd2(),
                 d.femax(), d.femin(), d.pmax(), d.pmin(), d.tg(), d.ddn(), d.dup(),
                 d.puFlag());
+    }
+
+    private static Repca1Data withBranch(Repca1Data d,int from,int to,String id) {
+        return new Repca1Data(d.remoteBus(),from,to,id,d.vcFlag(),d.refFlag(),d.fFlag(),
+                d.tfltr(),d.kp(),d.ki(),d.tft(),d.tfv(),d.vfrz(),d.rc(),d.xc(),d.kc(),
+                d.emax(),d.emin(),d.dbd1(),d.dbd2(),d.qmax(),d.qmin(),d.kpg(),d.kig(),d.tp(),
+                d.fdbd1(),d.fdbd2(),d.femax(),d.femin(),d.pmax(),d.pmin(),d.tg(),d.ddn(),d.dup(),d.puFlag());
     }
 }

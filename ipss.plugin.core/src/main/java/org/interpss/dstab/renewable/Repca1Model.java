@@ -21,6 +21,10 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * consumed by a REEC_A or REEC_B controller; all internal powers are on converter MVA base.
  */
 public final class Repca1Model implements ICMLStateProvider, IntegrationStateAccess {
+    public enum MeasurementSource {
+        EXTERNAL, MONITORED_BRANCH, GENERATOR_POWER_ZERO_IDENTIFIERS, GENERATOR_POWER_MISSING_BRANCH
+    }
+    private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(Repca1Model.class);
     private static final double EPS = 1.0e-9;
     /** Suppress only solver partitioning roundoff at the initialized equilibrium. */
     private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
@@ -39,6 +43,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     private AclfBranch monitoredBranch;
     private boolean branchStoredInRequestedDirection;
     private boolean zeroBranchFallback;
+    private boolean missingBranchFallback;
     private double systemBaseMva = 100.0;
     private double deviceBaseMva = 100.0;
 
@@ -457,6 +462,10 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     }
 
     private void resolveMeasurements() {
+        regulatedBus = null;
+        monitoredBranch = null;
+        branchStoredInRequestedDirection = false;
+        zeroBranchFallback = missingBranchFallback = false;
         if (converter == null && behindImpedanceConverter == null
                 && gridFormingConverter == null && virtualSynchronousConverter == null) return;
         BaseDStabBus<?, ?> localBus = converter != null ? converter.getDStabBus()
@@ -487,6 +496,12 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
             monitoredBranch = (AclfBranch) localBus.getNetwork().getBranch(to, from, data.branchId());
         }
         if (monitoredBranch == null) {
+            if (nativeRecordConvention) {
+                missingBranchFallback = true;
+                LOGGER.warn("REPCA1 monitored branch {}-{}-{} not found; using generator-power feedback with regulated bus {}",
+                        data.branchFromBus(), data.branchToBus(), data.branchId(), regulatedBus.getId());
+                return;
+            }
             throw new IllegalStateException("REPCA1 monitored branch not found: "
                     + data.branchFromBus() + "-" + data.branchToBus() + "-" + data.branchId());
         }
@@ -499,7 +514,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
             double f = regulatedBus == null ? localFrequency : regulatedBus.getFreq();
             return new Measurement(localP, localQ, voltage, Complex.ZERO, f);
         }
-        if (zeroBranchFallback) {
+        if (zeroBranchFallback || missingBranchFallback) {
             // PSS/E REPCA1 defines all-zero monitored-branch identifiers as
             // generator-power feedback. Keep voltage/frequency on the selected
             // regulated bus, but use the converter's local model-base P/Q and
@@ -605,6 +620,13 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     public double getLeadLagState() { return leadLagState; }
     public double getActiveLagState() { return pLagState; }
     public boolean isUsingZeroBranchFallback() { return zeroBranchFallback; }
+    public boolean isUsingGeneratorPowerFallback() { return zeroBranchFallback || missingBranchFallback; }
+    /** Resolved network-measurement selection; diagnostic access never changes selection or state. */
+    public MeasurementSource getMeasurementSource() {
+        if (missingBranchFallback) return MeasurementSource.GENERATOR_POWER_MISSING_BRANCH;
+        if (zeroBranchFallback) return MeasurementSource.GENERATOR_POWER_ZERO_IDENTIFIERS;
+        return monitoredBranch == null ? MeasurementSource.EXTERNAL : MeasurementSource.MONITORED_BRANCH;
+    }
     public double getDeviceBaseMva() { return deviceBaseMva; }
 
     /** Published seven-slot native order; reserved inactive slots are not artificial states. */

@@ -2,6 +2,18 @@
 
 ## Current checkpoint
 
+REPCA1 branch-fallback follow-up: implement native missing-edge/circuit
+generator feedback while retaining remote measurement and unchanged inputs.
+Add read-only source diagnostics and reinitialization lookup guards. Twenty-eight
+cold native runs yield fourteen seven-state profiles: thirteen raw-exact pairs
+and one inactive-memory difference of 1.36e-19. Explicit zero identifiers and
+the distinct signed-target monitored-branch behavior are independently covered.
+All raw rows have bounded staged/history replay; coupled runs remain diagnostic.
+Final latest-baseline gates pass 118 focused, 410 plugin-core and 1,724 scoped SMIB/model/solver
+tests with zero failures/errors and only existing skips, plus eight offline
+probe and six wording guards. See the
+[fallback evidence and TODO](benchmarks/repca-branch-fallback-2026-10-19.md).
+
 REPCA1 native-plant follow-up: correct literal-zero compensation, regulated-bus
 current, signed-origin feedback and absolute active-limit translation. Sixty
 cold native runs give 30 seven-state profiles at two steps: 25 raw-exact pairs

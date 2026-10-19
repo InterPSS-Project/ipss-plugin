@@ -33,12 +33,11 @@ def inputs(root,settings):
     record="1 'REPCA1' '1' "+' '.join(map(str,selectors+settings['constants']))+' /'
     return raw,dyr+record+'\n'
 
-def main():
-    settings=configuration(*sys.argv[1:])
+def run(settings,extra_scripts=(),prefix='repca-boundary-native-'):
     import psse3607
     import psspy,dyntools
-    root=Path.cwd();prefix='repca-boundary-native-';out=root/'target'/(prefix+settings['name']+'-'+settings['repeat']);out.mkdir(exist_ok=False)
-    for name in ['repca_native_probe.py','reeca_native_probe.py','tgov1_limit_probe.py']:shutil.copy2(root/'tools'/name,out/name)
+    root=Path.cwd();out=root/'target'/(prefix+settings['name']+'-'+settings['repeat']);out.mkdir(exist_ok=False)
+    for name in ['repca_native_probe.py','reeca_native_probe.py','tgov1_limit_probe.py']+list(extra_scripts):shutil.copy2(root/'tools'/name,out/name)
     raw,dyr=inputs(root,settings);(out/'network.raw').write_text(raw);(out/'dynamic.dyr').write_text(dyr);os.chdir(out)
     checked('initialize',psspy.psseinit(50))
     for fn in (psspy.progress_output,psspy.report_output,psspy.alert_output,psspy.prompt_output):checked('log',fn(2,'native.log',[0,0]))
@@ -90,12 +89,14 @@ def main():
         writer=csv.writer(stream,lineterminator='\n');writer.writerow(['time_s']+[labels[k] for k in keys])
         for i,time in enumerate(data['time']):writer.writerow([format(time,'.12g')]+[format(data[k][i],'.12g') for k in keys])
     log=Path('native.log').read_text(errors='replace');quality='Initial conditions check O.K.' in log and 'Network not converged' not in log
-    files=['network.raw','dynamic.dyr','repca_native_probe.py','reeca_native_probe.py','tgov1_limit_probe.py','readback.json','native.log','native.out','native.csv']
+    files=['network.raw','dynamic.dyr','repca_native_probe.py','reeca_native_probe.py','tgov1_limit_probe.py','readback.json','native.log','native.out','native.csv']+list(extra_scripts)
     status='rejected-quality' if not quality else 'complete' if selectors_exact else 'remote-selector-normalization-diagnostic'
     manifest=dict(status=status,model='REPCA1',settings=settings,layout=layout,events=events,selector_readback_unchanged=selectors_exact,
                   entered_constants=before,initialized_constants=after,entered_icons=flags_before,initialized_icons=flags_after,
                   entered_converter_constants=converter_before,initialized_converter_constants=converter_after,
                   sample_count=len(data['time']),channel_count=len(keys),library_sha256=sha(library),source_document_sha256=sha(document),engine_module=psse3607.__name__,files={name:sha(name) for name in files})
     Path('manifest.json').write_text(json.dumps(manifest,indent=2)+'\n');print(json.dumps(dict(profile=settings['name'],status=manifest['status'])));assert quality and selectors_exact
+
+def main():run(configuration(*sys.argv[1:]))
 
 if __name__=='__main__':main()

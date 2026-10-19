@@ -126,7 +126,9 @@ mistake are tooling diagnostics, not model failures or accepted native runs.
 - [x] Strict imports and small-network flat/fault diagnostics at both timesteps.
 - [x] Current plugin/core regression gates and source/dependency provenance.
 - [ ] Complete coupled event-side/current/command acceptance and precision floors.
-- [ ] Missing-branch fallback, further signed identifiers and invalid-input behavior.
+- [x] Missing-branch fallback and signed-target behavior: see the
+  [fallback follow-up](repca-branch-fallback-2026-10-19.md).
+- [ ] Further signed identifiers and invalid-input behavior.
 - [ ] Further base/PU declarations, converter hosts, aliases and wind/plant composition.
 - [ ] Zero-time, deadband/threshold equality, further limiter and freeze/release,
   trip/reconnect/reinitialization and independent PowerWorld execution profiles.
