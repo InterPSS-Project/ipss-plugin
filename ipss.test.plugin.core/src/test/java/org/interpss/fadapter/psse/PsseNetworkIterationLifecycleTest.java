@@ -33,6 +33,7 @@ public class PsseNetworkIterationLifecycleTest {
             var probe=observed.probe();
             assertEquals(500*3,probe.begins);
             assertEquals(probe.begins,probe.accepts);
+            assertEquals(probe.accepts,probe.finalOutputs);
             assertEquals(0,probe.aborts);
             assertTrue(probe.iterations>=probe.begins*2);
             assertEquals(List.of("INITIAL","PREDICTOR","CORRECTOR"),probe.stages.subList(0,3));
@@ -50,6 +51,7 @@ public class PsseNetworkIterationLifecycleTest {
         assertFalse(algorithm.getNetwork().isDStabNetInitialized());
         assertEquals(initialSamples,fixture.monitor().getBusVoltTable().get("Bus1").size());
         assertEquals(1,fixture.probe().accepts);
+        assertEquals(1,fixture.probe().finalOutputs);
         assertEquals(1,fixture.probe().aborts);
         int begins=fixture.probe().begins;
         assertFalse(algorithm.solveDEqnStep(true));
@@ -77,6 +79,7 @@ public class PsseNetworkIterationLifecycleTest {
                             switch(method.getName()) {
                                 case "beginNetworkSolution" -> probe.begin((NetworkIterationAware.Context)args[0]);
                                 case "beforeNetworkIteration" -> probe.before((int)args[0]);
+                                case "afterNetworkConvergence" -> probe.finalOutputs++;
                                 case "endNetworkSolution" -> probe.end((boolean)args[0]);
                                 default -> throw new AssertionError(method.getName());
                             }
@@ -124,7 +127,7 @@ public class PsseNetworkIterationLifecycleTest {
     private static final class Probe {
         final List<String> stages=new ArrayList<>();
         NetworkIterationAware.Context context;
-        int begins,iterations,accepts,aborts,nextIteration;
+        int begins,iterations,accepts,aborts,nextIteration,finalOutputs;
         String failStage;
         void begin(NetworkIterationAware.Context context) {
             this.context=context;stages.add(context.stage());begins++;nextIteration=0;

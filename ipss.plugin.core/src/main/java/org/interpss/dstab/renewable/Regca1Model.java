@@ -18,6 +18,7 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.common.DStabOutSymbol;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.device.DynamicGenDevice;
+import com.interpss.dstab.device.NetworkIterationAware;
 import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /**
@@ -25,7 +26,8 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * composed as controllers while this device owns the network current source.
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess {
+        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess,
+        NetworkIterationAware {
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 
@@ -55,6 +57,91 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double integrationStep;
     private IntegrationScheme integrationScheme = IntegrationScheme.MODIFIED_EULER;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
+    private boolean networkHighVoltageEnabled;
+    private boolean networkSolutionInProgress;
+    private boolean networkOutputAvailable;
+    private double savedNetworkVoltage;
+    private double networkCorrection;
+    private double deceleratedNetworkVoltage;
+    private boolean oldNetworkOutputAvailable;
+    private double oldSavedNetworkVoltage, oldNetworkCorrection, oldDeceleratedNetworkVoltage;
+
+    /** Stored algebraic memory, distinct from the converter's differential states. */
+    public record NetworkHighVoltageState(boolean enabled, boolean solutionInProgress,
+            boolean outputAvailable, double savedVoltage, double correction, double deceleratedVoltage) {}
+
+    public NetworkHighVoltageState getNetworkHighVoltageState() {
+        return new NetworkHighVoltageState(networkHighVoltageEnabled, networkSolutionInProgress,
+                networkOutputAvailable, savedNetworkVoltage, networkCorrection, deceleratedNetworkVoltage);
+    }
+
+    /**
+     * Opt in to network-iteration high-voltage memory. Requires a solver delivering
+     * the complete NetworkIterationAware lifecycle, including final evaluation.
+     * Configure between solves. Enabling retains the voltage memory seeded by
+     * initialization; disabling resets it at the current terminal voltage.
+     * The default instantaneous behavior is preserved.
+     */
+    public void setNetworkIterationHighVoltageEnabled(boolean enabled) {
+        if (networkSolutionInProgress) throw new IllegalStateException("Network solution is in progress");
+        if (networkHighVoltageEnabled == enabled) return;
+        networkHighVoltageEnabled = enabled;
+        if (!enabled) resetNetworkHighVoltageMemory();
+    }
+
+    private void resetNetworkHighVoltageMemory() {
+        networkSolutionInProgress = false;
+        networkOutputAvailable = false;
+        savedNetworkVoltage = getDStabBus() == null ? 1.0 : Math.max(.01, getDStabBus().getVoltageMag());
+        deceleratedNetworkVoltage = savedNetworkVoltage;
+        networkCorrection = 0.0;
+    }
+
+    @Override public void beginNetworkSolution(NetworkIterationAware.Context context) {
+        if (!networkHighVoltageEnabled) return;
+        if (networkSolutionInProgress) throw new IllegalStateException("Network solution is already in progress");
+        oldNetworkOutputAvailable = networkOutputAvailable;
+        oldSavedNetworkVoltage = savedNetworkVoltage;
+        oldNetworkCorrection = networkCorrection;
+        oldDeceleratedNetworkVoltage = deceleratedNetworkVoltage;
+        networkSolutionInProgress = true;
+        networkOutputAvailable = true;
+        savedNetworkVoltage = (1.0 - data.accel()) * savedNetworkVoltage
+                + data.accel() * Math.max(.01, getDStabBus().getVoltageMag());
+        networkCorrection = 0.0;
+    }
+
+    @Override public void beforeNetworkIteration(int iteration) {
+        if (networkHighVoltageEnabled) evaluateNetworkHighVoltage();
+    }
+
+    @Override public void afterNetworkConvergence() {
+        if (networkHighVoltageEnabled) evaluateNetworkHighVoltage();
+    }
+
+    private void evaluateNetworkHighVoltage() {
+        if (!networkSolutionInProgress) throw new IllegalStateException("Begin network solution before evaluation");
+        deceleratedNetworkVoltage = (1.0 - data.accel()) * savedNetworkVoltage
+                + data.accel() * Math.max(.01, getDStabBus().getVoltageMag());
+        networkCorrection += data.khv() * Math.max(deceleratedNetworkVoltage - data.volim(), 0.0);
+    }
+
+    @Override public void endNetworkSolution(boolean converged) {
+        if (!networkSolutionInProgress) return;
+        if (!converged) {
+            networkOutputAvailable = oldNetworkOutputAvailable;
+            savedNetworkVoltage = oldSavedNetworkVoltage;
+            networkCorrection = oldNetworkCorrection;
+            deceleratedNetworkVoltage = oldDeceleratedNetworkVoltage;
+        }
+        networkSolutionInProgress = false;
+    }
+
+    private double reactiveNetworkOutput(double voltage) {
+        if (networkOutputAvailable)
+            return Math.min(-data.iolim(), reactiveCurrentOutput() - networkCorrection / deceleratedNetworkVoltage);
+        return highVoltageReactiveOutput(reactiveCurrentOutput(), voltage, data.volim(), data.khv(), data.iolim());
+    }
 
     @Override
     public void configureIntegrationStep(double timeStepSec) {
@@ -75,6 +162,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     public boolean initStates(BaseDStabBus<?, ?> bus) {
         stateMonitor.reset();
         twoStep.reset();
+        resetNetworkHighVoltageMemory();
         RenewableElectricalController controller = activeController();
         if (parentGen == null || controller == null || bus == null) return false;
         Complex initial = parentGen.getGen();
@@ -269,8 +357,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     private Complex injectedCurrent(Complex voltage) {
         double ip = activeCurrentOutput() * lowVoltageActiveGain(voltage.abs(), data.lvpnt0(), data.lvpnt1());
-        double iq = highVoltageReactiveOutput(reactiveCurrentOutput(), voltage.abs(),
-                data.volim(), data.khv(), data.iolim());
+        double iq = reactiveNetworkOutput(voltage.abs());
         double theta = voltage.getArgument();
         double scale = deviceBaseMva / systemBaseMva;
         return new Complex(
@@ -390,7 +477,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
     public double getIq() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
-        return highVoltageReactiveOutput(reactiveCurrentOutput(), v, data.volim(), data.khv(), data.iolim());
+        return reactiveNetworkOutput(v);
     }
 
     @Override

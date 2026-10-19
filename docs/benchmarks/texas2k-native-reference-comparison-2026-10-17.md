@@ -3820,3 +3820,38 @@ close original-input initialization, production integration or full-system
 acceptance. Exact replays, both state traces, the command-equation check,
 standalone figure, rejected prefix and verification hashes are retained in
 private evidence set `2026-10-19-case2-power-voltage-feedback`.
+
+## Production network lifecycle integration, 2026-10-19
+
+The established converter network behavior now has an optional production path.
+Core adds one explicit final-output callback after voltage convergence, with
+failure cleanup, and selectable minimum iterations and voltage-change norm.
+REGCA1 implements saved-voltage and accumulated high-voltage correction memory
+through those callbacks. It also exposes an immutable algebraic-memory snapshot,
+separate from the already available differential states and stored derivatives.
+The staggered solver can reuse its preceding solved endpoint for ordinary-step
+derivatives while resolving event boundaries and notified input changes.
+All three numerical options remain opt-in; existing defaults are unchanged.
+The API and its limitations are documented in
+[the network lifecycle note](network-iteration-lifecycle-2026-10-17.md#production-final-output-lifecycle-2026-10-19).
+
+Independent conditional checks run the production solver and converter against
+eight archived profiles, comprising 16,032 network solutions. These use the
+recorded preceding voltage/memory and current regulator coordinate as inputs;
+they do not substitute for a free-running simulation. Every checked voltage,
+saved-memory, correction and reactive-power error remains within the previously
+established bounds.
+
+Replacing the custom network loop in the Case 2 diagnostic reproduces all 4,810
+physical channels across 1,205 rows byte for byte, through 1.2 seconds. The
+9,640 parsed controller records, cold states, assembled matrices and first
+right-hand side/solution also match exactly. Fault application and clearing
+retain both event sides. The run uses the same 1,204 network calls and 8,051
+linear solves, reusing three factorizations across the three topologies.
+
+This closes the production API gap for the tested network lifecycle. The
+computed initial operating point, mixed-load conversion and independent
+single-precision linear backend are still diagnostic. No original-input full
+event has newly passed, and the 20-second performance target has not been
+tested by this pipe-based verification run. Evidence is retained under
+`2026-10-19-production-network-lifecycle`.

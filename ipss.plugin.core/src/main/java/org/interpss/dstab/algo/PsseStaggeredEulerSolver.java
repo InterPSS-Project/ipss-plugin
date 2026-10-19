@@ -84,6 +84,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private boolean[] wasActive;
     private double fixedStep;
     private boolean inputDiscontinuity;
+    private boolean reuseNetworkEndpoint;
+    private boolean networkEndpointAvailable;
     private BooleanSupplier ownerActive;
     private boolean extendedStack;
     private boolean runtimeControllerOptimizationEnabled = true;
@@ -190,6 +192,16 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     public double getNetworkSolutionTolerance() { return converge_tol; }
+
+    /**
+     * Opt in to using the preceding solved endpoint for ordinary-step derivatives.
+     * Events and a dirty network matrix still force a fresh solve. Call
+     * notifyDiscontinuity after any external voltage, input, or activation change.
+     * Repeated network solves can advance algebraic device memory, so this selects
+     * a numerical lifecycle rather than merely caching an interchangeable result.
+     */
+    public void setReuseNetworkEndpoint(boolean enabled) { reuseNetworkEndpoint = enabled; }
+    public boolean isReuseNetworkEndpoint() { return reuseNetworkEndpoint; }
     public int getBoundMachineCount() { return machines.size(); }
     public int getBoundRenewableCount() { return renewables.size(); }
     /** Bound machine/controller states; excludes renewable bundle-owned states. */
@@ -212,6 +224,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         localSt1Controllers.clear();
         participants.clear(); participantByController.clear(); renewables.clear(); extendedStack=false;
         previous = null; wasActive = null; inputDiscontinuity = false;
+        networkEndpointAvailable = false;
         fixedStep = dstabAlgo.getSimuStepSec();
         requireStep(fixedStep);
         validateModels();
@@ -237,9 +250,11 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     @Override public boolean networkSolutionStep() throws DStabSimuException {
+        networkEndpointAvailable = false;
         if (!super.networkSolutionStep())
             throw new DStabSimuException("Network did not converge to " + converge_tol
                     + " at " + dstabAlgo.getSimuTime());
+        networkEndpointAvailable = true;
         return true;
     }
 
@@ -482,9 +497,13 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 throw new IllegalStateException("Reinitialize after changing dynamic model attachments");
         timestep=dt;
         boolean discontinuity=eventBoundaryThisStep || inputDiscontinuity;
+        boolean reuse = reuseNetworkEndpoint && networkEndpointAvailable && !discontinuity
+                && !dstabAlgo.getNetwork().isYMatrixDirty();
+        networkEndpointAvailable = false;
         if (discontinuity) for (var r:renewables)
             if (r.active.getAsBoolean()) r.model.rebaseNextTwoStep();
-        networkSolutionStep();
+        if (!reuse) networkSolutionStep();
+        networkEndpointAvailable = false;
         if (discontinuity) rebaseDynamicModelInputs(method);
         evaluate();
         for (int i=0;i<states.size();i++) {
@@ -535,11 +554,13 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         // Refresh model algebraic outputs/caches without advancing any state.
         evaluate(); evaluate();
         networkSolutionStep();
+        networkEndpointAvailable = false;
         // Zero-time algebraic blocks (for example IEEET1 with TR=0) must report
         // the solved endpoint voltage, not the previous network solution.
         evaluate();
         for (var bus:dstabAlgo.getNetwork().getBusList())
             if (bus.isActive()) bus.nextStep(dt,method,1);
         inputDiscontinuity=false;
+        networkEndpointAvailable = true;
     }
 }

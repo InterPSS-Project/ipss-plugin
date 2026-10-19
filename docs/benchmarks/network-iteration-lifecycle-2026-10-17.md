@@ -2,7 +2,12 @@
 
 ## Scope
 
-Baseline: plugin `5122b620a`, core `12c231df5`. This slice adds the shared
+The original 2026-10-17 slice used plugin `5122b620a` and core `12c231df5`.
+The 2026-10-19 extension below adds optional model-specific output evaluation
+and a production REGCA1 high-voltage memory path. Defaults remain unchanged;
+full-system physical acceptance remains open.
+
+Original scope: this slice adds the shared
 positive-sequence solver lifecycle needed for algebraic converter-boundary
 models. **It does not implement or verify REGCA1 high-voltage management.**
 No production model opts in yet; all physical equations, DYR schemas, state
@@ -239,3 +244,65 @@ Still required: integration with newer core and its combined regression, exact n
 low-voltage/angle discrimination, model-specific boundary implementation and
 tests, repeated independent trajectory artifacts and complete Texas2k physical
 acceptance. Infrastructure availability is not model verification.
+
+## Production final-output lifecycle, 2026-10-19
+
+The extension was built and tested from core `f0ef059893` and plugin
+`d8593a5f59` in isolated source snapshots. It adds
+`NetworkIterationAware.afterNetworkConvergence()`, called once in begin order
+after voltage convergence and before reverse-order cleanup. A failed final
+evaluation skips remaining final evaluations and ends every begun participant
+with `false`; causes, suppressed cleanup failures and the recursion guard are
+preserved. No additional network solve follows this callback. The voltage
+convergence criterion therefore does not assert a joint current/voltage residual
+for the final reported output. `endNetworkSolution()` remains cleanup only.
+
+`DStabSolverImpl` also exposes `setMinimumNetworkIterations()` and
+`setVoltageConvergenceNorm()`. Defaults remain two iterations and maximum real
+or imaginary component change. The optional complex-magnitude norm is invariant
+under reference-angle rotation. With a minimum of one, the first solved voltage
+is checked against the voltage at solve entry; an iteration budget below the
+selected minimum cannot report convergence.
+
+`Regca1Model.setNetworkIterationHighVoltageEnabled(true)` enables the behavior
+established by archived converter probes. Saved voltage advances once per
+network solution. Each iteration accumulates the high-voltage correction using
+the decelerated voltage, and one further evaluation uses the accepted voltage.
+The retained correction is applied to the current regulator output. State,
+current and monitoring reads do not advance this memory. Failed solves restore
+the preceding algebraic memory; reinitialization clears it. The immutable
+`getNetworkHighVoltageState()` snapshot exposes saved voltage, accumulated
+correction, decelerated voltage and lifecycle flags separately from differential
+states and stored derivatives. Enabling after initialization retains the seeded
+voltage memory; disabling resets it at the current terminal voltage.
+
+`PsseStaggeredEulerSolver.setReuseNetworkEndpoint(true)` optionally uses the
+preceding solved endpoint when evaluating ordinary-step derivatives. Events,
+explicit discontinuities, unavailable endpoints and a dirty network matrix
+require a fresh solve. External voltage, input or activation changes require
+`notifyDiscontinuity()`. Repeated solves advance algebraic model memory, so this
+option selects an integration lifecycle rather than providing a transparent
+cache optimization. It is disabled by default.
+
+Validation passes 94 core dynamic tests and 61 focused plugin tests, including
+callback ordering, fatal and recursive failures, restoration, pure observation,
+rotation-sensitive convergence and endpoint reuse. The registered plugin run
+contains 2,198 distinct tests: 2,165 pass, 27 skip, four fail and two error.
+Two failures came from a test proxy that rejected the newly added callback;
+after adding an explicit final-evaluation counter, both tests pass separately,
+including exact flat/fault trajectory equality. The remaining two failures and
+two errors have messages identical to the archived static-network baseline.
+The initial full run is retained as failed, not relabeled green.
+Across eight archived profiles, 16,032 conditional production network solutions
+meet the independently established voltage, memory, correction and reactive-power
+limits. Those checks use observed preceding memory and current regulator values
+as inputs; they do not establish free-running trajectory acceptance.
+
+The Case 2 production path reproduces the diagnostic 1.2-second prefix exactly:
+1,205 rows by 4,810 physical channels, 9,640 parsed controller records, identical
+cold states, three identical matrices and the same first right-hand side and
+solution. It uses 1,204 network calls and 8,051 linear solves, with three retained
+factorizations. Fault application and clearing are included. The computed
+operating point, mixed-load conversion and independent single-precision LU
+backend remain diagnostic. This is implementation equivalence, not a new
+physical acceptance or runtime claim.

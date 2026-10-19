@@ -15,6 +15,27 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class PsseStaggeredEulerSolverTest {
+    @Test void endpointReuseSkipsOnlyOrdinaryInitialSolve() throws Exception {
+        var algo = load();
+        var calls = new java.util.concurrent.atomic.AtomicInteger();
+        var shared = new PsseStaggeredEulerSolver(algo) {
+            @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                calls.incrementAndGet();return super.networkSolutionStep();
+            }
+        };
+        algo.setSolver(shared);
+        assertFalse(shared.isReuseNetworkEndpoint());
+        assertTrue(algo.initialization());
+        calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(2,calls.get());
+        shared.setReuseNetworkEndpoint(true);
+        calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(1,calls.get());
+        shared.notifyDiscontinuity();
+        calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(2,calls.get());
+        algo.getNetwork().setYMatrixDirty(true);
+        calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(2,calls.get());
+        calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(1,calls.get());
+    }
+
     @Test void explicitDiscontinuityRebasesRenewableBundleOnlyOnTheNextStep() throws Exception {
         IpssCorePlugin.init();
         String base="testData/adpter/psse/v33/renewable/";

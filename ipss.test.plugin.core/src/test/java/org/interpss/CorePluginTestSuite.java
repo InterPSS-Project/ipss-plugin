@@ -227,6 +227,7 @@ import org.interpss.core.dstab.PsseRunQualityTest;
 import org.interpss.core.dstab.EndpointAlignedStateMonitorTest;
 import org.interpss.core.dstab.RegcaZeroQRecoveryTest;
 import org.interpss.core.dstab.RegcaCurrentLimitNativeTest;
+import org.interpss.core.dstab.RegcaNetworkIterationTest;
 import org.interpss.fadapter.psse.PsseNetworkConvergenceTest;
 import org.interpss.fadapter.psse.PsseNetworkIterationLifecycleTest;
 import org.interpss.core.dstab.dynLoad.Perc1ModelTest;
@@ -1057,6 +1058,7 @@ import org.junit.platform.suite.api.Suite;
 	EndpointAlignedStateMonitorTest.class,
 	RegcaZeroQRecoveryTest.class,
 	RegcaCurrentLimitNativeTest.class,
+	RegcaNetworkIterationTest.class,
 	PsseNetworkConvergenceTest.class,
 	PsseNetworkIterationLifecycleTest.class,
 	Perc1ModelTest.class,
