@@ -4452,3 +4452,26 @@ Sources, test results, rejected controls, converted points, reference alignment,
 and startup outputs are retained in the private evidence set
 `2026-10-19-production-load-matrix-and-sixcase-startup`. Original acceptance
 limits are unchanged, and all six cases and all 36 disturbances remain in scope.
+
+### Grid-forming integration and controller-refresh follow-up
+
+The [shared integration report](regfma1-shared-integration-2026-10-19.md)
+records the REGFMA1 solver connection, access to all 45 Case 6 grid-forming
+states and rates, and 82 passing focused tests. Fifteen independent model
+profiles were compared at every regular endpoint; two terminal-current bounds
+still fail, despite all existing checkpoint tests passing.
+
+Case 6 now completes 1.2 seconds with every original grid-forming unit retained.
+Its first 20 ms pass the supplied required channels, but the full prefault
+period fails: worst voltage NRMAE is 0.0306921 and rotor maximum error is
+24.4954 degrees. The grid-forming cold-state derivatives are below 8.59e-13.
+The audit is observational: its 43 startup rows reproduce the corresponding
+longer-run physical values exactly. Initialization at those devices is therefore
+not established as the source of the later discrepancy.
+
+Separate Case 2 prefix controls include committed electrical and plant updates
+`85d556253` and `98badd136`. Both reproduce the preceding 1,205-row,
+4,810-channel physical prefix exactly. These controls do not establish later
+agreement or resolve the previously reported postfault errors. The private
+evidence set is `2026-10-19-grid-forming-integration-and-controller-refresh`;
+all six cases, all 36 disturbances and the existing limits remain in scope.

@@ -9,6 +9,7 @@ import com.interpss.dstab.mach.impl.SalientPoleMachineImpl;
 import com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController;
 import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter;
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.dstab.control.util.IntegrationStateAccess;
 import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
 /**
@@ -80,6 +81,10 @@ public final class Texas2kInitializationAudit {
         if(m instanceof RoundRotorMachineImpl r)row.put("electrical",r.captureRoundElectricalState());
         else if(m instanceof SalientPoleMachineImpl s)row.put("electrical",s.captureSalientElectricalState());
         row.put("exciter",controller(m.getExciter()));row.put("governor",controller(m.getGovernor()));row.put("stabilizer",controller(m.getStabilizer()));
+      }else if(device instanceof Regfma1Model r) {
+        row.put("type","REGFMA1");row.put("converter",r.getNamedStates());
+        row.put("converter_audit",controller(r));
+        if(r.getPlantController()!=null)row.put("plant_audit",controller(r.getPlantController()));
       }else if(device instanceof Regca1Model r) {
         row.put("type","REGCA1");row.put("converter",r.getNamedStates());
         row.put("converter_audit",controller(r));

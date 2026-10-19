@@ -6,6 +6,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.math3.complex.Complex;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.DStabGen;
@@ -17,7 +21,8 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
 
 /** WECC REGFM_A1 droop-controlled grid-forming inverter. */
 public final class Regfma1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, ICMLStateProvider {
+        implements DynamicGenDevice, ICMLStateProvider, IntegrationStateAccess,
+        StaggeredEulerParticipant {
     private static final double EPS = 1.0e-9;
 
     private final Regfma1Data data;
@@ -47,6 +52,11 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
     private Repca1Model plantController;
     private ModelState predictorStart;
     private ModelDerivatives predictorDerivatives;
+    private boolean initialized;
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Angle", "Measured Active Power", "Measured Reactive Power", "Measured Voltage",
+            "Voltage Integral", "Active Upper Limit Integral", "Active Lower Limit Integral",
+            "Reactive Upper Limit Integral", "Reactive Lower Limit Integral");
 
     public Regfma1Model(DStabGen parentGen, BaseDStabBus<?, ?> bus, String id,
             Regfma1Data data) {
@@ -62,6 +72,8 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
+        initialized = false;
+        stateMonitor.reset();
         if (parentGen == null || bus == null || parentGen.getGen() == null) return false;
         systemBaseMva = bus.getNetwork().getBaseMva();
         deviceBaseMva = parentGen.getMvaBase() > EPS ? parentGen.getMvaBase() : systemBaseMva;
@@ -101,7 +113,8 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
         predictorDerivatives = null;
         if (plantController != null) plantController.initialize(p, q, vMeasured);
         states.put(DStabOutSymbol.OUT_SYMBOL_BUS_DEVICE_ID, getExtendedDeviceId());
-        return finite(eDroop) && finite(angle);
+        initialized = finiteState();
+        return initialized;
     }
 
     @Override
@@ -125,10 +138,12 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
         if (flag == 0) {
             predictorStart = state();
             predictorDerivatives = derivatives(predictorStart, endpoint);
+            observe(predictorStart, predictorDerivatives, Stage.PREDICTOR);
             apply(applyBypasses(add(predictorStart, predictorDerivatives, dt), endpoint));
         } else {
             if (predictorStart == null || predictorDerivatives == null) return false;
             ModelDerivatives corrected = derivatives(state(), endpoint);
+            observe(state(), corrected, Stage.CORRECTOR);
             apply(applyBypasses(correct(predictorStart, predictorDerivatives,
                     corrected, dt), endpoint));
             predictorStart = null;
@@ -136,6 +151,83 @@ public final class Regfma1Model extends DynamicBusDeviceImpl
         }
         updateAlgebraicOutputs(state());
         return finiteState();
+    }
+
+    /** Nine stored coordinates; bypassed filters and inactive PI storage have zero rates. */
+    @Override public int staggeredStateCount() { return 9; }
+
+    @Override public void readStaggeredState(double[] values, int offset) {
+        values[offset] = angle;
+        values[offset+1] = pMeasured;
+        values[offset+2] = qMeasured;
+        values[offset+3] = vMeasured;
+        values[offset+4] = voltageIntegral;
+        values[offset+5] = pUpperIntegral;
+        values[offset+6] = pLowerIntegral;
+        values[offset+7] = qUpperIntegral;
+        values[offset+8] = qLowerIntegral;
+    }
+
+    private void requireStaggeredSupport() {
+        if (!initialized) throw new IllegalStateException("Initialize REGFMA1 before evaluating states");
+        if (plantController != null)
+            throw new IllegalStateException("Staggered REGFMA1 plant-controller coupling is not supported");
+    }
+
+    @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
+        requireStaggeredSupport();
+        // Refresh terminal power at the solved voltage without advancing any
+        // differential coordinate or predictor/corrector history.
+        updateAlgebraicOutputs(state());
+        getOutputObject();
+        ModelState effective = applyBypasses(state(), new Endpoint(p, q, getDStabBus().getVoltageMag()));
+        ModelDerivatives rate = derivatives(effective, new Endpoint(p, q, getDStabBus().getVoltageMag()));
+        updateAlgebraicOutputs(effective);
+        rates[offset] = rate.angle();
+        rates[offset+1] = rate.pMeasured();
+        rates[offset+2] = rate.qMeasured();
+        rates[offset+3] = rate.vMeasured();
+        rates[offset+4] = rate.voltageIntegral();
+        rates[offset+5] = rate.pUpperIntegral();
+        rates[offset+6] = rate.pLowerIntegral();
+        rates[offset+7] = rate.qUpperIntegral();
+        rates[offset+8] = rate.qLowerIntegral();
+        observe(effective, rate, Stage.STAGGERED);
+    }
+
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        requireStaggeredSupport();
+        for (int i=0; i<staggeredStateCount(); i++)
+            if (!Double.isFinite(values[offset+i]))
+                throw new IllegalArgumentException("Non-finite REGFMA1 integration coordinate " + i);
+        ModelState trial = new ModelState(values[offset], values[offset+1], values[offset+2],
+                values[offset+3], values[offset+4], values[offset+5], values[offset+6],
+                values[offset+7], values[offset+8]);
+        apply(applyBypasses(trial, new Endpoint(p, q, getDStabBus().getVoltageMag())));
+        updateAlgebraicOutputs(state());
+    }
+
+    private void observe(ModelState x, ModelDerivatives rate, Stage stage) {
+        stateMonitor.begin(stage);
+        stateMonitor.record(0, x.angle(), rate.angle());
+        stateMonitor.record(1, x.pMeasured(), rate.pMeasured());
+        stateMonitor.record(2, x.qMeasured(), rate.qMeasured());
+        stateMonitor.record(3, x.vMeasured(), rate.vMeasured());
+        stateMonitor.record(4, x.voltageIntegral(), rate.voltageIntegral());
+        stateMonitor.record(5, x.pUpperIntegral(), rate.pUpperIntegral());
+        stateMonitor.record(6, x.pLowerIntegral(), rate.pLowerIntegral());
+        stateMonitor.record(7, x.qUpperIntegral(), rate.qUpperIntegral());
+        stateMonitor.record(8, x.qLowerIntegral(), rate.qLowerIntegral());
+    }
+
+    @Override public Map<String, Double> getIntegrationStates() {
+        Map<String, Double> result = new LinkedHashMap<>(getNamedStates());
+        result.keySet().removeAll(java.util.List.of("Speed", "Internal Voltage", "Active Power", "Reactive Power"));
+        return Collections.unmodifiableMap(result);
+    }
+
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
     }
 
     private ModelDerivatives derivatives(ModelState state, Endpoint endpoint) {

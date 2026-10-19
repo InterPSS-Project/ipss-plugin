@@ -25,6 +25,8 @@ import com.interpss.dstab.cache.StateMonitor;
  * Instantaneous event-post and plant-input excursions remain separate profiles.
  */
 public class Regfma1NativeTrajectoryTest {
+    /** Subclasses exercise another integration path against the same immutable observations. */
+    protected boolean useSharedIntegration() { return false; }
     private static final double[] FLAT={6e-7,1e-12,1e-12,3.5e-7,3e-6,3.5e-7,1e-12,1e-12,1e-6,
             1e-6,1e-6,1e-12,1e-12,1e-12,1e-12,8e-7,1e-6,3.5e-7,1.2e-7,8e-8,3e-7,1.5e-6,3.5e-7,1e-12};
     private static final double[] DIRECT={3e-4,1e-12,1e-12,5e-6,.003,.00065,1e-12,1e-12,1e-12,
@@ -101,7 +103,7 @@ public class Regfma1NativeTrajectoryTest {
         assertThrows(IllegalArgumentException.class,()->Regfma1NativeReferenceCheckpoints.get("unknown"));
     }
 
-    private static void compareFault(String key,double[] bounds,Path directory) throws Exception {
+    private void compareFault(String key,double[] bounds,Path directory) throws Exception {
         Reference reference=Regfma1NativeReferenceCheckpoints.get(key);
         List<double[]> actual=run(reference,directory.resolve(key+".dyr"));
         double[] maximum=new double[bounds.length];
@@ -121,7 +123,7 @@ public class Regfma1NativeTrajectoryTest {
         System.out.println("Native REGFMA1 "+key+" channel maxima="+Arrays.toString(maximum));
     }
 
-    private static List<double[]> run(Reference reference,Path dyr) throws Exception {
+    private List<double[]> run(Reference reference,Path dyr) throws Exception {
         IpssCorePlugin.init();
         Files.writeString(dyr,"1 'REGFMA1' '1' "+reference.vflag()+" "+reference.qvflag()
                 +" "+String.join(" ",reference.constants().stream().map(Object::toString).toList())+" /\n"
@@ -142,6 +144,8 @@ public class Regfma1NativeTrajectoryTest {
         algorithm.setSimuOutputHandler(new StateMonitor());
         if(reference.fault())net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus2",net,
                 SimpleFaultCode.GROUND_3P,new Complex(0,1),null,.05,.05),"NativeThreeCycleFault");
+        if (useSharedIntegration())
+            algorithm.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm));
         assertTrue(algorithm.initialization());
         int steps=(int)Math.round(.3/reference.step());
         List<double[]> rows=new ArrayList<>();

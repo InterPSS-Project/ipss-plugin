@@ -22,6 +22,7 @@ import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock;
 import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.fadapter.psse.PsseDStabSolver;
 import com.interpss.dstab.device.DynamicBusDeviceType;
 import com.interpss.dstab.algo.DynamicSimuAlgorithm;
@@ -94,6 +95,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private final List<Participant> participants = new ArrayList<>();
     private final java.util.IdentityHashMap<Object, Participant> participantByController = new java.util.IdentityHashMap<>();
     private final List<Renewable> renewables = new ArrayList<>();
+    private final List<Participant> gridForming = new ArrayList<>();
     private record State(DoubleSupplier value, DoubleConsumer set,
             DoubleSupplier derivative, DoubleUnaryOperator project, BooleanSupplier active,
             BooleanSupplier frozen) {}
@@ -203,8 +205,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     public void setReuseNetworkEndpoint(boolean enabled) { reuseNetworkEndpoint = enabled; }
     public boolean isReuseNetworkEndpoint() { return reuseNetworkEndpoint; }
     public int getBoundMachineCount() { return machines.size(); }
-    public int getBoundRenewableCount() { return renewables.size(); }
-    /** Bound machine/controller states; excludes renewable bundle-owned states. */
+    public int getBoundRenewableCount() { return renewables.size()+gridForming.size(); }
+    /** Bound machine/controller/grid-forming states; excludes REGCA bundle-owned states. */
     public int getBoundDifferentialStateCount() {
         return states.size()+participants.stream().mapToInt(p->p.values.length).sum()
                 +localSt1Controllers.stream().mapToInt(c->c.states.size()).sum();
@@ -222,7 +224,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     @Override public boolean initialization() {
         machines.clear(); machineActive.clear(); attachmentsUnchanged.clear(); states.clear();
         localSt1Controllers.clear();
-        participants.clear(); participantByController.clear(); renewables.clear(); extendedStack=false;
+        participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); extendedStack=false;
         previous = null; wasActive = null; inputDiscontinuity = false;
         networkEndpointAvailable = false;
         fixedStep = dstabAlgo.getSimuStepSec();
@@ -279,6 +281,11 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 // The engine explicitly represents allowed generators without a
                 // dynamic model as static negative loads during initialization.
                 if (gen.getDynamicGenDevice()==null&&dstabAlgo.getNetwork().isAllowGenWithoutMach()) continue;
+                if (gen.getDynamicGenDevice() instanceof Regfma1Model r) {
+                    if (r.getPlantController()!=null)
+                        throw new IllegalArgumentException("Staggered REGFMA1 plant-controller coupling is not supported: "+gen.getId());
+                    continue;
+                }
                 if (gen.getDynamicGenDevice() instanceof Regca1Model r) {
                     if (r.getReeca1Controller()==null)
                         throw new IllegalArgumentException("Staggered REGCA1 requires REECA1: "+gen.getId());
@@ -381,6 +388,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     attachmentsUnchanged.add(()->gen.getDynamicGenDevice()==null);
                     continue;
                 }
+                if (gen.getDynamicGenDevice() instanceof Regfma1Model r) {
+                    extendedStack=true;
+                    Participant participant=new Participant(r,()->bus.isActive()&&gen.isActive()&&r.isActive());
+                    participants.add(participant);
+                    gridForming.add(participant);
+                    attachmentsUnchanged.add(()->gen.getDynamicGenDevice()==r&&r.getPlantController()==null);
+                    continue;
+                }
                 if (gen.getDynamicGenDevice() instanceof Regca1Model r) {
                     extendedStack=true;
                     r.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
@@ -437,6 +452,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private void evaluate() throws DStabSimuException { evaluate(false); }
 
     private void evaluate(boolean initialEndpoint) throws DStabSimuException {
+        for (var p:gridForming)
+            if (p.active.getAsBoolean()) p.model.evaluateStaggered(fixedStep,p.rates,0);
         for (var r:renewables)
             if (r.active.getAsBoolean()&&!r.model.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,0))
                 throw new DStabSimuException("Renewable boundary refresh failed: "+r.model.getId());

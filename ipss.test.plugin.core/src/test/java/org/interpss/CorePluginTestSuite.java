@@ -682,6 +682,8 @@ import org.junit.platform.suite.api.Suite;
 	EmbeddedTrajectoryReferenceTest.class,
 	Regfma1IndependentTrajectoryTest.class,
 	Regfma1NativeTrajectoryTest.class,
+	org.interpss.core.dstab.RegfmaSharedNativeTrajectoryTest.class,
+	org.interpss.core.dstab.RegfmaSharedIntegrationTest.class,
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
 	Esst4bAndesSmibConformanceTest.class,

@@ -13,6 +13,40 @@ import com.interpss.dstab.controller.cml.wrapper.ControllerFieldAnWrapper;
 
 /** Checks that audit observations detect a bad rate without changing the state. */
 class Texas2kInitializationAuditTest {
+    @Test void gridFormingStatesAndRatesAreIncludedWithoutAdvancingTheDevice(
+        @org.junit.jupiter.api.io.TempDir java.nio.file.Path directory) throws Exception {
+        org.interpss.IpssCorePlugin.init();
+        var ref=Regfma1NativeReferenceCheckpoints.get("flat00");
+        var dyr=directory.resolve("grid-forming.dyr");
+        java.nio.file.Files.writeString(dyr,"1 'REGFMA1' '1' 0 0 "
+            +String.join(" ",ref.constants().stream().map(Object::toString).toList())
+            +" /\n3 'GENCLS' '1' 9999999 0 /\n");
+        var context=new org.interpss.fadapter.psse.PSSEMultiFileLoader().loadDStab(
+            "testData/adpter/psse/v33/renewable/regfma1_native.raw",dyr.toString());
+        var net=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
+        net.setAllowGenWithoutMach(true);
+        algorithm.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true);
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSolver(new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm));
+        algorithm.setSimuMethod(com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(.0005);
+        algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+        assertTrue(algorithm.initialization());
+        var model=(org.interpss.dstab.renewable.Regfma1Model)
+            ((com.interpss.dstab.DStabGen)net.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
+        var before=model.getNamedStates();var rates=model.getStateDerivativeSnapshot();
+        var file=directory.resolve("initial-states.json");
+        Texas2kInitializationAudit.write(net,file);
+        var rows=com.google.gson.JsonParser.parseString(java.nio.file.Files.readString(file)).getAsJsonArray();
+        var row=rows.get(0).getAsJsonObject();
+        assertEquals("REGFMA1",row.get("type").getAsString());
+        var audit=row.getAsJsonObject("converter_audit");
+        assertEquals(9,audit.getAsJsonObject("integration_states").size());
+        assertEquals(9,audit.getAsJsonObject("rates").size());
+        assertEquals(0,audit.getAsJsonArray("rate_coverage_gaps").size());
+        assertEquals(before,model.getNamedStates());
+        assertEquals(rates,model.getStateDerivativeSnapshot());
+    }
     @Test void customStateAccessReportsMissingEvaluationAndDetectsNonzeroRate() {
         var model=new org.interpss.dstab.renewable.Wtdta1Model(
                 new org.interpss.dstab.renewable.Wtdta1Data(4,0,.5,1,0));
