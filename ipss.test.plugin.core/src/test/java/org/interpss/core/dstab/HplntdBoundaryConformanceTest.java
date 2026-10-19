@@ -32,7 +32,9 @@ public class HplntdBoundaryConformanceTest extends CorePluginTestSetup {
             var records=PsseDyrRecordReader.read(new StringReader(p.input()),p.name());var plan=HplntdNativeRecords.plan(records);assertEquals(Set.of(2),plan.plants().keySet());assertEquals(2,plan.downstream(2).size());equal(p.plant(),plan.plants().get(2).data());
             for(var link:plan.links()){assertEquals(HplntdBindingPlan.Status.LINKABLE,link.status());var expected=p.downstream(link.unit().source().busNumber());var actual=link.unit().data();assertEquals(expected.plantBus(),actual.plantBus());assertEquals(expected.plantModel(),actual.plantModel());assertArrayEquals(expected.relativeVariables(),actual.relativeVariables());assertArrayEquals(expected.constants(),actual.constants(),0);assertSame(plan.plants().get(2),link.plant());}
         }
-        assertTrue(DynamicModelCatalog.find("HPLNTDU").isEmpty(),"A decoder is not a loadable runtime");assertTrue(DynamicModelCatalog.find("REAXDU").isEmpty());
+        assertTrue(DynamicModelCatalog.find("HPLNTD").isEmpty(),"Source-list spelling is not an inferred native alias");
+        assertEquals(102,DynamicModelCatalog.find("HPLNTDU").orElseThrow().parameterCount());
+        assertEquals(23,DynamicModelCatalog.find("REAXDU").orElseThrow().parameterCount());
     }
     @Test void directNativeBranchQueriesMatchBothEndsAtThreeLivePlantBases()throws Exception{
         double[] maximum=new double[5];int profiles=0;

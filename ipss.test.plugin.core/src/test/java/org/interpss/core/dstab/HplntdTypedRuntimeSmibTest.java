@@ -21,7 +21,7 @@ public class HplntdTypedRuntimeSmibTest extends CorePluginTestSetup {
     record Fixture(DynamicSimuAlgorithm algorithm, Regca1Model first, Regca1Model second,
                    HplntdCoordinator group) {}
 
-    private Fixture fixture(Path dir, boolean reverse, double step) throws Exception {
+    static Path writeNetwork(Path dir)throws Exception {
         Files.createDirectories(dir);
         String raw=Files.readString(Path.of("testData/adpter/psse/v33/renewable/regfma1_native.raw"));
         var lines=raw.lines().toList();
@@ -33,9 +33,15 @@ public class HplntdTypedRuntimeSmibTest extends CorePluginTestSetup {
         String branch=lines.stream().filter(s->s.contains("2,'1 '")&&s.contains("1.00000E-1")).findFirst().orElseThrow();
         raw=raw.replace("0 / END OF BRANCH DATA",branch.replace("     1,     2,","     4,     2,")+"\n0 / END OF BRANCH DATA");
         Path network=dir.resolve("network.raw");Files.writeString(network,raw);
+        return network;
+    }
+    Fixture fixture(Path dir,boolean reverse,double step)throws Exception{return fixture(dir,reverse,step,false);}
+    Fixture fixture(Path dir, boolean reverse, double step,boolean imported) throws Exception {
+        Path network=writeNetwork(dir);
         var profile=HplntdAggregationNativeReference.profiles().getFirst();
-        String dynamic=profile.input().lines().filter(s->!s.contains("HPLNTDU")&&!s.contains("REAXDU"))
+        String dynamic=profile.input().lines().filter(s->imported||!s.contains("HPLNTDU")&&!s.contains("REAXDU"))
                 .reduce("",(a,b)->a+b+"\n");
+        if(imported&&reverse){var records=new ArrayList<>(dynamic.lines().toList());Collections.reverse(records);dynamic=String.join("\n",records)+"\n";}
         Path dyr=dir.resolve("network.dyr");Files.writeString(dyr,dynamic);
         var ctx=new PSSEMultiFileLoader().loadDStab(network.toString());
         var net=ctx.getDStabilityNet();var algo=ctx.getDynSimuAlgorithm();
@@ -52,7 +58,7 @@ public class HplntdTypedRuntimeSmibTest extends CorePluginTestSetup {
         var bindings=new ArrayList<>(List.of(new HplntdCoordinator.Binding(first,profile.downstream(1)),
                 new HplntdCoordinator.Binding(second,profile.downstream(4))));
         if(reverse)Collections.reverse(bindings);
-        var group=HplntdCoordinator.attach(profile.plant(),net.getBus("Bus2"),bindings);
+        var group=imported?first.getReeca1Controller().getHybridController().owner():HplntdCoordinator.attach(profile.plant(),net.getBus("Bus2"),bindings);
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algo.setSimuStepSec(step);algo.setTotalSimuTimeSec(.2);
         algo.setSimuOutputHandler(new StateMonitor());assertTrue(algo.initialization());
         return new Fixture(algo,first,second,group);
@@ -172,7 +178,7 @@ public class HplntdTypedRuntimeSmibTest extends CorePluginTestSetup {
     @Test void coupledCommandResponseComparedWithEveryNativeStateAndNetworkChannel(@TempDir Path dir)throws Exception {
         for(var profile:HplntdAggregationNativeReference.profiles()){
             if(!profile.name().startsWith("commands"))continue;
-            var f=fixture(dir.resolve(profile.name()),false,profile.step());var actual=new ArrayList<double[]>();
+            var f=fixture(dir.resolve(profile.name()),false,profile.step(),true);var actual=new ArrayList<double[]>();
             int steps=(int)Math.round(.2/profile.step()),event=(int)Math.round(.05/profile.step());
             for(int tick=0;tick<=steps;tick++){
                 if(tick==event){

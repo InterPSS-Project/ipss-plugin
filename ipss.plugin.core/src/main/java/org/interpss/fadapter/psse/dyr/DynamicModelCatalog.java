@@ -116,6 +116,12 @@ public final class DynamicModelCatalog {
     );
 
     private static final List<DynamicModelDescriptor> ADDITIONAL = List.of(
+            new DynamicModelDescriptor("HPLNTDU",Set.of(),PLANT_CONTROLLER,
+                    DynamicModelRecordSchema.exact(102),LOADABLE,"org.interpss.dstab.renewable.HplntdCoordinator",
+                    WeccApprovedDynamicModelCatalog.SOURCE),
+            new DynamicModelDescriptor("REAXDU",Set.of(),DynamicModelCategory.POWER_REFERENCE_CONTROLLER,
+                    DynamicModelRecordSchema.exact(23),LOADABLE,"org.interpss.dstab.renewable.HplntdCoordinator$Port",
+                    WeccApprovedDynamicModelCatalog.SOURCE),
             descriptor("REPCC",Set.of(),PLANT_CONTROLLER,92,LOADABLE,
                     "org.interpss.dstab.renewable.RepccModel","Plant%20Controller%20REPC_C.htm"),
             descriptor("REPCGFMC1U",Set.of(),PLANT_CONTROLLER,67,LOADABLE,

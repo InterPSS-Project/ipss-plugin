@@ -255,24 +255,36 @@ public class PSSEDStabDirectParser {
         pendingUel2c.clear();
         pendingOel2c.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
-        for (PsseDyrRecord record : records) {
+        var hybridRecords=new ArrayList<PsseDyrRecord>();
+        var removedHybrid=new java.util.LinkedHashMap<PsseDyrRecord,DynamicModelImportStatus>();
+        // Establish converter/electrical hosts before mechanical and auxiliary
+        // controllers. Stable sorting preserves all remaining source ordering.
+        var orderedRecords=new ArrayList<>(records);
+        orderedRecords.sort(java.util.Comparator.comparingInt(r->r.canonicalModelName().equals("REGCA1")?0:
+                r.canonicalModelName().equals("REECA1")?1:2));
+        for (PsseDyrRecord record : orderedRecords) {
             try {
                 String type = record.canonicalModelName();
                 GeneratorKey key = targetGeneratorKey(record);
-                boolean generatorTarget = DynamicModelCatalog.find(type)
+                boolean generatorTarget = !type.equals("HPLNTDU") && DynamicModelCatalog.find(type)
                         .map(model -> model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_CHARACTERISTIC
                                 && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.LOAD_PROTECTION
                                 && model.category() != org.interpss.fadapter.psse.dyr.DynamicModelCategory.SWITCHED_SHUNT)
                         .orElse(true);
                 if (generatorTarget && gnetRemovedGenerators.contains(key)) {
+                    if(type.equals("REAXDU"))removedHybrid.put(record,DynamicModelImportStatus.SKIPPED_GNET);
                     report.add(record, DynamicModelImportStatus.SKIPPED_GNET,
                             "generator intentionally removed by GNET preprocessing");
                     continue;
                 }
                 if (generatorTarget && modelRemovedGenerators.contains(key)) {
+                    if(type.equals("REAXDU"))removedHybrid.put(record,DynamicModelImportStatus.SKIPPED_MODEL_REMOVE);
                     report.add(record, DynamicModelImportStatus.SKIPPED_MODEL_REMOVE,
                             "dynamic stack intentionally removed by BAT_PLMOD_REMOVE type 1");
                     continue;
+                }
+                if(org.interpss.fadapter.psse.dyr.HplntdImporter.recognizes(record)){
+                    hybridRecords.add(record);continue;
                 }
                 if (!hasExpectedParameterCount(record)) {
                     report.add(record, DynamicModelImportStatus.REJECTED,
@@ -437,6 +449,7 @@ public class PSSEDStabDirectParser {
                     attached ? "" : "OEL2C requires a compatible loaded exciter");
         }
         pendingOel2c.clear();
+        org.interpss.fadapter.psse.dyr.HplntdImporter.attach(builder,hybridRecords,removedHybrid,report);
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {

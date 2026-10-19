@@ -565,6 +565,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         repccController=controller;
     }
     @Override public HplntdCoordinator.Port getHybridController(){return hybridController;}
+    boolean isOwnedBy(Regca1Model candidate){return converter==candidate;}
     public void setHybridController(HplntdCoordinator.Port controller){
         if(controller==null&&hybridController!=null)throw new IllegalStateException("Shared hybrid ownership cannot be detached one unit at a time");
         if(controller!=null&&(plantController!=null||repccController!=null||hybridController!=null||weakGridController!=null||windControlStack!=null))throw new IllegalStateException("Plant reference port is occupied");

@@ -29,9 +29,12 @@ class DynamicModelCatalogTest {
                 "WT1T and WT2T share WT12T1");
         var missing=nativeRows.stream().filter(row->!row.isImplementedExactly())
                 .map(WeccModelApproval::interpssModel).collect(java.util.stream.Collectors.toSet());
-        assertEquals(Set.of("HPLNTD"),missing,
+        assertEquals(Set.of(),missing,
                 "Any implementation claim must be backed by a real parser/runtime descriptor");
-        assertEquals(27,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(28,nativeRows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertTrue(DynamicModelCatalog.find("HPLNTD").isEmpty(),"Source spelling is not an inferred wrapper alias");
+        assertEquals(102,DynamicModelCatalog.find("HPLNTDU").orElseThrow().parameterCount());
+        assertEquals(23,DynamicModelCatalog.find("REAXDU").orElseThrow().parameterCount());
         for(String model:missing)assertTrue(DynamicModelCatalog.find(model).isEmpty(),
                 "Do not add a loadable placeholder, guessed schema, or unrelated engine: "+model);
     }

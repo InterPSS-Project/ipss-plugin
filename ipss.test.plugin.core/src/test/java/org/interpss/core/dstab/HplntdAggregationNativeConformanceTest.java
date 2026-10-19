@@ -48,7 +48,9 @@ public class HplntdAggregationNativeConformanceTest {
                 assertEquals(bus==1?1:2,unit.value(ReaxdData.Parameter.KZ));assertEquals(bus==1?2:1,unit.value(ReaxdData.Parameter.KW));
             }
         }
-        for(String name:List.of("HPLNTD","HPLNTDU","REAXDU"))assertTrue(DynamicModelCatalog.find(name).isEmpty(),"A foundation must not invent a runtime descriptor");
+        assertTrue(DynamicModelCatalog.find("HPLNTD").isEmpty(),"Source spelling is not a native wrapper alias");
+        assertEquals(102,DynamicModelCatalog.find("HPLNTDU").orElseThrow().parameterCount());
+        assertEquals(23,DynamicModelCatalog.find("REAXDU").orElseThrow().parameterCount());
     }
     @Test void everyRawAggregationAndDispatchSampleIncludingPauseAndTripSides()throws Exception {
         int profiles=0;

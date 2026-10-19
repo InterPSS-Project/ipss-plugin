@@ -361,6 +361,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         named.put("Active Power", p);
         named.put("Reactive Power", q);
         RenewableElectricalController controller = activeController();
+        if(controller!=null&&controller.getHybridController()!=null){
+            var port=controller.getHybridController();
+            port.owner().getPlantNamedStates().forEach((key,value)->named.put("HPLNTDU."+key,value));
+            port.getNamedStates().forEach((key,value)->named.put("REAXDU."+key,value));
+        }
         if (controller != null && controller.getRepccController() != null)
             controller.getRepccController().getNamedStates().forEach((key,value)->named.put("REPCC."+key,value));
         if (controller != null && controller.getWeakGridController() != null)

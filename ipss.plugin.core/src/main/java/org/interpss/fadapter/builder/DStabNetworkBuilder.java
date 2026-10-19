@@ -2,6 +2,8 @@ package org.interpss.fadapter.builder;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.interpss.dstab.control.exc.ExciterObjectFactory;
 import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
@@ -3638,6 +3640,22 @@ public class DStabNetworkBuilder {
         Reeca1Model controller = new Reeca1Model(data, converter);
         converter.setReeca1Controller(controller);
         return controller;
+    }
+
+    public record HybridUnit(String busId,String generatorId,org.interpss.dstab.renewable.ReaxdData data) {}
+
+    /** Resolve every downstream host before the shared coordinator mutates ports. */
+    public org.interpss.dstab.renewable.HplntdCoordinator addHplntd(String plantBusId,
+            org.interpss.dstab.renewable.HplntdData data,List<HybridUnit> units){
+        var plant=network.getDStabBus(plantBusId);
+        if(plant==null)throw new IllegalArgumentException("Hybrid plant bus not found: "+plantBusId);
+        var bindings=new ArrayList<org.interpss.dstab.renewable.HplntdCoordinator.Binding>();
+        for(var unit:units){
+            var converter=findRegca1(unit.busId(),unit.generatorId());
+            if(converter==null)throw new IllegalArgumentException("Hybrid unit requires REGCA1: "+unit.busId()+"/"+unit.generatorId());
+            bindings.add(new org.interpss.dstab.renewable.HplntdCoordinator.Binding(converter,unit.data()));
+        }
+        return org.interpss.dstab.renewable.HplntdCoordinator.attach(data,plant,bindings);
     }
 
     /** Dedicated native REPCC port; no legacy controller is overwritten. */

@@ -16,17 +16,17 @@ small, independently reproducible machine/infinite-bus or controller testbeds.
 Existing system results and failures remain historical evidence, not release
 gates for this revised objective.
 
-**Latest scoped acceptance status: incomplete, including missing implementations.**
-The approved native renewable audit finds **27 distinct families: 26 with a
-versioned loadable runtime path, one without a loadable runtime (HPLNTD)**, not merely missing
-benchmark coverage. REPCC now has exact standard import and a bounded REGCA1/REECA1
+**Latest scoped acceptance status: incomplete; bounded runtime presence is not full verification.**
+The approved native renewable audit finds **27 distinct families, all with bounded
+versioned loadable runtime paths**. Exact spellings, selectors, hosts and independent
+verification still have material gaps. REPCC now has exact standard import and a bounded REGCA1/REECA1
 runtime, enabled-MSS import and bounded fast-band switching comparisons. Slow-band
 clock precision and other initialization/host modes remain open. HPLNTD now has a
 typed data/aggregation, bounded plant/downstream kernels and a shared opt-in
 staggered integration boundary, and a bounded typed multi-unit runtime coordinator.
-Main-importer plant/downstream attachment is still missing.
-Exact wrapper decoding, immutable multi-unit link planning and a plant-base/
-physical-Mvar measurement API now exist separately from the main importer.
+Exact HPLNTDU/REAXDU wrappers now attach through the main importer with bus-owned
+group preflight, deferred electrical-controller ordering, explicit removal/error
+accounting and named-state observation. Source-list HPLNTD is not an inferred alias.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -466,6 +466,15 @@ and state definitions agree.
       Gates: 52 focused hybrid, 379 core-unit (six optional skips), and 1,480
       selected SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
       See [typed runtime evidence and remaining gaps](benchmarks/hplntd-typed-runtime-2026-10-18.md).
+    - [x] Connect exact HPLNTDU/REAXDU wrappers through the main importer and
+      builder, preserving bus ownership, order independence, per-generator
+      preprocessing and atomic command-port preflight. Add named-state monitoring,
+      ten import tests and imported native command comparisons without changing
+      reference data or tolerances. Runtime presence reaches 27/27 bounded family
+      paths, not full source-name/selector/host or independent fault acceptance.
+      Final gates: 113 focused, 379 core-unit (six optional skips), and 1,490
+      selected SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
+      See [import evidence and remaining work](benchmarks/hplntd-import-2026-10-18.md).
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve

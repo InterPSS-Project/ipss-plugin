@@ -9,7 +9,7 @@ import com.interpss.dstab.controller.cml.ICMLStateProvider;
  * switching are separate responsibilities; unsupported host modes fail early. */
 public final class HplntdCoordinator implements ICMLStateProvider {
     public record Binding(Regca1Model converter,ReaxdData data) {}
-    public static final class Port {
+    public static final class Port implements ICMLStateProvider {
         private final HplntdCoordinator owner;
         private final Regca1Model converter;
         private final Reeca1Model electrical;
@@ -32,6 +32,7 @@ public final class HplntdCoordinator implements ICMLStateProvider {
         public double activeIncrement(){return publishedP-p0;}
         public double reactiveIncrement(){return publishedQ-q0;}
         public double[] states(){if(lag==null)throw new IllegalStateException("Initialize the hybrid group first");return lag.states();}
+        @Override public Map<String,Double> getNamedStates(){return lag==null?Map.of():lag.getNamedStates();}
         private boolean active(){return converter.getDStabBus().isActive()&&converter.getParentGen().isActive();}
         private boolean eligible(){return active()&&converter.getDStabBus().isGenPV();}
     }
@@ -55,7 +56,7 @@ public final class HplntdCoordinator implements ICMLStateProvider {
         var list=new ArrayList<Port>();var keys=new HashSet<HplntdAggregation.Key>();
         for(var b:bindings){
             Objects.requireNonNull(b);var c=Objects.requireNonNull(b.converter());var d=Objects.requireNonNull(b.data());var e=c.getReeca1Controller();
-            if(c.getDStabBus().getNetwork()!=plantBus.getNetwork()||c.getParentGen().getDynamicGenDevice()!=c||e==null||e.getPlantController()!=null||e.getRepccController()!=null||e.getHybridController()!=null||e.getWeakGridController()!=null||e.getWindControlStack()!=null)
+            if(c.getDStabBus().getNetwork()!=plantBus.getNetwork()||c.getParentGen().getDynamicGenDevice()!=c||e==null||!e.isOwnedBy(c)||e.getPlantController()!=null||e.getRepccController()!=null||e.getHybridController()!=null||e.getWeakGridController()!=null||e.getWindControlStack()!=null)
                 throw new IllegalArgumentException("One unused REGCA1/REECA1 reference port on this network required per hybrid unit");
             if(c.getIntegrationScheme()!=Regca1Model.IntegrationScheme.MODIFIED_EULER||!c.getDStabBus().isGenPV()||!c.getDStabBus().isActive()||!c.getParentGen().isActive()||!Double.isFinite(c.getParentGen().getMvaBase())||c.getParentGen().getMvaBase()<=0)
                 throw new IllegalArgumentException("Typed hybrid units require active PV hosts, positive MVA and staged modified Euler");
@@ -115,6 +116,7 @@ public final class HplntdCoordinator implements ICMLStateProvider {
     public HplntdAggregation.Snapshot snapshot(){kernel();return snapshot;}
     public long predictorCount(){return predictors;}
     public long correctorCount(){return correctors;}
+    public Map<String,Double> getPlantNamedStates(){return kernel==null?Map.of():kernel.getNamedStates();}
     @Override public Map<String,Double> getNamedStates(){
         if(kernel==null)return Map.of();var states=new LinkedHashMap<>(kernel.getNamedStates());for(var p:ports)p.lag.getNamedStates().forEach((name,value)->states.put(p.key.bus()+"/"+p.key.generator()+"."+name,value));return Collections.unmodifiableMap(states);
     }

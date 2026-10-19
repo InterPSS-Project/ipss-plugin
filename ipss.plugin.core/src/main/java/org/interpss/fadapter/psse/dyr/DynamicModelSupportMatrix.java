@@ -37,7 +37,8 @@ public final class DynamicModelSupportMatrix {
                         .append(" | ").append(model.parameterCount())
                         .append(" | ").append(model.supportStatus())
                         .append(" | `").append(model.runtimeClassName()).append("` | ")
-                        .append("[PowerWorld](").append(model.reference()).append(") |\n"));
+                        .append("www.powerworld.com".equals(model.reference().getHost())?"[PowerWorld](":"[Reference](")
+                        .append(model.reference()).append(") |\n"));
         return markdown.toString();
     }
 

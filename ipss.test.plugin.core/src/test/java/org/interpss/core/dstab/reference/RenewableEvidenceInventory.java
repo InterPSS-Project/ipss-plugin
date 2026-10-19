@@ -15,11 +15,11 @@ public final class RenewableEvidenceInventory {
     public enum Scope { MISSING_IMPLEMENTATION, FOCUSED_ONLY, BOUNDED_DIALECT_COMPARISON,
         NATIVE_PARTIAL_PROFILE, NATIVE_RECORDED_PROFILE }
     public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP, WTPTB_NATIVE_MAP, WTGWGO_NATIVE_MAP, REECD_PAUX_NATIVE_MAP,
-        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, REPCGFMC_NATIVE_MAP, REPCC_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
+        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, REPCGFMC_NATIVE_MAP, REPCC_NATIVE_MAP, HPLNTD_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
     public record Entry(String model,String focusedTest,String trajectoryTest,Scope scope,
                         CheckpointKind storage,String checkpoint,String fixture,String limitation) {
         public Class<?> focusedClass() throws ClassNotFoundException {
-            return Class.forName("org.interpss.core.adapter.builder.dstab."+focusedTest,false,
+            return Class.forName(focusedTest.startsWith("org.")?focusedTest:"org.interpss.core.adapter.builder.dstab."+focusedTest,false,
                     RenewableEvidenceInventory.class.getClassLoader());
         }
         public Class<?> trajectoryClass() throws ClassNotFoundException {
@@ -29,6 +29,10 @@ public final class RenewableEvidenceInventory {
         /** Readability/integrity guard only, not cold-provenance or complete-model acceptance. */
         public void requireReadableCheckpoint() throws Exception {
             switch(storage) {
+                case HPLNTD_NATIVE_MAP -> {
+                    if(HplntdAggregationNativeReference.profiles().size()!=7)throw new IllegalStateException("Incomplete hybrid reference matrix");
+                    for(var p:HplntdAggregationNativeReference.profiles()){p.body();p.input();}
+                }
                 case NONE -> { if(!checkpoint.isEmpty())throw new IllegalStateException("Unexpected checkpoint"); }
                 case NATIVE_CSV -> {
                     Path path=Path.of("testData/reference/psse").resolve(checkpoint);
@@ -175,9 +179,9 @@ public final class RenewableEvidenceInventory {
                 bounded("WTPTA1","PsseType3WindControllerTest"),
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
-            Set.of("HPLNTD").stream().map(model->
-                new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        "Native HPLNTDU/REAXDU data, weighted dispatch and two-/thirteen-state kernels have bounded recorded-input evidence. Exact wrapper decoding, immutable multi-unit link planning and plant-base/physical-Mvar measurement APIs exist separately. A bounded typed REGCA1/REECA1 shared runtime now has flat, command, lifecycle and three-cycle fault checks. Main import, alternate hosts and complete selector/lifecycle acceptance remain missing; cross-method slew residuals are explicit and default modified Euler is unchanged."))
+            Set.of("HPLNTDU").stream().map(model->
+                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdTypedRuntimeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7","",
+                        "Exact HPLNTDU/REAXDU main import and bounded bus-owned REGCA1/REECA1 runtime, with order/removal diagnostics, recorded-input kernels, coupled commands and a three-cycle fault check. Source HPLNTD is not an inferred alias. Alternate hosts, selectors, switching, complete lifecycle and independent coupled fault acceptance remain open; cross-method slew residuals are explicit and default modified Euler is unchanged."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {
@@ -205,11 +209,11 @@ public final class RenewableEvidenceInventory {
                 .append("Source SHA-256: `").append(WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256).append("`.\n\n")
                 .append("The source renewable section has 45 rows: 29 approved, 28 with a native PTI mapping, ")
                 .append("and 27 distinct planned native families because WT1T/WT2T share WT12T1. ")
-                .append("26 families currently have loadable runtime paths; HPLNTD remains missing. REPCC has a bounded standard-native runtime and enabled-switching import with fast-band coupled evidence; source REPCCU is not an inferred alias, and slow-band clock precision/other initialization modes remain open. ")
+                .append("All 27 planned families now have bounded loadable runtime paths, not exhaustive source-name/selector coverage or complete verification. HPLNTDU/REAXDU exact wrappers use bus-owned multi-unit attachment; source HPLNTD is not an inferred alias. REPCC has a bounded standard-native runtime and enabled-switching import with fast-band coupled evidence; source REPCCU is not an inferred alias, and slow-band clock precision/other initialization modes remain open. ")
                 .append("REEC_E uses the proved native reference standard name REECE; the source-listed REECE1/REECEU1 names and wrappers remain unsupported. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
-                .append("Eight families have native recorded-profile links, eleven have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U, REGFMC1U, REPCGFMC1U and REPCC), ")
+                .append("Eight families have native recorded-profile links, twelve have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U, REGFMC1U, REPCGFMC1U, REPCC and HPLNTDU), ")
                 .append("six have only the explicitly bounded ANDES coupled comparison, and one has focused tests only. ")
                 .append("None of the latter seven is established as native simulator conformance. Legacy/retired and ")
                 .append("manufacturer-package supplemental models need a separate evidence expansion; their source rows ")
