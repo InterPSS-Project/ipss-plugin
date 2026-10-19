@@ -87,7 +87,8 @@ public class IeeestStabilizer extends AnnotateStabilizer {
         pmRef = machine.getPm();
         vtRef = bus.getVoltageMag();
         speedGain = data.mode() == 1 ? 1.0 : 0.0;
-        peGain = data.mode() == 3 ? 1.0 : 0.0;
+        // Accelerating power is Pm-Pe on the machine base, not Pm alone.
+        peGain = data.mode() == 3 ? 1.0 : data.mode() == 4 ? -1.0 : 0.0;
         pmGain = data.mode() == 4 ? 1.0 : 0.0;
         voltageGain = data.mode() == 5 ? 1.0 : 0.0;
         a1=data.a1(); a2=data.a2(); a3=data.a3(); a4=data.a4();

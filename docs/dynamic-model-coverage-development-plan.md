@@ -2,6 +2,27 @@
 
 ## Current checkpoint
 
+IEEEST power-input follow-up: correct mode 4 from mechanical power alone to
+Pm-Pe, keeping mode 3, operating-point references and integration unchanged.
+Predictor/corrector and cancellation tests fail before the missing negative
+electrical term is restored. Eight two-step flat/fault profiles have sixteen
+raw-exact cold runs, unchanged parameter readbacks and all eighteen allocated
+state channels. Allocation-only auditing avoids treating unused derivative VAR
+memory as physical power-input channels; the original pilots remain retained.
+All raw Vstab playback rows now have separate bounds, both limit directions
+are active, and fault errors refine by more than 60 percent at the half step.
+Coupled trajectories and seven-state observation coordinates remain separate
+open work. Native PSS1A correspondence uses the documented IEEEST record, not
+an invented alias for the typed fourteen-value interface. See the
+[source correction, exact-input evidence and TODO](benchmarks/ieeest-power-inputs-2026-10-19.md).
+Final gates pass 87 focused, 410 core and 1,790 scoped SMIB/model/solver tests
+with zero failures/errors and seven existing skips; all 53 offline checks pass.
+Source reconciliation covers 1,863 Java/POM files and 26 lossless fixture parts,
+including the committed converter voltage/event-memory follow-up. The private
+seal retains exact repeats, failing-before and unused-memory counterexamples,
+all-row diagnostics and tested source/dependency identities.
+No full Texas2k dynamic simulations are run.
+
 ESST1A event-side follow-up: add immutable BEFORE/AFTER sampling and separate
 reference assignment, resumed export and settled algebraic observations.
 Twelve existing numeric histories remain unchanged. Four extra cold observation

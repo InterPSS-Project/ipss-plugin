@@ -662,6 +662,7 @@ import org.junit.platform.suite.api.Suite;
 	SexsExciterTest.class,
 	Exst2PsseSmibConformanceTest.class,
 	IeeestPsseSmibConformanceTest.class,
+	org.interpss.core.dstab.IeeestPowerInputSmibTest.class,
 	Pss3bPsseSmibConformanceTest.class,
 	Pss2cPsseSmibConformanceTest.class,
 	Pss4bPsseSmibConformanceTest.class,

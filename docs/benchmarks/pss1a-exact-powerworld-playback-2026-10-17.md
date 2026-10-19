@@ -2,6 +2,11 @@
 
 ## Scope and source contract
 
+The later [native IEEEST power-input audit](ieeest-power-inputs-2026-10-19.md)
+checks the source table's two-selector/seventeen-constant correspondence and
+corrects the accelerating-power selector. It does not validate a literal
+fourteen-value PSS1A native record or replace the typed evidence below.
+
 This slice adds exact-model PowerWorld **recorded-speed playback** evidence for
 the existing InterPSS PSS1A engine. It does not replace its earlier equivalent
 IEEEST comparison, prove a native PTI PSS1A schema, or accept the complete SMIB

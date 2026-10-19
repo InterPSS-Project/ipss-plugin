@@ -56,7 +56,7 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     end = cfg.get('end_s', .5)
     assert end in (.5, 3.)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
-    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-', 'esst1a-washout-', 'esst1a-bypass-')
+    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-', 'esst1a-washout-', 'esst1a-bypass-', 'ieeest-input-')
     out = root / 'target' / (directory_prefix + tag)
     out.mkdir(exist_ok=False)
     probe_source = Path(probe_source or __file__).resolve()
@@ -119,7 +119,7 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
             if count:
                 allocation[array] = checked('index ' + kind + array, psspy.mdlind(1, '1', kind, array))
         assert tuple(allocation['N' + k] for k in ('CON', 'ICON', 'STATE', 'VAR')) == (
-            len(spec['constants']), len(spec['icons']), len(spec['states']), len(spec.get('variables', ()))), allocation
+            len(spec['constants']), len(spec['icons']), len(spec['states']), spec.get('variable_count', len(spec.get('variables', ())))), allocation
         constants = [checked('constant ' + kind, psspy.dsrval('CON', allocation['CON'] + i)) for i in range(allocation['NCON'])]
         icons = [checked('selector ' + kind, psspy.dsival('ICON', allocation['ICON'] + i)) for i in range(allocation['NICON'])]
         assert constants == [f32(v) for v in spec['constants']] and icons == list(spec['icons'])
