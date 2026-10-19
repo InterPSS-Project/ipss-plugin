@@ -3651,3 +3651,103 @@ twenty-second performance target remain open. Exact sources, arithmetic and
 ordering controls, full coupled output, prefix state traces, rejected controls
 and verification hashes are retained in private evidence set
 `2026-10-19-case2-converted-startup-precision`.
+
+### Dynamic arithmetic and state-based feedback localization
+
+The next control changes the dynamic linear solve while retaining the computed
+initial terminal point, original dynamic parameters, model equations, 1e-4
+voltage convergence threshold and diagnostic network-memory lifecycle. A
+test-only bridge sends the assembled complex matrix and current vector to an
+explicit single- or double-precision LU implementation. The single variant
+rounds the assembled matrix and vector before factorization/solution; this
+does not establish the reference's sparse ordering or its stamp-by-stamp
+arithmetic. Factors are reused until the matrix changes.
+
+The bridge passes a complex pivoting and matrix-invalidation check. Across the
+matched 1.2-second runs, cold states, all three unrounded network matrices and
+the first current vector are identical. Dense double precision reproduces the
+original sparse-double trajectory to 1.30e-14 pu voltage and 2.89e-12 degrees
+rotor angle. Thus the double control excludes a substantial bridge or matrix
+mapping error. The first single-precision solution has a scaled residual of
+5.09e-6 against the original double equations, versus 1.08e-14 for double.
+Single precision is not a more accurate linear solution of those equations.
+
+The complete single-precision extension retains all 10,005 rows and 4,810
+physical channels. Its first 1,205 physical rows are exactly equal to the
+short run, as are 9,640 parsed controller observations. Runtime classes, cold
+states and the three topology matrices remain unchanged. The full run uses
+three factorizations and 78,027 triangular solves. This instrumented dense
+pipe experiment takes 1,194 seconds and is not a performance implementation.
+
+| Full ten-second check | Dynamic double precision | Dynamic single precision |
+| --- | ---: | ---: |
+| Prefault voltage | 2,000/2,000 | 2,000/2,000 |
+| Prefault active power | 190/199 | 191/199 |
+| Prefault reactive power | 188/199 | 194/199 |
+| Prefault rotor maximum error below 0.02 degrees | 102/103 | 103/103 |
+| Fault and postfault voltage | 254/2,000 | 2,000/2,000 |
+| Fault and postfault active power | 100/199 | 195/199 |
+| Fault and postfault reactive power | 102/199 | 199/199 |
+| Full-window rotor RMSE below 0.1 degrees, provisional | 0/103 | 0/103 |
+
+Worst rotor RMSE falls from 2.955495 to 0.186132 degrees, both at bus 1051,
+but remains above the provisional limit. Its single-precision endpoint error
+is 0.430628 degrees. The four remaining postfault active-power failures are
+at buses 1084, 3061, 3098 and 3131, with NRMSE 0.010130, 0.013779, 0.008047
+and 0.005270 respectively. Bus 3061 has the largest active-power RMSE,
+1.716448 MW, and maximum error, 28.182146 MW at step 4,652. Eight prefault
+active-power and five prefault reactive-power checks also fail.
+
+The bus-1070 1.15 pu transition occurs at step 1,171 with dynamic single
+precision, one step after the supplied reference and earlier than the
+double-precision trajectory. Its resulting short error peak makes the
+1.2-second postfault prefix fail the voltage check. Over the complete
+postfault window the RMSE passes; the peak has not been discarded. All
+comparisons preserve step ordinal and event side, including both duplicated
+event timestamps. No time shift, interpolation or fitted state offset is used.
+
+A separate rejected control uniformly serializes every real dynamic-parameter
+literal to its binary32 value. It changes 21,821 of 22,812 double-valued real
+literals while preserving every binary32 bit pattern and all 93,271 other
+tokens. All classes, RAW inputs and the computed terminal point stay fixed.
+Its 1.2-second run leaves the transition one step late and reduces prefault
+reactive-power passing channels from 194 to 193. It is not extended or adopted.
+Four archived identical exports support representation equivalence for their
+single synchronous profile only, not this full network.
+
+The state accessors also support a separate voltage replay for all 96 renewable
+bundles. Each bundle initializes normally from the locally computed terminal
+P/Q/V; its stored states agree with the corresponding coupled-run snapshot to
+4.44e-16. No internal state is injected. Subsequent terminal phasors are taken
+directly from every supplied reference row. All 96 active-power channels pass
+both periods in this conditional replay. Reactive power passes 86/96 prefault
+and 95/96 after fault application. The remaining postfault Q failure at bus
+3113 retains the known instantaneous high-voltage-output limitation of this
+replay. The prefault Q failures have small absolute errors and narrow reference
+ranges; they remain failures under the declared normalization.
+
+This replay records 90,045 state/derivative observations for nine selected
+bundles and verifies empty rates before evaluation, matching state/rate names
+after evaluation, finite values and both event sides. It localizes the larger
+renewable active-power errors to network-voltage feedback rather than an
+unconditional failure of their computed initial states. It does not cover
+synchronous-machine power with prescribed inputs or establish coupled-network
+acceptance. The first expanded observer attempt stopped on a stale five-device
+count assertion; its log is retained beside the corrected nine-device replay.
+
+An independent calculation using three archived complex-angle exports checks
+the minimum network-iteration rule over every successive pair. Allowing a
+single converged solve gives maximum voltage error 7.98e-8 pu; requiring at
+least two gives 3.74e-5 pu. The final iteration counts are respectively one
+and two. These recorded-state conditional checks support a one-solve stopping
+option for the diagnostic lifecycle. They do not distinguish componentwise
+and complex-modulus convergence norms because both stop at the same iterations
+on these profiles.
+
+No production arithmetic or lifecycle implementation is changed by these
+experiments. Closer trajectories do not identify the reference sparse ordering.
+Production lifecycle integration, original-input acceptance, all 36 events
+and the twenty-second performance target remain open. Sources, binary inputs,
+matrix snapshots, complete output, failed controls, state observations and
+verification hashes are retained in private evidence set
+`2026-10-19-case2-dynamic-precision`.
