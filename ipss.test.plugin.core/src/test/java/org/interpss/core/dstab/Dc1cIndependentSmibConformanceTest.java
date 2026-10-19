@@ -30,8 +30,19 @@ public class Dc1cIndependentSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterSignals()throws Exception{
-        IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_dc1c.dyr").toString());
+        verify(EmbeddedTrajectoryReference.embedded("smib-genrou-dc1c"),CASE,"historical");
+    }
+
+    @Test
+    void freshColdPairedReferenceMatchesTheOriginalBounds(@org.junit.jupiter.api.io.TempDir Path staged)throws Exception {
+        var reference=org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.reference("dc1c");
+        var inputs=org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.stageInputs("dc1c",CASE,staged);
+        verify(reference,inputs,"fresh");
+    }
+
+    private void verify(EmbeddedTrajectoryReference reference,Path inputs,String referenceId)throws Exception {
+        IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(inputs.resolve("SMIB_v33.raw").toString(),
+                inputs.resolve("SMIB_v33_genrou_dc1c.dyr").toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(),"GENROU + DC1C SMIB load flow");
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(STEP);
@@ -46,7 +57,7 @@ public class Dc1cIndependentSmibConformanceTest {
         while(algorithm.getSimuTime()<1.0-STEP/2){assertTrue(algorithm.solveDEqnStep(true));
             record(actual,algorithm.getSimuTime(),network,machine,referenceMachine,exciter,initialRelativeAngle);}
 
-        EmbeddedTrajectoryReference reference=EmbeddedTrajectoryReference.embedded("smib-genrou-dc1c");
+
         assertTrue(!reference.samples().isEmpty());assertTrue(!reference.postEventSamples().isEmpty());
         int[] field={reference.fieldIndex("Bus","1","TSVpu"),reference.fieldIndex("Bus","2","TSVpu"),
                 reference.fieldIndex("Generator","1 1","TSMW"),reference.fieldIndex("Generator","1 1","TSMvar"),
@@ -65,6 +76,7 @@ public class Dc1cIndependentSmibConformanceTest {
             pw[4]-=expected.value(refAngle)+initialPwAngle;pw[5]-=expected.value(refSpeed);
             for(int i=0;i<field.length;i++){double error=Math.abs(row[i+1]-pw[i]);if(error>maximum[i]){maximum[i]=error;maximumTime[i]=expected.time();}}
         }
+        org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.trace("dc1c",referenceId,reference,actual);
         System.out.printf(Locale.ROOT,"DC1C Independent max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g edp=%.9g field=%.9g sensedV=%.9g vr=%.9g vf=%.9g leadLag=%.9g%n",Arrays.stream(maximum).boxed().toArray());
         System.out.println("DC1C Independent max-error times: "+Arrays.toString(maximumTime));
         String[] label={"Bus1 V","Bus2 V","P MW","Q Mvar","relative angle","relative speed","Eqp","PsiDp","PsiQpp","Edp","EField","sensed Vt","VR","VF","Lead-Lag"};

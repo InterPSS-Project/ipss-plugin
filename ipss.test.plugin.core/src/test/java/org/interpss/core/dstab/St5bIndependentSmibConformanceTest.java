@@ -34,8 +34,12 @@ public class St5bIndependentSmibConformanceTest {
     }
 
     static void assertConformance(String dyr,String artifact,String model)throws Exception{
+        assertConformance(dyr,artifact,model,CASE,EmbeddedTrajectoryReference.embedded(artifact),"historical");
+    }
+
+    static void assertConformance(String dyr,String artifact,String model,Path inputs,EmbeddedTrajectoryReference reference,String referenceId)throws Exception{
         IpssCorePlugin.init();var context=new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33.raw").toString(),CASE.resolve(dyr).toString());
+                inputs.resolve("SMIB_v33.raw").toString(),inputs.resolve(dyr).toString());
         var network=context.getDStabilityNet();var algorithm=context.getDynSimuAlgorithm();assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algorithm.setSimuStepSec(STEP);algorithm.setTotalSimuTimeSec(1);
         algorithm.setSimuOutputHandler(new StateMonitor());network.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",network,
@@ -48,7 +52,7 @@ public class St5bIndependentSmibConformanceTest {
         while(algorithm.getSimuTime()<1-STEP/2){assertTrue(algorithm.solveDEqnStep(true));
             record(actual,algorithm.getSimuTime(),network,machine,referenceMachine,exciter,initialAngle);}
 
-        var reference=EmbeddedTrajectoryReference.embedded(artifact);
+
         assertTrue(!reference.samples().isEmpty());assertTrue(!reference.postEventSamples().isEmpty());
         int[] field={reference.fieldIndex("Bus","1","TSVpu"),reference.fieldIndex("Bus","2","TSVpu"),
                 reference.fieldIndex("Generator","1 1","TSMW"),reference.fieldIndex("Generator","1 1","TSMvar"),
@@ -66,6 +70,7 @@ public class St5bIndependentSmibConformanceTest {
             double[] row=interpolate(actual,expected.time()),pw=new double[field.length];for(int i=0;i<field.length;i++)pw[i]=expected.value(field[i]);
             pw[4]-=expected.value(refAngle)+initialPwAngle;pw[5]-=expected.value(refSpeed);
             for(int i=0;i<field.length;i++){double error=Math.abs(row[i+1]-pw[i]);if(error>maximum[i]){maximum[i]=error;maximumTime[i]=expected.time();}}}
+        org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.trace(model.toLowerCase(Locale.ROOT),referenceId,reference,actual);
         System.out.println(model+" Independent max errors: "+Arrays.toString(maximum));
         System.out.println(model+" Independent max-error times: "+Arrays.toString(maximumTime));
         String[] label={"Bus1 V","Bus2 V","P MW","Q Mvar","relative angle","relative speed","Eqp","PsiDp","PsiQpp","Edp",

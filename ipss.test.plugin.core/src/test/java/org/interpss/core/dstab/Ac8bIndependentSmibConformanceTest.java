@@ -33,10 +33,21 @@ public class Ac8bIndependentSmibConformanceTest {
 
     @Test
     void threeCycleFaultMatchesIndependentBoundaryMachineAndExciterStates() throws Exception {
+        verify(EmbeddedTrajectoryReference.embedded("smib-genrou-ac8b"),CASE,"historical");
+    }
+
+    @Test
+    void freshColdPairedReferenceMatchesTheOriginalBounds(@org.junit.jupiter.api.io.TempDir Path staged)throws Exception {
+        var reference=org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.reference("ac8b");
+        var inputs=org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.stageInputs("ac8b",CASE,staged);
+        verify(reference,inputs,"fresh");
+    }
+
+    private void verify(EmbeddedTrajectoryReference reference,Path inputs,String referenceId)throws Exception {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
-                CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_ac8b_independent.dyr").toString());
+                inputs.resolve("SMIB_v33.raw").toString(),
+                inputs.resolve("SMIB_v33_genrou_ac8b_independent.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "GENROU + AC8B SMIB load flow");
@@ -63,7 +74,7 @@ public class Ac8bIndependentSmibConformanceTest {
                     initialRelativeAngle);
         }
 
-        EmbeddedTrajectoryReference reference = EmbeddedTrajectoryReference.embedded("smib-genrou-ac8b");
+
         assertTrue(!reference.samples().isEmpty());
         assertTrue(!reference.postEventSamples().isEmpty());
         int[] field = {
@@ -107,6 +118,7 @@ public class Ac8bIndependentSmibConformanceTest {
                 }
             }
         }
+        org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.trace("ac8b",referenceId,reference,actual);
         System.out.printf(Locale.ROOT,
                 "AC8B Independent max errors: v1=%.9g v2=%.9g pMW=%.9g qMvar=%.9g "
                 + "angleDeg=%.9g speed=%.9g eqp=%.9g psiDp=%.9g psiQpp=%.9g "

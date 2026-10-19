@@ -125,6 +125,33 @@ public class PowerWorldCsvRepeatabilityTest {
         }
     }
 
+    @Test void tenFreshExciterFixturesRetainCompleteFiniteRowsAndEventOccurrences()throws Exception {
+        for(String model:new String[]{"ac7c","ac8c","ac9c","dc1c","dc2c","ac8b","exac1a","st2c","st3c","st5c"}) {
+            var reference=org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.reference(model);
+            assertEquals(2003,reference.samples().size(),model);assertEquals(2001,reference.postEventSamples().size(),model);
+            assertEquals(2,reference.samples().stream().filter(row->row.occurrence()==1).count(),model);
+            assertEquals(0,reference.samples().get(0).time());assertEquals(1,reference.samples().get(2002).time());
+            for(var row:reference.samples())for(double value:row.values())org.junit.jupiter.api.Assertions.assertTrue(Double.isFinite(value),model);
+            assertThrows(UnsupportedOperationException.class,()->reference.fields().clear());
+        }
+    }
+
+    @Test void freshFixtureLookupNeverFallsBackToAnotherModel()throws Exception {
+        for(String model:new String[]{"missing","AC7C","../ac7c","ac11c"})
+            assertThrows(IllegalArgumentException.class,()->org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.reference(model));
+    }
+
+    @Test void freshInputStagingRejectsMutationAndCollisionBeforeWriting()throws Exception {
+        Path original=Path.of("testData/adpter/psse/v33/SMIB");Path staged=directory.resolve("staged");Files.createDirectories(staged);
+        Path sentinel=staged.resolve("SMIB_v33_genrou_ac7c.dyr");Files.writeString(sentinel,"do not overwrite");
+        assertThrows(IllegalArgumentException.class,()->org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.stageInputs("ac7c",original,staged));
+        assertEquals("do not overwrite",Files.readString(sentinel));org.junit.jupiter.api.Assertions.assertFalse(Files.exists(staged.resolve("SMIB_v33.raw")));
+        Path altered=directory.resolve("altered");Files.createDirectories(altered);Files.writeString(altered.resolve("SMIB_v33.raw"),"changed raw");
+        Path empty=directory.resolve("unwritten");
+        assertThrows(IllegalArgumentException.class,()->org.interpss.core.dstab.reference.FreshExciterPowerWorldReference.stageInputs("ac7c",altered,empty));
+        org.junit.jupiter.api.Assertions.assertFalse(Files.exists(empty));
+    }
+
     private PowerWorldCsvRepeatability.Summary compare(String expected, String actual) throws Exception {
         Path left = directory.resolve("expected.csv");
         Path right = directory.resolve("actual.csv");

@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+Ten-exciter fresh-reference follow-up: AC7C, AC8C, AC9C, DC1C, DC2C, AC8B,
+EXAC1A, ST2C, ST3C and ST5C now have additional always-active dense SMIB
+comparisons. Ten pinned numerical fixtures retain every raw event row;
+all twenty raw cold exports match their public projections exactly. Native
+running inputs are pinned separately from reference-tool dialect files.
+All 158 existing channel bounds pass in the 42-check focused gate without
+production model or tolerance changes. Final gates on baseline `91cc8b652`
+pass 410 plugin-core and 1,609 scoped SMIB/model/solver tests, with zero
+failures/errors and only existing skips. Private hashes retain source,
+references, exact native trace pairs and final reports for this slice.
+AC8B remains common-profile acceptance;
+active-branch and complete-model verification gaps remain open. See the
+[dense comparison checklist](benchmarks/exciter-fresh-dense-cross-tool-2026-10-19.md).
+
 AC11C fresh-reference follow-up: an always-active dense SMIB comparison now
 uses a pinned numerical projection of the recovered cold-run pair, retaining
 all 2,003 rows and 23 channels in the fixture. An explicit importer validates
@@ -1297,7 +1311,11 @@ the exciter mapping inventory, not its exhaustive profile or provenance work.
     Fresh pairs match exactly; ten historical profiles match numerically.
   - [ ] Recover six historical specification byte sequences; their separate
     current-specification cold evidence is retained. Diagnose the small AC11C
-    old/new discrepancy and accept new cross-solver profiles independently.
+    old/new discrepancy without rewriting historical results.
+  - [x] Add independent dense fresh coupled comparisons for all eleven recovered
+    profiles, with pinned public numeric projections, explicit full-row private
+    export audits and unchanged historical bounds. AC8B remains a declared
+    equation-equivalent common profile; event-side and active-branch gaps remain.
 
 See the [audit and explicit provenance gaps](benchmarks/exciter-evidence-audit-2026-10-17.md).
 This inventory does not close branch/profile coverage or system acceptance.
