@@ -2,6 +2,19 @@
 
 ## Current checkpoint
 
+IEEEST bus-measurement follow-up: implement local/remote frequency and actual
+bus-voltage inputs, strict remote validation, stage sampling and local-only
+voltage cutout. No dynamic state or shared integrator is added or changed.
+Sixteen profiles have thirty-two raw-exact cold runs and all-row input/output
+playback with explicit per-profile bounds and half-step refinement. Coupled
+flat/fault runs remain diagnostic, not complete network-frequency parity.
+Mode 6 and complete seven-state/coupled acceptance remain open. See the
+[measurement equations, evidence and TODO](benchmarks/ieeest-bus-measurements-2026-10-19.md).
+Final gates pass 118 focused, 415 core and 1,809 scoped SMIB/model/solver tests
+with zero failures/errors and seven existing skips, plus 57 offline checks.
+The source audit covers 1,869 Java/POM files and 56 lossless fixture parts.
+No full Texas2k dynamics are run.
+
 IEEEST zero-numerator follow-up: implement the native T5=0 unity-DC terminal
 lag rather than disabling the stabilizer. Restore the physical DC term in the
 deviation-coordinate realization without changing the shared integrator.

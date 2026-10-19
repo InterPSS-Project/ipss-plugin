@@ -663,6 +663,7 @@ import org.junit.platform.suite.api.Suite;
 	Exst2PsseSmibConformanceTest.class,
 	IeeestPsseSmibConformanceTest.class,
 	org.interpss.core.dstab.IeeestPowerInputSmibTest.class,
+	org.interpss.core.dstab.IeeestBusMeasurementSmibTest.class,
 	org.interpss.core.dstab.IeeestZeroNumeratorSmibTest.class,
 	Pss3bPsseSmibConformanceTest.class,
 	Pss2cPsseSmibConformanceTest.class,

@@ -18,9 +18,10 @@ public class IeeestStabilizer extends AnnotateStabilizer {
     private final IeeestData data;
     private double constantInputBias;
     private boolean initializingBias;
+    private BaseDStabBus<?, ?> measurementBus;
 
-    public double speedRef, peRef, pmRef, vtRef;
-    public double speedGain, peGain, pmGain, voltageGain;
+    public double speedRef, peRef, pmRef, vtRef, freqRef;
+    public double speedGain, peGain, pmGain, voltageGain, frequencyGain;
     public double a1, a2, a3, a4, a5, a6;
     public double t1, t2, t3, t4, t5, t6, ks, washoutGain;
     public double one = 1.0, lsmax, lsmin, vcu, vcl;
@@ -29,10 +30,26 @@ public class IeeestStabilizer extends AnnotateStabilizer {
             input="this.speedGain*mach.speed-this.speedGain*this.speedRef"
                     + "+this.peGain*mach.pe-this.peGain*this.peRef"
                     + "+this.pmGain*mach.pm-this.pmGain*this.pmRef"
-                    + "+this.voltageGain*mach.vt-this.voltageGain*this.vtRef",
+                    + "+this.busMeasurement.y",
             parameter={"this.one", "this.a1", "this.a2"},
             y0="this.secondOrderLeadLag.u0", initOrderNumber=1)
     public SecondOrderLagBlock secondOrderLag;
+
+    // A measurement is algebraic: it must sample the selected bus at each
+    // integration stage, without introducing another filter or stored state.
+    @AnControllerField(type=CMLFieldEnum.StaticBlock, input="this.one",
+            y0="0.0", initOrderNumber=-1)
+    public ICMLStaticBlock busMeasurement = new GainBlock() {
+        @Override public boolean initStateY0(double y0) {
+            super.k = 1.0;
+            return super.initStateY0(y0);
+        }
+        @Override public double getY() {
+            if (data.mode() == 2) return measurementBus.getFreq() - freqRef;
+            if (data.mode() == 5) return measurementBus.getVoltageMag() - vtRef;
+            return 0.0;
+        }
+    };
 
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="this.secondOrderLag.y",
             parameter={"this.a3", "this.a4", "this.a5", "this.a6"},
@@ -84,10 +101,17 @@ public class IeeestStabilizer extends AnnotateStabilizer {
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
+        if (data.mode() < 1 || data.mode() > 5 || data.remoteBus() < 0
+                || (data.remoteBus() != 0 && data.mode() != 2 && data.mode() != 5)) return false;
+        measurementBus = data.remoteBus() == 0 ? bus
+                : (BaseDStabBus<?, ?>) bus.getNetwork().getBus("Bus" + data.remoteBus());
+        if (measurementBus == null || !measurementBus.isActive()) return false;
         speedRef = machine.getSpeed();
         peRef = machine.getPe();
         pmRef = machine.getPm();
-        vtRef = bus.getVoltageMag();
+        vtRef = measurementBus.getVoltageMag();
+        freqRef = measurementBus.getFreq();
+        frequencyGain = data.mode() == 2 ? 1.0 : 0.0;
         speedGain = data.mode() == 1 ? 1.0 : 0.0;
         // Accelerating power is Pm-Pe on the machine base, not Pm alone.
         peGain = data.mode() == 3 ? 1.0 : data.mode() == 4 ? -1.0 : 0.0;
@@ -102,7 +126,8 @@ public class IeeestStabilizer extends AnnotateStabilizer {
         lsmax=data.lsmax(); lsmin=data.lsmin(); vcu=data.vcu(); vcl=data.vcl();
         // The filter chain stores deviations from this physical input. A
         // washout removes its DC term; the T5=0 lag must retain it instead.
-        double physicalInput=speedGain*(speedRef-1.0)+peGain*peRef+pmGain*pmRef+voltageGain*vtRef;
+        double physicalInput=speedGain*(speedRef-1.0)+peGain*peRef+pmGain*pmRef
+                +voltageGain*vtRef+frequencyGain*(freqRef-1.0);
         constantInputBias=t5==0.0 && t6>0.0 ? ks*physicalInput : 0.0;
         initializingBias=true;
         try { return super.initStates(bus, machine); }

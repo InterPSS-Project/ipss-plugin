@@ -139,6 +139,8 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
                 [-1, -1, -1, bus], ['V_BUS' + str(bus), 'ANGLE_BUS' + str(bus)]))
         else:
             checked('voltage channel', psspy.voltage_channel([-1, -1, -1, bus], 'V_BUS' + str(bus)))
+    for bus in cfg.get('frequency_buses', ()):
+        checked('frequency channel', psspy.bus_frequency_channel([-1, bus], 'FREQ' + str(bus)))
     for code, name in ((1, 'MACH_ANGLE'), (2, 'P_PU'), (3, 'Q_PU'),
                        (5, 'EFD'), (6, 'PMECH'), (7, 'MACH_SPEED')) + tuple(extra_machine_channels):
         checked('machine channel', psspy.machine_array_channel([-1, code, 1], '1', name))

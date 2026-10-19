@@ -2283,9 +2283,17 @@ public class PSSEDStabDirectParser {
         if (f.length < 22) return false;
         int mode = getInt(f, 3, 0);
         int remoteBus = getInt(f, 4, 0);
-        if ((mode < 1 || mode > 5 || mode == 2) || remoteBus != 0) {
+        if (mode < 1 || mode > 5 || remoteBus < 0
+                || (remoteBus != 0 && mode != 2 && mode != 5)) {
             log.warn("IEEEST remote-bus or unsupported signal mode {} at bus {}", mode, busId);
             return false;
+        }
+        if (remoteBus != 0) {
+            var measuredBus = builder.getBaseDStabNetwork().getBus("Bus" + remoteBus);
+            if (measuredBus == null || !measuredBus.isActive()) {
+                log.warn("IEEEST at bus {} requires an active measurement bus {}", busId, remoteBus);
+                return false;
+            }
         }
         var machine = builder.getBaseDStabNetwork().getMachine(busId + "-mach" + genId);
         if (machine == null || machine.getExciter() == null) {
