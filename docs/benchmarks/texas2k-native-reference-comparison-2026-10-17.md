@@ -3103,3 +3103,91 @@ the generator/shunt operating-point fixture. No complete event is accepted.
 Reproducible sources, frozen runtime hashes, state traces, duplicate-preserving
 comparisons, negative controls and the plot are retained in private evidence
 set `2026-10-18-case2-event-boundary-recovery`.
+
+### Converter network memory and event-rate localization
+
+The new state access separates two remaining reactive-power discrepancies.
+At bus 3113, the conditional output error begins when terminal voltage crosses
+1.2 pu, while the local reactive-current regulator remains constant. At bus
+3074, the error begins earlier, during the low-voltage fault. Terminal Q cannot
+be inverted into a reference regulator state using the former instantaneous
+high-voltage formula: that formula omits network-iteration memory. The first
+private state-localization report is superseded by the explicitly qualified
+output-localization v2 report; no unobserved reference state is claimed.
+
+Eight existing, cold-repeated synthetic state-step exports discriminate the
+high-voltage lifecycle without new simulator runs or parameter fitting. They
+cover Khv 0, 0.35 and 0.7, and Accel 0.4 and 0.8. On the lossless, zero-angle,
+zero-active-current profile, the following sequence matches the saved magnitude,
+terminal voltage, accumulated correction and reactive power:
+
+1. Update saved magnitude once per network solution using
+   `saved = (1-Accel)*saved + Accel*previous_terminal_magnitude`. A same-time run
+   restart also updates this memory; positive integration time is not required.
+2. Hold that saved value throughout the iterations. At each evaluation form
+   `decelerated = (1-Accel)*saved + Accel*current_terminal_magnitude` and accumulate
+   `correction += Khv*max(decelerated-Volim, 0)` from zero for this solution.
+3. Use `Iq = min(-Iolim, regulator_state-correction/decelerated)`.
+4. After the final voltage solve meets its finite voltage-change tolerance,
+   evaluate correction/output once more without another voltage solve.
+
+The conditional algebraic checks use recorded regulator states and preceding
+terminal/memory values. Across all eight exports, maximum voltage error is
+2.94e-7 pu, saved-magnitude error 1.20e-7 pu, correction error 1.46e-6 pu and
+reactive-power error 1.67e-6 pu on device base. Updating saved magnitude every
+inner iteration fails; omitting the final output evaluation also fails. The
+accepted output therefore need not have zero residual against the preceding
+voltage solve. These finite-tolerance observations do not establish general
+low-voltage gain, angle handling or a joint nonlinear-convergence criterion.
+The specification and earlier lifecycle limitations remain recorded in the
+[network-iteration report](network-iteration-lifecycle-2026-10-17.md).
+
+The same exports independently discriminate event derivative averaging. With
+the original 20-ms filter, 0.25-ms step, cold initial state and retained
+single-precision integration storage, the first post-discontinuity filter value
+matches the recorded float value when the new derivative is averaged with the
+preceding derivative. Across the complete eight recorded-voltage replays,
+maximum filter error is below 2.63e-6 pu; omitting averaging produces an initial
+0.001967-pu error. Controller freeze and limiter interactions require their own
+checks before extending this result to every bundle state.
+
+Two frozen coupled diagnostics retain the preceding 17 measured initial-Q
+selector signs, finite 1e-4 complex-voltage convergence rule and original model
+parameters. Both preserve all 1,003 prefault/startup rows and all 4,810 physical
+channels exactly. Each runs through 1.2 seconds, preserving both event sides.
+The table scores only the 202 recorded fault/postfault samples against each
+channel's complete ten-second reference range; it is not full-event acceptance.
+
+| Diagnostic | Voltage channels passing / 2,000 | P channels passing / 199 | Q channels passing / 199 |
+|---|---:|---:|---:|
+| Prior event-capture baseline | 1,948 | 194 | 190 |
+| Add high-voltage network memory | 1,951 | 195 | 191 |
+| Also average renewable event derivatives | 1,994 | 199 | 196 |
+
+In the combined diagnostic, bus 3113's postfault voltage NRMSE is 0.0001093
+and Q NRMSE is 0.0017443, both below 0.005. Its maximum voltage error falls
+from 0.006029 to 0.00008305 pu. Bus 3074's Q RMSE falls from 2.2731 to
+0.67284 Mvar, but a brief transition near 1.073 seconds increases its maximum
+Q error from 2.9783 to 3.3976 Mvar. It still fails. The remaining failing voltage
+channels are 1070, 3073, 3074, 3076, 3123 and 4002; failing Q channels are 1070,
+2076 and 3074. Worst short-prefix rotor error is 0.021071 degrees; complete
+prefault rotor failures are unchanged.
+
+A separate full ten-second prescribed-voltage replay isolates event-rate
+averaging without the new network-memory equation. It preserves all 96
+converters' initial states and pre-event outputs. Bus 1084 P RMSE falls from
+1.46779 to 0.019152 MW, with NRMSE 0.0002082. Bus 3074 Q RMSE falls from
+0.49893 to 0.14125 Mvar, but NRMSE 0.006064 still fails. Full postfault P/Q
+channel passes increase from 189/192 to 190/192; Q at 3074 and 3113 remains
+outside the limit. Prescribed voltage is a localization boundary, not a solved
+network trajectory.
+
+These are diagnostic overlays, with no new production model change in this
+slice. Production integration must give network memory explicit lifecycle
+ownership, retain pure observation methods, expose the effective averaged rates
+to the state monitor, verify freeze/reinitialization/failure behavior, and run
+the applicable model and system regression gates. Initial-Q selection,
+prefault rotor accuracy and the complete event comparisons remain open.
+Sources, raw archived probes, negative hypotheses, frozen runtimes, full
+comparisons and the inspected plot are retained in private evidence set
+`2026-10-18-case2-converter-boundaries`.
