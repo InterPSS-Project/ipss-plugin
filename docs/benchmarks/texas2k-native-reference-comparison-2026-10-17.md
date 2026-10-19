@@ -4,8 +4,10 @@
 
 The supplied corpus contains 36 ten-second disturbances across six cases. The
 updated user contract covers all matched bus-voltage magnitudes, machine
-terminal P/Q, and generator rotor angles. Bus-voltage angles are absent from
-the references. The user confirmed the following limits and conventions:
+terminal P/Q, and generator rotor angles. The original selected-channel
+references omit bus-voltage angles; the additional full-system Case 2
+bus-6307 reference includes them. The user confirmed the following limits and
+conventions:
 
 - Voltage and P/Q: NRMSE below `0.001` before the event and `0.005` from event
   application, including the fault, through the end of the run.
@@ -44,10 +46,13 @@ private verification archive, following repository policy.
 ## First validation case
 
 Case 2 is the first testing and benchmarking case, as requested by the user.
-Its largest initial voltage difference is `2.14042e-6` pu across the supplied
-observations. This power-flow agreement supports starting here; dynamic
-acceptance still requires the separate voltage, terminal P/Q, and rotor-angle
-checks above.
+The earlier largest initial voltage difference of `2.14042e-6` pu applies to
+60 original observations covering only 51 unique buses. Bus 1033 was absent
+from that set. It does not establish agreement at all 2,000 buses. The later
+full-system reference exposes a `0.01119813` pu mismatch at bus 1033 that was
+already present in the earlier local solution. Initial power-flow agreement
+must now be checked across the complete supplied bus set before drawing
+conclusions about dynamic initialization.
 
 The first disturbance is `case2_bus_fault_01` at bus 6307. A 1.2-second
 diagnostic covers the prefault interval, fault application, clearing, and early
@@ -269,6 +274,19 @@ retained for investigation; neither data set is used to fit voltage offsets.
 Before correction, Case 3 and 4 initial-reference differences reached `0.02270`
 and `0.02020` pu respectively. Intermediate incomplete control variants are
 preserved as failed diagnostics, not accepted power-flow solutions.
+
+An explicit historical audit confirms that the larger Case 2 initial mismatch
+is newly observed, rather than a regression in the local power-flow solution.
+The earlier power-flow export and the initial values in the full ten-second
+local run differ by at most `8.43769e-15` pu across all 2,000 active buses.
+Both runs use byte-identical RAW inputs. At bus 1033, the earlier local voltage
+is `1.026325785498238` pu and the later value is `1.026325785498240` pu; the
+newly supplied full-system reference is `1.015127658843994` pu. On the original
+51-bus set, the current local maximum error against the original references
+remains `2.14042e-6` pu. Against the new full reference on that same bus set,
+it is `2.14084e-6` pu. The earlier narrow observation set therefore missed
+the operating-point discrepancy. Detailed rows and input hashes are retained
+privately in `2026-10-18-case2-initial-voltage-coverage-audit`.
 
 ## Native wind-speed discrepancy
 
