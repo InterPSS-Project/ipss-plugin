@@ -519,7 +519,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         networkEndpointAvailable = false;
         if (discontinuity) for (var r:renewables)
             if (r.active.getAsBoolean()) r.model.rebaseNextTwoStep();
-        if (!reuse) networkSolutionStep();
+        if (!reuse) {
+            // The event-angle rebase belongs to this zero-time initial solve,
+            // before any bus-frequency or controller state advances.
+            String previousStage = networkSolutionStage;
+            networkSolutionStage = "INITIAL";
+            try { networkSolutionStep(); }
+            finally { networkSolutionStage = previousStage; }
+        }
         networkEndpointAvailable = false;
         if (discontinuity) rebaseDynamicModelInputs(method);
         evaluate();

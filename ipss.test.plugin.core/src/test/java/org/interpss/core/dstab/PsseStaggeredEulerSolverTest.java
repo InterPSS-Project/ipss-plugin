@@ -67,22 +67,89 @@ class PsseStaggeredEulerSolverTest {
     @Test void endpointReuseSkipsOnlyOrdinaryInitialSolve() throws Exception {
         var algo = load();
         var calls = new java.util.concurrent.atomic.AtomicInteger();
+        var stages = new java.util.ArrayList<String>();
         var shared = new PsseStaggeredEulerSolver(algo) {
             @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                stages.add(networkSolutionStage);
                 calls.incrementAndGet();return super.networkSolutionStep();
             }
         };
         algo.setSolver(shared);
         assertFalse(shared.isReuseNetworkEndpoint());
         assertTrue(algo.initialization());
-        calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(2,calls.get());
+        stages.clear();calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(2,calls.get());
+        assertEquals(java.util.List.of("INITIAL", "DIRECT"), stages);
         shared.setReuseNetworkEndpoint(true);
-        calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(1,calls.get());
+        stages.clear();calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(1,calls.get());
+        assertEquals(java.util.List.of("DIRECT"), stages);
         shared.notifyDiscontinuity();
-        calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(2,calls.get());
+        stages.clear();calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(2,calls.get());
+        assertEquals(java.util.List.of("INITIAL", "DIRECT"), stages);
         algo.getNetwork().setYMatrixDirty(true);
         calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(2,calls.get());
         calls.set(0);assertTrue(algo.solveDEqnStep(true));assertEquals(1,calls.get());
+    }
+
+    @Test void initialSolveRestoresStageWhenTheNetworkThrows() throws Exception {
+        var algo = load();
+        class FailingSolver extends PsseStaggeredEulerSolver {
+            boolean fail;
+            FailingSolver() { super(algo); }
+            String stage() { return networkSolutionStage; }
+            @Override public boolean networkSolutionStep() throws com.interpss.dstab.common.DStabSimuException {
+                if (fail) {
+                    assertEquals("INITIAL", networkSolutionStage);
+                    throw new com.interpss.dstab.common.DStabSimuException("Initial network failure");
+                }
+                return super.networkSolutionStep();
+            }
+        }
+        var shared = new FailingSolver();algo.setSolver(shared);
+        assertTrue(algo.initialization());shared.fail = true;
+        String before = shared.stage();
+        assertThrows(com.interpss.dstab.common.DStabSimuException.class,
+                () -> shared.nextStep(0., algo.getSimuStepSec(), DynamicSimuMethod.MODIFIED_EULER));
+        assertEquals(before, shared.stage());
+    }
+
+    @Test void eventConvergenceRebasesTheAcceptedAngleBeforeFrequencyIntegration() throws Exception {
+        IpssCorePlugin.init();
+        String base="testData/adpter/psse/v33/renewable/";
+        var context=new PSSEMultiFileLoader().loadDStab(
+                base+"regca_reeca_repca_bus1062.raw",base+"regca_reeca_repca_bus1062.dyr");
+        var algo=context.getDynSimuAlgorithm();var network=context.getDStabilityNet();
+        network.setBypassDataCheck(true);network.setAllowGenWithoutMach(true);
+        assertTrue(algo.getAclfAlgorithm().loadflow());
+        var events = new java.util.concurrent.atomic.AtomicInteger();
+        var shared=new PsseStaggeredEulerSolver(algo) {
+            @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
+                    throws com.interpss.dstab.common.DStabSimuException {
+                super.rebaseDynamicModelInputs(method);
+                events.incrementAndGet();
+                for (var bus : network.getBusList()) {
+                    if (bus.getBusFreqMeasureBlock() instanceof
+                            com.interpss.dstab.controller.deqn.measure.BusFreqMeasurementImpl frequency) {
+                        var state=frequency.captureModelState();
+                        double mismatch=Math.IEEEremainder(
+                                state.angle0()+state.lastInput()-bus.getVoltageAng(), 2*Math.PI);
+                        assertEquals(0., mismatch, 1e-12,
+                                "Rebase after nonlinear convergence, before frequency integration: "+bus.getId());
+                    }
+                }
+            }
+        };
+        shared.setReuseNetworkEndpoint(true);algo.setSolver(shared);
+        algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);algo.setSimuStepSec(.00025);
+        algo.setTotalSimuTimeSec(.006);algo.setSimuOutputHandler(new StateMonitor());
+        network.addDynamicEvent(com.interpss.dstab.DStabObjectFactory.createBusFaultEvent(
+                "Bus2",network,com.interpss.core.acsc.fault.SimpleFaultCode.GROUND_3P,
+                new org.apache.commons.math3.complex.Complex(0,.2),null,.002,.002),"FrequencyBoundary");
+        assertTrue(algo.initialization());
+        var converter=(org.interpss.dstab.renewable.Regca1Model)
+                ((com.interpss.dstab.DStabGen)network.getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
+        converter.setNetworkIterationHighVoltageEnabled(true);
+        for (int i=0;i<24;i++) assertTrue(algo.solveDEqnStep(true));
+        assertEquals(2, events.get());
     }
 
     @Test void explicitDiscontinuityRebasesRenewableBundleOnlyOnTheNextStep() throws Exception {
