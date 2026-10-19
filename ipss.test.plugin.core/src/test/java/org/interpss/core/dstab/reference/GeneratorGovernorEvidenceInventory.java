@@ -35,8 +35,15 @@ public final class GeneratorGovernorEvidenceInventory {
                     if (EmbeddedTrajectoryReference.embedded(checkpoint).samples().isEmpty())
                         throw new IllegalStateException("Empty " + checkpoint);
                 }
-                case PSSE -> EmbeddedNativeTrajectoryValues.verifyCheckpoint(
-                        Path.of(checkpoint), EmbeddedNativeTrajectoryValues.bytes(Path.of(checkpoint)));
+                case PSSE -> {
+                    EmbeddedNativeTrajectoryValues.verifyCheckpoint(
+                            Path.of(checkpoint), EmbeddedNativeTrajectoryValues.bytes(Path.of(checkpoint)));
+                    if(model.equals("GENQEC")){
+                        var profiles=GenqecSchemaNativeReference.profiles();
+                        if(profiles.size()!=10)throw new IllegalStateException("Incomplete native generator selector matrix");
+                        for(var profile:profiles){profile.body();profile.input();profile.network();}
+                    }
+                }
                 case ANDES -> {
                     if (EmbeddedCsvTrajectoryValues.lines(checkpoint).isEmpty())
                         throw new IllegalStateException("Empty " + checkpoint);
@@ -53,10 +60,10 @@ public final class GeneratorGovernorEvidenceInventory {
             new Evidence("GENROU", "DStabNetworkBuilderMachineTest",
                     "mach.GenrouAndesSmibConformanceTest", Oracle.ANDES,
                     "genrou-smib-line-trip.csv", "SMIB_v33_genrou.dyr"),
-            new Evidence("GENQEC", "DStabNetworkBuilderMachineTest",
+            new Evidence("GENQEC", "GenqecNativeSchemaTest",
                     "mach.GenqecuPsseSmibConformanceTest", Oracle.PSSE,
                     "smib-genqecu/psse.csv", "SMIB_v33_genqecu.dyr"),
-            new Evidence("GENQEJ", "DStabNetworkBuilderMachineTest",
+            new Evidence("GENQEJ", "GenqecNativeSchemaTest",
                     "mach.GenqejPsseSmibConformanceTest", Oracle.PSSE,
                     "smib-genqej/psse.csv", "SMIB_v33_genqej.dyr"),
             new Evidence("GGOV1", "PsseGgov1GovernorTest",
@@ -146,6 +153,10 @@ public final class GeneratorGovernorEvidenceInventory {
                 .append("POWERWORLD identifies archived PowerWorld exports; PSSE and PSSE_TGOV3D ")
                 .append("identify native reference simulator exports; ANDES identifies the separate open-source oracle. ")
                 .append("A reference's presence alone does not prove its comparison passes.\n\n")
+                .append("GENQEC's exact standard input is one selector plus sixteen constants; GENQECU and GENQEJU use the allocation wrapper. ")
+                .append("The former flat eighteen-field interchange is not a native input. Native nonzero selectors normalize to scaled quadratic, separately from the typed three-way setting. ")
+                .append("GenqecSchemaNativeReference adds ten complete raw histories from twenty cold runs and GenqecNativeSelectorConformanceTest checks imported three-cycle fault equivalence. ")
+                .append("These establish the schema/selector boundary, not complete machine or cross-tool trajectory parity. See [the scoped source and evidence report](benchmarks/genqec-native-schema-2026-10-18.md).\n\n")
                 .append("| Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |\n")
                 .append("|---|---|---|---|---|---|\n");
         for (Evidence entry : ENTRIES) {

@@ -2,7 +2,19 @@
 
 ## Current checkpoint
 
-WT12A1B slice in progress: explicit-ID wrapper parsing, native-versus-published
+GENQEC bounded native-schema slice: the documented one-ICON/sixteen-CON
+standard record replaces the incorrect flat eighteen-field interchange.
+GENQECU/GENQEJU wrappers now normalize every nonzero native selector to scaled
+quadratic without changing the typed three-way API or shared machine engine.
+Four before-fix guards fail and 51 focused checks now pass. Twenty native cold
+runs and eight final PowerWorld runs provide exact-input selector evidence and
+repeatable diagnostics. The final gate passes 1,559 SMIB/model/solver tests
+(one existing diagnostic skip) and 401 plugin-core tests (six optional skips),
+with zero failures/errors. Source/run/report hashes retain the scoped commit
+evidence; complete coupled parity remains open. See the
+[GENQEC source/evidence checklist](benchmarks/genqec-native-schema-2026-10-18.md).
+
+WT12A1B bounded slice committed as `53a70fea0`: explicit-ID wrapper parsing, native-versus-published
 initial-reference selection, persistent-low-voltage retriggering and integration
 stage guards now pass sixteen focused integration checks (21 reactor checks
 including tokenizer tests). Twenty-four native runs and twelve

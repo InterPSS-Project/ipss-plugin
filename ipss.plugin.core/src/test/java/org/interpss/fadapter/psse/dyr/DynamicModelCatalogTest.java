@@ -84,7 +84,9 @@ class DynamicModelCatalogTest {
         assertEquals(Set.of(6, 12), DynamicModelCatalog.find("WTDTBU1").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertEquals("GENQEJ", DynamicModelCatalog.canonicalName("genqeju"));
-        assertEquals(18, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
+        assertEquals(17, DynamicModelCatalog.find("GENQEC").orElseThrow().parameterCount());
+        assertEquals(Set.of(17,23), DynamicModelCatalog.find("GENQEC").orElseThrow().recordSchema().acceptedParameterCounts());
+        assertEquals(Set.of(23), DynamicModelCatalog.find("GENQEJ").orElseThrow().recordSchema().acceptedParameterCounts());
         assertEquals(16, DynamicModelCatalog.find("GENTPJ1").orElseThrow().parameterCount());
         assertEquals(30, DynamicModelCatalog.find("PERC1").orElseThrow().parameterCount());
         assertEquals(DynamicModelCategory.LOAD_CHARACTERISTIC,

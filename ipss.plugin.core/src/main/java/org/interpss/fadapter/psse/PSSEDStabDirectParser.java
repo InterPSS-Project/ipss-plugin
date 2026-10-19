@@ -570,9 +570,9 @@ public class PSSEDStabDirectParser {
             case "GENROE":
                 return procGenrou(busId, genId, fields);
             case "GENQEC":
-                return procGenqec(busId, genId, fields);
+                return procGenqec(busId, genId, record);
             case "GENQEJ":
-                return procGenqej(busId, genId, fields);
+                return procGenqej(busId, genId, record);
             case "GENTPJ1":
                 return procGentpj1(busId, genId, fields);
             case "GENTRA":
@@ -3034,91 +3034,59 @@ public class PSSEDStabDirectParser {
         return builder.addGovH6e(busId, genId, d) != null;
     }
 
-    // Native PSS/E GENQEC interchange order. Accel is a numerical
-    // network-boundary iteration parameter, not a machine differential state.
-    // IBUS 'GENQEC' ID Accel T'do T''do T'qo T''qo H D Xd Xq X'd X'q
-    //                    X''d X''q Xl S(1.0) S(1.2) Kw SatFunc
-    // Ra comes from the RAW generator source impedance. Rcomp and Xcomp are
-    // PowerWorld typed properties and are not fields in the PSS/E DYR record.
-    private boolean procGenqec(String busId, String genId, String[] f) throws InterpssException {
-        if ("USRMDL".equalsIgnoreCase(f[1])) {
-            if (f.length != 27
-                    || getInt(f, 4, -1) != 1 || getInt(f, 5, -1) != 1
-                    || getInt(f, 6, -1) != 1 || getInt(f, 7, -1) != 16
-                    || getInt(f, 8, -1) != 6 || getInt(f, 9, -1) != 1) {
-                log.warn("Invalid native GENQECU allocation at bus {}", busId);
-                return false;
+    // Ra comes from the RAW generator source impedance. Compensation and
+    // acceleration remain typed properties, not native record fields.
+    /** Native standard GENQEC: one ICON followed by sixteen CON values.
+     * Wrapper allocation precedes the same ICON/CON vector. Typed three-way
+     * saturation and acceleration settings are not native record fields. */
+    private int nativeGenqecSelectorOffset(PsseDyrRecord record, boolean allowStandard) {
+        if ("USRMDL".equalsIgnoreCase(record.fields().get(1))) {
+            int[] allocation = {1, 1, 1, 16, 6, 1};
+            if (record.parameterCount() != 23) return -1;
+            for (int i = 0; i < allocation.length; i++) {
+                if (record.intParameter(i) != allocation[i]) return -1;
             }
-            GenqecData data = new GenqecData(
-                    getDouble(f, 15, 0.0), getDouble(f, 16, 0.0), 0.0,
-                    getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
-                    getDouble(f, 19, 0.0), getDouble(f, 20, 0.0),
-                    getDouble(f, 21, 0.0), getDouble(f, 22, 0.0), getDouble(f, 23, 0.0),
-                    getDouble(f, 11, 0.0), getDouble(f, 13, 0.0),
-                    getDouble(f, 12, 0.0), getDouble(f, 14, 0.0),
-                    getDouble(f, 24, 0.0), getDouble(f, 25, 0.0),
-                    0.0, 0.0, 0.0, getDouble(f, 26, 0.0), getInt(f, 10, 0));
-            double[] rating = getGenRating(busId, genId);
-            builder.addGenqec(busId, genId, rating[0], rating[1], data);
-            return true;
+            return 6;
         }
-        if (f.length < 21) {
-            log.warn("Incomplete GENQEC record at bus {}: expected 21 fields, found {}", busId, f.length);
-            return false;
+        return allowStandard && record.parameterCount() == 17 ? 0 : -1;
+    }
+
+    private double[] nativeGenqecConstants(PsseDyrRecord record, int selectorOffset) {
+        double[] constants = new double[16];
+        for (int i = 0; i < constants.length; i++) {
+            constants[i] = record.doubleParameter(selectorOffset + 1 + i);
+            if (!Double.isFinite(constants[i])) {
+                throw new IllegalArgumentException("Generator constant must be finite: " + (i + 1));
+            }
         }
-        GenqecData data = new GenqecData(
-                getDouble(f, 8, 0.0), getDouble(f, 9, 0.0), 0.0,
-                getDouble(f, 10, 0.0), getDouble(f, 11, 0.0),
-                getDouble(f, 12, 0.0), getDouble(f, 13, 0.0),
-                getDouble(f, 14, 0.0), getDouble(f, 15, 0.0), getDouble(f, 16, 0.0),
-                getDouble(f, 4, 0.0), getDouble(f, 6, 0.0),
-                getDouble(f, 5, 0.0), getDouble(f, 7, 0.0),
-                getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
-                0.0, 0.0,
-                getDouble(f, 3, 0.0), getDouble(f, 19, 0.0), (int) getDouble(f, 20, 0.0));
+        return constants;
+    }
+
+    private boolean procGenqec(String busId, String genId, PsseDyrRecord record) throws InterpssException {
+        int selectorOffset = nativeGenqecSelectorOffset(record, true);
+        if (selectorOffset < 0) return false;
+        // Every nonzero native ICON means scaled quadratic, including 2/-1.
+        int saturation = record.intParameter(selectorOffset) == 0 ? 0 : 1;
+        double[] c = nativeGenqecConstants(record, selectorOffset);
+        GenqecData data = new GenqecData(c[4], c[5], 0.0,
+                c[6], c[7], c[8], c[9], c[10], c[11], c[12],
+                c[0], c[2], c[1], c[3], c[13], c[14],
+                0.0, 0.0, 0.0, c[15], saturation);
         double[] rating = getGenRating(busId, genId);
         builder.addGenqec(busId, genId, rating[0], rating[1], data);
         return true;
     }
 
-    // GENQEJ has a flat 18-field interchange form. Native 36.7 supplies
-    // GENQEJU through USRMDL with six allocation fields, one ICON, and 16 CONs.
-    private boolean procGenqej(String busId, String genId, String[] f) throws InterpssException {
-        if ("USRMDL".equalsIgnoreCase(f[1])) {
-            if (f.length != 27
-                    || getInt(f, 4, -1) != 1 || getInt(f, 5, -1) != 1
-                    || getInt(f, 6, -1) != 1 || getInt(f, 7, -1) != 16
-                    || getInt(f, 8, -1) != 6 || getInt(f, 9, -1) != 1) {
-                log.warn("Invalid native GENQEJU allocation at bus {}", busId);
-                return false;
-            }
-            GenqejData data = new GenqejData(
-                    getDouble(f, 15, 0.0), getDouble(f, 16, 0.0), 0.0,
-                    getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
-                    getDouble(f, 19, 0.0), getDouble(f, 20, 0.0),
-                    getDouble(f, 21, 0.0), getDouble(f, 22, 0.0), getDouble(f, 23, 0.0),
-                    getDouble(f, 11, 0.0), getDouble(f, 13, 0.0),
-                    getDouble(f, 12, 0.0), getDouble(f, 14, 0.0),
-                    getDouble(f, 24, 0.0), getDouble(f, 25, 0.0),
-                    0.0, 0.0, 0.0, getDouble(f, 26, 0.0), getInt(f, 10, 0));
-            double[] rating = getGenRating(busId, genId);
-            builder.addGenqej(busId, genId, rating[0], rating[1], data);
-            return true;
-        }
-        if (f.length < 21) {
-            log.warn("Incomplete GENQEJ record at bus {}: expected 21 fields, found {}", busId, f.length);
-            return false;
-        }
-        GenqejData data = new GenqejData(
-                getDouble(f, 8, 0.0), getDouble(f, 9, 0.0), 0.0,
-                getDouble(f, 10, 0.0), getDouble(f, 11, 0.0),
-                getDouble(f, 12, 0.0), getDouble(f, 13, 0.0),
-                getDouble(f, 14, 0.0), getDouble(f, 15, 0.0), getDouble(f, 16, 0.0),
-                getDouble(f, 4, 0.0), getDouble(f, 6, 0.0),
-                getDouble(f, 5, 0.0), getDouble(f, 7, 0.0),
-                getDouble(f, 17, 0.0), getDouble(f, 18, 0.0),
-                0.0, 0.0,
-                getDouble(f, 3, 0.0), getDouble(f, 19, 0.0), (int) getDouble(f, 20, 0.0));
+    /** This library contract supplies GENQEJU only through its exact wrapper. */
+    private boolean procGenqej(String busId, String genId, PsseDyrRecord record) throws InterpssException {
+        int selectorOffset = nativeGenqecSelectorOffset(record, false);
+        if (selectorOffset < 0) return false;
+        int saturation = record.intParameter(selectorOffset) == 0 ? 0 : 1;
+        double[] c = nativeGenqecConstants(record, selectorOffset);
+        GenqejData data = new GenqejData(c[4], c[5], 0.0,
+                c[6], c[7], c[8], c[9], c[10], c[11], c[12],
+                c[0], c[2], c[1], c[3], c[13], c[14],
+                0.0, 0.0, 0.0, c[15], saturation);
         double[] rating = getGenRating(busId, genId);
         builder.addGenqej(busId, genId, rating[0], rating[1], data);
         return true;

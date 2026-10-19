@@ -16,8 +16,8 @@ source-approved families that have no implementation or parser descriptor.
 |---|---|---|---:|---|---|---|
 | CIMTR4 | SYNCHRONOUS_MACHINE |  | 13 | LOADABLE | `org.interpss.dstab.mach.Cimtr4Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20CIMTR4.htm) |
 | GENCLS | SYNCHRONOUS_MACHINE |  | 2 | LOADABLE | `com.interpss.dstab.mach.EConstMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENCLS.htm) |
-| GENQEC | SYNCHRONOUS_MACHINE | GENQECU | 18 | LOADABLE | `org.interpss.dstab.mach.GenqecMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENQEC.htm) |
-| GENQEJ | SYNCHRONOUS_MACHINE | GENQEJU | 18 | LOADABLE | `org.interpss.dstab.mach.GenqejMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENQEJ.htm) |
+| GENQEC | SYNCHRONOUS_MACHINE | GENQECU | 17 | LOADABLE | `org.interpss.dstab.mach.GenqecMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENQEC.htm) |
+| GENQEJ | SYNCHRONOUS_MACHINE | GENQEJU | 23 | LOADABLE | `org.interpss.dstab.mach.GenqejMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENQEJ.htm) |
 | GENROU | SYNCHRONOUS_MACHINE | GENROE | 14 | LOADABLE | `com.interpss.dstab.mach.RoundRotorMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENROU.htm) |
 | GENSAL | SYNCHRONOUS_MACHINE | GENSAE | 12 | LOADABLE | `com.interpss.dstab.mach.SalientPoleMachine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENSAL.htm) |
 | GENTPJ1 | SYNCHRONOUS_MACHINE |  | 16 | LOADABLE | `org.interpss.dstab.mach.Gentpj1Machine` | [PowerWorld](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Machine%20Model%20GENTPJ.htm) |
