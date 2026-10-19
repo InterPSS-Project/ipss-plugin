@@ -4274,3 +4274,105 @@ discriminator are retained privately in
 `2026-10-19-fixed-q-allocation-and-readonly-trajectories`. All six cases and all
 36 disturbances remain in scope; these results do not establish complete
 dynamic acceptance or the performance target.
+
+## Read-only stopping-rule controls and remaining-error localization (2026-10-19)
+
+The completed 1.2-second controls retain the same computed operating point,
+models, reporting path and integration recurrence. Tightening only the dynamic
+complex-voltage stopping tolerance worsens prefault agreement:
+
+| Tolerance | Mean prefault network iterations | Maximum prefault rotor error |
+|---|---:|---:|
+| 1e-4 | 6.095 | 0.0285314 degrees |
+| 1e-5 | 11.960 | 10.2210 degrees |
+| 1e-6 | 18.509 | 10.9779 degrees |
+
+Each iteration count covers 1,000 network calls over the same nominal prefault
+interval, with each control evolving its own trajectory. Both tighter controls
+fail all 2,000 prefault voltage RMS gates and all 103 prefault rotor gates.
+Changing only the convergence norm to maximum real/imaginary component change
+at 1e-4 also fails those gates; maximum prefault rotor error is 10.2207 degrees.
+These candidates are rejected. The converter's algebraic high-voltage memory
+depends on the network-iteration lifecycle, so tighter stopping is not a
+transparent accuracy improvement for this model path.
+
+A separately recompiled, shortened 1e-4 control has identical runner binaries
+and reproduces the complete full-run prefix exactly: 1,205 rows by 4,810
+physical channels, plus identical cold and both history snapshots. This
+excludes recompilation and the shortened end time as explanations for the
+failed controls. It does not identify the reference's unobserved iteration norm.
+
+The full-system error review retains every channel and leaves all limits
+unchanged. Five postfault voltage channels exceed 0.005 NRMAE: buses 1011,
+1010, 1002, 1015 and 1007. Their errors are respectively 0.0137413, 0.00772536,
+0.00717141, 0.00684374 and 0.00565618. A hypothetical 0.01 limit would pass
+1,999 buses; 0.015 would pass all 2,000 in this run only. Neither is adopted.
+The largest instantaneous voltage error is 0.0180151 pu at bus 1070, which
+passes the mean-error gate. The error plots therefore retain both mean and
+peak measurements.
+
+### Original half-millisecond rotor discrepancy
+
+The corrected original 0.5 ms run's five-machine mean angle-error trajectory
+has 4.52239 degrees RMS. Each machine's deviation from that mean has less than
+0.079 degrees RMS, while the original absolute-angle RMSEs remain between
+4.51351 and 4.53783 degrees. These diagnostic coordinates do not alter the
+absolute-angle acceptance channels. The first 0.2-degree instantaneous
+exceedances occur between 1.461 and 1.5365 seconds.
+
+Independent physical-power swing replays at buses 6244 and 6245 reproduce the
+local angle increments within 0.00003188 and 0.00001106 degrees RMS,
+respectively. Supplied powers reproduce supplied increments within 0.001652
+and 0.000663 degrees RMS. Conditional mixed-power replays have larger errors
+with local electrical power than with local mechanical power; the two
+differences partially oppose each other. This supports an upstream power and
+network-feedback investigation rather than adjusting a rotor-angle offset.
+Mixed inputs are not physically coupled trajectories or acceptance evidence.
+
+The two supplied profiles also differ substantially after the disturbance:
+the shared bus-6244 angle differs by 9.62769 degrees RMS between the original
+0.5 ms and full-system 1 ms exports at their common nominal sample positions.
+The unmatched clearing event sides are excluded only from this cross-profile
+diagnostic. Each acceptance comparison still uses its own complete reference
+and both event sides. Unobserved settings may differ between the profiles, so
+this comparison does not establish timestep as the sole cause.
+
+### Bus-1011 reactive-power feedback
+
+Exact physical-network power-balance accounting at 5.547 seconds reconstructs
+the bus-1011 voltage error of -0.0125348 pu within 3.3e-13 pu. The largest
+individual accounting contribution is bus 1011's own reactive-power difference,
+at -0.0160174 pu before opposing contributions. Accounting terms can cancel;
+this is a localization identity, not an independent causal intervention.
+
+Two fresh prescribed-voltage replays use the current frozen read-only runtime,
+original parameters and ordinary initialization from the unchanged computed
+point. Initial coordinates agree with the coupled cold snapshot within
+4.45e-16. Local voltages reproduce the saved bus-1011 and bus-1070 P/Q outputs
+within 4.27e-14 MW/Mvar, establishing fidelity of the conditional replay.
+With supplied voltages, full-window physical-output errors fall substantially:
+
+| Bus / quantity | Coupled RMSE | Supplied-voltage replay RMSE |
+|---|---:|---:|
+| 1011 / Q (Mvar) | 0.519359588 | 0.000281535 |
+| 1070 / P (MW) | 3.578802520 | 0.000507529 |
+| 1070 / Q (Mvar) | 0.375117144 | 0.000583671 |
+
+At 5.547 seconds, supplied Q at bus 1011 is -3.371086 Mvar, the coupled result
+is -5.106128 Mvar, and the supplied-voltage replay gives -3.371188 Mvar. The
+local and supplied terminal-voltage histories cross the unchanged 1.15 pu
+electrical-control threshold at different times after 1.12 seconds. Their
+replayed controller memories and rates are retained for tracing that feedback.
+The replay coordinates are local calculations, not observed reference internal
+states. No parameter, initial state, voltage, offset or acceptance limit is
+fitted or replaced in an autonomous simulation.
+
+The controls, full error-review plots, original-event localization, exact power
+accounting, converter replays and source wind-attachment inventory are retained
+privately in `2026-10-19-readonly-network-and-error-localization`. The inventory
+records 48 active power-selector torque controllers in Case 2; Cases 3-6 each
+contain two active speed-selector torque controllers and require the newer
+independently checked speed-feedback implementation. No original case contains
+a drive-train record in that inventory. This source-record audit does not prove
+runtime attachment or dynamic acceptance. All six cases and all 36 disturbances
+remain required; none is declared accepted by these conditional experiments.
