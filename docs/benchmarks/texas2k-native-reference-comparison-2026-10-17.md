@@ -3560,3 +3560,94 @@ full replay and coupled outputs, production-equivalence checks, test reports,
 baseline controls and verification corrections are retained in private evidence
 set `2026-10-19-case2-event-freeze-history`. Previously archived inputs and
 runtime objects are referenced by immutable hashes to avoid duplicate storage.
+
+### Converted-network arithmetic and startup convergence
+
+The original-input initialization investigation now separates storage precision
+from factorization precision. Earlier storage-rounding controls still used a
+double-precision factorization. The new diagnostic explicitly calls complex
+single-precision or complex double-precision LAPACK factorization and solve
+routines. Each matrix is factored once and reused. A pivoting complex-system
+check with two right-hand sides verifies the wrapper; the exact library and
+symbols are pinned in the private evidence. Six repeated calculations give
+identical results, including the archived two-bus control.
+
+The Case 2 calculation starts from locally solved bus phasors, generator powers
+and shunt positions. It retains the confirmed constant-current P and
+constant-impedance Q conversion, including the previously netted generation.
+No supplied voltage, power or sign enters the calculation. Reference-dependent
+labels only identify channels for subsequent scoring.
+
+| Declared arithmetic control | Positive calculated Q among the 17 RAW-zero-Q units | Maximum phasor change from the local solved point |
+| --- | ---: | ---: |
+| Double storage and double LU | 13/17 | 1.03e-14 pu |
+| Single storage and double LU | 14/17 | 3.71e-6 pu |
+| Single storage and single LU | 17/17 | 6.11e-6 pu |
+
+These near-zero signs are not a robust initialization rule. Reversing the bus
+ordering before the same single-precision factorization changes bus 8024 Q
+from +0.000104614 Mvar to -0.000018160 Mvar, leaving 16/17 positive. Accuracy
+against the archived two-bus reference is mixed rather than uniformly better.
+The reference tool's internal factorization order remains unobserved. The
+ascending-order result is therefore a diagnostic, not a production correction.
+
+A complete ten-second coupled run transfers all 2,000 calculated terminal
+phasors, all 199 calculated generator powers and all 1,126 nonzero load-bus
+conversion coefficients. A fresh power flow independently reproduces the
+calculation's starting point. The load transfer preserves the I/Z coefficients.
+Internal model states and recovery directions initialize normally; all 96
+converter directions agree with the earlier supplied-initial-point diagnostic.
+No internal-state or selector override is applied. Diagnostic generator/shunt
+preparation and high-voltage network memory remain in this run.
+
+The worst initial voltage error is 0.0000125531 pu at bus 4175. This small
+terminal error does not establish dynamic initialization parity. Comparison of
+all 10,005 rows and 4,810 physical channels gives:
+
+| Quantity | Prefault passing channels | Fault and postfault passing channels |
+| --- | ---: | ---: |
+| Voltage | 2,000/2,000 | 254/2,000 |
+| Generator P | 190/199 | 100/199 |
+| Generator Q | 188/199 | 102/199 |
+
+Prefault rotor angle passes 102/103 channels. No rotor channel passes the
+provisional full-window 0.1-degree RMSE gate; worst RMSE is 2.95550 degrees at
+bus 1051. The largest P error is at bus 1070, with 59.6747 MW full-window RMSE.
+Thus matching the initial recovery directions alone is insufficient. The
+comparison preserves the full-reference range, step ordinals and both event
+sides, without interpolation or fitted angle offsets.
+
+At 1.170 seconds, bus 1070 terminal voltage is 1.149949144 pu locally and
+1.150004268 pu in the supplied reference, a difference of 0.000055124 pu.
+They lie on opposite sides of the 1.15 pu upper voltage-dip boundary. At
+1.172 seconds, the terminal Q difference reaches 6.35854 Mvar. These endpoint
+measurements localize a missed threshold transition; they do not directly
+observe the reference's internal states or inner network iterations.
+
+Three 1.2-second controls vary only the dynamic maximum-complex-voltage-change
+stopping tolerance. Added state observations leave the unchanged 1e-4 control
+exactly equal to the full run over all 1,205 prefix rows and 4,810 channels.
+All three cold initializations are exactly equal as parsed state snapshots.
+
+| Dynamic voltage tolerance | Triangular solves over 1,204 network calls | Mean iterations | Prefault voltage channels passing |
+| --- | ---: | ---: | ---: |
+| 1e-4 | 8,093 | 6.72 | 2,000/2,000 |
+| 1e-5 | 14,357 | 11.92 | 0/2,000 |
+| 1e-6 | 21,741 | 18.06 | 0/2,000 |
+
+The tighter runs diverge during startup, before the fault. At the network call
+labelled -0.001 seconds, the three runs take 4, 12 and 19 iterations. The
+diagnostic high-voltage correction accumulates during network iterations, so
+changing the stopping tolerance also changes that correction and subsequent
+controller inputs. The exposed states show different bus-1070 dip histories by
+0.333 seconds. This identifies convergence/history coupling for further review;
+it does not establish which internal reference transition is correct. No
+tolerance is selected merely because it gives the closest supplied trace.
+
+The three prefixes are not ten-second rotor acceptance tests. No new reference
+run or production arithmetic change was made. Original-input acceptance,
+production network-memory integration, the full 36-event comparison and the
+twenty-second performance target remain open. Exact sources, arithmetic and
+ordering controls, full coupled output, prefix state traces, rejected controls
+and verification hashes are retained in private evidence set
+`2026-10-19-case2-converted-startup-precision`.
