@@ -2,9 +2,13 @@ package org.interpss.core.dstab;
 
 import static org.junit.jupiter.api.Assertions.*;
 import java.lang.reflect.Proxy;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.dstab.renewable.*;
+import org.interpss.core.dstab.reference.ReecaNativeReference;
+import org.interpss.core.dstab.reference.RepcaNativeReference;
 import org.junit.jupiter.api.Test;
 import com.interpss.dstab.*;
 import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
@@ -78,6 +82,139 @@ public class RegcaNetworkIterationTest {
         assertEquals(iq, model.getIq(), 0);
         f.bus().setVoltage(new Complex(1.1));
         assertEquals(.5, model.getIq(), 0);
+        f.control().ip = .3;
+        f.bus().setVoltage(new Complex(.6));
+        assertEquals(.15, model.getIp(), 1e-15);
+        model.setNetworkIterationHighVoltageEnabled(true);
+        assertEquals(.15, model.getIp(), 1e-15,
+                "Until a network evaluation is available, use the instantaneous boundary");
+    }
+
+    @Test void activeGainUsesDeceleratedVoltageAndObservationDoesNotAdvanceMemory() {
+        var f = fixture();var model = f.model();
+        f.control().ip = .3;
+        model.setNetworkIterationHighVoltageEnabled(true);
+        model.beginNetworkSolution(CONTEXT);
+        // The retained 1.3 pu endpoint keeps the decelerated input at 0.94 pu.
+        f.bus().setVoltage(new Complex(.4));
+        model.beforeNetworkIteration(0);model.afterNetworkConvergence();model.endNetworkSolution(true);
+        assertEquals(.94, model.getNetworkHighVoltageState().deceleratedVoltage(), 1e-15);
+        assertEquals(.3, model.getIp(), 1e-15);
+        model.beginNetworkSolution(CONTEXT);
+        model.beforeNetworkIteration(0);model.afterNetworkConvergence();model.endNetworkSolution(true);
+        assertEquals(.724, model.getNetworkHighVoltageState().deceleratedVoltage(), 1e-15);
+        assertEquals(.243, model.getIp(), 1e-15);
+        var memory = model.getNetworkHighVoltageState();
+        var states = model.getIntegrationStates();
+        var derivatives = model.getStateDerivativeSnapshot();
+        // The current source must use the same gain while rotating by terminal angle.
+        f.bus().setVoltage(new Complex(.4*Math.cos(.27), .4*Math.sin(.27)));
+        for (int i=0;i<10;i++) {
+            Complex current = (Complex)model.getOutputObject();
+            assertEquals(.4*.243, f.bus().getVoltage().multiply(current.conjugate()).getReal(), 1e-15);
+            assertEquals(.243, model.getIp(), 1e-15);
+            model.getStates(null);model.getNamedStates();model.updateAttributes(false);
+        }
+        assertEquals(memory, model.getNetworkHighVoltageState());
+        assertEquals(states, model.getIntegrationStates());
+        assertEquals(derivatives, model.getStateDerivativeSnapshot());
+        // A rejected solve must restore the accepted gain as well as HV correction.
+        model.beginNetworkSolution(CONTEXT);
+        f.bus().setVoltage(new Complex(.01));model.beforeNetworkIteration(0);
+        assertEquals(.0288, model.getIp(), 1e-15);
+        model.endNetworkSolution(false);
+        assertEquals(memory, model.getNetworkHighVoltageState());
+        assertEquals(.243, model.getIp(), 1e-15);
+        model.setNetworkIterationHighVoltageEnabled(false);
+        assertEquals(0, model.getIp(), 0);
+    }
+
+    @Test void eventMemoryUsesLeftVoltageBeforeThePreliminaryNetworkSolve() {
+        var f = fixture();var model = f.model();f.control().ip = .3;
+        model.setNetworkIterationHighVoltageEnabled(true);
+        model.captureNetworkEventLeftBoundary();
+        // Event processing changes voltage before the iterative solve begins.
+        f.bus().setVoltage(new Complex(.8));
+        model.beginNetworkSolution(CONTEXT);
+        assertEquals(1.3, model.getNetworkHighVoltageState().savedVoltage(), 1e-15);
+        assertThrows(IllegalStateException.class, model::captureNetworkEventLeftBoundary);
+        model.beforeNetworkIteration(0);
+        f.bus().setVoltage(new Complex(.4));
+        model.afterNetworkConvergence();model.endNetworkSolution(true);
+        assertEquals(.94, model.getNetworkHighVoltageState().deceleratedVoltage(), 1e-15);
+        assertEquals(.3, model.getIp(), 1e-15);
+        // The captured endpoint applies to only one accepted solve.
+        model.beginNetworkSolution(CONTEXT);
+        assertEquals(.94, model.getNetworkHighVoltageState().savedVoltage(), 1e-15);
+        model.beforeNetworkIteration(0);model.endNetworkSolution(true);
+        assertEquals(.243, model.getIp(), 1e-15);
+    }
+
+    @Test void failedEventSolveRetainsLeftVoltageAndResetDiscardsIt() {
+        var f = fixture();var model = f.model();
+        model.setNetworkIterationHighVoltageEnabled(true);
+        model.captureNetworkEventLeftBoundary();
+        f.bus().setVoltage(new Complex(.8));
+        var before = model.getNetworkHighVoltageState();
+        model.beginNetworkSolution(CONTEXT);model.beforeNetworkIteration(0);
+        model.endNetworkSolution(false);
+        assertEquals(before, model.getNetworkHighVoltageState());
+        f.bus().setVoltage(new Complex(.4));
+        model.beginNetworkSolution(CONTEXT);
+        assertEquals(1.3, model.getNetworkHighVoltageState().savedVoltage(), 1e-15);
+        model.beforeNetworkIteration(0);model.endNetworkSolution(true);
+        model.captureNetworkEventLeftBoundary();
+        f.bus().setVoltage(new Complex(.6));
+        assertTrue(model.initStates(f.bus()));
+        model.beginNetworkSolution(CONTEXT);
+        assertEquals(.6, model.getNetworkHighVoltageState().savedVoltage(), 1e-15);
+        model.endNetworkSolution(false);
+        model.captureNetworkEventLeftBoundary();
+        f.bus().setVoltage(new Complex(.7));
+        model.setNetworkIterationHighVoltageEnabled(false);
+        model.setNetworkIterationHighVoltageEnabled(true);
+        model.beginNetworkSolution(CONTEXT);
+        assertEquals(.7, model.getNetworkHighVoltageState().savedVoltage(), 1e-15);
+        model.endNetworkSolution(false);
+    }
+
+    @Test void retainedReferenceFaultBoundariesVerifyGainAndSavedVoltage() {
+        var electrical = Set.of("q-coarse", "q-fine", "qv-coarse", "qv-fine");
+        var plant = Set.of("v-coarse", "v-fine", "frequency-off-coarse", "frequency-off-fine");
+        int profiles = 0;
+        for (var profile : ReecaNativeReference.profiles())
+            if (electrical.contains(profile.name())) { verifyRecordedBoundary(profile.body());profiles++; }
+        for (var profile : RepcaNativeReference.profiles())
+            if (plant.contains(profile.name())) { verifyRecordedBoundary(profile.body());profiles++; }
+        assertEquals(8, profiles);
+    }
+
+    private void verifyRecordedBoundary(String csv) {
+        var lines = csv.lines().toList();var header = Arrays.asList(lines.getFirst().split(","));
+        int voltage = header.indexOf("V1"), current = header.indexOf("CONVERTER_STATE0"),
+                power = header.indexOf("P_PU"), saved = header.indexOf("CONVERTER_VAR0");
+        int event = 2;
+        while (event < lines.size() && !lines.get(event).split(",")[0]
+                .equals(lines.get(event-1).split(",")[0])) event++;
+        assertTrue(event+1 < lines.size());
+        var left = lines.get(event-1).split(",");
+        var f = fixture(Double.parseDouble(left[voltage]), (double)(float).8);
+        var model = f.model();model.setNetworkIterationHighVoltageEnabled(true);
+        model.captureNetworkEventLeftBoundary();
+        // This is an algebraic boundary replay: the recorded regulator output
+        // is supplied to a zero-time regulator; no differential state is fitted.
+        for (int row=event;row<=event+1;row++) {
+            var sample = lines.get(row).split(",");
+            if (row==event) f.bus().setVoltage(new Complex(.91));
+            model.beginNetworkSolution(CONTEXT);
+            f.bus().setVoltage(new Complex(Double.parseDouble(sample[voltage])));
+            f.control().ip = Double.parseDouble(sample[current]);
+            model.beforeNetworkIteration(0);model.afterNetworkConvergence();model.endNetworkSolution(true);
+            assertEquals(Double.parseDouble(sample[saved]),
+                    model.getNetworkHighVoltageState().savedVoltage(), 1e-7);
+            assertEquals(Double.parseDouble(sample[power]),
+                    f.bus().getVoltageMag()*model.getIp(), 6e-8);
+        }
     }
 
     @Test void actualSolverFinalizesOutputWithoutAnotherNetworkSolve() throws Exception {
@@ -106,23 +243,27 @@ public class RegcaNetworkIterationTest {
 
     private record Fixture(DStabilityNetwork network, DStabBus bus, Regca1Model model, Control control) {}
     private Fixture fixture() {
+        return fixture(1.3, .4);
+    }
+    private Fixture fixture(double voltage, double acceleration) {
         var network = DStabObjectFactory.createDStabilityNetwork();network.setBaseKva(100000);
         var bus = (DStabBus)DStabObjectFactory.createDStabBus("B", network).orElseThrow();
-        bus.setVoltage(new Complex(1.3));
+        bus.setVoltage(new Complex(voltage));
         var gen = DStabObjectFactory.createDStabGen("1");
         gen.setGen(new Complex(0,.65));gen.setMvaBase(100);gen.setStatus(true);
+        gen.setPosGenZ(Complex.ZERO);
         bus.getContributeGenList().add(gen);
-        var data = new Regca1Data(0,0,10, .9,.4,1.2,1.2,.8,.4,-1.3,.02,.7,999,-999,.4);
+        var data = new Regca1Data(0,0,10, .9,.4,1.2,1.2,.8,.4,-1.3,.02,.7,999,-999,acceleration);
         var model = new Regca1Model(gen,bus,"1",data);model.setStatus(true);
         var control = new Control();model.setActiveElectricalController(control);
         assertTrue(model.initStates(bus));
         return new Fixture(network,bus,model,control);
     }
     private static class Control implements RenewableElectricalController {
-        double iq = -.5;
+        double ip, iq = -.5;
         public void initialize(double p,double q,double v) {}
         public void step(double dt,double p,double q,double v,double f) {}
-        public double getIpcmd() {return 0;}
+        public double getIpcmd() {return ip;}
         public double getIqcmd() {return iq;}
         public Repca1Model getPlantController() {return null;}
         public void setPlantController(Repca1Model controller) {}

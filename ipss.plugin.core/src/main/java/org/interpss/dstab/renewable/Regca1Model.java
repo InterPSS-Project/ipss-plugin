@@ -65,6 +65,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     private double deceleratedNetworkVoltage;
     private boolean oldNetworkOutputAvailable;
     private double oldSavedNetworkVoltage, oldNetworkCorrection, oldDeceleratedNetworkVoltage;
+    private double pendingEventVoltage = Double.NaN;
+    private double oldPendingEventVoltage;
 
     /** Stored algebraic memory, distinct from the converter's differential states. */
     public record NetworkHighVoltageState(boolean enabled, boolean solutionInProgress,
@@ -76,7 +78,8 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     /**
-     * Opt in to network-iteration high-voltage memory. Requires a solver delivering
+     * Opt in to network-iteration voltage memory for high-voltage correction and
+     * the low-voltage active-current gain. Requires a solver delivering
      * the complete NetworkIterationAware lifecycle, including final evaluation.
      * Configure between solves. Enabling retains the voltage memory seeded by
      * initialization; disabling resets it at the current terminal voltage.
@@ -95,6 +98,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         savedNetworkVoltage = getDStabBus() == null ? 1.0 : Math.max(.01, getDStabBus().getVoltageMag());
         deceleratedNetworkVoltage = savedNetworkVoltage;
         networkCorrection = 0.0;
+        pendingEventVoltage = Double.NaN;
     }
 
     @Override public void beginNetworkSolution(NetworkIterationAware.Context context) {
@@ -104,10 +108,16 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         oldSavedNetworkVoltage = savedNetworkVoltage;
         oldNetworkCorrection = networkCorrection;
         oldDeceleratedNetworkVoltage = deceleratedNetworkVoltage;
+        oldPendingEventVoltage = pendingEventVoltage;
         networkSolutionInProgress = true;
         networkOutputAvailable = true;
+        // Event processing can perform a preliminary linear solve before this
+        // lifecycle starts. Advance memory from the captured left endpoint.
+        double previousVoltage = Double.isNaN(pendingEventVoltage)
+                ? Math.max(.01, getDStabBus().getVoltageMag()) : pendingEventVoltage;
         savedNetworkVoltage = (1.0 - data.accel()) * savedNetworkVoltage
-                + data.accel() * Math.max(.01, getDStabBus().getVoltageMag());
+                + data.accel() * previousVoltage;
+        pendingEventVoltage = Double.NaN;
         networkCorrection = 0.0;
     }
 
@@ -133,8 +143,14 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             savedNetworkVoltage = oldSavedNetworkVoltage;
             networkCorrection = oldNetworkCorrection;
             deceleratedNetworkVoltage = oldDeceleratedNetworkVoltage;
+            pendingEventVoltage = oldPendingEventVoltage;
         }
         networkSolutionInProgress = false;
+    }
+
+    private double activeNetworkOutput(double voltage) {
+        double gainVoltage = networkOutputAvailable ? deceleratedNetworkVoltage : voltage;
+        return activeCurrentOutput() * lowVoltageActiveGain(gainVoltage, data.lvpnt0(), data.lvpnt1());
     }
 
     private double reactiveNetworkOutput(double voltage) {
@@ -191,6 +207,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
      * Call after the left endpoint's algebraic refresh and before changing voltage.
      */
     public void captureNetworkEventLeftBoundary() {
+        if (networkHighVoltageEnabled) {
+            if (networkSolutionInProgress)
+                throw new IllegalStateException("Capture the event boundary between network solutions");
+            pendingEventVoltage = Math.max(.01, getDStabBus().getVoltageMag());
+        }
         if (integrationScheme == IntegrationScheme.TWO_STEP && reeca1Controller != null)
             reeca1Controller.captureNetworkEventLeftBoundary(
                     Math.max(0.01, getDStabBus().getVoltageMag()));
@@ -356,7 +377,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
 
     private Complex injectedCurrent(Complex voltage) {
-        double ip = activeCurrentOutput() * lowVoltageActiveGain(voltage.abs(), data.lvpnt0(), data.lvpnt1());
+        double ip = activeNetworkOutput(voltage.abs());
         double iq = reactiveNetworkOutput(voltage.abs());
         double theta = voltage.getArgument();
         double scale = deviceBaseMva / systemBaseMva;
@@ -473,7 +494,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     public double getIqRegulatorState() { return iqState; }
     public double getIp() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
-        return activeCurrentOutput() * lowVoltageActiveGain(v, data.lvpnt0(), data.lvpnt1());
+        return activeNetworkOutput(v);
     }
     public double getIq() {
         double v = getDStabBus() == null ? vFiltered : getDStabBus().getVoltageMag();
