@@ -2931,3 +2931,47 @@ before the first differing excursion. Full state/rate traces, observer checks,
 rejected compilation log, threshold replay, matrix controls, all-channel
 comparisons and a standalone explanatory plot are retained privately in
 `2026-10-18-case2-threshold-and-state-localization`.
+
+### Independent early network-iteration reconstruction (2026-10-18)
+
+An independent calculation reconstructs the passive network, solved shunts,
+I-P/Z-Q loads and 199 generator source impedances. Across 383 endpoints from
+-0.002 through 0.380 seconds, one frozen-current Norton correction is at most
+7.70e-9 pu for the local trace and 7.86e-5 pu for the supplied trace. The
+supplied corrections are consistent with a finite network stopping tolerance;
+they do not alone explain the accumulated voltage difference before the
+first differing excursion.
+
+A separate iteration reconstruction checks 57 selected endpoints. Each
+starts from its preceding observed bus phasors and freezes synchronous
+internal voltages and converter current magnitudes reconstructed from that
+endpoint's terminal measurements. These are conditional network checks,
+not autonomous dynamic trajectories. The iteration uses predetermined
+maximum complex-voltage-change tolerances, with no fitted stopping index.
+
+| Constant-impedance load placement | Local endpoint error, 1e-8 stop | Supplied endpoint error, 1e-4 stop |
+| --- | ---: | ---: |
+| Current injection | 7.692e-9 pu | 5.5012e-5 pu |
+| Matrix diagonal | 7.065e-9 pu | 1.3657e-5 pu |
+
+Both local controls reproduce the endpoints within their stopping tolerance.
+The supplied reconstruction with the impedance load in the matrix takes
+one to ten iterations. Its largest remaining discrepancy stays at bus 4175,
+also the leading initial voltage mismatch. This supports the tested matrix
+placement and finite stopping rule, while the fully coupled failures in the
+preceding section show that they are insufficient to restore agreement.
+
+At bus 4175, the initial reactive balance residual is 0.0063599 Mvar. Its
+equivalent susceptance residual is -5.9950e-5 pu, exceeding the conservative
+export-rounding bound of 4.0511e-6 pu. Across the early interval this residual
+stays between -6.3888e-5 and -5.8298e-5 pu. It is consistent with a small
+solved-shunt or power-flow residual difference; the supplied measurements do
+not establish which one applies. Similar persistent residuals are recorded
+at buses 4005 and 4147. These apparent balance terms are not applied as
+parameter corrections.
+
+No production model, initial state or acceptance limit changes in this
+diagnostic. The full dynamic accuracy objective remains open. Input hashes,
+independent matrix construction, endpoint projections, complete iteration
+paths, fixed-tolerance controls and passive-bus balance tables are retained
+privately in `2026-10-18-case2-early-network-iteration-reconstruction`.
