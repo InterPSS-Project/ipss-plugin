@@ -31,7 +31,13 @@ def _pair(responses,offset):
 
 def band_response(responses,band):
     assert band in range(4)
-    offsets=(5+2*band,6+2*band)
+    return two_state_response(responses,(5+2*band,6+2*band))
+
+
+def two_state_response(responses,offsets):
+    """Measure a two-state subspace without assuming a state-coordinate scaling."""
+    assert len(offsets)==2 and len(set(offsets))==2
+    assert all(isinstance(i,int) and i in range(13) for i in offsets)
     pairs=[_pair(responses,offset) for offset in offsets]
     for a,b,_ in pairs:
         assert [row['time_s'] for row in a]==[row['time_s'] for row in pairs[0][0]]

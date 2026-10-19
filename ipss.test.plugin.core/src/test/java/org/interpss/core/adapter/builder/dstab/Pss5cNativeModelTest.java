@@ -92,7 +92,7 @@ public class Pss5cNativeModelTest {
         model.nextStep(.001,DynamicSimuMethod.MODIFIED_EULER,m,0);assertEquals(0,model.getOutput(m),0);
         p=parameters();p[10]=0;assertTrue(new Pss5cNativeData(p).isBypassed());
         p[9]=0;assertFalse(new Pss5cNativeData(p).isBypassed());
-        p=parameters();p[1]=0;assertNull(b.addPss5cNative("Bus1","1",p));
+        p=parameters();p[1]=-1;assertNull(b.addPss5cNative("Bus1","1",p));
     }
 
     @Test void limitsSwapWithoutForcingTheirSigns() {

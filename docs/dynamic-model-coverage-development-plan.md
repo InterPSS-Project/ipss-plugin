@@ -1727,6 +1727,12 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   scaling from the reciprocal-field behavior of the installed reference engine.
   Production equations and trajectory tolerances are unchanged. See the
   [pole-contract report](benchmarks/pss5c-pole-contract-2026-10-19.md).
+- [x] Support the exact PSS5C first-order low transducer for `AL=0, BL>0`,
+  preserving numerator feedthrough, atomic integration stages, named-state
+  keys and analytical A/B matrices. Isolate the installed reference engine's
+  timestep-dependent low-transducer order reduction with eight cold pairs;
+  do not silently apply that numerical policy to positive `AL`. See the
+  [low-transducer report](benchmarks/pss5c-low-transducer-2026-10-19.md).
 - [ ] Resolve native PSS5C band-frequency/transducer and raw-VAR observation
   discrepancies, zero-order transducers, zero-gain/lifecycle behavior and native
   thirteen-state observation coordinates before native trajectory acceptance.

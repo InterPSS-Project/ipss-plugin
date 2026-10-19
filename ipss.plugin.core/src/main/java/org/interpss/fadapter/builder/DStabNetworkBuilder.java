@@ -1498,7 +1498,7 @@ public class DStabNetworkBuilder {
         final org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData data;
         try {
             data = new org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData(parameters);
-            if (!data.isBypassed() && !data.hasFullOrderTransducers()) {
+            if (!data.isBypassed() && !data.hasSupportedTransducers()) {
                 log.warn("Native PSS5C degenerate transducer is not implemented at {} {}", busId, genId);
                 return null;
             }

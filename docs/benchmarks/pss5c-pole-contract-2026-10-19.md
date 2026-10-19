@@ -164,6 +164,11 @@ preserved.
 
 ## Remaining work
 
+Follow-up: the [low-transducer slice](pss5c-low-transducer-2026-10-19.md)
+implements the exact first-order low branch and separates timestep-dependent
+reference order reduction from the published full-order sensor poles. The
+frequency-field and complete native trajectory acceptance gaps remain open.
+
 - Resolve the exact native frequency-field convention and decide an explicit,
   source-backed compatibility policy before changing production equations.
 - Resolve low-transducer behavior, raw VAR/output timing and all thirteen

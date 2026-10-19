@@ -21,6 +21,16 @@ public final class Pss5cNativeData {
         return parameters[1] > 0 && parameters[4] > 0 && parameters[5] > 0 && parameters[7] > 0;
     }
 
+    /** Exact first-order low transducer, not a timestep-dependent approximation. */
+    public boolean hasFirstOrderLowTransducer() {
+        return parameters[1] == 0 && parameters[2] > 0;
+    }
+
+    public boolean hasSupportedTransducers() {
+        return hasFullOrderTransducers() || (hasFirstOrderLowTransducer()
+                && parameters[4] > 0 && parameters[5] > 0 && parameters[7] > 0);
+    }
+
     public boolean isBypassed() {
         if (parameters[25] == 0 || parameters[26] == 0 || parameters[27] == 0) return true;
         for (int band = 0; band < 4; band++) {

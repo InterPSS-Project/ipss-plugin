@@ -8,7 +8,7 @@ import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.EigenDecomposition;
 import org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData;
 
-/** Read-only continuous-time A/B diagnostic for the published full-order PSS5C.
+/** Read-only continuous-time A/B diagnostic for the supported PSS5C orders.
  * These are controller internal-state modes, including potentially unobservable
  * modes. Exciter, machine, output-limiter sensitivity and network feedback are
  * not closed around this matrix. This is not a system-stability assessment or
@@ -26,10 +26,14 @@ public final class Pss5cLocalLinearizer {
         double[][] a = new double[13][13];double[] b = new double[13];
         boolean bypassed = data.isBypassed();
         if (!bypassed) {
-            if (!data.hasFullOrderTransducers())
-                throw new IllegalArgumentException("PSS5C full-order transducers are required");
+            if (!data.hasSupportedTransducers())
+                throw new IllegalArgumentException("Unsupported PSS5C transducer order");
             double[] p = data.parameters();
-            a[0][1] = 1;a[1][0] = -1 / p[1];a[1][1] = -p[2] / p[1];b[1] = 1 / p[1];
+            if (data.hasFirstOrderLowTransducer()) {
+                a[0][0] = -1 / p[2];b[0] = 1 / p[2];
+            } else {
+                a[0][1] = 1;a[1][0] = -1 / p[1];a[1][1] = -p[2] / p[1];b[1] = 1 / p[1];
+            }
             a[2][3] = 1;a[3][4] = 1;
             double denominator = p[4] * p[5];
             a[4][2] = -p[7] / denominator;
@@ -44,7 +48,10 @@ public final class Pss5cLocalLinearizer {
                     double rate = p[26 - branch] * frequency;
                     a[row][row] = -rate;
                     if (band == 3) a[row][4] = rate * p[8];
-                    else {a[row][0] = rate * p[3];a[row][1] = rate * p[3] * p[0];}
+                    else if (data.hasFirstOrderLowTransducer()) {
+                        a[row][0] = rate * p[3] * (1 - p[0] / p[2]);
+                        b[row] = rate * p[3] * p[0] / p[2];
+                    } else {a[row][0] = rate * p[3];a[row][1] = rate * p[3] * p[0];}
                 }
             }
         }

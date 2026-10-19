@@ -84,7 +84,7 @@ public class Pss5cLocalLinearizerTest {
     }
 
     @Test void unsupportedOrNonfiniteMatricesAreRejectedRatherThanRegularized() {
-        var p=Pss5cNativeModelTest.parameters();p[1]=0;
+        var p=Pss5cNativeModelTest.parameters();p[1]=-1;
         assertThrows(IllegalArgumentException.class,()->Pss5cLocalLinearizer.analyze(new Pss5cNativeData(p)));
         p[1]=Double.MIN_VALUE;
         assertThrows(IllegalArgumentException.class,()->Pss5cLocalLinearizer.analyze(new Pss5cNativeData(p)));

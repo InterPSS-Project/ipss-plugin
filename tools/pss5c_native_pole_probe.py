@@ -12,6 +12,8 @@ from genrou_native_probe import checked, f32, sha
 from pss5c_native_probe import configuration
 
 FREQUENCIES={'baseline':None,'unity':1.,'half':.5,'double':2.}
+TRANSDUCERS={'dli-half':(0,.5),'al-double':(1,2.),'bl-double':(2,2.),
+             'explicit-low-first':(1,0.)}
 
 
 def main():
@@ -21,11 +23,14 @@ def main():
     step,amplitude=float(entered_step),float(entered_amplitude)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
     assert step in (.0001,.00005) and amplitude in (1e-6,5e-7)
-    assert profile in FREQUENCIES and scope in ('pilot','all')
+    assert profile in FREQUENCIES or profile in TRANSDUCERS
+    assert scope in ('pilot','all','sensors')
     root=Path.cwd();out=root/'target'/('pss5c-poles-'+tag);out.mkdir(exist_ok=False)
     raw=(root/'ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw').read_text()
     cfg=configuration('flat',raw);constants=cfg['components'][1]['constants']
-    if FREQUENCIES[profile] is not None:
+    if profile in TRANSDUCERS:
+        offset,factor=TRANSDUCERS[profile];constants[offset]*=factor
+    elif FREQUENCIES[profile] is not None:
         for offset in (10,14,18,22):constants[offset]=FREQUENCIES[profile]
     lines=[line for line in cfg['dynamic'].splitlines() if "'PSS5C'" not in line]
     lines.append("1 'PSS5C' '1' "+' '.join(map(str,constants))+' /')
@@ -36,7 +41,8 @@ def main():
     os.chdir(out)
     library=Path(psspy.__file__).resolve().parents[1]/'PSSBIN/DSMDL.DLL'
     document=library.parent.parent/'DOCS/ModelLibrary.pdf'
-    offsets=(5,11) if scope=='pilot' else tuple(range(5,13))
+    offsets=(tuple(range(5)) if scope=='sensors' else
+             ((5,11) if scope=='pilot' else tuple(range(5,13))))
     cases=[('control',None,0)]+[(f'state-{offset+1}-{sign:+d}',offset,sign) for offset in offsets for sign in (1,-1)]
     results=[]
     for label,offset,sign in cases:
