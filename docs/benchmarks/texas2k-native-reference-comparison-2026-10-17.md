@@ -3990,3 +3990,58 @@ No production equations or comparison limits changed, and no original-input
 complete event is newly accepted. Sources, recorded inputs, both complete
 replays, failed helper attempts and comparison evidence are retained privately
 under `2026-10-19-case2-synchronous-boundary-localization`.
+
+## Excitation inputs and retained-power audit (2026-10-19)
+
+A conditional replay now covers the excitation and stabilizer chains at buses
+5058, 5263 and 5303, retaining all 10,005 rows and both sides of each event.
+The controllers initialize from the original computed operating point. Their
+exciter coordinates match the coupled cold snapshot exactly; stabilizer
+coordinates differ by at most 2.23e-16. No reference internal state is imposed.
+Field current is inferred from the preceding electrical-machine replay and
+must not be treated as an independently observed reference channel.
+
+The replay uses the frozen solver's actual state bindings, limit projections
+and ST1 local integration routine. With supplied terminal voltage, speed and
+power inputs, the complete excitation chains have much smaller field-voltage
+errors than the original coupled run:
+
+| Bus | Coupled field-voltage RMSE (pu) | Supplied-input replay RMSE (pu) |
+|---|---:|---:|
+| 5058 | 0.018986929 | 0.000476070 |
+| 5263 | 0.053614241 | 0.000272356 |
+| 5303 | 0.070912968 | 0.000576907 |
+
+These are full zero-to-ten-second errors, including duplicate event rows.
+They localize most of the field-voltage discrepancy to the supplied physical
+inputs under this conditional experiment; they do not prove coupled accuracy
+or exact behavior at unobserved internal boundaries.
+
+The local-input control resolves an important timing distinction at bus 5263.
+Using the exported terminal power gives 0.001003190 pu field-voltage RMSE.
+Inverting the known local two-step speed recurrence recovers the retained
+electromagnetic torque used by the solver. That reconstruction agrees with
+606 previously recorded machine observations within 4.32e-13 pu. Substituting
+only this derived local power input reduces the controller reconstruction
+error to 8.30e-12 pu RMSE, with maximum error below 3.25e-11 pu. This is an
+audit of the local calculation, not a replacement reference or acceptance run.
+The pre-event duplicate rows and final row lack a following integration step;
+their exported power values are retained explicitly.
+
+For buses 5058 and 5303, the largest local replay differences occur at the two
+instantaneous event rows. The local exporter retains the preceding field
+voltage there, whereas the supplied reference updates it. Every such row
+remains in the full metrics. A separately labelled ordinary-row diagnostic
+has RMSEs of approximately 1.59e-7 and 8.16e-8 pu respectively; it does not
+alter the event-inclusive acceptance contract.
+
+The first helper attempts exposed a column-name error, a detached machine
+parent and accidental conversion of local power inputs to single precision.
+The final input extraction preserves local double precision. The retained-power
+precheck detects the precision loss, and the corrected reconstruction passes
+against the earlier read-only observer. Failed attempts and their logs remain
+with the complete replays, states, commands and hashes in the private evidence
+set `2026-10-19-case2-excitation-boundary-localization`.
+
+No production numerical code or comparison limits changed in this slice.
+The original-input full-event and six-case accuracy goals remain open.
