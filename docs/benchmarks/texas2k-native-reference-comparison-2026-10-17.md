@@ -3751,3 +3751,72 @@ and the twenty-second performance target remain open. Sources, binary inputs,
 matrix snapshots, complete output, failed controls, state observations and
 verification hashes are retained in private evidence set
 `2026-10-19-case2-dynamic-precision`.
+
+### Bus-3061 active-current collapse and replay fidelity
+
+The largest remaining postfault active-power error is localized using two
+complete 96-converter voltage replays with identical computed initialization
+and unchanged models. One uses the supplied terminal phasors; the other uses
+the completed local network's terminal phasors. The reference-input physical
+replay is exactly unchanged across all 960,480 device rows after expanding the
+read-only observer selection. Initial state checks remain below 4.45e-16.
+
+Replaying local voltages reproduces every renewable active-power output from
+the coupled run, with maximum difference 8.53e-14 MW. For five devices common
+to both state traces, maximum stored-coordinate differences are 1.12e-16 in
+converter and electrical states, 2.23e-16 in plant states, 5.83e-11 in torque
+states and zero in pitch states. Algebraic observer fields are not all equal:
+for example, an event-side reactive-error observation differs while the
+integrated states and active power agree. The comparison therefore does not
+claim that all callback observations have identical timing.
+
+Local-voltage reactive-power replay retains the known high-voltage-memory
+limitation at buses 3113 and 3129, with maximum differences 2.767061 Mvar and
+0.012918 Mvar. This does not affect the active-power reproduction result.
+State records align by step ordinal and event side; the history and initial
+row labels differ between the replay and coupled recorder and are retained.
+
+Bus 3061 has identical sampled voltage-dip decisions in both input histories.
+Its larger power error instead follows the voltage-control integral and the
+Q-priority current limit. The integral difference first exceeds 0.01 pu at
+step 3,998. During steps 4,500 through 4,800, each published active-current
+command exactly matches the unchanged rule
+`min(Porder / Vmeasured, sqrt(max(0, Imax^2 - previous_Iqcmd^2)))`, with
+`Imax = 1.3` and no active post-dip hold timer. All 301 samples in each replay
+pass this independent command calculation with zero numerical difference.
+
+The command first reaches zero at step 4,644 with supplied voltage and step
+4,657 with local voltage: a thirteen-step delay. At step 4,652, the local
+power exceeds the actual supplied power by 28.182146 MW, even though the
+instantaneous bus-voltage difference is only -8.96e-5 pu. The corresponding
+published current commands are zero and 0.144580 pu. The accumulated integral
+error explains why checking only voltage at the power-error peak is inadequate.
+These internal reference-input states remain conditional local calculations,
+not directly observed reference states. The plotted power comparison uses
+the actual supplied power channel without a fitted time shift.
+
+A separate 1.2-second arithmetic control gives the passive dynamic network
+the same declared primitive-storage policy used during converted startup:
+round primitive scalars to binary32 and store every passive matrix addition in
+complex64. All physical RAW/DYR inputs, solved shunts, converted load
+coefficients, model classes, initial states, current equations, convergence
+rule and factorization ordering stay fixed. An independent double assembly of
+the 2,359 branches and 861 transformers matches all dynamic off-diagonals
+within 4.55e-13. The declared storage control changes 7,354 passive entries;
+all three effective matrices are verified as the original matrix plus that
+same independently assembled difference.
+
+This control worsens the prefix. Prefault P passes 189/199 versus 191/199,
+Q passes 190/199 versus 194/199, and rotor maximum-error checks pass 98/103
+versus 103/103. Postfault-prefix voltage passes 1,979/2,000 versus 1,999/2,000;
+P passes 194/199 versus 197/199; Q passes 192/199 versus 198/199. Prefault
+voltage remains 2,000/2,000. It is retained as a rejected arithmetic control
+and is not extended or promoted. The result does not identify the reference's
+primitive accumulation order or internal factorization precision.
+
+This work narrows the remaining discrepancy to voltage-history sensitivity,
+including its accumulated effect on controller current limits. It does not
+close original-input initialization, production integration or full-system
+acceptance. Exact replays, both state traces, the command-equation check,
+standalone figure, rejected prefix and verification hashes are retained in
+private evidence set `2026-10-19-case2-power-voltage-feedback`.
