@@ -126,6 +126,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGastwddTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderGast2adTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderStabilizerTest;
+import org.interpss.core.adapter.builder.dstab.PssCanonicalNativeSchemaTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst1aExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseExst1FieldLimitTest;
@@ -935,6 +936,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderGastwddTest.class,
 	DStabNetworkBuilderGast2adTest.class,
 	DStabNetworkBuilderStabilizerTest.class,
+	PssCanonicalNativeSchemaTest.class,
 	PsseEsst4bExciterTest.class,
 	PsseEsst1aExciterTest.class,
 	PsseExst1FieldLimitTest.class,

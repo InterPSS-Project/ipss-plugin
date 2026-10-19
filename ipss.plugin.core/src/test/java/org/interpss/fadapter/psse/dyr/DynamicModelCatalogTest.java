@@ -220,12 +220,12 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS6C"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(34, 35), DynamicModelCatalog.find("PSS6C").orElseThrow()
+        assertEquals(Set.of(34), DynamicModelCatalog.find("PSS6C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS7C"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(38, 39), DynamicModelCatalog.find("PSS7C").orElseThrow()
+        assertEquals(Set.of(38), DynamicModelCatalog.find("PSS7C").orElseThrow()
                 .recordSchema().acceptedParameterCounts());
     }
 

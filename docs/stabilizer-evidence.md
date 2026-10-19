@@ -6,7 +6,9 @@ The supplied PDF's twelve filled PTI cells contain nine distinct reference simul
 
 Thirteen mappings have model-specific comparison links: eight native reference simulator and five PowerWorld. PSS1A's primary row below retains its equivalent IEEEST recorded-signal comparison. Supplementary exact typed PowerWorld playback is registered in Pss1aPowerWorldPlaybackConformanceTest at 0.5 and 0.25 ms, with all six published stabilizer states and Vstab scored at 5 ms checkpoints; Additional Pss1aPowerWorldActiveConformanceTest profiles independently exercise both output limits and upper/lower voltage cutouts at both steps; full-network SMIB differences, other selectors and lifecycle coverage remain open. This typed reference is not proof of a native PTI PSS1A DYR schema. None of these inventory rows is a VERIFIED label or proof that every selector, limiter, state coordinate and lifecycle profile is independently accepted. Current raw versions, repeatability and provenance must be audited separately; no new simulator reference is generated here.
 
-All focused checks below use DStabNetworkBuilderStabilizerTest.
+PSS6C/PSS7C native import admits exactly 34/38 values. The PowerWorld-only Tpgfilt extension remains available through the builder, not inferred by the native reader. PssCanonicalNativeSchemaTest guards rejection, attachment and compensation-tail mapping; four new cold runs reproduce every raw value of the existing two native references. See [schema separation evidence](benchmarks/pss-canonical-native-schema-2026-10-19.md).
+
+All other focused checks below use DStabNetworkBuilderStabilizerTest.
 
 | InterPSS mapping | Source PTI cell | Oracle | Scope | DYR fixture | Comparison | Checkpoint | Limitation |
 |---|---|---|---|---|---|---|---|

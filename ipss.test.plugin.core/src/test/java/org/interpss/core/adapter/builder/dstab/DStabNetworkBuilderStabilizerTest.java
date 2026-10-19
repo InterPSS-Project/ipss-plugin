@@ -1255,19 +1255,15 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss6c_mapsPowerWorld35ParameterRecord() throws Exception {
+    void buildPss6c_mapsPowerWorld35ParameterRecord() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss6c.dyr");
-        StringBuilder record = new StringBuilder("1 'PSS6C' '1'");
+        double[] parameters = new double[Ieee2016PSS6CStabilizerData.PARAMETER_COUNT];
         for (int i = 0; i < Ieee2016PSS6CStabilizerData.PARAMETER_COUNT; i++) {
             double value = i < 4 ? (i % 2 == 0 ? 1 : 0)
                     : i == 30 ? -1.0 : i == 31 ? -2.0 : i + 1;
-            record.append(' ').append(value);
+            parameters[i] = value;
         }
-        Files.writeString(dyr, record.append(" /\n").toString());
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        builder.addPss6c("Bus1", "1", parameters);
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee2016PSS6CStabilizer pss = (Ieee2016PSS6CStabilizer) machine.getStabilizer();
@@ -1275,8 +1271,9 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(1, pss.getData().ics1());
         assertEquals(0, pss.getData().remoteBus1());
         assertEquals(8.0, pss.getData().ks1(), TOL);
+        assertEquals(33.0, pss.getData().tpgfilt(), TOL);
+        assertEquals(34.0, pss.getData().xcomp(), TOL);
         assertEquals(35.0, pss.getData().tcomp(), TOL);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test
@@ -1405,18 +1402,12 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss7c_mapsPowerWorld39ParameterRecord() throws Exception {
+    void buildPss7c_mapsPowerWorld39ParameterRecord() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss7c.dyr");
         double[] values = pss7cParameters();
         values[4] = 2; values[5] = 3; values[16] = 4.5;
-        values[38] = 0.125;
-        StringBuilder record = new StringBuilder("1 'PSS7C' '1'");
-        for (double value : values) record.append(' ').append(value);
-        Files.writeString(dyr, record.append(" /\n").toString());
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        values[36] = 0.017; values[37] = 0.219; values[38] = 0.125;
+        builder.addPss7c("Bus1", "1", values);
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee2016PSS7CStabilizer pss = (Ieee2016PSS7CStabilizer) machine.getStabilizer();
@@ -1424,8 +1415,9 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(2, pss.getData().m());
         assertEquals(3, pss.getData().n());
         assertEquals(4.5, pss.getData().ks1(), TOL);
+        assertEquals(0.017, pss.getData().tpgfilt(), TOL);
+        assertEquals(0.219, pss.getData().xcomp(), TOL);
         assertEquals(0.125, pss.getData().tcomp(), TOL);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test

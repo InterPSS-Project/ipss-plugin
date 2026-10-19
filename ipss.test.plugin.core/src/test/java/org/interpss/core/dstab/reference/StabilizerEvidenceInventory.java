@@ -88,7 +88,12 @@ public final class StabilizerEvidenceInventory {
                 .append("VERIFIED label or proof that every selector, limiter, state coordinate and lifecycle ")
                 .append("profile is independently accepted. Current raw versions, repeatability and provenance ")
                 .append("must be audited separately; no new simulator reference is generated here.\n\n")
-                .append("All focused checks below use DStabNetworkBuilderStabilizerTest.\n\n")
+                .append("PSS6C/PSS7C native import admits exactly 34/38 values. The PowerWorld-only ")
+                .append("Tpgfilt extension remains available through the builder, not inferred by the native reader. ")
+                .append("PssCanonicalNativeSchemaTest guards rejection, attachment and compensation-tail mapping; ")
+                .append("four new cold runs reproduce every raw value of the existing two native references. ")
+                .append("See [schema separation evidence](benchmarks/pss-canonical-native-schema-2026-10-19.md).\n\n")
+                .append("All other focused checks below use DStabNetworkBuilderStabilizerTest.\n\n")
                 .append("| InterPSS mapping | Source PTI cell | Oracle | Scope | DYR fixture | Comparison | Checkpoint | Limitation |\n")
                 .append("|---|---|---|---|---|---|---|---|\n");
         for(Entry row:ENTRIES) {

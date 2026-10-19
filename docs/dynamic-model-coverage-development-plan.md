@@ -2,6 +2,17 @@
 
 ## Current checkpoint
 
+PSS6C/PSS7C native schema separation: exact 34/38-value native records are
+now distinct from the 35/39-value PowerWorld builder layouts. Two schema
+assertions fail before the fix; native compensation-tail ordering and vendor
+filter mapping have permanent guards. Four cold native runs reproduce every
+raw sample/channel of the existing SMIB fault references. Final gates on
+baseline `93cb13b54` pass 100 focused, 406 plugin-core and 1,572 scoped
+SMIB/model/solver checks with zero failures/errors and only existing skips.
+Source/run/report hashes retain the scoped evidence; equations and existing
+trajectory tolerances are unchanged. Broader model verification remains open.
+See the [schema separation checklist](benchmarks/pss-canonical-native-schema-2026-10-19.md).
+
 GENQEC bounded field-compensation correction: finite Kw>=0 now replaces
 the artificial Kw<1 restriction, and NaN is rejected. The existing Kw*Id
 product limiter and shared machine equations remain unchanged. Twelve native
@@ -1277,6 +1288,11 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   dialects independently of the WECC cross-vendor source mapping.
 - [ ] Audit raw artifact versions/cold repeatability and remaining active
   limiter, selector and lifecycle profiles for the stabilizer links.
+  - [x] Separate exact native PSS6C/PSS7C widths from PowerWorld-only filter
+    extensions. Retain builder mappings and cold-repeat both native SMIB
+    histories, including all states and raw event-side rows. Final 100 focused,
+    406 plugin-core and 1,572 SMIB/model/solver checks pass with existing skips
+    only. Complete selector/limit/lifecycle and coupled event parity remain open.
 - [ ] Complete the renewable evidence inventory and remaining model profiles.
 
 See the [source discrepancy, evidence scope and validation report](benchmarks/stabilizer-evidence-audit-2026-10-17.md).

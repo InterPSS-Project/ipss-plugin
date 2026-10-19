@@ -2570,22 +2570,20 @@ public class PSSEDStabDirectParser {
         return builder.addPss5c(busId, genId, parameters) != null;
     }
 
-    // PSS6C: four selectors and 30 constants; PowerWorld adds Tpgfilt before Xcomp.
+    // Native PSS6C: four selectors and 30 constants; no inferred vendor filter.
     private boolean procPss6c(String busId, String genId, String[] f) {
-        if (f.length < 37) return false;
-        int count = f.length >= 38 ? 35 : 34;
-        double[] parameters = new double[count];
+        if (f.length != 37) return false;
+        double[] parameters = new double[34];
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
         return builder.addPss6c(busId, genId, parameters) != null;
     }
 
-    // PSS7C: six ICONs and 32 constants; PowerWorld adds Tpgfilt before Xcomp.
+    // Native PSS7C: six selectors and 32 constants; no inferred vendor filter.
     private boolean procPss7c(String busId, String genId, String[] f) {
-        if (f.length < 41) return false;
-        int count = f.length >= 42 ? 39 : 38;
-        double[] parameters = new double[count];
+        if (f.length != 41) return false;
+        double[] parameters = new double[38];
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
