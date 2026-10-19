@@ -56,7 +56,7 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     end = cfg.get('end_s', .5)
     assert end in (.5, 3.)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
-    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-', 'esst1a-washout-')
+    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-', 'esst1a-washout-', 'esst1a-bypass-')
     out = root / 'target' / (directory_prefix + tag)
     out.mkdir(exist_ok=False)
     probe_source = Path(probe_source or __file__).resolve()

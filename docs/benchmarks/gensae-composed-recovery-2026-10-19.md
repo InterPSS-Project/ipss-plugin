@@ -2,6 +2,9 @@
 
 ## Scope and source contract
 
+The later [zero-time observer correction](esst1a-bypass-observation-2026-10-19.md)
+does not change these positive-time profiles or close their diagnostic gaps.
+
 Follow-up: [controlled-input washout verification](esst1a-washout-coordinate-2026-10-19.md)
 corrects the published coordinate at nonunit Tf and independently checks the
 InterPSS analytic solution and explicit stages. These Tf=1 recovery profiles

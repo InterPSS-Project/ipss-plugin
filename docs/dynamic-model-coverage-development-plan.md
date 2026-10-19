@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+ESST1A zero-time follow-up: native Tr=0/Ta=0 channels report algebraic
+outputs, not dormant integration storage. Correct the published observer only;
+generic state keys and physical integration remain unchanged. Twelve profiles
+at two timesteps cover zero transducer/regulator time, individually bypassed
+lead-lags, disabled feedback gain and their combination. All twenty-four cold
+runs converge with unchanged parameter readbacks; twelve raw CSV pairs are
+byte-exact and ten live-state channels agree within 4.92e-12 pu. Full coupled
+all-channel comparisons remain diagnostic, not broad-tolerance acceptance.
+Tf remains positive as required by the native schema. See the
+[bypass evidence and remaining acceptance work](benchmarks/esst1a-bypass-observation-2026-10-19.md).
+Final gates pass 63 focused, 410 core and 1,774 scoped SMIB/model/solver tests
+with zero failures/errors and seven existing skips; all 48 offline checks pass.
+Source reconciliation covers 1,858 Java/POM files and 42 fixture parts. The
+private evidence seal retains raw repeats, failed-before/clock counterexamples,
+all-channel diagnostics and exact tested source/dependency identities.
+No full Texas2k dynamic simulations are run.
+
 ESST1A washout-coordinate follow-up: correct only the published feedback
 storage observation to Tf times the running CML washout storage. Generic state
 keys, physical equations, limits and integration remain unchanged. Six controlled

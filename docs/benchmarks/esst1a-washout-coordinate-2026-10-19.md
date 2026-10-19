@@ -2,6 +2,10 @@
 
 ## Corrected observation, unchanged equations
 
+Follow-up: [zero-time observation and bypass coverage](esst1a-bypass-observation-2026-10-19.md)
+addresses algebraic transducer/regulator observations. Positive-time storage
+scaling and the analytic washout checks below remain unchanged.
+
 The previous published-state snapshot returned CML washout storage directly.
 That happened to agree with the native allocation when Tf=1, hiding a scale
 error at other time constants. A new regression fails before the correction:

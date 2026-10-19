@@ -728,6 +728,7 @@ import org.junit.platform.suite.api.Suite;
 	Esst1aAndesSmibConformanceTest.class,
 	Esst1aIndependentSmibConformanceTest.class,
 	org.interpss.core.dstab.Esst1aWashoutSmibTest.class,
+	org.interpss.core.dstab.Esst1aBypassSmibTest.class,
 	PsseSt1LocalIntegrationTest.class,
 	PsseStaticCurrentLoadVoltageCurveTest.class,
 	Exst1AndesSmibConformanceTest.class,
