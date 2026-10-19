@@ -18,12 +18,12 @@ import com.interpss.core.acsc.fault.SimpleFaultCode;
 
 /** Recorded phasor/speed/field-voltage replay, separate from coupled acceptance. */
 public class GenqecSalientNativeConformanceTest extends CorePluginTestSetup {
-    private static void boundary(GenqecMachine machine,Map<String,Double> row){
+    static void boundary(GenqecMachine machine,Map<String,Double> row){
         double angle=Math.toRadians(row.get("A_BUS1"));
         machine.getDStabBus().setVoltage(new Complex(Math.cos(angle),Math.sin(angle)).multiply(row.get("V_BUS1")));
         machine.setAngle(row.get("ANGLE"));machine.setSpeed(1+row.get("SPEED_DEV"));machine.setEfd(row.get("EFD"));
     }
-    private static IDynamicSimulation electricalSolver(GenqecMachine machine)throws Exception{
+    static IDynamicSimulation electricalSolver(GenqecMachine machine)throws Exception{
         var field=MachineImpl.class.getDeclaredField("_dEqnSolver");field.setAccessible(true);return (IDynamicSimulation)field.get(machine);
     }
     private static com.interpss.simu.SimuContext load(GenqecSalientNativeReference.Profile profile,Path dir,String dynamic)throws Exception{

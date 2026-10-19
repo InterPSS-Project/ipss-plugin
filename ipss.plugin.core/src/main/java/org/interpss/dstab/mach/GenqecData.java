@@ -74,8 +74,9 @@ public record GenqecData(
         if (s1 < 0.0 || s12 < 0.0) {
             throw new IllegalArgumentException("GENQEC saturation factors cannot be negative");
         }
-        if (kw < 0.0 || kw >= 1.0) {
-            throw new IllegalArgumentException("GENQEC Kw must satisfy 0 <= Kw < 1");
+        // The bounded runtime quantity is Kw*Id, not the input multiplier Kw.
+        if (!Double.isFinite(kw) || kw < 0.0) {
+            throw new IllegalArgumentException("GENQEC Kw must be finite and non-negative");
         }
         // -1 is the PSLF convention for disabled saturation. Other unsupported
         // values follow the published rule and use exponential saturation.

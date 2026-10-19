@@ -10,6 +10,8 @@ GENQEC's exact standard input is one selector plus sixteen constants; GENQECU an
 
 GenqecSalientNativeReference adds eight exact Tqop=0/Xqp=Xq profiles for GENQEC/GENQEJ and both saturation modes. The four electrical states, saturation and terminal power are replayed from native phasor/speed/field-voltage inputs; forced mechanical inputs are not predicted-state acceptance. The existing zero-state/general q-coordinate implementation is retained. First-fault callback residuals decrease under step halving, but complete coupled parity remains open. See [the salient-branch evidence](benchmarks/genqec-salient-branch-2026-10-19.md).
 
+GENQEC field compensation now accepts finite Kw>=0 without the former artificial Kw<1 cap; the runtime still clips Kw*Id to +/-0.4. GenqecKwNativeReference adds six exact-input profiles for Kw=0/1/1.5 with native limiter entry, both signs and release. Native field initialization and electrical replay are separate from complete coupled acceptance. See [the compensation evidence](benchmarks/genqec-field-compensation-2026-10-19.md).
+
 | Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |
 |---|---|---|---|---|---|
 | DEGOV1D | POWERWORLD | SMIB_v33_genrou_degov1d.dyr | DStabNetworkBuilderDegov1dTest | Degov1dIndependentSmibConformanceTest | smib-genrou-degov1d |

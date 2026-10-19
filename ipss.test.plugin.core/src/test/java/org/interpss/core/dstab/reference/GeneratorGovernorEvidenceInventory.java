@@ -42,6 +42,9 @@ public final class GeneratorGovernorEvidenceInventory {
                         var profiles=GenqecSchemaNativeReference.profiles();
                         if(profiles.size()!=10)throw new IllegalStateException("Incomplete native generator selector matrix");
                         for(var profile:profiles){profile.body();profile.input();profile.network();}
+                        var compensation=GenqecKwNativeReference.profiles();
+                        if(compensation.size()!=6)throw new IllegalStateException("Incomplete field-compensation reference matrix");
+                        for(var profile:compensation){profile.body();profile.input();profile.network();if(profile.replayBounds().length!=7)throw new IllegalStateException("Missing field-compensation channel bounds");}
                     }
                     if(model.equals("GENQEC")||model.equals("GENQEJ")){
                         var profiles=GenqecSalientNativeReference.profiles();
@@ -165,6 +168,9 @@ public final class GeneratorGovernorEvidenceInventory {
                 .append("GenqecSalientNativeReference adds eight exact Tqop=0/Xqp=Xq profiles for GENQEC/GENQEJ and both saturation modes. ")
                 .append("The four electrical states, saturation and terminal power are replayed from native phasor/speed/field-voltage inputs; forced mechanical inputs are not predicted-state acceptance. ")
                 .append("The existing zero-state/general q-coordinate implementation is retained. First-fault callback residuals decrease under step halving, but complete coupled parity remains open. See [the salient-branch evidence](benchmarks/genqec-salient-branch-2026-10-19.md).\n\n")
+                .append("GENQEC field compensation now accepts finite Kw>=0 without the former artificial Kw<1 cap; the runtime still clips Kw*Id to +/-0.4. ")
+                .append("GenqecKwNativeReference adds six exact-input profiles for Kw=0/1/1.5 with native limiter entry, both signs and release. ")
+                .append("Native field initialization and electrical replay are separate from complete coupled acceptance. See [the compensation evidence](benchmarks/genqec-field-compensation-2026-10-19.md).\n\n")
                 .append("| Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |\n")
                 .append("|---|---|---|---|---|---|\n");
         for (Evidence entry : ENTRIES) {

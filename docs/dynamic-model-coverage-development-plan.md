@@ -2,6 +2,17 @@
 
 ## Current checkpoint
 
+GENQEC bounded field-compensation correction: finite Kw>=0 now replaces
+the artificial Kw<1 restriction, and NaN is rejected. The existing Kw*Id
+product limiter and shared machine equations remain unchanged. Twelve native
+and twelve PowerWorld cold runs cover Kw=0/1/1.5 at two steps, including native
+initialization, both product-limit signs and release. Electrical replay and
+strict imported fault checks pass. Final validation on baseline `1b981eb9b`
+passes 23 focused, 406 plugin-core and 1,569 scoped SMIB/model/solver checks,
+with only existing skips and zero failures/errors. Source/run/report hashes
+retain the scoped implementation evidence. Complete coupled parity remains open. See the
+[compensation checklist](benchmarks/genqec-field-compensation-2026-10-19.md).
+
 GENQEC/GENQEJ bounded salient-pole verification: eight exact T'qo=0/X'q=Xq
 phasor/state profiles were generated twice cold across two models, two saturation
 choices and two steps. Eight additional PowerWorld standard-model diagnostics
