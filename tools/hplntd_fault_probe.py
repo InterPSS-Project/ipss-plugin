@@ -15,11 +15,6 @@ import shutil
 import struct
 import sys
 
-import psse3607
-import psspy
-import dyntools
-
-
 def checked(label, result):
     code, value = result if isinstance(result, tuple) else (result, None)
     if code:
@@ -31,15 +26,23 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def main():
+def run_case(tag, entered_step, *, dynamic=None, apply_fault=True, label='frozen-fault',
+             directory_prefix='hplntd-fault-reference-', probe_source=None):
+    # Import the licensed runtime only when executing a reference case. Pure
+    # input-schema tests must also run on machines without that installation.
+    import psse3607
+    import psspy
+    import dyntools
     root = Path.cwd()
-    tag, entered_step = sys.argv[1:]
     h = float(entered_step)
     assert h in (.0005, .00025)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
-    out = root / 'target' / ('hplntd-fault-reference-' + tag)
+    assert directory_prefix in ('hplntd-fault-reference-', 'hplntd-control-reference-')
+    out = root / 'target' / (directory_prefix + tag)
     out.mkdir(exist_ok=False)
-    shutil.copy2(__file__, out / 'probe.py')
+    shutil.copy2(probe_source or __file__, out / 'probe.py')
+    if probe_source:
+        shutil.copy2(__file__, out / 'hplntd_fault_probe.py')
     source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/renewable/regfma1_native.raw'
     raw = source.read_text()
     lines = raw.splitlines()
@@ -53,8 +56,10 @@ def main():
     raw = raw.replace('0 / END OF BRANCH DATA', branch.replace('     1,     2,', '     4,     2,', 1) + '\n0 / END OF BRANCH DATA')
     (out / 'network.raw').write_text(raw)
     resource = root / 'ipss.test.plugin.core/src/test/resources/hplntd-foundation-native/plant-low-window-coarse.dyr.b64'
-    dynamic = base64.b64decode(resource.read_bytes())
-    assert hashlib.sha256(dynamic).hexdigest() == '1a6bd67dbd0c25557697d469a0e7a738536f0a88d68034592eb3bae16063d77c'
+    frozen = base64.b64decode(resource.read_bytes())
+    assert hashlib.sha256(frozen).hexdigest() == '1a6bd67dbd0c25557697d469a0e7a738536f0a88d68034592eb3bae16063d77c'
+    dynamic = frozen if dynamic is None else dynamic
+    assert isinstance(dynamic, bytes)
     (out / 'dynamic.dyr').write_bytes(dynamic)
     record = next(s for s in dynamic.decode().splitlines() if "'USRBUS'" in s)
     tokens = shlex.split(record.rstrip().removesuffix('/'))
@@ -102,19 +107,21 @@ def main():
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     actual = [checked('constant audit', psspy.dsrval('CON', layout['PLANT']['CON'] + i)) for i in range(61)]
     f32 = lambda v: struct.unpack('f', struct.pack('f', v))[0]
-    assert actual == list(map(f32, declared))
+    assert actual == list(map(f32, declared)), ('Reference tool changed entered constants', declared, actual)
     checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
     events = []
     for offset, delta in [(3, .05), (1, .02)]:
         value = checked('initial reference', psspy.dsrval('VAR', layout['PLANT']['VAR'] + offset)) + delta
         checked('reference step', psspy.change_var(layout['PLANT']['VAR'] + offset, value))
         events.append(dict(time_s=.05, array='VAR', offset=offset, value=value))
-    checked('fault', psspy.dist_bus_fault(2, 3, 100., [0., 10.]))
-    events.append(dict(time_s=.05, action='three-phase-fault', bus=2, units=3, base_kv=100,
-                       impedance_ohm=[0, 10], impedance_system_pu=[0, .1]))
+    if apply_fault:
+        checked('fault', psspy.dist_bus_fault(2, 3, 100., [0., 10.]))
+        events.append(dict(time_s=.05, action='three-phase-fault', bus=2, units=3, base_kv=100,
+                           impedance_ohm=[0, 10], impedance_system_pu=[0, .1]))
     checked('fault interval', psspy.run(0, .1, 1000000, 1, 0))
-    checked('clear fault', psspy.dist_clear_fault(1))
-    events.append(dict(time_s=.1, action='clear-fault'))
+    if apply_fault:
+        checked('clear fault', psspy.dist_clear_fault(1))
+        events.append(dict(time_s=.1, action='clear-fault'))
     checked('recovery', psspy.run(0, .2, 1000000, 1, 0))
     _, labels, data = dyntools.CHNF('native.out').get_data()
     columns = sorted(k for k in labels if isinstance(k, int))
@@ -127,17 +134,20 @@ def main():
             writer.writerow([format(time, '.12g')] + [format(data[k][i], '.12g') for k in columns])
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and 'Network not converged' not in log
-    manifest = dict(status='native-converged-profile' if quality else 'rejected-native-quality', model='HPLNTDU',
+    files = ['network.raw', 'dynamic.dyr', 'probe.py', 'native.log', 'native.csv', 'native.out']
+    if probe_source:
+        files.append('hplntd_fault_probe.py')
+    manifest = dict(status='native-converged-profile' if quality else 'rejected-native-quality', model='HPLNTDU', profile=label,
                     downstream='REAXDU', step_s=h, end_s=.2, system_mva=100, machine_mva={'UNIT1': 50, 'UNIT4': 100},
                     events=events, layout=layout, declared_constants=declared, actual_constants=actual,
                     source_document_sha256=sha(document), library_sha256=sha(library),
                     engine_module=psse3607.__name__, wrapper_sha256=sha(psspy.__file__), python_sha256=sha(sys.executable),
                     channel_count=len(columns), sample_count=len(data['time']),
-                    files={name: sha(name) for name in ['network.raw', 'dynamic.dyr', 'probe.py', 'native.log', 'native.csv', 'native.out']})
+                    files={name: sha(name) for name in files})
     Path('manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     assert quality
     print(json.dumps(dict(status=manifest['status'], samples=manifest['sample_count'], csv_sha256=manifest['files']['native.csv'])))
 
 
 if __name__ == '__main__':
-    main()
+    run_case(*sys.argv[1:])

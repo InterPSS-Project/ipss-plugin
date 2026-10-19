@@ -489,6 +489,21 @@ and state definitions agree.
       Two legacy bounded ANDES wind envelopes are revised only after source-
       controlled frequency-on/off A/B proof; exact/native limits are unchanged.
       See [fault diagnostics, corrected defect and remaining gaps](benchmarks/hplntd-fault-event-frequency-2026-10-18.md).
+    - [x] Add exact token-only disabled-control/zero-gain reference probes and
+      offline artifact negative controls. Keep all states, outputs and duplicate
+      samples; require cold equality at two steps and unchanged frozen fault
+      hashes after common-runner refactoring. This is a source-discriminator
+      slice, not new runtime support. See [observations and implementation
+      implications](benchmarks/hplntd-control-discriminators-2026-10-18.md).
+      Fourteen profiles/28 cold runs are byte-identical by pair; all seven coarse
+      exploratory outputs and both frozen fault CSVs are unchanged. Gates on
+      baseline `7866eb36e`: ten probe/audit and six wording checks, 379 core-unit
+      (six optional skips), and 1,493 selected SMIB/model/solver tests (one
+      diagnostic skip), zero failures/errors. Production equations are unchanged.
+    - [ ] Implement disabled-path held commands and proportional-only
+      equilibrium from the discriminators, covering voltage/PF selectors and
+      electrical-feedback/feedforward combinations before expanding the bounded
+      import/runtime contract. Preserve existing rejection until established.
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve
