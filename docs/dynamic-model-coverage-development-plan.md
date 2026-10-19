@@ -2,6 +2,24 @@
 
 ## Current checkpoint
 
+IEEEST opt-in integration follow-up: bind the running CML graph to the existing
+staggered solver through a seven-coordinate state port. Preserve default
+modified-Euler behavior, published state keys, core GENROU reuse and all existing
+reference bytes/bounds. Add pure full-vector equations, optimization parity,
+status/reactivation/attachment checks and settled derivative-memory callbacks.
+Twelve recorded-input profiles and all 38 coupled non-time channels retain every
+row, event side and explicit raw/step clocks. The matched-method residual is
+much smaller, but no new trajectory acceptance is claimed: safety review rejected
+deriving bounds from observed coupled errors. Independent criteria or numerical
+precision bounds remain required. See the
+[adapter, comparison protocol, diagnostics and TODO](benchmarks/ieeest-staggered-boundary-2026-10-19.md).
+Final gates pass 143 focused, 427 core and 1,831 scoped SMIB/model/solver tests
+with zero failures/errors and seven existing skips, plus 59 offline checks.
+Source reconciliation covers 1,875 Java/POM files and 139 unchanged fixture
+parts; all forty established default-playback files remain byte-identical.
+New trajectory residuals remain diagnostic, not accepted under generated bounds.
+No full Texas2k dynamics are run.
+
 IEEEST atomic-corrector follow-up: fix the model-specific second-order lag so
 both corrector slopes use the same predicted vector. Two new vector-stage
 regressions fail before the fix; seven unit tests pass afterward, including

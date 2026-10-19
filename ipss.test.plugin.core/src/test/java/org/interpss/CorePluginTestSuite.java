@@ -665,6 +665,7 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.IeeestPowerInputSmibTest.class,
 	org.interpss.core.dstab.IeeestBusMeasurementSmibTest.class,
 	org.interpss.core.dstab.IeeestDerivativeSmibTest.class,
+	org.interpss.core.dstab.IeeestStaggeredSmibTest.class,
 	org.interpss.core.dstab.IeeestZeroNumeratorSmibTest.class,
 	Pss3bPsseSmibConformanceTest.class,
 	Pss2cPsseSmibConformanceTest.class,

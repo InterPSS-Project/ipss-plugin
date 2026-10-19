@@ -42,6 +42,9 @@ public final class SecondOrderLeadLagBlock extends CMLControlBlockAdapter {
 
     public double getFirstState() { return stateX; }
     public double getSecondState() { return x2; }
+    public void setSecondState(double value) { x2 = value; }
+    public double getFirstStateSlope() { return b > EPS ? x1Derivative(u) : firstOrderDerivative(u); }
+    public double getSecondStateSlope() { return x2Derivative(); }
 
     @Override
     public void eulerStep1(double input, double dt) {

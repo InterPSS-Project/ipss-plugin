@@ -120,6 +120,9 @@ does not accept the explicitly diagnostic fault-output comparisons above.
   and retained voltage/speed/memory/output diagnostics.
 - [ ] Resolve fault-output numerical-stage discrepancy without widening bounds,
   fitting parameters or replacing the published transfer function.
+  The [opt-in staggered boundary](ieeest-staggered-boundary-2026-10-19.md) now
+  compares the actual graph under the matched integration rule; the smaller
+  residuals remain diagnostic pending independent acceptance criteria.
 - [x] The [atomic-corrector follow-up](ieeest-atomic-corrector-2026-10-19.md)
   adds failing simultaneous-vector regressions and fixes the first lag's rate
   correction independently of trace fitting. Fault-output parity remains open.

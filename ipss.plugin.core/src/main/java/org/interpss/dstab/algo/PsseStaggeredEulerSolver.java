@@ -19,6 +19,7 @@ import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
 import org.interpss.dstab.control.exc.ieee.y2005.st4b.Esst4bPIControlBlock;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock;
+import org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer;
 import org.interpss.dstab.control.util.FreezeNonWindupPIControlBlock;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.dstab.renewable.Regca1Model;
@@ -54,7 +55,7 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * Non-windup projection clears outward history at a bound.</p>
  *
  * <p>Supported machines: GENROU, GENSAL and uncontrolled GENCLS. Supported
- * controllers: IEEET1, EXST1/ESST1A, ESST4B, PSS2A, GAST, TGOV1, IEESGO,
+ * controllers: IEEET1, EXST1/ESST1A, ESST4B, PSS2A, IEEEST, GAST, TGOV1, IEESGO,
  * IEEEG1, GGOV1 and HYGOV. REGCA1/REECA1 bundles use their two-step path.
  * The extended stack starts with zero derivative history; the original
  * IEEE39 controller subset retains its verified initial-derivative history.
@@ -267,7 +268,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 && type != PsseTGov1SteamTurGovernor.class && type != PsseIEESGOSteamTurGovernor.class
                 && type != IeeeSteamTCDRGovernor.class && type != PsseGgov1Governor.class
                 && type != PsseHygovGovernor.class && type != IEEE1981ST1Exciter.class
-                && type != IEEE2005ST4BExciter.class && type != Ieee1992PSS2AStabilizer.class)
+                && type != IEEE2005ST4BExciter.class && type != Ieee1992PSS2AStabilizer.class
+                && type != IeeestStabilizer.class)
             throw new IllegalArgumentException("Unsupported staggered-Euler controller: " + type.getName());
     }
 
@@ -314,9 +316,13 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         if (controller == null) return;
         if (controller instanceof StaggeredEulerParticipant model) {
             extendedStack=true;
+            if (controller instanceof AbstractAnnotateController annotated)
+                annotated.setRuntimeExpressionBindingsEnabled(runtimeControllerOptimizationEnabled);
             BooleanSupplier owner=ownerActive;
             BooleanSupplier active=controller instanceof PsseGgov1Governor g
                     ? ()->owner.getAsBoolean()&&g.isActive()
+                    : controller instanceof IeeestStabilizer pss
+                    ? ()->owner.getAsBoolean()&&pss.isActive()
                     : ()->owner.getAsBoolean()&&((PsseHygovGovernor)controller).isActive();
             Participant participant=new Participant(model,active);
             participants.add(participant);participantByController.put(controller,participant);
@@ -467,9 +473,12 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             }
             // Publish algebraic controller outputs at this same state/network
             // endpoint before evaluating the machine's electrical derivatives.
-            if (m.hasStabilizer()&&m.getStabilizer().isActive()
-                    &&!m.getStabilizer().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
-                throw new DStabSimuException("Stabilizer derivative failed: "+m.getId());
+            if (m.hasStabilizer()&&m.getStabilizer().isActive()) {
+                Participant p=participantByController.get(m.getStabilizer());
+                if (p!=null) p.model.evaluateStaggered(fixedStep,p.rates,0);
+                else if (!m.getStabilizer().nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,m,0))
+                    throw new DStabSimuException("Stabilizer derivative failed: "+m.getId());
+            }
             if (m.hasExciter()&&m.getExciter().isActive()) {
                 // PSS state and physical inputs stay fixed while this AVR is
                 // evaluated. Release before governor or machine updates below.
@@ -528,6 +537,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             finally { networkSolutionStage = previousStage; }
         }
         networkEndpointAvailable = false;
+        if (discontinuity) for (var p:participants)
+            if (p.active.getAsBoolean() && p.model instanceof IeeestStabilizer stabilizer)
+                stabilizer.synchronizeVoltageDerivativeMemory();
         if (discontinuity) rebaseDynamicModelInputs(method);
         evaluate();
         for (int i=0;i<states.size();i++) {
@@ -543,7 +555,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             boolean active=p.active.getAsBoolean();
             if (active&&!p.wasActive) System.arraycopy(p.rates,0,p.history,0,p.rates.length);
             p.wasActive=active;
-            if (discontinuity)
+            if (discontinuity && p.model.averageStaggeredRatesAtDiscontinuity())
                 for (int i=0;i<p.rates.length;i++) p.rates[i]=.5*(p.rates[i]+p.history[i]);
         }
         // Advance ST1 while its physical and upstream controller inputs still
@@ -582,6 +594,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         // Zero-time algebraic blocks (for example IEEET1 with TR=0) must report
         // the solved endpoint voltage, not the previous network solution.
         evaluate();
+        for (var p:participants)
+            if (p.active.getAsBoolean() && p.model instanceof IeeestStabilizer stabilizer)
+                stabilizer.acceptVoltageDerivativeEndpoint(time+dt,dt);
         for (var bus:dstabAlgo.getNetwork().getBusList())
             if (bus.isActive()) bus.nextStep(dt,method,1);
         inputDiscontinuity=false;

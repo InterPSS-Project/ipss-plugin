@@ -11,15 +11,22 @@ import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter;
+import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 
 /** PSS/E IEEEST stabilizer following the PowerWorld/WECC block ordering. */
 @AnController(input="mach.speed", output="this.outputGate.y", refPoint="0.0", display={})
-public class IeeestStabilizer extends AnnotateStabilizer {
+public class IeeestStabilizer extends AnnotateStabilizer implements StaggeredEulerParticipant {
     private final IeeestData data;
     private double constantInputBias;
     private boolean initializingBias;
     private BaseDStabBus<?, ?> measurementBus;
     private final IeeestVoltageDerivative voltageDerivative = new IeeestVoltageDerivative();
+    private StaggeredBlocks staggeredBlocks;
+    private record StaggeredBlocks(SecondOrderLagBlock first, SecondOrderLeadLagBlock second,
+            CMLControlBlock1stOrderAdapter lead1, CMLControlBlock1stOrderAdapter lead2,
+            CMLControlBlock1stOrderAdapter terminal) {}
 
     public double speedRef, peRef, pmRef, vtRef, freqRef;
     public double speedGain, peGain, pmGain, voltageGain, frequencyGain;
@@ -103,6 +110,7 @@ public class IeeestStabilizer extends AnnotateStabilizer {
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
+        staggeredBlocks = null;
         if (data.mode() < 1 || data.mode() > 6 || data.remoteBus() < 0
                 || (data.remoteBus() != 0 && data.mode() != 2 && data.mode() != 5 && data.mode() != 6)) return false;
         measurementBus = data.remoteBus() == 0 ? bus
@@ -133,9 +141,58 @@ public class IeeestStabilizer extends AnnotateStabilizer {
                 +voltageGain*vtRef+frequencyGain*(freqRef-1.0);
         constantInputBias=t5==0.0 && t6>0.0 ? ks*physicalInput : 0.0;
         initializingBias=true;
-        try { return super.initStates(bus, machine); }
+        boolean initialized;
+        try { initialized = super.initStates(bus, machine); }
         finally { initializingBias=false; }
+        if (initialized) {
+            var blocks = getNamedStateBlocks();
+            staggeredBlocks = new StaggeredBlocks((SecondOrderLagBlock) blocks.get("secondOrderLag"),
+                    (SecondOrderLeadLagBlock) blocks.get("secondOrderLeadLag"),
+                    (CMLControlBlock1stOrderAdapter) blocks.get("leadLag1"),
+                    (CMLControlBlock1stOrderAdapter) blocks.get("leadLag2"),
+                    (CMLControlBlock1stOrderAdapter) blocks.get("washout"));
+        }
+        return initialized;
     }
+
+    @Override public int staggeredStateCount() { return 7; }
+
+    private StaggeredBlocks staggered(double[] values, int offset) {
+        java.util.Objects.checkFromIndexSize(offset, staggeredStateCount(), values.length);
+        if (staggeredBlocks == null) throw new IllegalStateException("Initialize IEEEST before accessing integration states");
+        return staggeredBlocks;
+    }
+
+    @Override public void readStaggeredState(double[] values, int offset) {
+        var b = staggered(values, offset);
+        values[offset] = b.first.getStateX(); values[offset+1] = b.first.getRate();
+        values[offset+2] = b.second.getFirstState(); values[offset+3] = b.second.getSecondState();
+        values[offset+4] = b.lead1.getStateX(); values[offset+5] = b.lead2.getStateX();
+        values[offset+6] = b.terminal.getStateX();
+    }
+
+    @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
+        var b = staggered(rates, offset);
+        if (!Double.isFinite(stepSec) || stepSec < 0) throw new IllegalArgumentException("Nonnegative finite evaluation step required");
+        if (!super.nextStep(0, DynamicSimuMethod.MODIFIED_EULER, getMachine(), 0))
+            throw new IllegalStateException("Cannot evaluate IEEEST integration boundary");
+        rates[offset] = b.first.getOutputSlope(); rates[offset+1] = b.first.getRateSlope();
+        rates[offset+2] = b.second.getFirstStateSlope(); rates[offset+3] = b.second.getSecondStateSlope();
+        rates[offset+4] = b.lead1.getDX_dt(); rates[offset+5] = b.lead2.getDX_dt();
+        rates[offset+6] = b.terminal.getDX_dt();
+    }
+
+    @Override public void applyStaggeredState(double[] values, int offset, double stepSec) {
+        var b = staggered(values, offset);
+        for (int i=0; i<7; i++) if (!Double.isFinite(values[offset+i]))
+            throw new IllegalArgumentException("IEEEST integration state must be finite");
+        b.first.setStateX(values[offset]); b.first.setRate(values[offset+1]);
+        b.second.setStateX(values[offset+2]); b.second.setSecondState(values[offset+3]);
+        b.lead1.setStateX(values[offset+4]); b.lead2.setStateX(values[offset+5]);
+        b.terminal.setStateX(values[offset+6]);
+    }
+
+    @Override public boolean averageStaggeredRatesAtDiscontinuity() { return data.mode() != 6; }
 
     /** Called only after a settled zero-time network event; no filter advance. */
     public void synchronizeVoltageDerivativeMemory() {

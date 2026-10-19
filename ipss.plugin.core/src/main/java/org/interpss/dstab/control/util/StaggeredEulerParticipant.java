@@ -11,5 +11,7 @@ public interface StaggeredEulerParticipant {
     void readStaggeredState(double[] values, int offset);
     void evaluateStaggered(double stepSec, double[] derivatives, int offset);
     void applyStaggeredState(double[] values, int offset, double stepSec);
+    /** Some sampled-input models rebase measurement memory instead of averaging slopes. */
+    default boolean averageStaggeredRatesAtDiscontinuity() { return true; }
     default void completeStaggeredStep(double stepSec) { }
 }
