@@ -22,6 +22,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private final Regca1Model converter;
     private Repca1Model plantController;
     private RepccModel repccController;
+    private HplntdCoordinator.Port hybridController;
     private WtgwgoaModel weakGridController;
     private WindControlStack windControlStack;
     private WindSpeedConvention windSpeedConvention = WindSpeedConvention.WTTQA_POWER_REFERENCE;
@@ -128,6 +129,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             plantController.setReactiveStateOffset(qReference);
         }
         if (repccController != null) repccController.initialize(p,qReference,!(data.qFlag()==1&&data.vFlag()==0));
+        if(hybridController!=null)hybridController.initialize(p,qReference);
         if (weakGridController != null) weakGridController.initialize(v, p);
         if (windControlStack != null) windControlStack.initialize(p);
         twoStepIpcmd = ipcmd;
@@ -148,6 +150,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double sensedV = snapToInitial(sensedVoltage(v), sensedVoltage0);
         if (plantController != null) plantController.step(dt, p, q, sensedV, frequency);
         if (repccController != null) { repccController.step(dt,0); repccController.step(dt,1); }
+        if(hybridController!=null)throw new IllegalStateException("Shared hybrid composition requires staged controller callbacks");
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0));
         if (windControlStack != null) {
@@ -183,6 +186,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             plantController.step(dt, p, q, sensedV, frequency, flag);
         }
         if (repccController != null) repccController.step(dt,flag);
+        if(hybridController!=null)hybridController.step(dt,flag);
         if (weakGridController != null) weakGridController.step(dt, v, getPlantPowerReference(p0), flag);
         if (windControlStack != null) {
             windControlStack.step(dt, p, pOrder, getSelectedPowerReference(p0), voltageDip, flag);
@@ -229,7 +233,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             pOrder = Repca1Model.limit(pOrder, effectivePmin, effectivePmax);
         }
 
-        double plantQref = repccController!=null?repccController.reactiveIncrement():plantController == null ? 0.0 : plantController.getQref();
+        double plantQref = hybridController!=null?hybridController.reactiveIncrement():repccController!=null?repccController.reactiveIncrement():plantController == null ? 0.0 : plantController.getQref();
         double selectedQ = data.pfFlag() == 1
                 ? pMeasured * powerFactorRatio : qReference + plantQref;
         double qTarget = Repca1Model.limit(selectedQ, effectiveQmin, effectiveQmax);
@@ -551,19 +555,27 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     }
     @Override public Repca1Model getPlantController() { return plantController; }
     @Override public void setPlantController(Repca1Model controller) {
-        if(controller!=null&&repccController!=null)throw new IllegalStateException("REPCC already owns the plant reference port");
+        if(controller!=null&&(repccController!=null||hybridController!=null))throw new IllegalStateException("The plant reference port is already occupied");
         plantController = controller;
     }
     @Override public RepccModel getRepccController(){return repccController;}
     @Override public void setRepccController(RepccModel controller){
-        if(controller!=null&&(plantController!=null||repccController!=null))throw new IllegalStateException("Plant reference port is occupied");
+        if(controller!=null&&(plantController!=null||repccController!=null||hybridController!=null))throw new IllegalStateException("Plant reference port is occupied");
         if(controller!=null&&controller.getConverter()!=converter)throw new IllegalArgumentException("REPCC converter ownership mismatch");
         repccController=controller;
     }
+    @Override public HplntdCoordinator.Port getHybridController(){return hybridController;}
+    public void setHybridController(HplntdCoordinator.Port controller){
+        if(controller==null&&hybridController!=null)throw new IllegalStateException("Shared hybrid ownership cannot be detached one unit at a time");
+        if(controller!=null&&(plantController!=null||repccController!=null||hybridController!=null||weakGridController!=null||windControlStack!=null))throw new IllegalStateException("Plant reference port is occupied");
+        if(controller!=null&&controller.converter()!=converter)throw new IllegalArgumentException("Hybrid converter ownership mismatch");
+        hybridController=controller;
+    }
     @Override public WtgwgoaModel getWeakGridController() { return weakGridController; }
-    @Override public void setWeakGridController(WtgwgoaModel controller) { weakGridController = controller; }
+    @Override public void setWeakGridController(WtgwgoaModel controller) { if(controller!=null&&hybridController!=null)throw new IllegalStateException("Hybrid reference port is occupied");weakGridController = controller; }
     public WindControlStack getWindControlStack() { return windControlStack; }
     public void setWindControlStack(WindControlStack stack) {
+        if(stack!=null&&hybridController!=null)throw new IllegalStateException("Hybrid reference port is occupied");
         windControlStack = stack;
         applyWindSpeedConvention();
     }

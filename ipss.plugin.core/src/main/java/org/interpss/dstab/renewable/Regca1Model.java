@@ -297,6 +297,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
      * its commercial lag identities are verified, full fleet/event parity is open.
      */
     public void setIntegrationScheme(IntegrationScheme scheme) {
+        if(scheme==IntegrationScheme.TWO_STEP&&activeController()!=null&&activeController().getHybridController()!=null)throw new IllegalArgumentException("Shared hybrid composition currently requires staged modified Euler");
         if(scheme==IntegrationScheme.TWO_STEP&&activeController()!=null&&activeController().getRepccController()!=null)
             throw new IllegalArgumentException("REPCC uses staged modified Euler, not the converter two-step path");
         integrationScheme = java.util.Objects.requireNonNull(scheme);
@@ -313,6 +314,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
      * equation-level verification without coupling the converter to one REEC variant.
      */
     public void setActiveElectricalController(RenewableElectricalController electricalController) {
+        if(activeController()!=null&&activeController().getHybridController()!=null&&activeController()!=electricalController)throw new IllegalStateException("Rebuild the shared hybrid group before replacing a controller");
         this.electricalController = electricalController;
         this.reeca1Controller = null;
         if (electricalController != null && integrationStep > 0.0) {
@@ -321,6 +323,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     }
     public Reeca1Model getReeca1Controller() { return reeca1Controller; }
     public void setReeca1Controller(Reeca1Model controller) {
+        if(activeController()!=null&&activeController().getHybridController()!=null&&activeController()!=controller)throw new IllegalStateException("Rebuild the shared hybrid group before replacing a controller");
         this.reeca1Controller = controller;
         this.electricalController = null;
         if (controller != null && integrationStep > 0.0) {

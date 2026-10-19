@@ -23,7 +23,8 @@ benchmark coverage. REPCC now has exact standard import and a bounded REGCA1/REE
 runtime, enabled-MSS import and bounded fast-band switching comparisons. Slow-band
 clock precision and other initialization/host modes remain open. HPLNTD now has a
 typed data/aggregation, bounded plant/downstream kernels and a shared opt-in
-staggered integration boundary, but no production plant/downstream attachment.
+staggered integration boundary, and a bounded typed multi-unit runtime coordinator.
+Main-importer plant/downstream attachment is still missing.
 Exact wrapper decoding, immutable multi-unit link planning and a plant-base/
 physical-Mvar measurement API now exist separately from the main importer.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
@@ -455,6 +456,16 @@ and state definitions agree.
       Gates: 65 focused, 379 core-unit (six optional skips), and 1,469 selected
       SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
       See [binding/measurement evidence and runtime TODOs](benchmarks/hplntd-binding-boundary-2026-10-18.md).
+    - [x] Add typed shared runtime composition for bounded REGCA1/REECA1 hosts,
+      once-per-stage plant/lag advancement, deterministic command publication,
+      ownership guards, trip/rejoin reweighting and whole-group reinitialization.
+      Eight small-testbed tests include two-step-size command comparisons across
+      all seventeen states and eight network/output channels, plus a three-cycle
+      fault. Cross-method reference-slew residuals remain explicit; main import,
+      alternate host modes and independent fault acceptance remain open.
+      Gates: 52 focused hybrid, 379 core-unit (six optional skips), and 1,480
+      selected SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
+      See [typed runtime evidence and remaining gaps](benchmarks/hplntd-typed-runtime-2026-10-18.md).
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve
