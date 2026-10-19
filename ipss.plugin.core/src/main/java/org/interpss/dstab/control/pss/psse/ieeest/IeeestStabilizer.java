@@ -9,7 +9,6 @@ import com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer;
 import com.interpss.dstab.controller.cml.field.ICMLStaticBlock;
 import com.interpss.dstab.controller.cml.field.block.FilterControlBlock;
 import com.interpss.dstab.controller.cml.field.block.GainBlock;
-import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
 import com.interpss.dstab.datatype.CMLFieldEnum;
 import com.interpss.dstab.mach.Machine;
 
@@ -17,6 +16,8 @@ import com.interpss.dstab.mach.Machine;
 @AnController(input="mach.speed", output="this.outputGate.y", refPoint="0.0", display={})
 public class IeeestStabilizer extends AnnotateStabilizer {
     private final IeeestData data;
+    private double constantInputBias;
+    private boolean initializingBias;
 
     public double speedRef, peRef, pmRef, vtRef;
     public double speedGain, peGain, pmGain, voltageGain;
@@ -49,9 +50,9 @@ public class IeeestStabilizer extends AnnotateStabilizer {
     public FilterControlBlock leadLag2;
 
     @AnControllerField(type=CMLFieldEnum.ControlBlock, input="this.ks*this.leadLag2.y",
-            parameter={"type.NoLimit", "this.washoutGain", "this.t6"},
+            parameter={"this.washoutGain", "this.t6", "this.t5"},
             y0="this.outputGate.u0", initOrderNumber=5)
-    public WashoutControlBlock washout;
+    public IeeestTerminalBlock washout;
 
     @AnControllerField(type=CMLFieldEnum.StaticBlock, input="this.washout.y",
             y0="pss.vs", initOrderNumber=6)
@@ -64,7 +65,8 @@ public class IeeestStabilizer extends AnnotateStabilizer {
 
         @Override
         public double getY() {
-            double limited = Math.max(lsmin, Math.min(lsmax, super.getY()));
+            double unlimited = super.getY() + (initializingBias ? 0.0 : constantInputBias);
+            double limited = Math.max(lsmin, Math.min(lsmax, unlimited));
             double vt = getMachine().getDStabBus().getVoltageMag();
             boolean below = vcl != 0.0 && vt <= vcl;
             boolean above = vcu != 0.0 && vt >= vcu;
@@ -98,7 +100,20 @@ public class IeeestStabilizer extends AnnotateStabilizer {
         // CML Washout is K*T6*s/(1+T6*s); IEEEST specifies T5*s/(1+T6*s).
         washoutGain = t6 > 0.0 ? t5 / t6 : 0.0;
         lsmax=data.lsmax(); lsmin=data.lsmin(); vcu=data.vcu(); vcl=data.vcl();
-        return super.initStates(bus, machine);
+        // The filter chain stores deviations from this physical input. A
+        // washout removes its DC term; the T5=0 lag must retain it instead.
+        double physicalInput=speedGain*(speedRef-1.0)+peGain*peRef+pmGain*pmRef+voltageGain*vtRef;
+        constantInputBias=t5==0.0 && t6>0.0 ? ks*physicalInput : 0.0;
+        initializingBias=true;
+        try { return super.initStates(bus, machine); }
+        finally { initializingBias=false; }
+    }
+
+    /** Physical terminal-filter signal before the static output limits and voltage cutout. */
+    public double getUnclippedOutput() {
+        if(getNamedStateBlocks().isEmpty())throw new IllegalStateException("IEEEST blocks are not initialized");
+        try {return getFieldVaule("this.washout.y")+(initializingBias?0.0:constantInputBias);}
+        catch(Exception failure){throw new IllegalStateException("Cannot observe the IEEEST terminal signal",failure);}
     }
 
     @Override public AnController getAnController() { return getClass().getAnnotation(AnController.class); }

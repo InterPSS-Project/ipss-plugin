@@ -2,6 +2,19 @@
 
 ## Current checkpoint
 
+IEEEST zero-numerator follow-up: implement the native T5=0 unity-DC terminal
+lag rather than disabling the stabilizer. Restore the physical DC term in the
+deviation-coordinate realization without changing the shared integrator.
+Ordinary washout block storage and stages remain bit-for-bit identical; exact
+zero, tiny numerator, analytic recurrence and nonzero-DC equilibrium guards pass.
+Four valid accelerating-power profiles have eight raw-exact cold runs and
+bounded all-row terminal-state/Vstab playback with approximately fourfold step
+refinement. Four repeated nonzero-DC native initialization failures stay rejected,
+not compensated or fitted. Full coupled/coordinate and broader lifecycle work
+remains open. See the
+[zero-numerator implementation, evidence and TODO](benchmarks/ieeest-zero-numerator-2026-10-19.md).
+No full Texas2k dynamics are run.
+
 IEEEST power-input follow-up: correct mode 4 from mechanical power alone to
 Pm-Pe, keeping mode 3, operating-point references and integration unchanged.
 Predictor/corrector and cancellation tests fail before the missing negative

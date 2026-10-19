@@ -2,6 +2,11 @@
 
 ## Source-backed correction
 
+The [zero-numerator follow-up](ieeest-zero-numerator-2026-10-19.md) implements
+the separate T5=0 lag convention and physical DC initialization. It retains
+ordinary washout storage/stages and the bounds in this report; its rejected
+native nonzero-DC initializations are not counted as accepted trajectories.
+
 The native source table defines mode 3 as generator electrical power and mode 4
 as accelerating power. The existing mode-4 implementation selected mechanical
 power alone: its electrical-power coefficient was zero. The correction changes
