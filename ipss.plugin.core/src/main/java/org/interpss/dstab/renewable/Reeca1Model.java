@@ -56,6 +56,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private double effectiveVmax;
     private double effectiveVmin;
     private double postDipTimer;
+    private boolean singlePrecisionTimers;
     private double iqHoldTimer;
     private double heldIpMax;
     private double ipLimit;
@@ -375,7 +376,12 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
                     && data.kvi() * voltageControlError < 0.0 && qIntegralRate < 0.0)) qIntegralRate = 0.0;
         // Current-limit logic precedes the state advance. The next converter
         // command combines this limit with the advanced Pord/Vt_filt path.
-        double stagedIpLimit = ipLimit;
+        // Q-priority headroom reads the last published converter command.
+        // An algebraic refresh at a new voltage must not move this feedback
+        // across the integration boundary before that command is published.
+        double stagedIpLimit = data.pqFlag() == 0 && postDipTimer <= 0.0
+                ? Math.min(currentTableLimit(vMeasured, false, Double.POSITIVE_INFINITY),
+                        remaining(currentLimit(), twoStepIqcmd)) : ipLimit;
         twoStep.begin(dt);
         vMeasured = twoStep.advance(0, vMeasured, vRate);
         pMeasured = twoStep.advance(1, pMeasured, pRate);
@@ -422,14 +428,14 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             double iqMax = Math.min(currentLimit(), iqTable);
             rawIq = Repca1Model.limit(rawIq, -iqMax, iqMax);
             double calculatedIpMax = Math.min(ipTable, remaining(currentLimit(), rawIq));
-            if (voltageDip) heldIpMax = calculatedIpMax;
+            if (voltageDip && postDipTimer <= 0.0) heldIpMax = calculatedIpMax;
             double ipMax = postDipTimer > 0.0 ? heldIpMax : calculatedIpMax;
             rawIp = Repca1Model.limit(rawIp, 0.0, ipMax);
             iqLimit = iqMax;
             ipLimit = ipMax;
         } else {
             double calculatedIpMax = Math.min(currentLimit(), ipTable);
-            if (voltageDip) heldIpMax = calculatedIpMax;
+            if (voltageDip && postDipTimer <= 0.0) heldIpMax = calculatedIpMax;
             double ipMax = postDipTimer > 0.0 ? heldIpMax : calculatedIpMax;
             rawIp = Repca1Model.limit(rawIp, 0.0, ipMax);
             double iqMax = Math.min(iqTable, remaining(currentLimit(), rawIp));
@@ -462,11 +468,19 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     }
 
     private void updateDipTimers(double dt, boolean voltageDip) {
+        // A recovery interval already in progress keeps its original deadline,
+        // including time spent in a subsequent voltage excursion.
+        if (postDipTimer > 0.0) {
+            double remaining = singlePrecisionTimers
+                    ? (float) ((float) postDipTimer - (float) dt)
+                    : postDipTimer - dt;
+            postDipTimer = Math.max(0.0, remaining);
+        } else if (previousDip && !voltageDip) {
+            postDipTimer = singlePrecisionTimers ? (float) data.thld2() : data.thld2();
+        }
         if (previousDip && !voltageDip) {
-            postDipTimer = data.thld2();
             iqHoldTimer = Math.abs(data.thld());
         } else if (!voltageDip) {
-            postDipTimer = Math.max(0.0, postDipTimer - dt);
             iqHoldTimer = Math.max(0.0, iqHoldTimer - dt);
         }
     }
@@ -530,6 +544,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     public Reeca1Data getData() { return data; }
     void setSinglePrecisionStates(boolean enabled) {
+        singlePrecisionTimers = enabled;
         twoStep.setSinglePrecision(enabled);
         if (plantController!=null) plantController.setSinglePrecisionStates(enabled);
         if (windControlStack!=null) windControlStack.setSinglePrecisionStates(enabled);

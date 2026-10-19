@@ -454,6 +454,92 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void repeatedVoltageExcursionDoesNotRestartActiveCurrentRecovery() {
+        Reeca1Model controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), null);
+        controller.initialize(1.0, 0.0, 1.0);
+        controller.step(.125, 1.0, 0.0, .55, 1.0);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        double heldLimit = .4 + (.55 - .5) * (.6 - .4) / (.8 - .5);
+        assertEquals(heldLimit, controller.getIpcmd(), 1.0e-12);
+
+        controller.step(.125, 1.0, 0.0, .5, 1.0);
+        assertEquals(heldLimit, controller.getIpcmd(), 1.0e-12,
+                "a second excursion cannot overwrite the held fault limit");
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(heldLimit, controller.getIpcmd(), 1.0e-12);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(.7, controller.getIpcmd(), 1.0e-12,
+                "the first recovery deadline includes the second excursion");
+
+        controller.step(.125, 1.0, 0.0, .5, 1.0);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(.4, controller.getIpcmd(), 1.0e-12,
+                "a later independent excursion starts a fresh recovery interval");
+        controller.initialize(1.0, 0.0, 1.0);
+        controller.step(.125, 1.0, 0.0, 1.0, 1.0);
+        assertEquals(.7, controller.getIpcmd(), 1.0e-12,
+                "initialization clears the previous recovery interval");
+    }
+
+    @Test
+    void activeCurrentRecoveryUsesSelectedStoragePrecisionAtBoundary() throws Exception {
+        for (boolean singlePrecision : new boolean[]{false, true}) {
+            DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+            Regca1Model converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                    1, .02, 10, .9, .4, 1.22, 1.2, .9, .5, -1.3, .02, 0, 100, -100, .7));
+            Reeca1Model controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), null);
+            converter.setReeca1Controller(controller);
+            converter.setSinglePrecisionStates(singlePrecision);
+            controller.initialize(1.0, 0.0, 1.0);
+            controller.step(.001, 1.0, 0.0, .5, 1.0);
+            controller.step(.001, 1.0, 0.0, 1.0, 1.0);
+            for (int i = 0; i < 499; i++) controller.step(.001, 1.0, 0.0, 1.0, 1.0);
+            assertEquals(.4, controller.getIpcmd(), 1.0e-12);
+            controller.step(.001, 1.0, 0.0, 1.0, 1.0);
+            assertEquals(singlePrecision ? .4 : .7, controller.getIpcmd(), 1.0e-12,
+                    "the recorded binary32 recovery interval expires one step later");
+            controller.step(.001, 1.0, 0.0, 1.0, 1.0);
+            assertEquals(.7, controller.getIpcmd(), 1.0e-12);
+        }
+    }
+
+    @Test
+    void twoStepCurrentHeadroomUsesThePreviouslyPublishedReactiveCommand() throws Exception {
+        DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
+        Regca1Model converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                0, .02, 10, .9, .4, 1.22, 10, .8, .4, -1.3, .02, 0, 100, -100, .8));
+        converter.getParentGen().setGen(new Complex(.8, 0.0));
+        converter.getDStabBus().setVoltage(Complex.ONE);
+        Reeca1Model controller = new Reeca1Model(new Reeca1Data(
+                0, 0, 0, 0, 0, 0, .85, 1.15, 0, 0, 0, 10, 1, -1,
+                1, 0, 0, 0, .02, 2, -2, 2, 0, 0, 0, 0, 0, 0, .02,
+                99, -99, 2, 0, 1, .02,
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), converter);
+        converter.setReeca1Controller(controller);
+        converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        assertEquals(.8, converter.getIpRegulatorState(), 1.0e-12);
+
+        converter.getDStabBus().setVoltage(new Complex(1.2, 0.0));
+        for (int i = 0; i < 3; i++) {
+            assertTrue(converter.nextStep(0.0,
+                    com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 1));
+        }
+        assertEquals(1.0, controller.getIqcmd(), 1.0e-12);
+        assertEquals(0.0, controller.getActiveCurrentLimit(), 1.0e-12);
+        assertTrue(converter.nextStep(.001,
+                com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        assertEquals(.8, converter.getIpRegulatorState(), 1.0e-12);
+        assertTrue(converter.nextStep(.001,
+                com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        double previousCommand = .8 / 1.2;
+        double expectedCurrent = .8 + 1.5 * .001 * (previousCommand - .8) / .02;
+        assertEquals(expectedCurrent, converter.getIpRegulatorState(), 1.0e-12,
+                "refreshes cannot make the new reactive command restrict an earlier active-current stage");
+    }
+
+    @Test
     void pPriorityReactiveHeadroomPreventsVoltagePiWindup() {
         Reeca1Model controller = new Reeca1Model(currentLimitData(1, 1, 1, 0, false), null);
         controller.initialize(.8, .2, 1.0);

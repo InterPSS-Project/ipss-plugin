@@ -2238,3 +2238,133 @@ The original selected-recorder cache-preservation control also left prefault
 values unchanged, with at most 2.13e-10 difference in its postfault prefix.
 These diagnostics and the new reference comparisons are retained privately
 in `2026-10-18-case2-full-system-reference-intake`.
+
+### Recovery intervals and staged current limits (2026-10-18)
+
+The complete supplied voltage history localizes additional converter errors
+without changing model parameters. All 96 online converters use their recorded
+initial physical P/Q and terminal voltage; subsequent generator P/Q is never
+fed back. Plant feedback is local and frequency control is disabled in these
+original records. A self-replay control first recovers local P/Q with a maximum
+active-power error of 0.000567 MW. These are conditional component comparisons,
+not acceptance of a solved network.
+
+At generator 1082, the first material active-power difference occurs at
+0.870 seconds. A second voltage excursion was restarting an existing recovery
+interval. The corrected interval keeps its original deadline, includes time
+spent in later excursions, and retains the originally held fault-current limit
+until expiry. The optional single-precision path also retains timer arithmetic
+at that precision. Separately, two-step Q-priority headroom uses the previously
+published reactive-current command; endpoint refreshes cannot bring a new
+command across the integration boundary early.
+
+The complete 10,005-row component comparison preserves both event duplicate
+pairs and uses each channel's full ten-second reference range. Results are:
+
+| Conditional component criterion | Before | Corrected |
+| --- | ---: | ---: |
+| Prefault P/Q channels below 0.001 NRMSE | 181 / 192 | 192 / 192 |
+| Fault/postfault P/Q channels below 0.005 NRMSE | 181 / 192 | 188 / 192 |
+| Generator 1082 peak P error (MW) | 107.951345 | 0.0000889264 |
+| Generator 3122 peak P error (MW) | 148.119904 | 3.874594 |
+| Generator 3127 peak P error (MW) | 94.808256 | 6.659089 |
+| Generator 3112 peak P error (MW) | 54.449454 | 0.689812 |
+
+Generator 3141 still has a 66.648384 MW peak active-power error and 0.192888
+fault/postfault NRMSE. The other conditional failures are active power at 1084
+and reactive power at 3074 and 3113. Event-boundary behavior and later timer
+expiry remain under investigation; the component results do not establish
+complete controller conformance.
+
+The three new regression tests cover repeated recovery episodes, retained
+fault limits, reinitialization, storage precision at expiry, and staged
+current-command feedback. All 81 focused tests pass; the original implementation
+fails all three new tests. Concurrent plant-port work is excluded from the
+frozen runtime used for these controls.
+
+A timer-only coupled control of the original ten-second, 0.5 ms event reduces
+the worst rotor-angle RMSE from 19.653226 to 19.238490 degrees. It still passes
+only 19 of 40 criteria. The final combined correction's 0.5 ms coupled run
+has now completed: worst rotor-angle RMSE is 19.355058 degrees, and 19 of 40
+original selected-channel criteria pass. The retained-limit correction leaves
+this particular coupled trajectory unchanged from the timer-plus-staging run.
+The 81 focused tests and four additional two-step integration tests pass.
+The registered suite has 2,013 successful tests, nine skipped, four aborted,
+and the same three baseline failures among 2,029 discovered tests. Across
+all six cases, fault and generator-trip smoke controls pass; all six existing
+flat-run assertions continue to fail. These checks establish no new regression,
+but they do not establish full-system accuracy. Component evidence is retained
+privately in `2026-10-18-case2-recovery-controller-checkpoint`.
+
+### Complete supplied Case 2 comparison (2026-10-18)
+
+The supplied full-system Parquet dataset is now the primary reference for
+the Case 2 bus-6307 fault. A complete coupled-network run at its 1 ms interval
+compares all 4,810 measurement channels and all 10,005 recorded rows:
+48,124,050 paired measurements. Coverage includes 2,000 bus magnitudes,
+2,000 bus angles, terminal P and Q for 199 generators, and rotor angle,
+speed deviation, mechanical power and field voltage for 103 synchronous
+machines. No recorded voltage or state trajectory is imposed on this network.
+
+Alignment uses integration-step identity and the recorded side of each event.
+Both rows at fault application and clearing are retained. Every supplied
+timestamp matches repeated binary32 addition of 0.001 exactly; the final
+recorded time is 10.0004110336 seconds for integration step 10,000. The local
+clock's corresponding time is 10 seconds. No interpolation or fitted time
+shift is used. Metrics retain the two startup rows separately; acceptance
+uses 10,003 rows from integration time zero, including 1,001 prefault rows
+and 9,002 fault/postfault rows. The application STEP_END is prefault and
+its EVENT_POST is fault-side.
+
+The local bus phases are independently unwrapped across successive 360-degree
+crossings, starting from their original local phases. Supplied unwrapped
+phases are unchanged; raw local phase errors are also retained. No fitted
+angle offset or reference-selected turn is used. Rotor angles remain as
+recorded. Absolute local speed is converted to deviation by subtracting one.
+Bus-angle and additional machine-state errors are diagnostic; the agreed
+rotor-angle limits remain the acceptance criteria for machine angles.
+
+Each voltage and terminal-power gate uses the channel's full ten-second
+reference range. Passing channel counts are:
+
+| Quantity | Prefault | Fault and postfault |
+| --- | ---: | ---: |
+| Bus voltage | 96 / 2000 | 16 / 2000 |
+| Generator P | 28 / 199 | 29 / 199 |
+| Generator Q | 15 / 199 | 32 / 199 |
+
+Rotor-angle prefault maximum-error and full-window RMSE gates pass for 0
+and 0 of 103 machines, respectively. The accuracy objective is not met.
+
+The largest full-window RMSE channel for each quantity is listed below.
+The peak error is for that same channel, which need not have the largest
+instantaneous error in the quantity group.
+
+| Quantity | Bus / unit | RMSE | Peak absolute error |
+| --- | --- | ---: | ---: |
+| Bus voltage | 8024 | 0.015576004 pu | 0.025342609 pu |
+| Bus angle | 1070 | 32.600152 deg | 97.093495 deg |
+| Generator P | 1070 / 1 | 57.586797 MW | 120.42719 MW |
+| Generator Q | 5263 / 1 | 13.850113 Mvar | 37.985095 Mvar |
+| Rotor angle | 1050 / 1 | 28.255819 deg | 87.865968 deg |
+| Speed deviation | 1051 / 1 | 0.00067444631 pu | 0.0016114266 pu |
+| Mechanical power | 6078 / 1 | 6.5440603 MW | 17.835831 MW |
+| Field voltage | 5263 / 1 | 0.68403497 pu | 2.9143245 pu |
+
+The largest initial voltage-magnitude difference is 0.01119813 pu at bus
+1033. Generator 1070 provides a useful distinction: its conditional
+voltage-replay active-power RMSE is 0.00574665 MW, while the coupled-network
+RMSE is 57.586797 MW. Its supplied active power falls to zero late in the
+event, while the coupled run remains near 120 MW. This evidence directs the
+next investigation toward the operating point and network voltage history;
+it does not establish complete controller conformance.
+
+All channel-level metrics, event-side records, raw angle controls, plots,
+input hashes, frozen runtime provenance and completed regression outputs
+are retained privately in
+`2026-10-18-case2-full-reference-ten-second-comparison`.
+The streaming scorer reproduces all 9,620 earlier prefix metrics within
+2.85e-14 and independently verifies angle unwrapping without reference input.
+The initial operating-point differences and the exact original fault
+admittance remain unresolved. The next numerical diagnosis uses this complete
+reference; the six-case, 36-event accuracy objective remains open.
