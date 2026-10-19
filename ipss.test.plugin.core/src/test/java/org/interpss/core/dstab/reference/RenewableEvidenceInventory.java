@@ -32,6 +32,9 @@ public final class RenewableEvidenceInventory {
                 case HPLNTD_NATIVE_MAP -> {
                     if(HplntdAggregationNativeReference.profiles().size()!=7)throw new IllegalStateException("Incomplete hybrid reference matrix");
                     for(var p:HplntdAggregationNativeReference.profiles()){p.body();p.input();}
+                    var faults=org.interpss.core.dstab.HplntdFaultNativeSmibTest.reviewedProfiles();
+                    if(faults.size()!=2)throw new IllegalStateException("Incomplete hybrid fault diagnostics");
+                    for(var p:faults){p.body();p.input();}
                 }
                 case NONE -> { if(!checkpoint.isEmpty())throw new IllegalStateException("Unexpected checkpoint"); }
                 case NATIVE_CSV -> {
@@ -180,8 +183,8 @@ public final class RenewableEvidenceInventory {
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
             Set.of("HPLNTDU").stream().map(model->
-                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdTypedRuntimeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7","",
-                        "Exact HPLNTDU/REAXDU main import and bounded bus-owned REGCA1/REECA1 runtime, with order/removal diagnostics, recorded-input kernels, coupled commands and a three-cycle fault check. Source HPLNTD is not an inferred alias. Alternate hosts, selectors, switching, complete lifecycle and independent coupled fault acceptance remain open; cross-method slew residuals are explicit and default modified Euler is unchanged."))
+                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdFaultNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2","",
+                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime, recorded-input kernels and coupled command profiles. Fault diagnostics retain every raw state/network row; event-frequency reference ordering is corrected without changing the integrator. Instantaneous current and native frequency-callback parity remain unaccepted, as do alternate hosts/selectors/switching and complete lifecycle. Source HPLNTD is not an inferred alias; cross-method slew residuals remain explicit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {

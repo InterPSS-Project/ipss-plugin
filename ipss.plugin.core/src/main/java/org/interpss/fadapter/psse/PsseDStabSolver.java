@@ -12,6 +12,8 @@ import com.interpss.dstab.algo.DynamicSimuAlgorithm;
 import com.interpss.dstab.algo.defaultImpl.DStabSolverImpl;
 import com.interpss.dstab.device.DynamicDevice;
 import com.interpss.dstab.mach.Machine;
+import com.interpss.dstab.common.DStabSimuException;
+import com.interpss.dstab.controller.deqn.measure.BusFreqMeasurementImpl;
 import org.interpss.dstab.control.util.IntegrationStepAware;
 
 /**
@@ -37,6 +39,21 @@ public class PsseDStabSolver extends DStabSolverImpl {
         // and stop as soon as convergence is established. Callers may override
         // it through their configured solver before initialization.
         setMaxIterationTimes(500);
+    }
+
+    @Override public boolean networkSolutionStep() throws DStabSimuException {
+        boolean solved=super.networkSolutionStep();
+        // The event handler rebases after one linear Norton solve. Nonlinear
+        // current sources can still move the angle during INITIAL convergence.
+        // Rebase at that final zero-time endpoint, before frequency integration,
+        // without advancing or resetting its filter state or output.
+        if(solved&&eventBoundaryThisStep&&!dstabAlgo.isDisableDynamicEvent()
+                &&"INITIAL".equals(networkSolutionStage)){
+            for(BaseDStabBus<?,?> bus:dstabAlgo.getNetwork().getBusList())
+                if(bus.isActive()&&bus.getBusFreqMeasureBlock() instanceof BusFreqMeasurementImpl frequency)
+                    frequency.synchronizeNetworkAngle(bus.getVoltageAng());
+        }
+        return solved;
     }
 
     @Override

@@ -132,9 +132,14 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
         // generator-power fallback and same-endpoint staged coupling, which
         // this older single-stage ANDES trace did not use; native PSS/E state
         // trajectories are enforced separately.
+        // Converged event-frequency rebasing changes the upstream plant input.
+        // Paired old/new runs are byte-identical across all fourteen recorded
+        // channels when that frequency path is disabled. The revised turbine-
+        // speed/shaft envelopes therefore bound this coupled interface difference,
+        // not a change to drivetrain equations or an exact conformance limit.
         double[] tolerances = {
                 0.0, 9.0e-3, 3.5e-3,
-                5.0e-6, 7.0e-5, 5.0e-5, 1.0e-7,
+                6.1e-6, 7.0e-5, 9.5e-5, 1.0e-7,
                 2.3e-3, 3.0e-4, 9.0e-3,
                 1.5e-3, 7.0e-7, 2.7e-3, 1.7e-3
         };

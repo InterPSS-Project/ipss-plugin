@@ -27,6 +27,9 @@ staggered integration boundary, and a bounded typed multi-unit runtime coordinat
 Exact HPLNTDU/REAXDU wrappers now attach through the main importer with bus-owned
 group preflight, deferred electrical-controller ordering, explicit removal/error
 accounting and named-state observation. Source-list HPLNTD is not an inferred alias.
+The coupled fault diagnostic now identifies a corrected adapter event-frequency
+reference ordering defect; instantaneous native current/frequency callback parity
+and complete coupled fault acceptance remain open.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -475,6 +478,17 @@ and state definitions agree.
       Final gates: 113 focused, 379 core-unit (six optional skips), and 1,490
       selected SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
       See [import evidence and remaining work](benchmarks/hplntd-import-2026-10-18.md).
+    - [x] Add a portable cold-repeat fault probe and complete two-timestep
+      state/network diagnostics, retaining every raw history/event sample.
+      Correct the adapter's frequency rebase at the converged event endpoint
+      with fail-before phase-reference, preserved-output and disabled-event tests.
+      Native instantaneous-current and frequency-callback parity remain explicitly
+      unaccepted; no current delay or reference retuning is used to fit them.
+      Final gates: 47 focused, 379 core-unit (six optional skips), and 1,493
+      selected SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
+      Two legacy bounded ANDES wind envelopes are revised only after source-
+      controlled frequency-on/off A/B proof; exact/native limits are unchanged.
+      See [fault diagnostics, corrected defect and remaining gaps](benchmarks/hplntd-fault-event-frequency-2026-10-18.md).
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve
