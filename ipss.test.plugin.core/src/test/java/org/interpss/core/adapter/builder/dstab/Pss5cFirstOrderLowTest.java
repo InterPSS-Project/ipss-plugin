@@ -95,7 +95,7 @@ public class Pss5cFirstOrderLowTest {
         assertTrue(data.hasFullOrderTransducers());assertFalse(data.hasFirstOrderLowTransducer());
         p[1]=-1;assertFalse(new Pss5cNativeData(p).hasSupportedTransducers());
         p[1]=0;p[2]=0;assertFalse(new Pss5cNativeData(p).hasSupportedTransducers());
-        p[2]=.02;p[4]=0;assertFalse(new Pss5cNativeData(p).hasSupportedTransducers());
+        p[2]=.02;p[4]=0;p[5]=0;assertFalse(new Pss5cNativeData(p).hasSupportedTransducers());
     }
 
     private static double[] vector(Map<String,Double> states) {

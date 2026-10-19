@@ -13,7 +13,7 @@ from pss5c_native_probe import configuration
 
 FREQUENCIES={'baseline':None,'unity':1.,'half':.5,'double':2.}
 TRANSDUCERS={'dli-half':(0,.5),'al-double':(1,2.),'bl-double':(2,2.),
-             'explicit-low-first':(1,0.)}
+             'explicit-low-first':(1,0.),'high-no-lag':(4,0.),'high-no-quadratic':(5,0.)}
 
 
 def main():

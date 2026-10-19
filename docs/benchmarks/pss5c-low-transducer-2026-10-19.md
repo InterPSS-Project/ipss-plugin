@@ -130,3 +130,8 @@ low/high state and raw-VAR observation semantics, reduced high/static-low
 orders, remaining zero-gain/active-limit/lifecycle cases and independent
 all-channel coupled trajectory acceptance. The original native replay gap is
 not reclassified as accepted. Full Texas2k dynamics are not run here.
+
+Follow-up: the [high-transducer slice](pss5c-high-transducer-2026-10-19.md)
+adds proper published-equation high reductions and combined low/high tests.
+Its AH-zero reference-order discrepancy remains open; the historical results
+and acceptance limits recorded above are not replaced.

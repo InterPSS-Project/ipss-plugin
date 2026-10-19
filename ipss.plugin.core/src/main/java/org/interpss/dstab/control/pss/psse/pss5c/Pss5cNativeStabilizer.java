@@ -10,7 +10,7 @@ import com.interpss.dstab.controller.cml.annotate.AnController;
 import com.interpss.dstab.controller.cml.annotate.AnnotateStabilizer;
 import com.interpss.dstab.mach.Machine;
 
-/** Native PSS5C full/first-order low transducer and four bounded parallel bands.
+/** Native PSS5C supported transducer orders and four bounded parallel bands.
  * The thirteen companion/lag coordinates are semantic solver states, not
  * unproven aliases for the reference simulator's internal state coordinates.
  */
@@ -80,13 +80,18 @@ public final class Pss5cNativeStabilizer extends AnnotateStabilizer {
             dx[1] = (input - x[0] - p(2) * x[1]) / p(1);
         }
         dx[2] = x[3];
-        dx[3] = x[4];
-        double a1 = p(4) + p(6) / p(7);
-        double a2 = (p(5) + p(4) * p(6)) / p(7);
-        double a3 = p(4) * p(5) / p(7);
-        dx[4] = (input - x[2] - a1 * x[3] - a2 * x[4]) / a3;
+        if (data.hasSecondOrderHighTransducer()) {
+            dx[3] = highSignal(x, input);
+            dx[4] = 0; // Preserve the inactive companion-coordinate key.
+        } else {
+            dx[3] = x[4];
+            double a1 = p(4) + p(6) / p(7);
+            double a2 = (p(5) + p(4) * p(6)) / p(7);
+            double a3 = p(4) * p(5) / p(7);
+            dx[4] = (input - x[2] - a1 * x[3] - a2 * x[4]) / a3;
+        }
         double low = p(3) * lowSignal(x, input);
-        double high = p(8) * highSignal(x);
+        double high = p(8) * highSignal(x, input);
         for (int band = 0; band < 4; band++) {
             int offset = 9 + 4 * band;
             double frequency = p(offset + 1);
@@ -103,9 +108,14 @@ public final class Pss5cNativeStabilizer extends AnnotateStabilizer {
         return data.hasFirstOrderLowTransducer()
                 ? x[0] + (p(0) / p(2)) * (input - x[0]) : x[0] + p(0) * x[1];
     }
-    private double highSignal(double[] x) { return x[4]; }
+    private double highSignal(double[] x, double input) {
+        if (!data.hasSecondOrderHighTransducer()) return x[4];
+        double a1 = p(4) + p(6) / p(7);
+        double a2 = (p(5) + p(4) * p(6)) / p(7);
+        return (input - x[2] - a1 * x[3]) / a2;
+    }
     public double getLowIntermediateInput() { return bypassed ? 0 : lowSignal(state, getMachine().getSpeed() - 1); }
-    public double getHighInput() { return bypassed ? 0 : highSignal(state); }
+    public double getHighInput() { return bypassed ? 0 : highSignal(state, getMachine().getSpeed() - 1); }
 
     public double getBandOutput(int band) {
         if (band < 0 || band >= 4) throw new IllegalArgumentException("PSS5C band index must be 0..3");
@@ -116,7 +126,7 @@ public final class Pss5cNativeStabilizer extends AnnotateStabilizer {
         if (bypassed) return 0;
         int offset = 9 + 4 * band;
         if (p(offset + 1) <= 0) return 0;
-        double input = band == 3 ? p(8) * highSignal(x) : p(3) * lowSignal(x, speedInput);
+        double input = band == 3 ? p(8) * highSignal(x, speedInput) : p(3) * lowSignal(x, speedInput);
         int upper = 5 + 2 * band;
         double upperOutput = x[upper] + (p(26) / p(27)) * (input - x[upper]);
         double lowerOutput = x[upper + 1] + (p(25) / p(26)) * (input - x[upper + 1]);

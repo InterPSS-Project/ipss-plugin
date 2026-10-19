@@ -34,12 +34,20 @@ public final class Pss5cLocalLinearizer {
             } else {
                 a[0][1] = 1;a[1][0] = -1 / p[1];a[1][1] = -p[2] / p[1];b[1] = 1 / p[1];
             }
-            a[2][3] = 1;a[3][4] = 1;
-            double denominator = p[4] * p[5];
-            a[4][2] = -p[7] / denominator;
-            a[4][3] = -(p[6] + p[4] * p[7]) / denominator;
-            a[4][4] = -(p[5] + p[4] * p[6]) / denominator;
-            b[4] = p[7] / denominator;
+            a[2][3] = 1;
+            double highQuadratic = (p[5] + p[4] * p[6]) / p[7];
+            double highLinear = p[4] + p[6] / p[7];
+            if (data.hasSecondOrderHighTransducer()) {
+                a[3][2] = -1 / highQuadratic;a[3][3] = -highLinear / highQuadratic;
+                b[3] = 1 / highQuadratic;
+            } else {
+                a[3][4] = 1;
+                double denominator = p[4] * p[5];
+                a[4][2] = -p[7] / denominator;
+                a[4][3] = -(p[6] + p[4] * p[7]) / denominator;
+                a[4][4] = -(p[5] + p[4] * p[6]) / denominator;
+                b[4] = p[7] / denominator;
+            }
             for (int band = 0; band < 4; band++) {
                 double frequency = p[10 + 4 * band];
                 if (frequency <= 0) continue; // Frozen disabled memories, as in the runtime.
@@ -47,7 +55,11 @@ public final class Pss5cLocalLinearizer {
                     int row = 5 + 2 * band + branch;
                     double rate = p[26 - branch] * frequency;
                     a[row][row] = -rate;
-                    if (band == 3) a[row][4] = rate * p[8];
+                    if (band == 3 && data.hasSecondOrderHighTransducer()) {
+                        a[row][2] = -rate * p[8] / highQuadratic;
+                        a[row][3] = -rate * p[8] * highLinear / highQuadratic;
+                        b[row] = rate * p[8] / highQuadratic;
+                    } else if (band == 3) a[row][4] = rate * p[8];
                     else if (data.hasFirstOrderLowTransducer()) {
                         a[row][0] = rate * p[3] * (1 - p[0] / p[2]);
                         b[row] = rate * p[3] * p[0] / p[2];

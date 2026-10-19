@@ -1733,6 +1733,12 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   timestep-dependent low-transducer order reduction with eight cold pairs;
   do not silently apply that numerical policy to positive `AL`. See the
   [low-transducer report](benchmarks/pss5c-low-transducer-2026-10-19.md).
+- [x] Implement the proper published-equation second-order high transducer
+  for zero TH or zero AH, including input feedthrough, combined low/high
+  reductions and read-only A/B diagnostics. Add four cold reference pairs
+  and distinguish the TH-zero modal agreement from the AH-zero installed-
+  engine order discrepancy. Do not label either complete trajectory parity.
+  See the [high-transducer report](benchmarks/pss5c-high-transducer-2026-10-19.md).
 - [ ] Resolve native PSS5C band-frequency/transducer and raw-VAR observation
   discrepancies, zero-order transducers, zero-gain/lifecycle behavior and native
   thirteen-state observation coordinates before native trajectory acceptance.

@@ -27,8 +27,15 @@ public final class Pss5cNativeData {
     }
 
     public boolean hasSupportedTransducers() {
-        return hasFullOrderTransducers() || (hasFirstOrderLowTransducer()
-                && parameters[4] > 0 && parameters[5] > 0 && parameters[7] > 0);
+        boolean low = parameters[1] > 0 || hasFirstOrderLowTransducer();
+        boolean high = parameters[4] > 0 && parameters[5] > 0 && parameters[7] > 0;
+        return low && (high || hasSecondOrderHighTransducer());
+    }
+
+    /** Proper degree-two denominator when exactly one leading high factor vanishes. */
+    public boolean hasSecondOrderHighTransducer() {
+        return parameters[7] > 0 && ((parameters[4] == 0 && parameters[5] > 0)
+                || (parameters[4] > 0 && parameters[5] == 0 && parameters[6] > 0));
     }
 
     public boolean isBypassed() {
