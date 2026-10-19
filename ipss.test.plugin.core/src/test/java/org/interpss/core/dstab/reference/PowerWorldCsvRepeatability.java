@@ -6,12 +6,51 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.HashSet;
+import java.util.HexFormat;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /** Exact numerical comparison of the runner's SINGLE PowerWorld CSV exports, not a parity tolerance. */
 public final class PowerWorldCsvRepeatability {
     private PowerWorldCsvRepeatability() {}
 
     public record Summary(int samples, int channels, int repeatedTimeSamples) {}
+
+    /** Explicit full-trajectory import; never replaces an embedded checkpoint. */
+    public static EmbeddedTrajectoryReference trajectory(Path path,String expectedCanonicalSha256)throws IOException {
+        require(expectedCanonicalSha256!=null&&expectedCanonicalSha256.matches("[0-9a-f]{64}"),"A fixed canonical SHA-256 is required");
+        String text=Files.readString(path,StandardCharsets.UTF_8).replace("\r\n","\n").replace('\r','\n');
+        try {
+            String actual=HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8)));
+            require(actual.equals(expectedCanonicalSha256),"Trajectory SHA-256 mismatch");
+        }catch(NoSuchAlgorithmException exception){throw new IllegalStateException(exception);}
+        Table table=read(text.lines().toList(),path);var fields=new EmbeddedTrajectoryReference.Field[table.channels];var keys=new HashSet<String>();
+        for(int i=0;i<fields.length;i++) {
+            List<String> row=metadataFields(table.metadata.get(i+2));require(row.size()==6,"Expected six field metadata columns");
+            String object=row.get(0).trim(),key=row.get(1).trim(),variable=row.get(4).trim();
+            require(!object.isEmpty()&&!key.isEmpty()&&!variable.isEmpty(),"Field identity is incomplete");
+            require(keys.add(object+"\u0000"+key+"\u0000"+variable),"Duplicate field identity");
+            fields[i]=new EmbeddedTrajectoryReference.Field(object,key,row.get(2),variable,row.get(5));
+        }
+        return EmbeddedTrajectoryReference.of(fields,table.rows.toArray(double[][]::new));
+    }
+
+    private static List<String> metadataFields(String line) {
+        List<String> result=new ArrayList<>();StringBuilder field=new StringBuilder();boolean quoted=false,closed=false;
+        for(int i=0;i<line.length();i++) {
+            char ch=line.charAt(i);
+            if(quoted) {
+                if(ch=='"') {if(i+1<line.length()&&line.charAt(i+1)=='"'){field.append('"');i++;}else{quoted=false;closed=true;}}
+                else field.append(ch);
+            } else if(ch==','){result.add(field.toString());field.setLength(0);closed=false;}
+            else if(ch=='"'){require(!closed&&field.toString().isBlank(),"Malformed quoted metadata");field.setLength(0);quoted=true;}
+            else if(closed){require(Character.isWhitespace(ch),"Text after quoted metadata");}
+            else field.append(ch);
+        }
+        require(!quoted,"Unterminated quoted metadata");result.add(field.toString());return result;
+    }
 
     public record ChannelDifference(int column,int changedSamples,double maximumAbsoluteError,double timeOfMaximum) {}
     public record Differences(Summary summary,List<ChannelDifference> channels) {
@@ -58,7 +97,10 @@ public final class PowerWorldCsvRepeatability {
     private record Table(List<String> metadata, int channels, List<double[]> rows) {}
 
     private static Table read(Path path) throws IOException {
-        List<String> lines = Files.readAllLines(path);
+        return read(Files.readAllLines(path),path);
+    }
+
+    private static Table read(List<String> lines,Path path) {
         require(lines.size() >= 6 && lines.get(0).equals("ObjectFields")
                 && lines.get(1).startsWith("ObjectType,"), "Missing PowerWorld field header: " + path);
         int fieldEnd = lines.indexOf("END");

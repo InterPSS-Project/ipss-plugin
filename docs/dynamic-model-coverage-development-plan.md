@@ -2,6 +2,19 @@
 
 ## Current checkpoint
 
+AC11C fresh-reference follow-up: an always-active dense SMIB comparison now
+uses a pinned numerical projection of the recovered cold-run pair, retaining
+all 2,003 rows and 23 channels in the fixture. An explicit importer validates
+the raw export hash, metadata and every sample without replacing historical
+checkpoints or using global test settings. Both historical and fresh coupled
+profiles pass the original 19 channel bounds; production model equations and
+parameters are unchanged. Final gates pass 18 focused, 406 plugin-core and
+1,596 scoped SMIB/model/solver tests, with zero failures/errors and only
+existing skips. Private source/reference/report hashes retain this slice.
+Instantaneous event-side coupled acceptance,
+active auxiliary branches and complete-model verification remain open. See the
+[fresh-reference checklist](benchmarks/ac11c-fresh-cross-tool-2026-10-19.md).
+
 Exciter input-provenance follow-up: recover eleven missing historical DYR
 inputs by their exact archived hashes and preserve thirty content-addressed
 assets. All eleven recovered specifications complete twice cold in PowerWorld;

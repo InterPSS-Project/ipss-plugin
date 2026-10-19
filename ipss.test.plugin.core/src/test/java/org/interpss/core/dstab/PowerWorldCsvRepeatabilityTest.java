@@ -5,6 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.util.HexFormat;
 
 import org.interpss.core.dstab.reference.PowerWorldCsvRepeatability;
 import org.junit.jupiter.api.Test;
@@ -89,6 +92,36 @@ public class PowerWorldCsvRepeatabilityTest {
         Path left=directory.resolve("left.csv"),right=directory.resolve("right.csv");Files.writeString(left,HEADER+DATA+"END\n");
         for(String data:new String[]{HEADER+DATA.replace("0.1,","0.11,")+"END\n",HEADER+DATA.replace("1.001","NaN")+"END\n",HEADER+DATA}) {
             Files.writeString(right,data);assertThrows(IllegalArgumentException.class,()->PowerWorldCsvRepeatability.differences(left,right));
+        }
+    }
+
+    private static String hash(String text)throws Exception{return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8)));}
+
+    @Test void importsPinnedFullRowsWithDuplicateEventOccurrences()throws Exception {
+        String text=HEADER+DATA+"END\n";Path path=directory.resolve("full.csv");Files.writeString(path,text.replace("\n","\r\n"));
+        var trajectory=PowerWorldCsvRepeatability.trajectory(path,hash(text));assertEquals(4,trajectory.samples().size());assertEquals(0,trajectory.samples().get(1).occurrence());assertEquals(1,trajectory.samples().get(2).occurrence());assertEquals(.2,trajectory.samples().get(2).value(0));
+        assertEquals(0,trajectory.fieldIndex("Bus","1","TSVpu"));assertEquals(1,trajectory.fieldIndex("Generator","1 1","TSSpeed"));
+        double[] values=trajectory.samples().get(2).values();values[0]=99;assertEquals(.2,trajectory.samples().get(2).value(0));
+        assertThrows(UnsupportedOperationException.class,()->trajectory.samples().clear());
+    }
+
+    @Test void pinnedImportRejectsHashAndMalformedNumericData()throws Exception {
+        Path path=directory.resolve("bad.csv");String text=HEADER+DATA+"END\n";Files.writeString(path,text);
+        assertThrows(IllegalArgumentException.class,()->PowerWorldCsvRepeatability.trajectory(path,"0".repeat(64)));
+        for(String bad:new String[]{HEADER+DATA.replace("1.001","NaN")+"END\n",HEADER+DATA,HEADER+DATA.replace("0.05,0.2,1.001","0.05,0.2")+"END\n"}) {
+            Files.writeString(path,bad);assertThrows(IllegalArgumentException.class,()->PowerWorldCsvRepeatability.trajectory(path,hash(bad)));
+        }
+    }
+
+    @Test void quotedMetadataRetainsCommasAndEscapedQuotes()throws Exception {
+        String text=HEADER.replace("Bus,1,,,TSVpu,V pu","Bus,1,\"name, with \"\"quotes\"\"\",,TSVpu,\"V, pu\"")+DATA+"END\n";Path path=directory.resolve("quoted.csv");Files.writeString(path,text);
+        var trajectory=PowerWorldCsvRepeatability.trajectory(path,hash(text));assertEquals("name, with \"quotes\"",trajectory.fields().get(0).secondaryKey());assertEquals("V, pu",trajectory.fields().get(0).columnHeader());
+    }
+
+    @Test void importRejectsDuplicateAndInvalidFieldIdentities()throws Exception {
+        Path path=directory.resolve("metadata.csv");
+        for(String bad:new String[]{HEADER.replace("Generator,1 1,,,TSSpeed,Speed","Bus,1,,,TSVpu,V pu")+DATA+"END\n",HEADER.replace("Bus,1,,,TSVpu,V pu","Bus,,,,TSVpu,V pu")+DATA+"END\n",HEADER.replace("Bus,1,,,TSVpu,V pu","Bus,1,,,TSVpu,\"unterminated")+DATA+"END\n"}) {
+            Files.writeString(path,bad);assertThrows(IllegalArgumentException.class,()->PowerWorldCsvRepeatability.trajectory(path,hash(bad)));
         }
     }
 
