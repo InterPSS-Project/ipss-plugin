@@ -33,7 +33,9 @@ and complete coupled fault acceptance remain open.
 Disabled active/reactive plant paths now hold initial commands and leave unused
 storage at zero, while PF control retains its required active measurement.
 Sixteen two-step selector profiles add recorded-input and bounded coupled SMIB
-acceptance; enabled proportional-only initialization remains open.
+acceptance. Feasible proportional-only initialization and PF without electrical
+feedback now have 24 two-step profiles; native nonzero-deadband initialization
+and initialized reference-limit semantics remain unresolved counterexamples.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -515,10 +517,21 @@ and state definitions agree.
       zero failures/errors. Thirty-two raw runs support sixteen cold pairs;
       fourteen are byte-identical and two differ only in explicitly audited
       unused reactive VAR storage. No existing reference limits are changed.
-    - [ ] Implement enabled proportional-only equilibrium from the zero-gain
-      discriminators and establish electrical-feedback/feedforward combinations.
-      Independently verify branchless/alternate-host, switching and remaining
-      lifecycle profiles; retain explicit unsupported-path rejection until proved.
+    - [x] Implement feasible enabled proportional-only equilibrium, signed
+      inverse deadbands, all four active feedback/feedforward combinations and
+      PF measurement without electrical feedback. Retain zero integral storage,
+      strict feasibility checks and group reseeding. Add 24 two-step state/command
+      replay and bounded imported SMIB profiles with 48 raw runs, byte-identical
+      within each cold pair.
+      See [equations, evidence and counterexamples](benchmarks/hplntd-proportional-equilibrium-2026-10-18.md).
+      Final gates on `bdd6d02ba`: 47 focused, 393 core-unit (six optional skips),
+      1,514 selected SMIB/model/solver tests (one diagnostic skip), and 26 offline
+      checks, zero failures/errors. Four raw diagnostic runs remain excluded
+      from native acceptance; existing trajectory bounds are unchanged.
+    - [ ] Resolve initialized voltage-reference limits and the rejected native
+      nonzero-deadband/zero-Ki initialization. Independently verify excited V/PF
+      references, remaining active limits, branchless/alternate-host, switching
+      and lifecycle profiles; retain explicit unsupported-path rejection until proved.
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve

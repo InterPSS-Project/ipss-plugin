@@ -47,9 +47,13 @@ public class HplntdSelectorNativeSmibTest {
         System.arraycopy(f.group().kernel().states(),0,values,8,13);return values;
     }
     @Test void importedDisabledPathsKeepCommandsAndCompareAllNetworkAndStateSamples(@TempDir Path dir)throws Exception {
+        compareImportedProfiles(HplntdSelectorNativeReference.profiles(),p->HplntdSelectorNativeReference.coupledBounds(p.name()),dir,"hplntd-selector-coupled");
+    }
+    static void compareImportedProfiles(List<org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile> profiles,
+            java.util.function.Function<org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile,double[]> boundsFor,Path dir,String folder)throws Exception {
         var factory=new HplntdTypedRuntimeSmibTest();var names=channels();
         var failures=new ArrayList<String>();
-        for(var p:HplntdSelectorNativeReference.profiles()){
+        for(var p:profiles){
             var f=factory.fixture(dir.resolve(p.name()),true,p.step(),true,p);var data=p.plant();
             var rows=new ArrayList<double[]>();int steps=(int)Math.round(.2/p.step());
             for(int tick=0;tick<=steps;tick++){
@@ -80,9 +84,9 @@ public class HplntdSelectorNativeSmibTest {
                     if(error>maximum[i]){maximum[i]=error;at[i]=time;}trace.append(',').append(own[i]).append(',').append(expected);
                 }trace.append('\n');
             }
-            Path output=Path.of("target/hplntd-selector-coupled",p.name()+".csv");Files.createDirectories(output.getParent());Files.writeString(output,trace);
+            Path output=Path.of("target",folder,p.name()+".csv");Files.createDirectories(output.getParent());Files.writeString(output,trace);
             System.out.println("Hybrid selector coupled "+p.name()+" errors="+Arrays.toString(maximum)+" at="+Arrays.toString(at));
-            double[] bounds=HplntdSelectorNativeReference.coupledBounds(p.name());
+            double[] bounds=boundsFor.apply(p);
             for(int i=0;i<25;i++)if(maximum[i]>bounds[i])failures.add(p.name()+" "+names.get(i)+"="+maximum[i]);
         }
         assertTrue(failures.isEmpty(),String.join("; ",failures));

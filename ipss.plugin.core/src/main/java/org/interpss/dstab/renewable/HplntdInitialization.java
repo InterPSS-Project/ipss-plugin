@@ -47,34 +47,40 @@ public final class HplntdInitialization {
     public static Result initialize(HplntdData d, Measurements m) {
         // Shunt status/timers belong to the separate physical boundary and do
         // not alter these continuous-state equilibrium equations.
-        // Proportional-only equilibrium remains a separate contract. An unused
-        // loop does not need an integral bias or initialize its storage.
-        if (d.reactiveFlag() == 1 && d.value(KI) <= 0
-                || d.frequencyFlag() == 1 && d.value(KIG) <= 0)
-            throw new IllegalArgumentException("Enabled HPLNTDU control paths require positive integral gains");
+        validateControlGains(d);
         int mode = d.effectiveReferenceFlag(m.branchActive());
-        if (d.reactiveFlag() == 1 && mode == 2 && d.feedbackFlag() == 0)
-            throw new IllegalArgumentException("HPLNTDU foundation has not established PF initialization with disabled electrical feedback");
         double[] state = new double[HplntdData.STATE_COUNT];
         state[7] = m.regulatedVoltage().abs();
         double vref = 0, qref = 0, pfref = 0;
+        double qOffset = 0;
+        if (d.reactiveFlag() == 1 && d.value(KI) == 0) {
+            double error = m.reactiveCommand() / d.value(KP);
+            requireWithin(error, d.value(EMIN), d.value(EMAX), "proportional reactive error");
+            // Invert the published shifted deadband, rather than retaining an
+            // integral bias in a controller whose integral gain is zero.
+            qOffset = error > 0 ? error + d.value(DBD2) : error < 0 ? error + d.value(DBD1) : 0;
+        }
         if (d.reactiveFlag() == 1 && mode == 1) {
             if (d.compensationFlag() == 1) {
                 state[0] = m.regulatedVoltage().subtract(
                         new Complex(d.value(RC), d.value(XC)).multiply(m.branchCurrent())).abs();
-                vref = state[0];
+                vref = state[0] + qOffset;
             } else {
                 state[8] = d.value(KC) * m.branchReactive();
-                vref = state[7] + state[8];
+                vref = state[7] + state[8] + qOffset;
             }
         } else if (d.reactiveFlag() == 1) {
             state[1] = m.branchReactive();
-            if (mode == 0) qref = state[11] = m.branchReactive();
-            else pfref = Math.copySign(Math.abs(m.branchActive()) /
-                    Math.hypot(m.branchActive(), m.branchReactive()), m.branchReactive());
+            if (mode == 0) qref = state[11] = m.branchReactive() + qOffset;
+            else {
+                double requestedReactive = m.branchReactive() + qOffset;
+                pfref = Math.copySign(Math.abs(m.branchActive()) /
+                        Math.hypot(m.branchActive(), requestedReactive), requestedReactive);
+            }
         }
         if (d.reactiveFlag() == 1) {
-            state[2] = state[3] = state[12] = m.reactiveCommand();
+            state[2] = d.value(KI) == 0 ? 0 : m.reactiveCommand();
+            state[3] = state[12] = m.reactiveCommand();
             requireWithin(m.reactiveCommand(), d.value(QMIN), d.value(QMAX), "reactive output");
         }
         // PF control shares the active measurement even when frequency control
@@ -83,12 +89,22 @@ public final class HplntdInitialization {
                 || d.reactiveFlag() == 1 && mode == 2 ? m.branchActive() : 0;
         double pref = 0;
         if (d.frequencyFlag() == 1) {
-            pref = state[4];
+            double feedback = d.feedbackFlag() == 1 ? state[4] : 0;
+            double feedforward = d.feedforwardFlag();
+            double activePi;
+            if (d.value(KIG) == 0) {
+                pref = (m.activeCommand() + d.value(KPG) * feedback) / (d.value(KPG) + feedforward);
+                if (d.value(KPG) != 0)
+                    requireWithin(pref - feedback, d.value(PFEMIN), d.value(PFEMAX), "proportional active error");
+                activePi = d.value(KPG) * (pref - feedback);
+            } else {
+                pref = feedback;
+                activePi = state[5] = m.activeCommand() - feedforward * pref;
+            }
             state[10] = pref;
-            state[5] = m.activeCommand() - (d.feedforwardFlag() == 1 ? pref : 0);
             state[6] = m.activeCommand();
             requireWithin(m.activeCommand(), d.value(PMIN), d.value(PMAX), "active output");
-            requireWithin(state[5], d.activePiMinimum(), d.activePiMaximum(), "active PI");
+            requireWithin(activePi, d.activePiMinimum(), d.activePiMaximum(), "active PI");
         }
         if (d.reactiveFlag() == 1 && mode == 1) requireWithin(vref, d.value(VREFMIN), d.value(VREFMAX), "voltage reference");
         if (d.reactiveFlag() == 1 && mode == 0) requireWithin(qref, d.value(QREFMIN), d.value(QREFMAX), "reactive reference");
@@ -96,8 +112,13 @@ public final class HplntdInitialization {
             throw new IllegalArgumentException("HPLNTDU equilibrium lies outside the configured minimum power-factor magnitude");
         return new Result(mode, vref, qref, pref, pfref, state);
     }
+    static void validateControlGains(HplntdData d) {
+        if (d.reactiveFlag() == 1 && (d.value(KI) < 0 || d.value(KI) == 0 && d.value(KP) == 0)
+                || d.frequencyFlag() == 1 && (d.value(KIG) < 0 || d.value(KIG) == 0 && d.value(KPG) + d.feedforwardFlag() == 0))
+            throw new IllegalArgumentException("Hybrid enabled paths require nonnegative integral gains and a nonsingular equilibrium gain");
+    }
     private static void requireWithin(double value, double minimum, double maximum, String name) {
-        if (value < minimum || value > maximum)
+        if (!Double.isFinite(value) || value < minimum || value > maximum)
             throw new IllegalArgumentException("HPLNTDU equilibrium outside " + name + " bounds");
     }
 }

@@ -50,8 +50,9 @@ public final class HplntdCoordinator implements ICMLStateProvider {
     private long predictors,correctors;
     private HplntdCoordinator(HplntdData data,BaseDStabBus<?,?> plantBus,List<Binding> bindings){
         this.data=Objects.requireNonNull(data);boundary=new HplntdNetworkBoundary(data,plantBus);
-        if(data.switchingFlag()!=0||data.reactiveFlag()==1&&data.value(HplntdData.Parameter.KI)<=0||data.frequencyFlag()==1&&data.value(HplntdData.Parameter.KIG)<=0||boundary.ignored())
-            throw new IllegalArgumentException("Typed hybrid composition requires positive integral gains on enabled loops, valid measurements and disabled automatic switching");
+        HplntdInitialization.validateControlGains(data);
+        if(data.switchingFlag()!=0||boundary.ignored())
+            throw new IllegalArgumentException("Typed hybrid composition requires valid measurements and disabled automatic switching");
         if(bindings.isEmpty())throw new IllegalArgumentException("Hybrid downstream devices required");
         var list=new ArrayList<Port>();var keys=new HashSet<HplntdAggregation.Key>();
         for(var b:bindings){

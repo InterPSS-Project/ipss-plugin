@@ -1,5 +1,9 @@
 # Hybrid plant disabled-control implementation
 
+Follow-up: [feasible proportional-only equilibrium](hplntd-proportional-equilibrium-2026-10-18.md)
+now covers enabled zero-integral loops and PF without electrical feedback. The
+positive-gain restriction below describes this earlier slice, not current support.
+
 ## Implemented contract
 
 HPLNTDU now supports disabled active and reactive control paths in the kernel,

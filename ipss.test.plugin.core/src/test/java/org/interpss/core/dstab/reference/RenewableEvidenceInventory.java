@@ -38,6 +38,9 @@ public final class RenewableEvidenceInventory {
                     var selectors=HplntdSelectorNativeReference.profiles();
                     if(selectors.size()!=16)throw new IllegalStateException("Incomplete disabled-control reference matrix");
                     for(var p:selectors){p.body();p.input();}
+                    var proportional=HplntdProportionalNativeReference.profiles();
+                    if(proportional.size()!=24)throw new IllegalStateException("Incomplete proportional reference matrix");
+                    for(var p:proportional){p.body();p.input();}
                 }
                 case NONE -> { if(!checkpoint.isEmpty())throw new IllegalStateException("Unexpected checkpoint"); }
                 case NATIVE_CSV -> {
@@ -186,8 +189,8 @@ public final class RenewableEvidenceInventory {
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
             Set.of("HPLNTDU").stream().map(model->
-                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdSelectorNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2;disabled-selectors:16","",
-                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime, recorded-input kernels and coupled command profiles. Disabled active/reactive paths hold initial commands and unused storage; PF control retains its shared active measurement. Sixteen two-step selector profiles cover all plant states and bounded coupled outputs. Instantaneous fault current and native frequency-callback parity, proportional-only equilibrium, alternate hosts/switching and complete lifecycle remain unaccepted. Source HPLNTD is not an inferred alias; cross-method slew and filtered-measurement residuals remain explicit."))
+                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdProportionalNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2;disabled-selectors:16;proportional:24","",
+                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime. Disabled paths hold initial commands; PF retains its shared active measurement without enabling electrical feedback. Sixteen selector and twenty-four feasible proportional/feedback profiles compare every plant state and bounded coupled outputs. Signed inverse-deadband equilibrium is equation-tested; a suspect native nonzero-deadband initialization and an unresolved initialized voltage-reference boundary remain separate counterexamples. Instantaneous fault current/frequency parity, alternate hosts/switching and complete lifecycle remain unaccepted. Source HPLNTD is not an inferred alias; cross-method slew/filter residuals remain explicit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {
