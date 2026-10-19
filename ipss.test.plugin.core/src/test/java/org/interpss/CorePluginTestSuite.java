@@ -347,6 +347,7 @@ import org.interpss.core.dstab.WtgwgoaSmibIntegrationTest;
 import org.interpss.core.adapter.builder.dstab.PsseWtgwgoaModelTest;
 import org.interpss.core.adapter.builder.dstab.PsseWtptb1ModelTest;
 import org.interpss.core.dstab.Tgov1IndependentSmibConformanceTest;
+import org.interpss.core.dstab.Tgov1LimitNativeConformanceTest;
 import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St1cIndependentSmibConformanceTest;
@@ -776,6 +777,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseWtgwgoaModelTest.class,
 	PsseWtptb1ModelTest.class,
 	Tgov1IndependentSmibConformanceTest.class,
+	Tgov1LimitNativeConformanceTest.class,
 	Lcfb1IndependentSmibConformanceTest.class,
 	Dc4bIndependentSmibConformanceTest.class,
 	St1cIndependentSmibConformanceTest.class,

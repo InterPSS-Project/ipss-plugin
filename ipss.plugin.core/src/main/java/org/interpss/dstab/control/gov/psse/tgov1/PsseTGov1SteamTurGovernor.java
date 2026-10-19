@@ -162,6 +162,11 @@ public FilterControlBlock t2t3FilterBlock;
 		return runtimeBlock("t2t3FilterBlock").getY();
 	}
 
+	/** Unnormalized reheater storage: T3 times the CML lead-lag internal state. */
+	public double getReheaterStorage() {
+		return t3 * runtimeBlock("t2t3FilterBlock").getStateX();
+	}
+
 	private ICMLControlBlock runtimeBlock(String name) {
 		for (BaseFieldAnWrapper<?> wrapper : getFieldWrapperList()) {
 			if (wrapper.getFieldName().equals(name)

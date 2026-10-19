@@ -2,6 +2,19 @@
 
 ## Current checkpoint
 
+TGOV1 active-valve follow-up: four positive-time-constant upper/lower reference
+steps and inward releases have eight exact cold native runs, with all seven
+parameters unchanged after initialization. Full-row two-state/mechanical-output
+replay improves under step halving, and four strict-import coupled executions
+exercise both valve bounds and release. A read-only reheater-storage accessor
+preserves the existing CML coordinates and equations. Final gates pass twenty
+focused, 410 plugin-core and 1,616 scoped SMIB/model/solver checks, with zero
+failures/errors and only existing skips, plus four offline probe guards and
+six language-policy checks. Scoped private hashes retain source/reference/report
+evidence; complete-family and coupled cross-tool
+acceptance remain open. See the
+[active-valve checklist](benchmarks/tgov1-active-valve-limits-2026-10-19.md).
+
 Ten-exciter fresh-reference follow-up: AC7C, AC8C, AC9C, DC1C, DC2C, AC8B,
 EXAC1A, ST2C, ST3C and ST5C now have additional always-active dense SMIB
 comparisons. Ten pinned numerical fixtures retain every raw event row;
