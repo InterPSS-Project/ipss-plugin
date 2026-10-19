@@ -53,8 +53,11 @@ public final class SecondOrderLagBlock extends CMLControlBlockAdapter {
     @Override
     public void eulerStep2(double input, double dt) {
         u = input;
-        stateX += 0.5 * (outputDerivative(input) - oldOutputDerivative) * dt;
-        rate += 0.5 * (rateDerivative(input) - oldRateDerivative) * dt;
+        // Both corrector slopes belong to the same predicted state vector.
+        double outputSlope = outputDerivative(input);
+        double rateSlope = rateDerivative(input);
+        stateX += 0.5 * (outputSlope - oldOutputDerivative) * dt;
+        rate += 0.5 * (rateSlope - oldRateDerivative) * dt;
     }
 
     private double outputDerivative(double input) {

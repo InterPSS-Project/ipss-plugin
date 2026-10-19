@@ -120,10 +120,9 @@ does not accept the explicitly diagnostic fault-output comparisons above.
   and retained voltage/speed/memory/output diagnostics.
 - [ ] Resolve fault-output numerical-stage discrepancy without widening bounds,
   fitting parameters or replacing the published transfer function.
-- [ ] Audit the second-order lag corrector's simultaneous vector update: it
-  currently updates output storage before evaluating the rate correction.
-  Add a failing atomic-stage discriminator and fix this independently of trace
-  fitting; the state envelopes above are not proof of exact stage equivalence.
+- [x] The [atomic-corrector follow-up](ieeest-atomic-corrector-2026-10-19.md)
+  adds failing simultaneous-vector regressions and fixes the first lag's rate
+  correction independently of trace fitting. Fault-output parity remains open.
 - [ ] Broader denominator/zero branches, machine bases, lifecycle and complete
   network-coupled trajectory acceptance beyond the current shape/state bounds.
 - [ ] Complete model acceptance under the coverage plan.

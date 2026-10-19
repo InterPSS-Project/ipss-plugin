@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+IEEEST atomic-corrector follow-up: fix the model-specific second-order lag so
+both corrector slopes use the same predicted vector. Two new vector-stage
+regressions fail before the fix; seven unit tests pass afterward, including
+bit-identical first-order behavior and an analytic oscillator bound. All
+existing native-playback fixtures and bounds remain unchanged. Derivative-mode
+clipped fault-output parity remains open; this independent bug fix is not
+presented as its complete cause. See the
+[stage equations, before/after evidence and TODO](benchmarks/ieeest-atomic-corrector-2026-10-19.md).
+Final gates pass 137 focused, 427 core and 1,825 scoped SMIB/model/solver tests
+with zero failures/errors and seven existing skips, plus 59 offline checks.
+Source reconciliation covers 1,874 Java/POM files and 139 unchanged fixture
+parts; all 5,688 files in four linked prior evidence seals pass integrity checks.
+No full Texas2k dynamics are run.
+
 IEEEST derivative-memory follow-up: implement local/remote mode 6 with sampled
 memory, held stage input and settled-event rebasing, without changing the shared
 integrator. Twelve profiles have twenty-four exact cold runs and bounded all-row
@@ -16,8 +30,8 @@ parameter is widened or fitted. See the
 Final gates pass 130 focused, 420 core and 1,818 scoped SMIB/model/solver tests
 with zero failures/errors and seven existing skips, plus 59 offline checks.
 The source audit covers 1,873 Java/POM files and 44 lossless fixture parts.
-The next independent fix is the first filter's atomic corrector-stage update;
-the current bounds do not declare exact numerical-stage equivalence.
+The first filter's atomic corrector is fixed by the follow-up above; the
+remaining fault-output bounds still do not declare full trajectory acceptance.
 No full Texas2k dynamics are run.
 
 IEEEST bus-measurement follow-up: implement local/remote frequency and actual
