@@ -32,6 +32,9 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     private final Regcb1Model behindImpedanceConverter;
     private final Regfma1Model gridFormingConverter;
     private final Regfmb1Model virtualSynchronousConverter;
+    private final boolean nativeRecordConvention;
+    private double initialActiveReference;
+    private double initialReactiveReference;
     private BaseDStabBus<?, ?> regulatedBus;
     private AclfBranch monitoredBranch;
     private boolean branchStoredInRequestedDirection;
@@ -59,9 +62,10 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     private boolean initialized;
     private final TwoStepHistory twoStep = new TwoStepHistory(6);
     void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
-    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
+    public void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
     /** Configure the absolute reactive-reference coordinate during initialization. */
     void setReactiveStateOffset(double initialReference) {
+        initialReactiveReference = initialReference;
         // Native REPCA1 stores absolute Q-reference coordinates for s2/s3.
         // The controller API exposes increments; retain the physical storage
         // coordinate and translate the absolute limiter thresholds below.
@@ -101,20 +105,52 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
 
     private Repca1Model(Repca1Data data,Regca1Model converter,Regcb1Model behindImpedanceConverter,
             Regfma1Model gridFormingConverter,Regfmb1Model virtualSynchronousConverter) {
-        this.data = data;
+        this(data, converter, behindImpedanceConverter, gridFormingConverter, virtualSynchronousConverter, false);
+    }
+
+    private Repca1Model(Repca1Data data, Regca1Model converter, Regcb1Model behindImpedanceConverter,
+            Regfma1Model gridFormingConverter, Regfmb1Model virtualSynchronousConverter, boolean nativeRecord) {
+        this.data = java.util.Objects.requireNonNull(data);
         this.converter = converter;
         this.behindImpedanceConverter = behindImpedanceConverter;
         this.gridFormingConverter = gridFormingConverter;
         this.virtualSynchronousConverter=virtualSynchronousConverter;
+        nativeRecordConvention = nativeRecord;
     }
 
+    /** Native compensation and absolute-limit rules, separate from historical typed conventions. */
+    public static Repca1Model fromNativeRecord(Repca1Data data) {
+        return new Repca1Model(data, null, null, null, null, true);
+    }
+    public static Repca1Model fromNativeRecord(Repca1Data data, Regca1Model converter) {
+        return new Repca1Model(data, converter, null, null, null, true);
+    }
+    public static Repca1Model fromNativeRecord(Repca1Data data, Regcb1Model converter) {
+        return new Repca1Model(data, null, converter, null, null, true);
+    }
+    public static Repca1Model fromNativeRecord(Repca1Data data, Regfma1Model converter) {
+        return new Repca1Model(data, null, null, converter, null, true);
+    }
+    public static Repca1Model fromNativeRecord(Repca1Data data, Regfmb1Model converter) {
+        return new Repca1Model(data, null, null, null, converter, true);
+    }
+    public boolean isNativeRecordConvention() { return nativeRecordConvention; }
+
     public void initialize(double p, double q, double v) {
+        resolveMeasurements();
+        initializeMeasured(p, q, measure(p, q, v, 1.0));
+    }
+
+    /** Initialize from physical output references and an independently supplied measurement boundary. */
+    public void initializeMeasured(double p, double q, Measurement measurement) {
+        java.util.Objects.requireNonNull(measurement);
+        if (!Double.isFinite(p) || !Double.isFinite(q))
+            throw new IllegalArgumentException("Plant initial references must be finite");
+        initialized = false;
         stateMonitor.reset();
         twoStep.reset();
         predictorStart = null;
         predictorDerivatives = null;
-        resolveMeasurements();
-        Measurement measurement = measure(p, q, v, 1.0);
         pReference = pMeasured = measurement.p();
         qvReference = qOrVMeasured = reactiveMeasurement(measurement);
 
@@ -125,6 +161,16 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
         effectivePmin = Math.min(data.pmin(), 0.0);
         effectiveQmax = Math.max(data.qmax(), 0.0);
         effectiveQmin = Math.min(data.qmin(), 0.0);
+        initialActiveReference = p;
+        initialReactiveReference = q;
+        if (nativeRecordConvention) {
+            // Absolute native PI storage/output bounds become incremental API bounds.
+            effectivePmax = Math.max(data.pmax() - p, 0.0);
+            effectivePmin = Math.min(data.pmin() - p, 0.0);
+            twoStep.setOffset(2, p);
+            twoStep.setOffset(5, p);
+            setReactiveStateOffset(q);
+        }
         initialized = true;
     }
 
@@ -177,10 +223,14 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
      * endpoint and are never integrated as artificial states.
      */
     public void step(double dt, double p, double q, double v, double frequency, int flag) {
+        stepMeasured(dt, measure(p, q, v, frequency), flag);
+    }
+
+    /** Recorded-input or externally measured boundary; uses the same staged equations as network coupling. */
+    public void stepMeasured(double dt, Measurement measurement, int flag) {
         if (flag != 0 && flag != 1) {
             throw new IllegalArgumentException("REPCA1 integration flag must be 0 or 1");
         }
-        Measurement measurement = measure(p, q, v, frequency);
         if (dt <= 0.0) {
             PlantState endpoint = applyBypasses(state(), measurement);
             apply(endpoint);
@@ -233,8 +283,12 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
                 leadLagRate, pLagRate);
     }
 
-    void stepTwoStep(double dt, double p, double q, double v, double frequency) {
-        Measurement measurement = measure(p, q, v, frequency);
+    public void stepTwoStep(double dt, double p, double q, double v, double frequency) {
+        stepTwoStepMeasured(dt, measure(p, q, v, frequency));
+    }
+
+    /** Explicit history integration with physical measurements, not injected controller states. */
+    public void stepTwoStepMeasured(double dt, Measurement measurement) {
         PlantState start = applyBypasses(state(), measurement);
         if (dt > 0.0) {
             PlantDerivatives rate = derivatives(start, measurement);
@@ -334,6 +388,18 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
 
 
     @Override public java.util.Map<String, Double> getIntegrationStates() {
+        if (nativeRecordConvention) {
+            var active = new LinkedHashMap<String, Double>();
+            if (data.tfltr() > EPS) active.put("Measured Reactive Or Voltage", qOrVMeasured);
+            active.put("Reactive Control Integral", qIntegral);
+            if (data.tfv() > EPS) active.put("Lead Lag", leadLagState);
+            if (data.fFlag() == 1) {
+                if (data.tp() > EPS) active.put("Measured Active Power", pMeasured);
+                active.put("Active Control Integral", pIntegral);
+                if (data.tg() > EPS) active.put("Active Power Lag", pLagState);
+            }
+            return Collections.unmodifiableMap(active);
+        }
         return java.util.Map.of("Measured Active Power", pMeasured,
                 "Measured Reactive Or Voltage", qOrVMeasured,
                 "Active Control Integral", pIntegral,
@@ -342,6 +408,16 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
                 "Active Power Lag", pLagState);
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        if (nativeRecordConvention) {
+            var snapshot = stateMonitor.snapshot();
+            var states = new LinkedHashMap<String, Double>();
+            var rates = new LinkedHashMap<String, Double>();
+            for (String key : getIntegrationStates().keySet()) if (snapshot.rates().containsKey(key)) {
+                states.put(key, snapshot.evaluationStates().get(key));
+                rates.put(key, snapshot.rates().get(key));
+            }
+            return new IntegrationStateMonitor.Snapshot(snapshot.stage(), states, rates);
+        }
         return stateMonitor.snapshot();
     }
     private void retainRates(PlantState s, PlantDerivatives d, Stage stage) {
@@ -399,10 +475,12 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
             throw new IllegalStateException("REPCA1 remote bus not found: " + data.remoteBus());
         }
 
-        zeroBranchFallback = data.branchFromBus() == 0 && data.branchToBus() == 0;
+        zeroBranchFallback = nativeRecordConvention
+                ? data.branchFromBus() == 0 || data.branchToBus() == 0 || data.branchId().equals("0")
+                : data.branchFromBus() == 0 && data.branchToBus() == 0;
         if (zeroBranchFallback) return;
-        String from = busId(data.branchFromBus());
-        String to = busId(data.branchToBus());
+        String from = busId(nativeRecordConvention ? Math.abs(data.branchFromBus()) : data.branchFromBus());
+        String to = busId(nativeRecordConvention ? Math.abs(data.branchToBus()) : data.branchToBus());
         monitoredBranch = (AclfBranch) localBus.getNetwork().getBranch(from, to, data.branchId());
         branchStoredInRequestedDirection = monitoredBranch != null;
         if (monitoredBranch == null) {
@@ -434,6 +512,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
         }
         Complex sSystem = branchStoredInRequestedDirection
                 ? monitoredBranch.powerFrom2To(UnitType.PU) : monitoredBranch.powerTo2From(UnitType.PU);
+        if (nativeRecordConvention && data.branchFromBus() < 0) sSystem = sSystem.negate();
         Complex branchVoltage = branchStoredInRequestedDirection
                 ? ((BaseDStabBus<?, ?>) monitoredBranch.getFromBus()).getVoltage()
                 : ((BaseDStabBus<?, ?>) monitoredBranch.getToBus()).getVoltage();
@@ -445,7 +524,10 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
         // the basis declared by PUflag, then normalize it for model calculations.
         Complex declaredInput = data.puFlag() == 0 ? sSystem : sSystem.multiply(scale);
         Complex sDevice = toModelBase(declaredInput, data.puFlag(), systemBaseMva, deviceBaseMva);
-        Complex currentDevice = sDevice.divide(nonzero(branchVoltage)).conjugate();
+        // Native compensation forms Ibranch with the regulated Vt, even when
+        // the monitored power is taken at a different branch terminal.
+        Complex currentVoltage = nativeRecordConvention ? regulatedBus.getVoltage() : branchVoltage;
+        Complex currentDevice = sDevice.divide(nonzero(currentVoltage)).conjugate();
         return new Measurement(sDevice.getReal(), sDevice.getImaginary(), regulatedBus.getVoltage(),
                 currentDevice, regulatedBus.getFreq());
     }
@@ -458,8 +540,8 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
             // A zero Rc/Xc selects the actual monitored-line impedance, matching
             // the WECC/ANDES parameter-selection rule.
             Complex lineZ = monitoredBranch == null ? Complex.ZERO : monitoredBranch.getZ();
-            double rc = Math.abs(data.rc()) > EPS ? data.rc() : lineZ.getReal();
-            double xc = Math.abs(data.xc()) > EPS ? data.xc() : lineZ.getImaginary();
+            double rc = nativeRecordConvention || Math.abs(data.rc()) > EPS ? data.rc() : lineZ.getReal();
+            double xc = nativeRecordConvention || Math.abs(data.xc()) > EPS ? data.xc() : lineZ.getImaginary();
             Complex drop = new Complex(rc, xc).multiply(measurement.current());
             measured = measurement.voltage().subtract(drop).abs();
         } else {
@@ -525,6 +607,17 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     public boolean isUsingZeroBranchFallback() { return zeroBranchFallback; }
     public double getDeviceBaseMva() { return deviceBaseMva; }
 
+    /** Published seven-slot native order; reserved inactive slots are not artificial states. */
+    public double[] getNativeStates() {
+        if (!nativeRecordConvention) throw new IllegalStateException("Native state order requires the native-record convention");
+        return new double[]{data.refFlag() == 1 ? qOrVMeasured : 0,
+                data.refFlag() == 0 ? qOrVMeasured : 0,
+                qIntegral + initialReactiveReference, leadLagState + initialReactiveReference,
+                data.fFlag() == 1 ? pMeasured : 0,
+                data.fFlag() == 1 ? pIntegral + initialActiveReference : 0,
+                data.fFlag() == 1 ? pLagState + initialActiveReference : 0};
+    }
+
     @Override
     public Map<String, Double> getNamedStates() {
         Map<String, Double> named = new LinkedHashMap<>();
@@ -564,8 +657,17 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
 
     private static String busId(int number) { return "Bus" + number; }
 
-    private record Measurement(double p, double q, Complex voltage, Complex current, double frequency) {
-        double vMag() { return voltage.abs(); }
+    /** Powers and current are on device base; voltage is at the regulated measurement bus. */
+    public record Measurement(double p, double q, Complex voltage, Complex current, double frequency) {
+        public Measurement {
+            java.util.Objects.requireNonNull(voltage);
+            java.util.Objects.requireNonNull(current);
+            if (!Double.isFinite(p) || !Double.isFinite(q) || !Double.isFinite(frequency)
+                    || !Double.isFinite(voltage.getReal()) || !Double.isFinite(voltage.getImaginary())
+                    || !Double.isFinite(current.getReal()) || !Double.isFinite(current.getImaginary()))
+                throw new IllegalArgumentException("Plant measurements must be finite");
+        }
+        public double vMag() { return voltage.abs(); }
     }
 
     private record PlantState(double pMeasured, double qOrVMeasured,

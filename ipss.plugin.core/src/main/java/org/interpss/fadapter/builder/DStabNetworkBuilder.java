@@ -3702,27 +3702,27 @@ public class DStabNetworkBuilder {
     public Repca1Model addRepca1(String busId, String genId, Repca1Data data) {
         Regca1Model converter = findRegca1(busId, genId);
         if (converter != null && converter.getActiveElectricalController() != null) {
-            Repca1Model controller = new Repca1Model(data, converter);
+            Repca1Model controller = Repca1Model.fromNativeRecord(data, converter);
             converter.getActiveElectricalController().setPlantController(controller);
             return controller;
         }
         Regcb1Model behindImpedance = findRegcb1(busId, genId);
         if (behindImpedance != null
                 && behindImpedance.getActiveElectricalController() != null) {
-            Repca1Model controller = new Repca1Model(data, behindImpedance);
+            Repca1Model controller = Repca1Model.fromNativeRecord(data, behindImpedance);
             behindImpedance.getActiveElectricalController().setPlantController(controller);
             return controller;
         }
         Regfma1Model gridForming = findRegfma1(busId, genId);
         if (gridForming != null) {
-            Repca1Model controller = new Repca1Model(data, gridForming);
+            Repca1Model controller = Repca1Model.fromNativeRecord(data, gridForming);
             gridForming.setPlantController(controller);
             return controller;
         }
         var vsmBus=network.getDStabBus(busId);
         DStabGen vsmGen=vsmBus==null?null:(DStabGen)vsmBus.getContributeGen(genId);
         if(vsmGen!=null&&vsmGen.getDynamicGenDevice() instanceof Regfmb1Model vsm) {
-            Repca1Model controller=new Repca1Model(data,vsm);vsm.setPlantController(controller);return controller;
+            Repca1Model controller=Repca1Model.fromNativeRecord(data,vsm);vsm.setPlantController(controller);return controller;
         }
         log.warn("REGCA1/REGCB1/REEC or REGFMA1/REGFMB1U chain not found for REPCA1: bus={}, gen={}",
                 busId, genId);

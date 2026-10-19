@@ -2,6 +2,19 @@
 
 ## Current checkpoint
 
+REPCA1 native-plant follow-up: correct literal-zero compensation, regulated-bus
+current, signed-origin feedback and absolute active-limit translation. Sixty
+cold native runs give 30 seven-state profiles at two steps: 25 raw-exact pairs
+and five differing only in inactive auxiliary storage by at most 1.36e-19.
+Staged/history replay retains every raw row; the origin-current substitution
+remains an independent counterexample. All profiles import and run coupled
+SMIB diagnostics, not complete event-side acceptance. Latest plugin/core gates
+pass 91 focused, 410 plugin-core and 1,697 scoped SMIB/model/solver tests with
+zero failures/errors and only existing skips, plus four offline probe and six
+wording guards. The inventory has nineteen native-partial and eight recorded
+families, none ANDES-only and none VERIFIED. See the
+[plant evidence and remaining TODO](benchmarks/repca-native-plant-2026-10-19.md).
+
 REECA1 native-electrical follow-up: correct calculated PF/voltage bias and
 optional two-point/decreasing-current tables, preserving the historical typed
 convention and default integration. Fifty-two local cold runs give 26 profiles

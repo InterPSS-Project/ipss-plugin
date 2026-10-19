@@ -28,6 +28,72 @@ import org.junit.jupiter.api.io.TempDir;
 import com.interpss.core.aclf.AclfBranch;
 
 public class PsseRepca1PlantControllerTest extends CorePluginTestSetup {
+    @Test void nativeColdPairedProfilesReplayAllSevenAllocatedStates() throws Exception {
+        org.interpss.core.dstab.reference.RepcaNativeVerification.replayAllStates();
+    }
+    @Test void nativeProfilesHaveStrictImportAndCoupledSmallNetworkDiagnostics(@TempDir Path staged) throws Exception {
+        org.interpss.core.dstab.reference.RepcaNativeVerification.importAndRunLocalProfiles(staged);
+    }
+    @Test void nativeLineDropInitializationRejectsTheBranchOriginCurrentSubstitution() {
+        org.interpss.core.dstab.reference.RepcaNativeVerification.regulatedVoltageHasAnIndependentNativeInitializationWitness();
+    }
+    @Test
+    void nativeZeroCompensationDoesNotInferTheMonitoredBranchImpedance() throws Exception {
+        var fixture=measurementFixture();
+        var model=fixture.builder().addRepca1("Bus1","1",plantData(2,1,2,1,1,0,0,0,1));
+        model.initialize(.24,.0474445894361,1.0);
+        assertEquals(fixture.builder().getDStabNetwork().getDStabBus("Bus2").getVoltageMag(),
+                model.getMeasuredReactiveOrVoltage(),1e-12);
+    }
+
+    @Test void nativeNegativeOriginReversesPowerAtTheSameTerminalRatherThanSelectingTheOtherTerminal() throws Exception {
+        var fixture=measurementFixture();
+        var model=fixture.builder().addRepca1("Bus1","1",plantData(1,-1,2,0,0,0,0,0,1));
+        model.initialize(.24,.0474445894361,1);
+        Complex origin=fixture.branch().powerFrom2To(UnitType.PU);
+        assertEquals(-origin.getReal(),model.getMeasuredActivePower(),1e-12);
+        assertEquals(-origin.getImaginary(),model.getMeasuredReactiveOrVoltage(),1e-12);
+    }
+
+    @Test void nativeLineDropCurrentUsesTheRegulatedVoltageRatherThanTheBranchOriginVoltage() throws Exception {
+        var fixture=measurementFixture();
+        var model=fixture.builder().addRepca1("Bus1","1",plantData(2,1,2,1,1,.02,.08,0,1));
+        model.initialize(.24,.0474445894361,1);
+        Complex remote=fixture.builder().getDStabNetwork().getDStabBus("Bus2").getVoltage();
+        Complex power=fixture.branch().powerFrom2To(UnitType.PU);
+        double expected=remote.subtract(new Complex(.02,.08).multiply(power.divide(remote).conjugate())).abs();
+        assertEquals(expected,model.getMeasuredReactiveOrVoltage(),1e-12);
+    }
+
+    @Test void nativeMeasuredBoundaryRejectsNonfiniteValuesAndObservationsArePure() {
+        var data=dynamicData(0,0,.02,.5,1,.03,.1,.7,1,-1,.5,1,.1,20,20);
+        var model=Repca1Model.fromNativeRecord(data);
+        var input=new Repca1Model.Measurement(.24,.047,Complex.ONE,Complex.ZERO,1);
+        model.initializeMeasured(.24,.047,input);var named=model.getNamedStates();var active=model.getIntegrationStates();
+        double[] states=model.getNativeStates();states[1]=99;
+        assertEquals(.047,model.getNativeStates()[1],0);assertEquals(0,model.getNativeStates()[0],0);
+        assertEquals(0,model.getNativeStates()[4],0);assertEquals(0,model.getNativeStates()[5],0);assertEquals(0,model.getNativeStates()[6],0);
+        assertEquals(Set.of("Measured Reactive Or Voltage","Reactive Control Integral","Lead Lag"),active.keySet());
+        assertThrows(UnsupportedOperationException.class,()->active.put("Lead Lag",99.));
+        assertEquals(named,model.getNamedStates());assertEquals(active,model.getIntegrationStates());
+        assertThrows(IllegalArgumentException.class,()->new Repca1Model.Measurement(Double.NaN,.047,Complex.ONE,Complex.ZERO,1));
+        assertThrows(IllegalArgumentException.class,()->model.initializeMeasured(.24,Double.NaN,input));assertEquals(named,model.getNamedStates());
+        assertThrows(IllegalStateException.class,()->new Repca1Model(data).getNativeStates());
+    }
+
+    @Test
+    void nativeAbsolutePowerLimitsAreTranslatedAroundTheInitialElectricalReference() throws Exception {
+        var builder=DStabBuilderTestFixture.createBuilder();addRenewableChain(builder);
+        var data=new Repca1Data(0,0,0,"0",0,0,1,.02,.5,1,.03,.1,.7,0,0,0,.2,-.2,0,0,
+                1,-1,.5,1,.02,-.0006,.0006,.2,-.2,.245,.235,.1,20,20,1);
+        var model=builder.addRepca1("Bus1","1",data);model.initialize(.24,.0474445894361,1);
+        // The network fixture owns frequency, not this method's fallback argument.
+        builder.getDStabNetwork().getDStabBus("Bus1").setFreq(1.02);
+        for(int i=0;i<500;i++){model.step(.001,.24,.0474445894361,1,1.02,0);model.step(.001,.24,.0474445894361,1,1.02,1);}
+        assertTrue(model.getPref()<-.004,"Positive absolute lower power limit must allow a negative increment");
+        assertTrue(model.getPref()>=-.005-1e-12);
+    }
+
     @Test
     void plantRateSnapshotDistinguishesPredictorFromCorrectedState() {
         var plant = new Repca1Model(dynamicData(1, 1, .1, 1, 2, 0, .1, .7, 1, -1, 1, 2, .1, 1, 1));
