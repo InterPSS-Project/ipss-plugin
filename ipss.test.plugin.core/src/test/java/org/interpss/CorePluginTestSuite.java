@@ -677,6 +677,7 @@ import org.junit.platform.suite.api.Suite;
     Pss4cIndependentSmibConformanceTest.class,
     Pss5cIndependentSmibConformanceTest.class,
     org.interpss.core.adapter.builder.dstab.Pss5cNativeModelTest.class,
+    org.interpss.core.adapter.builder.dstab.Pss5cLocalLinearizerTest.class,
     org.interpss.core.dstab.Pss5cNativeSmibTest.class,
     Pss6cPsseSmibConformanceTest.class,
     Pss7cPsseSmibConformanceTest.class,

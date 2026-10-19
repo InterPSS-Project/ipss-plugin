@@ -139,6 +139,11 @@ permits CRLF-to-LF normalization only; both raw forms remain retained.
 
 ## Remaining work
 
+Follow-up: the [pole-contract diagnostic](pss5c-pole-contract-2026-10-19.md)
+adds paired-state perturbation evidence and a permanent read-only eigenvalue
+API. It does not change the equations or grant native trajectory acceptance;
+the foundation results and open requirements below remain applicable.
+
 - Resolve the native band-frequency and low-transducer discrepancies against
   authoritative equations and independent exact-tool discriminators.
 - Establish raw VAR/output timing and all thirteen state-coordinate meanings.

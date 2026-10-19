@@ -1721,6 +1721,12 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   is not an input selector. Validate exact parsing, published equations,
   independent frequency response and two-step flat/fault solver integration.
   See the [PSS5C native foundation report](benchmarks/pss5c-native-foundation-2026-10-19.md).
+- [x] Add a permanent read-only PSS5C state-matrix/eigenvalue diagnostic and
+  coordinate-invariant native band-pole experiments. Nine cold pairs (306
+  independent small-state response cases) distinguish published frequency
+  scaling from the reciprocal-field behavior of the installed reference engine.
+  Production equations and trajectory tolerances are unchanged. See the
+  [pole-contract report](benchmarks/pss5c-pole-contract-2026-10-19.md).
 - [ ] Resolve native PSS5C band-frequency/transducer and raw-VAR observation
   discrepancies, zero-order transducers, zero-gain/lifecycle behavior and native
   thirteen-state observation coordinates before native trajectory acceptance.
