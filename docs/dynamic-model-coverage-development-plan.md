@@ -41,9 +41,13 @@ native voltage parity and nonzero-deadband initialization remain open.
 The HPLNTDU switched-shunt kernel now reuses the ordered ten-device engine with
 physical-Mvar thresholds, not REPCC machine-base pu. Fourteen two-step profiles
 verify threshold/breaker timers and physical device statuses; two zero-delay
-profiles retain origin/timer diagnostics. This does not enable switched-shunt
-import or prove physical-network coupling/discharge-reclose parity. See the
+profiles retain origin/timer diagnostics. Exact physical G+jB switching and
+accepted-endpoint dispatch now enable the imported path. Eight coupled profiles
+have bounded acceptance; eight retain clock/origin diagnostics, and native
+discharge-reclose parity remains open. See the
 [switching kernel evidence](benchmarks/hplntd-switching-kernel-2026-10-18.md).
+The [physical-boundary follow-up](benchmarks/hplntd-switching-boundary-2026-10-18.md)
+records exact input networks and clock-only discrepancy discriminators.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -94,11 +98,21 @@ and state definitions agree.
 - [x] Pass 38 focused Java checks, all 401 plugin-core tests (six existing
   optional skips) and 1,530 selected SMIB/model/solver tests (one existing
   diagnostic skip), with zero failures/errors and no full Texas2k dynamics.
-- [ ] Bind HPLNTDU actions to exact individual physical G+jB and Y updates;
-  add accepted-endpoint dispatch, then enable/import switching only after tests.
-- [ ] Verify closed-loop switching trajectories at both timesteps and add
-  capacitor discharge/reclose native discriminators. Current traces do not
-  exercise reclosure; unused native discharge storage does not prove parity.
+- [x] Bind HPLNTDU actions to exact individual physical G+jB and Y updates;
+  add accepted-endpoint dispatch and main-import nominal-data preflight.
+- [x] Reuse the same physical binding for REPCC without changing its units,
+  switching rules or accepted trajectories; test persistent Y/cache updates.
+- [x] Verify eight coupled profiles across fast-band coarse and disabled/
+  invalid/missing-branch cases at both timesteps, scoring all 26 channels and
+  ten device statuses. Preserve eight clock/origin diagnostic profiles.
+- [x] Replay identical recorded reactive power on native and double solver
+  clocks; reproduce every positive-time physical status without timing offsets.
+- [x] Pass the physical-boundary slice's 38 focused checks, 401 plugin-core tests
+  (six existing optional skips), 1,536 selected SMIB/model/solver tests (one
+  existing diagnostic skip) and 40 offline checks, with zero failures/errors.
+- [ ] Close fine fast-band/slow-band exact timing and add capacitor discharge/
+  reclose native discriminators. Current traces do not exercise reclosure;
+  unused native discharge storage does not prove functional parity.
 - [ ] Resolve zero-delay callback/origin and native unused-timer differences
   before claiming exhaustive state/callback equivalence.
 

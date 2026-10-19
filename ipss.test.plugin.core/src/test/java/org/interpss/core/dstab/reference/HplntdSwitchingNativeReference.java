@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.zip.GZIPInputStream;
 import org.interpss.dstab.renewable.HplntdData;
 
-/** Frozen physical-Mvar switching evidence, not imported physical-network acceptance. */
+/** Frozen physical-Mvar switching inputs, raw outputs and scoped coupled bounds. */
 public final class HplntdSwitchingNativeReference {
     private HplntdSwitchingNativeReference() {}
     public record Profile(String name,double step,int samples,int statusSamples,String csvSha256,String inputSha256,String statusSha256){
@@ -15,6 +15,27 @@ public final class HplntdSwitchingNativeReference {
         public String input(){return plant().input();}
         public String body(){return plant().body();}
         public boolean zeroDelay(){return name.contains("zero-delay");}
+        public boolean coupledAccepted(){return name.endsWith("coarse")&&name.contains("-fast-")||name.contains("disabled")||name.contains("invalid-thresholds")||name.contains("missing-branch");}
+        public double[] coupledBounds(){return switch(name){
+            case "switching-positive-fast-coarse" -> new double[]{6.476e-06,4.756e-06,5.935e-07,7.11e-06,9.842e-07,5.309e-06,2.308e-06,3.438e-06,1e-12,9.628e-06,5.277e-06,5.554e-06,2.218e-06,1.56e-09,1.939e-06,1.673e-06,1e-12,6.685e-08,1.814e-06,5.225e-06,5.508e-06,1.856e-06,9.88e-06,2.118e-06,2.984e-06,7.424e-08};
+            case "switching-negative-fast-coarse" -> new double[]{3.419e-06,2.749e-06,2.074e-07,4.533e-06,1.656e-06,5.07e-06,3.632e-06,2.85e-06,1e-12,5.461e-06,5.646e-06,6.353e-06,2.218e-06,1.04e-09,2.045e-06,1.281e-06,1e-12,6.432e-08,1.814e-06,5.188e-06,6.352e-06,1.539e-06,1.425e-05,2.212e-06,4.894e-06,7.098e-08};
+            case "switching-disabled-coarse" -> new double[]{1.49e-06,1.008e-06,2.003e-07,1.223e-06,7.71e-07,4.94e-06,1.983e-06,2.984e-06,1e-12,5.317e-06,5.277e-06,5.277e-06,1.814e-06,1e-12,1.814e-06,8.741e-07,1e-12,3.617e-10,1.814e-06,5.225e-06,5.277e-06,1.542e-06,9.88e-06,1.983e-06,2.984e-06,6.64e-10};
+            case "switching-disabled-fine" -> new double[]{1.49e-06,1.008e-06,2.003e-07,1.223e-06,7.71e-07,4.94e-06,1.983e-06,2.984e-06,1e-12,5.225e-06,5.277e-06,5.277e-06,1.814e-06,1e-12,1.814e-06,8.741e-07,1e-12,3.611e-10,1.814e-06,5.225e-06,5.277e-06,1.542e-06,9.88e-06,1.983e-06,2.984e-06,6.64e-10};
+            case "switching-invalid-thresholds-coarse" -> new double[]{1.49e-06,1.008e-06,2.003e-07,1.223e-06,7.71e-07,4.94e-06,1.983e-06,2.984e-06,1e-12,5.317e-06,5.277e-06,5.277e-06,1.814e-06,1e-12,1.814e-06,8.741e-07,1e-12,3.617e-10,1.814e-06,5.225e-06,5.277e-06,1.542e-06,9.88e-06,1.983e-06,2.984e-06,6.64e-10};
+            case "switching-invalid-thresholds-fine" -> new double[]{1.49e-06,1.008e-06,2.003e-07,1.223e-06,7.71e-07,4.94e-06,1.983e-06,2.984e-06,1e-12,5.225e-06,5.277e-06,5.277e-06,1.814e-06,1e-12,1.814e-06,8.741e-07,1e-12,3.611e-10,1.814e-06,5.225e-06,5.277e-06,1.542e-06,9.88e-06,1.983e-06,2.984e-06,6.64e-10};
+            case "switching-missing-branch-coarse" -> new double[]{1.49e-06,1.008e-06,2.003e-07,1.223e-06,7.71e-07,4.94e-06,1.983e-06,2.984e-06,1e-12,5.317e-06,5.277e-06,5.277e-06,1.814e-06,1e-12,1.814e-06,8.741e-07,1e-12,3.617e-10,1.814e-06,5.225e-06,5.277e-06,1.542e-06,9.88e-06,1.983e-06,2.984e-06,6.64e-10};
+            case "switching-missing-branch-fine" -> new double[]{1.49e-06,1.008e-06,2.003e-07,1.223e-06,7.71e-07,4.94e-06,1.983e-06,2.984e-06,1e-12,5.225e-06,5.277e-06,5.277e-06,1.814e-06,1e-12,1.814e-06,8.741e-07,1e-12,3.611e-10,1.814e-06,5.225e-06,5.277e-06,1.542e-06,9.88e-06,1.983e-06,2.984e-06,6.64e-10};
+            default -> throw new IllegalArgumentException("Unaccepted coupled switching profile: "+name);
+        };}
+        /** Exact frozen network input; raw history and line endings are preserved. */
+        public String network(){
+            boolean negative=name.contains("negative");String file="/hplntd-foundation-native/switching-"+(negative?"negative":"positive")+".raw.b64";
+            try(var stream=HplntdSwitchingNativeReference.class.getResourceAsStream(file)){
+                if(stream==null)throw new IllegalStateException("Missing hybrid switching network");
+                String text=new String(Base64.getMimeDecoder().decode(stream.readAllBytes()),StandardCharsets.UTF_8);
+                if(!WtgibffraNativeReference.digest(text).equals(negative?"556b4b9c6e0ebe979729e8d8029df5db8e6b20f496b2b1ddfdacfff5787dbc24":"dc251adc48a2942de91ee74a118ac296afa7858f3227b431e1d9b8726948b0c1"))throw new IllegalStateException("Changed hybrid switching network");return text;
+            }catch(IOException e){throw new UncheckedIOException(e);}
+        }
         public String status(){
             try(var resource=HplntdSwitchingNativeReference.class.getResourceAsStream("/hplntd-foundation-native/"+name+".status.b64")){
                 if(resource==null)throw new IllegalStateException("Missing hybrid switch status reference");

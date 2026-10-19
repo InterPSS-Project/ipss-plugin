@@ -108,6 +108,8 @@ public class PsseDStabSolver extends DStabSolverImpl {
                     var electrical=converter.getActiveElectricalController();
                     if (electrical!=null && electrical.getRepccController()!=null)
                         electrical.getRepccController().acceptedEndpoint();
+                    if (electrical!=null && electrical.getHybridController()!=null)
+                        electrical.getHybridController().owner().acceptedEndpoint();
                 }
             }
         }

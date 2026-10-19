@@ -45,8 +45,8 @@ public final class RenewableEvidenceInventory {
                     if(references.size()!=16||HplntdReferenceLimitNativeReference.acceptedProfiles().size()!=4)throw new IllegalStateException("Incomplete reference-limit evidence or misclassified voltage diagnostics");
                     for(var p:references){p.body();p.input();}
                     var switches=HplntdSwitchingNativeReference.profiles();
-                    if(switches.size()!=16||switches.stream().filter(HplntdSwitchingNativeReference.Profile::zeroDelay).count()!=2)throw new IllegalStateException("Incomplete switching kernel evidence/diagnostics");
-                    for(var p:switches){p.body();p.input();p.status();}
+                    if(switches.size()!=16||switches.stream().filter(HplntdSwitchingNativeReference.Profile::zeroDelay).count()!=2||switches.stream().filter(HplntdSwitchingNativeReference.Profile::coupledAccepted).count()!=8)throw new IllegalStateException("Incomplete switching kernel/coupled evidence or diagnostics");
+                    for(var p:switches){p.body();p.input();p.status();p.network();if(p.coupledAccepted()&&p.coupledBounds().length!=26)throw new IllegalStateException("Incomplete switching channel bounds");}
                 }
                 case NONE -> { if(!checkpoint.isEmpty())throw new IllegalStateException("Unexpected checkpoint"); }
                 case NATIVE_CSV -> {
@@ -195,8 +195,8 @@ public final class RenewableEvidenceInventory {
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
             Set.of("HPLNTDU").stream().map(model->
-                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdReferenceLimitNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2;disabled-selectors:16;proportional:24;reference-limits:16;Q-PF-acceptance:4;switching-kernel:14;zero-delay-diagnostics:2","",
-                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime. Disabled paths and feasible proportional/feedback modes have independent profiles. Direct Q-upper/PF-lower reference disturbances add four state-replay and bounded coupled acceptance profiles. Twelve native voltage profiles prove bypass of the published Vref clamp at initialization and runtime; they are diagnostics, not voltage parity. InterPSS retains the published clamp. Suspect native nonzero-deadband initialization, instantaneous fault current/frequency parity, alternate hosts/switching and full lifecycle remain unaccepted. Source HPLNTD is not an inferred alias; cross-method slew/filter residuals remain explicit."))
+                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdReferenceLimitNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2;disabled-selectors:16;proportional:24;reference-limits:16;Q-PF-acceptance:4;switching-kernel:14;switching-coupled:8;switching-clock-origin-diagnostics:8","",
+                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime. Disabled paths and feasible proportional/feedback modes have independent profiles. Four direct Q/PF-reference profiles add state-replay and bounded coupled acceptance. Fourteen switching-kernel profiles and eight coupled profiles cover physical-Mvar dispatch, exact individual G+jB and persistent Y updates. Eight coupled clock/origin profiles remain diagnostics; discharge/reclose parity is open. Twelve voltage profiles diagnose native bypass of the published Vref clamp; InterPSS retains the clamp. Nonzero-deadband initialization, instantaneous fault current/frequency parity, alternate hosts and full lifecycle remain unaccepted. Source HPLNTD is not an inferred alias; cross-method slew/filter residuals remain explicit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {

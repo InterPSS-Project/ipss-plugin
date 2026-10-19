@@ -1,5 +1,6 @@
 """Offline switching-schema and raw-reference audit guards."""
 import base64
+import hashlib
 from pathlib import Path
 import shlex
 import tempfile
@@ -64,6 +65,19 @@ class SwitchingProbeTest(unittest.TestCase):
             configuration(self.original + b'\n', 'positive-fast')
         with self.assertRaises(ValueError):
             configuration(self.original, 'invented')
+
+    def test_frozen_networks_keep_exact_ten_individual_device_inputs(self):
+        expected = {'positive': 'dc251adc48a2942de91ee74a118ac296afa7858f3227b431e1d9b8726948b0c1',
+                    'negative': '556b4b9c6e0ebe979729e8d8029df5db8e6b20f496b2b1ddfdacfff5787dbc24'}
+        for direction, sha in expected.items():
+            body = base64.b64decode((RESOURCE / ('switching-' + direction + '.raw.b64')).read_bytes())
+            self.assertEqual(sha, hashlib.sha256(body).hexdigest())
+            section = body.decode().split('0 / END OF LOAD DATA')[1].split('0 / END OF FIXED SHUNT DATA')[0]
+            records = [line.split(',') for line in section.splitlines()[1:] if line.strip()]
+            self.assertEqual(10, len(records))
+            _, shunts = configuration(self.original, direction + '-fast')
+            for fields, (name, status, b) in zip(records, shunts):
+                self.assertEqual(['2', "'" + name + "'", str(status), '0', str(b)], fields)
 
     def test_raw_table_keeps_duplicate_and_history_rows(self):
         with tempfile.TemporaryDirectory(dir=ROOT / 'target') as directory:

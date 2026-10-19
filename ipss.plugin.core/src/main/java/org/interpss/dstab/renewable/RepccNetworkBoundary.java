@@ -3,7 +3,6 @@ package org.interpss.dstab.renewable;
 import java.util.*;
 import org.apache.commons.math3.complex.Complex;
 import com.interpss.core.aclf.AclfBranch;
-import com.interpss.core.aclf.ShuntCompensator;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabGen;
@@ -28,14 +27,12 @@ public final class RepccNetworkBoundary {
         Complex voltage() { return (forward?device.getFromAclfBus():device.getToAclfBus()).getVoltage(); }
         Complex power() { return voltage().multiply(current().conjugate()); }
     }
-    private record Fixed(BaseDStabBus<?,?> bus, ShuntCompensator device, Complex nominal) {}
     private final RepccData data;
     private final BaseDStabBus<?,?> terminal,regulated,frequency;
     private final BaseDStabNetwork<?,?> network;
     private final double systemToMachine;
     private final Branch main,switching;
-    private final Map<RepccData.Shunt,Fixed> fixed=new LinkedHashMap<>();
-    private RepccShuntController shunts;
+    private final PlantShuntNetworkBoundary physicalShunts;
 
     public RepccNetworkBoundary(RepccData data,DStabGen generator,BaseDStabBus<?,?> terminal) {
         this.data=Objects.requireNonNull(data);this.terminal=Objects.requireNonNull(terminal);
@@ -50,6 +47,7 @@ public final class RepccNetworkBoundary {
         regulated=resolveBus(data.remoteBus(),terminal);
         frequency=resolveBus(data.frequencyBus(),regulated);
         main=resolveBranch(data.measurementBranch());switching=resolveBranch(data.switchingBranch());
+        physicalShunts=new PlantShuntNetworkBoundary(data,network,switching!=null);
     }
     private BaseDStabBus<?,?> resolveBus(int number,BaseDStabBus<?,?> fallback) {
         var bus=number==0?null:network.getBus("Bus"+number);
@@ -79,56 +77,16 @@ public final class RepccNetworkBoundary {
      * the individual input conductance rather than infer it from aggregate bus G.
      * Initialization is atomic and must precede physical switching. */
     public void initializeShunts(Map<RepccData.Shunt,Complex> nominalSystemAdmittances) {
-        Objects.requireNonNull(nominalSystemAdmittances);
-        var resolved=new LinkedHashMap<RepccData.Shunt,Fixed>();
-        var devices=new ArrayList<RepccShuntController.Device>();
-        boolean enabled=data.switchingFlag()==1&&switching!=null&&data.switchingThresholdsValid();
-        if(enabled)for(var key:data.shunts()){
-            if(key.bus()==0)continue;
-            if(resolved.containsKey(key))throw new IllegalArgumentException("Duplicate REPCC shunt "+key);
-            var bus=network.getBus("Bus"+key.bus());
-            if(bus==null)throw new IllegalArgumentException("REPCC shunt bus not found: "+key);
-            var matches=bus.getCompensatorList().stream().filter(s->s.getId().equals(key.id())).toList();
-            if(matches.size()!=1)throw new IllegalArgumentException("One named fixed shunt required: "+key);
-            var device=matches.getFirst();Complex nominal=nominalSystemAdmittances.get(key);
-            finite(nominal);
-            if(device.getSteps()!=1||nominal.getImaginary()!=device.getB())
-                throw new IllegalArgumentException("REPCC requires the exact single-step nominal shunt admittance: "+key);
-            resolved.put(key,new Fixed(bus,device,nominal));
-            devices.add(new RepccShuntController.Device(key,nominal.getImaginary(),device.isActive()));
-        }
-        var next=new RepccShuntController(data);next.initialize(devices,switching!=null);
-        fixed.clear();fixed.putAll(resolved);shunts=next;
+        physicalShunts.initialize(nominalSystemAdmittances);
     }
     /** Call once after an accepted network endpoint, never during a trial stage.
      * Status and bus G changes survive later Y rebuilds. Incremental Y changes
      * use admittance directly, never nominal power divided by initial voltage. */
     public List<RepccShuntController.Action> advanceShunts(double acceptedTime) {
-        if(shunts==null)throw new IllegalStateException("Initialize physical REPCC shunts first");
-        if(shunts.isEnabled()){
-            if(network.getYMatrix()==null)throw new IllegalStateException("Dynamic Y matrix required before shunt switching");
-            for(var slot:shunts.slots()){
-                var binding=fixed.get(slot.key());
-                if(binding!=null&&binding.device().isActive()!=slot.inService())
-                    throw new IllegalStateException("External shunt status changed; reinitialize REPCC boundary: "+slot.key());
-            }
-        }
-        var actions=shunts.advance(acceptedTime,switching==null?0:switching.power().getImaginary()*systemToMachine);
-        for(var action:actions){
-            var binding=fixed.get(action.key());double sign=action.inService()?1:-1;
-            Complex delta=binding.nominal().multiply(sign);
-            binding.device().setStatus(action.inService());
-            binding.bus().setShuntY(binding.bus().getShuntY().add(new Complex(delta.getReal(),0)));
-            binding.bus().applyPositiveSequenceShuntAdmittanceChange(delta);
-            if(binding.bus().isActive()){
-                int index=binding.bus().getSortNumber();network.getYMatrix().addToA(delta,index,index);
-                network.setYMatrixDirty(true);
-            }
-        }
-        return actions;
+        return physicalShunts.advance(acceptedTime,switching==null?0:switching.power().getImaginary()*systemToMachine);
     }
     public RepccShuntController shuntController(){
-        if(shunts==null)throw new IllegalStateException("Initialize physical REPCC shunts first");return shunts;
+        return physicalShunts.controller();
     }
     private static void finite(Complex value) {
         if(value==null||!Double.isFinite(value.getReal())||!Double.isFinite(value.getImaginary()))

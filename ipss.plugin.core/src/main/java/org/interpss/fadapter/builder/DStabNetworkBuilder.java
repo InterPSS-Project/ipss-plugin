@@ -3655,7 +3655,19 @@ public class DStabNetworkBuilder {
             if(converter==null)throw new IllegalArgumentException("Hybrid unit requires REGCA1: "+unit.busId()+"/"+unit.generatorId());
             bindings.add(new org.interpss.dstab.renewable.HplntdCoordinator.Binding(converter,unit.data()));
         }
-        return org.interpss.dstab.renewable.HplntdCoordinator.attach(data,plant,bindings);
+        var nominal=new HashMap<org.interpss.dstab.renewable.RepccData.Shunt,org.apache.commons.math3.complex.Complex>();
+        var boundary=new org.interpss.dstab.renewable.HplntdNetworkBoundary(data,plant);
+        if(data.switchingFlag()==1&&data.switchingThresholdsValid()&&boundary.switchingBranchFound())for(var key:data.shunts()){
+            if(key.bus()==0)continue;
+            var bus=network.getDStabBus("Bus"+key.bus());
+            if(bus==null)throw new IllegalArgumentException("Hybrid shunt bus not found: "+key);
+            var matches=bus.getCompensatorList().stream().filter(s->s.getId().equals(key.id())).toList();
+            if(matches.size()!=1)throw new IllegalArgumentException("One named fixed shunt required: "+key);
+            var value=FixedShuntAdmittance.find(matches.getFirst()).orElseThrow(
+                    ()->new IllegalArgumentException("Retained nominal fixed-shunt admittance required: "+key));
+            if(nominal.putIfAbsent(key,value)!=null)throw new IllegalArgumentException("Duplicate hybrid shunt "+key);
+        }
+        return org.interpss.dstab.renewable.HplntdCoordinator.attach(data,plant,bindings,nominal);
     }
 
     /** Dedicated native REPCC port; no legacy controller is overwritten. */

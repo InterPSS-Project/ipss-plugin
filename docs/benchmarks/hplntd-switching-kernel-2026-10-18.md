@@ -1,5 +1,10 @@
 # Hybrid plant switching kernel evidence
 
+Historical kernel-only slice `b86a10f8a`. The
+[physical-boundary follow-up](hplntd-switching-boundary-2026-10-18.md) subsequently
+enables exact physical switching/import with bounded coupled acceptance and
+explicit remaining clock/origin/discharge limitations.
+
 Scope: small four-bus/two-unit reference testbed, not Texas2k dynamics.
 This slice proves a shared discrete kernel, not HPLNTDU physical-network
 switching or complete model verification. Main switched-shunt import remains

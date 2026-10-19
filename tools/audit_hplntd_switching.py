@@ -142,6 +142,9 @@ def audit(root):
                 if current != identity:
                     raise ValueError('Mixed reference runtime identities')
             profile = 'switching-' + mode + '-' + label
+            network = resource / ('switching-' + ('negative' if mode.startswith('negative') else 'positive') + '.raw.b64')
+            if base64.b64decode(network.read_bytes()) != (runs[0] / 'network.raw').read_bytes():
+                raise ValueError('Changed embedded exact switching network')
             for suffix, file in [('csv', 'native.csv'), ('status', 'shunt-status.csv'), ('dyr', 'dynamic.dyr')]:
                 embedded = base64.b64decode((resource / (profile + '.' + suffix + '.b64')).read_bytes())
                 if suffix != 'dyr':

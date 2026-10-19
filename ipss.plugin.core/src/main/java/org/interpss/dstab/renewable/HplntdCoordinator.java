@@ -1,12 +1,13 @@
 package org.interpss.dstab.renewable;
 
 import java.util.*;
+import org.apache.commons.math3.complex.Complex;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
-/** Shared typed bus-plant composition. One plant/lag-vector advance per solver
- * stage, independent of downstream traversal order. Main import and physical
- * switching are separate responsibilities; unsupported host modes fail early. */
+/** Shared typed/imported bus-plant composition. One plant/lag-vector advance
+ * per solver stage, independent of downstream traversal order. Physical shunts
+ * dispatch only at accepted endpoints; unsupported host modes fail early. */
 public final class HplntdCoordinator implements ICMLStateProvider {
     public record Binding(Regca1Model converter,ReaxdData data) {}
     public static final class Port implements ICMLStateProvider {
@@ -33,12 +34,14 @@ public final class HplntdCoordinator implements ICMLStateProvider {
         public double reactiveIncrement(){return publishedQ-q0;}
         public double[] states(){if(lag==null)throw new IllegalStateException("Initialize the hybrid group first");return lag.states();}
         @Override public Map<String,Double> getNamedStates(){return lag==null?Map.of():lag.getNamedStates();}
-        private boolean active(){return converter.getDStabBus().isActive()&&converter.getParentGen().isActive();}
+        private boolean active(){return converter.isActive()&&converter.getDStabBus().isActive()&&converter.getParentGen().isActive();}
         private boolean eligible(){return active()&&converter.getDStabBus().isGenPV();}
     }
     private enum Phase { IDLE,PREDICTED,CORRECTED }
     private final HplntdData data;
     private final HplntdNetworkBoundary boundary;
+    private final PlantShuntNetworkBoundary switching;
+    private final Map<RepccData.Shunt,Complex> nominalShunts;
     private final List<Port> ports;
     private HplntdAggregation aggregation;
     private HplntdAggregation.Snapshot snapshot;
@@ -48,11 +51,13 @@ public final class HplntdCoordinator implements ICMLStateProvider {
     private final Set<Port> seen0=new HashSet<>(),seen1=new HashSet<>();
     private double pendingStep;
     private long predictors,correctors;
-    private HplntdCoordinator(HplntdData data,BaseDStabBus<?,?> plantBus,List<Binding> bindings){
+    private HplntdCoordinator(HplntdData data,BaseDStabBus<?,?> plantBus,List<Binding> bindings,Map<RepccData.Shunt,Complex> nominalShunts){
         this.data=Objects.requireNonNull(data);boundary=new HplntdNetworkBoundary(data,plantBus);
         HplntdInitialization.validateControlGains(data);
-        if(data.switchingFlag()!=0||boundary.ignored())
-            throw new IllegalArgumentException("Typed hybrid composition requires valid measurements and disabled automatic switching");
+        if(boundary.ignored())throw new IllegalArgumentException("Hybrid composition requires valid measurements");
+        this.nominalShunts=Map.copyOf(nominalShunts);
+        switching=new PlantShuntNetworkBoundary(data,(com.interpss.dstab.BaseDStabNetwork<?,?>)plantBus.getNetwork(),boundary.switchingBranchFound());
+        switching.initialize(this.nominalShunts);
         if(bindings.isEmpty())throw new IllegalArgumentException("Hybrid downstream devices required");
         var list=new ArrayList<Port>();var keys=new HashSet<HplntdAggregation.Key>();
         for(var b:bindings){
@@ -71,7 +76,10 @@ public final class HplntdCoordinator implements ICMLStateProvider {
     }
     /** Serial preflight checks every port before attaching any of them. */
     public static HplntdCoordinator attach(HplntdData data,BaseDStabBus<?,?> bus,List<Binding> bindings){
-        var group=new HplntdCoordinator(data,bus,bindings);for(var p:group.ports)p.electrical.setHybridController(p);return group;
+        return attach(data,bus,bindings,Map.of());
+    }
+    public static HplntdCoordinator attach(HplntdData data,BaseDStabBus<?,?> bus,List<Binding> bindings,Map<RepccData.Shunt,Complex> nominalSystemShunts){
+        var group=new HplntdCoordinator(data,bus,bindings,nominalSystemShunts);for(var p:group.ports)p.electrical.setHybridController(p);return group;
     }
     private void initialize(Port p,double active,double reactive){
         if(kernel!=null){kernel=null;aggregation=null;snapshot=null;phase=Phase.IDLE;seen0.clear();seen1.clear();predictors=correctors=0;for(var member:ports){member.initialized=false;member.lag=null;member.heldInput=new ReaxdKernel.Input(0,0);}}
@@ -81,6 +89,7 @@ public final class HplntdCoordinator implements ICMLStateProvider {
             var next=new HplntdAggregation(data.value(HplntdData.Parameter.PLANT_MVA),devices());var s=next.refresh(devices());
             var in=boundary.measure(s.plantMva()).control();var k=new HplntdKernel(data);
             k.initialize(new HplntdInitialization.Measurements(in.regulatedVoltage(),in.branchCurrent(),in.active(),in.reactive(),s.initialActive(),s.initialReactive()));
+            switching.initialize(nominalShunts);
             aggregation=next;snapshot=s;kernel=k;
         }
     }
@@ -117,8 +126,20 @@ public final class HplntdCoordinator implements ICMLStateProvider {
     public HplntdAggregation.Snapshot snapshot(){kernel();return snapshot;}
     public long predictorCount(){return predictors;}
     public long correctorCount(){return correctors;}
+    /** Shared physical dispatch is idempotent at a repeated accepted endpoint,
+     * including callbacks from multiple downstream converters. Never call it
+     * until every participating unit has completed its corrector. */
+    public List<RepccShuntController.Action> acceptedEndpoint(){
+        kernel();
+        if(phase==Phase.PREDICTED||phase==Phase.CORRECTED&&!seen1.equals(expected))
+            throw new IllegalStateException("Complete every hybrid corrector before physical shunt dispatch");
+        if(activePorts().isEmpty())return List.of();
+        return switching.advance(kernel.time(),boundary.measure(snapshot.plantMva()).switchingReactiveMvar());
+    }
+    public RepccShuntController shuntController(){kernel();return switching.controller();}
+    public Map<String,Double> getSwitchingNamedStates(){return kernel==null||!switching.controller().isEnabled()?Map.of():switching.controller().getNamedStates();}
     public Map<String,Double> getPlantNamedStates(){return kernel==null?Map.of():kernel.getNamedStates();}
     @Override public Map<String,Double> getNamedStates(){
-        if(kernel==null)return Map.of();var states=new LinkedHashMap<>(kernel.getNamedStates());for(var p:ports)p.lag.getNamedStates().forEach((name,value)->states.put(p.key.bus()+"/"+p.key.generator()+"."+name,value));return Collections.unmodifiableMap(states);
+        if(kernel==null)return Map.of();var states=new LinkedHashMap<>(kernel.getNamedStates());for(var p:ports)p.lag.getNamedStates().forEach((name,value)->states.put(p.key.bus()+"/"+p.key.generator()+"."+name,value));getSwitchingNamedStates().forEach((name,value)->states.put("switching."+name,value));return Collections.unmodifiableMap(states);
     }
 }

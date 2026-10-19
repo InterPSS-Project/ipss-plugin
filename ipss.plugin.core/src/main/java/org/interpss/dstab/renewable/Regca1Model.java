@@ -290,6 +290,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
     @Override public boolean afterStep(double dt) {
         var controller=activeController();
         if(controller!=null&&controller.getRepccController()!=null)controller.getRepccController().acceptedEndpoint();
+        if(controller!=null&&controller.getHybridController()!=null)controller.getHybridController().owner().acceptedEndpoint();
         return true;
     }
     @Override public DStabGen getParentGen() { return parentGen; }
@@ -384,6 +385,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         if(controller!=null&&controller.getHybridController()!=null){
             var port=controller.getHybridController();
             port.owner().getPlantNamedStates().forEach((key,value)->named.put("HPLNTDU."+key,value));
+            port.owner().getSwitchingNamedStates().forEach((key,value)->named.put("HPLNTDU.switching."+key,value));
             port.getNamedStates().forEach((key,value)->named.put("REAXDU."+key,value));
         }
         if (controller != null && controller.getRepccController() != null)
