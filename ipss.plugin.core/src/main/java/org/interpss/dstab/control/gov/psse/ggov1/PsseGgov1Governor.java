@@ -89,22 +89,25 @@ public class PsseGgov1Governor extends AbstractGovernor
         double damping0 = damping(speedDeviation);
         double valve0 = getData().getWfnl() + (pm0 + damping0) / effectiveKturb;
 
-        // Expand the corrected position limits to contain the initialized valve.
         double[] valveLimits = normalizedValveLimits(getData().getVmax(), getData().getVmin());
-        // PowerWorld expands governor position limits to contain the initialized valve.
-        effectiveVmax = Math.max(valveLimits[0], valve0);
-        effectiveVmin = Math.min(valveLimits[1], valve0);
-        double droop0 = selectedDroop(pe0, valve0, valve0);
+        boolean declaredLimits = getData().isUseDeclaredValveLimits();
+        effectiveVmax = declaredLimits ? valveLimits[0] : Math.max(valveLimits[0], valve0);
+        effectiveVmin = declaredLimits ? valveLimits[1] : Math.min(valveLimits[1], valve0);
+        double actuator0 = clamp(valve0, effectiveVmin, effectiveVmax);
+        double droop0 = selectedDroop(pe0, actuator0, actuator0);
         pref = speedDeviation + getData().getR() * droop0;
         pmwset = pe0;
 
         double tempInput0 = valve0 * maximumPowerFactor(speedDeviation);
-        double loadIntegrator0 = valve0;
-        state = new State(pe0, 0.0, valve0, valve0, pm0 + damping0,
+        // Keep the turbine and measurement history at the supplied operating
+        // point. A limited actuator produces a real startup transient instead
+        // of widening the declared travel range to manufacture equilibrium.
+        double loadIntegrator0 = actuator0;
+        state = new State(pe0, 0.0, valve0, actuator0, pm0 + damping0,
                 loadIntegrator0, 0.0, speedDeviation, tempInput0, tempInput0);
         oldState = state;
-        committedFsr = valve0;
-        currentFsr = valve0;
+        committedFsr = actuator0;
+        currentFsr = actuator0;
         currentOutput = pm0;
         simulationTime = 0.0;
         engineHistory.clear();

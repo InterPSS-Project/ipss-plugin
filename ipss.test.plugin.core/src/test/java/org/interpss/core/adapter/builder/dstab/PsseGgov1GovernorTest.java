@@ -176,6 +176,43 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         assertTrue(governor.getOutput(machine) > 0.4);
     }
 
+    @ParameterizedTest
+    @CsvSource({"0.1,0.15", "0.5,0.5", "1.1,0.8"})
+    void declaredValveLimitsRetainStartupTransient(double initialPower, double limitedValve)
+            throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(initialPower); machine.setPe(initialPower);
+        var data = texasData();
+        data.setTrate(0.0); data.setKturb(1.0); data.setWfnl(0.0);
+        data.setVmin(.15); data.setVmax(.8); data.setTb(.12); data.setTc(0.0);
+        data.setLdref(10.0); data.setUseDeclaredValveLimits(true);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        assertTrue(governor.getData().isUseDeclaredValveLimits(), "builder must retain limit semantics");
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertEquals(.15, governor.getEffectiveVmin(), TOL);
+        assertEquals(.8, governor.getEffectiveVmax(), TOL);
+        assertEquals(limitedValve, governor.getIntegrationStates().get("Valve Position"), TOL);
+        assertEquals(limitedValve, governor.getLoadLimiterIntegralState(), TOL);
+        assertEquals(initialPower, governor.getGovernorIntegralState(), TOL);
+        assertEquals(initialPower, governor.getTurbineLeadLagState(), TOL);
+        assertEquals(initialPower, governor.getOutput(machine), TOL);
+        var rates = new double[10];
+        governor.evaluateStaggered(.0005, rates, 0);
+        assertEquals((limitedValve-initialPower)/.12, rates[4], TOL);
+        assertEquals(0.0, rates[3], TOL);
+        for(int i=0;i<200;i++) step(governor,machine,.0005);
+        double expected = limitedValve+(initialPower-limitedValve)*Math.exp(-.1/.12);
+        assertEquals(expected,governor.getOutput(machine),1.0e-6,
+                "turbine must respond to the fixed position boundary");
+        assertEquals(.15,governor.getData().getVmin(),TOL);
+        assertEquals(.8,governor.getData().getVmax(),TOL);
+        machine.setPm(.5); machine.setPe(.5);
+        assertTrue(governor.initStates(machine.getDStabBus(),machine));
+        assertEquals(.5,governor.getValveStroke(),TOL);
+        assertTrue(governor.getStateDerivativeSnapshot().rates().isEmpty());
+    }
+
     @Test
     void directParserUsesPsseFieldOrder(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
@@ -189,6 +226,7 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
         PsseGgov1Governor governor = (PsseGgov1Governor) builder.getDStabNetwork()
                 .getMachine("Bus1-mach1").getGovernor();
         assertNotNull(governor);
+        assertTrue(governor.getData().isUseDeclaredValveLimits());
         assertArrayEquals(new double[] { 1, 0, .03, 1, .05, -.05, 4.18, .71, 0, 1,
                 1, .15, .4, 1.22, .18, .16, 0, 0, 3, 2.56, .85, 1, 0, 1, -1,
                 0, .01, 10, .1, 390.24, 0, 4, 5, 99, -99 }, values(governor.getData()), TOL);
@@ -214,6 +252,7 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
 
         assertNotNull(governor);
         assertEquals("GGOV1D", governor.getName());
+        assertTrue(governor.getData().isUseDeclaredValveLimits());
         assertEquals(0.002, governor.getData().getDbH(), TOL);
         assertEquals(-0.003, governor.getData().getDbL(), TOL);
         assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"), machine));

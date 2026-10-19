@@ -42,10 +42,15 @@ public class PsseGgov1GovernorData extends BaseControllerData {
     private double dbH;
     private double dbL;
     private boolean useDeclaredValveRates;
+    private boolean useDeclaredValveLimits;
 
     /** Use record opening/closing rates directly; typed defaults retain their prior convention. */
     public boolean isUseDeclaredValveRates() { return useDeclaredValveRates; }
     public void setUseDeclaredValveRates(boolean value) { useDeclaredValveRates = value; }
+
+    /** Retain entered position limits when the initial operating point lies outside them. */
+    public boolean isUseDeclaredValveLimits() { return useDeclaredValveLimits; }
+    public void setUseDeclaredValveLimits(boolean value) { useDeclaredValveLimits = value; }
 
     public int getRselect() { return rselect; }
     public void setRselect(int value) { rselect = value; }

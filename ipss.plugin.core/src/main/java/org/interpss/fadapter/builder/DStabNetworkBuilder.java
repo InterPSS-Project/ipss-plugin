@@ -2832,6 +2832,7 @@ public class DStabNetworkBuilder {
         target.setLdref(source.getLdref()); target.setDm(source.getDm());
         target.setRopen(source.getRopen()); target.setRclose(source.getRclose());
         target.setUseDeclaredValveRates(source.isUseDeclaredValveRates());
+        target.setUseDeclaredValveLimits(source.isUseDeclaredValveLimits());
         target.setKimw(source.getKimw()); target.setAset(source.getAset());
         target.setKa(source.getKa()); target.setTa(source.getTa()); target.setTrate(source.getTrate());
         target.setDb(source.getDb()); target.setTsa(source.getTsa()); target.setTsb(source.getTsb());
