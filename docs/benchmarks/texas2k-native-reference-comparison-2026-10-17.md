@@ -2160,3 +2160,81 @@ Existing cold references, all 88 recurrence checks, independent controller and
 coupled controls, rejected storage variants, gate results and the complete
 original-event comparison are retained privately in
 `2026-10-18-ggov1-temperature-characteristic`.
+
+## Complete Case 2 reference channels and initial network discrepancy
+
+An additional user-supplied bus-6307 reference contains 10,005 rows and 4,810
+numerical channels: voltage magnitude and angle at all 2,000 buses, terminal
+P/Q for 199 generators, and rotor angle, speed deviation, mechanical power and
+field voltage for 103 synchronous machines. The original Parquet bytes and
+download checksum are retained in the private reference-import directory.
+Every numerical value is finite and no column contains nulls. A four-panel
+preview shows the supplied fault-bus voltage and angle and unit 6245/1 angle
+and terminal power without altering the source values.
+
+The new timestamps exactly reproduce repeated single-precision additions of
+0.001 seconds, including two negative-time history rows and duplicate rows at
+fault application and clearing. These duplicates occur at recorded times
+0.9999907017 and 1.0839946270 seconds. Both rows of each pair have a false
+`event_active` flag, so that flag alone cannot establish the event side.
+The voltage jump and row order distinguish the pre-event and post-event
+samples. Alignment uses integration-step identity and event side, with no
+interpolation, fitted shift or angle offset. This additional 1 ms reference
+does not replace the original 0.5 ms acceptance records.
+
+A matched 1 ms simulation through 1.2 seconds produces all 4,810 channels
+and 1,205 corresponding samples. The newly observable initial conditions
+expose a discrepancy outside the previously supplied voltage-monitor set:
+bus 1033 starts at 1.01512766 pu in the reference and 1.02632579 pu locally.
+Direct physical current balance using all supplied bus phasors and generator
+powers localizes the largest initial reactive residuals to switched-shunt
+buses. Expressing those residuals as an equivalent change in shunt
+susceptance gives the following diagnostic values, in Mvar at 1 pu:
+
+| Bus | Saved RAW shunt setting | Apparent setting from supplied balance |
+| --- | ---: | ---: |
+| 1033 | 50.000 | 0.00017 |
+| 1081 | 73.290 | 108.87409 |
+| 3050 | 42.880 | 51.10186 |
+| 1087 | 8.300 | 10.24602 |
+
+These are observed balance diagnostics, not authoritative exported shunt
+settings. A missing reactive injection or a different channel definition
+would also affect the calculation. No inferred susceptance is inserted into
+the simulation. The original voltage objectives, generator reactive limits
+and reference-run solution options must establish the correct initial
+control state. Existing adjustment-enable and cold-control-start probes
+retain the original shunt susceptances and do not resolve this discrepancy.
+The supplied fault-bus voltage also does not satisfy the particular fault
+admittance assumed by the existing balance diagnostic; that boundary requires
+the original run setting before its residual can be interpreted.
+
+Over the matched prefault interval, the largest voltage difference is
+0.0491757 pu at bus 1012, and the largest synchronous rotor-angle difference
+is 2.00340 degrees at unit 1050/1. These all-channel diagnostics are distinct
+from the earlier limited-channel results. Repeating the prefault comparison
+with the existing 0.5 ms simulation does not remove the discrepancy: its
+largest voltage difference against this new reference is 0.0591736 pu.
+Neither comparison establishes full-event acceptance.
+
+Two additional original 0.5 ms, ten-second events complete with the unchanged
+runtime and scoring contract. The first generator trip passes 4 of 40
+criteria, with worst rotor-angle RMSE 21.93924 degrees. The third bus fault
+passes 5 of 40, with worst rotor-angle RMSE 13.92401 degrees. Across these
+events and the original first bus fault, all 208 shared machine observations
+are bitwise identical at all 2,003 prefault/history samples. The differing
+post-event errors therefore do not result from inconsistent initialization
+between these three local runs. The six-case, 36-event accuracy objective
+remains open.
+
+Before arrival of the full-system reference, passive-network equations
+uniquely extended the original 26 inferred generator-terminal phasors to
+74 bus phasors. The same reconstruction recovered local simulation voltages
+within 1.27e-15 pu, and 12 independent unused equations closed the supplied
+inferred voltages within 3.16e-7 pu. A linear observability audit found no
+additional individually determined bus voltage from those constraints.
+Direct full-system measurements now supersede that missing-channel limitation.
+The original selected-recorder cache-preservation control also left prefault
+values unchanged, with at most 2.13e-10 difference in its postfault prefix.
+These diagnostics and the new reference comparisons are retained privately
+in `2026-10-18-case2-full-system-reference-intake`.
