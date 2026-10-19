@@ -5,8 +5,10 @@ package org.interpss.dstab.renewable;
  *
  * <p>The supported legacy 19-value exchange used by Texas2k contains
  * {@code Vflag} followed by eighteen control parameters. Its compatibility
- * voltage-source interface uses the WECC
- * defaults {@code Re=0} and {@code Xe=0.15}; {@code QVflag=0} selects the
+ * voltage-source interface uses compatibility constants {@code Re=0} and
+ * {@code Xe=0.15}, rather than the generator RAW source impedance. The WECC
+ * specification lists 0.15 as an example reactance, not a mandatory default.
+ * {@code QVflag=0} selects the
  * reactive-power plant-controller input.  The full constructor also represents
  * the complete PowerWorld REGFM_A1 data record. This legacy exchange is not
  * the current PSS/E 36.7 two-ICON, 18-CON layout, whose coupling impedance is
