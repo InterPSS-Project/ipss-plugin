@@ -71,6 +71,14 @@ Range-normalized RMS errors are retained as diagnostics; they are excluded from
 the required mean-error pass flag. Generator speed remains a frequency proxy.
 These converter corrections do not resolve Case 2's remaining errors.
 
+The subsequent complete solver-stage control also has byte-identical physical
+output to the converter-only run, with the same supplied-reference scores.
+All 96 active plant controllers in this Case 2 input have frequency control
+disabled. Thus the event-frequency correction improves the independent active
+frequency-control profiles without changing these recorded Case 2 trajectories.
+The separate private evidence set `2026-10-19-case2-event-frequency-full-control`
+retains the complete paired control and selector inventory.
+
 ## Wind-startup discrimination
 
 A fresh autonomous run uses an existing two-bus reference with nonunit shaft
@@ -89,10 +97,10 @@ consistency, not direct Case 3 internal-state parity. The independent retained
 wind trajectory supports preserving these nonzero startup rates; forcing them
 to zero would not be a justified initialization repair.
 
-Case 3's large coupled error remains unresolved. The separate full Case 2
-solver-stage control is still running and is excluded from the completed
-evidence seal. Its first attempt failed because the diagnostic worker could
-not find its numerical library at the chosen directory depth; the failed
+Case 3's large coupled error remains unresolved. The full Case 2 solver-stage
+control was still running at the first evidence seal and is retained in the
+follow-up set named above. Its first attempt failed because the diagnostic
+worker could not find its numerical library at the chosen directory depth; the failed
 attempt is retained and the corrected layout uses identical worker code.
 
 Private evidence set `2026-10-19-event-frequency-rebase` retains the tested
