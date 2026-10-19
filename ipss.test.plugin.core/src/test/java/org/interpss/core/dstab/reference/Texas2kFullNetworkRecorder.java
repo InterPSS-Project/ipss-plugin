@@ -13,6 +13,7 @@ import java.util.function.DoubleSupplier;
 import java.util.zip.GZIPOutputStream;
 
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regfma1Model;
 
 import com.google.gson.GsonBuilder;
 import com.interpss.dstab.BaseDStabNetwork;
@@ -29,9 +30,12 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
     private final List<Channel> channels = new ArrayList<>();
     private final BufferedWriter writer;
     private final Path manifest;
-    private final int busCount;
-    private final int synchronousCount;
-    private final int converterCount;
+    private final BaseDStabNetwork<?, ?> network;
+    private int busCount;
+    private int synchronousCount;
+    private int converterCount;
+    private int gridFormingCount;
+    private boolean bound;
     private long samples;
     private double firstTime = Double.NaN;
     private double lastTime = Double.NaN;
@@ -41,7 +45,18 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
         manifest = out.resolve("full-network-channels.json");
         if (Files.exists(trace) || Files.exists(manifest))
             throw new IOException("Refusing to replace full-network observations");
-        int buses = 0, synchronous = 0, converters = 0;
+        network = net;
+        writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(
+                trace, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)), StandardCharsets.UTF_8));
+    }
+
+    private void bindInitializedNetwork() throws IOException {
+        if (!network.isDStabNetInitialized())
+            throw new IllegalStateException("Initialize the dynamic network before recording observations");
+        // Initialization can convert allowed generators without models into loads.
+        // Bind the surviving device inventory when the first sample is requested.
+        var net = network;
+        int buses = 0, synchronous = 0, converters = 0, gridForming = 0;
         for (var bus : net.getBusList()) {
             if (!bus.isActive()) continue;
             buses++;
@@ -80,6 +95,15 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
                             () -> connected(bus.isActive(), generator.isActive(), converter.isActive()) ? bus.getVoltageMag() * converter.getIp() * base : 0.);
                     add("generator_Q_Mvar" + suffix, "terminal_reactive_power", "Mvar", number, id,
                             () -> connected(bus.isActive(), generator.isActive(), converter.isActive()) ? bus.getVoltageMag() * converter.getIq() * base : 0.);
+                } else if (device instanceof Regfma1Model converter) {
+                    converters++;
+                    gridForming++;
+                    add("generator_P_MW" + suffix, "terminal_active_power", "MW", number, id,
+                            () -> connected(bus.isActive(), generator.isActive(), converter.isActive())
+                                    ? terminalPowerWithoutCacheChanges(converter).getReal() * net.getBaseMva() : 0.);
+                    add("generator_Q_Mvar" + suffix, "terminal_reactive_power", "Mvar", number, id,
+                            () -> connected(bus.isActive(), generator.isActive(), converter.isActive())
+                                    ? terminalPowerWithoutCacheChanges(converter).getImaginary() * net.getBaseMva() : 0.);
                 } else {
                     throw new IllegalStateException("Unsupported online generator observation: " + bus.getId() + "/" + id);
                 }
@@ -88,11 +112,11 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
         busCount = buses;
         synchronousCount = synchronous;
         converterCount = converters;
-        writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(
-                trace, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)), StandardCharsets.UTF_8));
+        gridFormingCount = gridForming;
         writer.write("time_s,sample_kind");
         for (var channel : channels) writer.write("," + channel.name());
         writer.newLine();
+        bound = true;
     }
 
     private static boolean connected(boolean bus, boolean generator, boolean device) {
@@ -124,6 +148,22 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
         return machine.getDStabBus().getVoltage().multiply(machine.getIxy().conjugate());
     }
 
+    static org.apache.commons.math3.complex.Complex terminalPowerWithoutCacheChanges(Regfma1Model converter) {
+        var generator = converter.getParentGen();
+        var bus = converter.getDStabBus();
+        double angle = converter.getAngle(), magnitude = converter.getInternalVoltage();
+        var source = new org.apache.commons.math3.complex.Complex(
+                magnitude * Math.cos(angle), magnitude * Math.sin(angle));
+        var current = source.subtract(bus.getVoltage())
+                .divide(generator.getPosGenZ().multiply(generator.getZMultiFactor()));
+        double base = generator.getMvaBase() > 1.e-9 ? generator.getMvaBase() : bus.getNetwork().getBaseMva();
+        double maximum = converter.getData().imax() * base / bus.getNetwork().getBaseMva();
+        if (converter.getData().imax() > 1.e-9 && current.abs() > maximum)
+            current = new org.apache.commons.math3.complex.Complex(
+                    maximum * Math.cos(current.getArgument()), maximum * Math.sin(current.getArgument()));
+        return bus.getVoltage().multiply(current.conjugate());
+    }
+
     private void add(String name, String quantity, String unit, String bus,
             String machineId, DoubleSupplier value) {
         if (name.contains(",") || name.contains("\n"))
@@ -134,6 +174,7 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
     void record(double time, String kind) throws IOException {
         if (!Double.isFinite(time) || kind.contains(",") || kind.contains("\n"))
             throw new IllegalArgumentException("Invalid observation timestamp or event side");
+        if (!bound) bindInitializedNetwork();
         writer.write(Double.toString(time));
         writer.write("," + kind);
         for (var channel : channels) {
@@ -153,6 +194,8 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
         metadata.put("initial_active_buses", busCount);
         metadata.put("initial_online_synchronous_machines", synchronousCount);
         metadata.put("initial_online_converter_generators", converterCount);
+        metadata.put("initial_online_grid_forming_generators", gridFormingCount);
+        metadata.put("inventory_bound_after_initialization", bound);
         metadata.put("samples", samples);
         if (samples > 0) {
             metadata.put("first_time_s", firstTime);

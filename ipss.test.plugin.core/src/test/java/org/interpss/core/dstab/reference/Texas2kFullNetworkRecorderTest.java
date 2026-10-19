@@ -15,6 +15,7 @@ import java.util.zip.GZIPInputStream;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.renewable.Regca1Model;
+import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -125,6 +126,90 @@ class Texas2kFullNetworkRecorderTest {
         var description = metadata.getAsJsonArray("channels").asList().stream()
                 .map(e -> e.getAsJsonObject()).filter(c -> c.get("name").getAsString().equals("generator_P_MW__bus_1__id_1")).findFirst().orElseThrow();
         assertEquals("MW", description.get("unit").getAsString());
+    }
+
+    @Test void recordingBindsAfterUnmodeledGenerationIsConverted() throws Exception {
+        var net = (com.interpss.dstab.DStabilityNetwork)
+                com.interpss.simu.util.sample.SampleDStabTestingCases.sample3BusDStab_StaticLoads();
+        var lf = com.interpss.core.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
+        lf.getLfAdjAlgo().setApplyAdjustAlgo(false);
+        assertTrue(lf.loadflow());
+        var bus = net.getBus("Bus-3");
+        var generator = com.interpss.dstab.DStabObjectFactory.createDStabGen("unmodeled");
+        generator.setGen(new Complex(.3, .2));
+        generator.setStatus(true);
+        generator.setMvaBase(100.);
+        bus.getContributeGenList().add(generator);
+        net.setAllowGenWithoutMach(true);
+        lf.getDataCheckConfig().setAllowGenWithoutMachine(true);
+        net.checkData(lf.getDataCheckConfig());
+        net.setDStabNetInitialized(false);
+        try (var recorder = new Texas2kFullNetworkRecorder(net, directory)) {
+            assertThrows(IllegalStateException.class, () -> recorder.record(0., "INITIAL"));
+            assertTrue(net.initDStabNet());
+            assertFalse(generator.isActive());
+            recorder.record(0., "INITIAL");
+        }
+        var row = rows(directory).getFirst();
+        assertTrue(row.containsKey("bus_voltage_pu__bus_-3"));
+        assertFalse(row.keySet().stream().anyMatch(name -> name.endsWith("__id_unmodeled")));
+        var metadata = JsonParser.parseString(Files.readString(directory.resolve("full-network-channels.json"))).getAsJsonObject();
+        assertTrue(metadata.get("inventory_bound_after_initialization").getAsBoolean());
+        assertEquals(1, metadata.get("samples").getAsInt());
+    }
+
+    @Test void gridFormingPowerIsReadOnlyAcrossVoltageChangeCurrentLimitAndTrip() throws Exception {
+        IpssCorePlugin.init();
+        var profile = Regfma1NativeReferenceCheckpoints.get("flat11");
+        Path dyr = directory.resolve("grid-forming.dyr");
+        Files.writeString(dyr, "1 'REGFMA1' '1' 1 1 "
+                + String.join(" ", profile.constants().stream().map(Object::toString).toList())
+                + " /\n3 'GENCLS' '1' 9999999 0 /\n");
+        var context = new PSSEMultiFileLoader().loadDStab(
+                "testData/adpter/psse/v33/renewable/regfma1_native.raw", dyr.toString());
+        var net = context.getDStabilityNet();
+        var algorithm = context.getDynSimuAlgorithm();
+        net.setAllowGenWithoutMach(true);
+        algorithm.getAclfAlgorithm().getDataCheckConfig().setAllowGenWithoutMachine(true);
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(.0005);
+        algorithm.setTotalSimuTimeSec(.01);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        var bus = net.getDStabBus("Bus1");
+        var generator = (com.interpss.dstab.DStabGen)bus.getContributeGen("1");
+        var converter = (Regfma1Model)generator.getDynamicGenDevice();
+        var expected = new java.util.ArrayList<Complex>();
+        try (var recorder = new Texas2kFullNetworkRecorder(net, directory)) {
+            assertTrue(algorithm.initialization());
+            for (Complex voltage : List.of(new Complex(1.01, .002), new Complex(.2, .05))) {
+                bus.setVoltage(voltage);
+                var states = converter.getNamedStates();
+                var rates = converter.getStateDerivativeSnapshot();
+                boolean limited = converter.isCurrentLimited();
+                recorder.record(1., expected.isEmpty() ? "STEP_END" : "EVENT_POST");
+                assertEquals(states, converter.getNamedStates());
+                assertEquals(rates, converter.getStateDerivativeSnapshot());
+                assertEquals(limited, converter.isCurrentLimited());
+                Complex norton = (Complex)converter.getOutputObject();
+                Complex current = norton.subtract(voltage.divide(generator.getPosGenZ().multiply(generator.getZMultiFactor())));
+                expected.add(voltage.multiply(current.conjugate()).multiply(net.getBaseMva()));
+            }
+            assertTrue(converter.isCurrentLimited(), "The second observation exercises the current-limited output");
+            converter.setStatus(false);
+            recorder.record(1.1, "STEP_END");
+        }
+        var samples = rows(directory);
+        assertEquals(3, samples.size());
+        for (int i = 0; i < 2; i++) {
+            assertEquals(expected.get(i).getReal(), number(samples.get(i), "generator_P_MW__bus_1__id_1"), 1.e-10);
+            assertEquals(expected.get(i).getImaginary(), number(samples.get(i), "generator_Q_Mvar__bus_1__id_1"), 1.e-10);
+            assertFalse(samples.get(i).containsKey("machine_ANGLE_deg__bus_1__id_1"));
+        }
+        assertEquals(0., number(samples.get(2), "generator_P_MW__bus_1__id_1"), 0.);
+        assertEquals(0., number(samples.get(2), "generator_Q_Mvar__bus_1__id_1"), 0.);
+        var metadata = JsonParser.parseString(Files.readString(directory.resolve("full-network-channels.json"))).getAsJsonObject();
+        assertEquals(1, metadata.get("initial_online_grid_forming_generators").getAsInt());
     }
 
     private static double number(Map<String, String> row, String name) {
