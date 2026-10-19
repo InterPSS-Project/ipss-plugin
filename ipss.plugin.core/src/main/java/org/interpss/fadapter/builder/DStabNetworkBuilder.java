@@ -3835,7 +3835,7 @@ public class DStabNetworkBuilder {
         }
         WindControlStack stack=windStack(controller);
         if(stack.getPitchController()!=null || stack.getPitchControllerB()!=null)return null;
-        Wtpta1Model model = new Wtpta1Model(data);
+        Wtpta1Model model = Wtpta1Model.fromNativeRecord(data);
         stack.setPitchController(model);
         return model;
     }

@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+WTPTA1 native-pitch follow-up: correct integral/output-limit distinctions,
+plant-reference routing, moving speed-reference ports and native-A cross-freeze
+history without changing default modified Euler or revision-B behavior.
+Forty cold runs form twenty exact pairs. Sixteen staged three-state profiles
+and four explicit native-history profiles have bounded all-row replay;
+four modified-Euler order-step profiles remain explicit method counterexamples.
+The native zero-lag trajectory is unchanged under a 1000-fold rate reduction.
+All twenty profiles import/init; sixteen unforced profiles have coupled SMIB
+diagnostics, not complete instantaneous event-side acceptance. The inventory
+has seventeen native-partial and two ANDES-only families; none is VERIFIED.
+Focused checks pass 63 tests and plugin-core units pass 410, with only six
+existing optional skips. The full scoped gate passes 1,671 tests with zero
+failures/errors and one existing diagnostic skip, plus four offline probe and
+six wording guards. Source/reference/report evidence is sealed in the private
+hash-verified archive and retained with the scoped implementation slice.
+See the [pitch evidence and remaining TODO](benchmarks/wtpta-native-pitch-2026-10-19.md).
+
 WTARA1 algebraic-boundary follow-up: retain the published degree/product
 equation and reject nonfinite parameters/inputs before output mutation.
 Two guards fail before the correction. Thirty-two cold native runs form

@@ -12,6 +12,8 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
             "Speed Integral", "Compensation Integral", "Pitch");
     private Stage observationStage = Stage.NOT_EVALUATED;
     private final Wtpta1Data data;
+    private final Wtptb1Model nativeKernel;
+    private final IntegrationStateMonitor nativeMonitor;
     private double speedReference;
     private double speedIntegral;
     private double compensationIntegral;
@@ -19,14 +21,45 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
     private PitchState predictorStart;
     private PitchDerivative predictorDerivative;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
-    void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
-    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
+    void setSinglePrecisionStates(boolean enabled) { if(nativeKernel!=null)nativeKernel.setSinglePrecisionStates(enabled);else twoStep.setSinglePrecision(enabled); }
+    public void rebaseNextTwoStep() { if(nativeKernel!=null)nativeKernel.rebaseNextTwoStep();else twoStep.rebaseNextStep(); }
 
     public Wtpta1Model(Wtpta1Data data) {
-        this.data = data;
+        this(data,null);
+    }
+    private Wtpta1Model(Wtpta1Data data,Wtptb1Model kernel) {
+        this.data=java.util.Objects.requireNonNull(data);nativeKernel=kernel;
+        nativeMonitor=kernel==null?null:new IntegrationStateMonitor("Pitch","Speed Integral","Compensation Integral");
+        if(kernel!=null)kernel.setIntegrationObserver(nativeMonitor);
+    }
+
+    /** Exact ten-value native record with state-bounded PI storage and moving input ports. */
+    public static Wtpta1Model fromNativeRecord(Wtpta1Data data) { return new Wtpta1Model(data,Wtptb1Model.forPitchA(data)); }
+    public boolean isNativeRecordConvention() { return nativeKernel!=null; }
+
+    /** Explicit native speed-reference input, independent of the plant power reference. */
+    public void stepWithReference(double dt,double pOrder,double pReference,double speed,double reference,int flag) {
+        if(nativeKernel==null)throw new IllegalStateException("Explicit native input ports require the native-record convention");
+        nativeKernel.step(dt,pOrder,pReference,speed,reference,flag);speedReference=reference;
+    }
+    public void stepWithReference(double dt,double pOrder,double pReference,double speed,double reference) {
+        stepWithReference(dt,pOrder,pReference,speed,reference,0);stepWithReference(dt,pOrder,pReference,speed,reference,1);
+    }
+    /** Opt-in explicit history method; an input event must rebase its next positive step. */
+    public void stepTwoStepWithReference(double dt,double pOrder,double pReference,double speed,double reference) {
+        if(nativeKernel==null)throw new IllegalStateException("Explicit native input ports require the native-record convention");
+        nativeKernel.stepTwoStep(dt,pOrder,pReference,speed,reference);speedReference=reference;
+    }
+    public double[] getNativeStates() {
+        if(nativeKernel==null)throw new IllegalStateException("Native state order requires the native-record convention");
+        return nativeKernel.getNativeStates();
     }
 
     public void initialize(double theta0, double speed) {
+        if(nativeKernel!=null) {
+            if(!Double.isFinite(speed)||speed<=0)throw new IllegalArgumentException("WTPTA1 initial speed must be finite and positive");
+            nativeKernel.initialize(theta0);speedReference=speed;return;
+        }
         stateMonitor.reset();
         twoStep.reset();
         predictorStart = null;
@@ -38,6 +71,7 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
     }
 
     public void step(double dt, double pOrder, double pReference, double speed) {
+        if(nativeKernel!=null){stepWithReference(dt,pOrder,pReference,speed,speedReference);return;}
         PitchState observed = state();
         double powerError = pOrder - pReference;
         double compensationError = powerError;
@@ -74,6 +108,7 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
      */
     public void step(double dt, double pOrder, double pReference, double speed,
             int flag) {
+        if(nativeKernel!=null){stepWithReference(dt,pOrder,pReference,speed,speedReference,flag);return;}
         if (!Double.isFinite(dt) || dt < 0.0 || !Double.isFinite(pOrder)
                 || !Double.isFinite(pReference) || !Double.isFinite(speed)) {
             throw new IllegalArgumentException(
@@ -130,6 +165,7 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
     }
 
     void stepTwoStep(double dt, double pOrder, double pReference, double speed) {
+        if(nativeKernel!=null){stepTwoStepWithReference(dt,pOrder,pReference,speed,speedReference);return;}
         observationStage = Stage.TWO_STEP;
         if (dt <= 0.0) return;
         PitchState start = state();
@@ -152,14 +188,25 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
 
 
     @Override public java.util.Map<String, Double> getIntegrationStates() {
+        if(nativeKernel!=null) {
+            var x=nativeKernel.getNativeStates();
+            return data.tp()==0?java.util.Map.of("Speed Integral",x[1],"Compensation Integral",x[2])
+                    :java.util.Map.of("Speed Integral",x[1],"Compensation Integral",x[2],"Pitch",x[0]);
+        }
         return java.util.Map.of("Speed Integral", speedIntegral,
                 "Compensation Integral", compensationIntegral,
                 "Pitch", pitch);
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        if(nativeKernel!=null) {
+            var snapshot=nativeMonitor.snapshot();if(data.tp()!=0||snapshot.rates().isEmpty())return snapshot;
+            return new IntegrationStateMonitor.Snapshot(snapshot.stage(),java.util.Map.of("Speed Integral",snapshot.evaluationStates().get("Speed Integral"),"Compensation Integral",snapshot.evaluationStates().get("Compensation Integral")),
+                    java.util.Map.of("Speed Integral",snapshot.rates().get("Speed Integral"),"Compensation Integral",snapshot.rates().get("Compensation Integral")));
+        }
         return stateMonitor.snapshot();
     }
     @Override public java.util.Map<String, Double> getNamedStates() {
+        if(nativeKernel!=null) {var x=nativeKernel.getNativeStates();return java.util.Map.of("Speed Integral",x[1],"Compensation Integral",x[2],"Pitch",x[0]);}
         return getIntegrationStates();
     }
     private void retainRates(PitchState s, PitchDerivative d) {
@@ -197,10 +244,10 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
     }
 
     public Wtpta1Data getData() { return data; }
-    public double getPitch() { return pitch; }
+    public double getPitch() { return nativeKernel!=null?nativeKernel.getPitch():pitch; }
     public double getSpeedReference() { return speedReference; }
-    public double getSpeedIntegral() { return speedIntegral; }
-    public double getCompensationIntegral() { return compensationIntegral; }
+    public double getSpeedIntegral() { return nativeKernel!=null?nativeKernel.getNativeStates()[1]:speedIntegral; }
+    public double getCompensationIntegral() { return nativeKernel!=null?nativeKernel.getNativeStates()[2]:compensationIntegral; }
 
     private record PitchState(double speedIntegral, double compensationIntegral,
             double pitch) { }

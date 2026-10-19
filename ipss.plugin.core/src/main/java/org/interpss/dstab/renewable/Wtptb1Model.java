@@ -12,7 +12,11 @@ import java.util.Objects;
  * reference is a time-varying torque-controller input, not a frozen initial value.
  */
 public final class Wtptb1Model {
-    private final Wtptb1Data data;
+    private final Wtptb1Data originalData;
+    private final Parameters data;
+    private final boolean clipPiOutputs;
+    private org.interpss.dstab.control.util.IntegrationStateMonitor observer;
+    private org.interpss.dstab.control.util.IntegrationStateMonitor.Stage observationStage;
     // Native state order: output lag, speed integral, compensation integral.
     private final double[] state = new double[3];
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
@@ -20,7 +24,25 @@ public final class Wtptb1Model {
     private double[] start, firstRate;
     private boolean initialized;
 
-    public Wtptb1Model(Wtptb1Data data) { this.data = Objects.requireNonNull(data); }
+    public Wtptb1Model(Wtptb1Data data) {
+        originalData=Objects.requireNonNull(data);this.data=Parameters.of(data);clipPiOutputs=true;
+    }
+
+    /** Native revision A bounds integral storage, not the complete PI outputs. */
+    private Wtptb1Model(Wtpta1Data data) {
+        originalData=null;this.data=Parameters.of(Objects.requireNonNull(data));clipPiOutputs=false;
+        if(data.dThetaMax()<0||data.dThetaMin()>0)
+            throw new IllegalArgumentException("WTPTA1 native rate limits must include zero");
+    }
+    static Wtptb1Model forPitchA(Wtpta1Data data) { return new Wtptb1Model(data); }
+    void setIntegrationObserver(org.interpss.dstab.control.util.IntegrationStateMonitor monitor) { observer=monitor; }
+
+    private record Parameters(double kiw,double kpw,double kic,double kpc,double kcc,double tp,
+            double thetaMax,double thetaMin,double rateMax,double rateMin,double compensationMax,
+            double compensationMin,double speedMax,double speedMin) {
+        static Parameters of(Wtptb1Data d){return new Parameters(d.kiw(),d.kpw(),d.kic(),d.kpc(),d.kcc(),d.tp(),d.thetaMax(),d.thetaMin(),d.rateMax(),d.rateMin(),d.compensationMax(),d.compensationMin(),d.speedMax(),d.speedMin());}
+        static Parameters of(Wtpta1Data d){return new Parameters(d.kiw(),d.kpw(),d.kic(),d.kpc(),d.kcc(),d.tp(),d.thetaMax(),d.thetaMin(),d.dThetaMax(),d.dThetaMin(),d.thetaMax(),d.thetaMin(),d.thetaMax(),d.thetaMin());}
+    }
 
     /** Balanced zero-error initialization; invalid initial limits are not silently expanded. */
     public void initialize(double initialPitch) {
@@ -34,6 +56,7 @@ public final class Wtptb1Model {
         start = firstRate = null;
         twoStep.reset();
         initialized = true;
+        if(observer!=null)observer.reset();
     }
 
     /** Complete modified Euler for constant input signals over the step. */
@@ -53,6 +76,8 @@ public final class Wtptb1Model {
             throw new IllegalArgumentException("WTPTB1 requires dt >= 0 and stage 0 or 1");
         refreshAlgebraicPitch(pOrder,pReference,turbineSpeed,speedReference);
         if (dt == 0) return;
+        observationStage=flag==0?org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR
+                :org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR;
         if (flag == 0) {
             start = state.clone();
             firstRate = rates(pOrder, pReference, turbineSpeed, speedReference);
@@ -77,17 +102,25 @@ public final class Wtptb1Model {
         if(dt<0)throw new IllegalArgumentException("WTPTB1 requires dt >= 0");
         refreshAlgebraicPitch(pOrder,pReference,speed,reference);
         if(dt==0)return;
+        observationStage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP;
         double[] derivative=rates(pOrder,pReference,speed,reference);
         twoStep.begin(dt);
         for(int i=data.tp()==0?1:0;i<3;i++) {
             boolean constrained=state[0]<=data.thetaMin() || state[0]>=data.thetaMax()
                     || i==1 && (state[1]<=data.speedMin() || state[1]>=data.speedMax())
                     || i==2 && (state[2]<=data.compensationMin() || state[2]>=data.compensationMax());
-            state[i]=derivative[i]==0 && constrained?twoStep.hold(i,state[i])
+            boolean ownBound=i==0&&(state[0]<=data.thetaMin()||state[0]>=data.thetaMax())
+                    ||i==1&&(state[1]<=data.speedMin()||state[1]>=data.speedMax())
+                    ||i==2&&(state[2]<=data.compensationMin()||state[2]>=data.compensationMax());
+            // Revision A's angle cross-freeze zeros the PI derivative, but
+            // retains its STORE recurrence. The first zero rate removes the
+            // preceding half-step; anchoring at STATE would retain an offset.
+            state[i]=derivative[i]==0 && constrained && (clipPiOutputs||ownBound)?twoStep.hold(i,state[i])
                     :twoStep.advance(i,state[i],derivative[i]);
         }
         constrainStates();
         refreshAlgebraicPitch(pOrder,pReference,speed,reference);
+        if(observer!=null)twoStep.observeRates(observer);
     }
 
     private void constrainStates() {
@@ -106,9 +139,8 @@ public final class Wtptb1Model {
                 data.compensationMin(), data.compensationMax());
         // The integrator's own limit depends on its state, not PI output.
         // Even with clipped output it may integrate until the state bound.
-        double speedOutput = clip(state[1] + data.kpw() * speedError, data.speedMin(), data.speedMax());
-        double compensationOutput = clip(state[2] + data.kpc() * powerError,
-                data.compensationMin(), data.compensationMax());
+        double speedOutput = speedOutput(speedError);
+        double compensationOutput = compensationOutput(powerError);
         // Do not clamp the summed command before the lag: the final angle
         // constraint acts on the output state and its outward derivative.
         double pitchRate = data.tp()==0?0:clip((speedOutput + compensationOutput - state[0]) / data.tp(),
@@ -116,7 +148,9 @@ public final class Wtptb1Model {
         pitchRate = boundedRate(state[0], pitchRate, data.thetaMin(), data.thetaMax());
         speedRate = boundedRate(state[0], speedRate, data.thetaMin(), data.thetaMax());
         compensationRate = boundedRate(state[0], compensationRate, data.thetaMin(), data.thetaMax());
-        return new double[] {pitchRate, speedRate, compensationRate};
+        double[] result={pitchRate, speedRate, compensationRate};
+        if(observer!=null){observer.begin(observationStage);for(int i=0;i<3;i++)observer.record(i,state[i],result[i]);}
+        return result;
     }
 
     private void refreshAlgebraicPitch(double pOrder,double pReference,double speed,double reference) {
@@ -125,8 +159,16 @@ public final class Wtptb1Model {
         // Native Tp=0 eliminates the lag and its rate limiter, while retaining
         // angle and PI limits. Cold native traces obey this algebraic identity
         // to float precision even when the observed slew exceeds RThetaMax.
-        state[0]=clip(clip(state[1]+data.kpw()*(speed-reference+data.kcc()*error),data.speedMin(),data.speedMax())
-                +clip(state[2]+data.kpc()*error,data.compensationMin(),data.compensationMax()),data.thetaMin(),data.thetaMax());
+        state[0]=clip(speedOutput(speed-reference+data.kcc()*error)+compensationOutput(error),data.thetaMin(),data.thetaMax());
+    }
+
+    private double speedOutput(double error) {
+        double value=state[1]+data.kpw()*error;
+        return clipPiOutputs?clip(value,data.speedMin(),data.speedMax()):value;
+    }
+    private double compensationOutput(double error) {
+        double value=state[2]+data.kpc()*error;
+        return clipPiOutputs?clip(value,data.compensationMin(),data.compensationMax()):value;
     }
 
     private static double boundedRate(double state, double rate, double minimum, double maximum) {
@@ -135,7 +177,10 @@ public final class Wtptb1Model {
     private static double clip(double value, double minimum, double maximum) {
         return Math.max(minimum, Math.min(maximum, value));
     }
-    public Wtptb1Data getData() { return data; }
+    public Wtptb1Data getData() {
+        if(originalData==null)throw new IllegalStateException("Revision-A kernel has no revision-B input record");
+        return originalData;
+    }
     public double getPitch() { return state[0]; }
     public double[] getNativeStates() { return state.clone(); }
     public Map<String, Double> getNamedStates() {

@@ -46,6 +46,8 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
         var historicalStack=((Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1"))
                 .getDynamicGenDevice()).getReeca1Controller().getWindControlStack();
         historicalStack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(historicalStack.getDriveTrain().getData()));
+        // Keep this older benchmark's declared pitch/torque wiring separate from native-record conformance.
+        historicalStack.setPitchController(new org.interpss.dstab.renewable.Wtpta1Model(historicalStack.getPitchController().getData()));
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
         // ANDES disables REEC_A's speed multiplier when WTTQ_A supplies Pref.

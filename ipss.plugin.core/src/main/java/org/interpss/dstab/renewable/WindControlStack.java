@@ -88,6 +88,10 @@ public final class WindControlStack {
     /** Advance the complete stack with REPCA1's absolute {@code Pref0}. */
     public void step(double dt, double electricalPower, double pOrder,
             double powerReference, boolean voltageDip) {
+        if(activePitchController()!=null&&activePitchController().isNativeRecordConvention()) {
+            step(dt,electricalPower,pOrder,powerReference,voltageDip,0);
+            step(dt,electricalPower,pOrder,powerReference,voltageDip,1);return;
+        }
         WindDriveTrain driveTrain=activeDriveTrain();
         Wttqa1Model torqueController=activeTorqueController();
         Wtpta1Model pitchController=activePitchController();
@@ -161,7 +165,8 @@ public final class WindControlStack {
                     powerReference, voltageDip, 0);
         }
         if (pitchController != null) {
-            pitchController.step(dt, pOrder, oldPref, oldTurbineSpeed, 0);
+            if(pitchController.isNativeRecordConvention())pitchController.stepWithReference(dt,pOrder,powerReference,oldTurbineSpeed,oldSpeedReference,0);
+            else pitchController.step(dt, pOrder, oldPref, oldTurbineSpeed, 0);
         }
         if (activePitchControllerB()!=null) activePitchControllerB().step(dt,pOrder,powerReference,
                 oldTurbineSpeed,oldSpeedReference,0);
@@ -196,8 +201,8 @@ public final class WindControlStack {
                     powerReference, voltageDip, 1);
         }
         if (pitchController != null) {
-            pitchController.step(dt, pOrder, predictorPref,
-                    predictorTurbineSpeed, 1);
+            if(pitchController.isNativeRecordConvention())pitchController.stepWithReference(dt,pOrder,powerReference,predictorTurbineSpeed,predictorSpeedReference,1);
+            else pitchController.step(dt, pOrder, predictorPref,predictorTurbineSpeed, 1);
         }
         if (activePitchControllerB()!=null) activePitchControllerB().step(dt,pOrder,powerReference,
                 predictorTurbineSpeed,predictorSpeedReference,1);
@@ -234,7 +239,10 @@ public final class WindControlStack {
         if (driveTrain != null) driveTrain.stepTwoStep(dt, mechanicalPower, electricalPower);
         if (torqueController != null) torqueController.stepTwoStep(dt, electricalPower,
                 oldSpeed, powerReference, voltageDip);
-        if (pitchController != null) pitchController.stepTwoStep(dt, pOrder, oldPref, oldTurbineSpeed);
+        if (pitchController != null) {
+            if(pitchController.isNativeRecordConvention())pitchController.stepTwoStepWithReference(dt,pOrder,powerReference,oldTurbineSpeed,oldSpeedReference);
+            else pitchController.stepTwoStep(dt, pOrder, oldPref, oldTurbineSpeed);
+        }
         if (activePitchControllerB()!=null) activePitchControllerB().stepTwoStep(dt,pOrder,powerReference,
                 oldTurbineSpeed,oldSpeedReference);
         generatorSpeed = driveTrain == null

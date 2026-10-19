@@ -40,6 +40,8 @@ public class Type3WindIndependentTrajectoryTest extends CorePluginTestSetup {
         var historicalStack=((Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1"))
                 .getDynamicGenDevice()).getReeca1Controller().getWindControlStack();
         historicalStack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(historicalStack.getDriveTrain().getData()));
+        // Preserve this historical diagnostic's pitch convention; fresh native profiles are separate.
+        historicalStack.setPitchController(new org.interpss.dstab.renewable.Wtpta1Model(historicalStack.getPitchController().getData()));
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "Type-3 public load flow");
