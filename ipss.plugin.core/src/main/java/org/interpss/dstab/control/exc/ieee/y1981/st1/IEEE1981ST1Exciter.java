@@ -6,6 +6,9 @@
 package org.interpss.dstab.control.exc.ieee.y1981.st1;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.controller.cml.annotate.AnController;
@@ -36,6 +39,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 
 public class IEEE1981ST1Exciter extends AnnotateExciter {
 	private boolean exst1FieldVoltageLimits;
+    private boolean initializingFeedbackTap;
 	public double k1 = 1.0;/*constant*/
 	
 	/*
@@ -102,10 +106,24 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 	   public double kf = 1, tf = 0.01, k = kf/tf;
 	   @AnControllerField(
 	      type= CMLFieldEnum.ControlBlock,
-	      input="this.gainCustomBlock.y",
+	      input="this.rateFeedbackInputBlock.y",
 	      parameter={"type.NoLimit", "this.k", "this.tf"},
 	      feedback = true	)
 	   WashoutControlBlock washoutBlock;
+
+    /** ESST1A feedback is taken after UEL/OEL, before the final field ceiling. */
+    @AnControllerField(
+        type=CMLFieldEnum.StaticBlock,
+        // Retain the established output dependency for initialization ordering.
+        input="this.gainCustomBlock.y",
+        parameter={"type.NoLimit", "this.k1"},
+        y0="mach.efd")
+    public ICMLStaticBlock rateFeedbackInputBlock = new GainBlock() {
+        @Override public double getY() {
+            return exst1FieldVoltageLimits || initializingFeedbackTap
+                    ? super.getY() : getPreFieldVoltageSignal();
+        }
+    };
 	   /*
 	   public double vrmax = 5.30, vrmin = -5.11,kc =0;
 	   @AnControllerField(
@@ -289,7 +307,11 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         
 		this.k = this.tf == 0.0 ? 0.0 : this.kf / this.tf;
         // always add the following statement
-        return super.initStates(bus, mach);
+        // The regulator is solved backwards from EFD. During this pass use
+        // the declared y0, not an as-yet uninitialized upstream state.
+        initializingFeedbackTap=true;
+        try { return super.initStates(bus, mach); }
+        finally { initializingFeedbackTap=false; }
     }
 
 	/** Set the external under-excitation limiter signal. */
@@ -330,6 +352,28 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 	public boolean hasInitializedBlocks() {
 		return getFieldWrapperList() != null && !getFieldWrapperList().isEmpty();
 	}
+
+    /**
+     * Read-only ESST1A five-state observation in its published allocation order.
+     * Lead-lag storage is time-scaled at observation only; the existing generic
+     * named-state API and integration coordinates remain unchanged.
+     */
+    public Map<String,Double> getNativeStateSnapshot() {
+        if(!hasInitializedBlocks() || exst1FieldVoltageLimits)
+            throw new IllegalStateException("Five-state observation requires initialized ESST1A blocks");
+        // CML may keep live blocks in runtime wrappers rather than assigning
+        // the symbolic Java fields. Observe the registered runtime blocks.
+        var blocks=getNamedStateBlocks();
+        var first=(FilterControlBlock)blocks.get("filterBlock");
+        var second=(FilterControlBlock)blocks.get("filterBlock1");
+        Map<String,Double> states=new LinkedHashMap<>();
+        states.put("Measured voltage",blocks.get("trDelayBlock").getStateX());
+        states.put("First lead-lag",first.getT2()*first.getStateX());
+        states.put("Second lead-lag",second.getT2()*second.getStateX());
+        states.put("Regulator output",blocks.get("kaDelayBlock").getStateX());
+        states.put("Feedback",blocks.get("washoutBlock").getStateX());
+        return Collections.unmodifiableMap(states);
+    }
 
 	/** Terminal-voltage transducer output. */
 	public double getSensedVoltage() { return signal("this.trDelayBlock.y"); }

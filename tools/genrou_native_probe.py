@@ -46,7 +46,7 @@ def f32(value):
 
 def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native-',
              probe_source=None, state_names=('EP_Q', 'EP_D', 'PSIK_D', 'PSIK_Q', 'SPEED_DEV', 'ANGLE'),
-             record_phasors=False):
+             record_phasors=False, extra_machine_channels=(), support_files=()):
     import psse3607
     import psspy
     import dyntools
@@ -54,7 +54,7 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     step = float(entered_step)
     assert step in (.0005, .00025)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
-    assert directory_prefix in ('genrou-native-', 'gensal-native-')
+    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-')
     out = root / 'target' / (directory_prefix + tag)
     out.mkdir(exist_ok=False)
     probe_source = Path(probe_source or __file__).resolve()
@@ -63,6 +63,10 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     if probe_source != Path(__file__).resolve():
         shutil.copy2(__file__, out / 'genrou_native_probe.py')
         helpers.append('genrou_native_probe.py')
+    for name in support_files:
+        assert Path(name).name == name and name.endswith('.py')
+        shutil.copy2(probe_source.parent / name, out / name)
+        helpers.append(name)
     shutil.copy2(root / 'tools/hplntd_fault_probe.py', out / 'hplntd_fault_probe.py')
     (out / 'network.raw').write_text(cfg['raw'])
     (out / 'dynamic.dyr').write_text(cfg['dynamic'])
@@ -102,6 +106,29 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     assert before == [f32(v) for v in cfg['constants']], before
     for i, name in enumerate(state_names):
         checked('state channel', psspy.state_channel([-1, layout['STATE'] + i], name))
+    components = {}
+    for spec in cfg.get('components', ()):
+        kind = spec['kind']
+        allocation = {}
+        for array in ('CON', 'ICON', 'STATE', 'VAR'):
+            response = psspy.mdlind(1, '1', kind, 'N' + array)
+            count = 0 if array in ('ICON', 'VAR') and response[0] == 6 else checked('count ' + kind + array, response)
+            allocation['N' + array] = count
+            if count:
+                allocation[array] = checked('index ' + kind + array, psspy.mdlind(1, '1', kind, array))
+        assert tuple(allocation['N' + k] for k in ('CON', 'ICON', 'STATE', 'VAR')) == (
+            len(spec['constants']), len(spec['icons']), len(spec['states']), 0), allocation
+        constants = [checked('constant ' + kind, psspy.dsrval('CON', allocation['CON'] + i)) for i in range(allocation['NCON'])]
+        icons = [checked('selector ' + kind, psspy.dsival('ICON', allocation['ICON'] + i)) for i in range(allocation['NICON'])]
+        assert constants == [f32(v) for v in spec['constants']] and icons == list(spec['icons'])
+        components[kind] = dict(model=spec['model'], layout=allocation, actual_constants=constants, actual_icons=icons)
+        for i, name in enumerate(spec['states']):
+            checked('state channel ' + kind, psspy.state_channel([-1, allocation['STATE'] + i], name))
+    def validate_components():
+        for kind, component in components.items():
+            a = component['layout']
+            assert component['actual_constants'] == [checked('constant ' + kind, psspy.dsrval('CON', a['CON'] + i)) for i in range(a['NCON'])]
+            assert component['actual_icons'] == [checked('selector ' + kind, psspy.dsival('ICON', a['ICON'] + i)) for i in range(a['NICON'])]
     for bus in (1, 2):
         if record_phasors:
             checked('phasor channels', psspy.voltage_and_angle_channel(
@@ -109,7 +136,7 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
         else:
             checked('voltage channel', psspy.voltage_channel([-1, -1, -1, bus], 'V_BUS' + str(bus)))
     for code, name in ((1, 'MACH_ANGLE'), (2, 'P_PU'), (3, 'Q_PU'),
-                       (5, 'EFD'), (6, 'PMECH'), (7, 'MACH_SPEED')):
+                       (5, 'EFD'), (6, 'PMECH'), (7, 'MACH_SPEED')) + tuple(extra_machine_channels):
         checked('machine channel', psspy.machine_array_channel([-1, code, 1], '1', name))
     for code, name in ((1, 'REF_ANGLE'), (7, 'REF_SPEED')):
         checked('reference channel', psspy.machine_array_channel([-1, code, 2], '1', name))
@@ -117,6 +144,7 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     checked('step', psspy.dynamics_solution_param_2([di] * 8, [df, df, step] + [df] * 5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     assert read_constants() == before, 'Initialization changed entered constants'
+    validate_components()
     events = []
     for until in (.05, .1, .5):
         checked('interval', psspy.run(0, until, 1000000, 1, 0))
@@ -150,6 +178,9 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
                     python_sha256=sha(sys.executable), wrapper_sha256=sha(psspy.__file__),
                     engine_module=psse3607.__name__, files={name: sha(name) for name in files})
     assert manifest['final_constants'] == before
+    validate_components()
+    if components:
+        manifest['components'] = components
     Path('manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(json.dumps(dict(status=manifest['status'], profile=profile, samples=manifest['sample_count'])))
     assert quality

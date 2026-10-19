@@ -2,6 +2,24 @@
 
 ## Current checkpoint
 
+GENSAE field-current/composed ESST1A follow-up: verify twenty-two native
+profiles from forty-four raw-exact cold runs, including active field-current
+limits, compensation and a current-derated ceiling. Correct the ESST1A washout
+tap to the post-UEL/OEL, pre-final-ceiling signal while preserving EXST1 and
+backwards initialization. Add immutable published-coordinate observation without
+changing generic state keys or integration storage. Every raw state row has
+fixed profile bounds and significant residuals shrink under step halving.
+Field-current and cached field-gate replays retain all history/event sides;
+undefined regulator-port and wrong-feedback runs remain counterexamples.
+Final gates pass 29 focused, 410 plugin-core and 1,751 scoped SMIB/model/solver
+tests with zero failures/errors and only existing skips, plus 26 offline probe
+and six wording tests. The source audit reconciles 1,850 Java/POM files and
+66 public reference files. Complete instantaneous coupled output parity,
+broader selectors/lifecycle, longer composed-governor profiles and GENSAE
+checkpoint reconstruction remain open. See the
+[field-current/feedback evidence and TODO](benchmarks/gensae-field-esst1a-2026-10-19.md).
+No full Texas2k dynamic simulations are run.
+
 GENSAL/GENSAE follow-up: retain the core GENSAL solver and implement the native
 GENSAE three-electrical-coordinate both-axis saturation adapter with core
 mechanics, bases and Norton admittance. Correct subtransient-flux input and

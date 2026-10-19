@@ -108,6 +108,11 @@ Original GENSAL and GENROU independent gates remain unchanged.
 - [ ] Establish complete instantaneous event-side voltage/P/Q/torque acceptance.
 - [ ] Add longer multi-swing SMIB recovery and composed exciter/governor profiles,
   including independent field-current normalization checks.
+  - [x] Add twenty-two field-current and composed ESST1A profiles, active current
+    limiting/ceiling discriminators, bounded states and explicit cached-gate replay.
+    See the [follow-up evidence](gensae-field-esst1a-2026-10-19.md).
+  - [ ] Extend beyond the short composed-exciter profiles to multi-swing and
+    composed-governor/lifecycle coverage.
 - [ ] Implement GENSAE checkpoint-history reconstruction before advertising it:
   the existing core snapshot captures its concrete built-in electrical solver,
   and the new custom adapter deliberately reports unsupported rather than
