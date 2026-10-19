@@ -2868,3 +2868,66 @@ changes in this slice. Full-window and six-case acceptance remain open.
 Startup-rate bounds, exact producer and analyzer sources, frozen binaries,
 inputs, raw traces, component-binding checks and all-channel metrics are
 retained privately in `2026-10-18-case2-current-feedback-localization`.
+
+### First active-current limiter divergence and threshold sensitivity
+
+A read-only endpoint observer records all 96 renewable bundles through 0.9
+seconds in both the original coupled run and the supplied-voltage replay.
+All 4,810 physical channels across all 903 samples remain exactly unchanged
+in each run. During the first 0.1 seconds, inversion of the converter lag
+recovers locally published active-current commands within 9.63e-7 pu. The
+largest difference from the supplied-current inferred command is 0.000205091
+pu in the coupled run and 0.0000101544 pu under supplied voltages. This
+inversion is restricted to the prefix with inactive converter output/rate
+limits; it is not a directly supplied controller-state channel.
+
+The first large limiter divergence is at unit 1009/1. The coupled model's
+active-current command first binds at 0.516 seconds and reaches zero at
+0.537 seconds. Under supplied voltages, its active-current limit does not
+bind until 0.869 seconds. Both runs retain the original constants and initial
+states. The earlier distinction is a single high-voltage excursion:
+
+| Unit 1009/1 observation | Coupled model | Supplied voltage / conditional model |
+| --- | ---: | ---: |
+| Maximum terminal voltage before 0.5 seconds, pu | 1.149610863 | 1.150030971 |
+| Time of that maximum, seconds | 0.365 | 0.366 |
+| Original high-voltage threshold, pu | 1.15 | 1.15 |
+| Post-excursion active-current hold initiated | No | 0.5 seconds at 0.368 seconds |
+
+The timer in this table is observed in the local model driven by supplied
+voltages, not exported by the reference run. Its held active-current limit
+is 0.964409 pu. Without that hold, increasing reactive-current demand consumes
+the available current capacity and suppresses active power much earlier.
+Smaller upstream voltage differences precede this event: the earliest differing
+excursion flag is at unit 1070/1 at 0.334 seconds. Thus unit 1009/1 explains
+an amplification mechanism rather than the source of the earlier mismatch.
+
+A separate intervention derives only excursion booleans from the supplied
+terminal voltages and original DYR thresholds. Continuous voltages, powers,
+states and current injections remain locally calculated. Replaying local
+booleans first reproduces every physical output exactly. Using supplied
+booleans reduces maximum voltage error from 0.109927 to 0.00932786 pu and
+maximum rotor error from 8.102401 to 0.384972 degrees over 0 through 0.9
+seconds. Maximum P/Q errors become 34.709454 MW and 5.809051 Mvar. This
+confirms the importance of discrete threshold history without accepting
+measured branch decisions as a production correction.
+
+Two further coupled controls retain the corrected operating point and impose
+no measured signals. They move the existing constant-impedance load term into
+the matrix, preserving the independently checked physical I-P/Z-Q equation.
+The baseline bus executable instructions match the earlier validated split;
+initial physical outputs change by at most 4.53e-11 in exported units. At
+1e-8 network tolerance, maximum voltage/rotor errors remain 0.109927512 pu
+and 8.102417 degrees. With the previously observed 1e-4 complex-voltage
+stopping rule and preceding-endpoint reuse, they become 0.109372182 pu and
+8.263027 degrees. Both variants still miss unit 1009's crossing. This matrix
+split and stopping-rule combination therefore does not resolve the upstream
+discrepancy.
+
+The original thresholds, recovery durations, initial states and acceptance
+limits are unchanged. No production correction is promoted. Complete-event
+and six-case acceptance remain open; the next target is the voltage mismatch
+before the first differing excursion. Full state/rate traces, observer checks,
+rejected compilation log, threshold replay, matrix controls, all-channel
+comparisons and a standalone explanatory plot are retained privately in
+`2026-10-18-case2-threshold-and-state-localization`.
