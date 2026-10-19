@@ -2,6 +2,22 @@
 
 ## Current checkpoint
 
+REECA1 native-electrical follow-up: correct calculated PF/voltage bias and
+optional two-point/decreasing-current tables, preserving the historical typed
+convention and default integration. Fifty-two local cold runs give 26 profiles
+at two steps: 24 raw-exact pairs and two pairs differing only in inactive hold
+memory by at most 1.36e-19. All six states have separate bounded staged/history
+replays on every raw row. Four remote-request runs rewrite to local measurement
+and remain counterexamples, not remote acceptance. Strict local import and
+coupled SMIB diagnostics do not establish complete channel/event-side parity.
+The inventory has eighteen native-partial, one ANDES-only and eight recorded
+families; none is VERIFIED. See the
+[electrical evidence and remaining TODO](benchmarks/reeca-native-electrical-2026-10-19.md).
+Final gates pass 55 focused, 410 plugin-core and 1,679 scoped SMIB/model/solver
+tests with zero failures/errors and only existing skips, plus four offline
+probe and six wording guards. Raw repeats, source/report hashes, failed remote
+attempts and coupled diagnostics are retained in the private evidence seal.
+
 WTPTA1 native-pitch follow-up: correct integral/output-limit distinctions,
 plant-reference routing, moving speed-reference ports and native-A cross-freeze
 history without changing default modified Euler or revision-B behavior.

@@ -26,6 +26,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
             "Measured Voltage", "Measured Active Power", "Active Power Order", "Reactive Current", "Reactive Control Integral", "Voltage Control Integral");
     private final Reeca1Data data;
     private final Regca1Model converter;
+    private final boolean nativeRecordConvention;
+    private double initializedVoltageBias;
     private Repca1Model plantController;
     private RepccModel repccController;
     private HplntdCoordinator.Port hybridController;
@@ -76,9 +78,22 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     private final TwoStepHistory twoStep = new TwoStepHistory(6);
 
     public Reeca1Model(Reeca1Data data, Regca1Model converter) {
-        this.data = data;
-        this.converter = converter;
+        this(data, converter, false);
     }
+
+    private Reeca1Model(Reeca1Data data, Regca1Model converter, boolean nativeRecord) {
+        this.data = java.util.Objects.requireNonNull(data);
+        this.converter = converter;
+        nativeRecordConvention = nativeRecord;
+        if (nativeRecord) windSpeedConvention = WindSpeedConvention.PSSE_GENERATOR_SPEED;
+    }
+
+    /** Native calculated-bias rules remain separate from the historical typed input convention. */
+    public static Reeca1Model fromNativeRecord(Reeca1Data data, Regca1Model converter) {
+        return new Reeca1Model(data, converter, true);
+    }
+
+    public boolean isNativeRecordConvention() { return nativeRecordConvention; }
 
     @Override
     public void initialize(double p, double q, double v) {
@@ -95,6 +110,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         // bias before the Q limits.  Initialize either path at equilibrium.
         qReference = data.qFlag() == 1 && data.vFlag() == 0
                 ? sensedV - data.vref1() : q;
+        initializedVoltageBias = nativeRecordConvention && data.qFlag() == 1
+                && data.vFlag() == 0 && data.pfFlag() == 1 ? sensedV - q : data.vref1();
         powerFactorRatio = Math.abs(p) > EPS ? q / p : 0.0;
         dipReference = data.vref0() == 0.0 ? sensedV : data.vref0();
         vMeasured = sensedV;
@@ -308,10 +325,10 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
                 // VMAX/VMIN are downstream of the VFLAG selector in REEC_A,
                 // so they constrain the direct Vref1+Qext branch as well as
                 // the coordinated Q-PI branch.
-                voltageBias = Repca1Model.limit(data.vref1() + selectedQ,
+                voltageBias = Repca1Model.limit(initializedVoltageBias + selectedQ,
                         effectiveVmin, effectiveVmax);
                 reactiveControlError = 0.0;
-                reactiveControlPreLimitOutput = data.vref1() + selectedQ;
+                reactiveControlPreLimitOutput = initializedVoltageBias + selectedQ;
             }
             qControlOutput = voltageBias;
             // The PowerWorld/WECC summing junction following the VFLAG selector
@@ -354,7 +371,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         if (sensedV < data.vdip() || sensedV > data.vup()) previousDip = true;
     }
 
-    void rebaseNextTwoStep() {
+    public void rebaseNextTwoStep() {
         twoStep.rebaseNextStep();
         if (plantController != null) plantController.rebaseNextTwoStep();
         if (windControlStack != null) windControlStack.rebaseNextTwoStep();
@@ -381,7 +398,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
      * and plant outputs; wind derivatives use the old plant output and Pord.
      * Endpoint output refreshes occur only after all states have advanced.
      */
-    void stepTwoStep(double dt, double p, double q, double v, double frequency) {
+    public void stepTwoStep(double dt, double p, double q, double v, double frequency) {
         if (dt <= 0.0) {
             refreshTwoStep(p, q, v, frequency);
             return;
@@ -544,22 +561,27 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double[] y = reactive
                 ? new double[]{data.iq1(), data.iq2(), data.iq3(), data.iq4()}
                 : new double[]{data.ip1(), data.ip2(), data.ip3(), data.ip4()};
-        if (!validTable(x, y)) return disabledValue;
+        int length = 2;
+        // A zero voltage terminates the optional third/fourth pairs. Current
+        // ordinates need not increase; only the voltage coordinates are sorted.
+        while (length < x.length && x[length] != 0.0) length++;
+        if (!validTable(x, y, length)) return disabledValue;
         if (voltage <= x[0]) return y[0];
-        for (int i = 1; i < x.length; i++) {
+        for (int i = 1; i < length; i++) {
             if (voltage <= x[i]) {
                 return y[i - 1] + (voltage - x[i - 1]) * (y[i] - y[i - 1])
                         / (x[i] - x[i - 1]);
             }
         }
-        return y[y.length - 1];
+        return y[length - 1];
     }
 
-    private static boolean validTable(double[] x, double[] y) {
+    private static boolean validTable(double[] x, double[] y, int length) {
         boolean nonzero = false;
-        for (int i = 0; i < x.length; i++) {
+        for (int i = 0; i < length; i++) {
+            if (!Double.isFinite(x[i]) || !Double.isFinite(y[i])) return false;
             nonzero |= Math.abs(x[i]) > EPS || Math.abs(y[i]) > EPS;
-            if (i > 0 && (x[i] <= x[i - 1] || y[i] < y[i - 1])) return false;
+            if (i > 0 && x[i] <= x[i - 1]) return false;
         }
         return nonzero;
     }
@@ -644,6 +666,15 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
                 : windControlStack.getElectricalControllerSpeed();
     }
     public double getMeasuredVoltage() { return vMeasured; }
+    /** Native VAR(L+3) semantics where the direct-voltage branch is active. */
+    public double getInitializedVoltageBias() { return initializedVoltageBias; }
+    /** Reserved inactive native storage slots are zero; legacy named aliases are unchanged. */
+    public double[] getNativeStates() {
+        if (!nativeRecordConvention) throw new IllegalStateException("Native state order requires the native-record convention");
+        return new double[]{vMeasured, data.pfFlag() == 1 ? pMeasured : 0,
+                data.qFlag() == 1 && data.vFlag() == 1 ? qIntegral : 0,
+                data.qFlag() == 1 ? vIntegral : 0, data.qFlag() == 0 ? qCurrent : 0, pOrder};
+    }
     public double getMeasuredActivePower() { return pMeasured; }
     public double getActivePowerFilter() { return pFilter; }
     public double getActivePowerOrder() { return pOrder; }
@@ -669,6 +700,16 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
 
     @Override public java.util.Map<String, Double> getIntegrationStates() {
+        if (nativeRecordConvention) {
+            var result = new LinkedHashMap<String, Double>();
+            if (data.trv() > EPS) result.put("Measured Voltage", vMeasured);
+            if (data.pfFlag() == 1 && data.tp() > EPS) result.put("Measured Active Power", pMeasured);
+            if (data.qFlag() == 1 && data.vFlag() == 1) result.put("Reactive Control Integral", qIntegral);
+            if (data.qFlag() == 1) result.put("Voltage Control Integral", vIntegral);
+            if (data.qFlag() == 0 && data.tiq() > EPS) result.put("Reactive Current", qCurrent);
+            if (data.tpord() > EPS) result.put("Active Power Order", pOrder);
+            return java.util.Collections.unmodifiableMap(result);
+        }
         return java.util.Map.of("Measured Voltage", vMeasured,
                 "Measured Active Power", pMeasured,
                 "Active Power Order", pOrder,
@@ -677,6 +718,16 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
                 "Voltage Control Integral", vIntegral);
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        if (nativeRecordConvention) {
+            var snapshot = stateMonitor.snapshot();
+            var states = new LinkedHashMap<String, Double>();
+            var rates = new LinkedHashMap<String, Double>();
+            for (String key : getIntegrationStates().keySet()) if (snapshot.rates().containsKey(key)) {
+                states.put(key, snapshot.evaluationStates().get(key));
+                rates.put(key, snapshot.rates().get(key));
+            }
+            return new IntegrationStateMonitor.Snapshot(snapshot.stage(), states, rates);
+        }
         return stateMonitor.snapshot();
     }
 

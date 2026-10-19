@@ -3641,7 +3641,7 @@ public class DStabNetworkBuilder {
             log.warn("REGCA1 not found for REECA1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Reeca1Model controller = new Reeca1Model(data, converter);
+        Reeca1Model controller = Reeca1Model.fromNativeRecord(data, converter);
         converter.setReeca1Controller(controller);
         return controller;
     }

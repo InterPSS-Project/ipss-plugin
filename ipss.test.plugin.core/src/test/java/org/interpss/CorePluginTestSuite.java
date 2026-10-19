@@ -359,6 +359,8 @@ import org.interpss.core.dstab.WtaraAlgebraicConformanceTest;
 import org.interpss.core.dstab.WtaraNativeConformanceTest;
 import org.interpss.core.dstab.WtptaNativeConformanceTest;
 import org.interpss.core.dstab.WtptaNativeObservationConformanceTest;
+import org.interpss.core.dstab.ReecaNativeBoundaryConformanceTest;
+import org.interpss.core.dstab.ReecaNativeConformanceTest;
 import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St1cIndependentSmibConformanceTest;
@@ -799,6 +801,8 @@ import org.junit.platform.suite.api.Suite;
 	WtaraNativeConformanceTest.class,
 	WtptaNativeConformanceTest.class,
 	WtptaNativeObservationConformanceTest.class,
+	ReecaNativeBoundaryConformanceTest.class,
+	ReecaNativeConformanceTest.class,
 	Lcfb1IndependentSmibConformanceTest.class,
 	Dc4bIndependentSmibConformanceTest.class,
 	St1cIndependentSmibConformanceTest.class,
