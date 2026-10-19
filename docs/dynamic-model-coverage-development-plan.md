@@ -2,6 +2,21 @@
 
 ## Current checkpoint
 
+WTDTA1 native-mechanics follow-up: correct native-record Hz stiffness and
+synchronous-speed damping by reusing the existing four-coordinate mechanical
+kernel, without changing its equations or the legacy typed convention. Two
+guards fail before the correction. Thirty-six cold native runs form eighteen
+exact pairs; all four mechanical states pass per-profile replay bounds with
+every raw history/event row retained. Coupled fault/event-side and torque-curve
+differences remain explicit diagnostics, not trajectory acceptance. The
+inventory now has fifteen native-partial and four ANDES-only families; none is
+VERIFIED. See the [mechanical evidence and remaining work](benchmarks/wtdta-native-mechanics-2026-10-19.md).
+Final gates pass 61 focused, 410 plugin-core and 1,649 scoped SMIB/model/solver
+tests, with zero failures/errors and only existing skips, plus four offline
+probe guards and six wording checks. Source, references and reports are sealed
+in the private hash-verified archive and retained with the scoped implementation
+slice. No full Texas2k dynamic simulations are part of this slice.
+
 WTTQA1 speed-feedback follow-up: correct the reversed speed-error sign in
 initialization and both stepping paths, preserving the power branch and all
 existing trajectory bounds. Three new guards fail before the fix; twenty

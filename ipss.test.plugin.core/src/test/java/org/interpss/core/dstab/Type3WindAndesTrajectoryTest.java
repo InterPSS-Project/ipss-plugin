@@ -42,6 +42,10 @@ public class Type3WindAndesTrajectoryTest extends CorePluginTestSetup {
                 directory.resolve("type3_wind_bus1062.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        // This historical ANDES oracle explicitly uses the older angular-frequency mechanical realization.
+        var historicalStack=((Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1"))
+                .getDynamicGenDevice()).getReeca1Controller().getWindControlStack();
+        historicalStack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(historicalStack.getDriveTrain().getData()));
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
         // ANDES disables REEC_A's speed multiplier when WTTQ_A supplies Pref.

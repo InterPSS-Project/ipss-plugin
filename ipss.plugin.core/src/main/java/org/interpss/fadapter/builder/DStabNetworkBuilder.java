@@ -3784,7 +3784,7 @@ public class DStabNetworkBuilder {
             log.warn("Drive train already exists for WTDTA1: bus={}, gen={}", busId, genId);
             return null;
         }
-        Wtdta1Model model = new Wtdta1Model(data);
+        Wtdta1Model model = Wtdta1Model.fromNativeRecord(data,network.getFrequency());
         stack.setDriveTrain(model);
         return model;
     }

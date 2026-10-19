@@ -24,6 +24,12 @@ public final class Wtdtb1Model implements WindDriveTrain {
     private double[] start,initialRate;
     private double initialPower,initialSpeed=1;
     private boolean aerodynamicPresent;
+    private org.interpss.dstab.control.util.IntegrationStateMonitor integrationObserver;
+    private org.interpss.dstab.control.util.IntegrationStateMonitor.Stage observationStage;
+
+    /** Optional observation port; it does not participate in the mechanical equations. */
+    void setIntegrationObserver(org.interpss.dstab.control.util.IntegrationStateMonitor observer) { integrationObserver=observer; }
+    void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
 
     public Wtdtb1Model(Wtdtb1Data data,double nominalFrequency) {
         this(data,nominalFrequency,EquationConvention.PUBLISHED_DIAGRAM);
@@ -63,6 +69,7 @@ public final class Wtdtb1Model implements WindDriveTrain {
         state[0]=isSingleMass()?0:initialTorque/shaftStiffness();
         state[4]=aerodynamicPresent?0:power;
         start=null;initialRate=null;twoStep.reset();
+        if(integrationObserver!=null)integrationObserver.reset();
     }
 
     @Override public void step(double dt,double mechanicalPower,double electricalPower) {
@@ -74,6 +81,8 @@ public final class Wtdtb1Model implements WindDriveTrain {
         validate(dt,mechanicalPower,electricalPower);
         if(flag!=0&&flag!=1)throw new IllegalArgumentException("WTDTB1 stage must be 0 or 1");
         if(dt==0){algebraicElectricalPower(electricalPower);return;}
+        observationStage=flag==0?org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR
+                :org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR;
         if(flag==0) {
             start=state.clone();initialRate=rate(start,mechanicalPower,electricalPower);
             for(int i=0;i<5;i++)state[i]=start[i]+dt*initialRate[i];
@@ -90,9 +99,11 @@ public final class Wtdtb1Model implements WindDriveTrain {
     @Override public void stepTwoStep(double dt,double mechanicalPower,double electricalPower) {
         validate(dt,mechanicalPower,electricalPower);
         if(dt==0){algebraicElectricalPower(electricalPower);return;}
+        observationStage=org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP;
         double[] derivative=rate(state,mechanicalPower,electricalPower);
         twoStep.begin(dt);
         for(int i=0;i<5;i++)state[i]=twoStep.advance(i,state[i],derivative[i]);
+        if(integrationObserver!=null)twoStep.observeRates(integrationObserver);
         algebraicElectricalPower(electricalPower);
         requireFinite();
     }
@@ -120,6 +131,10 @@ public final class Wtdtb1Model implements WindDriveTrain {
         }
         result[3]=angularFrequency()*x[2];
         if(!aerodynamicPresent&&data.tp()>0)result[4]=(electricalPower-x[4])/data.tp();
+        if(integrationObserver!=null) {
+            integrationObserver.begin(observationStage);
+            for(int i=0;i<5;i++)integrationObserver.record(i,x[i]+(i==1||i==2?initialSpeed-1:0),result[i]);
+        }
         return result;
     }
 

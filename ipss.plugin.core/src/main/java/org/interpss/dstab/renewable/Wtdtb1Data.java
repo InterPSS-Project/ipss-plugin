@@ -1,6 +1,6 @@
 package org.interpss.dstab.renewable;
 
-/** Native PSS/E 36.7 WTDTB1 six-CON layout; Freq1 is Hz, not WTDTA1's exchange convention. */
+/** Native six-value torsional-emulation data; Freq1 is Hz. Legacy typed angular-frequency data are separate. */
 public record Wtdtb1Data(double h,double damp,double htfrac,double freq1,double dshaft,double tp) {
     public Wtdtb1Data {
         for(double value:new double[]{h,damp,htfrac,freq1,dshaft,tp})

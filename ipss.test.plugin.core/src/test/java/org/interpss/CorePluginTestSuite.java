@@ -353,6 +353,8 @@ import org.interpss.core.dstab.Tgov1PowerWorldLimitSmibTest;
 import org.interpss.core.dstab.Tgov1BaseNativeSmibTest;
 import org.interpss.core.dstab.WttqaSpeedFeedbackConformanceTest;
 import org.interpss.core.dstab.WttqaNativePartialConformanceTest;
+import org.interpss.core.dstab.WtdtaNativeConformanceTest;
+import org.interpss.core.dstab.WtdtaNativeObservationConformanceTest;
 import org.interpss.core.dstab.Lcfb1IndependentSmibConformanceTest;
 import org.interpss.core.dstab.Dc4bIndependentSmibConformanceTest;
 import org.interpss.core.dstab.St1cIndependentSmibConformanceTest;
@@ -787,6 +789,8 @@ import org.junit.platform.suite.api.Suite;
 	Tgov1BaseNativeSmibTest.class,
 	WttqaSpeedFeedbackConformanceTest.class,
 	WttqaNativePartialConformanceTest.class,
+	WtdtaNativeConformanceTest.class,
+	WtdtaNativeObservationConformanceTest.class,
 	Lcfb1IndependentSmibConformanceTest.class,
 	Dc4bIndependentSmibConformanceTest.class,
 	St1cIndependentSmibConformanceTest.class,

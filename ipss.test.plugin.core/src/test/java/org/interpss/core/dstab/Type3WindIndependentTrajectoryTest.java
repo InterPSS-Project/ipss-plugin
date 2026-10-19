@@ -35,6 +35,11 @@ public class Type3WindIndependentTrajectoryTest extends CorePluginTestSetup {
                 directory.resolve("type3_wind_bus1062.dyr").toString());
         var network = context.getDStabilityNet();
         var algorithm = context.getDynSimuAlgorithm();
+        // Preserve the historical finite-error diagnostic's declared older angular-frequency realization.
+        // Exact native mechanical acceptance is maintained separately by WtdtaNativeConformanceTest.
+        var historicalStack=((Regca1Model)((DStabGen)network.getBus("Bus1").getContributeGen("1"))
+                .getDynamicGenDevice()).getReeca1Controller().getWindControlStack();
+        historicalStack.setDriveTrain(new org.interpss.dstab.renewable.Wtdta1Model(historicalStack.getDriveTrain().getData()));
         network.setBypassDataCheck(true);
         network.setAllowGenWithoutMach(true);
         assertTrue(algorithm.getAclfAlgorithm().loadflow(), "Type-3 public load flow");

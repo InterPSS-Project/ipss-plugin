@@ -7,10 +7,11 @@ import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
 /**
  * WECC WTDTA1 two-mass wind drive train.
  *
- * <p>The equations follow the public WECC/ANDES model. PSS/E exports
- * {@code Freq1} in per-unit frequency, despite older documentation labeling it
- * as hertz. A zero turbine-inertia fraction selects the documented one-mass
- * representation.</p>
+ * <p>The native reader uses the independently verified four-state mechanical
+ * kernel with hertz frequency and synchronous damping. The direct typed
+ * constructor retains the older angular-frequency/initial-speed convention
+ * for explicit legacy benchmarks. A zero turbine-inertia fraction selects
+ * the documented one-mass representation.</p>
  */
 public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess, com.interpss.dstab.controller.cml.ICMLStateProvider {
     private static final double EPS = 1.0e-9;
@@ -22,6 +23,11 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
     private final Wtdta1Data data;
     private final WtgtAData powerWorldData;
     private final double inputPowerScale;
+    private final Wtdtb1Model nativeKernel;
+    private final IntegrationStateMonitor nativeMonitor;
+    private double nativeElectricalPower;
+    private static final String[] NATIVE_NAMES={"Shaft Twist Angle","Turbine Speed Deviation",
+            "Generator Speed Deviation","Generator Rotor Angle Deviation","Electrical Power Measurement Filter"};
     private double initialSpeed = 1.0;
     private double initialInputPower;
     private double initialPower;
@@ -33,13 +39,28 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
     private Derivative predictorDerivative;
     private double predictorSingleMassDerivative;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
-    void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
-    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
+    void setSinglePrecisionStates(boolean enabled) { if(nativeKernel!=null)nativeKernel.setSinglePrecisionStates(enabled);else twoStep.setSinglePrecision(enabled); }
+    void rebaseNextTwoStep() { if(nativeKernel!=null)nativeKernel.rebaseNextTwoStep();else twoStep.rebaseNextStep(); }
 
+    /** Legacy typed angular-frequency realization; native records use fromNativeRecord. */
     public Wtdta1Model(Wtdta1Data data) {
+        this(data,null);
+    }
+
+    private Wtdta1Model(Wtdta1Data data,Wtdtb1Model kernel) {
         this.data = data;
         this.powerWorldData = null;
         this.inputPowerScale = 1.0;
+        this.nativeKernel=kernel;
+        this.nativeMonitor=kernel==null?null:new IntegrationStateMonitor(NATIVE_NAMES);
+        if(kernel!=null)kernel.setIntegrationObserver(nativeMonitor);
+    }
+
+    /** Exact five-value native input; the emulation/filter branch is absent. */
+    public static Wtdta1Model fromNativeRecord(Wtdta1Data data,double nominalFrequency) {
+        var kernel=Wtdtb1Model.forNativePsse367(new Wtdtb1Data(data.h(),data.damp(),data.htfrac(),data.freq1(),data.dshaft(),0),nominalFrequency);
+        kernel.setAerodynamicPresent(true);
+        return new Wtdta1Model(data,kernel);
     }
 
     /** Build the equivalent kernel while retaining PowerWorld source/base semantics. */
@@ -47,6 +68,7 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
         this.data = data.toWtdta1Data();
         this.powerWorldData = data;
         this.inputPowerScale = machineBaseMva / data.effectiveModelBaseMva(machineBaseMva);
+        this.nativeKernel=null;this.nativeMonitor=null;
     }
 
     public void initialize(double power) {
@@ -55,6 +77,10 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
 
     /** WTTQA1 supplies its initialized power/speed characteristic when present. */
     public void initialize(double power, double speed) {
+        if(nativeKernel!=null) {
+            nativeKernel.initialize(power,speed);nativeElectricalPower=power;
+            initialSpeed=nativeKernel.getInitialSpeed();initialPower=initialInputPower=nativeKernel.getInitialInputPower();return;
+        }
         stateMonitor.reset();
         twoStep.reset();
         clearPredictor();
@@ -83,6 +109,7 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
      * the standalone complete-step API above.
      */
     public void step(double dt, double mechanicalPower, double electricalPower, int flag) {
+        if(nativeKernel!=null){nativeKernel.step(dt,mechanicalPower,electricalPower,flag);nativeElectricalPower=electricalPower;return;}
         if (!Double.isFinite(dt) || dt < 0.0
                 || !Double.isFinite(mechanicalPower) || !Double.isFinite(electricalPower)) {
             throw new IllegalArgumentException("WTDTA1 step inputs must be finite and dt must be non-negative");
@@ -140,6 +167,7 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
     }
 
     public void stepTwoStep(double dt, double mechanicalPower, double electricalPower) {
+        if(nativeKernel!=null){nativeKernel.stepTwoStep(dt,mechanicalPower,electricalPower);nativeElectricalPower=electricalPower;return;}
         observationStage = Stage.TWO_STEP;
         if (dt <= 0.0) return;
         mechanicalPower = scalePower(mechanicalPower);
@@ -166,12 +194,19 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
 
 
     @Override public java.util.Map<String, Double> getIntegrationStates() {
+        if(nativeKernel!=null)return nativeStates(true);
         if (isSingleMass()) return java.util.Map.of("Generator Speed", generatorSpeed);
         return java.util.Map.of("Turbine Speed", turbineSpeed,
                 "Generator Speed", generatorSpeed,
                 "Shaft Torque", shaftTorque);
     }
     @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        if(nativeKernel!=null) {
+            var snapshot=nativeMonitor.snapshot();var keys=getIntegrationStates().keySet();
+            var x=new java.util.LinkedHashMap<String,Double>();var dx=new java.util.LinkedHashMap<String,Double>();
+            for(String key:keys)if(snapshot.rates().containsKey(key)){x.put(key,snapshot.evaluationStates().get(key));dx.put(key,snapshot.rates().get(key));}
+            return new IntegrationStateMonitor.Snapshot(snapshot.stage(),x,dx);
+        }
         var snapshot = stateMonitor.snapshot();
         if (!isSingleMass() || snapshot.rates().isEmpty()) return snapshot;
         return new IntegrationStateMonitor.Snapshot(snapshot.stage(),
@@ -179,8 +214,26 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
                 java.util.Map.of("Generator Speed", snapshot.rates().get("Generator Speed")));
     }
     @Override public java.util.Map<String, Double> getNamedStates() {
+        if(nativeKernel!=null) {
+            var values=new java.util.LinkedHashMap<>(nativeStates(false));
+            values.put("Turbine Speed",getTurbineSpeed());values.put("Generator Speed",getGeneratorSpeed());values.put("Shaft Torque",getShaftTorque());
+            return java.util.Collections.unmodifiableMap(values);
+        }
         return getIntegrationStates();
     }
+
+    private java.util.Map<String,Double> nativeStates(boolean activeOnly) {
+        double[] state=getNativeStates();var result=new java.util.LinkedHashMap<String,Double>();
+        for(int i=0;i<4;i++)if(!activeOnly||!isSingleMass()||i>=2)result.put(NATIVE_NAMES[i],state[i]);
+        return java.util.Collections.unmodifiableMap(result);
+    }
+
+    /** Published four native coordinates, returned without changing integration state. */
+    public double[] getNativeStates() {
+        if(nativeKernel==null)throw new IllegalStateException("Native coordinates require the native-record convention");
+        return java.util.Arrays.copyOf(nativeKernel.getNativeStates(),4);
+    }
+    public boolean isNativeRecordConvention() { return nativeKernel!=null; }
     private void retainRates(State s, Derivative d) {
         stateMonitor.begin(observationStage);
         stateMonitor.record(0, s.turbineSpeed(), d.turbineSpeed());
@@ -246,12 +299,13 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
         }
     }
 
-    public boolean isSingleMass() { return data.htfrac() <= EPS; }
+    public boolean isSingleMass() { return nativeKernel!=null?nativeKernel.isSingleMass():data.htfrac() <= EPS; }
     public double turbineInertia() { return data.htfrac() * data.h(); }
     public double generatorInertia() { return (1.0 - data.htfrac()) * data.h(); }
 
-    /** ANDES/PSS/E per-unit-frequency form: 2*Ht*Hg/H * Freq1^2. */
+    /** Torque-state derivative stiffness; native frequency is Hz, legacy typed frequency is angular. */
     public double shaftStiffness() {
+        if(nativeKernel!=null)return nativeKernel.shaftStiffness()*nativeKernel.angularFrequency();
         if (isSingleMass()) return 0.0;
         return 2.0 * turbineInertia() * generatorInertia() / data.h()
                 * data.freq1() * data.freq1();
@@ -263,10 +317,10 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
     public double getInitialInputPower() { return initialInputPower; }
     public double getInitialPower() { return initialPower; }
     public double getInitialSpeed() { return initialSpeed; }
-    public double getTurbineSpeed() { return turbineSpeed; }
-    public double getGeneratorSpeed() { return generatorSpeed; }
-    public double getShaftTorque() { return shaftTorque; }
-    public double getDampingPower() { return dampingPower; }
+    public double getTurbineSpeed() { return nativeKernel!=null?nativeKernel.getTurbineSpeed():turbineSpeed; }
+    public double getGeneratorSpeed() { return nativeKernel!=null?nativeKernel.getGeneratorSpeed():generatorSpeed; }
+    public double getShaftTorque() { return nativeKernel==null?shaftTorque:isSingleMass()?nativeElectricalPower/getGeneratorSpeed():nativeKernel.shaftStiffness()*getNativeStates()[0]; }
+    public double getDampingPower() { return nativeKernel!=null?data.dshaft()*(getTurbineSpeed()-getGeneratorSpeed()):dampingPower; }
 
     private double scalePower(double power) { return power * inputPowerScale; }
 
