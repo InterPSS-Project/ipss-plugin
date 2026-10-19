@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+GENQEC/GENQEJ bounded salient-pole verification: eight exact T'qo=0/X'q=Xq
+phasor/state profiles were generated twice cold across two models, two saturation
+choices and two steps. Eight additional PowerWorld standard-model diagnostics
+repeat exactly. Electrical replay preserves every raw row and bounds four
+electrical states, saturation and P/Q; forced rotor inputs do not establish
+mechanical trajectory acceptance. Exact predictor/corrector and eight imported
+fault checks pass. The tempting q-state projection is rejected by the native
+guard, so the existing machine engine and named-state mapping are retained.
+The final gates pass 18 focused, 401 plugin-core and 1,562 SMIB/model/solver
+checks with only existing skips and zero failures/errors. The shared machine
+engine is retained unchanged, with source/run/report hashes for the scoped
+verification commit; complete coupled parity remains open. See the
+[salient-branch checklist](benchmarks/genqec-salient-branch-2026-10-19.md).
+
 GENQEC bounded native-schema slice: the documented one-ICON/sixteen-CON
 standard record replaces the incorrect flat eighteen-field interchange.
 GENQECU/GENQEJU wrappers now normalize every nonzero native selector to scaled

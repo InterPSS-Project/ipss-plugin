@@ -1019,6 +1019,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseWt12a1bModelTest.class,
 	org.interpss.core.adapter.builder.dstab.GenqecNativeSchemaTest.class,
 	org.interpss.core.dstab.GenqecNativeSelectorConformanceTest.class,
+	org.interpss.core.dstab.GenqecSalientNativeConformanceTest.class,
 	org.interpss.core.dstab.Wt12a1bNativeConformanceTest.class,
 	RenewableControlIntegrationTest.class,
 	RenewableAggregateQvModeTest.class,

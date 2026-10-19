@@ -8,6 +8,8 @@ POWERWORLD identifies archived PowerWorld exports; PSSE and PSSE_TGOV3D identify
 
 GENQEC's exact standard input is one selector plus sixteen constants; GENQECU and GENQEJU use the allocation wrapper. The former flat eighteen-field interchange is not a native input. Native nonzero selectors normalize to scaled quadratic, separately from the typed three-way setting. GenqecSchemaNativeReference adds ten complete raw histories from twenty cold runs and GenqecNativeSelectorConformanceTest checks imported three-cycle fault equivalence. These establish the schema/selector boundary, not complete machine or cross-tool trajectory parity. See [the scoped source and evidence report](benchmarks/genqec-native-schema-2026-10-18.md).
 
+GenqecSalientNativeReference adds eight exact Tqop=0/Xqp=Xq profiles for GENQEC/GENQEJ and both saturation modes. The four electrical states, saturation and terminal power are replayed from native phasor/speed/field-voltage inputs; forced mechanical inputs are not predicted-state acceptance. The existing zero-state/general q-coordinate implementation is retained. First-fault callback residuals decrease under step halving, but complete coupled parity remains open. See [the salient-branch evidence](benchmarks/genqec-salient-branch-2026-10-19.md).
+
 | Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |
 |---|---|---|---|---|---|
 | DEGOV1D | POWERWORLD | SMIB_v33_genrou_degov1d.dyr | DStabNetworkBuilderDegov1dTest | Degov1dIndependentSmibConformanceTest | smib-genrou-degov1d |
