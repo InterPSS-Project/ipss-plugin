@@ -16,6 +16,43 @@ import com.interpss.dstab.cache.StateMonitor;
 
 class Texas2kReferenceRunnerReportingTest {
     @Test
+    void connectedReportingPreservesElectricalCachesAndRetainedPower() throws Exception {
+        IpssCorePlugin.init();
+        String base="testData/adpter/psse/v33/SMIB/";
+        var context=new PSSEMultiFileLoader().loadDStab(
+                base+"SMIB_v33.raw",base+"SMIB_v33_genrou_esst4b.dyr");
+        var algorithm=context.getDynSimuAlgorithm();
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algorithm.setSimuStepSec(.0005);
+        algorithm.setTotalSimuTimeSec(.01);
+        algorithm.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algorithm.initialization());
+        var net=context.getDStabilityNet();
+        var machine=(com.interpss.dstab.mach.impl.RoundRotorMachineImpl)net.getMachine("Bus1-mach1");
+        var electrical=machine.captureRoundElectricalState();
+        double retainedPower=machine.getPe();
+        var bus=machine.getDStabBus();
+        bus.setVoltage(bus.getVoltage().multiply(new org.apache.commons.math3.complex.Complex(1.01,.002)));
+        var terminal=bus.getVoltage().multiply(machine.getIxy().conjugate());
+        assertNotEquals(electrical,machine.captureRoundElectricalState());
+        assertNotEquals(retainedPower,machine.getPe());
+        machine.restoreRoundElectricalState(electrical);
+        machine.setPe(retainedPower);
+        var event=JsonParser.parseString("""
+                {"nearby_buses":[1],"nearby_generators":[{"bus":1,"id":"1"}]}
+                """).getAsJsonObject();
+        var observed=record(net,event);
+        assertEquals(electrical,machine.captureRoundElectricalState());
+        assertEquals(retainedPower,machine.getPe(),0.);
+        assertEquals(retainedPower,observed.get("machine_AIRGAP_pu_mbase__bus_1__id_1"),0.);
+        assertEquals(terminal.getReal(),observed.get("machine_PELEC_pu_sbase__bus_1__id_1"),0.);
+        assertEquals(terminal.getImaginary(),observed.get("machine_QELEC_pu__bus_1__id_1"),0.);
+        assertEquals(observed,record(net,event));
+        assertEquals(electrical,machine.captureRoundElectricalState());
+    }
+
+    @Test
     void disconnectedChannelsAreZeroWithoutChangingRetainedMachineStates() throws Exception {
         IpssCorePlugin.init();
         String base="testData/adpter/psse/v33/SMIB/";

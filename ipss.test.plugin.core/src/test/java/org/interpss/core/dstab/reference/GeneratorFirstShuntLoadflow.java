@@ -25,6 +25,8 @@ import com.interpss.core.algo.LoadflowAlgorithm;
  * the shunt's voltage-dependent limits. Disaggregation then minimizes shunt
  * movement. Original device targets and generator limits are retained. Remote,
  * discrete, multiple-shunt and mixed generator-target groups are unsupported.
+ * Fixed-Q generators without a primary voltage controller leave the ordinary
+ * shunt controller in charge of its own voltage target.
  * As with ordinary load flow, a failed solve can change network voltages;
  * temporary device limits and controls are restored and convergence is cleared.
  */
@@ -50,6 +52,11 @@ public final class GeneratorFirstShuntLoadflow {
                             && s.getControlMode() != AclfAdjustControlMode.FIXED).toList();
             if (generators.isEmpty() || shunts.stream().noneMatch(
                     s -> s.getControlMode() == AclfAdjustControlMode.CONTINUOUS)) continue;
+            if (!bus.isPVBusLimit() && generators.stream().allMatch(g -> {
+                var limit = g.getQGenLimit();
+                return limit != null && Double.isFinite(limit.getMin())
+                        && limit.getMin() == limit.getMax();
+            })) continue;
             if (bus.isRemoteQBus() || !bus.isPVBusLimit() || shunts.size() != 1)
                 throw new IllegalArgumentException("Unsupported control group at " + bus.getId());
             groups.add(new Group(bus, generators, shunts.get(0)));
@@ -173,7 +180,8 @@ public final class GeneratorFirstShuntLoadflow {
             shunt.setBActual(b);
             restoreLimits();
             bus.setGenQ(plantQ);
-            if (!bus.allocateContributeGenQ(1.e-9))
+            bus.allocateContributeGenQ(1.e-9);
+            if (!allocatePhysicalReactivePower(plantQ))
                 throw new IllegalStateException("Physical machine allocation failed at " + bus.getId());
             double sum = 0.;
             for (int i = 0; i < generators.size(); i++) {
@@ -189,6 +197,48 @@ public final class GeneratorFirstShuntLoadflow {
             boolean limited = plantQ <= qMin + 1.e-10 || plantQ >= qMax - 1.e-10;
             bus.setGenCode(limited ? AclfGenCode.GEN_PQ : AclfGenCode.GEN_PV);
             return new GroupResult(bus.getId(), generators.size(), bus.getVoltageMag(), sum, initialB, b);
+        }
+
+        boolean allocatePhysicalReactivePower(double target) {
+            // This fixture has explicit source-record limits. In particular, a
+            // zero interval is fixed Q, not the core's unspecified-limit marker.
+            for (int i = 0; i < generators.size(); i++) {
+                var gen = generators.get(i);
+                double q = gen.getGen().getImaginary();
+                if (!Double.isFinite(q)) return false;
+                var limit = limits.get(i);
+                gen.setGen(new Complex(powers.get(i).getReal(),
+                        Math.max(limit.getMin(), Math.min(limit.getMax(), q))));
+            }
+            for (int pass = 0; pass <= generators.size(); pass++) {
+                double residual = target;
+                for (var gen : generators) residual -= gen.getGen().getImaginary();
+                if (Math.abs(residual) <= 1.e-9) return true;
+                double weight = 0.;
+                int eligible = 0;
+                for (int i = 0; i < generators.size(); i++) {
+                    if (!hasPhysicalHeadroom(i, residual)) continue;
+                    weight += Math.abs(powers.get(i).getReal());
+                    eligible++;
+                }
+                if (eligible == 0) return false;
+                for (int i = 0; i < generators.size(); i++) {
+                    if (!hasPhysicalHeadroom(i, residual)) continue;
+                    var gen = generators.get(i);
+                    var limit = limits.get(i);
+                    double fraction = weight > 0.
+                            ? Math.abs(powers.get(i).getReal()) / weight : 1. / eligible;
+                    double q = gen.getGen().getImaginary() + residual * fraction;
+                    gen.setGen(new Complex(powers.get(i).getReal(),
+                            Math.max(limit.getMin(), Math.min(limit.getMax(), q))));
+                }
+            }
+            return false;
+        }
+
+        boolean hasPhysicalHeadroom(int index, double residual) {
+            double q = generators.get(index).getGen().getImaginary();
+            return residual > 0. ? q < limits.get(index).getMax() : q > limits.get(index).getMin();
         }
 
         double voltageSquared() {

@@ -99,7 +99,7 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
         return bus && generator && device;
     }
 
-    private static org.apache.commons.math3.complex.Complex terminalPowerWithoutCacheChanges(Machine machine) {
+    static org.apache.commons.math3.complex.Complex terminalPowerWithoutCacheChanges(Machine machine) {
         // The terminal-current getter refreshes electrical caches and air-gap power
         // in subtransient machines. Observation must retain the solver's exact state.
         double pe = machine.getPe();

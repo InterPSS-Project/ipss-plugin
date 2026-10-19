@@ -4109,3 +4109,72 @@ references or evidence that the coupled six-case goal is complete.
 The completed replays, rejected full run, updated scoring, frozen runtime
 dependencies and original-reference hashes are retained privately in
 `2026-10-19-case2-updated-contract-and-controller-diagnostics`.
+
+## Six-case preparation and observation-side-effect correction (2026-10-19)
+
+The generator-first preparation now completes for all six original cases.
+Two explicit fixed-Q conditions had prevented Cases 3–6 from completing:
+
+- At bus 1007, all generator Q limits are zero and no primary generator voltage
+  controller is active. The ordinary shunt controller must retain its own
+  target instead of entering the generator-priority helper.
+- At bus 1033, a fixed-Q machine shares a bus with a regulating machine. The
+  generic core allocation convention treats a zero interval as unspecified.
+  The benchmark helper now enforces the explicit source-record bounds and
+  redistributes the residual among machines with available capability while
+  preserving machine P and aggregate Q.
+
+The default core allocation convention is unchanged. Three analytical guards
+reproduce these failures before their respective fixes; all 16 preparation
+tests now pass, including rejection of a missing primary controller when Q
+capability is adjustable. The corrected preparation gives the following cold
+voltage comparisons against the original selected-channel references. Each
+case has 60 observations across its six events, including generator-terminal
+voltage channels; repeated buses are retained.
+
+| Case | Unique observed buses | Largest cold voltage difference (pu) |
+|---|---:|---:|
+| 1 | 49 | 8.635e-8 |
+| 2 | 51 | 1.8263e-6 |
+| 3 | 50 | 9.219e-8 |
+| 4 | 55 | 9.060e-8 |
+| 5 | 50 | 1.5736e-7 |
+| 6 | 49 | 1.5736e-7 |
+
+These are comparisons of locally solved power flow before dynamic conversion
+with supplied cold terminal measurements. They do not establish correct
+per-machine initialization. A separate source-limit audit still finds fixed-Q
+allocation violations outside the coordinated shunt groups: 24 machines in
+Case 3, 19 in Case 4, 16 in Case 5 and 19 in Case 6. Swing-machine Q-limit
+excesses are reported separately. Those remaining allocation issues must be
+resolved before claiming complete six-case preparation.
+
+Two original 0.5 ms Case 2 events also complete with their original 20,005
+fault-event or 20,004 trip-event rows. All five voltage and five generator-speed
+channels per event pass both normalized MAE and RMSE limits, and all five
+prefault rotor-angle channels pass. Full-window rotor angles fail: worst RMSE
+is 4.55357949 degrees for the bus-6307 fault and 1.17868680 degrees for the
+bus-6302 generator trip. These are retained diagnostic counterexamples.
+The six staged event references reproduce every original CSV measurement
+exactly after the Parquet schema's declared binary32 storage conversion;
+the largest decimal-text versus binary32 difference is 5.000002e-7.
+
+Investigation found a separate observation-side effect in the selected-channel
+exporter. Its terminal-current getter refreshes cached electrical currents and
+retained machine power. The full-network exporter already preserved those
+values, but the selected-channel path did not. Therefore changing the selected
+machine list can change the calculation itself. The failing unit test records
+this cache/power mutation directly; the selected exporter now shares the
+existing read-only power observer. All four reporting tests pass. An unchanged
+Case 2 startup with five versus 26 selected machines is bit-for-bit identical
+across 4,810 physical channels and 43 samples, including identical cold and
+history state snapshots.
+
+This finding prevents using the earlier 1 ms numeric pass as acceptance
+evidence and prevents attributing the new failed runs solely to timestep.
+Both sets of outputs remain preserved. Fresh complete runs with read-only
+selected reporting are required at both timesteps. No dynamics equation,
+reference measurement, parameter or comparison threshold was changed to
+correct reporting. Completed tests, preparation attempts, failed trajectories,
+reference checks and the observation-invariance probe are retained privately
+in `2026-10-19-sixcase-preparation-and-readonly-reporting`.

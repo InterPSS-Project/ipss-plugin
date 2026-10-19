@@ -332,7 +332,7 @@ public final class Texas2kReferenceRunner {
             // getPe() includes stator copper loss and may be averaged at an
             // event. PSS/E PELEC/QELEC require the instantaneous terminal power.
             Complex terminalPower = active
-                    ? machine.getDStabBus().getVoltage().multiply(machine.getIxy().conjugate())
+                    ? Texas2kFullNetworkRecorder.terminalPowerWithoutCacheChanges(machine)
                     : Complex.ZERO;
             values.put("machine_AIRGAP_pu_mbase" + suffix, active ? machine.getPe() : 0.);
             values.put("machine_PELEC_pu_sbase" + suffix, terminalPower.getReal());

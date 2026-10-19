@@ -115,6 +115,40 @@ Q
         check(network(1., 1.06, .5, new Machine(0, -.4, .6, v)), v, total - .5*v*v, .5);
     }
 
+    @Test void fixedReactiveGeneratorLeavesShuntInControlOfItsOwnTarget() throws Exception {
+        double v = 1.03, p = .2;
+        var lf = network(1., v, 0., new Machine(p, 0., 0., 1.));
+        var bus = lf.getNetwork().getBus("Bus1");
+        var generator = bus.getContributeGenList().get(0);
+        var limits = generator.getQGenLimit();
+        assertFalse(bus.isPVBusLimit(), "Fixed-Q import has no primary voltage controller");
+
+        var result = GeneratorFirstShuntLoadflow.solve(lf);
+
+        assertTrue(result.converged());
+        assertTrue(result.groups().isEmpty());
+        assertTrue(lf.getTerminationReport().controlsSettled());
+        assertEquals(v, bus.getVoltageMag(), 2.e-8);
+        assertEquals(p, generator.getGen().getReal(), 0.);
+        assertEquals(0., generator.getGen().getImaginary(), 0.);
+        assertSame(limits, generator.getQGenLimit());
+        assertEquals(1., generator.getDesiredVoltMag(), 0.);
+        double q = (v*v - v*Math.sqrt(1.-Math.pow(p*.1/v, 2)))/.1;
+        var shunt = bus.getSwitchedShuntList().get(0);
+        assertEquals(q/(v*v), shunt.getBActual(), 2.e-8);
+        assertEquals(v, shunt.getDesiredControlRange().getMiddle(), 0.);
+    }
+
+    @Test void missingPrimaryControllerWithAdjustableReactiveRangeStillFails() throws Exception {
+        var lf = network(1., 1.03, .2, new Machine(.2, 0., 0., 1.));
+        var bus = lf.getNetwork().getBus("Bus1");
+        bus.getContributeGenList().get(0).setQGenLimit(
+                new org.interpss.numeric.datatype.LimitType(.1, -.1));
+        assertFalse(bus.isPVBusLimit());
+        assertThrows(IllegalArgumentException.class, () -> GeneratorFirstShuntLoadflow.solve(lf));
+        assertEquals(.2, bus.getSwitchedShuntList().get(0).getBActual(), 0.);
+    }
+
     @Test void retainsZeroShuntWhenGeneratorCanRegulate() throws Exception {
         double v = 1.03;
         check(network(1., 1.06, 0., new Machine(0, -.4, .6, v)), v, v*(v-1.)/.1, 0.);
@@ -144,6 +178,19 @@ Q
         double v = 1.03, total = v*(v-1.)/.1;
         check(network(1., 1.06, 0., new Machine(0, -.2, .2, v), new Machine(0, -.2, .2, v)),
                 v, total, 0.);
+    }
+
+    @Test void plantAllocationKeepsFixedReactiveMachineAtZero() throws Exception {
+        double v = 1.03, p = .4;
+        double q = (v*v - v*Math.sqrt(1.-Math.pow(p*.1/v, 2)))/.1;
+        check(network(1., 1.06, 0., new Machine(.2, -.4, .6, v), new Machine(.2, 0., 0., v)),
+                v, q, 0.);
+    }
+
+    @Test void zeroActivePowerAllocationStillHonorsFixedReactiveMachine() throws Exception {
+        double v = 1.03, q = v*(v-1.)/.1;
+        check(network(1., 1.06, 0., new Machine(0., -.4, .6, v), new Machine(0., 0., 0., v)),
+                v, q, 0.);
     }
 
     @Test void plantAtUpperLimitActivatesSecondary() throws Exception {
