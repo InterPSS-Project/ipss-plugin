@@ -44,4 +44,14 @@ public record HplntdData(int remoteBus,RepccData.Branch measurementBranch,int co
     }
     @Override public double[] constants(){return constants.clone();}
     public double value(Parameter p){return constants[p.ordinal()];}
+    public double activePiMinimum(){return value(feedforwardFlag==0?Parameter.PMIN:Parameter.PIMIN);}
+    public double activePiMaximum(){return value(feedforwardFlag==0?Parameter.PMAX:Parameter.PIMAX);}
+    public int effectiveReferenceFlag(double measuredActive) {
+        if(!Double.isFinite(measuredActive))throw new IllegalArgumentException("Finite plant active power required");
+        return referenceFlag==2&&Math.abs(measuredActive)<.01?0:referenceFlag;
+    }
+    public double referenceSlewTime(double step) {
+        if(!Double.isFinite(step)||step<=0||!Double.isFinite(2*step))throw new IllegalArgumentException("Positive finite plant timestep required");
+        return 2*step;
+    }
 }

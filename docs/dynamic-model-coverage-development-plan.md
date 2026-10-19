@@ -22,8 +22,8 @@ versioned loadable runtime path, one without a loadable runtime (HPLNTD)**, not 
 benchmark coverage. REPCC now has exact standard import and a bounded REGCA1/REECA1
 runtime, enabled-MSS import and bounded fast-band switching comparisons. Slow-band
 clock precision and other initialization/host modes remain open. HPLNTD now has a
-typed data/aggregation and a bounded downstream lag kernel, but no plant controller
-or production downstream attachment.
+typed data/aggregation, bounded plant/downstream kernels and a shared opt-in
+staggered integration boundary, but no production plant/downstream attachment.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -435,6 +435,16 @@ and state definitions agree.
   - [ ] Implement HPLNTDU's thirteen-state kernel and complete REAXDU's interface,
     exact production import/attachment and stage-coherent multi-unit coupling;
     verify all remaining selectors, limits, lifecycle and actual SMIB responses.
+    - [x] Add a dedicated thirteen-state kernel, nine equation/boundary tests and
+      ten matched-method replay profiles. Six new cold-paired profiles expose
+      measured frequency, reference steps, voltage freeze and fault recovery.
+      An independent scalar test proves reference-slew STORE behavior; the accepted
+      host clock resolves the fine-step recovery mismatch. Default modified Euler
+      is unchanged. Tight per-channel bounds and the previous failing diagnostics
+      are retained; runtime presence does not increase.
+      Final gates on baseline `08c49944f`: 51 focused, 371 core-unit (six optional
+      skips), 1,455 SMIB/model/solver (one diagnostic skip), zero failures/errors.
+      See [bounded plant-kernel evidence](benchmarks/hplntd-kernel-2026-10-18.md).
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve
