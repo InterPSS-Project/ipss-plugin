@@ -118,6 +118,8 @@ No mean phase or other offset is removed from any scored trajectory.
 
 A separate one-second 1e-6 convergence discriminator is not included in this
 evidence set; its completion and acceptance are not claimed here.
+Its completed comparison is recorded separately in the
+[convergence and recovery-boundary follow-up](case6-convergence-and-recovery-boundary-2026-10-19.md).
 
 ## Evidence and remaining work
 
