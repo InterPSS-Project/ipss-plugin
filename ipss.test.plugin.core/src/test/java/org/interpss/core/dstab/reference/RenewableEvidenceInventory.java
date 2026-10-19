@@ -15,7 +15,7 @@ public final class RenewableEvidenceInventory {
     public enum Scope { MISSING_IMPLEMENTATION, FOCUSED_ONLY, BOUNDED_DIALECT_COMPARISON,
         NATIVE_PARTIAL_PROFILE, NATIVE_RECORDED_PROFILE }
     public enum CheckpointKind { NONE, NATIVE_CSV, REGFMA_NATIVE_MAP, WTDTB_NATIVE_MAP, WTPTB_NATIVE_MAP, WTGWGO_NATIVE_MAP, REECD_PAUX_NATIVE_MAP,
-        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, REPCGFMC_NATIVE_MAP, REPCC_NATIVE_MAP, HPLNTD_NATIVE_MAP, WT12A1B_NATIVE_MAP, WTTQA_NATIVE_MAP, WTDTA_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
+        WTGIBFFR_NATIVE_MAP, REECE_NATIVE_MAP, REGFMB_NATIVE_MAP, REGFMC_NATIVE_MAP, REPCGFMC_NATIVE_MAP, REPCC_NATIVE_MAP, HPLNTD_NATIVE_MAP, WT12A1B_NATIVE_MAP, WTTQA_NATIVE_MAP, WTDTA_NATIVE_MAP, WTARA_NATIVE_MAP, INLINE_REGCA_CURRENT_LIMIT, ANDES_CSV }
     public record Entry(String model,String focusedTest,String trajectoryTest,Scope scope,
                         CheckpointKind storage,String checkpoint,String fixture,String limitation) {
         public Class<?> focusedClass() throws ClassNotFoundException {
@@ -29,6 +29,10 @@ public final class RenewableEvidenceInventory {
         /** Readability/integrity guard only, not cold-provenance or complete-model acceptance. */
         public void requireReadableCheckpoint() throws Exception {
             switch(storage) {
+                case WTARA_NATIVE_MAP -> {
+                    if(WtaraNativeReference.profiles().size()!=16)throw new IllegalStateException("Incomplete aerodynamic reference matrix");
+                    for(var p:WtaraNativeReference.profiles()){p.body();p.input();p.network();}
+                }
                 case WTDTA_NATIVE_MAP -> {
                     if(WtdtaNativeReference.profiles().size()!=18)throw new IllegalStateException("Incomplete mechanical reference matrix");
                     for(var p:WtdtaNativeReference.profiles()){p.body();p.input();p.network();}
@@ -209,7 +213,9 @@ public final class RenewableEvidenceInventory {
                 new Entry("WTDTA1","org.interpss.core.dstab.WtdtaNativeObservationConformanceTest","WtdtaNativeConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTDTA_NATIVE_MAP,"WtdtaNativeReference:18-four-state-replays;18-coupled-diagnostics","",
                         "Exact five-CON native import, hertz stiffness and synchronous damping; shared four-coordinate mechanical kernel, one-mass active coordinates, staged/two-step observation and lifecycle guards. Eighteen cold-paired native profiles replay all four states on every raw row. Whole-stack fault/event-side and torque-curve discrepancies remain unaccepted; legacy angular-frequency benchmarks are separate. Further limits/lifecycle and independent PowerWorld acceptance remain open."),
-                bounded("WTARA1","PsseType3WindControllerTest"),
+                new Entry("WTARA1","org.interpss.core.dstab.WtaraAlgebraicConformanceTest","WtaraNativeConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
+                        CheckpointKind.WTARA_NATIVE_MAP,"WtaraNativeReference:16-direct-algebraic-boundary-replays;16-coupled-diagnostics","",
+                        "Exact two-CON/zero-state native allocation, unchanged degree/product equation, physical initial-power routing and finite-input guards. Sixteen cold-paired profiles compare direct torque and power on every raw row, explicitly retaining cached zero-time driver boundaries; nonzero pitch, zero/doubled gain, negative mechanical power and nonunit speed are covered. Complete coupled event-side parity, further lifecycle/base profiles and independent PowerWorld execution remain open."),
                 bounded("WTPTA1","PsseType3WindControllerTest"),
                 new Entry("WTTQA1","PsseType3WindControllerTest","WttqaNativePartialConformanceTest",Scope.NATIVE_PARTIAL_PROFILE,
                         CheckpointKind.WTTQA_NATIVE_MAP,"WttqaNativeReference:8-bounded-state-replays;2-curve-input-counterexamples","",
@@ -249,9 +255,9 @@ public final class RenewableEvidenceInventory {
                 .append("REEC_E uses the proved native reference standard name REECE; the source-listed REECE1/REECEU1 names and wrappers remain unsupported. ")
                 .append("PVD1 has a blank PTI cell and is excluded from native scope. Approval, source mapping, loadability, ")
                 .append("recorded profile evidence and complete verification are separate claims. No row below is VERIFIED.\n\n")
-                .append("Eight families have native recorded-profile links, fifteen have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U, REGFMC1U, REPCGFMC1U, REPCC, HPLNTDU, WT12A1B, WTTQA1 and WTDTA1), ")
-                .append("four have only the explicitly bounded ANDES coupled comparison, and none has focused tests only. ")
-                .append("The latter four are not established as native simulator conformance. Legacy/retired and ")
+                .append("Eight families have native recorded-profile links, sixteen have partial native profiles (REGCA1 Iolim, WTDTB1, WTPTB1, WTGWGOA, REECD Paux, WTGIBFFRA kernel, REECE, REGFMB1U, REGFMC1U, REPCGFMC1U, REPCC, HPLNTDU, WT12A1B, WTTQA1, WTDTA1 and WTARA1), ")
+                .append("three have only the explicitly bounded ANDES coupled comparison, and none has focused tests only. ")
+                .append("The latter three are not established as native simulator conformance. Legacy/retired and ")
                 .append("manufacturer-package supplemental models need a separate evidence expansion; their source rows ")
                 .append("are retained below and must not be counted as approved implementations. No new simulator run ")
                 .append("or complete raw-provenance acceptance is claimed by this inventory.\n\n")

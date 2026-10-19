@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+WTARA1 algebraic-boundary follow-up: retain the published degree/product
+equation and reject nonfinite parameters/inputs before output mutation.
+Two guards fail before the correction. Thirty-two cold native runs form
+sixteen exact pairs, covering nonzero pitch, nonunit speed, zero/doubled gain
+and negative power. Direct torque/power replay retains every history/event
+row and explicitly verifies cached zero-time input boundaries. Complete
+coupled/PowerWorld parity remains open; none is VERIFIED. Final gates pass
+53 focused, 410 plugin-core and 1,656 scoped SMIB/model/solver tests with zero
+failures/errors and only existing skips, plus four offline probe guards and
+six wording checks. All source/reference/report evidence is sealed in the
+private hash-verified archive and retained with this scoped implementation
+slice. See the
+[algebraic evidence and TODO](benchmarks/wtara-native-algebraic-2026-10-19.md).
+
 WTDTA1 native-mechanics follow-up: correct native-record Hz stiffness and
 synchronous-speed damping by reusing the existing four-coordinate mechanical
 kernel, without changing its equations or the legacy typed convention. Two
