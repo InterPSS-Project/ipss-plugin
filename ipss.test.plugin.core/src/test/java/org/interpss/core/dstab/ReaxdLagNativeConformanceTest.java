@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 /** Recorded-input lag comparisons; not full hybrid-plant runtime acceptance. */
 public class ReaxdLagNativeConformanceTest {
+    static List<Profile> reviewedProfiles(){return List.copyOf(profiles());}
     private static List<Profile> profiles(){var p=new ArrayList<Profile>();
         for(var existing:HplntdAggregationNativeReference.profiles())if(existing.name().startsWith("commands")||existing.name().equals("flat-auto-coarse")||existing.name().equals("fixed-continuous-coarse"))p.add(existing);
         p.addAll(List.of(

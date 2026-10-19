@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.*;
 /** Matched staggered-method plant-base replay, not network attachment acceptance.
  * The default kernel modified-Euler path remains separate and unchanged. */
 public class HplntdKernelNativeConformanceTest {
+    static List<Profile> reviewedProfiles(){return List.copyOf(profiles());}
     private static List<Profile> profiles(){var result=new ArrayList<Profile>();for(var p:HplntdAggregationNativeReference.profiles())if(p.name().startsWith("commands")||p.name().equals("flat-auto-coarse")||p.name().equals("fixed-continuous-coarse"))result.add(p);result.addAll(List.of(
         new Profile("plant-low-window-coarse",.0005,405,"4c1413ee008f5723c9dfc367ef1b5c911694523f8dc3a3ae008d4a5b832d0093","1a6bd67dbd0c25557697d469a0e7a738536f0a88d68034592eb3bae16063d77c"),
         new Profile("plant-low-window-fine",.00025,805,"15426437f89a366d1ece11a9f124b8ad770f0395918275377d01e4e82bb4abaa","1a6bd67dbd0c25557697d469a0e7a738536f0a88d68034592eb3bae16063d77c"),

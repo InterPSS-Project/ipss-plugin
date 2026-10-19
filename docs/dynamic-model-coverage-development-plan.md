@@ -24,6 +24,8 @@ runtime, enabled-MSS import and bounded fast-band switching comparisons. Slow-ba
 clock precision and other initialization/host modes remain open. HPLNTD now has a
 typed data/aggregation, bounded plant/downstream kernels and a shared opt-in
 staggered integration boundary, but no production plant/downstream attachment.
+Exact wrapper decoding, immutable multi-unit link planning and a plant-base/
+physical-Mvar measurement API now exist separately from the main importer.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -445,6 +447,14 @@ and state definitions agree.
       Final gates on baseline `08c49944f`: 51 focused, 371 core-unit (six optional
       skips), 1,455 SMIB/model/solver (one diagnostic skip), zero failures/errors.
       See [bounded plant-kernel evidence](benchmarks/hplntd-kernel-2026-10-18.md).
+    - [x] Add exact production wrapper-decoder APIs, an immutable two-pass ownership
+      plan and a read-only plant-base/Mvar measurement boundary. Verify all 17
+      reviewed input contracts, duplicate/ignored links, source order, branch
+      directions, live plant bases, transformer ports and the missing-branch rule.
+      This is preflight/measurement support, not main-importer or runtime attachment.
+      Gates: 65 focused, 379 core-unit (six optional skips), and 1,469 selected
+      SMIB/model/solver tests (one diagnostic skip), zero failures/errors.
+      See [binding/measurement evidence and runtime TODOs](benchmarks/hplntd-binding-boundary-2026-10-18.md).
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve

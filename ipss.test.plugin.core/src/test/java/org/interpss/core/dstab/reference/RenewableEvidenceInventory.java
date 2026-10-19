@@ -177,7 +177,7 @@ public final class RenewableEvidenceInventory {
             ).stream(),
             Set.of("HPLNTD").stream().map(model->
                 new Entry(model,"","",Scope.MISSING_IMPLEMENTATION,CheckpointKind.NONE,"","",
-                        "Native HPLNTDU/REAXDU data, weighted dispatch and two-/thirteen-state kernels have bounded recorded-input evidence. Plant references, integral saturation, frequency rates and voltage freeze use the shared opt-in staggered boundary and accepted host clock; default modified Euler remains unchanged. Production import/attachment and complete selector/lifecycle acceptance remain missing."))
+                        "Native HPLNTDU/REAXDU data, weighted dispatch and two-/thirteen-state kernels have bounded recorded-input evidence. Exact wrapper decoding, immutable multi-unit link planning and plant-base/physical-Mvar measurement APIs exist separately. The main importer, runtime coordinator/attachment and complete selector/lifecycle acceptance remain missing; default modified Euler is unchanged."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {
