@@ -48,6 +48,13 @@ discharge-reclose parity remains open. See the
 [switching kernel evidence](benchmarks/hplntd-switching-kernel-2026-10-18.md).
 The [physical-boundary follow-up](benchmarks/hplntd-switching-boundary-2026-10-18.md)
 records exact input networks and clock-only discrepancy discriminators.
+Six additional three-cycle fault profiles now isolate native capacitor
+discharge/reversal discrepancies: changing Tout from 0 to 0.03/0.15 s leaves
+all native channels/statuses identical, while direct sign reversal retains
+the native fast timer. InterPSS preserves the published discharge lockout and
+sign-specific persistence; these new profiles are counterexamples, not added
+native trajectory acceptance. See the
+[discharge/reversal evidence](benchmarks/hplntd-discharge-reversal-2026-10-18.md).
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -110,9 +117,18 @@ and state definitions agree.
 - [x] Pass the physical-boundary slice's 38 focused checks, 401 plugin-core tests
   (six existing optional skips), 1,536 selected SMIB/model/solver tests (one
   existing diagnostic skip) and 40 offline checks, with zero failures/errors.
-- [ ] Close fine fast-band/slow-band exact timing and add capacitor discharge/
-  reclose native discriminators. Current traces do not exercise reclosure;
-  unused native discharge storage does not prove functional parity.
+- [x] Add six capacitor discharge/reclose and direct-sign-reversal native
+  discriminators at both timesteps, cold-regenerated twice (twelve runs).
+- [x] Distinguish functional native Tout insensitivity from unused timer storage;
+  preserve published lockout and sign-specific timing in replay and imported
+  three-cycle fault tests, without fitting production to the counterexamples.
+- [x] Pass 32 focused Java checks, 401 plugin-core tests (six existing optional
+  skips), 1,541 selected SMIB/model/solver tests (one existing diagnostic skip)
+  and 46 offline guards. Both isolated rule-removal mutations fail as intended;
+  the production engine is restored unchanged before all final gates.
+- [ ] Close fine fast-band/slow-band exact timing and source-versus-native
+  discharge/reversal parity. The functional reference differences are now
+  demonstrated, not accepted by deleting lockout or suppressing timer resets.
 - [ ] Resolve zero-delay callback/origin and native unused-timer differences
   before claiming exhaustive state/callback equivalence.
 
