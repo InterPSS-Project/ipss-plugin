@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +13,7 @@ import java.nio.file.Path;
 import org.interpss.CorePluginTestSetup;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernorData;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
 import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.fadapter.psse.PSSEDStabDirectParser;
 import org.junit.jupiter.api.Test;
@@ -22,6 +24,79 @@ import com.interpss.dstab.mach.Machine;
 
 public class PsseHygovGovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
+
+    @Test
+    void retainedRatesIdentifyTheirEvaluationStateAndReadsDoNotAdvanceTheModel() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(.4); machine.setPe(.4);
+        var governor = builder.addGovHygov("Bus1", "1", texasData());
+        var bus = builder.getDStabNetwork().getDStabBus("Bus1");
+        assertTrue(governor.initStates(bus, machine));
+        assertEquals(Stage.NOT_EVALUATED, governor.getStateDerivativeSnapshot().stage());
+        assertTrue(governor.getStateDerivativeSnapshot().rates().isEmpty());
+        var initial = governor.getIntegrationStates();
+        assertEquals(4, initial.size());
+        assertThrows(UnsupportedOperationException.class, () -> initial.put("Gate Position", 0.0));
+
+        machine.setSpeed(.99);
+        assertTrue(governor.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 0));
+        var predictor = governor.getStateDerivativeSnapshot();
+        assertEquals(Stage.PREDICTOR, predictor.stage());
+        assertEquals(initial, predictor.evaluationStates());
+        assertEquals(.01 / governor.getEffectiveTf(), predictor.rates().get("Governor Filter"), TOL);
+        var predicted = governor.getIntegrationStates();
+        assertTrue(governor.nextStep(.005, DynamicSimuMethod.MODIFIED_EULER, machine, 1));
+        var corrector = governor.getStateDerivativeSnapshot();
+        assertEquals(Stage.CORRECTOR, corrector.stage());
+        assertEquals(predicted, corrector.evaluationStates());
+        assertEquals(initial, predictor.evaluationStates(), "old snapshots remain detached");
+        assertThrows(UnsupportedOperationException.class,
+                () -> corrector.rates().put("Water Flow", 0.0));
+
+        var corrected = governor.getIntegrationStates();
+        double output = governor.getOutput(machine);
+        machine.setSpeed(.97);
+        for (int i = 0; i < 100; i++) {
+            assertEquals(corrected, governor.getNamedStates());
+            assertEquals(corrector, governor.getStateDerivativeSnapshot());
+            assertEquals(output, governor.getOutput(machine), 0.0);
+        }
+        machine.setSpeed(1.0);
+        assertTrue(governor.initStates(bus, machine));
+        assertEquals(Stage.NOT_EVALUATED, governor.getStateDerivativeSnapshot().stage());
+        assertTrue(governor.getStateDerivativeSnapshot().evaluationStates().isEmpty());
+    }
+
+    @Test
+    void sharedRateSnapshotPreservesStoredCoordinatesWithBypassedFilter() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(.4); machine.setPe(.4);
+        var data = texasData(); data.setTf(0.0);
+        var governor = builder.addGovHygov("Bus1", "1", data);
+        assertTrue(governor.initStates(builder.getDStabNetwork().getDStabBus("Bus1"), machine));
+        var before = governor.getIntegrationStates();
+        machine.setSpeed(.99);
+        double[] rates = new double[6];
+        governor.evaluateStaggered(.005, rates, 1);
+        var snapshot = governor.getStateDerivativeSnapshot();
+        assertEquals(Stage.STAGGERED, snapshot.stage());
+        assertEquals(before, snapshot.evaluationStates());
+        assertArrayEquals(java.util.Arrays.copyOfRange(rates, 1, 5),
+                snapshot.rates().values().stream().mapToDouble(Double::doubleValue).toArray(), 0.0);
+        assertEquals(0.0, snapshot.rates().get("Governor Filter"), 0.0);
+        assertEquals(0.0, before.get("Governor Filter"), 0.0);
+        assertTrue(Math.abs(governor.getGovernorFilterOutput()) > 0.0,
+                "the bypassed output is not the stored filter coordinate");
+        double[] next = before.values().stream().mapToDouble(Double::doubleValue).toArray();
+        for (int i = 0; i < 4; i++) next[i] += .005 * rates[i + 1];
+        governor.applyStaggeredState(next, 0, .005);
+        governor.completeStaggeredStep(.005);
+        assertEquals(snapshot, governor.getStateDerivativeSnapshot(),
+                "state application does not claim a fresh derivative evaluation");
+        assertEquals(before, snapshot.evaluationStates());
+    }
 
     @Test
     void sharedIntegratorSeparatesDerivativeEvaluationFromGateCommit() throws Exception {

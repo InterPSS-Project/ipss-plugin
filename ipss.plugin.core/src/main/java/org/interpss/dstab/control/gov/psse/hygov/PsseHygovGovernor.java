@@ -3,10 +3,14 @@ package org.interpss.dstab.control.gov.psse.hygov;
 import com.interpss.common.exp.InterpssRuntimeException;
 import com.interpss.dstab.BaseDStabBus;
 import com.interpss.dstab.algo.DynamicSimuMethod;
+import com.interpss.dstab.controller.cml.ICMLStateProvider;
 import com.interpss.dstab.controller.deqn.AbstractGovernor;
 import com.interpss.dstab.mach.Machine;
 import org.interpss.dstab.control.util.AsymmetricDeadbandBlock;
 import org.interpss.dstab.control.util.IntegrationStepAware;
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
 import org.interpss.dstab.control.util.StaggeredEulerParticipant;
 import org.interpss.numeric.datatype.Unit.UnitType;
 
@@ -19,8 +23,11 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * {@code Tr} dependence that is currently absent from the ANDES HYGOV state
  * equation.</p>
  */
-public class PsseHygovGovernor extends AbstractGovernor implements IntegrationStepAware, StaggeredEulerParticipant {
+public class PsseHygovGovernor extends AbstractGovernor implements IntegrationStepAware,
+        StaggeredEulerParticipant, ICMLStateProvider, IntegrationStateAccess {
     private static final double EPS = 1.0e-9;
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Governor Filter", "Temporary Droop Integral", "Gate Position", "Water Flow");
 
     private State state = State.zero();
     private State oldState = State.zero();
@@ -60,6 +67,7 @@ public class PsseHygovGovernor extends AbstractGovernor implements IntegrationSt
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
+        stateMonitor.reset();
         if (!validateParameters()) return false;
         PsseHygovGovernorData d = getData();
         effectiveTr = correctedPositiveTimeConstant(d.getTr());
@@ -97,11 +105,13 @@ public class PsseHygovGovernor extends AbstractGovernor implements IntegrationSt
         if (flag == 0) {
             oldState = state;
             oldDerivatives = derivatives(oldState);
+            retainRates(oldState, oldDerivatives, Stage.PREDICTOR);
             state = oldState.plus(oldDerivatives, dt);
             state = constrainDesiredGate(state, committedDesiredGate, dt);
             currentOutput = output(state);
         } else if (flag == 1) {
             Derivatives corrected = derivatives(state);
+            retainRates(state, corrected, Stage.CORRECTOR);
             state = oldState.plusAverage(oldDerivatives, corrected, dt);
             state = constrainDesiredGate(state, committedDesiredGate, dt);
             committedDesiredGate = desiredGate(state);
@@ -129,6 +139,7 @@ public class PsseHygovGovernor extends AbstractGovernor implements IntegrationSt
     @Override public void evaluateStaggered(double stepSec, double[] rates, int offset) {
         if (!initialized) throw new IllegalStateException("Initialize HYGOV before evaluating derivatives");
         Derivatives d = derivatives(state);
+        retainRates(state, d, Stage.STAGGERED);
         rates[offset] = d.filter;
         rates[offset+1] = d.integrator;
         rates[offset+2] = d.gate;
@@ -153,6 +164,33 @@ public class PsseHygovGovernor extends AbstractGovernor implements IntegrationSt
     }
 
     public double getGatePosition() { return state.gate; }
+
+    /** Stored coordinates, including the dormant filter coordinate when Tf is zero. */
+    @Override public java.util.Map<String, Double> getNamedStates() {
+        return getIntegrationStates();
+    }
+
+    @Override public java.util.Map<String, Double> getIntegrationStates() {
+        var values = new java.util.LinkedHashMap<String, Double>();
+        values.put("Governor Filter", state.filter);
+        values.put("Temporary Droop Integral", state.integrator);
+        values.put("Gate Position", state.gate);
+        values.put("Water Flow", state.flow);
+        return java.util.Collections.unmodifiableMap(values);
+    }
+
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
+    }
+
+    private void retainRates(State s, Derivatives d, Stage stage) {
+        stateMonitor.begin(stage);
+        stateMonitor.record(0, s.filter, d.filter);
+        stateMonitor.record(1, s.integrator, d.integrator);
+        stateMonitor.record(2, s.gate, d.gate);
+        stateMonitor.record(3, s.flow, d.flow);
+    }
+
     public double getWaterFlow() { return state.flow; }
     public double getTurbineHead() {
         return square(state.flow / Math.max(EPS, state.gate));

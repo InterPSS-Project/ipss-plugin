@@ -15,6 +15,55 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class PsseStaggeredEulerSolverTest {
+    @Test void salientElectricalRefreshPreservesAnExternallyAdvancedQState() throws Exception {
+        var algo = loadSalient();
+        var machine = (com.interpss.dstab.mach.impl.SalientPoleMachineImpl)
+                algo.getNetwork().getMachine("Bus1-mach1");
+        double accepted = machine.getPsiq11() + .01;
+        machine.setPsiq11(accepted);
+        for (int i = 0; i < 3; i++) {
+            assertTrue(machine.nextStepElectrical(0., DynamicSimuMethod.MODIFIED_EULER,
+                    algo.getNetwork(), 0));
+            assertEquals(accepted, machine.getPsiq11(), 0.,
+                    "algebraic refresh must retain the shared integrator's q-axis state");
+        }
+        machine.getIxy();
+        assertTrue(machine.nextStepElectrical(0., DynamicSimuMethod.MODIFIED_EULER,
+                algo.getNetwork(), 0));
+        var state = machine.captureSalientElectricalState();
+        assertEquals(accepted, state.x5Psiq11(), 0.);
+        assertEquals((-accepted + (machine.getXq11() - machine.getXq()) * state.Iq())
+                / machine.getTq011(), state.dx5Psiq11(), 1.e-12);
+    }
+
+    @Test void salientQStateAdvancesDuringTheSharedNetworkIntegration() throws Exception {
+        var algo = loadSalient();
+        var machine = (com.interpss.dstab.mach.impl.SalientPoleMachineImpl)
+                algo.getNetwork().getMachine("Bus1-mach1");
+        double initial = machine.getPsiq11();
+        machine.setPm(machine.getPm() + .1);
+        for (int i = 0; i < 200; i++) assertTrue(algo.solveDEqnStep(true));
+        assertTrue(Math.abs(machine.getPsiq11() - initial) > 1.e-6,
+                "the damper state must respond to the changing rotor/current boundary");
+        assertTrue(Double.isFinite(machine.getPe()));
+    }
+
+    private DynamicSimuAlgorithm loadSalient() throws Exception {
+        IpssCorePlugin.init();
+        String base = "testData/adpter/psse/v33/SMIB/";
+        var context = new PSSEMultiFileLoader().loadDStab(
+                base + "SMIB_v33.raw", base + "SMIB_v33_gensal.dyr");
+        var algo = context.getDynSimuAlgorithm();
+        assertTrue(algo.getAclfAlgorithm().loadflow());
+        algo.setSolver(new PsseStaggeredEulerSolver(algo));
+        algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algo.setSimuStepSec(.0005);
+        algo.setTotalSimuTimeSec(.1);
+        algo.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algo.initialization());
+        return algo;
+    }
+
     @Test void endpointReuseSkipsOnlyOrdinaryInitialSolve() throws Exception {
         var algo = load();
         var calls = new java.util.concurrent.atomic.AtomicInteger();
