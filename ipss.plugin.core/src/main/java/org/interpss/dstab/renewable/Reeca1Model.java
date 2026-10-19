@@ -343,6 +343,17 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         if (updateDipHistory) previousDip = voltageDip;
     }
 
+    /**
+     * Preserve an excursion at the solved left side of a network event.
+     * An event may remove it before the next integration call samples voltage.
+     * The next positive step owns the recovery transition and timer update;
+     * ordinary algebraic refreshes must not consume that history.
+     */
+    void captureNetworkEventLeftBoundary(double localVoltage) {
+        double sensedV = sensedVoltage(localVoltage);
+        if (sensedV < data.vdip() || sensedV > data.vup()) previousDip = true;
+    }
+
     /** Refresh upstream algebraic signals without consuming derivative history. */
     void refreshTwoStep(double p, double q, double v, double frequency) {
         p = snapToInitial(p, p0);

@@ -510,6 +510,75 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     }
 
     @Test
+    void networkEventPreservesAnExcursionBetweenIntegrationSamples() throws Exception {
+        for (double leftVoltage : new double[]{.5, 1.5}) {
+            var builder = DStabBuilderTestFixture.createBuilder();
+            var converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                    0, .02, 10, .9, .4, 1.22, 10, .8, .4, -1.3, .02, 0, 100, -100, .8));
+            converter.getParentGen().setGen(new Complex(.8, 0));
+            converter.getDStabBus().setVoltage(Complex.ONE);
+            var controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), converter);
+            converter.setReeca1Controller(controller);
+            converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+            assertTrue(converter.initStates(converter.getDStabBus()));
+            var method = com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER;
+            assertTrue(converter.nextStep(.001, method, 0));
+            converter.getDStabBus().setVoltage(new Complex(leftVoltage, 0));
+            assertTrue(converter.nextStep(0, method, 1));
+            assertEquals(0., controller.getControlMemory().get("Previous Dip"));
+            var converterStates = converter.getIntegrationStates();
+            var controlStates = controller.getIntegrationStates();
+            var converterRates = converter.getStateDerivativeSnapshot();
+            var controlRates = controller.getStateDerivativeSnapshot();
+            double held = controller.getControlMemory().get("Held Active Current Limit");
+            for (int i = 0; i < 3; i++) converter.captureNetworkEventLeftBoundary();
+            assertEquals(converterStates, converter.getIntegrationStates());
+            assertEquals(controlStates, controller.getIntegrationStates());
+            assertEquals(converterRates, converter.getStateDerivativeSnapshot());
+            assertEquals(controlRates, controller.getStateDerivativeSnapshot());
+            assertEquals(1., controller.getControlMemory().get("Previous Dip"));
+            assertEquals(0., controller.getControlMemory().get("Post Dip Timer"));
+            assertEquals(held, controller.getControlMemory().get("Held Active Current Limit"));
+
+            // Both event sides have the same physical time. Recovery starts
+            // when the next positive integration step sees the right side.
+            converter.getDStabBus().setVoltage(Complex.ONE);
+            assertTrue(converter.nextStep(0, method, 1));
+            assertEquals(0., controller.getControlMemory().get("Post Dip Timer"));
+            assertTrue(converter.nextStep(.001, method, 0));
+            assertEquals(.5, controller.getControlMemory().get("Post Dip Timer"), 0.);
+            assertEquals(held, controller.getActiveCurrentLimit(), 1.e-12);
+            assertTrue(converter.nextStep(.001, method, 0));
+            assertEquals(.499, controller.getControlMemory().get("Post Dip Timer"), 1.e-12);
+            assertTrue(converter.initStates(converter.getDStabBus()));
+            assertEquals(0., controller.getControlMemory().get("Previous Dip"));
+            assertEquals(0., controller.getControlMemory().get("Post Dip Timer"));
+        }
+    }
+
+    @Test
+    void normalEventBoundaryDoesNotEraseAnUnconsumedRecoveryTransition() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                0, .02, 10, .9, .4, 1.22, 10, .8, .4, -1.3, .02, 0, 100, -100, .8));
+        converter.getParentGen().setGen(new Complex(.8, 0));
+        converter.getDStabBus().setVoltage(Complex.ONE);
+        var controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), converter);
+        converter.setReeca1Controller(controller);
+        converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        converter.captureNetworkEventLeftBoundary();
+        assertEquals(0., controller.getControlMemory().get("Previous Dip"));
+        converter.getDStabBus().setVoltage(new Complex(.5, 0));
+        assertTrue(converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        converter.getDStabBus().setVoltage(Complex.ONE);
+        converter.captureNetworkEventLeftBoundary();
+        assertEquals(1., controller.getControlMemory().get("Previous Dip"));
+        assertTrue(converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0));
+        assertEquals(.5, controller.getControlMemory().get("Post Dip Timer"), 0.);
+    }
+
+    @Test
     void repeatedVoltageExcursionDoesNotRestartActiveCurrentRecovery() {
         Reeca1Model controller = new Reeca1Model(currentLimitData(1, 0, 2, .5, true), null);
         controller.initialize(1.0, 0.0, 1.0);

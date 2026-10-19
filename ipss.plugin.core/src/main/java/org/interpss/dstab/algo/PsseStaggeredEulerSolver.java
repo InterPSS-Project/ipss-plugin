@@ -408,6 +408,17 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         start=new double[states.size()]; derivative=new double[states.size()];
     }
 
+    @Override
+    public void beforeStep(double time) throws DStabSimuException {
+        // The enclosing solve has already identified this event. Capture its
+        // settled left endpoint before the event processor changes the network.
+        if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
+            for (var renewable : renewables)
+                if (renewable.active.getAsBoolean())
+                    renewable.model.captureNetworkEventLeftBoundary();
+        super.beforeStep(time);
+    }
+
     private void evaluate() throws DStabSimuException { evaluate(false); }
 
     private void evaluate(boolean initialEndpoint) throws DStabSimuException {

@@ -3039,3 +3039,67 @@ accepted. Frozen sources, state observations, unchanged-initial-state and
 prefix checks, all-channel comparisons, independent projection/startup
 calculations and the four-control error plot are retained privately in
 `2026-10-18-case2-recovery-network-interaction`.
+### Excursion history at a network-event boundary (2026-10-18)
+
+The newly exposed controller memory identifies a missed discrete transition.
+At bus 3141, the last prefault voltage is 1.151466 pu, above its 1.15 pu upper
+threshold. The fault changes it to 1.108097 pu at the same timestamp. The
+algebraic endpoint refresh had calculated the fault-current limit, but the
+excursion flag was only retained by a positive integration step. Consequently,
+the first post-event step never started the recovery interval. A later
+overvoltage excursion reduced the active-current limit to zero instead of
+retaining the earlier limit.
+
+The staggered solver now captures an active converter's solved left-side
+excursion before applying a network event. The next positive integration step
+continues to own the recovery transition and timer update. This capture does
+not advance continuous states, derivative history, or timers. It uses the
+existing event flag, preserves an unconsumed earlier transition, and does not
+run when network events are disabled. Ordinary algebraic refreshes retain their
+existing behavior. No device parameters, voltage thresholds, or reference
+trajectories are changed.
+
+A local voltage replay first reproduces all 96 converters through 1.2 seconds,
+including both event duplicate pairs, within 1.14e-13 MW/Mvar. Replaying the
+supplied voltage with identical local continuous initial states then reduces
+bus 3141's fault-prefix peak P error from 66.494408 MW to 0.049440 MW. Across
+the complete ten-second voltage replay, its fault/postfault NRMSE falls from
+0.192888 to 0.00164249. Its remaining 5.003989 MW peak occurs at 1.502 seconds,
+near recovery expiry. Fault/postfault conditional P/Q passing counts improve from
+188/192 to 189/192; the remaining failures are P at 1084 and Q at 3074 and
+3113. These are conditional component results, not solved-network acceptance.
+
+The coupled comparison retains the preceding finite-network and 17 initial-Q
+selector diagnostics. Its complete prefault physical trajectory is exactly
+unchanged. Over the fault/postfault prefix ending at 1.2 seconds:
+
+| Coupled prefix quantity | Before event capture | With event capture |
+| --- | ---: | ---: |
+| Voltage channels below 0.005 NRMSE | 1758 / 2000 | 1948 / 2000 |
+| P channels below 0.005 NRMSE | 150 / 199 | 194 / 199 |
+| Q channels below 0.005 NRMSE | 183 / 199 | 190 / 199 |
+| Largest absolute voltage error (pu) | 0.016946 | 0.018909 |
+| Largest absolute P error (MW) | 69.817125 | 4.781963 |
+| Largest absolute Q error (Mvar) | 14.158669 | 9.575994 |
+| Largest absolute rotor-angle error (degrees) | 0.146017 | 0.021781 |
+
+NRMSE uses each channel's complete ten-second reference range; event sides are
+aligned by ordinal and duplicate-row identity. The production event hook
+reproduces all 1,205 rows and 4,810 physical channels of the coupled diagnostic
+exactly. The 120 focused converter, controller, wind-stack, two-step and
+staggered-solver tests pass. The new boundary test fails when the capture is
+disabled; it covers lower and upper excursions, unchanged states/rates,
+idempotent capture, timer ownership, and reinitialization.
+
+A separate accepted-voltage stator-cache refresh experiment did not resolve
+the mismatch: worst complete-prefault rotor error increased from 0.018503 to
+0.040088 degrees. That experiment was not adopted. Its initial states were
+semantically identical; differing JSON field order was corrected in the
+diagnostic validator without rerunning or altering the measurements.
+
+The event-boundary correction does not resolve the initial-Q selection rule,
+prefault rotor criterion, remaining fault errors, or production integration of
+the generator/shunt operating-point fixture. No complete event is accepted.
+Reproducible sources, frozen runtime hashes, state traces, duplicate-preserving
+comparisons, negative controls and the plot are retained in private evidence
+set `2026-10-18-case2-event-boundary-recovery`.

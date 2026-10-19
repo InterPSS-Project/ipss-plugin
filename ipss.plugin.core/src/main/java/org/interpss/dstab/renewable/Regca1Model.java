@@ -97,6 +97,17 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         return finite(ipState) && finite(iqState);
     }
 
+    /**
+     * Capture a settled voltage excursion before the network applies an event.
+     * This does not advance continuous states, derivative history, or timers.
+     * Call after the left endpoint's algebraic refresh and before changing voltage.
+     */
+    public void captureNetworkEventLeftBoundary() {
+        if (integrationScheme == IntegrationScheme.TWO_STEP && reeca1Controller != null)
+            reeca1Controller.captureNetworkEventLeftBoundary(
+                    Math.max(0.01, getDStabBus().getVoltageMag()));
+    }
+
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (integrationScheme == IntegrationScheme.TWO_STEP)
