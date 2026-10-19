@@ -2,6 +2,19 @@
 
 ## Current checkpoint
 
+TGOV1 machine-base/damping follow-up: twenty native cold runs cover 50/200 MVA,
+zero/nonzero turbine damping and matched/halved timesteps, including a separate
+tight-network discriminator. Ten pairs match exactly and thirty hashed fixtures
+retain all history/event rows and runnable inputs. Recorded-input refinement and
+nine coupled metric bounds pass with unchanged production models. Tightening
+network tolerance alone does not remove the small voltage/angle floor; further
+precision localization and complete-family profiles remain open. See the
+[base/damping checklist](benchmarks/tgov1-machine-base-damping-2026-10-19.md).
+Final gates pass 21 focused, 410 plugin-core and 1,624 scoped SMIB/model/solver
+checks, with zero failures/errors and only existing skips, plus four offline
+probe guards and six language-policy checks. Source, reference and report
+hashes preserve the bounded profile evidence, not complete-family acceptance.
+
 TGOV1 PowerWorld follow-up: eight exact cold runs add complete fourteen-channel
 upper/lower reference-step artifacts at two steps. Explicit recorded-speed
 replay retains limiter-crossing errors; a scalar guard explains why they need
