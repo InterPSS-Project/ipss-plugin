@@ -2468,7 +2468,9 @@ passes the agreed criteria or resolves the discrepancy. The improved cold
 operating point must not be presented as a trajectory-accuracy improvement.
 
 The accepted comparison method and full-reference baseline remain unchanged.
-Original solution settings and fault admittance remain unconfirmed. The core
+At the time of these probes, the solution sequence was unconfirmed; the
+subsequent user clarification is recorded below. Fault admittance remains
+unconfirmed. The core
 fix, negative controls, production test reports, paired voltage replay, common
 motion analysis, successful and rejected power-flow probes, and both completed
 prefix comparisons are retained privately in
@@ -2495,8 +2497,9 @@ difference. A shunt at zero has room to increase toward its original
 does not establish that both original conflicting objectives were active.
 The primary control description requires matching objectives for colocated
 setpoint controllers; it does not specify automatic generator precedence
-for this conflicting input. The reference run's control settings remain
-unconfirmed.
+for this conflicting input. The subsequent user clarification below confirms
+the enabled adjustment and solved outcome, without specifying the internal
+resolution of conflicting targets.
 
 Using only the shunt settings and netted powers independently solved in the
 existing diagnostic policy, the largest initial power-balance residual falls
@@ -2509,3 +2512,45 @@ support the operating-point localization without proving the unconfirmed
 control policy or improving the failed dynamic comparison. All 150 active
 shunt records, bus-level residuals, rounding bounds and input hashes are
 retained privately in `2026-10-18-case2-initial-control-balance-audit`.
+
+### Confirmed initial preparation sequence (2026-10-18 follow-up)
+
+The user confirms that the original case had the bus-1033 shunt energized at
+its 50 Mvar setting. The initial reference power-flow solve enabled switched-
+shunt adjustment and moved this shunt to zero. The generator remained at its
+reactive-power minimum, so the voltage settled at 1.015128 pu rather than its
+1.0 pu schedule. The subsequent generator-netting solve and generator/load
+conversion did not change this bus result. No voltage-target edit was
+reported.
+
+The earlier benchmark used `fixed_powerflow_controls=true`, which explicitly
+disabled switched-shunt adjustment, and applied generator netting before its
+first solve. This is a preparation mismatch. The historical 51-bus comparison
+did not expose bus 1033; its small error was not evidence that the complete
+operating point matched. The user-confirmed sequence supersedes the previous
+uncertainty about whether this shunt was adjusted. It does not validate
+changing its original 1.03 pu target to 1.0 pu, nor establish that enabling
+adjustment alone reproduces the colocated controller behavior.
+
+A follow-up probe retains both original voltage targets, explicitly enables
+switched-shunt adjustment, solves before generator netting, then solves again
+after netting. It includes the verified continuous-shunt limit-release fix.
+Both power-flow solves converge with settled controls, but the shunt remains
+at 0.5 pu susceptance and the generator remains at -0.4003 pu reactive power.
+Bus 1033 is 1.026328249 pu before netting and 1.026328248 pu after it; the
+largest initial voltage error is 0.011200589 pu at that bus. The initial
+network compensation residual is 1.07e-12 pu. The probe ends at zero seconds
+and is not a dynamic acceptance run. Its inherited
+`fixed_powerflow_controls` flag is overridden explicitly for switched-shunt
+adjustment; the full injected runner source is retained with the evidence.
+
+Therefore correcting the preparation order and enabling adjustment do not
+resolve the colocated control mismatch. The current coordinated Newton shunt
+path excludes a parent bus with an active generator; its outer control path
+can leave the shunt at its upper limit while the generator is at its lower
+limit. Reproducing the reference requires resolving this interaction while
+preserving the original targets. The earlier generator-target substitution
+remains an unvalidated diagnostic, despite its closer initial voltages.
+The confirmed sequence, unchanged-input probe, source, outputs and runtime
+dependencies are retained privately in
+`2026-10-18-case2-confirmed-powerflow-sequence-check`.
