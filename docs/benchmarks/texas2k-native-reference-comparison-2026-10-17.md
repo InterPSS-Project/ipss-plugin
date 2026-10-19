@@ -2554,3 +2554,49 @@ remains an unvalidated diagnostic, despite its closer initial voltages.
 The confirmed sequence, unchanged-input probe, source, outputs and runtime
 dependencies are retained privately in
 `2026-10-18-case2-confirmed-powerflow-sequence-check`.
+
+### Colocated reactive-sharing formulation (2026-10-18)
+
+An experimental formulation now reproduces the confirmed bus-1033 state
+without overwriting either original voltage target. It explicitly assigns
+the local generator's voltage equation to the group, combines generator Q
+limits with the shunt's voltage-dependent reactive capability for the solve,
+then allocates the solved group output in proportion to participation weights,
+subject to individual bounds. Physical generator limits and the physical
+shunt representation are restored before dynamic initialization. This is an
+explicit group policy, not proof of a universal rule for conflicting targets.
+
+Six independent lossless-network fixtures pass: compatible and conflicting
+targets at the lower limit, unequal participation in the interior, generator
+upper-limit operation starting with either zero or full shunt output, and
+exhaustion of both upper limits. Their voltage and reactive-power expectations
+are calculated analytically. Separate allocation checks cover conservation,
+weight scaling, saturation, fixed bounds and rejection of infeasible demands.
+An earlier formulation based only on redistributing existing output failed
+the upper-limit checks and is retained as a negative control. A second probe
+was explicitly stopped before dynamics because it unnecessarily iterated an
+inactive capability bound; only the corrected completed run is scored.
+
+In the completed Case 2 probe, bus 1033 has zero shunt susceptance,
+-40.03 Mvar generator output, and 1.015128513 pu voltage after the netting
+solve. The original generator and shunt targets remain 1.0 and 1.03 pu.
+The largest initial voltage error across all 2,000 buses is 0.0000142113 pu
+at bus 4175. The initial network compensation residual is 1.06e-12 pu,
+and no residual injection is retained.
+
+The subsequent 1.2-second coupled comparison still fails: its prefault maximum
+voltage error is 0.109927 pu at bus 1046 and maximum rotor-angle error is
+10.386441 degrees at unit 1051/1. The worst rotor-angle RMSE over this prefix
+is 4.378404 degrees. All 4,810 channels and 1,205 samples are compared with
+event-side ordering preserved and full-ten-second normalization ranges.
+Thus reproducing the initial control state does not resolve the dynamic error.
+
+The six original cases contain 1, 1, 25, 25, 25 and 25 active continuous-shunt
+groups colocated with generators, respectively. All have conflicting source
+voltage objectives. Each of Cases 3–6 has five such buses with multiple active
+generators. The current experimental formulation supports one generator and
+one local continuous shunt per group and explicitly rejects larger groups;
+it is not integrated as a production policy or a six-case solution.
+The analytical checks, rejected probes, completed coupled prefix, original
+case inventory and primary-source extracts are retained privately in
+`2026-10-18-case2-colocated-reactive-sharing-diagnostics`.
