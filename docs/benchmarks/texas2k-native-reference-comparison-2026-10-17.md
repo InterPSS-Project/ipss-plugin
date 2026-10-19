@@ -2975,3 +2975,67 @@ diagnostic. The full dynamic accuracy objective remains open. Input hashes,
 independent matrix construction, endpoint projections, complete iteration
 paths, fixed-tolerance controls and passive-bus balance tables are retained
 privately in `2026-10-18-case2-early-network-iteration-reconstruction`.
+
+### Recovery-selection and network-iteration interaction (2026-10-18)
+
+The previously tested recovery selectors and finite network stopping rule
+interact strongly. A combined diagnostic retains the corrected power-flow
+solution, all continuous initial states and physical outputs. It changes
+only the seventeen stored initial-Q recovery selectors to the positive branch
+indicated by supplied initial measurements, and uses the independently checked
+constant-Z matrix placement, 1e-4 complex-voltage stopping rule and preceding
+endpoint reuse. No subsequent measured signal is imposed. Initial physical
+outputs and every other initial state-snapshot field are exactly unchanged.
+
+Maximum absolute errors over 0 to 0.9 seconds are:
+
+| Diagnostic | Voltage (pu) | Rotor angle (degrees) | Terminal P (MW) | Terminal Q (Mvar) |
+| --- | ---: | ---: | ---: | ---: |
+| Original coupled control | 0.10992734 | 8.1024006 | 109.11886 | 94.61586 |
+| Finite network rule and Z matrix only | 0.10937218 | 8.2630273 | 109.13158 | 99.68135 |
+| Recovery selectors only | 0.10998835 | 7.9841784 | 109.21101 | 91.85234 |
+| Combined diagnostic | 0.00021873 | 0.0114576 | 1.11674 | 0.16521 |
+
+All 96 converters' stored excursion histories now match the corresponding
+unchanged models driven by supplied voltage, at all 903 recorded endpoints.
+Those comparison histories are local model states, not supplied internal
+states. The result explains why either earlier control, applied alone,
+failed to remove the large discrepancy. It does not validate a new rule for
+choosing recovery direction at exact zero Q.
+
+An independent conditional-current projection separates 103 synchronous
+machines, 17 zero-initial-Q converters and 79 other converters. Before the
+first differing excursion, the seventeen converters dominate the conditional
+reactive-current error. A normal converted-network startup calculation from
+the independently solved operating point is also checked without supplied
+inputs. It changes voltage by at most 1.28e-14 pu and produces positive
+roundoff-sized Q for only 14 of the 17 units. Thus an ordinary startup solve
+does not yet supply a reliable justification for the measured-sign override.
+No offset, sign convention or recovery parameter is changed in production.
+
+The combined diagnostic completes through 1.2 seconds, including fault
+application and clearing. All 903 earlier rows and 4,810 physical channels
+remain exactly unchanged. The scorer preserves both duplicate event rows,
+uses the validated reference step ordinals, retains the full ten-second
+normalization ranges, and evaluates no ten-second rotor RMSE gate on this
+shortened run.
+
+| Complete prefault requirement | Passing channels | Total channels |
+| --- | ---: | ---: |
+| Voltage NRMSE < 0.001 | 2,000 | 2,000 |
+| Terminal P NRMSE < 0.001 | 197 | 199 |
+| Terminal Q NRMSE < 0.001 | 197 | 199 |
+| Rotor maximum error < 0.002 degrees | 63 | 103 |
+
+Worst prefault voltage/P/Q NRMSE is 0.00039505, 0.00142274 and 0.00219846.
+Maximum prefault rotor error is 0.0185027 degrees at unit 1051/1. The
+fault/postfault prefix still fails: voltage/P/Q NRMSE reaches 0.0222041,
+0.5391991 and 0.0975996, and rotor error reaches 0.1460175 degrees at 1.2
+seconds. These short fault-period metrics do not cover the full event.
+
+The dominant prefault interaction is localized, but production initialization,
+remaining prefault differences and fault recovery remain open. No event is
+accepted. Frozen sources, state observations, unchanged-initial-state and
+prefix checks, all-channel comparisons, independent projection/startup
+calculations and the four-control error plot are retained privately in
+`2026-10-18-case2-recovery-network-interaction`.
