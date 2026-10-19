@@ -1,0 +1,322 @@
+{
+  "schema": "interpss-benchmark-input-contract-v1",
+  "benchmarks": [
+    {
+      "name": "smib-genrou-ac11c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac11c.dyr",
+          "sha256": "0489565825a23cd8c768fbdbbe6216684c636b89deeab3119e737b68129db047"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac11c_powerworld.dyr",
+          "sha256": "3df21e8bcf21330dffd0132f34656737611690d93edae345ac0f07e70e275165"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac11c.json",
+          "sha256": "5ae4c685b5bd46f082712ccb95f8f498a21955a316e28e101962a04d23a1c535"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-ac7c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac7c.dyr",
+          "sha256": "f25f396605b7d3956c508d80535e225589d1b253b93b1809b0530f1c739e2430"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac7c_powerworld.dyr",
+          "sha256": "b113c870b49e7ae487e4daac2e9d22fcb95b157b75ff76df693fb5b0a4617560"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac7c.json",
+          "sha256": "2f7702ee373938bea890fddda730b1b747bf9ceaad3d01aad81f2418632777b3"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-ac8c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8c.dyr",
+          "sha256": "8449c70b6cab29055d73c1f165a087f7076e52e1f7ae1b2d4427ac065c066cb4"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8c_powerworld.dyr",
+          "sha256": "0e232c2f7c3ef2e5e482953a704eee608de9c98396981784625633c5409f3162"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac8c.json",
+          "sha256": "7b290786801e9d774cecfddfce999e864cd569614f0e4987a465fc1afd8d058a"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-ac9c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac9c.dyr",
+          "sha256": "746ceb58782137cff81d0151bf41bb9c381633b0ec1cfbc70b0d331590754a98"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac9c_powerworld.dyr",
+          "sha256": "8ee01a4b48bf33a22858a4c79827c0be1f166fbc6f938ac7a360d815ed6a771b"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac9c.json",
+          "sha256": "2b53cb9fb546d6877d3a63d2941d945dc7ac9a7ee08d3e7547cc2ed58a5e4739"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-dc1c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc1c.dyr",
+          "sha256": "d96e84034f660a40c472eef250d62fe377715ed6ccba454ad3c03fef85ab5484"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc1c_powerworld.dyr",
+          "sha256": "83a85c05e1e8795233278d3818abac2ad1872589a26cf68684c874fa49dca15f"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-dc1c.json",
+          "sha256": "f81d5fc7e9b43c99ad6991a23a3b92bdcac380ff08607d966e29b284a40d0159"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-dc2c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc2c.dyr",
+          "sha256": "6ac1af43b140f9a38978637af56f63d181e038378dbecb3fa462e5ee4c9d3838"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_dc2c_powerworld.dyr",
+          "sha256": "daef29c33385e2cd21f9671749fc2a6881fa91d295954a4a66f24e9f8237d848"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-dc2c.json",
+          "sha256": "b7710ab05e9c6f40718117acf0c46653d22aa2444fa47cb70ebf630aa10ad91b"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-ac8b",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8b_powerworld.dyr",
+          "sha256": "3c58a6bd2b28061d76398481b59b3b6ef407639abd0eddf0607c29f8d0c71f06"
+        },
+        "powerworld_dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac8b_powerworld_pti.dyr",
+          "sha256": "3e1022e0a8a31fd4e325cc26f8881a0fbe97512c8ff472bfd8d344d896a3ac83"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac8b.json",
+          "sha256": "57d6bcb2ae89a253816e6a3a4f759ca08fecd4ad1171ee3dc9df904c020d0dd9"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-exac1a",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_exac1a_powerworld.dyr",
+          "sha256": "818b6864b2f8f09e14a7bf77a53f620bc0c3a32028cea2cf169034c381cc5d62"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-exac1a.json",
+          "sha256": "b80c4297328da3cfb134eb06ec2b574646fc45aa17ca2042968b7dfc48420ad0"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-st2c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st2c_powerworld.dyr",
+          "sha256": "c6d7cf721f8115913656e02d2e05b02d6d9ad61602577e8ad017d2eaeb48b5df"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-st2c.json",
+          "sha256": "3ea8e6d77de65f371a43e152f0c12ded8315daf0bd7408c67d02cb570242be33"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-st3c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st3c_powerworld.dyr",
+          "sha256": "ebb434a190d75ebd7ef842964c2b7c372e9e8ee37bb3bb6a54f7b712daa0c0ae"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-st3c.json",
+          "sha256": "ee8a80553a9b237d4ecb11e20f62a5c4f25d8e4dfe6e7e46bdf62c4e807214a5"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-st5c",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_st5c_powerworld.dyr",
+          "sha256": "a6b26d9a0ba42be246b9df531b9d40ec8dc5f168e806771cde16a79cc3904cc6"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-st5c.json",
+          "sha256": "5fdb12a34dae73cf8efcc6904c48cd791b33eec33ab36540380b67ba238f9dea"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-ac7b",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_ac7b.dyr",
+          "sha256": "0bfb29b0e7671e6934a7e7ef2c3d4c01c3468ee296dd7b47c1ab77b0d028c644"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-ac7b.json",
+          "sha256": "a47869e906827593697ef3dd8c54d45ffa9deb733236f15cd0b45db114508005"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-esac4a",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_esac4a.dyr",
+          "sha256": "b311312bf1f8399f85cd695e0409df904111fd29c707d86daf4773e4e33c545d"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-esac4a.json",
+          "sha256": "d66ea4b206b07b1117712b13d6164cbab01ee54105437b14a2ba961f0686a1e0"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-esac6a",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_esac6a.dyr",
+          "sha256": "70a4a2776348c816a11066719a2f0a8e3188a6b7d2948313e37071abde894241"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-esac6a.json",
+          "sha256": "7d59afdf62e1959b226a75b6c39bad728f2bedd1db096556ec7f36be6bd04968"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-esac8b",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_esac8b.dyr",
+          "sha256": "3e1022e0a8a31fd4e325cc26f8881a0fbe97512c8ff472bfd8d344d896a3ac83"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-esac8b.json",
+          "sha256": "24106494bcf12f9104336c8611aa6c4fcfa957182d8e91153d8c554f6c2da563"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-exac4",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_exac4.dyr",
+          "sha256": "4937ec07687f877efad5b3f65eceb965e3dba564eb92edcb37ba7f752b09c8be"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-exac4.json",
+          "sha256": "41427f6b2fd44ef69af3d5b0c593ffce96b8a30537de7f53ff9d630b4c234193"
+        }
+      }
+    },
+    {
+      "name": "smib-genrou-rexsys",
+      "inputs": {
+        "dyr": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33_genrou_rexsys.dyr",
+          "sha256": "280b0e934f6742d639320066814c58e56bdfd0acb3e2633f2f8c851030d9b8a9"
+        },
+        "raw": {
+          "path": "ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw",
+          "sha256": "986c6b3c8201ff0c4581a60e48af3438a14c692c12e4f8b966f4f2c710daa02b"
+        },
+        "spec": {
+          "path": "ipss.test.plugin.core/testData/reference/powerworld/specs/smib-genrou-rexsys.json",
+          "sha256": "cc4d17c43238a77691428f56dc3af8ccf1cb8f6ab035db691b3757105e80a41e"
+        }
+      }
+    }
+  ]
+}

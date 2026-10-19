@@ -2,6 +2,17 @@
 
 ## Current checkpoint
 
+Exciter input-provenance follow-up: recover eleven missing historical DYR
+inputs by their exact archived hashes and preserve thirty content-addressed
+assets. All eleven recovered specifications complete twice cold in PowerWorld;
+all fresh pairs match exactly. Ten match the historical exports numerically;
+AC11C retains a small, explicitly reported discrepancy. Six original
+specification byte sequences remain unavailable. Final validation passes
+23 focused, 406 plugin-core and 1,591 scoped SMIB/model/solver checks with
+zero failures/errors and only existing skips, at unchanged model tolerances.
+Source/reference/report hashes retain this scoped provenance slice. See the
+[input recovery checklist](benchmarks/exciter-input-recovery-2026-10-19.md).
+
 PSS6C/PSS7C compensation/canonical follow-up: correct machine impedance-base
 conversion, PSS6C's published negative-input integrator cascade and PSS7C's
 observation-only pure-lag coordinate mapping. Sixteen cold native runs add
@@ -1268,6 +1279,12 @@ the exciter mapping inventory, not its exhaustive profile or provenance work.
 - [x] Record results and prepare the scoped commit.
 - [ ] Recover exact inputs/specifications for the 17 provenance gaps, then
   cold-regenerate and compare without rewriting old manifests or fitting curves.
+  - [x] Recover eleven missing DYR contracts and all their matching input roles;
+    preserve thirty assets and cold-run all eleven specifications twice.
+    Fresh pairs match exactly; ten historical profiles match numerically.
+  - [ ] Recover six historical specification byte sequences; their separate
+    current-specification cold evidence is retained. Diagnose the small AC11C
+    old/new discrepancy and accept new cross-solver profiles independently.
 
 See the [audit and explicit provenance gaps](benchmarks/exciter-evidence-audit-2026-10-17.md).
 This inventory does not close branch/profile coverage or system acceptance.

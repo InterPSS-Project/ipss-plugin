@@ -128,6 +128,7 @@ import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderMachineTest;
 import org.interpss.core.adapter.builder.dstab.DStabNetworkBuilderStabilizerTest;
 import org.interpss.core.adapter.builder.dstab.PssCanonicalNativeSchemaTest;
 import org.interpss.core.adapter.builder.dstab.PssCompensationBaseTest;
+import org.interpss.core.adapter.builder.dstab.ExciterInputContractTest;
 import org.interpss.core.dstab.PssCompensationNativeConformanceTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst4bExciterTest;
 import org.interpss.core.adapter.builder.dstab.PsseEsst1aExciterTest;
@@ -940,6 +941,7 @@ import org.junit.platform.suite.api.Suite;
 	DStabNetworkBuilderStabilizerTest.class,
 	PssCanonicalNativeSchemaTest.class,
 	PssCompensationBaseTest.class,
+	ExciterInputContractTest.class,
 	PssCompensationNativeConformanceTest.class,
 	PsseEsst4bExciterTest.class,
 	PsseEsst1aExciterTest.class,

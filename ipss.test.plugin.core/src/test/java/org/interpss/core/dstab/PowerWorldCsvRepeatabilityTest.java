@@ -76,6 +76,22 @@ public class PowerWorldCsvRepeatabilityTest {
         assertThrows(IllegalArgumentException.class, () -> compare(HEADER + DATA + "END\n", actual));
     }
 
+    @Test void reportsEveryChannelWithoutWeakeningExactComparison()throws Exception {
+        Path left=directory.resolve("diagnostic-old.csv"),right=directory.resolve("diagnostic-new.csv");
+        Files.writeString(left,HEADER+DATA+"END\n");Files.writeString(right,HEADER+DATA.replace("0.2,1.001","0.3,1.004")+"END\n");
+        var result=PowerWorldCsvRepeatability.differences(left,right);assertEquals(4,result.summary().samples());assertEquals(1,result.summary().repeatedTimeSamples());assertEquals(2,result.channels().size());
+        assertEquals(1,result.channels().get(0).changedSamples());assertEquals(.1,result.channels().get(0).maximumAbsoluteError(),1e-15);assertEquals(.05,result.channels().get(0).timeOfMaximum());
+        assertEquals(.003,result.channels().get(1).maximumAbsoluteError(),1e-15);
+        assertThrows(UnsupportedOperationException.class,()->result.channels().clear());assertThrows(IllegalArgumentException.class,()->PowerWorldCsvRepeatability.compare(left,right));
+    }
+
+    @Test void diagnosticRefusesTimeRealignmentAndMalformedData()throws Exception {
+        Path left=directory.resolve("left.csv"),right=directory.resolve("right.csv");Files.writeString(left,HEADER+DATA+"END\n");
+        for(String data:new String[]{HEADER+DATA.replace("0.1,","0.11,")+"END\n",HEADER+DATA.replace("1.001","NaN")+"END\n",HEADER+DATA}) {
+            Files.writeString(right,data);assertThrows(IllegalArgumentException.class,()->PowerWorldCsvRepeatability.differences(left,right));
+        }
+    }
+
     private PowerWorldCsvRepeatability.Summary compare(String expected, String actual) throws Exception {
         Path left = directory.resolve("expected.csv");
         Path right = directory.resolve("actual.csv");

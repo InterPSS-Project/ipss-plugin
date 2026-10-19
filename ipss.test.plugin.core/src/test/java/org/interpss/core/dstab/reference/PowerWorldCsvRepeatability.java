@@ -13,6 +13,29 @@ public final class PowerWorldCsvRepeatability {
 
     public record Summary(int samples, int channels, int repeatedTimeSamples) {}
 
+    public record ChannelDifference(int column,int changedSamples,double maximumAbsoluteError,double timeOfMaximum) {}
+    public record Differences(Summary summary,List<ChannelDifference> channels) {
+        public Differences { channels=List.copyOf(channels); }
+    }
+
+    /** Diagnostic only: no tolerance, sample removal or acceptance decision. */
+    public static Differences differences(Path expected,Path actual)throws IOException {
+        Table left=read(expected),right=read(actual);
+        require(left.metadata.equals(right.metadata),"Channel metadata or contingency differs");
+        require(left.rows.size()==right.rows.size(),"Sample count differs (event-side rows must be retained)");
+        int[] changed=new int[left.channels];double[] maximum=new double[left.channels],at=new double[left.channels];int repeated=0;
+        for(int row=0;row<left.rows.size();row++) {
+            double[] a=left.rows.get(row),b=right.rows.get(row);require(a[0]==b[0],"Diagnostic timestamps differ; interpolation is not permitted");
+            if(row>0&&a[0]==left.rows.get(row-1)[0])repeated++;
+            for(int channel=0;channel<left.channels;channel++) {
+                double error=Math.abs(a[channel+1]-b[channel+1]);if(error!=0)changed[channel]++;
+                if(error>maximum[channel]){maximum[channel]=error;at[channel]=a[0];}
+            }
+        }
+        List<ChannelDifference> channels=new ArrayList<>();for(int channel=0;channel<left.channels;channel++)channels.add(new ChannelDifference(channel+1,changed[channel],maximum[channel],at[channel]));
+        return new Differences(new Summary(left.rows.size(),left.channels,repeated),channels);
+    }
+
     public static Summary compare(Path expected, Path actual) throws IOException {
         Table left = read(expected);
         Table right = read(actual);
@@ -75,6 +98,12 @@ public final class PowerWorldCsvRepeatability {
     }
 
     public static void main(String[] args) throws IOException {
+        if(args.length==3&&args[0].equals("--differences")) {
+            var result=differences(Path.of(args[1]),Path.of(args[2]));
+            System.out.println("column,changed_samples,max_abs_error,time_s");
+            for(var channel:result.channels())System.out.println(channel.column()+","+channel.changedSamples()+","+channel.maximumAbsoluteError()+","+channel.timeOfMaximum());
+            return;
+        }
         require(args.length == 2, "Usage: PowerWorldCsvRepeatability expected.csv actual.csv");
         System.out.println(compare(Path.of(args[0]), Path.of(args[1])));
     }
