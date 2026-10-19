@@ -3855,3 +3855,76 @@ single-precision linear backend are still diagnostic. No original-input full
 event has newly passed, and the 20-second performance target has not been
 tested by this pipe-based verification run. Evidence is retained under
 `2026-10-19-production-network-lifecycle`.
+
+## Machine torque and evaluation-stage audit (2026-10-19)
+
+The completed state-access work also enables a more precise distinction between
+initial coordinates, retained derivatives and the inputs used by those
+derivatives. In the latest unchanged ten-second baseline, the median common
+rotor-angle error accounts for 99.827% of squared angle error across the 103
+synchronous machines. Integrating the supplied speed channels with the declared
+local angle recurrence leaves at most 0.003458 degrees of channel RMSE, much
+smaller than the 0.186132-degree worst coupled angle RMSE. This decomposition
+does not shift any accepted trajectory or replace the absolute-angle gate.
+
+A read-only audit of 20,806 machine evaluations through 0.2 seconds reproduces
+the baseline physical CSV exactly. Mechanical power and terminal power agree
+with their recorded channels to roundoff, but the retained electrical torque
+can differ from the instantaneous terminal torque after finite network
+convergence. The largest observed difference is -6.81245e-5 pu at bus 1051,
+unit 1, step 62, corresponding to a 1.09879e-5 pu/s speed-rate difference.
+The machine uses its retained torque consistently; the discrepancy concerns
+which network evaluation supplies that torque.
+
+Refreshing all subtransient current caches is not an acceptable correction.
+Two variants, refreshing before derivative evaluation or after accepted network
+solves, produce identical physical trajectories and substantially worsen the
+supplied-reference comparison. Through 1.2 seconds, no voltage or rotor channel
+passes its prefault criterion; the worst rotor RMSE reaches 4.58728 degrees.
+Those current caches also feed electrical-state and controller evaluation, so
+changing them changes more than mechanical acceleration. Neither variant was
+retained in production.
+
+A separate diagnostic changes only the torque used by mechanical derivatives,
+restoring all controller and electrical-stage inputs. Its 1.2-second extension
+preserves the preceding pass counts. The complete ten-second result is mixed:
+
+| Full reference comparison | Unchanged baseline | Torque-only diagnostic |
+|---|---:|---:|
+| Worst rotor-angle RMSE, degrees | 0.186132 | 0.151393 |
+| Full-window rotor channels passing 0.1 degrees RMSE | 0/103 | 0/103 |
+| Prefault voltage channels passing | 2,000/2,000 | 2,000/2,000 |
+| Fault/postfault voltage channels passing | 2,000/2,000 | 2,000/2,000 |
+| Prefault P / Q channels passing | 191/199 / 194/199 | 191/199 / 194/199 |
+| Fault/postfault P / Q channels passing | 195/199 / 199/199 | 194/199 / 197/199 |
+
+The torque-only run's local speed channels can now be reconstructed from
+recorded mechanical and terminal power to a worst channel RMSE of 6.95e-15 pu.
+That consistency improvement does not establish reference agreement: rotor
+accuracy still fails, and additional P/Q channels fail. The numerical change
+therefore remains diagnostic and the production baseline is unchanged.
+
+An allocation-free, read-only stator-torque accessor was also prototyped. Its
+equivalence and observation checks pass for both subtransient machine
+realizations. Four small-system profiles, including fault application and
+clearing with and without network-endpoint reuse, reproduce the snapshot-based
+torque diagnostic bit for bit. This prototype has not been promoted as a
+production simulation change. The isolated core build passes 27 accessor and
+machine-state checks, and 15 focused solver/accessor checks pass.
+
+The isolated registered suite completes 2,199 tests: 2,159 pass, 27 are skipped
+or aborted, and 13 fail. Nine failures are caused by a missing private fixture;
+all nine pass when that fixture is restored and those checks are rerun. The
+remaining four failure messages exactly match the archived static-network
+baseline. An earlier run exhausted its one-GiB heap and is retained as an
+incomplete attempt; the completed run uses four GiB. Neither the initial suite
+nor the full reference comparison is reported as passing.
+
+All comparisons retain the supplied full ten-second normalization ranges,
+original computed startup, mixed-load conversion and duplicate event sides.
+No gain, initial state, angle offset or reference-selected timing is fitted.
+The ten-second run uses the diagnostic single-precision linear backend and
+takes 1,070.8 seconds; it is not a test of the quarter-cycle performance target.
+No original-input full event has newly passed. Sources, unsuccessful controls,
+raw outputs and comparison artifacts are retained privately under
+`2026-10-19-case2-machine-endpoint-audit`.
