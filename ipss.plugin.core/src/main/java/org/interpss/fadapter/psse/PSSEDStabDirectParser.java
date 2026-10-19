@@ -2283,8 +2283,8 @@ public class PSSEDStabDirectParser {
         if (f.length < 22) return false;
         int mode = getInt(f, 3, 0);
         int remoteBus = getInt(f, 4, 0);
-        if (mode < 1 || mode > 5 || remoteBus < 0
-                || (remoteBus != 0 && mode != 2 && mode != 5)) {
+        if (mode < 1 || mode > 6 || remoteBus < 0
+                || (remoteBus != 0 && mode != 2 && mode != 5 && mode != 6)) {
             log.warn("IEEEST remote-bus or unsupported signal mode {} at bus {}", mode, busId);
             return false;
         }

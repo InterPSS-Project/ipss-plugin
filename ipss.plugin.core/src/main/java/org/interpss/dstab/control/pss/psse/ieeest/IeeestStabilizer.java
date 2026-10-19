@@ -19,6 +19,7 @@ public class IeeestStabilizer extends AnnotateStabilizer {
     private double constantInputBias;
     private boolean initializingBias;
     private BaseDStabBus<?, ?> measurementBus;
+    private final IeeestVoltageDerivative voltageDerivative = new IeeestVoltageDerivative();
 
     public double speedRef, peRef, pmRef, vtRef, freqRef;
     public double speedGain, peGain, pmGain, voltageGain, frequencyGain;
@@ -47,6 +48,7 @@ public class IeeestStabilizer extends AnnotateStabilizer {
         @Override public double getY() {
             if (data.mode() == 2) return measurementBus.getFreq() - freqRef;
             if (data.mode() == 5) return measurementBus.getVoltageMag() - vtRef;
+            if (data.mode() == 6) return voltageDerivative.getDerivative();
             return 0.0;
         }
     };
@@ -101,8 +103,8 @@ public class IeeestStabilizer extends AnnotateStabilizer {
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine machine) {
-        if (data.mode() < 1 || data.mode() > 5 || data.remoteBus() < 0
-                || (data.remoteBus() != 0 && data.mode() != 2 && data.mode() != 5)) return false;
+        if (data.mode() < 1 || data.mode() > 6 || data.remoteBus() < 0
+                || (data.remoteBus() != 0 && data.mode() != 2 && data.mode() != 5 && data.mode() != 6)) return false;
         measurementBus = data.remoteBus() == 0 ? bus
                 : (BaseDStabBus<?, ?>) bus.getNetwork().getBus("Bus" + data.remoteBus());
         if (measurementBus == null || !measurementBus.isActive()) return false;
@@ -111,6 +113,7 @@ public class IeeestStabilizer extends AnnotateStabilizer {
         pmRef = machine.getPm();
         vtRef = measurementBus.getVoltageMag();
         freqRef = measurementBus.getFreq();
+        voltageDerivative.initialize(vtRef);
         frequencyGain = data.mode() == 2 ? 1.0 : 0.0;
         speedGain = data.mode() == 1 ? 1.0 : 0.0;
         // Accelerating power is Pm-Pe on the machine base, not Pm alone.
@@ -133,6 +136,19 @@ public class IeeestStabilizer extends AnnotateStabilizer {
         try { return super.initStates(bus, machine); }
         finally { initializingBias=false; }
     }
+
+    /** Called only after a settled zero-time network event; no filter advance. */
+    public void synchronizeVoltageDerivativeMemory() {
+        if (data.mode() == 6) voltageDerivative.synchronizeVoltage(measurementBus.getVoltageMag());
+    }
+
+    /** Called after the corrector network converges, before endpoint monitoring. */
+    public void acceptVoltageDerivativeEndpoint(double time, double step) {
+        if (data.mode() == 6) voltageDerivative.accept(time, measurementBus.getVoltageMag(), step);
+    }
+
+    public double getVoltageDerivativeMemory() { return voltageDerivative.getVoltage(); }
+    public double getVoltageDerivative() { return voltageDerivative.getDerivative(); }
 
     /** Physical terminal-filter signal before the static output limits and voltage cutout. */
     public double getUnclippedOutput() {

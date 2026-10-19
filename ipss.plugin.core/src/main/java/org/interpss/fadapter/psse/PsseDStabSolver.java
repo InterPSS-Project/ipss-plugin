@@ -53,6 +53,22 @@ public class PsseDStabSolver extends DStabSolverImpl {
                 if(bus.isActive()&&bus.getBusFreqMeasureBlock() instanceof BusFreqMeasurementImpl frequency)
                     frequency.synchronizeNetworkAngle(bus.getVoltageAng());
         }
+        if (solved && ("INITIAL".equals(networkSolutionStage) || "CORRECTOR".equals(networkSolutionStage))) {
+            for (BaseDStabBus<?, ?> bus : dstabAlgo.getNetwork().getBusList()) {
+                if (!bus.isActive()) continue;
+                for (DStabGen generator : bus.getContributeGenList()) {
+                    if (generator.isActive() && generator.getDynamicGenDevice() instanceof Machine machine
+                            && machine.isActive() && machine.getStabilizer() instanceof
+                            org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer stabilizer
+                            && stabilizer.isActive()) {
+                        if ("CORRECTOR".equals(networkSolutionStage))
+                            stabilizer.acceptVoltageDerivativeEndpoint(networkEvaluationTime, timestep);
+                        else if (eventBoundaryThisStep && !dstabAlgo.isDisableDynamicEvent())
+                            stabilizer.synchronizeVoltageDerivativeMemory();
+                    }
+                }
+            }
+        }
         return solved;
     }
 
@@ -103,6 +119,9 @@ public class PsseDStabSolver extends DStabSolverImpl {
             if (!bus.isActive()) continue;
             for (DStabGen generator : bus.getContributeGenList()) {
                 if (!generator.isActive()) continue;
+                if (generator.getDynamicGenDevice() instanceof Machine machine && machine.isActive()
+                        && machine.getStabilizer() instanceof org.interpss.dstab.control.pss.psse.ieeest.IeeestStabilizer stabilizer
+                        && stabilizer.isActive()) stabilizer.synchronizeVoltageDerivativeMemory();
                 if (generator.getDynamicGenDevice() instanceof org.interpss.dstab.renewable.Regca1Model converter
                         && converter.isActive()) {
                     var electrical=converter.getActiveElectricalController();

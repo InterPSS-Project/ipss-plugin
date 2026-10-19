@@ -48,11 +48,11 @@ public class IeeestBusMeasurementSmibTest extends CorePluginTestSetup {
     }
 
     @Test void unsupportedOrUnresolvableMeasurementsAreNotSilentlySubstituted(@TempDir Path directory) {
-        for (int mode : List.of(1, 3, 4, 6))
+        for (int mode : List.of(1, 3, 4, 7))
             assertThrows(InterpssException.class, () -> load(mode, 2, directory.resolve("mode-" + mode)));
         for (int mode : List.of(2, 5)) for (int remote : List.of(-2, 999))
             assertThrows(InterpssException.class, () -> load(mode, remote, directory.resolve(mode + "-" + remote)));
-        assertThrows(InterpssException.class, () -> load(6, 0, directory.resolve("derivative")));
+        assertThrows(InterpssException.class, () -> load(7, 0, directory.resolve("unsupported")));
     }
 
     @Test void voltageInputIgnoresExciterCompensationAndObserverReadsArePure(@TempDir Path directory) throws Exception {

@@ -2,6 +2,24 @@
 
 ## Current checkpoint
 
+IEEEST derivative-memory follow-up: implement local/remote mode 6 with sampled
+memory, held stage input and settled-event rebasing, without changing the shared
+integrator. Twelve profiles have twenty-four exact cold runs and bounded all-row
+memory/derivative playback; flat/smooth outputs pass separate bounds and refine.
+Fault Vstab parity is explicitly NOT accepted: the local fine-step residual
+increases and the remote coarse residual reaches opposite output limits.
+Seven-coordinate diagnostics localize the remaining numerical-stage issue;
+all seven observed coordinates now have per-channel bounds and half-step
+refinement for the current denominator shape. No fault-output bound or physical
+parameter is widened or fitted. See the
+[derivative implementation, discrepancy and TODO](benchmarks/ieeest-voltage-derivative-2026-10-19.md).
+Final gates pass 130 focused, 420 core and 1,818 scoped SMIB/model/solver tests
+with zero failures/errors and seven existing skips, plus 59 offline checks.
+The source audit covers 1,873 Java/POM files and 44 lossless fixture parts.
+The next independent fix is the first filter's atomic corrector-stage update;
+the current bounds do not declare exact numerical-stage equivalence.
+No full Texas2k dynamics are run.
+
 IEEEST bus-measurement follow-up: implement local/remote frequency and actual
 bus-voltage inputs, strict remote validation, stage sampling and local-only
 voltage cutout. No dynamic state or shared integrator is added or changed.

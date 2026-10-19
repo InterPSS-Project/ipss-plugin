@@ -75,7 +75,9 @@ tested source/dependency identities.
   speed and stabilizer diagnostic histories.
 - [ ] Complete seven-state coordinate and network-coupled trajectory parity;
   coupled finiteness is not an independent trajectory acceptance gate.
-- [ ] Mode 6 voltage derivative, including exact memory and event timing.
+- [x] Mode 6 sampled memory and settled-event callbacks are implemented in the
+  [derivative follow-up](ieeest-voltage-derivative-2026-10-19.md); its fault-output
+  trajectory acceptance remains open.
 - [ ] Broader machine-base, denominator, resistance and lifecycle coverage.
 - [ ] Complete model acceptance under the development plan; this slice does
   not declare the entire model VERIFIED.

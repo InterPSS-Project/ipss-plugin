@@ -161,8 +161,12 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
             offset = components[spec['kind']]['layout']['STATE']
             values.update({name: checked('live controller state', psspy.dsrval('STATE', offset + i))
                            for i, name in enumerate(spec['states'])})
-        live_states.append(dict(stage=stage, time_s=checked('live clock', psspy.dsrval('TIME')),
-                                step_s=checked('live step', psspy.dsrval('DELT')), states=values))
+        entry = dict(stage=stage, time_s=checked('live clock', psspy.dsrval('TIME')),
+                     step_s=checked('live step', psspy.dsrval('DELT')), states=values)
+        if cfg.get('record_live_variables', False):
+            entry['variables'] = {name: checked('live controller variable', psspy.dsrval('VAR', components[spec['kind']]['layout']['VAR'] + i))
+                                  for spec in cfg.get('components', ()) for i, name in enumerate(spec.get('variables', ()))}
+        live_states.append(entry)
     record_live_states('initialized')
     events = []
     for until in (.05, .1, end):
@@ -176,6 +180,8 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
                 checked('clear', psspy.dist_clear_fault(1))
             events.append(dict(time_s=until, actual_time_s=actual,
                                action='fault' if until == .05 else 'clear'))
+            if cfg.get('record_live_fault_states', False):
+                record_live_states('post-fault-event' if until == .05 else 'post-clear-event')
         if until == .05 and cfg.get('vref_increment', 0.):
             increment = cfg['vref_increment']
             assert math.isfinite(increment)

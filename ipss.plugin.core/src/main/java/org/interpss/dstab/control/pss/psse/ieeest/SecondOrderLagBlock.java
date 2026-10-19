@@ -37,6 +37,8 @@ public final class SecondOrderLagBlock extends CMLControlBlockAdapter {
     }
 
     @Override public double getU0() { return u; }
+    /** Second-order output rate; observing it does not advance either state. */
+    public double getRate() { return rate; }
     @Override public double getU0(double y0) { return Math.abs(k) <= EPS ? 0.0 : y0 / k; }
 
     @Override
