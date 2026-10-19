@@ -171,6 +171,7 @@ import org.interpss.core.dstab.HplntdSelectorNativeSmibTest;
 import org.interpss.core.dstab.HplntdProportionalNativeSmibTest;
 import org.interpss.core.dstab.HplntdReferenceLimitNativeConformanceTest;
 import org.interpss.core.dstab.HplntdReferenceLimitNativeSmibTest;
+import org.interpss.core.dstab.HplntdShuntNativeConformanceTest;
 import org.interpss.core.adapter.builder.dstab.PsseRepccModelTest;
 import org.interpss.core.dstab.Repcgfmc1KernelNativeConformanceTest;
 import org.interpss.core.dstab.Repcgfmc1NativeImportSmibTest;
@@ -973,6 +974,7 @@ import org.junit.platform.suite.api.Suite;
 	HplntdProportionalNativeSmibTest.class,
 	HplntdReferenceLimitNativeConformanceTest.class,
 	HplntdReferenceLimitNativeSmibTest.class,
+	HplntdShuntNativeConformanceTest.class,
 	PsseRepccModelTest.class,
 	Repcgfmc1KernelNativeConformanceTest.class,
 	Repcgfmc1NativeImportSmibTest.class,

@@ -4,7 +4,7 @@ import static org.interpss.dstab.renewable.RepccData.Parameter.*;
 import java.util.*;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
-/** Ordered REPCC switched-shunt logic. Called once per accepted solver endpoint,
+/** Shared ordered plant switched-shunt logic. Called once per accepted solver endpoint,
  * never once per predictor or network iteration. Returned actions require an
  * attachment to update the physical network; this class does not change Y. */
 public final class RepccShuntController implements ICMLStateProvider {
@@ -17,7 +17,9 @@ public final class RepccShuntController implements ICMLStateProvider {
     public record Action(int slot,RepccData.Shunt key,boolean inService,double requestedAt,double completedAt) {}
     public record Slot(RepccData.Shunt key,double susceptance,boolean inService,
                        double breakerStart,double dischargeStart,boolean targetInService) {}
-    private final RepccData data;
+    private final List<RepccData.Shunt> keys;
+    private final boolean requested,validThresholds;
+    private final Map<RepccData.Parameter,Double> parameters;
     private final Device[] devices=new Device[10];
     private final boolean[] active=new boolean[10],target=new boolean[10];
     private final double[] breaker=new double[10],discharge=new double[10];
@@ -25,7 +27,24 @@ public final class RepccShuntController implements ICMLStateProvider {
     private int previousDirection;
     private boolean enabled,initialized,sampled;
 
-    public RepccShuntController(RepccData data){this.data=Objects.requireNonNull(data);}
+    public RepccShuntController(RepccData data){
+        this(Objects.requireNonNull(data).switchingFlag(),data.shunts(),data.switchingThresholdsValid(),switchValues(data::value));
+    }
+    /** Hybrid thresholds and input are physical Mvar, not plant-base pu.
+     * Only the documented switching parameters are shared; continuous kernels
+     * and the native 61-CON layout are not translated into another model. */
+    public RepccShuntController(HplntdData data){
+        this(Objects.requireNonNull(data).switchingFlag(),data.shunts(),data.switchingThresholdsValid(),
+                switchValues(p->data.value(HplntdData.Parameter.valueOf(p.name()))));
+    }
+    private RepccShuntController(int flag,List<RepccData.Shunt> slots,boolean valid,Map<RepccData.Parameter,Double> values){
+        keys=List.copyOf(slots);requested=flag==1;validThresholds=valid;parameters=Map.copyOf(values);
+    }
+    private static Map<RepccData.Parameter,Double> switchValues(java.util.function.ToDoubleFunction<RepccData.Parameter> value){
+        var result=new EnumMap<RepccData.Parameter,Double>(RepccData.Parameter.class);
+        for(var p:List.of(QDN1,QDN2,QUP1,QUP2,TDELAY1,TDELAY2,TMSSBRK,TOUT))result.put(p,value.applyAsDouble(p));
+        return result;
+    }
     public void initialize(List<Device> actualDevices,boolean measurementBranchFound){
         initialized=false;
         var byKey=new HashMap<RepccData.Shunt,Device>();
@@ -33,12 +52,12 @@ public final class RepccShuntController implements ICMLStateProvider {
             throw new IllegalArgumentException("Duplicate actual shunt "+device.key());
         Arrays.fill(devices,null);Arrays.fill(active,false);Arrays.fill(target,false);
         Arrays.fill(breaker,-1);Arrays.fill(discharge,-1);var seen=new HashSet<RepccData.Shunt>();
-        enabled=data.switchingFlag()==1&&measurementBranchFound&&data.switchingThresholdsValid();
+        enabled=requested&&measurementBranchFound&&validThresholds;
         for(int i=0;i<10;i++){
-            var key=data.shunts().get(i);if(key.bus()==0)continue;
-            if(!seen.add(key)){if(enabled)throw new IllegalArgumentException("Duplicate REPCC shunt slot "+key);else continue;}
+            var key=keys.get(i);if(key.bus()==0)continue;
+            if(!seen.add(key)){if(enabled)throw new IllegalArgumentException("Duplicate plant shunt slot "+key);else continue;}
             var device=byKey.get(key);
-            if(device==null){if(enabled)throw new IllegalArgumentException("Configured REPCC shunt not found: "+key);else continue;}
+            if(device==null){if(enabled)throw new IllegalArgumentException("Configured plant shunt not found: "+key);else continue;}
             devices[i]=device;active[i]=target[i]=device.inService();
         }
         clock=0;slowStart=fastStart=-1;previousDirection=0;sampled=false;initialized=true;
@@ -47,11 +66,12 @@ public final class RepccShuntController implements ICMLStateProvider {
     public double time(){requireInitialized();return clock;}
     public List<Slot> slots(){
         requireInitialized();var result=new ArrayList<Slot>();
-        for(int i=0;i<10;i++)result.add(new Slot(data.shunts().get(i),devices[i]==null?0:devices[i].susceptance(),
+        for(int i=0;i<10;i++)result.add(new Slot(keys.get(i),devices[i]==null?0:devices[i].susceptance(),
                 active[i],breaker[i],discharge[i],target[i]));return List.copyOf(result);
     }
-    /** Threshold inputs are machine-base reactive power, with the configured
-     * measurement direction already resolved. Repeated time is idempotent. */
+    /** Input and thresholds must use the same units: machine-base pu for REPCC,
+     * physical Mvar for HPLNTDU. Measurement direction is already resolved.
+     * Repeated time is idempotent. */
     public List<Action> advance(double time,double reactivePower){
         requireInitialized();
         if(!Double.isFinite(time)||!Double.isFinite(reactivePower)||time<clock||time<0)
@@ -93,13 +113,13 @@ public final class RepccShuntController implements ICMLStateProvider {
     private void complete(int slot,List<Action> actions){
         double started=breaker[slot];active[slot]=target[slot];breaker[slot]=-1;
         if(devices[slot].susceptance()>0)discharge[slot]=active[slot]?-1:clock;
-        actions.add(new Action(slot,data.shunts().get(slot),active[slot],started,clock));
+        actions.add(new Action(slot,keys.get(slot),active[slot],started,clock));
     }
     @Override public Map<String,Double> getNamedStates(){
         requireInitialized();var result=new LinkedHashMap<String,Double>();result.put("slowStart",slowStart);result.put("fastStart",fastStart);
         for(int i=0;i<10;i++){result.put("shunt."+i+".breakerStart",breaker[i]);result.put("shunt."+i+".dischargeStart",discharge[i]);result.put("shunt."+i+".inService",active[i]?1.:0.);}
         return Collections.unmodifiableMap(result);
     }
-    private double v(RepccData.Parameter p){return data.value(p);}
-    private void requireInitialized(){if(!initialized)throw new IllegalStateException("Initialize REPCC shunt controller first");}
+    private double v(RepccData.Parameter p){return parameters.get(p);}
+    private void requireInitialized(){if(!initialized)throw new IllegalStateException("Initialize plant shunt controller first");}
 }

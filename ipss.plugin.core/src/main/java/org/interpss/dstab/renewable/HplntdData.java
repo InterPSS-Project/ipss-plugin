@@ -44,6 +44,11 @@ public record HplntdData(int remoteBus,RepccData.Branch measurementBranch,int co
     }
     @Override public double[] constants(){return constants.clone();}
     public double value(Parameter p){return constants[p.ordinal()];}
+    /** Invalid order/sign disables switching; never repair or rescale the Mvar thresholds. */
+    public boolean switchingThresholdsValid(){
+        return value(Parameter.QDN2)<value(Parameter.QDN1)&&value(Parameter.QDN1)<0
+                &&value(Parameter.QUP2)>value(Parameter.QUP1)&&value(Parameter.QUP1)>0;
+    }
     public double activePiMinimum(){return value(feedforwardFlag==0?Parameter.PMIN:Parameter.PIMIN);}
     public double activePiMaximum(){return value(feedforwardFlag==0?Parameter.PMAX:Parameter.PIMAX);}
     public int effectiveReferenceFlag(double measuredActive) {

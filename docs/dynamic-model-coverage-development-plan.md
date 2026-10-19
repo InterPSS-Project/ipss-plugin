@@ -38,6 +38,12 @@ feedback now have 24 two-step profiles. Direct-reference probes isolate native
 raw-VAR voltage-limit bypass; InterPSS retains its published clamp. Four Q/PF
 reference-disturbance profiles add state-replay and bounded coupled acceptance;
 native voltage parity and nonzero-deadband initialization remain open.
+The HPLNTDU switched-shunt kernel now reuses the ordered ten-device engine with
+physical-Mvar thresholds, not REPCC machine-base pu. Fourteen two-step profiles
+verify threshold/breaker timers and physical device statuses; two zero-delay
+profiles retain origin/timer diagnostics. This does not enable switched-shunt
+import or prove physical-network coupling/discharge-reclose parity. See the
+[switching kernel evidence](benchmarks/hplntd-switching-kernel-2026-10-18.md).
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -71,6 +77,30 @@ excluded. Reuse core GENROU and existing controller engines where equations
 and state definitions agree.
 
 ## Approved renewable source and evidence audit
+
+### HPLNTDU switching kernel slice
+
+- [x] Preserve the native 35-ICON/61-CON layout and ten input-order device slots.
+- [x] Reuse ordered REPCC switching logic only for the shared switching rules;
+  keep HPLNTDU thresholds/input in physical Mvar, independent of plant MVA.
+- [x] Verify fast/slow bands, both directions, removal before insertion,
+  disabled switching, invalid thresholds and missing measurement branch.
+- [x] Cold-generate sixteen small-testbed profiles twice at 0.5/0.25 ms;
+  preserve all raw history/duplicate rows and ten physical status channels.
+- [x] Match twelve threshold/breaker timers and all ten statuses in fourteen
+  nonzero-delay profiles. Keep zero-delay origin/timer differences explicit.
+- [x] Test published capacitor discharge lockout, idempotent accepted endpoints,
+  latched requests, reinitialization and named-state immutability independently.
+- [x] Pass 38 focused Java checks, all 401 plugin-core tests (six existing
+  optional skips) and 1,530 selected SMIB/model/solver tests (one existing
+  diagnostic skip), with zero failures/errors and no full Texas2k dynamics.
+- [ ] Bind HPLNTDU actions to exact individual physical G+jB and Y updates;
+  add accepted-endpoint dispatch, then enable/import switching only after tests.
+- [ ] Verify closed-loop switching trajectories at both timesteps and add
+  capacitor discharge/reclose native discriminators. Current traces do not
+  exercise reclosure; unused native discharge storage does not prove parity.
+- [ ] Resolve zero-delay callback/origin and native unused-timer differences
+  before claiming exhaustive state/callback equivalence.
 
 - [x] Freeze the exact REPCGFMC1U seven-ICON/54-CON/15-STATE/20-VAR contract
   and four distinct GFM/GFL output paths. Implement typed data and algebraic
