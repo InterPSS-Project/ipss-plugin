@@ -55,6 +55,13 @@ public final class GeneratorGovernorEvidenceInventory {
                 case ANDES -> {
                     if (EmbeddedCsvTrajectoryValues.lines(checkpoint).isEmpty())
                         throw new IllegalStateException("Empty " + checkpoint);
+                    if(model.equals("GENROU")){
+                        var profiles=GenrouNativeReference.profiles();
+                        if(profiles.size()!=20)throw new IllegalStateException("Incomplete native round-rotor matrix");
+                        for(var profile:profiles){profile.body();profile.input();profile.network();}
+                        // Native initialization and fault diagnostics supplement,
+                        // rather than replace, the accepted ANDES trajectory gate.
+                    }
                 }
                 case PSSE_TGOV3D -> {
                     if (Tgov3dPsseReference.lines().isEmpty())
@@ -171,6 +178,9 @@ public final class GeneratorGovernorEvidenceInventory {
                 .append("GENQEC field compensation now accepts finite Kw>=0 without the former artificial Kw<1 cap; the runtime still clips Kw*Id to +/-0.4. ")
                 .append("GenqecKwNativeReference adds six exact-input profiles for Kw=0/1/1.5 with native limiter entry, both signs and release. ")
                 .append("Native field initialization and electrical replay are separate from complete coupled acceptance. See [the compensation evidence](benchmarks/genqec-field-compensation-2026-10-19.md).\n\n")
+                .append("GENROU/GENROE now reuse the core round-rotor equations with distinct quadratic/exponential saturation. ")
+                .append("GenrouNativeReference adds twenty six-state profiles from forty raw-exact cold runs; GenrouNativeSmibTest checks native initialization, immutable named states and reconstruction. ")
+                .append("Native coupled fault differences remain diagnostics, and the existing ANDES gate remains unchanged. See [the saturation evidence and TODO](benchmarks/genrou-native-saturation-2026-10-19.md).\n\n")
                 .append("| Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |\n")
                 .append("|---|---|---|---|---|---|\n");
         for (Evidence entry : ENTRIES) {

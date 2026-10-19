@@ -686,6 +686,7 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.RegfmaSharedIntegrationTest.class,
 	GenrouConformanceTest.class,
 	GenrouAndesSmibConformanceTest.class,
+	org.interpss.core.dstab.GenrouNativeSmibTest.class,
 	Esst4bAndesSmibConformanceTest.class,
 	Esst4bIndependentSmibConformanceTest.class,
 	Esac5aAndesSmibConformanceTest.class,

@@ -2,6 +2,21 @@
 
 ## Current checkpoint
 
+GENROU/GENROE saturation follow-up: reuse the existing core round-rotor machine
+and correct the native exponential identifier without replacing its electrical
+equations or integration. Add immutable six-state observation and selector-aware
+reconstruction. Forty cold runs yield twenty exact native pairs; all initial
+states/boundaries and every raw six-state trajectory row have separate bounds.
+The first fault discrepancy is localized to a new benchmark load-law mismatch,
+whose traces remain preserved. Matched-load electrical residuals approximately
+halve with the timestep. Complete event-side voltage/power and lifecycle parity
+remain open; the ANDES gate is unchanged. See the
+[saturation evidence and remaining TODO](benchmarks/genrou-native-saturation-2026-10-19.md).
+Final gates pass 44 focused, 410 core-unit and 1,731 scoped SMIB/model/solver
+tests with zero failures/errors and only existing skips, plus eight offline
+probe and six wording tests. Evidence is retained in the private hash seal;
+no full Texas2k dynamics are run.
+
 REPCA1 branch-fallback follow-up: implement native missing-edge/circuit
 generator feedback while retaining remote measurement and unchanged inputs.
 Add read-only source diagnostics and reinitialization lookup guards. Twenty-eight
@@ -1322,7 +1337,9 @@ proof of current-system accuracy, or mark this open acceptance item complete.
    to focused tests, the exact public DYR fixture, embedded checkpoints, and
    registered comparison classes. It identifies 22 governor PowerWorld
    comparisons and two native reference simulator comparisons (IEEEG1D and TGOV3D).
-   GENROU has ANDES evidence; GENQEC and GENQEJ have native reference simulator evidence.
+   GENROU retains ANDES evidence and now adds twenty native GENROU/GENROE
+   initialization/six-state SMIB profiles; complete event-side boundary parity
+   remains open. GENQEC and GENQEJ have native reference simulator evidence.
    Reference presence does not establish every profile or full-system parity.
    The [exciter inventory](exciter-evidence.md) now links all 59 distinct native
    models behind the 64 approved exciter rows. Its local provenance audit

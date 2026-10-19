@@ -568,7 +568,7 @@ public class PSSEDStabDirectParser {
                 return procGencls(busId, genId, fields);
             case "GENROU":
             case "GENROE":
-                return procGenrou(busId, genId, fields);
+                return procGenrou(busId, genId, fields, record.sourceModelName().equals("GENROE"));
             case "GENQEC":
                 return procGenqec(busId, genId, record);
             case "GENQEJ":
@@ -1036,7 +1036,7 @@ public class PSSEDStabDirectParser {
 
     // GENROU: IBUS 'GENROU' ID T'do T''do T'qo T''qo H D Xd Xq X'd X'q X''d Xl S(1.0) S(1.2)
     //         idx:  0    1    2   3    4    5    6   7 8  9  10  11  12  13  14   15     16
-    private boolean procGenrou(String busId, String genId, String[] f) throws InterpssException {
+    private boolean procGenrou(String busId, String genId, String[] f, boolean exponential) throws InterpssException {
         double td10 = getDouble(f, 3, 0);
         double td110 = getDouble(f, 4, 0);
         double tq10 = getDouble(f, 5, 0);
@@ -1052,9 +1052,13 @@ public class PSSEDStabDirectParser {
         double s100 = getDouble(f, 15, 0) * 100;
         double s120 = getDouble(f, 16, 0) * 100;
         double[] rating = getGenRating(busId, genId);
-        return builder.addGenrou(busId, genId, rating[0], rating[1],
+        var machine = builder.addGenrou(busId, genId, rating[0], rating[1],
                 td10, td110, tq10, tq110, h, d, xd, xq, xd1, xq1, xd11, xl,
-                s100, s120) != null;
+                s100, s120);
+        if (machine == null) return false;
+        ((org.interpss.dstab.mach.IeeeVcRoundRotorMachine)machine).setExponentialSaturation(exponential);
+        if (exponential) machine.setName("GENROE");
+        return true;
     }
 
     // GENSAL: IBUS 'GENSAL' ID T'do T''do T''qo H D Xd Xq X'd X''d Xl S(1.0) S(1.2)

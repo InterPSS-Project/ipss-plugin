@@ -12,6 +12,8 @@ GenqecSalientNativeReference adds eight exact Tqop=0/Xqp=Xq profiles for GENQEC/
 
 GENQEC field compensation now accepts finite Kw>=0 without the former artificial Kw<1 cap; the runtime still clips Kw*Id to +/-0.4. GenqecKwNativeReference adds six exact-input profiles for Kw=0/1/1.5 with native limiter entry, both signs and release. Native field initialization and electrical replay are separate from complete coupled acceptance. See [the compensation evidence](benchmarks/genqec-field-compensation-2026-10-19.md).
 
+GENROU/GENROE now reuse the core round-rotor equations with distinct quadratic/exponential saturation. GenrouNativeReference adds twenty six-state profiles from forty raw-exact cold runs; GenrouNativeSmibTest checks native initialization, immutable named states and reconstruction. Native coupled fault differences remain diagnostics, and the existing ANDES gate remains unchanged. See [the saturation evidence and TODO](benchmarks/genrou-native-saturation-2026-10-19.md).
+
 | Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |
 |---|---|---|---|---|---|
 | DEGOV1D | POWERWORLD | SMIB_v33_genrou_degov1d.dyr | DStabNetworkBuilderDegov1dTest | Degov1dIndependentSmibConformanceTest | smib-genrou-degov1d |
