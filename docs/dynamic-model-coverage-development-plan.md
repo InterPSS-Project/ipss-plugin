@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+ESST1A event-side follow-up: add immutable BEFORE/AFTER sampling and separate
+reference assignment, resumed export and settled algebraic observations.
+Twelve existing numeric histories remain unchanged. Four extra cold observation
+pairs show direct API assignment leaves all ten allocated states unchanged;
+their complete CSVs are byte-identical to the prior references. All raw rows
+and 25 non-time channels remain in the comparison. Explicit side selection
+removes the artificial 1.6 pu all-bypass boundary error. Native resumed versus
+settled zero-regulator staging retains about 0.0333331 pu difference; no physical
+equation or bound is changed to hide it. See the
+[event-stage equations, evidence and remaining work](benchmarks/esst1a-event-side-staging-2026-10-19.md).
+Final gates pass 70 focused, 410 core and 1,781 scoped SMIB/model/solver tests
+with zero failures/errors and seven existing skips, plus 50 offline checks.
+Source reconciliation covers 1,861 Java/POM files and 42 unchanged fixture
+parts. The private seal retains the new observation runs and all-row diagnostics,
+and pins the prior 1,480-file evidence inventory without replacing its raw data.
+No full Texas2k dynamic simulations are run.
+
 ESST1A zero-time follow-up: native Tr=0/Ta=0 channels report algebraic
 outputs, not dormant integration storage. Correct the published observer only;
 generic state keys and physical integration remain unchanged. Twelve profiles

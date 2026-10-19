@@ -17,6 +17,11 @@ at 0.5 s; timesteps are 0.5/0.25 ms. No full-system dynamics are used.
 
 ## Observation defect
 
+The [event-side follow-up](esst1a-event-side-staging-2026-10-19.md) retains
+the original time-only diagnostics below as counterexamples. It distinguishes
+reference assignment, resumed native export and settled algebraic evaluation;
+the large unaligned boundary errors are not all model-equation errors.
+
 The generic CML delay block correctly computes K*u algebraically when its
 time constant is zero. Its integration storage then remains at initialization.
 The ESST1A published-state observer previously returned that dormant storage

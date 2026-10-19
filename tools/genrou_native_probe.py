@@ -179,6 +179,8 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
             assert math.isfinite(increment)
             actual = checked('reference event clock', psspy.dsrval('TIME'))
             checked('voltage reference increment', psspy.increment_vref(1, '1', increment))
+            if cfg.get('record_live_event_states', False):
+                record_live_states('post-reference-event')
             events.append(dict(time_s=until, actual_time_s=actual,
                                action='voltage-reference-increment', increment=increment))
     _, labels, channels = dyntools.CHNF('native.out').get_data()
