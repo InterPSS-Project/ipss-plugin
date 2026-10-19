@@ -1716,6 +1716,14 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   playback acceptance does not establish complete closed-loop agreement.
 - [ ] Complete typed PSSSB selector, limiter and lifecycle coverage; the existing
   short-window benchmark is not an exhaustive verification label.
+- [x] Add the native PSS5C thirty-constant full-order foundation, preserving the
+  separate 21-value PowerWorld builder and benchmark. Internal ICON allocation
+  is not an input selector. Validate exact parsing, published equations,
+  independent frequency response and two-step flat/fault solver integration.
+  See the [PSS5C native foundation report](benchmarks/pss5c-native-foundation-2026-10-19.md).
+- [ ] Resolve native PSS5C band-frequency/transducer and raw-VAR observation
+  discrepancies, zero-order transducers, zero-gain/lifecycle behavior and native
+  thirteen-state observation coordinates before native trajectory acceptance.
 - [ ] Audit raw artifact versions/cold repeatability and remaining active
   limiter, selector and lifecycle profiles for the stabilizer links.
   - [x] Separate exact native PSS6C/PSS7C widths from PowerWorld-only filter

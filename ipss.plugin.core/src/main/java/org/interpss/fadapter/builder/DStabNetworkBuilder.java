@@ -1490,6 +1490,27 @@ public class DStabNetworkBuilder {
                 busId + "-pss4c" + genId, data, machine);
     }
 
+    /** Build full-order native PSS5C from exactly thirty constants, without a selector. */
+    public org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeStabilizer addPss5cNative(
+            String busId, String genId, double[] parameters) {
+        Machine machine = findMachine(busId, genId);
+        if (machine == null) return null;
+        final org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData data;
+        try {
+            data = new org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeData(parameters);
+            if (!data.isBypassed() && !data.hasFullOrderTransducers()) {
+                log.warn("Native PSS5C degenerate transducer is not implemented at {} {}", busId, genId);
+                return null;
+            }
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid native PSS5C record at {} {}: {}", busId, genId, e.getMessage());
+            return null;
+        }
+        var pss = new org.interpss.dstab.control.pss.psse.pss5c.Pss5cNativeStabilizer(
+                busId + "-pss5c-native" + genId, data, machine);
+        return pss;
+    }
+
     /** Build PSS5C from the 21-value PowerWorld/IEEE parameter order. */
     public Ieee2016PSS5CStabilizer addPss5c(String busId, String genId,
             double[] parameters) {

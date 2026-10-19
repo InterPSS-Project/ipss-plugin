@@ -2533,14 +2533,14 @@ public class PSSEDStabDirectParser {
         return builder.addPss4c(busId, genId, parameters) != null;
     }
 
-    // PowerWorld DYR extension: WECC lists no native PSS/E PSS5C name.
+    // Native PSS5C: thirty constants; its internal ICON is not a record selector.
     private boolean procPss5c(String busId, String genId, String[] f) {
-        if (f.length < 24) return false;
-        double[] parameters = new double[21];
+        if (f.length != 33) return false;
+        double[] parameters = new double[30];
         for (int i = 0; i < parameters.length; i++) {
             parameters[i] = getDouble(f, i + 3, 0.0);
         }
-        return builder.addPss5c(busId, genId, parameters) != null;
+        return builder.addPss5cNative(busId, genId, parameters) != null;
     }
 
     // Native PSS6C: four selectors and 30 constants; no inferred vendor filter.

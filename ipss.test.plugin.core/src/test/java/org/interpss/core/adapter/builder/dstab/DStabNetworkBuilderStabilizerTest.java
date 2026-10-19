@@ -1139,17 +1139,13 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void parsePss5c_mapsPowerWorld21ParameterExtension() throws Exception {
+    void typedPss5c_mapsPowerWorld21ParameterData() throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createWithMachine();
-        Path dyr = tempDir.resolve("pss5c.dyr");
-        StringBuilder record = new StringBuilder("1 'PSS5C' '1'");
+        double[] parameters = new double[Ieee2016PSS5CStabilizerData.PARAMETER_COUNT];
         for (int i = 1; i <= Ieee2016PSS5CStabilizerData.PARAMETER_COUNT; i++) {
-            record.append(' ').append(i);
+            parameters[i - 1] = i;
         }
-        Files.writeString(dyr, record.append(" /\n").toString());
-        PSSEDStabDirectParser parser = new PSSEDStabDirectParser(builder).setStrictImport(true);
-
-        parser.parseDynFile(dyr.toString());
+        assertNotNull(builder.addPss5c("Bus1", "1", parameters));
 
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
         Ieee2016PSS5CStabilizer pss =
@@ -1160,7 +1156,6 @@ public class DStabNetworkBuilderStabilizerTest extends CorePluginTestSetup {
         assertEquals(13.0, pss.getData().highBand().gain(), TOL);
         assertEquals(17.0, pss.getData().k1(), TOL);
         assertEquals(21.0, pss.getData().vstmin(), TOL);
-        assertTrue(parser.getLastImportReport().isStrictlyComplete());
     }
 
     @Test

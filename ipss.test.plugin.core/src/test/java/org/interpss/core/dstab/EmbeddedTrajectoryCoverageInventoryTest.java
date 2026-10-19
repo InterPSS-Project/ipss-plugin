@@ -124,7 +124,13 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
             var records=PsseDyrRecordReader.read(e.fixture()).stream()
                     .filter(record -> record.canonicalModelName().equals(e.model())).toList();
             assertEquals(1,records.size(),e.model()+" fixture must retain its source record exactly once");
-            if (row.scope()!=StabilizerEvidenceInventory.ReferenceScope.MODEL_SPECIFIC_COMPARISON) {
+            if (e.model().equals("PSS5C")) {
+                assertEquals(StabilizerEvidenceInventory.ReferenceScope.TYPED_MODEL_SPECIFIC_COMPARISON,row.scope());
+                assertEquals(21,records.get(0).parameterCount(),"Retain the separate typed reference input");
+                assertEquals(30,DynamicModelCatalog.find("PSS5C").orElseThrow().parameterCount());
+                assertTrue(registered.contains(org.interpss.core.adapter.builder.dstab.Pss5cNativeModelTest.class));
+                assertTrue(registered.contains(Pss5cNativeSmibTest.class));
+            } else if (row.scope()!=StabilizerEvidenceInventory.ReferenceScope.MODEL_SPECIFIC_COMPARISON) {
                 assertTrue(Set.of("PSS1A", "PSSSB").contains(e.model()));
                 assertTrue(DynamicModelCatalog.find(e.model()).isEmpty());
                 assertEquals(e.model().equals("PSS1A") ? 14 : 30, records.get(0).parameterCount());
