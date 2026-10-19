@@ -94,8 +94,10 @@ is registered in the core suite and discovered by the scoped SMIB suite.
   power acceptance, including nonzero resistance and both machine-base scales.
 - [ ] Add trip/reconnect, checkpoint continuation and further saturation-region
   cases; reconstruction equivalence alone is not lifecycle acceptance.
-- [ ] Audit the analogous GENSAE/GENSAL alias using its own source and native
-  discriminator; do not assume the round-rotor correction proves that family.
+- [x] Audit the analogous GENSAE/GENSAL alias using its own source and native
+  discriminator. Its distinct both-axis realization and remaining gaps are
+  documented in the [salient-pole evidence](gensal-gensae-native-2026-10-19.md);
+  the round-rotor correction alone was not used as proof for that family.
 - [ ] Independently execute the corresponding PowerWorld matrix with its
   documented stator convention kept explicit.
 

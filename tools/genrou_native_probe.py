@@ -44,20 +44,25 @@ def f32(value):
     return struct.unpack('<f', struct.pack('<f', value))[0]
 
 
-def main():
+def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native-',
+             probe_source=None, state_names=('EP_Q', 'EP_D', 'PSIK_D', 'PSIK_Q', 'SPEED_DEV', 'ANGLE'),
+             record_phasors=False):
     import psse3607
     import psspy
     import dyntools
     root = Path.cwd()
-    tag, entered_step, profile = sys.argv[1:]
     step = float(entered_step)
     assert step in (.0005, .00025)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
-    source = root / 'ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw'
-    cfg = configuration(profile, source.read_text())
-    out = root / 'target' / ('genrou-native-' + tag)
+    assert directory_prefix in ('genrou-native-', 'gensal-native-')
+    out = root / 'target' / (directory_prefix + tag)
     out.mkdir(exist_ok=False)
-    shutil.copy2(__file__, out / 'probe.py')
+    probe_source = Path(probe_source or __file__).resolve()
+    shutil.copy2(probe_source, out / 'probe.py')
+    helpers = []
+    if probe_source != Path(__file__).resolve():
+        shutil.copy2(__file__, out / 'genrou_native_probe.py')
+        helpers.append('genrou_native_probe.py')
     shutil.copy2(root / 'tools/hplntd_fault_probe.py', out / 'hplntd_fault_probe.py')
     (out / 'network.raw').write_text(cfg['raw'])
     (out / 'dynamic.dyr').write_text(cfg['dynamic'])
@@ -90,15 +95,19 @@ def main():
         layout['N' + kind] = count
         if count:
             layout[kind] = checked('index ' + kind, psspy.mdlind(1, '1', 'GEN', kind))
-    assert tuple(layout['N' + k] for k in ('CON', 'ICON', 'STATE', 'VAR')) == (14, 0, 6, 0), layout
+    assert tuple(layout['N' + k] for k in ('CON', 'ICON', 'STATE', 'VAR')) == (len(cfg['constants']), 0, len(state_names), 0), layout
     def read_constants():
-        return [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(14)]
+        return [checked('constant', psspy.dsrval('CON', layout['CON'] + i)) for i in range(len(cfg['constants']))]
     before = read_constants()
     assert before == [f32(v) for v in cfg['constants']], before
-    for i, name in enumerate(('EP_Q', 'EP_D', 'PSIK_D', 'PSIK_Q', 'SPEED_DEV', 'ANGLE')):
+    for i, name in enumerate(state_names):
         checked('state channel', psspy.state_channel([-1, layout['STATE'] + i], name))
     for bus in (1, 2):
-        checked('voltage channel', psspy.voltage_channel([-1, -1, -1, bus], 'V_BUS' + str(bus)))
+        if record_phasors:
+            checked('phasor channels', psspy.voltage_and_angle_channel(
+                [-1, -1, -1, bus], ['V_BUS' + str(bus), 'ANGLE_BUS' + str(bus)]))
+        else:
+            checked('voltage channel', psspy.voltage_channel([-1, -1, -1, bus], 'V_BUS' + str(bus)))
     for code, name in ((1, 'MACH_ANGLE'), (2, 'P_PU'), (3, 'Q_PU'),
                        (5, 'EFD'), (6, 'PMECH'), (7, 'MACH_SPEED')):
         checked('machine channel', psspy.machine_array_channel([-1, code, 1], '1', name))
@@ -130,7 +139,7 @@ def main():
     log = Path('native.log').read_text(errors='replace')
     quality = 'Initial conditions check O.K.' in log and 'Network not converged' not in log
     files = ['network.raw', 'dynamic.dyr', 'probe.py', 'hplntd_fault_probe.py',
-             'native.log', 'native.out', 'native.csv']
+             'native.log', 'native.out', 'native.csv'] + helpers
     manifest = dict(status='native-converged-profile' if quality else 'rejected-native-quality',
                     model=cfg['model'], profile=profile, declared_constants=cfg['constants'],
                     actual_constants=before, final_constants=read_constants(), layout=layout,
@@ -144,6 +153,12 @@ def main():
     Path('manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
     print(json.dumps(dict(status=manifest['status'], profile=profile, samples=manifest['sample_count'])))
     assert quality
+
+
+def main():
+    tag, step, profile = sys.argv[1:]
+    source = Path.cwd() / 'ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw'
+    run_case(tag, step, profile, configuration(profile, source.read_text()))
 
 
 if __name__ == '__main__':

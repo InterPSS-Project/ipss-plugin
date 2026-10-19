@@ -625,7 +625,7 @@ public class PSSEDStabDirectParser {
                 return procWt12a1b(busId, genId, record);
             case "GENSAL":
             case "GENSAE":
-                return procGensal(busId, genId, fields);
+                return procGensal(busId, genId, fields, record.sourceModelName().equals("GENSAE"));
             case "IEEET1":
                 return procExcIeeet1(busId, genId, fields);
             case "IEEEX1":
@@ -1063,7 +1063,7 @@ public class PSSEDStabDirectParser {
 
     // GENSAL: IBUS 'GENSAL' ID T'do T''do T''qo H D Xd Xq X'd X''d Xl S(1.0) S(1.2)
     //         idx:  0    1   2   3    4     5   6 7  8  9  10  11  12   13     14
-    private boolean procGensal(String busId, String genId, String[] f) throws InterpssException {
+    private boolean procGensal(String busId, String genId, String[] f, boolean exponential) throws InterpssException {
         double td10 = getDouble(f, 3, 0);
         double td110 = getDouble(f, 4, 0);
         double tq110 = getDouble(f, 5, 0);
@@ -1077,8 +1077,10 @@ public class PSSEDStabDirectParser {
         double s100 = getDouble(f, 13, 0) * 100;
         double s120 = getDouble(f, 14, 0) * 100;
         double[] rating = getGenRating(busId, genId);
-        return builder.addGensal(busId, genId, rating[0], rating[1],
-                td10, td110, tq110, h, d, xd, xq, xd1, xd11, xl, s100, s120) != null;
+        return (exponential?builder.addGensae(busId,genId,rating[0],rating[1],
+                td10,td110,tq110,h,d,xd,xq,xd1,xd11,xl,s100,s120):
+                builder.addGensal(busId,genId,rating[0],rating[1],
+                td10,td110,tq110,h,d,xd,xq,xd1,xd11,xl,s100,s120))!=null;
     }
 
     // ==================== Exciter Model Parsers ====================

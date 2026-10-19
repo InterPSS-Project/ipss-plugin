@@ -181,6 +181,8 @@ public final class GeneratorGovernorEvidenceInventory {
                 .append("GENROU/GENROE now reuse the core round-rotor equations with distinct quadratic/exponential saturation. ")
                 .append("GenrouNativeReference adds twenty six-state profiles from forty raw-exact cold runs; GenrouNativeSmibTest checks native initialization, immutable named states and reconstruction. ")
                 .append("Native coupled fault differences remain diagnostics, and the existing ANDES gate remains unchanged. See [the saturation evidence and TODO](benchmarks/genrou-native-saturation-2026-10-19.md).\n\n")
+                .append("Supplemental salient-pole evidence does not change the approved-row counts above. GENSAL retains the core d-axis-only solver; GENSAE adds the native three-coordinate both-axis saturation adapter while reusing core mechanics and Norton admittance. ")
+                .append("GensalNativeReference retains thirty-two five-state/phasor profiles from sixty-four cold runs. GensalNativeSmibTest separates bounded native state comparisons from remaining event-side and checkpoint gaps. See [the salient-pole evidence and TODO](benchmarks/gensal-gensae-native-2026-10-19.md).\n\n")
                 .append("| Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |\n")
                 .append("|---|---|---|---|---|---|\n");
         for (Evidence entry : ENTRIES) {

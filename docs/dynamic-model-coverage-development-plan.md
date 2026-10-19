@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+GENSAL/GENSAE follow-up: retain the core GENSAL solver and implement the native
+GENSAE three-electrical-coordinate both-axis saturation adapter with core
+mechanics, bases and Norton admittance. Correct subtransient-flux input and
+atomic callback-current staging; both failed realizations remain counterexamples.
+Sixty-four cold runs yield thirty-two exact five-state/phasor profiles covering
+both families, damping/resistance, nonunit bases and disabled saturation.
+Every raw state row has fixed bounds and significant residuals shrink under
+step halving. The zero-saturation coupled limit matches the core within 1e-11.
+Native parsing, reinitialization, compensation and predictor/corrector guards
+pass; unsupported GENSAE checkpoint reconstruction is explicit, not silently
+downgraded to another model. Final gates pass 62 focused, 410 plugin-core and
+1,743 scoped SMIB/model/solver tests with zero failures/errors and only existing
+skips, plus sixteen offline probe and six wording tests. Complete event-side
+boundary, composed-controller and broader lifecycle acceptance remain open.
+See the [salient-pole evidence and TODO](benchmarks/gensal-gensae-native-2026-10-19.md).
+No full Texas2k dynamics are run.
+
 GENROU/GENROE saturation follow-up: reuse the existing core round-rotor machine
 and correct the native exponential identifier without replacing its electrical
 equations or integration. Add immutable six-state observation and selector-aware

@@ -892,13 +892,28 @@ public class DStabNetworkBuilder {
             double h, double d,
             double xd, double xq, double xd1, double xd11, double xl,
             double se100, double se120) throws InterpssException {
+        return addSalient(busId,genId,ratingMva,ratedKv,td10,td110,tq110,h,d,
+                xd,xq,xd1,xd11,xl,se100,se120,false);
+    }
+
+    /** Same native twelve-constant layout, with exponential saturation on both axes. */
+    public SalientPoleMachine addGensae(String busId,String genId,double ratingMva,double ratedKv,
+            double td10,double td110,double tq110,double h,double d,double xd,double xq,
+            double xd1,double xd11,double xl,double se100,double se120)throws InterpssException {
+        return addSalient(busId,genId,ratingMva,ratedKv,td10,td110,tq110,h,d,
+                xd,xq,xd1,xd11,xl,se100,se120,true);
+    }
+
+    private SalientPoleMachine addSalient(String busId,String genId,double ratingMva,double ratedKv,
+            double td10,double td110,double tq110,double h,double d,double xd,double xq,
+            double xd1,double xd11,double xl,double se100,double se120,boolean exponential)throws InterpssException {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);
         if (bus == null) {
             log.warn("Bus not found for GENSAL: {}", busId);
             return null;
         }
-        IeeeVcSalientPoleMachine mach = new IeeeVcSalientPoleMachine();
-        configureMachineIdentity(mach, "GENSAL", MachineModelType.EQ11_SALIENT_POLE,
+        SalientPoleMachine mach = exponential?new org.interpss.dstab.mach.GensaeMachine():new IeeeVcSalientPoleMachine();
+        configureMachineIdentity(mach, exponential?"GENSAE":"GENSAL", MachineModelType.EQ11_SALIENT_POLE,
                 busId, genId);
 
         mach.setRating(ratingMva, UnitType.mVA, network.getBaseKva());

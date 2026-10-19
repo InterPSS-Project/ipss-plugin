@@ -14,6 +14,8 @@ GENQEC field compensation now accepts finite Kw>=0 without the former artificial
 
 GENROU/GENROE now reuse the core round-rotor equations with distinct quadratic/exponential saturation. GenrouNativeReference adds twenty six-state profiles from forty raw-exact cold runs; GenrouNativeSmibTest checks native initialization, immutable named states and reconstruction. Native coupled fault differences remain diagnostics, and the existing ANDES gate remains unchanged. See [the saturation evidence and TODO](benchmarks/genrou-native-saturation-2026-10-19.md).
 
+Supplemental salient-pole evidence does not change the approved-row counts above. GENSAL retains the core d-axis-only solver; GENSAE adds the native three-coordinate both-axis saturation adapter while reusing core mechanics and Norton admittance. GensalNativeReference retains thirty-two five-state/phasor profiles from sixty-four cold runs. GensalNativeSmibTest separates bounded native state comparisons from remaining event-side and checkpoint gaps. See [the salient-pole evidence and TODO](benchmarks/gensal-gensae-native-2026-10-19.md).
+
 | Model | Oracle | DYR fixture | Focused tests | Trajectory comparison | Checkpoints |
 |---|---|---|---|---|---|
 | DEGOV1D | POWERWORLD | SMIB_v33_genrou_degov1d.dyr | DStabNetworkBuilderDegov1dTest | Degov1dIndependentSmibConformanceTest | smib-genrou-degov1d |
