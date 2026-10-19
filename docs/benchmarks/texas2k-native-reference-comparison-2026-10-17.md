@@ -3928,3 +3928,65 @@ takes 1,070.8 seconds; it is not a test of the quarter-cycle performance target.
 No original-input full event has newly passed. Sources, unsuccessful controls,
 raw outputs and comparison artifacts are retained privately under
 `2026-10-19-case2-machine-endpoint-audit`.
+
+## Aggregate power and synchronous electrical replay (2026-10-19)
+
+The remaining common rotor drift is now decomposed using all generator powers,
+the unchanged converted loads and the passive network. The aggregate identity
+closes within 2.65e-11 MW for both the unchanged baseline and the torque-only
+diagnostic. These are conditional accounting contributions, not independent
+causal interventions or corrections to accepted trajectories.
+
+In the unchanged baseline, renewable power differences contribute +1.13318
+degrees to the inertia-weighted final angle calculation. Buses 3061 and 3098
+contribute +0.76377 and +0.37281 degrees respectively; other units partially
+cancel them. The four-to-six-second interval contributes +1.09299 degrees of
+the renewable term. Mechanical power, load, losses and balance residuals also
+contribute and partially cancel. The earlier retained-torque discrepancy
+prevents interpreting the baseline's terminal-power reconstruction as its exact
+mechanical trajectory. The torque-only accounting retains that distinction and
+does not establish coupled acceptance.
+
+Two offline voltage decompositions reconstruct the selected bus-3061 and
+bus-3098 magnitude differences. The second uses an exact Cartesian power-balance
+secant, including constant-current load, without artificial machine-admittance
+coordinates. Synchronous Q differences around buses 5262 and 5263 contribute
+substantially before the renewable current-limit divergence. Large opposing
+contributions make it inappropriate to identify one controller as the cause
+from these decompositions alone. The previously observed bus-4147 reactive
+residual remains visible; it is not a new missing-term finding.
+
+A new electrical-state replay covers all 103 synchronous machines and all
+10,005 rows. Every machine initializes normally from the original computed
+operating point; its electrical coordinates match the coupled cold snapshot
+exactly. Terminal magnitude/angle, rotor angle, speed and field voltage are then
+prescribed from recorded inputs. Only the machine electrical differential
+coordinates are integrated. Duplicate event sides, the declared event-average
+recurrence and the full ten-second normalization ranges are preserved.
+
+| Recorded-input comparison | Prefault P | Prefault Q | Fault/postfault P | Fault/postfault Q |
+|---|---:|---:|---:|---:|
+| Local-input reconstruction: passing channels | 103/103 | 103/103 | 103/103 | 103/103 |
+| Supplied-reference inputs: passing channels | 103/103 | 103/103 | 103/103 | 103/103 |
+| Supplied-reference inputs: worst NRMSE | 0.000360243 | 0.000125006 | 0.000279164 | 0.000134740 |
+
+Local-input reconstruction is not bit-exact: its worst full-window P and Q
+RMSEs are 0.020385 MW and 0.025135 Mvar, both at bus 5263. This bounds the
+effect of explicitly refreshing algebraic current before derivative evaluation
+in this prescribed-input probe. Against supplied-reference inputs, worst P and
+Q RMSEs are 0.018722 MW at bus 6147 and 0.017119 Mvar at bus 6245. These results
+bound the electrical-model discrepancy under observed boundaries; they do not
+prove coupled initialization, controller behavior or rotor-angle integration.
+
+The largest recorded field-voltage RMSEs are 0.070913 pu at bus 5303 and
+0.053614 pu at bus 5263. Their excitation and stabilizer inputs are the next
+localization targets. The separate electrical angle-coordinate ranking uses
+the principal periodic difference, since the supplied bus angles contain whole
+revolutions. This does not change the absolute rotor-angle acceptance gate.
+The first unwrapped ranking and the initial replay compilation failure are
+retained alongside the corrected diagnostics.
+
+No production equations or comparison limits changed, and no original-input
+complete event is newly accepted. Sources, recorded inputs, both complete
+replays, failed helper attempts and comparison evidence are retained privately
+under `2026-10-19-case2-synchronous-boundary-localization`.
