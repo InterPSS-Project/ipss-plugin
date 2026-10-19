@@ -2681,3 +2681,80 @@ against the frozen diagnostic runtime. Sources, runtime hashes, successful
 and rejected probes, startup snapshots and all-channel comparisons are
 retained privately in
 `2026-10-18-case2-generator-priority-initialization-audit`.
+
+### Whole-fleet voltage replay and discrete initialization sensitivity
+
+A paired diagnostic now replays bus voltage phasors through all 199 original
+devices for 903 samples, from -0.002 through 0.900 seconds. It retains the
+independently solved initial operating point and all original parameters;
+subsequent powers, rotor angles, field voltages and controller states are not
+imposed. This isolates device response from closed-loop network feedback.
+The prescribed voltages make this a conditional component test, not a
+coupled-system acceptance run.
+
+The self-replay first uses the completed local trajectory. A rejected first
+implementation omitted the stator-current cache refresh normally performed
+by network current evaluation and fails this control. The corrected replay
+refreshes machine Norton outputs at each imposed endpoint. It reproduces
+local rotor angle within 1.74e-7 degrees, field voltage within 1.73e-6 pu,
+mechanical power within 3.58e-7 MW, terminal P within 0.000897 MW and terminal
+Q within 0.0000350 Mvar. Both attempts and their sources are retained.
+
+With the supplied voltage history, the largest device discrepancies over
+the same interval change as follows. The locations of maxima may differ
+between the two columns.
+
+| Quantity | Coupled run | Supplied-voltage replay |
+| --- | ---: | ---: |
+| Rotor angle maximum | 8.10240 degrees | 0.00363717 degrees |
+| Terminal P maximum | 109.118863 MW | 0.0824185 MW |
+| Terminal Q maximum | 94.615855 Mvar | 5.652801 Mvar |
+| Field voltage maximum | 3.288372 pu | 0.0191549 pu |
+
+For unit 5263/1 specifically, terminal-Q maximum error falls from 94.615855
+to 0.0106834 Mvar and field-voltage maximum error falls from 3.139484 to
+0.000429716 pu. The largest remaining field-voltage error is at unit 5303/1.
+Using full-ten-second normalization ranges, all 199 P channels and 180 of
+199 Q channels pass the prefault NRMSE threshold over this shortened replay
+interval; 100 of 103 rotor-angle channels satisfy the maximum-error threshold.
+These conditional counts do not cover the complete prefault period or fault.
+
+Seventeen of the Q failures share a discrete initialization difference. Their
+local initial reactive current is exactly zero, while every corresponding
+supplied initial terminal-Q value is positive, between 6.98e-7 and 0.000199676
+Mvar. The converter's existing recovery rule uses the sign of initial Q to
+select a directional rate boundary; exact zero selects neither boundary.
+With zero-valued directional limits, this small initial difference changes
+later admissible current motion. Unit 8099/1 has the largest conditional Q
+error, 5.652801 Mvar. The other two Q failures, 4010/1 and 4142/1, have maximum
+absolute errors of only 0.002672 and 0.001120 Mvar but small reference ranges.
+
+A separate 1.2-second coupled sensitivity probe changes only the seventeen
+stored recovery selectors to the positive-Q branch indicated by the supplied
+initial measurements. All original continuous states, physical initial
+outputs, power-flow controls and model parameters are preserved. This is
+explicitly a counterfactual diagnostic, not a validated initialization rule
+or production correction. Its prefault maximum rotor-angle error decreases
+from 10.386441 to 10.199512 degrees, while voltage maximum error changes from
+0.109927 to 0.109988 pu. Thus the selector difference is real but does not
+explain the main coupled discrepancy. No selector override is promoted.
+
+An independent passive-network calculation also checks 18 selected samples
+through the complete prefault interval, using solved shunts and the confirmed
+I-P/Z-Q conversion. The local physical power-balance residual stays below
+3.1e-6 MVA at every checked bus. The supplied residual is about 0.03 MVA at
+the leading bus; much of this is within the exported phasors' conservative
+float32 bound. Smaller residuals at converter buses exceed that rounding
+bound and are consistent with the previously observed finite network stopping
+rule. The reference-based subtransient internal-voltage reconstruction changes
+by at most 1.76e-7 pu over the first two startup steps. Neither check reveals
+a large initial synchronous-machine state imbalance or proves exact network
+iteration equivalence.
+
+The large discrepancy therefore remains associated with closed-loop network
+feedback and its numerical interface, with smaller device and initialization
+differences still present. The supplied-voltage agreement does not justify
+replacing the required coupled simulation with replay. Full-window and
+six-case acceptance remain open. Scripts, frozen sources, rejected controls,
+raw traces, all-channel metrics and source hashes are retained privately in
+`2026-10-18-case2-whole-fleet-voltage-and-initial-selection`.
