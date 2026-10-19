@@ -3,24 +3,38 @@
 ## Acceptance contract
 
 The supplied corpus contains 36 ten-second disturbances across six cases. The
-updated user contract covers all matched bus-voltage magnitudes, machine
-terminal P/Q, and generator rotor angles. The original selected-channel
+updated user contract covers all matched bus-voltage magnitudes, frequency,
+and generator rotor angles. Terminal P/Q remain diagnostic quantities after
+the user's 2026-10-19 goal edit. The original selected-channel
 references omit bus-voltage angles; the additional full-system Case 2
-bus-6307 reference includes them. The user confirmed the following limits and
-conventions:
+bus-6307 reference includes them. The current goal specifies the following
+limits and conventions:
 
-- Voltage and P/Q: NRMSE below `0.001` before the event and `0.005` from event
-  application, including the fault, through the end of the run.
+- Voltage and frequency: the updated goal specifies NRMAE below `0.001` before
+  the event and `0.005` from event application through the end of the run.
+  Both range-normalized MAE and RMSE are reported while the changed metric
+  definition is clarified.
 - Both periods use the **full ten-second reference range** as the denominator.
-- Rotor angle: maximum absolute error below `0.002` degrees before the event;
-  **RMSE below `0.01` degrees** across the full ten seconds.
+- Rotor angle, updated by the user on 2026-10-19: maximum absolute error below
+  `0.02` degrees before the event and **RMSE below `0.2` degrees** across the
+  full ten seconds. The updated goal calls this degree-valued quantity NRMSE;
+  comparisons retain the earlier explicit RMSE-in-degrees interpretation.
 - Load conversion: constant-current P and constant-impedance Q.
+
+The original 36-event corpus contains five generator-speed channels per event;
+the additional full-system dataset contains 103. Neither has a separately
+named bus-frequency channel. Generator speed is the available frequency
+candidate, pending confirmation of whether the user instead wants frequency
+derived from bus phase angles. This distinction is not resolved by relabelling
+speed as a directly measured bus frequency.
 
 The prefault side at the application timestamp is a prefault observation; the
 duplicate event-post sample belongs to the fault/postfault period. The earlier
 single `0.001` full-window gate is retained only as historical evidence.
 The updated target has **not** been achieved. Partial or failed trajectories
 cannot pass.
+Historical sections retain the limits used for their original comparisons;
+new rescoring is identified explicitly and does not replace those artifacts.
 
 Commercial-tool documentation and reproducible commercial-tool outputs are the
 primary verification references for the exact model and version. ANDES is a
@@ -34,7 +48,7 @@ The supplied commercial-simulator outputs are the final accuracy reference for
 this benchmark and for selecting a network convergence tolerance. A tighter
 InterPSS run is an internal numerical-sensitivity control. Agreement between
 InterPSS runs cannot establish correctness or replace the supplied-reference
-voltage, terminal P/Q and rotor-angle acceptance checks.
+voltage, frequency and rotor-angle acceptance checks.
 
 The local comparison producer retains input and reference SHA-256 hashes,
 freezes compiled runtime jars, preserves event-pre/event-post samples, and
@@ -4045,3 +4059,53 @@ set `2026-10-19-case2-excitation-boundary-localization`.
 
 No production numerical code or comparison limits changed in this slice.
 The original-input full-event and six-case accuracy goals remain open.
+
+## Updated voltage/frequency scoring and controller diagnostics (2026-10-19)
+
+The existing original-input, ten-second Case 2 bus-6307 run has been rescored
+against the full-system 1 ms reference using the updated contract. No numerical
+model, initial state or trajectory was changed for this rescoring. Frequency
+is provisionally evaluated from the supplied generator-speed channels. Both
+range-normalized MAE and RMSE are reported, using the complete ten-second
+reference range and retaining both sides of each event.
+
+| Quantity and period | Channels passing | Worst normalized MAE | Worst normalized RMSE |
+|---|---:|---:|---:|
+| Bus voltage, prefault | 2,000 / 2,000 | 0.000288742 | 0.000572856 |
+| Bus voltage, fault/postfault | 2,000 / 2,000 | 0.001295044 | 0.001488382 |
+| Generator speed, prefault | 103 / 103 | 0.000067175 | 0.000151852 |
+| Generator speed, fault/postfault | 103 / 103 | 0.000366815 | 0.000440160 |
+
+All 103 rotor-angle channels also pass the updated degree limits: the largest
+prefault absolute error is 0.01792176 degrees, and the largest full-window RMSE
+is 0.18613198 degrees. These results establish numerical agreement for this
+one event under the stated frequency interpretation. They do not establish
+all 36 disturbances, direct bus-frequency agreement, production integration
+or the runtime target. The dense linear-solver pipe backend remains an
+explicit diagnostic implementation. Terminal P/Q errors are retained as
+diagnostics rather than acceptance gates under the updated objective.
+
+A separate stabilizer-input experiment replaced retained electrical power
+with freshly evaluated terminal torque only during stabilizer evaluation,
+restoring the retained machine power afterward. Cold integration coordinates
+remain unchanged, and the first 1.2 seconds of the complete run reproduce the
+prefix exactly across 4,810 channels. However, worst rotor-angle RMSE increases
+to 0.21745585 degrees, and only three of 103 full-window angle channels pass
+the 0.2-degree limit. This experiment is rejected; it is not promoted into the
+production solver. Both runs require three factorizations and approximately
+78,000 triangular solves, so their wall-time difference is not evidence of an
+algorithmic speed improvement.
+
+Conditional governor replay now covers all 103 synchronous machines: 88 custom
+governors and 15 steam controllers. Initial coordinates agree with the original
+cold snapshot within 5.56e-16. Reconstructed local retained-power inputs agree
+with 20,806 archived observations within 5.08e-13 pu; using them reproduces local
+mechanical power within 1.15e-12 MW RMSE. With supplied speed and terminal-power
+inputs, the largest mechanical-power RMSE is 0.01526950 MW at bus 7389. A uniform
+single-precision storage probe reduces that value to 0.01278290 MW but is not
+adopted. These are conditional equation/input diagnostics, not replacement
+references or evidence that the coupled six-case goal is complete.
+
+The completed replays, rejected full run, updated scoring, frozen runtime
+dependencies and original-reference hashes are retained privately in
+`2026-10-19-case2-updated-contract-and-controller-diagnostics`.
