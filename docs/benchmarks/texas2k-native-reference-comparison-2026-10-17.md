@@ -2475,3 +2475,37 @@ prefix comparisons are retained privately in
 `2026-10-18-case2-shunt-limit-and-operating-point-diagnostics`.
 The next localization uses the earliest divergence and the supplied complete
 machine channels; the six-case, 36-event accuracy objective remains open.
+
+### Independent initial power-balance audit (2026-10-18)
+
+A separate nodal-admittance calculation checks all 2,000 supplied initial
+bus phasors, all available terminal P/Q, and the original loads. It reproduces
+the earlier branch-by-branch balance calculation within 5.54e-11 MVA.
+This is a read-only diagnostic at the first sample, before any disturbance;
+it does not depend on fault admittance or change a simulation input.
+
+At bus 1033, the original 50 Mvar shunt setting produces a 51.524032 Mvar
+reactive balance discrepancy at the supplied voltage. The apparent shunt
+setting inferred from that balance is 0.000171 Mvar at 1 pu, consistent with
+zero within the export-precision bound. The supplied generator Q is
+-40.029671 Mvar, close to its original lower limit of -40.03 Mvar. Thus the
+large voltage discrepancy is associated with an initial control-state
+difference. A shunt at zero has room to increase toward its original
+1.03 pu objective when the voltage is 1.015128 pu, so the observed state
+does not establish that both original conflicting objectives were active.
+The primary control description requires matching objectives for colocated
+setpoint controllers; it does not specify automatic generator precedence
+for this conflicting input. The reference run's control settings remain
+unconfirmed.
+
+Using only the shunt settings and netted powers independently solved in the
+existing diagnostic policy, the largest initial power-balance residual falls
+from 51.524032 MVA at bus 1033 to 0.030507 MVA at bus 4147. Of 2,000 buses,
+1,990 fall within a conservative bound for float32 voltage, phase and power
+rounding, and 1,997 fall within that bound plus 0.001 MVA. The bound excludes
+solver tolerance and input uncertainty and is not an acceptance threshold.
+The leading remaining excesses are at buses 4147, 4175 and 4005. These results
+support the operating-point localization without proving the unconfirmed
+control policy or improving the failed dynamic comparison. All 150 active
+shunt records, bus-level residuals, rounding bounds and input hashes are
+retained privately in `2026-10-18-case2-initial-control-balance-audit`.
