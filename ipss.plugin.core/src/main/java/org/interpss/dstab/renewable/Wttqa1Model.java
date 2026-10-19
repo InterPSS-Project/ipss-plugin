@@ -46,7 +46,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
         predictorDerivative = null;
         speedReference = speedForPower(power);
         double initialError = data.tFlag() == 1 ? 0.0
-                : speedReference - generatorSpeed;
+                : generatorSpeed - speedReference;
         torque = power / nonzero(generatorSpeed);
         torqueIntegral = torque - data.kpp() * initialError;
         pref = power;
@@ -76,12 +76,11 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
         filteredPower = Repca1Model.lag(filteredPower, electricalPower, data.tp(), dt);
         speedReference = Repca1Model.lag(speedReference, speedForPower(filteredPower),
                 data.twref(), dt);
-        // WECC Figure 3-6 selects (Pref0-filtered Pe)/wg for TFLAG=1 and
-        // (wref-wg) for TFLAG=0. This sign is also the physically negative-
-        // feedback form of the active-power loop.
+        // The native block diagram selects (Pref0-filtered Pe)/wg for TFLAG=1 and
+        // (wg-wref) for TFLAG=0: an overspeed increases electrical torque.
         double error = data.tFlag() == 1
                 ? (powerReference - filteredPower) / nonzero(generatorSpeed)
-                : speedReference - generatorSpeed;
+                : generatorSpeed - speedReference;
         if (Math.abs(error) <= EQUILIBRIUM_RESIDUAL) error = 0.0;
         torqueIntegral = Repca1Model.integrateWithAntiWindup(torqueIntegral, data.kip(), error,
                 dt, data.kpp(), data.teMin(), data.teMax(), voltageDip);
@@ -193,7 +192,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
             double powerReference) {
         double error = data.tFlag() == 1
                 ? (powerReference - state.filteredPower()) / nonzero(generatorSpeed)
-                : state.speedReference() - generatorSpeed;
+                : generatorSpeed - state.speedReference();
         return Math.abs(error) <= EQUILIBRIUM_RESIDUAL ? 0.0 : error;
     }
 

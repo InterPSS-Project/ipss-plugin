@@ -41,8 +41,8 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
         var counts=entries.stream().collect(Collectors.groupingBy(RenewableEvidenceInventory.Entry::scope,Collectors.counting()));
         assertEquals(0,counts.getOrDefault(RenewableEvidenceInventory.Scope.MISSING_IMPLEMENTATION,0L).longValue());
         assertEquals(8,counts.get(RenewableEvidenceInventory.Scope.NATIVE_RECORDED_PROFILE).longValue());
-        assertEquals(13,counts.get(RenewableEvidenceInventory.Scope.NATIVE_PARTIAL_PROFILE).longValue());
-        assertEquals(6,counts.get(RenewableEvidenceInventory.Scope.BOUNDED_DIALECT_COMPARISON).longValue());
+        assertEquals(14,counts.get(RenewableEvidenceInventory.Scope.NATIVE_PARTIAL_PROFILE).longValue());
+        assertEquals(5,counts.get(RenewableEvidenceInventory.Scope.BOUNDED_DIALECT_COMPARISON).longValue());
         assertEquals(0,counts.getOrDefault(RenewableEvidenceInventory.Scope.FOCUSED_ONLY,0L).longValue());
         Set<Class<?>> registered=Set.copyOf(Arrays.asList(
                 CorePluginTestSuite.class.getAnnotation(SelectClasses.class).value()));

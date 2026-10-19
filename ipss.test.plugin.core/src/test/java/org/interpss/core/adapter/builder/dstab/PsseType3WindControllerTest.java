@@ -528,7 +528,7 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
         double expectedSpeedReference = .79 + .05 * ((.86 - .79) / .4);
         assertEquals(.55, model.getFilteredPower(), 1.0e-12);
         assertEquals(expectedSpeedReference, model.getSpeedReference(), 1.0e-12);
-        assertEquals(initialTorque + expectedSpeedReference - .75,
+        assertEquals(initialTorque + .75 - expectedSpeedReference,
                 model.getTorque(), 1.0e-12);
     }
 
@@ -550,13 +550,13 @@ public class PsseType3WindControllerTest extends CorePluginTestSetup {
     }
 
     @Test
-    void torqueControllerSpeedErrorModeMatchesPowerworldFlagDefinition() {
+    void torqueControllerSpeedErrorModeMatchesPublishedNativeJunction() {
         Wttqa1Model model = torqueController(0, 1, 0, 0, 0, 10, 0);
         model.initialize(.5);
 
         model.step(.1, .5, .7);
 
-        double expectedTorque = .5 / .79 + .09;
+        double expectedTorque = .5 / .79 - .09;
         assertEquals(expectedTorque, model.getTorque(), 1.0e-12);
         assertEquals(expectedTorque * .7, model.getPref(), 1.0e-12);
     }

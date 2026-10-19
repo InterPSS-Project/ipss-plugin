@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+WTTQA1 speed-feedback follow-up: correct the reversed speed-error sign in
+initialization and both stepping paths, preserving the power branch and all
+existing trajectory bounds. Three new guards fail before the fix; twenty
+native cold runs form ten exact pairs. Eight default-curve profiles add bounded
+three-state replay, while two nonunit curve profiles retain an explicit native
+raw-power versus published filtered-power input discrepancy. Ten imported SMIB
+executions are finite, not whole-stack native parity. The generated inventory
+now has fourteen native-partial and five ANDES-only families; none is VERIFIED.
+See the [sign correction and remaining work](benchmarks/wttqa-speed-feedback-2026-10-19.md).
+Final gates pass 78 focused, 410 plugin-core and 1,633 scoped SMIB/model/solver
+checks, with zero failures/errors and only existing skips, plus four offline
+probe guards and six wording checks. Source/reference/report hashes preserve
+the before-fix failures, eight bounded replays and two unaccepted counterexamples.
+
 TGOV1 machine-base/damping follow-up: twenty native cold runs cover 50/200 MVA,
 zero/nonzero turbine damping and matched/halved timesteps, including a separate
 tight-network discriminator. Ten pairs match exactly and thirty hashed fixtures
