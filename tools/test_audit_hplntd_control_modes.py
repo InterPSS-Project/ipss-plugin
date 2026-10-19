@@ -63,6 +63,18 @@ class ControlArtifactAuditTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'duplicate'):
                 read_run(directory)
 
+    def test_custom_reference_offsets_require_explicit_profile_contract(self):
+        with tempfile.TemporaryDirectory() as name:
+            directory = Path(name)
+            self.fixture(directory)
+            path = directory / 'manifest.json'
+            manifest = json.loads(path.read_text())
+            manifest['events'] = [dict(time_s=.05, offset=0)]
+            path.write_text(json.dumps(manifest))
+            self.assertEqual(405, len(read_run(directory, (0,))[1]))
+            with self.assertRaisesRegex(ValueError, 'reference events'):
+                read_run(directory)
+
 
 if __name__ == '__main__':
     unittest.main()

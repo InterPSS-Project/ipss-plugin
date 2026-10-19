@@ -51,6 +51,13 @@ public class HplntdSelectorNativeSmibTest {
     }
     static void compareImportedProfiles(List<org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile> profiles,
             java.util.function.Function<org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile,double[]> boundsFor,Path dir,String folder)throws Exception {
+        compareImportedProfiles(profiles,boundsFor,dir,folder,(p,g)->{
+            var r=g.kernel().references();g.kernel().setReferences(new HplntdKernel.References(r.voltage(),r.reactive()+.02,r.frequency(),r.active()+.05,r.powerFactor(),r.voltageAux(),r.activeAux()));
+        });
+    }
+    static void compareImportedProfiles(List<org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile> profiles,
+            java.util.function.Function<org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile,double[]> boundsFor,Path dir,String folder,
+            java.util.function.BiConsumer<org.interpss.core.dstab.reference.HplntdAggregationNativeReference.Profile,HplntdCoordinator> event)throws Exception {
         var factory=new HplntdTypedRuntimeSmibTest();var names=channels();
         var failures=new ArrayList<String>();
         for(var p:profiles){
@@ -58,7 +65,7 @@ public class HplntdSelectorNativeSmibTest {
             var rows=new ArrayList<double[]>();int steps=(int)Math.round(.2/p.step());
             for(int tick=0;tick<=steps;tick++){
                 if(tick==(int)Math.round(.05/p.step())){
-                    var r=f.group().kernel().references();f.group().kernel().setReferences(new HplntdKernel.References(r.voltage(),r.reactive()+.02,r.frequency(),r.active()+.05,r.powerFactor(),r.voltageAux(),r.activeAux()));
+                    event.accept(p,f.group());
                 }
                 rows.add(snapshot(f));
                 for(var port:f.group().ports()){
@@ -69,7 +76,7 @@ public class HplntdSelectorNativeSmibTest {
                     var before=f.group().kernel().states();var reference=f.group().kernel().references();
                     assertTrue(f.algorithm().solveDEqnStep(true));var after=f.group().kernel().states();
                     if(data.frequencyFlag()==1)assertEquals(HplntdTypedRuntimeSmibTest.referenceHeun(before[10],reference.active(),p.step(),data.value(HplntdData.Parameter.DPRMIN),data.value(HplntdData.Parameter.DPRMAX)),after[10],1e-14);
-                    if(data.reactiveFlag()==1&&data.referenceFlag()==0)assertEquals(HplntdTypedRuntimeSmibTest.referenceHeun(before[11],reference.reactive(),p.step(),data.value(HplntdData.Parameter.DQREFMIN),data.value(HplntdData.Parameter.DQREFMAX)),after[11],1e-14);
+                    if(data.reactiveFlag()==1&&data.referenceFlag()==0)assertEquals(HplntdTypedRuntimeSmibTest.referenceHeun(before[11],Math.max(data.value(HplntdData.Parameter.QREFMIN),Math.min(data.value(HplntdData.Parameter.QREFMAX),reference.reactive())),p.step(),data.value(HplntdData.Parameter.DQREFMIN),data.value(HplntdData.Parameter.DQREFMAX)),after[11],1e-14);
                 }
             }
             assertEquals(steps,f.group().predictorCount());assertEquals(steps,f.group().correctorCount());

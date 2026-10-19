@@ -11,12 +11,16 @@ import struct
 
 from hplntd_control_mode_probe import MODES, variant
 
+# These frozen profiles were generated before reference-step customization.
+# Pin their generating source, not whatever helper happens to be current later.
+FROZEN_RUNNER_SHA256 = 'cea8b6133e3909cbb1cd2c38d4ff6fefe426768a6bf908c6a42939a6ece29cf8'
+
 
 def digest(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def read_run(directory):
+def read_run(directory, reference_offsets=(3, 1)):
     manifest = json.loads((directory / 'manifest.json').read_text())
     if manifest['status'] != 'native-converged-profile':
         raise ValueError('Rejected reference quality: ' + directory.name)
@@ -41,7 +45,7 @@ def read_run(directory):
         raise ValueError('Lost duplicate event/pause samples')
     if any(event.get('action') for event in manifest['events']):
         raise ValueError('Unexpected fault in selector-only discriminator')
-    if [(e['time_s'], e['offset']) for e in manifest['events']] != [(.05, 3), (.05, 1)]:
+    if [(e['time_s'], e['offset']) for e in manifest['events']] != [(.05, offset) for offset in reference_offsets]:
         raise ValueError('Changed reference events')
     return manifest, numeric
 
@@ -70,7 +74,8 @@ def audit(root):
                 if (run / 'dynamic.dyr').read_bytes() != variant(closed, mode):
                     raise ValueError('Unexpected input mutation')
                 for archived, source in [('probe.py', 'hplntd_control_mode_probe.py'), ('hplntd_fault_probe.py', 'hplntd_fault_probe.py')]:
-                    if digest(run / archived) != digest(root / 'tools' / source):
+                    expected = FROZEN_RUNNER_SHA256 if archived == 'hplntd_fault_probe.py' else digest(root / 'tools' / source)
+                    if digest(run / archived) != expected:
                         raise ValueError('Probe source changed since generation')
             if first['files']['native.csv'] != second['files']['native.csv'] or rows != repeated:
                 raise ValueError('Cold repeat changed raw output')

@@ -27,7 +27,8 @@ def sha(path):
 
 
 def run_case(tag, entered_step, *, dynamic=None, apply_fault=True, label='frozen-fault',
-             directory_prefix='hplntd-fault-reference-', probe_source=None):
+             directory_prefix='hplntd-fault-reference-', probe_source=None,
+             reference_steps=((3, .05), (1, .02))):
     # Import the licensed runtime only when executing a reference case. Pure
     # input-schema tests must also run on machines without that installation.
     import psse3607
@@ -35,6 +36,9 @@ def run_case(tag, entered_step, *, dynamic=None, apply_fault=True, label='frozen
     import dyntools
     root = Path.cwd()
     h = float(entered_step)
+    reference_steps = tuple(reference_steps)
+    assert reference_steps and all(isinstance(offset, int) and offset in (0, 1, 2, 3, 9, 10, 11)
+                                   and math.isfinite(delta) for offset, delta in reference_steps)
     assert h in (.0005, .00025)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
     assert directory_prefix in ('hplntd-fault-reference-', 'hplntd-control-reference-')
@@ -110,7 +114,7 @@ def run_case(tag, entered_step, *, dynamic=None, apply_fault=True, label='frozen
     assert actual == list(map(f32, declared)), ('Reference tool changed entered constants', declared, actual)
     checked('prefault', psspy.run(0, .05, 1000000, 1, 0))
     events = []
-    for offset, delta in [(3, .05), (1, .02)]:
+    for offset, delta in reference_steps:
         value = checked('initial reference', psspy.dsrval('VAR', layout['PLANT']['VAR'] + offset)) + delta
         checked('reference step', psspy.change_var(layout['PLANT']['VAR'] + offset, value))
         events.append(dict(time_s=.05, array='VAR', offset=offset, value=value))

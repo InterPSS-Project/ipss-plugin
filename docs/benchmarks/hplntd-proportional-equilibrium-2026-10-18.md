@@ -1,5 +1,11 @@
 # Hybrid plant proportional-only equilibrium
 
+Follow-up: [direct-reference discriminators](hplntd-reference-limits-2026-10-18.md)
+now localize the initialized voltage-bound observation to native raw-VAR voltage
+bypass at runtime as well. InterPSS retains the published clamp; voltage parity
+is not inferred from that diagnosis. The counterexamples below retain their
+original checkpoint classification.
+
 ## Implemented equations
 
 HPLNTDU initialization now supports feasible enabled loops with zero integral

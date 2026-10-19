@@ -34,8 +34,10 @@ Disabled active/reactive plant paths now hold initial commands and leave unused
 storage at zero, while PF control retains its required active measurement.
 Sixteen two-step selector profiles add recorded-input and bounded coupled SMIB
 acceptance. Feasible proportional-only initialization and PF without electrical
-feedback now have 24 two-step profiles; native nonzero-deadband initialization
-and initialized reference-limit semantics remain unresolved counterexamples.
+feedback now have 24 two-step profiles. Direct-reference probes isolate native
+raw-VAR voltage-limit bypass; InterPSS retains its published clamp. Four Q/PF
+reference-disturbance profiles add state-replay and bounded coupled acceptance;
+native voltage parity and nonzero-deadband initialization remain open.
 The source-list REPCCU spelling is not an inferred alias. REEC_E now has strict native reference standard-name `REECE`
 import and deferred REGCA/REGCB attachment. The source-list `REECE1/REECEU1`
 names/wrappers remain unsupported; family runtime presence does not prove their
@@ -528,10 +530,22 @@ and state definitions agree.
       1,514 selected SMIB/model/solver tests (one diagnostic skip), and 26 offline
       checks, zero failures/errors. Four raw diagnostic runs remain excluded
       from native acceptance; existing trajectory bounds are unchanged.
-    - [ ] Resolve initialized voltage-reference limits and the rejected native
-      nonzero-deadband/zero-Ki initialization. Independently verify excited V/PF
-      references, remaining active limits, branchless/alternate-host, switching
-      and lifecycle profiles; retain explicit unsupported-path rejection until proved.
+    - [x] Localize the initialized voltage-reference discrepancy with sixteen
+      two-step direct-reference profiles and 32 raw runs, identical within each
+      of the sixteen cold pairs.
+      Twelve voltage diagnostics prove native raw-VAR bypass, not initialized
+      limit expansion. Preserve the published clamp with a failing mutation
+      control. Add four Q-upper/PF-lower state-replay and bounded coupled
+      trajectory profiles; preserve the runner's earlier default hashes.
+      See [direct-reference evidence](benchmarks/hplntd-reference-limits-2026-10-18.md).
+      Final gates: 41 focused, 393 core-unit (six optional skips), 1,519 selected
+      SMIB/model/solver tests (one diagnostic skip), and 32 offline checks,
+      zero failures/errors. Four fresh default runs preserve earlier CSV hashes;
+      production model equations and existing trajectory bounds are unchanged.
+    - [ ] Resolve published-diagram versus native voltage-boundary compatibility
+      without silently removing limits, and the rejected native nonzero-deadband/
+      zero-Ki initialization. Independently benchmark voltage references, remaining
+      active limits, branchless/alternate-host, switching and lifecycle profiles.
   - [x] Freeze the installed standard-native REPCC contract: 35 mixed-type ICONs,
     57 CONs, thirteen states, 36 VARs. Add typed data and algebraic equilibrium
     initialization, plus eight cold-paired native foundation profiles. Preserve

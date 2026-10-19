@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import shlex
 import struct
-from audit_hplntd_control_modes import digest, read_run
+from audit_hplntd_control_modes import digest, read_run, FROZEN_RUNNER_SHA256
 from hplntd_proportional_probe import MODES, variant
 
 ACCEPTED = tuple(mode for mode in MODES if not mode.startswith('reject-') and mode != 'ki-deadband')
@@ -38,7 +38,7 @@ def audit(root):
                 if mode in ACCEPTED and (run / 'dynamic.dyr').read_bytes() != variant(baseline, mode):
                     raise ValueError('Unexpected input mutation')
                 probe = 'hplntd_proportional_probe.py' if mode in ACCEPTED else 'hplntd_control_mode_probe.py'
-                if digest(run / 'probe.py') != digest(root / 'tools' / probe) or digest(run / 'hplntd_fault_probe.py') != digest(root / 'tools/hplntd_fault_probe.py'):
+                if digest(run / 'probe.py') != digest(root / 'tools' / probe) or digest(run / 'hplntd_fault_probe.py') != FROZEN_RUNNER_SHA256:
                     raise ValueError('Changed reference probe')
             name = 'proportional-' + mode + '-' + label
             if gzip.decompress(base64.b64decode((source / (name + '.csv.b64')).read_bytes())) != (runs[0] / 'native.csv').read_bytes():

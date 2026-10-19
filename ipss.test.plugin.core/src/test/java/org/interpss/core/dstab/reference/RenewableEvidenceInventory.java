@@ -41,6 +41,9 @@ public final class RenewableEvidenceInventory {
                     var proportional=HplntdProportionalNativeReference.profiles();
                     if(proportional.size()!=24)throw new IllegalStateException("Incomplete proportional reference matrix");
                     for(var p:proportional){p.body();p.input();}
+                    var references=HplntdReferenceLimitNativeReference.profiles();
+                    if(references.size()!=16||HplntdReferenceLimitNativeReference.acceptedProfiles().size()!=4)throw new IllegalStateException("Incomplete reference-limit evidence or misclassified voltage diagnostics");
+                    for(var p:references){p.body();p.input();}
                 }
                 case NONE -> { if(!checkpoint.isEmpty())throw new IllegalStateException("Unexpected checkpoint"); }
                 case NATIVE_CSV -> {
@@ -189,8 +192,8 @@ public final class RenewableEvidenceInventory {
                 bounded("WTTQA1","PsseType3WindControllerTest")
             ).stream(),
             Set.of("HPLNTDU").stream().map(model->
-                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdProportionalNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2;disabled-selectors:16;proportional:24","",
-                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime. Disabled paths hold initial commands; PF retains its shared active measurement without enabling electrical feedback. Sixteen selector and twenty-four feasible proportional/feedback profiles compare every plant state and bounded coupled outputs. Signed inverse-deadband equilibrium is equation-tested; a suspect native nonzero-deadband initialization and an unresolved initialized voltage-reference boundary remain separate counterexamples. Instantaneous fault current/frequency parity, alternate hosts/switching and complete lifecycle remain unaccepted. Source HPLNTD is not an inferred alias; cross-method slew/filter residuals remain explicit."))
+                new Entry(model,"org.interpss.core.dstab.HplntdImportedSmibTest","HplntdReferenceLimitNativeSmibTest",Scope.NATIVE_PARTIAL_PROFILE,CheckpointKind.HPLNTD_NATIVE_MAP,"embedded-hplntd-foundation:7;fault-diagnostics:2;disabled-selectors:16;proportional:24;reference-limits:16;Q-PF-acceptance:4","",
+                        "Exact HPLNTDU/REAXDU import and bounded REGCA1/REECA1 runtime. Disabled paths and feasible proportional/feedback modes have independent profiles. Direct Q-upper/PF-lower reference disturbances add four state-replay and bounded coupled acceptance profiles. Twelve native voltage profiles prove bypass of the published Vref clamp at initialization and runtime; they are diagnostics, not voltage parity. InterPSS retains the published clamp. Suspect native nonzero-deadband initialization, instantaneous fault current/frequency parity, alternate hosts/switching and full lifecycle remain unaccepted. Source HPLNTD is not an inferred alias; cross-method slew/filter residuals remain explicit."))
     ).sorted(Comparator.comparing(Entry::model)).toList();
 
     private static Entry nativeRow(String model,String focused,String trajectory,String checkpoint,String fixture) {

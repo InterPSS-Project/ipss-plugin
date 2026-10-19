@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import struct
 
-from audit_hplntd_control_modes import digest, read_run
+from audit_hplntd_control_modes import digest, read_run, FROZEN_RUNNER_SHA256
 from hplntd_selector_probe import MODES, variant
 
 
@@ -52,7 +52,7 @@ def audit(root):
                 if mode in MODES and (run / 'dynamic.dyr').read_bytes() != variant(baseline, mode):
                     raise ValueError('Changed exact selector tokens')
                 probe = 'hplntd_selector_probe.py' if mode in MODES else 'hplntd_control_mode_probe.py'
-                if digest(run / 'probe.py') != digest(root / 'tools' / probe) or digest(run / 'hplntd_fault_probe.py') != digest(root / 'tools/hplntd_fault_probe.py'):
+                if digest(run / 'probe.py') != digest(root / 'tools' / probe) or digest(run / 'hplntd_fault_probe.py') != FROZEN_RUNNER_SHA256:
                     raise ValueError('Changed probe source')
             name = 'selector-' + mode + '-' + label
             resource = root / 'ipss.test.plugin.core/src/test/resources/hplntd-foundation-native'
