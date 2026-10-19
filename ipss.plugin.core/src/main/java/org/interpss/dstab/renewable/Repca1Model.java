@@ -59,6 +59,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
     private boolean initialized;
     private final TwoStepHistory twoStep = new TwoStepHistory(6);
     void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
+    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
     /** Configure the absolute reactive-reference coordinate during initialization. */
     void setReactiveStateOffset(double initialReference) {
         // Native REPCA1 stores absolute Q-reference coordinates for s2/s3.
@@ -248,6 +249,7 @@ public final class Repca1Model implements ICMLStateProvider, IntegrationStateAcc
                             : twoStep.advance(3, start.qIntegral(), rate.qIntegral()),
                     twoStep.advance(4, start.leadLagState(), rate.leadLagState()),
                     twoStep.advance(5, start.pLagState(), rate.pLagState())));
+            twoStep.observeRates(stateMonitor);
         } else {
             apply(start);
         }

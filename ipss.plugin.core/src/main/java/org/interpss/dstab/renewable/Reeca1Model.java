@@ -354,6 +354,13 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         if (sensedV < data.vdip() || sensedV > data.vup()) previousDip = true;
     }
 
+    void rebaseNextTwoStep() {
+        twoStep.rebaseNextStep();
+        if (plantController != null) plantController.rebaseNextTwoStep();
+        if (windControlStack != null) windControlStack.rebaseNextTwoStep();
+        if (weakGridController != null) weakGridController.rebaseNextTwoStep();
+    }
+
     /** Refresh upstream algebraic signals without consuming derivative history. */
     void refreshTwoStep(double p, double q, double v, double frequency) {
         p = snapToInitial(p, p0);
@@ -437,6 +444,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
                 : twoStep.advance(4, qIntegral, qIntegralRate);
         vIntegral = dip ? twoStep.hold(5, vIntegral)
                 : twoStep.advance(5, vIntegral, vIntegralRate);
+        twoStep.observeRates(stateMonitor);
         // REGCA consumes the last published electrical-control command. Its
         // proportional Q inputs belong to this completed step, while these
         // controller states have advanced. Retain that boundary before the

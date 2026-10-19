@@ -1,6 +1,8 @@
 package org.interpss.dstab.renewable;
 
 import java.util.Arrays;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
 
 /**
  * Explicit two-step derivative history for the opt-in renewable integration path.
@@ -18,6 +20,8 @@ final class TwoStepHistory {
     private final double[] offset;
     private final boolean[] initialized;
     private boolean singlePrecision;
+    private boolean eventPending;
+    private boolean eventStep;
 
     TwoStepHistory(int states) {
         previous = new double[states];store=new double[states];lastState=new double[states];
@@ -31,11 +35,17 @@ final class TwoStepHistory {
         Arrays.fill(previous, 0.0);
         previousStep = 0.0;
         Arrays.fill(initialized,false);
+        eventPending = eventStep = false;
     }
+
+    /** Idempotent; only the next positive integration step consumes this event. */
+    void rebaseNextStep() { eventPending = true; }
 
     void begin(double dt) {
         if (!Double.isFinite(dt) || dt <= 0.0)
             throw new IllegalArgumentException("Two-step integration requires a positive finite step");
+        eventStep = eventPending;
+        eventPending = false;
         step = dt;
         previousWeight = previousStep == 0.0 ? .5 : .5 * dt / previousStep;
         currentWeight = 1.0 + previousWeight;
@@ -43,6 +53,7 @@ final class TwoStepHistory {
     }
 
     double advance(int index, double state, double rate) {
+        if (eventStep) rate = .5 * (rate + previous[index]);
         if (singlePrecision) {
             if (!initialized[index] || state!=lastState[index]) {
                 store[index]=(float)(state+offset[index]);
@@ -60,6 +71,18 @@ final class TwoStepHistory {
         double result = state + step * (currentWeight * rate - previousWeight * previous[index]);
         previous[index] = rate;
         return result;
+    }
+
+    /** Publish retained integration rates after advance/hold has selected them. */
+    void observeRates(IntegrationStateMonitor monitor) {
+        monitor.begin(eventStep ? Stage.TWO_STEP_EVENT : Stage.TWO_STEP);
+        for (int i = 0; i < previous.length; i++) monitor.recordRate(i, previous[i]);
+    }
+
+    /** A collapsed state can use a different semantic observation coordinate. */
+    void observeRate(IntegrationStateMonitor monitor, int stateIndex, int observationIndex) {
+        monitor.begin(eventStep ? Stage.TWO_STEP_EVENT : Stage.TWO_STEP);
+        monitor.recordRate(observationIndex, previous[stateIndex]);
     }
 
     /** A model freeze holds the state and discards its pre-freeze derivative. */

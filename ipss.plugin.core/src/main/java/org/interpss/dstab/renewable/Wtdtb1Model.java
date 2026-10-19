@@ -20,6 +20,7 @@ public final class Wtdtb1Model implements WindDriveTrain {
     private final EquationConvention equationConvention;
     private final double[] state=new double[5];
     private final TwoStepHistory twoStep=new TwoStepHistory(5);
+    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
     private double[] start,initialRate;
     private double initialPower,initialSpeed=1;
     private boolean aerodynamicPresent;

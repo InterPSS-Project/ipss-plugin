@@ -482,6 +482,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                 throw new IllegalStateException("Reinitialize after changing dynamic model attachments");
         timestep=dt;
         boolean discontinuity=eventBoundaryThisStep || inputDiscontinuity;
+        if (discontinuity) for (var r:renewables)
+            if (r.active.getAsBoolean()) r.model.rebaseNextTwoStep();
         networkSolutionStep();
         if (discontinuity) rebaseDynamicModelInputs(method);
         evaluate();

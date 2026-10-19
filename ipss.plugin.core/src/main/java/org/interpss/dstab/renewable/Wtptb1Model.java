@@ -16,6 +16,7 @@ public final class Wtptb1Model {
     // Native state order: output lag, speed integral, compensation integral.
     private final double[] state = new double[3];
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
+    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
     private double[] start, firstRate;
     private boolean initialized;
 

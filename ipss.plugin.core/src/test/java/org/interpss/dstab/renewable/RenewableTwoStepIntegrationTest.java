@@ -6,6 +6,61 @@ import org.junit.jupiter.api.Test;
 
 class RenewableTwoStepIntegrationTest {
     @Test
+    void discontinuityAveragesOnceAndRetainsTheResultForTheFollowingStep() {
+        for (boolean single : new boolean[]{false, true}) {
+            var history = new TwoStepHistory(1);
+            history.setSinglePrecision(single);
+            history.begin(.1);
+            double x = history.advance(0, 1., 2.);
+            history.rebaseNextStep();
+            history.rebaseNextStep();
+            assertThrows(IllegalArgumentException.class, () -> history.begin(0.));
+            history.begin(.1);
+            x = history.advance(0, x, 6.);
+            assertEquals(1.8, x, single ? 3.e-7 : 1.e-14);
+            history.begin(.1);
+            assertEquals(2.5, history.advance(0, x, 6.), single ? 3.e-7 : 1.e-14);
+            history.rebaseNextStep();
+            history.reset();
+            history.begin(.1);
+            assertEquals(1.3, history.advance(0, 1., 2.), single ? 1.e-7 : 1.e-14);
+        }
+    }
+
+    @Test
+    void eventFilterMatchesTheArchivedFirstPositiveStateWithoutStateForcing() {
+        // Independent archived state-step profile, including its observed terminal
+        // voltage. Evidence: 2026-10-18-case2-converter-boundaries, eight cold runs.
+        var history = new TwoStepHistory(1);
+        history.setSinglePrecision(true);
+        history.rebaseNextStep();
+        history.begin(.00025);
+        assertEquals(1.0019669532775879,
+                history.advance(0, 1., (1.20981049538-1.)/.02), 0.);
+    }
+
+    @Test
+    void heldStateDiscardsHistoryWithoutInjectingAnAveragedRate() {
+        var history = new TwoStepHistory(1);
+        var monitor = new org.interpss.dstab.control.util.IntegrationStateMonitor("state");
+        history.begin(.1);
+        double x = history.advance(0, 1., 2.);
+        history.rebaseNextStep();
+        history.begin(.1);
+        monitor.record(0, x, 9.);
+        assertEquals(x, history.hold(0, x), 0.);
+        history.observeRates(monitor);
+        var snapshot = monitor.snapshot();
+        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+                snapshot.stage());
+        assertEquals(0., snapshot.rates().get("state"), 0.);
+        assertEquals(x, snapshot.evaluationStates().get("state"), 0.);
+        history.begin(.1);
+        assertEquals(x+.9, history.advance(0, x, 6.), 1.e-14);
+        assertEquals(0., snapshot.rates().get("state"), 0.);
+    }
+
+    @Test
     void activeCommandUsesTheCurrentLimitComputedBeforeTheStateAdvance() {
         Reeca1Model electrical=limitController(1,0.,2.,1.,0.,.1);
         electrical.initialize(.8,.5,1.);

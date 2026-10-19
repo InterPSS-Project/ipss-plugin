@@ -34,6 +34,7 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
     private double predictorSingleMassDerivative;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
     void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
+    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
 
     public Wtdta1Model(Wtdta1Data data) {
         this.data = data;
@@ -148,6 +149,7 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
         if (isSingleMass()) {
             generatorSpeed = turbineSpeed = twoStep.advance(0, start.generatorSpeed(),
                     singleMassDerivative(start.generatorSpeed(), mechanicalPower, electricalPower));
+            twoStep.observeRate(stateMonitor, 0, 1);
             shaftTorque = electricalPower / nonzeroSpeed(generatorSpeed);
             dampingPower = 0.0;
         } else {
@@ -156,6 +158,7 @@ public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess
                     twoStep.advance(0, start.turbineSpeed(), rate.turbineSpeed()),
                     twoStep.advance(1, start.generatorSpeed(), rate.generatorSpeed()),
                     twoStep.advance(2, start.shaftTorque(), rate.shaftTorque())));
+            twoStep.observeRates(stateMonitor);
             dampingPower = data.dshaft() * (turbineSpeed - generatorSpeed);
         }
         requireFiniteState();

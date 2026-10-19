@@ -3191,3 +3191,72 @@ prefault rotor accuracy and the complete event comparisons remain open.
 Sources, raw archived probes, negative hypotheses, frozen runtimes, full
 comparisons and the inspected plot are retained in private evidence set
 `2026-10-18-case2-converter-boundaries`.
+
+### Production renewable event rates and observation semantics
+
+The opt-in two-step renewable path now averages the first derivative after a
+network event or an explicit input-discontinuity notification with its retained
+preceding derivative. The staggered solver propagates the event to the converter,
+electrical controller and attached plant and wind components. Repeated
+notifications are idempotent. Zero-time refreshes and output observations do
+not consume the event; the next positive integration step does. Frozen states
+continue to discard history and retain a zero rate. Initialization clears both
+pending events and derivative history.
+
+`TWO_STEP_EVENT` identifies the effective averaged rate in the state snapshot.
+Its evaluation-state map retains the current pre-step coordinates; the rate
+also contains the preceding evaluation's contribution and must not be treated
+as an instantaneous right-hand side at those coordinates. Subsequent steps
+return to `TWO_STEP`. The existing current-state and detached-snapshot accessors
+remain read-only. A direct observation audit checks 60 converter and electrical
+measurement rates across six units and both event boundaries: every reported
+rate exactly equals the independently calculated event average.
+
+All 128 focused converter, electrical/plant controller, wind, integration and
+staggered-solver checks pass. Removing only event averaging in an isolated
+negative control fails three guards: the archived first positive filter state,
+retained history on the following step, and the bundle's reported rate. Neither
+production parameters nor initial states are adjusted for these checks.
+
+The production event API exactly reproduces all 10,005 rows for all 96
+converters in the preceding prescribed-voltage diagnostic. In the coupled
+diagnostic with high-voltage memory still supplied by an overlay, it reproduces
+all 1,205 rows and 4,810 physical channels exactly. Thus the preceding table's
+1,994 voltage, 199 P and 196 Q prefix passes are preserved, including all
+unchanged prefault samples. The 17 measured initial-Q selector signs and the
+network-memory overlay remain diagnostic qualifications; this is not a complete
+production acceptance run. Initial-Q selection, remaining transition errors,
+prefault rotor accuracy and the complete six-case comparisons remain open.
+
+The broader regression uses an isolated copy of the committed plugin baseline
+plus these production and test edits, with the matching core binary frozen and
+hashed before execution. The older default local core lacks the fixed-shunt API
+already required by that baseline; its initial compilation failure is retained
+as dependency evidence. Unrelated live checkout changes are excluded.
+
+The six-case fault and generator-trip smoke methods pass, and all 15 topology
+fault scenarios pass their declared finite-value and recovery checks. The short
+startup-hold gate fails at Case 1, and all six cases fail the strict one-second
+voltage/speed drift gate. Restoring all thirteen pre-change production classes
+in a separate runtime overlay reproduces the same startup failure and all six
+strict-flat failures. The six detailed drift-ranking files are byte-identical.
+Four static import/load-flow failures also reproduce with the previous
+controller code. These findings establish attribution for this slice; they do
+not waive or resolve the failing gates. The default system-gate path is distinct
+from the corrected-operating-point reference diagnostic described above.
+
+The completed retained reports contain 3,375 distinct test names: plugin core
+404 (six skips), three-phase 468 (28 skips), and integration 2,503 (65 skips).
+The first two modules have no failures or errors. Integration reports four
+failed assertions and eleven errors. Nine errors are missing-private-input
+cases: all nine pass when the exact omitted RAW is staged in a separate working
+directory with the changed production classes. The other six failing test
+methods are the four static and two drift gates attributed above. The registered
+suite repeats some classes; private evidence separately records all 5,467 XML
+testcase executions rather than conflating repeated runs with distinct tests.
+
+Sources, frozen runtimes, the three negative-control failures, observation
+checks, exact physical-output comparisons, complete regression logs/reports,
+baseline controls and the supplemented-input rerun are retained in private
+evidence set `2026-10-19-renewable-event-rates`. No remaining gate is relabeled
+as passing, and no complete event is accepted.

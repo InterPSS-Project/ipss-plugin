@@ -18,6 +18,7 @@ public final class WtgwgoaModel {
     private final EquationConvention convention;
     private final double[] state=new double[3];
     private final TwoStepHistory twoStep=new TwoStepHistory(3);
+    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
     private Mode mode=Mode.BYPASS;
     private double clock,capturedReference,holdStart=999,storedLimitedReference,reference;
     private Snapshot start;

@@ -20,6 +20,7 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
     private PitchDerivative predictorDerivative;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
     void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
+    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
 
     public Wtpta1Model(Wtpta1Data data) {
         this.data = data;
@@ -138,6 +139,7 @@ public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.d
                 twoStep.advance(0, start.speedIntegral(), rate.speedIntegral()),
                 twoStep.advance(1, start.compensationIntegral(), rate.compensationIntegral()),
                 twoStep.advance(2, start.pitch(), rate.pitch())));
+        twoStep.observeRates(stateMonitor);
     }
 
     private double integralRate(double integral, double gain, double error,

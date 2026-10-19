@@ -15,6 +15,39 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class PsseStaggeredEulerSolverTest {
+    @Test void explicitDiscontinuityRebasesRenewableBundleOnlyOnTheNextStep() throws Exception {
+        IpssCorePlugin.init();
+        String base="testData/adpter/psse/v33/renewable/";
+        var context=new PSSEMultiFileLoader().loadDStab(
+                base+"regca_reeca_repca_bus1062.raw",base+"regca_reeca_repca_bus1062.dyr");
+        var algo=context.getDynSimuAlgorithm();
+        context.getDStabilityNet().setBypassDataCheck(true);
+        context.getDStabilityNet().setAllowGenWithoutMach(true);
+        assertTrue(algo.getAclfAlgorithm().loadflow());
+        var shared=new PsseStaggeredEulerSolver(algo);
+        algo.setSolver(shared);
+        algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
+        algo.setSimuStepSec(.00025);
+        algo.setTotalSimuTimeSec(.002);
+        algo.setSimuOutputHandler(new StateMonitor());
+        assertTrue(algo.initialization());
+        var converter=(org.interpss.dstab.renewable.Regca1Model)
+                ((com.interpss.dstab.DStabGen)algo.getNetwork().getBus("Bus1").getContributeGen("1")).getDynamicGenDevice();
+        var electrical=converter.getReeca1Controller();
+        var models=java.util.List.of(converter,electrical,electrical.getPlantController());
+        assertTrue(algo.solveDEqnStep(true));
+        shared.notifyDiscontinuity();
+        shared.notifyDiscontinuity();
+        assertTrue(algo.solveDEqnStep(true));
+        for(var model:models) assertEquals(
+                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+                ((org.interpss.dstab.control.util.IntegrationStateAccess)model).getStateDerivativeSnapshot().stage());
+        assertTrue(algo.solveDEqnStep(true));
+        for(var model:models) assertEquals(
+                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
+                ((org.interpss.dstab.control.util.IntegrationStateAccess)model).getStateDerivativeSnapshot().stage());
+    }
+
     @Test void classicalSourceAdvancesAlongsideTheExtendedControllerStack() throws Exception {
         IpssCorePlugin.init();
         String base="testData/adpter/psse/v33/SMIB/";

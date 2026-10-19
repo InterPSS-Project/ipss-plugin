@@ -30,6 +30,14 @@ public final class WindControlStack {
         if (driveTrain!=null) driveTrain.setSinglePrecisionStates(enabled);
     }
 
+    void rebaseNextTwoStep() {
+        if (activeTorqueController() != null) activeTorqueController().rebaseNextTwoStep();
+        if (activePitchController() != null) activePitchController().rebaseNextTwoStep();
+        if (activePitchControllerB() != null) activePitchControllerB().rebaseNextTwoStep();
+        if (driveTrain != null) driveTrain.rebaseNextTwoStep();
+        if (torsionalEmulation != null) torsionalEmulation.rebaseNextTwoStep();
+    }
+
     public void initialize(double power) {
         if(torsionalEmulation!=null)torsionalEmulation.setAerodynamicPresent(aerodynamics!=null);
         WindDriveTrain driveTrain=activeDriveTrain();

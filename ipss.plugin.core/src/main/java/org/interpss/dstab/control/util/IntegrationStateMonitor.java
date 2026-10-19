@@ -8,6 +8,8 @@ import java.util.Map;
 public final class IntegrationStateMonitor {
     public enum Stage {
         NOT_EVALUATED, PREDICTOR, CORRECTOR, STAGGERED, TWO_STEP,
+        /** Two-step rate averaged across an input discontinuity before integration. */
+        TWO_STEP_EVENT,
         /** Average applied change per second, rather than an instantaneous RHS. */
         APPLIED_STEP
     }
@@ -31,6 +33,9 @@ public final class IntegrationStateMonitor {
         states[index] = state;
         rates[index] = rate;
     }
+
+    /** Retain the rate used by integration without replacing its evaluation state. */
+    public void recordRate(int index, double rate) { rates[index] = rate; }
 
     public Snapshot snapshot() {
         var x = new LinkedHashMap<String, Double>();

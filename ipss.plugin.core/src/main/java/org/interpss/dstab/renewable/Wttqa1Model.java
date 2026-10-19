@@ -22,6 +22,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
     private TorqueDerivative predictorDerivative;
     private final TwoStepHistory twoStep = new TwoStepHistory(3);
     void setSinglePrecisionStates(boolean enabled) { twoStep.setSinglePrecision(enabled); }
+    void rebaseNextTwoStep() { twoStep.rebaseNextStep(); }
 
     public Wttqa1Model(Wttqa1Data data) {
         this.data = data;
@@ -166,6 +167,7 @@ public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.d
                     twoStep.advance(1, start.speedReference(), rate.speedReference()),
                     voltageDip ? twoStep.hold(2, start.torqueIntegral())
                             : twoStep.advance(2, start.torqueIntegral(), rate.torqueIntegral())));
+            twoStep.observeRates(stateMonitor);
         } else {
             apply(start);
         }

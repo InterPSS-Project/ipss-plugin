@@ -108,6 +108,14 @@ public final class Regca1Model extends DynamicBusDeviceImpl
                     Math.max(0.01, getDStabBus().getVoltageMag()));
     }
 
+    /** Rebase bundle histories on the next positive two-step integration call. */
+    public void rebaseNextTwoStep() {
+        if (integrationScheme == IntegrationScheme.TWO_STEP && reeca1Controller != null) {
+            twoStep.rebaseNextStep();
+            reeca1Controller.rebaseNextTwoStep();
+        }
+    }
+
     @Override
     public boolean nextStep(double dt, DynamicSimuMethod method, int flag) {
         if (integrationScheme == IntegrationScheme.TWO_STEP)
@@ -186,6 +194,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             vFiltered = twoStep.advance(0, vFiltered, dv);
             ipState = twoStep.advance(1, ipState, dip);
             iqState = twoStep.advance(2, iqState, diq);
+            twoStep.observeRates(stateMonitor);
             if (data.tg() > EPS) ipState = Math.min(ipState, lowVoltagePowerLimit());
         }
         return finite(vFiltered) && finite(ipState) && finite(iqState);

@@ -15,6 +15,56 @@ public class PsseRenewableTwoStepIntegrationTest extends CorePluginTestSetup {
     private static final double H = .0005;
 
     @Test
+    void bundleEventRatesSurviveRefreshAndClearAfterOnePositiveStep() throws Exception {
+        Regca1Model converter = fixture();
+        var electrical = converter.getReeca1Controller();
+        var wind = electrical.getWindControlStack();
+        var pitch = new Wtpta1Model(new Wtpta1Data(1, 2, 3, 4, .5, 1, 20, 0, 100, -100));
+        var drive = new Wtdta1Model(new Wtdta1Data(5, .1, .8, 1.5, .2));
+        wind.setPitchController(pitch);
+        wind.setDriveTrain(drive);
+        wind.setAerodynamics(new Wtara1Model(new Wtara1Data(.007, 0)));
+        var plant = new Repca1Model(new Repca1Data(0, 0, 0, "0", 0, 0, 0,
+                .1, 2, 3, 0, .2, .7, 0, 0, 0, 1, -1, 0, 0, 2, -2,
+                0, 0, .1, 0, 0, 1, -1, 2, -2, .2, 20, 0, 0));
+        electrical.setPlantController(plant);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        var models = java.util.List.<org.interpss.dstab.control.util.IntegrationStateAccess>of(
+                converter, electrical, plant, wind.getTorqueController(), pitch, drive);
+        var before = models.stream().map(m -> m.getIntegrationStates()).toList();
+        converter.rebaseNextTwoStep();
+        converter.rebaseNextTwoStep();
+        converter.getDStabBus().setVoltage(new Complex(.8, 0.));
+        for (int i=0;i<5;i++) {
+            converter.nextStep(0., DynamicSimuMethod.MODIFIED_EULER, 0);
+            converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 1);
+            converter.getOutputObject();
+        }
+        assertEquals(before, models.stream().map(m -> m.getIntegrationStates()).toList());
+        converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 0);
+        for (var model:models) assertEquals(
+                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP_EVENT,
+                model.getStateDerivativeSnapshot().stage());
+        assertEquals(-5., converter.getStateDerivativeSnapshot().rates().get("Filtered Voltage"), 1.e-12);
+        assertEquals(-5., electrical.getStateDerivativeSnapshot().rates().get("Measured Voltage"), 1.e-12);
+        assertEquals(1.-.75*H*10., converter.getFilteredVoltage(), 1.e-14);
+        assertEquals(0., electrical.getStateDerivativeSnapshot().rates().get("Active Power Order"), 0.);
+        var retained = converter.getStateDerivativeSnapshot();
+        converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 1);
+        assertEquals(retained, converter.getStateDerivativeSnapshot());
+        converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 0);
+        for (var model:models) assertEquals(
+                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
+                model.getStateDerivativeSnapshot().stage());
+        converter.rebaseNextTwoStep();
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        converter.nextStep(H, DynamicSimuMethod.MODIFIED_EULER, 0);
+        for (var model:models) assertEquals(
+                org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP,
+                model.getStateDerivativeSnapshot().stage());
+    }
+
+    @Test
     void commonOldEndpointMatchesTheTwoCommercialStartupSteps() throws Exception {
         Regca1Model converter = fixture();
         Reeca1Model electrical = converter.getReeca1Controller();
