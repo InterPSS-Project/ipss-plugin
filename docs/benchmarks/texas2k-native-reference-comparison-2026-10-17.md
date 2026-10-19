@@ -3471,3 +3471,92 @@ initialization fix, production integration, performance acceptance or any of the
 36 complete event comparisons. The producers, frozen classpaths, failed solves,
 complete initial-point trace, prescribed-voltage replay and independent checks
 are retained in private evidence set `2026-10-19-case2-initial-point-localization`.
+
+### Frozen controller states at a fault boundary
+
+The retained state/rate access localizes the remaining prescribed-voltage Q
+error at bus 3074 to the voltage-integrator history when the fault triggers
+the voltage-dip freeze. The model diagram specifies the frozen coordinates;
+the numerical event treatment is evaluated against the supplied full trace
+and the previously established two-step event-average rule. No model gain,
+limit, initial state or terminal measurement is fitted.
+
+As a diagnostic, terminal `Q/(V*MBASE)` and the existing recurrence reconstruct
+the frozen coordinate over steps 1022 through 1043. This is an inferred
+coordinate, not a directly measured reference state. The inferred value lies
+between -0.571301148 and -0.571297497, approximately 0.00153 below the local held
+value. Applying the same inversion to local outputs recovers the recorded
+local coordinate within 1.02e-7. That nearly constant discrepancy motivates
+checking storage/history ownership at the freeze boundary.
+
+Two uniform rules were tested across all 96 converters. Advancing every frozen
+step with a zero new rate changes ordinary voltage-dip behavior before the
+fault and creates six additional failed power checks. It is rejected. Retaining
+the old rate only at an explicit event, after anchoring frozen storage at the
+current state, preserves ordinary freeze behavior. The existing event average
+then combines the old rate with the new zero rate. This second rule reduces
+bus 3074 postfault Q replay NRMSE from 0.00595247 to 0.0000350722. The other five
+previously failed coupled power checks retain exactly their earlier replay
+scores. Bus 3113 still fails this conditional replay at 0.0121853; its known
+instantaneous high-voltage-output limitation remains explicit.
+
+`TwoStepHistory.hold()` now implements the event-only rule for the opt-in
+single-precision path. Ordinary frozen steps and the double-precision path
+retain their earlier behavior. The change introduces no new allocations.
+Focused regression passes 132 tests with no skips or failures; two of the four
+new event-history assertions fail against the preceding implementation.
+Production and experimental instruction listings match exactly. Their full
+96-converter, 10,005-sample, ten-quantity replays are numerically identical,
+as are all 50,025 parsed state/derivative records for the five traced devices.
+Raw JSON map-key order differs between JVMs and is retained unchanged; no
+numerical normalization is used to establish that equality.
+
+The complete coupled ten-second run retains the previous diagnostic scope:
+all initial terminal phasors and generator P/Q come from the supplied first
+row, while dynamic states initialize normally. It also retains the diagnostic
+high-voltage network memory. All 4,810 physical channels are exactly unchanged
+through 1.001 seconds, including both samples at fault application. The first physical
+output difference occurs at 1.002 seconds. Cold initialization and the 2,199
+recorded operating-point changes are identical to the preceding run.
+
+Against the supplied full reference, the eight previous failed checks become:
+
+| Channel and period | Previous NRMSE | Event-freeze NRMSE | Limit |
+| --- | ---: | ---: | ---: |
+| Q, bus 4010 unit 1, prefault | 0.00136117 | 0.00136117 | 0.001 |
+| V, bus 3073, fault and postfault | 0.00504547 | 0.000172758 | 0.005 |
+| V, bus 3074, fault and postfault | 0.00603231 | 0.000169399 | 0.005 |
+| P, bus 1084 unit 1, fault and postfault | 0.00867656 | 0.00647785 | 0.005 |
+| Q, bus 3074 unit 1, fault and postfault | 0.0260265 | 0.000271686 | 0.005 |
+| P, bus 3120 unit 1, fault and postfault | 0.0356893 | 0.000469863 | 0.005 |
+| Q, bus 3120 unit 1, fault and postfault | 0.0173180 | 0.00130730 | 0.005 |
+| P, bus 3131 unit 1, fault and postfault | 0.00812769 | 0.00587294 | 0.005 |
+
+All 2,000 voltage channels now pass both periods, as do all 199 postfault Q
+channels. Prefault P passes 199/199; prefault Q passes 198/199 and postfault P
+passes 197/199. The three remaining failed checks are shown above. All 103
+rotor channels pass the current provisional degree-valued gates. Worst full
+rotor RMSE falls from 0.0527093 degrees at bus 5263 to 0.0201258 degrees at bus
+1051. Worst prefault rotor error is unchanged at 0.00904019 degrees. The full
+reference range, step-ordinal alignment and duplicate event sides are retained.
+
+This establishes a bounded event-history correction and conditional coupled
+improvement. It does not establish original-input initialization parity,
+production network-memory integration, the twenty-second performance target
+or acceptance of any of the 36 original-input complete event comparisons.
+
+The isolated registered regression covers 3,405 distinct tests: 3,300 pass,
+99 are skipped and six fail (four assertion failures and two reported errors).
+Plugin-core and three-phase modules have no failures. All fifteen topology
+fault cases pass. The four static failures, the startup-hold assertion and the
+strict six-case drift assertion reproduce with the preceding history class;
+all repeated failure messages match, and all six drift-ranking reports are
+byte-identical. These existing failures remain open. Repeated executions from
+the explicitly selected registered suite are retained separately from distinct
+test counts. The frozen baseline excludes unrelated worktree changes.
+
+Sources, the rejected ordinary-freeze trial, conditional state reconstruction,
+full replay and coupled outputs, production-equivalence checks, test reports,
+baseline controls and verification corrections are retained in private evidence
+set `2026-10-19-case2-event-freeze-history`. Previously archived inputs and
+runtime objects are referenced by immutable hashes to avoid duplicate storage.

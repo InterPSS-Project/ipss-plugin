@@ -85,8 +85,18 @@ final class TwoStepHistory {
         monitor.recordRate(observationIndex, previous[stateIndex]);
     }
 
-    /** A model freeze holds the state and discards its pre-freeze derivative. */
+    /**
+     * Anchor frozen storage at STATE. At a single-precision event boundary,
+     * preserve the preceding rate for the first event average with the new zero
+     * rate. Ordinary frozen steps hold STATE and clear derivative history.
+     */
     double hold(int index, double state) {
+        if (eventStep && singlePrecision) {
+            store[index] = (float) (state + offset[index]);
+            initialized[index] = true;
+            lastState[index] = store[index] - offset[index];
+            return advance(index, lastState[index], 0.0);
+        }
         previous[index] = 0.0;
         if (singlePrecision) {
             store[index]=(float)(state+offset[index]);initialized[index]=true;

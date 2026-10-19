@@ -40,7 +40,7 @@ class RenewableTwoStepIntegrationTest {
     }
 
     @Test
-    void heldStateDiscardsHistoryWithoutInjectingAnAveragedRate() {
+    void doublePrecisionHeldStateDiscardsHistoryWithoutInjectingAnAveragedRate() {
         var history = new TwoStepHistory(1);
         var monitor = new org.interpss.dstab.control.util.IntegrationStateMonitor("state");
         history.begin(.1);
