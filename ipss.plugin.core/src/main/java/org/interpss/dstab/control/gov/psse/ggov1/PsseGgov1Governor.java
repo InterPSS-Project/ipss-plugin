@@ -1,5 +1,9 @@
 package org.interpss.dstab.control.gov.psse.ggov1;
 
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Map;
@@ -25,9 +29,11 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * of the integration step size.</p>
  */
 public class PsseGgov1Governor extends AbstractGovernor
-        implements IntegrationStepAware, ICMLStateProvider, StaggeredEulerParticipant {
+        implements IntegrationStepAware, ICMLStateProvider, StaggeredEulerParticipant, IntegrationStateAccess {
     private static final double EPS = 1.0e-9;
 
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Electrical Power", "Derivative Lag", "Governor Integral", "Valve Position", "Turbine Lag", "Load Limiter Integral", "Supervisory Load Control", "Acceleration Lag", "Temperature Lead Lag", "Temperature Lag");
     private State state = State.zero();
     private State oldState = State.zero();
     private Derivatives oldDerivatives = Derivatives.zero();
@@ -69,6 +75,7 @@ public class PsseGgov1Governor extends AbstractGovernor
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus, Machine mach) {
+        stateMonitor.reset();
         if (!validateParameters()) return false;
         prepareEffectiveParameters();
 
@@ -117,6 +124,7 @@ public class PsseGgov1Governor extends AbstractGovernor
             oldState = state;
             Algebraic a = algebraic(oldState, dt, 0.0, committedFsr);
             oldDerivatives = derivatives(oldState, a);
+            retainRates(oldState, oldDerivatives, Stage.PREDICTOR);
             state = oldState.plus(oldDerivatives, dt);
             Algebraic predicted = algebraic(state, dt, dt, committedFsr);
             currentFsr = predicted.fsr;
@@ -124,6 +132,7 @@ public class PsseGgov1Governor extends AbstractGovernor
         } else if (flag == 1) {
             Algebraic predicted = algebraic(state, dt, dt, currentFsr);
             Derivatives correctedDerivatives = derivatives(state, predicted);
+            retainRates(state, correctedDerivatives, Stage.CORRECTOR);
             state = oldState.plusAverage(oldDerivatives, correctedDerivatives, dt);
             Algebraic corrected = algebraic(state, dt, dt, committedFsr);
             currentFsr = corrected.fsr;
@@ -162,6 +171,7 @@ public class PsseGgov1Governor extends AbstractGovernor
         if (!initialized) throw new IllegalStateException("Initialize GGOV1 before evaluating derivatives");
         Algebraic a = algebraic(state, stepSec, 0.0, committedFsr);
         Derivatives d = derivatives(state, a);
+        retainRates(state, d, Stage.STAGGERED);
         currentFsr = a.fsr;
         currentOutput = a.pmech;
         rates[offset] = d.peMeasured;
@@ -241,6 +251,35 @@ public class PsseGgov1Governor extends AbstractGovernor
                 "Supervisory Load Control", getSupervisoryLoadControlState(),
                 "Acceleration Control", getAccelerationControlOutput(),
                 "Temperature Detection", getTemperatureDetectionLeadLagOutput());
+    }
+
+    @Override public java.util.Map<String, Double> getIntegrationStates() {
+        return java.util.Map.of("Electrical Power", state.peMeasured,
+                "Derivative Lag", state.derivativeLag,
+                "Governor Integral", state.governorIntegrator,
+                "Valve Position", state.valve,
+                "Turbine Lag", state.turbineLag,
+                "Load Limiter Integral", state.loadIntegrator,
+                "Supervisory Load Control", state.mwIntegrator,
+                "Acceleration Lag", state.accelerationLag,
+                "Temperature Lead Lag", state.temperatureLeadLag,
+                "Temperature Lag", state.temperatureLag);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
+    }
+    private void retainRates(State s, Derivatives d, Stage stage) {
+        stateMonitor.begin(stage);
+        stateMonitor.record(0, s.peMeasured, d.peMeasured);
+        stateMonitor.record(1, s.derivativeLag, d.derivativeLag);
+        stateMonitor.record(2, s.governorIntegrator, d.governorIntegrator);
+        stateMonitor.record(3, s.valve, d.valve);
+        stateMonitor.record(4, s.turbineLag, d.turbineLag);
+        stateMonitor.record(5, s.loadIntegrator, d.loadIntegrator);
+        stateMonitor.record(6, s.mwIntegrator, d.mwIntegrator);
+        stateMonitor.record(7, s.accelerationLag, d.accelerationLag);
+        stateMonitor.record(8, s.temperatureLeadLag, d.temperatureLeadLag);
+        stateMonitor.record(9, s.temperatureLag, d.temperatureLag);
     }
     public double getDroopFeedback() {
         return selectedDroop(state.peMeasured, getValveStroke(), currentFsr);

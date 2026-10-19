@@ -2758,3 +2758,55 @@ replacing the required coupled simulation with replay. Full-window and
 six-case acceptance remain open. Scripts, frozen sources, rejected controls,
 raw traces, all-channel metrics and source hashes are retained privately in
 `2026-10-18-case2-whole-fleet-voltage-and-initial-selection`.
+
+### State and derivative access for the remaining Case 2 controllers
+
+The initialization audit now uses read-only `IntegrationStateAccess` for GGOV1,
+REGCA1, REECA1, REPCA1, WTTQA1, WTPTA1 and WTDTA1. Existing named-output keys
+are preserved. `getIntegrationStates()` exposes current stored coordinates;
+`getStateDerivativeSnapshot()` returns detached, immutable maps of the states
+used in the last derivative evaluation and their corresponding rates. These
+maps must be paired with each other, not with a later corrected state.
+For example, GGOV1's stored derivative lag is distinct from its published
+derivative-control output. One-mass WTDTA1 exposes only its differential speed
+coordinate; its algebraic torque is not assigned a fictitious derivative.
+
+Snapshots identify predictor, corrector, staggered or two-step evaluation.
+The legacy sequential block path reports `APPLIED_STEP`: average applied
+change per second, including limits, rather than an instantaneous equation
+derivative. Algebraic refreshes retain the preceding actual rate observation.
+Reinitialization clears all observations; `NOT_EVALUATED` and empty rate maps
+mean unavailable, not zero. No getter reevaluates equations or advances a
+state, selector, timer, limiter, transport buffer or integration history.
+Observation buffers are reused; named maps are created when read.
+
+The converter also exposes its stored initial reactive power and directional
+recovery selection. REECA1 exposes its rate-limited power-reference memory,
+dip and hold timers, held current limit and previously published commands.
+These discrete memories remain separate from differential coordinates.
+
+The corrected Case 2 startup replay contains 199 active devices. Following
+the first history step, all 88 custom governors and all 96 renewable bundles
+have retained rate access, including their 96 plant controllers, 48 torque
+controllers and 48 pitch controllers. The audit reports 4,588 rate entries
+and no coverage gaps at either history endpoint. Before the first history
+step, 384 renewable component snapshots correctly report no evaluation yet.
+These counts describe audit entries and are not a solver state-vector size.
+
+The newly visible first-step active-power-order rate reaches -3.828125 pu/s
+at several renewable units, while the plant, torque and pitch rates are zero
+at that evaluation. This records an actual startup transient; it does not by
+itself establish an erroneous initialization or agreement with the reference.
+The accessor change leaves every physical output numerically identical to
+the preceding startup baseline: 4,810 channels across 23 samples from -0.002
+through 0.020 seconds, with maximum difference exactly zero.
+
+Validation passed 166 focused model, solver, two-step and audit tests,
+including nonzero-rate detection, held-state rates, predictor/corrector
+identification, snapshot immutability, read-only access and reset semantics.
+The isolated build uses the frozen diagnostic runtime and the current additive
+bus API needed by unrelated controller dependencies; no engine implementation
+is changed. This is access and startup non-regression evidence. It does not
+close the full-window or six-case accuracy gates. Sources, binaries, commands,
+test summaries, audit snapshots and output comparisons are retained privately
+in `2026-10-18-case2-controller-state-access`.

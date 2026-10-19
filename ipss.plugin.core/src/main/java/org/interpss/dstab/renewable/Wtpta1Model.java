@@ -1,9 +1,16 @@
 package org.interpss.dstab.renewable;
 
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+
 /** WECC WTPT_A pitch controller with PI, angle, and angle-rate limits. */
-public final class Wtpta1Model {
+public final class Wtpta1Model implements IntegrationStateAccess, com.interpss.dstab.controller.cml.ICMLStateProvider {
     private static final double EPS = 1.0e-9;
 
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Speed Integral", "Compensation Integral", "Pitch");
+    private Stage observationStage = Stage.NOT_EVALUATED;
     private final Wtpta1Data data;
     private double speedReference;
     private double speedIntegral;
@@ -19,6 +26,7 @@ public final class Wtpta1Model {
     }
 
     public void initialize(double theta0, double speed) {
+        stateMonitor.reset();
         twoStep.reset();
         predictorStart = null;
         predictorDerivative = null;
@@ -29,6 +37,7 @@ public final class Wtpta1Model {
     }
 
     public void step(double dt, double pOrder, double pReference, double speed) {
+        PitchState observed = state();
         double powerError = pOrder - pReference;
         double compensationError = powerError;
         double speedError = data.kcc() * powerError + speed - speedReference;
@@ -49,6 +58,12 @@ public final class Wtpta1Model {
                 : (target - pitch) / data.tp();
         derivative = Repca1Model.limit(derivative, data.dThetaMin(), data.dThetaMax());
         pitch = Repca1Model.limit(pitch + dt * derivative, data.thetaMin(), data.thetaMax());
+        if (dt > 0.0) {
+            observationStage = Stage.APPLIED_STEP;
+            retainRates(observed, new PitchDerivative((speedIntegral-observed.speedIntegral())/dt,
+                    (compensationIntegral-observed.compensationIntegral())/dt,
+                    (pitch-observed.pitch())/dt));
+        }
     }
 
     /**
@@ -63,6 +78,7 @@ public final class Wtpta1Model {
             throw new IllegalArgumentException(
                     "WTPTA1 staged inputs must be finite and dt must be non-negative");
         }
+        observationStage = flag == 0 ? Stage.PREDICTOR : Stage.CORRECTOR;
         if (flag != 0 && flag != 1) {
             throw new IllegalArgumentException("WTPTA1 integration flag must be 0 or 1");
         }
@@ -107,10 +123,13 @@ public final class Wtpta1Model {
                 || (state.pitch() <= data.thetaMin() && pitchRate < 0.0)) {
             pitchRate = 0.0;
         }
-        return new PitchDerivative(speedRate, compensationRate, pitchRate);
+        PitchDerivative rate = new PitchDerivative(speedRate, compensationRate, pitchRate);
+        retainRates(state, rate);
+        return rate;
     }
 
     void stepTwoStep(double dt, double pOrder, double pReference, double speed) {
+        observationStage = Stage.TWO_STEP;
         if (dt <= 0.0) return;
         PitchState start = state();
         PitchDerivative rate = derivatives(start, dt, pOrder, pReference, speed);
@@ -129,6 +148,24 @@ public final class Wtpta1Model {
         return gain * error;
     }
 
+
+    @Override public java.util.Map<String, Double> getIntegrationStates() {
+        return java.util.Map.of("Speed Integral", speedIntegral,
+                "Compensation Integral", compensationIntegral,
+                "Pitch", pitch);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
+    }
+    @Override public java.util.Map<String, Double> getNamedStates() {
+        return getIntegrationStates();
+    }
+    private void retainRates(PitchState s, PitchDerivative d) {
+        stateMonitor.begin(observationStage);
+        stateMonitor.record(0, s.speedIntegral(), d.speedIntegral());
+        stateMonitor.record(1, s.compensationIntegral(), d.compensationIntegral());
+        stateMonitor.record(2, s.pitch(), d.pitch());
+    }
     private PitchState state() {
         return new PitchState(speedIntegral, compensationIntegral, pitch);
     }

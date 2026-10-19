@@ -32,6 +32,62 @@ public class PsseReeca1ControllerTest extends CorePluginTestSetup {
     private static final double CONTROL_STEP = 1.0 / 960.0;
 
     @Test
+    void converterAndElectricalTwoStepRatesExposeHoldsAndInitialSelector() throws Exception {
+        var builder = DStabBuilderTestFixture.createBuilder();
+        var converter = builder.addRegca1("Bus1", "1", new Regca1Data(
+                0, .02, 10, .9, .4, 1.22, 10, .8, .4, -1.3, .02, 0, 0, 0, .8));
+        converter.getParentGen().setGen(new Complex(.8, 1.e-6));
+        converter.getDStabBus().setVoltage(Complex.ONE);
+        var controller = new Reeca1Model(texasData(1, 1, 1), converter);
+        converter.setReeca1Controller(controller);
+        converter.setIntegrationScheme(Regca1Model.IntegrationScheme.TWO_STEP);
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        assertEquals(1, converter.getReactiveRecoveryDirection());
+        assertTrue(converter.getStateDerivativeSnapshot().rates().isEmpty());
+        converter.getDStabBus().setVoltage(new Complex(.5, 0));
+        converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 0);
+        var converterSnapshot = converter.getStateDerivativeSnapshot();
+        var controlSnapshot = controller.getStateDerivativeSnapshot();
+        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.TWO_STEP, controlSnapshot.stage());
+        assertEquals(-25.0, converterSnapshot.rates().get("Filtered Voltage"), 1.e-12);
+        assertEquals(0.0, controlSnapshot.rates().get("Active Power Order"), 0.0);
+        assertEquals(0.0, controlSnapshot.rates().get("Reactive Control Integral"), 0.0);
+        assertEquals(0.0, controlSnapshot.rates().get("Voltage Control Integral"), 0.0);
+        converter.nextStep(.001, com.interpss.dstab.algo.DynamicSimuMethod.MODIFIED_EULER, 1);
+        assertEquals(converterSnapshot, converter.getStateDerivativeSnapshot());
+        assertEquals(controlSnapshot, controller.getStateDerivativeSnapshot());
+        converter.getParentGen().setGen(new Complex(.8, 0));
+        assertTrue(converter.initStates(converter.getDStabBus()));
+        assertEquals(0, converter.getReactiveRecoveryDirection());
+        assertTrue(converter.getStateDerivativeSnapshot().rates().isEmpty());
+    }
+
+    @Test
+    void electricalStateAccessIsDetachedAndReportsAppliedRateSemantics() {
+        var controller = new Reeca1Model(texasData(1, 1, 1), null);
+        controller.initialize(.8, .2, 1.0);
+        assertTrue(controller.getStateDerivativeSnapshot().rates().isEmpty());
+        double initial = controller.getMeasuredVoltage();
+        controller.step(.001, .8, .2, .95, 1.0, 0);
+        var snapshot = controller.getStateDerivativeSnapshot();
+        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.APPLIED_STEP, snapshot.stage());
+        assertEquals(initial, snapshot.evaluationStates().get("Measured Voltage"), 0.0);
+        assertEquals((controller.getMeasuredVoltage()-initial)/.001,
+                snapshot.rates().get("Measured Voltage"), 0.0);
+        var states = controller.getNamedStates();
+        var memory = controller.getControlMemory();
+        for (int i=0;i<20;i++) {
+            assertEquals(snapshot, controller.getStateDerivativeSnapshot());
+            assertEquals(states, controller.getNamedStates());
+            assertEquals(memory, controller.getControlMemory());
+        }
+        controller.step(.001, .8, .2, .94, 1.0, 1);
+        assertEquals(snapshot, controller.getStateDerivativeSnapshot(), "Algebraic refresh retains the last actual rate evaluation");
+        controller.initialize(.8, .2, 1.0);
+        assertTrue(controller.getStateDerivativeSnapshot().rates().isEmpty());
+    }
+
+    @Test
     void directParserMapsCompleteFiftyOneParameterRecord(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("reeca1.dyr");

@@ -1,5 +1,9 @@
 package org.interpss.dstab.renewable;
 
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -9,7 +13,7 @@ import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.controller.cml.ICMLStateProvider;
 
 /** WECC REEC_A electrical controller producing REGC_A current commands. */
-public final class Reeca1Model implements RenewableElectricalController, ICMLStateProvider {
+public final class Reeca1Model implements RenewableElectricalController, ICMLStateProvider, IntegrationStateAccess {
     /** Native PSS/E retains PFLAG's speed input even when WTTQA1 is connected. */
     public enum WindSpeedConvention { PSSE_GENERATOR_SPEED, WTTQA_POWER_REFERENCE }
     private static final double EPS = 1.0e-9;
@@ -18,6 +22,8 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     /** Maximum internal step for the stiff cascaded Q/voltage PI controls. */
     private static final double MAX_CONTROL_STEP = 1.0 / 960.0;
 
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Measured Voltage", "Measured Active Power", "Active Power Order", "Reactive Current", "Reactive Control Integral", "Voltage Control Integral");
     private final Reeca1Data data;
     private final Regca1Model converter;
     private Repca1Model plantController;
@@ -76,6 +82,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     @Override
     public void initialize(double p, double q, double v) {
+        stateMonitor.reset();
         twoStep.reset();
         resolveSensedBus();
         double sensedV = sensedVoltage(v);
@@ -211,6 +218,12 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
 
     private void stepElectricalControls(double dt, double p, double q, double v,
             double sensedV, boolean updateDipHistory) {
+        double observed0 = vMeasured;
+        double observed1 = pMeasured;
+        double observed2 = pOrder;
+        double observed3 = qCurrent;
+        double observed4 = qIntegral;
+        double observed5 = vIntegral;
         boolean voltageDip = sensedV < data.vdip() || sensedV > data.vup();
         if (updateDipHistory) updateDipTimers(dt, voltageDip);
         vMeasured = Repca1Model.lag(vMeasured, sensedV, data.trv(), dt);
@@ -318,6 +331,15 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         reactiveCurrentInjection = iqInjection;
         double rawIq = -(rawQCurrent + iqInjection);
         applyCurrentLimits(rawIp, rawIq, voltageDip);
+        if (dt > 0.0) {
+            stateMonitor.begin(Stage.APPLIED_STEP);
+            stateMonitor.record(0, observed0, (data.trv() <= EPS ? 0.0 : (vMeasured-observed0)/dt));
+            stateMonitor.record(1, observed1, (data.tp() <= EPS ? 0.0 : (pMeasured-observed1)/dt));
+            stateMonitor.record(2, observed2, (data.tpord() <= EPS ? 0.0 : (pOrder-observed2)/dt));
+            stateMonitor.record(3, observed3, (data.tiq() <= EPS ? 0.0 : (qCurrent-observed3)/dt));
+            stateMonitor.record(4, observed4, (qIntegral-observed4)/dt);
+            stateMonitor.record(5, observed5, (vIntegral-observed5)/dt);
+        }
         if (updateDipHistory) previousDip = voltageDip;
     }
 
@@ -386,6 +408,13 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double stagedIpLimit = data.pqFlag() == 0 && postDipTimer <= 0.0
                 ? Math.min(currentTableLimit(vMeasured, false, Double.POSITIVE_INFINITY),
                         remaining(currentLimit(), twoStepIqcmd)) : ipLimit;
+        stateMonitor.begin(Stage.TWO_STEP);
+        stateMonitor.record(0, vMeasured, vRate);
+        stateMonitor.record(1, pMeasured, pRate);
+        stateMonitor.record(2, pOrder, dip ? 0.0 : orderRate);
+        stateMonitor.record(3, qCurrent, dip || data.qFlag() != 0 ? 0.0 : iqRate);
+        stateMonitor.record(4, qIntegral, dip ? 0.0 : qIntegralRate);
+        stateMonitor.record(5, vIntegral, dip ? 0.0 : vIntegralRate);
         twoStep.begin(dt);
         vMeasured = twoStep.advance(0, vMeasured, vRate);
         pMeasured = twoStep.advance(1, pMeasured, pRate);
@@ -618,6 +647,27 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
     @Override public double getIqcmd() { return iqcmd; }
     double getTwoStepIpcmd() { return twoStepIpcmd; }
     double getTwoStepIqcmd() { return twoStepIqcmd; }
+
+
+    @Override public java.util.Map<String, Double> getIntegrationStates() {
+        return java.util.Map.of("Measured Voltage", vMeasured,
+                "Measured Active Power", pMeasured,
+                "Active Power Order", pOrder,
+                "Reactive Current", qCurrent,
+                "Reactive Control Integral", qIntegral,
+                "Voltage Control Integral", vIntegral);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
+    }
+
+    /** Discrete and rate-limiter memory is separate from differential coordinates. */
+    public Map<String, Double> getControlMemory() {
+        return Map.of("Active Power Filter", pFilter, "Post Dip Timer", postDipTimer,
+                "Reactive Hold Timer", iqHoldTimer, "Held Active Current Limit", heldIpMax,
+                "Previous Dip", previousDip ? 1.0 : 0.0,
+                "Published Active Command", twoStepIpcmd, "Published Reactive Command", twoStepIqcmd);
+    }
 
     @Override
     public Map<String, Double> getNamedStates() {

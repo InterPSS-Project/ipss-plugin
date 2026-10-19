@@ -13,6 +13,18 @@ import com.interpss.dstab.controller.cml.wrapper.ControllerFieldAnWrapper;
 
 /** Checks that audit observations detect a bad rate without changing the state. */
 class Texas2kInitializationAuditTest {
+    @Test void customStateAccessReportsMissingEvaluationAndDetectsNonzeroRate() {
+        var model=new org.interpss.dstab.renewable.Wtdta1Model(
+                new org.interpss.dstab.renewable.Wtdta1Data(4,0,.5,1,0));
+        model.initialize(.8,1);
+        var unobserved=Texas2kInitializationAudit.controller(model);
+        assertFalse(((java.util.List<?>)unobserved.get("rate_coverage_gaps")).isEmpty());
+        model.stepTwoStep(.001,.9,.8);
+        var report=Texas2kInitializationAudit.controller(model);
+        assertTrue(((java.util.List<?>)report.get("rate_coverage_gaps")).isEmpty());
+        assertEquals(.025,((Map<String,Double>)report.get("rates")).get("Turbine Speed"),1.e-12);
+        assertEquals(report,Texas2kInitializationAudit.controller(model));
+    }
     private static void installFixtureField(AbstractAnnotateController controller,BaseFieldAnWrapper<?> field) throws Exception {
         var registry=AbstractAnnotateController.class.getDeclaredField("fieldWrapperList");
         registry.setAccessible(true);registry.set(controller,new java.util.ArrayList<>(java.util.List.of(field)));

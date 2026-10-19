@@ -1,5 +1,9 @@
 package org.interpss.dstab.renewable;
 
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,11 +20,13 @@ import org.interpss.numeric.datatype.Unit.UnitType;
  * WECC REPC_A plant controller. Its outputs are incremental Pref/Qext commands
  * consumed by a REEC_A or REEC_B controller; all internal powers are on converter MVA base.
  */
-public final class Repca1Model implements ICMLStateProvider {
+public final class Repca1Model implements ICMLStateProvider, IntegrationStateAccess {
     private static final double EPS = 1.0e-9;
     /** Suppress only solver partitioning roundoff at the initialized equilibrium. */
     private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
 
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Measured Active Power", "Measured Reactive Or Voltage", "Active Control Integral", "Reactive Control Integral", "Lead Lag", "Active Power Lag");
     private final Repca1Data data;
     private final Regca1Model converter;
     private final Regcb1Model behindImpedanceConverter;
@@ -102,6 +108,7 @@ public final class Repca1Model implements ICMLStateProvider {
     }
 
     public void initialize(double p, double q, double v) {
+        stateMonitor.reset();
         twoStep.reset();
         predictorStart = null;
         predictorDerivatives = null;
@@ -121,6 +128,7 @@ public final class Repca1Model implements ICMLStateProvider {
     }
 
     public void step(double dt, double p, double q, double v, double frequency) {
+        PlantState observationStart = state();
         Measurement measurement = measure(p, q, v, frequency);
         pMeasured = lag(pMeasured, activeMeasurement(measurement), data.tp(), dt);
         qOrVMeasured = lag(qOrVMeasured, reactiveMeasurement(measurement), data.tfltr(), dt);
@@ -149,6 +157,15 @@ public final class Repca1Model implements ICMLStateProvider {
         } else {
             pext = pLagState = 0.0;
         }
+        if (dt > 0.0) {
+            stateMonitor.begin(Stage.APPLIED_STEP);
+            stateMonitor.record(0, observationStart.pMeasured(), (data.tp() <= EPS ? 0.0 : (pMeasured-observationStart.pMeasured())/dt));
+            stateMonitor.record(1, observationStart.qOrVMeasured(), (data.tfltr() <= EPS ? 0.0 : (qOrVMeasured-observationStart.qOrVMeasured())/dt));
+            stateMonitor.record(2, observationStart.pIntegral(), (pIntegral-observationStart.pIntegral())/dt);
+            stateMonitor.record(3, observationStart.qIntegral(), (qIntegral-observationStart.qIntegral())/dt);
+            stateMonitor.record(4, observationStart.leadLagState(), (data.tfv() <= EPS ? 0.0 : (leadLagState-observationStart.leadLagState())/dt));
+            stateMonitor.record(5, observationStart.pLagState(), (data.tg() <= EPS ? 0.0 : (pLagState-observationStart.pLagState())/dt));
+        }
     }
 
     /**
@@ -172,12 +189,14 @@ public final class Repca1Model implements ICMLStateProvider {
         if (flag == 0) {
             predictorStart = state();
             predictorDerivatives = derivatives(predictorStart, measurement);
+            retainRates(predictorStart, predictorDerivatives, Stage.PREDICTOR);
             apply(advance(predictorStart, predictorDerivatives, measurement, dt));
         } else if (flag == 1) {
             if (predictorStart == null || predictorDerivatives == null) {
                 throw new IllegalStateException("REPCA1 corrector called without predictor");
             }
             PlantDerivatives correctedDerivatives = derivatives(state(), measurement);
+            retainRates(state(), correctedDerivatives, Stage.CORRECTOR);
             apply(correct(predictorStart, predictorDerivatives,
                     correctedDerivatives, measurement, dt));
             predictorStart = null;
@@ -218,6 +237,7 @@ public final class Repca1Model implements ICMLStateProvider {
         PlantState start = applyBypasses(state(), measurement);
         if (dt > 0.0) {
             PlantDerivatives rate = derivatives(start, measurement);
+            retainRates(start, rate, Stage.TWO_STEP);
             twoStep.begin(dt);
             apply(new PlantState(
                     twoStep.advance(0, start.pMeasured(), rate.pMeasured()),
@@ -308,6 +328,28 @@ public final class Repca1Model implements ICMLStateProvider {
         double fError = deadband(1.0 - effectiveFrequency, data.fdbd1(), data.fdbd2());
         double droop = fError >= 0.0 ? data.dup() * fError : data.ddn() * fError;
         return limit(pReference - measuredP + droop, data.femin(), data.femax());
+    }
+
+
+    @Override public java.util.Map<String, Double> getIntegrationStates() {
+        return java.util.Map.of("Measured Active Power", pMeasured,
+                "Measured Reactive Or Voltage", qOrVMeasured,
+                "Active Control Integral", pIntegral,
+                "Reactive Control Integral", qIntegral,
+                "Lead Lag", leadLagState,
+                "Active Power Lag", pLagState);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
+    }
+    private void retainRates(PlantState s, PlantDerivatives d, Stage stage) {
+        stateMonitor.begin(stage);
+        stateMonitor.record(0, s.pMeasured(), d.pMeasured());
+        stateMonitor.record(1, s.qOrVMeasured(), d.qOrVMeasured());
+        stateMonitor.record(2, s.pIntegral(), d.pIntegral());
+        stateMonitor.record(3, s.qIntegral(), d.qIntegral());
+        stateMonitor.record(4, s.leadLagState(), d.leadLagState());
+        stateMonitor.record(5, s.pLagState(), d.pLagState());
     }
 
     private PlantState state() {

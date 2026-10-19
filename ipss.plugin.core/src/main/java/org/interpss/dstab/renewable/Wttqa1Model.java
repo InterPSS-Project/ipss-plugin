@@ -1,9 +1,16 @@
 package org.interpss.dstab.renewable;
 
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+
 /** WECC WTTQ_A torque/active-power-reference controller. */
-public final class Wttqa1Model {
+public final class Wttqa1Model implements IntegrationStateAccess, com.interpss.dstab.controller.cml.ICMLStateProvider {
     /** Suppress only algebraic partitioning roundoff at an initialized equilibrium. */
     private static final double EQUILIBRIUM_RESIDUAL = 1.0e-8;
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Filtered Power", "Speed Reference", "Torque Integral");
+    private Stage observationStage = Stage.NOT_EVALUATED;
     private final Wttqa1Data data;
     private double initialPower;
     private double filteredPower;
@@ -32,6 +39,7 @@ public final class Wttqa1Model {
                     "WTTQA1 initial power and generator speed must be finite and positive");
         }
         initialPower = filteredPower = power;
+        stateMonitor.reset();
         twoStep.reset();
         predictorStart = null;
         predictorDerivative = null;
@@ -60,6 +68,7 @@ public final class Wttqa1Model {
      */
     public void step(double dt, double electricalPower, double generatorSpeed,
             double powerReference, boolean voltageDip) {
+        TorqueState observed = state();
         if (!Double.isFinite(powerReference)) {
             throw new IllegalArgumentException("WTTQA1 Pref0 must be finite");
         }
@@ -78,6 +87,13 @@ public final class Wttqa1Model {
         torque = Repca1Model.limit(data.kpp() * error + torqueIntegral,
                 data.teMin(), data.teMax());
         pref = torque * generatorSpeed;
+        if (dt > 0.0) {
+            observationStage = Stage.APPLIED_STEP;
+            retainRates(observed, new TorqueDerivative(
+                    data.tp() <= 0 ? 0 : (filteredPower-observed.filteredPower())/dt,
+                    data.twref() <= 0 ? 0 : (speedReference-observed.speedReference())/dt,
+                    (torqueIntegral-observed.torqueIntegral())/dt));
+        }
     }
 
     /**
@@ -95,6 +111,7 @@ public final class Wttqa1Model {
             throw new IllegalArgumentException(
                     "WTTQA1 staged inputs must be finite; dt non-negative and speed positive");
         }
+        observationStage = flag == 0 ? Stage.PREDICTOR : Stage.CORRECTOR;
         if (flag != 0 && flag != 1) {
             throw new IllegalArgumentException("WTTQA1 integration flag must be 0 or 1");
         }
@@ -131,11 +148,14 @@ public final class Wttqa1Model {
         double error = controlError(state, generatorSpeed, powerReference);
         double integralRate = integralRate(state.torqueIntegral(), data.kip(), error,
                 data.kpp(), data.teMin(), data.teMax(), voltageDip);
-        return new TorqueDerivative(powerRate, speedReferenceRate, integralRate);
+        TorqueDerivative rate = new TorqueDerivative(powerRate, speedReferenceRate, integralRate);
+        retainRates(state, rate);
+        return rate;
     }
 
     void stepTwoStep(double dt, double electricalPower, double generatorSpeed,
             double powerReference, boolean voltageDip) {
+        observationStage = Stage.TWO_STEP;
         TorqueState start = applyBypasses(state(), electricalPower);
         if (dt > 0.0) {
             TorqueDerivative rate = derivatives(start, electricalPower, generatorSpeed,
@@ -175,6 +195,24 @@ public final class Wttqa1Model {
         return Math.abs(error) <= EQUILIBRIUM_RESIDUAL ? 0.0 : error;
     }
 
+
+    @Override public java.util.Map<String, Double> getIntegrationStates() {
+        return java.util.Map.of("Filtered Power", filteredPower,
+                "Speed Reference", speedReference,
+                "Torque Integral", torqueIntegral);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
+    }
+    @Override public java.util.Map<String, Double> getNamedStates() {
+        return getIntegrationStates();
+    }
+    private void retainRates(TorqueState s, TorqueDerivative d) {
+        stateMonitor.begin(observationStage);
+        stateMonitor.record(0, s.filteredPower(), d.filteredPower());
+        stateMonitor.record(1, s.speedReference(), d.speedReference());
+        stateMonitor.record(2, s.torqueIntegral(), d.torqueIntegral());
+    }
     private TorqueState state() {
         return new TorqueState(filteredPower, speedReference, torqueIntegral);
     }

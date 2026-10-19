@@ -26,6 +26,44 @@ public class PsseGgov1GovernorTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-9;
 
     @Test
+    void stateAccessRetainsExactSolverRatesAndResetsWithoutAdvancing() throws Exception {
+        var builder = DStabBuilderTestFixture.createWithMachine();
+        var machine = builder.getDStabNetwork().getMachine("Bus1-mach1");
+        machine.setSpeed(1.0); machine.setPm(.4); machine.setPe(.4);
+        var data = texasData(); data.setTrate(0.0); data.setTeng(.05);
+        var governor = builder.addGovGgov1("Bus1", "1", data);
+        governor.configureIntegrationStep(.001);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertTrue(governor.getStateDerivativeSnapshot().rates().isEmpty());
+        machine.setPe(.2);
+        double[] rates = new double[10];
+        governor.evaluateStaggered(.001, rates, 0);
+        var snapshot = governor.getStateDerivativeSnapshot();
+        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.STAGGERED, snapshot.stage());
+        assertEquals(rates[0], snapshot.rates().get("Electrical Power"), 0.0);
+        assertEquals(-.2 / data.getTpelec(), rates[0], TOL);
+        var states = governor.getIntegrationStates();
+        double output = governor.getOutput(machine), selector = governor.getFsr();
+        for (int i=0;i<20;i++) {
+            assertEquals(snapshot, governor.getStateDerivativeSnapshot());
+            assertEquals(states, governor.getIntegrationStates());
+            assertEquals(output, governor.getOutput(machine), 0.0);
+            assertEquals(selector, governor.getFsr(), 0.0);
+        }
+        org.junit.jupiter.api.Assertions.assertThrows(UnsupportedOperationException.class,
+                () -> snapshot.rates().put("Electrical Power", 0.0));
+        governor.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 0);
+        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.PREDICTOR,
+                governor.getStateDerivativeSnapshot().stage());
+        governor.nextStep(.001, DynamicSimuMethod.MODIFIED_EULER, machine, 1);
+        assertEquals(org.interpss.dstab.control.util.IntegrationStateMonitor.Stage.CORRECTOR,
+                governor.getStateDerivativeSnapshot().stage());
+        assertEquals(rates[0], snapshot.rates().get("Electrical Power"), 0.0);
+        assertTrue(governor.initStates(machine.getDStabBus(), machine));
+        assertTrue(governor.getStateDerivativeSnapshot().rates().isEmpty());
+    }
+
+    @Test
     void sharedIntegratorSamplesAllTenStatesWithoutAdvancingTransportHistory() throws Exception {
         var builder = DStabBuilderTestFixture.createWithMachine();
         Machine machine = builder.getDStabNetwork().getMachine("Bus1-mach1");

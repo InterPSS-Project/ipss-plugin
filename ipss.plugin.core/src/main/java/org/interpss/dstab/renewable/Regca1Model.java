@@ -1,5 +1,9 @@
 package org.interpss.dstab.renewable;
 
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.LinkedHashMap;
@@ -21,10 +25,12 @@ import com.interpss.dstab.device.impl.DynamicBusDeviceImpl;
  * composed as controllers while this device owns the network current source.
  */
 public final class Regca1Model extends DynamicBusDeviceImpl
-        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider {
+        implements DynamicGenDevice, IntegrationStepAware, ICMLStateProvider, IntegrationStateAccess {
     public enum IntegrationScheme { MODIFIED_EULER, TWO_STEP }
     private static final double EPS = 1.0e-9;
 
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Filtered Voltage", "Active Current Regulator", "Reactive Current Regulator");
     private final Regca1Data data;
     private final Hashtable<String, Object> states = new Hashtable<>();
     private DStabGen parentGen;
@@ -67,6 +73,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
 
     @Override
     public boolean initStates(BaseDStabBus<?, ?> bus) {
+        stateMonitor.reset();
         twoStep.reset();
         RenewableElectricalController controller = activeController();
         if (parentGen == null || controller == null || bus == null) return false;
@@ -116,6 +123,10 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             dv0 = derivative(v, vFiltered, data.tfltr());
             dip0 = activeCurrentDerivative(ipcmd, ipState);
             diq0 = reactiveCurrentDerivative(iqcmd, iqState);
+            stateMonitor.begin(Stage.PREDICTOR);
+            stateMonitor.record(0, vFiltered, dv0);
+            stateMonitor.record(1, ipState, dip0);
+            stateMonitor.record(2, iqState, diq0);
             vFiltered = advance(vFiltered, v, dv0, data.tfltr(), dt);
             ipState = advance(ipState, ipcmd, dip0, data.tg(), dt);
             iqState = advance(iqState, -iqcmd, diq0, data.tg(), dt);
@@ -123,6 +134,10 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             double dv1 = derivative(v, vFiltered, data.tfltr());
             double dip1 = activeCurrentDerivative(ipcmd, ipState);
             double diq1 = reactiveCurrentDerivative(iqcmd, iqState);
+            stateMonitor.begin(Stage.CORRECTOR);
+            stateMonitor.record(0, vFiltered, dv1);
+            stateMonitor.record(1, ipState, dip1);
+            stateMonitor.record(2, iqState, diq1);
             vFiltered = data.tfltr() <= EPS ? oldVFiltered : oldVFiltered + 0.5 * dt * (dv0 + dv1);
             ipState = data.tg() <= EPS ? oldIpState :
                     oldIpState + 0.5 * dt * (dip0 + dip1);
@@ -151,6 +166,10 @@ public final class Regca1Model extends DynamicBusDeviceImpl
             double dv = derivative(v, vFiltered, data.tfltr());
             double dip = activeCurrentDerivative(reeca1Controller.getTwoStepIpcmd(), ipState);
             double diq = reactiveCurrentDerivative(reeca1Controller.getTwoStepIqcmd(), iqState);
+            stateMonitor.begin(Stage.TWO_STEP);
+            stateMonitor.record(0, vFiltered, dv);
+            stateMonitor.record(1, ipState, dip);
+            stateMonitor.record(2, iqState, diq);
             reeca1Controller.stepTwoStep(dt, p, q, controlVoltage, frequency);
             twoStep.begin(dt);
             vFiltered = twoStep.advance(0, vFiltered, dv);
@@ -301,6 +320,7 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         if(scheme==IntegrationScheme.TWO_STEP&&activeController()!=null&&activeController().getRepccController()!=null)
             throw new IllegalArgumentException("REPCC uses staged modified Euler, not the converter two-step path");
         integrationScheme = java.util.Objects.requireNonNull(scheme);
+        stateMonitor.reset();
         twoStep.reset();
     }
     public Reecb1Model getElectricalController() {
@@ -383,6 +403,20 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         }
         return Collections.unmodifiableMap(named);
     }
+
+
+    @Override public java.util.Map<String, Double> getIntegrationStates() {
+        return java.util.Map.of("Filtered Voltage", vFiltered,
+                "Active Current Regulator", ipState,
+                "Reactive Current Regulator", iqState);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        return stateMonitor.snapshot();
+    }
+
+    /** Stored sign selector; zero means neither directional recovery boundary. */
+    public double getInitialReactivePower() { return initialQ; }
+    public int getReactiveRecoveryDirection() { return initialQ > 0 ? 1 : initialQ < 0 ? -1 : 0; }
 
     private RenewableElectricalController activeController() {
         return reeca1Controller != null ? reeca1Controller : electricalController;

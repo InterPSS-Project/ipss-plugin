@@ -1,5 +1,9 @@
 package org.interpss.dstab.renewable;
 
+import org.interpss.dstab.control.util.IntegrationStateAccess;
+import org.interpss.dstab.control.util.IntegrationStateMonitor;
+import org.interpss.dstab.control.util.IntegrationStateMonitor.Stage;
+
 /**
  * WECC WTDTA1 two-mass wind drive train.
  *
@@ -8,10 +12,13 @@ package org.interpss.dstab.renewable;
  * as hertz. A zero turbine-inertia fraction selects the documented one-mass
  * representation.</p>
  */
-public final class Wtdta1Model implements WindDriveTrain {
+public final class Wtdta1Model implements WindDriveTrain, IntegrationStateAccess, com.interpss.dstab.controller.cml.ICMLStateProvider {
     private static final double EPS = 1.0e-9;
     private static final double MIN_SPEED = 0.01;
 
+    private final IntegrationStateMonitor stateMonitor = new IntegrationStateMonitor(
+            "Turbine Speed", "Generator Speed", "Shaft Torque");
+    private Stage observationStage = Stage.NOT_EVALUATED;
     private final Wtdta1Data data;
     private final WtgtAData powerWorldData;
     private final double inputPowerScale;
@@ -47,6 +54,7 @@ public final class Wtdta1Model implements WindDriveTrain {
 
     /** WTTQA1 supplies its initialized power/speed characteristic when present. */
     public void initialize(double power, double speed) {
+        stateMonitor.reset();
         twoStep.reset();
         clearPredictor();
         if (!Double.isFinite(power) || !Double.isFinite(speed) || speed <= 0.0) {
@@ -78,6 +86,7 @@ public final class Wtdta1Model implements WindDriveTrain {
                 || !Double.isFinite(mechanicalPower) || !Double.isFinite(electricalPower)) {
             throw new IllegalArgumentException("WTDTA1 step inputs must be finite and dt must be non-negative");
         }
+        observationStage = flag == 0 ? Stage.PREDICTOR : Stage.CORRECTOR;
         if (flag != 0 && flag != 1) {
             throw new IllegalArgumentException("WTDTA1 integration flag must be 0 or 1");
         }
@@ -130,6 +139,7 @@ public final class Wtdta1Model implements WindDriveTrain {
     }
 
     public void stepTwoStep(double dt, double mechanicalPower, double electricalPower) {
+        observationStage = Stage.TWO_STEP;
         if (dt <= 0.0) return;
         mechanicalPower = scalePower(mechanicalPower);
         electricalPower = scalePower(electricalPower);
@@ -151,6 +161,29 @@ public final class Wtdta1Model implements WindDriveTrain {
         requireFiniteState();
     }
 
+
+    @Override public java.util.Map<String, Double> getIntegrationStates() {
+        if (isSingleMass()) return java.util.Map.of("Generator Speed", generatorSpeed);
+        return java.util.Map.of("Turbine Speed", turbineSpeed,
+                "Generator Speed", generatorSpeed,
+                "Shaft Torque", shaftTorque);
+    }
+    @Override public IntegrationStateMonitor.Snapshot getStateDerivativeSnapshot() {
+        var snapshot = stateMonitor.snapshot();
+        if (!isSingleMass() || snapshot.rates().isEmpty()) return snapshot;
+        return new IntegrationStateMonitor.Snapshot(snapshot.stage(),
+                java.util.Map.of("Generator Speed", snapshot.evaluationStates().get("Generator Speed")),
+                java.util.Map.of("Generator Speed", snapshot.rates().get("Generator Speed")));
+    }
+    @Override public java.util.Map<String, Double> getNamedStates() {
+        return getIntegrationStates();
+    }
+    private void retainRates(State s, Derivative d) {
+        stateMonitor.begin(observationStage);
+        stateMonitor.record(0, s.turbineSpeed(), d.turbineSpeed());
+        stateMonitor.record(1, s.generatorSpeed(), d.generatorSpeed());
+        stateMonitor.record(2, s.shaftTorque(), d.shaftTorque());
+    }
     private State state() {
         return new State(turbineSpeed, generatorSpeed, shaftTorque);
     }
@@ -184,14 +217,18 @@ public final class Wtdta1Model implements WindDriveTrain {
                 - data.damp() * (state.generatorSpeed() - initialSpeed)
                 + shaftDamping) / (2.0 * generatorInertia());
         double torqueDerivative = shaftStiffness() * speedDifference;
-        return new Derivative(turbineDerivative, generatorDerivative, torqueDerivative);
+        Derivative rate = new Derivative(turbineDerivative, generatorDerivative, torqueDerivative);
+        retainRates(state, rate);
+        return rate;
     }
 
     private double singleMassDerivative(double speed, double mechanicalPower,
             double electricalPower) {
-        return (mechanicalPower / nonzeroSpeed(speed)
+        double rate = (mechanicalPower / nonzeroSpeed(speed)
                 - electricalPower / nonzeroSpeed(speed)
                 - data.damp() * (speed - initialSpeed)) / (2.0 * data.h());
+        retainRates(new State(speed, speed, shaftTorque), new Derivative(rate, rate, 0.0));
+        return rate;
     }
 
     private static double nonzeroSpeed(double speed) {
