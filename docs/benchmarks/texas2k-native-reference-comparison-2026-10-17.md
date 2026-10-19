@@ -4376,3 +4376,79 @@ independently checked speed-feedback implementation. No original case contains
 a drive-train record in that inventory. This source-record audit does not prove
 runtime attachment or dynamic acceptance. All six cases and all 36 disturbances
 remain required; none is declared accepted by these conditional experiments.
+
+### Production mixed-load matrix integration and six-case startup
+
+The frozen benchmark contained a constant-impedance load matrix treatment that
+was absent from the ordinary core build. Replacing its runtime with the sealed
+plugin snapshot `a409546078844f7d2d2ecc62a8247fcaccc231be` and production network
+callbacks exposed this omission: generator active power differed by as much as
+152.769309 MW in the first 1.2 seconds. The initial state differences were only
+roundoff, but the matrix differed on 1,126 entries. Algebraically equivalent
+matrix/current decompositions cannot be treated as interchangeable at a finite
+iteration tolerance with retained converter network memory.
+
+Core commit `08fb54173` adds the explicit, default-off
+`setStaticLoadZPartInYMatrix(true)` option. It stamps the initialized impedance
+component of a mixed static load into the positive-sequence dynamic matrix and
+compensates the current injection using the admittance actually stamped.
+Changing load power while reusing the factorization therefore preserves the
+physical load equation. The existing all-load matrix mode does not count the
+impedance twice. The option is configured before dynamic initialization and
+does not add dynamic contributions to power-flow matrices.
+
+The integrated path passes 23 load, network lifecycle and staggered integration
+tests, including ten new matrix/current tests registered in the main plugin
+suite. A replay of 12,018 archived independent scalar-load observations has a
+maximum physical or reconstructed Norton-power error of 3.40721e-8 pu. The
+sealed plugin build separately passes 120 focused controller, state-access,
+preparation and reporting tests. These are scoped checks, not a new full-suite
+or full-system acceptance claim.
+
+The 1.2-second Case 2 control retains all 4,810 physical channels and 1,205
+rows, including both fault event sides. All generator channels and all three
+cold/history state snapshots reproduce the frozen read-only control exactly.
+Matrices and the first linear equation also agree exactly. Only sixteen
+values differ, all at the nearly zero-voltage faulted bus 6307: voltage by at
+most 4.12e-14 pu and angle by at most 4.58e-6 degrees. This is qualified
+implementation equivalence; the previously reported reference errors remain.
+
+Converted operating points have now been calculated from the original solved
+inputs for all six cases, with 429, 199, 625, 405, 405 and 410 active generators
+respectively before dynamic initialization. No reference values enter this
+calculation. Each conversion converges in one linear solve at the declared
+1e-5 tolerance; all Case 2 converted voltages, angles, powers and load
+coefficients reproduce the previous computed point exactly.
+
+The first 20 milliseconds, at the original 0.5 ms timestep, give the following
+worst errors among the five supplied channels of each required quantity:
+
+| Case | Voltage NRMAE | Speed NRMAE | Rotor maximum error, degrees |
+|---|---:|---:|---:|
+| 1 | 5.63849e-6 | 1.24016e-7 | 0.000479498 |
+| 2 | 3.05973e-6 | 1.53473e-7 | 0.000781345 |
+| 3 | 0.000130368 | 1.09547e-6 | 0.000112842 |
+| 4 | 0.000398798 | 1.23429e-6 | 0.0000508902 |
+| 5 | 0.000112489 | 4.14873e-6 | 0.00107164 |
+
+Each comparison retains 43 rows, including two startup-history rows, and scores
+all 40 matched physical channels. History is excluded from acceptance metrics;
+normalization uses the full ten-second supplied range. All fifteen required
+channels pass within this short interval in Cases 1–5. This does not establish
+the full prefault or postfault gates. Speed remains a frequency proxy.
+
+The first attempt in Cases 3–5 stopped in the optional full-network recorder
+before the engine could convert allowed generators without dynamic models to
+static negative loads. A second attempt retained every supplied matched
+channel and disabled that optional recorder; normal initialization completed.
+Case 6 then exposed a separate limitation: its REGFMA1 units are unsupported
+by the selected staggered integration path. They have not been removed or
+replaced to obtain a passing run. Model integration for that case, longer
+trajectories for every event, and the existing Case 2 reference discrepancies
+remain open. The later electrical-controller commit `38ffc1a26` was completed
+after this runtime was sealed and is not included in these runs.
+
+Sources, test results, rejected controls, converted points, reference alignment,
+and startup outputs are retained in the private evidence set
+`2026-10-19-production-load-matrix-and-sixcase-startup`. Original acceptance
+limits are unchanged, and all six cases and all 36 disturbances remain in scope.

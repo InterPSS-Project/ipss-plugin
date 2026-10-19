@@ -1077,6 +1077,7 @@ import org.junit.platform.suite.api.Suite;
 	RegcaNetworkIterationTest.class,
 	PsseNetworkConvergenceTest.class,
 	PsseNetworkIterationLifecycleTest.class,
+	org.interpss.core.dstab.StaticLoadMatrixSplitTest.class,
 	Perc1ModelTest.class,
 	Cmldznu2ModelTest.class,
 	IeelLoadModelTest.class,
