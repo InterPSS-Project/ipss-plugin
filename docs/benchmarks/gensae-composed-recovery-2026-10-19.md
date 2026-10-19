@@ -2,6 +2,12 @@
 
 ## Scope and source contract
 
+Follow-up: [controlled-input washout verification](esst1a-washout-coordinate-2026-10-19.md)
+corrects the published coordinate at nonunit Tf and independently checks the
+InterPSS analytic solution and explicit stages. These Tf=1 recovery profiles
+are unchanged. Their four diagnostic state gaps remain unresolved; the new
+constant-input checks do not confer coupled-trajectory acceptance here.
+
 This follow-up composes the existing generator, exciter and governor engines
 without changing their production equations or integration method. Nine
 configurations at 0.5/0.25 ms give eighteen profiles, cold-generated twice:

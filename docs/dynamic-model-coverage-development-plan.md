@@ -2,6 +2,21 @@
 
 ## Current checkpoint
 
+ESST1A washout-coordinate follow-up: correct only the published feedback
+storage observation to Tf times the running CML washout storage. Generic state
+keys, physical equations, limits and integration remain unchanged. Six controlled
+three-second profiles at Tf=0.5/1/2 s and two timesteps have twelve raw-exact
+cold runs and independent live-state readback. Constant-input coupled SMIB
+tests check the analytic solution against a derived method bound and the
+explicit modified-Euler recurrence at every step. Native numerical residuals
+still do not refine uniformly; they remain diagnostics, not accepted trajectories.
+Final gates pass 58 focused, 410 plugin-core and 1,769 scoped SMIB/model/solver
+tests with zero failures/errors and seven existing skips across the latter two
+gates. The separately versioned verification core preserves the latest baseline's
+salient-refresh guards without modifying older pinned artifacts. See the
+[coordinate correction, evidence and remaining TODO](benchmarks/esst1a-washout-coordinate-2026-10-19.md).
+No full Texas2k dynamic simulations are run.
+
 GENSAE composed-recovery follow-up: eighteen three-second GENSAE/ESST1A/TGOV1
 profiles now have thirty-six raw-exact cold runs, including both separately
 activated valve bounds, field-current limiting/ceiling, compensation and

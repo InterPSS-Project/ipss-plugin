@@ -355,7 +355,7 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
 
     /**
      * Read-only ESST1A five-state observation in its published allocation order.
-     * Lead-lag storage is time-scaled at observation only; the existing generic
+     * Lead-lag and washout storage are time-scaled at observation only; the existing generic
      * named-state API and integration coordinates remain unchanged.
      */
     public Map<String,Double> getNativeStateSnapshot() {
@@ -371,7 +371,8 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         states.put("First lead-lag",first.getT2()*first.getStateX());
         states.put("Second lead-lag",second.getT2()*second.getStateX());
         states.put("Regulator output",blocks.get("kaDelayBlock").getStateX());
-        states.put("Feedback",blocks.get("washoutBlock").getStateX());
+        var washout=(WashoutControlBlock)blocks.get("washoutBlock");
+        states.put("Feedback",washout.getT()*washout.getStateX());
         return Collections.unmodifiableMap(states);
     }
 

@@ -56,7 +56,7 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     end = cfg.get('end_s', .5)
     assert end in (.5, 3.)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
-    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-')
+    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-', 'esst1a-washout-')
     out = root / 'target' / (directory_prefix + tag)
     out.mkdir(exist_ok=False)
     probe_source = Path(probe_source or __file__).resolve()
@@ -149,9 +149,23 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     assert read_constants() == before, 'Initialization changed entered constants'
     validate_components()
+    live_states = []
+    def record_live_states(stage):
+        if not cfg.get('record_live_states', False):
+            return
+        values = {name: checked('live generator state', psspy.dsrval('STATE', layout['STATE'] + i))
+                  for i, name in enumerate(state_names)}
+        for spec in cfg.get('components', ()):
+            offset = components[spec['kind']]['layout']['STATE']
+            values.update({name: checked('live controller state', psspy.dsrval('STATE', offset + i))
+                           for i, name in enumerate(spec['states'])})
+        live_states.append(dict(stage=stage, time_s=checked('live clock', psspy.dsrval('TIME')),
+                                step_s=checked('live step', psspy.dsrval('DELT')), states=values))
+    record_live_states('initialized')
     events = []
     for until in (.05, .1, end):
         checked('interval', psspy.run(0, until, 1000000, 1, 0))
+        record_live_states('interval-end')
         if cfg['apply_fault'] and until in (.05, .1):
             actual = checked('event clock', psspy.dsrval('TIME'))
             if until == .05:
@@ -160,6 +174,13 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
                 checked('clear', psspy.dist_clear_fault(1))
             events.append(dict(time_s=until, actual_time_s=actual,
                                action='fault' if until == .05 else 'clear'))
+        if until == .05 and cfg.get('vref_increment', 0.):
+            increment = cfg['vref_increment']
+            assert math.isfinite(increment)
+            actual = checked('reference event clock', psspy.dsrval('TIME'))
+            checked('voltage reference increment', psspy.increment_vref(1, '1', increment))
+            events.append(dict(time_s=until, actual_time_s=actual,
+                               action='voltage-reference-increment', increment=increment))
     _, labels, channels = dyntools.CHNF('native.out').get_data()
     indices = sorted(k for k in labels if isinstance(k, int))
     assert all(math.isfinite(v) for k in ['time'] + indices for v in channels[k])
@@ -172,6 +193,9 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     quality = 'Initial conditions check O.K.' in log and 'Network not converged' not in log
     files = ['network.raw', 'dynamic.dyr', 'probe.py', 'hplntd_fault_probe.py',
              'native.log', 'native.out', 'native.csv'] + helpers
+    if live_states:
+        Path('live-states.json').write_text(json.dumps(live_states, indent=2) + '\n')
+        files.append('live-states.json')
     manifest = dict(status='native-converged-profile' if quality else 'rejected-native-quality',
                     model=cfg['model'], profile=profile, declared_constants=cfg['constants'],
                     actual_constants=before, final_constants=read_constants(), layout=layout,

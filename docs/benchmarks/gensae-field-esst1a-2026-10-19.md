@@ -2,6 +2,10 @@
 
 ## Source-backed correction
 
+Follow-up: the published washout state also requires Tf scaling when Tf is
+not one second. The [controlled-input coordinate investigation](esst1a-washout-coordinate-2026-10-19.md)
+corrects that observation without changing this feedback tap or integration.
+
 The active field-ceiling discriminator exposed a persistent ESST1A controller
 error: regulator-state residual was about 0.544 pu at both integration steps.
 The existing washout sampled the clipped field output. Native source-library
