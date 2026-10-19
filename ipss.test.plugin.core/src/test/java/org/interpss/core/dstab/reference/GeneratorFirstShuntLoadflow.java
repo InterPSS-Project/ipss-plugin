@@ -1,0 +1,225 @@
+package org.interpss.core.dstab.reference;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.commons.math3.complex.Complex;
+import org.interpss.numeric.datatype.LimitType;
+
+import com.interpss.common.exp.InterpssException;
+import com.interpss.core.aclf.AclfGen;
+import com.interpss.core.aclf.AclfGenCode;
+import com.interpss.core.aclf.BaseAclfBus;
+import com.interpss.core.aclf.adj.AclfAdjustControlMode;
+import com.interpss.core.aclf.facts.StaticVarCompensator;
+import com.interpss.core.aclf.adj.SwitchedShunt;
+import com.interpss.core.algo.LoadflowAlgorithm;
+
+/**
+ * Explicit benchmark policy for a local generator plant with one continuous
+ * secondary shunt. This opt-in fixture is not a change to the default solver.
+ * The plant owns the voltage equation. Its physical Q limits are exhausted
+ * before the shunt moves from the setting present on entry.
+ *
+ * <p>An aggregate capability solve determines the required total Q, including
+ * the shunt's voltage-dependent limits. Disaggregation then minimizes shunt
+ * movement. Original device targets and generator limits are retained. Remote,
+ * discrete, multiple-shunt and mixed generator-target groups are unsupported.
+ * As with ordinary load flow, a failed solve can change network voltages;
+ * temporary device limits and controls are restored and convergence is cleared.
+ */
+public final class GeneratorFirstShuntLoadflow {
+    private GeneratorFirstShuntLoadflow() { }
+
+    public record GroupResult(String bus, int generators, double voltage,
+            double generatorQ, double initialB, double finalB) { }
+
+    public record Result(boolean converged, int solves, List<GroupResult> groups) {
+        public Result { groups = List.copyOf(groups); }
+    }
+
+    /** Solve using generator priority for supported colocated groups. */
+    public static Result solve(LoadflowAlgorithm lf) throws InterpssException {
+        var groups = new ArrayList<Group>();
+        // Validate every group before changing any devices.
+        for (var bus : lf.getNetwork().getBusList()) {
+            if (!bus.isActive() || bus.isSwing()) continue;
+            var generators = bus.getContributeGenList().stream().filter(AclfGen::isActive).toList();
+            var shunts = bus.getSwitchedShuntList().stream()
+                    .filter(s -> s.isActive() && s.isControlStatus()
+                            && s.getControlMode() != AclfAdjustControlMode.FIXED).toList();
+            if (generators.isEmpty() || shunts.stream().noneMatch(
+                    s -> s.getControlMode() == AclfAdjustControlMode.CONTINUOUS)) continue;
+            if (bus.isRemoteQBus() || !bus.isPVBusLimit() || shunts.size() != 1)
+                throw new IllegalArgumentException("Unsupported control group at " + bus.getId());
+            groups.add(new Group(bus, generators, shunts.get(0)));
+        }
+        if (groups.isEmpty()) return new Result(lf.loadflow(), 1, List.of());
+        boolean success = false;
+        try {
+            for (var group : groups) group.prepare();
+            for (int iteration = 1; iteration <= 50; iteration++) {
+                for (var group : groups) group.updateAggregateLimits();
+                if (!lf.loadflow() || !lf.getTerminationReport().controlsSettled())
+                    return new Result(false, iteration, List.of());
+                boolean settled = true;
+                for (var group : groups) settled &= group.limitsSettled();
+                if (!settled) continue;
+                var results = new ArrayList<GroupResult>();
+                for (var group : groups) results.add(group.finish());
+                success = true;
+                return new Result(true, iteration, results);
+            }
+            throw new IllegalStateException("Voltage-dependent group limits did not settle");
+        } finally {
+            for (var group : groups) group.restore(success);
+            if (!success) lf.getNetwork().setLfConverged(false);
+        }
+    }
+
+    private static final class Group {
+        final BaseAclfBus<?, ?> bus;
+        final List<? extends AclfGen> generators;
+        final SwitchedShunt shunt;
+        final List<LimitType> limits;
+        final List<Complex> powers;
+        final LimitType busLimits;
+        final AclfGenCode busCode;
+        final boolean pvControl, pvAdjust, shuntAdjust;
+        final double initialB, target, qMin, qMax, bMin, bMax, busQ, busTarget;
+        double totalQ;
+
+        Group(BaseAclfBus<?, ?> bus, List<? extends AclfGen> generators, SwitchedShunt shunt) {
+            this.bus = bus;
+            this.generators = generators;
+            this.shunt = shunt;
+            if (shunt instanceof StaticVarCompensator
+                    || shunt.getControlMode() != AclfAdjustControlMode.CONTINUOUS
+                    || shunt.getRemoteBus() != bus || shunt.getDesiredControlRange() == null
+                    || Math.abs(shunt.getDesiredControlRange().getMax()
+                            - shunt.getDesiredControlRange().getMin()) > 1.e-12)
+                throw new IllegalArgumentException("Expected one local continuous point shunt at " + bus.getId());
+            target = generators.get(0).getDesiredVoltMag();
+            if (!Double.isFinite(target) || target <= 0.)
+                throw new IllegalArgumentException("Invalid generator voltage target");
+            limits = new ArrayList<>();
+            powers = new ArrayList<>();
+            double min = 0., max = 0.;
+            for (var gen : generators) {
+                String remote = gen.getRemoteVControlBusId();
+                if ((remote != null && !remote.isEmpty() && !remote.equals(bus.getId()))
+                        || Math.abs(gen.getDesiredVoltMag() - target) > 1.e-12)
+                    throw new IllegalArgumentException("Mixed or remote generator control at " + bus.getId());
+                var limit = gen.getQGenLimit();
+                checkLimits(limit);
+                min += limit.getMin(); max += limit.getMax();
+                limits.add(limit); powers.add(gen.getGen());
+            }
+            qMin = min; qMax = max;
+            var bLimits = shunt.getBLimit(true);
+            checkLimits(bLimits);
+            bMin = bLimits.getMin(); bMax = bLimits.getMax();
+            initialB = shunt.getBActual();
+            if (!Double.isFinite(initialB) || initialB < bMin - 1.e-12 || initialB > bMax + 1.e-12)
+                throw new IllegalArgumentException("Initial shunt outside limits at " + bus.getId());
+            busLimits = bus.getQGenLimit(); busCode = bus.getGenCode(); busQ = bus.getGenQ();
+            busTarget = bus.getDesiredVoltMag();
+            pvControl = bus.getPVBusLimit().isControlStatus();
+            pvAdjust = bus.getPVBusLimit().isAdjustStatus();
+            shuntAdjust = shunt.isAdjustStatus();
+        }
+
+        void prepare() {
+            shunt.setControlStatus(false);
+            shunt.setBActual(0.);
+            bus.setGenCode(AclfGenCode.GEN_PV);
+            bus.setDesiredVoltMag(target);
+            bus.setVoltageMag(target);
+            bus.getPVBusLimit().setControlStatus(true);
+            bus.getPVBusLimit().setAdjustStatus(true);
+        }
+
+        void updateAggregateLimits() {
+            double v2 = voltageSquared();
+            // Only the temporary representation uses this expanded interval.
+            // Every machine's real power and physical Q interval are restored.
+            var first = limits.get(0);
+            generators.get(0).setQGenLimit(new LimitType(
+                    first.getMax() + bMax * v2, first.getMin() + bMin * v2));
+            bus.setQGenLimit(new LimitType(qMax + bMax * v2, qMin + bMin * v2));
+        }
+
+        boolean limitsSettled() {
+            double v2 = voltageSquared();
+            // A PV bus's specified genQ can be stale; use solved network power.
+            totalQ = bus.calNetGenResults().getImaginary();
+            var current = bus.getQGenLimit();
+            double min = qMin + bMin * v2, max = qMax + bMax * v2;
+            return Double.isFinite(totalQ) && totalQ >= min - 1.e-10 && totalQ <= max + 1.e-10
+                    && (Math.abs(totalQ - current.getMin()) >= 1.e-8
+                            || Math.abs(min - current.getMin()) < 1.e-10)
+                    && (Math.abs(totalQ - current.getMax()) >= 1.e-8
+                            || Math.abs(max - current.getMax()) < 1.e-10);
+        }
+
+        GroupResult finish() {
+            double v2 = voltageSquared();
+            // Retain B exactly if the primary plant can supply the residual Q.
+            double required = totalQ - initialB * v2;
+            double plantQ = Math.max(qMin, Math.min(qMax, required));
+            double b = required >= qMin && required <= qMax
+                    ? initialB : (totalQ - plantQ) / v2;
+            b = Math.max(bMin, Math.min(bMax, b));
+            shunt.setBActual(b);
+            restoreLimits();
+            bus.setGenQ(plantQ);
+            if (!bus.allocateContributeGenQ(1.e-9))
+                throw new IllegalStateException("Physical machine allocation failed at " + bus.getId());
+            double sum = 0.;
+            for (int i = 0; i < generators.size(); i++) {
+                var gen = generators.get(i);
+                double q = gen.getGen().getImaginary();
+                if (q < limits.get(i).getMin() - 1.e-9 || q > limits.get(i).getMax() + 1.e-9)
+                    throw new IllegalStateException("Machine Q outside physical limits at " + bus.getId());
+                gen.setGen(new Complex(powers.get(i).getReal(), q));
+                sum += q;
+            }
+            if (Math.abs(totalQ - sum - b * v2) > 1.e-8)
+                throw new IllegalStateException("Group reactive balance failed at " + bus.getId());
+            boolean limited = plantQ <= qMin + 1.e-10 || plantQ >= qMax - 1.e-10;
+            bus.setGenCode(limited ? AclfGenCode.GEN_PQ : AclfGenCode.GEN_PV);
+            return new GroupResult(bus.getId(), generators.size(), bus.getVoltageMag(), sum, initialB, b);
+        }
+
+        double voltageSquared() {
+            double v = bus.getVoltageMag();
+            if (!Double.isFinite(v) || v <= 0.) throw new IllegalStateException("Invalid voltage at " + bus.getId());
+            return v * v;
+        }
+
+        void restoreLimits() {
+            for (int i = 0; i < generators.size(); i++) generators.get(i).setQGenLimit(limits.get(i));
+            bus.setQGenLimit(new LimitType(qMax, qMin));
+        }
+
+        void restore(boolean success) {
+            restoreLimits();
+            shunt.setControlStatus(true);
+            shunt.setAdjustStatus(shuntAdjust);
+            bus.getPVBusLimit().setControlStatus(pvControl);
+            bus.getPVBusLimit().setAdjustStatus(pvAdjust);
+            bus.setDesiredVoltMag(busTarget);
+            if (!success) {
+                for (int i = 0; i < generators.size(); i++) generators.get(i).setGen(powers.get(i));
+                shunt.setBActual(initialB);
+                bus.setQGenLimit(busLimits); bus.setGenCode(busCode); bus.setGenQ(busQ);
+            }
+        }
+    }
+
+    private static void checkLimits(LimitType limits) {
+        if (limits == null || !Double.isFinite(limits.getMin()) || !Double.isFinite(limits.getMax())
+                || limits.getMin() > limits.getMax())
+            throw new IllegalArgumentException("Expected finite physical limits");
+    }
+}

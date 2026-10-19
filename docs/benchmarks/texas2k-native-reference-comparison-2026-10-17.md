@@ -2600,3 +2600,84 @@ it is not integrated as a production policy or a six-case solution.
 The analytical checks, rejected probes, completed coupled prefix, original
 case inventory and primary-source extracts are retained privately in
 `2026-10-18-case2-colocated-reactive-sharing-diagnostics`.
+
+### Generator priority and initialization state audit (2026-10-18)
+
+The user specifies generator-first control: the generator plant supplies the
+required reactive power within its physical limits, and the secondary shunt
+assists when that capability is exhausted. The new opt-in benchmark fixture
+`GeneratorFirstShuntLoadflow` replaces participation-weighted allocation for
+this policy. It retains the entering shunt susceptance while the generator
+plant can meet the required Q, then moves the shunt only as needed. Original
+device targets, real generation and physical reactive limits are retained.
+This does not change the default production load-flow policy.
+
+Twelve independent analytical network tests pass, covering generator headroom,
+both limit directions, exhausted aggregate capability, two-generator plants,
+nonzero real power, repeated solves, unsupported mixed generator targets and
+failure cleanup. Support remains limited to local generators sharing one
+target and one local continuous shunt; larger control configurations and all
+six full cases have not been validated with this fixture.
+
+The Case 2 startup probe retains zero shunt susceptance and -40.03 Mvar at bus
+1033, with voltage 1.015128513 pu. All 4,810 physical channels at all 23 samples
+from -0.002 through 0.020 seconds are numerically identical to the earlier
+completed group-formulation prefix. Thus generator priority preserves the
+corrected initial operating point but does not resolve the dynamic mismatch.
+
+The benchmark runner now accepts `audit_initialization=true`. It exports the
+core machine initial-condition report and read-only state snapshots before
+and after each configured startup-history step. The audit uses the core's
+machine integration snapshots, CML named states and retained derivatives,
+including nested controllers and every internal compound-filter section.
+It does not advance states or reevaluate controller equations. Retained rates
+must already have been evaluated by the solver; the tested staggered solver
+does this during initialization. Four focused tests verify detection of an
+injected nonzero derivative, nonfinite-rate rejection, incomplete controller
+initialization reporting and compound-section coverage without state mutation.
+
+The initial snapshot covers 199 active units and 2,598 retained machine/CML
+derivatives. None exceeds 1e-6 in its native state units per second. The largest
+absolute rate is 1.03001e-11 in unit 4094/1's exciter delay state. This is a
+diagnostic equilibrium check for the observed states, not a global acceptance
+test. The derivative accessors do not cover the 88 custom GGOV1 governors or
+96 renewable bundles; these gaps are explicitly recorded. Named governor
+states change by at most 2.87e-11 over the first two startup steps.
+
+The corresponding initial physical-channel comparison against the supplied
+full-system measurements is:
+
+| Quantity | Maximum absolute initial error | Location |
+| --- | ---: | --- |
+| Bus voltage | 0.0000142113 pu | 4175 |
+| Bus phase | 0.000266501 degrees | 4177 |
+| Generator active power | 0.00889059 MW | 7389/1 |
+| Generator reactive power | 0.00368468 Mvar | 4192/6 |
+| Rotor angle | 0.000544181 degrees | 7389/1 |
+| Field voltage | 0.0000196617 pu | 4052/1 |
+
+The first substantial observed state motion is in renewable active-power
+orders. For example, unit 2059/1 changes from 0.625 to 0.619257808 pu on the
+first startup step. The supplied terminal P/V measurements, interpreted using
+the original converter lag and two-step recurrence, imply 0.619256078 pu for
+that first command. Across 96 bundles the largest local-versus-reference
+inferred command difference is 3.55e-6 pu. This inference assumes inactive
+converter current/rate limits at these startup samples and is not a directly
+exported reference state. Its reconstruction residual against the observed
+local command is below 5.37e-7 pu. No reconstructed state is injected into the
+simulation.
+
+Consequently, the large renewable startup motion alone does not identify an
+initialization defect: similar motion is present in the supplied reference.
+By time zero, after two startup steps, physical-channel errors already reach
+0.000226340 pu voltage at bus 3034 and 0.146118 Mvar reactive power at unit
+5263/1. The first network/controller refreshes and the remaining derivative
+coverage are the next localization targets. The earlier failed 1.2-second
+comparison remains the applicable dynamic result; no new ten-second or
+six-case acceptance is claimed.
+
+Both focused test classes pass all 16 tests, and the tracked runner compiles
+against the frozen diagnostic runtime. Sources, runtime hashes, successful
+and rejected probes, startup snapshots and all-channel comparisons are
+retained privately in
+`2026-10-18-case2-generator-priority-initialization-audit`.

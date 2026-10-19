@@ -250,6 +250,12 @@ public final class Texas2kReferenceRunner {
                         || plan.get("retain_norton_compensation").getAsBoolean();
                 if (!retainCompensation) net.setCustomBusCurrInjHashtable(null);
                 status.put("retain_norton_compensation", retainCompensation);
+                boolean auditInitialization = plan.has("audit_initialization")
+                        && plan.get("audit_initialization").getAsBoolean();
+                if (auditInitialization) {
+                    Files.writeString(out.resolve("core-machine-initial-conditions.txt"), net.getMachineInitCondition());
+                    Texas2kInitializationAudit.write(net, out.resolve("initialization-state-audit.json"));
+                }
                 var initial = record(net, event);
                 writer.write("time_s,sample_kind," + String.join(",", initial.keySet()) + "\n");
                 int historySteps = plan.has("startup_history_steps")
@@ -263,6 +269,8 @@ public final class Texas2kReferenceRunner {
                         write(writer, algo.getSimuTime(), "HISTORY", record(net, event), fullNetwork);
                         if (!algo.solveDEqnStep(true))
                             throw new IllegalStateException("Startup history integration failed");
+                        if (auditInitialization)
+                            Texas2kInitializationAudit.write(net, out.resolve("startup-state-audit-" + index + ".json"));
                     }
                     initial = record(net, event);
                 }
