@@ -3366,3 +3366,108 @@ metrics, comparison/plot producers and frozen runtime hashes are retained in
 private evidence set `2026-10-19-case2-ten-second-selector-diagnostic`. The
 comparator explicitly prevents a shortened prefix from satisfying a ten-second
 rotor gate. No complete event or six-case accuracy target is accepted.
+
+### Complete initial terminal operating point and remaining feedback errors
+
+A further ten-second diagnostic initializes all 2,000 bus voltage phasors and
+all 199 generator P/Q values uniformly from the first supplied sample. Each
+dynamic model then initializes its own internal states normally. No measured
+rotor angle, speed, mechanical power, field voltage or internal controller state
+is imported. No individual recovery selector is overridden, and no later sample
+is supplied to this coupled run. All changes from the independently solved
+operating point are retained. The diagnostic high-voltage network memory and
+generator/shunt preparation remain in place, so this is not acceptance from the
+original RAW inputs.
+
+The initial physical outputs reproduce the supplied voltage magnitudes within
+1.60e-14 pu, P within 1.91e-11 MW and Q within 6.84e-11 Mvar. The ordinary model
+initializers now select positive initial-Q recovery directions for all seventeen
+previously identified zero-Q units. These terminal initial values come from
+measurements; their signs are not an independently derived conversion rule.
+All runtime objects, including intermediate classpath overlays, are checked
+against their pre-run provenance. The comparison retains 10,005 rows, 4,810
+physical channels and both sides of each event.
+
+| Gate | Passing channels |
+|---|---:|
+| Prefault voltage, NRMSE <0.001 | 2,000/2,000 |
+| Prefault P, NRMSE <0.001 | 199/199 |
+| Prefault Q, NRMSE <0.001 | 198/199 |
+| Prefault rotor maximum error <0.02 degrees | 103/103 |
+| Ten-second rotor RMSE <0.1 degrees | 103/103 |
+| Fault/postfault voltage, NRMSE <0.005 | 1,998/2,000 |
+| Fault/postfault P, NRMSE <0.005 | 196/199 |
+| Fault/postfault Q, NRMSE <0.005 | 197/199 |
+
+The largest prefault rotor error is 0.00904019 degrees, and the worst ten-second
+rotor RMSE is 0.05270929 degrees, both at bus 5263, unit 1. The degree-valued
+full-window criterion continues to use RMSE, following the earlier explicit
+unit clarification; the later wording remains awaiting clarification. Voltage
+and power use their complete ten-second reference ranges, and the relaxed
+threshold starts at fault application. No offsets, interpolation or error floors
+are introduced.
+
+Eight checks still fail: prefault Q at 4010; fault/postfault voltage at 3073 and
+3074; fault/postfault P at 1084, 3120 and 3131; and fault/postfault Q at 3074 and
+3120. This is a reduction from eleven failed checks in the earlier
+measured-selector diagnostic, but different channels can cross their thresholds
+when the complete operating point changes.
+
+A separate replay initializes all 96 renewable bundles from this same terminal
+operating point and prescribes every subsequent voltage phasor from the supplied
+reference. Internal initial states agree with the coupled initialization within
+4.45e-16 without copying those states or overriding selectors. Every replay
+voltage/angle input is checked against its corresponding original row; ordinal
+and duplicate-side alignment is retained. Five of the six failed coupled power
+checks pass conditionally:
+
+| Power channel and period | Coupled NRMSE | Prescribed-voltage NRMSE |
+|---|---:|---:|
+| Q at 4010, prefault | 0.00136117 | 3.21841e-8 |
+| P at 1084, fault/postfault | 0.00867656 | 0.000210103 |
+| Q at 3074, fault/postfault | 0.02602650 | 0.00595247 |
+| P at 3120, fault/postfault | 0.03568934 | 1.34383e-6 |
+| Q at 3120, fault/postfault | 0.01731796 | 1.72508e-5 |
+| P at 3131, fault/postfault | 0.00812769 | 0.000286902 |
+
+The replay retains the existing instantaneous high-voltage output because the
+reference does not supply inner network iterations. Q at 3113 consequently also
+fails the conditional postfault gate, at NRMSE 0.01218528; that channel passes
+the coupled diagnostic with network memory. This qualification prevents the
+replay from being treated as a complete converter/network solution.
+
+At 3074, conditional Q RMSE remains 0.13864991 Mvar. The local regulator first
+differs from the observed terminal quantity Q/(V*MBASE) by more than 1e-4 pu at
+step 1022, or 1.022 seconds. Through 1.2 seconds the prescribed voltage peaks at
+1.09437287 pu, below this unit's 1.2-pu high-voltage threshold. The local state,
+its retained derivative and evaluation stage, current command, measured-voltage
+state and dip/hold memories are saved around this first divergence. The terminal
+quantity is an observation, not an asserted reference internal state. This
+narrows the next controller/measurement-boundary check without fitting a state.
+
+### Rejected static-tolerance and converted-startup alternatives
+
+The RAW records a 0.1-MVA electrical tolerance, a 0.1-Mvar reactive-limit tolerance
+and a 1e-5-pu voltage-control tolerance. Those recorded values do not prove which
+settings the original reference run executed. Applying the electrical tolerance
+alone leaves 110 controls unsettled; applying the complete recorded set leaves
+76 unsettled. Keeping tight electrical convergence while applying the recorded
+reactive/voltage control tolerances leaves 158 unsettled. All three trials fail
+before dynamic initialization and are retained as rejected trials.
+
+The original tight-control operating point does support an ordinary
+constant-source converted-network solve with unchanged I/Z load coefficients.
+Its maximum voltage update is only 7.58e-15 pu, yet ordinary double-precision
+source-power recovery gives positive initial Q for only twelve of the seventeen
+units. Five independently declared storage-precision controls give 7 to 14
+positive values. Their network factorizations are explicitly double precision;
+they do not claim to reproduce the reference factorization. No tested arithmetic
+policy establishes all seventeen signs, and no forced rounding/sign rule is
+adopted.
+
+These experiments identify an operating-point sensitivity and a remaining
+controller/network-feedback discrepancy. They do not establish an original-input
+initialization fix, production integration, performance acceptance or any of the
+36 complete event comparisons. The producers, frozen classpaths, failed solves,
+complete initial-point trace, prescribed-voltage replay and independent checks
+are retained in private evidence set `2026-10-19-case2-initial-point-localization`.
