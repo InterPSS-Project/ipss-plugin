@@ -113,6 +113,10 @@ Original GENSAL and GENROU independent gates remain unchanged.
     See the [follow-up evidence](gensae-field-esst1a-2026-10-19.md).
   - [ ] Extend beyond the short composed-exciter profiles to multi-swing and
     composed-governor/lifecycle coverage.
+    - [x] Add eighteen three-second composed-governor profiles with separate
+      upper/lower valve activation; retain the newly exposed four-state gaps.
+      See [composed recovery](gensae-composed-recovery-2026-10-19.md).
+    - [ ] Resolve those coupled-state gaps and add trip/reconnect coverage.
 - [ ] Implement GENSAE checkpoint-history reconstruction before advertising it:
   the existing core snapshot captures its concrete built-in electrical solver,
   and the new custom adapter deliberately reports unsupported rather than

@@ -23,8 +23,8 @@ import com.interpss.dstab.mach.*;
 /** Field-current ports and composed-exciter evidence, not complete model acceptance. */
 public class GensaeFieldSmibTest extends CorePluginTestSetup {
     private static final List<String> EXC_KEYS=List.of("Measured voltage","First lead-lag","Second lead-lag","Regulator output","Feedback");
-    private record Fixture(DynamicSimuAlgorithm algorithm,GensaeMachine machine,Machine reference) {}
-    private static Fixture load(String rawText,String input,double step,boolean fault,Path directory)throws Exception {
+    record Fixture(DynamicSimuAlgorithm algorithm,GensaeMachine machine,Machine reference) {}
+    static Fixture load(String rawText,String input,double step,boolean fault,Path directory)throws Exception {
         Files.createDirectories(directory);Path raw=directory.resolve("network.raw"),dyr=directory.resolve("dynamic.dyr");
         Files.writeString(raw,rawText);Files.writeString(dyr,input);
         var context=new PSSEMultiFileLoader().loadDStab(raw.toString());var net=context.getDStabilityNet();
@@ -39,7 +39,7 @@ public class GensaeFieldSmibTest extends CorePluginTestSetup {
         assertTrue(algorithm.initialization());
         return new Fixture(algorithm,assertInstanceOf(GensaeMachine.class,net.getMachine("Bus1-mach1")),net.getMachine("Bus2-mach1"));
     }
-    private static LinkedHashMap<String,Double> snapshot(Fixture f,double time) {
+    static LinkedHashMap<String,Double> snapshot(Fixture f,double time) {
         var m=f.machine();var values=new LinkedHashMap<String,Double>();
         var v=m.getDStabBus().getVoltage();var current=m.getIgen().subtract(v.multiply(m.getYgen()));var power=v.multiply(current.conjugate());
         values.put("time_s",time);values.put("EP_Q",m.getEq1());values.put("PSIQ_PP",-m.getPsiq11());values.put("PSIK_D",m.getPsikd());

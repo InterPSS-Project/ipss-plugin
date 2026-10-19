@@ -2,6 +2,24 @@
 
 ## Current checkpoint
 
+GENSAE composed-recovery follow-up: eighteen three-second GENSAE/ESST1A/TGOV1
+profiles now have thirty-six raw-exact cold runs, including both separately
+activated valve bounds, field-current limiting/ceiling, compensation and
+50/100/200 MVA. Eight coupled states and all initial fields have fixed profile
+bounds; seven dominant state errors refine under step halving. Explicit
+recorded-speed and algebraic governor checks are separate from coupled parity.
+The longer runs expose nonshrinking washout, angle and coupled governor-state
+residuals; these four states remain diagnostics, not accepted with enlarged
+tolerances. Clock and rounded-stage discriminators do not resolve the gap.
+Lossless compact fixtures reconstruct every original CSV byte and hash.
+See the [composed-recovery evidence and open work](benchmarks/gensae-composed-recovery-2026-10-19.md).
+Final gates pass 48 focused, 410 plugin-core and 1,760 scoped SMIB/model/solver
+tests with zero failures/errors and only existing skips, plus 35 offline probe
+and six wording checks. Source reconciliation covers 1,854 Java/POM files and
+144 selected fixture parts. The private evidence seal retains the raw repeats,
+source hashes, replay diagnostics and terminal reports. No full Texas2k dynamic
+simulations are run.
+
 GENSAE field-current/composed ESST1A follow-up: verify twenty-two native
 profiles from forty-four raw-exact cold runs, including active field-current
 limits, compensation and a current-derated ceiling. Correct the ESST1A washout

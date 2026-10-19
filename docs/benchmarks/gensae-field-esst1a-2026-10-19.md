@@ -73,7 +73,10 @@ GENROU/GENSAE and ANDES/PowerWorld ESST1A/EXST1 bounds remain unchanged.
 - [x] Finish final registered SMIB/core gates and source reconciliation.
 - [ ] Establish complete instantaneous event-side coupled voltage/P/Q/EFD parity.
 - [ ] Expand selector, auxiliary-limiter, zero-time and reconnect coverage.
-- [ ] Add longer multi-swing and composed-governor profiles.
+- [x] Add longer multi-swing and composed-governor profiles; see the
+  [three-second matrix and diagnostics](gensae-composed-recovery-2026-10-19.md).
+- [ ] Resolve the longer-run washout, angle and coupled governor-state discrepancies
+  before claiming complete composed-trajectory acceptance.
 - [ ] Implement GENSAE checkpoint-history reconstruction.
 - [ ] Execute the independent composed PowerWorld matrix with its stator convention.
 

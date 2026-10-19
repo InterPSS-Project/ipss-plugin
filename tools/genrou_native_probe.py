@@ -53,8 +53,10 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     root = Path.cwd()
     step = float(entered_step)
     assert step in (.0005, .00025)
+    end = cfg.get('end_s', .5)
+    assert end in (.5, 3.)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)
-    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-')
+    assert directory_prefix in ('genrou-native-', 'gensal-native-', 'gensae-field-', 'gensae-recovery-')
     out = root / 'target' / (directory_prefix + tag)
     out.mkdir(exist_ok=False)
     probe_source = Path(probe_source or __file__).resolve()
@@ -117,13 +119,15 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
             if count:
                 allocation[array] = checked('index ' + kind + array, psspy.mdlind(1, '1', kind, array))
         assert tuple(allocation['N' + k] for k in ('CON', 'ICON', 'STATE', 'VAR')) == (
-            len(spec['constants']), len(spec['icons']), len(spec['states']), 0), allocation
+            len(spec['constants']), len(spec['icons']), len(spec['states']), len(spec.get('variables', ()))), allocation
         constants = [checked('constant ' + kind, psspy.dsrval('CON', allocation['CON'] + i)) for i in range(allocation['NCON'])]
         icons = [checked('selector ' + kind, psspy.dsival('ICON', allocation['ICON'] + i)) for i in range(allocation['NICON'])]
         assert constants == [f32(v) for v in spec['constants']] and icons == list(spec['icons'])
         components[kind] = dict(model=spec['model'], layout=allocation, actual_constants=constants, actual_icons=icons)
         for i, name in enumerate(spec['states']):
             checked('state channel ' + kind, psspy.state_channel([-1, allocation['STATE'] + i], name))
+        for i, name in enumerate(spec.get('variables', ())):
+            checked('variable channel ' + kind, psspy.var_channel([-1, allocation['VAR'] + i], name))
     def validate_components():
         for kind, component in components.items():
             a = component['layout']
@@ -146,9 +150,9 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     assert read_constants() == before, 'Initialization changed entered constants'
     validate_components()
     events = []
-    for until in (.05, .1, .5):
+    for until in (.05, .1, end):
         checked('interval', psspy.run(0, until, 1000000, 1, 0))
-        if cfg['apply_fault'] and until < .5:
+        if cfg['apply_fault'] and until in (.05, .1):
             actual = checked('event clock', psspy.dsrval('TIME'))
             if until == .05:
                 checked('fault', psspy.dist_bus_fault(1, 3, 100, [0, 20]))
@@ -171,7 +175,7 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     manifest = dict(status='native-converged-profile' if quality else 'rejected-native-quality',
                     model=cfg['model'], profile=profile, declared_constants=cfg['constants'],
                     actual_constants=before, final_constants=read_constants(), layout=layout,
-                    solved=solved, resistance_machine_pu=cfg['resistance'], step_s=step, end_s=.5,
+                    solved=solved, resistance_machine_pu=cfg['resistance'], step_s=step, end_s=end,
                     events=events, fault=dict(bus=1, impedance_ohm=[0, 20], impedance_system_pu=[0, .2]),
                     sample_count=len(channels['time']), channel_count=len(indices),
                     library_sha256=sha(library), source_document_sha256=sha(document),

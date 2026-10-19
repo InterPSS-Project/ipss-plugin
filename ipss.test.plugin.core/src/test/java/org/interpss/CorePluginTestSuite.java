@@ -689,6 +689,8 @@ import org.junit.platform.suite.api.Suite;
 	org.interpss.core.dstab.GenrouNativeSmibTest.class,
 	org.interpss.core.dstab.GensalNativeSmibTest.class,
 	org.interpss.core.dstab.GensaeFieldSmibTest.class,
+	org.interpss.core.dstab.GensaeRecoverySmibTest.class,
+	org.interpss.core.dstab.NativeFloatCsvCodecTest.class,
 	Esst4bAndesSmibConformanceTest.class,
 	Esst4bIndependentSmibConformanceTest.class,
 	Esac5aAndesSmibConformanceTest.class,
