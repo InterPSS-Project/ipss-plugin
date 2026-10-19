@@ -2810,3 +2810,61 @@ is changed. This is access and startup non-regression evidence. It does not
 close the full-window or six-case accuracy gates. Sources, binaries, commands,
 test summaries, audit snapshots and output comparisons are retained privately
 in `2026-10-18-case2-controller-state-access`.
+
+### Startup-rate consistency and renewable current feedback
+
+The new rate observations are checked against the supplied startup measurements
+before interpreting nonzero derivatives as initialization failures. For all
+48 wind units, the first active-power-order rate equals the declared speed
+multiplier contribution, `Pfilter * (speed - 1) / Tpord`. Its largest magnitude
+is 3.828125 pu/s. Inverting the first nonzero converter-current increment from
+the supplied terminal P and V gives a power-order estimate consistent with
+that first step for all 48 units. The largest difference is 1.35646e-6 pu,
+within the conservative exported-float and state-storage rounding bounds.
+The same inversion against local current and stored state differs by at most
+5.36442e-7 pu. This is a bounded consistency check, not direct observation of
+the reference's internal states. It does not justify suppressing the initial
+power-order derivative to create a flat startup.
+
+A separate set of conditional interventions localizes the subsequent feedback
+error. Current magnitudes are reconstructed as `Ip = P / (V * MBASE)` and
+`Iq = Q / (V * MBASE)` for all 96 converters over the 903 history/prefault
+samples through 0.9 seconds. They rotate with each locally solved bus voltage;
+no supplied voltage phase, bus magnitude, rotor angle or controller state is
+imposed. The network, I-P/Z-Q loads and all synchronous machines and controls
+continue to solve. Original initial states and model parameters are retained.
+The converter controls continue to evaluate, but the selected injected-current
+component follows its recorded boundary. The active-only and reactive-only
+interventions leave the other current component fully coupled.
+
+Replaying the local current records reproduces the original coupled trace:
+maximum voltage difference is 5.55e-15 pu and maximum rotor difference is
+1.85e-12 degrees. Every imposed component is independently reconstructed from
+the physical output and checked against its staged boundary for all 96 units
+and 903 samples; the maximum discrepancy is 2.22e-16 pu.
+
+Errors against the supplied measurements over 0 through 0.9 seconds are:
+
+| Conditional run | Maximum voltage error, pu | Maximum rotor error, degrees | Maximum terminal P error, MW | Maximum terminal Q error, Mvar |
+| --- | ---: | ---: | ---: | ---: |
+| Original coupled control | 0.109927 | 8.102401 | 109.118863 | 94.615855 |
+| Both renewable current components supplied | 0.000298982 | 0.0150753 | 0.183365 | 0.407396 |
+| Active component supplied; reactive component coupled | 0.00567977 | 0.0510230 | 0.474268 | 4.592817 |
+| Reactive component supplied; active component coupled | 0.0126846 | 0.338512 | 34.335895 | 8.745456 |
+
+These interventions associate the dominant coupled discrepancy with renewable
+current feedback and make the active-current path the next investigation
+priority. They do not establish which equation, discrete transition or network
+sampling rule is responsible. Reactive-only replay still leaves the largest
+active-power discrepancy at unit 1082/1, reaching 34.335895 MW at 0.9 seconds.
+Active-only replay leaves the largest voltage and reactive-power errors at
+unit 8099/1, consistent with the previously identified zero-Q recovery-selector
+difference. The effects of the two interventions are not additive.
+
+No replay is a coupled-system acceptance result. The 0.002-degree prefault
+rotor limit is still exceeded, the complete prefault interval and fault are
+not covered by these probes, and no production equation or acceptance limit
+changes in this slice. Full-window and six-case acceptance remain open.
+Startup-rate bounds, exact producer and analyzer sources, frozen binaries,
+inputs, raw traces, component-binding checks and all-channel metrics are
+retained privately in `2026-10-18-case2-current-feedback-localization`.
