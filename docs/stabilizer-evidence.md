@@ -8,6 +8,8 @@ Thirteen mappings have model-specific comparison links: eight native reference s
 
 PSS6C/PSS7C native import admits exactly 34/38 values. The PowerWorld-only Tpgfilt extension remains available through the builder, not inferred by the native reader. PssCanonicalNativeSchemaTest guards rejection, attachment and compensation-tail mapping; four new cold runs reproduce every raw value of the existing two native references. See [schema separation evidence](benchmarks/pss-canonical-native-schema-2026-10-19.md).
 
+PssCompensationBaseTest and PssCompensationNativeConformanceTest add non-unit voltage/MVA-base guards, the source-backed PSS6C negative-input cascade correction and PSS7C native ramp-tail observation mapping without changing its solver storage. Eight profiles from sixteen cold native runs score every stabilizer state/output in recorded-input replay; imported fault checks are separate from complete coupled parity. See [compensation/canonical evidence](benchmarks/pss-compensation-canonical-2026-10-19.md).
+
 All other focused checks below use DStabNetworkBuilderStabilizerTest.
 
 | InterPSS mapping | Source PTI cell | Oracle | Scope | DYR fixture | Comparison | Checkpoint | Limitation |

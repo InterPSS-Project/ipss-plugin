@@ -2,6 +2,17 @@
 
 ## Current checkpoint
 
+PSS6C/PSS7C compensation/canonical follow-up: correct machine impedance-base
+conversion, PSS6C's published negative-input integrator cascade and PSS7C's
+observation-only pure-lag coordinate mapping. Sixteen cold native runs add
+eight matched/half-step profiles at 50 and 200 MVA. Full-row state/output
+replay, physical nameplate-base guards and eight strict-import faults pass.
+Final validation on baseline `100ffc099` passes 107 focused, 406 plugin-core
+and 1,579 scoped SMIB/model/solver checks, with zero failures/errors and only
+existing skips. Source/reference/report hashes retain this scoped correction;
+complete coupled parity and further selector/limit/lifecycle profiles remain open. See the
+[compensation/canonical checklist](benchmarks/pss-compensation-canonical-2026-10-19.md).
+
 PSS6C/PSS7C native schema separation: exact 34/38-value native records are
 now distinct from the 35/39-value PowerWorld builder layouts. Two schema
 assertions fail before the fix; native compensation-tail ordering and vendor
@@ -1293,6 +1304,12 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
     histories, including all states and raw event-side rows. Final 100 focused,
     406 plugin-core and 1,572 SMIB/model/solver checks pass with existing skips
     only. Complete selector/limit/lifecycle and coupled event parity remain open.
+  - [x] Correct PSS6C negative-input cascaded canonical equations, both
+    compensated impedance-base conversions and PSS7C pure-lag observation.
+    Sixteen new cold runs add eight two-step state/output replay profiles;
+    source-backed unit and strict imported fault checks pass. Final 107
+    focused, 406 plugin-core and 1,579 scoped SMIB/model/solver checks pass
+    with existing skips only; complete model/coupled parity remains open.
 - [ ] Complete the renewable evidence inventory and remaining model profiles.
 
 See the [source discrepancy, evidence scope and validation report](benchmarks/stabilizer-evidence-audit-2026-10-17.md).

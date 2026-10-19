@@ -319,12 +319,14 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         Complex terminalVoltage = machine.getDStabBus().getVoltage();
         Complex terminalCurrent = machine.getIgen()
                 .subtract(terminalVoltage.multiply(machine.getYgen()));
-        Complex power = terminalVoltage.multiply(terminalCurrent.conjugate())
-                .divide(machine.getIMultiFactor());
+        Complex power = terminalVoltage.multiply(terminalCurrent.conjugate());
+        // Xcomp is an impedance: current conversion alone omits the voltage
+        // base ratio when machine nameplate and network nominal voltage differ.
+        double networkXcomp = xcomp * machine.getZMultiFactor();
         double magnitude = terminalVoltage.abs();
         if (magnitude == 0.0) return Complex.ZERO;
-        return new Complex(magnitude + power.getImaginary() * xcomp / magnitude,
-                power.getReal() * xcomp / magnitude);
+        return new Complex(magnitude + power.getImaginary() * networkXcomp / magnitude,
+                power.getReal() * networkXcomp / magnitude);
     }
 
     private static double compensatedVoltageAngle(Machine machine, double xcomp) {
@@ -376,7 +378,13 @@ public final class Ieee2016PSS7CStabilizer extends AnnotateStabilizer
         states.put("input2Washout2", active[W22]);
         states.put("input2Transducer", active[L2]);
         for (int i = 0; i < RAMP_STATE_COUNT; i++) {
-            states.put("rampTracking" + (i + 1), active[RAMP + i]);
+            // Lead-lag coordinates are already native states. Pure lag tails
+            // store T9 times the published output; transform observation only.
+            boolean lagTail = i >= effectiveData.n()
+                    && i < effectiveData.m() * effectiveData.n()
+                    && effectiveData.t9() > EPS;
+            states.put("rampTracking" + (i + 1), lagTail
+                    ? active[RAMP + i] / effectiveData.t9() : active[RAMP + i]);
         }
         states.put("canonicalIntegrator1", active[C1]);
         states.put("canonicalIntegrator2", active[C2]);

@@ -164,13 +164,12 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         double combined = x1 - x1k - x2Wash;
         dx[UW] = lagDerivative(combined, x[UW], d.td());
         double u = washoutOutput(combined, x[UW], d.td(), d.td());
-        double error = u - x[C1] - x[C2] - x[C3] - x[C4];
+        // Both inputs of the canonical summing junction are negative.
+        double error = -u - x[C1] - x[C2] - x[C3] - x[C4];
         dx[C1] = integratorDerivative(error, d.ti1());
-        dx[C2] = integratorDerivative(error + x[C1], d.ti2());
-        dx[C3] = integratorDerivative(
-                d.ki3() * (error + x[C1] + x[C2]), d.ti3());
-        dx[C4] = integratorDerivative(
-                d.ki4() * (error + x[C1] + x[C2] + x[C3]), d.ti4());
+        dx[C2] = integratorDerivative(x[C1], d.ti2());
+        dx[C3] = integratorDerivative(d.ki3() * x[C2], d.ti3());
+        dx[C4] = integratorDerivative(d.ki4() * x[C3], d.ti4());
         dx[PGEN] = d.tpgfilt() > EPS
                 ? lagDerivative(pgen, x[PGEN], d.tpgfilt()) : 0.0;
         dx[COMP] = d.tcomp() > EPS ? (rawComp - x[COMP]) / d.tcomp() : 0.0;
@@ -183,7 +182,7 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         double x2k = lagOutput(d.ks2() * vsi2, x[X2K], d.t2());
         double combined = x1 - x1k - washoutOutput(x2k, x[X2W], d.macc(), d.t4());
         double u = washoutOutput(combined, x[UW], d.td(), d.td());
-        double error = u - x[C1] - x[C2] - x[C3] - x[C4];
+        double error = -u - x[C1] - x[C2] - x[C3] - x[C4];
         double y = d.k0() * error + d.k1() * x[C1] + d.k2() * x[C2]
                 + d.k3() * x[C3] + d.k4() * x[C4];
         return clamp(d.ks() * y, d.vstmax(), d.vstmin());
@@ -268,12 +267,14 @@ public final class Ieee2016PSS6CStabilizer extends AnnotateStabilizer
         Complex terminalVoltage = machine.getDStabBus().getVoltage();
         Complex terminalCurrent = machine.getIgen()
                 .subtract(terminalVoltage.multiply(machine.getYgen()));
-        Complex power = terminalVoltage.multiply(terminalCurrent.conjugate())
-                .divide(machine.getIMultiFactor());
+        Complex power = terminalVoltage.multiply(terminalCurrent.conjugate());
+        // Xcomp is an impedance: current conversion alone omits the voltage
+        // base ratio when machine nameplate and network nominal voltage differ.
+        double networkXcomp = xcomp * machine.getZMultiFactor();
         double magnitude = terminalVoltage.abs();
         if (magnitude == 0.0) return Complex.ZERO;
-        return new Complex(magnitude + power.getImaginary() * xcomp / magnitude,
-                power.getReal() * xcomp / magnitude);
+        return new Complex(magnitude + power.getImaginary() * networkXcomp / magnitude,
+                power.getReal() * networkXcomp / magnitude);
     }
 
     private static double compensatedVoltageAngle(Machine machine, double xcomp) {
