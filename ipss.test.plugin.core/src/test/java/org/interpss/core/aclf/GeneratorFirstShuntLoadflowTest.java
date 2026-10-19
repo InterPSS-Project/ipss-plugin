@@ -193,6 +193,36 @@ Q
                 v, q, 0.);
     }
 
+    @Test void fixedReactiveAllocationAlsoAppliesWithoutSecondaryShunt() throws Exception {
+        checkFixedReactiveAllocationWithoutShunt(.2);
+    }
+
+    @Test void zeroActivePowerFixedReactiveAllocationAlsoAppliesWithoutShunt() throws Exception {
+        checkFixedReactiveAllocationWithoutShunt(0.);
+    }
+
+    private void checkFixedReactiveAllocationWithoutShunt(double p) throws Exception {
+        double v = 1.03;
+        var lf = network(1., 1.06, 0., new Machine(p, -.4, .6, v), new Machine(p, 0., 0., v));
+        var bus = lf.getNetwork().getBus("Bus1");
+        bus.getSwitchedShuntList().clear();
+        var limits = bus.getContributeGenList().stream().map(g -> g.getQGenLimit()).toList();
+        var result = GeneratorFirstShuntLoadflow.solve(lf);
+        assertTrue(result.converged());
+        assertTrue(result.groups().isEmpty());
+        assertEquals(v, bus.getVoltageMag(), 2.e-8);
+        double q = (v*v - v*Math.sqrt(1.-Math.pow(2*p*.1/v, 2)))/.1;
+        assertEquals(q, bus.calNetGenResults().getImaginary(), 2.e-8);
+        assertEquals(q, bus.getContributeGenList().get(0).getGen().getImaginary(), 2.e-8);
+        assertEquals(0., bus.getContributeGenList().get(1).getGen().getImaginary(), 0.);
+        for (int i = 0; i < 2; i++) {
+            var generator = bus.getContributeGenList().get(i);
+            assertEquals(p, generator.getGen().getReal(), 0.);
+            assertSame(limits.get(i), generator.getQGenLimit());
+            assertEquals(v, generator.getDesiredVoltMag(), 0.);
+        }
+    }
+
     @Test void plantAtUpperLimitActivatesSecondary() throws Exception {
         double v = 1.03, total = v*(v-1.)/.1;
         check(network(1., 1.06, 0., new Machine(0, -.2, .05, v), new Machine(0, -.2, .05, v)),

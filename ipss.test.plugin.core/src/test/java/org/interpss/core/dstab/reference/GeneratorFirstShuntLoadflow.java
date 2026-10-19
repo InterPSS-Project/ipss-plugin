@@ -27,6 +27,8 @@ import com.interpss.core.algo.LoadflowAlgorithm;
  * discrete, multiple-shunt and mixed generator-target groups are unsupported.
  * Fixed-Q generators without a primary voltage controller leave the ordinary
  * shunt controller in charge of its own voltage target.
+ * Explicit fixed-Q machine limits also apply to multi-generator buses without
+ * a secondary shunt; allocation preserves their solved aggregate power.
  * As with ordinary load flow, a failed solve can change network voltages;
  * temporary device limits and controls are restored and convergence is cleared.
  */
@@ -61,7 +63,18 @@ public final class GeneratorFirstShuntLoadflow {
                 throw new IllegalArgumentException("Unsupported control group at " + bus.getId());
             groups.add(new Group(bus, generators, shunts.get(0)));
         }
-        if (groups.isEmpty()) return new Result(lf.loadflow(), 1, List.of());
+        if (groups.isEmpty()) {
+            boolean converged = lf.loadflow();
+            if (converged) {
+                try {
+                    allocateFixedReactiveMachines(lf);
+                } catch (RuntimeException failure) {
+                    lf.getNetwork().setLfConverged(false);
+                    throw failure;
+                }
+            }
+            return new Result(converged, 1, List.of());
+        }
         boolean success = false;
         try {
             for (var group : groups) group.prepare();
@@ -74,6 +87,7 @@ public final class GeneratorFirstShuntLoadflow {
                 if (!settled) continue;
                 var results = new ArrayList<GroupResult>();
                 for (var group : groups) results.add(group.finish());
+                allocateFixedReactiveMachines(lf);
                 success = true;
                 return new Result(true, iteration, results);
             }
@@ -82,6 +96,65 @@ public final class GeneratorFirstShuntLoadflow {
             for (var group : groups) group.restore(success);
             if (!success) lf.getNetwork().setLfConverged(false);
         }
+    }
+
+    private static void allocateFixedReactiveMachines(LoadflowAlgorithm lf) {
+        for (var bus : lf.getNetwork().getBusList()) {
+            if (!bus.isActive() || bus.isSwing()) continue;
+            var generators = bus.getContributeGenList().stream().filter(AclfGen::isActive).toList();
+            if (generators.size() < 2 || generators.stream().noneMatch(gen -> {
+                var limit = gen.getQGenLimit();
+                return limit != null && Double.isFinite(limit.getMin())
+                        && limit.getMin() == limit.getMax()
+                        && Math.abs(gen.getGen().getImaginary() - limit.getMin()) > 1.e-9;
+            })) continue;
+            var limits = generators.stream().map(AclfGen::getQGenLimit).toList();
+            limits.forEach(GeneratorFirstShuntLoadflow::checkLimits);
+            var powers = generators.stream().map(AclfGen::getGen).toList();
+            double target = powers.stream().mapToDouble(Complex::getImaginary).sum();
+            if (!allocatePhysicalReactivePower(generators, limits, powers, target))
+                throw new IllegalStateException("Fixed-Q machine allocation failed at " + bus.getId());
+        }
+    }
+
+    private static boolean allocatePhysicalReactivePower(List<? extends AclfGen> generators,
+            List<LimitType> limits, List<Complex> powers, double target) {
+        // Source-record zero intervals are fixed Q, not unspecified limits.
+        // Compute first so an infeasible allocation cannot partially modify devices.
+        double[] q = new double[generators.size()];
+        for (int i = 0; i < q.length; i++) {
+            double value = generators.get(i).getGen().getImaginary();
+            if (!Double.isFinite(value)) return false;
+            q[i] = Math.max(limits.get(i).getMin(), Math.min(limits.get(i).getMax(), value));
+        }
+        for (int pass = 0; pass <= q.length; pass++) {
+            double residual = target;
+            for (double value : q) residual -= value;
+            if (Math.abs(residual) <= 1.e-9) {
+                for (int i = 0; i < q.length; i++)
+                    generators.get(i).setGen(new Complex(powers.get(i).getReal(), q[i]));
+                return true;
+            }
+            double weight = 0.;
+            int eligible = 0;
+            for (int i = 0; i < q.length; i++) {
+                if (!hasPhysicalHeadroom(q[i], limits.get(i), residual)) continue;
+                weight += Math.abs(powers.get(i).getReal());
+                eligible++;
+            }
+            if (eligible == 0) return false;
+            for (int i = 0; i < q.length; i++) {
+                if (!hasPhysicalHeadroom(q[i], limits.get(i), residual)) continue;
+                double fraction = weight > 0. ? Math.abs(powers.get(i).getReal()) / weight : 1. / eligible;
+                q[i] = Math.max(limits.get(i).getMin(),
+                        Math.min(limits.get(i).getMax(), q[i] + residual * fraction));
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasPhysicalHeadroom(double q, LimitType limit, double residual) {
+        return residual > 0. ? q < limit.getMax() : q > limit.getMin();
     }
 
     private static final class Group {
@@ -181,7 +254,7 @@ public final class GeneratorFirstShuntLoadflow {
             restoreLimits();
             bus.setGenQ(plantQ);
             bus.allocateContributeGenQ(1.e-9);
-            if (!allocatePhysicalReactivePower(plantQ))
+            if (!allocatePhysicalReactivePower(generators, limits, powers, plantQ))
                 throw new IllegalStateException("Physical machine allocation failed at " + bus.getId());
             double sum = 0.;
             for (int i = 0; i < generators.size(); i++) {
@@ -197,48 +270,6 @@ public final class GeneratorFirstShuntLoadflow {
             boolean limited = plantQ <= qMin + 1.e-10 || plantQ >= qMax - 1.e-10;
             bus.setGenCode(limited ? AclfGenCode.GEN_PQ : AclfGenCode.GEN_PV);
             return new GroupResult(bus.getId(), generators.size(), bus.getVoltageMag(), sum, initialB, b);
-        }
-
-        boolean allocatePhysicalReactivePower(double target) {
-            // This fixture has explicit source-record limits. In particular, a
-            // zero interval is fixed Q, not the core's unspecified-limit marker.
-            for (int i = 0; i < generators.size(); i++) {
-                var gen = generators.get(i);
-                double q = gen.getGen().getImaginary();
-                if (!Double.isFinite(q)) return false;
-                var limit = limits.get(i);
-                gen.setGen(new Complex(powers.get(i).getReal(),
-                        Math.max(limit.getMin(), Math.min(limit.getMax(), q))));
-            }
-            for (int pass = 0; pass <= generators.size(); pass++) {
-                double residual = target;
-                for (var gen : generators) residual -= gen.getGen().getImaginary();
-                if (Math.abs(residual) <= 1.e-9) return true;
-                double weight = 0.;
-                int eligible = 0;
-                for (int i = 0; i < generators.size(); i++) {
-                    if (!hasPhysicalHeadroom(i, residual)) continue;
-                    weight += Math.abs(powers.get(i).getReal());
-                    eligible++;
-                }
-                if (eligible == 0) return false;
-                for (int i = 0; i < generators.size(); i++) {
-                    if (!hasPhysicalHeadroom(i, residual)) continue;
-                    var gen = generators.get(i);
-                    var limit = limits.get(i);
-                    double fraction = weight > 0.
-                            ? Math.abs(powers.get(i).getReal()) / weight : 1. / eligible;
-                    double q = gen.getGen().getImaginary() + residual * fraction;
-                    gen.setGen(new Complex(powers.get(i).getReal(),
-                            Math.max(limit.getMin(), Math.min(limit.getMax(), q))));
-                }
-            }
-            return false;
-        }
-
-        boolean hasPhysicalHeadroom(int index, double residual) {
-            double q = generators.get(index).getGen().getImaginary();
-            return residual > 0. ? q < limits.get(index).getMax() : q > limits.get(index).getMin();
         }
 
         double voltageSquared() {

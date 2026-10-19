@@ -4178,3 +4178,99 @@ reference measurement, parameter or comparison threshold was changed to
 correct reporting. Completed tests, preparation attempts, failed trajectories,
 reference checks and the observation-invariance probe are retained privately
 in `2026-10-19-sixcase-preparation-and-readonly-reporting`.
+
+## Fixed reactive allocation outside shunt groups (2026-10-19)
+
+The explicit source-limit allocation now also covers multi-generator buses
+without a coordinated secondary shunt. A fixed-Q machine retains its specified
+interval, including an explicit zero interval. Remaining reactive power is
+redistributed within the other machines' physical capabilities, retaining the
+existing active-power weighting and using equal shares when eligible active
+powers are all zero. Allocation is computed before it is applied; infeasible
+allocation fails explicitly. This remains an opt-in benchmark preparation
+policy, not a change to the generic core's unspecified-zero-limit convention.
+
+Two analytical tests reproduced the error before the correction: an explicitly
+zero-Q machine incorrectly received half of the solved bus Q. Both now pass,
+along with the preceding sixteen generator/shunt preparation tests. The new
+six-case preparation completes and removes all fixed-Q limit violations:
+
+| Case | Fixed-Q violations before | Fixed-Q violations after |
+|---|---:|---:|
+| 1 | 0 | 0 |
+| 2 | 0 | 0 |
+| 3 | 24 | 0 |
+| 4 | 19 | 0 |
+| 5 | 16 | 0 |
+| 6 | 19 | 0 |
+
+Across all 12,000 solved bus instances, voltage magnitudes and angles are
+unchanged exactly. Every generator's active power is unchanged. The largest
+change in aggregate bus Q is 1.42e-14 Mvar. The prior observed cold-voltage
+agreement therefore remains unchanged, with worst error 1.82629e-6 pu in
+Case 2. Source Q-limit excesses remain at the slack machine, bus 7389 unit 1,
+in Cases 1, 4, 5 and 6; the slack balance is preserved and these excesses are
+reported separately. This is power-flow preparation evidence, not proof of
+dynamic initialization or complete event acceptance.
+
+The cold comparison also checks observed machine terminal P/Q from all 36
+supplied event records. Worst differences are 0.00163657 MW and 0.00224858 Mvar.
+These are comparisons of the unconverted local load flow with the supplied
+converted cold measurements; they do not establish exact conversion equality.
+
+## Full-system rerun with read-only reporting (2026-10-19)
+
+The corrected 1 ms Case 2 bus-6307 run completes all ten seconds, with all
+10,005 samples and 4,810 physical channels retained. Runtime and input hashes
+match before and after execution. Comparison preserves both event sides and
+uses the full ten-second reference range. The supplied-reference results are:
+
+| Required quantity and period | Passing channels | Worst error | Limit |
+|---|---:|---:|---:|
+| Voltage prefault NRMAE | 2,000/2,000 | 0.000463305 | 0.001 |
+| Voltage fault/postfault NRMAE | 1,995/2,000 | 0.0137413 | 0.005 |
+| Generator-speed prefault NRMAE | 103/103 | 0.0000638304 | 0.001 |
+| Generator-speed fault/postfault NRMAE | 103/103 | 0.000818356 | 0.005 |
+| Rotor prefault maximum absolute error | 102/103 | 0.0285314 degrees | 0.02 degrees |
+| Rotor full-window RMSE | 102/103 | 0.203219 degrees | 0.2 degrees |
+
+The worst postfault voltage error is at bus 1011, the prefault rotor error is
+at bus 1051 unit 1, and the full-window rotor error is at bus 1050 unit 1.
+Range-normalized RMS errors are retained separately: voltage passes all
+prefault channels and 1,992/2,000 fault/postfault channels; speed passes all
+channels in both periods. Speed remains a provisional frequency measure,
+pending clarification of the required frequency channels. This rerun fails
+the requested numerical gates and supersedes the earlier mutating-observer
+run as the current diagnostic control. No failing channel is omitted.
+
+The shared cold voltage, rotor-angle, field-voltage and speed observations in
+the supplied 0.5 ms and 1 ms profiles are identical. Their shared active and
+reactive powers differ only slightly under their respective output units
+and binary32 storage. This check covers only the shared measured devices;
+it does not prove equality of unobserved controls or disturbed trajectories.
+
+The corresponding read-only 0.5 ms run also completes all ten seconds and
+20,005 samples against the original selected-channel reference. All five
+voltage channels and all five speed channels pass both period gates under
+both mean-absolute and RMS normalization. Worst fault/postfault NRMAEs are
+0.00111150 for voltage and 0.00215746 for speed. Prefault rotor maximum error
+is 0.00332473 degrees, but all five full-window rotor channels fail: the worst
+RMSE is 4.53783 degrees at bus 6244 unit 1. The preceding mutating-observer
+run had 4.55358 degrees at that machine. Correcting observation therefore
+does not remove this original-reference rotor discrepancy.
+
+A separate 1.2-second discriminator calls the existing machine
+`updateAttributes(false)` for every active synchronous machine after each
+converged dynamic network endpoint. This tests whether explicitly refreshing
+the final electrical currents resolves the read-only mismatch. It does not:
+prefault rotor maximum error grows to 10.9702 degrees at bus 1051 unit 1,
+and none of the 2,000 prefault voltage channels passes the RMS gate. The
+candidate is rejected, with no production change. The initial compilation
+failure and corrected discriminator are retained with the complete outputs.
+
+The eighteen preparation tests, six-case source-bound audits, both complete
+read-only simulations, shared-reference cold checks and rejected endpoint
+discriminator are retained privately in
+`2026-10-19-fixed-q-allocation-and-readonly-trajectories`. All six cases and all
+36 disturbances remain in scope; these results do not establish complete
+dynamic acceptance or the performance target.
