@@ -1,6 +1,6 @@
 # Stabilizer verification evidence
 
-Generated from StabilizerEvidenceInventory. The fifteen approved source-list rows in the May 2026 catalog resolve to fourteen distinct InterPSS stabilizer mappings; the PSLF PSS2C row is not a second verified native model.
+Generated from StabilizerEvidenceInventory. The fifteen approved source-list rows in the May 2026 catalog resolve to thirteen distinct InterPSS stabilizer mappings, plus separate typed PSSSB evidence; the PSLF PSS2C row is not a second verified native model.
 
 The supplied PDF's twelve filled PTI cells contain nine distinct reference simulator names. PSS1A maps to IEEEST and PSSSB maps to PSS2A in that column; PSS3C, PSS4C and PSS5C have blank PTI cells. These source facts are not inferred DYR aliases or claims that later installed releases lack those models. Existing implementation and benchmark links are retained separately, including supplemental models.
 
@@ -26,5 +26,5 @@ All other focused checks below use DStabNetworkBuilderStabilizerTest.
 | PSS5C | (blank) | POWERWORLD | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_pss5c.dyr | Pss5cIndependentSmibConformanceTest | smib-genrou-esst1a-pss5c | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |
 | PSS6C | PSS6C | PSSE | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_pss6c.dyr | Pss6cPsseSmibConformanceTest | smib-genrou-esst1a-pss6c/psse.csv | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |
 | PSS7C | PSS7C | PSSE | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_pss7c.dyr | Pss7cPsseSmibConformanceTest | smib-genrou-esst1a-pss7c/psse.csv | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |
-| PSSSB | PSS2A | POWERWORLD | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_psssb.dyr | PsssbIndependentSmibConformanceTest | smib-genrou-esst1a-psssb | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |
+| PSSSB | (blank) | POWERWORLD | TYPED_MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_psssb.dyr | PsssbIndependentSmibConformanceTest | smib-genrou-esst1a-psssb | Typed PowerWorld model, not native DYR; fixture is retained as reference-tool input only. Existing short-window comparison is unchanged; complete selector/lifecycle coverage remains open. |
 | ST2CUT | ST2CUT | PSSE | MODEL_SPECIFIC_COMPARISON | SMIB_v33_genrou_esst1a_st2cut.dyr | St2cutPsseSmibConformanceTest | smib-genrou-esst1a-st2cut/psse.csv | Profile-specific comparison only; selectors, active limits, lifecycle and cold provenance need individual review. |

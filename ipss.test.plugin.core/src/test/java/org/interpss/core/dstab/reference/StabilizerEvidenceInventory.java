@@ -14,7 +14,7 @@ import org.interpss.core.dstab.reference.GeneratorGovernorEvidenceInventory.Orac
 public final class StabilizerEvidenceInventory {
     private StabilizerEvidenceInventory() {}
 
-    public enum ReferenceScope { MODEL_SPECIFIC_COMPARISON, EQUIVALENT_SIGNAL_PLAYBACK }
+    public enum ReferenceScope { MODEL_SPECIFIC_COMPARISON, EQUIVALENT_SIGNAL_PLAYBACK, TYPED_MODEL_SPECIFIC_COMPARISON }
 
     public record Entry(Evidence evidence, ReferenceScope scope, String limitation) {
         public String model() { return evidence.model(); }
@@ -42,7 +42,11 @@ public final class StabilizerEvidenceInventory {
             powerWorld("PSS5C","Pss5cIndependentSmibConformanceTest"),
             nativeReference("PSS6C","Pss6cPsseSmibConformanceTest"),
             nativeReference("PSS7C","Pss7cPsseSmibConformanceTest"),
-            powerWorld("PSSSB","PsssbIndependentSmibConformanceTest"),
+            new Entry(new Evidence("PSSSB", "DStabNetworkBuilderStabilizerTest",
+                    "PsssbIndependentSmibConformanceTest", Oracle.POWERWORLD,
+                    "smib-genrou-esst1a-psssb", "SMIB_v33_genrou_esst1a_psssb.dyr"),
+                    ReferenceScope.TYPED_MODEL_SPECIFIC_COMPARISON,
+                    "Typed PowerWorld model, not native DYR; fixture is retained as reference-tool input only. Existing short-window comparison is unchanged; complete selector/lifecycle coverage remains open."),
             nativeReference("ST2CUT","St2cutPsseSmibConformanceTest")
     ).stream().sorted(Comparator.comparing(Entry::model)).toList();
 
@@ -70,7 +74,7 @@ public final class StabilizerEvidenceInventory {
     public static String markdown() {
         StringBuilder text=new StringBuilder("# Stabilizer verification evidence\n\n")
                 .append("Generated from StabilizerEvidenceInventory. The fifteen approved source-list rows ")
-                .append("in the May 2026 catalog resolve to fourteen distinct InterPSS stabilizer mappings; ")
+                .append("in the May 2026 catalog resolve to thirteen distinct InterPSS stabilizer mappings, plus separate typed PSSSB evidence; ")
                 .append("the PSLF PSS2C row is not a second verified native model.\n\n")
                 .append("The supplied PDF's twelve filled PTI cells contain nine distinct reference simulator names. ")
                 .append("PSS1A maps to IEEEST and PSSSB maps to PSS2A in that column; PSS3C, PSS4C and ")

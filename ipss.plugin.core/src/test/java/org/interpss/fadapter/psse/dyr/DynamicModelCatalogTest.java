@@ -215,8 +215,9 @@ class DynamicModelCatalogTest {
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSSSB"))
                 .findFirst().orElseThrow().isImplementedExactly());
-        assertEquals(Set.of(30), DynamicModelCatalog.find("PSSSB").orElseThrow()
-                .recordSchema().acceptedParameterCounts());
+        assertTrue(DynamicModelCatalog.find("PSSSB").isEmpty(), "Typed extension is not a native DYR name");
+        assertEquals("PSS2A", WeccApprovedDynamicModelCatalog.stabilizers().stream()
+                .filter(row -> row.catalogName().equals("PSSSB")).findFirst().orElseThrow().interpssModel());
         assertTrue(WeccApprovedDynamicModelCatalog.stabilizers().stream()
                 .filter(row -> row.catalogName().equals("PSS6C"))
                 .findFirst().orElseThrow().isImplementedExactly());

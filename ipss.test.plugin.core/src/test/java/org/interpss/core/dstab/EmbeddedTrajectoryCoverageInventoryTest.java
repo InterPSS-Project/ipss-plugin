@@ -101,14 +101,15 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
         assertEquals(15,rows.size());
         Set<String> required=rows.stream().map(row -> row.interpssModel()).collect(Collectors.toSet());
         var entries=StabilizerEvidenceInventory.entries();
-        assertEquals(14,required.size());
-        assertEquals(required,entries.stream().map(row -> row.model()).collect(Collectors.toSet()));
-        assertEquals(required.size(),entries.size(),"Do not count source-list aliases twice");
+        assertEquals(13,required.size());
+        var expected = new java.util.HashSet<>(required);
+        expected.add("PSSSB"); // Additional typed evidence, not an invented native mapping.
+        assertEquals(expected,entries.stream().map(row -> row.model()).collect(Collectors.toSet()));
+        assertEquals(expected.size(),entries.size(),"Do not count source-list aliases twice");
         Set<Class<?>> registered=Set.copyOf(Arrays.asList(
                 CorePluginTestSuite.class.getAnnotation(SelectClasses.class).value()));
         for(var row:entries) {
             var e=row.evidence();
-            var descriptor=DynamicModelCatalog.find(e.model()).orElseThrow();
             assertTrue(registered.contains(e.focusedTestClass()),e.model()+" focused test is not registered");
             assertTrue(registered.contains(e.trajectoryTestClass()),e.model()+" comparison is not registered");
             for(Class<?> test:List.of(e.focusedTestClass(),e.trajectoryTestClass())) {
@@ -122,8 +123,16 @@ public class EmbeddedTrajectoryCoverageInventoryTest {
             }
             var records=PsseDyrRecordReader.read(e.fixture()).stream()
                     .filter(record -> record.canonicalModelName().equals(e.model())).toList();
-            assertEquals(1,records.size(),e.model()+" fixture must contain its native mapping exactly once");
-            assertTrue(descriptor.recordSchema().accepts(records.get(0).parameterCount()),e.model());
+            assertEquals(1,records.size(),e.model()+" fixture must retain its source record exactly once");
+            if (row.scope()==StabilizerEvidenceInventory.ReferenceScope.TYPED_MODEL_SPECIFIC_COMPARISON) {
+                assertEquals("PSSSB", e.model());
+                assertTrue(DynamicModelCatalog.find(e.model()).isEmpty());
+                assertEquals(30, records.get(0).parameterCount());
+                assertTrue(row.sourcePsseNames().isEmpty());
+            } else {
+                var descriptor=DynamicModelCatalog.find(e.model()).orElseThrow();
+                assertTrue(descriptor.recordSchema().accepts(records.get(0).parameterCount()),e.model());
+            }
             e.requireReadableCheckpoint();
             assertFalse(row.limitation().isBlank(),"An evidence link must disclose its scope limitations");
         }

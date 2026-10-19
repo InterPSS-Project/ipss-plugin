@@ -1701,8 +1701,15 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   (six optional skips), with zero failures/errors and no full-system dynamics.
 - [x] Seal and hash-verify 694 source, fixture, checkpoint and regression
   evidence files; record the source-column correction and inventory in one slice.
-- [ ] Add exact PSS1A commercial SMIB evidence and audit PSS1A/PSSSB input
-  dialects independently of the WECC cross-vendor source mapping.
+- [x] Audit the PSSSB input dialect independently of the source mapping:
+  four cold allocation checks distinguish unsupported native PSSSB from native
+  PSS2A; reject the former in the DYR reader and preserve the explicit typed
+  builder and unchanged PowerWorld SMIB comparison. See the
+  [PSSSB dialect boundary report](benchmarks/psssb-native-typed-boundary-2026-10-19.md).
+- [ ] Complete exact PSS1A commercial SMIB acceptance and its separate native
+  input-dialect audit. Typed playback does not establish native schema support.
+- [ ] Complete typed PSSSB selector, limiter and lifecycle coverage; the existing
+  short-window benchmark is not an exhaustive verification label.
 - [ ] Audit raw artifact versions/cold repeatability and remaining active
   limiter, selector and lifecycle profiles for the stabilizer links.
   - [x] Separate exact native PSS6C/PSS7C widths from PowerWorld-only filter

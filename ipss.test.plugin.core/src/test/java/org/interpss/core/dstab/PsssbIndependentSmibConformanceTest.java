@@ -12,6 +12,8 @@ import java.util.Locale;
 import org.apache.commons.math3.complex.Complex;
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
+import org.interpss.core.dstab.reference.PsssbTypedTestData;
+import org.interpss.fadapter.builder.DStabNetworkBuilder;
 import org.interpss.dstab.control.exc.ieee.y1981.st1.IEEE1981ST1Exciter;
 import org.interpss.dstab.control.pss.psse.psssb.PsssbStabilizer;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
@@ -24,7 +26,7 @@ import com.interpss.dstab.cache.StateMonitor;
 import com.interpss.dstab.mach.Machine;
 import com.interpss.dstab.mach.RoundRotorMachine;
 
-/** Full-solver GENROU + ESST1A + WECC PSSSB comparison against Independent. */
+/** Core GENROU + ESST1A with explicitly typed PowerWorld PSSSB comparison. */
 public class PsssbIndependentSmibConformanceTest {
     private static final double STEP = 0.0005;
     private static final Path CASE = Path.of("testData", "adpter", "psse", "v33", "SMIB");
@@ -35,8 +37,10 @@ public class PsssbIndependentSmibConformanceTest {
         IpssCorePlugin.init();
         var context = new PSSEMultiFileLoader().loadDStab(
                 CASE.resolve("SMIB_v33.raw").toString(),
-                CASE.resolve("SMIB_v33_genrou_esst1a_psssb.dyr").toString());
+                CASE.resolve("SMIB_v33_genrou_esst1a.dyr").toString());
         var network = context.getDStabilityNet();
+        assertTrue(new DStabNetworkBuilder(network).addPsssb("Bus1", "1",
+                PsssbTypedTestData.benchmark()) != null);
         var algorithm = context.getDynSimuAlgorithm();
         assertTrue(algorithm.getAclfAlgorithm().loadflow());
         algorithm.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
