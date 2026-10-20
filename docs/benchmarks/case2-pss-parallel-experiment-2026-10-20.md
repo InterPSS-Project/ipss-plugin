@@ -1,5 +1,8 @@
 # Case 2 controller and parallel-network experiment
 
+The goal now requires **one CPU core**. The parallel timings in this historical
+experiment do not qualify; see the [single-core measurements](case2-single-core-efficiency-2026-10-20.md).
+
 The combined experimental candidate reaches **23.6035 seconds for ten simulated
 seconds**, at the unchanged **1e-5 maximum-component voltage tolerance** and
 **1/240-second integration step**. The **15-second target remains unachieved**.

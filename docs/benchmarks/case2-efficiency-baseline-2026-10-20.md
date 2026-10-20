@@ -1,6 +1,9 @@
 # Case 2 efficiency baseline at 1e-5 network tolerance
 
-The current target is **15 seconds for ten simulated seconds**, reduced from the
+The current target is **15 seconds for ten simulated seconds on one CPU core**.
+These earlier measurements predate CPU-affinity enforcement; see the
+[single-core measurements](case2-single-core-efficiency-2026-10-20.md).
+The elapsed-time target was reduced from the
 20-second target used when collecting this baseline. It has not been achieved.
 See the [direct-controller experiment](case2-direct-controller-experiment-2026-10-20.md)
 for the subsequent measurements. This check uses the compiled production classes, a quarter-cycle
