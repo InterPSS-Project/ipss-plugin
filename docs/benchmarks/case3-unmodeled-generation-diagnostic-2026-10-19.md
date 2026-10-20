@@ -27,6 +27,14 @@ outputs. Whether these units were netted, disconnected, or given additional
 models remains an open input question; no replacement model is inferred.
 Exact manual provenance remains in private evidence.
 
+The supplied Case 3 removal commands explicitly remove the generator model
+for each of these two units. They do not establish whether generation was
+also netted or disconnected. The other 160 commands request removal of
+stabilizers or turbine-load controllers at 80 converter units. Those targets
+contain only converter, electrical-controller, and plant-controller records;
+there is no corresponding stabilizer or turbine-load-controller record in
+the supplied DYR. This inventory does not identify a skipped active model.
+
 ## Frozen-source comparison
 
 At each sampled time, an independent network calculation reconstructs the
@@ -58,6 +66,12 @@ ruled out solely from this table, but there is no evidence here to adopt it.
   saved complex voltages by up to 0.0006872 pu at the sampled times. This
   observation/solution discrepancy limits interpretation of the control and
   is not hidden by an offset.
+
+A subsequent [read-only equation audit](case3-network-residual-diagnostic-2026-10-19.md)
+separates this local current imbalance into network stopping error and
+arithmetic effects. It excludes post-solve output refresh as a material
+contributor for the observed prefix; it does not resolve the reference
+trajectory mismatch.
 
 The reproducible program, prefix-equivalence check, numerical solutions,
 channel table, and PNG/PDF figure are retained in the private evidence set
