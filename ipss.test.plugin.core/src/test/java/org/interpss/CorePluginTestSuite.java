@@ -684,6 +684,7 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.adapter.builder.dstab.Pss5cStaticLowTest.class,
     org.interpss.core.dstab.RegfmaLimitNativeTest.class,
     org.interpss.core.adapter.builder.dstab.Oel3cKernelTest.class,
+    org.interpss.core.adapter.builder.dstab.Basoel2KernelTest.class,
     org.interpss.core.adapter.builder.dstab.Oel3cModelTest.class,
     org.interpss.core.dstab.Pss5cNativeSmibTest.class,
     Pss6cPsseSmibConformanceTest.class,

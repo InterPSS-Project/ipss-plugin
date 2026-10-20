@@ -11,7 +11,7 @@ Nine approved source rows include eight native mappings and one explicitly uncon
 | OEL3C | OEL3C | OEL3C | OVER_EXCITATION_LIMITER | loadable, not fully verified | Bounded AC1C summation-port runtime; complete verification is separate. |
 | OEL4C | OEL4C | OEL4C | OVER_EXCITATION_LIMITER | missing | Missing runtime and native import. |
 | OEL5C | OEL5CU1 | OEL5C | OVER_EXCITATION_LIMITER | missing | Preserve the source wrapper identifier; no inferred alias. |
-| BASOEL2 | BASOEL2 | BASOEL2 | OVER_EXCITATION_LIMITER | missing | Missing runtime and native import. |
+| BASOEL2 | BASOEL2 | BASOEL2 | OVER_EXCITATION_LIMITER | missing | Standalone equation/timer foundation; runtime and native import remain missing. |
 | UEL1 | UEL1 | uel1 | UNDER_EXCITATION_LIMITER | loadable, not fully verified | Runtime path present; complete verification is separate. |
 | UEL2 | UEL2 | uel2 | UNDER_EXCITATION_LIMITER | missing | Not interchangeable with UEL2C. |
 | UEL2C | UEL2C | UEL2C | UNDER_EXCITATION_LIMITER | loadable, not fully verified | Runtime path present; complete verification is separate. |

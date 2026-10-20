@@ -122,12 +122,17 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
             allocation['N' + array] = count
             if count:
                 allocation[array] = checked('index ' + kind + array, psspy.mdlind(1, '1', kind, array))
+        reserved_icons = spec.get('reserved_icon_count', 0)
+        if reserved_icons:
+            assert spec['model'] == 'BASOEL2' and reserved_icons == 12 and len(spec['icons']) == 3
         assert tuple(allocation['N' + k] for k in ('CON', 'ICON', 'STATE', 'VAR')) == (
-            len(spec['constants']), len(spec['icons']), len(spec['states']), spec.get('variable_count', len(spec.get('variables', ())))), allocation
+            len(spec['constants']), len(spec['icons']) + reserved_icons, len(spec['states']), spec.get('variable_count', len(spec.get('variables', ())))), allocation
         constants = [checked('constant ' + kind, psspy.dsrval('CON', allocation['CON'] + i)) for i in range(allocation['NCON'])]
         icons = [checked('selector ' + kind, psspy.dsival('ICON', allocation['ICON'] + i)) for i in range(allocation['NICON'])]
-        assert constants == [f32(v) for v in spec['constants']] and icons == list(spec['icons'])
-        components[kind] = dict(model=spec['model'], layout=allocation, actual_constants=constants, actual_icons=icons)
+        assert constants == [f32(v) for v in spec['constants']] and icons[:len(spec['icons'])] == list(spec['icons'])
+        components[kind] = dict(model=spec['model'], layout=allocation, actual_constants=constants, actual_icons=icons[:len(spec['icons'])])
+        if reserved_icons:
+            components[kind].update(reserved_icon_count=reserved_icons,reserved_icons_initial=icons[len(spec['icons']):])
         for i, name in enumerate(spec['states']):
             checked('state channel ' + kind, psspy.state_channel([-1, allocation['STATE'] + i], name))
         for i, name in enumerate(spec.get('variables', ())):
@@ -136,7 +141,11 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
         for kind, component in components.items():
             a = component['layout']
             assert component['actual_constants'] == [checked('constant ' + kind, psspy.dsrval('CON', a['CON'] + i)) for i in range(a['NCON'])]
-            assert component['actual_icons'] == [checked('selector ' + kind, psspy.dsival('ICON', a['ICON'] + i)) for i in range(a['NICON'])]
+            entered_count = len(component['actual_icons'])
+            assert component['actual_icons'] == [checked('selector ' + kind, psspy.dsival('ICON', a['ICON'] + i)) for i in range(entered_count)]
+            if component.get('reserved_icon_count', 0):
+                component['reserved_icons_final'] = [checked('internal selector ' + kind, psspy.dsival('ICON', a['ICON'] + i))
+                                                     for i in range(entered_count, a['NICON'])]
     for bus in (1, 2):
         if record_phasors:
             checked('phasor channels', psspy.voltage_and_angle_channel(

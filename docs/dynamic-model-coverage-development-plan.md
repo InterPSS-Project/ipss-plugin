@@ -2,6 +2,24 @@
 
 ## Current checkpoint
 
+BASOEL2 now has a standalone three-state equation/timer foundation with explicit
+WECC and PowerWorld timer policies. Native import and runtime attachment are
+still missing; the loadable limiter count remains four. Seven profiles at two
+steps were cold-run twice, retaining all 42,140 raw rows. Physical channels
+repeat, but several opaque timer-storage channels do not; whole-export
+repeatability and native timer-dialect acceptance are not claimed. See the
+[BASOEL2 foundation and remaining TODOs](benchmarks/basoel2-foundation-2026-10-19.md).
+
+BASOEL2 slice gates: 134 focused, 431 core and 2,086 scoped SMIB/model tests,
+zero failures/errors and seven existing skips, plus 227 offline checks. Prior
+exports and sealed evidence are unchanged. Coupled BASOEL2 acceptance is open.
+
+- [x] Implement typed BASOEL2 data, continuous equations and explicit timer policies.
+- [x] Check the WECC diagram and PowerWorld pseudocode, including their zero-delay difference.
+- [x] Retain every cold-reference channel and report timer-storage discrepancies.
+- [ ] Resolve native timer and physical-input semantics before runtime promotion.
+- [ ] Add native import, host lifecycle integration and coupled SMIB RMSE acceptance.
+
 OEL3C now has a permanent exact native recorded-input conformance gate: six
 zero-filter cases at two steps retain all 9,030 raw representative rows and pass
 RMSE < 0.001 per tested channel. This is kernel-only acceptance, not full host or
