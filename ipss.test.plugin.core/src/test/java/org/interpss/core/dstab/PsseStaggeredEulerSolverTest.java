@@ -15,6 +15,55 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class PsseStaggeredEulerSolverTest {
+    @Test void roundRotorCurrentsMatchTheAcceptedNetworkVoltage() throws Exception {
+        assertStatorCacheMatchesAcceptedVoltage(loadSubtransient("SMIB_v33_genrou.dyr"));
+    }
+
+    @Test void salientPoleCurrentsMatchTheAcceptedNetworkVoltage() throws Exception {
+        assertStatorCacheMatchesAcceptedVoltage(loadSalient());
+    }
+
+    private void assertStatorCacheMatchesAcceptedVoltage(DynamicSimuAlgorithm algo) throws Exception {
+        var machine = (com.interpss.dstab.mach.impl.DynamicMachineImpl)
+                algo.getNetwork().getMachine("Bus1-mach1");
+        machine.getDStabBus().setVoltage(machine.getDStabBus().getVoltage().multiply(.85));
+        machine.getIxy();
+        double[] initial = differentialStates(machine);
+        var shared = (PsseStaggeredEulerSolver) algo.getSolver();
+        // Accept a visible voltage update in one iteration to expose a stale
+        // pre-solve cache; this tolerance is local to the endpoint-contract test.
+        shared.setNetworkSolutionTolerance(.5);
+        shared.setMinimumNetworkIterations(1);
+        assertTrue(shared.networkSolutionStep());
+        assertTrue(shared.getLastNetworkSolutionDiagnostics().converged());
+        assertEquals(1, shared.getLastNetworkSolutionDiagnostics().iterations());
+        double[] cached = statorCache(machine);
+        machine.getIxy();
+        assertArrayEquals(statorCache(machine), cached, 1.e-12,
+                "derivatives must see currents and air-gap power at the accepted voltage");
+        assertArrayEquals(initial, differentialStates(machine), 0.,
+                "an algebraic endpoint refresh must not advance differential states");
+    }
+
+    private double[] statorCache(com.interpss.dstab.mach.impl.DynamicMachineImpl machine) {
+        if (machine instanceof com.interpss.dstab.mach.impl.RoundRotorMachineImpl round) {
+            var state = round.captureRoundElectricalState();
+            return new double[]{state.Id(), state.Iq(), machine.getPe()};
+        }
+        var state = ((com.interpss.dstab.mach.impl.SalientPoleMachineImpl) machine)
+                .captureSalientElectricalState();
+        return new double[]{state.Id(), state.Iq(), machine.getPe()};
+    }
+
+    private double[] differentialStates(com.interpss.dstab.mach.impl.DynamicMachineImpl machine) {
+        if (machine instanceof com.interpss.dstab.mach.impl.RoundRotorMachineImpl round)
+            return new double[]{round.getEq1(), round.getPsikd(), round.getPsikq(),
+                    round.getEd1(), round.getAngle(), round.getSpeed()};
+        var salient = (com.interpss.dstab.mach.impl.SalientPoleMachineImpl) machine;
+        return new double[]{salient.getEq1(), salient.getPsikd(), salient.getPsiq11(),
+                salient.getAngle(), salient.getSpeed()};
+    }
+
     @Test void salientElectricalRefreshPreservesAnExternallyAdvancedQState() throws Exception {
         var algo = loadSalient();
         var machine = (com.interpss.dstab.mach.impl.SalientPoleMachineImpl)
@@ -49,10 +98,14 @@ class PsseStaggeredEulerSolverTest {
     }
 
     private DynamicSimuAlgorithm loadSalient() throws Exception {
+        return loadSubtransient("SMIB_v33_gensal.dyr");
+    }
+
+    private DynamicSimuAlgorithm loadSubtransient(String dynamicFile) throws Exception {
         IpssCorePlugin.init();
         String base = "testData/adpter/psse/v33/SMIB/";
         var context = new PSSEMultiFileLoader().loadDStab(
-                base + "SMIB_v33.raw", base + "SMIB_v33_gensal.dyr");
+                base + "SMIB_v33.raw", base + dynamicFile);
         var algo = context.getDynSimuAlgorithm();
         assertTrue(algo.getAclfAlgorithm().loadflow());
         algo.setSolver(new PsseStaggeredEulerSolver(algo));

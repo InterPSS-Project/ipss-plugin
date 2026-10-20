@@ -257,6 +257,11 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         if (!super.networkSolutionStep())
             throw new DStabSimuException("Network did not converge to " + converge_tol
                     + " at " + dstabAlgo.getSimuTime());
+        // Injection evaluation precedes the linear solve. Refresh stator-current
+        // and air-gap-power caches at the accepted voltage before derivatives
+        // or upstream controllers consume them, including on endpoint reuse.
+        for (int i = 0; i < machines.size(); i++)
+            if (machineActive.get(i).getAsBoolean()) machines.get(i).getIxy();
         networkEndpointAvailable = true;
         return true;
     }
