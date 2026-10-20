@@ -1,5 +1,17 @@
 # Case 2 compiled controller experiments
 
+**Reproducibility correction:** a subsequent rebuild found that the archived
+typed-ST1 source fails compilation. Its build log confirms failure, while the
+benchmark directory retained an older copied `St1DirectEvaluation.class` without
+the new `advanceZero` method. The runs labeled `st1-typed-kernel` therefore tested
+that older class. Their timing and trajectory observations describe the executed
+binary, but do **not** verify the typed rewrite described below. The focused
+typed-kernel checks likewise do not prove that rewrite. Fresh builds must start
+with an empty class directory and pass before benchmarking. Original evidence is
+retained; this correction supersedes the affected attribution and source claim.
+Fresh builds, corrected verification and the subsequent warm-up protocol are
+documented in [the clean-build follow-up](case2-clean-warm-runtime-2026-10-20.md).
+
 The target remains **10 seconds for ten simulated seconds**, on **one CPU core**,
 with **1e-5 maximum-component voltage tolerance** and **1/240-second steps**.
 Two clean fresh-process measurements of the combined experimental candidate take
