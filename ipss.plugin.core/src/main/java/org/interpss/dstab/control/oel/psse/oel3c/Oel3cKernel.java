@@ -28,6 +28,8 @@ public final class Oel3cKernel {
     }
     public Signals signals(double selectedRawInput){requireInitialized();return signals(state,selectedRawInput);}
     public State rates(double selectedRawInput){requireInitialized();return rates(state,selectedRawInput);}
+    /** Discard an unaccepted trial when an owner is disabled between integration stages. */
+    public void cancelPrediction(){if(start!=null){state=start;start=firstRate=null;}}
 
     /** Atomic predictor/corrector stages; observation never advances integration history. */
     public boolean step(double seconds,int flag,double selectedRawInput) {

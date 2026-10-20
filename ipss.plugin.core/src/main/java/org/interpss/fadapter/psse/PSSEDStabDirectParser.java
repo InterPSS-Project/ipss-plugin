@@ -177,6 +177,7 @@ public class PSSEDStabDirectParser {
     private final List<PendingUel1> pendingUel1 = new ArrayList<>();
     private final List<PendingUel2c> pendingUel2c = new ArrayList<>();
     private final List<PendingOel2c> pendingOel2c = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingOel3c = new ArrayList<>();
     private boolean strictImport;
     /** Pin a known native schema when legacy cardinality inference is not appropriate. */
     public enum Regfma1RecordFormat { AUTO_COMPATIBLE, NATIVE_PSSE_36_7, TEXAS2K_LEGACY }
@@ -253,6 +254,7 @@ public class PSSEDStabDirectParser {
         pendingUel1.clear();
         pendingUel2c.clear();
         pendingOel2c.clear();
+        pendingOel3c.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
         var hybridRecords=new ArrayList<PsseDyrRecord>();
         var removedHybrid=new java.util.LinkedHashMap<PsseDyrRecord,DynamicModelImportStatus>();
@@ -298,7 +300,7 @@ public class PSSEDStabDirectParser {
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("REPCC") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
-                        || type.equals("OEL2C") || type.equals("UEL2C")
+                        || type.equals("OEL2C") || type.equals("UEL2C") || type.equals("OEL3C")
                         || type.equals("WTDTB1") || type.equals("WTPTB1") || type.equals("WTGWGOA") || type.equals("WTGIBFFRA");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
@@ -449,6 +451,16 @@ public class PSSEDStabDirectParser {
         }
         pendingOel2c.clear();
         org.interpss.fadapter.psse.dyr.HplntdImporter.attach(builder,hybridRecords,removedHybrid,report);
+        for(PsseDyrRecord pending:pendingOel3c) {
+            try {
+                boolean attached=procOel3c(pending);
+                report.add(pending,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                    attached?"Exact OEL3C standard record with compatible summation port":
+                        "OEL3C requires an unoccupied compatible summation-point exciter; takeover/disabled ports are rejected");
+            }catch(IllegalArgumentException failure){report.add(pending,DynamicModelImportStatus.REJECTED,failure.getMessage());}
+            catch(RuntimeException failure){report.add(pending,DynamicModelImportStatus.ERROR,failure.getMessage());}
+        }
+        pendingOel3c.clear();
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
@@ -563,6 +575,8 @@ public class PSSEDStabDirectParser {
             case "OEL2C":
                 pendingOel2c.add(new PendingOel2c(busId, genId, fields.clone(), record));
                 return true;
+            case "OEL3C":
+                pendingOel3c.add(record);return true;
             case "GENCLS":
                 return procGencls(busId, genId, fields);
             case "GENROU":
@@ -2398,6 +2412,15 @@ public class PSSEDStabDirectParser {
 
     private record PendingOel2c(String busId,String genId,String[] fields,
             PsseDyrRecord record) {}
+
+    private boolean procOel3c(PsseDyrRecord record) {
+        if(!record.sourceModelName().equals("OEL3C")||record.parameterCount()!=12)return false;
+        var d=new org.interpss.dstab.control.oel.psse.oel3c.Oel3cData(record.intParameter(0),record.intParameter(1),
+            record.doubleParameter(2),record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),
+            record.doubleParameter(6),record.doubleParameter(7),record.doubleParameter(8),record.doubleParameter(9),
+            record.doubleParameter(10),record.doubleParameter(11));
+        return builder.addOel3c(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),d)!=null;
+    }
 
     private record LoadTarget(BaseDStabBus<?, ?> bus, AclfLoad load) {}
 

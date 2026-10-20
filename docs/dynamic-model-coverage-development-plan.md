@@ -2,17 +2,29 @@
 
 ## Current checkpoint
 
-The excitation-limiter source audit now includes all nine approved page-2
-rows: eight native mappings and one explicitly unconverted model. Only UEL1,
-UEL2C and OEL2C have loadable runtime paths. The new OEL3C two-coordinate
-equation kernel is tested but deliberately not counted as attached/importable.
-Sixteen clean native runs form eight exact cold pairs, with all 24,080 raw
-rows retained; eight selected-input kernel replays remain diagnostic, not
-complete trajectory acceptance. See the [source coverage table](excitation-limiter-coverage.md)
-and [kernel, sources, reference evidence and next implementation work](benchmarks/oel3c-foundation-2026-10-19.md).
+The excitation-limiter source audit includes all nine approved page-2 rows:
+eight native mappings and one explicitly unconverted model. UEL1, UEL2C,
+OEL2C and now OEL3C have bounded loadable runtime paths. OEL3C has exact
+standard-record parsing and an AC1C summation connection, including separate
+physical Efd/Ifd/Vfe routing, deferred initialization and lifecycle rollback.
+Other hosts and takeover are explicitly rejected, not silently substituted.
+Twenty-eight clean routing-reference runs form fourteen exact cold pairs,
+retaining 42,140 raw rows; four failed takeover initializations remain rejected
+evidence. Sixteen registered SMIB profiles cover flat/fault behavior and two
+timesteps. Independent fault trajectories, proportional-switch observations,
+event-side alignment and new PowerWorld execution artifacts remain open.
+See the [source coverage table](excitation-limiter-coverage.md),
+[runtime/routing evidence and gaps](benchmarks/oel3c-runtime-2026-10-19.md) and
+[earlier equation foundation](benchmarks/oel3c-foundation-2026-10-19.md).
 No full Texas2k dynamics are run.
 
-OEL3C foundation validation: 40 focused, 431 core and 2,004 scoped SMIB/model/
+OEL3C runtime slice validation: 77 focused, 431 core and 2,037 scoped SMIB/model/
+solver tests, zero failures/errors and seven existing skips, plus 155 offline
+checks and 28 independent run-quality audits. Source reconciliation covers
+1,899 Java/POM files and 139 unchanged earlier fixture parts. Complete
+independent fault acceptance remains open; no bounds were widened.
+
+Earlier OEL3C foundation validation: 40 focused, 431 core and 2,004 scoped SMIB/model/
 solver tests, zero failures/errors and seven existing skips, plus 151 offline
 checks. Source reconciliation covers 1,895 Java/POM files and 139 unchanged
 earlier fixture parts. The runtime descriptor catalog is unchanged: the new
@@ -1249,7 +1261,9 @@ and state definitions agree.
     preserve unconverted OEL1 and exact OEL5CU1 mapping without invented aliases.
   - [x] Implement the OEL3C source equation kernel, independent stage/limit tests
     and repeatable native reference foundation without promoting it to LOADABLE.
-  - [ ] Complete OEL3C device/import/routing, initialization, lifecycle and native/
+  - [x] Add exact OEL3C standard import, AC1C summation attachment, physical
+    input routing, deferred initialization and lifecycle/SMIB tests.
+  - [ ] Complete remaining OEL3C host/routing and independent native/
     PowerWorld coupled acceptance. Add OEL4C, OEL5CU1, BASOEL2 and UEL2 runtimes;
     keep typed unconverted OEL1 separate from native DYR inputs.
   the remaining renewable gaps are not a claim that all other sections are complete.

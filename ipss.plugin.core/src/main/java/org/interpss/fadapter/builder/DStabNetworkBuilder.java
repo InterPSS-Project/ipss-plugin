@@ -3497,6 +3497,18 @@ public class DStabNetworkBuilder {
         catch(IllegalArgumentException ex){log.warn("Incompatible UEL2C target at {} {}: {}",busId,genId,ex.getMessage());return null;}
     }
 
+    /** Attach an OEL3C auxiliary controller through an explicitly compatible summation port. */
+    public org.interpss.dstab.control.oel.psse.oel3c.Oel3cModel addOel3c(String busId,String genId,
+            org.interpss.dstab.control.oel.psse.oel3c.Oel3cData data) {
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);Machine machine=network.getMachine(busId+"-mach"+genId);
+        if(bus==null||machine==null||!machine.hasExciter())return null;
+        if(bus.getDynamicBusDeviceList().stream().anyMatch(device->genId.equals(device.getId())
+                &&(device instanceof org.interpss.dstab.control.oel.psse.oel3c.Oel3cModel
+                    ||device instanceof Oel2cOverExcitationLimiter)))return null;
+        try{return new org.interpss.dstab.control.oel.psse.oel3c.Oel3cModel(bus,machine,genId,data);}
+        catch(IllegalArgumentException failure){log.warn("Incompatible OEL3C target at {} {}: {}",busId,genId,failure.getMessage());return null;}
+    }
+
     /** Attach an OEL2C auxiliary controller without replacing the exciter. */
     public Oel2cOverExcitationLimiter addOel2c(String busId, String genId, Oel2cData data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);

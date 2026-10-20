@@ -1,0 +1,13 @@
+package org.interpss.dstab.control.exc;
+
+/** Explicit physical input, initialization and connection contract for an auxiliary OEL3C. */
+public interface Oel3cExciterPort {
+    enum Connection { DISABLED, SUMMATION, TAKEOVER }
+    interface Limiter {
+        boolean initializeAfterExciter(double initialExciterFieldCurrent);
+        double output();
+    }
+    Connection oel3cConnection();
+    boolean bindOel3c(Limiter limiter);
+    double oel3cExciterFieldCurrent();
+}

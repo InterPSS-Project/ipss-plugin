@@ -16,7 +16,8 @@ import com.interpss.dstab.mach.MachineIfdBase;
 /** IEEE 421.5-2016 / PSS/E AC1C rotating AC excitation system. */
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
-public final class Ac1cExciter extends AnnotateExciter implements IntegrationStepAware {
+public final class Ac1cExciter extends AnnotateExciter implements IntegrationStepAware,
+        org.interpss.dstab.control.exc.Oel3cExciterPort {
     public static final int INPUT_UNUSED=0, INPUT_SUMMATION=1, INPUT_TAKEOVER=2;
     private static final double EPS=1.0e-12;
     private static final int VE=0, VSENSE=1, LEAD_LAG=2, VA=3, VFE_LAG=4;
@@ -27,6 +28,7 @@ public final class Ac1cExciter extends AnnotateExciter implements IntegrationSte
     private boolean initialized, hasVuel, hasVoel, hasVsclSum, hasVsclUel, hasVsclOel;
     private double integrationStep, minimumTimeConstantMultiplier=1.0;
     private double vuel, voel, vsclSum, vsclUel, vsclOel;
+    private org.interpss.dstab.control.exc.Oel3cExciterPort.Limiter auxiliaryOel3c;
 
     public int oelLocation, uelLocation, sclLocation;
     public double tr,tb,tc,ka,ta,vamax,vamin,te,kf,tf,kc,kd,ke;
@@ -39,7 +41,25 @@ public final class Ac1cExciter extends AnnotateExciter implements IntegrationSte
 
     public Ac1cData getData(){return data;}
     public void setVuel(double v){vuel=v;hasVuel=true;} public double getVuel(){return vuel;}
-    public void setVoel(double v){voel=v;hasVoel=true;} public double getVoel(){return voel;}
+    public void setVoel(double v){
+        if(auxiliaryOel3c!=null)throw new IllegalStateException("An auxiliary OEL already owns this input");
+        voel=v;hasVoel=true;
+    }
+    public double getVoel(){return voel;}
+    @Override public Connection oel3cConnection(){
+        return data.getOelLocation()==INPUT_SUMMATION?Connection.SUMMATION:
+            data.getOelLocation()==INPUT_TAKEOVER?Connection.TAKEOVER:Connection.DISABLED;
+    }
+    @Override public boolean bindOel3c(Limiter limiter){
+        if(limiter==null||auxiliaryOel3c!=null||hasVoel||oel3cConnection()!=Connection.SUMMATION)return false;
+        auxiliaryOel3c=limiter;return true;
+    }
+    @Override public double oel3cExciterFieldCurrent(){
+        if(!initialized)throw new IllegalStateException("Initialize the exciter before sampling its field current");
+        double ifd=getMachine().calculateIfd(MachineIfdBase.EXCITER);
+        if(!Double.isFinite(ifd))throw new IllegalStateException("Nonfinite machine field current");
+        return getFieldFeedback();
+    }
     public void setVsclSum(double v){vsclSum=v;hasVsclSum=true;}
     public void setVsclUel(double v){vsclUel=v;hasVsclUel=true;}
     public void setVsclOel(double v){vsclOel=v;hasVsclOel=true;}
@@ -50,6 +70,7 @@ public final class Ac1cExciter extends AnnotateExciter implements IntegrationSte
     }
 
     @Override public boolean initStates(BaseDStabBus<?,?> bus,Machine machine){
+        initialized=false;
         loadAndCorrectParameters();
         if(!validLocation(oelLocation)||!validLocation(uelLocation)||!validLocation(sclLocation)
                 ||tr<0||tb<0||ta<0||te<0||tf<0||kc<0||kd<0||Math.abs(ka)<=EPS)return false;
@@ -65,6 +86,7 @@ public final class Ac1cExciter extends AnnotateExciter implements IntegrationSte
         state[VE]=ve0;state[VSENSE]=machine.getDStabBus().getVoltageMag();
         state[LEAD_LAG]=error0;state[VA]=vfe0;state[VFE_LAG]=vfe0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
+        if(auxiliaryOel3c!=null&&!auxiliaryOel3c.initializeAfterExciter(vfe0))return false;
         reference=error0+state[VSENSE]-stabilizerSignal(machine)-summationLimiterInput();
         outputSignal=rectifierOutput(ve0,ifd);initialized=true;return true;
     }
@@ -165,6 +187,7 @@ public final class Ac1cExciter extends AnnotateExciter implements IntegrationSte
         double value=0;
         if(uelLocation==INPUT_SUMMATION&&hasVuel)value+=vuel;
         if(oelLocation==INPUT_SUMMATION&&hasVoel)value+=voel;
+        if(oelLocation==INPUT_SUMMATION&&auxiliaryOel3c!=null)value+=auxiliaryOel3c.output();
         if(sclLocation==INPUT_SUMMATION&&hasVsclSum)value+=vsclSum;
         return value;
     }
