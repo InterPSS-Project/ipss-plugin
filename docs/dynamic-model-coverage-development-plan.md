@@ -2,6 +2,20 @@
 
 ## Current checkpoint
 
+OEL3C now has a permanent exact native recorded-input conformance gate: six
+zero-filter cases at two steps retain all 9,030 raw representative rows and pass
+RMSE < 0.001 per tested channel. This is kernel-only acceptance, not full host or
+physical-input routing acceptance. Proportional peak errors remain reported.
+Pickup-only cold discriminators separately prove that the reference tool's
+entered 0.4/0.5/0.6 pickups produce identical trajectories despite different
+readbacks; no corresponding bias or parameter fitting is added to InterPSS.
+See [recorded-input acceptance and reference initialization diagnosis](benchmarks/oel3c-recorded-input-2026-10-19.md).
+
+Recorded-input slice gates: 106 focused, 431 core and 2,058 scoped SMIB/model
+tests, zero failures/errors and seven existing skips, plus 215 offline checks.
+Verification uses the matching, separately pinned engine required by the latest
+committed preprocessing APIs; earlier pins and evidence remain unchanged.
+
 The event-observation slice now records exact InterPSS pre/post-fault samples,
 exciter-base field current and the reference-machine angle at both timesteps.
 Permanent diagnostics pair all 9,018 representative raw rows and independently
@@ -51,6 +65,8 @@ Measurement follow-up TODO:
 - [x] Reject a nominal selector whose initialized physical measurement disagrees.
 - [x] Record the user's per-channel RMSE < 0.001 criterion without changing old bounds.
 - [ ] Resolve the reference tool's Efd selector/runtime discrepancy.
+- [x] Isolate and cold-reproduce the reference tool's entered-pickup discrepancy.
+- [x] Verify the published zero-filter kernel against exact native recorded inputs.
 - [x] Record both machine angles and exact InterPSS event-post observations.
 - [x] Apply the new RMSE criterion to every paired channel without dropping events.
 - [ ] Establish dynamic Ifd/Vfe routing and reconcile the reference tool's mixed
