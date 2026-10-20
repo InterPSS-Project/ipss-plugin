@@ -532,6 +532,15 @@ prefault voltage and rotor-angle acceptance still fail. Reference-derived
 selector inputs remain diagnostic, and no support status is promoted. See
 the [recovery-memory evidence and remaining limits](benchmarks/case3-recovery-hold-2026-10-20.md).
 
+HYGOV entered-limit follow-up: preserve the entered gate bounds when the solved
+initial gate lies outside them. Initial states and power remain unchanged.
+All 333 Case 3 machine stacks meet the prefault rotor limit with supplied
+terminal voltages; bus 6274/1 improves from 0.252706° to 0.001065° maximum error.
+Thirty-eight focused tests pass. The frozen registered suite retains its five
+preceding failures, and coupled full-system accuracy still fails. No support
+status is promoted. See the
+[hydro gate-limit evidence](benchmarks/case3-hydro-gate-limits-2026-10-20.md).
+
 WTPTA1 native-pitch follow-up: correct integral/output-limit distinctions,
 plant-reference routing, moving speed-reference ports and native-A cross-freeze
 history without changing default modified Euler or revision-B behavior.

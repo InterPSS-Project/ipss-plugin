@@ -81,11 +81,11 @@ public class PsseHygovGovernor extends AbstractGovernor implements IntegrationSt
         double q0 = pm0 / d.getAt() + d.getQnl();
         if (q0 <= EPS) return false;
 
-        // PowerWorld expands position limits when the solved initial gate lies outside them.
+        // Retain entered limits; an out-of-range initial gate must move back toward them.
         double rawMax = Math.max(d.getGmax(), d.getGmin());
         double rawMin = Math.min(d.getGmax(), d.getGmin());
-        effectiveGmax = Math.max(rawMax, q0);
-        effectiveGmin = Math.min(rawMin, q0);
+        effectiveGmax = rawMax;
+        effectiveGmin = rawMin;
         pref = d.getR() * q0;
         state = new State(0.0, q0, q0, q0);
         oldState = state;
