@@ -71,7 +71,8 @@ public final class Basoel2Kernel {
         finite(oel+vhz);return new Signals(sensed,speed,reference,error,proportional,pi,oel,vhz,oel+vhz,gate);
     }
     private State rates(State x,Inputs input){
-        Signals s=signals(x,timers,input);double integral=data.integralGain()*s.error();finite(integral);
+        // The published diagram feeds Ki/s from the Kp output, not directly from error.
+        Signals s=signals(x,timers,input);double integral=data.integralGain()*s.proportional();finite(integral);
         if((x.integral()<=0&&integral<0)||(x.integral()>=input.voltageReference()&&integral>0))integral=0;
         double sensed=data.inputFilterTime()==0?0:(input.selectedInput()-x.inputLag())/data.inputFilterTime();
         double speed=data.speedFilterTime()==0?0:(input.frequency()-x.speedLag())/data.speedFilterTime();

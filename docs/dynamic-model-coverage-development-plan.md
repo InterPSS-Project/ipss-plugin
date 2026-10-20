@@ -2,6 +2,24 @@
 
 ## Current checkpoint
 
+BASOEL2's integral drive is corrected to Ki times the Kp output, as confirmed by
+the diagram and independent PowerWorld runs. Twenty cold runs retain 30,060 raw
+rows and 31 fields; ten full original CSVs are portable permanent fixtures.
+All-row, per-channel diagnostics retain failed initialization/event-phase and
+timer counterexamples. The Efd reference's zero sensed initialization is rejected
+rather than copied into InterPSS. Coupled acceptance and native import stay open.
+See [the equation correction, complete comparisons and remaining gaps](benchmarks/basoel2-powerworld-2026-10-19.md).
+
+Correction/benchmark gates: 202 focused, 431 core and 2,154 scoped SMIB/model
+tests, zero failures/errors and seven existing skips, plus 247 offline checks.
+Only the BASOEL2 kernel production class changes. Coupled reference comparisons
+remain failed/diagnostic where reported; green regressions do not close them.
+
+- [x] Correct the shared Kp/Ki integral-drive wiring and add direct regression tests.
+- [x] Produce cold-repeatable PowerWorld references and preserve every raw channel/event row.
+- [x] Reject invalid reference initialization and report every failed coupled channel.
+- [ ] Close the remaining reference-phase, threshold, host/profile and native-import gaps.
+
 BASOEL2 now also has an explicit-policy typed AC1C summation runtime and builder
 attachment. Both published timer policies are covered by 32 flat/fault SMIB
 profiles, including an initially active V/Hz equilibrium. Automatic native
@@ -19,9 +37,9 @@ exports and both preceding evidence seals remain unchanged.
 - [x] Test both published policies on the core GENROU machine with full fault-side observations.
 - [ ] Resolve native timer/state semantics, add native import and close independent acceptance.
 
-BASOEL2 now has a standalone three-state equation/timer foundation with explicit
-WECC and PowerWorld timer policies. Native import and runtime attachment are
-still missing; the loadable limiter count remains four. Seven profiles at two
+Earlier foundation checkpoint: BASOEL2 had a standalone three-state equation/timer
+foundation with explicit WECC and PowerWorld timer policies. Native import and
+runtime attachment were then missing; the loadable limiter count was four. Seven profiles at two
 steps were cold-run twice, retaining all 42,140 raw rows. Physical channels
 repeat, but several opaque timer-storage channels do not; whole-export
 repeatability and native timer-dialect acceptance are not claimed. See the
@@ -35,7 +53,8 @@ exports and sealed evidence are unchanged. Coupled BASOEL2 acceptance is open.
 - [x] Check the WECC diagram and PowerWorld pseudocode, including their zero-delay difference.
 - [x] Retain every cold-reference channel and report timer-storage discrepancies.
 - [ ] Resolve native timer and physical-input semantics before runtime promotion.
-- [ ] Add native import, host lifecycle integration and coupled SMIB RMSE acceptance.
+- [x] Add explicit-policy typed host/lifecycle integration (subsequent runtime slice).
+- [ ] Add native import and establish independent coupled SMIB RMSE acceptance.
 
 OEL3C now has a permanent exact native recorded-input conformance gate: six
 zero-filter cases at two steps retain all 9,030 raw representative rows and pass

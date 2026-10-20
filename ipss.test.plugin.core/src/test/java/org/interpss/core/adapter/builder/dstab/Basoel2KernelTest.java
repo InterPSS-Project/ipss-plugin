@@ -164,4 +164,19 @@ public class Basoel2KernelTest {
         advance(wecc,.001,high,high);advance(pw,.001,high,high);
         assertFalse(wecc.timers().get(0).active());assertTrue(pw.timers().get(0).active());
     }
+    @Test void integralBlockIsFedFromTheProportionalOutputInBothIntegrationStages(){
+        var k=kernel(data(1,0,0,0));k.initialize(input(.5));var high=input(4);
+        assertEquals(.2,k.signals(high).proportional(),1e-15);
+        assertEquals(.4*.2,k.rates(high).integral(),1e-15);
+        assertTrue(k.step(.1,0,high));assertEquals(.1*.4*.2,k.state().integral(),1e-15);
+        assertTrue(k.step(.1,1,high));assertEquals(.1*.4*.2,k.state().integral(),1e-15);
+        assertTrue(k.acceptEndpoint(.1,high));
+    }
+    @Test void zeroProportionalGainAlsoRemovesIntegralDriveWithoutChangingKi(){
+        var p=new Basoel2Data(1,0,0,0,0,7,3,.02,2,.02,1,.02,0,1.05,.1);
+        var k=kernel(p);k.initialize(input(.5));var high=input(4);
+        for(int i=0;i<20;i++)advance(k,.1,high,high);
+        assertTrue(k.timers().stream().allMatch(t->t.active()));
+        assertEquals(7,p.integralGain());assertEquals(0,k.state().integral());assertEquals(0,k.signals(high).total());
+    }
 }
