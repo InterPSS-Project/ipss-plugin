@@ -168,3 +168,66 @@ The recorder and inclusive timing are repository changes; the numerical runtime
 used here is still the separately preserved experimental overlay. Exact agreement
 with the old control proves recording nonregression, not independent-reference
 accuracy acceptance.
+
+## Follow-up screens with recording included
+
+A warmed binary-output profile contains 581 integration execution samples. The
+largest sampled leaf is the factored sparse triangular solve (14.6%). Voltage
+angle evaluation, EMF iteration, convergence observation and static-load cache
+checks also appear prominently. These samples identify candidates; profiled
+wall times are not qualifying performance measurements.
+
+Three further series retain one logical CPU, one complete warm-up, three measured
+fresh cases, all output channels, 1/240-second steps and 1e-5 convergence tolerance.
+
+| Candidate | Simulation plus recording, s | Median, s | Network iterations |
+| --- | --- | ---: | ---: |
+| Setter-invalidated voltage and load-part caches | 11.4121 / 11.0638 / 11.2477 | 11.2477 | 38,819 |
+| Exact small-increment frequency unwrap | 11.3380 / 11.5655 / 11.4214 | 11.4214 | 38,819 |
+| Existing constant-impedance matrix split | 12.1077 / 11.5224 / 11.4800 | 11.5224 | 40,871 |
+
+None establishes an improvement over the retained 11.2635-second median. The
+cache difference is within the observed run-to-run range; the other two are
+slower. None is promoted to production or replaces the experimental control.
+
+The cache candidate invalidates rectangular-voltage storage only when component
+bits change and invalidates load-part eligibility when coefficient references
+change. Custom subclasses retain the previous checks. It passes 4,274 voltage
+assertions with matching notifications and 2,065 load/current observations with
+matching bits and errors. The first load fixture caught exceptions but omitted
+the engine's NaN-current `Error`; the corrected fixture compares both kinds of
+failure. All four complete traces match the control exactly.
+
+The frequency candidate bypasses `IEEEremainder` only when the computed increment
+is within ±π, where the quotient rounds to zero. All other increments use the
+existing calculation. It passes 203,375 exact angle checks, including neighboring
+boundary values, signed zero, extreme values and invalid values, plus the three
+existing ramp, angle-jump and snapshot-restoration tests. All four full traces
+also match the control exactly.
+
+The matrix split uses the engine's existing option to stamp only the initialized
+constant-impedance load component. Current-dependent load behavior and the
+physical I/Z curve remain unchanged. Earlier independent load observations
+validated that representation. Here it increases iteration count by 5.3% and
+changes the finite-tolerance trajectory: maximum control differences are
+0.0060935 pu voltage and 1.26581° rotor angle. Bus-phase difference is 1.15250°
+using principal periodic differences; raw subtraction across the ±180° branch
+cut would misleadingly report almost 360°. All four matrix-split repeats match
+each other, but they do not match the control.
+
+A separate diagnostic compares both quarter-cycle trajectories with the supplied
+full-system reference. It validates the reference's accumulated float clock
+against the declared 1 ms grid and interpolates within each event phase. Both
+event-post rows are matched by event identity. Clearing occurs at 1.083333 seconds
+in this benchmark and 1.084 seconds in the supplied trace; no fitted clock shift
+or rotor-angle offset is applied. This is not a formal same-grid acceptance test.
+The control's worst prefault voltage error is 0.131920 pu and its worst full-window
+rotor RMSE is 117.675° at bus 5263/unit 1. The matrix split gives 0.131905 pu and
+117.631°, respectively. These large independent-reference discrepancies confirm
+that the frozen performance fixture remains unsuitable for accuracy acceptance;
+bit-exact recording and runtime checks do not validate its physical trajectory.
+
+Compact profile, build, check, comparison and timing evidence is retained under
+`2026-10-20-case2-recorded-runtime-screens`. Identical repeated output files share
+immutable storage after validation. The best retained timing remains 11.2635
+seconds including recording, and the ten-second goal remains open.
