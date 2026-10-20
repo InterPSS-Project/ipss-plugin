@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+The excitation-limiter source audit now includes all nine approved page-2
+rows: eight native mappings and one explicitly unconverted model. Only UEL1,
+UEL2C and OEL2C have loadable runtime paths. The new OEL3C two-coordinate
+equation kernel is tested but deliberately not counted as attached/importable.
+Sixteen clean native runs form eight exact cold pairs, with all 24,080 raw
+rows retained; eight selected-input kernel replays remain diagnostic, not
+complete trajectory acceptance. See the [source coverage table](excitation-limiter-coverage.md)
+and [kernel, sources, reference evidence and next implementation work](benchmarks/oel3c-foundation-2026-10-19.md).
+No full Texas2k dynamics are run.
+
+OEL3C foundation validation: 40 focused, 431 core and 2,004 scoped SMIB/model/
+solver tests, zero failures/errors and seven existing skips, plus 151 offline
+checks. Source reconciliation covers 1,895 Java/POM files and 139 unchanged
+earlier fixture parts. The runtime descriptor catalog is unchanged: the new
+kernel does not close the missing attached-model/import or coupled acceptance
+requirements.
+
 REGFMA1 lower-integral/simultaneous-PQ-plus-voltage-PI follow-up adds eight clean
 native runs forming four exact cold pairs, sixteen new registered model checks,
 and sixteen artifact controls. Recorded-input replay reproduces every source
@@ -1228,6 +1245,13 @@ and state definitions agree.
 - [ ] Expand the evidence inventory to retired/legacy and vendor-package models
   required by supplied cases, keeping those separate from approved-list counts.
 - [ ] Audit the remaining non-renewable PDF sections against actual source rows;
+  - [x] Include and visually audit all nine approved excitation-limiter rows;
+    preserve unconverted OEL1 and exact OEL5CU1 mapping without invented aliases.
+  - [x] Implement the OEL3C source equation kernel, independent stage/limit tests
+    and repeatable native reference foundation without promoting it to LOADABLE.
+  - [ ] Complete OEL3C device/import/routing, initialization, lifecycle and native/
+    PowerWorld coupled acceptance. Add OEL4C, OEL5CU1, BASOEL2 and UEL2 runtimes;
+    keep typed unconverted OEL1 separate from native DYR inputs.
   the remaining renewable gaps are not a claim that all other sections are complete.
 
 See [all source rows, actual implementation gaps and profile scopes](renewable-model-evidence.md).

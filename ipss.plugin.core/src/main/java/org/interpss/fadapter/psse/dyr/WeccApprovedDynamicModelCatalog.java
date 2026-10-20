@@ -4,6 +4,8 @@ import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.SYNCHRONOUS_MA
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.STABILIZER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.GOVERNOR;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.EXCITER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.UNDER_EXCITATION_LIMITER;
+import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.OVER_EXCITATION_LIMITER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.CONVERTER_MACHINE;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.ELECTRICAL_CONTROLLER;
 import static org.interpss.fadapter.psse.dyr.DynamicModelCategory.PLANT_CONTROLLER;
@@ -32,7 +34,7 @@ public final class WeccApprovedDynamicModelCatalog {
             "https://www.wecc.org/sites/default/files/documents/progress_report/2026/"
                     + "Approved%20Dynamic%20Models%20May%202026.pdf");
 
-    /** Excitation-system rows through TEXS; OEL/UEL rows are a separate future wave. */
+    /** Excitation-system rows through TEXS; OEL/UEL rows are exposed separately by limiters(). */
     private static final List<WeccModelApproval> EXCITERS = List.of(
             exciter("EXAC1", "exac1", "EXAC1", "EXAC1", APPROVED, "2006-08-11", "EXAC1"),
             exciter("ESAC1A", "esac1a", "ESAC1A", "ESAC1A", APPROVED, "2011-01-21", "ESAC1A"),
@@ -109,6 +111,27 @@ public final class WeccApprovedDynamicModelCatalog {
             exciter("SCRX", "scrx", "SCRX", "SCRX", APPROVED, "2006-08-11", "SCRX"),
             exciter("SEXS", "sexs", "SEXS_GE and SEXS_PTI", "SEXS", NEVER_APPROVED, "", "SEXS"),
             exciter("TEXS", "texs", "Not converted", "TEXS", NEVER_APPROVED, "", ""));
+
+    /** All nine approved excitation-limiter rows on source page 2, including absent runtimes. */
+    private static final List<WeccModelApproval> LIMITERS=List.of(
+            new WeccModelApproval("OEL1",OVER_EXCITATION_LIMITER,"oel1","Not converted (277)","OEL1",
+                    APPROVED,"2012-04-27","","Non-IEEE source model; do not invent a native identifier."),
+            new WeccModelApproval("OEL2C",OVER_EXCITATION_LIMITER,"oel2c","OEL2C","OEL2C",
+                    APPROVED,"2020-04-22","OEL2C","Runtime path present; complete verification is separate."),
+            new WeccModelApproval("OEL3C",OVER_EXCITATION_LIMITER,"oel3c","OEL3C","OEL3C",
+                    APPROVED,"2020-04-22","","Equation kernel alone is not an attached runtime/import path."),
+            new WeccModelApproval("OEL4C",OVER_EXCITATION_LIMITER,"oel4c","OEL4C","OEL4C",
+                    APPROVED,"2020-04-22","","Missing runtime and native import."),
+            new WeccModelApproval("OEL5C",OVER_EXCITATION_LIMITER,"oel5c","OEL5CU1","OEL5C",
+                    APPROVED,"2020-04-22","","Preserve the source wrapper identifier; no inferred alias."),
+            new WeccModelApproval("BASOEL2",OVER_EXCITATION_LIMITER,"basoel2","BASOEL2","BASOEL2",
+                    APPROVED,"2026-05-07","","Missing runtime and native import."),
+            new WeccModelApproval("UEL1",UNDER_EXCITATION_LIMITER,"uel1","UEL1","uel1",
+                    APPROVED,"2012-04-27","UEL1","Runtime path present; complete verification is separate."),
+            new WeccModelApproval("UEL2",UNDER_EXCITATION_LIMITER,"uel2","UEL2","uel2",
+                    APPROVED,"2012-04-27","","Not interchangeable with UEL2C."),
+            new WeccModelApproval("UEL2C",UNDER_EXCITATION_LIMITER,"uel2c","UEL2C","UEL2C",
+                    APPROVED,"2020-04-22","UEL2C","Runtime path present; complete verification is separate."));
 
     private static final List<WeccModelApproval> GENERATORS = List.of(
             row("GENTPF", "gentpf", "GENTPF", "GENTPF", UNAPPROVED, "2022-01-27", "",
@@ -264,6 +287,8 @@ public final class WeccApprovedDynamicModelCatalog {
     public static List<WeccModelApproval> exciters() {
         return EXCITERS;
     }
+
+    public static List<WeccModelApproval> limiters(){return LIMITERS;}
 
     public static List<WeccModelApproval> stabilizers() {
         return STABILIZERS;
