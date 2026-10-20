@@ -1,6 +1,10 @@
 # Case 2 efficiency on one CPU core
 
-The current requirement is **15 seconds for ten simulated seconds**, at **1e-5
+The target has since changed to **10 seconds for ten simulated seconds on one
+CPU core**. See the [latest rectangular-network experiment](case2-rectangular-single-core-2026-10-20.md)
+for the current measurements and remaining work.
+
+The requirement when the runs below were recorded was **15 seconds for ten simulated seconds**, at **1e-5
 maximum-component voltage tolerance** and a **quarter-cycle step (1/240 second)**,
 using **one CPU core**. It remains unachieved. The fully sequential experimental
 candidate takes **22.8559 seconds**,
