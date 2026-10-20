@@ -28,6 +28,13 @@ public class Oel3cSmibTest {
         "1,0,.00025,true","2,0,.00025,true","3,0,.00025,true",
         "1,.02,.0005,true","3,.02,.00025,true"})
     void publicNetworkInitializesAndRunsWithoutHiddenSignalSubstitution(int selector,double tf,double h,boolean fault)throws Exception {
+        run(selector,tf,h,fault,false);
+    }
+    @ParameterizedTest @CsvSource({"1,.0005","1,.00025","2,.0005","2,.00025","3,.0005","3,.00025"})
+    void independentImpedanceLoadProfiles(int selector,double h)throws Exception {
+        run(selector,0,h,true,true);
+    }
+    private void run(int selector,double tf,double h,boolean fault,boolean impedanceLoad)throws Exception {
         IpssCorePlugin.init();Path dyr=directory.resolve("oel3c.dyr");
         Files.writeString(dyr,"1 'GENROU' '1' 6 .033 .54 .078 6.4 0 .8958 .8645 .1189 .1969 .089 .0521 0 0 /\n"
             +"2 'GENCLS' '1' 99999 0 /\n"
@@ -36,9 +43,15 @@ public class Oel3cSmibTest {
         var context=new PSSEMultiFileLoader().loadDStab("testData/adpter/psse/v33/SMIB/SMIB_v33.raw",dyr.toString());
         var net=context.getDStabilityNet();var alg=context.getDynSimuAlgorithm();
         // Match the reference probe's zero current/admittance load conversion.
-        net.setStaticLoadIncludedInYMatrix(false);
-        net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_P);
-        net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_P);
+        if(!impedanceLoad){
+            net.setStaticLoadIncludedInYMatrix(false);
+            net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_P);
+            net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_P);
+        }else{
+            net.setStaticLoadIncludedInYMatrix(true);
+            net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_Z);
+            net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_Z);
+        }
         assertTrue(alg.getAclfAlgorithm().loadflow());alg.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         alg.setSimuStepSec(h);alg.setTotalSimuTimeSec(.5);alg.setSimuOutputHandler(new StateMonitor());
         if(fault)net.addDynamicEvent(DStabObjectFactory.createBusFaultEvent("Bus1",net,
@@ -50,12 +63,16 @@ public class Oel3cSmibTest {
             selector==3?exc.getFieldFeedback():machine.getEfd();
         assertEquals(expectedInput,oel.getSelectedInput(),1e-12);
         double initialVoltage=net.getBus("Bus1").getVoltageMag(),initialEfd=machine.getEfd();
-        List<String> rows=new ArrayList<>();rows.add("time_s,V_BUS1,V_BUS2,EFD,MACH_SPEED,OEL_INPUT,OEL_INTEGRAL,OEL_REFERENCE,OEL_ERROR,OEL_GAINED_ERROR,OEL_PROPORTIONAL,OEL_OUTPUT,VFE");
+        List<String> rows=new ArrayList<>();rows.add("time_s,V_BUS1,V_BUS2,EFD,MACH_SPEED,OEL_INPUT,OEL_INTEGRAL,OEL_REFERENCE,OEL_ERROR,OEL_GAINED_ERROR,OEL_PROPORTIONAL,OEL_OUTPUT,VFE,PMW,QMVAR,MACH_ANGLE,REF_SPEED,EXC_FIELD,EXC_SENSE,EXC_REGULATOR,EXC_LEAD_LAG,EXC_RATE_FEEDBACK");
         double largestDrift=0,lowestOutput=0;
         while(true){
-            var signals=oel.getSignals();double[] values={alg.getSimuTime(),net.getBus("Bus1").getVoltageMag(),net.getBus("Bus2").getVoltageMag(),
+            var signals=oel.getSignals();Complex voltage=machine.getDStabBus().getVoltage();
+            Complex power=voltage.multiply(machine.getIgen().subtract(voltage.multiply(machine.getYgen())).conjugate()).multiply(100);
+            double[] values={alg.getSimuTime(),net.getBus("Bus1").getVoltageMag(),net.getBus("Bus2").getVoltageMag(),
                 machine.getEfd(),machine.getSpeed()-1,signals.scaledInput(),oel.getPublishedStates().get("Integrator VIOEL"),
-                signals.reference(),signals.error(),signals.gainedError(),signals.proportional(),oel.getOutput(),exc.getFieldFeedback()};
+                signals.reference(),signals.error(),signals.gainedError(),signals.proportional(),oel.getOutput(),exc.getFieldFeedback(),
+                power.getReal(),power.getImaginary(),Math.toDegrees(machine.getAngle()),net.getMachine("Bus2-mach1").getSpeed()-1,
+                exc.getInternalFieldVoltage(),exc.getSensedVoltage(),exc.getRegulatorOutput(),exc.getLeadLagOutput(),exc.getRateFeedback()};
             for(double value:values)assertTrue(Double.isFinite(value));
             assertTrue(oel.getOutput()>=-1&&oel.getOutput()<=0);assertTrue(values[6]>=-1&&values[6]<=0);
             lowestOutput=Math.min(lowestOutput,oel.getOutput());largestDrift=Math.max(largestDrift,Math.abs(values[1]-initialVoltage));
@@ -65,6 +82,6 @@ public class Oel3cSmibTest {
         if(!fault){assertTrue(largestDrift<1e-7,"Flat voltage drift="+largestDrift);assertEquals(initialEfd,machine.getEfd(),1e-7);}
         System.out.println("OEL3C selector="+selector+" TF="+tf+" h="+h+" fault="+fault+" maxVoltageDrift="+largestDrift+" minOutput="+lowestOutput);
         Path destination=Path.of("target","oel3c-runtime-coupled");Files.createDirectories(destination);
-        Files.write(destination.resolve("input"+selector+"-tf"+tf+"-h"+h+"-"+(fault?"fault":"flat")+".csv"),rows);
+        Files.write(destination.resolve("input"+selector+"-tf"+tf+"-h"+h+"-"+(fault?"fault":"flat")+(impedanceLoad?"-impedance":"")+".csv"),rows);
     }
 }

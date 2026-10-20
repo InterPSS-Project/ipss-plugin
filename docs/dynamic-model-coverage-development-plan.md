@@ -2,6 +2,21 @@
 
 ## Current checkpoint
 
+The OEL3C follow-up now includes twelve clean PowerWorld runs, six exact cold
+pairs and all 18,036 raw rows as portable whole-file fixtures. An explicit
+PowerWorld-only selector/order translation fixes a benchmark input-format bug;
+all controller/machine parameters and solver/load options round-trip. The
+all-row switch audit confirms the proportional equation in both traces and
+localizes the large pointwise error to different zero-crossing branches.
+Coupled acceptance remains open: matched-load PowerWorld runs expose a
+non-converging AC1C host/coupling difference even with the OEL inactive.
+See [exact input translation, switch diagnosis and remaining counterexamples](benchmarks/oel3c-powerworld-switching-2026-10-19.md).
+Production model equations and established bounds are unchanged.
+
+Follow-up gates: 83 focused, 431 core and 2,043 scoped SMIB/model/solver tests,
+zero failures/errors and seven existing skips, plus 173 offline checks.
+All 22 SMIB exports repeat exactly. The production class hashes are unchanged.
+
 The excitation-limiter source audit includes all nine approved page-2 rows:
 eight native mappings and one explicitly unconverted model. UEL1, UEL2C,
 OEL2C and now OEL3C have bounded loadable runtime paths. OEL3C has exact
@@ -1264,7 +1279,9 @@ and state definitions agree.
   - [x] Add exact OEL3C standard import, AC1C summation attachment, physical
     input routing, deferred initialization and lifecycle/SMIB tests.
   - [ ] Complete remaining OEL3C host/routing and independent native/
-    PowerWorld coupled acceptance. Add OEL4C, OEL5CU1, BASOEL2 and UEL2 runtimes;
+    PowerWorld coupled acceptance. Repeatable PowerWorld artifacts now exist;
+    the inactive-OEL host/coupling counterexample remains unresolved.
+    Add OEL4C, OEL5CU1, BASOEL2 and UEL2 runtimes;
     keep typed unconverted OEL1 separate from native DYR inputs.
   the remaining renewable gaps are not a claim that all other sections are complete.
 

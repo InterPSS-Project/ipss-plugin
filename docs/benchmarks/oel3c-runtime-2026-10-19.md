@@ -1,5 +1,9 @@
 # OEL3C imported auxiliary runtime and physical-input routing
 
+Follow-up: [PowerWorld input translation, repeatable artifacts and switch diagnosis](oel3c-powerworld-switching-2026-10-19.md)
+adds the execution evidence missing at this snapshot and preserves the new
+coupled counterexamples; complete trajectory acceptance remains open.
+
 ## Scope and acceptance
 
 OEL3C now has an exact standard-record importer and a zero-injection auxiliary
