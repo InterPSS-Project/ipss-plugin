@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+OEL4C now has a standalone five-constant delayed-Q/conditional-PI foundation and
+twelve cold-repeatable PowerWorld reference pairs. All 36,064 raw rows and 21
+channels are retained with exact parameter readbacks. This is not yet a runtime
+or import path; five approved limiter rows remain loadable. See the
+[equation/reference contract and remaining TODOs](benchmarks/oel4c-foundation-2026-10-20.md).
+
+Foundation gates: 267 focused, 435 core and 2,219 registered scoped SMIB/model
+tests, zero failures/errors and seven existing skips, plus 253 offline checks.
+All 86 prior limiter exports are unchanged. An all-row measured-Q kernel replay
+is retained diagnostically: eight of twelve reference cases still fail at least
+one output/timer RMSE criterion; no event rows are discarded or clocks fitted.
+
+- [x] Establish OEL4C data, equation stages, conditional PI and timer-recovery tests.
+- [x] Preserve independent flat, delayed/zero-delay, integral-only, saturated and Qmax references.
+- [ ] Add permanent recorded-input conformance, host integration and strict import.
+- [ ] Close full coupled SMIB acceptance per channel at RMSE < 0.001.
+
 BASOEL2 now has exact three-selector/twelve-constant record import into the
 bounded AC1C summation runtime. Successful import explicitly reports the
 `POWERWORLD_DOCUMENTED` timer policy and leaves independent coupled acceptance
