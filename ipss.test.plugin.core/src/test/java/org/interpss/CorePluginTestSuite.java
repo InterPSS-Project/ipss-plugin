@@ -681,6 +681,7 @@ import org.junit.platform.suite.api.Suite;
     org.interpss.core.adapter.builder.dstab.Pss5cFirstOrderLowTest.class,
     org.interpss.core.adapter.builder.dstab.Pss5cSecondOrderHighTest.class,
     org.interpss.core.adapter.builder.dstab.Pss5cCoordinateObservationTest.class,
+    org.interpss.core.adapter.builder.dstab.Pss5cStaticLowTest.class,
     org.interpss.core.dstab.Pss5cNativeSmibTest.class,
     Pss6cPsseSmibConformanceTest.class,
     Pss7cPsseSmibConformanceTest.class,

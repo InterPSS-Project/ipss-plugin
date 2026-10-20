@@ -151,6 +151,14 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     for code, name in ((1, 'REF_ANGLE'), (7, 'REF_SPEED')):
         checked('reference channel', psspy.machine_array_channel([-1, code, 2], '1', name))
     di, df = psspy.getdefaultint(), psspy.getdefaultreal()
+    if cfg.get('record_rejection_preflight', False):
+        assert directory_prefix == 'pss5c-native-'
+        preflight=dict(status='native-diagnostic-preflight-not-trajectory-acceptance',profile=profile,
+            actual_constants=before,layout=layout,components=components,step_s=step,
+            library_sha256=sha(library),source_document_sha256=sha(document),
+            python_sha256=sha(sys.executable),wrapper_sha256=sha(psspy.__file__),engine_module=psse3607.__name__,
+            trajectory_acceptance=False)
+        Path('diagnostic-preflight.json').write_text(json.dumps(preflight,indent=2)+'\n')
     checked('step', psspy.dynamics_solution_param_2([di] * 8, [df, df, step] + [df] * 5))
     checked('start', psspy.strt_2([0, 0], 'native.out'))
     assert read_constants() == before, 'Initialization changed entered constants'

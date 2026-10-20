@@ -31,7 +31,7 @@ public final class Pss5cLocalLinearizer {
             double[] p = data.parameters();
             if (data.hasFirstOrderLowTransducer()) {
                 a[0][0] = -1 / p[2];b[0] = 1 / p[2];
-            } else {
+            } else if (!data.hasStaticLowTransducer()) {
                 a[0][1] = 1;a[1][0] = -1 / p[1];a[1][1] = -p[2] / p[1];b[1] = 1 / p[1];
             }
             a[2][3] = 1;
@@ -63,7 +63,8 @@ public final class Pss5cLocalLinearizer {
                     else if (data.hasFirstOrderLowTransducer()) {
                         a[row][0] = rate * p[3] * (1 - p[0] / p[2]);
                         b[row] = rate * p[3] * p[0] / p[2];
-                    } else {a[row][0] = rate * p[3];a[row][1] = rate * p[3] * p[0];}
+                    } else if (data.hasStaticLowTransducer()) b[row] = rate * p[3];
+                    else {a[row][0] = rate * p[3];a[row][1] = rate * p[3] * p[0];}
                 }
             }
         }

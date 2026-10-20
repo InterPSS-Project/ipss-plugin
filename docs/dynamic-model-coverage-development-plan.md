@@ -2,6 +2,24 @@
 
 ## Current checkpoint
 
+PSS5C static-low follow-up: implement the exact unity transfer when DLI, AL
+and BL are all zero, including instantaneous input, frozen unused coordinates,
+analytical A/B terms and all three supported high-transducer orders. Add
+twenty controller tests and twelve imported flat/three-cycle-fault SMIB cases.
+Eight provenance-recorded native attempts produce nonfinite low signals even
+for flat input, while two unchanged control runs remain clean and repeatable.
+Keep these rejected cases separate from source-equation evidence; no native
+trajectory acceptance or complete model verification is claimed. See the
+[implementation, rejection evidence and remaining work](benchmarks/pss5c-static-low-2026-10-19.md).
+No full Texas2k dynamics are run.
+
+This static-low slice passes 231 focused, 427 core and 1,962 scoped SMIB/model/
+solver tests, with zero failures/errors and seven existing skips, plus 127
+offline checks. Reconciliation covers 1,888 Java/POM files and 139 unchanged
+fixture parts. All 24 previous coupled exports and typed error vectors remain
+unchanged; twelve new static-low exports are separate. Native trajectory parity
+remains open rather than inferred from these source-equation gates.
+
 IEEEST opt-in integration follow-up: bind the running CML graph to the existing
 staggered solver through a seven-coordinate state port. Preserve default
 modified-Euler behavior, published state keys, core GENROU reuse and all existing
@@ -1746,8 +1764,13 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   gain three-band output identity from the contradictory zero-gain case.
   No production equation or trajectory limit changes. See the
   [coordinate-observation report](benchmarks/pss5c-coordinate-observation-2026-10-19.md).
+- [x] Implement the exact proper static low transducer for DLI=AL=BL=0,
+  with input feedthrough, frozen-coordinate diagnostics and mixed high orders.
+  Preserve the repeated nonfinite native cases and paired healthy control;
+  do not turn rejected output into a trajectory oracle. See the
+  [static-low report](benchmarks/pss5c-static-low-2026-10-19.md).
 - [ ] Resolve native PSS5C band-frequency/transducer and raw-VAR observation
-  discrepancies, zero-order transducers, zero-gain/lifecycle behavior and native
+  discrepancies, remaining degenerate transducers, zero-gain/lifecycle behavior and native
   thirteen-state observation coordinates before native trajectory acceptance.
 - [ ] Audit raw artifact versions/cold repeatability and remaining active
   limiter, selector and lifecycle profiles for the stabilizer links.

@@ -38,7 +38,7 @@ public final class Pss5cNativeStabilizer extends AnnotateStabilizer {
         bypassed = data.isBypassed();
         if (!bypassed) {
             double input = machine.getSpeed() - 1;
-            state[0] = input;
+            state[0] = data.hasStaticLowTransducer() ? 0 : input;
             state[2] = input;
             for (int band = 0; band < 3; band++) {
                 state[5 + 2 * band] = state[6 + 2 * band] = p(3) * input;
@@ -72,7 +72,9 @@ public final class Pss5cNativeStabilizer extends AnnotateStabilizer {
     }
 
     private void rates(double input, double[] x, double[] dx) {
-        if (data.hasFirstOrderLowTransducer()) {
+        if (data.hasStaticLowTransducer()) {
+            dx[0] = dx[1] = 0; // Both retained low coordinates are inactive.
+        } else if (data.hasFirstOrderLowTransducer()) {
             dx[0] = (input - x[0]) / p(2);
             dx[1] = 0; // Inactive coordinate retained for stable named-state keys.
         } else {
@@ -105,6 +107,7 @@ public final class Pss5cNativeStabilizer extends AnnotateStabilizer {
     }
 
     private double lowSignal(double[] x, double input) {
+        if (data.hasStaticLowTransducer()) return input;
         return data.hasFirstOrderLowTransducer()
                 ? x[0] + (p(0) / p(2)) * (input - x[0]) : x[0] + p(0) * x[1];
     }

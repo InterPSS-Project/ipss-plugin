@@ -185,3 +185,8 @@ Remaining gaps are the native frequency convention, AH-zero and low-order
 numerical policies, zero-gain/limit/lifecycle behavior, generalized raw-state
 observation semantics and independent all-channel coupled acceptance. The
 overall model-coverage goal remains active. Full Texas2k dynamics are not run.
+
+Follow-up: the [static-low slice](pss5c-static-low-2026-10-19.md) implements
+the proper unity low transfer and mixed high orders. Repeated nonfinite native
+attempts remain rejected; they do not supersede the preserved observations or
+establish independent trajectory acceptance.

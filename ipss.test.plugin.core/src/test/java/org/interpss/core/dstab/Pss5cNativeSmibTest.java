@@ -29,11 +29,27 @@ public class Pss5cNativeSmibTest {
                 "false,.0005,true,1", "true,.0005,true,1", "false,.00025,true,1", "true,.00025,true,1"})
     void importedNativeModelHasAStationaryFlatAndAThreeCycleFaultResponse(boolean fault,double step,boolean firstOrder,int highMode)
             throws Exception {
+        run(fault,step,firstOrder,highMode,false);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"false,.0005,-1", "true,.0005,-1", "false,.00025,-1", "true,.00025,-1",
+                "false,.0005,0", "true,.0005,0", "false,.00025,0", "true,.00025,0",
+                "false,.0005,1", "true,.0005,1", "false,.00025,1", "true,.00025,1"})
+    void staticLowHasStationaryFlatAndThreeCycleFaultResponse(boolean fault,double step,int highMode) throws Exception {
+        run(fault,step,false,highMode,true);
+    }
+
+    private void run(boolean fault,double step,boolean firstOrder,int highMode,boolean staticLow) throws Exception {
         IpssCorePlugin.init();var folder=Path.of("testData/adpter/psse/v33/SMIB");
         Path dynamic=folder.resolve("SMIB_v33_genrou_esst1a_pss5c_native.dyr");
-        if(firstOrder || highMode>=0) {
+        if(firstOrder || highMode>=0 || staticLow) {
             String original=Files.readString(dynamic);assertEquals(1,original.split("\\.00012739",-1).length-1);
             if(firstOrder)original=original.replace(".00012739","0.0");
+            if(staticLow) {
+                assertEquals(1,original.split("\\.001759 \\.00012739 \\.017823",-1).length-1);
+                original=original.replace(".001759 .00012739 .017823","0.0 0.0 0.0");
+            }
             if(highMode>=0) {
                 assertEquals(1,original.split("66 1 1 81 80 66",-1).length-1);
                 original=original.replace("66 1 1 81 80 66",highMode==0?"66 0 1 81 80 66":"66 1 0 81 80 66");
@@ -49,6 +65,7 @@ public class Pss5cNativeSmibTest {
         assertTrue(alg.initialization());var machine=assertInstanceOf(RoundRotorMachine.class,net.getMachine("Bus1-mach1"));
         var model=assertInstanceOf(Pss5cNativeStabilizer.class,machine.getStabilizer());
         assertEquals(firstOrder,model.getData().hasFirstOrderLowTransducer());
+        assertEquals(staticLow,model.getData().hasStaticLowTransducer());
         assertEquals(highMode>=0,model.getData().hasSecondOrderHighTransducer());
         double initialV=net.getBus("Bus1").getVoltageMag(),maximum=0;
         StringBuilder csv=new StringBuilder("time_s,low_signal,high_signal,VVL,VL,VI,VH,Vstab,speed_deviation,V_BUS1\n");
@@ -56,7 +73,11 @@ public class Pss5cNativeSmibTest {
             double value=model.getOutput(machine);maximum=Math.max(maximum,Math.abs(value));
             assertTrue(Math.abs(value)<=.15+1e-14);
             assertTrue(model.getNamedStates().values().stream().allMatch(Double::isFinite));
-            if(firstOrder)assertEquals(0,model.getNamedStates().get("lowRate"),0);
+            if(firstOrder||staticLow)assertEquals(0,model.getNamedStates().get("lowRate"),0);
+            if(staticLow) {
+                assertEquals(0,model.getNamedStates().get("lowPosition"),0);
+                assertEquals(machine.getSpeed()-1,model.getLowIntermediateInput(),0);
+            }
             if(highMode>=0)assertEquals(0,model.getNamedStates().get("highAcceleration"),0);
             csv.append(String.format(Locale.ROOT,"%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g,%.12g%n",
                 alg.getSimuTime(),model.getLowIntermediateInput(),model.getHighInput(),model.getBandOutput(0),
@@ -67,8 +88,9 @@ public class Pss5cNativeSmibTest {
         } while(true);
         if(fault)assertTrue(maximum>1e-8,"Disturbance activates the controller; not an oracle tolerance");
         else {assertTrue(maximum<1e-9);assertEquals(initialV,net.getBus("Bus1").getVoltageMag(),1e-9);}
-        Path output=Path.of(highMode>=0?"target/pss5c-native-high-"+highMode+"-low-"+(firstOrder?"first":"full")+"-coupled":
-                (firstOrder?"target/pss5c-native-first-order-coupled":"target/pss5c-native-coupled"));Files.createDirectories(output);
+        Path output=Path.of(staticLow?"target/pss5c-native-static-low-high-"+highMode+"-coupled":
+                (highMode>=0?"target/pss5c-native-high-"+highMode+"-low-"+(firstOrder?"first":"full")+"-coupled":
+                (firstOrder?"target/pss5c-native-first-order-coupled":"target/pss5c-native-coupled")));Files.createDirectories(output);
         Files.writeString(output.resolve((fault?"fault":"flat")+"-"+step+".csv"),csv.toString());
     }
 }

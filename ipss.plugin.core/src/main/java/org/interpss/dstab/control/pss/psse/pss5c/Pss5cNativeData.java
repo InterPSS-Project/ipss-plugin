@@ -26,8 +26,13 @@ public final class Pss5cNativeData {
         return parameters[1] == 0 && parameters[2] > 0;
     }
 
+    /** Exact unity transfer, with no active low-transducer storage. */
+    public boolean hasStaticLowTransducer() {
+        return parameters[0] == 0 && parameters[1] == 0 && parameters[2] == 0;
+    }
+
     public boolean hasSupportedTransducers() {
-        boolean low = parameters[1] > 0 || hasFirstOrderLowTransducer();
+        boolean low = parameters[1] > 0 || hasFirstOrderLowTransducer() || hasStaticLowTransducer();
         boolean high = parameters[4] > 0 && parameters[5] > 0 && parameters[7] > 0;
         return low && (high || hasSecondOrderHighTransducer());
     }
