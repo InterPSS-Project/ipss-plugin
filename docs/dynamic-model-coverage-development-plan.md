@@ -2,6 +2,21 @@
 
 ## Current checkpoint
 
+The event-observation slice now records exact InterPSS pre/post-fault samples,
+exciter-base field current and the reference-machine angle at both timesteps.
+Permanent diagnostics pair all 9,018 representative raw rows and independently
+score eighteen quantities against RMSE < 0.001, retaining peak and event-side
+errors. Bus voltages, speeds and relative angles pass that numerical criterion;
+several controller quantities fail. Reference post-event channels also expose
+mixed observation phases, so the tool comparison remains diagnostic. No model
+equation, parameter, initial state or old tolerance is changed.
+See [event-side evidence and remaining discrepancies](benchmarks/oel3c-event-observations-2026-10-19.md).
+
+Event-slice gates: 91 focused, 431 core and 2,043 scoped SMIB/model tests,
+zero failures/errors and seven existing skips, plus 197 offline checks. All
+22 legacy exports remain unchanged and six enriched event exports repeat across
+independent focused and broad runs. Production classes remain unchanged.
+
 The latest follow-up adds a permanent physical-measurement guard and three new
 22-channel PowerWorld profiles, each cold-regenerated twice (6,018 raw rows).
 It rejects the nominal Efd routing mismatch rather than fitting the host model.
@@ -10,7 +25,7 @@ consistent; neither is complete dynamic-routing acceptance. New portable whole
 CSV fixtures preserve all metadata and both event occurrences. The existing
 twelve-channel fixtures and prior sealed evidence are unchanged.
 
-Latest gates: 91 focused, 431 core and 2,043 scoped SMIB/model tests, zero
+Earlier measurement-slice gates: 91 focused, 431 core and 2,043 scoped SMIB/model tests, zero
 failures/errors and seven existing skips, plus 183 offline checks. The 22
 existing InterPSS exports repeat exactly; no production model equations change.
 
@@ -36,8 +51,10 @@ Measurement follow-up TODO:
 - [x] Reject a nominal selector whose initialized physical measurement disagrees.
 - [x] Record the user's per-channel RMSE < 0.001 criterion without changing old bounds.
 - [ ] Resolve the reference tool's Efd selector/runtime discrepancy.
-- [ ] Establish dynamic Ifd/Vfe routing, relative-angle coordinates and exact
-  event-post observations, then apply the new coupled RMSE criterion.
+- [x] Record both machine angles and exact InterPSS event-post observations.
+- [x] Apply the new RMSE criterion to every paired channel without dropping events.
+- [ ] Establish dynamic Ifd/Vfe routing and reconcile the reference tool's mixed
+  event-channel phases; localize remaining regular-endpoint controller errors.
 - [ ] Close the remaining approved model/host/profile coverage requirements;
   finite or repeatable runs alone do not satisfy those requirements.
 
