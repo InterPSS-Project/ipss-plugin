@@ -2,18 +2,46 @@
 
 ## Current checkpoint
 
+The latest follow-up adds a permanent physical-measurement guard and three new
+22-channel PowerWorld profiles, each cold-regenerated twice (6,018 raw rows).
+It rejects the nominal Efd routing mismatch rather than fitting the host model.
+The Ifd initialization is explicitly ambiguous, and the Vfe initialization is
+consistent; neither is complete dynamic-routing acceptance. New portable whole
+CSV fixtures preserve all metadata and both event occurrences. The existing
+twelve-channel fixtures and prior sealed evidence are unchanged.
+
+Latest gates: 91 focused, 431 core and 2,043 scoped SMIB/model tests, zero
+failures/errors and seven existing skips, plus 183 offline checks. The 22
+existing InterPSS exports repeat exactly; no production model equations change.
+
 The OEL3C follow-up now includes twelve clean PowerWorld runs, six exact cold
 pairs and all 18,036 raw rows as portable whole-file fixtures. An explicit
 PowerWorld-only selector/order translation fixes a benchmark input-format bug;
 all controller/machine parameters and solver/load options round-trip. The
 all-row switch audit confirms the proportional equation in both traces and
 localizes the large pointwise error to different zero-crossing branches.
-Coupled acceptance remains open: matched-load PowerWorld runs expose a
-non-converging AC1C host/coupling difference even with the OEL inactive.
+Coupled acceptance remains open. Direct measurement pilots now invalidate the
+earlier inactive-OEL interpretation: the nominal Efd reference initializes its
+limiter from Vfe despite the documented selector/readback. Verify physical
+routing before attributing the coupled difference to AC1C. The user's acceptance
+criterion for new channels is RMSE < 0.001 per channel on declared per-unit bases
+(relative angles in radians), with peak and event-side errors also reported.
 See [exact input translation, switch diagnosis and remaining counterexamples](benchmarks/oel3c-powerworld-switching-2026-10-19.md).
 Production model equations and established bounds are unchanged.
 
-Follow-up gates: 83 focused, 431 core and 2,043 scoped SMIB/model/solver tests,
+Measurement follow-up TODO:
+
+- [x] Record direct physical inputs, limiter states/output and reference angle.
+- [x] Cold-repeat all three enriched profiles and preserve whole raw exports.
+- [x] Reject a nominal selector whose initialized physical measurement disagrees.
+- [x] Record the user's per-channel RMSE < 0.001 criterion without changing old bounds.
+- [ ] Resolve the reference tool's Efd selector/runtime discrepancy.
+- [ ] Establish dynamic Ifd/Vfe routing, relative-angle coordinates and exact
+  event-post observations, then apply the new coupled RMSE criterion.
+- [ ] Close the remaining approved model/host/profile coverage requirements;
+  finite or repeatable runs alone do not satisfy those requirements.
+
+Earlier switch-slice gates: 83 focused, 431 core and 2,043 scoped SMIB/model/solver tests,
 zero failures/errors and seven existing skips, plus 173 offline checks.
 All 22 SMIB exports repeat exactly. The production class hashes are unchanged.
 

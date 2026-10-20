@@ -62,17 +62,28 @@ def validate_options(body):
     if result!={'MOD_LoadModelDefault':'Impedance','MOD_IntegrationMethod':'RK2'}:raise ValueError('Unexpected solver/load options')
     return result
 
+def measurement_specification(profile,step,relative,translated):
+    spec=specification(profile,step,relative,translated)
+    spec['results'] += ["GEN 2 '1'|TSRotorAngle","GEN 1 '1'|TSEfd","GEN 1 '1'|TSIfd","GEN 1 '1'|TSVOEL"]
+    spec['results'] += ["GEN 1 '1'|TSOELState:"+str(i) for i in (1,2)]
+    spec['results'] += ["GEN 1 '1'|TSOELOther:"+str(i) for i in (1,2,3,4)]
+    return spec
+
 def main():
-    tag,entered_step,profile=sys.argv[1:];step=float(entered_step);root=Path.cwd()
+    tag,entered_step,profile=sys.argv[1:4];step=float(entered_step);root=Path.cwd()
+    measurement=sys.argv[4:]==['--measurement-channels']
+    if sys.argv[4:] and not measurement:raise ValueError('Unknown diagnostic option')
     if not tag or not all(c.isalnum() or c in '-_' for c in tag):raise ValueError('Invalid output tag')
     out=root/'target'/('oel3c-powerworld-'+tag);out.mkdir(exist_ok=False)
     for source,destination in [('tools/oel3c_powerworld_probe.py','probe.py'),('tools/oel3c_routing_probe.py','oel3c_routing_probe.py'),
+        ('tools/audit_oel3c_measurement.py','audit_oel3c_measurement.py'),
         ('tools/oel3c_native_probe.py','oel3c_native_probe.py'),('tools/genrou_native_probe.py','genrou_native_probe.py'),
         ('tools/hplntd_fault_probe.py','hplntd_fault_probe.py'),
         ('ipss.test.plugin.core/src/test/python/powerworld_transient_benchmark.py','runner.py')]:shutil.copy2(root/source,out/destination)
     raw=(root/'ipss.test.plugin.core/testData/adpter/psse/v33/SMIB/SMIB_v33.raw').read_text()
     cfg=configuration(profile,raw);(out/'source.dyr').write_text(cfg['dynamic']);(out/'translated.dyr').write_text(translate(cfg))
-    spec=specification(profile,step,(out/'source.dyr').relative_to(root).as_posix(),(out/'translated.dyr').relative_to(root).as_posix())
+    make_spec=measurement_specification if measurement else specification
+    spec=make_spec(profile,step,(out/'source.dyr').relative_to(root).as_posix(),(out/'translated.dyr').relative_to(root).as_posix())
     (out/'spec.json').write_text(json.dumps(spec,indent=2)+'\n')
     module=importlib.util.spec_from_file_location('oel3c_independent_runner',out/'runner.py');runner=importlib.util.module_from_spec(module);module.loader.exec_module(runner)
     original=subprocess.Popen
@@ -91,6 +102,11 @@ def main():
     rows={marker:validate_readback((out/(marker+'-models.aux')).read_text(),cfg) for marker in ('power_flow_solved','initialized')}
     options={marker:validate_options((out/(marker+'-models.aux')).read_text()) for marker in rows}
     (out/'model-readback.json').write_text(json.dumps(dict(status='exact-physical-parameter-readback',records=rows,options=options),indent=2)+'\n')
+    if measurement:
+        from audit_oel3c_measurement import read_measurements,initial_measurement
+        result=initial_measurement(*read_measurements(out/'powerworld.csv'),cfg)
+        (out/'measurement-audit.json').write_text(json.dumps(result,indent=2)+'\n')
+        print('Initial physical measurement: '+result['status']+'; trajectory acceptance remains false')
     print(manifest)
 
 if __name__=='__main__':main()
