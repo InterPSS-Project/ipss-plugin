@@ -489,6 +489,15 @@ tests with zero failures/errors and only existing skips, plus four offline
 probe and six wording guards. Raw repeats, source/report hashes, failed remote
 attempts and coupled diagnostics are retained in the private evidence seal.
 
+REECA1 recovery-memory follow-up: capture active-current headroom at two-step
+command publication so endpoint refreshes cannot overwrite an active recovery
+hold. Thirty focused tests pass and all 26 retained electrical profiles keep
+identical state errors. The supplied-voltage Case 3 diagnostic reduces bus
+3122/1 active-power maximum error from 4.32696 MW to 0.00164684 MW; coupled
+prefault voltage and rotor-angle acceptance still fail. Reference-derived
+selector inputs remain diagnostic, and no support status is promoted. See
+the [recovery-memory evidence and remaining limits](benchmarks/case3-recovery-hold-2026-10-20.md).
+
 WTPTA1 native-pitch follow-up: correct integral/output-limit distinctions,
 plant-reference routing, moving speed-reference ports and native-A cross-freeze
 history without changing default modified Euler or revision-B behavior.

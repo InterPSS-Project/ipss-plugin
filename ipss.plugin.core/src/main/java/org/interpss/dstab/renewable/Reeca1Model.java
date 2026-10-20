@@ -347,7 +347,7 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         double iqInjection = reactiveCurrentInjection(voltageDip);
         reactiveCurrentInjection = iqInjection;
         double rawIq = -(rawQCurrent + iqInjection);
-        applyCurrentLimits(rawIp, rawIq, voltageDip);
+        applyCurrentLimits(rawIp, rawIq, voltageDip, updateDipHistory);
         if (dt > 0.0) {
             stateMonitor.begin(Stage.APPLIED_STEP);
             stateMonitor.record(0, observed0, (data.trv() <= EPS ? 0.0 : (vMeasured-observed0)/dt));
@@ -469,6 +469,12 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         stepElectricalControls(0.0, p, q, v, sensedV, false);
         twoStepIpcmd = Repca1Model.limit(pOrder / nonzero(vMeasured), 0.0, stagedIpLimit);
         twoStepIqcmd = iqcmd;
+        // Capture recovery headroom with the command publication, once per step.
+        // Endpoint algebraic refreshes must not overwrite the retained value.
+        if (dip && postDipTimer <= 0.0) {
+            heldIpMax = Math.min(currentTableLimit(vMeasured, false, Double.POSITIVE_INFINITY),
+                    data.pqFlag() == 0 ? remaining(currentLimit(), twoStepIqcmd) : currentLimit());
+        }
         if (windControlStack != null)
             windControlStack.stepTwoStep(dt, p, oldPorder, selectedReference, dip);
         if (weakGridController != null) weakGridController.stepTwoStep(dt, v, p0 + plantPref);
@@ -490,21 +496,21 @@ public final class Reeca1Model implements RenewableElectricalController, ICMLSta
         return gain * error;
     }
 
-    private void applyCurrentLimits(double rawIp, double rawIq, boolean voltageDip) {
+    private void applyCurrentLimits(double rawIp, double rawIq, boolean voltageDip, boolean captureHold) {
         double iqTable = currentTableLimit(vMeasured, true, Double.POSITIVE_INFINITY);
         double ipTable = currentTableLimit(vMeasured, false, Double.POSITIVE_INFINITY);
         if (data.pqFlag() == 0) {
             double iqMax = Math.min(currentLimit(), iqTable);
             rawIq = Repca1Model.limit(rawIq, -iqMax, iqMax);
             double calculatedIpMax = Math.min(ipTable, remaining(currentLimit(), rawIq));
-            if (voltageDip && postDipTimer <= 0.0) heldIpMax = calculatedIpMax;
+            if (captureHold && voltageDip && postDipTimer <= 0.0) heldIpMax = calculatedIpMax;
             double ipMax = postDipTimer > 0.0 ? heldIpMax : calculatedIpMax;
             rawIp = Repca1Model.limit(rawIp, 0.0, ipMax);
             iqLimit = iqMax;
             ipLimit = ipMax;
         } else {
             double calculatedIpMax = Math.min(currentLimit(), ipTable);
-            if (voltageDip && postDipTimer <= 0.0) heldIpMax = calculatedIpMax;
+            if (captureHold && voltageDip && postDipTimer <= 0.0) heldIpMax = calculatedIpMax;
             double ipMax = postDipTimer > 0.0 ? heldIpMax : calculatedIpMax;
             rawIp = Repca1Model.limit(rawIp, 0.0, ipMax);
             double iqMax = Math.min(iqTable, remaining(currentLimit(), rawIp));
