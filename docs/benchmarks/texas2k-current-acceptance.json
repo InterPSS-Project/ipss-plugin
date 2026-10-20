@@ -4,7 +4,7 @@
   "scope": {
     "original_cases": 6,
     "original_events": 36,
-    "reference": "Supplied reference outputs, including the full-system Case 2 export"
+    "reference": "Supplied reference outputs, including the full-system bus-6307 exports for all six cases"
   },
   "voltage_frequency": {
     "metric": "mean_absolute_error / full_ten_second_reference_range",

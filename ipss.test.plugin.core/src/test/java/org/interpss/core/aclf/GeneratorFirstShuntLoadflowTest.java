@@ -154,6 +154,71 @@ Q
         check(network(1., 1.06, 0., new Machine(0, -.4, .6, v)), v, v*(v-1.)/.1, 0.);
     }
 
+    @Test void participationSharesPlantAndShuntWithoutRetainingInitialSetting() throws Exception {
+        double v = 1.03, total = v*(v-1.)/.1;
+        var lf = network(1., 1.06, .5, new Machine(0., -.4, .6, v));
+        var bus = lf.getNetwork().getBus("Bus1");
+        var result = GeneratorFirstShuntLoadflow.solve(lf,
+                GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS);
+        assertTrue(result.converged());
+        assertEquals(v, bus.getVoltageMag(), 2.e-8);
+        assertEquals(total/2, bus.getContributeGenList().get(0).getGen().getImaginary(), 2.e-8);
+        assertEquals(total/2/(v*v), bus.getSwitchedShuntList().get(0).getBActual(), 2.e-8);
+        assertEquals(1.06, bus.getSwitchedShuntList().get(0).getDesiredControlRange().getMiddle(), 0.);
+    }
+
+    @Test void participationCountsOnePlantAndHonorsFixedReactiveMachine() throws Exception {
+        double v = 1.03, p = .4;
+        double total = (v*v-v*Math.sqrt(1.-Math.pow(p*.1/v,2)))/.1;
+        var lf = network(1., 1.06, .5, new Machine(.2, -.4, .6, v), new Machine(.2, 0., 0., v));
+        var bus = lf.getNetwork().getBus("Bus1");
+        bus.getSwitchedShuntList().get(0).setRemoteControlPercentage(300.);
+        assertTrue(GeneratorFirstShuntLoadflow.solve(lf,
+                GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS).converged());
+        assertEquals(total/4, bus.getContributeGenList().get(0).getGen().getImaginary(), 2.e-8);
+        assertEquals(0., bus.getContributeGenList().get(1).getGen().getImaginary(), 0.);
+        assertEquals(3*total/4/(v*v), bus.getSwitchedShuntList().get(0).getBActual(), 2.e-8);
+    }
+
+    @Test void participationClampsPlantAndTransfersResidualToShunt() throws Exception {
+        double v = 1.03, total = v*(v-1.)/.1;
+        var lf = network(1., 1.06, 0., new Machine(0., -.4, .05, v));
+        var bus = lf.getNetwork().getBus("Bus1");
+        assertTrue(GeneratorFirstShuntLoadflow.solve(lf,
+                GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS).converged());
+        assertEquals(.05, bus.getContributeGenList().get(0).getGen().getImaginary(), 2.e-8);
+        assertEquals((total-.05)/(v*v), bus.getSwitchedShuntList().get(0).getBActual(), 2.e-8);
+    }
+
+    @Test void participationClampsShuntLowerBoundForNegativeRequirement() throws Exception {
+        var lf = network(1.02, 1.03, .5, new Machine(0., -.4, .6, 1.));
+        var bus = lf.getNetwork().getBus("Bus1");
+        assertTrue(GeneratorFirstShuntLoadflow.solve(lf,
+                GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS).converged());
+        assertEquals(-.2, bus.getContributeGenList().get(0).getGen().getImaginary(), 2.e-8);
+        assertEquals(0., bus.getSwitchedShuntList().get(0).getBActual(), 2.e-8);
+    }
+
+    @Test void participationClampsShuntUpperBoundAndTransfersResidualToPlant() throws Exception {
+        double v = 1.1, total = v*(v-1.)/.1;
+        var lf = network(1., 1.12, 0., new Machine(0., -.4, 2., v));
+        var bus = lf.getNetwork().getBus("Bus1");
+        bus.getSwitchedShuntList().get(0).setRemoteControlPercentage(300.);
+        assertTrue(GeneratorFirstShuntLoadflow.solve(lf,
+                GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS).converged());
+        assertEquals(.5, bus.getSwitchedShuntList().get(0).getBActual(), 2.e-8);
+        assertEquals(total-.5*v*v, bus.getContributeGenList().get(0).getGen().getImaginary(), 2.e-8);
+    }
+
+    @Test void inconsistentPlantParticipationIsRejectedBeforeMutation() throws Exception {
+        var lf = network(1., 1.03, .5, new Machine(.1, -.2, .4, 1.), new Machine(.2, -.2, .4, 1.));
+        var bus = lf.getNetwork().getBus("Bus1");
+        bus.getContributeGenList().get(1).setMvarControlPFactor(2.);
+        assertThrows(IllegalArgumentException.class, () -> GeneratorFirstShuntLoadflow.solve(lf,
+                GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS));
+        assertEquals(.5, bus.getSwitchedShuntList().get(0).getBActual(), 0.);
+    }
+
     @Test void upperLimitActivatesSecondary() throws Exception {
         double v = 1.03, total = v*(v-1.)/.1;
         check(network(1., 1.06, 0., new Machine(0, -.4, .1, v)), v, .1, (total-.1)/(v*v));

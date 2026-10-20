@@ -16,14 +16,14 @@ import com.interpss.core.aclf.adj.SwitchedShunt;
 import com.interpss.core.algo.LoadflowAlgorithm;
 
 /**
- * Explicit benchmark policy for a local generator plant with one continuous
- * secondary shunt. This opt-in fixture is not a change to the default solver.
- * The plant owns the voltage equation. Its physical Q limits are exhausted
- * before the shunt moves from the setting present on entry.
+ * Explicit benchmark policies for a local generator plant with one continuous
+ * shunt. The plant owns the voltage equation. Reactive allocation either retains
+ * the initial shunt setting within physical limits or shares the requirement
+ * using the declared control participation factors.
  *
  * <p>An aggregate capability solve determines the required total Q, including
- * the shunt's voltage-dependent limits. Disaggregation then minimizes shunt
- * movement. Original device targets and generator limits are retained. Remote,
+ * the shunt's voltage-dependent limits. Original device targets and generator
+ * limits are retained. Remote,
  * discrete, multiple-shunt and mixed generator-target groups are unsupported.
  * Fixed-Q generators without a primary voltage controller leave the ordinary
  * shunt controller in charge of its own voltage target.
@@ -35,6 +35,11 @@ import com.interpss.core.algo.LoadflowAlgorithm;
 public final class GeneratorFirstShuntLoadflow {
     private GeneratorFirstShuntLoadflow() { }
 
+    public enum ReactiveAllocation {
+        RETAIN_INITIAL_SHUNT,
+        PARTICIPATION_FACTORS
+    }
+
     public record GroupResult(String bus, int generators, double voltage,
             double generatorQ, double initialB, double finalB) { }
 
@@ -44,6 +49,12 @@ public final class GeneratorFirstShuntLoadflow {
 
     /** Solve using generator priority for supported colocated groups. */
     public static Result solve(LoadflowAlgorithm lf) throws InterpssException {
+        return solve(lf, ReactiveAllocation.RETAIN_INITIAL_SHUNT);
+    }
+
+    /** Solve with an explicit reactive allocation policy and generator voltage target. */
+    public static Result solve(LoadflowAlgorithm lf, ReactiveAllocation allocation) throws InterpssException {
+        java.util.Objects.requireNonNull(allocation, "Reactive allocation policy");
         var groups = new ArrayList<Group>();
         // Validate every group before changing any devices.
         for (var bus : lf.getNetwork().getBusList()) {
@@ -61,7 +72,7 @@ public final class GeneratorFirstShuntLoadflow {
             })) continue;
             if (bus.isRemoteQBus() || !bus.isPVBusLimit() || shunts.size() != 1)
                 throw new IllegalArgumentException("Unsupported control group at " + bus.getId());
-            groups.add(new Group(bus, generators, shunts.get(0)));
+            groups.add(new Group(bus, generators, shunts.get(0), allocation));
         }
         if (groups.isEmpty()) {
             boolean converged = lf.loadflow();
@@ -167,12 +178,16 @@ public final class GeneratorFirstShuntLoadflow {
         final AclfGenCode busCode;
         final boolean pvControl, pvAdjust, shuntAdjust;
         final double initialB, target, qMin, qMax, bMin, bMax, busQ, busTarget;
+        final ReactiveAllocation allocation;
+        final double plantShare;
         double totalQ;
 
-        Group(BaseAclfBus<?, ?> bus, List<? extends AclfGen> generators, SwitchedShunt shunt) {
+        Group(BaseAclfBus<?, ?> bus, List<? extends AclfGen> generators, SwitchedShunt shunt,
+                ReactiveAllocation allocation) {
             this.bus = bus;
             this.generators = generators;
             this.shunt = shunt;
+            this.allocation = allocation;
             if (shunt instanceof StaticVarCompensator
                     || shunt.getControlMode() != AclfAdjustControlMode.CONTINUOUS
                     || shunt.getRemoteBus() != bus || shunt.getDesiredControlRange() == null
@@ -196,6 +211,21 @@ public final class GeneratorFirstShuntLoadflow {
                 limits.add(limit); powers.add(gen.getGen());
             }
             qMin = min; qMax = max;
+            if (allocation == ReactiveAllocation.PARTICIPATION_FACTORS) {
+                // A plant is one voltage controller; do not count its machines
+                // as separate participants alongside the shunt.
+                double plantWeight = generators.get(0).getMvarControlPFactor();
+                double shuntWeight = shunt.getRemoteControlPercentage() * .01;
+                if (!Double.isFinite(plantWeight) || plantWeight <= 0.
+                        || !Double.isFinite(shuntWeight) || shuntWeight <= 0.
+                        || generators.stream().anyMatch(g ->
+                            !Double.isFinite(g.getMvarControlPFactor())
+                            || Math.abs(g.getMvarControlPFactor() - plantWeight) > 1.e-12))
+                    throw new IllegalArgumentException("Invalid or inconsistent control participation at " + bus.getId());
+                plantShare = plantWeight / (plantWeight + shuntWeight);
+            } else {
+                plantShare = Double.NaN;
+            }
             var bLimits = shunt.getBLimit(true);
             checkLimits(bLimits);
             bMin = bLimits.getMin(); bMax = bLimits.getMax();
@@ -249,6 +279,16 @@ public final class GeneratorFirstShuntLoadflow {
             double plantQ = Math.max(qMin, Math.min(qMax, required));
             double b = required >= qMin && required <= qMax
                     ? initialB : (totalQ - plantQ) / v2;
+            if (allocation == ReactiveAllocation.PARTICIPATION_FACTORS) {
+                // The interval accounts for both the plant's Mvar limits and
+                // the shunt's voltage-dependent admittance limits.
+                double lower = Math.max(qMin, totalQ - bMax * v2);
+                double upper = Math.min(qMax, totalQ - bMin * v2);
+                if (lower > upper + 1.e-9)
+                    throw new IllegalStateException("Infeasible reactive sharing at " + bus.getId());
+                plantQ = Math.max(lower, Math.min(upper, totalQ * plantShare));
+                b = (totalQ - plantQ) / v2;
+            }
             b = Math.max(bMin, Math.min(bMax, b));
             shunt.setBActual(b);
             restoreLimits();
