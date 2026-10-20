@@ -1,4 +1,8 @@
 {
+  "BenchmarkOutputGuard": {
+    "ipss.benchmark.maxFileBytes": 536870912,
+    "ipss.benchmark.minFreeBytes": 2147483648
+  },
   "Ieee39PsseBenchmarkTest": {
     "ieee39.steps": "0.00025,0.004333",
     "ieee39.methods": "modified-euler,psse-staggered-euler",

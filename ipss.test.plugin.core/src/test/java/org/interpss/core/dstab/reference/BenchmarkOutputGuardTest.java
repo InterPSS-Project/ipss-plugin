@@ -9,9 +9,31 @@ import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.interpss.test.TestConfig;
+import java.util.Map;
 
 public class BenchmarkOutputGuardTest {
     @TempDir Path directory;
+
+    @Test void budgetsComeFromImmutableJsonFixturesAndRetainLongPrecision() {
+        var config = TestConfig.load("/test-config/ipss.test.plugin.core.json", "BenchmarkOutputGuard");
+        assertEquals(BenchmarkOutputGuard.DEFAULT_MIN_FREE_BYTES,
+                BenchmarkOutputGuard.setting(config, "ipss.benchmark.minFreeBytes", 1));
+        var reviewed = config.withOverrides(Map.of("ipss.benchmark.minFreeBytes", 4L * 1024 * 1024 * 1024));
+        assertEquals(4L * 1024 * 1024 * 1024,
+                BenchmarkOutputGuard.setting(reviewed, "ipss.benchmark.minFreeBytes", 1));
+        assertEquals(BenchmarkOutputGuard.DEFAULT_MIN_FREE_BYTES,
+                BenchmarkOutputGuard.setting(config, "ipss.benchmark.minFreeBytes", 1));
+    }
+
+    @Test void invalidJsonBudgetCannotDisableTheGuard() {
+        var config = TestConfig.load("/test-config/ipss.test.plugin.core.json", "BenchmarkOutputGuard");
+        for(Object value : new Object[]{0,-1,"bad","1.5"}) {
+            var invalid = config.withOverrides(Map.of("ipss.benchmark.maxFileBytes", value));
+            assertThrows(IllegalArgumentException.class,
+                    () -> BenchmarkOutputGuard.setting(invalid, "ipss.benchmark.maxFileBytes", 1));
+        }
+    }
 
     @Test void rejectsOversizedEstimateBeforeCreatingAFile() {
         Path path = directory.resolve("trace.csv");

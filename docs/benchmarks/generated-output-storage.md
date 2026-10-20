@@ -45,9 +45,12 @@ and is rejected before writing the large trace. If every sample is required,
 provision storage and explicitly review a larger budget; do not reduce sampling
 without updating the declared comparison protocol.
 
-The Java settings `ipss.benchmark.maxFileBytes` and
-`ipss.benchmark.minFreeBytes` accept explicit positive byte budgets. They are
-writer limits and do not change numerical simulation settings.
+The `BenchmarkOutputGuard` section of
+`ipss.test.plugin.core/src/test/resources/test-config/ipss.test.plugin.core.json`
+contains the positive byte budgets `ipss.benchmark.maxFileBytes` and
+`ipss.benchmark.minFreeBytes`. Review larger budgets in that fixture rather
+than using JVM-wide overrides. These writer limits do not change numerical
+simulation settings; existing defaults and storage enforcement are unchanged.
 
 ## Log retention and cleanup
 
@@ -73,5 +76,7 @@ duplicate timestamps. The Python checks exercise refusal before launching on a
 full disk, a falling free-space reserve, a noisy child process, existing-log and
 status protection, invalid limits, propagation of the command's exit code,
 descendant termination before and after parent exit, and failed job assignment.
-All seven Java checks and ten Python checks pass. A real Maven invocation
+The seven original Java checks are supplemented by JSON-budget validation and
+immutable 64-bit configuration checks. The Python checks also cover the bounded
+runner. A real Maven invocation
 through the bounded runner also completed and retained its exit status.

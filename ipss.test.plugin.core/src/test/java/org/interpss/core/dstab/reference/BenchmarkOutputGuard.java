@@ -8,20 +8,23 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import org.interpss.test.TestConfig;
 
 /** Bounds generated traces without dropping samples or changing simulation steps. */
 public final class BenchmarkOutputGuard {
     public static final long DEFAULT_MIN_FREE_BYTES = 2L * 1024 * 1024 * 1024;
     public static final long DEFAULT_MAX_FILE_BYTES = 512L * 1024 * 1024;
     private static final long CHECK_INTERVAL = 1024 * 1024;
+    private static final TestConfig CONFIG = TestConfig.load(
+            "/test-config/ipss.test.plugin.core.json", "BenchmarkOutputGuard");
 
     private BenchmarkOutputGuard() { }
 
     @FunctionalInterface
     interface FreeSpace { long bytes() throws IOException; }
 
-    private static long setting(String name, long fallback) {
-        long value = Long.parseLong(System.getProperty(name, Long.toString(fallback)));
+    static long setting(TestConfig config, String name, long fallback) {
+        long value = config.longValue(name, fallback);
         if (value <= 0) throw new IllegalArgumentException(name + " must be positive");
         return value;
     }
@@ -41,8 +44,8 @@ public final class BenchmarkOutputGuard {
     public static OutputStream newOutputStream(Path path, long estimatedBytes) throws IOException {
         Path parent = path.toAbsolutePath().getParent();
         return open(path, estimatedBytes,
-                setting("ipss.benchmark.maxFileBytes", DEFAULT_MAX_FILE_BYTES),
-                setting("ipss.benchmark.minFreeBytes", DEFAULT_MIN_FREE_BYTES),
+                setting(CONFIG, "ipss.benchmark.maxFileBytes", DEFAULT_MAX_FILE_BYTES),
+                setting(CONFIG, "ipss.benchmark.minFreeBytes", DEFAULT_MIN_FREE_BYTES),
                 () -> Files.getFileStore(parent).getUsableSpace());
     }
 
