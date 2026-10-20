@@ -5,7 +5,8 @@ import org.interpss.numeric.datatype.LimitType;
 import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlockAdapter;
 
 /** Implements PowerWorld's optional PSS2A block (A + s*Ta)/(1 + s*Tb). */
-public final class Pss2aLeadLagBlock extends CMLControlBlockAdapter {
+public final class Pss2aLeadLagBlock extends CMLControlBlockAdapter
+        implements com.interpss.dstab.controller.cml.runtime.CmlDiagnosticSource {
     private static final double EPS = 1.0e-12;
 
     private final double a;
@@ -85,5 +86,11 @@ public final class Pss2aLeadLagBlock extends CMLControlBlockAdapter {
     @Override public void setDX_dt(double value) { predictorDerivative = value; }
     /** Derivative evaluated at the most recent predictor input/state boundary. */
     public double getStateDerivative() { return predictorDerivative; }
+    @Override public java.util.List<com.interpss.dstab.controller.cml.runtime.CmlRuntimeDiagnostics.Binding>
+            diagnosticBindings() {
+        return java.util.List.of(new com.interpss.dstab.controller.cml.runtime.CmlRuntimeDiagnostics.Binding(
+                "x", this::getStateX, this::getStateDerivative, () -> derivative(u, stateX),
+                () -> com.interpss.dstab.controller.cml.runtime.CmlRuntimeDiagnostics.LimiterStatus.UNAVAILABLE));
+    }
     @Override public void setParameter(String name, double value) { }
 }

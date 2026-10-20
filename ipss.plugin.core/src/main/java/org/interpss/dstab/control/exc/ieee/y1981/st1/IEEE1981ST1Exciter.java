@@ -38,6 +38,11 @@ import com.interpss.dstab.mach.MachineIfdBase;
 )
 
 public class IEEE1981ST1Exciter extends AnnotateExciter {
+    @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
+            throws com.interpss.common.exp.InterpssException {
+        return getClass() == IEEE1981ST1Exciter.class
+                ? bindPublicDoubleParameter(name) : super.bindCompiledParameter(name);
+    }
 	private boolean exst1FieldVoltageLimits;
     private boolean initializingFeedbackTap;
 	public double k1 = 1.0;/*constant*/

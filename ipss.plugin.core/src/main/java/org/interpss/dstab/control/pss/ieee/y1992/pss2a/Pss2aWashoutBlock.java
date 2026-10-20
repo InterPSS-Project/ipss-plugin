@@ -9,7 +9,18 @@ import com.interpss.dstab.controller.cml.field.block.WashoutControlBlock;
  * zero.  The generic washout block represents {@code sT/(1+sT)} literally,
  * so using it at T=0 would divide by zero during the predictor step.</p>
  */
-public class Pss2aWashoutBlock extends WashoutControlBlock {
+public class Pss2aWashoutBlock extends WashoutControlBlock implements
+        com.interpss.dstab.controller.cml.runtime.CmlPureOutputRefresh,
+        com.interpss.dstab.controller.cml.runtime.CmlDiagnosticSource {
+    @Override public boolean supportsPureOutputRefresh() { return getClass() == Pss2aWashoutBlock.class; }
+
+    @Override public java.util.List<com.interpss.dstab.controller.cml.runtime.CmlRuntimeDiagnostics.Binding>
+            diagnosticBindings() {
+        return java.util.List.of(new com.interpss.dstab.controller.cml.runtime.CmlRuntimeDiagnostics.Binding(
+                "x", this::getStateX, this::getDX_dt,
+                () -> getClass() == Pss2aWashoutBlock.class ? (isBypassed() ? 0. : dX_dt(getU())) : Double.NaN,
+                () -> com.interpss.dstab.controller.cml.runtime.CmlRuntimeDiagnostics.LimiterStatus.UNAVAILABLE));
+    }
     private static final double EPS = 1.0e-12;
 
     public Pss2aWashoutBlock(double k, double t) {

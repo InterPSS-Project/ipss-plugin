@@ -56,6 +56,11 @@ import com.interpss.dstab.mach.Machine;
  */
 public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 		implements IntegrationStepAware {
+    @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
+            throws com.interpss.common.exp.InterpssException {
+        return getClass() == Ieee1992PSS2AStabilizer.class
+                ? bindPublicDoubleParameter(name) : super.bindCompiledParameter(name);
+    }
 	    public double tw1 = 0.1, tw2 = 0.05, t6 = 0.05;
 	    @AnControllerField(
 	            type= CMLFieldEnum.Controller,
@@ -110,6 +115,7 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 			refPoint="0.0"
 	)
 	class CustomExciter extends AbstractChildAnnotateController {
+        @Override public boolean supportsCompiledOutputScheduling() { return getClass() == CustomExciter.class; }
 	    public CustomExciter(double tw1, double tw2, double k, double t) {
 	        super();
 	        this.tw1 = tw1;

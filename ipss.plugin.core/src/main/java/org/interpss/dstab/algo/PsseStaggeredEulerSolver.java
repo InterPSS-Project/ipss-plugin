@@ -91,6 +91,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private BooleanSupplier ownerActive;
     private boolean extendedStack;
     private boolean runtimeControllerOptimizationEnabled = true;
+    private boolean compiledControllerGraphsEnabled;
     private double[] start;
     private double[] derivative;
     private final List<Participant> participants = new ArrayList<>();
@@ -193,6 +194,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     public boolean isRuntimeControllerOptimizationEnabled() {
         return runtimeControllerOptimizationEnabled;
     }
+
+    /** Opt in before initialization. Model structure must then remain fixed until reinitialization. */
+    public void setCompiledControllerGraphsEnabled(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Configure compiled graphs before initialization");
+        compiledControllerGraphsEnabled = enabled;
+    }
+
+    public boolean isCompiledControllerGraphsEnabled() { return compiledControllerGraphsEnabled; }
 
     public double getNetworkSolutionTolerance() { return converge_tol; }
 
@@ -354,6 +363,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             } else if (wrapper.getField() instanceof CMLControlBlock1stOrderAdapter b) {
                 block(b,wrapper.getFieldName());
             } else throw new IllegalArgumentException("Unsupported block " + wrapper.getFieldName());
+        }
+        if (compiledControllerGraphsEnabled && runtimeControllerOptimizationEnabled
+                && (controller.getClass() == IEEE1981ST1Exciter.class
+                    || controller.getClass() == Ieee1992PSS2AStabilizer.class)) {
+            try { c.compileRuntimePlan(); }
+            catch (com.interpss.common.exp.InterpssException failure) {
+                throw new IllegalStateException("Cannot compile controller graph " + c.getId(), failure);
+            }
         }
         if (controller instanceof IEEE1981ST1Exciter st1) {
             localSt1Controllers.add(new LocalSt1Controller(st1,ownerActive,
