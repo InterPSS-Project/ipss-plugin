@@ -11,6 +11,10 @@ import java.util.HexFormat;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import org.interpss.core.dstab.reference.PowerWorldCsvRepeatability;
+import org.interpss.core.dstab.reference.EmbeddedTrajectoryReference;
+import org.interpss.dstab.control.oel.psse.basoel2.Basoel2Data;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -18,7 +22,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 /** Frozen whole-reference integrity and algebraic identity, not coupled trajectory acceptance. */
 public class Basoel2PowerWorldArtifactConformanceTest {
     private static final String BASE="/basoel2-powerworld-reference/";
-    private record Profile(String name,double step,int samples,String rawSha,String canonicalSha,int oelFlag) { }
+    record Profile(String name,double step,int samples,String rawSha,String canonicalSha,int oelFlag) { }
     @TempDir Path directory;
     private static byte[] resource(String name)throws Exception{
         try(var input=Basoel2PowerWorldArtifactConformanceTest.class.getResourceAsStream(BASE+name)){
@@ -31,13 +35,32 @@ public class Basoel2PowerWorldArtifactConformanceTest {
             return new Profile(fields[0],Double.parseDouble(fields[1]),Integer.parseInt(fields[2]),fields[3],fields[4],Integer.parseInt(fields[5]));
         });
     }
-    @ParameterizedTest @MethodSource("profiles")
-    void retainsEveryRawFieldAndEventSideWithoutFittedReferenceStates(Profile profile)throws Exception{
+    static JsonObject readback(Profile profile,String model)throws Exception{
+        var profiles=JsonParser.parseString(new String(resource("index.json"),StandardCharsets.UTF_8)).getAsJsonObject().getAsJsonArray("profiles");
+        JsonObject found=null;
+        for(var item:profiles)if(item.getAsJsonObject().get("name").getAsString().equals(profile.name())){
+            assertNull(found,"Duplicate fixture profile");found=item.getAsJsonObject();
+        }
+        assertNotNull(found);assertEquals(profile.rawSha(),found.get("raw_sha256").getAsString());
+        return found.getAsJsonObject("model_readback").getAsJsonObject("records").getAsJsonObject("initialized").getAsJsonObject(model);
+    }
+    static Basoel2Data data(Profile profile)throws Exception{
+        var p=readback(profile,"limiter");
+        return new Basoel2Data(p.get("OELFlag").getAsInt(),p.get("VHzFlag").getAsInt(),p.get("OELIn").getAsInt(),
+            p.get("TRoel").getAsDouble(),p.get("Kp").getAsDouble(),p.get("Ki").getAsDouble(),
+            p.get("OEL1").getAsDouble(),p.get("OET1").getAsDouble(),p.get("OEL2").getAsDouble(),p.get("OET2").getAsDouble(),
+            p.get("OEL3").getAsDouble(),p.get("OET3").getAsDouble(),p.get("TRVHz").getAsDouble(),p.get("KVHz").getAsDouble(),p.get("VHzmin").getAsDouble());
+    }
+    static EmbeddedTrajectoryReference load(Profile profile,Path directory)throws Exception{
         byte[] body;
         try(var input=new GZIPInputStream(new ByteArrayInputStream(Base64.getMimeDecoder().decode(resource(profile.name()+".csv.gz.b64"))))){body=input.readAllBytes();}
         assertEquals(profile.rawSha(),HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(body)));
         Path path=directory.resolve(profile.name()+".csv");Files.write(path,body);
-        var reference=PowerWorldCsvRepeatability.trajectory(path,profile.canonicalSha());
+        return PowerWorldCsvRepeatability.trajectory(path,profile.canonicalSha());
+    }
+    @ParameterizedTest @MethodSource("profiles")
+    void retainsEveryRawFieldAndEventSideWithoutFittedReferenceStates(Profile profile)throws Exception{
+        var reference=load(profile,directory);
         assertEquals(31,reference.fields().size());assertEquals(profile.samples(),reference.samples().size());
         int sensed=reference.fieldIndex("Generator","1 1","TSOELState:1"),integral=reference.fieldIndex("Generator","1 1","TSOELState:2");
         int target=reference.fieldIndex("Generator","1 1","TSOELOther:1"),output=reference.fieldIndex("Generator","1 1","TSOELOther:2");

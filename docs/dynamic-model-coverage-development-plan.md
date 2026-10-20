@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+BASOEL2 now has a permanent sensed-boundary PI/timer conformance gate. All ten
+recorded reference cases retain all 15,030 representative rows and pass RMSE
+< 0.001 for fourteen downstream quantities; all active/above flags match exactly.
+Worst RMSE is approximately 3.52e-6. This localizes coupled timer discrepancies
+to the sensed-input trajectories in the tested matrix. Input filters, physical
+routing, native-tool semantics and full coupled acceptance remain separate gaps.
+No production equations or references change in this follow-up. See the
+[recorded-boundary scope and results](benchmarks/basoel2-powerworld-2026-10-19.md#recorded-sensed-boundary-conformance).
+
+Replay-slice gates: 212 focused, 431 core and 2,164 scoped SMIB/model tests,
+zero failures/errors and seven existing skips, plus 247 offline checks. All
+production class images and seventy prior trajectory exports remain unchanged.
+
+- [x] Replay only measured boundary inputs; retain independent integral/timer states.
+- [x] Verify all fourteen downstream quantities on every raw row at both timesteps.
+- [ ] Close physical-input/filter, export-phase, native-import and remaining model gaps.
+
 BASOEL2's integral drive is corrected to Ki times the Kp output, as confirmed by
 the diagram and independent PowerWorld runs. Twenty cold runs retain 30,060 raw
 rows and 31 fields; ten full original CSVs are portable permanent fixtures.

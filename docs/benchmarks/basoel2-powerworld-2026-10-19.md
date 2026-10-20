@@ -62,6 +62,40 @@ case has further input/output phase discrepancies. These remain failed
 comparisons. The results do not justify a fitted timing shift, a changed pickup,
 or stale measurement behavior in InterPSS.
 
+## Recorded sensed-boundary conformance
+
+The follow-up replays all ten immutable references through the actual InterPSS
+kernel at the boundary after the input filters. It injects only recorded sensed
+input, sensed frequency and terminal voltage. The constant voltage reference is
+derived from the source AC1C equilibrium equation; no reference/timer/integral
+state is supplied to the kernel. Parameters come from the frozen model readback.
+
+This is explicit sub-block isolation: the two input filters are bypassed in the
+test adapter because their outputs are the injected boundary. Their dynamics,
+physical-input routing and network feedback are excluded, not silently accepted.
+The physical runtime initialization remains unchanged, including its rejection
+of the reference's Efd initialization counterexample.
+
+Every one of the 15,030 raw representative rows and both fault-side occurrences
+is retained. Fourteen downstream quantities pass the user RMSE < 0.001 criterion
+in every profile. All six active/above flags match exactly. The worst RMSE is
+approximately 3.52e-6 for the zero-filter coarse integral, reducing to 1.76e-6
+at the finer step; the largest pointwise residual is approximately 6.94e-6.
+
+This localizes the previously observed coupled timer differences to different
+sensed-input trajectories, rather than proving a fault in the tested downstream
+timer equations. It does not resolve the installed native tool's distinct timer
+contract or grant full coupled trajectory acceptance. No production equation,
+model parameter, timestep, raw reference or established bound changes in this
+follow-up. The full-reference decoder is shared with the artifact checks.
+
+Recorded-boundary follow-up validation: 212 focused, 431 core and 2,164 scoped
+SMIB/model tests, zero failures/errors and seven existing skips, plus 247 offline
+checks. All 1,523 production class images, 70 prior SMIB exports and twelve raw
+reference resources remain unchanged. Source reconciliation covers 1,912
+Java/POM files. The private `2026-10-19-basoel2-sensed-boundary` archive retains
+the exact test sources, structured per-channel metrics and linked prior evidence.
+
 ## Remaining work
 
 Final regression: 202 focused, 431 core and 2,154 scoped SMIB/model tests,
@@ -77,8 +111,10 @@ archive retains before/after diagnostics, raw references, reports and hashes.
 - [x] Cold-repeat exact-model PowerWorld faults with complete parameter readback.
 - [x] Preserve complete portable raw references and reject invalid initial inputs.
 - [x] Compare all states, physical quantities and timers without dropping events.
+- [x] Independently verify the recorded sensed-boundary PI/timer logic on all ten profiles.
 - [ ] Reconcile reference observation phases and Efd initialization.
-- [ ] Localize remaining threshold/zero-filter differences with recorded inputs.
+- [ ] Verify the remaining physical-input/filter and export-phase boundaries;
+  downstream recorded-input timer agreement is not full routing acceptance.
 - [ ] Add independent flat/V/Hz and additional host coverage.
 - [ ] Establish RMSE < 0.001 for every declared coupled channel over every row.
 - [ ] Resolve native semantics and implement exact automatic import.
