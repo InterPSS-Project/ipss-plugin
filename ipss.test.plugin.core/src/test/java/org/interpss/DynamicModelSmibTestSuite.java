@@ -20,7 +20,7 @@ import org.junit.platform.suite.api.Suite;
         "org\\.interpss\\.core\\.dstab\\.(cml|mach)\\..*Tests?",
         "org\\.interpss\\.core\\.dstab\\.[^.]*Smib[^.]*",
         "org\\.interpss\\.core\\.dstab\\.[^.]*(Conformance|IndependentTrajectory|NativeTrajectory)Test",
-        "org\\.interpss\\.core\\.dstab\\.(Regca.*|RenewableAggregateQvMode|Type3WindAndesTrajectory|Pss3cNumericalStage|ZeroTimePsseBoundaryReplay|ReferenceArtifactManifestIntegrity|EmbeddedTrajectoryCoverageInventory|PsseRunQuality)Test",
+        "org\\.interpss\\.core\\.dstab\\.(Regca.*|RegfmaLimitNative|RenewableAggregateQvMode|Type3WindAndesTrajectory|Pss3cNumericalStage|ZeroTimePsseBoundaryReplay|ReferenceArtifactManifestIntegrity|EmbeddedTrajectoryCoverageInventory|PsseRunQuality)Test",
         "org\\.interpss\\.core\\.dstab\\.reference\\.EmbeddedTrajectoryReferenceTest"
 })
 @ExcludeClassNamePatterns({

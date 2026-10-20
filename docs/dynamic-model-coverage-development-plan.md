@@ -2,6 +2,25 @@
 
 ## Current checkpoint
 
+REGFMA1 lower-integral/simultaneous-PQ-plus-voltage-PI follow-up adds eight clean
+native runs forming four exact cold pairs, sixteen new registered model checks,
+and sixteen artifact controls. Recorded-input replay reproduces every source
+derivative and modified-Euler stage without changing production equations.
+The original coarse default-method comparison remains outside established
+bounds; the failure is retained, not accepted or hidden by larger bounds.
+Matched-method regular endpoints at both steps and default half-step endpoints
+meet unchanged envelopes. Complete coarse/default numerical parity and exact
+event-post acceptance remain open. See the
+[profiles, retained failures and next work](benchmarks/regfma1-lower-and-pq-pi-2026-10-19.md).
+No full Texas2k dynamics are run.
+
+Final REGFMA1 follow-up gates: 56 focused, 427 core and 1,978 scoped SMIB/model/
+solver tests, zero failures/errors and seven existing skips, plus 143 offline
+checks. Source reconciliation covers 1,890 Java/POM files, 139 unchanged earlier
+fixture parts and four new full-row resources. Production model classes and
+the earlier fifteen checkpoint datasets remain unchanged. These gates do not
+grant the explicitly missing coarse default-method or instantaneous-event parity.
+
 PSS5C static-low follow-up: implement the exact unity transfer when DLI, AL
 and BL are all zero, including instantaneous input, frozen unused coordinates,
 analytical A/B terms and all three supported high-transducer orders. Add
@@ -1940,9 +1959,12 @@ its GFM ratings equal the network base and no plant offset is attached.
 - [x] Record implementation in commit `26660c135`; recheck its four model/test
   files against the completed isolated verification snapshot, and retain the
   full validation report rather than relying on its smaller focused subset.
-- [ ] Add independent lower voltage-integral saturation, terminal-voltage PI/PQ
-  limiter interaction, native zero-time/limit-initialization and typed/PowerWorld
-  active-voltage-limit profiles.
+- [x] Add independent lower voltage-integral saturation/inward release and
+  simultaneous terminal-voltage PI/PQ-limit references at two steps, twice cold.
+  Register source/stage checks and retain every raw row. Acceptance is bounded
+  by the explicit method/endpoint protocol above, not complete model verification.
+- [ ] Resolve broader coarse default-method numerical parity, native zero-time/
+  limit-initialization and typed/PowerWorld active-voltage-limit profiles.
 - [x] Record final SMIB regression evidence and create the scoped native-schema,
   initialization-base, observation and SMIB-gate implementation slice.
 

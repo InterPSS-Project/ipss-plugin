@@ -131,3 +131,8 @@ Still open for complete REGFMA1 SMIB acceptance:
   propagated to that unverified branch without its own evidence.
 
 The overall approved-model SMIB coverage goal remains incomplete.
+
+The [lower-bound and simultaneous-PQ/voltage-PI follow-up](regfma1-lower-and-pq-pi-2026-10-19.md)
+adds four cold-paired full-row datasets and independent source/stage checks.
+It retains a coarse default-method counterexample explicitly; the historical
+fifteen datasets, their bounds, and this report's original evidence are unchanged.
