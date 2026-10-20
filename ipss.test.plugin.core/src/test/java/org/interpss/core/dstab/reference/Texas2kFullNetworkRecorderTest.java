@@ -17,7 +17,8 @@ import org.interpss.IpssCorePlugin;
 import org.interpss.dstab.renewable.Regca1Model;
 import org.interpss.dstab.renewable.Regfma1Model;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.io.TempDir;
 
 import com.google.gson.JsonParser;
@@ -27,7 +28,8 @@ import com.interpss.dstab.cache.StateMonitor;
 class Texas2kFullNetworkRecorderTest {
     @TempDir Path directory;
 
-    @Test void terminalPowerUsesSystemBaseAndPreservesDuplicateEventSamples() throws Exception {
+    @ParameterizedTest @EnumSource(Texas2kFullNetworkRecorder.Format.class)
+    void terminalPowerUsesSystemBaseAndPreservesDuplicateEventSamples(Texas2kFullNetworkRecorder.Format format) throws Exception {
         IpssCorePlugin.init();
         String base = "testData/adpter/psse/v33/SMIB/";
         var context = new PSSEMultiFileLoader().loadDStab(base + "SMIB_v33.raw", base + "SMIB_v33_genrou_esst4b.dyr");
@@ -55,7 +57,7 @@ class Texas2kFullNetworkRecorderTest {
                 "Copper loss must distinguish terminal power from air-gap power");
         round.restoreRoundElectricalState(storedElectricalState);
         machine.setPe(storedAirgapPower);
-        try (var recorder = new Texas2kFullNetworkRecorder(net, directory)) {
+        try (var recorder = new Texas2kFullNetworkRecorder(net, directory, format)) {
             recorder.record(-.001, "HISTORY");
             recorder.record(0., "INITIAL");
             recorder.record(1., "STEP_END");
@@ -85,10 +87,11 @@ class Texas2kFullNetworkRecorderTest {
         var metadata = JsonParser.parseString(Files.readString(directory.resolve("full-network-channels.json"))).getAsJsonObject();
         assertEquals(4, metadata.get("samples").getAsInt());
         assertEquals(-.001, metadata.get("first_time_s").getAsDouble(), 0.);
-        assertThrows(java.io.IOException.class, () -> new Texas2kFullNetworkRecorder(net, directory));
+        assertThrows(java.io.IOException.class, () -> new Texas2kFullNetworkRecorder(net, directory, format));
     }
 
-    @Test void converterPowerExcludesNortonAdmittanceAndCachedEventAverage() throws Exception {
+    @ParameterizedTest @EnumSource(Texas2kFullNetworkRecorder.Format.class)
+    void converterPowerExcludesNortonAdmittanceAndCachedEventAverage(Texas2kFullNetworkRecorder.Format format) throws Exception {
         IpssCorePlugin.init();
         String base = "testData/adpter/psse/v33/renewable/regca_reeca_repca_bus1062";
         var context = new PSSEMultiFileLoader().loadDStab(base + ".raw", base + ".dyr");
@@ -113,7 +116,7 @@ class Texas2kFullNetworkRecorderTest {
         Complex terminalPower = bus.getVoltage().multiply(norton.subtract(admittanceCurrent).conjugate()).multiply(net.getBaseMva());
         var before = converter.getNamedStates();
         assertNotEquals(terminalPower.getReal(), before.get("Active Power") * generator.getMvaBase(), 1.e-5);
-        try (var recorder = new Texas2kFullNetworkRecorder(net, directory)) {
+        try (var recorder = new Texas2kFullNetworkRecorder(net, directory, format)) {
             recorder.record(1., "EVENT_POST");
         }
         assertEquals(before, converter.getNamedStates(), "Observation must not refresh cached powers or advance controls");
@@ -128,7 +131,8 @@ class Texas2kFullNetworkRecorderTest {
         assertEquals("MW", description.get("unit").getAsString());
     }
 
-    @Test void recordingBindsAfterUnmodeledGenerationIsConverted() throws Exception {
+    @ParameterizedTest @EnumSource(Texas2kFullNetworkRecorder.Format.class)
+    void recordingBindsAfterUnmodeledGenerationIsConverted(Texas2kFullNetworkRecorder.Format format) throws Exception {
         var net = (com.interpss.dstab.DStabilityNetwork)
                 com.interpss.simu.util.sample.SampleDStabTestingCases.sample3BusDStab_StaticLoads();
         var lf = com.interpss.core.LoadflowAlgoObjectFactory.createLoadflowAlgorithm(net);
@@ -144,7 +148,7 @@ class Texas2kFullNetworkRecorderTest {
         lf.getDataCheckConfig().setAllowGenWithoutMachine(true);
         net.checkData(lf.getDataCheckConfig());
         net.setDStabNetInitialized(false);
-        try (var recorder = new Texas2kFullNetworkRecorder(net, directory)) {
+        try (var recorder = new Texas2kFullNetworkRecorder(net, directory, format)) {
             assertThrows(IllegalStateException.class, () -> recorder.record(0., "INITIAL"));
             assertTrue(net.initDStabNet());
             assertFalse(generator.isActive());
@@ -158,7 +162,8 @@ class Texas2kFullNetworkRecorderTest {
         assertEquals(1, metadata.get("samples").getAsInt());
     }
 
-    @Test void gridFormingPowerIsReadOnlyAcrossVoltageChangeCurrentLimitAndTrip() throws Exception {
+    @ParameterizedTest @EnumSource(Texas2kFullNetworkRecorder.Format.class)
+    void gridFormingPowerIsReadOnlyAcrossVoltageChangeCurrentLimitAndTrip(Texas2kFullNetworkRecorder.Format format) throws Exception {
         IpssCorePlugin.init();
         var profile = Regfma1NativeReferenceCheckpoints.get("flat11");
         Path dyr = directory.resolve("grid-forming.dyr");
@@ -180,7 +185,7 @@ class Texas2kFullNetworkRecorderTest {
         var generator = (com.interpss.dstab.DStabGen)bus.getContributeGen("1");
         var converter = (Regfma1Model)generator.getDynamicGenDevice();
         var expected = new java.util.ArrayList<Complex>();
-        try (var recorder = new Texas2kFullNetworkRecorder(net, directory)) {
+        try (var recorder = new Texas2kFullNetworkRecorder(net, directory, format)) {
             assertTrue(algorithm.initialization());
             for (Complex voltage : List.of(new Complex(1.01, .002), new Complex(.2, .05))) {
                 bus.setVoltage(voltage);
@@ -217,6 +222,27 @@ class Texas2kFullNetworkRecorderTest {
     }
 
     private static List<Map<String, String>> rows(Path directory) throws Exception {
+        if (Files.exists(directory.resolve("full-network.bin"))) {
+            var metadata = JsonParser.parseString(Files.readString(directory.resolve("full-network-channels.json"))).getAsJsonObject();
+            var names = metadata.getAsJsonArray("channels").asList().stream()
+                    .map(c -> c.getAsJsonObject().get("name").getAsString()).toList();
+            var result = new java.util.ArrayList<Map<String, String>>();
+            try (var input = new java.io.DataInputStream(Files.newInputStream(directory.resolve("full-network.bin")))) {
+                assertEquals("IPSSOBS1", new String(input.readNBytes(8), StandardCharsets.US_ASCII));
+                assertEquals(names.size(), input.readInt());
+                for (int i = 0; i < metadata.get("samples").getAsInt(); i++) {
+                    Map<String, String> values = new LinkedHashMap<>();
+                    values.put("time_s", Double.toString(input.readDouble()));
+                    int length = input.readInt();
+                    assertTrue(length >= 0 && length <= 1024);
+                    values.put("sample_kind", new String(input.readNBytes(length), StandardCharsets.UTF_8));
+                    for (String name : names) values.put(name, Double.toString(input.readDouble()));
+                    result.add(values);
+                }
+                assertEquals(-1, input.read());
+            }
+            return result;
+        }
         try (var reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(
                 Files.newInputStream(directory.resolve("full-network.csv.gz"))), StandardCharsets.UTF_8))) {
             String[] header = reader.readLine().split(",", -1);

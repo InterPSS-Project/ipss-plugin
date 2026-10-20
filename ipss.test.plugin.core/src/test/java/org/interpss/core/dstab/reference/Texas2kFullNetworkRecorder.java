@@ -1,9 +1,12 @@
 package org.interpss.core.dstab.reference;
 
 import java.io.BufferedWriter;
+import java.io.BufferedOutputStream;
+import java.io.OutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -23,12 +26,15 @@ import com.interpss.dstab.mach.impl.SalientPoleMachineImpl;
 
 /** Optional read-only full-network observations for supplied-reference diagnosis. */
 final class Texas2kFullNetworkRecorder implements AutoCloseable {
+    enum Format { CSV_GZIP, BINARY64 }
     private record Channel(String name, String quantity, String unit, String bus,
             String machineId, DoubleSupplier value) { }
     private record Description(String name, String quantity, String unit, String bus,
             String machineId) { }
     private final List<Channel> channels = new ArrayList<>();
     private final BufferedWriter writer;
+    private final OutputStream binary;
+    private ByteBuffer row;
     private final Path manifest;
     private final BaseDStabNetwork<?, ?> network;
     private int busCount;
@@ -41,13 +47,25 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
     private double lastTime = Double.NaN;
 
     Texas2kFullNetworkRecorder(BaseDStabNetwork<?, ?> net, Path out) throws IOException {
-        Path trace = out.resolve("full-network.csv.gz");
+        this(net, out, Format.CSV_GZIP);
+    }
+
+    Texas2kFullNetworkRecorder(BaseDStabNetwork<?, ?> net, Path out, Format format) throws IOException {
+        java.util.Objects.requireNonNull(format, "format");
+        Path trace = out.resolve(format == Format.BINARY64 ? "full-network.bin" : "full-network.csv.gz");
         manifest = out.resolve("full-network-channels.json");
-        if (Files.exists(trace) || Files.exists(manifest))
+        if (Files.exists(out.resolve("full-network.bin")) || Files.exists(out.resolve("full-network.csv.gz"))
+                || Files.exists(manifest))
             throw new IOException("Refusing to replace full-network observations");
         network = net;
-        writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(
-                BenchmarkOutputGuard.newOutputStream(trace, 0)), StandardCharsets.UTF_8));
+        if (format == Format.BINARY64) {
+            binary = new BufferedOutputStream(BenchmarkOutputGuard.newOutputStream(trace, 0), 256 * 1024);
+            writer = null;
+        } else {
+            binary = null;
+            writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(
+                    BenchmarkOutputGuard.newOutputStream(trace, 0)), StandardCharsets.UTF_8));
+        }
     }
 
     private void bindInitializedNetwork() throws IOException {
@@ -113,9 +131,15 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
         synchronousCount = synchronous;
         converterCount = converters;
         gridFormingCount = gridForming;
-        writer.write("time_s,sample_kind");
-        for (var channel : channels) writer.write("," + channel.name());
-        writer.newLine();
+        if (binary != null) {
+            binary.write(ByteBuffer.allocate(12).put("IPSSOBS1".getBytes(StandardCharsets.US_ASCII))
+                    .putInt(channels.size()).array());
+            row = ByteBuffer.allocate(Math.addExact(Math.multiplyExact(channels.size(), 8), 1036));
+        } else {
+            writer.write("time_s,sample_kind");
+            for (var channel : channels) writer.write("," + channel.name());
+            writer.newLine();
+        }
         bound = true;
     }
 
@@ -172,25 +196,38 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
     }
 
     void record(double time, String kind) throws IOException {
-        if (!Double.isFinite(time) || kind.contains(",") || kind.contains("\n"))
+        if (!Double.isFinite(time) || kind.contains(",") || kind.contains("\n") || kind.contains("\r"))
             throw new IllegalArgumentException("Invalid observation timestamp or event side");
+        byte[] kindBytes = binary == null ? null : kind.getBytes(StandardCharsets.UTF_8);
+        if (kindBytes != null && kindBytes.length > 1024)
+            throw new IllegalArgumentException("Observation event side exceeds 1024 UTF-8 bytes");
         if (!bound) bindInitializedNetwork();
-        writer.write(Double.toString(time));
-        writer.write("," + kind);
+        if (binary != null) row.clear().putDouble(time).putInt(kindBytes.length).put(kindBytes);
+        else {
+            writer.write(Double.toString(time));
+            writer.write("," + kind);
+        }
         for (var channel : channels) {
             double value = channel.value().getAsDouble();
             if (!Double.isFinite(value)) throw new IllegalStateException("Nonfinite " + channel.name() + " at " + time);
-            writer.write("," + Double.toString(value));
+            if (binary != null) row.putDouble(value);
+            else writer.write("," + Double.toString(value));
         }
-        writer.newLine();
+        if (binary != null) binary.write(row.array(), 0, row.position());
+        else writer.newLine();
         if (samples++ == 0) firstTime = time;
         lastTime = time;
     }
 
     @Override public void close() throws IOException {
-        writer.close();
+        if (binary != null) binary.close();
+        else writer.close();
         var metadata = new java.util.LinkedHashMap<String, Object>();
         metadata.put("schema", "texas2k-full-network-observations-v1");
+        if (binary != null) {
+            metadata.put("trace_format", "ipss-observations-binary64-v1");
+            metadata.put("trace_file", "full-network.bin");
+        }
         metadata.put("initial_active_buses", busCount);
         metadata.put("initial_online_synchronous_machines", synchronousCount);
         metadata.put("initial_online_converter_generators", converterCount);

@@ -163,8 +163,12 @@ public final class Texas2kReferenceRunner {
             }
             boolean fullNetworkDiagnostics = plan.has("full_network_diagnostics")
                     && plan.get("full_network_diagnostics").getAsBoolean();
+            var fullNetworkFormat = plan.has("full_network_format")
+                    ? Texas2kFullNetworkRecorder.Format.valueOf(plan.get("full_network_format").getAsString())
+                    : Texas2kFullNetworkRecorder.Format.CSV_GZIP;
+            long simulationStarted;
             try (var writer = BenchmarkOutputGuard.newWriter(trace, 0);
-                    var fullNetwork = fullNetworkDiagnostics ? new Texas2kFullNetworkRecorder(net, out) : null) {
+                    var fullNetwork = fullNetworkDiagnostics ? new Texas2kFullNetworkRecorder(net, out, fullNetworkFormat) : null) {
                 final JsonObject selected = event;
                 // Preserve the loader's initialization and integration-step configuration.
                 String globalScheme = plan.has("solver_integration_scheme")
@@ -256,6 +260,8 @@ public final class Texas2kReferenceRunner {
                     Files.writeString(out.resolve("core-machine-initial-conditions.txt"), net.getMachineInitCondition());
                     Texas2kInitializationAudit.write(net, out.resolve("initialization-state-audit.json"));
                 }
+                simulationStarted = System.nanoTime();
+                status.put("setup_initialization_wall_s", (simulationStarted - started) / 1.e9);
                 var initial = record(net, event);
                 writer.write("time_s,sample_kind," + String.join(",", initial.keySet()) + "\n");
                 int historySteps = plan.has("startup_history_steps")
@@ -292,6 +298,9 @@ public final class Texas2kReferenceRunner {
                 }
             }
             status.put("status", "completed");
+            // Includes startup samples, events, all channel recording and final writer close.
+            status.put("simulation_output_wall_s", (System.nanoTime() - simulationStarted) / 1.e9);
+            status.put("full_network_format", fullNetworkDiagnostics ? fullNetworkFormat.name() : "DISABLED");
         } catch (Exception failure) {
             status.put("status", "failed");
             status.put("error", failure.toString());
