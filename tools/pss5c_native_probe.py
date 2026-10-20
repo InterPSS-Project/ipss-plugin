@@ -9,20 +9,21 @@ EXC_CON=(.02,.8,-.8,.2,.8,.1,.4,80.,.04,99.,-99.,7.3,-7.3,0.,.1,1.,0.,1.)
 PSS_CON=(.001759,.00012739,.017823,66.,1.,1.,81.,80.,66.,
          .5,.01,.01,-.01,3.,.07,.075,-.075,20.,.6,.6,-.6,80.,9.,.6,-.6,
          5.736,6.883,8.259,.15,-.15)
-MODES=('flat','fault','transducer-fault','gain-fault','very-low-fault','unit-frequency-fault','unit-frequency-no-dli-fault')
+MODES=('flat','fault','transducer-fault','gain-fault','very-low-fault','unit-frequency-fault','unit-frequency-no-dli-fault',
+       'fine-observation-flat','fine-observation-fault','fine-observation-transducer-fault')
 
 
 def configuration(mode,raw):
     assert mode in MODES
-    cfg=machine_configuration('flat' if mode=='flat' else 'fault',raw)
+    cfg=machine_configuration('flat' if mode in ('flat','fine-observation-flat') else 'fault',raw)
     constants=list(PSS_CON)
-    if mode=='transducer-fault':
+    if mode in ('transducer-fault','fine-observation-transducer-fault'):
         constants[:3]=[.003,.0002,.025]
         constants[4:8]=[.8,1.2,70.,65.]
     if mode=='gain-fault':constants[3],constants[8]=33.,99.
     if mode=='very-low-fault':
         for index in (13,17,21):constants[index]=0.
-    if mode.startswith('unit-frequency'):
+    if mode.startswith(('unit-frequency','fine-observation')):
         for index in (10,14,18,22):constants[index]=1.
         if mode=='unit-frequency-no-dli-fault':constants[0]=0.
     cfg['dynamic']+="1 'ESST1A' '1' 1 1 "+' '.join(map(str,EXC_CON))+' /\n'
@@ -32,6 +33,10 @@ def configuration(mode,raw):
              states=tuple('PSS_STATE_'+str(i+1) for i in range(13)),
              variables=('PSS_LOW_SIGNAL','PSS_HIGH_SIGNAL','PSS_VVL','PSS_VL','PSS_VI','PSS_VH'))]
     cfg['record_live_states']=True
+    if mode.startswith('fine-observation'):
+        cfg['pss5c_observation_diagnostic']=True
+        cfg['record_live_variables']=True
+        cfg['record_live_fault_states']=True
     return cfg
 
 

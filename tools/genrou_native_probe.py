@@ -52,7 +52,11 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
     import dyntools
     root = Path.cwd()
     step = float(entered_step)
-    assert step in (.0005, .00025)
+    permitted_steps = (.0005, .00025)
+    if cfg.get('pss5c_observation_diagnostic', False):
+        assert directory_prefix == 'pss5c-native-', 'Fine steps are an explicit PSS5C diagnostic only'
+        permitted_steps += (.00005, .000025)
+    assert step in permitted_steps
     end = cfg.get('end_s', .5)
     assert end in (.5, 3.)
     assert tag and all(c.isalnum() or c in '-_' for c in tag)

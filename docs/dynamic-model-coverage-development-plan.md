@@ -1739,6 +1739,13 @@ untracked WECC240/JAX test. No reference checkpoint or tolerance changes.
   and distinguish the TH-zero modal agreement from the AH-zero installed-
   engine order discrepancy. Do not label either complete trajectory parity.
   See the [high-transducer report](benchmarks/pss5c-high-transducer-2026-10-19.md).
+- [x] Add the permanent full-order companion/cascade coordinate observation
+  API and derivative-identity tests. Preserve exact-time replay history and
+  duplicate-boundary feedthrough. Cold-repeat six fine-step observation
+  profiles and their twelve all-row replays; separate the tested nonzero-
+  gain three-band output identity from the contradictory zero-gain case.
+  No production equation or trajectory limit changes. See the
+  [coordinate-observation report](benchmarks/pss5c-coordinate-observation-2026-10-19.md).
 - [ ] Resolve native PSS5C band-frequency/transducer and raw-VAR observation
   discrepancies, zero-order transducers, zero-gain/lifecycle behavior and native
   thirteen-state observation coordinates before native trajectory acceptance.

@@ -162,3 +162,9 @@ All eight prior full/first-order-low coupled CSVs are byte-identical. Sixteen
 new high-reduction exports are kept separately. The typed PSS5C compiled
 runtime and comparison error vectors/times are unchanged. No existing bound
 is widened and no reference history is replaced.
+
+Follow-up: the [coordinate-observation slice](pss5c-coordinate-observation-2026-10-19.md)
+adds read-only equivalent transducer coordinates and all-row fine-step replay
+diagnostics. It identifies an aggregation discrepancy for tested nonzero
+gains and a separate zero-gain counterexample; it does not replace the source
+equations or claim complete native trajectory acceptance.
