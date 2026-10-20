@@ -46,8 +46,8 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
         if (Files.exists(trace) || Files.exists(manifest))
             throw new IOException("Refusing to replace full-network observations");
         network = net;
-        writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(Files.newOutputStream(
-                trace, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)), StandardCharsets.UTF_8));
+        writer = new BufferedWriter(new OutputStreamWriter(new GZIPOutputStream(
+                BenchmarkOutputGuard.newOutputStream(trace, 0)), StandardCharsets.UTF_8));
     }
 
     private void bindInitializedNetwork() throws IOException {

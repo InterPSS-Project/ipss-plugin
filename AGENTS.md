@@ -25,6 +25,25 @@ mvn -pl ipss.plugin.3phase -am clean install -DskipTests
 
 Surefire is configured with `failIfNoTests=false` so specifying a non-matching test name won't fail the build.
 
+## Generated-output storage
+
+- Run long simulations, diagnostic sweeps, and verbose builds through
+  `python tools/run_bounded.py --log target/<unique-run>.log -- <command> ...`.
+  It retains 2 GiB of free disk space and caps console capture at 16 MiB;
+  exceeding either limit stops the command with a failure status.
+- Do not redirect unbounded command output directly to a file. Keep Java test
+  heaps bounded on this workstation, for example `-DargLine=-Xmx2g` for Maven.
+- Benchmark trace writers enforce a 512 MiB per-file limit and a 2 GiB free-space
+  reserve. Keep full comparison samples and event-side duplicates; never silently
+  reduce sampling or discard channels to make a run fit. Larger exports require
+  an explicit reviewed budget and enough space.
+- Keep optional full-network and state diagnostics off unless the current
+  comparison needs them. Avoid copying entire private evidence trees into
+  temporary build directories; reference or selectively stage needed files.
+- Preserve supplied references and files listed by evidence manifests. Cleanup
+  may remove old, regenerable outputs only after checking that they are neither
+  active nor retained dependencies. Do not add automatic deletion of references.
+
 ## Repository Structure
 
 Multi-module Maven project (`com.interpss:ipss.plugin`, version `${revision}` currently 1.1.0).

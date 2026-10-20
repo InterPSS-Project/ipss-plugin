@@ -1095,6 +1095,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseDyrRepresentativeSelectorTest.class,
 	EmbeddedTrajectoryCoverageInventoryTest.class,
 	ReferenceArtifactManifestIntegrityTest.class,
+	org.interpss.core.dstab.reference.BenchmarkOutputGuardTest.class,
 	PowerWorldCsvRepeatabilityTest.class,
 	PsseRunQualityTest.class,
 	EndpointAlignedStateMonitorTest.class,

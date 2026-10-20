@@ -163,7 +163,7 @@ public final class Texas2kReferenceRunner {
             }
             boolean fullNetworkDiagnostics = plan.has("full_network_diagnostics")
                     && plan.get("full_network_diagnostics").getAsBoolean();
-            try (var writer = Files.newBufferedWriter(trace);
+            try (var writer = BenchmarkOutputGuard.newWriter(trace, 0);
                     var fullNetwork = fullNetworkDiagnostics ? new Texas2kFullNetworkRecorder(net, out) : null) {
                 final JsonObject selected = event;
                 // Preserve the loader's initialization and integration-step configuration.

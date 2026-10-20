@@ -131,7 +131,10 @@ public class Ieee39PsseBenchmarkTest {
         }
         assertTrue(algo.initialization(), "IEEE39 initialization");
         var initial=record(net);
-        try (var writer=Files.newBufferedWriter(out.resolve("interpss.csv"))) {
+        long estimatedBytes = org.interpss.core.dstab.reference.BenchmarkOutputGuard.estimateCsvBytes(
+                (long)Math.ceil(stop / step) + 5, initial.size());
+        try (var writer=org.interpss.core.dstab.reference.BenchmarkOutputGuard.newWriter(
+                out.resolve("interpss.csv"), estimatedBytes)) {
             output[0] = writer;
             writer.write("time_s,"+String.join(",",initial.keySet())+"\n");
             write(writer,0.,initial);
