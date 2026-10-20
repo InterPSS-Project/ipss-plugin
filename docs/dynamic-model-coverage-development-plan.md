@@ -2,6 +2,25 @@
 
 ## Current checkpoint
 
+OEL4C now has bounded typed AC1C summation attachment, machine-base Q/Qmax
+measurement and accepted-state rollback. Twenty-two typed SMIB scenarios cover
+flat/fault, initially active, controller branches and 50/100/200-MVA owners.
+Matched PowerWorld diagnostics retain all 18,032 rows and independently score
+seventeen common coordinates: the physical voltage/speed/angle/P/Q/Efd channels
+pass RMSE < 0.001 in every case, but all ten fault cases still fail at least one
+exciter/limiter channel. See [runtime scope, tests and remaining gaps](benchmarks/oel4c-runtime-2026-10-20.md).
+
+Runtime gates: 331 focused, 435 core and 2,287 registered scoped SMIB/model tests,
+zero failures/errors and seven existing skips, plus 261 offline checks. Standard
+record import remains absent; the loadable limiter count remains five.
+
+- [x] Implement typed OEL4C ownership, measurement/base conversion and deferred initialization.
+- [x] Test rollback, initialization equilibria and twenty-two full event-side SMIB scenarios.
+- [x] Add all-row independent coupled diagnostics with explicit unmatched-coordinate inventory.
+- [ ] Resolve ten fault-case comparison failures and add strict standard record import.
+
+Earlier recorded-input checkpoint:
+
 OEL4C now has twelve portable whole-reference fixtures and permanent full-row
 measured-Q replay. A red/green analytic regression identified and fixed premature
 timer expiry based on a predictor whose corrected PI output was still enforcing.

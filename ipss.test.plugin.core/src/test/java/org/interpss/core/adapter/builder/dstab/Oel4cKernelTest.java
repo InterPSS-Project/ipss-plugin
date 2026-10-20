@@ -109,4 +109,18 @@ public class Oel4cKernelTest {
         assertEquals(.03,k.signals(.85).elapsed(),1e-14,
             "A rejected predictor's zero output must not expire an enforcing corrected state");
     }
+    @Test void checkpointRestoresAnUnacceptedCorrectorAndRejectsForeignOrTrialSnapshots(){
+        var k=kernel(0,.3,.7,-1);var initial=k.namedStates();var checkpoint=k.checkpoint();
+        assertTrue(k.step(.01,0,2));assertThrows(IllegalStateException.class,k::checkpoint);
+        assertTrue(k.step(.01,1,2));assertNotEquals(initial,k.namedStates());
+        k.restore(checkpoint);assertEquals(initial,k.namedStates());assertEquals(0,k.signals(2).elapsed());
+        assertThrows(IllegalArgumentException.class,()->kernel(0,.3,.7,-1).restore(checkpoint));
+        step(k,2,.01);assertEquals(-.307,k.signals(2).output(),1e-12);
+    }
+    @Test void coreCorrectorDifferenceOverflowIsRejectedWithoutLosingThePrediction(){
+        var k=kernel(0,0,Double.MAX_VALUE,-Double.MAX_VALUE);
+        assertTrue(k.step(1e-310,0,1.75));var predicted=k.namedStates();double clock=k.signals(1.75).elapsed();
+        assertFalse(k.step(1e-310,1,.25));assertEquals(predicted,k.namedStates());assertEquals(clock,k.signals(1.75).elapsed());
+        k.cancelPrediction();assertEquals(0,k.signals(1).integral());
+    }
 }

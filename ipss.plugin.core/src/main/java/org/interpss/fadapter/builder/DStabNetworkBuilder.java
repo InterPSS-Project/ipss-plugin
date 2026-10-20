@@ -3519,6 +3519,15 @@ public class DStabNetworkBuilder {
         catch(IllegalArgumentException failure){log.warn("Incompatible BASOEL2 target at {} {}: {}",busId,genId,failure.getMessage());return null;}
     }
 
+    /** Typed OEL4C attachment through the existing exclusive summation port; record import is separate. */
+    public org.interpss.dstab.control.oel.psse.oel4c.Oel4cModel addOel4c(String busId,String genId,
+            org.interpss.dstab.control.oel.psse.oel4c.Oel4cData data){
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);Machine machine=network.getMachine(busId+"-mach"+genId);
+        if(bus==null||machine==null||!machine.hasExciter())return null;
+        try{return new org.interpss.dstab.control.oel.psse.oel4c.Oel4cModel(bus,machine,genId,data);}
+        catch(IllegalArgumentException failure){log.warn("Incompatible OEL4C target at {} {}: {}",busId,genId,failure.getMessage());return null;}
+    }
+
     /** Attach an OEL2C auxiliary controller without replacing the exciter. */
     public Oel2cOverExcitationLimiter addOel2c(String busId, String genId, Oel2cData data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);

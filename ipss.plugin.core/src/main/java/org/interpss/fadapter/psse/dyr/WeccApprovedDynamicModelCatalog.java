@@ -121,7 +121,7 @@ public final class WeccApprovedDynamicModelCatalog {
             new WeccModelApproval("OEL3C",OVER_EXCITATION_LIMITER,"oel3c","OEL3C","OEL3C",
                     APPROVED,"2020-04-22","OEL3C","Bounded AC1C summation-port runtime; complete verification is separate."),
             new WeccModelApproval("OEL4C",OVER_EXCITATION_LIMITER,"oel4c","OEL4C","OEL4C",
-                    APPROVED,"2020-04-22","","Missing runtime and native import."),
+                    APPROVED,"2020-04-22","","Bounded typed AC1C summation runtime exists; standard import and independent coupled acceptance remain open."),
             new WeccModelApproval("OEL5C",OVER_EXCITATION_LIMITER,"oel5c","OEL5CU1","OEL5C",
                     APPROVED,"2020-04-22","","Preserve the source wrapper identifier; no inferred alias."),
             new WeccModelApproval("BASOEL2",OVER_EXCITATION_LIMITER,"basoel2","BASOEL2","BASOEL2",
