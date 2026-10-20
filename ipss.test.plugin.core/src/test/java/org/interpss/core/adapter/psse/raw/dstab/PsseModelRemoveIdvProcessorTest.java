@@ -1,6 +1,8 @@
 package org.interpss.core.adapter.psse.raw.dstab;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -108,6 +110,57 @@ public class PsseModelRemoveIdvProcessorTest {
         Files.writeString(malformed, "BAT_PLMOD_REMOVE 1 1\n");
         assertThrows(InterpssException.class,
                 () -> PsseModelRemoveIdvProcessor.apply(network, malformed.toString()));
+    }
+
+    @Test
+    void defaultLoaderNetsMissingModelsAfterPowerFlowBeforeDynamicLoadConversion() throws Exception {
+        var context = missingModelContext();
+        var net = context.getDStabilityNet();
+        var bus = net.getDStabBus("Bus1");
+        var generator = (DStabGen) bus.getContributeGen("1");
+        assertTrue(net.isAllowGenWithoutMach());
+        assertTrue(generator.isActive(), "Import must retain the original power-flow generator");
+        var algorithm = context.getDynSimuAlgorithm();
+        assertTrue(algorithm.getAclfAlgorithm().loadflow());
+        assertTrue(generator.isActive(), "Checking must not net unsolved generation");
+        var solvedPower = generator.getGen();
+        var solvedVoltage = bus.getVoltage();
+        net.setStaticLoadIncludedInYMatrix(false);
+        net.setStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_I);
+        net.setReactiveStaticLoadModel(com.interpss.dstab.StaticLoadModel.CONST_Z);
+        algorithm.setSimuOutputHandler(new com.interpss.dstab.cache.StateMonitor());
+        long checks = ((com.interpss.dstab.impl.BaseDStabNetworkImpl<?, ?>)net)
+                .getDynamicModelInventoryBuildCount();
+        assertTrue(algorithm.initialization());
+        assertFalse(generator.isActive());
+        assertNotNull(bus.getContributeLoad("Gen-Equiv"));
+        assertEquals(solvedPower.negate(), bus.getContributeLoad("Gen-Equiv").getLoadCP());
+        assertEquals(solvedVoltage, bus.getVoltage());
+        assertEquals(checks, ((com.interpss.dstab.impl.BaseDStabNetworkImpl<?, ?>)net)
+                .getDynamicModelInventoryBuildCount(), "Initialization must reuse the data-check inventory");
+        bus.setVoltage(solvedVoltage.multiply(.9));
+        assertEquals(-solvedPower.getReal()*.9, bus.calStaticLoad().getReal(), 1.e-12);
+        assertEquals(-solvedPower.getImaginary()*.81, bus.calStaticLoad().getImaginary(), 1.e-12);
+    }
+
+    @Test
+    void defaultLoaderAllowsStrictMissingModelRejection() throws Exception {
+        var context = missingModelContext();
+        var net = context.getDStabilityNet();
+        net.setAllowGenWithoutMach(false);
+        assertFalse(net.checkData(context.getDynSimuAlgorithm().getAclfAlgorithm().getDataCheckConfig()));
+        assertFalse(net.prepareDStabModels());
+        assertTrue(net.getDStabBus("Bus1").getContributeGen("1").isActive());
+        assertNull(net.getDStabBus("Bus1").getContributeLoad("Gen-Equiv"));
+    }
+
+    private com.interpss.simu.SimuContext missingModelContext() throws Exception {
+        org.interpss.IpssCorePlugin.init();
+        Path raw = tempDir.resolve("missing.raw");
+        Files.copy(Path.of("testData", "adpter", "psse", "v33", "SMIB", "SMIB_v33.raw"), raw);
+        Path dyr = tempDir.resolve("missing.dyr");
+        Files.writeString(dyr, "2 'GENCLS' 1 3.5 0 /\n");
+        return new PSSEMultiFileLoader().loadDStab(raw.toString(), dyr.toString());
     }
 
     private static com.interpss.dstab.DStabilityNetwork oneGeneratorNetwork()

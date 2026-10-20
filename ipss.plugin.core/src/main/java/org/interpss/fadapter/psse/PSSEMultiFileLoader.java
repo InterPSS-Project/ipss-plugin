@@ -165,6 +165,11 @@ public class PSSEMultiFileLoader {
                     modelRemovedGenerators);
         }
 
+        // Missing generator models are netted from solved P/Q during default
+        // preprocessing, before dynamic states and static loads are initialized.
+        // Import/data checking must leave the power-flow generators in service.
+        // Callers can disable this policy with setAllowGenWithoutMach(false).
+        dsNet.setAllowGenWithoutMach(true);
         DynamicSimuAlgorithm dynAlgo = DStabObjectFactory.createDynamicSimuAlgorithm(dsNet);
         dynAlgo.setSolver(new PsseDStabSolver(dynAlgo));
         simuCtx.setDynSimuAlgorithm(dynAlgo);
