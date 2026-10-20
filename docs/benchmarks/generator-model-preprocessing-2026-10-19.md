@@ -64,6 +64,10 @@ power flow or non-finite pending generator power.
   fixtures with non-finite shunts, and the P4 voltage-comparison fixture.
 - All six cases passed the three-cycle fault and generator-trip smoke tests.
   The flat-run smoke stops at the existing Case 1 Bus1051 voltage-drift limit.
+- A paired full Case 3 startup control reuses one inventory across checking
+  and initialization. All 203 rows, 6,578 physical channels and three 623-device
+  cold/history snapshots match the earlier trajectory exactly; see the
+  [preprocessing and command-storage controls](case3-preprocessing-command-storage-2026-10-19.md).
 
 The broad suite was run with a 2 GiB Java heap. Two earlier attempts were
 interrupted by disk exhaustion and are not counted as validation. The successful
