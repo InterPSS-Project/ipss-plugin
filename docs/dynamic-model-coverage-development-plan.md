@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+OEL4C now has twelve portable whole-reference fixtures and permanent full-row
+measured-Q replay. A red/green analytic regression identified and fixed premature
+timer expiry based on a predictor whose corrected PI output was still enforcing.
+Only OEL4C's accepted timer-history decision changes; no shared CML behavior or
+reference samples are altered. See [permanent comparisons and remaining gaps](benchmarks/oel4c-recorded-input-2026-10-20.md).
+
+Recorded-input/corrector gates: 292 focused, 435 core and 2,244 registered scoped
+SMIB/model tests, zero failures/errors and seven existing skips, plus 253 offline
+checks. All 86 prior limiter exports and all 24 raw reference runs are unchanged.
+
+- [x] Preserve all 18,032 representative raw rows and 21 original channels permanently.
+- [x] Add independent controlled-error conformance and full output/timer diagnostics.
+- [x] Base accepted recovery expiry on the corrected PI output, with a red/green regression.
+- [ ] Resolve the eight remaining all-row output/timer failures, then finish host/import/coupled coverage.
+
+Earlier foundation checkpoint:
+
 OEL4C now has a standalone five-constant delayed-Q/conditional-PI foundation and
 twelve cold-repeatable PowerWorld reference pairs. All 36,064 raw rows and 21
 channels are retained with exact parameter readbacks. This is not yet a runtime

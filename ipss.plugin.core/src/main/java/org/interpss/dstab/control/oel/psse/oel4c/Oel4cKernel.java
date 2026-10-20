@@ -64,7 +64,11 @@ public final class Oel4cKernel {
             startIntegral=pi.getStateX();startElapsed=elapsed;pendingStep=seconds;
             pi.eulerStep1(rateInput,seconds);elapsed=nextTimer;predicted=true;
         }else{
-            pi.eulerStep2(rateInput,seconds);elapsed=nextTimer;predicted=false;
+            pi.eulerStep2(rateInput,seconds);
+            // Expire accepted recovery history from the corrected PI output, never a trial overshoot.
+            boolean enforcing=input.reactiveError()<0
+                ||(startElapsed>=data.delay()&&signals(reactivePower,nextTimer).output()<0);
+            elapsed=enforcing?startElapsed+seconds:0;predicted=false;
         }
         finite(pi.getStateX());return true;
     }

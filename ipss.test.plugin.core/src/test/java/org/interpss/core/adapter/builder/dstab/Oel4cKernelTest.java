@@ -101,4 +101,12 @@ public class Oel4cKernelTest {
         var shortExposure=kernel(.01,0,1,-1);step(shortExposure,2,.002);step(shortExposure,.9,.001);
         assertEquals(0,shortExposure.signals(2).elapsed());
     }
+    @Test void recoveryExpiryUsesTheAcceptedCorrectorNotAnOvershootingPredictor(){
+        var k=kernel(.01,0,1,-1);step(k,2,.01);step(k,.6,.01);
+        assertEquals(-.001,k.signals(.6).integral(),1e-14);
+        assertTrue(k.step(.01,0,.85));assertEquals(0,k.signals(.85).output());
+        assertTrue(k.step(.01,1,.85));assertEquals(-.00025,k.signals(.85).output(),1e-14);
+        assertEquals(.03,k.signals(.85).elapsed(),1e-14,
+            "A rejected predictor's zero output must not expire an enforcing corrected state");
+    }
 }
