@@ -78,7 +78,8 @@ The saved coupled prefix contains 603 rows, all 2,000 complex bus voltages and
 branches, transformers and fixed shunts, adds solved switched shunts once, and
 uses the confirmed constant-current P / constant-impedance Q load profile.
 It retains the existing negative-load conversion of unmodeled units 5045/1
-and 7099/2; their reference preparation remains unresolved.
+and 7099/2. The user subsequently confirmed netting before load conversion;
+see the [preparation clarification](case3-unmodeled-generation-diagnostic-2026-10-19.md).
 
 The largest bus power-balance residual is **0.270299 MVA** at bus 2029,
 0.2765 s. At the cold initial point the maximum is 0.112883 MVA at bus 5317.

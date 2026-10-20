@@ -1,31 +1,37 @@
 # Case 3 unmodeled-generation diagnostic
 
-Changing the two unmodeled generators from negative current-P/impedance-Q
-loads to negative constant-P/Q loads is not supported as a correction by this
-diagnostic. At 0.05 seconds, its immediate voltage effect at bus 3054 is
-−0.0000798 pu, while the existing simulation-minus-reference error is
-−0.0041141 pu. The change moves that voltage farther from the supplied result.
-No production equation, input, state, or acceptance limit was changed.
+The user confirmed that units 5045/1 and 7099/2 were netted **before load
+conversion** for the supplied Cases 3–6 runs. Their negative loads therefore
+retain the confirmed current-P/impedance-Q profile. This resolves the earlier
+preparation question without changing the comparison runtime or acceptance
+limits.
 
-## Source preparation remains unresolved
+The earlier supplied screenshot describes automatic netting during dynamic
+initialization, after load conversion. The user's subsequent explicit answer
+establishes the before-conversion order used here. A pending constant-P/Q
+implementation experiment was set aside; it was not committed or used to
+produce a replacement benchmark trajectory. The supplied-run order is
+user-confirmed, not independently established from the screenshot or a newly
+executed reference run.
+
+## Confirmed supplied-run preparation
 
 The original Cases 3–6 contain active units 5045/1 and 7099/2 with wind
 controller records but no generator/converter model. Neither unit appears in
 the supplied netting instructions. The current runtime converts their solved
-generation to negative loads using the confirmed current-P/impedance-Q
-profile. Case 3 contributions are:
+generation to negative loads and applies the current-P/impedance-Q profile.
+That dynamic voltage response agrees with the newly confirmed preparation.
+Case 3 contributions are:
 
 | Unit | Active generation (MW) | Reactive generation (Mvar) |
 | --- | ---: | ---: |
 | 5045/1 | 34.514984 | 29.937023 |
 | 7099/2 | 13.607986 | −11.802962 |
 
-The retained reference operating manual states that an active generator
-without a generator model invalidates initialization and prevents a subsequent
-dynamic run. It does not establish the preparation used for these supplied
-outputs. Whether these units were netted, disconnected, or given additional
-models remains an open input question; no replacement model is inferred.
-Exact manual provenance remains in private evidence.
+The earlier manual-based inference did not establish how these supplied runs
+were prepared. The user's confirmation supersedes the unresolved-input status;
+no replacement generator or converter model is inferred. Exact manual
+provenance and the historical diagnostic remain in private evidence.
 
 The supplied Case 3 removal commands explicitly remove the generator model
 for each of these two units. They do not establish whether generation was
@@ -50,8 +56,9 @@ change representation. Reference values are used afterward to report errors.
 | 0.10 | −0.0064270 | −0.0000399 | 0.0000474 |
 
 These are independent frozen-source calculations, not a corrected dynamic
-trajectory or a bound on later feedback. The alternative therefore cannot be
-ruled out solely from this table, but there is no evidence here to adopt it.
+trajectory or a bound on later feedback. They cannot establish the preparation
+order. The confirmed order, rather than which representation fits the sampled
+voltages better, determines the retained load profile.
 
 ## Validation and limits
 
@@ -77,3 +84,8 @@ The reproducible program, prefix-equivalence check, numerical solutions,
 channel table, and PNG/PDF figure are retained in the private evidence set
 `2026-10-19-case3-unmodeled-load-response`. The six-case, 36-event comparison
 goal remains open.
+
+Private evidence set `2026-10-19-unmodeled-generation-preparation-confirmation`
+retains the user's clarification, screenshot, superseded experiment and the
+successful three-test check after restoring the committed core. The existing
+2,003-row, 6,578-channel Case 3 physical trace remains byte-identical.

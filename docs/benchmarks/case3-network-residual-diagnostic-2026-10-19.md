@@ -62,8 +62,9 @@ cold-limit records are retained in the private evidence set
 `2026-10-19-case3-network-residual-diagnostic`.
 
 The supplied model-removal commands explicitly target the two unmodeled
-generators. Their netting or disconnection during original preparation
-remains unknown. The separate
+generators. The user subsequently confirmed that both were netted before
+load conversion in the supplied runs. The separate
 [unmodeled-generation diagnostic](case3-unmodeled-generation-diagnostic-2026-10-19.md)
-records that changing their frozen load representation does not explain the
-early voltage discrepancy. The six-case, 36-event goal remains open.
+records that confirmation and retains their current-P/impedance-Q profile.
+The frozen-source comparison does not establish a cause for the early voltage
+discrepancy. The six-case, 36-event goal remains open.

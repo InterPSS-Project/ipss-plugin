@@ -136,9 +136,10 @@ The observation test class was already registered in the core suite; a fresh
 execution of that entire suite is not claimed here.
 
 Two source units in Cases 3–6 have no generator/converter model in the supplied
-DYR files: bus 5045/unit 1 and bus 7099/unit 2. Their handling in the original
-reference preparation still needs clarification. The existing local conversion
-behavior is preserved; no inferred replacement or shutdown is applied.
+DYR files: bus 5045/unit 1 and bus 7099/unit 2. The user subsequently confirmed
+that they were netted before load conversion. The existing current-P/impedance-Q
+negative-load response is preserved; see the
+[preparation clarification](case3-unmodeled-generation-diagnostic-2026-10-19.md).
 
 Inputs, raw outputs, source snapshots, replay programs, comparisons, rejected
 controls and hashes are retained in the private evidence set
