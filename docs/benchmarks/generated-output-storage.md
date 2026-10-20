@@ -20,6 +20,13 @@ reached, retains the captured prefix, and records the reason and exit code in
 `my-run.log.status.json`. Existing logs and status files are never overwritten.
 The command's own exit code is preserved when no storage limit is hit.
 
+On Windows, a launcher waits for assignment to a private Job Object before it
+starts the command. The job owns all descendants and terminates them when its
+last handle closes, including when a parent exits early or the runner is
+interrupted. This uses the operating system's documented
+[process-tree lifetime control](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects).
+If assignment fails, the requested command is never launched.
+
 `--min-free-gib` and `--max-log-mib` select explicit budgets for a reviewed run.
 Keep both positive. The guard checks the filesystem containing the log, so put
 the log on the same drive as the generated results.
@@ -64,6 +71,7 @@ The Java checks exercise estimated and actual file limits, disk-space loss durin
 writing, existing-file protection, and exact compressed round trips including
 duplicate timestamps. The Python checks exercise refusal before launching on a
 full disk, a falling free-space reserve, a noisy child process, existing-log and
-status protection, invalid limits, and propagation of the command's exit code.
-All seven Java checks and seven Python checks pass. A real Maven invocation
+status protection, invalid limits, propagation of the command's exit code,
+descendant termination before and after parent exit, and failed job assignment.
+All seven Java checks and ten Python checks pass. A real Maven invocation
 through the bounded runner also completed and retained its exit status.

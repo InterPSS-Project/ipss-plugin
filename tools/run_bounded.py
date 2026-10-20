@@ -14,11 +14,66 @@ GIB = 1024 ** 3
 MIB = 1024 ** 2
 
 
-def stop_process_tree(process):
-    if os.name == "nt":
-        subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-                       creationflags=subprocess.CREATE_NO_WINDOW, check=False)
+class WindowsJob:
+    """Own only this run's processes, including descendants of exited parents."""
+
+    def __init__(self):
+        import ctypes
+        from ctypes import wintypes
+
+        class BasicLimits(ctypes.Structure):
+            _fields_ = [("process_time", ctypes.c_int64), ("job_time", ctypes.c_int64),
+                        ("flags", wintypes.DWORD), ("min_working_set", ctypes.c_size_t),
+                        ("max_working_set", ctypes.c_size_t), ("active_processes", wintypes.DWORD),
+                        ("affinity", ctypes.c_size_t), ("priority", wintypes.DWORD),
+                        ("scheduling", wintypes.DWORD)]
+
+        class IoCounters(ctypes.Structure):
+            _fields_ = [(name, ctypes.c_uint64) for name in
+                        ("reads", "writes", "other", "read_bytes", "write_bytes", "other_bytes")]
+
+        class ExtendedLimits(ctypes.Structure):
+            _fields_ = [("basic", BasicLimits), ("io", IoCounters),
+                        ("process_memory", ctypes.c_size_t), ("job_memory", ctypes.c_size_t),
+                        ("peak_process_memory", ctypes.c_size_t), ("peak_job_memory", ctypes.c_size_t)]
+
+        self.api = ctypes.WinDLL("kernel32", use_last_error=True)
+        for name, arguments, result in [
+            ("CreateJobObjectW", [ctypes.c_void_p, wintypes.LPCWSTR], wintypes.HANDLE),
+            ("SetInformationJobObject", [wintypes.HANDLE, ctypes.c_int, ctypes.c_void_p,
+                                          wintypes.DWORD], wintypes.BOOL),
+            ("AssignProcessToJobObject", [wintypes.HANDLE, wintypes.HANDLE], wintypes.BOOL),
+            ("CloseHandle", [wintypes.HANDLE], wintypes.BOOL),
+        ]:
+            function = getattr(self.api, name)
+            function.argtypes, function.restype = arguments, result
+        self.handle = self.api.CreateJobObjectW(None, None)
+        if not self.handle:
+            raise ctypes.WinError(ctypes.get_last_error())
+        limits = ExtendedLimits()
+        limits.basic.flags = 0x2000  # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE
+        if not self.api.SetInformationJobObject(self.handle, 9, ctypes.byref(limits),
+                                               ctypes.sizeof(limits)):
+            error = ctypes.WinError(ctypes.get_last_error())
+            self.close()
+            raise error
+
+    def assign(self, process):
+        import ctypes
+        if not self.api.AssignProcessToJobObject(self.handle, int(process._handle)):
+            raise ctypes.WinError(ctypes.get_last_error())
+
+    def close(self):
+        if self.handle:
+            import ctypes
+            if not self.api.CloseHandle(self.handle):
+                raise ctypes.WinError(ctypes.get_last_error())
+            self.handle = None
+
+
+def stop_process_tree(process, job=None):
+    if job is not None:
+        job.close()
     else:
         import signal
         try:
@@ -60,12 +115,32 @@ def run(command, log, min_free=2 * GIB, max_log=16 * MIB, free_bytes=None):
     stopped = threading.Event()
     failure = []
     process = None
+    job = None
     try:
         with log.open("xb") as output:
-            options = {"start_new_session": True} if os.name != "nt" else {
-                "creationflags": subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.CREATE_NO_WINDOW}
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                       stdin=subprocess.DEVNULL, **options)
+            if os.name == "nt":
+                job = WindowsJob()
+                # The launcher cannot start the command until job assignment succeeds.
+                # This avoids an uncontained descendant racing ahead of assignment.
+                launcher = ("import json,subprocess,sys; "
+                            "command=json.loads(sys.stdin.buffer.readline()); "
+                            "sys.exit(subprocess.call(command, stdin=subprocess.DEVNULL))")
+                process = subprocess.Popen([sys.executable, "-c", launcher],
+                                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                           stdin=subprocess.PIPE,
+                                           creationflags=subprocess.CREATE_NO_WINDOW)
+                try:
+                    job.assign(process)
+                    process.stdin.write((json.dumps(command) + "\n").encode("utf-8"))
+                    process.stdin.close()
+                except BaseException:
+                    process.kill()
+                    process.wait(timeout=3)
+                    process.stdin.close()
+                    raise
+            else:
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                           stdin=subprocess.DEVNULL, start_new_session=True)
             status["state"] = "running"
             status_path.write_text(json.dumps(status, indent=2) + "\n")
 
@@ -96,25 +171,33 @@ def run(command, log, min_free=2 * GIB, max_log=16 * MIB, free_bytes=None):
                     break
                 time.sleep(.1)
             if stopped.is_set():
-                stop_process_tree(process)
+                stop_process_tree(process, job)
             else:
                 process.wait()
             reader.join(timeout=5)
+            # The reader can reach the budget after the command's parent exits.
+            if stopped.is_set():
+                stop_process_tree(process, job)
             if reader.is_alive():
                 failure.append("A descendant retained the console pipe")
-                stop_process_tree(process)
-                process.stdout.close()
+                stop_process_tree(process, job)
                 reader.join(timeout=1)
             process.stdout.close()
             code = 75 if failure else process.returncode
             status.update(state="stopped" if failure else "completed", exit_code=code,
                           reason="; ".join(failure) if failure else None)
     except BaseException as error:
-        if process is not None and process.poll() is None:
-            stop_process_tree(process)
+        if process is not None:
+            stop_process_tree(process, job)
         status.update(state="failed", reason=str(error))
         raise
     finally:
+        if job is not None:
+            job.close()
+        if process is not None:
+            for pipe in (process.stdout, process.stdin):
+                if pipe is not None:
+                    pipe.close()
         status_path.write_text(json.dumps(status, indent=2) + "\n")
     return code
 

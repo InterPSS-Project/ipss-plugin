@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import sys
 import tempfile
@@ -31,6 +32,61 @@ class BoundedRunTest(unittest.TestCase):
         status = json.loads(self.log.with_name("run.log.status.json").read_text())
         self.assertEqual("stopped", status["state"])
         self.assertIn("log budget", status["reason"])
+
+    @unittest.skipUnless(os.name == "nt", "Windows job ownership")
+    def test_budget_stops_descendant_after_its_parent_exits(self):
+        pid_file = Path(self.directory.name) / "child.pid"
+        child = ("import os,sys,time; from pathlib import Path; "
+                 f"Path({str(pid_file)!r}).write_text(str(os.getpid())); "
+                 "time.sleep(.3); sys.stdout.write('x'*100000); sys.stdout.flush(); time.sleep(60)")
+        parent = ("import subprocess,sys; "
+                  f"subprocess.Popen([sys.executable, '-c', {child!r}])")
+        self.assertEqual(75, self.run_command(parent))
+        self.assertEqual(1024, self.log.stat().st_size)
+        self.assert_process_stopped(int(pid_file.read_text()))
+
+    @unittest.skipUnless(os.name == "nt", "Windows job ownership")
+    def test_budget_stops_descendant_while_parent_is_running(self):
+        pid_file = Path(self.directory.name) / "child.pid"
+        child = ("import os,time; from pathlib import Path; "
+                 f"Path({str(pid_file)!r}).write_text(str(os.getpid())); time.sleep(60)")
+        parent = ("import subprocess,sys,time; from pathlib import Path; "
+                  f"subprocess.Popen([sys.executable, '-c', {child!r}]); "
+                  f"p=Path({str(pid_file)!r})\n"
+                  "while not p.exists(): time.sleep(.01)\n"
+                  "sys.stdout.write('x'*100000); sys.stdout.flush(); time.sleep(60)")
+        self.assertEqual(75, self.run_command(parent))
+        self.assert_process_stopped(int(pid_file.read_text()))
+
+    @unittest.skipUnless(os.name == "nt", "Windows job ownership")
+    def test_job_assignment_failure_never_launches_command(self):
+        marker = Path(self.directory.name) / "should-not-exist"
+        with patch.object(run_bounded.WindowsJob, "assign", side_effect=OSError("assignment failed")):
+            with self.assertRaisesRegex(OSError, "assignment failed"):
+                self.run_command(f"from pathlib import Path; Path({str(marker)!r}).touch()")
+        self.assertFalse(marker.exists())
+
+    def assert_process_stopped(self, pid):
+        import ctypes
+        from ctypes import wintypes
+        api = ctypes.WinDLL("kernel32", use_last_error=True)
+        api.OpenProcess.argtypes = [wintypes.DWORD, wintypes.BOOL, wintypes.DWORD]
+        api.OpenProcess.restype = wintypes.HANDLE
+        api.WaitForSingleObject.argtypes = [wintypes.HANDLE, wintypes.DWORD]
+        api.WaitForSingleObject.restype = wintypes.DWORD
+        api.TerminateProcess.argtypes = [wintypes.HANDLE, wintypes.UINT]
+        api.CloseHandle.argtypes = [wintypes.HANDLE]
+        handle = api.OpenProcess(0x100001, False, pid)  # SYNCHRONIZE | PROCESS_TERMINATE
+        if not handle:
+            self.assertEqual(87, ctypes.get_last_error())  # Process already removed.
+            return
+        try:
+            result = api.WaitForSingleObject(handle, 3000)
+            if result != 0:
+                api.TerminateProcess(handle, 99)  # Cleanup this test's known child on failure.
+            self.assertEqual(0, result, "Descendant survived the bounded run")
+        finally:
+            api.CloseHandle(handle)
 
     def test_low_disk_never_launches_command(self):
         with patch.object(run_bounded.subprocess, "Popen") as launch:
