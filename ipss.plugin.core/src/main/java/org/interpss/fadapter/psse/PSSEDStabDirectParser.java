@@ -178,6 +178,10 @@ public class PSSEDStabDirectParser {
     private final List<PendingUel2c> pendingUel2c = new ArrayList<>();
     private final List<PendingOel2c> pendingOel2c = new ArrayList<>();
     private final List<PsseDyrRecord> pendingOel3c = new ArrayList<>();
+    private final List<PsseDyrRecord> pendingBasoel2 = new ArrayList<>();
+    /** Declared documented model contract; loadability does not assert reference-tool parity. */
+    public static final org.interpss.dstab.control.oel.psse.basoel2.Basoel2Kernel.TimerSemantics BASOEL2_TIMER_POLICY =
+            org.interpss.dstab.control.oel.psse.basoel2.Basoel2Kernel.TimerSemantics.POWERWORLD_DOCUMENTED;
     private boolean strictImport;
     /** Pin a known native schema when legacy cardinality inference is not appropriate. */
     public enum Regfma1RecordFormat { AUTO_COMPATIBLE, NATIVE_PSSE_36_7, TEXAS2K_LEGACY }
@@ -255,6 +259,7 @@ public class PSSEDStabDirectParser {
         pendingUel2c.clear();
         pendingOel2c.clear();
         pendingOel3c.clear();
+        pendingBasoel2.clear();
         DynamicModelImportReport.Builder report = DynamicModelImportReport.builder(source);
         var hybridRecords=new ArrayList<PsseDyrRecord>();
         var removedHybrid=new java.util.LinkedHashMap<PsseDyrRecord,DynamicModelImportStatus>();
@@ -300,7 +305,7 @@ public class PSSEDStabDirectParser {
                 boolean deferred = type.equals("ST2CUT") || type.equals("IEEEST")
                         || type.equals("REPCA1") || type.equals("REPCC") || type.equals("REPCGFMC1U") || type.equals("REECE") || type.equals("LCFB1")
                         || type.equals("IEEEVC") || type.equals("UEL1")
-                        || type.equals("OEL2C") || type.equals("UEL2C") || type.equals("OEL3C")
+                        || type.equals("OEL2C") || type.equals("UEL2C") || type.equals("OEL3C") || type.equals("BASOEL2")
                         || type.equals("WTDTB1") || type.equals("WTPTB1") || type.equals("WTGWGOA") || type.equals("WTGIBFFRA");
                 if (processModelRecord(type, record.fields().toArray(String[]::new), record)) {
                     if (!deferred) report.add(record, attachedStatus(record),
@@ -461,6 +466,17 @@ public class PSSEDStabDirectParser {
             catch(RuntimeException failure){report.add(pending,DynamicModelImportStatus.ERROR,failure.getMessage());}
         }
         pendingOel3c.clear();
+        for(PsseDyrRecord pending:pendingBasoel2) {
+            try {
+                boolean attached=procBasoel2(pending);
+                report.add(pending,attached?DynamicModelImportStatus.ATTACHED:DynamicModelImportStatus.REJECTED,
+                    attached?"BASOEL2 3-selector/12-constant record; timer policy "+BASOEL2_TIMER_POLICY+
+                        "; documented implementation is loadable, reference-tool/coupled trajectory acceptance remains open":
+                        "BASOEL2 requires an unoccupied compatible AC1C summation port; takeover/disabled ports are rejected");
+            }catch(IllegalArgumentException failure){report.add(pending,DynamicModelImportStatus.REJECTED,failure.getMessage());}
+            catch(RuntimeException failure){report.add(pending,DynamicModelImportStatus.ERROR,failure.getMessage());}
+        }
+        pendingBasoel2.clear();
         lastImportReport = report.build();
         log.info("Dynamic model import: {}", lastImportReport.failureSummary());
         if (strictImport && !lastImportReport.isStrictlyComplete()) {
@@ -577,6 +593,8 @@ public class PSSEDStabDirectParser {
                 return true;
             case "OEL3C":
                 pendingOel3c.add(record);return true;
+            case "BASOEL2":
+                pendingBasoel2.add(record);return true;
             case "GENCLS":
                 return procGencls(busId, genId, fields);
             case "GENROU":
@@ -2420,6 +2438,17 @@ public class PSSEDStabDirectParser {
             record.doubleParameter(6),record.doubleParameter(7),record.doubleParameter(8),record.doubleParameter(9),
             record.doubleParameter(10),record.doubleParameter(11));
         return builder.addOel3c(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),d)!=null;
+    }
+
+    private boolean procBasoel2(PsseDyrRecord record) {
+        if(!record.sourceModelName().equals("BASOEL2")||record.parameterCount()!=15)return false;
+        var d=new org.interpss.dstab.control.oel.psse.basoel2.Basoel2Data(
+            record.intParameter(0),record.intParameter(1),record.intParameter(2),
+            record.doubleParameter(3),record.doubleParameter(4),record.doubleParameter(5),
+            record.doubleParameter(6),record.doubleParameter(7),record.doubleParameter(8),
+            record.doubleParameter(9),record.doubleParameter(10),record.doubleParameter(11),
+            record.doubleParameter(12),record.doubleParameter(13),record.doubleParameter(14));
+        return builder.addBasoel2(BUS_ID_PREFIX+record.busNumber(),record.deviceId(),d,BASOEL2_TIMER_POLICY)!=null;
     }
 
     private record LoadTarget(BaseDStabBus<?, ?> bus, AclfLoad load) {}

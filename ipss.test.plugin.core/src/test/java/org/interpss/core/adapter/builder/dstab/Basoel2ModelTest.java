@@ -108,10 +108,13 @@ public class Basoel2ModelTest extends CorePluginTestSetup {
         assertEquals(1.2,m.getExciter().getOutput(m),1e-9);
         assertTrue(((Ac1cExciter)m.getExciter()).reference>o.getSampledInput().voltageReference());
     }
-    @Test void automaticNativeImportRemainsRejectedInsteadOfChoosingAPolicySilently()throws Exception{
+    @Test void recordImportDeclaresItsDocumentedPolicyWithoutClaimingReferenceParity()throws Exception{
         var b=host(1);var file=directory.resolve("unresolved.dyr");
         Files.writeString(file,"1 'BASOEL2' '1' 1 0 1 .02 .2 .4 3 .02 2 .02 1.5 .02 .02 1.05 .1 /\n");
-        assertThrows(Exception.class,()->new PSSEDStabDirectParser(b).setStrictImport(true).parseDynFile(file.toString()));
-        assertTrue(org.interpss.fadapter.psse.dyr.DynamicModelCatalog.find("BASOEL2").isEmpty());
+        var parser=new PSSEDStabDirectParser(b).setStrictImport(true);parser.parseDynFile(file.toString());
+        var o=(Basoel2Model)machine(b).getDStabBus().getDynamicBusDeviceList().stream().filter(Basoel2Model.class::isInstance).findFirst().orElseThrow();
+        assertEquals(Basoel2Kernel.TimerSemantics.POWERWORLD_DOCUMENTED,o.getTimerSemantics());
+        String detail=parser.getLastImportReport().entries().getFirst().message();
+        assertTrue(detail.contains("POWERWORLD_DOCUMENTED"));assertTrue(detail.contains("acceptance remains open"));
     }
 }

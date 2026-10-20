@@ -9,7 +9,7 @@ public class ExcitationLimiterCoverageTest {
         var rows=WeccApprovedDynamicModelCatalog.limiters();assertEquals(9,rows.size());
         assertTrue(rows.stream().allMatch(r->r.approvalStatus()==WeccModelApprovalStatus.APPROVED));
         assertEquals(8,rows.stream().filter(WeccModelApproval::hasPsseModel).count());
-        assertEquals(4,rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
+        assertEquals(5,rows.stream().filter(WeccModelApproval::isImplementedExactly).count());
         assertEquals(6,rows.stream().filter(r->r.category()==DynamicModelCategory.OVER_EXCITATION_LIMITER).count());
         assertEquals(3,rows.stream().filter(r->r.category()==DynamicModelCategory.UNDER_EXCITATION_LIMITER).count());
     }
@@ -22,7 +22,7 @@ public class ExcitationLimiterCoverageTest {
         assertEquals(12,DynamicModelCatalog.find("OEL3C").orElseThrow().parameterCount());
     }
     @Test void exactPresentAndMissingSetsStayExplicitAndImmutable() {
-        var rows=WeccApprovedDynamicModelCatalog.limiters();assertEquals(Set.of("UEL1","UEL2C","OEL2C","OEL3C"),
+        var rows=WeccApprovedDynamicModelCatalog.limiters();assertEquals(Set.of("UEL1","UEL2C","OEL2C","OEL3C","BASOEL2"),
             rows.stream().filter(WeccModelApproval::isImplementedExactly).map(WeccModelApproval::catalogName).collect(java.util.stream.Collectors.toSet()));
         assertThrows(UnsupportedOperationException.class,()->rows.clear());
         assertEquals("2026-05-07",rows.stream().filter(r->r.catalogName().equals("BASOEL2")).findFirst().orElseThrow().statusEffective());
@@ -30,10 +30,10 @@ public class ExcitationLimiterCoverageTest {
     @Test void generatedMarkdownIncludesEverySourceRowAndNoVerificationPromotion() {
         String text=ExcitationLimiterCoverage.markdown();
         for(var row:WeccApprovedDynamicModelCatalog.limiters())assertTrue(text.contains("| "+row.catalogName()+" |"));
-        assertTrue(text.contains("Four rows currently have bounded loadable runtime paths"));
+        assertTrue(text.contains("Five rows currently have bounded loadable runtime paths"));
         assertTrue(text.contains("kernel does not increase the loadable count"));
-        assertTrue(text.contains("Explicit-dialect typed summation runtime; native import and reference-dialect acceptance remain missing."));
-        assertTrue(DynamicModelCatalog.find("BASOEL2").isEmpty());
+        assertTrue(text.contains("POWERWORLD_DOCUMENTED policy; full trajectory acceptance remains open."));
+        assertEquals(15,DynamicModelCatalog.find("BASOEL2").orElseThrow().parameterCount());
         assertTrue(text.contains(WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256));
     }
 }

@@ -7,7 +7,7 @@ public final class ExcitationLimiterCoverage {
         StringBuilder s=new StringBuilder("# Approved excitation-limiter coverage\n\n");
         s.append("Generated from `WeccApprovedDynamicModelCatalog.limiters()` and the visually reviewed May 2026 source PDF, page 2. Source SHA-256: `")
             .append(WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256).append("`.\n\n")
-            .append("Nine approved source rows include eight native mappings and one explicitly unconverted model. Four rows currently have bounded loadable runtime paths; this is not complete equation or trajectory verification. A standalone kernel does not increase the loadable count.\n\n")
+            .append("Nine approved source rows include eight native mappings and one explicitly unconverted model. Five rows currently have bounded loadable runtime paths; this is not complete equation or trajectory verification. A standalone kernel does not increase the loadable count. BASOEL2 import explicitly selects POWERWORLD_DOCUMENTED behavior, not emulation of a particular reference-tool version.\n\n")
             .append("| Source | Native identifier | PowerWorld | Category | Runtime path | Notes |\n|---|---|---|---|---|---|\n");
         for(var row:WeccApprovedDynamicModelCatalog.limiters())
             s.append("| ").append(row.catalogName()).append(" | ").append(row.psseModel()).append(" | ")

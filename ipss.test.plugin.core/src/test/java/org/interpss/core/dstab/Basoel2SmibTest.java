@@ -86,6 +86,9 @@ public class Basoel2SmibTest {
         run(profile,h,policy,false,outputDirectory());
     }
     static void run(String profile,double h,Basoel2Kernel.TimerSemantics policy,boolean impedanceLoad,Path destination)throws Exception{
+        run(profile,h,policy,impedanceLoad,destination,false);
+    }
+    static void run(String profile,double h,Basoel2Kernel.TimerSemantics policy,boolean impedanceLoad,Path destination,boolean importRecord)throws Exception{
         IpssCorePlugin.init();Path work=Files.createTempDirectory(destination,"case-");Path dyr=work.resolve("model.dyr");
         Files.writeString(dyr,"1 'GENROU' '1' 6 .033 .54 .078 6.4 0 .8958 .8645 .1189 .1969 .089 .0521 0 0 /\n"
             +"2 'GENCLS' '1' 99999 0 /\n1 'AC1C' '1' 1 0 0 .2 .05 10 .3 20 -20 .4 .2 .5 .2 .1 1.1 .75 0 1 0 20 -20 99 0 /\n");
@@ -99,7 +102,19 @@ public class Basoel2SmibTest {
         var data=new Basoel2Data(enabled,vhz,selector,profile.equals("ifd-zero-filter")?0:.02,.15,.25,
             level,efd?0:.01,!fault?3.5:efd?1.2:vfe?1.6:1.5,efd?.01:.02,!fault?2.5:efd?1.15:vfe?1.5:1.2,efd?.01:.03,.02,
             profile.equals("flat-vhz")?.9:profile.equals("vhz-fault")?1.0001:1.05,.1);
-        var oel=new DStabNetworkBuilder(net).addBasoel2("Bus1","1",data,policy);assertNotNull(oel);
+        Basoel2Model oel;
+        if(importRecord){
+            assertEquals(org.interpss.fadapter.psse.PSSEDStabDirectParser.BASOEL2_TIMER_POLICY,policy);
+            String record="1 'BASOEL2' '1' "+data.oelFlag()+" "+data.vhzFlag()+" "+data.inputFlag()+" "+
+                data.inputFilterTime()+" "+data.proportionalGain()+" "+data.integralGain()+" "+data.shortLimit()+" "+
+                data.shortDelay()+" "+data.mediumLimit()+" "+data.mediumDelay()+" "+data.continuousLimit()+" "+
+                data.continuousDelay()+" "+data.speedFilterTime()+" "+data.vhzGain()+" "+data.minimumVhzInput()+" /\n";
+            Path imported=work.resolve("limiter.dyr");Files.writeString(imported,record);
+            new org.interpss.fadapter.psse.PSSEDStabDirectParser(new DStabNetworkBuilder(net)).setStrictImport(true).parseDynFile(imported.toString());
+            Files.writeString(dyr,Files.readString(dyr)+record);
+            oel=limiter(alg);assertEquals(data,oel.getData());
+        }else oel=new DStabNetworkBuilder(net).addBasoel2("Bus1","1",data,policy);
+        assertNotNull(oel);
         net.setStaticLoadIncludedInYMatrix(impedanceLoad);
         var loadModel=impedanceLoad?com.interpss.dstab.StaticLoadModel.CONST_Z:com.interpss.dstab.StaticLoadModel.CONST_P;
         net.setStaticLoadModel(loadModel);net.setReactiveStaticLoadModel(loadModel);

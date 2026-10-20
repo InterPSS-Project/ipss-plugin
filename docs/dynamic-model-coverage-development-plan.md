@@ -2,6 +2,25 @@
 
 ## Current checkpoint
 
+BASOEL2 now has exact three-selector/twelve-constant record import into the
+bounded AC1C summation runtime. Successful import explicitly reports the
+`POWERWORLD_DOCUMENTED` timer policy and leaves independent coupled acceptance
+open. Five approved limiter rows are now loadable; that count is not a verified
+model count. See [import scope and remaining work](benchmarks/basoel2-import-2026-10-19.md).
+
+Import-slice gates: 250 focused, 431 core and 2,202 registered scoped SMIB/model
+tests, zero failures/errors and seven existing skips, plus 247 offline checks.
+All sixteen imported exports match the typed path byte-for-byte; seventy prior
+exports remain unchanged. Full coupled independent acceptance is still open.
+
+- [x] Add strict BASOEL2 record import, declared policy and preprocessing skips.
+- [x] Add malformed-record/ownership tests and sixteen imported SMIB profiles.
+- [ ] Close all-channel independent coupled RMSE < 0.001 acceptance, retaining
+  peaks and fault-event observations; do not infer acceptance from import success.
+
+The following checkpoints are historical evidence; their then-open import
+items are superseded by the importer slice above, not by native-tool parity.
+
 BASOEL2 now has a permanent sensed-boundary PI/timer conformance gate. All ten
 recorded reference cases retain all 15,030 representative rows and pass RMSE
 < 0.001 for fourteen downstream quantities; all active/above flags match exactly.

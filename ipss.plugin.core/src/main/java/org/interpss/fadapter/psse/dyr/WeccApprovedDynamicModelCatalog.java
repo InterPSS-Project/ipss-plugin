@@ -125,7 +125,7 @@ public final class WeccApprovedDynamicModelCatalog {
             new WeccModelApproval("OEL5C",OVER_EXCITATION_LIMITER,"oel5c","OEL5CU1","OEL5C",
                     APPROVED,"2020-04-22","","Preserve the source wrapper identifier; no inferred alias."),
             new WeccModelApproval("BASOEL2",OVER_EXCITATION_LIMITER,"basoel2","BASOEL2","BASOEL2",
-                    APPROVED,"2026-05-07","","Explicit-dialect typed summation runtime; native import and reference-dialect acceptance remain missing."),
+                    APPROVED,"2026-05-07","BASOEL2","Exact 3-selector/12-constant import into bounded AC1C summation runtime; POWERWORLD_DOCUMENTED policy; full trajectory acceptance remains open."),
             new WeccModelApproval("UEL1",UNDER_EXCITATION_LIMITER,"uel1","UEL1","uel1",
                     APPROVED,"2012-04-27","UEL1","Runtime path present; complete verification is separate."),
             new WeccModelApproval("UEL2",UNDER_EXCITATION_LIMITER,"uel2","UEL2","uel2",
