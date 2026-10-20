@@ -1,7 +1,9 @@
 # Case 2 efficiency baseline at 1e-5 network tolerance
 
-The target remains **20 seconds for ten simulated seconds**. It has not been
-achieved. This check uses the current compiled production classes, a quarter-cycle
+The current target is **15 seconds for ten simulated seconds**, reduced from the
+20-second target used when collecting this baseline. It has not been achieved.
+See the [direct-controller experiment](case2-direct-controller-experiment-2026-10-20.md)
+for the subsequent measurements. This check uses the compiled production classes, a quarter-cycle
 step (1/240 second), the established Case 2 bus-6307 event, current-P/impedance-Q
 loads, and a **1e-5 maximum-component voltage stopping tolerance**. The maximum
 iteration count remains 500. No endpoint is skipped or convergence rule changed.
