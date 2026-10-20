@@ -2,6 +2,23 @@
 
 ## Current checkpoint
 
+BASOEL2 now also has an explicit-policy typed AC1C summation runtime and builder
+attachment. Both published timer policies are covered by 32 flat/fault SMIB
+profiles, including an initially active V/Hz equilibrium. Automatic native
+import remains rejected: 22 controlled reference runs expose additional
+disabled-state and timer-expiry differences. No native-policy substitution or
+coupled acceptance is claimed; the loadable limiter count remains four.
+See [typed runtime, timer counterexamples and remaining TODOs](benchmarks/basoel2-runtime-2026-10-19.md).
+
+Typed-runtime gates: 180 focused, 431 core and 2,132 scoped SMIB/model tests,
+zero failures/errors and seven existing skips, plus 235 offline checks.
+All 32 new exports repeat exactly across the focused and broad gates; earlier
+exports and both preceding evidence seals remain unchanged.
+
+- [x] Implement typed BASOEL2 host/measurement integration with explicit policy selection.
+- [x] Test both published policies on the core GENROU machine with full fault-side observations.
+- [ ] Resolve native timer/state semantics, add native import and close independent acceptance.
+
 BASOEL2 now has a standalone three-state equation/timer foundation with explicit
 WECC and PowerWorld timer policies. Native import and runtime attachment are
 still missing; the loadable limiter count remains four. Seven profiles at two

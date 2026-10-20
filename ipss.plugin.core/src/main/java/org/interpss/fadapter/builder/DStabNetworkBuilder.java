@@ -3509,6 +3509,16 @@ public class DStabNetworkBuilder {
         catch(IllegalArgumentException failure){log.warn("Incompatible OEL3C target at {} {}: {}",busId,genId,failure.getMessage());return null;}
     }
 
+    /** Typed BASOEL2 attachment with an explicit published timer dialect, not automatic native import. */
+    public org.interpss.dstab.control.oel.psse.basoel2.Basoel2Model addBasoel2(String busId,String genId,
+            org.interpss.dstab.control.oel.psse.basoel2.Basoel2Data data,
+            org.interpss.dstab.control.oel.psse.basoel2.Basoel2Kernel.TimerSemantics timerSemantics){
+        BaseDStabBus<?,?> bus=network.getDStabBus(busId);Machine machine=network.getMachine(busId+"-mach"+genId);
+        if(bus==null||machine==null||!machine.hasExciter())return null;
+        try{return new org.interpss.dstab.control.oel.psse.basoel2.Basoel2Model(bus,machine,genId,data,timerSemantics);}
+        catch(IllegalArgumentException failure){log.warn("Incompatible BASOEL2 target at {} {}: {}",busId,genId,failure.getMessage());return null;}
+    }
+
     /** Attach an OEL2C auxiliary controller without replacing the exciter. */
     public Oel2cOverExcitationLimiter addOel2c(String busId, String genId, Oel2cData data) {
         BaseDStabBus<?, ?> bus = network.getDStabBus(busId);

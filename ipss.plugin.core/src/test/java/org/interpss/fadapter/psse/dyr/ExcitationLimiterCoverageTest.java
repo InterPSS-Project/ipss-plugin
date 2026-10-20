@@ -32,7 +32,7 @@ public class ExcitationLimiterCoverageTest {
         for(var row:WeccApprovedDynamicModelCatalog.limiters())assertTrue(text.contains("| "+row.catalogName()+" |"));
         assertTrue(text.contains("Four rows currently have bounded loadable runtime paths"));
         assertTrue(text.contains("kernel does not increase the loadable count"));
-        assertTrue(text.contains("Standalone equation/timer foundation; runtime and native import remain missing."));
+        assertTrue(text.contains("Explicit-dialect typed summation runtime; native import and reference-dialect acceptance remain missing."));
         assertTrue(DynamicModelCatalog.find("BASOEL2").isEmpty());
         assertTrue(text.contains(WeccApprovedDynamicModelCatalog.SOURCE_PDF_SHA256));
     }

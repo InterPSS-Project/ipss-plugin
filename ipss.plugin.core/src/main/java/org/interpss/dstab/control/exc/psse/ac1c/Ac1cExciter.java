@@ -17,7 +17,7 @@ import com.interpss.dstab.mach.MachineIfdBase;
 @AnController(input="mach.vt", output="this.outputSignal",
         refPoint="this.reference", display={})
 public final class Ac1cExciter extends AnnotateExciter implements IntegrationStepAware,
-        org.interpss.dstab.control.exc.Oel3cExciterPort {
+        org.interpss.dstab.control.exc.Basoel2ExciterPort {
     public static final int INPUT_UNUSED=0, INPUT_SUMMATION=1, INPUT_TAKEOVER=2;
     private static final double EPS=1.0e-12;
     private static final int VE=0, VSENSE=1, LEAD_LAG=2, VA=3, VFE_LAG=4;
@@ -46,6 +46,7 @@ public final class Ac1cExciter extends AnnotateExciter implements IntegrationSte
         voel=v;hasVoel=true;
     }
     public double getVoel(){return voel;}
+    @Override public double basoel2VoltageReference(){return reference;}
     @Override public Connection oel3cConnection(){
         return data.getOelLocation()==INPUT_SUMMATION?Connection.SUMMATION:
             data.getOelLocation()==INPUT_TAKEOVER?Connection.TAKEOVER:Connection.DISABLED;
@@ -86,8 +87,9 @@ public final class Ac1cExciter extends AnnotateExciter implements IntegrationSte
         state[VE]=ve0;state[VSENSE]=machine.getDStabBus().getVoltageMag();
         state[LEAD_LAG]=error0;state[VA]=vfe0;state[VFE_LAG]=vfe0;
         System.arraycopy(state,0,trial,0,state.length);active=state;
+        reference=error0+state[VSENSE]-stabilizerSignal(machine);
         if(auxiliaryOel3c!=null&&!auxiliaryOel3c.initializeAfterExciter(vfe0))return false;
-        reference=error0+state[VSENSE]-stabilizerSignal(machine)-summationLimiterInput();
+        reference-=summationLimiterInput();
         outputSignal=rectifierOutput(ve0,ifd);initialized=true;return true;
     }
 

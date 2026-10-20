@@ -190,7 +190,17 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
         live_states.append(entry)
     record_live_states('initialized')
     events = []
-    for until in (.05, .1, end):
+    state_schedule=cfg.get('basoel2_timer_state_schedule', ())
+    if state_schedule:
+        # Explicit open-loop timer diagnostic, never an accepted coupled trajectory.
+        assert profile.startswith('timer-') and cfg['apply_fault'] is False
+        limiter=next(s for s in cfg['components'] if s['kind']=='MAXXL')
+        assert limiter['model']=='BASOEL2'
+        assert tuple(limiter['icons'][:2])==(0,0) or (tuple(limiter['icons'][:2])==(1,0) and limiter['constants'][1:3]==[0.,0.])
+        assert limiter['constants'][0]==1e6 and all(0<t<end for t,_ in state_schedule)
+        assert list(state_schedule)==sorted(state_schedule)
+    intervals=sorted(set((.05,.1,end)+tuple(time for time,_ in state_schedule)))
+    for until in intervals:
         checked('interval', psspy.run(0, until, 1000000, 1, 0))
         record_live_states('interval-end')
         if cfg['apply_fault'] and until in (.05, .1):
@@ -212,6 +222,14 @@ def run_case(tag, entered_step, profile, cfg, *, directory_prefix='genrou-native
                 record_live_states('post-reference-event')
             events.append(dict(time_s=until, actual_time_s=actual,
                                action='voltage-reference-increment', increment=increment))
+        for scheduled,value in state_schedule:
+            if until==scheduled:
+                assert math.isfinite(value)
+                index=components['MAXXL']['layout']['STATE']
+                checked('timer diagnostic input state step',psspy.change_state(index,[value,0.,value]))
+                record_live_states('timer-input-state-step')
+                events.append(dict(time_s=until,actual_time_s=checked('diagnostic clock',psspy.dsrval('TIME')),
+                                   action='timer-diagnostic-state-step',value=value))
     _, labels, channels = dyntools.CHNF('native.out').get_data()
     indices = sorted(k for k in labels if isinstance(k, int))
     assert all(math.isfinite(v) for k in ['time'] + indices for v in channels[k])
