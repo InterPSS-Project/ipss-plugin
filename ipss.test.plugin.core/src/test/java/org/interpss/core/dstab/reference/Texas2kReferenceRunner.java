@@ -83,21 +83,20 @@ public final class Texas2kReferenceRunner {
             lf.getDataCheckConfig().setAllowGenWithoutMachine(true);
             lf.setNonDivergent(true);
             int loadflowIterations = plan.has("loadflow_max_iterations")
-                    ? plan.get("loadflow_max_iterations").getAsInt() : 50;
+                    ? plan.get("loadflow_max_iterations").getAsInt() : 10000;
             lf.setMaxIterations(loadflowIterations);
             status.put("loadflow_max_iterations", loadflowIterations);
             lf.setTolerance(1.e-10);
             if (plan.has("fixed_powerflow_controls") && plan.get("fixed_powerflow_controls").getAsBoolean()) {
                 lf.setInitBusVoltage(false);
                 lf.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(false);
-                lf.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(false);
                 lf.getLfAdjAlgo().getPowerAdjConfig().setPsXfrPControl(false);
                 lf.getNetAdjAlgo().setAreaInterchangeControlEnabled(false);
-                status.put("fixed_powerflow_controls", true);
+                status.put("fixed_transformer_and_area_controls", true);
             }
             if (plan.has("adjust_loadflow")) {
                 lf.getLfAdjAlgo().setApplyAdjustAlgo(plan.get("adjust_loadflow").getAsBoolean());
-                status.put("adjust_loadflow", plan.get("adjust_loadflow").getAsBoolean());
+                status.put("requested_adjust_loadflow", plan.get("adjust_loadflow").getAsBoolean());
             }
             if (plan.has("initialize_from_raw") && plan.get("initialize_from_raw").getAsBoolean()) {
                 // Diagnostic only: use the operating point supplied by the solved RAW.
@@ -105,12 +104,8 @@ public final class Texas2kReferenceRunner {
                 net.setLfConverged(true);
                 status.put("initialization_source", "solved-raw-diagnostic");
             } else {
-                if (!lf.loadflow()) throw new IllegalStateException("Load flow failed");
-                var termination = lf.getTerminationReport();
-                status.put("loadflow_termination", termination.status().toString());
-                status.put("loadflow_unsettled_controls", termination.unsettledControlCount());
-                if (!termination.controlsSettled())
-                    throw new IllegalStateException("Load-flow controls remain unsettled: " + termination);
+                Texas2kPowerflowPreparation.solve(lf,
+                        inputs.resolve(event.get("raw").getAsString()), status);
             }
             net.setBypassDataCheck(false);
             if (!net.checkData(lf.getDataCheckConfig()))

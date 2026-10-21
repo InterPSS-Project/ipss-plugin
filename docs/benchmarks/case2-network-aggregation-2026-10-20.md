@@ -588,3 +588,75 @@ evidence, not acceptance of the simulation or completion of the eight-second goa
 Compact source, class, profile, test, excluded-attempt and timing evidence is
 retained privately under `2026-10-20-case2-device-profile-followup`. All changes
 in this section remain experimental overlays; production defaults are unchanged.
+
+## Default operating-point preparation
+
+The reference runner now uses coordinated generator/shunt control and solved-power
+netting by default. The generator controls the voltage first; the continuous local
+shunt supplies support when generator reactive limits require it. Colocated
+machine allocation respects individual limits, including fixed-Q machines.
+Unsupported control groups fail explicitly.
+
+Explicitly netted generators are temporarily restored for the initial power-flow
+solve. Their solved P/Q becomes negative constant-power load, followed by a
+second coordinated solve. Dynamic initialization then converts these loads using
+the configured constant-current P / constant-impedance Q profile. Original input
+loads, including names that collide with generated netting IDs, are preserved.
+Missing-model generators continue through the engine's existing preprocessing.
+No supplied trajectory measurements enter this preparation.
+
+The legacy `fixed_powerflow_controls` flag fixes transformer and area controls;
+it no longer freezes switched shunts. Status records the effective preparation
+policy and switched-shunt adjustment separately. The explicit
+`initialize_from_raw` diagnostic still bypasses the power-flow solve. The default
+iteration cap is 10,000; an explicit plan cap remains honored, and both numerical
+convergence and settled controls are required.
+
+The preceding performance control had held switched shunts fixed. Its first
+history sample differed from the supplied reference by 0.0111981 pu at bus 1033.
+Coordinated preparation solves that bus to 1.0151285126 pu, with zero shunt
+susceptance and generator Q at -0.4003 pu. This corrects the obsolete preparation
+in the timing workload; it does not establish dynamic trajectory acceptance.
+Earlier timing comparisons remain valid only as nonregression measurements of
+that older workload.
+
+The focused validation runs 31 tests covering generator/shunt coordination,
+fixed-Q allocation, solved-power netting, zero-input-power generators,
+collision-safe load IDs, malformed-netting rejection and recording behavior.
+The frozen reference runtime now includes the shared preparation and recording
+classes, including their nested classes.
+
+The default runner was then rebuilt and exercised through three warm-ups and
+three measured runs on one logical CPU. Every full trace is byte-identical to
+the coordinated diagnostic and to every repeat: 4,810 channels, 2,405 rows,
+finite values and both event-side duplicate observations. There are 38,526 timed
+network iterations per run. Measurements include preparation, initialization,
+simulation and recording; compilation and between-run storage deduplication are
+outside the timer.
+
+| Measured repeat | Preparation and initialization, s | Simulation and recording, s | Complete runner, s |
+| --- | ---: | ---: | ---: |
+| 1 | 25.6570 | 11.0333 | 36.6903 |
+| 2 | 29.4897 | 12.3534 | 41.8432 |
+| 3 | 26.3229 | 10.9441 | 37.2670 |
+
+The complete median is 37.2670 seconds. Coordinated preparation is now a major
+part of the measured workload; the eight-second goal remains open.
+
+The first history sample, before startup integration, has maximum voltage error
+0.0000142113 pu and rotor-angle error 0.000544181 degrees against the supplied
+initial measurements. After startup integration, the zero-time voltage error
+reaches 0.00571479 pu. Prefault maximum voltage error is 0.126645 pu and rotor
+error is 13.7631 degrees; full-trajectory worst rotor RMSE is 108.024 degrees at
+bus 5263, unit 1. These failures remain open. This comparison interpolates within
+event phases, preserves event-side observations, and fits no offsets or shifts.
+Startup step sizes differ, and clearing occurs at 1.083333 seconds in the
+quarter-cycle run versus 1.084 seconds in the supplied 1 ms reference; these are
+diagnostic scores, not matched-grid acceptance results.
+
+An earlier six-run attempt stopped during its last repeat at the 2 GiB free-space
+reserve. Its five completed runs and partial last run are retained. The final
+series keeps complete output on every run and replaces only byte-identical
+completed output with verified hardlinks between runs. No supplied references,
+channels or samples are removed. Compact verification evidence is retained under
+`2026-10-20-case2-default-preparation`.

@@ -10,7 +10,9 @@ import java.util.Locale;
 
 import org.interpss.IpssCorePlugin;
 import org.interpss.core.dstab.reference.GeneratorFirstShuntLoadflow;
+import org.interpss.core.dstab.reference.Texas2kPowerflowPreparation;
 import org.interpss.fadapter.psse.PSSEMultiFileLoader;
+import org.interpss.fadapter.psse.PsseGnetIdvProcessor;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,6 +23,7 @@ import com.interpss.core.algo.config.ControlInitializationMode;
 /** Independent two-bus equations for generator priority and secondary support. */
 class GeneratorFirstShuntLoadflowTest {
     @TempDir Path root;
+    private Path inputRaw;
     @BeforeAll static void initialize() { IpssCorePlugin.init(); }
 
     private record Machine(double p, double min, double max, double target) { }
@@ -66,6 +69,7 @@ Q
 """, gen, slack, shuntTarget, shuntTarget, initialB * 100);
         Path input = Files.createTempFile(root, "priority-", ".raw");
         Files.writeString(input, raw);
+        inputRaw = input;
         var ctx = new PSSEMultiFileLoader().loadDStab(input.toString());
         var lf = ctx.getDynSimuAlgorithm().getAclfAlgorithm();
         ctx.getDStabilityNet().setAllowGenWithoutMach(true);
@@ -113,6 +117,86 @@ Q
     @Test void retainsEnergizedShuntWhenGeneratorCanRegulate() throws Exception {
         double v = 1.03, total = v * (v - 1.) / .1;
         check(network(1., 1.06, .5, new Machine(0, -.4, .6, v)), v, total - .5*v*v, .5);
+    }
+
+    @Test void defaultPreparationEnablesSecondaryControlAndHonorsGeneratorLimits() throws Exception {
+        var lf = network(1.05, 1.03, .5, new Machine(0., -.1, .2, 1.));
+        lf.getLfAdjAlgo().setApplyAdjustAlgo(false);
+        lf.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(false);
+        var status = new java.util.LinkedHashMap<String, Object>();
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        var bus = lf.getNetwork().getBus("Bus1");
+        // Q = V(V-E)/X, with Qmin active and the shunt at its lower bound.
+        double expected = (1.05 + Math.sqrt(1.05*1.05 - .04)) / 2.;
+        assertEquals(expected, bus.getVoltageMag(), 2.e-8);
+        assertEquals(-.1, bus.getGenQ(), 2.e-8);
+        assertEquals(0., bus.getSwitchedShuntList().get(0).getBActual(), 2.e-8);
+        assertEquals(true, status.get("switched_shunt_adjustment"));
+        assertEquals(0, status.get("solved_netted_generators"));
+        assertFalse(status.containsKey("loadflow_after_netting_solves"));
+    }
+
+    @Test void defaultNettingUsesSolvedPowerBeforeLoadConversion() throws Exception {
+        var lf = network(1., 1.06, 0., new Machine(0., -.4, .6, 1.02));
+        var bus = lf.getNetwork().getBus("Bus1");
+        bus.getSwitchedShuntList().clear();
+        var gen = bus.getContributeGen("1");
+        assertEquals(0., gen.getGen().getImaginary(), 0.);
+        var idv = root.resolve("net.idv");
+        Files.writeString(idv, "GNET\n1\n0\n");
+        PsseGnetIdvProcessor.apply((com.interpss.dstab.BaseDStabNetwork<?, ?>) lf.getNetwork(), idv.toString());
+        var status = new java.util.LinkedHashMap<String, Object>();
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        var load = bus.getContributeLoad("GNET-1");
+        assertFalse(gen.isActive()); assertTrue(load.isActive());
+        assertEquals(1, status.get("solved_netted_generators"));
+        assertTrue(status.containsKey("loadflow_after_netting_solves"));
+        assertEquals(-1.02 * .02 / .1, load.getLoadCP().getImaginary(), 2.e-8);
+        assertEquals(org.apache.commons.math3.complex.Complex.ZERO, load.getLoadCI());
+        assertEquals(org.apache.commons.math3.complex.Complex.ZERO, load.getLoadCZ());
+        assertEquals(1.02, bus.getVoltageMag(), 2.e-8);
+        assertTrue(lf.getTerminationReport().controlsSettled());
+    }
+
+    @Test void malformedImportedNettingFailsBeforeRestoringGenerators() throws Exception {
+        var lf = network(1., 1.06, 0., new Machine(0., -.4, .6, 1.02));
+        var bus = lf.getNetwork().getBus("Bus1");
+        var idv = root.resolve("net.idv"); Files.writeString(idv, "GNET\n1\n0\n");
+        PsseGnetIdvProcessor.apply((com.interpss.dstab.BaseDStabNetwork<?, ?>) lf.getNetwork(), idv.toString());
+        bus.getContributeLoad("GNET-1").setId("GNET-unknown");
+        assertThrows(IllegalStateException.class, () -> Texas2kPowerflowPreparation.solve(
+                lf, inputRaw, new java.util.LinkedHashMap<>()));
+        assertFalse(bus.getContributeGen("1").isActive());
+        assertTrue(bus.getContributeLoad("GNET-unknown").isActive());
+    }
+
+    @Test void nettingPreservesOriginalLoadsAndDisambiguatesHyphenatedIds() throws Exception {
+        network(1., 1.06, 0., new Machine(.1, -.4, .6, 1.02),
+                new Machine(.1, -.4, .6, 1.02));
+        String raw = Files.readString(inputRaw).replace("1,'2',", "1,'1-2',")
+                .replace("0 / END OF LOAD DATA", "1,'GNET-1',1,1,1,10,0,0,0,0,0,1\n0 / END OF LOAD DATA");
+        Files.writeString(inputRaw, raw);
+        var ctx = new PSSEMultiFileLoader().loadDStab(inputRaw.toString());
+        var lf = ctx.getDynSimuAlgorithm().getAclfAlgorithm();
+        lf.getDataCheckConfig().setAllowGenWithoutMachine(true);
+        lf.setTolerance(1.e-11); lf.setMaxIterations(100);
+        var bus = ctx.getDStabilityNet().getBus("Bus1");
+        bus.getSwitchedShuntList().clear();
+        var originalLoad = bus.getContributeLoad("GNET-1");
+        var originalPower = originalLoad.getLoadCP();
+        var idv = root.resolve("net.idv"); Files.writeString(idv, "GNET\n1\n0\n");
+        PsseGnetIdvProcessor.apply(ctx.getDStabilityNet(), idv.toString());
+        var status = new java.util.LinkedHashMap<String, Object>();
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        assertEquals(2, status.get("solved_netted_generators"));
+        assertSame(originalLoad, bus.getContributeLoad("GNET-1"));
+        assertTrue(originalLoad.isActive()); assertEquals(originalPower, originalLoad.getLoadCP());
+        assertEquals(bus.getContributeGen("1").getGen().negate(),
+                bus.getContributeLoad("GNET-1-2").getLoadCP());
+        assertEquals(bus.getContributeGen("1-2").getGen().negate(),
+                bus.getContributeLoad("GNET-1-2-2").getLoadCP());
+        assertFalse(bus.getContributeGen("1").isActive());
+        assertFalse(bus.getContributeGen("1-2").isActive());
     }
 
     @Test void fixedReactiveGeneratorLeavesShuntInControlOfItsOwnTarget() throws Exception {
