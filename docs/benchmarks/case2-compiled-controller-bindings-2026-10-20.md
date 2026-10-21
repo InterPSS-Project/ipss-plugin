@@ -1803,3 +1803,44 @@ runtime-class hashes match the saved scalar-scan production checkpoint. The
 restoration reports and hash checks are retained alongside the experiment.
 The result rules out this particular arithmetic cache as a useful next step.
 It does not show that the entire machine-current evaluation is inexpensive.
+
+## Controller-scoped terminal-current samples: not adopted
+
+A second experiment sampled terminal current lazily within one compiled ST4B
+output or integration evaluation. It cleared the sample at the scope boundary
+and around stabilizer callbacks. Standard machine, data, bus and controller-graph
+checks excluded custom readers, observers, shared blocks and custom limits.
+Field current and bridge limits remained live. The candidate was switchable and
+disabled by default.
+
+All 33 focused tests passed, including coupled fault trajectories, live controls,
+direct predictor/corrector state checks, shared-block fallback, missing machine
+data, observer fallback and a mutating stabilizer with nested output calls.
+A pre-hardening full-case audit found zero differing groups across 164,463 numeric
+slots and 12,922 accepted-history groups. Its exact source/classes are retained
+separately; the final implementation additionally checks missing machine data.
+
+The hardened implementation was measured in separate JVMs with twelve warmups
+and six repetitions each, one verified CPU, fresh setup, ten simulated seconds,
+quarter-cycle steps, 1e-5 tolerance and complete recording:
+
+| Scoped current sample | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Disabled | 9.8346, 9.6578, 9.8362, 9.6020, 9.6186, 9.8923 | 9.7462 |
+| Enabled | 10.3025, 10.1101, 10.3299, 10.0799, 10.0839, 10.1269 | 10.1185 |
+
+Despite avoiding 2,810,980 complete terminal-current evaluations per case, the
+candidate was **0.3723 seconds slower (3.82%)**. All 36 qualifying recordings
+retained the canonical hash. The preliminary control and state-audit recordings
+also match it. Reducing call count did not reduce total runtime in this design;
+the additional cost has not been isolated to a specific guard or JVM effect.
+The candidate was removed, and the 9.6082-second production checkpoint remains
+the accepted implementation.
+
+`checkpoints/case2-st4-measurement-probe-2026-10-21.json` indexes the source patch,
+compiled classes, exact pre-hardening snapshot, state audit, tests, commands,
+timings and retained recording hashes. This experiment does not achieve the
+eight-second objective or establish independent-reference accuracy.
+After removal, all 29 targeted rebuild tests pass. The complete inventory of
+5,272 effective runtime classes matches the saved production checkpoint, with
+no differing or extra classes. The index includes the restoration evidence.

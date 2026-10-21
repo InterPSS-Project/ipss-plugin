@@ -1,0 +1,191 @@
+{
+  "schema": 1,
+  "status": "not-adopted-measured-slowdown",
+  "goal_achieved": false,
+  "core_commit": "7a9808da4",
+  "plugin_base_commit": "2107ed2bc",
+  "candidate_source": "Retained three-file source patch and compiled classes; not a production commit.",
+  "summaries": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.8346153,
+        9.657788,
+        9.836218,
+        9.6019649,
+        9.6186416,
+        9.8923118
+      ],
+      "median_case_wall_s": 9.74620165,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    },
+    "candidate": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        10.3024908,
+        10.1100667,
+        10.3298708,
+        10.0798691,
+        10.0838857,
+        10.1268558
+      ],
+      "median_case_wall_s": 10.11846125,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    }
+  },
+  "measurement_reuses": {
+    "control": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "candidate": [
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980,
+      2810980
+    ]
+  },
+  "focused_tests": {
+    "tests": 33,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "independent_accuracy_qualified": false,
+  "state_audit": {
+    "result": {
+      "status": "diagnostic",
+      "production_changed": false,
+      "numeric_slots": 164463,
+      "groups": 12922,
+      "comparisons": [
+        {
+          "run": 1,
+          "differing_groups": []
+        },
+        {
+          "run": 2,
+          "differing_groups": []
+        }
+      ]
+    },
+    "scope": "Pre-hardening implementation; final implementation adds a missing-data guard and direct-stage/shared-block tests. Pre-hardening source/classes are frozen separately."
+  },
+  "verification": {
+    "qualifying_recordings": 36,
+    "preliminary_recordings": 21,
+    "identical_trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "single_cpu": true,
+    "full_recording_included": true
+  },
+  "conclusion": "Enabled median is 0.3722596 seconds slower than disabled, despite 2810980 current reuses per case. Candidate code is not adopted.",
+  "archive": {
+    "bytes": 3839382,
+    "sha256": "921f039c2b09e1c3911e033fce92925b543ab11daa42929179628711353a467d"
+  },
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st4-measurement-probe/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 1125032,
+    "sha256": "72ca7ee023b76bef406373b979e176e479dc885db371964c2a77003bdc7a5249"
+  },
+  "restoration": {
+    "verification": {
+      "status": "completed",
+      "core_commit": "7a9808da4",
+      "matched_runtime_classes": 5272,
+      "differences": [],
+      "extra_runtime_classes": [],
+      "removed_archived_test_classes": [],
+      "core_source_matches_head": true
+    },
+    "focused_tests": {
+      "tests": 29,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "files": {
+      "ipss.test.plugin.core/target/surefire-reports/TEST-org.interpss.core.dstab.PsseStaggeredEulerSolverTest.xml": {
+        "bytes": 29881,
+        "sha256": "ff818e15e696e12538869b8758850b351204e19461b8d73fd485e43de92bc162"
+      },
+      "ipss.test.plugin.core/target/surefire-reports/TEST-org.interpss.core.dstab.St4bBridgeInputReuseTest.xml": {
+        "bytes": 28164,
+        "sha256": "bb6c917c02e89650bf51ea5c58995c40884bf47727176251e362023d689357b5"
+      },
+      "ipss.test.plugin.core/target/surefire-reports/TEST-org.interpss.core.dstab.St4bCompiledStageTest.xml": {
+        "bytes": 36631,
+        "sha256": "860e52262b47d1608ea7d672d4c33e6e9790f08f21ddf5d25702cfe4c7fe522d"
+      },
+      "target/archive_st4_measurement_restoration_20261021.py": {
+        "bytes": 2068,
+        "sha256": "adf403d8ce4ca50fcf638eec6196b82d7bad755e081d31c204deac51a8606330"
+      },
+      "target/st4-measurement-restore-verification-20261021.log": {
+        "bytes": 22468,
+        "sha256": "9b722fda82badf160dcfa97b0152560cdfd965c2ac1f4f76841b45509c17fbff"
+      },
+      "target/st4-measurement-restored-runtime-20261021.json": {
+        "bytes": 229,
+        "sha256": "bf8288ab7ee2dc1e24f3a46ccb968a6e9f56d289cb8496689d027c8168b23dde"
+      },
+      "target/st4-measurement-restored-runtime-20261021.log": {
+        "bytes": 229,
+        "sha256": "bf8288ab7ee2dc1e24f3a46ccb968a6e9f56d289cb8496689d027c8168b23dde"
+      },
+      "target/verify_st4_measurement_restoration_20261021.py": {
+        "bytes": 2103,
+        "sha256": "5d90eeee990ddeb9ec71ff65748673795a8373883d0bd2d1ac89f3b198659cdb"
+      }
+    },
+    "archive": {
+      "path": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st4-measurement-probe/restoration.zip",
+      "bytes": 21121,
+      "sha256": "b2e633c37b2e1c729850c329c1b9bf7a52a3944bf1f6a20445f8c882853179b0"
+    }
+  }
+}
