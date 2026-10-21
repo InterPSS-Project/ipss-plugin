@@ -1097,3 +1097,51 @@ The eight-second objective remains unmet, and this unchanged trajectory does not
 resolve independent-reference accuracy. Final sources, classes, tests, producers,
 post-measurement profiles, settings and retained full-recording hashes are stored
 privately under `verification-artifacts/2026-10-21-controller-membership-final`.
+
+
+## Short-expression scalar experiment
+
+A private candidate evaluates fixed expressions with up to four operands in
+scalar Java temporaries. It reads every live operand in source order before
+arithmetic and retains the original signs, multiplication/division order,
+positive-zero placeholders and summation order. Longer expressions retain the
+existing evaluator. No model equations or integration stages change.
+
+The standalone arithmetic probe passes 262,080 comparisons against the original
+expression evaluator, including every operator shape through six operands,
+signed zero, nonfinite inputs, recursive reads and throwing readers. Of those,
+16,320 arithmetic comparisons exercise the short-expression path; the remainder
+cover the longer-expression fallback. This is not a controller lifecycle or
+system acceptance gate.
+
+Two separate JVMs each perform twelve warmups and six measured runs on one
+pinned CPU. Fresh setup, all recording, compilation and garbage collection are
+included. The protocol remains ten simulated seconds, quarter-cycle integration
+and 1e-5 dynamic tolerance.
+
+| Evaluator | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Existing production | 13.0109, 12.7276, 12.8811, 12.5824, 12.5718, 12.9036 | 12.8043 |
+| Scalar candidate | 14.9825, 12.7636, 12.6898, 12.6240, 12.6265, 12.8130 | 12.7267 |
+
+The median difference is only 0.61%, with overlapping samples. The candidate's
+first measured run includes 2,138 ms of compilation; that run is retained.
+All 36 full recordings have the canonical production hash: 2,405 finite samples,
+4,810 channels and both event-side duplicates. Identical repetitions use verified
+hard links. The candidate is not promoted because this experiment does not show
+a convincing complete-run improvement. Production engine sources are unchanged;
+the full registered suites were not rerun for this private experiment.
+
+Custom CML blocks already implement numerical equations in Java. The remaining
+expression machinery primarily connects their inputs and outputs. A larger
+architectural candidate should combine prebound signal wiring and direct Java
+equations for a controller, while preserving stage-specific input sampling,
+limiter and integration history, live parameters and named-state diagnostics.
+Such a kernel needs one authoritative equation definition and explicit lifecycle
+tests; duplicating independent generic and optimized equations would create a
+maintenance risk.
+
+Private sources, executable probes, full-recording hashes, numerical plans and
+timing evidence are retained under
+`verification-artifacts/2026-10-21-short-expression-experiment`.
+The eight-second objective and independent-reference accuracy remain unresolved.
