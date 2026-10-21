@@ -10,6 +10,13 @@ numbers below are historical component measurements, not the acceptance metric.
 Use simulation plus recording through final output close, and also report the
 complete runner elapsed time including case loading and initialization.
 
+The current objective supersedes the historical ten-second target below:
+**under eight seconds for ten simulated seconds**, at 1e-5 tolerance and a
+1/240-second step, on one logical CPU after warm-up. Complete runner time,
+including case loading, initialization and recording, is the primary metric.
+The user reports a Case 2 reference-run total below seven seconds. That is a
+user-supplied comparison, not a locally reproduced timing measurement.
+
 ## Implemented candidates
 
 The convergence candidate uses the already computed maximum bus change to make
@@ -363,3 +370,95 @@ The best measured simulation-plus-recording median is below ten seconds, but
 one run remains above ten and complete runner time remains above ten in every
 measured run. The complete-time goal is therefore still open. Matching the
 retained control does not resolve its independent-reference accuracy failures.
+
+## Workflow redesign toward the eight-second target
+
+A whole-run main-thread profile after three complete warm-ups collected 624
+execution samples: 361 in network solution, 226 in the rest of integration,
+14 in recorder code, and 23 in setup or other work. Sampling percentages are not
+component wall times. Profiling adds overhead, particularly during setup, so its
+elapsed time is excluded from qualifying timing comparisons. The profile uses
+the same single-CPU placement, numerical overlay and full output as the preceding
+CPU-4 series.
+
+The most frequent sampled leaves are voltage retrieval, current-injection
+assembly and the row-oriented triangular solver. Repeated branch/device scans
+also remain visible. These results favor removing repeated dispatch and data
+transfer from the iteration loop. Recording is already a small remaining cost;
+removing output cannot provide the required improvement and is not an allowed
+benchmark change.
+
+Three clean-built prototypes test parts of that design:
+
+1. Pass the solved rectangular voltage directly to convergence observation for
+   exact standard buses without notification listeners. Polar, observed and
+   custom buses retain getter-based observation.
+2. Store preceding voltages in a reusable indexed array and specialize the
+   static-only current-injection path. Every iteration still evaluates the live
+   voltage-dependent load, load-change factor and current load-model settings.
+   The leading zero in current accumulation is retained to preserve signed-zero
+   behavior and arithmetic order.
+3. Compile network-iteration participant bindings once and rebuild them when
+   membership changes. Network bus/branch lists, bus generator/device lists,
+   branch device lists and generator-model changes invalidate the plan. Each
+   solve still checks live bus, generator, branch-endpoint and device status,
+   preserves identity deduplication and callback order, and uses the original
+   scan for unsupported network, bus, generator or branch subclasses.
+
+The static-current and indexed-convergence prototype passes 3,010 current/error/
+mutation observations and 504 convergence-norm, threshold, diagnostic and callback
+cases against the preceding control. The schedule passes another 3,000 membership
+observations, including reordering, replacement, inverse containment, removal,
+reinsertion and status changes; its binding array is reused on 2,249 observations.
+These are focused differential checks, not a full production test suite.
+
+| Configuration | Simulation plus recording median, s | Complete runner measurements, s | Complete runner median, s |
+| --- | ---: | --- | ---: |
+| Previous CPU-4 control | 9.8913 | 10.4126 / 10.3419 / 10.4732 | 10.4126 |
+| Direct solved-voltage handoff | 9.8860 | 10.7383 / 10.3862 / 9.9685 | 10.3862 |
+| Indexed convergence and static-only injection | 9.5647 | 10.1045 / 10.2135 / 9.9321 | 10.1045 |
+| Also prepare the participant schedule | 9.0368 | 9.7749 / 9.4830 / 9.4215 | 9.4830 |
+
+Every series uses three full warm-ups and three fresh measured cases in one JVM,
+the same logical CPU 4, a 2 GiB heap, SerialGC and no simulation worker threads.
+The first handoff change establishes no material timing improvement. The combined
+prototype has a complete-time median 8.9% below the earlier control, although
+these sequential small-sample runs are not a randomized performance study.
+Its network component takes 4.33–4.42 seconds, with integration taking 8.60–8.71
+seconds. Full recording and output finalization remain included in the reported
+simulation and complete times.
+
+All 18 new warm-up and measured traces are bit-exact to the retained control:
+4,810 channels, 2,405 rows and 11,568,050 finite measurements per trace. Selected
+CSV, metadata, startup compensation and event-side duplicate samples match too.
+All runs retain 38,819 timed network iterations. The profile's four generated
+full and selected traces also have the same retained hashes. Verified duplicate
+generated files share immutable storage; supplied references are preserved.
+Compact source, class, profile, test and timing evidence is retained privately
+under `2026-10-20-case2-workflow-redesign`.
+
+The eight-second complete-time objective remains unmet. These are experimental
+overlays, not a change to production defaults, and exact agreement with the local
+control is only a nonregression result, not independent-reference acceptance.
+
+The indexed prototype changes the protected legacy voltage-table representation.
+That table is deliberately excluded from its differential check. A production
+implementation needs an explicit compatibility path for subclasses and custom
+networks before this experimental implementation can replace the general solver.
+
+The intended runtime separates preparation from stage execution. Initialization
+validates models and builds stable bus/device slots, controller dependency order,
+callback schedules and output bindings. A network workspace owns RHS, solved
+voltage and preceding-voltage buffers. Each integration stage refreshes external
+inputs, evaluates its controller equations and voltage-dependent injections,
+solves with the retained factorization, checks convergence, and commits accepted
+state before recording. Structural changes invalidate the affected prepared plan;
+status and numerical inputs remain live. Custom device calls retain a synchronized
+object-model path. Algebraic evaluation must not advance hidden controller history.
+
+The next substantial implementation work is to extend the prepared schedule to
+the remaining integration callbacks and to give common controller kernels reusable
+numerical storage with explicit stage ownership. A change in network iteration
+count or arithmetic requires a fresh independent-reference comparison; faster
+execution alone does not establish an acceptable simulation. Existing reference
+accuracy failures remain unresolved.
