@@ -1526,3 +1526,74 @@ classes, counters, tests and recording/dependency hashes are retained under
 `verification-artifacts/2026-10-21-pss-observation-production`.
 The paired source and evidence index is
 `checkpoints/case2-pss-observation-production-2026-10-21.json`.
+
+## ST4B bridge input arithmetic and remaining runtime gap
+
+Plugin commit `1cbb68db2`, paired with core commit `d81a45fef`, reuses the
+ST4B bridge input calculation only when its live inputs have identical bits.
+The phasor cache keys on gain and angle; the voltage calculation keys on the
+phasor, terminal voltage, terminal current, reactance and current gain.
+Every evaluation still reads terminal voltage, terminal current and field
+current in the existing order. Field current, rectifier evaluation, limits
+and the stored bridge output remain live. Nonfinite inputs and custom complex
+implementations retain ordinary evaluation.
+
+This differs from the recovered experimental bridge cache, which reused a
+broader result within an evaluation scope. Restoring typed block wiring alone
+did not restore that cache. The input-checked implementation keeps the existing
+measurement callbacks and parameter-sampling boundaries.
+
+All 21 focused tests pass, including five new tests for unchanged inputs,
+individual key changes, live field current and limits, signed zero, nonfinite
+values, custom arithmetic and getter side effects. Coupled stage tests compare
+reuse against disabled reuse while checking state and stored-output behavior.
+
+Both ordinary production JVMs perform twelve warmups and six measured runs on
+one verified CPU. Fresh setup and full recording are included for ten simulated
+seconds, quarter-cycle steps and 1e-5 dynamic tolerance. Only bridge input reuse
+differs between them.
+
+| Production bridge input reuse | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Disabled | 10.9116, 10.6432, 11.0447, 10.5410, 10.4899, 10.8917 | 10.7675 |
+| Enabled | 10.7909, 10.3501, 10.4498, 10.3713, 10.3750, 10.7988 | 10.4124 |
+
+The paired reduction is **0.3551 seconds (3.30%)**. Each enabled run reports
+7,534,228 bridge input reuses and 7,995,520 phasor reuses. The complete recording
+hash remains identical to the performance control.
+
+The remaining complete-case gap to the recovered composite runtime's
+8.5163-second median is **1.8961 seconds**. Separately calculated phase medians
+locate the difference in simulation plus recording:
+
+| Phase | Recovered composite, s | Current production, s |
+|---|---:|---:|
+| Setup and initialization | 0.3544 | 0.3463 |
+| Simulation and output | 8.0715 | 10.1086 |
+
+Phase medians need not sum to the complete-case median. Both paths use sixteen
+power-flow iterations before netting and zero afterward. This comparison does
+not yet isolate the remaining difference among network traversal, controller
+evaluation, lifecycle checks and recording. Earlier single-feature experiments
+cannot be added as an explanation of the whole gap. In particular, disabling
+the experimental primitive current transfer group was faster in its isolated
+comparison.
+
+There was no complete runnable source commit for the original approximately
+8.9-second result. Component commits and reports omitted the effective mutable
+build-directory overrides. Commit `e2e0a892f` now indexes the recovered immutable
+executable snapshot, but it is not the missing historical source checkpoint.
+New production checkpoints identify paired core/plugin commits and retained
+runner, dependency and recording hashes. The checked-in
+`tools/benchmark-reactor/pom.xml` builds both source repositories together to
+avoid unintentionally loading an older installed core artifact.
+
+The broader registered suite and explicit controller tests find 2,631 tests:
+2,613 pass, nine are skipped, four abort and the same five fail as the retained
+baseline. Failing-method identities and failure messages both match. All 36
+recordings have the canonical hash and retain 2,405 finite samples, 4,810 channels
+and both event-side duplicates. The paired source and evidence index is
+`checkpoints/case2-st4-bridge-input-production-2026-10-21.json`; private evidence
+is retained under `verification-artifacts/2026-10-21-st4-bridge-input-production`.
+
+The eight-second goal and independent-reference accuracy remain unresolved.
