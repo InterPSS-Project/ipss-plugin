@@ -231,3 +231,80 @@ Compact profile, build, check, comparison and timing evidence is retained under
 `2026-10-20-case2-recorded-runtime-screens`. Identical repeated output files share
 immutable storage after validation. The best retained timing remains 11.2635
 seconds including recording, and the ten-second goal remains open.
+
+## Reusable row view of sparse factors
+
+The next candidate retains the existing LU factorization and creates a reusable
+row view of its flat triangular factors. Each row accumulates its solution in
+local scalars instead of repeatedly updating scattered workspace entries. Lower
+and upper coefficients retain the library's subtraction order. Diagonal division
+reuses its constant ratio and scale, preserving the original arithmetic rather
+than substituting complex reciprocal multiplication.
+
+This path accepts only triangular factors with independent blocks. Coupled blocks
+and other factor layouts use the existing library solve. Matrix invalidation and
+symbolic-table replacement discard the view; every numeric factorization or
+refactorization rebuilds it. A failed rebuild cannot leave the old factor usable.
+The core adapter exposes `setUseFactoredRows(true)` and the default-off
+`ipss.jklu.rowSolve` property. Flat factors must also be available; these runs use
+`-Djklu.complex.factor.columnKernelMinN=0`. The solver remains single-threaded.
+
+The initial focused comparison checks 85,440 double observations, repeated RHS
+solves, value changes, pivoting, independent and coupled blocks, invalid RHS
+lengths and nonfinite values. Enabled, disabled and control outputs have identical
+digests. The maximum independently calculated residual is 1.15e-14. An initial
+candidate incorrectly required precomputed diagonal reciprocals and consequently
+never activated; the solve counter caught this before any timing claim.
+
+The integrated adapter and separate helper pass 14 selected JUnit tests: four new
+lifecycle/numerical tests and ten existing complex sparse-solver tests. They cover
+AMD and natural ordering, structural changes, dimension growth, symbolic reuse,
+enable/disable changes, missing flat factors and the optional reciprocal mode.
+A broader initial test also tried COLAMD, but its library analysis failed with a
+null-row exception before the control solve. That ordering is not covered by the
+successful new regression run. This is focused clean compilation and JUnit
+validation, not a full Maven suite.
+
+| Series | Warm-ups | Simulation plus recording, s | Median, s |
+| --- | ---: | --- | ---: |
+| Experimental row view, ordinary tiered settings | 1 | 11.3452 / 10.8723 / 11.0102 | 11.0102 |
+| Experimental row view, expanded inlining | 3 | 10.9299 / 10.5337 / 11.1376 | 10.9299 |
+| Integrated helper, expanded inlining | 3 | 10.9438 / 10.8702 / 10.7660 | 10.8702 |
+| Matched control with row view disabled, expanded inlining | 3 | 11.3575 / 11.2446 / 10.8966 | 11.2446 |
+
+Expanded inlining uses `-XX:MaxInlineLevel=30 -XX:FreqInlineSize=600`. Every series
+uses one logical CPU, `ActiveProcessorCount=1`, SerialGC and a 2 GiB heap. Each
+warm-up and measurement reconstructs the network in the same JVM. Compilation is
+outside these timings. The integrated helper's complete runner times are 11.5382,
+11.3126 and 11.2036 seconds, including case loading and initialization. The median
+integration-only time is 9.7793 seconds, which must not be mistaken for meeting
+the inclusive ten-second goal.
+
+All 22 complete traces in these four series match the retained control bit for
+bit: 4,810 channels, 2,405 rows and 11,568,050 finite measurements per trace, with
+event-side duplicate timestamps preserved. Each run retains 38,819 timed network
+iterations. The integrated run's lifetime counter records 34,454 row-view solves,
+including initialization; unsupported factors continue through the fallback.
+An earlier six-run attempt stopped at the 2 MiB console budget and is excluded
+from timing conclusions. Its retry used an 8 MiB budget and completed normally.
+The first matched-control attempt reached the 2 GiB free-space reserve and was
+also excluded. Identical older generated CSVs and completed traces were verified
+and moved to immutable shared storage, recovering about 0.9 GB without changing
+their paths or contents. Partial files and supplied references were preserved.
+The control retry completed with the same output and storage limits.
+
+The matched control uses the same clean-built classes and JVM settings, changing
+only the row-view enable property. Its counter remains zero. Compared with its
+11.2446-second median, the enabled helper's 10.8702-second median is **3.3% lower**.
+Complete runner medians are 11.7071 and 11.3126 seconds, respectively. These are
+sequential small-sample measurements with overlapping ranges, so a repeatable
+speedup of that size is not yet established.
+
+The API and regression tests are core changes. The full-system timing still uses
+the preserved experimental network/controller overlay alongside that adapter;
+it does not describe the default production configuration. The original two
+experimental series also use different warm-up policies and cannot isolate the
+effect of expanded inlining. Compact sources, compiled classes, tests, complete
+and stopped run metadata, and verified trace hashes are retained privately under
+`2026-10-20-case2-factored-rows`. The ten-second target and independent-reference
+accuracy acceptance remain unmet.
