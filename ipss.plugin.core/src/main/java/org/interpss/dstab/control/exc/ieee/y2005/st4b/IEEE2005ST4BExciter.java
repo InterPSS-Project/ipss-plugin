@@ -36,6 +36,15 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
         return getClass() == IEEE2005ST4BExciter.class
                 ? bindPublicDoubleParameter(name) : super.bindCompiledParameter(name);
     }
+    private boolean compiledStageEnabled = true;
+    @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
+        return compiledStageEnabled ? St4bCompiledStage.tryCreate(this) : null;
+    }
+    public void setCompiledStageEnabled(boolean enabled) {
+        if (isRuntimePlanCompiled() || getRuntimePhase() != RuntimePhase.IDLE)
+            throw new IllegalStateException("Invalidate the controller plan before changing its stage policy");
+        compiledStageEnabled = enabled;
+    }
     private static final Logger log = LoggerFactory.getLogger(IEEE2005ST4BExciter.class);
 	public double k1 = 1.0;/*constant*/
 	/** External UEL contribution; zero is the nonbinding/absent value. */
@@ -186,6 +195,9 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	  			return 0.0; // In > 1.0
 	      }
 	   };
+    private final ICMLStaticBlock standardRectifier = customBlock;
+    boolean hasStandardRectifier() { return customBlock == standardRectifier; }
+
 	   
 
 	 

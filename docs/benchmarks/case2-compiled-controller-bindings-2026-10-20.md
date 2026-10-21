@@ -1274,3 +1274,60 @@ does not assign an exact fraction of the 3.08 seconds to each one; that requires
 controlled component comparisons. Retained measurements, settings, effective
 classpath and all-channel comparison results are recorded privately under
 `verification-artifacts/2026-10-21-performance-baseline-audit`.
+
+
+## Typed ST4B stage and observation preparation
+
+The standard ST4B graph now binds its input wiring directly to the initialized
+runtime wrappers. `tools/generate_st4b_stage_inputs.py` generates the wiring
+from annotations and provides `--check` to detect drift. The existing Java
+blocks remain the authoritative equations and state storage. Function instances
+are bound from runtime wrappers, which can differ from annotation field values.
+
+The engine has an optional observation-preparation capability, disabled by
+default. ST4B opts in while retaining the original algebraic convergence loop,
+both post-stage preparations, ordered feedback sweeps, live rectifier reads,
+stored bridge voltage, and predictor/corrector history. Nested observations do
+not release pending stage captures. Changed equations, custom blocks, custom
+limits and controller subclasses retain generic evaluation. Fixed structure
+requires invalidation before rebuilding.
+
+All 99 focused tests pass: 46 engine tests and 53 plugin tests. New coverage
+compares predictor and corrector stages, repeated voltage-dependent observations,
+state/derivative history, shared-block ordering, live controls, fault coupling,
+structural invalidation, fallback and observation failure recovery. Generated
+wiring and neutral-language checks pass. The broader registered suite plus both
+typed-stage test classes has the same five failing methods as the retained
+baseline; its exact counts and failure details are retained with the evidence.
+This does not establish successful six-case initialization or independent
+trajectory accuracy.
+
+Separate production JVMs each perform twelve warmups and six measured runs on
+one verified CPU, with fresh setup, ten simulated seconds, quarter-cycle steps,
+1e-5 dynamic tolerance and complete recording. Both keep typed PSS2A enabled.
+There are no solver or model class overlays. Two additional candidate profiles
+follow and are excluded from the measured repetitions.
+
+| Evaluation | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Generic ST4B preparation | 12.0741, 11.7258, 12.0624, 11.7143, 11.7079, 11.9375 | 11.8317 |
+| Typed ST4B stage and observation preparation | 11.6627, 11.5535, 11.6521, 11.3358, 11.4117, 11.5956 | 11.5746 |
+
+The paired median reduction is **2.17%**,
+or **0.2571 seconds**.
+All 38 full recordings retain the canonical binary hash: 2,405 finite samples,
+4,810 channels and both event-side duplicates. Each enabled run uses 64 typed
+ST4B evaluators and 615,104 compiled integration-stage calls. The fresh control
+median reproduces the earlier production result within ordinary run variation.
+
+This recovers only a small part of the gap to the earlier combined experimental
+runtime. Main-thread execution samples still place 55.6–60.6% in network
+solution; static-load complex division, device traversal, voltage scans and
+sparse triangular solves remain prominent. These are sampled execution shares,
+not wall-time phase measurements or recording-I/O timing. Current assembly and
+the remaining experimental paths require controlled integration and validation.
+
+The eight-second objective remains unmet, and matching the performance control
+does not resolve the independent-reference accuracy gap. Sources, classes,
+producer settings, test logs, profiles and recording hashes are retained under
+`verification-artifacts/2026-10-21-st4b-compiled-stage`.
