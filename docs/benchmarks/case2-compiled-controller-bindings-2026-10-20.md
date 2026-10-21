@@ -1419,3 +1419,54 @@ Commands, switchable sources/classes, all repetitions, affinity checks and
 recording hashes are retained under
 `verification-artifacts/2026-10-21-fast-stack-ablations`. The checked-in evidence
 index is `checkpoints/case2-fast-stack-ablations-2026-10-21.json`.
+
+## Production scalar static-load arithmetic
+
+Core commit `65425fa8d` integrates scalar static-load power and current
+arithmetic into the ordinary production bus implementation. The standard path
+retains the original multiply/add and scaled complex-division order, updates
+`staticTotalLoad` on every evaluated load call, and preserves the low-voltage
+cutoff and stamped-admittance compensation. Eligibility is restricted to
+standard bus/network implementations and finite standard complex values.
+Custom classes, zero-ZIP fallback and nonfinite arithmetic keep the ordinary
+path. Replacing ZIP values invalidates the cached eligibility decision.
+
+The scalar mode is enabled by default and can be disabled between evaluations
+with `setScalarStaticLoadEvaluationEnabled(false)`. No primitive current
+transfer or cached device traversal is enabled by this change.
+
+All 37 focused tests pass. New tests compare exact floating-point bits and
+stored load history across voltage sweeps, both current curves, load shedding,
+live ZIP replacement, runtime toggling, zero loads, nonfinite/overflow cases,
+low-voltage cutoff, stamped compensation and custom complex arithmetic. The
+existing independent 204-point load-curve fixture and coupled controller tests
+also pass.
+
+The broader registered suite plus both compiled-controller test classes finds
+2,624 tests: 2,606 pass, nine are skipped, four abort and the same five fail as
+the retained baseline. Both failing-method identities and failure messages
+match; this does not claim a clean overall suite or resolved six-case startup.
+
+Both timing JVMs load production classes, perform twelve warmups and six
+measured runs on one verified CPU, and include fresh setup and full recording
+for ten simulated seconds at quarter-cycle steps and 1e-5 dynamic tolerance.
+Only the scalar-load mode differs; typed ST4B and PSS2A stages stay enabled.
+
+| Production configuration | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Scalar load arithmetic disabled | 11.8247, 11.6265, 11.6283, 11.4757, 11.3386, 11.6171 | 11.6218 |
+| Scalar load arithmetic enabled | 11.2077, 11.0903, 11.0071, 11.1783, 11.2775, 11.2891 | 11.1930 |
+
+The median reduction is **0.4288 seconds (3.69%)**. All 36 complete binary
+recordings retain the canonical hash: 2,405 finite samples, 4,810 channels and
+both event-side duplicates. Compilation and garbage-collection time remain
+included in measured case time; their per-run values are retained in the
+evidence. This production gain is smaller than the isolated recovered-runtime
+scalar arithmetic gain and must not be substituted for that experiment.
+
+The eight-second production objective and independent-reference accuracy
+remain unresolved. The source checkpoint is saved before timing; commands,
+sources/classes, full-recording hashes, test results and dependency hashes are
+retained under `verification-artifacts/2026-10-21-scalar-static-load-production`.
+The paired source and evidence index is
+`checkpoints/case2-scalar-static-load-production-2026-10-21.json`.
