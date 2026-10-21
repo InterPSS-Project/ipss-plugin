@@ -1735,3 +1735,39 @@ hash. The follow-up profile manifest is retained separately under
 `verification-artifacts/2026-10-21-guarded-endpoint-profile` and linked from
 the same checkpoint index; its effective directory classes match the timed
 implementation.
+
+## Scalar voltage convergence scan
+
+Core commit `7a9808da4`, paired with plugin `3119e08c3`, reads validated
+rectangular bus coordinates directly during convergence scanning. It avoids
+temporary complex differences while preserving the existing norm arithmetic,
+inclusive magnitude threshold, strict component threshold, first-invalid-bus
+behavior, history publication and leading-bus identity. Polar coordinates,
+unvalidated tables and diagnostic alert callbacks retain the ordinary path.
+
+Both production JVMs perform twelve warmups and six measured runs on one
+verified CPU, with fresh setup, ten simulated seconds, quarter-cycle steps,
+1e-5 dynamic tolerance and complete recording:
+
+| Scalar scan | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Disabled | 9.9553, 9.6043, 10.3844, 9.7382, 9.4208, 9.7011 | 9.7196 |
+| Enabled | 9.6718, 9.4978, 9.7473, 9.5447, 9.4230, 9.7505 | 9.6082 |
+
+The paired median reduction is **0.1114 seconds (1.15%)**. The individual
+timings overlap; this is a small measured improvement, not a confidence bound
+or an explanation of the remaining difference from the recovered executable.
+All 36 recordings have the canonical binary hash, retaining 2,405 finite
+samples, 4,810 channels and both event-side duplicates.
+
+All 41 focused tests pass. Initial testing exposed an object-identity difference
+for efficient voltage publication; the final implementation preserves the
+ordinary path's cached-object identity as well as its numerical values.
+The broader registered suite plus explicit controller and convergence tests
+finds 2,669 tests: 2,651 pass, nine skip, four abort and the same five fail as
+the preceding baseline, with matching failure methods and messages.
+The source/evidence index is
+`checkpoints/case2-scalar-voltage-production-2026-10-21.json`; its private
+archive pins the changed source/classes, all effective directory-class hashes,
+external dependencies, producers, tests and retained input/output hashes.
+The eight-second objective and independent-reference accuracy remain open.
