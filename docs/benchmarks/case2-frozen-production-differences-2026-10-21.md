@@ -2,11 +2,12 @@
 
 The frozen executable retains two network optimizations that the current
 production path does not: convergence checking during voltage publication, and
-a cached list of network-iteration callback participants. These are the strongest
-remaining candidates for investigation. Their individual timing effects have
-not yet been measured.
+a cached list of network-iteration callback participants. Controller execution
+also differs. A later participant-cache experiment saved about 0.13 seconds with
+overlapping timing ranges; it does not explain the whole gap. The fused
+convergence pass still has no isolated timing measurement.
 
-This audit changes no simulation code. It compares the effective classes used
+This audit changes no production simulation code. It compares the effective classes used
 by the retained runs, disassembled method instructions, available source
 variants, input files, external dependencies, and run settings.
 
@@ -91,9 +92,10 @@ they are not 116 independent behavioral changes.
 All 116 differing classes were disassembled. Comparison normalizes constant-pool
 indices and whitespace while preserving instruction comments. Equal normalized
 methods are useful evidence but do not prove equality of all class metadata or
-bootstrap behavior. The retained source variant for the frozen staggered solver
-is older than its effective class; the executable is authoritative for that
-class, so a complete exact-source diff cannot be claimed.
+bootstrap behavior. The original audit had not located the exact source of the
+frozen staggered solver. The follow-up recovered it and rebuilt all six solver
+class files byte for byte. This closes that solver's source gap; it does not
+establish an exact historical source checkout for the whole executable.
 
 Previous conditional tests also constrain interpretation:
 
@@ -106,11 +108,63 @@ Previous conditional tests also constrain interpretation:
 - These effects come from different configurations and sessions and must not
   be added into a purported timing decomposition.
 
-The next discriminating experiments should restore the participant cache with
-complete invalidation, then fuse convergence with voltage publication, one at
-a time. Each needs warmed complete-case timing and unchanged full recordings.
-The audit identifies missing mechanisms; it does not yet assign the full
-1.10-second gap to them.
+The participant-cache prototype subsequently exposed a missing invalidation
+path when a generator's effective machine is restored, and was not adopted.
+Its matched medians were 9.609221 seconds without the cache and 9.482661 seconds
+with it. Fusing convergence with voltage publication remains a separate test.
+The audit does not assign the full 1.10-second gap to either mechanism.
+
+## Follow-up: which frozen version is being compared
+
+The original checkpoint, the selected working baseline, and the latest candidate
+are distinct executables. Their measurements must not be mixed into one
+production-versus-frozen comparison.
+
+| Version | Changes from the original frozen executable | Warmups / measurements | Complete-case median |
+| --- | --- | --- | --- |
+| Original frozen executable, indexed by `e2e0a892f` | None | 12 / 5 | 8.5065261 s |
+| Selected machine-frame working baseline | Production machine-frame reuse; ordinary current transfer; cached current traversal disabled | 24 / 7 | 7.9112594 s |
+| Endpoint candidate, independent archive replay | Selected baseline plus guarded electrical-only first endpoint preparation | 32 / 7 | 7.6671205 s |
+
+These are separate sessions with different warmup counts, not a controlled
+attribution of every reduction. The original production comparison above remains
+the applicable matched-settings audit. In the endpoint experiment's own 32/7
+control/candidate pair, medians were 7.9369608 and 7.5986059 seconds: a 0.3383549
+second reduction. The independent candidate replay measured 7.5252278 to
+7.8540224 seconds, with all seven measurements below eight seconds.
+
+The endpoint candidate ports an optimization already present in production:
+the first of two endpoint evaluations prepares electrical machine quantities
+only for eligible device stacks; the second full evaluation remains. It records
+211,376 such preparations per case. Its stored-state audit sampled 146,580
+numerical slots across 2,402 accepted steps. All 12,864 numerical/history hash
+groups matched; one additional group differed only in a diagnostic invocation
+counter whose bytecode has no numerical consumer. Raw comparison and counter
+classification are both retained. This is scoped evidence for this Case 2
+configuration, not general custom-model lifecycle qualification.
+
+All three frozen versions and the retained production run have the same complete
+recording hash given above. Fresh setup and full recording remain included;
+the tolerance, time step, CPU affinity and channels were not relaxed. The
+endpoint candidate is retained separately and has not replaced either the
+selected working-baseline index or production source.
+
+On follow-up, all 5,275 production and 5,287 original frozen effective class files
+still matched the audit inventory. The core revision is unchanged, and there
+are no committed plugin simulation-source changes between the audit revision
+and `c7a2978da`. Uncommitted source files are not treated as newly built or timed.
+
+For production work, preserve the useful machine optimizations already present,
+measure the fused convergence pass independently, and review controller
+preparation/reuse costs with the required invalidation safeguards. Replacing
+production wholesale with the frozen classes would also replace those safeguards
+and fallback paths; this audit does not qualify that broader change.
+
+The [endpoint checkpoint](checkpoints/case2-frozen-endpoint-2026-10-21.json)
+retains the exact solver-source proof, state audit, matched timing experiment,
+independent replay and hashes of the effective 5,288-class runtime. The
+[machine-frame report](case2-machine-frame-performance-2026-10-21.md) records the
+earlier paired experiment and participant-cache limitation.
 
 Related evidence:
 [working baseline](checkpoints/case2-working-performance-baseline.json),

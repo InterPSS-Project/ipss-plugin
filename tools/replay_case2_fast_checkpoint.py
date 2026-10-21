@@ -41,6 +41,41 @@ def destination(root: Path, relative: str) -> Path:
     return result
 
 
+def install_overlay(repo: Path, root: Path, relative_index: str, base_archive: dict,
+                    parent_archive: dict | None = None) -> tuple[dict, dict, int]:
+    index_path = repo / relative_index
+    index = json.loads(index_path.read_text())
+    manifest_path = verified(repo / index["private_manifest"], index["private_manifest_digest"])
+    manifest = json.loads(manifest_path.read_text())
+    archive = verified(manifest_path.parent / "overlay.zip", index["archive"])
+    if manifest["base_archive"] != base_archive:
+        raise RuntimeError("Overlay requires a different base archive")
+    if parent_archive is not None and manifest.get("parent_overlay_archive") != parent_archive:
+        raise RuntimeError("Overlay requires a different parent overlay")
+    with zipfile.ZipFile(archive) as bundle:
+        members = [i for i in bundle.infolist() if i.filename.startswith("runtime/") and not i.is_dir()]
+        if sum(i.file_size for i in members) > 4 * 1024**2:
+            raise RuntimeError("Overlay exceeds its 4 MiB runtime budget")
+        if len(members) != len(manifest["runtime_files"]) or {i.filename for i in members} != set(manifest["runtime_files"]):
+            raise RuntimeError("Incomplete or duplicate overlay entries")
+        for member in members:
+            expected = manifest["runtime_files"][member.filename]
+            payload = bundle.read(member)
+            if len(payload) != expected["bytes"] or hashlib.sha256(payload).hexdigest() != expected["sha256"]:
+                raise ValueError("Overlay class differs from manifest")
+            if not member.filename.endswith(".class"):
+                raise ValueError("Only classes may replace frozen runtime entries")
+            target = destination(root, member.filename)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(payload)
+    count = sum(1 for _ in (root / "runtime").rglob("*.class"))
+    if count != index["frozen_directory_classes"]:
+        raise RuntimeError("Unexpected overlay runtime class count")
+    record = dict(index=relative_index, index_digest=digest(index_path),
+                  manifest_digest=digest(manifest_path), archive_digest=digest(archive))
+    return index, record, count
+
+
 def run_single_cpu(command: list[str], repo: Path, root: Path) -> None:
     kernel = ctypes.WinDLL("kernel32", use_last_error=True)
     kernel.SetProcessAffinityMask.argtypes = [wintypes.HANDLE, ctypes.c_size_t]
@@ -87,7 +122,10 @@ def main() -> None:
                         help="New output directory inside this repository's target directory")
     parser.add_argument("--machine-frame-reuse", action="store_true",
                         help="Replay the retained machine-frame variant with 24 warmups and 7 measurements")
+    parser.add_argument("--electrical-endpoint", action="store_true",
+                        help="Include machine-frame reuse and endpoint preparation, with 32 warmups and 7 measurements")
     args = parser.parse_args()
+    use_machine_frame = args.machine_frame_reuse or args.electrical_endpoint
     if os.name != "nt":
         parser.error("This checkpoint runner requires Windows CPU-affinity verification")
     repo = Path(__file__).resolve().parents[1]
@@ -139,44 +177,20 @@ def main() -> None:
         input_count += 1
     if runtime_count != index["summary"]["frozen_directory_classes"] or input_count != 4:
         raise RuntimeError("Incomplete checkpoint runtime or case inputs")
-    overlay_record = None
+    overlay_record = endpoint_record = None
     warmup_runs, measured_runs = 12, 5
-    if args.machine_frame_reuse:
-        overlay_index_path = repo / "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json"
-        overlay_index = json.loads(overlay_index_path.read_text())
-        overlay_manifest_path = verified(repo / overlay_index["private_manifest"],
-                                         overlay_index["private_manifest_digest"])
-        overlay_manifest = json.loads(overlay_manifest_path.read_text())
-        overlay_archive = verified(overlay_manifest_path.parent / "overlay.zip", overlay_index["archive"])
-        if overlay_manifest["base_archive"] != index["archive"]:
-            raise RuntimeError("Machine-frame overlay requires a different base archive")
-        with zipfile.ZipFile(overlay_archive) as bundle:
-            members = [i for i in bundle.infolist() if i.filename.startswith("runtime/") and not i.is_dir()]
-            if sum(i.file_size for i in members) > 4 * 1024**2:
-                raise RuntimeError("Machine-frame overlay exceeds its 4 MiB runtime budget")
-            if {i.filename for i in members} != set(overlay_manifest["runtime_files"]):
-                raise RuntimeError("Incomplete machine-frame overlay")
-            for member in members:
-                expected = overlay_manifest["runtime_files"][member.filename]
-                payload = bundle.read(member)
-                if len(payload) != expected["bytes"] or hashlib.sha256(payload).hexdigest() != expected["sha256"]:
-                    raise ValueError("Machine-frame class differs from manifest")
-                if not member.filename.endswith(".class"):
-                    raise ValueError("Only classes may replace frozen runtime entries")
-                target = destination(root, member.filename)
-                target.parent.mkdir(parents=True, exist_ok=True)
-                target.write_bytes(payload)
-        runtime_count = sum(1 for _ in runtime.rglob("*.class"))
-        if runtime_count != overlay_index["frozen_directory_classes"]:
-            raise RuntimeError("Unexpected machine-frame runtime class count")
+    if use_machine_frame:
+        overlay_index, overlay_record, runtime_count = install_overlay(repo, root,
+            "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json", index["archive"])
         warmup_runs, measured_runs = 24, 7
-        overlay_record = dict(index=overlay_index_path.relative_to(repo).as_posix(),
-                              index_digest=digest(overlay_index_path),
-                              manifest_digest=digest(overlay_manifest_path), archive_digest=digest(overlay_archive))
+    if args.electrical_endpoint:
+        _, endpoint_record, runtime_count = install_overlay(repo, root,
+            "docs/benchmarks/checkpoints/case2-frozen-endpoint-2026-10-21.json", index["archive"], overlay_index["archive"])
+        warmup_runs, measured_runs = 32, 7
     command = json.loads((root / "original-command.json").read_text())
     command[command.index("-cp") + 1] = ";".join([str(runtime), *dependencies])
     command[-2] = str(root / "plan.json")
-    if args.machine_frame_reuse:
+    if use_machine_frame:
         command[command.index("-Dipss.experiment.primitiveCurrentHandoff=true")] = "-Dipss.experiment.primitiveCurrentHandoff=false"
         command[1:1] = ["-Dipss.dstab.disableCurrentArrays=true", "-Dipss.benchmark.frameReuse=true"]
     (root / "command.json").write_text(json.dumps(command, indent=2))
@@ -185,7 +199,7 @@ def main() -> None:
         private_manifest=index["private_manifest"], private_manifest_digest=index["private_manifest_digest"],
         archive_digest=index["archive"], frozen_directory_classes=runtime_count,
         mutable_build_directories_on_classpath=False, source_checkout=False,
-        machine_frame_overlay=overlay_record), indent=2))
+        machine_frame_overlay=overlay_record, electrical_endpoint_overlay=endpoint_record), indent=2))
     run_single_cpu(command, repo, root)
     runs = json.loads((root / "warm-statuses.json").read_text())
     if len(runs) != warmup_runs + measured_runs or len({r["pid"] for r in runs}) != 1:
@@ -200,9 +214,11 @@ def main() -> None:
                 or status["network_voltage_tolerance"] != 1e-5
                 or abs(status["step_s"] - 1 / 240) >= 1e-15):
             raise RuntimeError("Replay did not retain requested simulation settings")
-        if args.machine_frame_reuse and (status["buffered_current_solve_count"] != 0
+        if use_machine_frame and (status["buffered_current_solve_count"] != 0
                                          or status["frame_reuses"] <= 0):
             raise RuntimeError("Machine-frame replay did not use its declared execution paths")
+        if args.electrical_endpoint and status["electrical_endpoint_preparations"] != 211376:
+            raise RuntimeError("Endpoint replay did not use its declared preparation path")
         path = root / "actual/case2_bus_fault_01" / f"run-{row['run']}" / "full-network.bin"
         stat = path.stat()
         key = stat.st_dev, stat.st_ino
@@ -214,7 +230,8 @@ def main() -> None:
     if len(times) != measured_runs:
         raise RuntimeError("Unexpected number of measured repetitions")
     selected_path = repo / "docs/benchmarks/checkpoints/case2-working-performance-baseline.json"
-    replayed_index = ("docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json"
+    replayed_index = ("docs/benchmarks/checkpoints/case2-frozen-endpoint-2026-10-21.json" if args.electrical_endpoint
+                      else "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json"
                       if args.machine_frame_reuse else index_path.relative_to(repo).as_posix())
     selected = (selected_path.exists()
                 and json.loads(selected_path.read_text()).get("selected_checkpoint") == replayed_index)
@@ -224,7 +241,7 @@ def main() -> None:
         full_recording_included=True, trace_sha256=expected_hash,
         frozen_directory_classes=runtime_count, mutable_build_directories_on_classpath=False,
         exact_historical_checkout=False, independent_accuracy_qualified=False,
-        machine_frame_reuse=args.machine_frame_reuse)
+        machine_frame_reuse=use_machine_frame, electrical_endpoint_preparation=args.electrical_endpoint)
     (root / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     print(json.dumps(summary, indent=2))
 
