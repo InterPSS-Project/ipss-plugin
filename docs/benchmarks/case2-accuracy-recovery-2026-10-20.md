@@ -124,6 +124,70 @@ only an implementation-equivalence check.
 
 ## Regression testing
 
+### Confirmed reference settings and shunt-control correction
+
+The user subsequently confirmed three distinct convergence settings for the
+latest supplied Case 2 run: 0.1 MVA maximum bus mismatch for power flow,
+1e-5 pu voltage correction for converted-network startup, and 1e-4 pu voltage
+correction during dynamics. On the input's 100 MVA base, the power-flow setting
+is 1e-3 pu. The [settings record](texas2k-case2-reference-numerics-2026-10-20.json)
+separates these confirmed values from local numerical choices. The image does
+not establish the exact correction norm, iteration limits or arithmetic precision.
+The earlier 1e-5 dynamic controls therefore use a different stopping tolerance
+from this reference; they do not qualify as matched-protocol accuracy tests.
+
+Repeating startup at the requested 1e-3 power-flow tolerance exposed another
+regression in the inner-NR continuous-shunt path. It used the power mismatch
+tolerance to decide whether a voltage target was violated and whether a
+temporary susceptance limit should release. It could report settled controls
+while bus 8107 remained at 1.0293158 pu instead of its attainable 1.03 pu target.
+The auxiliary voltage equation could also terminate using the looser power
+threshold after a shunt was admitted.
+
+Continuous-shunt admission and limit release now use the configured voltage
+control tolerance. Before final convergence, an owned continuous-shunt voltage
+equation outside that tolerance receives another Newton correction. Power-flow
+mismatch tolerance remains 1e-3 pu; physical susceptance limits remain enforced.
+Discrete control policies are unchanged. Case 2 reaches the 1.03 pu target and
+finishes preparation in 16 iterations, with maximum electrical mismatch
+2.39091e-5 pu.
+
+The complete ten-second diagnostic retains the calculated startup conversion,
+1 ms integration and every reference sample, including event-side duplicates.
+With the confirmed stage tolerances, the isolated shunt correction changes
+worst full-window rotor RMSE from 2.960 degrees to 0.072737 degrees:
+
+| Required comparison after correction | Worst error | Limit | Passing channels |
+|---|---:|---:|---:|
+| Prefault voltage NRMAE | 0.000467410 | 0.001 | 2,000 / 2,000 |
+| Fault/postfault voltage NRMAE | 0.00102110 | 0.015 | 2,000 / 2,000 |
+| Prefault rotor maximum, degrees | 0.0267988 | 0.02 | 102 / 103 |
+| Full-window rotor RMSE, degrees | 0.0727366 | 0.2 | 103 / 103 |
+
+The remaining prefault rotor failure is still bus 1051 unit 1. Ordinary startup
+integration, quarter-cycle accuracy, direct bus-frequency coverage and the other
+events remain open. This result is a partial recovery, not complete acceptance.
+
+The specialized controller and network candidate was separately compared with
+the recovered 1 ms production implementation: all 10,005 rows and 4,810 channels
+agree within 2.12e-10 in their recorded units. Its supplied-reference scores also
+retain the same remaining prefault failure. The corrected shunt run uses this
+candidate and takes 31.39 seconds including recording, excluding the separate
+startup-conversion calculation. This cold diagnostic is not an end-to-end,
+warmed single-core performance acceptance result.
+
+All 134 focused tests pass after compiling the final production sources.
+The new small-network regression fails before the fix: a 0.0005 pu voltage error
+is ignored at 1e-3 power tolerance. Tests cover local and remote targets, both
+error signs, physical bounds, and release from upper and lower temporary limits.
+The wider registered-suite results below describe the preceding measurement-stage
+change; that entire suite was not repeated for this isolated control fix.
+
+Additional compact evidence is retained privately in
+`verification-artifacts/2026-10-20-case2-confirmed-tolerances`.
+
+### Measurement-stage regression tests
+
 All 56 focused checks pass, including round-rotor and salient-pole measurement
 boundaries, unchanged differential states during network evaluation, rejection
 of stage changes after initialization, explicit numerical-plan reporting,
