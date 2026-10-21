@@ -308,3 +308,58 @@ effect of expanded inlining. Compact sources, compiled classes, tests, complete
 and stopped run metadata, and verified trace hashes are retained privately under
 `2026-10-20-case2-factored-rows`. The ten-second target and independent-reference
 accuracy acceptance remain unmet.
+
+## Bound recording channels and reusable CSV rows
+
+The full recorder now calculates each synchronous or grid-forming generator's
+terminal power once per observation and emits both P and Q from that result.
+Adjacent channel evaluation consumes the pair immediately. Every new row
+refreshes the measurement, including rows with identical event timestamps.
+Electrical caches and retained air-gap power remain unchanged by observation.
+
+The selected-channel recorder binds device references and column names once for
+the initialized case. Each sample refreshes a reusable primitive array, checking
+live bus and machine status. Repeated selections retain the original unique
+column order. A changed selection or structural device inventory requires a new
+recorder. A reusable string builder then assembles each selected CSV row before
+writing it. CSV double formatting, line endings, column order and all values are
+preserved; the full trace remains lossless binary64.
+
+All series below retain the same numerical overlay, enabled row solver, expanded
+inlining, 1e-5 tolerance, 1/240-second step, three complete warm-ups and three fresh
+measured cases in one JVM. Output close and metadata writing remain timed.
+
+| Recording configuration | Logical CPU | Simulation plus recording, s | Median, s | Complete runner median, s |
+| --- | ---: | --- | ---: | ---: |
+| Previous recorder | 0 | 10.9438 / 10.8702 / 10.7660 | 10.8702 | 11.3126 |
+| Bound channels and paired terminal power | 0 | 10.1857 / 10.2984 / 10.1719 | 10.1857 | 10.7777 |
+| Also buffer selected CSV rows | 0 | 10.2252 / 9.7867 / 10.1292 | 10.1292 | 10.5419 |
+| Same buffered recorder, alternate CPU placement | 4 | 9.7885 / 9.8913 / 10.0189 | 9.8913 | 10.4126 |
+
+On the original CPU placement, the combined recording change lowers the measured
+inclusive median by **6.8%**. The additional row-buffer difference is small
+relative to run variability and is not established as an isolated speedup.
+Changing to logical CPU 4 is a separate placement experiment, not a code change.
+Each JVM's process affinity is verified before and after execution to contain
+exactly one logical CPU; `ActiveProcessorCount=1`, SerialGC and the 2 GiB heap
+remain in force. No additional simulation workers are created.
+
+All 18 new complete traces, including warm-ups, match the retained numerical
+control bit for bit. Each has 4,810 channels, 2,405 rows and 11,568,050 finite
+measurements, with both event sides retained. Selected CSV files, initial
+compensation and channel metadata also remain identical. Timed network iteration
+count remains 38,819. The final reporting/storage test run passes all 20 selected
+tests, including same-time voltage/status changes, reconnection, electrical-cache
+preservation, duplicate selection, signed zero, subnormal/extreme finite CSV
+values, and rejection of nonfinite values.
+
+Verified identical generated files share immutable storage after each completed
+series. Compact source, class, test, timing and trace-hash evidence is retained
+privately under `2026-10-20-case2-recording-bindings`. These changes are committed
+benchmark-recorder code; the measured numerical network/controller runtime
+continues to include the separately preserved experimental overlay.
+
+The best measured simulation-plus-recording median is below ten seconds, but
+one run remains above ten and complete runner time remains above ten in every
+measured run. The complete-time goal is therefore still open. Matching the
+retained control does not resolve its independent-reference accuracy failures.

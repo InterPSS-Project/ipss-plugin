@@ -13,6 +13,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.DoubleSupplier;
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import java.util.zip.GZIPOutputStream;
 
 import org.interpss.dstab.renewable.Regca1Model;
@@ -90,12 +92,9 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
                 var device = generator.getDynamicGenDevice();
                 if (device instanceof Machine machine) {
                     synchronous++;
-                    DoubleSupplier p = () -> connected(bus.isActive(), generator.isActive(), machine.isActive())
-                            ? terminalPowerWithoutCacheChanges(machine).getReal() * net.getBaseMva() : 0.;
-                    DoubleSupplier q = () -> connected(bus.isActive(), generator.isActive(), machine.isActive())
-                            ? terminalPowerWithoutCacheChanges(machine).getImaginary() * net.getBaseMva() : 0.;
-                    add("generator_P_MW" + suffix, "terminal_active_power", "MW", number, id, p);
-                    add("generator_Q_Mvar" + suffix, "terminal_reactive_power", "Mvar", number, id, q);
+                    addPowerPair(suffix, number, id,
+                            () -> connected(bus.isActive(), generator.isActive(), machine.isActive()),
+                            () -> terminalPowerWithoutCacheChanges(machine));
                     add("machine_ANGLE_deg" + suffix, "rotor_angle", "deg", number, id,
                             () -> connected(bus.isActive(), generator.isActive(), machine.isActive()) ? Math.toDegrees(machine.getAngle()) : 0.);
                     add("machine_SPEED_pu" + suffix, "speed", "pu_synchronous_speed", number, id,
@@ -116,12 +115,9 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
                 } else if (device instanceof Regfma1Model converter) {
                     converters++;
                     gridForming++;
-                    add("generator_P_MW" + suffix, "terminal_active_power", "MW", number, id,
-                            () -> connected(bus.isActive(), generator.isActive(), converter.isActive())
-                                    ? terminalPowerWithoutCacheChanges(converter).getReal() * net.getBaseMva() : 0.);
-                    add("generator_Q_Mvar" + suffix, "terminal_reactive_power", "Mvar", number, id,
-                            () -> connected(bus.isActive(), generator.isActive(), converter.isActive())
-                                    ? terminalPowerWithoutCacheChanges(converter).getImaginary() * net.getBaseMva() : 0.);
+                    addPowerPair(suffix, number, id,
+                            () -> connected(bus.isActive(), generator.isActive(), converter.isActive()),
+                            () -> terminalPowerWithoutCacheChanges(converter));
                 } else {
                     throw new IllegalStateException("Unsupported online generator observation: " + bus.getId() + "/" + id);
                 }
@@ -145,6 +141,24 @@ final class Texas2kFullNetworkRecorder implements AutoCloseable {
 
     private static boolean connected(boolean bus, boolean generator, boolean device) {
         return bus && generator && device;
+    }
+
+    private void addPowerPair(String suffix, String bus, String id, BooleanSupplier active,
+            Supplier<org.apache.commons.math3.complex.Complex> power) {
+        // These adjacent channels are evaluated in insertion order for every row.
+        // P refreshes both values; Q consumes that same observation. No value is
+        // reused across rows, even when event-pre/post timestamps are identical.
+        double[] reactive = new double[1];
+        add("generator_P_MW" + suffix, "terminal_active_power", "MW", bus, id, () -> {
+            if (!active.getAsBoolean()) {
+                reactive[0] = 0.;
+                return 0.;
+            }
+            var terminal = power.get();
+            reactive[0] = terminal.getImaginary() * network.getBaseMva();
+            return terminal.getReal() * network.getBaseMva();
+        });
+        add("generator_Q_Mvar" + suffix, "terminal_reactive_power", "Mvar", bus, id, () -> reactive[0]);
     }
 
     static org.apache.commons.math3.complex.Complex terminalPowerWithoutCacheChanges(Machine machine) {

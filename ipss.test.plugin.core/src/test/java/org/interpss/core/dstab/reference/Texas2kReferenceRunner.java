@@ -17,7 +17,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.interpss.core.acsc.fault.SimpleFaultCode;
-import com.interpss.dstab.BaseDStabNetwork;
 import com.interpss.dstab.DStabObjectFactory;
 import com.interpss.dstab.DStabGen;
 import com.interpss.dstab.StaticLoadModel;
@@ -169,7 +168,7 @@ public final class Texas2kReferenceRunner {
             long simulationStarted;
             try (var writer = BenchmarkOutputGuard.newWriter(trace, 0);
                     var fullNetwork = fullNetworkDiagnostics ? new Texas2kFullNetworkRecorder(net, out, fullNetworkFormat) : null) {
-                final JsonObject selected = event;
+                var selectedRecorder = new Texas2kSelectedRecorder(net, event);
                 // Preserve the loader's initialization and integration-step configuration.
                 String globalScheme = plan.has("solver_integration_scheme")
                         ? plan.get("solver_integration_scheme").getAsString() : "MODIFIED_EULER";
@@ -191,7 +190,7 @@ public final class Texas2kReferenceRunner {
                         @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
                                 throws DStabSimuException {
                             super.rebaseDynamicModelInputs(method);
-                            try { write(writer, algo.getSimuTime(), "EVENT_POST", record(net, selected), fullNetwork); }
+                            try { write(writer, algo.getSimuTime(), "EVENT_POST", selectedRecorder.sample(), fullNetwork); }
                             catch (Exception failure) { throw new DStabSimuException("Event observation failed: "+failure); }
                         }
                     });
@@ -218,7 +217,7 @@ public final class Texas2kReferenceRunner {
                     @Override protected void rebaseDynamicModelInputs(DynamicSimuMethod method)
                             throws DStabSimuException {
                         super.rebaseDynamicModelInputs(method);
-                        try { write(writer, algo.getSimuTime(), "EVENT_POST", record(net, selected), fullNetwork); }
+                        try { write(writer, algo.getSimuTime(), "EVENT_POST", selectedRecorder.sample(), fullNetwork); }
                         catch (Exception failure) {
                             throw new DStabSimuException("Event observation failed: " + failure);
                         }
@@ -262,8 +261,8 @@ public final class Texas2kReferenceRunner {
                 }
                 simulationStarted = System.nanoTime();
                 status.put("setup_initialization_wall_s", (simulationStarted - started) / 1.e9);
-                var initial = record(net, event);
-                writer.write("time_s,sample_kind," + String.join(",", initial.keySet()) + "\n");
+                var initial = selectedRecorder.sample();
+                writer.write("time_s,sample_kind," + initial.header() + "\n");
                 int historySteps = plan.has("startup_history_steps")
                         ? plan.get("startup_history_steps").getAsInt() : 0;
                 if (historySteps != 0 && historySteps != 2)
@@ -272,13 +271,13 @@ public final class Texas2kReferenceRunner {
                 if (historySteps == 2) {
                     algo.setSimuTime(-historySteps * step);
                     for (int index = 0; index < historySteps; index++) {
-                        write(writer, algo.getSimuTime(), "HISTORY", record(net, event), fullNetwork);
+                        write(writer, algo.getSimuTime(), "HISTORY", selectedRecorder.sample(), fullNetwork);
                         if (!algo.solveDEqnStep(true))
                             throw new IllegalStateException("Startup history integration failed");
                         if (auditInitialization)
                             Texas2kInitializationAudit.write(net, out.resolve("startup-state-audit-" + index + ".json"));
                     }
-                    initial = record(net, event);
+                    initial = selectedRecorder.sample();
                 }
                 write(writer, 0., "INITIAL", initial, fullNetwork);
                 status.put("step_s", step);
@@ -290,7 +289,7 @@ public final class Texas2kReferenceRunner {
                         throw new IllegalStateException("Integration failed at " + algo.getSimuTime());
                     reached = algo.getSimuTime();
                     if ((index + 1) % outputEvery == 0)
-                        write(writer, reached, "STEP_END", record(net, event), fullNetwork);
+                        write(writer, reached, "STEP_END", selectedRecorder.sample(), fullNetwork);
                     if ((index + 1) % 2000 == 0) {
                         writer.flush();
                         System.out.println(args[1] + " t=" + reached);
@@ -313,53 +312,9 @@ public final class Texas2kReferenceRunner {
         }
     }
 
-    private static Map<String, Double> record(BaseDStabNetwork<?, ?> net, JsonObject event) {
-        Map<String, Double> values = new LinkedHashMap<>();
-        for (var number : event.getAsJsonArray("nearby_buses")) {
-            int id = number.getAsInt();
-            var bus = net.getBus("Bus" + id);
-            if (bus == null || !bus.isActive()) throw new IllegalStateException("Missing bus " + id);
-            values.put("bus_voltage_pu__bus_" + id, bus.getVoltageMag());
-            values.put("bus_angle_deg__bus_" + id, Math.toDegrees(bus.getVoltageAng()));
-        }
-        var observedGenerators = event.has("diagnostic_generators")
-                ? event.getAsJsonArray("diagnostic_generators") : event.getAsJsonArray("nearby_generators");
-        for (var generator : observedGenerators) {
-            var g = generator.getAsJsonObject();
-            String id = "Bus" + g.get("bus").getAsInt() + "-mach" + g.get("id").getAsString();
-            var machine = net.getMachine(id);
-            if (machine == null) throw new IllegalStateException("Missing machine " + id);
-            String suffix = "__bus_" + g.get("bus").getAsInt() + "__id_" + g.get("id").getAsString();
-            // Commercial machine channels are zero after disconnection. Keep
-            // the retained internal states intact; this is an output convention.
-            boolean active = machine.isActive();
-            values.put("machine_ANGLE_deg" + suffix, active ? Math.toDegrees(machine.getAngle()) : 0.);
-            values.put("machine_SPEED_dev_pu" + suffix, active ? machine.getSpeed() - 1. : 0.);
-            values.put("machine_EFD_pu" + suffix, active ? machine.getEfd() : 0.);
-            values.put("machine_PMECH_pu_mbase" + suffix, active ? machine.getPm() : 0.);
-            values.put("machine_ETERM_pu" + suffix, active ? machine.getDStabBus().getVoltageMag() : 0.);
-            // getPe() includes stator copper loss and may be averaged at an
-            // event. PSS/E PELEC/QELEC require the instantaneous terminal power.
-            Complex terminalPower = active
-                    ? Texas2kFullNetworkRecorder.terminalPowerWithoutCacheChanges(machine)
-                    : Complex.ZERO;
-            values.put("machine_AIRGAP_pu_mbase" + suffix, active ? machine.getPe() : 0.);
-            values.put("machine_PELEC_pu_sbase" + suffix, terminalPower.getReal());
-            values.put("machine_QELEC_pu" + suffix, terminalPower.getImaginary());
-        }
-        return values;
-    }
-
     private static void write(BufferedWriter writer, double time, String kind,
-            Map<String, Double> values, Texas2kFullNetworkRecorder fullNetwork) throws Exception {
-        writer.write(Double.toString(time));
-        writer.write("," + kind);
-        for (var entry : values.entrySet()) {
-            if (!Double.isFinite(entry.getValue()))
-                throw new IllegalStateException("Nonfinite " + entry.getKey() + " at " + time);
-            writer.write("," + entry.getValue());
-        }
-        writer.newLine();
+            Texas2kSelectedRecorder.Sample sample, Texas2kFullNetworkRecorder fullNetwork) throws Exception {
+        sample.write(writer, time, kind);
         if (fullNetwork != null) fullNetwork.record(time, kind);
     }
 }

@@ -57,15 +57,21 @@ class Texas2kFullNetworkRecorderTest {
                 "Copper loss must distinguish terminal power from air-gap power");
         round.restoreRoundElectricalState(storedElectricalState);
         machine.setPe(storedAirgapPower);
+        Complex changedPower;
         try (var recorder = new Texas2kFullNetworkRecorder(net, directory, format)) {
             recorder.record(-.001, "HISTORY");
             recorder.record(0., "INITIAL");
             recorder.record(1., "STEP_END");
             machine.setStatus(false);
             recorder.record(1., "EVENT_POST");
+            machine.setStatus(true);
+            machine.getDStabBus().setVoltage(voltage.multiply(new Complex(.97,-.003)));
+            voltage=machine.getDStabBus().getVoltage();
+            changedPower=Texas2kFullNetworkRecorder.terminalPowerWithoutCacheChanges(machine).multiply(net.getBaseMva());
+            recorder.record(1., "EVENT_POST");
         }
         var rows = rows(directory);
-        assertEquals(4, rows.size());
+        assertEquals(5, rows.size());
         assertEquals("STEP_END", rows.get(2).get("sample_kind"));
         assertEquals("EVENT_POST", rows.get(3).get("sample_kind"));
         assertEquals(rows.get(2).get("time_s"), rows.get(3).get("time_s"));
@@ -75,6 +81,10 @@ class Texas2kFullNetworkRecorderTest {
         assertEquals(pm * machine.getRating() * net.getBaseMva(), number(rows.get(2), "machine_PMECH_MW__bus_1__id_1"), 0.);
         assertEquals(0., number(rows.get(3), "generator_P_MW__bus_1__id_1"), 0.);
         assertEquals(0., number(rows.get(3), "machine_ANGLE_deg__bus_1__id_1"), 0.);
+        assertEquals(rows.get(3).get("time_s"),rows.get(4).get("time_s"));
+        assertNotEquals(power.getReal(),changedPower.getReal());
+        assertEquals(changedPower.getReal(),number(rows.get(4),"generator_P_MW__bus_1__id_1"),1.e-12);
+        assertEquals(changedPower.getImaginary(),number(rows.get(4),"generator_Q_Mvar__bus_1__id_1"),1.e-12);
         assertEquals(rows.get(2).get("bus_angle_deg__bus_1"), rows.get(3).get("bus_angle_deg__bus_1"));
         assertEquals(voltage, machine.getDStabBus().getVoltage());
         assertEquals(angle, machine.getAngle(), 0.);
@@ -85,7 +95,7 @@ class Texas2kFullNetworkRecorderTest {
         assertEquals(storedElectricalState, round.captureRoundElectricalState(),
                 "Reporting after a voltage change must preserve cached currents, derivatives and power");
         var metadata = JsonParser.parseString(Files.readString(directory.resolve("full-network-channels.json"))).getAsJsonObject();
-        assertEquals(4, metadata.get("samples").getAsInt());
+        assertEquals(5, metadata.get("samples").getAsInt());
         assertEquals(-.001, metadata.get("first_time_s").getAsDouble(), 0.);
         assertThrows(java.io.IOException.class, () -> new Texas2kFullNetworkRecorder(net, directory, format));
     }
