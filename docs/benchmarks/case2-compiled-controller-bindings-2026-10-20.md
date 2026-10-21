@@ -1470,3 +1470,59 @@ sources/classes, full-recording hashes, test results and dependency hashes are
 retained under `verification-artifacts/2026-10-21-scalar-static-load-production`.
 The paired source and evidence index is
 `checkpoints/case2-scalar-static-load-production-2026-10-21.json`.
+
+## Typed PSS2A observation preparation
+
+Core commit `d81a45fef` and plugin commit `a23b4c022` extend the compiled
+PSS2A evaluator to output observations. Integration preparation and dependency
+scheduling visit the two input branches in different orders, so the evaluator
+retains two separately compiled orders. Observations use the existing pure,
+acyclic dependency order. No signal name lookup or graph sorting occurs in the
+observation loop.
+
+The engine retains its phase guards, output-expression evaluation, nonfinite
+handling and fallback paths. An opt-in scheduled-observation hook never advances
+or releases captured integration history. Changed ordering without an exact
+typed schedule, shared blocks, custom blocks and unsupported graphs retain
+generic evaluation. PSS2A observation preparation is enabled by default and can
+be selected before plan compilation with
+`setCompiledObservationPreparationEnabled(...)`.
+
+All 41 focused tests pass. New coverage verifies that the typed path is used,
+preserves pending predictor/corrector captures, follows observation ordering,
+handles shared-block fallback, retains live inputs and recovers from nonfinite
+observations. Engine tests cover nested capture, phase restoration and failed
+observations. Generated stage wiring and neutral-language checks pass.
+
+The broader registered suite plus both compiled-controller test classes finds
+2,626 tests: 2,608 pass, nine are skipped, four abort and the same five fail as
+the retained baseline. Both failing-method identities and failure messages
+match. The two additional passing tests cover the new observation behavior;
+the existing failures and independent-reference accuracy remain unresolved.
+
+Both production JVMs use twelve warmups and six measured runs on one verified
+CPU, including fresh setup and full recording for ten simulated seconds at
+quarter-cycle steps and 1e-5 dynamic tolerance. Both retain scalar static-load
+arithmetic and typed ST4B/PSS2A integration stages. Only typed PSS2A observation
+preparation differs.
+
+| Production observation preparation | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Generic dependency schedule | 11.2826, 11.1736, 11.3503, 11.1366, 11.1600, 11.2923 | 11.2281 |
+| Typed equivalent schedule | 10.9640, 10.5436, 10.9487, 10.4793, 10.5693, 10.8751 | 10.7222 |
+
+The median reduction is **0.5059 seconds (4.51%)**. Each candidate run reports
+1,077,075 typed PSS2A observation preparations. All 36 full binary recordings
+have the canonical hash, preserving 2,405 samples, 4,810 channels and both
+event-side duplicates. The configuration counter covers 435 attached PSS
+objects; an initial post-run check incorrectly expected the 103 bound-machine
+count. The checker was corrected using the retained completed runs, with no
+simulation rerun or changes to timings. The original checker and correction
+record are preserved with the evidence.
+
+The eight-second goal remains unmet, and this output-equivalence result does
+not resolve independent-reference accuracy. Commands, source checkpoints,
+classes, counters, tests and recording/dependency hashes are retained under
+`verification-artifacts/2026-10-21-pss-observation-production`.
+The paired source and evidence index is
+`checkpoints/case2-pss-observation-production-2026-10-21.json`.
