@@ -1331,3 +1331,43 @@ The eight-second objective remains unmet, and matching the performance control
 does not resolve the independent-reference accuracy gap. Sources, classes,
 producer settings, test logs, profiles and recording hashes are retained under
 `verification-artifacts/2026-10-21-st4b-compiled-stage`.
+
+
+## Recovered fast-stack checkpoint
+
+The earlier approximately 8.9-second result was not preserved as a single
+runnable source commit. Component commits and private experiment archives were
+saved, but the command also depended on mutable build directories. The reporting
+commit `63038f1ea` contained benchmark documentation, not the entire executable.
+
+A fresh replay with current unshadowed engine classes failed before simulation:
+the current bus implementation expected an efficient-voltage API absent from the
+old network overlay. Restoring the engine base from `9e479a4f5` resolved that
+incompatibility. The recovered replay freezes all 5,287 effective directory
+classes before execution; its unshadowed plugin dependencies come from the
+current build. It is a recovered composite runtime, not a claim that the exact
+historical source checkout was recovered.
+
+With twelve warmups and five measured runs, complete-case times are
+8.8609, 8.4059, 8.6535, 8.5163 and 8.3183 seconds: median **8.516267 seconds**.
+Single-CPU affinity, ten simulated seconds, quarter-cycle steps, 1e-5 tolerance,
+fresh setup and complete recording are verified. All seventeen full recordings
+have the same canonical hash as production, with 2,405 samples, 4,810 channels
+and both event-side duplicates. This establishes recoverable experimental
+performance; it does not establish independent-reference accuracy.
+
+The gap to the newly measured 11.5746-second production path is 3.0583 seconds.
+The missing implementation pieces include scalar static-load/current assembly,
+primitive current transfer, complete direct stabilizer output evaluation and
+ST4B bridge reuse within an evaluation scope. The latest ST4B change restored
+typed wiring while retaining live bridge recomputation, so it did not restore
+the complete earlier ST4B fast path. Exact per-component timing attribution
+still requires controlled comparisons of this recovered stack.
+
+The private `verification-artifacts/2026-10-21-recovered-fast-stack` snapshot
+now archives effective classes, classpath resources, available experimental
+sources, commands and channel metadata, with external dependencies and large
+input/output files identified by hashes. The checked-in checkpoint index is
+`checkpoints/case2-recovered-fast-2026-10-21.json`. It requires that private
+snapshot and its dependencies; it is not a standalone production source commit.
+The eight-second production objective remains open.
