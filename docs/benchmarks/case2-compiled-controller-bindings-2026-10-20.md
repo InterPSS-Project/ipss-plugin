@@ -910,3 +910,53 @@ tolerance; it must not be presented as a matched-reference numerical protocol.
 Exact final sources, classes, test reports, profiles, producers and trace hashes
 are retained privately under
 `verification-artifacts/2026-10-21-revision-voltage-validation`.
+
+
+## Native bus-list iterator specialization
+
+The native bus list now uses a small iterator specialization for direct reads of
+its size and modification counter. It inherits the ordinary element-read and
+removal implementation. Membership remains live: there is no frozen list copy,
+no changed device-update order and no numerical calculation change.
+`setDirectBusIterationEnabled(false)` selects the ordinary iterator. Changing
+the option does not invalidate iterators already created.
+
+All 118 targeted tests pass, including five new iterator checks. They compare
+ordinary and specialized traversal across 200 deterministic mutation sequences,
+removal and exhaustion, raw backing-array edits, replacement and live option
+changes. Existing network, convergence, current-buffer, multi-network and coupled
+controller checks also pass. The full registered suite was not rerun.
+
+An alternating five-pair trial, after six warmups, showed the following complete
+case medians. Two additional profile runs were excluded from timing.
+
+| Mode | Median complete-case seconds |
+|---|---:|
+| Ordinary iterator | 14.5129 |
+| Specialized iterator | 13.9890 |
+
+That 3.61% difference includes residual compilation, which varied substantially.
+To test whether mode alternation distorted the result, each mode was then run
+in a separate JVM with twelve fixed-mode warmups and six measured repetitions.
+
+| Mode | Six complete-case times, seconds | Median, seconds | Median compilation, ms |
+|---|---|---:|---:|
+| Ordinary iterator | 14.0391, 14.1244, 13.9482, 13.9949, 14.0857, 14.2144 | 14.0624 | 194.5 |
+| Specialized iterator | 13.7946, 13.7075, 13.7565, 13.5321, 13.6186, 14.0930 | 13.7320 | 196.0 |
+
+The fixed-mode median reduction is 2.35%. Compilation and garbage collection remain
+included; no estimated time was subtracted. Both trials use one pinned CPU,
+quarter-cycle steps, 1e-5 dynamic tolerance and fresh networks. Timing includes
+import, power flow, initialization and full recording. The comparison toggle is
+applied after import; both modes share the new default during import. Iterator
+counters exclude import and record 92,364 specialized traversals when enabled.
+
+All 54 full recordings match the preceding production trace byte-for-byte:
+2,405 finite samples, all 4,810 channels and both event-side duplicates. Equal
+recordings share storage through verified hard links within each trial.
+
+The eight-second objective remains unmet. These checks establish implementation
+equivalence, not independent-reference accuracy; the quarter-cycle reference
+mismatch remains unresolved. Compact exact sources, classes, tests, profiles,
+producers and retained recording hashes are stored privately under
+`verification-artifacts/2026-10-21-direct-bus-iteration`.
