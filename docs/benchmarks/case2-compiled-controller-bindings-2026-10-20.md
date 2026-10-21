@@ -855,3 +855,58 @@ while keeping structural invalidation and physical-input refresh explicit.
 Exact sources/classes, producers, targeted regression reports, profiles and full
 recording hashes are retained privately under
 `verification-artifacts/2026-10-21-nested-output-scheduling`.
+
+
+## Revision-based network membership validation
+
+The indexed voltage-history path now validates native bus membership once per
+network solution, then uses the network revision to check whether that proof
+still holds. Numerical convergence checks and voltage-dependent current updates
+still execute at every required iteration. This changes structural validation,
+not convergence tolerance, integration order or physical equations.
+
+The fast path requires exact standard buses, a common standard network owner,
+the native bus list and ordinary history values. Bus identifier changes now
+invalidate the revision before and after assignment, including invalid names
+and reentrant notifications. Existing membership and activity hooks remain
+active. Exposing or installing the list's raw backing array permanently disables
+revision reuse for that network because later array edits bypass list hooks.
+Detached lists, custom implementations and escaped history views retain their
+previous guarded path. `setRevisionVoltageValidationEnabled(false)` selects
+full validation between network solves for controlled comparison.
+
+Each enabled Case 2 run performs 2,405 full validations and skips 33,964 repeated
+validations. It still checks every active bus voltage during convergence and
+preserves invalid-iterate reporting and partial history writes.
+
+The final-source trial uses six warmups, five measured alternating pairs and two
+separate profiling runs. Each run builds a fresh network and includes power
+flow, initialization and all 4,810 recorded channels. The process is pinned to
+one CPU, with quarter-cycle integration and 1e-5 dynamic tolerance.
+
+| Membership validation | Five complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Full validation | 14.5435, 15.1893, 14.5148, 14.4400, 14.5810 | 14.5435 |
+| Revision guarded | 13.9929, 13.7258, 13.7843, 13.8284, 13.9170 | 13.8284 |
+
+The median reduction is 4.92%. All eighteen complete traces match the preceding
+production trace byte-for-byte: 2,405 finite samples, 4,810 channels and duplicate
+fault application/clearing timestamps preserved. Matching repeated recordings
+share storage through verified hard links.
+
+All 113 targeted checks pass, including 87 core network checks, two multi-network
+checks and 24 coupled solver/controller checks. New tests cover both convergence
+norms, rename and activity changes, list edits, owner changes, custom callbacks,
+reentrant notifications, raw-array access and delayed array mutation. The full
+registered suite was not rerun.
+
+The eight-second objective and supplied-reference accuracy remain unresolved.
+This is implementation-equivalence evidence, not independent accuracy acceptance.
+The confirmed reference uses separate tolerances: 1e-3 pu power mismatch on the
+100 MVA base, 1e-5 pu startup voltage correction and 1e-4 pu dynamic voltage
+correction. The performance trial deliberately uses the requested 1e-5 dynamic
+tolerance; it must not be presented as a matched-reference numerical protocol.
+
+Exact final sources, classes, test reports, profiles, producers and trace hashes
+are retained privately under
+`verification-artifacts/2026-10-21-revision-voltage-validation`.
