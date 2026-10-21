@@ -1844,3 +1844,43 @@ eight-second objective or establish independent-reference accuracy.
 After removal, all 29 targeted rebuild tests pass. The complete inventory of
 5,272 effective runtime classes matches the saved production checkpoint, with
 no differing or extra classes. The index includes the restoration evidence.
+
+
+## Direct stabilizer evaluator comparison and selected working baseline
+
+Two private PSS2A comparisons replace output evaluation or combined stage/output
+evaluation on the current engine, retaining setup, network tolerance, CPU affinity
+and full recording. The output-only pair has
+medians of 9.6027 seconds disabled and 9.5813 seconds enabled. The combined
+stage/output pair has medians of 9.6912 seconds disabled and 9.5461 seconds
+enabled. Each uses twelve warmups and six measured repetitions. Run ranges
+overlap; these measurements do not establish recovery of the remaining second.
+The combined path executes 778,454 direct stages and 865,596 direct output
+evaluations per case. All 72 timed-protocol recordings have the canonical hash.
+The candidates remain private diagnostics and are not adopted. All 5,272
+production directory classes remain identical to the scalar-scan checkpoint.
+See `checkpoints/case2-pss-direct-evaluation-probe-2026-10-21.json`.
+
+The frozen recovered executable is now selected as the working performance
+baseline, as requested. The repeatable runner verifies the archived runtime,
+case inputs and Maven dependencies, then uses only the extracted frozen runtime
+and those dependencies. No mutable build directory is on the runtime classpath.
+The current production source remains available separately; this selection does
+not create the missing historical source checkout or qualify reference accuracy.
+
+```powershell
+python tools/run_bounded.py --log target/fast-checkpoint-replay.log -- python tools/replay_case2_fast_checkpoint.py --output target/fast-checkpoint-replay
+```
+
+Use a new output/log name for each replay. The private archive and retained
+dependencies are required. Staging is limited to 256 MiB and requires 3 GiB free;
+the bounded runner maintains the existing disk and log limits. Every channel and
+event-side duplicate is retained; identical repeated recordings use hard links.
+
+The fresh archive-only replay measured 9.0264, 8.3822, 8.5732, 8.5065 and 8.4001
+seconds after twelve warmups: **8.5065 seconds median**. Fresh setup and full
+recording remain included, with one CPU, ten simulated seconds, quarter-cycle
+steps and 1e-5 network voltage-correction tolerance. All seventeen full recordings
+match the canonical hash. The eight-second goal remains unmet by about 0.51
+seconds. Selection and replay evidence are indexed in
+`checkpoints/case2-working-performance-baseline.json`.

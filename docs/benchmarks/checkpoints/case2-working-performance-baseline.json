@@ -1,0 +1,45 @@
+{
+  "schema": 1,
+  "status": "selected-working-performance-baseline",
+  "goal_achieved": false,
+  "selected_checkpoint": "docs/benchmarks/checkpoints/case2-recovered-fast-2026-10-21.json",
+  "executable_evidence_commit": "e2e0a892f",
+  "replay_tool": "tools/replay_case2_fast_checkpoint.py",
+  "source_checkout": false,
+  "production_source_replaced": false,
+  "summary": {
+    "status": "completed",
+    "working_performance_baseline": true,
+    "warmup_runs": 12,
+    "measured_runs": 5,
+    "case_wall_s": [
+      9.026433,
+      8.3822033,
+      8.5731963,
+      8.5065261,
+      8.4000571
+    ],
+    "median_case_wall_s": 8.5065261,
+    "single_cpu_verified": true,
+    "full_recording_included": true,
+    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "frozen_directory_classes": 5287,
+    "mutable_build_directories_on_classpath": false,
+    "exact_historical_checkout": false,
+    "independent_accuracy_qualified": false
+  },
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-working-fast-baseline/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 28316,
+    "sha256": "8e12755ab9e80cb8812141fadbb584a97f8967f75ebab4e6c046fe953b9fdeb5"
+  },
+  "archive": {
+    "bytes": 126943,
+    "sha256": "c6cb32b690db7a11feb6945443ced6e369dc92dbd2a365a8cbe74c8961d361d4"
+  },
+  "requirements": [
+    "Private frozen archive and four retained input files",
+    "Matching Maven dependencies",
+    "Windows Java runtime and permission to create verified recording hard links"
+  ]
+}
