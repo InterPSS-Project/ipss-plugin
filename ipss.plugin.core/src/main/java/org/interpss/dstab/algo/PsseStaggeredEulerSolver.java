@@ -100,6 +100,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private boolean extendedStack;
     private boolean runtimeControllerOptimizationEnabled = true;
     private boolean compiledControllerGraphsEnabled;
+    private boolean compiledLocalSt1Enabled=true;
     private double[] start;
     private double[] derivative;
     private final List<Participant> participants = new ArrayList<>();
@@ -119,11 +120,16 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         final double[] previous, start, rates;
         final boolean[] frozen;
         final boolean reuseFixedPssOutput;
+        final boolean compiledLocal;
+        final long runtimeGeneration;
+        final double[] compiledOutput=new double[1];
         boolean wasActive;
 
         LocalSt1Controller(IEEE1981ST1Exciter model, BooleanSupplier active, List<State> states,
-                boolean reuseFixedPssOutput) {
+                boolean reuseFixedPssOutput, boolean compiledLocal) {
             this.reuseFixedPssOutput = reuseFixedPssOutput;
+            this.compiledLocal=compiledLocal;
+            this.runtimeGeneration=model.getRuntimeGeneration();
             this.model=model; this.active=active; this.states=List.copyOf(states);
             previous=new double[states.size()]; start=new double[states.size()];
             rates=new double[states.size()]; frozen=new boolean[states.size()];
@@ -136,6 +142,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
 
         void advance(double dt, boolean discontinuity) throws DStabSimuException {
+            if(compiledLocal && runtimeGeneration!=model.getRuntimeGeneration())
+                throw new IllegalStateException("Reinitialize after changing ST1 runtime structure");
             if (!active.getAsBoolean()) {
                 java.util.Arrays.fill(previous,0.); wasActive=false; return;
             }
@@ -144,7 +152,10 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     && model.getMachine().getStabilizer() instanceof Ieee1992PSS2AStabilizer pss ? pss : null;
             if (held != null) held.beginFixedInputObservation();
             try {
-                for (int sub=0;sub<SUBSTEPS;sub++) {
+                if(compiledLocal && model.tryCompiledLocalAdvance(dt,discontinuity,wasActive,held!=null,
+                        previous,start,rates,compiledOutput)) {
+                    field=compiledOutput[0];wasActive=true;
+                } else for (int sub=0;sub<SUBSTEPS;sub++) {
                     evaluate();
                     for (int i=0;i<states.size();i++) {
                         State state=states.get(i);
@@ -210,6 +221,13 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     public boolean isCompiledControllerGraphsEnabled() { return compiledControllerGraphsEnabled; }
+
+    /** Select before initialization; false retains the ordinary local controller evaluator. */
+    public void setCompiledLocalSt1Enabled(boolean enabled) {
+        if(previous!=null)throw new IllegalStateException("Select the local evaluator before initialization");
+        compiledLocalSt1Enabled=enabled;
+    }
+
 
     public double getNetworkSolutionTolerance() { return converge_tol; }
 
@@ -392,7 +410,8 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
         if (controller instanceof IEEE1981ST1Exciter st1) {
             localSt1Controllers.add(new LocalSt1Controller(st1,ownerActive,
-                    states.subList(firstState,states.size()), runtimeControllerOptimizationEnabled));
+                    states.subList(firstState,states.size()), runtimeControllerOptimizationEnabled,
+                    runtimeControllerOptimizationEnabled && compiledLocalSt1Enabled));
             states.subList(firstState,states.size()).clear();
         }
         ownerActive=owner;

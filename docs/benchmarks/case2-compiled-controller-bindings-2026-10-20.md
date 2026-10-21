@@ -513,3 +513,89 @@ producer now stops if verified storage reuse fails before another repetition.
 Sources, exact executed producers, compiled candidates, raw test reports,
 numerical plans, timing records and hashes are retained privately under
 `verification-artifacts/2026-10-21-current-buffer-integration`.
+
+## Production ST1 local equations
+
+The staggered solver now uses a compiled local ST1 plan for supported standard
+machine and controller configurations. Input expressions come from the existing
+model wrappers. The plan resolves their readers and dependencies once, retains
+the established equation order, and evaluates the ten local substeps in reusable
+numerical arrays. State, input and derivative storage is restored before returning
+to the solver, preserving ordinary named-state observations.
+
+Physical measurements are held only inside the local integration stage.
+Parameters and limits are captured again at each stage entry. The output is still
+published before the final algebraic refresh. Discontinuity averaging, limiter
+projection and retained derivative history follow the ordinary recurrence.
+
+Custom blocks, wrappers, limits, machines and unsupported stabilizers retain the
+ordinary path. Late machine or bus observers also select ordinary evaluation.
+Structural invalidation requires solver reinitialization; the compiled plan does
+not silently continue with an obsolete state layout. The solver option
+`setCompiledLocalSt1Enabled(false)` provides an explicit ordinary-evaluation control.
+
+Four small-network model/stabilizer combinations retain all 480 observations
+bit for bit while setpoints, limiter inputs, parameters and enable status change.
+The comparison includes every observed block input, state, output, derivative
+and local integration-history entry. Further tests cover late observers,
+invalid output buffers, custom limits, structural invalidation, reinitialization
+and the existing compiled-graph option. The focused set contains 45 passing tests.
+
+An alternating production comparison uses six warmups followed by five measured
+pairs. Each repetition builds a fresh Case 2 network, pins the JVM to one CPU,
+uses quarter-cycle steps and 1e-5 dynamic tolerance, and records all channels for
+ten simulated seconds. Setup, power flow, initialization, recording, remaining
+compilation and garbage collection are included.
+
+| ST1 local evaluation | Five complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Ordinary | 24.4510, 25.0526, 24.5460, 24.7914, 24.6043 | 24.6043 |
+| Compiled | 21.6211, 21.7813, 22.8525, 21.9302, 21.6239 | 21.7813 |
+
+The median reduction is 11.47%. Every enabled case executes 86,472 compiled local
+advances. All sixteen recordings match the preceding production trace exactly:
+2,405 finite samples, 4,810 channels and both sides of both fault events.
+Verified hard links retain every recording path while using one physical binary
+recording. These measurements use current production classes without experimental
+runtime overlays. The eight-second target is still unmet.
+
+The registered core plugin suite plus the focused checks records 2,650 test
+executions, including 24 repeated selections: 2,632 pass, thirteen skip, three
+fail assertions and two error. All five failure
+reasons reproduce with the pre-change ST1 and solver classes from `601b2b890`:
+two static power-flow comparisons, two fixed-shunt import checks, and Case 1's
+bus-1051 flat-start voltage drift. The broad gate therefore remains failed.
+Full reference accuracy and the remaining six-case accuracy gates are still open.
+
+### Existing compiled-graph mode and the remaining production cost
+
+A second alternating trial keeps compiled local ST1 evaluation enabled and
+changes the existing `setCompiledControllerGraphsEnabled` option. Six warmups
+precede five measured pairs; two further runs collect profiles and are excluded
+from the timing statistics.
+
+| Controller graph bindings | Five complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Live | 22.1264, 21.6340, 22.1848, 22.0457, 21.8581 | 22.0457 |
+| Compiled | 19.1461, 18.8149, 19.8853, 19.3080, 18.8270 | 19.1461 |
+
+This option reduces the paired median by another 13.15%. All eighteen complete
+recordings, including the two profiled cases, remain byte-identical to the same
+production trace. The option remains explicitly selected before initialization;
+the default graph-binding setting is unchanged. The production local optimization
+and this configuration still do not reach eight seconds.
+
+The warmed compiled-graph profile contains 937 main-thread execution samples:
+531 in network solution, 387 in other integration work, six in recording and
+thirteen in setup or other work. These are sampled execution shares, not elapsed
+time allocations. The triangular solve accounts for 61 leaf samples. Repeated
+angle calculation accounts for 92 leaf samples, including 84 reached through
+bus-voltage publication. Of 89 string-hash leaf samples, 85 are voltage-table
+lookups or writes inside network iteration; another 29 leaf samples are hash-table
+entry allocation in that same path. Indexed convergence storage and guarded
+voltage publication are therefore concrete remaining production targets.
+
+The combined evidence covers 34 full recordings. Supplied references are unchanged.
+Sources, compiled classes, exact producers, timing records, profiles, registered
+test reports, baseline failure controls and hashes are retained privately under
+`verification-artifacts/2026-10-21-production-st1-local-plan`.
