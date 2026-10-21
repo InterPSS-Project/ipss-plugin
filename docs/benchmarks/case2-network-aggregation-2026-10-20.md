@@ -462,3 +462,59 @@ numerical storage with explicit stage ownership. A change in network iteration
 count or arithmetic requires a fresh independent-reference comparison; faster
 execution alone does not establish an acceptable simulation. Existing reference
 accuracy failures remain unresolved.
+
+## Dynamic-device updates: local ST1 numerical storage
+
+The prepared-schedule run spends about 4.3 seconds of integration outside network
+solution. This includes device updates, measurements and scheduling; it is not a
+controller-only timer. ST1 is a useful first target because its local integration
+performs ten substeps, each with two controller evaluations. Repeated block
+dispatch and state access therefore multiply even when the network is unchanged.
+
+Two additional clean-built experimental overlays preserve those substeps and all
+existing preparation passes. The first moves the local update into the direct
+ST1 evaluator with fixed block bindings. The second captures inputs, coefficients,
+states and derivatives into reusable primitive arrays, evaluates standard blocks
+there, and restores block integration state at the stage boundary. The primitive
+path is restricted to stages with no stabilizer or an existing fixed PSS2A
+observation hold. Other stabilizers retain the object-based local update. Custom
+static gains retain their existing calls. Voltage and stabilizer observation reuse
+is confined to the local stage; network-dependent inputs refresh afterward.
+
+| Configuration | Simulation plus recording median, s | Complete runner measurements, s | Complete runner median, s |
+| --- | ---: | --- | ---: |
+| Prepared participant schedule | 9.0368 | 9.7749 / 9.4830 / 9.4215 | 9.4830 |
+| Bulk local ST1 update | 8.9452 | 9.5200 / 9.3265 / 9.5532 | 9.5200 |
+| Primitive local ST1 storage | 8.7799 | 9.5711 / 9.2370 / 9.0521 | 9.2370 |
+
+The same three-warm-up, three-measurement, single-CPU protocol applies. Bulk
+dispatch alone establishes no total-time improvement. Primitive storage gives a
+2.6% lower complete-time median than the preceding schedule experiment, but the
+small sequential samples overlap and do not establish a repeatable isolated
+speedup. Its integration takes 8.23–8.50 seconds, including 4.32–4.42 seconds of
+network solution. Each run confirms 36 ST1 models and 86,472 primitive local
+advances, including startup. Recording and finalization remain included.
+
+Both prototypes pass 480 focused steps across four ST1 configurations, including
+setpoint changes, discontinuities, deactivation/reactivation and limiter settings.
+Machine values, controller inputs, states, outputs, derivatives and retained
+integration history match the object-based control exactly. All twelve complete
+warm-up/measured traces remain bit-exact to the retained full-system control,
+including all 4,810 channels, 2,405 rows, event duplicates, selected CSV, metadata
+and startup compensation. Timed network iterations remain 38,819. These are
+focused differential checks, not the complete production test suite.
+
+Compact source, class, failed-build, test and timing evidence is retained privately
+under `2026-10-20-case2-st1-local-storage`. Identical generated traces share
+immutable storage. Neither prototype changes production defaults. The primitive
+prototype duplicates standard block equations; production kernels should derive
+from a shared equation definition and retain a synchronized fallback for custom
+blocks to avoid maintaining two independent model implementations.
+
+The next device-update targets are typed global state bindings, one activation
+check per device per stage, and prepared integration callback schedules. Broader
+controller evaluations can be split into algebraic evaluation, derivative
+evaluation and accepted-history commit only after their dependencies and history
+effects are explicit. Removing repeated passes or lowering substep counts without
+that analysis would change the numerical method. The eight-second complete-time
+target and independent-reference accuracy acceptance both remain unmet.
