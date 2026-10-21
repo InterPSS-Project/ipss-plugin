@@ -130,3 +130,52 @@ the eight-second objective and quarter-cycle accuracy qualification remain open.
 The profile and rejected experiments are retained privately under
 `verification-artifacts/2026-10-20-network-layout-trials`, with the previous
 controller-binding evidence as a dependency.
+
+## Direct network phase timing and device-access trials
+
+Direct phase timers refine the sampling result above. In the final warmed,
+single-CPU instrumented case, 36,371 linear network calls spent:
+
+| Network phase | Seconds |
+|---|---:|
+| Current-injection assembly | 2.0601 |
+| Custom-current addition | 0.0010 |
+| Sparse solve, including equation-vector conversion | 1.5130 |
+| Voltage publication and convergence observation | 0.8138 |
+
+The counters include initialization and event-side linear solves. Custom-current
+entries were visited only 1,718 times across the entire case; compensation is
+disabled after initialization in this workload. Consequently, the sampled
+custom-current leaf must not be interpreted as its elapsed-time cost. Assembly
+is the largest directly measured network phase. Instrumentation adds overhead;
+the 9.8796-second complete profiled run is excluded from performance qualification.
+
+Two further device-access experiments retained the preceding numerical workload:
+
+| Experiment | Measured complete-case times, seconds | Median | Decision |
+|---|---|---:|---|
+| Read stored machine derivatives without constructing complete solver-state snapshots | 9.6704, 9.5342, 9.0092 | 9.5342 | Not adopted |
+| Reuse rotor-angle sine and cosine while continuing to refresh terminal currents and electrical power | 9.6058, 9.3883, 8.7994 | 9.3883 | Not adopted |
+
+Both use six warmups and three measured repetitions on one CPU, with full
+recording and fresh networks. Neither demonstrates an improvement over the
+9.3042-second baseline median. All eighteen complete traces are byte-identical
+to that baseline. The derivative checks pass for round-rotor and salient-pole
+machines over disturbed trajectories and special stored values, and confirm
+that reads leave solver history unchanged. An initial test launch used the wrong
+fixture working directory; both tests pass after correcting that launch.
+Rotation checks pass 200,000 exact-bit comparisons against the preceding
+transform implementation, with changing voltage, angle and scale, reflective
+angle updates, special values, and repeated changes of the cached angle.
+
+Production numerical code remains unchanged. The next implementation target is
+the current-assembly/solver interface: reusable numerical right-hand-side storage
+for validated standard devices and static loads, with live voltage-dependent
+injections, preserved summation order, and compatible behavior for custom devices
+and matrix observers. Removing complex-object round trips must preserve inactive
+rows, custom-current behavior, matrix-vector visibility and event ordering.
+This work is not yet implemented or qualified. The eight-second objective,
+production runtime integration and quarter-cycle reference accuracy remain open.
+
+These trials and the phase profile are retained privately under
+`verification-artifacts/2026-10-20-device-access-trials`.
