@@ -20,6 +20,27 @@ import com.interpss.dstab.mach.Machine;
 /** Stage, lifecycle and fallback regressions for the compiled local recurrence. */
 class St1CompiledLocalPlanTest {
     @Test
+    void nestedParentScheduleKeepsCompleteCoupledStateAndHistory() throws Exception {
+        var ordinary=load("esst1a_pss2a",true,true,false);
+        var scheduled=load("esst1a_pss2a",true,true,true);
+        var first=(com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController)ordinary.machine.getStabilizer();
+        var second=(com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController)scheduled.machine.getStabilizer();
+        assertFalse(first.isCompiledOutputSchedulingEnabled());
+        assertTrue(second.isCompiledOutputSchedulingEnabled());
+        for(int step=0;step<240;step++) {
+            for(var fixture:List.of(ordinary,scheduled)) {
+                if(step%19==0) {
+                    fixture.exciter.setRefPoint(fixture.exciter.getRefPoint()+(step%3-1)*.02);
+                    fixture.solver.notifyDiscontinuity();
+                }
+                fixture.machine.getStabilizer().setStatus(step%37!=4);
+                assertTrue(fixture.algorithm.solveDEqnStep(true));
+            }
+            assertEquals(snapshot(ordinary),snapshot(scheduled),"step "+step);
+        }
+        assertThrows(IllegalStateException.class,()->scheduled.solver.setNestedControllerOutputSchedulingEnabled(false));
+    }
+    @Test
     void compiledChildOutputReuseKeepsCoupledStatesAcrossDiscontinuities() throws Exception {
         var ordinary=load("esst1a_pss2a",true,true);
         var reused=load("esst1a_pss2a",true,true);
@@ -153,7 +174,29 @@ class St1CompiledLocalPlanTest {
             var history=local.getClass().getDeclaredField("previous");history.setAccessible(true);
             add(result,(double[])history.get(local));
         }
+        if(f.machine.getStabilizer() instanceof org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer pss)
+            controllerSnapshot(result,pss);
+        var globalHistory=PsseStaggeredEulerSolver.class.getDeclaredField("previous");
+        globalHistory.setAccessible(true);add(result,(double[])globalHistory.get(f.solver));
         return result;
+    }
+
+    private static void controllerSnapshot(List<Long> result,
+            com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController controller) {
+        if(controller instanceof com.interpss.dstab.controller.cml.annotate.AbstractChildAnnotateController child)
+            add(result,child.getRuntimeInputValue(),child.getRuntimeOutputValue());
+        for(var wrapper:controller.getFieldWrapperList()) {
+            if(wrapper.getField() instanceof com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController child)
+                controllerSnapshot(result,child);
+            else if(wrapper.getField() instanceof CMLControlBlockAdapter block) {
+                add(result,block.getU(),block.getStateX(),block.getY());
+                if(block instanceof CMLControlBlock1stOrderAdapter first)add(result,first.getDX_dt());
+                if(block instanceof com.interpss.dstab.controller.cml.field.block.FilterNthOrderBlock compound)
+                    for(var inner:compound.getIntegrationBlocks())add(result,inner.getU(),inner.getStateX(),inner.getDX_dt());
+                if(block instanceof org.interpss.dstab.control.pss.ieee.y1992.pss2a.Pss2aLeadLagBlock leadLag)
+                    add(result,leadLag.getStateDerivative());
+            }
+        }
     }
 
     private static void add(List<Long> values,double... samples) {
@@ -168,6 +211,10 @@ class St1CompiledLocalPlanTest {
     }
 
     private static Fixture load(String model,boolean compiled,boolean compiledGraph) throws Exception {
+        return load(model,compiled,compiledGraph,true);
+    }
+
+    private static Fixture load(String model,boolean compiled,boolean compiledGraph,boolean nestedSchedule) throws Exception {
         IpssCorePlugin.init();
         String base="testData/adpter/psse/v33/SMIB/";
         var context=new PSSEMultiFileLoader().loadDStab(base+"SMIB_v33.raw",
@@ -177,6 +224,7 @@ class St1CompiledLocalPlanTest {
         var solver=new PsseStaggeredEulerSolver(algorithm);
         solver.setCompiledLocalSt1Enabled(compiled);
         solver.setCompiledControllerGraphsEnabled(compiledGraph);
+        solver.setNestedControllerOutputSchedulingEnabled(nestedSchedule);
         algorithm.setSolver(solver);algorithm.setSimuStepSec(1./240.);
         algorithm.setTotalSimuTimeSec(1.);algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.initialization());

@@ -794,3 +794,64 @@ physical input refresh and the declared integration lifecycle.
 Exact final sources/classes, the preliminary executed core snapshot, producers,
 regression reports, profiles and complete-recording hashes are retained privately
 under `verification-artifacts/2026-10-21-prepared-child-output`.
+
+
+## Nested parent output dependency scheduling
+
+Compiled parent output schedules now include eligible child controllers. The
+parent and child graphs must be acyclic and declare pure output behavior. Child
+output getters must retain the inherited implementation. Shared blocks across
+the tree, including internal compound-filter states, select the ordinary sweep
+path. These checks run when compiling the graph rather than at each observation.
+
+The standard compound ramp filter and final PSS2A lead-lag expose their existing
+pure output behavior; their state-update equations, limiter logic and derivative
+history remain unchanged. PSS2A opts into parent scheduling. Its selector inputs
+and explicit fixed-input observation scope remain live at their existing stage
+boundaries. Nested scheduling preserves the ordinary NaN failure signal when
+the parent output is nonfinite.
+
+`setNestedOutputSchedulingEnabled(false)` selects ordinary parent sweeps before
+controller compilation. The staggered solver provides
+`setNestedControllerOutputSchedulingEnabled(false)` before initialization.
+Nested scheduling defaults to enabled but applies only to eligible compiled
+graphs; unsupported and custom graphs retain their previous evaluation path.
+
+The paired trial creates a fresh Case 2 network for each run, with six warmups,
+five measured pairs and two separate profile runs. It uses one pinned CPU,
+quarter-cycle integration, 1e-5 dynamic tolerance, and all 4,810 recorded channels.
+Complete-case timing includes setup, power flow, initialization and recording.
+All 103 stabilizer parent controllers use scheduling in enabled runs.
+
+| Parent output evaluation | Five complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Ordinary sweeps | 14.9051, 15.7102, 14.8285, 15.0582, 14.7802 | 14.9051 |
+| Dependency schedule | 14.4163, 14.4412, 14.6167, 14.3260, 14.3124 | 14.4163 |
+
+The median reduction is 3.28%. All eighteen full recordings match the preceding
+rectangular production trace byte-for-byte: 2,405 finite samples and both sides
+of both fault events. Hard links preserve every recording path without storing
+repeated copies of the binary trace within the trial.
+
+All 70 targeted tests pass: 45 core controller checks and 25 plugin checks.
+The coupled snapshots include stabilizer and child states, compound-filter
+states, stored derivatives, solver integration history and exciter local history.
+Additional checks cover nested feedback, cross-tree aliases, custom output
+getters, nonfinite outputs, invalidation and pre-initialization configuration.
+The full registered suite was not rerun.
+
+The enabled profile contains 661 main-thread samples:
+348 in network solution,
+295 in other integration,
+5 in recording and
+13 in setup or other work.
+Sampling counts are not wall-time allocations.
+
+The eight-second objective remains unmet. Local trajectory equality does not
+resolve independent-reference accuracy. The next substantial opportunity is
+reducing repeated network membership validation and controller runtime dispatch
+while keeping structural invalidation and physical-input refresh explicit.
+
+Exact sources/classes, producers, targeted regression reports, profiles and full
+recording hashes are retained privately under
+`verification-artifacts/2026-10-21-nested-output-scheduling`.

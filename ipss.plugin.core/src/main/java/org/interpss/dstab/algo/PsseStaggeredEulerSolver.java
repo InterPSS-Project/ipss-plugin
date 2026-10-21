@@ -101,6 +101,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private boolean runtimeControllerOptimizationEnabled = true;
     private boolean compiledControllerGraphsEnabled;
     private boolean preparedControllerOutputReuseEnabled = true;
+    private boolean nestedControllerOutputSchedulingEnabled = true;
     private boolean compiledLocalSt1Enabled=true;
     private boolean useRectangularNetworkVoltage;
     private double[] start;
@@ -245,6 +246,12 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     public void setPreparedControllerOutputReuseEnabled(boolean enabled) {
         if (previous != null) throw new IllegalStateException("Configure controller output reuse before initialization");
         preparedControllerOutputReuseEnabled = enabled;
+    }
+
+    /** Configure dependency scheduling for pure child graphs before initialization. */
+    public void setNestedControllerOutputSchedulingEnabled(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Configure nested output scheduling before initialization");
+        nestedControllerOutputSchedulingEnabled = enabled;
     }
 
     /** Configure before initialization; changing the boundary requires new derivative history. */
@@ -399,6 +406,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             throw new IllegalArgumentException("Unsupported controller " + controller.getClass());
         c.setRuntimeExpressionBindingsEnabled(runtimeControllerOptimizationEnabled);
         c.setPreparedOutputReuseEnabled(preparedControllerOutputReuseEnabled);
+        c.setNestedOutputSchedulingEnabled(nestedControllerOutputSchedulingEnabled);
         if (controller instanceof IEEE2005ST4BExciter || controller instanceof IEEE1981ST1Exciter
                 || controller instanceof Ieee1992PSS2AStabilizer) extendedStack=true;
         BooleanSupplier owner=ownerActive;

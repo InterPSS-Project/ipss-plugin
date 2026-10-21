@@ -6,7 +6,9 @@ import com.interpss.dstab.controller.cml.field.adapt.CMLControlBlockAdapter;
 
 /** Implements PowerWorld's optional PSS2A block (A + s*Ta)/(1 + s*Tb). */
 public final class Pss2aLeadLagBlock extends CMLControlBlockAdapter
-        implements com.interpss.dstab.controller.cml.runtime.CmlDiagnosticSource {
+        implements com.interpss.dstab.controller.cml.runtime.CmlDiagnosticSource,
+        com.interpss.dstab.controller.cml.runtime.CmlPureOutputRefresh {
+    @Override public boolean supportsPureOutputRefresh() { return true; }
     private static final double EPS = 1.0e-12;
 
     private final double a;

@@ -56,6 +56,9 @@ import com.interpss.dstab.mach.Machine;
  */
 public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 		implements IntegrationStepAware {
+    @Override public boolean supportsCompiledOutputScheduling() {
+        return getClass() == Ieee1992PSS2AStabilizer.class;
+    }
     @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
             throws com.interpss.common.exp.InterpssException {
         return getClass() == Ieee1992PSS2AStabilizer.class
