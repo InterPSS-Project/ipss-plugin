@@ -1,0 +1,145 @@
+{
+  "schema": 1,
+  "status": "production-machine-frame-checkpoint",
+  "goal_achieved": false,
+  "core_commit": "bdff8b2e9",
+  "plugin_commit": "ed0ed59bc",
+  "timed_core_commit": "54f6a5118",
+  "timed_runtime_bytecode_unchanged": true,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-machine-frame-production-v2/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 117002,
+    "sha256": "85558a9b8f73334d304ea0a852b5c743d2c261a840ffb889137533635eab57f8"
+  },
+  "archive": {
+    "bytes": 3233320,
+    "sha256": "fb0ff6522961393d3237a4fd99a62fa4553c3afabbbb6788ac4a32329ec9c26f"
+  },
+  "summaries": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        10.7787789,
+        10.8261913,
+        10.6078435,
+        10.5196014,
+        10.4685516,
+        10.9062294
+      ],
+      "median_case_wall_s": 10.6933112,
+      "compilation_time_ms": [
+        389,
+        165,
+        269,
+        58,
+        55,
+        343
+      ],
+      "gc_time_ms": [
+        128,
+        132,
+        131,
+        127,
+        130,
+        137
+      ],
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    },
+    "candidate": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        10.3527427,
+        10.2144359,
+        10.168129,
+        9.8991997,
+        9.979147,
+        10.2191522
+      ],
+      "median_case_wall_s": 10.19128245,
+      "compilation_time_ms": [
+        388,
+        165,
+        267,
+        57,
+        55,
+        343
+      ],
+      "gc_time_ms": [
+        128,
+        132,
+        127,
+        128,
+        129,
+        128
+      ],
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    }
+  },
+  "verification": {
+    "recordings": 36,
+    "samples_per_recording": 2405,
+    "channels": 4810,
+    "event_post_rows": 2,
+    "finite": true,
+    "identical_trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "single_cpu": true,
+    "full_recording_included": true,
+    "experimental_class_overlay": false
+  },
+  "focused_tests": {
+    "tests": 36,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "phase_medians": {
+    "retained-fast-stack-replay-v2-20261021": {
+      "setup_initialization_wall_s": 0.3544432,
+      "simulation_output_wall_s": 8.0715168,
+      "loadflow_before_netting_iterations": 16,
+      "loadflow_after_netting_iterations": 0
+    },
+    "machine-frame-control-production-warm-20261021": {
+      "setup_initialization_wall_s": 0.35119690000000003,
+      "simulation_output_wall_s": 10.23379815,
+      "loadflow_before_netting_iterations": 16.0,
+      "loadflow_after_netting_iterations": 0.0
+    },
+    "machine-frame-candidate-production-warm-20261021": {
+      "setup_initialization_wall_s": 0.35020425,
+      "simulation_output_wall_s": 9.72812495,
+      "loadflow_before_netting_iterations": 16.0,
+      "loadflow_after_netting_iterations": 0.0
+    }
+  },
+  "phase_median_note": "Separately calculated medians need not sum to the complete-case median.",
+  "registered_gate": {
+    "same_failure_methods_as_baseline": true,
+    "same_failure_messages_as_baseline": true,
+    "found": 2635,
+    "passed": 2617,
+    "failed": 5,
+    "skipped": 9,
+    "aborted": 4
+  },
+  "independent_accuracy_qualified": false,
+  "requirements": [
+    "Paired core and plugin commits named above",
+    "Private runner and supplied input dependencies retained by the manifest",
+    "Matching external dependencies"
+  ]
+}

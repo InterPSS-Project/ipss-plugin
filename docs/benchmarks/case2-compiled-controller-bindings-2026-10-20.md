@@ -1597,3 +1597,64 @@ and both event-side duplicates. The paired source and evidence index is
 is retained under `verification-artifacts/2026-10-21-st4-bridge-input-production`.
 
 The eight-second goal and independent-reference accuracy remain unresolved.
+
+## Machine frame trigonometry reuse
+
+Two fresh warmed execution profiles of the preceding production checkpoint put
+59.6% and 61.1% of main-thread execution samples in network solution. Machine
+current evaluation remains prominent. These are sampled execution shares, not
+wall-time phase measurements. Both diagnostic recordings retain the canonical
+trace; their instrumented times are excluded from qualifying performance.
+
+Core commit `54f6a5118`, paired with plugin commit `ed0ed59bc`, adds a
+per-machine cache of sine and cosine keyed by the exact rotor-angle bits.
+Terminal voltage, current, electrical power, and controller states are still
+evaluated on every call. The forward and reverse transformations retain the
+existing arithmetic order and allocate fresh result vectors. Changing voltage
+or machine base factors therefore remains immediately visible at a fixed angle.
+Custom complex readers keep the ordinary path, and nonfinite angles are not
+reused. `setFrameTransformReuseEnabled(...)` selects the control path; reuse is
+enabled by default.
+
+All 36 focused tests pass: four new exact-arithmetic and machine lifecycle
+tests plus 32 existing machine/controller checks. New coverage includes random
+and extreme angles, signed zero, nonfinite recovery, custom reader order,
+fresh result storage, repeated network iterations with changing voltage, live
+base-factor changes and both round-rotor and salient-pole integration states.
+
+Both production JVMs perform twelve warmups and six measured complete-case
+runs on one verified CPU. Fresh setup and full recording remain included for
+ten simulated seconds at quarter-cycle steps and 1e-5 dynamic tolerance. Only
+machine frame reuse differs; the previous load and controller optimizations
+remain enabled in both configurations.
+
+| Machine frame reuse | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Disabled | 10.7788, 10.8262, 10.6078, 10.5196, 10.4686, 10.9062 | 10.6933 |
+| Enabled | 10.3527, 10.2144, 10.1681, 9.8992, 9.9791, 10.2192 | 10.1913 |
+
+The paired reduction is **0.5020 seconds (4.69%)**. Each enabled run reports
+23,857,412 transform-cache hits. The fresh control is slower than the previous
+session's 10.4124-second result; the improvement above uses the paired control,
+not that historical value. Compilation and collection remain inside measured
+case time. The production median remains **2.1913 seconds above the objective**.
+
+This output-preserving performance change does not resolve the remaining
+independent-reference accuracy gap. The eight-second goal remains open.
+
+The final source checkpoint is core `bdff8b2e9` with plugin `ed0ed59bc`.
+The follow-up corrects an overly strict raw-NaN-sign assertion and removes
+trailing whitespace; all eleven affected runtime class files are byte-identical
+to the timed `54f6a5118` implementation. Finite values, infinities and signed
+zeros retain exact-bit assertions; invalid results must agree in NaN
+classification. The original rejected gate remains in the private evidence.
+
+The completed broader gate finds 2,635 tests: 2,617 pass, nine are skipped,
+four abort and the same five fail as the preceding baseline. Both failure
+identities and messages match. All 36 timed-run recordings have the canonical
+hash, with 2,405 finite samples, 4,810 channels and both event-side duplicates.
+Sources, commands, profiles, focused reports, both broad gates, bytecode
+identity checks and recording hashes are retained under
+`verification-artifacts/2026-10-21-machine-frame-production-v2`.
+The paired source/evidence index is
+`checkpoints/case2-machine-frame-production-2026-10-21.json`.
