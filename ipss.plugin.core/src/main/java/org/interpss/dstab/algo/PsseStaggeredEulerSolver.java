@@ -100,6 +100,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private boolean extendedStack;
     private boolean runtimeControllerOptimizationEnabled = true;
     private boolean compiledControllerGraphsEnabled;
+    private boolean compiledSt4bBindingsEnabled = true;
     private boolean preparedControllerOutputReuseEnabled = true;
     private boolean nestedControllerOutputSchedulingEnabled = true;
     private boolean compiledLocalSt1Enabled=true;
@@ -224,6 +225,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     public boolean isCompiledControllerGraphsEnabled() { return compiledControllerGraphsEnabled; }
+
+    /** Select before initialization; false retains ST4B's live expression binding. */
+    public void setCompiledSt4bBindingsEnabled(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Configure ST4B bindings before initialization");
+        compiledSt4bBindingsEnabled = enabled;
+    }
+
+    public boolean isCompiledSt4bBindingsEnabled() { return compiledSt4bBindingsEnabled; }
 
     /** Select before initialization; false retains the ordinary local controller evaluator. */
     public void setCompiledLocalSt1Enabled(boolean enabled) {
@@ -428,10 +437,15 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
         if (compiledControllerGraphsEnabled && runtimeControllerOptimizationEnabled
                 && (controller.getClass() == IEEE1981ST1Exciter.class
+                    || (compiledSt4bBindingsEnabled && controller.getClass() == IEEE2005ST4BExciter.class)
                     || controller.getClass() == Ieee1992PSS2AStabilizer.class)) {
             try { c.compileRuntimePlan(); }
             catch (com.interpss.common.exp.InterpssException failure) {
                 throw new IllegalStateException("Cannot compile controller graph " + c.getId(), failure);
+            }
+            if (controller.getClass() == IEEE2005ST4BExciter.class) {
+                long generation=c.getRuntimeGeneration();
+                attachmentsUnchanged.add(()->c.getRuntimeGeneration()==generation);
             }
         }
         if (controller instanceof IEEE1981ST1Exciter st1) {

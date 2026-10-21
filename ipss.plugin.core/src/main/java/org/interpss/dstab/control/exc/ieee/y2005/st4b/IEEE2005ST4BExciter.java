@@ -31,6 +31,11 @@ import com.interpss.dstab.mach.MachineIfdBase;
 		   display= {})
 public class IEEE2005ST4BExciter extends AnnotateExciter
         implements IntegrationStepAware, UnderExcitationLimiterTarget {
+    @Override public java.util.function.DoubleSupplier bindCompiledParameter(String name)
+            throws com.interpss.common.exp.InterpssException {
+        return getClass() == IEEE2005ST4BExciter.class
+                ? bindPublicDoubleParameter(name) : super.bindCompiledParameter(name);
+    }
     private static final Logger log = LoggerFactory.getLogger(IEEE2005ST4BExciter.class);
 	public double k1 = 1.0;/*constant*/
 	/** External UEL contribution; zero is the nonbinding/absent value. */

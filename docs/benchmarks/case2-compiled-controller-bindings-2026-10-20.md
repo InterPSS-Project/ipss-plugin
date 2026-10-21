@@ -977,3 +977,68 @@ general-model lifecycle equivalence still need testing. Neither refresh has been
 removed from production. Exact overlay sources, comparison metrics and retained
 recording hashes are stored privately under
 `verification-artifacts/2026-10-21-endpoint-refresh-probe`.
+
+
+## Fixed ST4B signal and parameter bindings
+
+The compiled-controller option now also binds ST4B signal references and public
+parameter readers once. Parameter values, limiter inputs and machine measurements
+remain live. The ordinary feedback sweeps and rectifier observations retain their
+order; this model does not opt into reordered output scheduling or output reuse.
+Custom parameter-provider subclasses retain virtual dispatch.
+`setCompiledSt4bBindingsEnabled(false)` selects live ST4B bindings while leaving
+other compiled controllers unchanged. Configure before initialization; invalidating
+the compiled ST4B structure requires solver reinitialization.
+
+All 44 focused tests pass. The three new checks cover coupled machine/controller
+states and history with and without a stabilizer, fault application and clearing,
+live references and limits, activation changes, custom parameter providers, and
+structural invalidation/reinitialization. Existing parser, PI, coupled solver,
+local-ST1 and independent ST4B fixture checks pass. The complete registered suite
+and six-case gates were not rerun.
+
+Each mode ran in a separate JVM with twelve warmups and six measured repetitions.
+Both use final production classes, one pinned CPU, quarter-cycle steps and 1e-5
+dynamic tolerance. Timing includes fresh import, power-flow preparation,
+initialization, dynamics and full recording; compilation and collection time
+remain included. No solver or model overlays are present in these timing runs.
+
+| Mode | Six complete-case times, seconds | Median, seconds | Median compilation, ms |
+|---|---|---:|---:|
+| Live ST4B bindings | 13.7850, 13.6838, 13.9211, 13.6668, 13.5635, 13.9480 | 13.7344 | 198.0 |
+| Fixed ST4B bindings | 13.3213, 13.0829, 13.2810, 12.9777, 13.0219, 13.2146 | 13.1487 | 211.0 |
+
+The median reduction is 4.26%. All 36 full
+recordings match the preceding production trace byte-for-byte: 2,405 finite
+samples, all 4,810 channels and both event-side duplicate timestamps. Counters
+confirm that all 64 ST4B models use fixed bindings only in the enabled mode.
+Identical recordings share storage through verified hard links.
+
+The eight-second objective and independent-reference accuracy remain unresolved.
+Exact final sources, classes, test reports, producers, numerical settings and
+retained full-recording hashes are stored privately under
+`verification-artifacts/2026-10-21-st4b-fixed-bindings`.
+
+### Endpoint refresh: internal-state evidence
+
+Separate private overlays inspected the consecutive post-state evaluations.
+The second evaluation changes machine electrical caches, controller inputs and
+derivatives; it is not a no-op. At the accepted endpoint, removing that evaluation
+preserves the full recording and all audited groups except one pooled input-buffer
+group. All audited frame sizes are zero there; those old inputs are overwritten
+before an active frame reads them.
+
+A second candidate replaces the first complete evaluation with a machine
+electrical-only pass, followed by the ordinary complete evaluation. It preserves
+the full recording and every audited accepted-state fingerprint in Case 2. This
+is evidence for separating electrical-state synchronization from controller
+evaluation, not proof that arbitrary models or intermediate observers are safe.
+Neither candidate changes production refresh behavior in this slice.
+
+Both state audits inspect a discovered object graph. The accepted-state audit
+also reads current immutable records and governor transport histories, but other
+untraversed or replaced objects and intermediate callbacks remain outside its
+proof. The raw audit's structural-link flags compare with discovery, not with the
+immediately preceding evaluation. The electrical candidate resumed in a separate
+JVM after both baselines completed and a storage-link permission failure stopped
+the wrapper. These diagnostic timings do not qualify as performance measurements.
