@@ -518,3 +518,73 @@ evaluation and accepted-history commit only after their dependencies and history
 effects are explicit. Removing repeated passes or lowering substep counts without
 that analysis would change the numerical method. The eight-second complete-time
 target and independent-reference accuracy acceptance both remain unmet.
+
+## Device-update profile and preparation follow-up
+
+A new main-thread profile of the primitive ST1 candidate, after three warm-ups
+with full recording enabled, collects 571 execution samples: 299 in network
+solution, 240 in other integration work, 12 in recording and 20 in setup/other
+work. The ST1 local update appears in 20 samples; PSS2A's direct step appears in
+32, bus frequency updates in 31 and post-step processing in 19. Inclusive counts
+overlap and are not component wall times. Profiled elapsed times are excluded
+from benchmark timing. An earlier attempt omitted full-network recording; it is
+retained as an excluded diagnostic, not evidence for whole-run costs.
+
+Custom-current assembly is the leaf in 65 samples. The case retains 1,717 custom
+bus-current entries, so repeated bus lookup and synchronized value lookup occur
+throughout the 38,819 network iterations. A prototype binds buses to entry-order
+slots while reading every current value live from the map on each iteration.
+Key changes, table replacement and network membership changes invalidate or
+refresh bindings. Sort numbers remain live. Exact standard networks/tables use
+the optimized path; custom subclasses retain the original path. Arithmetic and
+current-addition order are unchanged. A focused comparison passes 3,004 ordered
+observations covering membership replacement, map mutations, missing-bus errors
+and custom-table behavior, including mutation during current assembly.
+
+A second prototype caches whether standard branches have any post-step devices.
+The membership check occurs after bus callbacks, so a device added by a bus
+callback participates in the same step. Nonempty and custom branch paths retain
+the original traversal. It passes 3,000 actual callback observations, including
+inactive devices/branches and add/remove changes, with 2,000 cache reuses. The
+measured times do not establish a speedup, so this variant is not included in
+the next candidate's base.
+
+PSS2A provides a more targeted controller change: for the standard forward graph,
+one ordered preparation pass after state integration already propagates every
+updated input through both child cascades and the parent chain. A prototype
+removes only the immediately repeated identical preparation pass. Exact block
+and child types plus the established forward-order eligibility are required;
+other graphs retain both passes. It retains the initial input capture, state
+integration, output-observation behavior and all ST1 substeps. The focused check
+passes 3,000 predictor/corrector stages with live signal and time-constant changes,
+including zero-time bypasses. Inputs, states, derivatives and outputs are exact
+before and after observation; an execution counter verifies the fast path runs.
+
+| Configuration | Simulation plus recording median, s | Complete runner measurements, s | Complete runner median, s |
+| --- | ---: | --- | ---: |
+| Preceding primitive ST1 candidate | 8.7799 | 9.5711 / 9.2370 / 9.0521 | 9.2370 |
+| Also bind custom-current buses | 8.6377 | 9.2378 / 9.1739 / 9.0107 | 9.1739 |
+| Also skip confirmed empty branch schedules | 8.9232 | 9.5044 / 9.5858 / 9.0102 | 9.5044 |
+| Bound currents plus PSS2A single refresh, without empty-branch change | 8.5081 | 9.0862 / 8.9537 / 8.9847 | 8.9847 |
+
+These are sequential three-warm-up/three-measurement series on logical CPU 4,
+with one active processor, SerialGC, a 2 GiB heap and all recording enabled.
+The final candidate lowers the complete median by 2.7% versus the preceding
+primitive ST1 series. Small sample sizes and overlapping measurements limit any
+claim about isolated speedup. Its integration takes 8.01–8.17 seconds, including
+4.28–4.33 seconds of network solution; simulation plus recording takes
+8.47–8.57 seconds. All complete measured runs still exceed eight seconds.
+
+All eighteen new full warm-up/measured traces match the retained control bit for
+bit, including all 4,810 channels and 2,405 rows. Selected CSV, metadata, startup
+compensation, finite values and event-side duplicate samples also match. Each
+run retains 38,819 timed network iterations, 1e-5 convergence tolerance and
+1/240-second integration steps. The four full-recording profile traces and their
+selected CSVs have the retained control hashes too. Identical generated outputs
+share immutable storage after verification. The independent-reference accuracy
+failures of the retained control remain unresolved; this is nonregression
+evidence, not acceptance of the simulation or completion of the eight-second goal.
+
+Compact source, class, profile, test, excluded-attempt and timing evidence is
+retained privately under `2026-10-20-case2-device-profile-followup`. All changes
+in this section remain experimental overlays; production defaults are unchanged.
