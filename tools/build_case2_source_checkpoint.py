@@ -17,6 +17,8 @@ from replay_case2_fast_checkpoint import destination, digest, verified
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--checkpoint", default="docs/benchmarks/checkpoints/case2-recovered-source-2026-10-21.json",
+                        help="Repository-relative source checkpoint index")
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[1]
     root = (repo / args.output).resolve()
@@ -24,7 +26,7 @@ def main():
         parser.error("Output must be a new directory under target")
     if shutil.disk_usage(repo).free < 2 * 1024**3 + 128 * 1024**2:
         raise RuntimeError("Need the 2 GiB reserve plus 128 MiB for this source build")
-    index = json.loads((repo / "docs/benchmarks/checkpoints/case2-recovered-source-2026-10-21.json").read_text())
+    index = json.loads(destination(repo, args.checkpoint).read_text())
     manifest_path = verified(repo / index["private_manifest"], index["private_manifest_digest"])
     manifest = json.loads(manifest_path.read_text())
     archive = verified(manifest_path.parent / "source-evidence.zip", index["archive"])

@@ -1,5 +1,11 @@
 # Case 2 source restoration
 
+A [subsequent compatibility change](case2-generic-controller-compatibility-2026-10-21.md)
+restores the generic controller lifecycle APIs, passes their 19 tests, and retains
+the fast direct kernels. It measures 7.573 seconds median with all seven runs
+below eight seconds. The restoration evidence below describes the earlier source
+checkpoint; network and system qualification remain unfinished.
+
 The fast main-source configuration has been restored on the saved performance
 branches in core and plugin. A build from 1,834 core sources and 882 plugin
 sources reproduces the retained Case 2 recording byte for byte, without frozen
