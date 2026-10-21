@@ -96,7 +96,7 @@ public final class GeneratorFirstShuntLoadflow {
                 if (!lf.loadflow() || !lf.getTerminationReport().controlsSettled())
                     return new Result(false, iteration, List.of());
                 boolean settled = true;
-                for (var group : groups) settled &= group.limitsSettled();
+                for (var group : groups) settled &= group.limitsSettled(lf.getTolerance());
                 if (!settled) continue;
                 var results = new ArrayList<GroupResult>();
                 for (var group : groups) results.add(group.finish());
@@ -275,17 +275,28 @@ public final class GeneratorFirstShuntLoadflow {
             bus.setQGenLimit(new LimitType(qMax + bMax * v2, qMin + bMin * v2));
         }
 
-        boolean limitsSettled() {
+        boolean limitsSettled(double powerTolerance) {
             double v2 = voltageSquared();
             // A PV bus's specified genQ can be stale; use solved network power.
             totalQ = bus.calNetGenResults().getImaginary();
             var current = bus.getQGenLimit();
             double min = qMin + bMin * v2, max = qMax + bMax * v2;
-            return Double.isFinite(totalQ) && totalQ >= min - 1.e-10 && totalQ <= max + 1.e-10
+            boolean exact = Double.isFinite(totalQ) && totalQ >= min - 1.e-10 && totalQ <= max + 1.e-10
                     && (Math.abs(totalQ - current.getMin()) >= 1.e-8
                             || Math.abs(min - current.getMin()) < 1.e-10)
                     && (Math.abs(totalQ - current.getMax()) >= 1.e-8
                             || Math.abs(max - current.getMax()) < 1.e-10);
+            if (exact) return true;
+            // A converged PQ solution may retain a power residual within the
+            // requested load-flow tolerance. Project the allocation onto the
+            // physical capability at the final voltage instead of repeatedly
+            // solving unchanged equations at that same tolerance. Device limits
+            // remain exact; only the accepted nodal power residual is retained.
+            double feasibleQ = Math.max(min, Math.min(max, totalQ));
+            if (!Double.isFinite(totalQ) || Math.abs(totalQ - feasibleQ) > powerTolerance)
+                return false;
+            totalQ = feasibleQ;
+            return true;
         }
 
         GroupResult finish() {

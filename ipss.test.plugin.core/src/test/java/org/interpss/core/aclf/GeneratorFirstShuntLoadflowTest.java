@@ -438,6 +438,22 @@ Q
         check(network(1., 1.03, 0., new Machine(0, -.4, .05, 1.1)), v, .05, .5);
     }
 
+    @Test void relaxedPowerToleranceKeepsVoltageDependentPhysicalBounds() throws Exception {
+        for (double tolerance : new double[]{1.e-3, 1.e-5, 1.e-9}) {
+            var lf = network(1., 1.03, 0., new Machine(0., -.4, .05, 1.1));
+            lf.setTolerance(tolerance);
+            var result = GeneratorFirstShuntLoadflow.solve(lf);
+            assertTrue(result.converged());
+            assertTrue(result.solves() < 10, "A feasible boundary allocation must not repeat unchanged solves");
+            var bus = lf.getNetwork().getBus("Bus1");
+            assertEquals(.05, bus.getGenQ(), 1.e-10);
+            assertEquals(.5, bus.getFirstSwitchedShunt(true).getBActual(), 1.e-10);
+            assertEquals(.05, bus.getContributeGenList().get(0).getGen().getImaginary(), 1.e-10);
+            assertTrue(Math.abs(bus.mismatch(com.interpss.core.algo.AclfMethodType.NR).getImaginary()) <= tolerance + 1.e-10);
+            assertEquals(tolerance, lf.getTolerance());
+        }
+    }
+
     @Test void plantUsesBothMachinesBeforeMovingShunt() throws Exception {
         double v = 1.03, total = v*(v-1.)/.1;
         check(network(1., 1.06, 0., new Machine(0, -.2, .2, v), new Machine(0, -.2, .2, v)),
