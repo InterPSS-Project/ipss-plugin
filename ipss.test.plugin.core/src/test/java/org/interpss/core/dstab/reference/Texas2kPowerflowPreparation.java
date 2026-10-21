@@ -38,6 +38,17 @@ public final class Texas2kPowerflowPreparation {
     /** The explicit cold post-netting option is retained for diagnostic comparisons. */
     public static void solve(LoadflowAlgorithm lf, Path raw, Map<String, Object> status,
             boolean reusePostNettingControls) throws Exception {
+        var limits = lf.getLfAdjAlgo().getLimitCtrlConfig();
+        var callerMode = limits.getControlInitializationMode();
+        try {
+            solvePrepared(lf, raw, status, reusePostNettingControls);
+        } finally {
+            limits.setControlInitializationMode(callerMode);
+        }
+    }
+
+    private static void solvePrepared(LoadflowAlgorithm lf, Path raw, Map<String, Object> status,
+            boolean reusePostNettingControls) throws Exception {
         status.put("reuse_post_netting_controls", reusePostNettingControls);
         var deferred = findImportedNetting(lf, raw);
         // Validate all imported netting before changing any device status.
@@ -52,13 +63,25 @@ public final class Texas2kPowerflowPreparation {
         }
         lf.getLfAdjAlgo().setApplyAdjustAlgo(true);
         lf.setContinuousSwitchedShuntNrControlEnabled(true);
+        // Settle the control active set before requesting final electrical accuracy.
+        double transitionTolerance = Math.max(10. * lf.getTolerance(), 1.e-4);
+        lf.setNrControlTransitionTolerance(transitionTolerance);
+        lf.getLfAdjAlgo().getLimitCtrlConfig().setStartPoint((int) Math.min(
+                Integer.MAX_VALUE, Math.ceil(transitionTolerance / lf.getTolerance())));
+        lf.getLfAdjAlgo().setMaxPvLimitAdjustmentsPerIteration(Integer.MAX_VALUE);
+        lf.getLfAdjAlgo().setMinPvLimitStableIterations(1);
+        lf.getLfAdjAlgo().setRequirePriorPvLimitViolation(false);
+        status.put("nr_control_transition_tolerance_pu", transitionTolerance);
         status.put("continuous_shunt_control", "inner-NR");
         // Continuous controls are owned by NR. Serialize physical discrete moves.
         lf.getLfAdjAlgo().setMaxSwitchedShuntAdjustmentsPerIteration(1);
         lf.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(true);
         lf.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.00000001);
+        status.put("imported_reactive_limit_guesses", seedImportedReactiveLimits(lf));
+        // Imported Q and voltage provide an initial guess, not a locked active
+        // set. Normal limit enforcement, backoff and final convergence remain on.
         lf.getLfAdjAlgo().getLimitCtrlConfig()
-                .setControlInitializationMode(ControlInitializationMode.COLD_START);
+                .setControlInitializationMode(ControlInitializationMode.PREVIOUS_SOLUTION);
         status.put("powerflow_preparation", "generator-priority-solved-netting");
         status.put("switched_shunt_adjustment", true);
         requireSolved(lf, "before_netting", status);
@@ -97,8 +120,32 @@ public final class Texas2kPowerflowPreparation {
                 limits.setControlInitializationMode(previousMode);
             }
         } else if (!deferred.isEmpty()) {
+            lf.getLfAdjAlgo().getLimitCtrlConfig()
+                    .setControlInitializationMode(ControlInitializationMode.COLD_START);
             requireSolved(lf, "after_netting", status);
         }
+    }
+
+    private static int seedImportedReactiveLimits(LoadflowAlgorithm lf) {
+        int count = 0;
+        for (var bus : lf.getNetwork().getBusList()) {
+            if (!bus.isActive() || !bus.isGenPV() || !bus.isPVBusLimit() || bus.isRemoteQBus()
+                    || !bus.getPVBusLimit().isControlStatus()
+                    || bus.getContributeGenList().stream().noneMatch(AclfGen::isActive)) continue;
+            var limits = bus.getQGenLimit();
+            if (limits == null) continue;
+            double q = bus.getGenQ(), voltage = bus.getVoltageMag(), target = bus.getDesiredVoltMag();
+            if (Math.abs(q - limits.getMin()) < 1.e-6 && voltage > target + 1.e-6) {
+                bus.getPVBusLimit().changeToGenPQBus(limits.getMin());
+                count++;
+            } else if (Math.abs(q - limits.getMax()) < 1.e-6 && voltage < target - 1.e-6) {
+                bus.getPVBusLimit().changeToGenPQBus(limits.getMax());
+                count++;
+            } else {
+                bus.setVoltageMag(target);
+            }
+        }
+        return count;
     }
 
     private static void requireSolved(LoadflowAlgorithm lf, String stage,
@@ -107,6 +154,8 @@ public final class Texas2kPowerflowPreparation {
         var termination = lf.getTerminationReport();
         status.put("loadflow_" + stage + "_solves", result.solves());
         status.put("loadflow_" + stage + "_iterations", termination.iteration());
+        status.put("loadflow_" + stage + "_max_mismatch_pu", termination.maxEquationMismatchPu());
+        status.put("loadflow_" + stage + "_max_auxiliary_mismatch_pu", termination.maxAuxiliaryMismatchPu());
         status.put("loadflow_termination", termination.status().toString());
         status.put("loadflow_unsettled_controls", termination.unsettledControlCount());
         if (!result.converged() || !termination.controlsSettled())

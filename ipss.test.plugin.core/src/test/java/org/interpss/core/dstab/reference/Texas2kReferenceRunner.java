@@ -86,7 +86,12 @@ public final class Texas2kReferenceRunner {
                     ? plan.get("loadflow_max_iterations").getAsInt() : 10000;
             lf.setMaxIterations(loadflowIterations);
             status.put("loadflow_max_iterations", loadflowIterations);
-            lf.setTolerance(1.e-10);
+            double loadflowTolerance = plan.has("loadflow_tolerance_pu")
+                    ? plan.get("loadflow_tolerance_pu").getAsDouble() : 1.e-3;
+            if (!Double.isFinite(loadflowTolerance) || loadflowTolerance <= 0.)
+                throw new IllegalArgumentException("Load-flow tolerance must be finite and positive");
+            lf.setTolerance(loadflowTolerance);
+            status.put("loadflow_tolerance_pu", loadflowTolerance);
             if (plan.has("fixed_powerflow_controls") && plan.get("fixed_powerflow_controls").getAsBoolean()) {
                 lf.setInitBusVoltage(false);
                 lf.getLfAdjAlgo().getVoltAdjConfig().setXfrTapControl(false);

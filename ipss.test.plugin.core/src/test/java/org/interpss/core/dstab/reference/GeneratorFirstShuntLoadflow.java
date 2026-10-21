@@ -88,7 +88,9 @@ public final class GeneratorFirstShuntLoadflow {
         }
         boolean success = false;
         try {
-            for (var group : groups) group.prepare();
+            for (var group : groups) group.prepare(lf.getLfAdjAlgo().getLimitCtrlConfig()
+                    .getControlInitializationMode()
+                    == com.interpss.core.algo.config.ControlInitializationMode.PREVIOUS_SOLUTION);
             for (int iteration = 1; iteration <= 50; iteration++) {
                 for (var group : groups) group.updateAggregateLimits();
                 if (!lf.loadflow() || !lf.getTerminationReport().controlsSettled())
@@ -239,12 +241,26 @@ public final class GeneratorFirstShuntLoadflow {
             shuntAdjust = shunt.isAdjustStatus();
         }
 
-        void prepare() {
+        void prepare(boolean reuse) {
+            double v2 = voltageSquared();
+            double aggregateQ = busQ + initialB * v2;
+            // A limited plant can retain its state only when the combined
+            // generator/shunt capability also binds in the correct direction.
+            // Otherwise restore voltage regulation and let the solve reallocate Q.
+            reuse = reuse && (busCode == AclfGenCode.GEN_PV && Math.abs(bus.getVoltageMag() - target) < 1.e-9
+                    || busCode == AclfGenCode.GEN_PQ && (
+                            Math.abs(aggregateQ - qMin - bMin * v2) < 1.e-9 && bus.getVoltageMag() >= target
+                            || Math.abs(aggregateQ - qMax - bMax * v2) < 1.e-9 && bus.getVoltageMag() <= target));
             shunt.setControlStatus(false);
             shunt.setBActual(0.);
-            bus.setGenCode(AclfGenCode.GEN_PV);
+            bus.setGenCode(reuse ? busCode : AclfGenCode.GEN_PV);
             bus.setDesiredVoltMag(target);
-            bus.setVoltageMag(target);
+            if (!reuse) bus.setVoltageMag(target);
+            if (reuse) {
+                bus.setGenQ(aggregateQ);
+                generators.get(0).setGen(new Complex(powers.get(0).getReal(),
+                        powers.get(0).getImaginary() + initialB * v2));
+            }
             bus.getPVBusLimit().setControlStatus(true);
             bus.getPVBusLimit().setAdjustStatus(true);
         }

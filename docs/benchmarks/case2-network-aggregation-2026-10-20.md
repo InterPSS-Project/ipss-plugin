@@ -762,3 +762,111 @@ boundaries established for NR, but uses its own Newton damping and limit
 activation schedule. Agreement of device constraints and the final operating
 point does not imply an identical iteration sequence. Exact supplied settings
 and the follow-up verification are retained with the private evidence.
+
+## Twenty-iteration preparation target
+
+At the original 1e-10 tolerance, Case 2 met the requested **20 total preparation iterations**: 20 before
+netting and zero afterward, with 19 actual Newton matrix solves. The post-netting
+solve still runs its convergence and control checks. This supersedes the
+114-iteration preparation policy above. That verification used a final mismatch
+tolerance of 1e-10 and a voltage-control tolerance of 1e-8. The subsequent
+user-requested 1e-3 final tolerance is reported below.
+
+The remaining overhead came from reconstructing generator limits in small
+batches, repeatedly solving intermediate control states to final accuracy,
+waiting for another outer pass after a control-row change, and resetting a
+solved colocated generator/shunt group before the second solve. The preparation
+now uses these changes together:
+
+- Imported Q and voltage provide reversible initial generator-limit guesses.
+  Case 2 supplies 75 such guesses. Normal enforcement and release remain active;
+  tests verify that incorrect lower- and upper-limit guesses both release.
+- The opt-in `setNrControlTransitionTolerance(1e-4)` allows intermediate control
+  transitions earlier. Final electrical convergence and physical limits retain
+  their original requirements. Fresh Jacobians replace numerical LU reuse in
+  this mode, and unrelated generator limits no longer delay every continuous
+  shunt. The shared generator/shunt plant still uses generator priority.
+- A changed inner control equation receives its Newton correction immediately,
+  using the same failure and rollback handling as an ordinary correction.
+- Post-netting preparation preserves the combined generator/shunt injection
+  and a feasible solved control state. A changed voltage target or a limited
+  plant with remaining combined reactive capability forces reevaluation.
+
+The core threshold defaults to the final load-flow tolerance, retaining the
+existing behavior for callers that do not request earlier transitions. The
+benchmark helper selects the accelerated policy and restores the caller's
+initialization mode after success or failure. No supplied trajectory samples
+are used to choose the initial control state.
+
+A fresh production static solve differs from the 114-iteration solution by at
+most 9.01e-13 pu voltage, 5.60e-13 radians angle, 1.08e-11 pu generator Q and
+5.37e-12 pu shunt B. Bus 2127 remains fixed at B = -2.0 pu; bus 1033 retains
+zero shunt B, Q = -0.4003 pu and voltage 1.0151285166 pu.
+
+All six full warm-up/measured runs use 20 + 0 preparation iterations, with all
+4,810 channels and 2,405 samples retained and finite. The six traces are
+byte-identical to one another. Differences from the 114-iteration trajectory
+are at most 1.32e-12 pu voltage and 7.52e-10 degrees rotor angle.
+
+| Measured repeat | Preparation and initialization, s | Simulation and recording, s | Complete runner, s |
+| --- | ---: | ---: | ---: |
+| 1 | 1.0034 | 8.9026 | 9.9060 |
+| 2 | 1.0911 | 8.6041 | 9.6952 |
+| 3 | 0.3673 | 8.8635 | 9.2309 |
+
+The total median is **9.6952 seconds**, effectively unchanged from the preceding
+9.7046-second cohort. The iteration reduction is verified; these measurements
+do not establish an end-to-end timing improvement. The eight-second total goal
+remains open. Against the supplied reference, the earlier dynamic accuracy
+failures also remain: maximum prefault voltage error is 0.126645 pu and worst
+full rotor-angle RMSE is 107.8961 degrees. The event-grid caveats above still
+apply.
+
+Validation passes 91 focused core tests and 37 preparation/recording tests,
+including strict final convergence under earlier control transitions, physical
+shunt limits, reversible imported-limit guesses, nonzero shunt injection reuse,
+changed voltage targets, and failure restoration. Private evidence is retained
+under `2026-10-20-case2-twenty-iteration-preparation`.
+
+## Requested 1e-3 pu power-flow tolerance
+
+The reference runner now defaults to **1e-3 pu final power mismatch tolerance**.
+An explicit `loadflow_tolerance_pu` plan field overrides this default; the runner
+rejects nonpositive or nonfinite values and records the effective setting.
+The dynamic network tolerance in these timing runs remains 1e-5.
+
+The preparation helper selects an intermediate control-transition threshold of
+`max(1e-4, 10 * finalTolerance)`, or 1e-2 pu here. This keeps the accelerated
+control-transition workflow active when the final tolerance is relaxed. It
+does not change the final electrical tolerance, physical device limits or
+1e-8 voltage-control tolerance. Setting both thresholds to 1e-3 disabled that
+workflow and took 27 iterations in an initial diagnostic.
+
+All six full runs with the final policy converge in **16 iterations before
+netting and zero afterward**, meeting the 20-iteration target. Final maximum
+P/Q mismatch is 2.39090e-5 pu; all controls settle. The static probe confirms
+bus 2127 remains fixed at B = -2 pu, and bus 1033 retains B = 0 and generator
+Q = -0.4003 pu, with voltage 1.0151285991 pu.
+
+The largest pre-startup voltage difference against the supplied reference is
+**0.000684050 pu at bus 8107**, compared with 0.000014215 pu for the tighter
+solve. After dynamic startup, the maximum initial voltage error remains
+0.00571467 pu at bus 3034. The relaxed preparation is not trajectory-equivalent
+to the tighter solve: the full-run maximum differences are 0.0116765 pu voltage
+and 3.01725 degrees rotor angle. The supplied reference remains the accuracy
+authority; its worst full rotor-angle RMSE is 107.4113 degrees and maximum
+prefault voltage error is 0.126701 pu. Dynamic accuracy still fails.
+
+Three warm-up runs precede three measured runs in one single-CPU JVM. All
+4,810 channels and 2,405 samples are finite and retained; all six traces are
+byte-identical. Complete measured times are 10.2285, 9.7479 and 8.9739 seconds
+(median **9.7479 seconds**). Simulation plus recording has a median of
+8.5671 seconds. This establishes the iteration reduction but no material total
+runtime improvement over the preceding cohort. Event-grid and history-sampling
+caveats above still apply.
+
+The final policy passes 38 preparation/recording tests, including an independent
+two-bus power-balance check at 1e-3 tolerance with active generator and shunt
+limits. The 91 focused core regressions above also pass. Source, run settings,
+residuals, timing, comparisons and reference hashes are retained in the same
+private evidence archive.

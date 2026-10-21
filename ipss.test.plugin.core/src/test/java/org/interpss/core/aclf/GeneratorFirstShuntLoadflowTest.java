@@ -119,6 +119,62 @@ Q
         check(network(1., 1.06, .5, new Machine(0, -.4, .6, v)), v, total - .5*v*v, .5);
     }
 
+    @Test void previousPlantStatePreservesNonzeroShuntInjectionWithoutAnotherNewtonSolve() throws Exception {
+        double v = 1.03, total = v * (v - 1.) / .1;
+        var lf = network(1., 1.06, .5, new Machine(0, -.4, .6, v));
+        check(lf, v, total - .5*v*v, .5);
+        lf.setInitBusVoltage(false);
+        lf.getLfAdjAlgo().getLimitCtrlConfig()
+                .setControlInitializationMode(ControlInitializationMode.PREVIOUS_SOLUTION);
+        check(lf, v, total - .5*v*v, .5);
+        assertEquals(0, lf.getTerminationReport().iteration());
+    }
+
+    @Test void previousLimitedPlantReleasesWhenCombinedCapabilityHasHeadroom() throws Exception {
+        var lf = network(1., 1.06, .5, new Machine(0., -.4, .6, 1.));
+        var bus = lf.getNetwork().getBus("Bus1");
+        bus.getContributeGen("1").setGen(new org.apache.commons.math3.complex.Complex(0., -.4));
+        bus.getPVBusLimit().changeToGenPQBus(-.4);
+        bus.setVoltageMag(1.02);
+        lf.setInitBusVoltage(false);
+        lf.getLfAdjAlgo().getLimitCtrlConfig()
+                .setControlInitializationMode(ControlInitializationMode.PREVIOUS_SOLUTION);
+        check(lf, 1., -.4, .4);
+    }
+
+    @Test void previousRegulatingPlantReinitializesAChangedVoltageTarget() throws Exception {
+        var lf = network(1., 1.06, .5, new Machine(0., -.4, .6, 1.03));
+        check(lf, 1.03, 1.03 * .03 / .1 - .5 * 1.03 * 1.03, .5);
+        var bus = lf.getNetwork().getBus("Bus1");
+        bus.getContributeGen("1").setDesiredVoltMag(1.02);
+        bus.setDesiredVoltMag(1.02);
+        lf.setInitBusVoltage(false);
+        lf.getLfAdjAlgo().getLimitCtrlConfig()
+                .setControlInitializationMode(ControlInitializationMode.PREVIOUS_SOLUTION);
+        check(lf, 1.02, 1.02 * .02 / .1 - .5 * 1.02 * 1.02, .5);
+    }
+
+    @Test void importedReactiveLimitGuessesCanReleaseInEitherDirection() throws Exception {
+        for (boolean lower : new boolean[] {true, false}) {
+            var lf = network(1., 1.06, 0., new Machine(0., -.4, .6, 1.));
+            var bus = lf.getNetwork().getBus("Bus1");
+            bus.getSwitchedShuntList().clear();
+            double guessedQ = lower ? -.4 : .6;
+            bus.getContributeGen("1").setGen(new org.apache.commons.math3.complex.Complex(0., guessedQ));
+            bus.setGenQ(guessedQ);
+            bus.setVoltageMag(lower ? 1.02 : .98);
+            lf.setInitBusVoltage(false);
+            var status = new java.util.LinkedHashMap<String, Object>();
+            Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+            assertEquals(1, status.get("imported_reactive_limit_guesses"));
+            // The independent two-bus solution has zero flow and neither Q limit active.
+            assertEquals(1., bus.getVoltageMag(), 1.e-9);
+            assertEquals(0., bus.getContributeGen("1").getGen().getImaginary(), 1.e-9);
+            assertTrue(bus.isGenPV());
+            assertTrue(lf.getTerminationReport().controlsSettled());
+        }
+    }
+
     @Test void defaultPreparationEnablesSecondaryControlAndHonorsGeneratorLimits() throws Exception {
         var lf = network(1.05, 1.03, .5, new Machine(0., -.1, .2, 1.));
         lf.getLfAdjAlgo().setApplyAdjustAlgo(false);
@@ -133,7 +189,26 @@ Q
         assertEquals(0., bus.getSwitchedShuntList().get(0).getBActual(), 2.e-8);
         assertEquals(true, status.get("switched_shunt_adjustment"));
         assertEquals(0, status.get("solved_netted_generators"));
+        assertEquals(1.e-4, lf.getNrControlTransitionTolerance());
+        assertEquals(1.e-11, lf.getTolerance());
         assertFalse(status.containsKey("loadflow_after_netting_solves"));
+    }
+
+    @Test void relaxedFinalToleranceRetainsEarlierControlTransitionsAndPhysicalLimits() throws Exception {
+        var lf = network(1.05, 1.03, .5, new Machine(0., -.1, .2, 1.));
+        lf.setTolerance(1.e-3);
+        var status = new java.util.LinkedHashMap<String, Object>();
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        var bus = lf.getNetwork().getBus("Bus1");
+        // Independent Q balance for a generator at Qmin with its shunt off.
+        double voltage = bus.getVoltageMag();
+        assertTrue(Math.abs(voltage * (voltage - 1.05) / .1 + .1) < 1.e-3);
+        assertEquals(-.1, bus.getGenQ(), 1.e-10);
+        assertEquals(0., bus.getSwitchedShuntList().get(0).getBActual(), 1.e-10);
+        assertEquals(1.e-3, lf.getTolerance());
+        assertEquals(1.e-2, lf.getNrControlTransitionTolerance());
+        assertTrue(lf.getTerminationReport().controlsSettled());
+        assertTrue(lf.getTerminationReport().maxEquationMismatchPu() < 1.e-3);
     }
 
     @Test void defaultNettingUsesSolvedPowerBeforeLoadConversion() throws Exception {
