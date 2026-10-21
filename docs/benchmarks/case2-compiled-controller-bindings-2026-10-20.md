@@ -1145,3 +1145,68 @@ Private sources, executable probes, full-recording hashes, numerical plans and
 timing evidence are retained under
 `verification-artifacts/2026-10-21-short-expression-experiment`.
 The eight-second objective and independent-reference accuracy remain unresolved.
+
+
+## Typed PSS2A integration stages
+
+PSS2A now has a typed stage evaluator for its standard fixed controller graph.
+The block equations and numerical state storage remain in the existing Java
+blocks. `tools/generate_pss2a_stage_inputs.py` generates direct input wiring
+from the model annotations, retaining operand-read and floating-point reduction
+order. Run its `--check` option after editing the model or generated evaluator.
+Live gains, setpoints and machine measurements remain live.
+
+The core `CmlCompiledStage` contract separates input preparation/capture,
+advancement and capture release. The controller owns phase guards, nested-stage
+rejection, invalidation and failure cleanup. The default retains two output
+preparations. The PSS2A evaluator uses one only for its recognized acyclic graph
+with distinct, pure blocks. Shared blocks retain repeated preparation; custom
+getters, variable expression limits and changed wiring retain generic evaluation.
+Structural edits require invalidation and rebuilding at an idle boundary.
+The model enables this evaluator when its compiled runtime plan is requested;
+it does not enable controller-graph compilation for every solver automatically.
+
+The final production rebuild passed 92 focused tests: 45 engine tests and
+47 plugin tests, with no failures, errors or skips. Eight new tests cover stage
+phases and failures, invalidation, direct predictor/corrector comparisons,
+coupled faults, live controls, custom-provider fallback and shared-block ordering.
+The generated-input and neutral-language checks pass.
+
+The broader registered core-plugin suite plus the new stage tests discovers
+2,618 tests: 2,600 pass, five fail, nine are skipped and four abort. The five
+failing test methods match the retained baseline, including the existing
+six-case flat-start failure; there are no new failing methods. This does not
+establish successful six-case initialization or independent trajectory accuracy.
+
+Separate production JVMs each perform twelve warmups and six measured runs on
+one verified CPU. Both use fresh setup, quarter-cycle steps, 1e-5 dynamic
+tolerance and ten simulated seconds. Complete recording and writer close,
+compilation and garbage collection are included. There are no solver or model
+class overlays in these final measurements. Two additional candidate profiles
+run afterward and are excluded from the timing samples.
+
+| Evaluation | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Generic compiled graph | 12.8985, 12.6692, 12.8043, 12.6549, 12.5769, 12.8127 | 12.7367 |
+| Typed PSS2A stage | 12.0969, 11.9115, 11.9014, 11.8140, 11.6897, 11.9495 | 11.9064 |
+
+The paired median reduction is 6.52%.
+All 38 complete recordings retain the canonical production hash, with 2,405
+finite samples, 4,810 channels and both event-side duplicates. Each enabled
+run uses 103 typed PSS2A evaluators and records 989,933 compiled stage calls.
+Identical repetitions share storage only after complete byte comparison.
+An earlier attempt stopped during warmup because hard-link permission was
+unavailable; it supplies no measured timing samples.
+
+The two post-measurement profiles attribute 58.0–61.1% of main-thread execution
+samples to network solution and 36.7–38.5% to other integration work. Static-load
+complex division, injection-device traversal, voltage scans and sparse solves
+remain prominent. These are sampled execution shares, not wall-time phase
+measurements or an estimate of recording I/O cost. Further controller work alone
+is unlikely to close the remaining approximately 3.9-second gap.
+
+The eight-second objective remains unmet. Equality with the performance control
+does not resolve the existing independent-reference accuracy gap. This slice
+does not establish six-case or full-system acceptance. Reproducible sources,
+classes, test logs, numerical settings, profiles and full-recording hashes are
+retained privately under `verification-artifacts/2026-10-21-pss-compiled-stage`.

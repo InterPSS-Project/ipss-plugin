@@ -56,6 +56,16 @@ import com.interpss.dstab.mach.Machine;
  */
 public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
 		implements IntegrationStepAware {
+    @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
+        return compiledStageEnabled ? Pss2aCompiledStage.tryCreate(this) : null;
+    }
+    private boolean compiledStageEnabled=true;
+    /** Select before graph compilation; invalidate an existing plan before changing this choice. */
+    public void setCompiledStageEnabled(boolean enabled) {
+        if(isRuntimePlanCompiled() || getRuntimePhase()!=RuntimePhase.IDLE)
+            throw new IllegalStateException("Configure PSS stage evaluation before graph compilation");
+        compiledStageEnabled=enabled;
+    }
     @Override public boolean supportsCompiledOutputScheduling() {
         return getClass() == Ieee1992PSS2AStabilizer.class;
     }
