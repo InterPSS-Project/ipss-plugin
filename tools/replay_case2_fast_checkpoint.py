@@ -124,11 +124,26 @@ def main() -> None:
                         help="Replay the retained machine-frame variant with 24 warmups and 7 measurements")
     parser.add_argument("--electrical-endpoint", action="store_true",
                         help="Include machine-frame reuse and endpoint preparation, with 32 warmups and 7 measurements")
+    parser.add_argument("--selected", action="store_true",
+                        help="Replay the version selected in the working performance baseline index")
     args = parser.parse_args()
+    repo = Path(__file__).resolve().parents[1]
+    if args.selected:
+        if args.machine_frame_reuse or args.electrical_endpoint:
+            parser.error("--selected cannot be combined with explicit version flags")
+        selected_path = repo / "docs/benchmarks/checkpoints/case2-working-performance-baseline.json"
+        selected = json.loads(selected_path.read_text())["selected_checkpoint"]
+        known = {
+            "docs/benchmarks/checkpoints/case2-recovered-fast-2026-10-21.json": (False, False),
+            "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json": (True, False),
+            "docs/benchmarks/checkpoints/case2-frozen-endpoint-2026-10-21.json": (True, True),
+        }
+        if selected not in known:
+            parser.error("Selected checkpoint is not supported by this replay tool")
+        args.machine_frame_reuse, args.electrical_endpoint = known[selected]
     use_machine_frame = args.machine_frame_reuse or args.electrical_endpoint
     if os.name != "nt":
         parser.error("This checkpoint runner requires Windows CPU-affinity verification")
-    repo = Path(__file__).resolve().parents[1]
     root = (repo / args.output).resolve()
     if not root.is_relative_to((repo / "target").resolve()) or root.exists():
         parser.error("Output must be a new directory below target")

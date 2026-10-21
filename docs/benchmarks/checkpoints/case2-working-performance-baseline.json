@@ -2,29 +2,30 @@
   "schema": 1,
   "status": "selected-working-performance-baseline",
   "goal_achieved": false,
-  "selected_checkpoint": "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json",
+  "selected_checkpoint": "docs/benchmarks/checkpoints/case2-frozen-endpoint-2026-10-21.json",
+  "previous_selected_checkpoint": "docs/benchmarks/checkpoints/case2-frozen-machine-frame-2026-10-21.json",
   "base_executable_evidence_commit": "e2e0a892f",
   "replay_tool": "tools/replay_case2_fast_checkpoint.py",
   "replay_args": [
-    "--machine-frame-reuse"
+    "--selected"
   ],
   "source_checkout": false,
   "production_source_replaced": false,
   "summary": {
     "status": "completed",
     "working_performance_baseline": true,
-    "warmup_runs": 24,
+    "warmup_runs": 32,
     "measured_runs": 7,
     "case_wall_s": [
-      8.101799,
-      8.5699651,
-      7.9954821,
-      7.8189051,
-      7.9112594,
-      7.8808672,
-      7.8166163
+      7.5252278,
+      7.6671205,
+      7.5520151,
+      7.7367339,
+      7.7764214,
+      7.6509762,
+      7.8540224
     ],
-    "median_case_wall_s": 7.9112594,
+    "median_case_wall_s": 7.6671205,
     "single_cpu_verified": true,
     "full_recording_included": true,
     "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
@@ -32,20 +33,40 @@
     "mutable_build_directories_on_classpath": false,
     "exact_historical_checkout": false,
     "independent_accuracy_qualified": false,
-    "machine_frame_reuse": true
+    "machine_frame_reuse": true,
+    "electrical_endpoint_preparation": true
   },
-  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-frozen-machine-frame/replay-manifest.json",
+  "latest_repetition": {
+    "checkpoint": "docs/benchmarks/checkpoints/case2-controller-stack-crossover-2026-10-21.json",
+    "case_wall_s": [
+      7.592151,
+      7.5524264,
+      7.5490919,
+      7.6301367,
+      7.6527871,
+      7.5753287,
+      7.6667807
+    ],
+    "median_case_wall_s": 7.592151,
+    "warmup_runs": 32,
+    "measured_runs": 7,
+    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "full_recording_included": true,
+    "single_cpu_verified": true
+  },
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-frozen-endpoint/manifest.json",
   "private_manifest_digest": {
-    "bytes": 24989,
-    "sha256": "89b9247b3bc62c365f1425b69d1e0d80a9fe00591fdf10c50a6035b283bf0411"
+    "bytes": 67862,
+    "sha256": "ba83b52f541ee150b05eeaa2b5260fecdb7c277349982b9766cc812658706ed1"
   },
   "archive": {
-    "bytes": 2680860,
-    "sha256": "64494b3e05048b2c5dd2fd16a05a9f90fea8d359adf4033189a92a5ebfd3ccb3"
+    "bytes": 7649749,
+    "sha256": "b42d3dc7f51debf933139051e1155e3472585cb6afe40f05af7d1403ba1b5cdd"
   },
+  "recovery_record": "docs/benchmarks/checkpoints/case2-pre-fast-selection-2026-10-21.json",
   "limitations": [
-    "Two of seven independent replay measurements exceed eight seconds.",
     "Independent-reference accuracy remains unresolved.",
-    "The production source path has not been replaced by the frozen executable."
+    "The selected executable reproduces the retained production trajectory for Case 2; this does not qualify other cases.",
+    "There is no verified whole-source checkout for this assembled executable. Production source has not been rolled back."
   ]
 }
