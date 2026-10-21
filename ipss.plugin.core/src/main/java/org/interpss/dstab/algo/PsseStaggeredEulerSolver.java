@@ -100,6 +100,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private boolean extendedStack;
     private boolean runtimeControllerOptimizationEnabled = true;
     private boolean compiledControllerGraphsEnabled;
+    private boolean preparedControllerOutputReuseEnabled = true;
     private boolean compiledLocalSt1Enabled=true;
     private boolean useRectangularNetworkVoltage;
     private double[] start;
@@ -239,6 +240,12 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     public boolean isUseRectangularNetworkVoltage() { return useRectangularNetworkVoltage; }
+
+    /** Configure compiled child-output reuse before the controller plans are bound. */
+    public void setPreparedControllerOutputReuseEnabled(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Configure controller output reuse before initialization");
+        preparedControllerOutputReuseEnabled = enabled;
+    }
 
     /** Configure before initialization; changing the boundary requires new derivative history. */
     public void setMachineMeasurementStage(MachineMeasurementStage stage) {
@@ -391,6 +398,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         if (!(controller instanceof AbstractAnnotateController c))
             throw new IllegalArgumentException("Unsupported controller " + controller.getClass());
         c.setRuntimeExpressionBindingsEnabled(runtimeControllerOptimizationEnabled);
+        c.setPreparedOutputReuseEnabled(preparedControllerOutputReuseEnabled);
         if (controller instanceof IEEE2005ST4BExciter || controller instanceof IEEE1981ST1Exciter
                 || controller instanceof Ieee1992PSS2AStabilizer) extendedStack=true;
         BooleanSupplier owner=ownerActive;

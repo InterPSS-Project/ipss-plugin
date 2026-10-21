@@ -727,3 +727,70 @@ voltage correction. They are not interchangeable convergence criteria.
 Exact producers, final sources, compiled classes, profiles, regression reports
 and full-recording hashes are retained privately under
 `verification-artifacts/2026-10-21-deferred-voltage-publication`.
+
+
+## Immediate compiled child-output reuse
+
+Nested controller preparation previously prepared a child graph and then called
+its output getter, which could repeat the same input preparation. The compiled
+runtime now proves when that immediately prepared output is already settled:
+the controller declares pure getters, every block supports pure output refresh,
+the graph is acyclic, preparation order matches dependency order, and blocks
+are distinct. Static protocols, feedback, shared blocks, reordered dependencies
+and overridden output getters retain ordinary evaluation.
+
+The reusable result is scoped to the immediate child observation. Independent
+output reads still refresh live measurements and parameters; integration states
+and derivative history stay in their existing blocks. There are no handwritten
+replacement model equations. Frozen plans also inspect their prebound block
+membership in original order instead of repeatedly walking wrapper collections.
+Time constants remain live in those checks.
+
+`setPreparedOutputReuseEnabled(false)` selects ordinary child observation on an
+idle controller tree. The staggered solver exposes the corresponding
+`setPreparedControllerOutputReuseEnabled(false)` before initialization. Reuse is
+enabled by default but requires a compiled graph and the capabilities above.
+Output evaluation errors retain the ordinary zero-output fallback; settings
+applied before annotation initialization propagate to subsequently compiled
+children. Structural changes still require explicit plan invalidation.
+
+The final trial uses six warmups, five measured alternating pairs and two separate
+profile runs. Each repetition creates a fresh network and records all 4,810
+channels at quarter-cycle steps with 1e-5 dynamic tolerance on one pinned CPU.
+Setup, initialization, recording, remaining compilation and garbage collection
+are included in the complete-case times.
+
+| Child output evaluation | Five complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Ordinary | 15.8776, 16.5269, 15.7704, 15.8654, 15.6520 | 15.8654 |
+| Immediate reuse | 14.7382, 14.5910, 14.9270, 14.6746, 14.5761 | 14.6746 |
+
+The final median reduction is 7.51%. The preliminary trial independently
+measured 7.58%. Each enabled run reuses 10,247,898 child outputs.
+All eighteen final recordings are byte-identical to the previous rectangular
+production trace: 2,405 finite samples, with both sides of both fault events.
+The preliminary trial also preserves all eighteen complete recordings exactly.
+Verified hard links avoid duplicating large binary files within each trial.
+
+All 62 targeted tests pass: 40 core controller checks and 22 coupled plugin checks.
+Coverage includes live inputs, gains and time constants, predictor/corrector
+history, feedback and alias fallback, output overrides, output failures,
+invalidation/recompilation, pre-initialization settings, discontinuities and
+controller status changes. The complete registered suite was not rerun.
+
+The enabled profile contains 708 main-thread execution samples:
+332 in network solution,
+358 in other integration,
+3 in recording, and
+15 in setup or other work.
+These are sampling counts, not measured wall-time allocations.
+
+The eight-second goal remains unmet, and matching the previous quarter-cycle
+trace does not resolve its independent-reference accuracy failures. Further
+work should extend dependency-aware scheduling to eligible parent controller
+graphs and reduce the remaining network data-access cost, while preserving
+physical input refresh and the declared integration lifecycle.
+
+Exact final sources/classes, the preliminary executed core snapshot, producers,
+regression reports, profiles and complete-recording hashes are retained privately
+under `verification-artifacts/2026-10-21-prepared-child-output`.

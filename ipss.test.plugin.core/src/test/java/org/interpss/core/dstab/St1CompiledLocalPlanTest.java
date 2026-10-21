@@ -20,6 +20,30 @@ import com.interpss.dstab.mach.Machine;
 /** Stage, lifecycle and fallback regressions for the compiled local recurrence. */
 class St1CompiledLocalPlanTest {
     @Test
+    void compiledChildOutputReuseKeepsCoupledStatesAcrossDiscontinuities() throws Exception {
+        var ordinary=load("esst1a_pss2a",true,true);
+        var reused=load("esst1a_pss2a",true,true);
+        assertThrows(IllegalStateException.class,()->reused.solver.setPreparedControllerOutputReuseEnabled(false));
+        var first=(com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController)ordinary.machine.getStabilizer();
+        var second=(com.interpss.dstab.controller.cml.annotate.AbstractAnnotateController)reused.machine.getStabilizer();
+        first.setPreparedOutputReuseEnabled(false);
+        long firstCount=first.getPreparedOutputReuseCount(), secondCount=second.getPreparedOutputReuseCount();
+        for(int step=0;step<240;step++) {
+            for(var fixture:List.of(ordinary,reused)) {
+                if(step%19==0) {
+                    fixture.exciter.setRefPoint(fixture.exciter.getRefPoint()+(step%3-1)*.01);
+                    fixture.solver.notifyDiscontinuity();
+                }
+                fixture.machine.getStabilizer().setStatus(step%37!=4);
+                assertTrue(fixture.algorithm.solveDEqnStep(true));
+            }
+            assertEquals(snapshot(ordinary),snapshot(reused),"step "+step);
+        }
+        assertEquals(firstCount,first.getPreparedOutputReuseCount());
+        assertTrue(second.getPreparedOutputReuseCount()>secondCount+100);
+    }
+
+    @Test
     void fullStateAndHistoryMatchOrdinaryEvaluationAcrossEventsAndLiveParameters() throws Exception {
         for(String model:List.of("esst1a_pss2a","esst1a_ieeest","esst1a","exst1")) {
             var ordinary=load(model,false);
