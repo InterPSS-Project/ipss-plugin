@@ -46,6 +46,8 @@ it does not claim that unrelated uncommitted source edits were rebuilt.
 | Iteration callback participants | `IterationBinding[]` is cached by network identity and membership version; reusable collections filter live active devices and deduplicate identities. | Allocates collections and scans buses, generators, branches and dynamic-device lists for each network solution. | A participant cache was not carried into production. Its membership invalidation hooks must accompany any port. |
 | Current assembly and solver transfer | Uses cached runtime participants and primitive current buffers; 36,370 buffered solves are recorded. | The measured configuration uses ordinary current transfer and live traversal, with guarded scalar static-load arithmetic. | A real path difference, but not established as a speed advantage: disabling cached current traversal and primitive transfer together previously improved the frozen stack. |
 | Controller evaluation | Specialized ST1, ST4 and PSS2A direct evaluators, including experimental output/bridge reuse. | Compiled-stage lifecycle with preparation, reuse guards, invalidation and fallback handling; typed PSS2A wiring and guarded ST4 bridge-input reuse are already present. | Not simply interpreted versus compiled. Recent PSS2A probes account for only a small, uncertain part of the gap. |
+| Ordinary sparse-solve workspace | Reuses `ordinarySolveBuffer`, resizing when the matrix dimension changes. | Allocates a new `double[2*n]` for each ordinary solve. | The earlier kernel comparison missed this adapter-level allocation difference. The measured Case 2 path makes 32,274 such allocations, about 1.03 GB of array payload per case. |
+| Custom-current bus lookup | Retains bound bus references with table/type and membership checks. | Looks up buses through the ordinary path. | Another cache difference; its independent timing contribution is not established. |
 | Voltage representation | Deferred-angle and rectangular-voltage caching in the base load-flow bus implementation. | Deferred-angle publication localized to the dynamic bus implementation, with observer/type guards and inherited-cache invalidation. | Both avoid unnecessary polar conversions; placement and guard costs differ. |
 | Machine update optimizations | Does not have all current production optimizations. | Adds cached frame transformations and guarded electrical endpoint preparation. | Production also contains improvements absent from the frozen runtime; this is not a simple rollback comparison. |
 
@@ -179,3 +181,16 @@ Related evidence:
 [conditional ablations](checkpoints/case2-fast-stack-ablations-2026-10-21.json),
 [PSS2A probes](checkpoints/case2-pss-direct-evaluation-probe-2026-10-21.json),
 and [this audit's retained inventory](checkpoints/case2-frozen-production-diff-2026-10-21.json).
+
+## Follow-up profiles and workspace isolation
+
+The [profile and workspace follow-up](case2-execution-path-profile-2026-10-21.md)
+adds matched execution profiles and an isolated allocation experiment. It
+corrects an omission in the original audit: identical triangular-solve kernels
+do not mean identical workspace management. Production creates a temporary
+array on every ordinary solve; the frozen adapter retains one.
+
+The profiles also point to controller preparation and repeated EMF iteration.
+They do not provide an additive decomposition of the elapsed-time gap. Recording
+methods remain equal, and the complete trajectories remain byte-identical for
+this case. Production source has not been replaced by the experimental overlays.
