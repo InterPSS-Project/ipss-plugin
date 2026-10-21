@@ -194,3 +194,12 @@ The profiles also point to controller preparation and repeated EMF iteration.
 They do not provide an additive decomposition of the elapsed-time gap. Recording
 methods remain equal, and the complete trajectories remain byte-identical for
 this case. Production source has not been replaced by the experimental overlays.
+
+The [complete ST4 bridge experiment](case2-st4-bridge-scope-2026-10-21.md) isolates
+another controller difference: the frozen evaluator reuses the complete bridge
+value within an evaluation, while production reuses selected inputs. A guarded
+prototype eliminates 5.15 million repeated evaluations per case and preserves
+all 12,923 accepted-state comparison groups. Its alternating seven-pair timing
+changes the median from 9.400 to 9.322 seconds (0.83%), with overlapping ranges.
+This small gain does not explain the remaining gap; the prototype is retained
+without production adoption.
