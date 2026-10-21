@@ -26,6 +26,50 @@ import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 
 /** Fixed signal bindings retain the ordered feedback and rectifier observations. */
 class St4bCompiledStageTest {
+    @Test void electricalPreparationPreservesCoupledStatesAndGovernorHistory(@TempDir Path root) throws Exception {
+        for(boolean governor:new boolean[]{false,true}) {
+            var ordinary=load(true,true,root.resolve("endpoint-off-"+governor+".dyr"),false,governor);
+            var candidate=load(true,true,root.resolve("endpoint-on-"+governor+".dyr"),true,governor);
+            double reference=ordinary.exciter.getRefPoint();
+            for(int step=0;step<240;step++) {
+                for(var f:List.of(ordinary,candidate)) {
+                    if(step%17==0) {f.exciter.setRefPoint(reference+(step%3-1)*.03);f.solver.notifyDiscontinuity();}
+                    f.exciter.setVuel(step%23==0?.015:0.);
+                    f.exciter.setVoel(step%31==0?.2:Double.POSITIVE_INFINITY);
+                    f.exciter.kc=.08+step%7*.01;f.exciter.vbmax=8.+step%4;
+                    f.exciter.setStatus(step!=73);f.machine.getStabilizer().setStatus(step!=97);
+                    if(governor && step%19==0) {
+                        f.machine.getGovernor().setRefPoint(.65+step*.0001);f.solver.notifyDiscontinuity();
+                    }
+                    assertTrue(f.algorithm.solveDEqnStep(true));
+                }
+                assertEquals(snapshot(ordinary),snapshot(candidate),"governor="+governor+", step="+step);
+            }
+            assertEquals(0,ordinary.solver.getElectricalEndpointPreparationCount());
+            assertTrue(candidate.solver.getElectricalEndpointPreparationCount()>200);
+            assertThrows(IllegalStateException.class,()->candidate.solver.setElectricalEndpointPreparationEnabled(false));
+        }
+    }
+
+    @Test void endpointPreparationFallsBackForObserversAndMechanicalPowerInputs(@TempDir Path root) throws Exception {
+        var f=load(true,true,root.resolve("endpoint-fallback.dyr"),true,true);
+        assertTrue(f.algorithm.solveDEqnStep(true));
+        long first=f.solver.getElectricalEndpointPreparationCount();assertTrue(first>0);
+        var observer=new org.eclipse.emf.common.notify.impl.AdapterImpl();
+        f.machine.eAdapters().add(observer);
+        assertTrue(f.algorithm.solveDEqnStep(true));assertEquals(first,f.solver.getElectricalEndpointPreparationCount());
+        f.machine.eAdapters().remove(observer);
+        var pss=(org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer)f.machine.getStabilizer();
+        pss.getData().setIcs1(4);
+        assertTrue(f.algorithm.solveDEqnStep(true));assertEquals(first,f.solver.getElectricalEndpointPreparationCount());
+        pss.getData().setIcs1(1);
+        assertTrue(f.algorithm.solveDEqnStep(true));assertEquals(first+1,f.solver.getElectricalEndpointPreparationCount());
+        f.algorithm.getNetwork().setDStabNetInitialized(false);
+        assertTrue(f.algorithm.getAclfAlgorithm().loadflow());assertTrue(f.algorithm.initialization());
+        assertEquals(0,f.solver.getElectricalEndpointPreparationCount());
+        assertTrue(f.algorithm.solveDEqnStep(true));assertEquals(1,f.solver.getElectricalEndpointPreparationCount());
+    }
+
     @Test
     void coupledStatesAndHistoryMatchAcrossFaultsAndLiveControls(@TempDir Path temporary) throws Exception {
         for (boolean pss : new boolean[]{false,true}) {
@@ -96,6 +140,7 @@ class St4bCompiledStageTest {
         var changed=new com.interpss.dstab.datatype.ExpCalculator("this.refPoint-this.trDelayBlock.y");
         com.interpss.dstab.controller.cml.annotate.util.CMLSymbolMapper.mapExpressionSymbolStr2Type(changed.getRecList());
         wrapper.setInputExp(changed);e.compileRuntimePlan();assertFalse(e.hasCompiledStageEvaluator());
+        assertFalse(e.supportsElectricalEndpointPreparation());
         e.invalidateRuntimePlan();wrapper.setInputExp(input);e.compileRuntimePlan();assertTrue(e.hasCompiledStageEvaluator());
         e.invalidateRuntimePlan();
         var gate=(com.interpss.dstab.controller.cml.wrapper.FunctionFieldAnWrapper<?>)e.getFieldWrapperList().stream()
@@ -110,6 +155,7 @@ class St4bCompiledStageTest {
             @Override public double getY(){reads[0]++;return super.getY();}
         };
         custom.initStateY0(1.);delay.setField(custom);e.compileRuntimePlan();assertFalse(e.hasCompiledStageEvaluator());
+        assertFalse(e.supportsElectricalEndpointPreparation());
         reads[0]=0;assertTrue(e.eulerStep(true,.001,f.machine));assertTrue(reads[0]>0);
         e.invalidateRuntimePlan();delay.setField(original);
         var limit=new com.interpss.dstab.datatype.LimitExpression(2.,-2.) {
@@ -130,6 +176,7 @@ class St4bCompiledStageTest {
             second.setField(first.getField());e.compileRuntimePlan();
         }
         assertTrue(compiled.exciter.hasCompiledStageEvaluator());
+        assertFalse(compiled.exciter.supportsElectricalEndpointPreparation(),"Shared blocks require the original preparation order");
         for(int step=0;step<30;step++)for(boolean predictor:new boolean[]{true,false}) {
             for(var f:List.of(ordinary,compiled)) {
                 f.exciter.setRefPoint(1.+step*.0001);
@@ -191,6 +238,13 @@ class St4bCompiledStageTest {
             add(result,bus.getVoltage().getReal(),bus.getVoltage().getImaginary());
         controllerSnapshot(result,f.exciter);
         if(f.machine.getStabilizer() instanceof AbstractAnnotateController pss)controllerSnapshot(result,pss);
+        if(f.machine.getGovernor() instanceof org.interpss.dstab.control.util.StaggeredEulerParticipant governor) {
+            var values=new double[governor.staggeredStateCount()];governor.readStaggeredState(values,0);add(result,values);
+            var field=PsseStaggeredEulerSolver.class.getDeclaredField("participants");field.setAccessible(true);
+            for(var participant:(List<?>)field.get(f.solver))for(String name:List.of("values","rates","history","trial")) {
+                var slot=participant.getClass().getDeclaredField(name);slot.setAccessible(true);add(result,(double[])slot.get(participant));
+            }
+        }
         var previous=PsseStaggeredEulerSolver.class.getDeclaredField("previous");previous.setAccessible(true);
         add(result,(double[])previous.get(f.solver));
         return result;
@@ -222,15 +276,22 @@ class St4bCompiledStageTest {
     }
 
     private static Fixture load(boolean compiled,boolean pss,Path dynamicFile) throws Exception {
+        return load(compiled,pss,dynamicFile,true,false);
+    }
+
+    private static Fixture load(boolean compiled,boolean pss,Path dynamicFile,boolean endpoint,boolean governor) throws Exception {
         IpssCorePlugin.init();Path base=Path.of("testData/adpter/psse/v33/SMIB");
         String records=Files.readString(base.resolve("SMIB_v33_genrou_esst4b.dyr"));
         if(pss) records+="\n"+Files.readAllLines(base.resolve("SMIB_v33_genrou_esst1a_pss2a.dyr")).stream()
                 .filter(line->line.contains("'PSS2A'")).findFirst().orElseThrow()+"\n";
+        if(governor)records+="\n"+Files.readAllLines(base.resolve("SMIB_v33_genrou_ggov1.dyr")).stream()
+                .filter(line->line.contains("'GGOV1'")).findFirst().orElseThrow()+"\n";
         Files.writeString(dynamicFile,records);
         var context=new PSSEMultiFileLoader().loadDStab(base.resolve("SMIB_v33.raw").toString(),dynamicFile.toString());
         var algorithm=context.getDynSimuAlgorithm();assertTrue(algorithm.getAclfAlgorithm().loadflow());
         var solver=new PsseStaggeredEulerSolver(algorithm);solver.setCompiledControllerGraphsEnabled(true);
         solver.setCompiledSt4bBindingsEnabled(true);
+        solver.setElectricalEndpointPreparationEnabled(endpoint);
         ((IEEE2005ST4BExciter)algorithm.getNetwork().getMachine("Bus1-mach1").getExciter()).setCompiledStageEnabled(compiled);
         ((IEEE2005ST4BExciter)algorithm.getNetwork().getMachine("Bus1-mach1").getExciter()).setBridgeInputReuseEnabled(compiled);
         solver.setNetworkSolutionTolerance(1.e-5);solver.setReuseNetworkEndpoint(true);

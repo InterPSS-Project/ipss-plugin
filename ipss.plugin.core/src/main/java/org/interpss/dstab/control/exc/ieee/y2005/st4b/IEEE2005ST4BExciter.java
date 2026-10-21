@@ -49,8 +49,16 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
     public long getBridgeInputReuseCount() { return bridgeInputCache.voltageReuses(); }
     public long getBridgePhasorReuseCount() { return bridgeInputCache.phasorReuses(); }
     private boolean compiledStageEnabled = true;
+    private transient St4bCompiledStage endpointStage;
     @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
-        return compiledStageEnabled ? St4bCompiledStage.tryCreate(this) : null;
+        endpointStage = compiledStageEnabled ? St4bCompiledStage.tryCreate(this) : null;
+        return endpointStage;
+    }
+    /** Whether a machine electrical prepass may replace an otherwise redundant controller refresh. */
+    public boolean supportsElectricalEndpointPreparation() {
+        return hasCompiledStageEvaluator() && endpointStage != null
+                && getRuntimePhase() == RuntimePhase.IDLE && !eNotificationRequired()
+                && endpointStage.supportsElectricalEndpointPreparation();
     }
     public void setCompiledStageEnabled(boolean enabled) {
         if (isRuntimePlanCompiled() || getRuntimePhase() != RuntimePhase.IDLE)

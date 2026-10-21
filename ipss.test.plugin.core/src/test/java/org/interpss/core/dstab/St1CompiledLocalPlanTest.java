@@ -19,6 +19,25 @@ import com.interpss.dstab.mach.Machine;
 
 /** Stage, lifecycle and fallback regressions for the compiled local recurrence. */
 class St1CompiledLocalPlanTest {
+    @Test void electricalPreparationRetainsLocalAndGlobalHistory() throws Exception {
+        for(String model:List.of("esst1a_pss2a","esst1a","exst1")) {
+            var ordinary=load(model,true,true,true,false);
+            var candidate=load(model,true,true,true,true);
+            double reference=ordinary.exciter.getRefPoint();
+            for(int step=0;step<240;step++) {
+                for(var f:List.of(ordinary,candidate)) {
+                    if(step%13==0) {f.exciter.setRefPoint(reference+(step%3-1)*.03);f.solver.notifyDiscontinuity();}
+                    f.exciter.uel=step%4;f.exciter.setVuel(.1);f.exciter.setVoel(8.);
+                    f.exciter.vosError=step%2;f.exciter.vosOutput=1-f.exciter.vosError;
+                    f.exciter.kc=step%7*.01;f.exciter.klr=step%3*.05;f.exciter.setStatus(step%29!=5);
+                    assertTrue(f.algorithm.solveDEqnStep(true));
+                }
+                assertEquals(snapshot(ordinary),snapshot(candidate),model+" endpoint step "+step);
+            }
+            assertEquals(0,ordinary.solver.getElectricalEndpointPreparationCount());
+            assertTrue(candidate.solver.getElectricalEndpointPreparationCount()>200,model);
+        }
+    }
     @Test
     void nestedParentScheduleKeepsCompleteCoupledStateAndHistory() throws Exception {
         var ordinary=load("esst1a_pss2a",true,true,false);
@@ -215,6 +234,10 @@ class St1CompiledLocalPlanTest {
     }
 
     private static Fixture load(String model,boolean compiled,boolean compiledGraph,boolean nestedSchedule) throws Exception {
+        return load(model,compiled,compiledGraph,nestedSchedule,true);
+    }
+
+    private static Fixture load(String model,boolean compiled,boolean compiledGraph,boolean nestedSchedule,boolean endpoint) throws Exception {
         IpssCorePlugin.init();
         String base="testData/adpter/psse/v33/SMIB/";
         var context=new PSSEMultiFileLoader().loadDStab(base+"SMIB_v33.raw",
@@ -225,6 +248,7 @@ class St1CompiledLocalPlanTest {
         solver.setCompiledLocalSt1Enabled(compiled);
         solver.setCompiledControllerGraphsEnabled(compiledGraph);
         solver.setNestedControllerOutputSchedulingEnabled(nestedSchedule);
+        solver.setElectricalEndpointPreparationEnabled(endpoint);
         algorithm.setSolver(solver);algorithm.setSimuStepSec(1./240.);
         algorithm.setTotalSimuTimeSec(1.);algorithm.setSimuOutputHandler(new StateMonitor());
         assertTrue(algorithm.initialization());

@@ -27,6 +27,7 @@ final class St4bCompiledStage implements CmlCompiledStage {
     private final double[] gateInputs = new double[2];
     private final LowValueFunction gateFunction;
     private int capturedCount;
+    private final boolean endpointPreparation;
     private static final String[] NAMES = {"trDelayBlock", "vrPIBlock", "taDelayBlock", "kgGainBlock", "vmPIBlock", "customBlock"};
     // BEGIN GENERATED SIGNATURES
     private static final String[] INPUTS = {"+mach.vt", "+this.refPoint-this.trDelayBlock.y+pss.vs+this.vuel", "+this.vrPIBlock.y", "+this.customBlock.y", "+this.taDelayBlock.y-this.kgGainBlock.y", "+this.vmPIBlock.y-this.vmPIBlock.y+this.voelGate.y"};
@@ -80,6 +81,20 @@ final class St4bCompiledStage implements CmlCompiledStage {
         order.sort(Comparator.comparingInt(n -> n.order));
         ordered = order.toArray(Node[]::new);
         feedback = feedbackOrder.toArray(Node[]::new);
+        var unique = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<Object,Boolean>());
+        boolean independent = signature(model.getOutputExp()).equals(mappedSignature("this.customBlock.y"));
+        for (var node : nodes) independent &= unique.add(node.block);
+        endpointPreparation = independent;
+    }
+
+    boolean supportsElectricalEndpointPreparation() {
+        if (!endpointPreparation || capturedCount != 0) return false;
+        for (var node : nodes)
+            if (node.block instanceof ICMLLimitBlock limited && limited.getLimit() != null
+                    && (limited.getLimit().getClass() != com.interpss.dstab.datatype.LimitExpression.class
+                        || limited.getLimit().getMaxExp() != null || limited.getLimit().getMinExp() != null))
+                return false;
+        return true;
     }
 
     private static ExpCalculator mapped(String expression) {

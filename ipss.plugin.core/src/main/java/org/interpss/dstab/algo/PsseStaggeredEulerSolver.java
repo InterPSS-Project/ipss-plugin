@@ -104,6 +104,9 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private boolean preparedControllerOutputReuseEnabled = true;
     private boolean nestedControllerOutputSchedulingEnabled = true;
     private boolean compiledLocalSt1Enabled=true;
+    private boolean electricalEndpointPreparationEnabled = true;
+    private final List<BooleanSupplier> electricalEndpointEligible = new ArrayList<>();
+    private long electricalEndpointPreparationCount;
     private boolean useRectangularNetworkVoltage;
     private double[] start;
     private double[] derivative;
@@ -128,6 +131,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         final long runtimeGeneration;
         final double[] compiledOutput=new double[1];
         boolean wasActive;
+        boolean lastAdvanceCompiled;
 
         LocalSt1Controller(IEEE1981ST1Exciter model, BooleanSupplier active, List<State> states,
                 boolean reuseFixedPssOutput, boolean compiledLocal) {
@@ -146,6 +150,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
 
         void advance(double dt, boolean discontinuity) throws DStabSimuException {
+            lastAdvanceCompiled=false;
             if(compiledLocal && runtimeGeneration!=model.getRuntimeGeneration())
                 throw new IllegalStateException("Reinitialize after changing ST1 runtime structure");
             if (!active.getAsBoolean()) {
@@ -158,7 +163,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
             try {
                 if(compiledLocal && model.tryCompiledLocalAdvance(dt,discontinuity,wasActive,held!=null,
                         previous,start,rates,compiledOutput)) {
-                    field=compiledOutput[0];wasActive=true;
+                    field=compiledOutput[0];wasActive=true;lastAdvanceCompiled=true;
                 } else for (int sub=0;sub<SUBSTEPS;sub++) {
                     evaluate();
                     for (int i=0;i<states.size();i++) {
@@ -225,6 +230,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     }
 
     public boolean isCompiledControllerGraphsEnabled() { return compiledControllerGraphsEnabled; }
+
+    /** Configure before initialization; unsupported or observed stacks retain both full refreshes. */
+    public void setElectricalEndpointPreparationEnabled(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Configure endpoint preparation before initialization");
+        electricalEndpointPreparationEnabled = enabled;
+    }
+
+    public long getElectricalEndpointPreparationCount() { return electricalEndpointPreparationCount; }
 
     /** Select before initialization; false retains ST4B's live expression binding. */
     public void setCompiledSt4bBindingsEnabled(boolean enabled) {
@@ -299,6 +312,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
 
     @Override public boolean initialization() {
         machines.clear(); machineActive.clear(); attachmentsUnchanged.clear(); states.clear();
+        electricalEndpointEligible.clear(); electricalEndpointPreparationCount=0;
         localSt1Controllers.clear();
         participants.clear(); participantByController.clear(); renewables.clear(); gridForming.clear(); extendedStack=false;
         previous = null; wasActive = null; inputDiscontinuity = false;
@@ -536,6 +550,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
                     state(s::getPsiq11,s::setPsiq11,()->s.captureSalientElectricalState().dx5Psiq11());
                 }
                 controller(m.getExciter()); controller(m.getGovernor()); controller(m.getStabilizer());
+                electricalEndpointEligible.add(endpointEligibility(m, exciter, governor, stabilizer));
             }
         }
         previous=new double[states.size()];
@@ -557,6 +572,43 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private void evaluate() throws DStabSimuException { evaluate(false); }
 
     private void evaluate(boolean initialEndpoint) throws DStabSimuException {
+        evaluate(initialEndpoint, false);
+    }
+
+    private BooleanSupplier endpointEligibility(MachineImpl machine, Object exciter, Object governor, Object stabilizer) {
+        Class<?> type=machine.getClass();
+        if (type!=RoundRotorMachineImpl.class && type!=SalientPoleMachineImpl.class
+                && type!=org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
+                && type!=org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class
+                || governor!=null && governor.getClass()!=PsseGgov1Governor.class
+                || stabilizer!=null && stabilizer.getClass()!=Ieee1992PSS2AStabilizer.class)
+            return ()->false;
+        BooleanSupplier exciterReady;
+        if (exciter instanceof IEEE2005ST4BExciter st4)
+            exciterReady=st4::supportsElectricalEndpointPreparation;
+        else if (exciter instanceof IEEE1981ST1Exciter st1) {
+            var local=localSt1Controllers.stream().filter(c->c.model==st1).findFirst().orElse(null);
+            if(local==null)return ()->false;
+            exciterReady=()->local.lastAdvanceCompiled && !st1.eNotificationRequired();
+        } else return ()->false;
+        return ()->{
+            if (!exciterReady.getAsBoolean() || machine.eNotificationRequired()
+                    || machine.getDStabBus().getClass()!=com.interpss.dstab.impl.DStabBusImpl.class
+                    || ((com.interpss.dstab.impl.DStabBusImpl)machine.getDStabBus()).eNotificationRequired())return false;
+            if (governor instanceof PsseGgov1Governor g && (g.eNotificationRequired()
+                    || g.getData().getClass()!=org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1GovernorData.class))return false;
+            if (stabilizer instanceof Ieee1992PSS2AStabilizer pss) {
+                if (!pss.hasCompiledStageEvaluator() || !pss.isCompiledOutputSchedulingEnabled()
+                        || pss.eNotificationRequired()
+                        || pss.getData().getClass()!=org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizerData.class)return false;
+                int first=pss.getData().getIcs1(), second=pss.getData().getIcs2();
+                if (first==4 || second==4 || first==6 || second==6)return false;
+            }
+            return true;
+        };
+    }
+
+    private void evaluate(boolean initialEndpoint, boolean prepareElectrical) throws DStabSimuException {
         for (var p:gridForming)
             if (p.active.getAsBoolean()) p.model.evaluateStaggered(fixedStep,p.rates,0);
         for (var r:renewables)
@@ -565,6 +617,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         for (int i=0;i<machines.size();i++) {
             Machine m=machines.get(i);
             if (!machineActive.get(i).getAsBoolean()) continue;
+            if (prepareElectrical && extendedStack && electricalEndpointPreparationEnabled
+                    && electricalEndpointEligible.get(i).getAsBoolean()) {
+                if (!((DynamicMachineImpl)m).nextStepElectrical(0.,DynamicSimuMethod.MODIFIED_EULER,
+                        dstabAlgo.getNetwork(),0))
+                    throw new DStabSimuException("Electrical endpoint preparation failed: "+m.getId());
+                electricalEndpointPreparationCount++;
+                continue;
+            }
             if (!extendedStack) {
                 if (!m.nextStep(0.,DynamicSimuMethod.MODIFIED_EULER,0))
                     throw new DStabSimuException("Derivative evaluation failed: " + m.getId());
@@ -686,8 +746,11 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         }
         for (var p:participants)
             if (p.wasActive) p.model.completeStaggeredStep(dt);
-        // Refresh model algebraic outputs/caches without advancing any state.
-        evaluate(); evaluate();
+        // The first pass settles the machine's electrical caches after state
+        // advancement. Fixed standard stacks can defer their controller work
+        // to the second pass; other stacks retain both complete evaluations.
+        // Renewable and grid-forming preparation remains in both passes.
+        evaluate(false, true); evaluate();
         networkSolutionStep();
         networkEndpointAvailable = false;
         // Zero-time algebraic blocks (for example IEEET1 with TR=0) must report
