@@ -174,8 +174,53 @@ for validated standard devices and static loads, with live voltage-dependent
 injections, preserved summation order, and compatible behavior for custom devices
 and matrix observers. Removing complex-object round trips must preserve inactive
 rows, custom-current behavior, matrix-vector visibility and event ordering.
-This work is not yet implemented or qualified. The eight-second objective,
+At this stage it was not yet implemented or qualified. The eight-second objective,
 production runtime integration and quarter-cycle reference accuracy remain open.
 
 These trials and the phase profile are retained privately under
 `verification-artifacts/2026-10-20-device-access-trials`.
+
+## Primitive current-buffer experiments
+
+Two subsequent prototypes assemble eligible network currents into a reusable
+interleaved numerical vector and solve it using the existing factorization.
+They preserve untouched rows and publish the complete solved vector before
+voltage observers run. Custom current tables, unsupported devices and custom bus
+classes retain the existing interface. Live voltage-dependent injections and
+the original arithmetic and summation order are preserved.
+
+The second prototype also evaluates standard static-load power and current into
+the numerical buffer, avoiding intermediate complex objects. Public power
+queries continue to calculate and return their normal results. Exceptional
+values and custom complex subclasses retain the original fallback calculations.
+
+| Experiment | Measured complete-case times, seconds | Median |
+|---|---|---:|
+| Primitive current handoff | 9.2817, 9.4986, 8.8871 | 9.2817 |
+| Primitive handoff and scalar static-load evaluation | 9.1725, 9.3885, 8.9708 | 9.1725 |
+
+Each trial uses six warmups, three measured fresh-network runs on one CPU, the
+same quarter-cycle step and 1e-5 dynamic tolerance, and full recording. The
+second median is 0.1316 seconds below the earlier 9.3042-second baseline, but
+the timing ranges overlap. These measurements do not establish a repeatable
+performance improvement. Neither prototype is adopted into production.
+
+Each run exercises 36,370 primitive solves and 55,100,550 static-only row writes.
+All eighteen complete recordings are byte-identical to the preceding baseline:
+2,405 rows, 4,810 finite channels, and both event-side duplicates. Each prototype
+also passes 19,998 exact-bit static-current comparisons against the ordinary
+dispatcher, two matching exceptional-input checks, and generator/custom-bus
+fallback checks. The ordinary dispatcher itself matches a separately executed
+preceding implementation over all test observations.
+
+The prototype inventory guard is not a production lifecycle contract: it uses
+an experimental device whitelist, and observer attachment after inventory
+construction still needs invalidation coverage. Production integration would
+require those guarantees and broader fallback tests. No numerical production
+code changed in these trials. The eight-second target and quarter-cycle
+reference accuracy remain unresolved; equivalence to an experimental baseline
+does not establish reference acceptance.
+
+Sources, compiled overlays, test results and measurements are retained privately
+under `verification-artifacts/2026-10-20-primitive-current-trials`. Full generated
+recordings and supplied inputs remain hash-identified retained dependencies.
