@@ -342,3 +342,97 @@ eight-second target and quarter-cycle reference accuracy remain open.
 The audits, analysis scripts and rejected prototype are retained privately under
 `verification-artifacts/2026-10-21-startup-boundary-and-norm-trial`, with the prior
 workflow evidence and raw recordings identified by hash.
+
+## Fused sparse input permutation and shared voltage magnitude
+
+The optional factor-row solver now prepares the combined symbolic permutation
+and numerical pivot mapping once per factorization. Forward substitution reads
+and scales each right-hand-side entry through that mapping, eliminating the
+separate workspace-fill and pivot-swap passes. The row arithmetic, subtraction
+order and diagonal division remain unchanged. Refactorization rebuilds the map.
+
+This isolated change is committed in core as `a152ee2fd`. Both the compiled
+prototype checks and the registered Maven tests pass all twelve sparse-solver
+tests. They cover repeated right-hand sides, numerical and structural changes,
+pivoting, independent and coupled blocks, dimension growth, fallback modes,
+exceptional values and the optional reciprocal-diagonal mode. The first Maven
+invocation stopped in a module without the selected tests; the corrected reactor
+invocation ran the twelve tests with zero failures, errors or skips.
+
+A separate prototype passes the already-computed solved-voltage magnitude from
+the network's divergence check into the standard bus setter. Notification
+listeners, custom buses, custom complex values and polar-coordinate handling
+retain the existing dispatch. It passes 168,000 exact-value checks plus matching
+notification histories and custom-dispatch counts. This setter change remains
+experimental and is not included in the core commit.
+
+All timing trials below use one CPU, fresh networks, ten simulated seconds,
+quarter-cycle steps, 1e-5 dynamic tolerance and complete recording:
+
+| Trial | Warmups | Five measured complete-case times, seconds | Median, seconds |
+|---|---:|---|---:|
+| Fused factor input | 12 | 8.5272, 8.0623, 8.2091, 8.1079, 8.0631 | 8.1079 |
+| Shared voltage magnitude | 12 | 8.6075, 8.2042, 8.2198, 8.1970, 8.0852 | 8.2042 |
+| Both, synchronous JVM compilation | 12 | 8.4791, 8.0165, 8.1322, 8.0852, 7.9475 | 8.0852 |
+| Both, longer fixed warm-up | 24 | 8.1597, 8.3863, 8.2986, 8.0184, 7.8874 | 8.1597 |
+
+All eighty complete recordings are byte-identical to the preceding numerical
+baseline. The shared-magnitude result is too close to the preceding 8.2149-second
+control to establish a repeatable improvement. Neither synchronous compilation
+nor longer warm-up establishes an eight-second median: the final trial still
+records 268, 460, 75, 48 and 53 milliseconds of compilation during its measured
+cases. These costs remain included, as do setup, power flow, initialization and
+recording. The fastest individual repetitions are not used as the acceptance
+statistic.
+
+The eight-second objective, production integration of the broader experimental
+runtime and quarter-cycle reference accuracy remain open. Sources, raw test
+reports, numerical plans, complete timing records and hashes are retained under
+`verification-artifacts/2026-10-21-sparse-publication-trials`.
+
+### Shared parameter accessors remove repeated executable specialization
+
+A separate three-case diagnostic enabled JVM class-loading and compilation
+logging. The second and third fresh cases loaded 220 and 181 additional classes;
+the class-load log attributes almost all of this activity to generated method
+handle forms. Compiled public-parameter binding used a distinct bound method
+handle for each controller instance. Repeated fresh-network construction therefore
+created executable accessors even after the model classes had been warmed.
+
+Public instance-double getters are now shared by declaring class and field,
+using a class-scoped cache of unbound handles. Each evaluation supplies its own
+controller receiver, so parameter writes remain visible and owners cannot share
+parameter values accidentally. Custom field selection remains a binding-time
+operation. Static fields, inaccessible declarations and incompatible owners
+retain the previous binding failure/fallback behavior. The cache does not retain
+controller instances.
+
+The same instrumented diagnostic now loads 40 and one additional classes in its
+second and third cases, respectively. All six before/after recordings are
+byte-identical to the baseline. Instrumented times are excluded from performance
+qualification. The initial prototype required an additional incompatible-owner
+check; the corrected implementation passes 16,006 focused checks and all 35
+registered CML tests, including three new parameter-access regression tests.
+The corrected implementation and tests are committed in core as `fb503be81`.
+
+Two complete timing trials add the corrected shared getter to the preceding
+fused-input/shared-magnitude candidate and retain synchronous JVM compilation:
+
+| Fixed warmups | Five measured complete-case times, seconds | Median, seconds |
+|---:|---|---:|
+| 12 | 8.1879, 8.1064, 7.9640, 7.7281, 7.6388 | 7.9640 |
+| 24 | 7.9189, 8.1505, 7.7336, 7.9700, 7.7502 | 7.9189 |
+
+All 46 complete recordings match exactly: 2,405 rows, 4,810 finite channels and
+both sides of both fault events. Both trials use one CPU and the requested
+quarter-cycle step and 1e-5 dynamic tolerance. Each repetition constructs a fresh
+network and includes power flow, initialization, ten-second dynamics and full
+recording. Remaining compilation and garbage-collection costs are included.
+
+An eight-second median is now demonstrated for this experimental numerical
+baseline. It is not an upper bound for every run: one of the final five
+repetitions takes 8.1505 seconds. These results do not resolve the baseline's
+independent reference-accuracy failures. Integrating the other experimental
+components into the production runtime, their lifecycle/fallback coverage and
+quarter-cycle reference accuracy remain required work; the overall objective
+is not marked complete.
