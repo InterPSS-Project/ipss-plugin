@@ -20,7 +20,7 @@ class Texas2kReferenceRunnerReportingTest {
                 {"network_voltage_tolerance":0.0001,"network_convergence_norm":"COMPLEX_MAGNITUDE",
                  "minimum_network_iterations":1,"reuse_network_endpoint":true,
                  "static_load_z_part_in_y_matrix":true,"converter_network_voltage_memory":true,
-                 "machine_measurement_stage":"LAST_NETWORK_INJECTION"}
+                 "machine_measurement_stage":"LAST_NETWORK_INJECTION","rectangular_network_voltage":true}
                 """).getAsJsonObject();
         var options = Texas2kNumericalOptions.read(plan);
         var status = new java.util.LinkedHashMap<String,Object>();
@@ -29,12 +29,20 @@ class Texas2kReferenceRunnerReportingTest {
         assertEquals("LAST_NETWORK_INJECTION", status.get("machine_measurement_stage"));
         assertEquals("COMPLEX_MAGNITUDE", status.get("network_convergence_norm"));
         assertEquals(1, status.get("minimum_network_iterations"));
+        assertEquals(true, status.get("rectangular_network_voltage"));
+        assertTrue(options.rectangularNetworkVoltage());
+        var algorithm = com.interpss.dstab.DStabObjectFactory.createDynamicSimuAlgorithm(
+                com.interpss.dstab.DStabObjectFactory.createDStabilityNetwork());
+        var solver = new org.interpss.dstab.algo.PsseStaggeredEulerSolver(algorithm);
+        options.configure(solver);
+        assertTrue(solver.isUseRectangularNetworkVoltage());
         assertTrue(options.reuseEndpoint() && options.loadZInMatrix() && options.converterVoltageMemory());
         var defaults = Texas2kNumericalOptions.read(new JsonObject());
         assertEquals(1.e-8, defaults.networkTolerance());
         assertEquals(2, defaults.minimumIterations());
         assertEquals(org.interpss.dstab.algo.PsseStaggeredEulerSolver.MachineMeasurementStage.LAST_NETWORK_INJECTION, defaults.machineStage());
         assertFalse(defaults.reuseEndpoint() || defaults.loadZInMatrix() || defaults.converterVoltageMemory());
+        assertFalse(defaults.rectangularNetworkVoltage());
     }
 
     @Test void invalidNumericalPoliciesFailBeforeAReferenceRun() {

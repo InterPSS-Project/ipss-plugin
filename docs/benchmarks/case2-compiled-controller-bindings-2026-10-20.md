@@ -660,3 +660,70 @@ and supplied files remain unchanged.
 Exact producers, sources, compiled classes, profiles, regression reports and
 complete-recording hashes are retained privately under
 `verification-artifacts/2026-10-21-indexed-voltage-history`.
+
+
+## Deferred rectangular-voltage publication
+
+The standard dynamic bus can now retain the immutable rectangular voltage from
+the sparse solve and calculate its polar angle when an observer requests it.
+This avoids repeated angle evaluation and complex-object allocation during
+network iterations. Magnitude validation and row-by-row publication order remain
+unchanged. Custom bus/network types, custom complex values and notification
+callbacks retain ordinary publication. Scalar writes invalidate cached values;
+EMF inspection, serialization through state snapshots, formatting and late
+observers see the ordinary polar state.
+
+The staggered solver exposes `setUseRectangularNetworkVoltage(true)` before
+initialization. This option defaults to false and is reported in the numerical
+plan. Rectangular coordinates remove a polar round trip, so choosing them is an
+explicit numerical option. The core optimization applies only to eligible
+rectangular buses and can separately be disabled with
+`setEfficientVoltagePublicationEnabled(false)`.
+
+An initial timing attempt left the network in polar coordinates and exercised
+zero optimized publications. It was stopped and is excluded from performance
+claims. The qualifying trial explicitly checks rectangular coordinates and
+nonzero optimized publications before timing proceeds.
+
+Six warmups precede five alternating measured pairs. Each run creates a fresh
+network and includes setup, power flow, initialization and complete recording of
+4,810 channels. The JVM is pinned to one CPU; integration uses quarter-cycle
+steps and 1e-5 dynamic tolerance. Two additional profile runs are excluded from
+the timing medians.
+
+| Rectangular publication | Five complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Ordinary | 17.7214, 17.6098, 17.6335, 17.8332, 17.9127 | 17.7214 |
+| Deferred | 16.0707, 15.8292, 16.9524, 15.8900, 15.7853 | 15.8900 |
+
+The median reduction is 10.33%. Each enabled run performs 72,742,000 guarded
+publications. All eighteen rectangular recordings are byte-identical, with
+2,405 finite samples and both sides of both fault events preserved. Hard links
+retain every output path without storing eighteen copies of the binary trace.
+
+Against the prior polar production recording, all samples pass the declared
+equivalence budget of `1e-10 + 1e-12 * abs(prior value)`. Maximum differences are
+4.27e-14 pu bus voltage, 1.01e-11 degrees bus angle, and 1.55e-11 degrees rotor
+angle. No offset fitting, resampling or channel removal is applied. This is an
+implementation-equivalence check, not independent-reference acceptance.
+
+All 97 targeted tests pass: 68 core checks, two multi-network checks and 27
+plugin checks. They cover scalar coordinate changes, signed zero and nonfinite
+values, late and muted observers, state snapshots, fallback dispatch, repeated
+solves, concurrent read-only access and coupled machine trajectories. The full
+registered suite was not rerun for this slice.
+
+The enabled profile contains 767 main-thread execution samples: 357 in network
+solution, 390 in other integration, three in recording and seventeen in setup
+or other work. Collection traversal, triangular solves and controller-stage
+preparation remain prominent. These sample counts are not wall-time allocations.
+
+The eight-second objective remains unmet. Supplied-reference accuracy remains
+unresolved; reproducing the previous quarter-cycle trajectory does not repair
+its error. Reference settings remain separately recorded as 0.1 MVA power-flow
+mismatch, 1e-5 pu converted-startup voltage correction and 1e-4 pu dynamic
+voltage correction. They are not interchangeable convergence criteria.
+
+Exact producers, final sources, compiled classes, profiles, regression reports
+and full-recording hashes are retained privately under
+`verification-artifacts/2026-10-21-deferred-voltage-publication`.

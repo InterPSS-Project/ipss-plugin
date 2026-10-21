@@ -101,6 +101,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
     private boolean runtimeControllerOptimizationEnabled = true;
     private boolean compiledControllerGraphsEnabled;
     private boolean compiledLocalSt1Enabled=true;
+    private boolean useRectangularNetworkVoltage;
     private double[] start;
     private double[] derivative;
     private final List<Participant> participants = new ArrayList<>();
@@ -231,6 +232,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
 
     public double getNetworkSolutionTolerance() { return converge_tol; }
 
+    /** Select before initialization; false preserves the network's configured coordinates. */
+    public void setUseRectangularNetworkVoltage(boolean enabled) {
+        if (previous != null) throw new IllegalStateException("Select network coordinates before initialization");
+        useRectangularNetworkVoltage = enabled;
+    }
+
+    public boolean isUseRectangularNetworkVoltage() { return useRectangularNetworkVoltage; }
+
     /** Configure before initialization; changing the boundary requires new derivative history. */
     public void setMachineMeasurementStage(MachineMeasurementStage stage) {
         if (previous != null) throw new IllegalStateException("Configure machine measurement stage before initialization");
@@ -275,6 +284,7 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         requireStep(fixedStep);
         validateModels();
         if (!super.initialization()) return false;
+        if (useRectangularNetworkVoltage) dstabAlgo.getNetwork().setPolarCoordinate(false);
         bind();
         try {
             networkSolutionStep();

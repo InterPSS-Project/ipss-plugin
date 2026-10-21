@@ -10,7 +10,7 @@ import org.interpss.dstab.algo.PsseStaggeredEulerSolver.MachineMeasurementStage;
 /** Explicit numerical boundaries shared by accuracy and timing producers. */
 record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm norm,
         int minimumIterations, boolean reuseEndpoint, boolean loadZInMatrix,
-        boolean converterVoltageMemory, MachineMeasurementStage machineStage) {
+        boolean converterVoltageMemory, MachineMeasurementStage machineStage, boolean rectangularNetworkVoltage) {
     Texas2kNumericalOptions {
         if (!Double.isFinite(networkTolerance) || networkTolerance <= 0.)
             throw new IllegalArgumentException("Network tolerance must be finite and positive");
@@ -27,7 +27,8 @@ record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm n
                 plan.has("minimum_network_iterations") ? plan.get("minimum_network_iterations").getAsInt() : 2,
                 enabled(plan, "reuse_network_endpoint"), enabled(plan, "static_load_z_part_in_y_matrix"),
                 enabled(plan, "converter_network_voltage_memory"),
-                plan.has("machine_measurement_stage") ? MachineMeasurementStage.valueOf(plan.get("machine_measurement_stage").getAsString()) : MachineMeasurementStage.LAST_NETWORK_INJECTION);
+                plan.has("machine_measurement_stage") ? MachineMeasurementStage.valueOf(plan.get("machine_measurement_stage").getAsString()) : MachineMeasurementStage.LAST_NETWORK_INJECTION,
+                enabled(plan, "rectangular_network_voltage"));
     }
 
     private static boolean enabled(JsonObject plan, String key) {
@@ -40,6 +41,7 @@ record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm n
         solver.setMinimumNetworkIterations(minimumIterations);
         solver.setReuseNetworkEndpoint(reuseEndpoint);
         solver.setMachineMeasurementStage(machineStage);
+        solver.setUseRectangularNetworkVoltage(rectangularNetworkVoltage);
     }
 
     void report(Map<String, Object> status) {
@@ -50,5 +52,6 @@ record Texas2kNumericalOptions(double networkTolerance, VoltageConvergenceNorm n
         status.put("static_load_z_part_in_y_matrix", loadZInMatrix);
         status.put("converter_network_voltage_memory", converterVoltageMemory);
         status.put("machine_measurement_stage", machineStage.toString());
+        status.put("rectangular_network_voltage", rectangularNetworkVoltage);
     }
 }
