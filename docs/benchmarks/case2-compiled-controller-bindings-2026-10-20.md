@@ -599,3 +599,64 @@ The combined evidence covers 34 full recordings. Supplied references are unchang
 Sources, compiled classes, exact producers, timing records, profiles, registered
 test reports, baseline failure controls and hashes are retained privately under
 `verification-artifacts/2026-10-21-production-st1-local-plan`.
+
+
+## Indexed voltage-history convergence
+
+The network solver now binds bus-order slots to entries in its existing protected
+voltage-history table. A guarded standard-model pass takes the table monitor once
+and reads and updates those entries directly. It preserves the convergence norm,
+tolerance, bus order, both voltage reads, iteration count, partial writes before
+an invalid iterate, and device callback boundaries. The original table remains
+the source of truth for subclass and callback readers.
+
+The pass validates bus identity, identifiers, membership, native list behavior,
+standard bus/network types, and ordinary complex values before writing. Public
+table mutations invalidate bindings. Exposing a mutable table view permanently
+selects ordinary access, because an iterator or entry can mutate the table later.
+Custom tables and unsupported models retain the original convergence loop.
+`setIndexedVoltageRecordsEnabled(false)` selects ordinary lookup explicitly.
+
+An earlier per-access candidate preserved complete recordings but provided no
+measured gain: its paired median was 0.63% slower. Its access checks and locks
+were still in the inner loop. That implementation was removed. The batch
+candidate reduced a separate paired median from 19.1694 to 18.1864 seconds.
+
+The final-source trial uses the original plain hash table as its control, six
+warmups and five measured pairs. Every repetition creates a fresh Case 2 network,
+uses one verified CPU, quarter-cycle steps and 1e-5 dynamic tolerance, and retains
+all 4,810 channels. Setup, power flow, initialization, recording, remaining JIT
+compilation and garbage collection are included.
+
+| Voltage history | Five complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Original table | 18.9546, 19.4371, 18.9748, 19.1409, 19.0335 | 19.0335 |
+| Indexed batch | 17.8657, 18.0908, 18.7435, 17.7647, 17.7152 | 17.8657 |
+
+The final median reduction is 6.14%. All sixteen final recordings are
+byte-identical to the preceding production trace: 2,405 finite samples and both
+sides of both fault events. Each indexed run exercises 145,476,000 direct entry
+reads/writes. Verified hard links retain every output path without duplicating
+the large binary recording within a trial.
+
+All 70 executed targeted regressions pass: 43 core convergence, lifecycle and
+current-buffer checks; three multi-network checks; and 24 controller-coupling
+checks. These cover both convergence norms, iteration-limit diagnostics, repeated
+solves, public table mutations, escaped views, changed bus layouts, serialization,
+custom callback fallback and the first invalid iterate. This is a targeted gate;
+the complete registered suite was not rerun for this change.
+
+The preliminary batch profile contains 826 main-thread execution samples: 480 in
+network solution, 329 in other integration, three in recording, and fourteen in
+setup or other work. Angle calculations and controller stage preparation remain
+substantial costs. Sample counts describe the profile, not measured wall-time
+allocations.
+
+The eight-second objective remains unmet. Equality with the prior quarter-cycle
+trace establishes implementation equivalence; it does not resolve the independent
+reference-accuracy failures documented above. The reference numerical protocol
+and supplied files remain unchanged.
+
+Exact producers, sources, compiled classes, profiles, regression reports and
+complete-recording hashes are retained privately under
+`verification-artifacts/2026-10-21-indexed-voltage-history`.
