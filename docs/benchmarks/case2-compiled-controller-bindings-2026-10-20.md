@@ -1042,3 +1042,58 @@ proof. The raw audit's structural-link flags compare with discovery, not with th
 immediately preceding evaluation. The electrical candidate resumed in a separate
 JVM after both baselines completed and a storage-link permission failure stopped
 the wrapper. These diagnostic timings do not qualify as performance measurements.
+
+
+## Native controller membership cache
+
+Native machine controller lookup now retains the ordered membership of its
+standard containment list. Controller types and activity remain live; this is
+not a cached type-to-controller result. List edits invalidate the snapshot before
+notification callbacks observe the changed list. Custom type getters and custom
+returned lists retain ordinary iteration, including fail-fast mutation behavior
+and one call to the controller-list getter. Exposing or installing raw backing
+storage permanently disables membership snapshots because retained arrays can
+be changed without a list hook. The live comparison control is
+`MachineImpl.setControllerMembershipCachingEnabled(false)`.
+
+All 72 targeted checks pass: five new membership tests, 37 existing core network
+state/lifecycle tests, 26 coupled solver/controller tests and four reference
+checkpoint-integrity tests. Mutation coverage includes 10,000 deterministic
+sequences, reordered duplicate types, direct and reflective type writes,
+reparenting, notification callbacks, iterator/sublist edits, retained raw-array
+changes, custom getter side effects and live enable/disable changes. The full
+registered suite and six-case gates were not rerun.
+
+Separate fixed-mode JVMs each run twelve warmups and six measured repetitions.
+Both retain fixed ST4B bindings and all preceding production optimizations,
+one pinned CPU, quarter-cycle steps, 1e-5 dynamic tolerance, fresh setup and full
+recording. The lookup toggle is applied after import, so both modes include the
+same import using the new default; counters exclude import. No solver/model
+overlays are present. Two extra profiles follow the enabled-mode measurements
+and are excluded from the timing samples below.
+
+| Mode | Six complete-case times, seconds | Median, seconds | Median compilation, ms |
+|---|---|---:|---:|
+| Ordinary membership traversal | 13.3223, 13.0100, 13.1088, 12.8529, 12.8777, 13.1127 | 13.0594 | 209.0 |
+| Cached membership traversal | 12.9453, 12.6361, 12.7494, 12.4823, 12.4997, 12.8195 | 12.6927 | 209.5 |
+
+The median reduction is 2.81%.
+All 435 imported machine objects receive the selected policy;
+the enabled mode records 27,843,511 cached lookups per complete run
+after import, while the disabled mode records zero. All 38 complete recordings
+retain the preceding production trace byte-for-byte: 2,405 finite samples,
+4,810 channels and both event-side duplicates. Identical recordings use verified
+hard links to share storage.
+
+The two post-measurement profiles attribute 52.6 to 57.1% of main-thread
+execution samples to network solution and 40.3 to 45.2% to other integration
+work. Triangular sparse solves alone account for about 11%; repeated bus/current
+traversal, voltage scans and controller input preparation remain significant.
+These are sampled execution shares, not wall-time phase measurements or an
+estimate of recording I/O cost. The next larger gains need to address those
+data/evaluation paths rather than only the factorized sparse solve.
+
+The eight-second objective remains unmet, and this unchanged trajectory does not
+resolve independent-reference accuracy. Final sources, classes, tests, producers,
+post-measurement profiles, settings and retained full-recording hashes are stored
+privately under `verification-artifacts/2026-10-21-controller-membership-final`.
