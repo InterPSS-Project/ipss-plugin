@@ -26,6 +26,42 @@ import com.interpss.dstab.mach.impl.RoundRotorMachineImpl;
 
 /** Fixed signal bindings retain the ordered feedback and rectifier observations. */
 class Pss2aCompiledStageTest {
+    @Test void nonfiniteObservationsRetainFailureSignalAndRecoverWithoutAdvancing(@TempDir Path root) throws Exception {
+        var ordinary=load(true,true,root.resolve("nonfinite-ordinary.dyr"));
+        var compiled=load(true,true,root.resolve("nonfinite-compiled.dyr"));
+        var p=pss(ordinary);p.invalidateRuntimePlan();p.setCompiledObservationPreparationEnabled(false);p.compileRuntimePlan();
+        for(double input:new double[]{Double.NaN,Double.POSITIVE_INFINITY,Double.NEGATIVE_INFINITY,.03}) {
+            pss(ordinary).input1Signal=input;pss(compiled).input1Signal=input;
+            assertEquals(Double.doubleToLongBits(pss(ordinary).getOutput(ordinary.machine)),
+                    Double.doubleToLongBits(pss(compiled).getOutput(compiled.machine)));
+            assertEquals(AbstractAnnotateController.RuntimePhase.IDLE,pss(compiled).getRuntimePhase());
+        }
+        assertEquals(snapshot(ordinary),snapshot(compiled));
+    }
+    @Test void typedObservationsRetainLiveInputsAndPendingStageCaptures(@TempDir Path root) throws Exception {
+        var ordinary=load(true,true,root.resolve("observe-ordinary.dyr"));
+        var compiled=load(true,true,root.resolve("observe-compiled.dyr"));
+        var p=pss(ordinary);p.invalidateRuntimePlan();p.setCompiledObservationPreparationEnabled(false);p.compileRuntimePlan();
+        assertThrows(IllegalStateException.class,()->pss(compiled).setCompiledObservationPreparationEnabled(false));
+        long before=pss(compiled).getCompiledObservationEvaluationCount();
+        var field=AbstractAnnotateController.class.getDeclaredField("compiledStageEvaluator");field.setAccessible(true);
+        for(int step=0;step<100;step++)for(boolean predictor:new boolean[]{true,false}) {
+            for(var f:List.of(ordinary,compiled)) {
+                var model=pss(f);model.input1Signal=Math.sin(step*.11);model.input2Signal=Math.cos(step*.07);
+                model.ks3=1.+step%3*.2;model.ks4=.3+step%7*.1;
+                var evaluator=(com.interpss.dstab.controller.cml.runtime.CmlCompiledStage)field.get(model);
+                evaluator.prepare(predictor,.001,true);
+                // Observations may refresh inputs but must not overwrite the captured advance inputs.
+                model.input1Signal+=.03;model.input2Signal-=.02;
+                for(int observation=0;observation<4;observation++)model.getOutput(f.machine);
+                evaluator.advance(predictor,.001);evaluator.release();
+            }
+            assertEquals(snapshot(ordinary),snapshot(compiled));
+        }
+        assertTrue(pss(compiled).getCompiledObservationEvaluationCount()>before+100);
+        assertEquals(AbstractAnnotateController.RuntimePhase.IDLE,pss(compiled).getRuntimePhase());
+    }
+
     private static org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer pss(Fixture f) {
         return (org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer)f.machine.getStabilizer();
     }
@@ -133,6 +169,7 @@ class Pss2aCompiledStageTest {
         var field=AbstractAnnotateController.class.getDeclaredField("compiledStageEvaluator");field.setAccessible(true);
         var evaluator=(com.interpss.dstab.controller.cml.runtime.CmlCompiledStage)field.get(pss(compiled));
         assertNotNull(evaluator);assertTrue(evaluator.requiresRepeatedOutputPreparation());
+        assertFalse(evaluator.supportsObservationPreparation(),"Shared blocks retain generic observation order");
         for(int step=0;step<50;step++)for(boolean predictor:new boolean[]{true,false}) {
             for(var fixture:List.of(ordinary,compiled)) {
                 var p=pss(fixture);p.input1Signal=step*.002;p.input2Signal=(50-step)*.003;

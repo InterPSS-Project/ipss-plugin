@@ -60,6 +60,14 @@ public class Ieee1992PSS2AStabilizer extends AnnotateStabilizer
         return compiledStageEnabled ? Pss2aCompiledStage.tryCreate(this) : null;
     }
     private boolean compiledStageEnabled=true;
+    private boolean compiledObservationPreparationEnabled=true;
+    /** Select before graph compilation; observations retain the engine's phase and ordering checks. */
+    public void setCompiledObservationPreparationEnabled(boolean enabled) {
+        if(isRuntimePlanCompiled() || getRuntimePhase()!=RuntimePhase.IDLE)
+            throw new IllegalStateException("Configure PSS observations before graph compilation");
+        compiledObservationPreparationEnabled=enabled;
+    }
+    public boolean isCompiledObservationPreparationEnabled() {return compiledObservationPreparationEnabled;}
     /** Select before graph compilation; invalidate an existing plan before changing this choice. */
     public void setCompiledStageEnabled(boolean enabled) {
         if(isRuntimePlanCompiled() || getRuntimePhase()!=RuntimePhase.IDLE)

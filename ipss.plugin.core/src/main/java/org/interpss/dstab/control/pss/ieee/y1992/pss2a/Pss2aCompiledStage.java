@@ -15,6 +15,7 @@ final class Pss2aCompiledStage implements CmlCompiledStage {
     private final double[] inputs=new double[10],states=new double[10],rates=new double[10];
     private final Child first,second;
     private final Entry[] ordered;
+    private final Entry[] observationOrder;
     private int capturedCount;
     private final boolean orderedPureGraph;
     private static final String[] NAMES={"washoutBlock1", "washoutBlock2", "delayBlock", "washoutBlock1", "washoutBlock2", "delayBlock", "filterNthBlock", "filterBlock1", "filterBlock2", "outputBlock"};
@@ -77,7 +78,17 @@ final class Pss2aCompiledStage implements CmlCompiledStage {
                 for(var inner:compound.getIntegrationBlocks()) forward &= unique.add(inner);
         }
         orderedPureGraph=forward;
-
+        var graph=model.getCompiledSignalGraph();
+        var observations=new ArrayList<Entry>();
+        if(graph!=null && graph.complete() && graph.acyclic()) {
+            for(var group:graph.groups()) {
+                if(group.fields().size()!=1)throw new IllegalArgumentException("Changed observation group");
+                String name=group.fields().get(0);
+                observations.add(Arrays.stream(ordered).filter(e->e.wrapper.getFieldName().equals(name))
+                        .findFirst().orElseThrow(()->new IllegalArgumentException("Unknown observation field")));
+            }
+        }
+        observationOrder=observations.size()==ordered.length?observations.toArray(Entry[]::new):null;
     }
     private static String signature(ExpCalculator expression) {
         var result=new StringBuilder();
@@ -87,7 +98,10 @@ final class Pss2aCompiledStage implements CmlCompiledStage {
     }
     private record Entry(BlockFieldAnWrapper<?> wrapper,Child child,Node node) {}
     @Override public void prepare(boolean predictor,double dt,boolean capture) {
-        for(Entry entry:ordered) {
+        prepare(ordered,capture);
+    }
+    private void prepare(Entry[] entries,boolean capture) {
+        for(Entry entry:entries) {
             if(entry.child!=null) {
                 Child child=entry.child;
                 child.model.setRuntimeInputValue(0.+(child==first?model.input1Signal:model.input2Signal));
@@ -100,6 +114,14 @@ final class Pss2aCompiledStage implements CmlCompiledStage {
         for(int i=0;i<capturedCount;i++)captured[i].kernel.advance(predictor,inputs[i],dt,null,null,states,rates,i);
     }
     @Override public boolean requiresRepeatedOutputPreparation() {return !orderedPureGraph;}
+    @Override public boolean supportsObservationPreparation() {
+        return orderedPureGraph && model.isCompiledObservationPreparationEnabled();
+    }
+    @Override public boolean prepareScheduledObservation() {
+        if(!supportsObservationPreparation() || observationOrder==null)return false;
+        prepare(observationOrder,false);
+        return true;
+    }
     @Override public void release() {Arrays.fill(captured,0,capturedCount,null);capturedCount=0;}
     private double y(int id) {
         return switch(id) {
