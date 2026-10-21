@@ -35,6 +35,7 @@ public final class Texas2kReferenceRunner {
         Path planPath = Path.of(args[0]);
         Path root = planPath.toAbsolutePath().getParent();
         JsonObject plan = JsonParser.parseString(Files.readString(planPath)).getAsJsonObject();
+        var numericalOptions = Texas2kNumericalOptions.read(plan);
         JsonObject event = null;
         for (var candidate : plan.getAsJsonArray("events")) {
             var object = candidate.getAsJsonObject();
@@ -48,7 +49,7 @@ public final class Texas2kReferenceRunner {
         Map<String, Object> status = new LinkedHashMap<>();
         status.put("event_key", args[1]);
         status.put("integration_method", "modified-euler");
-        status.put("network_voltage_tolerance", 1.e-8);
+        numericalOptions.report(status);
         status.put("network_max_iterations", 500);
         double reached = 0.;
         long started = System.nanoTime();
@@ -73,6 +74,7 @@ public final class Texas2kReferenceRunner {
             // Mixed P/Q profiles must use the engine's initialized load-current path.
             net.setStaticLoadIncludedInYMatrix(net.getStaticLoadModel() == StaticLoadModel.CONST_Z
                     && net.getReactiveStaticLoadModel() == StaticLoadModel.CONST_Z);
+            net.setStaticLoadZPartInYMatrix(numericalOptions.loadZInMatrix());
             status.put("static_load_in_y_matrix", net.isStaticLoadIncludedInYMatrix());
             status.put("active_load_model", net.getStaticLoadModel().toString());
             status.put("reactive_load_model", net.getReactiveStaticLoadModel().toString());
@@ -143,6 +145,7 @@ public final class Texas2kReferenceRunner {
                     if (generator instanceof DStabGen dynamicGen
                             && dynamicGen.getDynamicGenDevice() instanceof Regca1Model renewable) {
                         renewable.setIntegrationScheme(scheme);
+                        renewable.setNetworkIterationHighVoltageEnabled(numericalOptions.converterVoltageMemory());
                         renewable.setSinglePrecisionStates(renewableSinglePrecision);
                         configuredRenewables++;
                     }
@@ -179,7 +182,7 @@ public final class Texas2kReferenceRunner {
                 status.put("solver_integration_scheme", globalScheme);
                 if (globalScheme.equals("STAGGERED_EULER")) {
                     algo.setSolver(new PsseStaggeredEulerSolver(algo) {
-                        { setNetworkSolutionTolerance(1.e-8); setMaxIterationTimes(500); }
+                        { numericalOptions.configure(this); setMaxIterationTimes(500); }
                         @Override public boolean hasDynEvent(double t) {
                             for (var e : algo.getNetwork().getDynamicEventList()) {
                                 double boundary = e.isActive() ? e.getStartTimeSec()+e.getDurationSec()
@@ -197,7 +200,14 @@ public final class Texas2kReferenceRunner {
                         }
                     });
                 } else algo.setSolver(new PsseDStabSolver(algo) {
-                    { converge_tol = 1.e-8; setMaxIterationTimes(500); }
+                    {
+                        if (numericalOptions.reuseEndpoint() || plan.has("machine_measurement_stage"))
+                            throw new IllegalArgumentException("Endpoint reuse and machine measurement stage require the staggered solver");
+                        status.put("machine_measurement_stage", "MODIFIED_EULER_STAGES");
+                        converge_tol = numericalOptions.networkTolerance(); setMaxIterationTimes(500);
+                        setVoltageConvergenceNorm(numericalOptions.norm());
+                        setMinimumNetworkIterations(numericalOptions.minimumIterations());
+                    }
                     @Override public boolean hasDynEvent(double t) {
                         // Include a clearing time that lies between integration grid points.
                         // This is a pure boundary query; hasEventAt() mutates event status.

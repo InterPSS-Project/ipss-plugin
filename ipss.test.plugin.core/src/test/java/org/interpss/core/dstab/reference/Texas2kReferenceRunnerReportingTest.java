@@ -15,6 +15,43 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class Texas2kReferenceRunnerReportingTest {
+    @Test void numericalPolicyIsExplicitAndReportedWithoutSourceRewriting() {
+        var plan = JsonParser.parseString("""
+                {"network_voltage_tolerance":0.0001,"network_convergence_norm":"COMPLEX_MAGNITUDE",
+                 "minimum_network_iterations":1,"reuse_network_endpoint":true,
+                 "static_load_z_part_in_y_matrix":true,"converter_network_voltage_memory":true,
+                 "machine_measurement_stage":"LAST_NETWORK_INJECTION"}
+                """).getAsJsonObject();
+        var options = Texas2kNumericalOptions.read(plan);
+        var status = new java.util.LinkedHashMap<String,Object>();
+        options.report(status);
+        assertEquals(1.e-4, status.get("network_voltage_tolerance"));
+        assertEquals("LAST_NETWORK_INJECTION", status.get("machine_measurement_stage"));
+        assertEquals("COMPLEX_MAGNITUDE", status.get("network_convergence_norm"));
+        assertEquals(1, status.get("minimum_network_iterations"));
+        assertTrue(options.reuseEndpoint() && options.loadZInMatrix() && options.converterVoltageMemory());
+        var defaults = Texas2kNumericalOptions.read(new JsonObject());
+        assertEquals(1.e-8, defaults.networkTolerance());
+        assertEquals(2, defaults.minimumIterations());
+        assertEquals(org.interpss.dstab.algo.PsseStaggeredEulerSolver.MachineMeasurementStage.LAST_NETWORK_INJECTION, defaults.machineStage());
+        assertFalse(defaults.reuseEndpoint() || defaults.loadZInMatrix() || defaults.converterVoltageMemory());
+    }
+
+    @Test void invalidNumericalPoliciesFailBeforeAReferenceRun() {
+        for (double tolerance : new double[]{0., -1., Double.NaN, Double.POSITIVE_INFINITY}) {
+            var plan = new JsonObject(); plan.addProperty("network_voltage_tolerance", tolerance);
+            assertThrows(IllegalArgumentException.class, () -> Texas2kNumericalOptions.read(plan));
+        }
+        for (int iterations : new int[]{0, -1, 501}) {
+            var plan = new JsonObject(); plan.addProperty("minimum_network_iterations", iterations);
+            assertThrows(IllegalArgumentException.class, () -> Texas2kNumericalOptions.read(plan));
+        }
+        for (String key : new String[]{"machine_measurement_stage", "network_convergence_norm"}) {
+            var plan = new JsonObject(); plan.addProperty(key, "UNKNOWN");
+            assertThrows(IllegalArgumentException.class, () -> Texas2kNumericalOptions.read(plan));
+        }
+    }
+
     @Test
     void reusableCsvRowPreservesDoubleFormattingAndRejectsNonfiniteValues() throws Exception {
         var sample=new Texas2kSelectedRecorder.Sample(new String[]{"zero","small","large"});

@@ -15,12 +15,53 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 import com.interpss.dstab.cache.StateMonitor;
 
 class PsseStaggeredEulerSolverTest {
+    @Test void roundRotorRetainsLastInjectionMeasurementsWhenSelected() throws Exception {
+        assertLastInjectionBoundary("SMIB_v33_genrou.dyr");
+    }
+
+    @Test void salientPoleRetainsLastInjectionMeasurementsWhenSelected() throws Exception {
+        assertLastInjectionBoundary("SMIB_v33_gensal.dyr");
+    }
+
+    private void assertLastInjectionBoundary(String dynamicFile) throws Exception {
+        var algo = loadSubtransient(dynamicFile);
+        var solver = new PsseStaggeredEulerSolver(algo);
+        assertEquals(PsseStaggeredEulerSolver.MachineMeasurementStage.LAST_NETWORK_INJECTION,
+                solver.getMachineMeasurementStage());
+        assertThrows(NullPointerException.class, () -> solver.setMachineMeasurementStage(null));
+        solver.setMachineMeasurementStage(PsseStaggeredEulerSolver.MachineMeasurementStage.LAST_NETWORK_INJECTION);
+        algo.setSolver(solver);
+        assertTrue(algo.initialization());
+        assertThrows(IllegalStateException.class, () -> solver.setMachineMeasurementStage(
+                PsseStaggeredEulerSolver.MachineMeasurementStage.ACCEPTED_VOLTAGE));
+        var machine = (com.interpss.dstab.mach.impl.DynamicMachineImpl)
+                algo.getNetwork().getMachine("Bus1-mach1");
+        machine.getDStabBus().setVoltage(machine.getDStabBus().getVoltage().multiply(.85));
+        machine.getIxy();
+        double[] injection = statorCache(machine), initial = differentialStates(machine);
+        solver.setNetworkSolutionTolerance(.5);
+        solver.setMinimumNetworkIterations(1);
+        solver.setReuseNetworkEndpoint(true);
+        assertTrue(solver.networkSolutionStep());
+        assertEquals(1, solver.getLastNetworkSolutionDiagnostics().iterations());
+        assertArrayEquals(injection, statorCache(machine), 1.e-12,
+                "the explicit injection boundary must survive a converged network solve");
+        assertArrayEquals(initial, differentialStates(machine), 0.);
+        machine.getIxy();
+        double[] accepted = statorCache(machine);
+        double largest = 0.;
+        for (int i = 0; i < accepted.length; i++) largest = Math.max(largest, Math.abs(accepted[i] - injection[i]));
+        assertTrue(largest > .01, "the fixture must discriminate the two measurement boundaries");
+    }
+
     @Test void roundRotorCurrentsMatchTheAcceptedNetworkVoltage() throws Exception {
-        assertStatorCacheMatchesAcceptedVoltage(loadSubtransient("SMIB_v33_genrou.dyr"));
+        assertStatorCacheMatchesAcceptedVoltage(loadSubtransient("SMIB_v33_genrou.dyr",
+                PsseStaggeredEulerSolver.MachineMeasurementStage.ACCEPTED_VOLTAGE));
     }
 
     @Test void salientPoleCurrentsMatchTheAcceptedNetworkVoltage() throws Exception {
-        assertStatorCacheMatchesAcceptedVoltage(loadSalient());
+        assertStatorCacheMatchesAcceptedVoltage(loadSubtransient("SMIB_v33_gensal.dyr",
+                PsseStaggeredEulerSolver.MachineMeasurementStage.ACCEPTED_VOLTAGE));
     }
 
     private void assertStatorCacheMatchesAcceptedVoltage(DynamicSimuAlgorithm algo) throws Exception {
@@ -102,13 +143,20 @@ class PsseStaggeredEulerSolverTest {
     }
 
     private DynamicSimuAlgorithm loadSubtransient(String dynamicFile) throws Exception {
+        return loadSubtransient(dynamicFile, PsseStaggeredEulerSolver.MachineMeasurementStage.LAST_NETWORK_INJECTION);
+    }
+
+    private DynamicSimuAlgorithm loadSubtransient(String dynamicFile,
+            PsseStaggeredEulerSolver.MachineMeasurementStage stage) throws Exception {
         IpssCorePlugin.init();
         String base = "testData/adpter/psse/v33/SMIB/";
         var context = new PSSEMultiFileLoader().loadDStab(
                 base + "SMIB_v33.raw", base + dynamicFile);
         var algo = context.getDynSimuAlgorithm();
         assertTrue(algo.getAclfAlgorithm().loadflow());
-        algo.setSolver(new PsseStaggeredEulerSolver(algo));
+        var solver = new PsseStaggeredEulerSolver(algo);
+        solver.setMachineMeasurementStage(stage);
+        algo.setSolver(solver);
         algo.setSimuMethod(DynamicSimuMethod.MODIFIED_EULER);
         algo.setSimuStepSec(.0005);
         algo.setTotalSimuTimeSec(.1);

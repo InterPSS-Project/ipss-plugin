@@ -1,5 +1,12 @@
 # Case 3 machine-current consistency at accepted network voltage
 
+Subsequent cross-case checking found that the accepted-voltage refresh regresses
+Case 2. The [accuracy recovery](case2-accuracy-recovery-2026-10-20.md) restores the
+earlier injection boundary as the staggered solver's default and retains this
+accepted-voltage behavior as an explicit option. The measurements below remain
+the historical evidence for that option, not a justification for making it the
+universal default.
+
 The staggered solver left synchronous-machine stator currents and air-gap
 power cached at the voltage preceding the final linear network solve.
 Electrical derivatives could therefore consume currents inconsistent with

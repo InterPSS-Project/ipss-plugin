@@ -77,6 +77,14 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * limitations are recorded in docs/benchmarks/ieee39-benchmark-2026-10-15.md.</p>
  */
 public class PsseStaggeredEulerSolver extends PsseDStabSolver {
+    /**
+     * Boundary supplying synchronous-machine stator currents and air-gap power.
+     * LAST_NETWORK_INJECTION retains the measurements used to assemble the final
+     * network right-hand side. ACCEPTED_VOLTAGE recomputes them after its solve.
+     * This is a numerical integration policy, not a performance switch.
+     */
+    public enum MachineMeasurementStage { LAST_NETWORK_INJECTION, ACCEPTED_VOLTAGE }
+    private MachineMeasurementStage machineMeasurementStage = MachineMeasurementStage.LAST_NETWORK_INJECTION;
     private final List<Machine> machines = new ArrayList<>();
     private final List<BooleanSupplier> machineActive = new ArrayList<>();
     private final List<BooleanSupplier> attachmentsUnchanged = new ArrayList<>();
@@ -205,6 +213,14 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
 
     public double getNetworkSolutionTolerance() { return converge_tol; }
 
+    /** Configure before initialization; changing the boundary requires new derivative history. */
+    public void setMachineMeasurementStage(MachineMeasurementStage stage) {
+        if (previous != null) throw new IllegalStateException("Configure machine measurement stage before initialization");
+        machineMeasurementStage = java.util.Objects.requireNonNull(stage, "machine measurement stage");
+    }
+
+    public MachineMeasurementStage getMachineMeasurementStage() { return machineMeasurementStage; }
+
     /**
      * Opt in to using the preceding solved endpoint for ordinary-step derivatives.
      * Events and a dirty network matrix still force a fresh solve. Call
@@ -266,11 +282,13 @@ public class PsseStaggeredEulerSolver extends PsseDStabSolver {
         if (!super.networkSolutionStep())
             throw new DStabSimuException("Network did not converge to " + converge_tol
                     + " at " + dstabAlgo.getSimuTime());
-        // Injection evaluation precedes the linear solve. Refresh stator-current
-        // and air-gap-power caches at the accepted voltage before derivatives
-        // or upstream controllers consume them, including on endpoint reuse.
-        for (int i = 0; i < machines.size(); i++)
-            if (machineActive.get(i).getAsBoolean()) machines.get(i).getIxy();
+        // Injection evaluation precedes the linear solve. The selected boundary
+        // must remain the same for ordinary solves, events and endpoint reuse.
+        // Refreshing here changes controller inputs and electrical derivatives;
+        // it is not interchangeable with retaining the last injection boundary.
+        if (machineMeasurementStage == MachineMeasurementStage.ACCEPTED_VOLTAGE)
+            for (int i = 0; i < machines.size(); i++)
+                if (machineActive.get(i).getAsBoolean()) machines.get(i).getIxy();
         networkEndpointAvailable = true;
         return true;
     }
