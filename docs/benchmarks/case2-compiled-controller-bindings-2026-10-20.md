@@ -960,3 +960,20 @@ equivalence, not independent-reference accuracy; the quarter-cycle reference
 mismatch remains unresolved. Compact exact sources, classes, tests, profiles,
 producers and retained recording hashes are stored privately under
 `verification-artifacts/2026-10-21-direct-bus-iteration`.
+
+### Endpoint-refresh discriminator
+
+A private solver overlay separately tested two possible reductions in repeated
+device evaluation. Removing the second consecutive post-state endpoint refresh
+preserves the complete Case 2 recording byte-for-byte. Skipping entry evaluation
+when reusing a network endpoint changes the trajectory: maximum rotor difference
+reaches 3.17988 degrees and maximum bus-voltage difference reaches 0.0141796 pu.
+Entry evaluation therefore remains required in this workload.
+
+All three diagnostic runs retain 2,405 finite samples, 4,810 channels and both
+fault-event duplicates. Their cold timings are not performance qualification.
+The duplicate post-state refresh is a promising candidate, but hidden-state and
+general-model lifecycle equivalence still need testing. Neither refresh has been
+removed from production. Exact overlay sources, comparison metrics and retained
+recording hashes are stored privately under
+`verification-artifacts/2026-10-21-endpoint-refresh-probe`.
