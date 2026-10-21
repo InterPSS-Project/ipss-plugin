@@ -1771,3 +1771,35 @@ The source/evidence index is
 archive pins the changed source/classes, all effective directory-class hashes,
 external dependencies, producers, tests and retained input/output hashes.
 The eight-second objective and independent-reference accuracy remain open.
+
+## Source-current arithmetic reuse: not adopted
+
+A switchable experiment reused the voltage-independent Norton-source arithmetic
+for the round-rotor and salient-pole machine paths. Raw-bit keys covered both
+internal-voltage components, conductance, susceptance and angle. Terminal current,
+electrical power, field-current measurements and the base-factor getter remained
+live; the scaled output retained a fresh object. Nonfinite results bypassed reuse.
+
+All 36 focused tests passed, including exact arithmetic, signed zero and nonfinite
+inputs, getter order, live voltage/base changes, reinitialization and integrated
+machine states. Each timing JVM used twelve warmups and six measured complete-case
+runs with the same one-CPU, 10-second, quarter-cycle, 1e-5 settings and full recording.
+
+| Source arithmetic reuse | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Disabled | 9.7539, 9.5013, 9.7558, 9.4065, 9.3621, 9.7191 | 9.6102 |
+| Enabled | 9.8020, 9.4793, 9.7077, 9.5292, 9.3877, 9.7883 | 9.6184 |
+
+The enabled median was 0.0082 seconds slower, despite 9,892,693 reuse hits per
+case. This comparison demonstrates no performance benefit. All 36 recordings
+retained the canonical hash. The candidate was removed, leaving core `7a9808da4`
+as the production implementation; the experiment is retained as a source patch
+and compiled-class snapshot rather than an adopted source commit.
+
+The index `checkpoints/case2-norton-source-probe-2026-10-21.json` pins the failed
+experiment's sources, runtime hashes, producers, tests and timing evidence.
+After removing it, all 44 targeted rebuild tests pass and all 5,272 effective
+runtime-class hashes match the saved scalar-scan production checkpoint. The
+restoration reports and hash checks are retained alongside the experiment.
+The result rules out this particular arithmetic cache as a useful next step.
+It does not show that the entire machine-current evaluation is inexpensive.

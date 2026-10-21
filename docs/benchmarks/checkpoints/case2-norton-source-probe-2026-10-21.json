@@ -1,0 +1,184 @@
+{
+  "schema": 1,
+  "status": "not-adopted-no-demonstrated-performance-benefit",
+  "goal_achieved": false,
+  "core_base_commit": "7a9808da4",
+  "plugin_commit": "164a472d0",
+  "candidate_source": "Retained five-file source patch and compiled classes; not a production commit.",
+  "summaries": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.7538988,
+        9.5012856,
+        9.7557878,
+        9.4065391,
+        9.3620721,
+        9.7191305
+      ],
+      "median_case_wall_s": 9.61020805,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    },
+    "candidate": {
+      "status": "completed",
+      "mode": "candidate",
+      "warmup_runs": 12,
+      "measured_runs": 6,
+      "case_wall_s": [
+        9.801974,
+        9.4792734,
+        9.707714,
+        9.529176,
+        9.3877465,
+        9.7883066
+      ],
+      "median_case_wall_s": 9.618445,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "full_recording_included": true,
+      "single_cpu_verified": true,
+      "experimental_class_overlay": false,
+      "reference_accuracy_qualified": false
+    }
+  },
+  "norton_source_reuses": {
+    "control": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "candidate": [
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693,
+      9892693
+    ]
+  },
+  "focused_tests": {
+    "tests": 36,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "independent_accuracy_qualified": false,
+  "verification": {
+    "recordings": 36,
+    "identical_trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "single_cpu": true,
+    "full_recording_included": true
+  },
+  "conclusion": "Enabled median is 0.00823695 seconds slower than disabled. This pair demonstrates no performance benefit; candidate code is removed.",
+  "archive": {
+    "bytes": 1706364,
+    "sha256": "133381ce528fc2a9c5a41663bbf3daa79b61c829ed3f6c0985da38879391b74d"
+  },
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-norton-source-probe/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 1088640,
+    "sha256": "d19bd8b43b624b7538178a611bf3e9a2992cdc451cfbc4618ef78f0ee3a50269"
+  },
+  "restoration": {
+    "verification": {
+      "status": "completed",
+      "core_commit": "7a9808da4",
+      "matched_runtime_classes": 5272,
+      "differences": [],
+      "core_source_matches_head": true,
+      "git_status": " M ipss.core_EMF/src/main/java/com/interpss/dstab/mach/impl/MachineImpl.java\n",
+      "source_hash_checks": {
+        "ipss.core_EMF/src/main/java/com/interpss/dstab/mach/impl/MachineImpl.java": {
+          "current": "8a6b5c7784ea7f301bc222c44a3de3443a84e49d",
+          "head": "8a6b5c7784ea7f301bc222c44a3de3443a84e49d"
+        }
+      }
+    },
+    "focused_tests": {
+      "tests": 44,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    "files": {
+      "core/ipss.test.core/target/surefire-reports/TEST-com.interpss.dstab.algo.defaultImpl.IndexedVoltageRecordTableTest.xml": {
+        "bytes": 16216,
+        "sha256": "970cce7875b1d769f7965734f33550431be46e0b09c8444cbe54c6e3f8dd7b77"
+      },
+      "core/ipss.test.core/target/surefire-reports/TEST-com.interpss.dstab.algo.defaultImpl.RevisionVoltageValidationTest.xml": {
+        "bytes": 16692,
+        "sha256": "b6daac88a497d241c877a4c2792ba80f433edb17a086bb6bb2af41738d6444fe"
+      },
+      "core/ipss.test.core/target/surefire-reports/TEST-com.interpss.dstab.algo.defaultImpl.ScalarVoltageScanTest.xml": {
+        "bytes": 15679,
+        "sha256": "b0f9767d5f87757fa20f51a7a97769a1341cf5877fe56e5b6a53e3a50c64d46f"
+      },
+      "core/ipss.test.core/target/surefire-reports/TEST-com.interpss.dstab.mach.impl.MachineFrameTransformTest.xml": {
+        "bytes": 16794,
+        "sha256": "ce51895f88b1d5549e2b1d2584975b1205ad033ed5e37729b352ec61f4a76467"
+      },
+      "ipss.test.plugin.core/target/surefire-reports/TEST-org.interpss.core.dstab.PsseStaggeredEulerSolverTest.xml": {
+        "bytes": 29942,
+        "sha256": "dd530c5018a3f2e6fef8399a5022781d3526fcea38f4f6f6db975f884f109e57"
+      },
+      "target/archive_norton_restore_20261021.py": {
+        "bytes": 2237,
+        "sha256": "76d0c4ffa08ee2ef5c37dbb23ff73f633287a85e75f602a74681959e575e879d"
+      },
+      "target/norton-source-restore-verification-20261021.log": {
+        "bytes": 25493,
+        "sha256": "dcb8e785d0e03ce36f5f1a48b327865c90b3517c244d6f7886f7c543763cbac0"
+      },
+      "target/norton-source-restored-runtime-20261021.json": {
+        "bytes": 500,
+        "sha256": "165dd54c76329d03d5c53fc24010399561cb9430978d7b36986dd947f7db063b"
+      },
+      "target/norton-source-restored-runtime-v3-20261021.log": {
+        "bytes": 500,
+        "sha256": "165dd54c76329d03d5c53fc24010399561cb9430978d7b36986dd947f7db063b"
+      },
+      "target/verify_restored_scalar_runtime_20261021.py": {
+        "bytes": 1796,
+        "sha256": "7ff5dd3d0a618b9caaea81019c3918134612bf1e8f805fea18ebd8227bf0d9ec"
+      }
+    },
+    "archive": {
+      "path": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-norton-source-probe/restoration.zip",
+      "bytes": 24312,
+      "sha256": "09bccf64c1f59f903efc74138411ae15e9c931ea7856e542eb93ccd77b62f1ac"
+    }
+  }
+}
