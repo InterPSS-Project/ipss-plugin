@@ -137,6 +137,14 @@ Q
     }
 
     @Test void defaultNettingUsesSolvedPowerBeforeLoadConversion() throws Exception {
+        checkSolvedNetting(true);
+    }
+
+    @Test void coldControlDiagnosticKeepsSolvedNettingAndRestoresInitializationMode() throws Exception {
+        checkSolvedNetting(false);
+    }
+
+    private void checkSolvedNetting(boolean reuse) throws Exception {
         var lf = network(1., 1.06, 0., new Machine(0., -.4, .6, 1.02));
         var bus = lf.getNetwork().getBus("Bus1");
         bus.getSwitchedShuntList().clear();
@@ -146,11 +154,19 @@ Q
         Files.writeString(idv, "GNET\n1\n0\n");
         PsseGnetIdvProcessor.apply((com.interpss.dstab.BaseDStabNetwork<?, ?>) lf.getNetwork(), idv.toString());
         var status = new java.util.LinkedHashMap<String, Object>();
-        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        if (reuse) Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        else Texas2kPowerflowPreparation.solve(lf, inputRaw, status, false);
+        assertTrue(lf.isContinuousSwitchedShuntNrControlEnabled());
+        assertEquals("inner-NR", status.get("continuous_shunt_control"));
         var load = bus.getContributeLoad("GNET-1");
         assertFalse(gen.isActive()); assertTrue(load.isActive());
         assertEquals(1, status.get("solved_netted_generators"));
         assertTrue(status.containsKey("loadflow_after_netting_solves"));
+        assertEquals(reuse, status.get("reuse_post_netting_controls"));
+        if (reuse) assertEquals("PREVIOUS_SOLUTION", status.get("post_netting_control_initialization"));
+        else assertFalse(status.containsKey("post_netting_control_initialization"));
+        assertEquals(ControlInitializationMode.COLD_START,
+                lf.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
         assertEquals(-1.02 * .02 / .1, load.getLoadCP().getImaginary(), 2.e-8);
         assertEquals(org.apache.commons.math3.complex.Complex.ZERO, load.getLoadCI());
         assertEquals(org.apache.commons.math3.complex.Complex.ZERO, load.getLoadCZ());
@@ -168,6 +184,30 @@ Q
                 lf, inputRaw, new java.util.LinkedHashMap<>()));
         assertFalse(bus.getContributeGen("1").isActive());
         assertTrue(bus.getContributeLoad("GNET-unknown").isActive());
+    }
+
+    @Test void postNettingFailureRestoresCallerControlInitializationMode() throws Exception {
+        var lf = network(1., 1.06, 0., new Machine(0., -.4, .6, 1.02));
+        lf.getNetwork().getBus("Bus1").getSwitchedShuntList().clear();
+        var idv = root.resolve("net.idv"); Files.writeString(idv, "GNET\n1\n0\n");
+        PsseGnetIdvProcessor.apply((com.interpss.dstab.BaseDStabNetwork<?, ?>) lf.getNetwork(), idv.toString());
+        int[] calls = {0};
+        var failing = (LoadflowAlgorithm) Proxy.newProxyInstance(
+                LoadflowAlgorithm.class.getClassLoader(), new Class<?>[] {LoadflowAlgorithm.class},
+                (proxy, method, args) -> {
+                    if (method.getName().equals("loadflow") && ++calls[0] == 2) {
+                        assertEquals(ControlInitializationMode.PREVIOUS_SOLUTION,
+                                lf.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
+                        throw new IllegalStateException("Injected post-netting failure");
+                    }
+                    try { return method.invoke(lf, args); }
+                    catch (InvocationTargetException failure) { throw failure.getCause(); }
+                });
+        var error = assertThrows(IllegalStateException.class, () -> Texas2kPowerflowPreparation.solve(
+                failing, inputRaw, new java.util.LinkedHashMap<>(), true));
+        assertEquals("Injected post-netting failure", error.getMessage());
+        assertEquals(ControlInitializationMode.COLD_START,
+                lf.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
     }
 
     @Test void nettingPreservesOriginalLoadsAndDisambiguatesHyphenatedIds() throws Exception {

@@ -105,7 +105,9 @@ public final class Texas2kReferenceRunner {
                 status.put("initialization_source", "solved-raw-diagnostic");
             } else {
                 Texas2kPowerflowPreparation.solve(lf,
-                        inputs.resolve(event.get("raw").getAsString()), status);
+                        inputs.resolve(event.get("raw").getAsString()), status,
+                        !plan.has("reuse_post_netting_controls")
+                                || plan.get("reuse_post_netting_controls").getAsBoolean());
             }
             net.setBypassDataCheck(false);
             if (!net.checkData(lf.getDataCheckConfig()))

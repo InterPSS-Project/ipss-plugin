@@ -660,3 +660,105 @@ series keeps complete output on every run and replaces only byte-identical
 completed output with verified hardlinks between runs. No supplied references,
 channels or samples are removed. Compact verification evidence is retained under
 `2026-10-20-case2-default-preparation`.
+
+## Continuous shunts inside Newton–Raphson
+
+The preparation bottleneck above is corrected by enabling
+`LoadflowAlgorithm.setContinuousSwitchedShuntNrControlEnabled(true)` in the
+shared preparation helper. This independent core option defaults to false for
+other callers. It uses the existing coordinated polar NR formulation without
+enabling transformer-tap equations or discrete-bank projection. Continuous
+shunts are solved with their local or remote voltage constraints; discrete
+banks remain in the outer adjustment loop.
+
+For an unconstrained continuous shunt, the reduced formulation solves an
+auxiliary reactive injection with the pilot-voltage constraint, then transfers
+that injection into physical susceptance using the solved terminal voltage.
+The auxiliary injection is cleared. At a susceptance bound, the voltage
+constraint is replaced by reactive balance at fixed physical susceptance.
+Generator reactive limits retain priority over supporting shunts.
+
+Two integration defects had prevented this path from working on Case 2:
+
+- With imported voltages and cold controls, PV magnitudes could differ from
+  their prescribed values when the reduced Jacobian was formed. The line search
+  subsequently moved those fixed boundaries, so its direction and residual
+  described different equations. Cold coordinated initialization now establishes
+  PV targets before the first residual and Jacobian. Saved and previous-solution
+  modes retain their persisted boundaries.
+- Outer generator PV/PQ adjustment could change the equation set while an inner
+  shunt-limit transaction was pending. A later rollback then quarantined a valid
+  control and produced an incorrect operating point. Outer adjustments now wait
+  for the inner transaction to be accepted or rolled back.
+
+After solved-power netting, the second solve now starts from the preceding
+control state. It still solves the changed equations and verifies settled
+controls. The caller's initialization mode is restored even on failure; an
+explicit `reuse_post_netting_controls: false` retains the cold diagnostic.
+
+| Preparation stage | Earlier outer adjustment iterations | Continuous-shunt NR iterations |
+| --- | ---: | ---: |
+| Before netting | 1,826 | 102 |
+| After netting | 1,564 | 12 |
+| Total | 3,390 | 114 |
+
+This removes 96.6% of preparation iterations without relaxing the 1e-10
+power-flow mismatch tolerance or 1e-8 voltage-control tolerance. The static
+probe's largest voltage difference from the earlier correct coordinated
+solution is 9.965e-9 pu, and its largest angle difference is 3.181e-9 radians.
+The final solve reports no unsettled controls.
+
+The full candidate uses the previously described experimental device-performance
+overlay plus these production preparation changes. Three warm-ups and three
+measured ten-second runs use one JVM on logical CPU 4, one active processor,
+SerialGC, a 2 GiB heap, 1/240-second steps and 1e-5 dynamic network tolerance.
+All 4,810 channels and 2,405 rows are recorded in every run, including both
+event-side observations. Compilation and between-run storage deduplication are
+excluded; preparation, initialization, simulation and recording are included.
+
+| Measured repeat | Preparation and initialization, s | Simulation and recording, s | Complete runner, s |
+| --- | ---: | ---: | ---: |
+| 1 | 0.8859 | 8.8187 | 9.7046 |
+| 2 | 1.1024 | 9.6061 | 10.7085 |
+| 3 | 0.7858 | 8.5827 | 9.3685 |
+
+The complete median is **9.7046 seconds**, compared with the earlier coordinated
+series' 37.2670 seconds. These are sequential cohorts, so the exact timing
+ratio includes run-to-run variation. The iteration reduction and removal of the
+preparation bottleneck are directly observed. The eight-second goal remains open.
+
+All six new traces are finite and byte-identical to one another. They are not
+identical to the earlier cold-preparation trajectory: maximum differences reach
+0.0119252 pu voltage and 2.20816 degrees rotor angle over ten seconds, despite
+the closely matching static operating points. Against the supplied reference,
+the first history voltage error is 0.0000142146 pu, the zero-time voltage error
+after startup is 0.00571479 pu, and prefault maxima remain 0.126645 pu voltage
+and 13.7632 degrees rotor angle. Worst full-trajectory rotor RMSE is 107.8961
+degrees at bus 5263, unit 1. Dynamic accuracy therefore remains unresolved.
+The same phase-preserving interpolation and differing clearing/history grids
+described above apply; these scores are diagnostic, not acceptance results.
+
+Validation passes 89 focused core tests and 33 preparation/recording tests.
+Coverage includes local and remote continuous control, physical limits,
+independence from tap/discrete controls, cold PV initialization, transaction
+isolation and caller-mode restoration after a failed post-netting solve.
+Compact source, test, timing and comparison evidence is retained privately under
+`2026-10-20-case2-inner-shunt-nr`.
+
+The user subsequently confirmed 153 switched-shunt records, a locked shunt at
+bus 2127 because both voltage limits are zero, and selection of the generator's
+1.0 pu target over the colocated continuous shunt's 1.03 pu target at bus 1033.
+A fresh check against the installed production core verifies all 153 mapped
+shunts. Bus 2127 is fixed and retains B = -2.0 pu through both solves. Bus 1033
+starts with B = 0.5 pu and finishes with B = 0, generator Q = -0.4003 pu, and
+voltage 1.0151285166 pu. The generator's lower reactive limit prevents it from
+reaching the 1.0 pu target.
+
+The supplied settings disable flat start, transformer/phase-shifter adjustment
+and area interchange, enable switched-shunt adjustment, and delay generator
+reactive-limit enforcement until a late iteration or sufficiently small
+mismatch. The candidate retains imported starting voltages, with prescribed PV
+boundaries established for NR, but uses its own Newton damping and limit
+activation schedule. Agreement of device constraints and the final operating
+point does not imply an identical iteration sequence. Exact supplied settings
+and the follow-up verification are retained with the private evidence.

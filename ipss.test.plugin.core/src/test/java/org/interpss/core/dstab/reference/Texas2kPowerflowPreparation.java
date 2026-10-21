@@ -32,6 +32,13 @@ public final class Texas2kPowerflowPreparation {
      */
     public static void solve(LoadflowAlgorithm lf, Path raw, Map<String, Object> status)
             throws Exception {
+        solve(lf, raw, status, true);
+    }
+
+    /** The explicit cold post-netting option is retained for diagnostic comparisons. */
+    public static void solve(LoadflowAlgorithm lf, Path raw, Map<String, Object> status,
+            boolean reusePostNettingControls) throws Exception {
+        status.put("reuse_post_netting_controls", reusePostNettingControls);
         var deferred = findImportedNetting(lf, raw);
         // Validate all imported netting before changing any device status.
         for (var entry : deferred) {
@@ -44,6 +51,9 @@ public final class Texas2kPowerflowPreparation {
             entry.bus().initContributeLoad(false);
         }
         lf.getLfAdjAlgo().setApplyAdjustAlgo(true);
+        lf.setContinuousSwitchedShuntNrControlEnabled(true);
+        status.put("continuous_shunt_control", "inner-NR");
+        // Continuous controls are owned by NR. Serialize physical discrete moves.
         lf.getLfAdjAlgo().setMaxSwitchedShuntAdjustmentsPerIteration(1);
         lf.getLfAdjAlgo().getVoltAdjConfig().setSwitchedShuntAdjust(true);
         lf.getLfAdjAlgo().getVoltAdjConfig().setAdjTolerance(0.00000001);
@@ -73,7 +83,22 @@ public final class Texas2kPowerflowPreparation {
             entry.bus().initContributeLoad(false);
         }
         status.put("solved_netted_generators", count);
-        if (!deferred.isEmpty()) requireSolved(lf, "after_netting", status);
+        if (!deferred.isEmpty() && reusePostNettingControls) {
+            // Netting replaces each solved injection by the same negative load.
+            // Keep the already-solved control state as the next solve's starting
+            // point; still solve the changed equations and check all controls.
+            var limits = lf.getLfAdjAlgo().getLimitCtrlConfig();
+            var previousMode = limits.getControlInitializationMode();
+            try {
+                limits.setControlInitializationMode(ControlInitializationMode.PREVIOUS_SOLUTION);
+                status.put("post_netting_control_initialization", "PREVIOUS_SOLUTION");
+                requireSolved(lf, "after_netting", status);
+            } finally {
+                limits.setControlInitializationMode(previousMode);
+            }
+        } else if (!deferred.isEmpty()) {
+            requireSolved(lf, "after_netting", status);
+        }
     }
 
     private static void requireSolved(LoadflowAlgorithm lf, String stage,
@@ -81,6 +106,7 @@ public final class Texas2kPowerflowPreparation {
         var result = GeneratorFirstShuntLoadflow.solve(lf);
         var termination = lf.getTerminationReport();
         status.put("loadflow_" + stage + "_solves", result.solves());
+        status.put("loadflow_" + stage + "_iterations", termination.iteration());
         status.put("loadflow_termination", termination.status().toString());
         status.put("loadflow_unsettled_controls", termination.unsettledControlCount());
         if (!result.converged() || !termination.controlsSettled())
