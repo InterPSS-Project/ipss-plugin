@@ -1658,3 +1658,80 @@ identity checks and recording hashes are retained under
 `verification-artifacts/2026-10-21-machine-frame-production-v2`.
 The paired source/evidence index is
 `checkpoints/case2-machine-frame-production-2026-10-21.json`.
+
+## Guarded electrical endpoint preparation
+
+Plugin commit `287326d65`, paired with core `bdff8b2e9`, separates the first
+post-integration electrical preparation from the final controller evaluation.
+The solver previously evaluated the complete device stack twice before the
+network solve. Eligible standard ST1/ST4B stacks now refresh machine electrical
+caches in the first pass and evaluate their controllers in the second pass.
+Renewable and grid-forming preparation remains in both passes. Numerical
+equations, integration step, network tolerance and recording are unchanged.
+
+Eligibility requires standard machine classes, an appropriate compiled exciter
+path, and either no governor or GGOV1. Attached stabilizers require the
+compiled standard PSS2A graph.
+Mechanical-power and voltage-derivative input selections, relevant observers,
+unsupported controller stacks, shared ST4B blocks and custom limits retain the
+original preparation. ST1 eligibility also requires that its compiled local
+advance actually ran in the current step. Reinitialization clears bindings and
+the preparation counter. The pre-initialization switch
+`setElectricalEndpointPreparationEnabled(false)` retains the control path.
+
+An unrestricted diagnostic prepass measured 9.5366 seconds against 10.2099
+seconds for its control. That result does not qualify the unrestricted change
+for general use. The guarded source implementation was measured separately,
+with twelve warmups and six repetitions in each JVM, one verified CPU, fresh
+setup, ten simulated seconds, quarter-cycle steps, 1e-5 dynamic tolerance and
+complete recording:
+
+| Guarded preparation | Six complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Disabled | 10.1681, 9.9963, 10.1853, 9.9453, 9.8329, 10.1326 | 10.0645 |
+| Enabled | 9.9386, 9.6532, 9.7501, 9.5304, 9.5090, 9.7492 | 9.7012 |
+
+The paired reduction is **0.3633 seconds (3.61%)**. Each enabled run replaces
+211,376 controller preparations, covering 88 eligible machines across 2,402
+steps. All 36 recordings retain the canonical hash, 2,405 finite samples,
+4,810 channels and both event-side duplicates. The production result remains
+**1.7012 seconds above the eight-second objective**.
+
+All 46 focused tests pass, including coupled state/history comparisons through
+faults, reference and limiter changes, governor participation, status changes,
+observer fallback, live stabilizer selection and reinitialization. The broader
+registered suite plus explicit controller tests finds 2,645 tests: 2,627 pass,
+nine skip, four abort and the same five fail as the preceding baseline, with
+matching failure methods and messages.
+
+A separate read-only accepted-state audit discovers 164,206 numeric slots and
+12,919 fingerprint groups. Both repeated control and guarded preparation have
+zero differing groups across 2,402 steps. This audit includes current immutable
+records and complex values, while excluding the network/bus/algorithm objects,
+synthetic callbacks, listed diagnostic counters and the configuration switch.
+It supplements the coupled tests and full recordings; it is not a proof of
+arbitrary custom callback equivalence or independent-reference accuracy.
+
+The source/evidence index is
+`checkpoints/case2-guarded-endpoint-production-2026-10-21.json`. The private
+`verification-artifacts/2026-10-21-guarded-endpoint-production` archive retains
+the producers, changed sources/classes, tests, diagnostics and timing metadata.
+The manifest pins all effective directory-class hashes, external dependencies
+and retained input/output files. Large recordings remain referenced by hash.
+The performance objective and independent-reference accuracy remain open.
+
+Two follow-up warmed profiles of the same implementation place 58.9% and
+63.3% of main-thread execution samples in network solution. Sparse triangular
+solves account for 11.4–12.4% of leaf samples, machine current output for
+9.5–11.4%, and indexed voltage-convergence scanning for 6.0–6.8%. Device-list
+iteration remains visible. These are sampled execution shares, not wall-time
+phase costs. They make current assembly and convergence scanning concrete
+targets for the next optimization; controller-only work cannot explain the
+entire remaining cost.
+
+Profile times are excluded from the qualifying timings above. All fourteen
+profile-producer recordings, including twelve warmups, retain the canonical
+hash. The follow-up profile manifest is retained separately under
+`verification-artifacts/2026-10-21-guarded-endpoint-profile` and linked from
+the same checkpoint index; its effective directory classes match the timed
+implementation.
