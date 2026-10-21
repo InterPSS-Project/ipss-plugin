@@ -300,3 +300,45 @@ result still has one prefault rotor-limit failure, as recorded in the
 Scripts, compiled prototypes, numerical plans, test results and compact logs are
 retained privately under `verification-artifacts/2026-10-21-workflow-runtime-trials`.
 Full recordings and supplied inputs remain hash-identified retained dependencies.
+
+### Startup boundary localization and rejected magnitude-check optimization
+
+Two 20 ms audits preserve the existing 1 ms controls byte for byte while recording
+network convergence and converter memory after each solve. All 96 active
+converters have zero accumulated high-voltage correction throughout all 23
+recorded solves. Thus that correction is not the cause of the first divergence,
+although it remains relevant later in the trajectory.
+
+The initial solution and first startup-history sample are identical. During the
+second history step, the 1e-4 control stops after four iterations with a maximum
+voltage correction of 9.00054e-5 pu. The 1e-5 control takes twelve iterations,
+ending at 7.96634e-6 pu. Their time-zero bus magnitudes differ by up to
+0.000210444 pu. This is an early network-endpoint difference, before the large
+trajectory separation. The audit does not yet establish a corrected coupling
+policy.
+
+The supplied reference itself has substantial motion before the one-second
+fault. Across nominal times in [0, 1), bus 3113 spans approximately 0.2513 pu and
+machine 1051 unit 1 spans approximately 15.44 degrees. These are ranges within
+the supplied trace, not comparison errors. A flat-prefault expectation must
+therefore be distinguished from reproducing this particular reference. The
+comparison continues to use the unchanged supplied trace, with nominal
+millisecond alignment and retained duplicate event timestamps.
+
+A separate numerical prototype skips full complex-magnitude calculations when
+conservative bounds already determine convergence and exclude a new maximum.
+Uncertain cases retain the exact existing scaled-magnitude arithmetic; custom
+complex subclasses and the componentwise norm retain ordinary dispatch. It
+passes 3,597,396 exact-value and bound checks, including subnormal values,
+overflow, equality, neighboring floating-point values and exceptional values.
+
+With twelve warmups and five measured fresh-network runs on one CPU, complete
+times are 8.6957, 8.3764, 8.3927, 8.2668 and 8.2033 seconds. The 8.3764-second
+median does not improve the preceding 8.2149-second candidate. All seventeen
+full recordings remain byte-identical to the baseline, but the prototype is
+not adopted. Numerical production code remains unchanged, and both the
+eight-second target and quarter-cycle reference accuracy remain open.
+
+The audits, analysis scripts and rejected prototype are retained privately under
+`verification-artifacts/2026-10-21-startup-boundary-and-norm-trial`, with the prior
+workflow evidence and raw recordings identified by hash.
