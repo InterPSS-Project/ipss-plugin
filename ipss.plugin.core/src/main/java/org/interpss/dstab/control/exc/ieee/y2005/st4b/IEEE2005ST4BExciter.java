@@ -36,6 +36,18 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
         return getClass() == IEEE2005ST4BExciter.class
                 ? bindPublicDoubleParameter(name) : super.bindCompiledParameter(name);
     }
+    private final St4bBridgeInputCache bridgeInputCache = new St4bBridgeInputCache();
+    private boolean bridgeInputReuseEnabled = true;
+    /** Change at an idle boundary; every reuse still checks the live numeric inputs. */
+    public void setBridgeInputReuseEnabled(boolean enabled) {
+        if (getRuntimePhase() != RuntimePhase.IDLE)
+            throw new IllegalStateException("Change bridge input reuse at an idle boundary");
+        bridgeInputReuseEnabled = enabled;
+        bridgeInputCache.invalidate();
+    }
+    public boolean isBridgeInputReuseEnabled() { return bridgeInputReuseEnabled; }
+    public long getBridgeInputReuseCount() { return bridgeInputCache.voltageReuses(); }
+    public long getBridgePhasorReuseCount() { return bridgeInputCache.phasorReuses(); }
     private boolean compiledStageEnabled = true;
     @Override protected com.interpss.dstab.controller.cml.runtime.CmlCompiledStage compileStageEvaluator() {
         return compiledStageEnabled ? St4bCompiledStage.tryCreate(this) : null;
@@ -163,18 +175,25 @@ public class IEEE2005ST4BExciter extends AnnotateExciter
 	         return this.u * VB;
 	      }
 	      private double calcVe(){
-	         double angleKp = Math.toRadians(angKp_deg);
-	         Complex kpCplx = new Complex(kp * Math.cos(angleKp),
-	               kp * Math.sin(angleKp));
-	         Machine mach = (Machine) eInternalContainer();
+             boolean reuse = bridgeInputReuseEnabled && IEEE2005ST4BExciter.this.getClass() == IEEE2005ST4BExciter.class;
+             double gain = kp, degrees = angKp_deg;
+             Complex kpCplx;
+             if (reuse) kpCplx = bridgeInputCache.phasor(gain, degrees);
+             else {
+                 double angleKp = Math.toRadians(degrees);
+                 kpCplx = new Complex(gain * Math.cos(angleKp), gain * Math.sin(angleKp));
+             }
+             Machine mach = (Machine) eInternalContainer();
+             Complex vt = mach.getParentGen().getParentBus().getVoltage();
+             Complex it = mach.getIxy();
+             if (reuse && vt.getClass() == Complex.class && it.getClass() == Complex.class)
+                 return bridgeInputCache.voltage(kpCplx, vt, it, xl, ki);
+             // Custom arithmetic retains fresh operand identity and its original evaluation order.
+             if (reuse) kpCplx = new Complex(kpCplx.getReal(), kpCplx.getImaginary());
+             return vt.multiply(kpCplx).add(new Complex(0, 1)
+                   .multiply((kpCplx.multiply(xl).add(ki)).multiply(it))).abs();
+          }
 
-	         Complex vt = mach.getParentGen().getParentBus().getVoltage();
-	         Complex it = mach.getIxy();
-	         // ve = |kp*vt_ + j*(ki+kp_*xl)*it_|
-	         return vt.multiply(kpCplx).add(new Complex(0, 1)
-	               .multiply((kpCplx.multiply(xl).add(ki)).multiply(it))).abs();
-	      }
-	      
 	      private double calcVB(double ve){
 	    	 // if(getMachine()!=null)
 	    	  VB = ve*fexFunc(ve, getMachine().calculateIfd(MachineIfdBase.EXCITER));

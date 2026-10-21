@@ -232,6 +232,7 @@ class St4bCompiledStageTest {
         var solver=new PsseStaggeredEulerSolver(algorithm);solver.setCompiledControllerGraphsEnabled(true);
         solver.setCompiledSt4bBindingsEnabled(true);
         ((IEEE2005ST4BExciter)algorithm.getNetwork().getMachine("Bus1-mach1").getExciter()).setCompiledStageEnabled(compiled);
+        ((IEEE2005ST4BExciter)algorithm.getNetwork().getMachine("Bus1-mach1").getExciter()).setBridgeInputReuseEnabled(compiled);
         solver.setNetworkSolutionTolerance(1.e-5);solver.setReuseNetworkEndpoint(true);
         algorithm.setSolver(solver);algorithm.setSimuStepSec(1./240.);algorithm.setTotalSimuTimeSec(1.);
         algorithm.setSimuOutputHandler(new StateMonitor());
