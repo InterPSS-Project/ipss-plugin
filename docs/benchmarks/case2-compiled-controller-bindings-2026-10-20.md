@@ -89,3 +89,44 @@ Compact sources, compiled overlays, plans, measurements and verification reports
 are retained privately under
 `verification-artifacts/2026-10-20-compiled-controller-bindings`. Supplied
 references and complete large traces are retained as hash-identified dependencies.
+
+## Follow-up profile and rejected storage experiments
+
+A subsequent profile of the same bound-controller candidate collected 452
+main-thread execution samples: 245 in network solution (54.2%), 182 in device
+integration (40.3%), nine in recording (2.0%), and 16 in setup or other work
+(3.5%). These are sampled execution shares, not complete wall-time shares.
+The profiled run was slower under instrumentation and is excluded from timing
+qualification. Allocation sampling was not used to estimate per-case allocation.
+
+The largest sampled leaf was the factored sparse triangular solve, with 84
+samples (18.6%). Network instrumentation counted 36,369 iterations across 2,405
+network calls, or 15.12 iterations per call. The existing factorization reuse
+remains in place. Repeated voltage-dependent injections are still required on
+each nonlinear iteration.
+
+Two isolated storage changes were tested against the preceding 9.3042-second
+candidate, each with six warmups and three measured fresh-network runs in one
+JVM, pinned to one CPU, with full recording:
+
+| Experiment | Measured complete-case times, seconds | Median | Decision |
+|---|---|---:|---|
+| Setter-invalidated rectangular voltage cache for standard dynamic buses | 9.8730, 9.6900, 9.0326 | 9.6900 | Not adopted |
+| Separate real and imaginary arrays for sparse factor rows and work buffers | 9.3897, 9.8107, 9.1163 | 9.3897 | Not adopted |
+
+Neither trial demonstrated a speed improvement. They remain private experiments;
+production numerical code was not changed. The cache passed 32 exact-bit checks,
+including setter notifications, reflective model updates, coordinate changes,
+signed zero, and custom getters. The factor layout passed 12 sparse-solver tests,
+including repeated right-hand sides, refactorization, pivoting, independent
+blocks, structural changes, dimension growth, and fallback behavior.
+
+All nine full traces from each experiment are byte-identical to the preceding
+quarter-cycle candidate: 2,405 rows and 4,810 finite channels, retaining both
+sides of both fault events. This establishes equivalence to that candidate,
+not reference accuracy. The best established median remains 9.3042 seconds;
+the eight-second objective and quarter-cycle accuracy qualification remain open.
+
+The profile and rejected experiments are retained privately under
+`verification-artifacts/2026-10-20-network-layout-trials`, with the previous
+controller-binding evidence as a dependency.
