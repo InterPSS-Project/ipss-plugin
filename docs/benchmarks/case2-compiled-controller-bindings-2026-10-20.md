@@ -224,3 +224,79 @@ does not establish reference acceptance.
 Sources, compiled overlays, test results and measurements are retained privately
 under `verification-artifacts/2026-10-20-primitive-current-trials`. Full generated
 recordings and supplied inputs remain hash-identified retained dependencies.
+
+## Combined workflow trial and accuracy discriminator, October 21
+
+The next isolated prototypes cache ordered controller membership with list-change
+invalidation, invalidate ST1 expression inputs when their dependencies are written,
+and reuse the primitive current buffers described above. Live measurements,
+integration stages and arithmetic order are preserved. Custom controller-type
+getters retain ordinary dispatch. The revised membership path also preserves a
+single call to an overridden controller-list getter.
+
+The revised membership checks pass 92,237 assertions and observe 3,038 model
+notifications. The ST1 checks retain all 480 recorded state, input, output,
+derivative and history rows exactly, including limiter and enable/disable cases.
+Polling dependency values was separately tested but did not improve timing;
+write-driven invalidation is used in the combined trial.
+
+Two fresh complete-workflow trials use twelve warmups and five measured runs,
+one CPU, a fresh network per repetition, quarter-cycle integration, 1e-5 dynamic
+tolerance and full recording:
+
+| Trial | Complete-case seconds | Median, seconds |
+|---|---|---:|
+| Control | 9.3409, 9.2776, 9.3639, 9.2754, 9.2633 | 9.2776 |
+| Combined prototypes | 8.5716, 8.2584, 8.2149, 8.1581, 8.0910 | 8.2149 |
+
+The combined median is 11.5% lower but remains above eight seconds. All 34 full
+recordings are byte-identical to the preceding performance baseline. Residual
+JIT compilation and garbage collection remain included in elapsed time.
+A further measurement-reuse trial completed 27 of 29 planned runs before the
+bounded launcher stopped at its 8 MiB console limit. Its completed traces match,
+but it has no qualified timing result. None of these prototypes is promoted to
+production by this measurement.
+
+### Accuracy takes precedence over this timing improvement
+
+Scoring the ordinary-startup performance baseline against the supplied full
+reference gives a worst full-window rotor RMSE of 102.808 degrees. Independently
+recomputing converted startup improves the initial voltage agreement to
+1.2553e-5 pu but does not repair quarter-cycle dynamics: worst full-window rotor
+RMSE is 106.061 degrees. These timings therefore describe an inaccurate
+trajectory and cannot establish the combined performance-and-accuracy objective.
+
+The user-confirmed reference settings remain distinct: load flow uses 0.1 MVA
+maximum bus mismatch (1e-3 pu on the 100 MVA base), converted startup uses 1e-5 pu
+voltage correction, and dynamics use 1e-4 pu voltage correction. The settings
+image does not establish the exact correction norm or iteration limits. The
+1e-5 dynamic performance target is a separate experiment.
+
+Prefault discriminators use the same computed converted point and optimized
+implementation, changing only the indicated numerical settings:
+
+| Integration step | Dynamic tolerance | Maximum voltage error, pu | Maximum rotor error, degrees |
+|---|---:|---:|---:|
+| 1 ms | 1e-4 | 0.000743132 | 0.0267988 |
+| 1 ms | 1e-5 | 0.110184 | 10.2261 |
+| Quarter cycle | 1e-4 | 0.126195 | 14.2907 |
+| Quarter cycle, initialization compensation retained | 1e-5 | 0.138392 | 18.7496 |
+
+The matched 1 ms/1e-4 control reproduces all 993 prefault rows and 4,810 channels
+of the preceding recovered implementation byte for byte. This isolates the new
+storage optimizations from the observed divergence in that configuration.
+Tightening tolerance and increasing the step each independently disrupt the
+prefault trajectory. Retaining initialization compensation does not restore it.
+The quarter-cycle probes use phase-specific reference interpolation and are
+diagnostic comparisons, not formal acceptance results.
+
+The next investigation must resolve network/controller coupling and convergence
+semantics. Iteration-count reductions are especially sensitive because the
+converter high-voltage correction has iteration-local memory. The evidence does
+not yet identify a valid production correction. The recovered 1 ms full-run
+result still has one prefault rotor-limit failure, as recorded in the
+[accuracy report](case2-accuracy-recovery-2026-10-20.md).
+
+Scripts, compiled prototypes, numerical plans, test results and compact logs are
+retained privately under `verification-artifacts/2026-10-21-workflow-runtime-trials`.
+Full recordings and supplied inputs remain hash-identified retained dependencies.
