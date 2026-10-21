@@ -68,5 +68,7 @@
     "Independent-reference accuracy remains unresolved.",
     "The selected executable reproduces the retained production trajectory for Case 2; this does not qualify other cases.",
     "There is no verified whole-source checkout for this assembled executable. Production source has not been rolled back."
-  ]
+  ],
+  "source_reconstruction": "docs/benchmarks/checkpoints/case2-recovered-source-2026-10-21.json",
+  "working_source_status": "main-source-restored-regression-qualification-pending"
 }

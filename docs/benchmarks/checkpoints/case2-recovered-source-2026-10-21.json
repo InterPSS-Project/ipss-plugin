@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "status": "source-restored-regression-qualification-pending",
+  "goal_achieved": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-recovered-source/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 1081837,
+    "sha256": "4ecc066f36c03509a5d64662992071cf924dd6b6599f94fa9f96613601f5089c"
+  },
+  "archive": {
+    "bytes": 9689774,
+    "sha256": "384fab6600bd013f17bcbac2ea590e1f74a65845cf908f55f0a08a2ff5d456c7"
+  },
+  "source_counts": {
+    "core": 1834,
+    "plugin": 882,
+    "harness": 9
+  },
+  "timing": {
+    "status": "completed",
+    "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+    "matches_frozen": true,
+    "main_sources_clean_compiled": true,
+    "frozen_main_classes_on_classpath": false,
+    "runs": 39,
+    "warmup_runs": 32,
+    "measured_runs": 7,
+    "case_wall_s": [
+      7.6157155,
+      7.5244966,
+      7.7702963,
+      8.0520779,
+      7.5786411,
+      7.619469,
+      7.7128071
+    ],
+    "median_case_wall_s": 7.619469
+  },
+  "focused_tests": {
+    "found": 16,
+    "passed": 16,
+    "failed": 0
+  },
+  "core_registered_tests": "compilation fails: newer API tests require reconciliation",
+  "independent_reference_accuracy_qualified": false,
+  "report": "docs/benchmarks/case2-source-restoration-2026-10-21.md",
+  "independent_source_rebuild": {
+    "status": "verified",
+    "classes_compared": 3868,
+    "different": [],
+    "missing": [],
+    "main_class_files_loaded_from_archive": false
+  },
+  "core_source_commit": "cb2c3589d1d0a87ad5c2f3b88a2952d6dec6002c",
+  "plugin_source_base_commit": "7bcff8a72",
+  "working_main_source_restored": true,
+  "rebuild_verification": {
+    "manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-recovered-source/rebuild-verification.json",
+    "manifest_digest": {
+      "bytes": 1563,
+      "sha256": "126289ea259b45e3189bbd7ca2661cf0a3f754f4586ba80bc7bc2ebe0acedd21"
+    },
+    "archive": {
+      "bytes": 213272,
+      "sha256": "b30943734480ee1ee0362da8976116fedbf121706268e27840a6c99f46873759"
+    }
+  }
+}

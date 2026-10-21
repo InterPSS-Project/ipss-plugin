@@ -16,8 +16,8 @@ import com.interpss.dstab.controller.cml.field.func.HighValueFunction;
 import com.interpss.dstab.controller.cml.runtime.CmlBlockKernel;
 import com.interpss.dstab.controller.cml.wrapper.*;
 
-/** Compiled ST1 equations and stage-local numerical storage for the staggered recurrence. */
-final class St1CompiledLocalPlan {
+/** Experimental evaluator for the unmodified ST1 graph. Not a general CML replacement. */
+final class St1DirectEvaluation {
     final IEEE1981ST1Exciter model;
     final Node[] nodes = new Node[8];
     private final FixedExpression[] inputs = new FixedExpression[8];
@@ -46,12 +46,7 @@ final class St1CompiledLocalPlan {
     static final String[] NAMES = {"trDelayBlock", "gainBlock", "filterBlock", "filterBlock1",
         "kaDelayBlock", "washoutBlock", "rateFeedbackInputBlock", "gainCustomBlock"};
 
-    static St1CompiledLocalPlan tryCreate(IEEE1981ST1Exciter model) {
-        try { return new St1CompiledLocalPlan(model); }
-        catch(IllegalArgumentException | IllegalStateException failure) { return null; }
-    }
-
-    private St1CompiledLocalPlan(IEEE1981ST1Exciter model) {
+    St1DirectEvaluation(IEEE1981ST1Exciter model) {
         this.model = model;
         BaseFieldAnWrapper<?> foundGate = null;
         var sorted = new ArrayList<Node>();
@@ -60,19 +55,12 @@ final class St1CompiledLocalPlan {
             int id=Arrays.asList(NAMES).indexOf(wrapper.getFieldName());
             if (id < 0 || !(wrapper instanceof BlockFieldAnWrapper<?> block))
                 throw new IllegalStateException("Unexpected ST1 field: " + wrapper.getFieldName());
-            if(block.getClass()!=ControlBlockFieldAnWrapper.class && block.getClass()!=StaticBlockFieldAnWrapper.class)
-                throw new IllegalStateException("Custom wrapper requires the generic evaluator");
             Node node=new Node(id,block); nodes[id]=node; sorted.add(node);
         }
         if (foundGate == null || foundGate.getField().getClass() != HighValueFunction.class)
             throw new IllegalStateException("Unexpected ST1 selector");
         gate=foundGate;
-        if(gate.getClass()!=FunctionFieldAnWrapper.class || !(gate instanceof FunctionFieldAnWrapper function)
-                || !Arrays.equals(function.getInputs(),new String[]{"this.gainBlock.y","this.vuelGate1"}))
-            throw new IllegalStateException("Changed selector requires the generic evaluator");
-        for (Node node : nodes) if(node==null)throw new IllegalStateException("Missing ST1 block");
-        if(nodes[6].block!=model.originalFeedbackBlock || nodes[7].block!=model.originalOutputBlock)
-            throw new IllegalStateException("Custom output requires the generic evaluator");
+        for (Node node : nodes) Objects.requireNonNull(node);
         localBlocks=sorted.stream().filter(n->n.control)
             .map(n->(com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter)n.block)
             .toArray(com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter[]::new);
@@ -97,7 +85,6 @@ final class St1CompiledLocalPlan {
                 inputs[node.id]=new FixedExpression(node.wrapper.getInputExp(),model,this::bindSignal);
                 int dependencies=0;
                 for(var record:node.wrapper.getInputExp().getRecList())dependencies|=dependency(record);
-                if(dependencies<0)throw new IllegalStateException("Unsupported local input dependency");
                 inputDependencies[node.id]=dependencies;
                 if(dependencies>=0)for(int source=0;source<8;source++)
                     if((dependencies&(1<<source))!=0)dependentInputs[source]|=1<<node.id;
@@ -107,22 +94,6 @@ final class St1CompiledLocalPlan {
             gateExpression=new FixedExpression(expression,model,this::bindSignal);
         } catch(InterpssException failure) { throw new IllegalStateException("Cannot compile ST1 equations",failure); }
 
-    }
-
-    boolean supportsCurrentBlocks() {
-        if(model.getFieldWrapperList().size()!=9 || gate.getField().getClass()!=HighValueFunction.class)return false;
-        for(Node node:nodes) {
-            if(node.wrapper.getField()!=node.block)return false;
-            if(node.block instanceof ICMLLimitBlock limited && limited.getLimit()!=null) {
-                var limit=limited.getLimit();
-                if(limit.getClass()!=com.interpss.dstab.datatype.LimitExpression.class
-                        || limit.getMaxExp()!=null || limit.getMinExp()!=null)return false;
-            }
-        }
-        // Projection semantics are fixed when the solver captures its state layout.
-        for(int i=0;i<localBlocks.length;i++)
-            if(localLimited[i]!=(localBlocks[i].getType()==StaticBlockType.NonWindup))return false;
-        return true;
     }
 
     double y(int id) {
@@ -217,7 +188,8 @@ final class St1CompiledLocalPlan {
         if(fixedInputs)throw new IllegalStateException("Nested ST1 local integration");
         fixedInputs=true;fixedPss=cachePss;voltageRead=false;pssRead=false;
         try {
-            if(cachePss || model.getMachine().getStabilizer()==null) {
+            if(!Boolean.getBoolean("ipss.experiment.disableSt1PrimitiveLocal")
+                    && (cachePss || model.getMachine().getStabilizer()==null)) {
                 capturePrimitiveLocal();primitiveLocal=true;primitiveLocalAdvanceCount++;
             }
             double h=dt/10,field=model.getMachine().getEfd();
@@ -361,7 +333,7 @@ final class St1CompiledLocalPlan {
                 throw new IllegalStateException("Variable limit requires general evaluator");
         }
         void prepare(boolean capture) {
-            double value=St1CompiledLocalPlan.this.input(id);
+            double value=St1DirectEvaluation.this.input(id);
             if (control) {
                 if(primitiveLocal)localInput(id,value);
                 else ((CMLControlBlockAdapter)block).setStageInput(value);

@@ -1,5 +1,10 @@
 # Case 2 fast baseline selection
 
+Subsequent work [restored the corresponding main sources](case2-source-restoration-2026-10-21.md)
+and reproduced a 7.619-second median from source. That branch still needs
+regression qualification. The selection and recovery actions below describe
+the earlier executable-only checkpoint.
+
 The working performance index now selects the retained electrical-endpoint
 executable. The latest seven complete-case measurements have a median of
 7.592151 seconds and a range of 7.549092 to 7.666781 seconds after 32 warmups.
