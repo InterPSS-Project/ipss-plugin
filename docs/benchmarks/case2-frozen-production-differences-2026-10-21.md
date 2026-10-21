@@ -4,8 +4,9 @@ The frozen executable retains two network optimizations that the current
 production path does not: convergence checking during voltage publication, and
 a cached list of network-iteration callback participants. Controller execution
 also differs. A later participant-cache experiment saved about 0.13 seconds with
-overlapping timing ranges; it does not explain the whole gap. The fused
-convergence pass still has no isolated timing measurement.
+overlapping timing ranges; it does not explain the whole gap. A subsequent
+guarded publication-reduction prototype was slower than its control and was
+not adopted; see the follow-up experiment below.
 
 This audit changes no production simulation code. It compares the effective classes used
 by the retained runs, disassembled method instructions, available source
@@ -111,8 +112,14 @@ Previous conditional tests also constrain interpretation:
 The participant-cache prototype subsequently exposed a missing invalidation
 path when a generator's effective machine is restored, and was not adopted.
 Its matched medians were 9.609221 seconds without the cache and 9.482661 seconds
-with it. Fusing convergence with voltage publication remains a separate test.
-The audit does not assign the full 1.10-second gap to either mechanism.
+with it. A later buffered publication-reduction test measured 9.6673181 seconds
+enabled versus 9.4254708 seconds disabled, using a 32/7 warmup/measurement
+protocol. It preserved all recordings but was not adopted. That guarded
+prototype differs from the original frozen implementation: it defers history
+commits until solve success and retains mutation/observer fallbacks. The audit
+does not assign the full 1.10-second gap to either mechanism. See the
+[publication-reduction experiment](case2-publication-convergence-probe-2026-10-21.md)
+for its scope, all measured values, and validation evidence.
 
 ## Follow-up: which frozen version is being compared
 
