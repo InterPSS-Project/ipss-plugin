@@ -25,6 +25,16 @@ import com.interpss.dstab.algo.DynamicSimuMethod;
 public class PsseRegca1ConverterTest extends CorePluginTestSetup {
     private static final double TOL = 1.0e-10;
     @Test
+    void bufferedCurrentCapabilityExcludesAlgebraicControllerCallbacks() throws Exception {
+        for (double tg : new double[]{0., .02}) {
+            Fixture fixture = fixture(data(1, tg, 10., 0., 0.));
+            assertEquals(tg > 0., fixture.model.supportsDeferredCurrentPublication());
+        }
+        assertTrue(new org.interpss.dstab.mach.IeeeVcRoundRotorMachine().supportsDeferredCurrentPublication());
+        assertTrue(new org.interpss.dstab.mach.IeeeVcSalientPoleMachine().supportsDeferredCurrentPublication());
+    }
+
+    @Test
     void directParserRetainsAllFifteenPsseParameters(@TempDir Path tempDir) throws Exception {
         DStabNetworkBuilder builder = DStabBuilderTestFixture.createBuilder();
         Path dyr = tempDir.resolve("regca1.dyr");

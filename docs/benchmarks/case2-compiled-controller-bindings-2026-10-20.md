@@ -436,3 +436,80 @@ independent reference-accuracy failures. Integrating the other experimental
 components into the production runtime, their lifecycle/fallback coverage and
 quarter-cycle reference accuracy remain required work; the overall objective
 is not marked complete.
+
+## Production current buffers and lifecycle validation
+
+Core now provides an opt-in buffered network-current path. Standard machine
+implementations and supported plugin current providers explicitly declare that
+their current evaluation cannot observe deferred matrix rows. The provider
+contract replaces the experimental class-name list. Algebraic converter bypass,
+custom providers, custom matrix implementations and observed devices retain
+ordinary publication.
+
+The buffer reuses numerical storage and existing factors, retains untouched
+rows, and publishes every solved row before voltage callbacks. Failure during
+assembly or solving restores the same partially assembled right-hand side as
+ordinary dispatch, including the original current objects. Dirty backend factors
+are rebuilt even when the network-level dirty flag was not set.
+
+The experimental eligibility cache missed observers attached after its first
+inventory. The production implementation caches membership only. Generator and
+bus-device list edits invalidate that layout; replacement, movement and status
+changes use the existing inventory hooks. Observer attachment and changeable
+provider capabilities are checked on every solve. Unknown subclasses do not
+inherit unconditional eligibility. Uninitialized load profiles that delegate to
+custom load calculations also retain ordinary dispatch.
+
+Initial validation walked all device lists repeatedly. Three complete timing
+trials retain the preceding optimized candidate and change its safety checks:
+
+| Safety-check implementation | Warmups | Median complete-case time, seconds |
+|---|---:|---:|
+| Live list scans | 12 | 9.3173 |
+| Cached membership with live observer checks | 12 | 8.8255 |
+| Cached membership, validation during buffer copy | 12 | 8.6704 |
+
+Each trial has five measured fresh-network repetitions, one CPU, ten simulated
+seconds, quarter-cycle steps, 1e-5 dynamic tolerance and all-channel recording.
+All 51 recordings retain the earlier optimized baseline exactly. The safer
+candidate does not achieve the eight-second target.
+
+A separate alternating comparison uses freshly compiled production classes
+without experimental class overlays. Six warmups precede five measured pairs:
+
+| Current publication | Five complete-case times, seconds | Median, seconds |
+|---|---|---:|
+| Ordinary | 24.9191, 24.5936, 24.7687, 24.9803, 24.9260 | 24.9191 |
+| Buffered | 25.1756, 26.9818, 25.4261, 25.3502, 26.7987 | 25.4261 |
+
+Every repetition includes fresh setup, initialization, simulation and recording.
+Remaining compilation and collection costs are included. The buffer alone does
+not establish a speedup, so ordinary publication remains the production default;
+`setBufferedCurrentAssemblyEnabled(true)` explicitly selects the new path.
+Faster scalar assembly and device evaluation still require production integration.
+
+All sixteen production recordings are byte-identical, with 36,370 buffered solves
+in each enabled case. Comparing the freshly built production trajectory with the
+optimized candidate gives maximum differences of 4.2633e-14 pu in bus voltage
+and 1.5462e-11 degrees in rotor angle. These are implementation comparisons;
+independent reference-accuracy failures remain unresolved.
+
+The joint Maven reactor compiles both repositories against current sources
+without replacing cached dependency jars. Its final run finds 112 focused tests:
+111 pass, one opt-in three-phase export is skipped, and none fail or error.
+Ten new buffer regressions cover late observers, membership and capability
+changes, default selection, dirty factors, inactive rows, failure publication,
+custom loads, subclass fallback and buffer resizing. Existing network,
+conversion, model, recording and three-phase checks also pass.
+
+Across the three optimized trials, the initial two-run production control and
+the sixteen-run production comparison, all 69 recordings have 2,405 finite rows,
+4,810 channels and both sides of both fault events. Repeated-output hard-link
+attempts were initially denied, leaving duplicate files. Verified deduplication
+replaced 132 identical generated files with hard links, reclaiming 6.78 GB while
+preserving every path and sample. Supplied references are unchanged. The paired
+producer now stops if verified storage reuse fails before another repetition.
+
+Sources, exact executed producers, compiled candidates, raw test reports,
+numerical plans, timing records and hashes are retained privately under
+`verification-artifacts/2026-10-21-current-buffer-integration`.

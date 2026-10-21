@@ -363,6 +363,11 @@ public final class Regca1Model extends DynamicBusDeviceImpl
         return timeConstant <= EPS ? state : state + dt * rate;
     }
 
+    @Override public boolean supportsDeferredCurrentPublication() {
+        // Algebraic bypass can call a replaceable controller while assembling current.
+        return getClass() == Regca1Model.class && data.tg() > EPS;
+    }
+
     @Override
     public Object getOutputObject() {
         Complex voltage = getDStabBus().getVoltage();

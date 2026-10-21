@@ -12,6 +12,8 @@ public final class IeeeVcSalientPoleMachine extends SalientPoleMachineImpl
     static { IeeeVcMachineState.register(IeeeVcSalientPoleMachine.class,IeeeVcSalientPoleMachine::new); }
     private IeeeVcData ieeeVcData;
 
+    @Override public boolean supportsDeferredCurrentPublication() { return true; }
+
     @Override
     public Map<String,Double> getNamedStates() {
         Map<String,Double> states=new LinkedHashMap<>();

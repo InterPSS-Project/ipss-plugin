@@ -13,6 +13,8 @@ public final class IeeeVcRoundRotorMachine extends RoundRotorMachineImpl
     private IeeeVcData ieeeVcData;
     private boolean exponentialSaturation;
 
+    @Override public boolean supportsDeferredCurrentPublication() { return true; }
+
     /** GENROE changes only the saturation characteristic of the core machine. */
     public boolean isExponentialSaturation() {
         return exponentialSaturation;
