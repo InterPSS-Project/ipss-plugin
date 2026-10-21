@@ -1210,3 +1210,67 @@ does not resolve the existing independent-reference accuracy gap. This slice
 does not establish six-case or full-system acceptance. Reproducible sources,
 classes, test logs, numerical settings, profiles and full-recording hashes are
 retained privately under `verification-artifacts/2026-10-21-pss-compiled-stage`.
+
+## Electrical endpoint refresh timing discriminator
+
+A subsequent private solver overlay replaces the first of two post-state full
+evaluations with machine-electrical staging, then retains the second full
+evaluation and the network solve. The production solver is unchanged. This
+experiment includes the committed typed PSS2A stages and uses the same CPU,
+fresh setup, quarter-cycle step, 1e-5 tolerance and complete-recording protocol.
+
+After twelve warmups, its six complete-case times are 11.3834, 10.8544, 11.0556,
+10.7924, 10.9755 and 11.0403 seconds: median **11.0079 seconds**, 7.55% below the
+preceding 11.9064-second production measurement. Two profiles follow, excluded
+from the six timing samples. All twenty new full recordings are byte-identical
+to the twenty retained compiled-stage production recordings, including all
+channels and both event-side duplicates.
+
+This measures the cost of the extra evaluation; it does not qualify the new
+ordering for general use. Current hidden-state/history and custom-callback
+equivalence must be checked before enabling it in production. The broad suite
+reported above used the production solver, not this overlay. The profiles place
+63.3–63.7% of main-thread execution samples in network solution, with static-load
+division, device traversal, voltage scans and sparse solves still prominent.
+The eight-second objective remains unmet even for this experimental path.
+
+The candidate source, classes, producer, settings, profiles and recording hashes
+are retained under `verification-artifacts/2026-10-21-endpoint-refresh-timing`.
+
+## Reconciliation with the earlier approximately 8.9-second result
+
+The retained `current-buffer-guard-cache-quarter-warm-20261021` run has a median
+of **8.8255475 seconds**, from 8.8855, 8.8438, 8.8255, 8.6700 and 8.6899 seconds.
+The newer compiled-stage production median is **11.90644155 seconds**, a real
+**3.08089405-second gap** against that experimental implementation. The earlier
+result did include fresh setup and full recording. Both use twelve warmups,
+CPU affinity mask 1, one active processor, serial GC, synchronous compilation,
+ten simulated seconds, quarter-cycle steps and 1e-5 dynamic tolerance.
+
+| Retained run | Complete-case median, s | Setup median, s | Simulation and recording median, s |
+|---|---:|---:|---:|
+| Earlier combined experimental runtime | 8.8255 | 0.3631 | 8.3857 |
+| Current compiled-stage production runtime | 11.9064 | 0.3181 | 11.4992 |
+
+Phase medians are computed separately and need not sum to the complete-case
+median. The slowdown is in simulation and recording, not increased preparation.
+The complete binary recordings have the same SHA-256. A fresh all-value audit
+also finds zero difference over 2,405 finite samples and 4,810 channels, retaining
+both event-side duplicates. This does not establish independent-reference accuracy.
+
+The earlier executable loaded a stack of experimental classes ahead of production
+classes: direct ST1, ST4B and PSS2A evaluators, scalar static-load/current assembly,
+primitive current handoff, and other solver/publication optimizations. The current
+production run does not load those overlays. In particular, direct ST4B stage and
+output evaluation and scalar static-load assembly have not been carried over in
+full. Its ordinary current-publication default also differs from the earlier
+buffered path. Several other experimental gains have since been integrated with
+lifecycle checks, and this report records that production progression from
+approximately 24.9 seconds to 11.9 seconds.
+
+This baseline change must not be presented as surpassing the earlier fast result.
+The classpath and code-path audit identifies implementation differences, but
+does not assign an exact fraction of the 3.08 seconds to each one; that requires
+controlled component comparisons. Retained measurements, settings, effective
+classpath and all-channel comparison results are recorded privately under
+`verification-artifacts/2026-10-21-performance-baseline-audit`.
