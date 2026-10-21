@@ -1371,3 +1371,51 @@ input/output files identified by hashes. The checked-in checkpoint index is
 `checkpoints/case2-recovered-fast-2026-10-21.json`. It requires that private
 snapshot and its dependencies; it is not a standalone production source commit.
 The eight-second production objective remains open.
+
+## Isolated checks of the recovered performance gap
+
+Four separate JVMs each perform twelve warmups and five measured complete-case
+runs. Each retains one verified CPU, fresh setup, ten simulated seconds,
+quarter-cycle steps, 1e-5 dynamic tolerance and full recording. The control
+repeats the recovered composite runtime with a switchable bridge implementation;
+each other configuration disables one optimization group. These experiments
+change private overlays, not production defaults.
+
+| Recovered-runtime configuration | Complete-case median, s | Difference from fresh control, s |
+|---|---:|---:|
+| All recovered paths enabled | 8.5102 | 0.0000 |
+| ST4B bridge reuse disabled | 8.9989 | +0.4887 |
+| Scalar static-load power/current arithmetic disabled | 9.2061 | +0.6960 |
+| Cached current-device traversal and primitive current transfer disabled | 8.2016 | -0.3086 |
+
+The fresh control reproduces the preceding 8.5163-second recovery. Bridge reuse
+and scalar load arithmetic each show a measurable benefit in this runtime.
+Disabling the current traversal/transfer group is faster in this test; therefore
+the missing primitive transfer path cannot be credited with explaining the
+production slowdown. Scalar load arithmetic remains enabled in that test.
+The scalar-only test retains cached traversal and primitive transfer.
+
+These are conditional differences from separate JVM runs, not additive phase
+costs or confidence bounds. The complete three-second production gap is not yet
+attributed. Other implementation differences include the direct stabilizer
+output path, cached network bus traversal, and production lifecycle/fallback
+checks. Their individual costs have not been isolated here.
+
+All 68 complete binary recordings have the canonical hash: 2,405 samples,
+4,810 channels and both event-side duplicates. Both load-flow iteration counts
+remain unchanged (16 before netting, zero after). The enabled transfer variants
+each report 36,370 buffered current solves; the disabled variant reports zero.
+This validates measured-output equivalence for this case, not independent
+reference accuracy or general correctness of every experimental path.
+
+The checkpointing failure was preserving component commits and benchmark
+reports without a complete immutable source snapshot of the integrated fast
+runtime. The recovered executable archive now pins the effective classes and
+resources, but it remains a composite experimental artifact. It does not turn
+the earlier 8.9-second state into a standalone source commit or establish the
+eight-second production objective.
+
+Commands, switchable sources/classes, all repetitions, affinity checks and
+recording hashes are retained under
+`verification-artifacts/2026-10-21-fast-stack-ablations`. The checked-in evidence
+index is `checkpoints/case2-fast-stack-ablations-2026-10-21.json`.

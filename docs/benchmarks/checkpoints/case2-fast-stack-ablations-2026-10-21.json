@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "status": "isolated-recovered-runtime-performance-checks",
+  "production": false,
+  "independent_accuracy_qualified": false,
+  "private_manifest": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-fast-stack-ablations/manifest.json",
+  "private_manifest_digest": {
+    "bytes": 107451,
+    "sha256": "3ae17320f295f485167bf1dc8ee45910839e56146dbe814995a4190a4b3e71c1"
+  },
+  "archive": {
+    "bytes": 6118969,
+    "sha256": "2698f42d3926062624f213d6caf9c660c68d1c47128ca2ea8a68685029fcedf9"
+  },
+  "recovered_runtime_manifest": {
+    "path": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-recovered-fast-stack/manifest.json",
+    "bytes": 1359928,
+    "sha256": "3475afae10a3ac2b9eb4a20481fa3117079ad16e6e8312a517fb1b67306aa160"
+  },
+  "results": {
+    "control": {
+      "status": "completed",
+      "mode": "control",
+      "warmup_runs": 12,
+      "measured_runs": 5,
+      "case_wall_s": [
+        8.7313004,
+        8.7755824,
+        8.5101772,
+        8.311689,
+        8.3734993
+      ],
+      "median_case_wall_s": 8.5101772,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "single_cpu_verified": true,
+      "full_recording_included": true,
+      "experimental_runtime": true,
+      "independent_accuracy_qualified": false,
+      "setup_median_s": 0.3618374,
+      "simulation_recording_median_s": 8.0280957
+    },
+    "bridge_off": {
+      "status": "completed",
+      "mode": "bridge_off",
+      "warmup_runs": 12,
+      "measured_runs": 5,
+      "case_wall_s": [
+        9.2882165,
+        8.9988594,
+        9.3670719,
+        8.9615652,
+        8.9614677
+      ],
+      "median_case_wall_s": 8.9988594,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "single_cpu_verified": true,
+      "full_recording_included": true,
+      "experimental_runtime": true,
+      "independent_accuracy_qualified": false,
+      "setup_median_s": 0.3448323,
+      "simulation_recording_median_s": 8.6854134
+    },
+    "current_off": {
+      "status": "completed",
+      "mode": "current_off",
+      "warmup_runs": 12,
+      "measured_runs": 5,
+      "case_wall_s": [
+        8.5895342,
+        8.2015959,
+        8.3158261,
+        8.0340388,
+        7.9895355
+      ],
+      "median_case_wall_s": 8.2015959,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "single_cpu_verified": true,
+      "full_recording_included": true,
+      "experimental_runtime": true,
+      "independent_accuracy_qualified": false,
+      "setup_median_s": 0.3490102,
+      "simulation_recording_median_s": 7.814198
+    },
+    "static_off": {
+      "status": "completed",
+      "mode": "static_off",
+      "warmup_runs": 12,
+      "measured_runs": 5,
+      "case_wall_s": [
+        9.3663716,
+        9.3644449,
+        9.2061274,
+        8.9220296,
+        9.0017125
+      ],
+      "median_case_wall_s": 9.2061274,
+      "trace_sha256": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+      "canonical_trace": true,
+      "single_cpu_verified": true,
+      "full_recording_included": true,
+      "experimental_runtime": true,
+      "independent_accuracy_qualified": false,
+      "setup_median_s": 0.3625156,
+      "simulation_recording_median_s": 8.723014
+    }
+  },
+  "conditional_cost_s": {
+    "bridge_off": 0.4886822000000013,
+    "current_off": -0.30858130000000017,
+    "static_off": 0.6959502000000004
+  },
+  "notes": [
+    "Costs are conditional on the recovered combined experimental runtime and need not add in production.",
+    "current_off disables cached current-device traversal and primitive current transfer together; scalar static-load arithmetic remains enabled.",
+    "static_off disables scalar static-load power and current arithmetic, retaining cached device traversal and primitive current transfer.",
+    "Each JVM performs twelve warmups and five measured repetitions with fresh setup and complete recording.",
+    "All complete channel recordings equal the retained canonical binary trace.",
+    "The remaining production gap is not isolated by these ablations."
+  ]
+}
