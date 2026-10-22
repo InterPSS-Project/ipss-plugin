@@ -945,3 +945,45 @@ retains sources, test results, runtime identities, all timings and hashes for
 94 complete recordings plus four prefixes. Unrelated pending performance edits
 were excluded from the source used for verification. Case 1 remains about
 1.47 seconds above the target, and independent full-system accuracy is unresolved.
+
+## Ordinary ST1 traversal screen, October 22
+
+An isolated follow-up extends the fixed preparation call sites to ordinary
+ST1 evaluations. It preserves each input read, stage-input write, static-block
+update, preparation pass and control-block advancement. The committed local
+traversal remains enabled in both arms. Eleven focused tests pass, including
+bitwise ordinary and local state/derivative comparisons, changing parameters
+and limiters, alternate-order fallback, and replaced-binding rejection.
+
+Case 1 completes 32 alternating warmups and seven measured pairs on one
+logical CPU, with the same quarter-cycle step, 1e-5 tolerance, full recording
+and experimental network path as the preceding screen. The candidate executes
+2,696,070 ordinary fixed-order passes per run; controls execute zero.
+
+| Case 1 measurement | Control | Candidate |
+| --- | ---: | ---: |
+| Median whole-case wall time | 15.997 s | 16.132 s |
+| Wall-time range | 13.146–17.614 s | 13.736–17.484 s |
+| Median process CPU time | 10.891 s | 10.844 s |
+
+Only four of seven pairs favor the candidate. The last eight warmups took
+9.412–9.697 seconds, followed by a large increase in both arms during measurement.
+One candidate run took 17.484 seconds wall time but 10.844 seconds of process
+CPU time, with zero compilation and 122 ms of garbage collection. These gaps
+and the observed activity of other applications prevent qualifying a small
+performance gain. All measurements remain retained; none was removed as an outlier.
+
+The bounded runner stopped during Case 2's nineteenth warmup when free space
+on the log volume fell below its 2 GiB reserve. A subsequent identity-checked
+manual stop request found that the process had already exited and stopped no
+process. Case 2 has 18 completed warmups and no measured pairs. All 64 completed
+recordings across both cases match the retained baseline byte for byte; the
+interrupted Case 2 recording is retained separately and excluded from completed
+run claims. There is no new six-case acceptance result.
+
+The ordinary-evaluation extension is not enabled in production. The
+[screen evidence index](checkpoints/st1-ordinary-schedule-2026-10-22.json)
+retains the candidate, tests, runtime identities, all completed timings,
+recording hashes and the storage-guard termination. The preceding committed
+local ST1 improvement remains the qualified performance change; the eight-second
+objective and independent full-system accuracy remain open.
