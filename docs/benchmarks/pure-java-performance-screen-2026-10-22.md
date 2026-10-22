@@ -431,3 +431,7 @@ The [stored-state and local-stability diagnostic](renewable-startup-local-stabil
 ## Case 3 renewable boundary replay
 
 The [conditional terminal-voltage replay](case3-renewable-boundary-replay-2026-10-22.md) isolates a strong initial recovery-selector sensitivity across all 290 converters. A selector-only coupled quarter-cycle probe avoids the early failure but retains large reference errors. Finer local replay steps also worsen some outputs, so extra substeps are not promoted as an accuracy fix. Six replay runs, one coupled short run and their complete observations are retained; no production change or new timing claim follows.
+
+## Local-update input and limiter history
+
+The [Case 3 stage audit](case3-replay-step-boundary-2026-10-22.md) separates held-input and interpolated-input substeps. Both alter limiter-command timing and retained two-step history; held voltage reduces but does not remove the mismatch. Stored rate equations match exactly at the two observed devices, and the control recording is unchanged. Four new full-fleet conditional replays and a comparison figure are retained. No production fix or performance acceptance follows from this diagnostic.
