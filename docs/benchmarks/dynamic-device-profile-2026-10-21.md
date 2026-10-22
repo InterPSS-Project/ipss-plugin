@@ -111,3 +111,35 @@ The [profile evidence index](checkpoints/dynamic-device-profile-2026-10-21.json)
 retains a compact private archive of those sources, counters, flight recordings
 and run metadata, with hashes. It references the existing baseline archive
 instead of copying the complete source or simulation-output trees.
+
+## Follow-up execution sampling without per-device timers
+
+A second Case 1 profile uses the committed scalar-preparation controller overlay,
+32 complete warmups and three sampled runs, without any per-device timing calls.
+It excludes both pending observation-cache and compact-state-update prototypes.
+The network step, tolerance, single logical CPU and full recording are unchanged.
+All 35 runs reproduce the retained binary observations byte for byte. The sampled
+whole-case durations are 11.1457, 11.0184 and 10.7185 seconds; these include flight
+recording overhead and are not a replacement performance checkpoint.
+
+Of 1,763 main-thread execution samples, 711 (40.3%) are in network solution work,
+208 (11.8%) in PSS2A, 205 (11.6%) in the ST1 family, 221 (12.5%) in machine-package
+paths, 72 (4.1%) in ESST4B and 66 (3.7%) in renewable-model paths. These categories
+are stack classifications, not exclusive stopwatch measurements. Machine-package
+samples include controller ownership accessors and voltage-compensation helpers;
+they must not all be attributed to machine differential equations. Network
+classification takes precedence over model classes deeper in that stack.
+
+Network leaf samples are concentrated in the factored row solve, current-injection
+assembly and static-load evaluation. Controller-related leaf samples also include
+machine ownership and controller lookup methods. Line-level samples can be
+affected by JIT inlining and safepoints, so a method's sample count alone does not
+establish its removable cost. Output recording remains included; the small count
+classified directly as recording is not a complete wall-time I/O measurement.
+
+This supports investigating both the network and controller paths. Reducing ST1
+substep count addresses only one portion of the work and has not met the accuracy
+requirements in the one- and four-step experiments. The
+[sampling evidence index](checkpoints/case1-sampling-profile-2026-10-21.json)
+retains the flight recording, source, commands, all statuses, affinity verification
+and detailed stack summary.
