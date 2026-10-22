@@ -635,3 +635,64 @@ and independent trajectory acceptance remain open.
 The [phase-profile evidence index](checkpoints/phase-profiles-2026-10-22.json)
 retains the sampling recording, instrumented sources, commands, timings, input
 change masks, affinity checks and hashes of all 38 complete recordings.
+
+## Guarded ST4B endpoint reuse screens, October 22
+
+Two isolated prototypes combine ST4B's zero-time step and output evaluation.
+They retain all three step-preparation passes and all state/derivative work.
+A prepared output can be reused only within that call, with a standard graph,
+side-effect-free machine/bus inputs, a held standard stabilizer output, finite
+values, and unchanged block inputs during the final preparation pass. Unsettled
+feedback, observers and custom blocks retain the existing evaluation path.
+Voltage, parameters and numeric limits remain live between calls.
+
+The first guard checks graph shape on every call and snapshots all six inputs.
+After 20 alternating warmups and seven measured pairs per case, it shows no
+consistent advantage: the candidate wins three pairs in Case 1 and one in
+Case 2. Case 1 includes two candidate wall-clock delays of roughly two seconds
+relative to process CPU time; these observations are retained, not excluded.
+The compact guard checks immutable graph shape when binding, retains the
+existing per-preparation replacement checks, and compares input bits while
+preparing each block. It also removes an unnecessary admittance computation
+that had been used only to check a known return type.
+
+The compact screen uses 32 alternating warmups followed by seven measured
+pairs per case. Each run includes fresh loading, preparation, initialization,
+all channels, output writing and closure. One logical CPU, 1e-5 network tolerance,
+quarter-cycle steps and ten ST1 substeps remain fixed. Compilation and garbage
+collection within measured runs are included. Both arms use the experimental
+Anderson/deferred-publication network path; these are not production timings.
+
+| Case | Control median | Compact candidate median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.898 s | 9.578 s | 0.256 s | 7/7 |
+| 2 | 6.590 s | 6.468 s | 0.100 s | 5/7 |
+
+Case 1 control/candidate ranges are 9.752–10.136 / 9.205–9.708 seconds.
+Case 2 ranges are 6.373–6.842 / 6.387–6.642 seconds. The second case still
+has overlapping ranges. Candidate runs reuse 1,508,664 outputs in Case 1 and
+468,454 in Case 2. All 160 complete recordings across both timing screens
+match the retained baseline byte for byte, including channel metadata.
+
+The original guard passes 39 focused tests; the compact guard passes 41,
+including coupled faults, controller activation, live inputs/limits, custom
+blocks, observers, unsettled feedback and nonfinite fallback. An independent
+small-system trajectory suite is included in these counts. An initial
+benchmark harness compilation error and a test-only API compilation error
+are retained separately from simulation outcomes.
+
+With Anderson acceleration disabled, two additional control/candidate runs
+per case also produce identical complete recordings (four runs total). Cases
+3 and 4 still fail at 0.04583333333333333 seconds with byte-identical partial
+recordings. These checks preserve the existing failures; they do not qualify
+those cases for timing or accuracy.
+
+These results establish a promising isolated optimization, not independent
+full-system accuracy. No production default changes in this checkpoint.
+The eight-second target remains unmet for Case 1, and supplied-reference
+trajectory acceptance remains open.
+
+The [endpoint-screen evidence index](checkpoints/st4-endpoint-screens-2026-10-22.json)
+retains both prototypes, tests, raw timings, reproduction scripts and recording
+hashes. Full recordings remain on the designated artifact drive; the retained
+archive contains compact evidence and dependency references.
