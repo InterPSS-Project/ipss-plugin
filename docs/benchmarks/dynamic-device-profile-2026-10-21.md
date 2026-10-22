@@ -1145,3 +1145,21 @@ It has no warmed timing qualification and is not enabled in production. Its
 first build failed on a Java class-type comparison before tests or simulation;
 the corrected build and that failed attempt are both retained. These checks
 preserve the existing trajectories and do not establish independent-reference accuracy.
+
+The subsequent warmed screen completed 32 alternating warmups and seven
+measured pairs per case, with one logical CPU and complete recording included.
+All 92 recordings match the retained one-step baseline byte for byte and keep
+the same network iteration counts.
+
+| Case | Control median | Preparation-reuse median | Median paired saving | Reuse faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.933 s | 8.931 s | -0.029 s | 3/7 |
+| 2 | 6.361 s | 6.224 s | 0.142 s | 5/7 |
+
+Median process CPU time changes from 8.781 to 8.656 seconds for Case 1 and
+6.219 to 6.063 seconds for Case 2. The state comparisons add work to avoid
+preparation passes; the wall-time results do not demonstrate a consistent gain
+across both cases. This prototype remains disabled in production. The
+[warmed timing index](checkpoints/pss-unchanged-state-refresh-screen-2026-10-22.json)
+retains all pairs, runtime identities, source, counters and recording hashes.
+These results do not qualify independent-reference accuracy or six-case completion.
