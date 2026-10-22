@@ -359,3 +359,43 @@ reference trajectory accuracy remain unresolved.
 The [qualification index](checkpoints/st1-boundary-qualification-2026-10-21.json)
 retains scripts, sources/classes, tests, commands, affinity, counters and hashes.
 Full generated recordings remain identified dependencies rather than extra copies.
+
+## Imported-machine Norton-source cache screen
+
+The corrected prototype adds an explicit eligibility hook to the core machine
+and opts in the two final imported synchronous-machine classes. It does not
+introduce a core-to-plugin dependency or opt arbitrary subclasses in. The
+voltage-dependent terminal-current and electrical-power updates still execute
+on every call. Only the final internal-source conversion can reuse its result,
+keyed by exact internal voltage, conductance, susceptance, angle and current
+base multiplier.
+
+Forty-two focused tests pass, including imported round-rotor and salient-pole
+models, changing terminal voltages, state advances, base multipliers, cache
+disable/re-enable and reinitialization. Core scalar tests cover signed zeros,
+extreme values and non-finite inputs. Controls assert zero reuse; candidates
+assert positive reuse. Case 1 exercises 333 active synchronous machines and
+12,860,500 reuses per completed candidate run. The previous inactive screen's
+performance conclusion remains withdrawn.
+
+Both cases use twelve alternating warmups and five measured pairs, alternating
+which arm runs first in each pair. Both arms include the integrated guarded ST1
+optimization, identical class overlays, one logical CPU, the quarter-cycle
+network step, 1e-5 tolerance and full recording. No measurements or compilation
+time are removed. All 44 complete recordings match their retained baseline.
+
+| Case | Disabled control median | Cache median | Median paired reduction | Cache faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.490026 s | 10.678659 s | -0.091580 s | 1/5 |
+| 2 | 7.569275 s | 7.695792 s | -0.201854 s | 2/5 |
+
+The cache is not promoted: Case 1 is slower in four of five measured pairs and
+has a higher median. This screen does not isolate which part of the extra cache
+key/dispatch machinery accounts for the cost. Positive reuse counts alone are
+insufficient evidence of a speedup. The implementation remains an isolated
+prototype; the committed ST1 improvement is retained.
+
+The [evidence index](checkpoints/imported-norton-source-screen-2026-10-21.json)
+preserves sources/classes, tests, commands, raw timings, feature counters,
+affinity and full-recording dependencies. Independent-reference accuracy and
+the full eight-second objective remain open.

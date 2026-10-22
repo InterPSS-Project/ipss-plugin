@@ -1,0 +1,202 @@
+{
+  "schema": 1,
+  "description": "Imported-machine Norton-source cache screen with positive feature counters. Not promoted.",
+  "base_commit": "9b49d217001a2784a292f4a049c130747d1304bc",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-imported-norton-source-screen/evidence.zip",
+  "archive_sha256": "8e9a06430419152e8b125cc749c730f0b9d8040e566035c96e1e0d6c3e62d3d0",
+  "archive_bytes": 4098891,
+  "protocol": {
+    "cases": [
+      1,
+      2
+    ],
+    "warmups_per_case": 12,
+    "measured_pairs_per_case": 5,
+    "logical_processors": 1,
+    "network_step_s": 0.004166666666666667,
+    "voltage_correction_tolerance_pu": 1e-05,
+    "st1_substeps": 10,
+    "st1_boundary_reuse": true,
+    "scope": "Fresh parsing, preparation, initialization, all observations and writer closure; compilation and GC included"
+  },
+  "focused_tests": 42,
+  "results": [
+    {
+      "case": 1,
+      "arms": {
+        "control": {
+          "seconds": [
+            11.2729915,
+            10.4194035,
+            10.6252478,
+            10.4750464,
+            10.4900263
+          ],
+          "median_s": 10.4900263,
+          "min_s": 10.4194035,
+          "max_s": 11.2729915,
+          "compilation_ms": [
+            627,
+            93,
+            132,
+            158,
+            66
+          ],
+          "reuses": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "active_eligible": [
+            333,
+            333,
+            333,
+            333,
+            333
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            10.6533033,
+            11.1637036,
+            10.6786592,
+            10.5666262,
+            10.9305831
+          ],
+          "median_s": 10.6786592,
+          "min_s": 10.5666262,
+          "max_s": 11.1637036,
+          "compilation_ms": [
+            208,
+            308,
+            235,
+            143,
+            215
+          ],
+          "reuses": [
+            12860500,
+            12860500,
+            12860500,
+            12860500,
+            12860500
+          ],
+          "active_eligible": [
+            333,
+            333,
+            333,
+            333,
+            333
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        0.6196882000000006,
+        -0.7443001000000002,
+        -0.05341139999999989,
+        -0.09157979999999988,
+        -0.4405567999999995
+      ],
+      "median_paired_reduction_s": -0.09157979999999988,
+      "candidate_wins": 1,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      }
+    },
+    {
+      "case": 2,
+      "arms": {
+        "control": {
+          "seconds": [
+            8.103275,
+            7.5692755,
+            7.4184238,
+            7.5843765,
+            7.4939381
+          ],
+          "median_s": 7.5692755,
+          "min_s": 7.4184238,
+          "max_s": 8.103275,
+          "compilation_ms": [
+            646,
+            86,
+            53,
+            179,
+            83
+          ],
+          "reuses": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "active_eligible": [
+            103,
+            103,
+            103,
+            103,
+            103
+          ]
+        },
+        "candidate": {
+          "seconds": [
+            7.5842599,
+            8.1949766,
+            7.8661763,
+            7.3872452,
+            7.6957923
+          ],
+          "median_s": 7.6957923,
+          "min_s": 7.3872452,
+          "max_s": 8.1949766,
+          "compilation_ms": [
+            131,
+            524,
+            310,
+            18,
+            207
+          ],
+          "reuses": [
+            4739059,
+            4739059,
+            4739059,
+            4739059,
+            4739059
+          ],
+          "active_eligible": [
+            103,
+            103,
+            103,
+            103,
+            103
+          ]
+        }
+      },
+      "paired_reductions_s": [
+        0.5190150999999998,
+        -0.6257011000000006,
+        -0.4477525,
+        0.19713130000000056,
+        -0.20185419999999965
+      ],
+      "median_paired_reduction_s": -0.20185419999999965,
+      "candidate_wins": 2,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "123b1cce4ad4d4087e7dc294b47031bb1bfc52436dd086d588e531d5936f675f",
+        "interpss.csv": "d54364c9932dc2a280b9fd633f30885cf77175c9204bea1d8e2fa089bbb31950",
+        "full-network-channels.json": "4a2e93748b9175d0d334165c88e90cb4a8a8d82047e9c646794dd835463b6bee"
+      }
+    }
+  ],
+  "decision": "Do not promote: Case 1 median and four of five pairs are slower. This corrects the previous inactive cache screen but does not establish a generally useful speedup.",
+  "dependencies": [
+    "st1-boundary-qualification-2026-10-21.json",
+    "dynamic-parameter-validation-2026-10-21.json"
+  ]
+}
