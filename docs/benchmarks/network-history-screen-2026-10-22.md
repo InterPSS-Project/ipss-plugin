@@ -103,9 +103,47 @@ An isolated follow-up reuses that existing guarded setter for accelerated
 voltage publication. All 47 focused tests pass, as do 4,274 exact-double checks
 plus notification-history and subclass-setter checks. Complete Cases 1 and 2
 retain identical binary, CSV and channel metadata, iteration counts and mixing
-counts. This follow-up has compatibility audits only: the timing table above
-measures the earlier eager-publication version. Its speedup remains unmeasured,
-and the underlying reference-accuracy limitations remain unchanged.
+counts. The timing table above measures the earlier eager-publication version;
+the following screen measures the verified deferred-publication follow-up.
+The underlying reference-accuracy limitations remain unchanged.
+
+## Deferred-publication timing and coverage
+
+The follow-up repeats the same twelve alternating warmups and five measured
+pairs per case, retaining the single-CPU setting, complete recording, fresh
+preparation and compilation/GC inside the timed interval. Its control disables
+acceleration; both arms use the same executable overlay and D: storage.
+
+| Case | Ordinary median and range, s | Deferred candidate median and range, s | Median paired reduction, s | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.910843 (10.856055–11.795607) | 10.795280 (10.588565–10.859228) | 0.158592 | 5/5 |
+| 2 | 7.455104 (7.448309–8.208470) | 6.757077 (6.623757–7.047913) | 0.751984 | 5/5 |
+
+The candidate wins all five pairs in both cases. Relative differences between
+arm medians are 1.1% for Case 1 and 9.4% for Case 2. Case 1's ranges still overlap
+and compilation remains active, so this is a bounded screening result, not a
+universal speedup guarantee. All 44 complete runs reproduce the full binary,
+CSV and channel metadata of their respective audited arms. These are comparisons
+against ordinary iteration, not paired comparisons against the earlier eager
+acceleration variant; cross-screen differences cannot isolate setter cost alone.
+
+A separate instrumented audit confirms that the fast-path predicate holds for
+all 27,060,000 accelerated voltage publications in Case 1 and all 30,778,000 in
+Case 2, with zero fallback calls. Both audit recordings remain byte-identical.
+These counts establish coverage, not exclusive timing attribution.
+
+For the candidate, median setup/initialization is 0.432 seconds in Case 1 and
+0.334 seconds in Case 2; simulation plus complete recording is 10.359 and 6.387
+seconds respectively. Stage medians need not sum to the full median. Case 1's
+remaining gap therefore lies mainly in simulation work, rather than preparation.
+
+Case 1 still exceeds eight seconds. The candidate retains its previously
+measured reference errors, including worse Case 1 rotor/power errors than the
+ordinary iteration control. Cases 3–4 still lack completed ten-second runs.
+The prototype is retained for further investigation; production defaults remain
+unchanged. The [follow-up evidence index](checkpoints/network-deferred-screen-2026-10-22.json)
+preserves raw timings, phase measurements, coverage counts, full-recording
+hashes, source/classes, commands and external recording dependencies.
 
 ## Cases 3 and 4
 
