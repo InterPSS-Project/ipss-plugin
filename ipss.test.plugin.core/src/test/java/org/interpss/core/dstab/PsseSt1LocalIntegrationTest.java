@@ -14,13 +14,19 @@ import com.interpss.dstab.cache.StateMonitor;
 /** Native reference-step discriminators for ST1's local integration and publication. */
 public class PsseSt1LocalIntegrationTest {
     @Test
-    void explicitDefaultAndMachineOverridePreserveTheDefaultTrajectory() throws Exception {
-        double[] expected=trajectory(load(false,.0005));
-        assertArrayEquals(expected,trajectory(load(false,.0005,s->s.setSt1Substeps(10))),0.);
+    void defaultIsOneAndExplicitTenAndMachineOverrideRemainAvailable() throws Exception {
+        var defaultFixture=load(false,.0005);
+        assertEquals(1,IEEE1981ST1Exciter.DEFAULT_LOCAL_SUBSTEPS);
+        assertEquals(1,defaultFixture.solver().getSt1Substeps());
+        assertEquals(1,defaultFixture.solver().getSt1Substeps("Bus1-mach1"));
+        double[] expected=trajectory(defaultFixture);
+        assertArrayEquals(expected,trajectory(load(false,.0005,s->s.setSt1Substeps(1))),0.);
+        double[] ten=trajectory(load(false,.0005,s->s.setSt1Substeps(10)));
+        assertNotEquals(expected[0],ten[0],"explicit ten must retain its distinct integration");
         var overridden=load(false,.0005,s->{s.setSt1Substeps(4);s.setSt1Substeps("Bus1-mach1",10);});
         assertEquals(4,overridden.solver().getSt1Substeps());
         assertEquals(10,overridden.solver().getSt1Substeps("Bus1-mach1"));
-        assertArrayEquals(expected,trajectory(overridden),0.);
+        assertArrayEquals(ten,trajectory(overridden),0.);
     }
 
     @Test
@@ -96,7 +102,7 @@ public class PsseSt1LocalIntegrationTest {
         // local ten-step integration from the common network-step recurrence.
         for (double[] sample : new double[][] {{.0005,.00019025802612304688},
                 {.005,.0018546581268310547}}) {
-            var fixture=load(false,sample[0]);
+            var fixture=load(false,sample[0],s->s.setSt1Substeps(10));
             double initial=fixture.machine().getEfd();
             jump(fixture,.001);
             assertTrue(fixture.algorithm().solveDEqnStep(true));
@@ -107,7 +113,7 @@ public class PsseSt1LocalIntegrationTest {
 
     @Test
     void zeroTaFieldPublishesBeforeTheLastAlgebraicRefresh() throws Exception {
-        var fixture=load(true,.0005);
+        var fixture=load(true,.0005,s->s.setSt1Substeps(10));
         double initial=fixture.machine().getEfd();
         jump(fixture,.001);
         assertTrue(fixture.algorithm().solveDEqnStep(true));
@@ -124,7 +130,7 @@ public class PsseSt1LocalIntegrationTest {
 
     @Test
     void disabledLocalControllerFreezesAndReinitializationDoesNotDuplicateIt() throws Exception {
-        var fixture=load(false,.0005);
+        var fixture=load(false,.0005,s->s.setSt1Substeps(10));
         int count=fixture.solver().getBoundDifferentialStateCount();
         double initial=fixture.machine().getEfd();
         fixture.exciter().setStatus(false);

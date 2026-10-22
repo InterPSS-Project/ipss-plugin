@@ -1,9 +1,13 @@
 # ST1 single-step accuracy experiment
 
-Removing the ST1 local substeps is **not qualified for production**. Cases 1 and
-2 complete, but the single-step trajectories differ materially from the retained
-ten-substep implementation. Case 2 still fails the supplied-reference accuracy gates.
-The production default remains ten local steps. Correction dated 2026-10-22:
+Policy update, October 22: the user accepted the plotted one-versus-ten-step
+differences and requested **one local step by default**. The
+[configurable-count API](configurable-controller-substeps-2026-10-21.md) now
+uses that default, with ten still available explicitly. This changes the
+accepted performance/accuracy tradeoff, not the measured errors below.
+Cases 1 and 2 complete, but the single-step trajectories differ from the retained
+ten-step implementation. Case 2 still fails the supplied-reference accuracy gates.
+Correction dated 2026-10-22:
 the earlier Case 1 independent-reference comparison used the wrong fault bus
 and is withdrawn. Case 2 reference errors and the one-versus-ten implementation
 differences remain valid. See the [event-identity audit](network-iteration-audit-2026-10-22.md).
@@ -53,7 +57,8 @@ Cases 3 and 4 fail at 0.0458333 seconds with either count. Their short prefixes
 are retained for diagnosis, but cannot qualify ten-second accuracy or timing.
 The experiment does not show that every ST1 instance requires ten steps, or that
 ten is the minimum acceptable count. It shows that changing all of them to one
-is not an acceptable accuracy-preserving optimization in these coupled runs.
+is not a bitwise or strict accuracy-preserving optimization in these coupled runs;
+the subsequent user-approved default accepts that numerical difference.
 
 ## Comparison and evidence
 

@@ -494,8 +494,8 @@ public class IEEE1981ST1Exciter extends AnnotateExciter {
         if (getClass()!=IEEE1981ST1Exciter.class) throw new IllegalStateException("Exact ST1 class required");
         directEvaluation=new St1DirectEvaluation(this);
     }
-    /** Existing local integration policy, retained for callers of the original overload. */
-    public static final int DEFAULT_LOCAL_SUBSTEPS = 10;
+    /** Default local integration count; higher counts remain explicitly configurable. */
+    public static final int DEFAULT_LOCAL_SUBSTEPS = 1;
     /** Upper bound on explicitly requested local integration work. */
     public static final int MAX_LOCAL_SUBSTEPS = 128;
 

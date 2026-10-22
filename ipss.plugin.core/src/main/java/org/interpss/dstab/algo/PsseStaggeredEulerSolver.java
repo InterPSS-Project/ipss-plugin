@@ -60,7 +60,7 @@ import com.interpss.dstab.mach.impl.DynamicMachineImpl;
  * The extended stack starts with zero derivative history; the original
  * IEEE39 controller subset retains its verified initial-derivative history.
  * Renewable event-history parity and full-fleet accuracy remain unverified.
- * ST1 controllers default to ten configurable local STORE steps per network step with physical
+ * ST1 controllers default to one configurable local STORE step per network step with physical
  * and stabilizer inputs held at the old endpoint. Their field outputs are
  * published before the final local algebraic refresh; machine and other
  * controller states retain the common network-step rule.
