@@ -116,6 +116,47 @@
       "bytes": 2875347,
       "sha256": "6ccd8d36133839b348f5af0ba948857e19a283d05ad6cbd15eb41f56ac11d6be",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "current-assembly-components-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-current-assembly-components/evidence.zip",
+      "bytes": 3106147,
+      "sha256": "185016b3650fd8ec87343c44173801924e6ce895e5d1504b40f0ce0a6de404e7",
+      "outcome": "diagnostic-resolution-insufficient",
+      "summary": {
+        "1": {
+          "sampled_assembly_ms": 84.6647,
+          "generator_section_ms": 20.0713,
+          "dynamic_device_section_ms": 11.4815,
+          "static_load_section_ms": 17.9403,
+          "empty_clock_pair_ns": 18.571,
+          "per_section_timer_count": 574000,
+          "clock_floor_indicator_ms": 10.659754,
+          "network_iterations": 18340,
+          "sampled_equation_calls": [
+            287,
+            286,
+            287
+          ],
+          "equation_calls": 18342
+        },
+        "2": {
+          "sampled_assembly_ms": 92.6586,
+          "generator_section_ms": 19.6041,
+          "dynamic_device_section_ms": 12.6388,
+          "static_load_section_ms": 19.7415,
+          "empty_clock_pair_ns": 19.369,
+          "per_section_timer_count": 632000,
+          "clock_floor_indicator_ms": 12.241208,
+          "network_iterations": 20202,
+          "sampled_equation_calls": [
+            316,
+            316,
+            316
+          ],
+          "equation_calls": 20204
+        }
+      }
     }
   ],
   "row_solve": {
