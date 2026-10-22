@@ -314,3 +314,48 @@ assert nonzero reuse.
 The [evidence index](checkpoints/st1-boundary-screen-2026-10-21.json) retains both
 experiments, sources/classes, the counterexample, tests, commands, feature counters,
 affinity records and full-recording hashes. Supplied references are unchanged.
+
+## ST1 boundary reuse qualification and integration
+
+The longer paired campaign used 32 alternating warmups followed by seven
+control/candidate pairs per case. Pair order alternated. Both arms used the same
+class overlay with reuse disabled for control, one logical CPU, a 1/240-second
+network step, 1e-5 voltage-correction tolerance and ten ST1 substeps. Timings
+include fresh parsing, preparation, initialization, all recording and writer
+closure. Compilation and garbage collection were not subtracted.
+
+| Case | Control median | Candidate median | Median paired reduction | Candidate faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.687032 s | 10.459400 s | 0.282008 s | 6/7 pairs |
+| 2 | 7.526230 s | 7.433640 s | 0.142034 s | 6/7 pairs |
+
+The ranges overlap and occasional compilation continues during measurement.
+All 92 complete recordings match their baseline hashes, including event-side
+samples. Every candidate Case 1 run skips 1,967,238 redundant graph evaluations;
+every candidate Case 2 run skips 626,922. Controls report zero skips.
+
+The integrated source adds two eligibility guards beyond the timed prototype:
+the selector must retain its standard input expressions, and active saved
+washout history must be zero. These guards preserve the fallback for customized
+graphs and externally restored history. Thirty-nine isolated focused tests and
+41 tests with the existing worktree prototypes pass. They compare all local
+state/history and block inputs, outputs and derivatives, including nonzero
+feedback, zero regulator time, observer changes, altered selectors and counts
+1, 4, 10 and 128.
+
+Final-source complete Cases 1 and 2 match every baseline recording byte and
+retain the same skip counts. The paired timing numbers above belong to the
+earlier guarded prototype; final-source audits establish compatibility and
+feature use, not another warmed timing measurement. Cases 3 and 4 retain their
+existing failure at 0.04583333333333333 seconds, with identical partial records
+and failure messages. Those failed runs are not performance successes.
+
+The feature is integrated only into the supported direct ST1 local path. It
+preserves all physical substeps, equations, state advances and publication
+boundaries. Other pending observation-cache and compact-state prototypes remain
+unpromoted. The Case 1 eight-second target, early Case 3/4 failures and supplied
+reference trajectory accuracy remain unresolved.
+
+The [qualification index](checkpoints/st1-boundary-qualification-2026-10-21.json)
+retains scripts, sources/classes, tests, commands, affinity, counters and hashes.
+Full generated recordings remain identified dependencies rather than extra copies.

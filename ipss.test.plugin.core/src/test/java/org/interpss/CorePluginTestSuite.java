@@ -754,6 +754,7 @@ import org.junit.platform.suite.api.Suite;
 	PsseSt1LocalIntegrationTest.class,
 	DynamicParameterValidationTest.class,
     St1InputEquationsTest.class,
+    org.interpss.dstab.control.exc.ieee.y1981.st1.St1BoundaryReuseTest.class,
 	PsseStaticCurrentLoadVoltageCurveTest.class,
 	Exst1AndesSmibConformanceTest.class,
 	Ieeet1AndesSmibConformanceTest.class,

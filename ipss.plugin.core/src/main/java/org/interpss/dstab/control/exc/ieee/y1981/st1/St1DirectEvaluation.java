@@ -19,6 +19,10 @@ import com.interpss.dstab.controller.cml.wrapper.*;
 /** Experimental evaluator for the unmodified ST1 graph. Not a general CML replacement. */
 final class St1DirectEvaluation {
     final IEEE1981ST1Exciter model;
+    final boolean boundaryReuseEnabled=!Boolean.getBoolean("ipss.experiment.disableSt1BoundaryReuse");
+    long boundaryReuseCount;
+    private final boolean standardBoundaryGraph;
+    private final int feedbackHistorySlot;
     final Node[] nodes = new Node[8];
     private final FixedExpression[] inputs = new FixedExpression[8];
     private final boolean[] scalarInputs = new boolean[8];
@@ -65,11 +69,20 @@ final class St1DirectEvaluation {
         if (foundGate == null || foundGate.getField().getClass() != HighValueFunction.class)
             throw new IllegalStateException("Unexpected ST1 selector");
         gate=foundGate;
+        var gateInputs=((HighValueFunction)gate.getField()).getVarRecList();
+        standardBoundaryGraph=gateInputs.size()==2
+            && gateInputs.get(0).getSymbolType()==CMLVarEnum.ControllerFieldOutput
+            && "this.gainBlock.y".equals(gateInputs.get(0).getSymbolStr())
+            && gateInputs.get(1).getSymbolType()==CMLVarEnum.ControllerFieldParameter
+            && "this.vuelGate1".equals(gateInputs.get(1).getSymbolStr());
         for (Node node : nodes) Objects.requireNonNull(node);
         localBlocks=sorted.stream().filter(n->n.control)
             .map(n->(com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter)n.block)
             .toArray(com.interpss.dstab.controller.cml.field.adapt.CMLControlBlock1stOrderAdapter[]::new);
         localIds=sorted.stream().filter(n->n.control).mapToInt(n->n.id).toArray();
+        int feedbackSlot=-1;
+        for(int i=0;i<localIds.length;i++)if(localIds[i]==5)feedbackSlot=i;
+        feedbackHistorySlot=feedbackSlot;
         localLimited=new boolean[localBlocks.length];
         for(int i=0;i<localBlocks.length;i++) {
             localLimited[i]=localBlocks[i].getType()==StaticBlockType.NonWindup;
@@ -191,6 +204,24 @@ final class St1DirectEvaluation {
         if(Double.doubleToRawLongBits(localX[id])!=Double.doubleToRawLongBits(value))outputChanged(id);
         localX[id]=value;
     }
+    private static final Class<?> FEEDBACK_TYPE=new IEEE1981ST1Exciter().rateFeedbackInputBlock.getClass();
+    private static final Class<?> OUTPUT_TYPE=new IEEE1981ST1Exciter().gainCustomBlock.getClass();
+    private boolean standardBoundary() {
+        if(!standardBoundaryGraph || model.getClass()!=IEEE1981ST1Exciter.class || nodes[6].block.getClass()!=FEEDBACK_TYPE
+                || nodes[7].block.getClass()!=OUTPUT_TYPE)return false;
+        var machine=model.getMachine();Class<?> type=machine.getClass();
+        if(type!=com.interpss.dstab.mach.impl.RoundRotorMachineImpl.class
+                && type!=com.interpss.dstab.mach.impl.SalientPoleMachineImpl.class
+                && type!=org.interpss.dstab.mach.IeeeVcRoundRotorMachine.class
+                && type!=org.interpss.dstab.mach.IeeeVcSalientPoleMachine.class)return false;
+        if(((org.eclipse.emf.ecore.impl.BasicEObjectImpl)machine).eNotificationRequired()
+                || model.getDStabBus().getClass()!=com.interpss.dstab.impl.DStabBusImpl.class
+                || ((org.eclipse.emf.ecore.impl.BasicEObjectImpl)model.getDStabBus()).eNotificationRequired())return false;
+        for(boolean standard:scalarInputs)if(!standard)return false;
+        for(var limit:localLimits)if(limit!=null && limit.getClass()!=org.interpss.numeric.datatype.LimitType.class
+                && limit.getClass()!=com.interpss.dstab.datatype.LimitExpression.class)return false;
+        return true;
+    }
     double advanceLocalStore(double dt,int substeps,boolean discontinuity,boolean wasActive,
             boolean cachePss,double[] history,double[] start,double[] rates) {
         if(history.length!=localBlocks.length || start.length!=localBlocks.length || rates.length!=localBlocks.length)
@@ -203,8 +234,17 @@ final class St1DirectEvaluation {
                 capturePrimitiveLocal();primitiveLocal=true;primitiveLocalAdvanceCount++;
             }
             double h=dt/substeps,field=model.getMachine().getEfd();
+            // A dynamic regulator and an inactive, zero-state washout leave no
+            // rate-feedback loop. The preceding end-of-substep evaluation already
+            // prepared the next substep's inputs and derivatives. Active feedback
+            // must repeat that pass to refresh history, even when Ta is positive.
+            boolean reuseBoundary=primitiveLocal && localT[4]>0. && localK[5]==0.
+                && localX[5]==0. && feedbackHistorySlot>=0
+                && (!wasActive || history[feedbackHistorySlot]==0.)
+                && boundaryReuseEnabled && standardBoundary();
+            if(reuseBoundary)boundaryReuseCount+=substeps-1;
             for(int sub=0;sub<substeps;sub++) {
-                evaluate();
+                if(sub==0 || !reuseBoundary)evaluate();
                 for(int i=0;i<localBlocks.length;i++) {
                     var block=localBlocks[i];
                     start[i]=primitiveLocal?localX[localIds[i]]:block.getStateX();
