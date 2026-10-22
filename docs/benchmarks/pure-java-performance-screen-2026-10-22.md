@@ -284,3 +284,62 @@ The first summary calculated network_other_s by subtracting all component timers
 Current assembly is the largest measured network component. Solved-voltage publication and accelerated-voltage publication together are also material. The next distinct candidate should investigate whether the intermediate solved voltage must be written to every bus before a successful acceleration step immediately replaces it. This differs from the existing deferred-angle setter, which still writes both voltages. Any staged publication requires exact standard classes, observer/callback compatibility, live injection refresh at the next iteration, original convergence checks, correct publication on acceptance/failure, and comparison of full trajectories. This audit does not authorize skipping either publication in production.
 
 Compact source/classes, commands, raw runs, scope correction, affinity, input/runtime/output hashes are retained. Complete recordings remain explicit external dependencies. Supplied references are preserved. The eight-second goal remains open.
+
+## Staged voltage publication
+
+The isolated Java candidate holds solved bus voltages while the original convergence check and eligible acceleration calculation run. A successful acceleration publishes its final voltage once. Convergence, rejected acceleration, iteration exhaustion and errors flush the pending solved values. The network matrix rows remain current. Voltage-dependent injections are refreshed at the next iteration. No integration stages or nonlinear checks are removed.
+
+The path requires the exact standard network, matrix and bus classes, rectangular coordinates and no bus/network notification observers. Eligibility is rechecked after current assembly and solving. The solver uses an explicit contract that its acceleration-eligibility supplier is side-effect free and independent of bus voltage. Ordinary supplier registration disables staging. Custom complex values flush the pending prefix before ordinary handling. These are prototype APIs, not promoted production defaults.
+
+Nine focused tests pass. They cover raw coordinates and signed zeros, reusable publication scopes, nested-scope rejection, standard-class/observer/coordinate guards, matrix-row visibility, notification order, both convergence norms, iteration callbacks, unchanged diagnostics, generic eligibility fallback, rejected acceleration, iteration exhaustion, thrown eligibility, divergent-prefix publication, changed factors, inactive/reactivated buses and observers attached during iteration callbacks. Custom complex fallback has source inspection, not a dedicated focused regression.
+
+| Case | Control median, s | Candidate median, s | Median paired saving, s | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.845055 | 9.022781 | -0.188708 | 0/5 |
+| 2 | 6.250584 | 6.481023 | -0.196025 | 0/5 |
+
+Sixteen alternating warmups precede five order-alternating measured pairs in each case. All runs use one pinned logical CPU, the Java sparse backend, quarter-cycle steps, 1e-5 voltage-correction tolerance, one ST1 step and existing experimental network acceleration. Fresh case setup, initialization, simulation, full recording, writer closure, compilation and GC remain included. Controls use the same executable overlay with staging disabled; they retain its small no-op scope cleanup cost.
+
+All 52 complete recordings match the retained baseline byte for byte. No samples, channels or event-side duplicates are removed. Iteration counts remain 18,340 and 20,202. Per-candidate publication counters are:
+
+| Case | Staged scopes | Solved voltages published | Intermediate writes discarded |
+| --- | ---: | ---: | ---: |
+| 1 | 18,340 | 9,616,000 | 27,064,000 |
+| 2 | 20,202 | 9,616,000 | 30,788,000 |
+
+This screen is not a production promotion. Supplied-case recording equality establishes no new independent-reference accuracy or six-case performance acceptance. Arbitrary concurrent access is outside the single-threaded prototype contract. Further qualification would also need a dedicated custom-complex fallback test and a lifecycle API that cannot be misused by an ordinary external observer. The eight-second objective remains open.
+
+The prior network timing audit motivated this distinct candidate: avoiding an intermediate bus write differs from deferring angle computation while still performing both writes. Full raw times and paired differences are retained; independent arm medians and the median of paired savings are different statistics. Sources/classes, commands, tests, affinity, input/runtime hashes and complete-recording hashes are preserved in compact evidence; large recordings remain explicit external dependencies. No production sources or supplied references were changed.
+
+## Matrix-backed staged publication follow-up
+
+The revision does not establish a useful end-to-end improvement. Its median
+paired saving is only 0.007406 seconds in Case 1 (three wins in five pairs),
+and it loses 0.106010 seconds in Case 2 (two wins). The preceding buffered
+version loses all five pairs in both cases. Neither version is promoted.
+Together, the two screens retain 104 identical full recordings and eighteen
+successful focused-test executions. The eight-second objective remains open.
+
+The follow-up uses the solved matrix rows as pending voltage storage instead of copying voltages and magnitudes into temporary arrays. The existing convergence check and eligible acceleration calculation run before publication. A successful acceleration publishes its final voltage once. Convergence, rejected acceleration, iteration exhaustion and errors flush the pending solved values. The network matrix rows remain current. Voltage-dependent injections are refreshed at the next iteration. No integration stages or nonlinear checks are removed.
+
+The path requires the exact standard network, matrix and bus classes, rectangular coordinates and no bus/network notification observers. Network eligibility is checked after current assembly and solving. Bus eligibility is checked in publication order; before any unsupported bus getter or observer runs, the preceding staged prefix is published and the remainder uses ordinary dispatch. This avoids a separate full bus scan. The solver uses an explicit contract that its acceleration-eligibility supplier is side-effect free and independent of bus voltage, and cannot mutate the solved matrix or membership. Ordinary supplier registration disables staging. Custom complex values flush the pending prefix before ordinary handling. Flush recomputes magnitudes from the unchanged standard matrix values using the original magnitude operation. These are prototype APIs, not promoted production defaults.
+
+Nine focused tests pass. They cover raw coordinates and signed zeros, reusable publication scopes, nested-scope rejection, standard-class/observer/coordinate guards, matrix-row visibility, notification order, both convergence norms, iteration callbacks, unchanged diagnostics, generic eligibility fallback, rejected acceleration, iteration exhaustion, thrown eligibility, divergent-prefix publication, changed factors, inactive/reactivated buses and observers attached during iteration callbacks. Custom complex fallback has source inspection, not a dedicated focused regression.
+
+| Case | Control median, s | Candidate median, s | Median paired saving, s | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.909406 | 8.862637 | 0.007406 | 3/5 |
+| 2 | 6.327662 | 6.401398 | -0.106010 | 2/5 |
+
+Sixteen alternating warmups precede five order-alternating measured pairs in each case. All runs use one pinned logical CPU, the Java sparse backend, quarter-cycle steps, 1e-5 voltage-correction tolerance, one ST1 step and existing experimental network acceleration. Fresh case setup, initialization, simulation, full recording, writer closure, compilation and GC remain included. Controls use the same executable overlay with staging disabled; they retain its small no-op scope cleanup cost.
+
+All 52 complete recordings match the retained baseline byte for byte. No samples, channels or event-side duplicates are removed. Iteration counts remain 18,340 and 20,202. Per-candidate publication counters are:
+
+| Case | Staged scopes | Solved voltages published | Intermediate writes discarded |
+| --- | ---: | ---: | ---: |
+| 1 | 18,340 | 9,616,000 | 27,064,000 |
+| 2 | 20,202 | 9,616,000 | 30,788,000 |
+
+This screen is not a production promotion. Supplied-case recording equality establishes no new independent-reference accuracy or six-case performance acceptance. Arbitrary concurrent access is outside the single-threaded prototype contract. Further qualification would also need a dedicated custom-complex fallback test and a lifecycle API that cannot be misused by an ordinary external observer. The eight-second objective remains open.
+
+The preceding buffered-publication candidate lost all five pairs in both cases. This revision removes the temporary arrays and separate bus guard scan; it tests whether that bookkeeping explains the loss. It remains distinct from deferred angle computation, which still performs both voltage writes. Full raw times and paired differences are retained; independent arm medians and the median of paired savings are different statistics. Sources/classes, commands, tests, affinity, input/runtime hashes and complete-recording hashes are preserved in compact evidence; large recordings remain explicit external dependencies. No production sources or supplied references were changed.

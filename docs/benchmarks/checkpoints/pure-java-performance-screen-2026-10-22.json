@@ -67,6 +67,20 @@
       "bytes": 3114448,
       "sha256": "bfd32c897cef14c6572c7faebc7e72f2c23c124d8759fd23b2a6c23a9a366346",
       "outcome": "diagnostic-only"
+    },
+    {
+      "name": "staged-voltage-publication-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-staged-voltage-publication/evidence.zip",
+      "bytes": 5136378,
+      "sha256": "80fbcbd5865c872d8846253e70ff4b1e3cbadc5485e7d6d1cd784bb191a8f637",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "staged-voltage-matrix-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-staged-voltage-matrix/evidence.zip",
+      "bytes": 5119865,
+      "sha256": "795e3086139b25e0770950e4eba20e6eadeab75e7c85eaa827d041221ef58826",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -559,5 +573,173 @@
     },
     "complete_recordings": 30,
     "recordings_identical": true
+  },
+  "staged_voltage_publication": {
+    "summary": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            8.7956216,
+            8.8536455,
+            8.8450551,
+            8.816743,
+            8.8509134
+          ],
+          "candidate": [
+            9.1591142,
+            9.0037074,
+            9.0337627,
+            9.022781,
+            8.9979859
+          ]
+        },
+        "medians_s": {
+          "control": 8.8450551,
+          "candidate": 9.022781
+        },
+        "paired_savings_s": [
+          -0.36349259999999894,
+          -0.15006189999999897,
+          -0.18870760000000075,
+          -0.2060379999999995,
+          -0.14707250000000016
+        ],
+        "median_paired_saving_s": -0.18870760000000075,
+        "candidate_wins": 0,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.0685015,
+            6.419475,
+            6.28026,
+            6.2505844,
+            6.2123326
+          ],
+          "candidate": [
+            6.6813059,
+            6.4810227,
+            6.4762845,
+            6.3064406,
+            6.6594796
+          ]
+        },
+        "medians_s": {
+          "control": 6.2505844,
+          "candidate": 6.4810227
+        },
+        "paired_savings_s": [
+          -0.6128043999999999,
+          -0.06154769999999932,
+          -0.19602450000000005,
+          -0.05585620000000002,
+          -0.4471470000000002
+        ],
+        "median_paired_saving_s": -0.19602450000000005,
+        "candidate_wins": 0,
+        "recordings_identical": true
+      }
+    ],
+    "coverage": {
+      "1": {
+        "scopes": 18340,
+        "published": 9616000,
+        "discarded_intermediate_writes": 27064000
+      },
+      "2": {
+        "scopes": 20202,
+        "published": 9616000,
+        "discarded_intermediate_writes": 30788000
+      }
+    },
+    "focused_tests": 9,
+    "complete_recordings": 52
+  },
+  "staged_voltage_matrix": {
+    "summary": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            8.9094059,
+            8.9373536,
+            8.8894894,
+            8.9536709,
+            8.8700425
+          ],
+          "candidate": [
+            9.0589345,
+            8.9575679,
+            8.8406517,
+            8.8464167,
+            8.8626368
+          ]
+        },
+        "medians_s": {
+          "control": 8.9094059,
+          "candidate": 8.8626368
+        },
+        "paired_savings_s": [
+          -0.1495286,
+          -0.020214300000001018,
+          0.048837699999999984,
+          0.10725419999999986,
+          0.0074056999999996265
+        ],
+        "median_paired_saving_s": 0.0074056999999996265,
+        "candidate_wins": 3,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.1110835,
+            6.4659157,
+            6.0824144,
+            6.4717451,
+            6.3276624
+          ],
+          "candidate": [
+            6.5376013,
+            6.4013983,
+            6.1884243,
+            6.2747592,
+            6.4971653
+          ]
+        },
+        "medians_s": {
+          "control": 6.3276624,
+          "candidate": 6.4013983
+        },
+        "paired_savings_s": [
+          -0.42651780000000006,
+          0.06451739999999972,
+          -0.1060099000000001,
+          0.1969858999999996,
+          -0.16950289999999946
+        ],
+        "median_paired_saving_s": -0.1060099000000001,
+        "candidate_wins": 2,
+        "recordings_identical": true
+      }
+    ],
+    "coverage": {
+      "1": {
+        "scopes": 18340,
+        "published": 9616000,
+        "discarded_intermediate_writes": 27064000
+      },
+      "2": {
+        "scopes": 20202,
+        "published": 9616000,
+        "discarded_intermediate_writes": 30788000
+      }
+    },
+    "focused_tests": 9,
+    "complete_recordings": 52
   }
 }
