@@ -21,6 +21,9 @@ final class St1DirectEvaluation {
     final IEEE1981ST1Exciter model;
     final boolean boundaryReuseEnabled=!Boolean.getBoolean("ipss.experiment.disableSt1BoundaryReuse");
     long boundaryReuseCount;
+    private final boolean fixedScheduleRequested=!Boolean.getBoolean("ipss.experiment.disableSt1FixedSchedule");
+    private boolean fixedSchedule;
+    long fixedSchedulePasses;
     private final boolean standardBoundaryGraph;
     private final int feedbackHistorySlot;
     final Node[] nodes = new Node[8];
@@ -93,6 +96,12 @@ final class St1DirectEvaluation {
         ordered=sorted.toArray(Node[]::new);
         controls=sorted.stream().filter(n->n.control).toArray(Node[]::new);
         feedback=sorted.stream().filter(n->!n.control&&n.wrapper.isFeedback()).toArray(Node[]::new);
+        int[] expectedOrder={0,5,1,2,3,4,7,6};
+        fixedSchedule=fixedScheduleRequested && ordered.length==8 && feedback.length==0;
+        for(int i=0;i<ordered.length && fixedSchedule;i++) {
+            int id=expectedOrder[i];
+            fixedSchedule=ordered[i].id==id && nodes[id].control==(id==0||id==5||id==2||id==3||id==4);
+        }
         Class<?>[] types={DelayControlBlock.class,GainBlock.class,FilterControlBlock.class,
             FilterControlBlock.class,DelayControlBlock.class,WashoutControlBlock.class};
         for(int i=0;i<types.length;i++)if(nodes[i].block.getClass()!=types[i])
@@ -332,8 +341,35 @@ final class St1DirectEvaluation {
         prepare(false);
     }
     void prepare(boolean capture) {
+        // Fixed call sites retain the ordered traversal and all three preparation
+        // passes. Alternate graphs and ordinary evaluations keep the node loop.
+        if(primitiveLocal && fixedSchedule) {
+            fixedSchedulePasses++;
+            prepareFixedControl(0,capture);
+            prepareFixedControl(5,capture);
+            prepareFixedStatic(1);
+            prepareFixedControl(2,capture);
+            prepareFixedControl(3,capture);
+            prepareFixedControl(4,capture);
+            prepareFixedStatic(7);
+            prepareFixedStatic(6);
+            return;
+        }
         for (Node node : ordered) node.prepare(capture);
         for (Node node : feedback) node.prepare(false);
+    }
+    private void prepareFixedControl(int id,boolean capture) {
+        double value=input(id);
+        localInput(id,value);
+        if(capture)nodes[id].input=value;
+    }
+    private void prepareFixedStatic(int id) {
+        double value=input(id);
+        var block=nodes[id].block;
+        double previousInput=block.getU();
+        block.eulerStep1(value,0.);
+        if(id<6)localInput(id,value);
+        else if(Double.doubleToRawLongBits(previousInput)!=Double.doubleToRawLongBits(block.getU()))outputChanged(id);
     }
     void advanceZero(Node node) {
         if(primitiveLocal){advancePrimitiveZero(node);return;}

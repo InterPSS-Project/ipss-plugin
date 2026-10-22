@@ -892,3 +892,56 @@ retains sources, runtime hashes, test results, commands and every timing,
 with hashes and locations for the complete recordings. This verifies a
 behavior-preserving candidate on the benchmark baseline, not six-case
 reference accuracy. The eight-second objective remains open.
+
+## Fixed ST1 local traversal, October 22
+
+The standard ST1 variants share the ordered slots `[0, 5, 1, 2, 3, 4, 7, 6]`
+and no additional static feedback pass. The evaluator now checks that layout
+when binding the graph and uses explicit call sites for the eight preparations
+inside its existing primitive local-integration scope. Every preparation pass,
+operand read, state update, limiter operation and substep remains. Alternate
+ordering and ordinary evaluations retain the node loop; replaced bindings
+still fail the existing structural check. Ten ST1 substeps remain the default.
+
+The isolated candidate and control use one logical CPU, a quarter-cycle
+network step, 1e-5 voltage-correction tolerance, the preceding ST4B optimization
+and the same experimental Anderson/deferred network path. Thirty-two alternating
+warmups precede seven measured pairs per case, with pair order alternated.
+Whole-case timing includes parsing, preparation, initialization, complete
+recording and writer closure; compilation and garbage collection remain included.
+
+| Case | Control median | Candidate median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.686 s | 9.470 s | 0.216 s | 7/7 |
+| 2 | 6.494 s | 6.458 s | 0.147 s | 5/7 |
+
+Control/candidate ranges are 9.484–9.924 / 9.321–9.685 seconds for Case 1
+and 6.383–6.657 / 6.311–6.510 seconds for Case 2. Candidate runs execute
+10,527,966 fixed-order passes in Case 1 and 3,307,554 in Case 2; controls
+execute zero. All 92 complete recordings and metadata files are identical.
+These paired results support enabling the traversal optimization, while the
+smaller Case 2 benefit remains more sensitive to run variability.
+
+The final source enables the path by default, with
+`ipss.experiment.disableSt1FixedSchedule=true` retaining the diagnostic control.
+Eight focused tests pass, including bitwise local state/derivative/history and
+field-output checks across counts 1, 4, 10 and 128, active feedback, zero-time
+regulators, changing inputs/limits, discontinuities and reactivation. Additional
+tests cover alternate-order fallback, ordinary evaluation and binding replacement.
+The existing independent small-system trajectory test also passes. The new
+test class is registered in `CorePluginTestSuite`; existing full-reactor test
+compilation limitations remain, so this is a focused gate on compatible dependencies.
+
+Two complete final-source runs reproduce Cases 1–2 byte for byte. Four further
+final-source prefix checks preserve their previous observations: Case 3 reaches
+0.1 seconds, while Cases 4, 5 and 6 retain failures at 0.0458333, 0.0333333 and
+0.05 seconds. They are not complete ten-second acceptance runs. The first
+timing harness failed compilation because of duplicate local names; the first
+expanded test compile failed on a wildcard field type. Both were corrected
+before their respective simulations/tests, and the failed attempts are retained.
+
+The [fixed-traversal evidence index](checkpoints/st1-fixed-schedule-2026-10-22.json)
+retains sources, test results, runtime identities, all timings and hashes for
+94 complete recordings plus four prefixes. Unrelated pending performance edits
+were excluded from the source used for verification. Case 1 remains about
+1.47 seconds above the target, and independent full-system accuracy is unresolved.
