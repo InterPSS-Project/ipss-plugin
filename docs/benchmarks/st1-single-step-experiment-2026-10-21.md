@@ -99,3 +99,48 @@ resampling. Full-run metrics printed on the enlargements still cover ten seconds
 Reproduce with `python tools/plot_st1_substep_comparison.py`; its optional local
 plotting dependencies are in `target/plot-dependencies`. Per-channel metrics and
 peak times are saved in `figures/st1-single-step-2026-10-21/plotted-channels.json`.
+
+## Why ten, and the four-step experiment
+
+Ten was selected in commit `639e50c90` to reproduce independently observed ST1
+state-history and field-publication behavior. The controlled EXST1 reference
+step and ESST1A zero-regulator-time tests discriminate that update sequence.
+It is a reference-fidelity choice, not a universal numerical stability rule or
+proof that ten is the smallest usable count. See the earlier
+[local-integration evidence](texas2k-native-reference-comparison-2026-10-17.md#st1-local-integration-and-field-publication).
+
+Four steps were subsequently tested with the same isolated executable overlay,
+input cases, 1/240-second network step, 1e-5 pu network tolerance, and full
+recording as the one-step experiment. The local step is 1.04167 ms, compared
+with 0.416667 ms for ten. Both Cases 1 and 2 complete ten seconds.
+
+| Worst-channel quantity | Case 1 | Case 2 |
+| --- | ---: | ---: |
+| Rotor RMSE, four minus ten | 1.98233 degrees | 1.19633 degrees |
+| Largest absolute rotor difference, four minus ten | 6.71355 degrees | 2.31567 degrees |
+| Voltage RMSE, four minus ten | 0.00202360 pu | 0.00299588 pu |
+| Largest absolute voltage difference, four minus ten | 0.0166873 pu | 0.0119014 pu |
+| Rotor RMSE against reference, ten steps | 42.3457 degrees | 102.7470 degrees |
+| Rotor RMSE against reference, four steps | 44.1859 degrees | 102.3923 degrees |
+
+Four is closer to ten in rotor-angle RMSE than one, but coupled voltage errors
+are not uniformly monotonic with step count. Reference rotor error improves
+slightly in Case 2 and worsens in Case 1; both variants remain far outside the
+0.01-degree target. These results neither qualify four nor prove ten optimal.
+
+The two focused reference-response tests pass with ten steps and fail with four.
+At a 0.005-second network step, the controlled EXST1 field increment with four
+is 0.00185840528 pu versus reference 0.00185465813 pu: error 3.74715e-6 pu,
+exceeding the existing 4e-7 pu tolerance. The zero-regulator-time ESST1A field
+increment differs by 1.33937e-6 pu, exceeding its 1e-6 pu tolerance. These are
+small local errors; the coupled trajectory comparison measures their broader
+effect. The third lifecycle test fails in both configurations because of the
+existing load-flow network cast on reinitialization, so this is not a passing
+three-test suite.
+
+Ten remains the default. No warmed speedup is claimed for four: these were
+correctness runs. Cases 3 and 4 were not rerun with four; their existing early
+failure cannot qualify full-run behavior. The
+[four-step evidence index](checkpoints/st1-four-step-experiment-2026-10-21.json)
+retains the complete channel comparisons, test reports, commands, source
+references and recording hashes.
