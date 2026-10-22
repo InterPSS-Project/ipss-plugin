@@ -293,3 +293,73 @@ changed. The eight-second full-run goal remains open, and these cold short
 runs are not new performance measurements. The
 [equal-startup evidence index](checkpoints/case5-equal-startup-duration-2026-10-22.json)
 retains the harness, commands, runtime inventory, raw recordings and comparisons.
+
+### Independent step-transition contract and startup prototype
+
+A three-bus reference probe isolates the converter's filtered-voltage lag:
+input 1 pu, time constant 0.02 seconds, forced initial state and integration
+base 0.9 pu, and zero initial derivative history. It advances twice at 1 ms,
+three times at 1/240 second, then three times at 1 ms. Two cold runs produce
+identical channel files and state snapshots. This is a deliberately forced
+scalar response, not a physical fault or a system acceptance result.
+
+All eight observed states match the binary32 retained-base recurrence exactly:
+advance STORE by `h*f`, then form STATE as `STORE + 0.5*h*f`, preserving the
+previous STORE when h changes. Standard variable-step Adams--Bashforth gives
+a 0.00878668 pu error at the step increase in this probe. Reducing the step
+also causes a visible state change through the retained base. Therefore a
+step change must not silently substitute a different recurrence. The production
+`TwoStepHistory` binary32 path already has the observed behavior; the new
+`TwoStepHistoryStepTransitionTest` locks all eight values and reset/replay
+behavior without changing its implementation.
+
+An isolated solver prototype allows one startup-to-runtime step change at time
+zero. It keeps the existing arithmetic path when the step is unchanged. For
+global and local ST1 histories, the experimental transition uses the retained-
+base identity `x + 1.5*h_new*f - 0.5*h_old*f_previous`. The local ST1 path uses
+its generic update for the transition and resumes the existing fast path on
+later equal steps. Renewable binary32 history is unchanged. The scalar probe
+directly verifies the converter lag; extending its identity to every controller
+does not independently qualify all of those model transitions or lifecycle
+events. The prototype remains outside production sources.
+
+Twenty-two focused tests pass against both the retained production runtime and
+the prototype with its transition option disabled. These include the new
+scalar regression, existing solver guard tests, renewable history checks and
+the existing small-system reference response. The fixed-quarter-cycle Case 5
+control also reproduces both complete short recordings byte for byte with the
+prototype. Five new Case 5 runs, including that control, retain all samples.
+All four changed-startup arms have bit-identical cold physical values to the
+prior control. Their main network step is 1/240 second, their voltage-correction
+tolerance is 1e-5 pu, and each process has one logical CPU.
+
+| Startup interval | Renewable local steps | Recovery selectors | Last time, s | Maximum voltage error, pu | Maximum rotor error, degrees |
+|---|---:|---|---:|---:|---:|
+| 1/240 s | 1 | Measured, diagnostic control | 0.1 | 0.0321156 | 0.816907 |
+| 1 ms | 1 | Original | 0.0541667, failed | 0.897868 | 0.0378301 |
+| 1 ms | 1 | Measured, diagnostic | 0.1 | 0.0101283 | 0.150658 |
+| 1 ms | 4 | Original | 0.1 | 0.0323421 | 0.148341 |
+| 1 ms | 4 | Measured, diagnostic | 0.1 | 0.00408214 | 0.0269595 |
+
+Each row uses its full available nonnegative prefix; the failed row is not
+comparable to a complete 0.1-second rotor maximum. Full ten-second reference
+ranges remain the NRMSE denominators. With four local steps, the original-
+selector arm's worst voltage NRMSE is 0.0314054; the measured-selector arm's is
+0.00395686. Both fail the 0.001 prefault limit. The latter's worst rotor RMSE
+over this prefix is 0.0184523 degrees, and its maximum exceeds the 0.002-degree
+prefault limit. No timestamps, initial powers or physical parameters were
+fitted to the reference.
+
+The transition alone delays the original-selector failure but does not remove
+it. Four local steps prevent that short failure, while the remaining large
+original-selector error keeps independently derived converter initialization
+and recovery selection as a priority. Measured selector signs remain diagnostic
+inputs and are not a production initialization rule. No startup policy or local
+step count is promoted, no full-system trajectory acceptance is claimed, and no
+new warmed ten-second performance measurement was made. Existing full-reactor
+compilation limitations remain; the tests used retained compatible dependencies.
+
+The [reference/startup evidence index](checkpoints/reference-startup-transition-2026-10-22.json)
+retains both independent cold probes, numerical alternatives, the regression
+test, prototype sources, commands, runtime hashes, recordings and all-channel
+comparisons. Exact reference-runtime provenance stays in the private archive.
