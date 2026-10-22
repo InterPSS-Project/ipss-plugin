@@ -70,10 +70,11 @@ a complete before/after record of every existing effective parameter change.
 Source parameters, supplied references and their comparison conventions remain
 unchanged.
 
-Uncovered families are listed explicitly. These include ESST4B, IEEET1,
-IEEEG1 and renewable bundles in the supplied cases. Load, relay and dynamic
-shunt-specific checks also remain outside this first implementation. Existing
-device checks and unsupported-model rejection continue to apply.
+The initial implementation left ESST4B, IEEET1, IEEEG1 and renewable bundles
+uncovered. The October 22 extension below adds selected checks for the first
+three families. Renewable bundles, load, relay and dynamic shunt-specific
+checks remain uncovered. Existing device checks and unsupported-model rejection
+continue to apply.
 
 ## Six-case audit
 
@@ -119,3 +120,57 @@ The [evidence index](checkpoints/dynamic-parameter-validation-2026-10-21.json)
 identifies the retained audit reports, input hashes, tests, source snapshots and
 recording comparisons. Pending performance prototypes were excluded from the
 full-network regression; the 32 tests also passed with those worktree edits.
+
+## October 22 coverage extension
+
+A further review of the linked [ESST4B](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20ESST4B.htm),
+[IEEET1](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Exciter%20IEEET1.htm)
+and [IEEEG1](https://www.powerworld.com/WebHelp/Content/TransientModels_HTML/Governor%20IEEEG1,%20IEEEG1D%20and%20IEEEG1_GE.htm)
+pages was checked against the implemented initialization equations. The
+pre-initialization validator now includes:
+
+- ESST4B: finite scalar data, optional Tr/Ta lags, reversed PI limits, and
+  warnings when existing initialization substitutes gains for an inactive PI
+  path. The absent Vgmax upper limit may be positive infinity; NaN, negative
+  infinity and infinite gains are rejected.
+- IEEET1: optional Tr/Ta lags, strictly positive Te, an enabled feedback
+  denominator Tf, finite scalar data and reversed regulator limits.
+- IEEEG1: T2/T1 lead-lag causality, strictly positive valve-positioner T3,
+  optional turbine lags, finite scalar data, rate/position limits, and the
+  shaft-fraction sum used as an initialization divisor. Existing fraction
+  normalization and rate-sign corrections generate warnings.
+
+These are selected checks, not complete validation of every parameter or
+variant. Reports identify existing initialization corrections without adding
+new corrections. Validation leaves all input values and integration settings
+unchanged; blocking errors are rejected by the existing initialization gate.
+
+All 51 focused tests passed: 14 validator tests, existing solver/substep tests,
+exciter builder tests, and three independent small-system trajectory tests.
+Tests include non-mutation, zero-time bypasses, singular initialization,
+optional infinite limits and initialization rejection. The existing unrelated
+performance prototypes were excluded from the test classpath.
+
+The six-case import audit was repeated at 1/240 second with ST1 substep counts
+10, 4 and 1. All 18 reports contain zero errors in the covered rules and the
+same 44 PSS2A warnings per case when inactive models are included. Active and
+inactive warning counts remain those in the table above. No new warning was
+introduced by the three additional families. Remaining attached uncovered
+devices are 107 renewable bundles in Cases 1–2, 301 in Cases 3–5, and 301 plus
+five grid-forming devices in Case 6. Counts include inactive devices.
+
+This is a parameter audit, not a new six-case dynamic acceptance run. The new
+checks do not establish the cause of prefault motion or resolve the outstanding
+full-system reference errors.
+
+The generic warning threshold must not be confused with a model-specific
+correction rule: at 1/240 second and multiplier two it is 8.333333 ms, whereas
+the linked PSS2A page's T2/T4 correction threshold uses 0.1 times that value.
+The [sub-interval guide](https://www.powerworld.com/WebHelp/Content/MainDocumentation_HTML/Transient_Stability_Integration_Subinterval_Models.htm)
+also lists PSS2A among models with specialized default sub-interval behavior.
+Neither observation authorizes copying another implementation's numerical
+policy into this solver. Test local integration against unchanged model data
+and supplied trajectories before adjusting physical time constants.
+
+The [extension evidence index](checkpoints/dynamic-parameter-validation-extension-2026-10-22.json)
+retains the reports, test result, source snapshots and reproduction commands.

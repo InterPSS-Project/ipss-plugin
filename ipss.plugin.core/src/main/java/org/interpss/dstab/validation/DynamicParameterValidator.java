@@ -16,6 +16,9 @@ import org.interpss.dstab.control.pss.ieee.y1992.pss2a.Ieee1992PSS2AStabilizer;
 import org.interpss.dstab.control.gov.psse.tgov1.PsseTGov1SteamTurGovernor;
 import org.interpss.dstab.control.gov.psse.hygov.PsseHygovGovernor;
 import org.interpss.dstab.control.gov.psse.ggov1.PsseGgov1Governor;
+import org.interpss.dstab.control.exc.ieee.y2005.st4b.IEEE2005ST4BExciter;
+import org.interpss.dstab.control.exc.ieee.y1968.type1.Ieee1968Type1Exciter;
+import org.interpss.dstab.control.gov.ieee.steamTCDR.IeeeSteamTCDRGovernor;
 
 /**
  * Non-mutating, pre-initialization checks for selected machine/controller families.
@@ -127,11 +130,17 @@ public final class DynamicParameterValidator {
                 add(Severity.ERROR,name,low,"Required reactance ordering: lower "+(strict?"<":"<=")+" upper ("+high+")");
         }
         // Only scalar data getters are read, once before initialization, never in the time loop.
-        void finiteData(Object data) {
+        void finiteData(Object data, String... positiveInfinityAllowed) {
             var getters=java.util.Arrays.stream(data.getClass().getMethods())
                     .filter(m->m.getName().startsWith("get")&&m.getParameterCount()==0&&m.getReturnType()==double.class)
                     .sorted(java.util.Comparator.comparing(java.lang.reflect.Method::getName)).toList();
-            for(var getter:getters)try { finite(getter.getName().substring(3),(double)getter.invoke(data)); }
+            for(var getter:getters)try {
+                String name=getter.getName().substring(3);
+                double value=(double)getter.invoke(data);
+                // Some model dialects explicitly use +infinity for an absent upper limit.
+                if(value==Double.POSITIVE_INFINITY&&java.util.Arrays.asList(positiveInfinityAllowed).contains(name))continue;
+                finite(name,value);
+            }
             catch(ReflectiveOperationException e) { throw new IllegalStateException("Cannot inspect "+model+"."+getter.getName(),e); }
         }
         void machine(Machine m) {
@@ -156,6 +165,40 @@ public final class DynamicParameterValidator {
             }
         }
         boolean controller(Object controller) {
+            if(controller instanceof IEEE2005ST4BExciter c) {
+                var d=c.getData();finiteData(d,"Vgmax");
+                time("Tr",d.getTr(),true);time("Ta",d.getTa(),true);
+                limits("Vr",d.getVrmin(),d.getVrmax());limits("Vm",d.getVmmin(),d.getVmmax());
+                if(Math.abs(d.getKpr())<=1e-9&&Math.abs(d.getKir())<=1e-9)
+                    add(Severity.WARNING,"Kpr/Kir",d.getKpr(),"Inactive outer PI path: existing initialization substitutes Kpr=40; review source gains");
+                if(Math.abs(d.getKpm())<=1e-9&&Math.abs(d.getKim())<=1e-9)
+                    add(Severity.WARNING,"Kpm/Kim",d.getKpm(),"Inactive inner PI path: existing initialization substitutes Kpm=1; review source gains");
+                add(Severity.INFO,"initialization policy",h,"Existing model may adjust time constants, gains and initial limits; this report does not change imported data");
+                return true;
+            }
+            if(controller instanceof Ieee1968Type1Exciter c) {
+                var d=c.getData();finiteData(d);
+                time("Tr",d.getTr(),true);time("Ta",d.getTa(),true);time("Te",d.getTe(),false);
+                if(d.getKf()!=0)time("Tf",d.getTf(),false);else positive("Tf",d.getTf(),true);
+                limits("Vr",d.getVrmin(),d.getVrmax());
+                add(Severity.INFO,"initialization policy",h,"Existing model may adjust time constants, field resistance and initial limits; this report does not change imported data");
+                return true;
+            }
+            if(controller instanceof IeeeSteamTCDRGovernor c) {
+                var d=c.getData();finiteData(d);
+                leadLag("T2",d.getT2(),"T1",d.getT1());time("T3",d.getT3(),false);
+                time("T4",d.getTch(),true);time("T5",d.getTrh1(),true);
+                time("T6",d.getTrh2(),true);time("T7",d.getTco(),true);
+                limits("P",d.getPmin(),d.getPmax());limits("valve rate",d.getPdown(),d.getPup());
+                if(d.getPup()<0||d.getPdown()>0)
+                    add(Severity.WARNING,"valve rate sign",d.getPup(),"Opening rate should be nonnegative and closing rate nonpositive; existing initialization changes signs");
+                double sum=d.getFvhp()+d.getFhp()+d.getFip()+d.getFlp();
+                positive("shaft fraction sum",sum,false); // Initialization divides by this sum.
+                if(Double.isFinite(sum)&&sum>1)
+                    add(Severity.WARNING,"shaft fraction sum",sum,"Existing initialization normalizes shaft fractions whose sum exceeds one");
+                add(Severity.INFO,"initialization policy",h,"Existing model may adjust time constants, fractions, rate limits and initial valve limits; this report does not change imported data");
+                return true;
+            }
             if(controller instanceof IEEE1981ST1Exciter c) {
                 var d=c.getData();finiteData(d);
                 time("Tr",d.getTr(),true);time("Ta",d.getTa(),true);
