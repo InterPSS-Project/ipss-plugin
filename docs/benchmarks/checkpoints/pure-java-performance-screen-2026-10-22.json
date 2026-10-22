@@ -81,6 +81,13 @@
       "bytes": 5119865,
       "sha256": "795e3086139b25e0770950e4eba20e6eadeab75e7c85eaa827d041221ef58826",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-prepared-cascade-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-prepared-cascade-v2/evidence.zip",
+      "bytes": 5585170,
+      "sha256": "a7642c8270d958952f6ba971f76978cc740fdae369cdf71c91e48e69a272b599",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -741,5 +748,93 @@
     },
     "focused_tests": 9,
     "complete_recordings": 52
+  },
+  "pss_prepared_cascade": {
+    "summary": [
+      {
+        "case": 1,
+        "times_s": {
+          "control": [
+            8.8168482,
+            8.980253,
+            8.7591026,
+            8.8687424,
+            8.9515785
+          ],
+          "candidate": [
+            8.9156164,
+            8.9621669,
+            8.7496568,
+            8.8770943,
+            8.6918422
+          ]
+        },
+        "medians_s": {
+          "control": 8.8687424,
+          "candidate": 8.8770943
+        },
+        "paired_savings_s": [
+          -0.09876819999999853,
+          0.01808609999999966,
+          0.009445799999999949,
+          -0.00835189999999919,
+          0.25973630000000014
+        ],
+        "median_paired_saving_s": 0.009445799999999949,
+        "candidate_wins": 3,
+        "recordings_identical": true
+      },
+      {
+        "case": 2,
+        "times_s": {
+          "control": [
+            6.0557252,
+            6.3374315,
+            6.076351,
+            6.2893248,
+            6.3807966
+          ],
+          "candidate": [
+            6.4622628,
+            6.0395052,
+            6.3368473,
+            6.2244405,
+            6.3485243
+          ]
+        },
+        "medians_s": {
+          "control": 6.2893248,
+          "candidate": 6.3368473
+        },
+        "paired_savings_s": [
+          -0.40653760000000005,
+          0.2979263000000003,
+          -0.2604962999999998,
+          0.06488430000000012,
+          0.03227229999999981
+        ],
+        "median_paired_saving_s": 0.03227229999999981,
+        "candidate_wins": 3,
+        "recordings_identical": true
+      }
+    ],
+    "coverage": {
+      "1": {
+        "models": 333,
+        "stages": 2513491,
+        "physical_states_per_model": 5,
+        "omitted_child_propagation_visits": 25134910
+      },
+      "2": {
+        "models": 103,
+        "stages": 778557,
+        "physical_states_per_model": 5,
+        "omitted_child_propagation_visits": 7785570
+      }
+    },
+    "initial_tests": 8,
+    "guarded_tests": 10,
+    "complete_recordings": 56,
+    "guarded_source_timed": false
   }
 }

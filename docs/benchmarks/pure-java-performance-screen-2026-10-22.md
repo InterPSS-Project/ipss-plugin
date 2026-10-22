@@ -343,3 +343,31 @@ All 52 complete recordings match the retained baseline byte for byte. No samples
 This screen is not a production promotion. Supplied-case recording equality establishes no new independent-reference accuracy or six-case performance acceptance. Arbitrary concurrent access is outside the single-threaded prototype contract. Further qualification would also need a dedicated custom-complex fallback test and a lifecycle API that cannot be misused by an ordinary external observer. The eight-second objective remains open.
 
 The preceding buffered-publication candidate lost all five pairs in both cases. This revision removes the temporary arrays and separate bus guard scan; it tests whether that bookkeeping explains the loss. It remains distinct from deferred angle computation, which still performs both voltage writes. Full raw times and paired differences are retained; independent arm medians and the median of paired savings are different statistics. Sources/classes, commands, tests, affinity, input/runtime hashes and complete-recording hashes are preserved in compact evidence; large recordings remain explicit external dependencies. No production sources or supplied references were changed.
+
+## Prepared compound-cascade screen
+
+The isolated Java candidate removes two redundant input-propagation passes inside the standard compound filter. The complete controller already prepares all inputs before advancing states and prepares them again afterward. The candidate advances the compound child states from those prepared inputs, preserving their order and original Euler methods. States, derivatives, scratch arrays, limiter equations, all ordinary controller preparation, network iterations and recording remain intact.
+
+Qualification requires the exact standard model/child/block graph, no aliased nodes or internal cascade states, and live NoLimit types. Changed limiter types fall back immediately. Physical child parameters and externally restored states remain authoritative. The final guarded revision additionally excludes custom field-wrapper classes, whose getters can observe the intermediate compound inputs.
+
+| Case | Control median, s | Candidate median, s | Median paired saving, s | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.868742 | 8.877094 | 0.009446 | 3/5 |
+| 2 | 6.289325 | 6.336847 | 0.032272 | 3/5 |
+
+The small, variable savings do not establish a useful end-to-end improvement. Both candidate arm medians are slightly slower; each candidate wins three of five pairs. The median of paired differences differs from the difference of arm medians. This prototype is not promoted, and the eight-second goal remains open.
+
+Sixteen alternating warmups precede five order-alternating measured pairs per case on one pinned logical CPU. The Java sparse backend, 1/240-second network step, 1e-5 voltage-correction tolerance, one ST1 step and prior experimental network acceleration are unchanged. Fresh loading, preparation, initialization, simulation, full recording, closure, compilation and GC remain inside timing. All 52 timed-screen recordings match the retained baseline byte for byte.
+
+| Case | Exercised models | Compound integration stages | Omitted child visits in two propagation passes |
+| --- | ---: | ---: | ---: |
+| 1 | 333 | 2,513,491 | 25,134,910 |
+| 2 | 103 | 778,557 | 7,785,570 |
+
+A guarded follow-up confirms five physical compound states in every exercised model. The raw input files each contain 435 PSS2A records, all with M=5 and N=1; raw counts include records not exercised by the dynamic run and are not runtime model counts. Thus the measured small benefit is not explained by empty cascades. Counts do not measure time saved.
+
+Eight initial focused tests pass. They cover cascade orders including zero order, zero/nonzero time constants and steps, predictor/corrector stages, complete stored inputs/states/derivatives before output refresh, internal compound storage, scratch arrays, output history, external restoration, live child parameters, limiter changes, aliases, custom blocks, nonfinite inputs and replaced bindings. Special-value comparisons canonicalize NaNs; they are not a claim about NaN payload preservation. An initial harness variable-name collision failed compilation and ran no simulation; it is retained separately.
+
+Further qualification found that a custom field-wrapper getter can observe intermediate compound inputs. A retained failing-before/passing-after regression compares its actual observation log. Exact-wrapper guards fix that difference. Ten tests then pass, including ordinary model-adapter observations. The guarded build also passes four complete Case 1/Case 2 recording checks with unchanged coverage and iterations. These four cold compatibility runs are not timing qualification of the guarded source. The timing table describes the preceding prototype; the extra guards run at model-plan compilation, but their performance is not assumed free.
+
+In total, 56 complete recordings are retained and verified without dropping channels, samples or event-side duplicates. No production source or supplied reference changed. These parity checks establish no new independent-reference accuracy or six-case performance acceptance. Sources/classes, raw times, failing and passing tests, commands, affinity, input/runtime hashes, and recording hashes are retained. Large recordings remain explicit external dependencies of the compact archive.
