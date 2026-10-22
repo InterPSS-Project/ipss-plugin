@@ -93,8 +93,10 @@ retains the source, tests, comparisons and output hashes.
 
 ## Remaining initialization discrepancy
 
-Separate large generator-Q discrepancies remain at bus 2065: 94.0449 Mvar in
-Case 3 and 98.2580 Mvar in Case 4. Voltage agreement alone does not validate the
+At this checkpoint, separate generator-Q discrepancies remained at bus 2065:
+94.0449 Mvar in Case 3 and 98.2580 Mvar in Case 4. The subsequent
+[default reactive-sharing correction](texas2k-reactive-sharing-2026-10-20.md#default-preparation-and-capability-tracking-october-22)
+removes these large allocation errors. Voltage agreement alone does not validate
 generator/shunt reactive-power allocation or dynamic initialization.
 
 ## Verification and limits

@@ -267,12 +267,32 @@ public final class GeneratorFirstShuntLoadflow {
 
         void updateAggregateLimits() {
             double v2 = voltageSquared();
+            var previousLimits = bus.getQGenLimit();
+            double previousQ = bus.getGenQ();
+            double minimum = qMin + bMin * v2, maximum = qMax + bMax * v2;
             // Only the temporary representation uses this expanded interval.
             // Every machine's real power and physical Q interval are restored.
             var first = limits.get(0);
             generators.get(0).setQGenLimit(new LimitType(
                     first.getMax() + bMax * v2, first.getMin() + bMin * v2));
-            bus.setQGenLimit(new LimitType(qMax + bMax * v2, qMin + bMin * v2));
+            bus.setQGenLimit(new LimitType(maximum, minimum));
+            if (bus.isGenPQ()) {
+                // A previous-solution solve preserves specified Q. If this plant
+                // is held at a capability bound, its injection must follow that
+                // bound as B*V^2 changes; changing the limits alone repeats the
+                // old zero-mismatch solution indefinitely.
+                double nextQ = Math.abs(previousQ - previousLimits.getMax()) < 1.e-9
+                        ? maximum : Math.abs(previousQ - previousLimits.getMin()) < 1.e-9
+                            ? minimum : previousQ;
+                if (nextQ != previousQ) {
+                    bus.setGenQ(nextQ);
+                    // Aggregate initialization rebuilds bus Q from the machines.
+                    // The first machine represents the temporary shunt addition.
+                    var firstPower = generators.get(0).getGen();
+                    generators.get(0).setGen(new Complex(firstPower.getReal(),
+                            firstPower.getImaginary() + nextQ - previousQ));
+                }
+            }
         }
 
         boolean limitsSettled(double powerTolerance) {
@@ -281,6 +301,22 @@ public final class GeneratorFirstShuntLoadflow {
             totalQ = bus.calNetGenResults().getImaginary();
             var current = bus.getQGenLimit();
             double min = qMin + bMin * v2, max = qMax + bMax * v2;
+            if (bus.isGenPQ()) {
+                double specified = bus.getGenQ();
+                double physicalBound = Math.abs(specified - current.getMax()) < 1.e-9 ? max
+                        : Math.abs(specified - current.getMin()) < 1.e-9 ? min : Double.NaN;
+                if (Double.isFinite(physicalBound)) {
+                    // A binding capability must remain binding even when its
+                    // voltage-dependent range expands. Interior allocation at
+                    // the old bound would leave available support unused and
+                    // accept an unmet voltage target. A sub-tolerance nodal
+                    // residual may be projected onto the updated physical bound.
+                    if (!Double.isFinite(totalQ) || Math.abs(totalQ - physicalBound) > powerTolerance)
+                        return false;
+                    totalQ = physicalBound;
+                    return true;
+                }
+            }
             boolean exact = Double.isFinite(totalQ) && totalQ >= min - 1.e-10 && totalQ <= max + 1.e-10
                     && (Math.abs(totalQ - current.getMin()) >= 1.e-8
                             || Math.abs(min - current.getMin()) < 1.e-10)

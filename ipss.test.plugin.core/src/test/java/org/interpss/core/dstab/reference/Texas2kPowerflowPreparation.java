@@ -83,6 +83,7 @@ public final class Texas2kPowerflowPreparation {
         lf.getLfAdjAlgo().getLimitCtrlConfig()
                 .setControlInitializationMode(ControlInitializationMode.PREVIOUS_SOLUTION);
         status.put("powerflow_preparation", "generator-priority-solved-netting");
+        status.put("reactive_allocation", "PARTICIPATION_FACTORS");
         status.put("switched_shunt_adjustment", true);
         requireSolved(lf, "before_netting", status);
         int count = 0;
@@ -150,7 +151,12 @@ public final class Texas2kPowerflowPreparation {
 
     private static void requireSolved(LoadflowAlgorithm lf, String stage,
             Map<String, Object> status) throws Exception {
-        var result = GeneratorFirstShuntLoadflow.solve(lf);
+        // The generator owns the voltage target; colocated controllers share
+        // total Q by their declared participation factors and physical limits.
+        // Retaining the imported shunt can reproduce V while initializing the
+        // generator at a substantially different reactive operating point.
+        var result = GeneratorFirstShuntLoadflow.solve(lf,
+                GeneratorFirstShuntLoadflow.ReactiveAllocation.PARTICIPATION_FACTORS);
         var termination = lf.getTerminationReport();
         status.put("loadflow_" + stage + "_solves", result.solves());
         status.put("loadflow_" + stage + "_iterations", termination.iteration());
