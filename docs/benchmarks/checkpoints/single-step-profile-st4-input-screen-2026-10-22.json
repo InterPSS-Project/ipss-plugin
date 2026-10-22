@@ -1,0 +1,461 @@
+{
+  "schema": 1,
+  "description": "One-step controller phase profile and paired single-core ST4 physical-input reuse screen.",
+  "base_plugin_commit": "207d3e04b5bd4e6948906a2a54d83ca7f0cecc64",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-single-step-profile-st4-input-screen/evidence.zip",
+  "archive_bytes": 528895,
+  "archive_sha256": "0707ac8062e3c1e658e98f8a52be62b0964c4050a4d352f541c8297a4ea27312",
+  "results": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          8.9717803,
+          9.0060222,
+          8.8664844,
+          8.8658264,
+          9.0126907,
+          9.2902528,
+          8.9359984
+        ],
+        "candidate": [
+          8.9992814,
+          9.1666498,
+          8.7580256,
+          8.9153058,
+          9.180211,
+          8.9246692,
+          8.6991355
+        ]
+      },
+      "medians_s": {
+        "control": 8.9717803,
+        "candidate": 8.9246692
+      },
+      "paired_savings_s": [
+        -0.027501099999998502,
+        -0.16062759999999976,
+        0.1084587999999993,
+        -0.04947940000000095,
+        -0.16752029999999962,
+        0.365583599999999,
+        0.2368629000000002
+      ],
+      "median_paired_saving_s": -0.027501099999998502,
+      "candidate_wins": 3,
+      "recordings_identical": true,
+      "candidate_voltage_reuses": [
+        3017328,
+        3017328,
+        3017328,
+        3017328,
+        3017328,
+        3017328,
+        3017328
+      ],
+      "candidate_pss_reuses": [
+        3017328,
+        3017328,
+        3017328,
+        3017328,
+        3017328,
+        3017328,
+        3017328
+      ]
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.0874771,
+          6.3330931,
+          6.1471826,
+          6.4248906,
+          6.1484829,
+          6.3710782,
+          6.3836356
+        ],
+        "candidate": [
+          6.1861849,
+          6.2235142,
+          6.1041846,
+          6.2168883,
+          6.2709922,
+          6.142417,
+          6.2391957
+        ]
+      },
+      "medians_s": {
+        "control": 6.3330931,
+        "candidate": 6.2168883
+      },
+      "paired_savings_s": [
+        -0.09870779999999968,
+        0.10957889999999981,
+        0.04299799999999987,
+        0.20800230000000042,
+        -0.12250929999999993,
+        0.22866120000000034,
+        0.14443990000000007
+      ],
+      "median_paired_saving_s": 0.10957889999999981,
+      "candidate_wins": 5,
+      "recordings_identical": true,
+      "candidate_voltage_reuses": [
+        936908,
+        936908,
+        936908,
+        936908,
+        936908,
+        936908,
+        936908
+      ],
+      "candidate_pss_reuses": [
+        936908,
+        936908,
+        936908,
+        936908,
+        936908,
+        936908,
+        936908
+      ]
+    }
+  ],
+  "timing_context": [
+    {
+      "case": 1,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 8.9717803,
+          "process_cpu_s": 8.75,
+          "compilation_time_ms": 44,
+          "gc_time_ms": 67
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 8.9992814,
+          "process_cpu_s": 8.875,
+          "compilation_time_ms": 5,
+          "gc_time_ms": 68
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 9.1666498,
+          "process_cpu_s": 8.78125,
+          "compilation_time_ms": 39,
+          "gc_time_ms": 172
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 9.0060222,
+          "process_cpu_s": 8.671875,
+          "compilation_time_ms": 50,
+          "gc_time_ms": 62
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 8.8664844,
+          "process_cpu_s": 8.625,
+          "compilation_time_ms": 36,
+          "gc_time_ms": 61
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 8.7580256,
+          "process_cpu_s": 8.546875,
+          "compilation_time_ms": 5,
+          "gc_time_ms": 62
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 8.9153058,
+          "process_cpu_s": 8.78125,
+          "compilation_time_ms": 84,
+          "gc_time_ms": 129
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 8.8658264,
+          "process_cpu_s": 8.703125,
+          "compilation_time_ms": 31,
+          "gc_time_ms": 133
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 9.0126907,
+          "process_cpu_s": 8.703125,
+          "compilation_time_ms": 14,
+          "gc_time_ms": 129
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 9.180211,
+          "process_cpu_s": 9.0625,
+          "compilation_time_ms": 208,
+          "gc_time_ms": 131
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 8.9246692,
+          "process_cpu_s": 8.6875,
+          "compilation_time_ms": 64,
+          "gc_time_ms": 130
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 9.2902528,
+          "process_cpu_s": 9.078125,
+          "compilation_time_ms": 274,
+          "gc_time_ms": 124
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 8.9359984,
+          "process_cpu_s": 8.625,
+          "compilation_time_ms": 2,
+          "gc_time_ms": 122
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 8.6991355,
+          "process_cpu_s": 8.421875,
+          "compilation_time_ms": 4,
+          "gc_time_ms": 115
+        }
+      ],
+      "median_cpu_s": {
+        "False": 8.703125,
+        "True": 8.78125
+      }
+    },
+    {
+      "case": 2,
+      "measured": [
+        {
+          "run": 32,
+          "candidate": false,
+          "complete_case_wall_s": 6.0874771,
+          "process_cpu_s": 6.0,
+          "compilation_time_ms": 25,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 33,
+          "candidate": true,
+          "complete_case_wall_s": 6.1861849,
+          "process_cpu_s": 6.078125,
+          "compilation_time_ms": 1,
+          "gc_time_ms": 100
+        },
+        {
+          "run": 34,
+          "candidate": true,
+          "complete_case_wall_s": 6.2235142,
+          "process_cpu_s": 6.015625,
+          "compilation_time_ms": 11,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 35,
+          "candidate": false,
+          "complete_case_wall_s": 6.3330931,
+          "process_cpu_s": 6.078125,
+          "compilation_time_ms": 52,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 36,
+          "candidate": false,
+          "complete_case_wall_s": 6.1471826,
+          "process_cpu_s": 6.03125,
+          "compilation_time_ms": 10,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 37,
+          "candidate": true,
+          "complete_case_wall_s": 6.1041846,
+          "process_cpu_s": 5.984375,
+          "compilation_time_ms": 2,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 38,
+          "candidate": true,
+          "complete_case_wall_s": 6.2168883,
+          "process_cpu_s": 6.09375,
+          "compilation_time_ms": 82,
+          "gc_time_ms": 97
+        },
+        {
+          "run": 39,
+          "candidate": false,
+          "complete_case_wall_s": 6.4248906,
+          "process_cpu_s": 6.25,
+          "compilation_time_ms": 171,
+          "gc_time_ms": 95
+        },
+        {
+          "run": 40,
+          "candidate": false,
+          "complete_case_wall_s": 6.1484829,
+          "process_cpu_s": 5.875,
+          "compilation_time_ms": 53,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 41,
+          "candidate": true,
+          "complete_case_wall_s": 6.2709922,
+          "process_cpu_s": 6.203125,
+          "compilation_time_ms": 11,
+          "gc_time_ms": 91
+        },
+        {
+          "run": 42,
+          "candidate": true,
+          "complete_case_wall_s": 6.142417,
+          "process_cpu_s": 5.96875,
+          "compilation_time_ms": 49,
+          "gc_time_ms": 93
+        },
+        {
+          "run": 43,
+          "candidate": false,
+          "complete_case_wall_s": 6.3710782,
+          "process_cpu_s": 6.203125,
+          "compilation_time_ms": 269,
+          "gc_time_ms": 104
+        },
+        {
+          "run": 44,
+          "candidate": false,
+          "complete_case_wall_s": 6.3836356,
+          "process_cpu_s": 6.15625,
+          "compilation_time_ms": 14,
+          "gc_time_ms": 92
+        },
+        {
+          "run": 45,
+          "candidate": true,
+          "complete_case_wall_s": 6.2391957,
+          "process_cpu_s": 6.140625,
+          "compilation_time_ms": 34,
+          "gc_time_ms": 97
+        }
+      ],
+      "median_cpu_s": {
+        "False": 6.078125,
+        "True": 6.078125
+      }
+    }
+  ],
+  "profile": {
+    "samples": 2005,
+    "categories": {
+      "other": 635,
+      "PSS2A": 264,
+      "ST1": 185,
+      "other_network": 639,
+      "ST4": 136,
+      "acceleration_history": 120,
+      "recording": 26
+    },
+    "warmups": 12,
+    "profiled_runs": 4,
+    "sample_period_ms": 2,
+    "recordings_match": true,
+    "measured": [
+      {
+        "total_s": 10.9151429,
+        "phases": {
+          "st4_ordinary_s": 0.7283925,
+          "renewable_s": 0.2044379,
+          "stabilizer_s": 1.317573,
+          "st1_ordinary_s": 0.7361696,
+          "other_exciter_s": 0.2517273,
+          "electrical_s": 0.186791,
+          "machine_s": 0.1593966,
+          "governor_s": 0.5234571,
+          "st1_local_s": 0.2707045
+        },
+        "record_write_s": 0.2802071
+      },
+      {
+        "total_s": 9.7688807,
+        "phases": {
+          "st4_ordinary_s": 0.6972294,
+          "renewable_s": 0.1746714,
+          "stabilizer_s": 1.0771155,
+          "st1_ordinary_s": 0.7388564,
+          "other_exciter_s": 0.2486707,
+          "electrical_s": 0.1299082,
+          "machine_s": 0.1593147,
+          "governor_s": 0.5233425,
+          "st1_local_s": 0.2512299
+        },
+        "record_write_s": 0.2755343
+      },
+      {
+        "total_s": 9.8310788,
+        "phases": {
+          "st4_ordinary_s": 0.6944434,
+          "renewable_s": 0.1718276,
+          "stabilizer_s": 1.0662737,
+          "st1_ordinary_s": 0.7387384,
+          "other_exciter_s": 0.2504939,
+          "electrical_s": 0.1271008,
+          "machine_s": 0.1645311,
+          "governor_s": 0.5204184,
+          "st1_local_s": 0.2648775
+        },
+        "record_write_s": 0.2467773
+      },
+      {
+        "total_s": 9.4905706,
+        "phases": {
+          "st4_ordinary_s": 0.6888769,
+          "renewable_s": 0.1750566,
+          "stabilizer_s": 1.0705546,
+          "st1_ordinary_s": 0.7312387,
+          "other_exciter_s": 0.2533038,
+          "electrical_s": 0.1269493,
+          "machine_s": 0.157683,
+          "governor_s": 0.5156139,
+          "st1_local_s": 0.2467222
+        },
+        "record_write_s": 0.2551633
+      }
+    ],
+    "interpretation": "Instrumented diagnostic, not performance qualification. Recording timer excludes selected-channel sampling and writer closure. Sampling includes timer overhead."
+  },
+  "verified_complete_recordings": 108,
+  "timing_runs": 92,
+  "diagnostic_runs": 16,
+  "tests_per_arm": 9,
+  "logical_cpu_mask": 1,
+  "warmups_per_case": 32,
+  "measured_pairs_per_case": 7,
+  "production_changed": false,
+  "limitations": [
+    "Both arms use the same experimental Anderson/deferred network path.",
+    "All complete recordings match the retained one-step baseline byte for byte.",
+    "Profile timings include instrumentation overhead and are not performance qualification.",
+    "No six-case completion or independent full-system accuracy acceptance is claimed."
+  ]
+}

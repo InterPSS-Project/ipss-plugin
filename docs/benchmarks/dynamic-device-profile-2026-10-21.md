@@ -1068,3 +1068,80 @@ also passes 64,000 calls with the feature disabled and another 64,000 enabled.
 The [screen evidence index](checkpoints/anderson-qr-prefix-screen-2026-10-22.json)
 retains the sources, runtime identities, complete-output hashes and timings.
 The eight-second Case 1 objective and independent-reference accuracy remain open.
+
+## One-step controller profile and ST4 input reuse, October 22
+
+The refreshed Case 1 profile uses the one-step ST1 default, one logical CPU,
+1/240-second network steps, 1e-5 voltage-correction tolerance and complete
+recording. Twelve warmups precede four instrumented runs. The median measured
+regions are:
+
+| Region | Seconds |
+| --- | ---: |
+| Stabilizer evaluation | 1.074 |
+| Ordinary ST1 evaluation | 0.737 |
+| Ordinary ST4B evaluation | 0.696 |
+| Governor evaluation | 0.522 |
+| Other exciter evaluation | 0.251 |
+| Local ST1 advancement | 0.258 |
+| Recorded-channel writing | 0.265 |
+
+The writing timer includes selected-channel serialization and full-network
+recording, but excludes selected-channel sampling and final writer closure.
+These regions omit other work and include timer overhead; they are not a sum
+of complete simulation time. The 2 ms execution sampling collected 2,005
+main-thread samples. PSS2A preparation and kernel advancement remain prominent;
+sampling attribution alone does not establish removable cost. All sixteen
+profile recordings match the retained one-step baseline byte for byte.
+
+An isolated ST4B prototype reads compensated voltage and the held stabilizer
+output once within the existing fixed-input endpoint scope. It keeps fresh
+reads at the next endpoint, the existing eligibility guards and all equation,
+state, limiter and preparation work. Nine focused tests pass in each feature
+setting, including changing compensation data, voltage and speed, events,
+activation, live limits, custom/observed devices, nonfinite input and reinitialization.
+
+| Case | Control median | Input-reuse median | Median paired saving | Reuse faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.972 s | 8.925 s | -0.028 s | 3/7 |
+| 2 | 6.333 s | 6.217 s | 0.110 s | 5/7 |
+
+Each case has 32 alternating warmups and seven measured pairs, including fresh
+parsing, preparation, initialization, all recording and writer closure. Median
+process CPU time changes from 8.703 to 8.781 seconds for Case 1 and remains
+6.078 seconds for Case 2. The candidate avoids 3,017,328 repeated reads of each
+input in Case 1 and 936,908 of each in Case 2. Controls reuse none. All 92
+complete timing recordings match the baseline, with unchanged network counts.
+The improvement is inconsistent, so this cache is not promoted.
+
+The [profile and screen index](checkpoints/single-step-profile-st4-input-screen-2026-10-22.json)
+retains 108 complete-recording hashes, source/runtime identities, focused tests,
+the flight recording and all timing pairs. Earlier failed attempts are retained:
+an extra legacy bridge test targeted absent APIs, the first harness referenced
+an absent machine-list API, and the next harness reached ten seconds before
+its counter dereferenced an inactive model with no compiled plan. The latter
+is classified as a failed diagnostic run, not a completed benchmark. Production
+code, the eight-second objective and independent-reference accuracy status are unchanged.
+
+A subsequent PSS2A prototype targets a complete repeated preparation pass.
+After the initial ordered preparation, it captures finite stored states,
+including the compound filter's internal states. It then executes every
+existing kernel and history update. For an eligible standard graph, a zero-time
+predictor whose states remain bitwise unchanged can retain the already prepared
+inputs and child outputs. Changed states, nonfinite inputs, custom graphs,
+corrector stages and nonzero intervals retain the original refresh path.
+
+Five focused tests pass in each feature setting. They compare stored inputs,
+states, rates and child values before output observation can refresh them,
+then compare outputs and subsequent correctors. Coverage includes signed-zero
+state changes, live parameters, nonfinite values and custom/replaced bindings.
+Two complete coupled Case 1/2 runs match every baseline recording byte and
+retain network counts of 18,340 and 20,202 respectively. The candidate skips
+2,513,158 repeated passes in Case 1 and 778,454 in Case 2.
+
+The [PSS2A correctness checkpoint](checkpoints/pss-unchanged-state-refresh-probe-2026-10-22.json)
+retains the prototype, tests, input/runtime identities and full-output hashes.
+It has no warmed timing qualification and is not enabled in production. Its
+first build failed on a Java class-type comparison before tests or simulation;
+the corrected build and that failed attempt are both retained. These checks
+preserve the existing trajectories and do not establish independent-reference accuracy.
