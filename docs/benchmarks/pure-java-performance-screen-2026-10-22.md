@@ -189,3 +189,32 @@ supplied references are unchanged by this experiment.
 
 The [evidence index](checkpoints/pure-java-performance-screen-2026-10-22.json)
 retains the compact archive, raw paired timings, tests and recording audit.
+
+## Typed PSS2A input assignments
+
+A subsequent candidate separates standard PSS2A input assignments into typed
+call sites. Compound-filter propagation and custom callbacks remain intact;
+no preparation passes or state updates are removed. Three focused tests pass
+in each mode, covering live parameters, zero/positive time constants, internal
+compound states, nonfinite inputs, custom input callbacks and replaced bindings.
+
+| Case | Control median, s | Typed median, s | Median paired saving, s | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 8.953387 | 8.931192 | 0.037438 | 3/5 |
+| 2 | 6.291398 | 6.326838 | -0.091827 | 1/5 |
+
+The screen again uses sixteen alternating warmups, five measured pairs per
+case, one pinned CPU, Java sparse solving, quarter-cycle steps and 1e-5 network
+tolerance. Complete recording and writer closure remain timed. All 52 recordings
+match the baseline, with unchanged network iteration counts. Each run verifies
+that standard model plans selected the requested mode. Two compile-only harness
+failures are retained separately and contribute no timing observations.
+
+The small, variable differences do not establish a reliable improvement, so
+this candidate is not promoted. The next investigation targets the immediate
+PSS-to-exciter observation boundary: a new explicit endpoint scope may reuse
+freshly prepared output without the state-comparison overhead of the earlier
+reuse experiment. That is an unimplemented hypothesis, not a measured saving.
+The [evidence index](checkpoints/pure-java-performance-screen-2026-10-22.json)
+retains this screen. Production sources and supplied references are unchanged;
+Case 1 and the full goal remain unqualified.

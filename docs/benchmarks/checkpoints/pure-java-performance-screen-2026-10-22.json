@@ -46,6 +46,13 @@
       "bytes": 5084131,
       "sha256": "1ea110a30c68393cc6aae21afa4b6306f42c86769fb6b2bdade7d664a7477380",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-typed-input-v3-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-typed-input-v3/evidence.zip",
+      "bytes": 5065381,
+      "sha256": "17019997696721d34d748487d043e87947fad5a36b2a4b18328d055497074818",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -353,5 +360,73 @@
       "median_paired_saving_s": 0.0032598,
       "wins": 7
     }
-  }
+  },
+  "pss_typed_input": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.1948209,
+          8.9240642,
+          9.08967,
+          8.8623153,
+          8.9533865
+        ],
+        "candidate": [
+          8.7474011,
+          8.8866262,
+          8.931192,
+          8.9476224,
+          9.090558
+        ]
+      },
+      "medians_s": {
+        "control": 8.9533865,
+        "candidate": 8.931192
+      },
+      "paired_savings_s": [
+        0.4474198000000005,
+        0.03743799999999986,
+        0.15847800000000056,
+        -0.08530709999999964,
+        -0.1371714999999991
+      ],
+      "median_paired_saving_s": 0.03743799999999986,
+      "candidate_wins": 3,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.0903731,
+          6.291398,
+          6.1548783,
+          6.4183524,
+          6.316735
+        ],
+        "candidate": [
+          6.4619984,
+          6.3268377,
+          6.2467051,
+          6.1551717,
+          6.6222914
+        ]
+      },
+      "medians_s": {
+        "control": 6.291398,
+        "candidate": 6.3268377
+      },
+      "paired_savings_s": [
+        -0.3716252999999998,
+        -0.03543969999999952,
+        -0.09182679999999976,
+        0.2631806999999995,
+        -0.3055563999999995
+      ],
+      "median_paired_saving_s": -0.09182679999999976,
+      "candidate_wins": 1,
+      "recordings_identical": true
+    }
+  ]
 }
