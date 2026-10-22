@@ -371,3 +371,26 @@ Eight initial focused tests pass. They cover cascade orders including zero order
 Further qualification found that a custom field-wrapper getter can observe intermediate compound inputs. A retained failing-before/passing-after regression compares its actual observation log. Exact-wrapper guards fix that difference. Ten tests then pass, including ordinary model-adapter observations. The guarded build also passes four complete Case 1/Case 2 recording checks with unchanged coverage and iterations. These four cold compatibility runs are not timing qualification of the guarded source. The timing table describes the preceding prototype; the extra guards run at model-plan compilation, but their performance is not assumed free.
 
 In total, 56 complete recordings are retained and verified without dropping channels, samples or event-side duplicates. No production source or supplied reference changed. These parity checks establish no new independent-reference accuracy or six-case performance acceptance. Sources/classes, raw times, failing and passing tests, commands, affinity, input/runtime hashes, and recording hashes are retained. Large recordings remain explicit external dependencies of the compact archive.
+
+## PSS endpoint eligibility cost audit
+
+This instrumented diagnostic revisits the previously rejected prepared endpoint candidate. It measures its checks rather than removing them or changing controller behavior. It is not a new optimization or a production performance qualification.
+
+Each case has eight alternating warmups and three alternating measurement pairs in one JVM pinned to one logical CPU. The quarter-cycle step, 1e-5 voltage-correction tolerance, single ST1 step, Java sparse solver, experimental network acceleration and complete recording are unchanged. All 28 recordings match the retained baseline byte for byte. Seven existing focused endpoint/preparation tests pass.
+
+| Timed region (median seconds) | Case 1 | Case 2 |
+| --- | ---: | ---: |
+| Control ordinary output observations | 0.222763 | 0.063232 |
+| Candidate remaining ordinary observations | 0.059820 | 0.012502 |
+| Candidate freshly prepared observations | 0.057142 | 0.017349 |
+| Candidate pre-step eligibility | 0.125202 | 0.043829 |
+| Candidate post-step eligibility | 0.047844 | 0.014923 |
+| Candidate zero-time predictor | 0.894904 | 0.279978 |
+
+Pre-step eligibility includes the initial model eligibility check, exciter lookup, exact-class and observer checks. Post-step eligibility repeats the model/machine check after the zero-time predictor. These two intervals do not overlap. The predictor timer includes all original state/derivative work and preparation and is reported separately; the control predictor is not timed, so the rows cannot establish a total controller speedup. Ordinary-output timing includes all fixed-input observation calls, including local-controller paths. Fresh-output timing covers the candidate replacement calls. Per-region counts are retained in cost-summary.json.
+
+Each interval includes a clock read and some instrumentation cost. The report also retains 100,000 empty timer pairs per run as a clock-cost indicator, but does not subtract that measurement: instrumentation changes inlining, cache behavior and optimization, so subtraction would not recover exact uninstrumented costs. Complete timings include instrumentation, status aggregation and calibration and are not an updated performance baseline. Independent region medians need not sum to a measured total.
+
+The source is the previously screened endpoint candidate; its broader custom machine/controller-getter fallback limitation remains. This audit does not make it eligible for production. The initial build stopped at a harness-generation assertion before compilation or simulation; its files and failed log are retained. Sources, classes, focused tests, commands, raw statuses, affinity and runtime/input/output identities are retained. Supplied references and production source are unchanged. Independent-reference accuracy, Cases 3-6 and the full eight-second goal remain unresolved.
+
+The audit narrows the next optimization target. In Case 1, the two instrumented eligibility regions total about 0.173 seconds, while all control ordinary output observations take about 0.223 seconds. In Case 2, those figures are about 0.059 and 0.063 seconds. These figures support eligibility overhead as a contributor to the rejected candidate's poor result, but do not isolate its uninstrumented causal effect. Removing checks alone offers a modest opportunity and does not explain the roughly 0.9-second Case 1 gap in recent uninstrumented screens. The zero-time predictor, including ordered preparation and state/derivative work, is the larger measured region (about 0.895 seconds in Case 1 and 0.280 in Case 2). Further controller work should target that region with equation and history parity, rather than repeating output-reuse variants or assuming an eligibility rewrite will meet the target. The figures do not justify omitting the predictor or its stored-derivative updates.

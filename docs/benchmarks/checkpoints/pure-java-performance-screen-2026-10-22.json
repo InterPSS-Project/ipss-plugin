@@ -88,6 +88,13 @@
       "bytes": 5585170,
       "sha256": "a7642c8270d958952f6ba971f76978cc740fdae369cdf71c91e48e69a272b599",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "pss-endpoint-cost-audit-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-pss-endpoint-cost-audit-v2/evidence.zip",
+      "bytes": 2924227,
+      "sha256": "55d462bf46765573b3eaf01b21514027040ed63dbb6125e6daa8906e00c9623d",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -836,5 +843,126 @@
     "guarded_tests": 10,
     "complete_recordings": 56,
     "guarded_source_timed": false
+  },
+  "pss_endpoint_cost_audit": {
+    "summary": [
+      {
+        "case": 1,
+        "arms": {
+          "False": {
+            "region_median_s": {
+              "zero_time_predictor": 0.0,
+              "post_step_eligibility": 0.0,
+              "fresh_output": 0.0,
+              "ordinary_output": 0.2227634,
+              "pre_step_eligibility": 0.0
+            },
+            "counts": {
+              "zero_time_predictor": 0,
+              "post_step_eligibility": 0,
+              "fresh_output": 0,
+              "ordinary_output": 2786653,
+              "pre_step_eligibility": 0
+            },
+            "complete_case_s": [
+              9.1535055,
+              9.2529607,
+              9.6689968
+            ],
+            "empty_timer_pair_mean_ns": [
+              19.023,
+              19.046,
+              18.95
+            ]
+          },
+          "True": {
+            "region_median_s": {
+              "zero_time_predictor": 0.8949039,
+              "post_step_eligibility": 0.0478445,
+              "fresh_output": 0.0571423,
+              "ordinary_output": 0.0598197,
+              "pre_step_eligibility": 0.1252016
+            },
+            "counts": {
+              "zero_time_predictor": 2407126,
+              "post_step_eligibility": 2407126,
+              "fresh_output": 2407126,
+              "ordinary_output": 379527,
+              "pre_step_eligibility": 2512825
+            },
+            "complete_case_s": [
+              9.1624649,
+              9.1074721,
+              9.4061446
+            ],
+            "empty_timer_pair_mean_ns": [
+              19.055,
+              19.082,
+              19.033
+            ]
+          }
+        }
+      },
+      {
+        "case": 2,
+        "arms": {
+          "False": {
+            "region_median_s": {
+              "zero_time_predictor": 0.0,
+              "post_step_eligibility": 0.0,
+              "fresh_output": 0.0,
+              "ordinary_output": 0.0632321,
+              "pre_step_eligibility": 0.0
+            },
+            "counts": {
+              "zero_time_predictor": 0,
+              "post_step_eligibility": 0,
+              "fresh_output": 0,
+              "ordinary_output": 864823,
+              "pre_step_eligibility": 0
+            },
+            "complete_case_s": [
+              6.2641645,
+              6.4534867,
+              6.4771038
+            ],
+            "empty_timer_pair_mean_ns": [
+              20.329,
+              19.054,
+              18.88
+            ]
+          },
+          "True": {
+            "region_median_s": {
+              "zero_time_predictor": 0.2799778,
+              "post_step_eligibility": 0.0149229,
+              "fresh_output": 0.0173488,
+              "ordinary_output": 0.0125021,
+              "pre_step_eligibility": 0.0438288
+            },
+            "counts": {
+              "zero_time_predictor": 749524,
+              "post_step_eligibility": 749524,
+              "fresh_output": 749524,
+              "ordinary_output": 115299,
+              "pre_step_eligibility": 778351
+            },
+            "complete_case_s": [
+              6.2433115,
+              6.3067963,
+              6.2735325
+            ],
+            "empty_timer_pair_mean_ns": [
+              18.958,
+              18.916,
+              19.142
+            ]
+          }
+        }
+      }
+    ],
+    "diagnostic_only": true,
+    "focused_tests": 7,
+    "complete_recordings": 28
   }
 }
