@@ -78,3 +78,24 @@ the retained all-channel comparison.
 Retain the ten-step default while resolving the independent-reference mismatch.
 Any subsequent smaller-count or alternative-integrator candidate needs the same
 coupled reference checks before a warmed performance qualification.
+
+## Trajectory plots
+
+The [four-page PDF](figures/st1-single-step-2026-10-21/comparison.pdf) contains
+full-run overlays and early-time enlargements for Cases 1 and 2. Blue is ten
+local steps, orange is one, and the lower panels show one minus ten. The shaded
+interval marks fault application through clearing.
+
+- [Case 1, full run](figures/st1-single-step-2026-10-21/case1-full-run.png)
+- [Case 1, first 1.3 seconds](figures/st1-single-step-2026-10-21/case1-early-time.png)
+- [Case 2, full run](figures/st1-single-step-2026-10-21/case2-full-run.png)
+- [Case 2, first 1.3 seconds](figures/st1-single-step-2026-10-21/case2-early-time.png)
+
+Each family uses its largest absolute difference channel: Case 1 voltage bus
+1082 and rotor bus 8155/unit 2; Case 2 voltage bus 3110 and rotor bus 5263/unit 1.
+Case 1's voltage channel differs from the worst-RMSE voltage channel, bus 1050.
+All 2,403 nonnegative samples, including both event sides, are retained without
+resampling. Full-run metrics printed on the enlargements still cover ten seconds.
+Reproduce with `python tools/plot_st1_substep_comparison.py`; its optional local
+plotting dependencies are in `target/plot-dependencies`. Per-channel metrics and
+peak times are saved in `figures/st1-single-step-2026-10-21/plotted-channels.json`.
