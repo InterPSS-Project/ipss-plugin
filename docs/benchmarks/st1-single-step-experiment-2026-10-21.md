@@ -2,8 +2,11 @@
 
 Removing the ST1 local substeps is **not qualified for production**. Cases 1 and
 2 complete, but the single-step trajectories differ materially from the retained
-ten-substep implementation and still fail the supplied-reference accuracy gates.
-The production default remains ten local steps.
+ten-substep implementation. Case 2 still fails the supplied-reference accuracy gates.
+The production default remains ten local steps. Correction dated 2026-10-22:
+the earlier Case 1 independent-reference comparison used the wrong fault bus
+and is withdrawn. Case 2 reference errors and the one-versus-ten implementation
+differences remain valid. See the [event-identity audit](network-iteration-audit-2026-10-22.md).
 
 ## Controlled change
 
@@ -30,10 +33,10 @@ can have different worst channels.
 
 | Quantity | Case 1: ten steps vs reference | Case 1: one step vs reference | Case 2: ten steps vs reference | Case 2: one step vs reference |
 | --- | ---: | ---: | ---: | ---: |
-| Rotor angle, degrees | 42.3457 | 40.7661 | 102.7470 | 108.1341 |
-| Bus voltage, pu | 0.0915854 | 0.0915852 | 0.0462767 | 0.0466229 |
-| Generator active power, MW | 84.4109 | 84.3501 | 130.7477 | 131.0833 |
-| Generator reactive power, Mvar | 48.8002 | 48.8048 | 158.5232 | 138.6538 |
+| Rotor angle, degrees | Withdrawn | Withdrawn | 102.7470 | 108.1341 |
+| Bus voltage, pu | Withdrawn | Withdrawn | 0.0462767 | 0.0466229 |
+| Generator active power, MW | Withdrawn | Withdrawn | 130.7477 | 131.0833 |
+| Generator reactive power, Mvar | Withdrawn | Withdrawn | 158.5232 | 138.6538 |
 
 The baseline already has a substantial independent-reference error. A smaller
 aggregate error in some single-step channels does not establish correct local
@@ -54,7 +57,8 @@ is not an acceptable accuracy-preserving optimization in these coupled runs.
 
 ## Comparison and evidence
 
-Case 1 compares 5,191 channels and Case 2 compares 4,501: all recorded bus
+The original calculation included 5,191 Case 1 channels and 4,501 Case 2 channels:
+all recorded bus
 voltages and angles, generator P/Q, and synchronous rotor angles. Bus angles are
 reported in the evidence without an acceptance gate; no angular offset or
 wrapping correction is fitted. Supplied reference files are unchanged.
@@ -120,13 +124,16 @@ with 0.416667 ms for ten. Both Cases 1 and 2 complete ten seconds.
 | Largest absolute rotor difference, four minus ten | 6.71355 degrees | 2.31567 degrees |
 | Voltage RMSE, four minus ten | 0.00202360 pu | 0.00299588 pu |
 | Largest absolute voltage difference, four minus ten | 0.0166873 pu | 0.0119014 pu |
-| Rotor RMSE against reference, ten steps | 42.3457 degrees | 102.7470 degrees |
-| Rotor RMSE against reference, four steps | 44.1859 degrees | 102.3923 degrees |
+| Rotor RMSE against reference, ten steps | Withdrawn | 102.7470 degrees |
+| Rotor RMSE against reference, four steps | Withdrawn | 102.3923 degrees |
 
 Four is closer to ten in rotor-angle RMSE than one, but coupled voltage errors
 are not uniformly monotonic with step count. Reference rotor error improves
-slightly in Case 2 and worsens in Case 1; both variants remain far outside the
-0.01-degree target. These results neither qualify four nor prove ten optimal.
+slightly in Case 2; its variants remain far outside the 0.01-degree target.
+The old Case 1 reference comparison is invalid because its actual fault is at
+bus 7249 and the supplied full-system reference fault is at bus 6307. Its
+four-versus-ten implementation differences remain valid. These results neither
+qualify four nor prove ten optimal.
 
 The two focused reference-response tests pass with ten steps and fail with four.
 At a 0.005-second network step, the controlled EXST1 field increment with four

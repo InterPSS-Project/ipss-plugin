@@ -1,8 +1,16 @@
 {
   "schema": 1,
+  "reference_comparison_validity": {
+    "date": "2026-10-22",
+    "case1_reference_comparison_valid": false,
+    "reason": "Actual fault bus 7249 differs from supplied full-system reference fault bus 6307. Retained Case 1 reference errors are historical invalid calculations, not accuracy evidence.",
+    "case2_event_identity_unchanged": true,
+    "implementation_differences_still_valid": true,
+    "correction_index": "docs/benchmarks/checkpoints/network-iteration-audit-2026-10-22.json"
+  },
   "description": "Four local ST1 steps tested; ten-step default retained. Neither count qualifies independent-reference accuracy.",
   "baseline_evidence_index": "docs/benchmarks/checkpoints/st1-single-step-experiment-2026-10-21.json",
-  "baseline_evidence_index_sha256": "d7fb2e05d0168bc51edbf1f6734ba6f176797e7b82e9899de3d8badd4d4312fb",
+  "baseline_evidence_index_sha256": "6aff67e0d52508067fd5f90c37af1c609eb05230b064e73502c92fe60fcd6a9c",
   "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-st1-four-step/evidence.zip",
   "archive_bytes": 2861402,
   "archive_sha256": "c477095d32c5dcfbc6b9d0de0af765116560768147908e45321d49c4ee2ef60c",
@@ -940,7 +948,8 @@
             "failed_channels": 0
           }
         }
-      }
+      },
+      "reference_comparison_validity": "WITHDRAWN_WRONG_FAULT_BUS"
     }
   ],
   "retained_dependencies": [
@@ -1014,5 +1023,6 @@
       "bytes": 2830917,
       "sha256": "0ccfe235aae428ab47a1a92f4901a2517008db3f6745422b0131535f38d5a89d"
     }
-  ]
+  ],
+  "baseline_evidence_index_sha256_at_capture": "d7fb2e05d0168bc51edbf1f6734ba6f176797e7b82e9899de3d8badd4d4312fb"
 }

@@ -1,5 +1,13 @@
 {
   "schema": 1,
+  "reference_comparison_validity": {
+    "date": "2026-10-22",
+    "case1_reference_comparison_valid": false,
+    "reason": "Actual fault bus 7249 differs from supplied full-system reference fault bus 6307. Retained Case 1 reference errors are historical invalid calculations, not accuracy evidence.",
+    "case2_event_identity_unchanged": true,
+    "implementation_differences_still_valid": true,
+    "correction_index": "docs/benchmarks/checkpoints/network-iteration-audit-2026-10-22.json"
+  },
   "description": "ST1 single-step experiment rejected for production; ten local steps retained.",
   "baseline_commit": "8b9c61728b26b5b5d67f556bf25255459ade4adb",
   "baseline_checkpoint": "docs/benchmarks/checkpoints/st1-generated-inputs-2026-10-21.json",
@@ -4369,7 +4377,8 @@
             }
           }
         }
-      }
+      },
+      "reference_comparison_validity": "WITHDRAWN_WRONG_FAULT_BUS"
     },
     {
       "case": 3,
