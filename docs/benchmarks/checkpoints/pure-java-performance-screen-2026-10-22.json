@@ -109,6 +109,13 @@
       "bytes": 3843950,
       "sha256": "63ab37072af0bad9a7021e1042ef32f12a11deb85e2598f13d0afa32384f00f9",
       "outcome": "not-promoted"
+    },
+    {
+      "name": "java-cpu-placement-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-cpu-placement/evidence.zip",
+      "bytes": 2875347,
+      "sha256": "6ccd8d36133839b348f5af0ba948857e19a283d05ad6cbd15eb41f56ac11d6be",
+      "outcome": "not-promoted"
     }
   ],
   "row_solve": {
@@ -1346,5 +1353,78 @@
       }
     ],
     "full_reference_details": "all-channel-accuracy-summary.json and case*-all-channel-errors.json in the private evidence archive"
+  },
+  "cpu_placement": {
+    "summary": {
+      "case": 1,
+      "times_s": {
+        "0": [
+          9.0223596,
+          8.9532332,
+          8.4801778,
+          8.9281112,
+          8.7871852
+        ],
+        "8": [
+          8.7318969,
+          8.7219682,
+          8.7709896,
+          8.914391,
+          8.9291527
+        ]
+      },
+      "medians_s": {
+        "0": 8.9281112,
+        "8": 8.7709896
+      },
+      "paired_cpu8_savings_s": [
+        0.2904626999999991,
+        0.2312650000000005,
+        -0.2908118000000002,
+        0.01372019999999985,
+        -0.1419674999999998
+      ],
+      "median_paired_saving_s": 0.01372019999999985,
+      "cpu8_wins": 3,
+      "median_process_cpu_s": {
+        "0": 8.703125,
+        "8": 8.40625
+      },
+      "compiler_ms": {
+        "0": [
+          131,
+          165,
+          72,
+          21,
+          5
+        ],
+        "8": [
+          320,
+          128,
+          102,
+          190,
+          254
+        ]
+      },
+      "gc_ms": {
+        "0": [
+          134,
+          129,
+          88,
+          107,
+          63
+        ],
+        "8": [
+          189,
+          61,
+          62,
+          64,
+          60
+        ]
+      }
+    },
+    "complete_recordings": 26,
+    "simultaneous_logical_processors": 1,
+    "production_source_changed": false
   }
 }
