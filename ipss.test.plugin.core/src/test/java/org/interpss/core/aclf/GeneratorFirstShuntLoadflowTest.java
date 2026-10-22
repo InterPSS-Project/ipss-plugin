@@ -247,6 +247,42 @@ Q
         checkSolvedNetting(true);
     }
 
+    @Test void relaxedToleranceDoesNotAcceptAnUnbalancedClippedGenerator() throws Exception {
+        for (double direction : new double[] {-1., 1.}) {
+            double bound = direction * .2;
+            double required = bound + direction * .005;
+            double slack = 1. - .1 * required;
+            var lf = network(slack, 1.03, 0., new Machine(0., -.2, .2, 1.));
+            var bus = lf.getNetwork().getBus("Bus1");
+            bus.getSwitchedShuntList().clear();
+            lf.setTolerance(1.e-3);
+            var config = lf.getLfAdjAlgo().getLimitCtrlConfig();
+            config.setToleranceFactor(10.);
+            var status = new java.util.LinkedHashMap<String, Object>();
+            Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+            assertTrue(bus.isGenPQ(), "A Q violation above the electrical tolerance must enforce the limit");
+            double q = bus.getContributeGen("1").getGen().getImaginary();
+            double v = bus.getVoltageMag();
+            // Independent lossless branch balance, after physical allocation.
+            assertEquals(bound, q, 1.e-10);
+            assertTrue(Math.abs(v * (v - slack) / .1 - q) < lf.getTolerance());
+            assertEquals(1.e-3, status.get("reactive_limit_tolerance_pu"));
+            assertEquals(10., config.getToleranceFactor(), 0.);
+            assertEquals(1.e-3, lf.getTolerance(), 0.);
+        }
+    }
+
+    @Test void preparationPreservesAStricterReactiveLimitTolerance() throws Exception {
+        var lf = network(1., 1.03, 0., new Machine(0., -.2, .2, 1.));
+        lf.setTolerance(1.e-3);
+        var config = lf.getLfAdjAlgo().getLimitCtrlConfig();
+        config.setToleranceFactor(.1);
+        var status = new java.util.LinkedHashMap<String, Object>();
+        Texas2kPowerflowPreparation.solve(lf, inputRaw, status);
+        assertEquals(1.e-4, status.get("reactive_limit_tolerance_pu"));
+        assertEquals(.1, config.getToleranceFactor(), 0.);
+    }
+
     @Test void coldControlDiagnosticKeepsSolvedNettingAndRestoresInitializationMode() throws Exception {
         checkSolvedNetting(false);
     }
@@ -305,6 +341,7 @@ Q
                     if (method.getName().equals("loadflow") && ++calls[0] == 2) {
                         assertEquals(ControlInitializationMode.PREVIOUS_SOLUTION,
                                 lf.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
+                        assertEquals(1., lf.getLfAdjAlgo().getLimitCtrlConfig().getToleranceFactor());
                         throw new IllegalStateException("Injected post-netting failure");
                     }
                     try { return method.invoke(lf, args); }
@@ -315,6 +352,7 @@ Q
         assertEquals("Injected post-netting failure", error.getMessage());
         assertEquals(ControlInitializationMode.COLD_START,
                 lf.getLfAdjAlgo().getLimitCtrlConfig().getControlInitializationMode());
+        assertEquals(10., lf.getLfAdjAlgo().getLimitCtrlConfig().getToleranceFactor());
     }
 
     @Test void nettingPreservesOriginalLoadsAndDisambiguatesHyphenatedIds() throws Exception {

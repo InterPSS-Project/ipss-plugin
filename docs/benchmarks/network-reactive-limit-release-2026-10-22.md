@@ -125,3 +125,72 @@ The [evidence index](checkpoints/network-reactive-limit-release-2026-10-22.json)
 retains source, tests, logs, reference comparisons and hashes for the complete
 short-run recordings. Full outputs remain in the generated-artifact store;
 supplied references are preserved.
+
+## Preparation limit deadband and Case 5 startup
+
+The shared benchmark preparation now caps the reactive-limit tolerance factor
+at one for both the initial and post-netting solves. It preserves a caller's
+stricter factor and restores the original factor on success or failure. The
+electrical tolerance remains 0.001 pu; the dynamic voltage-correction tolerance
+remains 1e-5 pu and the network interval remains 1/240 second. The effective
+reactive-limit tolerance is recorded in run status.
+
+Previously the default factor of ten allowed a PV bus to require up to 0.01 pu
+beyond a reactive limit before enforcing that limit. Final machine allocation
+could then clip Q without resolving the changed power balance. In Case 5,
+bus 5382 retained 1.04 pu while its physical machine allocation left a
+0.7604673 Mvar deficit. Its machine and controller initial derivatives were near
+roundoff, so a controller-equilibrium check alone did not expose this network
+inconsistency. Enforcing the limit produces 1.0398735121 pu at that bus and
+reduces its deficit to roundoff. The largest initial current residual across
+the network falls from 0.0073121856 to 0.0001074055 pu, now at bus 1033.
+
+The cold point comparison against the supplied Case 5 reference improves:
+
+| Maximum absolute error | Previous preparation | Corrected preparation |
+|---|---:|---:|
+| Bus voltage, pu | 0.000159421 | 0.00000145241 |
+| Generator Q, Mvar | 0.147939 | 0.00172481 |
+| Rotor angle, degrees | 0.00504456 | 0.000487984 |
+| Generator P, MW | 0.00519893 | 0.0104693 |
+
+The active-power maximum is the balancing unit 7389/1. These are cold
+initialization errors, not errors over the prefault trajectory. No measured
+power or voltage was inserted into the solution.
+
+All 42 focused tests pass. An independent lossless two-bus test enforces both
+upper and lower reactive bounds with a 0.005 pu required-Q excess at a 0.001 pu
+electrical tolerance. The old preparation leaves the bus regulating and fails
+the physical-balance regression. Additional checks cover a stricter caller
+factor, recorded effective tolerance, and restoration after a post-netting
+exception. The negative control also fails the new reporting and in-solve
+configuration assertions; those are distinct from the physical-balance failure.
+
+Six single-core short probes retain complete recordings. Cases 1, 2, 3, 4 and 6
+are byte-identical to the preceding checkpoint. Case 3 retains its earlier
+experimental four local renewable steps. Cases 4 and 6 still fail at 0.0458333
+and 0.05 seconds. Case 5 preparation still takes two solves before netting and
+one after; the status field for iterations describes the last solve, not the
+aggregate iteration count.
+
+Case 5 with one renewable step still fails at 0.0333333 seconds. A separate
+four-local-step diagnostic completes 0.1 seconds while keeping the quarter-cycle
+network interval. All 4,919 comparable channels were scored against the supplied
+reference. Its largest voltage error is 0.04013395 pu at bus 1007 and its largest
+rotor-angle error is 0.2954107 degrees at 1050/1; worst voltage NRMSE is
+0.04268944 using the full ten-second reference range. This remains far outside
+acceptance. Local steps are not promoted by this preparation fix.
+
+The initialization audit also has a small observable numerical effect: enabling
+the retained audit changes recorded powers by at most 2.6006e-12 MW/Mvar over
+the original short prefix. The failed byte-equality assertion and raw results
+are retained. The four-step prior-preparation comparison uses that audited
+diagnostic and is identified accordingly.
+
+No new warmed ten-second timing or full-system accuracy acceptance is claimed.
+The next dynamic investigation should follow the early renewable/network
+response near bus 1007 and machine 1050/1, independently of the corrected
+5382 operating point. The existing full-reactor compilation limitations above
+remain; this slice used an isolated compatible runtime. The
+[evidence index](checkpoints/preparation-reactive-limit-tolerance-2026-10-22.json)
+records the tests, cold comparisons, short trajectories and reproduction inputs.

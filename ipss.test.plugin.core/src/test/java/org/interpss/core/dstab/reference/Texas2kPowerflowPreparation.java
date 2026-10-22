@@ -40,10 +40,19 @@ public final class Texas2kPowerflowPreparation {
             boolean reusePostNettingControls) throws Exception {
         var limits = lf.getLfAdjAlgo().getLimitCtrlConfig();
         var callerMode = limits.getControlInitializationMode();
+        double callerToleranceFactor = limits.getToleranceFactor();
         try {
+            // A looser Q-limit deadband can leave a PV solution outside the
+            // machine capability. Final allocation then clips Q without solving
+            // the changed balance, creating a dynamic initialization residual.
+            // Honor a caller's stricter setting, but do not exceed the requested
+            // electrical mismatch tolerance during operating-point preparation.
+            limits.setToleranceFactor(Math.min(callerToleranceFactor, 1.));
+            status.put("reactive_limit_tolerance_pu", limits.getToleranceFactor() * lf.getTolerance());
             solvePrepared(lf, raw, status, reusePostNettingControls);
         } finally {
             limits.setControlInitializationMode(callerMode);
+            limits.setToleranceFactor(callerToleranceFactor);
         }
     }
 
