@@ -1,0 +1,243 @@
+{
+  "schema": 1,
+  "description": "Pure Java solver and ST4 scheduling experiments, followed by complete simulation phase attribution.",
+  "scope": "pure-java-only",
+  "goal_complete": false,
+  "production_source_changed": false,
+  "experiments": [
+    {
+      "name": "java-row-scatter-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-row-scatter/evidence.zip",
+      "bytes": 403492,
+      "sha256": "e480a265fabf24cae87c06ecb9169aabb24777dd9f288c73cad9b80b01c312f0",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "st4-fixed-schedule-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st4-fixed-schedule/evidence.zip",
+      "bytes": 5057030,
+      "sha256": "4c5e5c8d9b9f64c917b2f7c958dabe8d07a9ea807496aeaea16c021c09f54017",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "java-complete-phase-audit-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-complete-phase-audit/evidence.zip",
+      "bytes": 1776800,
+      "sha256": "bee3859088cb4292e8f32401a473d2e46949df0c52f95e6bfce7e06c6ff2a539",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "java-integration-breakdown-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-java-integration-breakdown/evidence.zip",
+      "bytes": 1822159,
+      "sha256": "3872ab40190dd0747dea9faad2737d99897a6b1a17d497ae1ddd3adcb5ce8882",
+      "outcome": "not-promoted"
+    },
+    {
+      "name": "st4-pi-dispatch-v2-20261022",
+      "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-22-st4-pi-dispatch-v2/evidence.zip",
+      "bytes": 5053889,
+      "sha256": "e5ecc10ab238bd3ea93e18f35bc99d2d193b21ed063fd16bdd29f59979518406",
+      "outcome": "not-promoted"
+    }
+  ],
+  "row_solve": {
+    "medians_s": {
+      "False": 0.0811736,
+      "True": 0.080357
+    },
+    "paired_savings_s": [
+      0.001216800000000004,
+      0.0053409999999999985,
+      -0.004500900000000002,
+      0.001966499999999996,
+      0.0001305000000000056,
+      -0.0009849999999999998,
+      0.001160300000000003
+    ],
+    "median_paired_saving_s": 0.001160300000000003,
+    "candidate_wins": 5,
+    "scope": "Repeated solves on the captured final Case 1 network factor; includes resetting RHS. Not whole-simulation timing."
+  },
+  "st4_schedule": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.0896127,
+          9.5237197,
+          9.7608692,
+          8.950128,
+          10.324362
+        ],
+        "candidate": [
+          10.0726256,
+          9.4165411,
+          9.0862313,
+          10.0325845,
+          9.9448453
+        ]
+      },
+      "medians_s": {
+        "control": 9.5237197,
+        "candidate": 9.9448453
+      },
+      "paired_savings_s": [
+        -0.9830129000000003,
+        0.10717859999999924,
+        0.6746379000000005,
+        -1.082456500000001,
+        0.37951669999999993
+      ],
+      "median_paired_saving_s": 0.10717859999999924,
+      "candidate_wins": 3,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.1811931,
+          7.9815575,
+          7.1284312,
+          7.1556937,
+          8.0834975
+        ],
+        "candidate": [
+          7.0247152,
+          6.2019048,
+          7.0733592,
+          6.419952,
+          6.5741866
+        ]
+      },
+      "medians_s": {
+        "control": 7.1556937,
+        "candidate": 6.5741866
+      },
+      "paired_savings_s": [
+        -0.8435221000000004,
+        1.7796526999999998,
+        0.05507200000000001,
+        0.7357416999999993,
+        1.5093109
+      ],
+      "median_paired_saving_s": 0.7357416999999993,
+      "candidate_wins": 4,
+      "recordings_identical": true
+    }
+  ],
+  "phase_medians": {
+    "complete_case_wall_s": 10.2302021,
+    "network_s": 3.6494672,
+    "integration_excluding_network_and_event_recording_s": 5.6469507,
+    "selected_sampling_s": 0.0022751,
+    "recording_write_s": 0.3006581,
+    "nested_event_recording_s": 0.0001365,
+    "process_cpu_s": 9.59375,
+    "compilation_time_ms": 336
+  },
+  "integration_breakdown": {
+    "scope": "Instrumented phase attribution only, not performance qualification.",
+    "labels": [
+      "attachment_checks",
+      "initial_evaluation",
+      "state_and_participant_capture",
+      "local_st1_advance",
+      "bus_predictor",
+      "renewable_advance",
+      "state_advance",
+      "participant_state_advance",
+      "participant_completion",
+      "electrical_preparation",
+      "pre_network_evaluation",
+      "post_network_evaluation",
+      "endpoint_accept_and_bus_corrector"
+    ],
+    "medians_s": {
+      "attachment_checks": 0.0364649,
+      "initial_evaluation": 1.2332897,
+      "state_and_participant_capture": 0.2364969,
+      "local_st1_advance": 0.2963188,
+      "bus_predictor": 0.1291488,
+      "renewable_advance": 0.161828,
+      "state_advance": 0.1922212,
+      "participant_state_advance": 0.0196266,
+      "participant_completion": 0.0396662,
+      "electrical_preparation": 0.4727003,
+      "pre_network_evaluation": 1.1517975,
+      "post_network_evaluation": 1.2592661,
+      "endpoint_accept_and_bus_corrector": 0.2731306
+    },
+    "complete_case_median_s": 10.2595463,
+    "recordings_identical": true
+  },
+  "st4_pi_dispatch": [
+    {
+      "case": 1,
+      "times_s": {
+        "control": [
+          9.3046912,
+          9.16421,
+          8.933141,
+          8.5175758,
+          8.7672993
+        ],
+        "candidate": [
+          9.0027726,
+          8.8955215,
+          8.9741121,
+          9.1208535,
+          8.9361282
+        ]
+      },
+      "medians_s": {
+        "control": 8.933141,
+        "candidate": 8.9741121
+      },
+      "paired_savings_s": [
+        0.3019186000000005,
+        0.26868850000000144,
+        -0.04097109999999837,
+        -0.6032777000000014,
+        -0.16882890000000117
+      ],
+      "median_paired_saving_s": -0.04097109999999837,
+      "candidate_wins": 2,
+      "recordings_identical": true
+    },
+    {
+      "case": 2,
+      "times_s": {
+        "control": [
+          6.1783878,
+          6.4574126,
+          6.0979857,
+          6.2496663,
+          6.5894204
+        ],
+        "candidate": [
+          6.4777487,
+          6.2637097,
+          6.2276181,
+          6.1216126,
+          6.4600313
+        ]
+      },
+      "medians_s": {
+        "control": 6.2496663,
+        "candidate": 6.2637097
+      },
+      "paired_savings_s": [
+        -0.29936089999999993,
+        0.1937028999999999,
+        -0.1296324000000002,
+        0.1280537000000006,
+        0.12938910000000003
+      ],
+      "median_paired_saving_s": 0.1280537000000006,
+      "candidate_wins": 3,
+      "recordings_identical": true
+    }
+  ]
+}
