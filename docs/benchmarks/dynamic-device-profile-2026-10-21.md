@@ -1040,4 +1040,31 @@ coefficients match the original implementation bitwise; 43,640 columns are
 reused. Coverage includes rank deficiency, signed zeros, nonfinite inputs,
 history rotation and resets. Two complete one-step Case 1/2 smokes also match
 all recordings, metadata and iteration counts. This prototype has no warmed
-timing qualification and has not changed production code.
+timing qualification in that checkpoint and has not changed production code.
+
+## QR-history reuse timing, October 22
+
+A subsequent paired screen measures QR-prefix reuse with the implicit one-step
+ST1 default in both arms. It retains the same experimental network path,
+quarter-cycle interval, 1e-5 tolerance, complete recording and single-CPU
+affinity. Each case has 32 alternating warmups and seven measured pairs.
+
+| Case | Full QR median | Prefix-reuse median | Median paired saving | Reuse faster |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 9.338 s | 9.362 s | -0.007 s | 3/7 |
+| 2 | 6.222 s | 6.195 s | 0.082 s | 5/7 |
+
+Median process CPU time also does not improve: Case 1 changes from 9.094 to
+9.156 seconds, and Case 2 from 6.063 to 6.078 seconds. Compilation and garbage
+collection times are retained for every measured run; all pairs remain in
+the report. These results do not establish a consistent performance benefit,
+so QR-prefix reuse is not promoted. The user-approved one-step default remains.
+
+All 92 complete recordings match the retained one-step baseline byte for byte,
+including every full-network sample, selected-channel sample and channel
+metadata. Network iteration and mixing counts are unchanged. Each candidate
+run reuses 7,209 QR columns; the control reuses none. The standalone comparison
+also passes 64,000 calls with the feature disabled and another 64,000 enabled.
+The [screen evidence index](checkpoints/anderson-qr-prefix-screen-2026-10-22.json)
+retains the sources, runtime identities, complete-output hashes and timings.
+The eight-second Case 1 objective and independent-reference accuracy remain open.
