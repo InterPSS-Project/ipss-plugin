@@ -1,6 +1,8 @@
 {
   "schema": 1,
-  "description": "Isolated synchronous-machine Norton-source cache screen; rejected for production because timing shows no gain.",
+  "description": "Isolated synchronous-machine Norton-source cache screen; intended imported-machine eligibility was not verified, so no cache performance conclusion is supported.",
+  "coverage_verified": false,
+  "coverage_correction": "The exact core-class guard excludes IeeeVcRoundRotorMachine and IeeeVcSalientPoleMachine used by imported cases. Rerun with supported subclass eligibility and asserted candidate/control cache-use counters before drawing performance conclusions.",
   "base_commit": "679c2cd47007b64c27613ac974e37845f4acc082",
   "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-norton-source-screen/evidence.zip",
   "archive_sha256": "153e7eb1c5cc2e0835ac2b6aba8b2370a9b27e7ca33f72bde96b7deb89398254",
@@ -78,5 +80,20 @@
     }
   ],
   "median_reduction_s": -0.09232399999999963,
-  "median_reduction_percent": -0.8620560542976136
+  "median_reduction_percent": -0.8620560542976136,
+  "coverage_audit": {
+    "index": "st1-boundary-screen-2026-10-21.json",
+    "norton_source_reuses": 0,
+    "norton_source_eligible_machines": 0,
+    "norton_machine_classes": {
+      "org.interpss.dstab.mach.IeeeVcRoundRotorMachine": 410,
+      "org.interpss.dstab.mach.IeeeVcSalientPoleMachine": 25
+    },
+    "all_recordings_match": true,
+    "hashes": {
+      "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+      "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+      "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+    }
+  }
 }

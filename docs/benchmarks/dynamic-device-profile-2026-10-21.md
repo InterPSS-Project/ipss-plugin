@@ -242,16 +242,75 @@ All 34 complete Case 1 recordings match the retained baseline byte for byte.
 | Control | 10.709744 s | 10.642337–11.222181 s |
 | Norton-source cache | 10.802068 s | 10.716232–11.235897 s |
 
-The candidate median is 0.092324 seconds (0.86%) slower.
-Ranges overlap, so this screen establishes no benefit and does not isolate a
-reliable regression. Both processes use one logical CPU, twelve complete warmups
-and five measurements, including recording and writer closure. Compilation
-remains active during measurement. The cache is not promoted into production;
-there is no reason to broaden timing qualification for this candidate. Case 2
-was not timed in this screen. Independent-reference accuracy and the eight-second
-target remain unresolved.
+The candidate median is 0.092324 seconds (0.86%) slower, with overlapping ranges.
+However, a subsequent eligibility review found that the prototype's exact-class
+guard excludes the imported `IeeeVcRoundRotorMachine` and
+`IeeeVcSalientPoleMachine` subclasses. The unit test exercises core machine
+classes; it does not prove execution in the large imported case. This screen
+therefore does **not** establish the cache's performance on the intended machines.
+Its recordings and timings remain valid observations, but the earlier conclusion
+that the intended cache showed no benefit is withdrawn. A corrected screen must
+assert nonzero cache use in the candidate and zero use in its disabled control.
+
+Both processes use one logical CPU, twelve complete warmups and five measurements,
+including recording and writer closure. Compilation remains active during
+measurement. The cache is not promoted into production. Case 2 was not timed in
+this screen. Independent-reference accuracy and the eight-second target remain
+unresolved.
 
 The [screening evidence index](checkpoints/norton-source-screen-2026-10-21.json)
 retains sources, commands, tests, timings, affinity records and recording hashes.
 Identical generated recordings share retained storage; supplied references are
 unchanged.
+
+## Guarded ST1 substep-boundary reuse screening
+
+The standard local ST1 path evaluates the graph at the end of one substep and
+again at the start of the next. An initial prototype skipped the latter pass
+whenever regulator time constant Ta was positive. Complete Cases 1 and 2 still
+matched, but a stronger test with active rate feedback found a field-output
+difference. The repeated pass can refresh derivative history; positive Ta alone
+does not justify removing it. The failed test and initial source are retained.
+
+The revised prototype additionally requires zero rate-feedback gain and zero
+feedback state, standard scalar input equations, supported exact machine and
+block types, ordinary limit objects and no machine/bus observers. Zero-Ta and
+active-feedback models keep the original sequence. It retains all ten physical
+substeps, field-publication order, convergence tolerance and network interval.
+
+Thirty-four focused tests pass. They include bitwise block state, derivative,
+input, output, local history and field comparisons over changing setpoints,
+limit selectors, voltage, status history, three Ta values, two feedback gains,
+and counts 1, 4, 10 and 128. Nonzero feedback state and late observer attachment
+disable reuse. The new test exercises the optimization and its fallback, rather
+than relying only on unchanged large-case output.
+
+All 34 complete Case 1 recordings match the retained baseline. Every candidate
+run reports 1,967,238 skipped redundant graph evaluations; every control reports
+zero. Both arms use the same class overlay with the feature disabled for control,
+one logical CPU, twelve warmups and five measurements including writer closure.
+
+| Variant | Median total | Range |
+| --- | ---: | ---: |
+| Disabled control | 10.788260 s | 10.617502–11.216924 s |
+| Guarded boundary reuse | 10.483388 s | 10.418873–11.289080 s |
+
+The median reduction is 0.304873 seconds (2.83%). This is a promising
+screen, with overlapping ranges and compilation still active during measurement.
+Longer timing qualification and Case 2 timing remain outstanding before promotion.
+The guarded final prototype has full-case recording evidence for Case 1; the
+earlier broader prototype's two-case regression is retained separately and must
+not be represented as final-prototype Case 2 verification. Independent-reference
+accuracy, early Case 3/4 failures and the eight-second objective remain unresolved.
+
+A separate full Case 1 audit confirms the preceding Norton-source screen had
+zero eligible machines and zero cache reuses. Its attached machine inventory
+contains 410 `IeeeVcRoundRotorMachine` and 25 `IeeeVcSalientPoleMachine` instances,
+including inactive machines. Its complete recording still matches the baseline.
+This confirms the eligibility defect and withdraws that screen's cache-performance
+conclusion. Future cache qualification must exercise the imported subclasses and
+assert nonzero reuse.
+
+The [evidence index](checkpoints/st1-boundary-screen-2026-10-21.json) retains both
+experiments, sources/classes, the counterexample, tests, commands, feature counters,
+affinity records and full-recording hashes. Supplied references are unchanged.
