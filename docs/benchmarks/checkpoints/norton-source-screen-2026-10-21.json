@@ -1,0 +1,82 @@
+{
+  "schema": 1,
+  "description": "Isolated synchronous-machine Norton-source cache screen; rejected for production because timing shows no gain.",
+  "base_commit": "679c2cd47007b64c27613ac974e37845f4acc082",
+  "archive": "ipss.test.plugin.core/testData/private/verification-artifacts/2026-10-21-norton-source-screen/evidence.zip",
+  "archive_sha256": "153e7eb1c5cc2e0835ac2b6aba8b2370a9b27e7ca33f72bde96b7deb89398254",
+  "archive_bytes": 3434193,
+  "focused_tests_passed": 34,
+  "protocol": {
+    "case": 1,
+    "warmups": 12,
+    "measurements": 5,
+    "logical_processors": 1,
+    "network_step_s": 0.004166666666666667,
+    "voltage_correction_tolerance_pu": 1e-05,
+    "st1_substeps": 10,
+    "scope": "Fresh parse, preparation, initialization, all observations and writer closure",
+    "excluded": [
+      "Pending observation-cache prototype",
+      "Pending compact-state prototype",
+      "Zero-time PSS2A prototype"
+    ]
+  },
+  "results": [
+    {
+      "case": 1,
+      "variant": "candidate",
+      "seconds": [
+        11.2358967,
+        10.7162323,
+        10.7506783,
+        10.8305276,
+        10.8020684
+      ],
+      "median_s": 10.8020684,
+      "min_s": 10.7162323,
+      "max_s": 11.2358967,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "compilation_ms": [
+        642,
+        209,
+        309,
+        100,
+        145
+      ]
+    },
+    {
+      "case": 1,
+      "variant": "baseline",
+      "seconds": [
+        11.2221814,
+        10.9509626,
+        10.6423366,
+        10.7097444,
+        10.6749771
+      ],
+      "median_s": 10.7097444,
+      "min_s": 10.6423366,
+      "max_s": 11.2221814,
+      "all_runs_match": true,
+      "hashes": {
+        "full-network.bin": "d0068ceb29f00e87ff6136e2ee6439beb7fe51f9aca7eeee70006dfcb6205e83",
+        "interpss.csv": "1c4b0e258a8412620dfc384c2a5584b876a32c04883b384dad7111778afe583c",
+        "full-network-channels.json": "1fe4b6dacf21996de4ffc6a0363f4afe30e65436df133dcf6db5bffa9c576fce"
+      },
+      "compilation_ms": [
+        624,
+        215,
+        313,
+        99,
+        140
+      ]
+    }
+  ],
+  "median_reduction_s": -0.09232399999999963,
+  "median_reduction_percent": -0.8620560542976136
+}

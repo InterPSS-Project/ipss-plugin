@@ -221,3 +221,37 @@ open. The [screening evidence index](checkpoints/pss-zero-step-screen-2026-10-21
 retains the source, tests, exact commands, timings and verified affinity records.
 Identical generated recordings share retained storage; supplied references are
 unchanged.
+
+## Synchronous-machine Norton-source cache screening
+
+An isolated prototype reuses the final Norton source for exact standard round-rotor
+and salient-pole machines when internal voltage, conductance, susceptance, rotor
+angle and current-base scaling retain identical bits. Terminal current, electrical
+power and field-current inputs still refresh with live voltage. Custom machine
+subclasses retain the ordinary dispatcher. Physical parameters, integration stages,
+substeps and convergence tolerance are unchanged.
+
+Thirty-four focused tests pass. Added tests compare cached and uncached machine
+outputs, power, field current and integrated states through changing voltage,
+base scaling, angle and reinitialization. A separate source-cache test exercises
+every scalar key, signed zeros, nonfinite values and explicit invalidation.
+All 34 complete Case 1 recordings match the retained baseline byte for byte.
+
+| Variant | Median total | Range |
+| --- | ---: | ---: |
+| Control | 10.709744 s | 10.642337–11.222181 s |
+| Norton-source cache | 10.802068 s | 10.716232–11.235897 s |
+
+The candidate median is 0.092324 seconds (0.86%) slower.
+Ranges overlap, so this screen establishes no benefit and does not isolate a
+reliable regression. Both processes use one logical CPU, twelve complete warmups
+and five measurements, including recording and writer closure. Compilation
+remains active during measurement. The cache is not promoted into production;
+there is no reason to broaden timing qualification for this candidate. Case 2
+was not timed in this screen. Independent-reference accuracy and the eight-second
+target remain unresolved.
+
+The [screening evidence index](checkpoints/norton-source-screen-2026-10-21.json)
+retains sources, commands, tests, timings, affinity records and recording hashes.
+Identical generated recordings share retained storage; supplied references are
+unchanged.
