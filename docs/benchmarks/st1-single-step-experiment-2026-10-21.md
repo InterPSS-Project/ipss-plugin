@@ -1,0 +1,80 @@
+# ST1 single-step accuracy experiment
+
+Removing the ST1 local substeps is **not qualified for production**. Cases 1 and
+2 complete, but the single-step trajectories differ materially from the retained
+ten-substep implementation and still fail the supplied-reference accuracy gates.
+The production default remains ten local steps.
+
+## Controlled change
+
+An isolated executable overlay starts from plugin commit `8b9c61728`. It changes
+only the ST1 local integration count from ten to one, in both the direct and
+fallback paths. It retains the same two-step state recurrence, event-history
+handling, limits, input holding and network/controller sequencing. This tests
+removing subdivisions, not replacing the integration method.
+
+The network step is 1/240 second, dynamic voltage-correction tolerance is 1e-5 pu,
+and load-flow tolerance is 1e-3 pu. Each run uses one logical CPU and records all
+channels. The local ST1 interval therefore increases from 0.4167 ms to 4.1667 ms.
+Pending observation-cache and compact-state-update changes are excluded.
+
+The ten-substep control reproduces the retained Case 1 and Case 2 binary,
+channel metadata and CSV outputs byte for byte. Each variant is one cold
+correctness run; these runs do not establish a warmed performance difference.
+
+## Ten-second results
+
+Errors below are worst-channel RMSE over all nonnegative recorded samples,
+including the separate pre-event and post-event observations. Different columns
+can have different worst channels.
+
+| Quantity | Case 1: ten steps vs reference | Case 1: one step vs reference | Case 2: ten steps vs reference | Case 2: one step vs reference |
+| --- | ---: | ---: | ---: | ---: |
+| Rotor angle, degrees | 42.3457 | 40.7661 | 102.7470 | 108.1341 |
+| Bus voltage, pu | 0.0915854 | 0.0915852 | 0.0462767 | 0.0466229 |
+| Generator active power, MW | 84.4109 | 84.3501 | 130.7477 | 131.0833 |
+| Generator reactive power, Mvar | 48.8002 | 48.8048 | 158.5232 | 138.6538 |
+
+The baseline already has a substantial independent-reference error. A smaller
+aggregate error in some single-step channels does not establish correct local
+integration or satisfy the rotor-angle target of 0.01 degree RMSE.
+
+| Difference caused by one step instead of ten | Case 1 | Case 2 |
+| --- | ---: | ---: |
+| Worst rotor-angle RMSE | 5.63295 degrees | 5.88287 degrees |
+| Largest absolute rotor-angle difference | 9.55632 degrees | 9.78722 degrees |
+| Worst bus-voltage RMSE | 0.00157958 pu | 0.00728416 pu |
+| Largest absolute bus-voltage difference | 0.00980177 pu | 0.05916673 pu |
+
+Cases 3 and 4 fail at 0.0458333 seconds with either count. Their short prefixes
+are retained for diagnosis, but cannot qualify ten-second accuracy or timing.
+The experiment does not show that every ST1 instance requires ten steps, or that
+ten is the minimum acceptable count. It shows that changing all of them to one
+is not an acceptable accuracy-preserving optimization in these coupled runs.
+
+## Comparison and evidence
+
+Case 1 compares 5,191 channels and Case 2 compares 4,501: all recorded bus
+voltages and angles, generator P/Q, and synchronous rotor angles. Bus angles are
+reported in the evidence without an acceptance gate; no angular offset or
+wrapping correction is fitted. Supplied reference files are unchanged.
+
+Ordinary samples use linear interpolation within their own event segment.
+Duplicated fault-application and clearing samples are paired by event identity
+and side; interpolation never crosses an event jump. Actual sample times remain
+unchanged. The reference clearing timestamp differs slightly from the actual
+quarter-cycle boundary, so this is an event-aware comparison, not an assertion
+of identical time grids. Range normalization uses the full reference interval
+from zero through ten seconds. Raw-unit rotor-angle errors need no range
+normalization.
+
+The [evidence index](checkpoints/st1-single-step-experiment-2026-10-21.json)
+identifies the private archive, source overlays, run commands, statuses, input
+and recording hashes, full channel-error summaries and comparison script. Raw
+recordings remain local dependencies rather than being duplicated in the archive.
+An initial bus-only scan is superseded by the complete channel-name mapping in
+the retained all-channel comparison.
+
+Retain the ten-step default while resolving the independent-reference mismatch.
+Any subsequent smaller-count or alternative-integrator candidate needs the same
+coupled reference checks before a warmed performance qualification.
