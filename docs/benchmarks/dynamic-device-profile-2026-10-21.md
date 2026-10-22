@@ -846,3 +846,49 @@ worst cold voltage error across 2,000 buses from 0.015545 to 0.0000113 pu in
 14 preparation iterations. Neither experiment changes production defaults.
 The [stability and limit-recovery report](renewable-stability-and-limit-recovery-2026-10-22.md)
 retains the numerical controls, failed alternatives and remaining accuracy gaps.
+
+## Atomic first-order kernel screen, October 22
+
+The retained sampling profile puts custom-current handling near the top, but
+the separate phase timers measure only 0.00057–0.00065 seconds in that operation
+per run. Sampling attribution alone is insufficient to identify this as a
+useful optimization target. The same instrumented runs spend approximately
+1.96 seconds in exciter evaluation, 1.15 seconds in stabilizers and 0.80 seconds
+in local ST1 advancement. These timers include instrumentation overhead.
+
+An isolated first-order CML kernel prototype combines the existing atomic
+calculation and commit into one method. It removes repeated eligibility checks
+and dispatch while preserving arithmetic order, scratch-array writes and block
+state restoration. Non-windup and custom blocks keep their existing fallback;
+the separate trial and commit API is unchanged. No production source changed.
+
+Each case ran twelve alternating warmups and four alternating measured pairs
+on one logical CPU. Both arms use the prior ST4B reuse and experimental
+Anderson/deferred network configuration, a 1/240-second step and 1e-5 voltage
+correction tolerance. Whole-case timing includes loading, preparation,
+initialization, complete recording and writer closure.
+
+| Case | Control median | Candidate median | Median paired saving | Faster pairs |
+| --- | ---: | ---: | ---: | ---: |
+| 1 | 10.059 s | 9.938 s | 0.182 s | 2/4 |
+| 2 | 6.683 s | 6.647 s | 0.069 s | 2/4 |
+
+The ranges overlap substantially: Case 1 control/candidate are 9.608–10.843 /
+9.717–10.036 seconds; Case 2 are 6.485–7.128 / 6.391–7.270 seconds. Compilation
+and garbage collection remain included. Case 1 measured compilation alone
+ranges from 78 to 628 ms, so this short screen does not establish a steady
+performance gain. The candidate is not promoted.
+
+All forty complete recordings and channel metadata files match the retained
+baseline byte for byte. Seven focused tests pass with the candidate both on
+and off: three block kernel tests, three PSS2A scalar evaluation tests and one
+independent small-system trajectory test. An initial broader test compilation
+failed because the existing `Pss2aCompiledStageTest` refers to APIs removed in
+the earlier rollback. That class remains excluded and unresolved; it was not
+modified to make this screen pass.
+
+The [screen evidence index](checkpoints/atomic-cml-screen-2026-10-22.json)
+retains sources, runtime hashes, test results, commands and every timing,
+with hashes and locations for the complete recordings. This verifies a
+behavior-preserving candidate on the benchmark baseline, not six-case
+reference accuracy. The eight-second objective remains open.
